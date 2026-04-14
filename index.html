@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-<title>Jaea Lee | 이재아</title>
+<title>Jaea Lee | Portfolio</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet"/>
 
@@ -938,7 +938,6 @@ a{color:inherit;text-decoration:none}
         <span class="act-period">2023.10</span>
       </div>
 
-      <!-- 카드 추가하려면 위 형식 복사해서 붙여넣기 -->
 
     </div>
   </section>
@@ -1033,19 +1032,7 @@ a{color:inherit;text-decoration:none}
     <h2 class="sec-h">Achievements <small>수상 · 자격증</small></h2>
     <div class="ach-list">
 
-      <!-- 자격증/수상 있으면 아래 형식으로 추가 -->
-      <!-- 예시:
-      <div class="ach-item">
-        <div class="ach-num">①</div>
-        <div class="ach-body">
-          <div class="ach-name">정보처리기능사</div>
-          <div class="ach-org">한국산업인력공단</div>
-        </div>
-        <div class="ach-date">2024.06</div>
-      </div>
-      -->
-
-      <!-- ITQ 자격증 -->
+      <!-- ① ITQ 자격증 -->
       <div class="ach-item">
         <div class="ach-num">①</div>
         <div class="ach-body">
@@ -1121,116 +1108,137 @@ a{color:inherit;text-decoration:none}
 <script>
 /* ====================================================
    1. 타이핑 애니메이션
+   Hero 섹션의 역할 텍스트가 자동으로 타이핑되고 지워짐
+   phrases 배열에서 순서대로 출력 → phrases 수정하면 내용 변경 가능
 ==================================================== */
 const typedEl = document.getElementById('typed');
 const phrases = ['Frontend Developer', 'CS Sophomore Dev', 'Problem Solver', 'Growing Developer'];
 let pi=0, ci=0, del=false;
+
 function typeLoop(){
-  const ph=phrases[pi];
-  if(!del){ typedEl.textContent=ph.slice(0,ci+1); ci++;
-    if(ci===ph.length){ del=true; setTimeout(typeLoop,1800); return; }
-    setTimeout(typeLoop,100);
-  } else { typedEl.textContent=ph.slice(0,ci-1); ci--;
-    if(ci===0){ del=false; pi=(pi+1)%phrases.length; setTimeout(typeLoop,400); return; }
-    setTimeout(typeLoop,55);
+  const ph = phrases[pi];
+  if (!del) {
+    // 한 글자씩 추가
+    typedEl.textContent = ph.slice(0, ci+1); ci++;
+    if (ci === ph.length) { del=true; setTimeout(typeLoop,1800); return; } // 다 쓰면 1.8초 대기 후 지우기 시작
+    setTimeout(typeLoop, 100); // 타이핑 속도 (ms)
+  } else {
+    // 한 글자씩 삭제
+    typedEl.textContent = ph.slice(0, ci-1); ci--;
+    if (ci === 0) { del=false; pi=(pi+1)%phrases.length; setTimeout(typeLoop,400); return; } // 다 지우면 다음 문장으로
+    setTimeout(typeLoop, 55); // 삭제 속도 (ms)
   }
 }
-setTimeout(typeLoop,600);
+setTimeout(typeLoop, 600); // 페이지 로드 후 0.6초 뒤 시작
 
 /* ====================================================
-   2. 사이드 네비 active (스크롤 감지)
+   2. 사이드 네비 active 표시 (스크롤 감지)
+   스크롤 위치에 따라 현재 섹션에 해당하는 네비 메뉴를 활성화
+   IntersectionObserver: 특정 요소가 화면에 보이는지 감지하는 API
 ==================================================== */
-const sideLinks = document.querySelectorAll('.side-link');
-const sections  = document.querySelectorAll('.section');
+const sideLinks = document.querySelectorAll('.side-link'); // 모든 네비 링크
+const sections  = document.querySelectorAll('.section');   // 모든 섹션
 
-const secObs = new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
-    if(!e.isIntersecting) return;
-    const id=e.target.id;
-    sideLinks.forEach(l=>l.classList.toggle('active', l.dataset.s===id));
+const secObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return; // 화면에 안 보이면 무시
+    const id = e.target.id;
+    // data-s 속성이 섹션 id와 일치하면 active 클래스 추가
+    sideLinks.forEach(l => l.classList.toggle('active', l.dataset.s === id));
   });
-},{ rootMargin:'-40% 0px -40% 0px', threshold:0 });
-sections.forEach(s=>secObs.observe(s));
+}, { rootMargin: '-40% 0px -40% 0px', threshold: 0 }); // 화면 중간 40% 구간 진입 시 감지
+
+sections.forEach(s => secObs.observe(s));
 
 /* ====================================================
-   3. 프로젝트 필터
+   3. 프로젝트 필터 탭
+   All / Web / App / Research 버튼 클릭 시
+   data-c 속성이 일치하는 카드만 보이고 나머지는 숨김
 ==================================================== */
-const ftabs    = document.querySelectorAll('.ftab');
-const projItems = document.querySelectorAll('.proj-item');
+const ftabs     = document.querySelectorAll('.ftab');      // 필터 버튼들
+const projItems = document.querySelectorAll('.proj-item'); // 프로젝트 카드들
 
-ftabs.forEach(tab=>{
-  tab.addEventListener('click',()=>{
-    const f=tab.dataset.f;
-    ftabs.forEach(t=>t.classList.remove('active'));
-    tab.classList.add('active');
-    projItems.forEach(item=>{
-      item.classList.toggle('hidden', f!=='all' && item.dataset.c!==f);
+ftabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    const f = tab.dataset.f; // 클릭한 탭의 필터값 (all / web / app / research)
+    ftabs.forEach(t => t.classList.remove('active')); // 모든 탭 비활성화
+    tab.classList.add('active'); // 클릭한 탭만 활성화
+    projItems.forEach(item => {
+      // all이면 전부 보이고, 아니면 카테고리 일치하는 것만 표시
+      item.classList.toggle('hidden', f !== 'all' && item.dataset.c !== f);
     });
   });
 });
 
 /* ====================================================
-   4. 프로젝트 카드 페이드인 (IntersectionObserver)
+   4. 프로젝트 카드 페이드인 애니메이션
+   카드가 화면에 들어올 때 투명 → 불투명으로 부드럽게 등장
+   한 번 등장하면 unobserve로 감지 중단 (성능 절약)
 ==================================================== */
-const fadeObs = new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
-    if(!e.isIntersecting) return;
-    e.target.style.opacity='1';
-    e.target.style.transform='translateY(0)';
-    fadeObs.unobserve(e.target);
+const fadeObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    e.target.style.opacity = '1';
+    e.target.style.transform = 'translateY(0)';
+    fadeObs.unobserve(e.target); // 한 번만 실행
   });
-},{ threshold:0.1 });
+}, { threshold: 0.1 }); // 카드가 10% 이상 보이면 실행
 
-projItems.forEach((item,i)=>{
-  item.style.transitionDelay=`${i*0.06}s`;
+projItems.forEach((item, i) => {
+  item.style.transitionDelay = `${i * 0.06}s`; // 카드마다 0.06초씩 딜레이 → 순차 등장 효과
   fadeObs.observe(item);
 });
 
 /* ====================================================
    5. 모바일 햄버거 메뉴
+   ☰ 버튼 클릭 시 전체화면 메뉴 오버레이 열고 닫기
+   메뉴 링크 클릭 시 자동으로 닫힘
 ==================================================== */
-const hbg        = document.getElementById('hbg');
-const mobOverlay = document.getElementById('mobOverlay');
-const mobLinks   = document.querySelectorAll('.mob-link');
+const hbg        = document.getElementById('hbg');        // 햄버거 버튼
+const mobOverlay = document.getElementById('mobOverlay'); // 전체화면 메뉴
+const mobLinks   = document.querySelectorAll('.mob-link'); // 메뉴 링크들
 
-hbg.addEventListener('click',()=>{
-  const open=mobOverlay.classList.toggle('open');
-  hbg.classList.toggle('open',open);
-  document.body.style.overflow=open?'hidden':'';
+hbg.addEventListener('click', () => {
+  const open = mobOverlay.classList.toggle('open'); // open 클래스 토글
+  hbg.classList.toggle('open', open);              // 버튼 X 모양으로 변경
+  document.body.style.overflow = open ? 'hidden' : ''; // 메뉴 열리면 배경 스크롤 막기
 });
-mobLinks.forEach(l=>l.addEventListener('click',()=>{
-  mobOverlay.classList.remove('open');
+
+mobLinks.forEach(l => l.addEventListener('click', () => {
+  mobOverlay.classList.remove('open'); // 링크 클릭 시 메뉴 닫기
   hbg.classList.remove('open');
-  document.body.style.overflow='';
+  document.body.style.overflow = '';
 }));
 
 /* ====================================================
-   6. Contact 폼 제출
+   6. Contact 폼 제출 (Formspree 연동)
+   이름 / 이메일 / 메시지 입력 후 Send 버튼 클릭 시
+   Formspree API로 POST 요청 → 이메일로 전송됨
 ==================================================== */
 document.getElementById('sendBtn').addEventListener('click', async () => {
-  const n = document.getElementById('nIn').value.trim();
-  const e = document.getElementById('eIn').value.trim();
-  const m = document.getElementById('mIn').value.trim();
+  const n = document.getElementById('nIn').value.trim(); // 이름
+  const e = document.getElementById('eIn').value.trim(); // 이메일
+  const m = document.getElementById('mIn').value.trim(); // 메시지
 
-  // 빈칸 체크
+  // 빈칸이 있으면 폼을 좌우로 흔들어서 알림
   if (!n || !e || !m) {
     document.getElementById('cform').animate(
-      [{transform:'translateX(0)'},{transform:'translateX(-7px)'},{transform:'translateX(7px)'},{transform:'translateX(-5px)'},{transform:'translateX(5px)'},{transform:'translateX(0)'}],
-      {duration:360, easing:'ease'}
+      [{transform:'translateX(0)'},{transform:'translateX(-7px)'},{transform:'translateX(7px)'},
+       {transform:'translateX(-5px)'},{transform:'translateX(5px)'},{transform:'translateX(0)'}],
+      { duration: 360, easing: 'ease' }
     );
     return;
   }
 
-  // 이메일 형식 체크
-  if (!e.includes('@')) { alert('올바른 이메일을 입력해주세요.'); return; }
+  // 이메일에 @ 없으면 오류
+  if (!e.includes('@')) { alert('Please enter a valid email. / 올바른 이메일을 입력해주세요.'); return; }
 
-  // 전송 중 표시
+  // 전송 중 — 버튼 비활성화
   const btn = document.getElementById('sendBtn');
   btn.disabled = true;
-  document.getElementById('btnTxt').textContent = '전송 중...';
+  document.getElementById('btnTxt').textContent = 'Sending... / 전송 중...';
 
   try {
-    // ↓ 본인 Formspree URL로 교체하세요
     const res = await fetch('https://formspree.io/f/myklzglo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1238,24 +1246,28 @@ document.getElementById('sendBtn').addEventListener('click', async () => {
     });
 
     if (res.ok) {
-      // 성공
+      // 전송 성공 → 폼 숨기고 완료 메시지 표시
       document.getElementById('cform').style.display = 'none';
       document.getElementById('cfDone').style.display = 'block';
     } else {
-      // 실패
-      alert('전송 실패. 잠시 후 다시 시도해주세요.');
+      // 서버 오류 (네트워크는 됐지만 Formspree 측 문제)
+      alert('Failed to send. Please try again. / 전송 실패. 잠시 후 다시 시도해주세요.');
       btn.disabled = false;
-      document.getElementById('btnTxt').textContent = 'Send';
+      document.getElementById('btnTxt').textContent = 'Send / 보내기';
     }
   } catch (err) {
-    // 네트워크 오류
-    alert('네트워크 오류. 인터넷 연결을 확인해주세요.');
+    // 네트워크 자체가 안 될 때 (오프라인, Wi-Fi 끊김 등)
+    alert('Network error. Check your connection. / 네트워크 오류. 인터넷 연결을 확인해주세요.');
     btn.disabled = false;
-    document.getElementById('btnTxt').textContent = 'Send';
+    document.getElementById('btnTxt').textContent = 'Send / 보내기';
   }
 });
-/* top button */
-document.getElementById('topBtn').addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+
+/* ====================================================
+   7. 맨 위로 버튼
+   오른쪽 하단 ↑ 버튼 클릭 시 페이지 최상단으로 부드럽게 이동
+==================================================== */
+document.getElementById('topBtn').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 </script>
 </body>
 </html>
