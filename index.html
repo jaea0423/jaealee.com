@@ -912,28 +912,51 @@ mobLinks.forEach(l=>l.addEventListener('click',()=>{
 /* ====================================================
    6. Contact 폼 제출
 ==================================================== */
-document.getElementById('sendBtn').addEventListener('click',()=>{
-  const n=document.getElementById('nIn').value.trim();
-  const e=document.getElementById('eIn').value.trim();
-  const m=document.getElementById('mIn').value.trim();
+document.getElementById('sendBtn').addEventListener('click', async () => {
+  const n = document.getElementById('nIn').value.trim();
+  const e = document.getElementById('eIn').value.trim();
+  const m = document.getElementById('mIn').value.trim();
 
-  if(!n||!e||!m){
+  // 빈칸 체크
+  if (!n || !e || !m) {
     document.getElementById('cform').animate(
       [{transform:'translateX(0)'},{transform:'translateX(-7px)'},{transform:'translateX(7px)'},{transform:'translateX(-5px)'},{transform:'translateX(5px)'},{transform:'translateX(0)'}],
       {duration:360,easing:'ease'}
     );
     return;
   }
-  if(!e.includes('@')){ alert('올바른 이메일을 입력해주세요.'); return; }
 
-  const btn=document.getElementById('sendBtn');
-  btn.disabled=true;
-  document.getElementById('btnTxt').textContent='전송 중...';
+  // 이메일 형식 체크
+  if (!e.includes('@')) { alert('올바른 이메일을 입력해주세요.'); return; }
 
-  setTimeout(()=>{
-    document.getElementById('cform').style.display='none';
-    document.getElementById('cfDone').style.display='block';
-  },1000);
+  // 전송 중 표시
+  const btn = document.getElementById('sendBtn');
+  btn.disabled = true;
+  document.getElementById('btnTxt').textContent = '전송 중...';
+
+  try {
+    const res = await fetch('https://formspree.io/f/https://formspree.io/f/myklzglo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: n, email: e, message: m })
+    });
+
+    if (res.ok) {
+      // 성공
+      document.getElementById('cform').style.display = 'none';
+      document.getElementById('cfDone').style.display = 'block';
+    } else {
+      // 실패
+      alert('전송 실패. 잠시 후 다시 시도해주세요.');
+      btn.disabled = false;
+      document.getElementById('btnTxt').textContent = 'Send';
+    }
+  } catch (err) {
+    // 네트워크 오류
+    alert('네트워크 오류. 인터넷 연결을 확인해주세요.');
+    btn.disabled = false;
+    document.getElementById('btnTxt').textContent = 'Send';
+  }
 });
 
 /* ====================================================
