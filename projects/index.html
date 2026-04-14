@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Projects — Jaeah Lee</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" as="style" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --white: #ffffff;
+  --bg:    #f5f4f1;
+  --ink:   #0f0f0e;
+  --mid:   #3a3936;
+  --muted: #888480;
+  --faint: #c8c5c0;
+  --line:  #e2e0db;
+
+  --blue:  #1d4ed8;
+  --gold:  #92600a;
+  --green: #166534;
+  --red:   #991b1b;
+
+  --blue-bg:  #eff6ff;
+  --gold-bg:  #fffbeb;
+  --green-bg: #f0fdf4;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* ─── 네비 ─── */
+nav {
+  background: var(--white);
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  z-index: 99;
+}
+.nav-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 40px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.nav-logo {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ink);
+  text-decoration: none;
+  letter-spacing: 0.04em;
+}
+.nav-logo:hover { color: var(--muted); }
+.nav-links { display: flex; gap: 8px; }
+.nav-link {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 6px 14px;
+  border-radius: 20px;
+  transition: all 0.15s;
+}
+.nav-link:hover { background: var(--bg); color: var(--ink); }
+.nav-link.on { background: var(--ink); color: var(--white); }
+
+/* ─── 페이지 헤더 ─── */
+.hero {
+  background: var(--white);
+  border-bottom: 1px solid var(--line);
+  padding: 64px 40px 52px;
+}
+.hero-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.hero-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.hero-eyebrow::before {
+  content: '';
+  display: block;
+  width: 20px;
+  height: 1px;
+  background: var(--faint);
+}
+.hero-title {
+  font-size: 52px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin-bottom: 16px;
+}
+.hero-desc {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--muted);
+  letter-spacing: -0.01em;
+}
+
+/* ─── 필터 탭 ─── */
+.filter-wrap {
+  max-width: 1100px;
+  margin: 36px auto 0;
+  padding: 0 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.filter-tabs { display: flex; gap: 8px; }
+.filter-btn {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 8px 18px;
+  background: var(--white);
+  border: 1.5px solid var(--line);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: -0.01em;
+}
+.filter-btn:hover { border-color: var(--ink); color: var(--ink); }
+.filter-btn.on { background: var(--ink); color: var(--white); border-color: var(--ink); }
+.project-count {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--faint);
+}
+
+/* ─── 그리드 ─── */
+.grid-wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 40px 80px;
+}
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+/* ─── 카드 ─── */
+.card {
+  background: var(--white);
+  border: 1.5px solid var(--line);
+  border-radius: 16px;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  position: relative;
+}
+.card:hover {
+  border-color: transparent;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  transform: translateY(-3px);
+}
+.card:hover .card-arrow { transform: translate(3px, -3px); opacity: 1; }
+.card:active { transform: translateY(-1px); }
+
+/* 상단 컬러 밴드 */
+.card-band {
+  height: 6px;
+  flex-shrink: 0;
+}
+.band-blue  { background: var(--blue); }
+.band-gold  { background: var(--gold); }
+.band-green { background: var(--green); }
+.band-red   { background: var(--red); }
+
+/* 카드 본문 */
+.card-body {
+  padding: 32px 32px 28px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 상단 행 */
+.card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.card-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+.badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+.badge-blue  { background: var(--blue-bg);  color: var(--blue); }
+.badge-gold  { background: var(--gold-bg);  color: var(--gold); }
+.badge-green { background: var(--green-bg); color: var(--green); }
+.badge-gray  { background: var(--bg); color: var(--muted); }
+
+.card-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--faint);
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+/* 제목 */
+.card-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin-bottom: 6px;
+}
+
+.card-sub {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  margin-bottom: 16px;
+}
+
+.card-desc {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--muted);
+  line-height: 1.75;
+  flex: 1;
+}
+
+/* 하단 */
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+.card-stack { display: flex; gap: 6px; }
+.stack-chip {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--faint);
+  padding: 3px 8px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+.card-arrow {
+  font-size: 18px;
+  color: var(--muted);
+  opacity: 0.5;
+  transition: all 0.2s;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* WIP 카드 */
+.card.wip {
+  opacity: 0.5;
+  pointer-events: none;
+  filter: grayscale(0.5);
+}
+
+/* 탭 패널 */
+.tab-panel { display: none; }
+.tab-panel.on { display: block; }
+
+/* 빈 상태 */
+.empty {
+  padding: 80px 0;
+  text-align: center;
+}
+.empty p {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  color: var(--faint);
+}
+
+/* ─── 푸터 ─── */
+footer {
+  background: var(--white);
+  border-top: 1px solid var(--line);
+}
+.footer-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.footer-l {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.footer-r {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--faint);
+}
+
+/* ─── 반응형 ─── */
+@media (max-width: 700px) {
+  .nav-inner, .hero-inner, .filter-wrap,
+  .grid-wrap, .footer-inner { padding-left: 20px; padding-right: 20px; }
+  .hero { padding: 48px 20px 40px; }
+  .hero-title { font-size: 36px; }
+  .projects-grid { grid-template-columns: 1fr; }
+  .card-title { font-size: 22px; }
+  .filter-wrap { flex-direction: column; align-items: flex-start; gap: 12px; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- 네비 -->
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">jaealee.com</a>
+    <div class="nav-links">
+      <a href="/" class="nav-link">홈</a>
+      <a href="/projects/" class="nav-link on">프로젝트</a>
+    </div>
+  </div>
+</nav>
+
+<!-- 히어로 -->
+<div class="hero">
+  <div class="hero-inner">
+    <p class="hero-eyebrow">JAEAH LEE</p>
+    <h1 class="hero-title">Projects</h1>
+    <p class="hero-desc">지금까지 만들어온 것들을 모아두었습니다.</p>
+  </div>
+</div>
+
+<!-- 필터 -->
+<div class="filter-wrap">
+  <div class="filter-tabs">
+    <button class="filter-btn on" onclick="filterTab(this,'all')">전체</button>
+    <button class="filter-btn" onclick="filterTab(this,'web')">웹 · 서비스</button>
+    <button class="filter-btn" onclick="filterTab(this,'design')">디자인</button>
+  </div>
+  <span class="project-count" id="proj-count">2 PROJECTS</span>
+</div>
+
+<!-- 그리드 -->
+<div class="grid-wrap">
+
+  <!-- 전체 -->
+  <div class="tab-panel on" id="panel-all">
+    <div class="projects-grid">
+
+      <!-- 01 포트폴리오 -->
+      <a class="card" href="/">
+        <div class="card-band band-blue"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-badges">
+              <span class="badge badge-blue">WEB</span>
+              <span class="badge badge-gray">PERSONAL</span>
+            </div>
+            <span class="card-num">01</span>
+          </div>
+          <div class="card-title">포트폴리오<br>웹사이트</div>
+          <div class="card-sub">jaealee.com</div>
+          <p class="card-desc">이재아의 개인 포트폴리오 웹사이트입니다. 컴퓨터공학과 2학년, 개발과 기획을 함께 공부하고 있습니다.</p>
+          <div class="card-footer">
+            <div class="card-stack">
+              <span class="stack-chip">HTML</span>
+              <span class="stack-chip">CSS</span>
+            </div>
+            <span class="card-arrow">↗</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- 02 하얀편지 -->
+      <a class="card" href="/whiteletter/">
+        <div class="card-band band-gold"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-badges">
+              <span class="badge badge-gold">WEB</span>
+              <span class="badge badge-gray">SERVICE</span>
+            </div>
+            <span class="card-num">02</span>
+          </div>
+          <div class="card-title">하얀편지</div>
+          <div class="card-sub">WHITE LETTER — /whiteletter</div>
+          <p class="card-desc">유언장과 타임 편지를 안전하게 보관하고 전달하는 서비스입니다. 자필 원본 보관부터 디지털 편지까지, 마지막 말을 지킵니다.</p>
+          <div class="card-footer">
+            <div class="card-stack">
+              <span class="stack-chip">HTML</span>
+              <span class="stack-chip">CSS</span>
+              <span class="stack-chip">JS</span>
+            </div>
+            <span class="card-arrow">↗</span>
+          </div>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- 웹·서비스 -->
+  <div class="tab-panel" id="panel-web">
+    <div class="projects-grid">
+      <a class="card" href="/">
+        <div class="card-band band-blue"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-badges"><span class="badge badge-blue">WEB</span><span class="badge badge-gray">PERSONAL</span></div>
+            <span class="card-num">01</span>
+          </div>
+          <div class="card-title">포트폴리오<br>웹사이트</div>
+          <div class="card-sub">jaealee.com</div>
+          <p class="card-desc">이재아의 개인 포트폴리오 웹사이트입니다. 컴퓨터공학과 2학년, 개발과 기획을 함께 공부하고 있습니다.</p>
+          <div class="card-footer">
+            <div class="card-stack"><span class="stack-chip">HTML</span><span class="stack-chip">CSS</span></div>
+            <span class="card-arrow">↗</span>
+          </div>
+        </div>
+      </a>
+      <a class="card" href="/whiteletter/">
+        <div class="card-band band-gold"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-badges"><span class="badge badge-gold">WEB</span><span class="badge badge-gray">SERVICE</span></div>
+            <span class="card-num">02</span>
+          </div>
+          <div class="card-title">하얀편지</div>
+          <div class="card-sub">WHITE LETTER — /whiteletter</div>
+          <p class="card-desc">유언장과 타임 편지를 안전하게 보관하고 전달하는 서비스입니다. 자필 원본 보관부터 디지털 편지까지, 마지막 말을 지킵니다.</p>
+          <div class="card-footer">
+            <div class="card-stack"><span class="stack-chip">HTML</span><span class="stack-chip">CSS</span><span class="stack-chip">JS</span></div>
+            <span class="card-arrow">↗</span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- 디자인 -->
+  <div class="tab-panel" id="panel-design">
+    <div class="empty">
+      <p>COMING SOON</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- 푸터 -->
+<footer>
+  <div class="footer-inner">
+    <span class="footer-l">Jaeah Lee</span>
+    <span class="footer-r">© 2025</span>
+  </div>
+</footer>
+
+<script>
+const counts = { all: 2, web: 2, design: 0 };
+
+function filterTab(btn, id) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('panel-' + id).classList.add('on');
+  const n = counts[id];
+  document.getElementById('proj-count').textContent = n + ' PROJECT' + (n !== 1 ? 'S' : '');
+}
+</script>
+
+</body>
+</html>
