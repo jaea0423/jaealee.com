@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Jaea Lee | Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet"/>
+
+<style>
+/* ====================================================
+   CSS 변수
+==================================================== */
+:root {
+  --bg:        #f9f9f6;
+  --bg-s:      #f0f0eb;
+  --bg-dark:   #0b0b09;
+  --lime:      #b5e030;
+  --lime-d:    rgba(181,224,48,0.12);
+  --lime-b:    rgba(181,224,48,0.28);
+  --txt:       #0b0b09;
+  --txt-m:     #555550;
+  --txt-l:     #aaa;
+  --txt-inv:   #f2f2ee;
+  --brd:       rgba(0,0,0,0.08);
+  --brd-m:     rgba(0,0,0,0.15);
+  --side-w:    210px;
+  --fh:        'Syne', sans-serif;
+  --fb:        'Pretendard', sans-serif;
+  --r:         10px;
+  --t:         0.22s;
+  --ease:      cubic-bezier(.25,.46,.45,.94);
+}
+
+/* ====================================================
+   리셋
+==================================================== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:16px}
+body{background:var(--bg);color:var(--txt);font-family:var(--fb);line-height:1.7;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+
+/* ====================================================
+   사이드 네비
+==================================================== */
+.side-nav{
+  position:fixed;top:0;left:0;
+  width:var(--side-w);height:100vh;
+  display:flex;flex-direction:column;
+  padding:36px 28px;
+  border-right:1px solid var(--brd);
+  background:var(--bg);
+  z-index:100;
+}
+.side-logo{
+  font-family:var(--fh);font-size:24px;font-weight:800;
+  color:var(--txt);letter-spacing:-1px;margin-bottom:48px;display:block;
+}
+.side-logo span{color:var(--lime)}
+.side-links{display:flex;flex-direction:column;gap:2px;flex:1}
+.side-link{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 11px;border-radius:7px;
+  font-size:13px;font-weight:500;color:var(--txt-l);
+  transition:all var(--t) var(--ease);
+}
+.side-link:hover{color:var(--txt);background:var(--bg-s)}
+.side-link.active{color:var(--txt);background:var(--bg-s);font-weight:600}
+.s-dot{
+  width:5px;height:5px;border-radius:50%;
+  background:var(--txt-l);flex-shrink:0;transition:background var(--t);
+}
+.side-link.active .s-dot,
+.side-link:hover .s-dot{background:var(--lime)}
+.side-bottom{
+  display:flex;gap:10px;padding-top:20px;border-top:1px solid var(--brd);
+}
+.s-icon{
+  width:32px;height:32px;border-radius:7px;
+  border:1px solid var(--brd);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--txt-l);transition:all var(--t);
+}
+.s-icon:hover{color:var(--txt);border-color:var(--brd-m);background:var(--bg-s)}
+
+/* ====================================================
+   모바일 상단 네비
+==================================================== */
+.top-nav{
+  display:none;position:fixed;top:0;left:0;right:0;z-index:200;
+  padding:15px 20px;background:var(--bg);border-bottom:1px solid var(--brd);
+  justify-content:space-between;align-items:center;
+}
+.top-logo{font-family:var(--fh);font-size:20px;font-weight:800}
+.top-logo span{color:var(--lime)}
+.hbg{
+  display:flex;flex-direction:column;gap:5px;
+  background:none;border:none;cursor:pointer;padding:4px;
+}
+.hbg span{
+  display:block;width:21px;height:1.5px;background:var(--txt);
+  border-radius:2px;transition:all var(--t) var(--ease);transform-origin:center;
+}
+.hbg.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hbg.open span:nth-child(2){transform:rotate(-45deg) translate(5px,-5px)}
+
+/* 모바일 오버레이 */
+.mob-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(11,11,9,0.97);z-index:190;
+  align-items:center;justify-content:center;
+}
+.mob-overlay.open{display:flex}
+.mob-nav{display:flex;flex-direction:column;align-items:center;gap:24px}
+.mob-link{
+  font-family:var(--fh);font-size:30px;font-weight:700;
+  color:rgba(255,255,255,0.35);transition:color var(--t);
+}
+.mob-link:hover{color:var(--lime)}
+
+/* ====================================================
+   메인 콘텐츠
+==================================================== */
+.main{margin-left:var(--side-w)}
+.section{padding:96px 60px;max-width:880px}
+
+/* 섹션 레이블 행 */
+.sec-label{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.sec-num{
+  font-family:var(--fh);font-size:11px;font-weight:700;
+  color:var(--lime);background:var(--lime-d);
+  border:1px solid var(--lime-b);padding:2px 10px;border-radius:100px;
+}
+.sec-eye{font-size:11px;font-weight:600;letter-spacing:3px;color:var(--txt-l)}
+.sec-h{
+  font-family:var(--fh);
+  font-size:clamp(30px,4vw,50px);font-weight:800;
+  letter-spacing:-1.5px;margin-bottom:44px;line-height:1.1;
+}
+
+/* ====================================================
+   HERO
+==================================================== */
+.hero{
+  min-height:100vh;background:var(--bg-dark);
+  display:flex;flex-direction:column;justify-content:center;
+  position:relative;overflow:hidden;
+  /* 전체 너비 사용 */
+  max-width:none;
+  margin-left:calc(-1 * var(--side-w));
+  padding-left:calc(var(--side-w) + 60px);
+  padding-right:60px;padding-top:0;padding-bottom:0;
+}
+/* 배경 격자 */
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,0.025) 1px,transparent 1px);
+  background-size:52px 52px;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%);
+  pointer-events:none;
+}
+/* 배경 광원 */
+.hero::after{
+  content:'';position:absolute;
+  width:600px;height:600px;border-radius:50%;
+  background:radial-gradient(circle,rgba(181,224,48,0.06) 0%,transparent 70%);
+  top:-150px;right:-100px;pointer-events:none;
+}
+.hero-in{position:relative;z-index:1;max-width:680px}
+.hero-tag{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:5px 14px;background:rgba(181,224,48,0.08);
+  border:1px solid var(--lime-b);border-radius:100px;
+  font-size:12px;font-weight:500;color:var(--lime);
+  margin-bottom:28px;letter-spacing:0.5px;
+}
+.tag-pulse{
+  width:6px;height:6px;border-radius:50%;background:var(--lime);
+  animation:pulse 1.8s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.3;transform:scale(1.4)}}
+
+.hero-h{
+  font-family:var(--fh);
+  font-size:clamp(44px,7vw,84px);
+  font-weight:800;line-height:1.05;letter-spacing:-3px;
+  color:var(--txt-inv);margin-bottom:18px;
+}
+.hero-h em{font-style:normal;color:var(--lime);white-space:nowrap;display:inline-block;}
+
+.hero-role{
+  font-size:clamp(15px,1.8vw,20px);font-weight:300;
+  color:rgba(255,255,255,0.35);margin-bottom:20px;
+  min-height:34px;font-family:var(--fh);
+}
+.typed{color:rgba(255,255,255,0.7);font-weight:500}
+.caret{color:var(--lime);animation:cblink .7s step-end infinite}
+@keyframes cblink{0%,100%{opacity:1}50%{opacity:0}}
+
+.hero-desc{
+  font-size:14px;color:rgba(255,255,255,0.4);
+  max-width:500px;line-height:1.9;margin-bottom:36px;
+}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap}
+.btn-fill{
+  padding:11px 26px;background:var(--lime);color:#0b0b09;
+  font-weight:600;font-size:13px;border-radius:var(--r);
+  transition:all var(--t) var(--ease);letter-spacing:0.3px;
+}
+.btn-fill:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(181,224,48,0.35)}
+.btn-out{
+  padding:10px 26px;background:transparent;
+  color:rgba(255,255,255,0.45);font-size:13px;font-weight:500;
+  border:1px solid rgba(255,255,255,0.14);border-radius:var(--r);
+  transition:all var(--t);
+}
+.btn-out:hover{color:var(--txt-inv);border-color:rgba(255,255,255,0.4)}
+
+/* 스크롤 힌트 */
+.scroll-hint{
+  position:absolute;bottom:32px;
+  left:calc(var(--side-w) + 60px);
+  display:flex;align-items:center;gap:12px;z-index:1;
+}
+.scroll-hint span{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.2)}
+.s-track{width:44px;height:1px;background:rgba(255,255,255,0.08);position:relative;overflow:hidden}
+.s-thumb{position:absolute;top:0;left:0;width:18px;height:100%;background:var(--lime);animation:strack 2s var(--ease) infinite}
+@keyframes strack{0%{left:-18px}100%{left:44px}}
+
+/* ====================================================
+   ABOUT
+==================================================== */
+.about{border-bottom:1px solid var(--brd)}
+.about-grid{display:grid;grid-template-columns:180px 1fr;gap:52px;align-items:start}
+.avatar{
+  width:150px;height:150px;border-radius:var(--r);
+  background:linear-gradient(135deg,#e6e6e0,#d4d4cc);
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:18px;border:1px solid var(--brd);  overflow:hidden;
+}
+.avatar img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;}
+.av-txt{font-family:var(--fh);font-size:36px;font-weight:800;color:var(--txt-l)}
+.av-quote{
+  font-size:12px;color:var(--txt-l);font-style:italic;
+  line-height:1.65;padding-left:11px;border-left:2px solid var(--lime);
+}
+.info-tbl{width:100%;border-collapse:collapse}
+.info-tbl tr{border-bottom:1px solid var(--brd)}
+.info-tbl tr:last-child{border-bottom:none}
+.ik{
+  padding:13px 14px 13px 0;font-size:13px;font-weight:500;color:var(--txt-l);
+  white-space:nowrap;vertical-align:top;display:flex;align-items:flex-start;gap:7px;
+}
+.ik svg{flex-shrink:0;margin-top:2px}
+.iv{padding:13px 0;font-size:14px;font-weight:500;color:var(--txt);vertical-align:top}
+.iv small{display:block;font-size:12px;color:var(--txt-l);font-weight:400}
+.st-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:3px 11px;background:var(--lime-d);
+  border:1px solid var(--lime-b);border-radius:100px;
+  font-size:11px;font-weight:600;color:#4a6a08;
+}
+.st-pill::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--lime)}
+
+/* ====================================================
+   SKILLS
+==================================================== */
+.skills{border-bottom:1px solid var(--brd)}
+.skills-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.sk-cat{
+  background:var(--bg-s);border:1px solid var(--brd);
+  border-radius:var(--r);padding:22px;transition:border-color var(--t);
+}
+.sk-cat:hover{border-color:var(--brd-m)}
+.sk-head{
+  display:flex;align-items:center;gap:9px;
+  margin-bottom:16px;padding-bottom:13px;border-bottom:1px solid var(--brd);
+}
+.sk-icon{width:18px;height:18px;color:var(--lime);flex-shrink:0}
+.sk-head h3{font-family:var(--fh);font-size:13px;font-weight:700;color:var(--txt);letter-spacing:0.5px}
+.sk-ul{list-style:none;display:flex;flex-direction:column;gap:9px}
+.sk-ul li{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--txt-m);font-weight:400}
+.sk-dot{width:4px;height:4px;border-radius:50%;background:var(--lime);flex-shrink:0}
+
+/* ====================================================
+   PROJECTS
+==================================================== */
+.projects{border-bottom:1px solid var(--brd)}
+.ftabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:36px}
+.ftab{
+  padding:6px 18px;background:transparent;
+  border:1px solid var(--brd);border-radius:100px;
+  font-size:12px;font-weight:500;font-family:var(--fb);
+  color:var(--txt-l);cursor:pointer;transition:all var(--t);
+}
+.ftab:hover{border-color:var(--brd-m);color:var(--txt)}
+.ftab.active{background:var(--txt);border-color:var(--txt);color:var(--bg)}
+
+.proj-list{display:flex;flex-direction:column}
+.proj-item{
+  display:grid;grid-template-columns:130px 1fr;gap:28px;
+  padding:32px 0;border-bottom:1px solid var(--brd);
+  opacity:0;transform:translateY(20px);
+  transition:opacity .45s var(--ease),transform .45s var(--ease),border-color var(--t);
+}
+.proj-item:first-child{border-top:1px solid var(--brd)}
+.proj-item.hidden{display:none}
+.proj-item:hover{border-bottom-color:var(--brd-m)}
+
+.p-meta{display:flex;flex-direction:column;gap:9px;padding-top:3px}
+.p-date{font-size:12px;color:var(--txt-l);font-weight:400}
+.p-badge{
+  display:inline-block;padding:2px 9px;border-radius:4px;
+  font-size:11px;font-weight:700;letter-spacing:0.5px;width:fit-content;
+}
+.bw{background:rgba(181,224,48,0.10);color:#3d6500;border:1px solid rgba(181,224,48,0.25)}
+.ba{background:rgba(110,70,210,0.09);color:#6030b0;border:1px solid rgba(110,70,210,0.18)}
+.bd{background:rgba(30,90,210,0.09);color:#1040a0;border:1px solid rgba(30,90,210,0.18)}
+
+.p-body{display:flex;flex-direction:column;gap:11px}
+.p-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.p-title{font-family:var(--fh);font-size:18px;font-weight:700;color:var(--txt);letter-spacing:-0.5px;line-height:1.2}
+.p-links{display:flex;gap:7px;flex-shrink:0}
+.p-lbtn{
+  display:flex;align-items:center;gap:4px;
+  padding:4px 11px;background:var(--bg-s);
+  border:1px solid var(--brd);border-radius:6px;
+  font-size:11px;font-weight:500;color:var(--txt-m);transition:all var(--t);
+}
+.p-lbtn:hover{background:var(--txt);color:var(--bg);border-color:var(--txt)}
+.p-sub{font-size:13px;color:var(--txt-m);font-weight:500;line-height:1.5}
+.p-bullets{list-style:none;display:flex;flex-direction:column;gap:5px}
+.p-bullets li{
+  font-size:12.5px;color:var(--txt-m);line-height:1.65;
+  padding-left:13px;position:relative;
+}
+.p-bullets li::before{
+  content:'·';position:absolute;left:0;
+  color:var(--lime);font-weight:700;font-size:15px;line-height:1.45;
+}
+.p-tags{display:flex;flex-wrap:wrap;gap:5px}
+.ptag{
+  padding:3px 9px;background:var(--bg-s);
+  border:1px solid var(--brd);border-radius:4px;
+  font-size:11px;font-weight:500;color:var(--txt-m);
+}
+
+/* ====================================================
+   CONTACT
+==================================================== */
+.contact-lead{font-size:14px;color:var(--txt-m);margin-bottom:40px;margin-top:-28px}
+.contact-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:44px;align-items:start}
+.c-info{display:flex;flex-direction:column;gap:10px}
+.c-row{
+  display:flex;align-items:center;gap:12px;
+  padding:14px;background:var(--bg-s);border:1px solid var(--brd);
+  border-radius:var(--r);transition:all var(--t);position:relative;overflow:hidden;
+}
+.c-row::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--lime-d),transparent);
+  opacity:0;transition:opacity var(--t);
+}
+.c-row:hover{border-color:var(--lime-b)}
+.c-row:hover::after{opacity:1}
+.c-row:hover .c-arrow{transform:translateX(4px);color:var(--lime)}
+.c-icon{
+  width:36px;height:36px;border-radius:7px;background:var(--bg);
+  border:1px solid var(--brd);display:flex;align-items:center;justify-content:center;
+  color:var(--txt-l);flex-shrink:0;position:relative;z-index:1;
+}
+.c-lbl{font-size:10px;color:var(--txt-l);letter-spacing:1.5px;text-transform:uppercase;position:relative;z-index:1}
+.c-val{font-size:13px;font-weight:500;color:var(--txt);position:relative;z-index:1}
+.c-arrow{margin-left:auto;font-size:13px;color:var(--txt-l);transition:all var(--t);position:relative;z-index:1}
+
+/* 폼 */
+.cform-wrap{position:relative}
+.cform{
+  display:flex;flex-direction:column;gap:14px;
+  background:var(--bg-s);border:1px solid var(--brd);
+  border-radius:14px;padding:26px;
+}
+.cf-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cf-field{display:flex;flex-direction:column;gap:6px}
+.cf-field label{font-size:10px;font-weight:600;color:var(--txt-l);letter-spacing:1.5px;text-transform:uppercase}
+.cf-field input,.cf-field textarea{
+  background:var(--bg);border:1px solid var(--brd);
+  border-radius:7px;padding:10px 13px;
+  color:var(--txt);font-family:var(--fb);font-size:13px;
+  outline:none;resize:vertical;transition:border-color var(--t),box-shadow var(--t);
+}
+.cf-field input:focus,.cf-field textarea:focus{
+  border-color:var(--lime-b);box-shadow:0 0 0 3px var(--lime-d);
+}
+.cf-field input::placeholder,.cf-field textarea::placeholder{color:#ccc}
+.cf-btn{
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  width:100%;padding:12px;background:var(--txt);border:none;
+  border-radius:7px;font-family:var(--fb);font-size:13px;
+  font-weight:600;color:var(--bg);cursor:pointer;transition:all var(--t) var(--ease);
+}
+.cf-btn:hover{background:#1c1c1a;transform:translateY(-1px)}
+.cf-btn:disabled{opacity:0.6;transform:none}
+.cf-done{
+  display:none;text-align:center;padding:44px 24px;
+  background:var(--bg-s);border:1px solid var(--lime-b);border-radius:14px;
+}
+.done-ck{
+  width:44px;height:44px;border-radius:50%;
+  background:var(--lime-d);border:1px solid var(--lime-b);
+  color:#3d6500;font-size:18px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 12px;
+}
+.done-t{font-family:var(--fh);font-size:18px;font-weight:800;margin-bottom:5px}
+.done-s{font-size:13px;color:var(--txt-l)}
+
+/* ====================================================
+   FOOTER
+==================================================== */
+.footer{
+  padding:24px 60px;border-top:1px solid var(--brd);
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:12px;color:var(--txt-l);max-width:none;
+}
+.top-btn{
+  width:34px;height:34px;border-radius:50%;
+  background:var(--bg-s);border:1px solid var(--brd);
+  color:var(--txt-m);font-size:14px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all var(--t);
+}
+.top-btn:hover{background:var(--txt);color:var(--bg);border-color:var(--txt)}
+
+/* ====================================================
+   반응형
+==================================================== */
+@media(max-width:860px){
+  .side-nav{display:none}
+  .top-nav{display:flex}
+  .main{margin-left:0}
+  .hero{margin-left:0;padding-left:24px;padding-right:24px;padding-top:80px}
+  .scroll-hint{left:24px}
+  .section{padding:72px 24px;max-width:100%}
+  .about-grid{grid-template-columns:1fr;gap:28px}
+  .avatar{width:110px;height:110px}
+  .av-txt{font-size:28px}
+  .skills-grid{grid-template-columns:1fr}
+  .proj-item{grid-template-columns:1fr;gap:12px}
+  .p-meta{flex-direction:row;align-items:center}
+  .contact-grid{grid-template-columns:1fr;gap:28px}
+  .cf-row{grid-template-columns:1fr}
+  .footer{padding:20px 24px}
+}
+</style>
+</head>
+<body>
+
+<!-- 사이드 네비 -->
+<aside class="side-nav" id="sideNav">
+  <a href="#home" class="side-logo">JA<span>.</span></a>
+  <nav class="side-links">
+    <a href="#home"     class="side-link active" data-s="home"><span class="s-dot"></span>Home <small>홈</small></a>
+    <a href="#about"    class="side-link" data-s="about"><span class="s-dot"></span>About <small>소개</small></a>
+    <a href="#skills"   class="side-link" data-s="skills"><span class="s-dot"></span>Skills <small>기술</small></a>
+    <a href="#projects" class="side-link" data-s="projects"><span class="s-dot"></span>Projects <small>프로젝트</small></a>
+    <a href="#contact"  class="side-link" data-s="contact"><span class="s-dot"></span>Contact <small>연락</small></a>
+  </nav>
+  <div class="side-bottom">
+    <a href="https://github.com/jaea0423" class="s-icon" title="GitHub" aria-label="GitHub">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.1.82-.26.82-.58v-2.17c-3.34.72-4.04-1.61-4.04-1.61-.54-1.38-1.33-1.75-1.33-1.75-1.08-.74.08-.73.08-.73 1.2.08 1.83 1.23 1.83 1.23 1.06 1.82 2.79 1.29 3.47.99.1-.77.41-1.29.75-1.59-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.14 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.21.69.82.57C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+    </a>
+    <a href="mailto:z@kangwon.ac.kr" class="s-icon" title="Email" aria-label="Email">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+    </a>
+  </div>
+</aside>
+
+<!-- 모바일 상단 네비 -->
+<header class="top-nav" id="topNav">
+  <a href="#home" class="top-logo">JA<span>.</span></a>
+  <button class="hbg" id="hbg" aria-label="Menu / 메뉴"><span></span><span></span></button>
+</header>
+
+<!-- 모바일 오버레이 -->
+<div class="mob-overlay" id="mobOverlay">
+  <nav class="mob-nav">
+    <a href="#home"     class="mob-link">Home <small>홈</small></a>
+    <a href="#about"    class="mob-link">About <small>소개</small></a>
+    <a href="#skills"   class="mob-link">Skills <small>기술</small></a>
+    <a href="#projects" class="mob-link">Projects <small>프로젝트</small></a>
+    <a href="#contact"  class="mob-link">Contact <small>연락</small></a>
+  </nav>
+</div>
+
+<!-- 메인 콘텐츠 -->
+<main class="main">
+
+  <!-- ── HERO ── -->
+  <section id="home" class="section hero">
+    <div class="hero-in">
+      <div class="hero-tag"><span class="tag-pulse"></span>CS Sophomore · Job-seeking <small>CS 2학년 · 취업 준비 중</small></div>
+      <h1 class="hero-h">Hello.<br><em>I'm Jaea Lee.</em><br>안녕하세요.<br>이재아입니다.</h1>
+      <p class="hero-role"><span class="typed" id="typed"></span><span class="caret">|</span></p>
+      <p class="hero-desc">I am currently enrolled in the Department of Computer Science and am gaining knowledge in a wide range of areas, including Java, C, and HTML.<br><small>저는 현재 컴퓨터공학과에 재학 중이며, JAVA, C언어, HTML을 비롯한 다양한 분야의 지식을 쌓아가고 있습니다.</small></p>
+      <div class="hero-btns">
+        <a href="#projects" class="btn-fill">View Projects <small>프로젝트 보기</small> →</a>
+        <a href="#contact"  class="btn-out">Contact Me <small>연락하기</small></a>
+      </div>
+    </div>
+    <div class="scroll-hint">
+      <span>scroll</span>
+      <div class="s-track"><div class="s-thumb"></div></div>
+    </div>
+  </section>
+
+  <!-- ── ABOUT ── -->
+  <section id="about" class="section about">
+    <div class="sec-label"><span class="sec-num">01</span><span class="sec-eye">ABOUT ME <small>소개</small></span></div>
+    <h2 class="sec-h">About Me <small>저를 소개합니다</small></h2>
+    <div class="about-grid">
+      <div>
+        <div class="avatar"><img src="jaea.jpeg" alt="Jaea Lee"/></div>
+        <p class="av-quote">"I want to be a developer who focuses on essentials." <small>본질에 집중하는 개발자가 되고 싶습니다.</small></p>
+      </div>
+      <div>
+        <table class="info-tbl">
+          <tbody>
+            <tr>
+              <td class="ik"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Name <small>이름</small></td>
+              <td class="iv">Jaea Lee <small>이재아</small></td>
+            </tr>
+            <tr>
+              <td class="ik"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Age <small>나이</small></td>
+              <td class="iv">Age 22 <small>23세(한국나이)</small></td>
+            </tr>
+            <tr>
+              <td class="ik"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Location <small>위치</small></td>
+              <td class="iv">Chuncheon, Gangwon <small>강원도 춘천시</small></td>
+            </tr>
+            <tr>
+              <td class="ik"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Email</td>
+              <td class="iv">z@kangwon.ac.kr</td>
+            </tr>
+            <tr>
+              <td class="ik"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>Education <small>학력</small></td>
+              <td class="iv">Department of Computer Science, Kangwon National University <small>강원대학교 컴퓨터공학과</small></td>
+            </tr>
+            <tr>
+              <td class="ik"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Status <small>상태</small></td>
+              <td class="iv"><span class="st-pill">Open to Internship/Job Opportunities <small>취업·인턴 지원 중</small></span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SKILLS ── -->
+  <section id="skills" class="section skills">
+    <div class="sec-label"><span class="sec-num">02</span><span class="sec-eye">SKILLS <small>기술 스택</small></span></div>
+    <h2 class="sec-h">Skills <small>기술 스택</small></h2>
+    <div class="skills-grid">
+      <div class="sk-cat">
+        <div class="sk-head">
+          <svg class="sk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          <h3>Language</h3>
+        </div>
+        <ul class="sk-ul">
+          <li><span class="sk-dot"></span>Java</li>
+          <li><span class="sk-dot"></span>C</li>
+          <li><span class="sk-dot"></span>Python</li>
+          <li><span class="sk-dot"></span>JavaScript</li>
+        </ul>
+      </div>
+      <div class="sk-cat">
+        <div class="sk-head">
+          <svg class="sk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          <h3>Frontend</h3>
+        </div>
+        <ul class="sk-ul">
+          <li><span class="sk-dot"></span>HTML5</li>
+          <li><span class="sk-dot"></span>CSS3</li>
+          <li><span class="sk-dot"></span>JavaScript (ES6+)</li>
+          <li><span class="sk-dot"></span>Responsive Design</li>
+        </ul>
+      </div>
+      <div class="sk-cat">
+        <div class="sk-head">
+          <svg class="sk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          <h3>Data / AI</h3>
+        </div>
+        <ul class="sk-ul">
+          <li><span class="sk-dot"></span>pandas</li>
+          <li><span class="sk-dot"></span>matplotlib</li>
+          <li><span class="sk-dot"></span>scikit-learn</li>
+          <li><span class="sk-dot"></span>TensorFlow (기초)</li>
+        </ul>
+      </div>
+      <div class="sk-cat">
+        <div class="sk-head">
+          <svg class="sk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+          <h3>Tools / OS</h3>
+        </div>
+        <ul class="sk-ul">
+          <li><span class="sk-dot"></span>Git / GitHub</li>
+          <li><span class="sk-dot"></span>Linux (Ubuntu)</li>
+          <li><span class="sk-dot"></span>Vim</li>
+          <li><span class="sk-dot"></span>VS Code</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PROJECTS ── -->
+  <section id="projects" class="section projects">
+    <div class="sec-label"><span class="sec-num">03</span><span class="sec-eye">PROJECTS <small>프로젝트</small></span></div>
+    <h2 class="sec-h">Projects <small>프로젝트</small></h2>
+
+    <div class="ftabs">
+      <button class="ftab active" data-f="all">All <small>전체</small></button>
+      <button class="ftab" data-f="web">Web <small>웹</small></button>
+      <button class="ftab" data-f="app">App <small>앱</small></button>
+      <button class="ftab" data-f="data">Data <small>데이터</small></button>
+    </div>
+
+    <div class="proj-list" id="projList">
+
+      <article class="proj-item" data-c="web">
+        <div class="p-meta">
+          <time class="p-date">2025.04</time>
+          <span class="p-badge bw">Web</span>
+        </div>
+        <div class="p-body">
+          <div class="p-title-row">
+            <h3 class="p-title">Personal Portfolio Website <small>개인 포트폴리오 웹사이트</small></h3>
+            <div class="p-links">
+              <a href="#" class="p-lbtn"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.1.82-.26.82-.58v-2.17c-3.34.72-4.04-1.61-4.04-1.61-.54-1.38-1.33-1.75-1.33-1.75-1.08-.74.08-.73.08-.73 1.2.08 1.83 1.23 1.83 1.23 1.06 1.82 2.79 1.29 3.47.99.1-.77.41-1.29.75-1.59-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.14 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.21.69.82.57C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>GitHub</a>
+              <a href="#" class="p-lbtn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Live</a>
+            </div>
+          </div>
+          <p class="p-sub">Responsive portfolio site built with pure HTML/CSS/JS <small>HTML, CSS, JS만으로 제작한 반응형 포트폴리오 사이트</small></p>
+          <ul class="p-bullets">
+            <li>Built with vanilla HTML/CSS/JavaScript without external libraries <small>순수 HTML·CSS·JavaScript로 외부 라이브러리 없이 구현</small></li>
+            <li>Added scroll-based animations using IntersectionObserver <small>IntersectionObserver API를 활용한 스크롤 기반 애니메이션</small></li>
+            <li>Designed responsive layout with CSS Grid and Flexbox <small>CSS Grid·Flexbox를 조합한 반응형 레이아웃 설계</small></li>
+            <li>Developed custom typing animation and project filter <small>커스텀 타이핑 애니메이션, 프로젝트 필터 기능 구현</small></li>
+          </ul>
+          <div class="p-tags"><span class="ptag">HTML</span><span class="ptag">CSS</span><span class="ptag">JavaScript</span></div>
+        </div>
+      </article>
+
+      <article class="proj-item" data-c="app">
+        <div class="p-meta">
+          <time class="p-date">2025.03</time>
+          <span class="p-badge ba">App</span>
+        </div>
+        <div class="p-body">
+          <div class="p-title-row">
+            <h3 class="p-title">Library Management System <small>도서 관리 시스템</small></h3>
+            <div class="p-links">
+              <a href="#" class="p-lbtn"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.1.82-.26.82-.58v-2.17c-3.34.72-4.04-1.61-4.04-1.61-.54-1.38-1.33-1.75-1.33-1.75-1.08-.74.08-.73.08-.73 1.2.08 1.83 1.23 1.83 1.23 1.06 1.82 2.79 1.29 3.47.99.1-.77.41-1.29.75-1.59-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.14 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.21.69.82.57C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>GitHub</a>
+            </div>
+          </div>
+          <p class="p-sub">Console-based Java library manager (solo project) <small>Java로 구현한 콘솔 기반 도서 관리 프로그램 (1人 개인 프로젝트)</small></p>
+          <ul class="p-bullets">
+            <li>Applied OOP design principles to class structure <small>OOP(객체지향) 설계 원칙을 적용한 클래스 구조 설계</small></li>
+            <li>Implemented book add/remove/search/update features <small>도서 추가·삭제·검색·수정 기능 구현</small></li>
+            <li>Used file I/O for data persistence <small>파일 입출력(File I/O)을 활용한 데이터 영속성 확보</small></li>
+            <li>Improved stability with exception handling <small>예외 처리(Exception Handling)로 안정성 향상</small></li>
+          </ul>
+          <div class="p-tags"><span class="ptag">Java</span><span class="ptag">OOP</span><span class="ptag">File I/O</span></div>
+        </div>
+      </article>
+
+      <article class="proj-item" data-c="data">
+        <div class="p-meta">
+          <time class="p-date">2024.12</time>
+          <span class="p-badge bd">Data</span>
+        </div>
+        <div class="p-body">
+          <div class="p-title-row">
+            <h3 class="p-title">Climate Data Analysis <small>기후 데이터 분석</small></h3>
+            <div class="p-links">
+              <a href="#" class="p-lbtn"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.1.82-.26.82-.58v-2.17c-3.34.72-4.04-1.61-4.04-1.61-.54-1.38-1.33-1.75-1.33-1.75-1.08-.74.08-.73.08-.73 1.2.08 1.83 1.23 1.83 1.23 1.06 1.82 2.79 1.29 3.47.99.1-.77.41-1.29.75-1.59-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.14 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.21.69.82.57C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>GitHub</a>
+            </div>
+          </div>
+          <p class="p-sub">Analyzed and visualized public climate data with Python <small>Python으로 공공 기후 데이터를 분석하고 시각화한 프로젝트</small></p>
+          <ul class="p-bullets">
+            <li>Collected public climate data via API and cleaned it <small>공공데이터포털 API에서 기후 데이터 수집 및 전처리</small></li>
+            <li>Cleaned missing values and normalized data with pandas <small>pandas로 결측치 처리, 정규화 등 데이터 클리닝 수행</small></li>
+            <li>Visualized annual temperature trends with matplotlib/seaborn <small>matplotlib·seaborn으로 연도별 기온 변화 시각화</small></li>
+            <li>Practiced future temperature prediction with linear regression <small>선형 회귀 모델로 미래 기온 예측 실습</small></li>
+          </ul>
+          <div class="p-tags"><span class="ptag">Python</span><span class="ptag">pandas</span><span class="ptag">matplotlib</span><span class="ptag">scikit-learn</span></div>
+        </div>
+      </article>
+
+      <article class="proj-item" data-c="web">
+        <div class="p-meta">
+          <time class="p-date">2024.09</time>
+          <span class="p-badge bw">Web</span>
+        </div>
+        <div class="p-body">
+          <div class="p-title-row">
+            <h3 class="p-title">Shopping Mall UI Clone <small>쇼핑몰 UI 클론</small></h3>
+            <div class="p-links">
+              <a href="#" class="p-lbtn"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.1.82-.26.82-.58v-2.17c-3.34.72-4.04-1.61-4.04-1.61-.54-1.38-1.33-1.75-1.33-1.75-1.08-.74.08-.73.08-.73 1.2.08 1.83 1.23 1.83 1.23 1.06 1.82 2.79 1.29 3.47.99.1-.77.41-1.29.75-1.59-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.14 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.21.69.82.57C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>GitHub</a>
+              <a href="#" class="p-lbtn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Live</a>
+            </div>
+          </div>
+          <p class="p-sub">Cloned responsive shopping mall UI from a real site <small>실제 쇼핑몰을 참고해 반응형 UI를 구현한 클론 프로젝트</small></p>
+          <ul class="p-bullets">
+            <li>Implemented complex layout with CSS Grid and Flexbox <small>CSS Grid·Flexbox를 조합하여 복잡한 레이아웃 구현</small></li>
+            <li>Added mobile/tablet/desktop responsiveness with media queries <small>미디어 쿼리로 모바일·태블릿·데스크탑 반응형 처리</small></li>
+            <li>Built cart, quantity, and modal interactions in JavaScript <small>JavaScript로 장바구니·수량 조절·모달 기능 구현</small></li>
+          </ul>
+          <div class="p-tags"><span class="ptag">HTML</span><span class="ptag">CSS</span><span class="ptag">JavaScript</span><span class="ptag">Grid</span></div>
+        </div>
+      </article>
+
+      <article class="proj-item" data-c="app">
+        <div class="p-meta">
+          <time class="p-date">2024.06</time>
+          <span class="p-badge ba">App</span>
+        </div>
+        <div class="p-body">
+          <div class="p-title-row">
+            <h3 class="p-title">Login System Implementation <small>로그인 시스템 구현</small></h3>
+            <div class="p-links">
+              <a href="#" class="p-lbtn"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.1.82-.26.82-.58v-2.17c-3.34.72-4.04-1.61-4.04-1.61-.54-1.38-1.33-1.75-1.33-1.75-1.08-.74.08-.73.08-.73 1.2.08 1.83 1.23 1.83 1.23 1.06 1.82 2.79 1.29 3.47.99.1-.77.41-1.29.75-1.59-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.14 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.21.69.82.57C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>GitHub</a>
+            </div>
+          </div>
+          <p class="p-sub">C언어로 구현한 파일 기반 사용자 인증 시스템 (Linux 환경)</p>
+          <ul class="p-bullets">
+            <li>해시 함수 기반 비밀번호 저장으로 보안성 확보</li>
+            <li>파일 기반 사용자 DB 구축 및 CRUD 기능 구현</li>
+            <li>Linux 표준 입출력 및 파일 시스템 API 활용</li>
+            <li>입력값 유효성 검사 및 에러 처리 로직 구현</li>
+          </ul>
+          <div class="p-tags"><span class="ptag">C</span><span class="ptag">Linux</span><span class="ptag">File I/O</span></div>
+        </div>
+      </article>
+
+      <article class="proj-item" data-c="data">
+        <div class="p-meta">
+          <time class="p-date">2024.12</time>
+          <span class="p-badge bd">Data</span>
+        </div>
+        <div class="p-body">
+          <div class="p-title-row">
+            <h3 class="p-title">Movie Recommendation AI Model <small>영화 추천 AI 모델</small></h3>
+            <div class="p-links">
+              <a href="#" class="p-lbtn"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.1.82-.26.82-.58v-2.17c-3.34.72-4.04-1.61-4.04-1.61-.54-1.38-1.33-1.75-1.33-1.75-1.08-.74.08-.73.08-.73 1.2.08 1.83 1.23 1.83 1.23 1.06 1.82 2.79 1.29 3.47.99.1-.77.41-1.29.75-1.59-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.14 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.21.69.82.57C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>GitHub</a>
+            </div>
+          </div>
+          <p class="p-sub">Built a collaborative filtering recommender with Python <small>협업 필터링으로 영화를 추천하는 AI 모델 (2人 팀 프로젝트)</small></p>
+          <ul class="p-bullets">
+            <li>Implemented collaborative filtering algorithm from scratch <small>협업 필터링(Collaborative Filtering) 알고리즘 직접 구현</small></li>
+            <li>Preprocessed MovieLens data and calculated user similarity <small>MovieLens 데이터셋 전처리 및 사용자 유사도 계산</small></li>
+            <li>Evaluated models using scikit-learn and comparison tests <small>scikit-learn으로 모델 정확도 평가 및 비교 실험</small></li>
+            <li>Collaborated with Git for team workflow and code review <small>Git으로 팀원과 협업, 코드 리뷰 경험</small></li>
+          </ul>
+          <div class="p-tags"><span class="ptag">Python</span><span class="ptag">scikit-learn</span><span class="ptag">ML</span><span class="ptag">pandas</span></div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ── CONTACT ── -->
+  <section id="contact" class="section contact">
+    <div class="sec-label"><span class="sec-num">04</span><span class="sec-eye">CONTACT <small>연락하기</small></span></div>
+    <h2 class="sec-h">Contact <small>연락하기</small></h2>
+    <p class="contact-lead">Any questions or collaboration proposals are welcome. <small>궁금한 점이나 협업 제안은 언제든지 환영합니다!</small></p>
+
+    <div class="contact-grid">
+      <div class="c-info">
+        <a href="mailto:z@kangwon.ac.kr" class="c-row">
+          <div class="c-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+          <div><p class="c-lbl">Email</p><p class="c-val">z@kangwon.ac.kr</p></div>
+          <span class="c-arrow">→</span>
+        </a>
+        <a href="#" class="c-row">
+          <div class="c-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.1.82-.26.82-.58v-2.17c-3.34.72-4.04-1.61-4.04-1.61-.54-1.38-1.33-1.75-1.33-1.75-1.08-.74.08-.73.08-.73 1.2.08 1.83 1.23 1.83 1.23 1.06 1.82 2.79 1.29 3.47.99.1-.77.41-1.29.75-1.59-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.14 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.21.69.82.57C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg></div>
+          <div><p class="c-lbl">GitHub</p><p class="c-val">github.com/jaea0423</p></div>
+          <span class="c-arrow">→</span>
+        </a>
+      </div>
+
+      <div class="cform-wrap">
+        <div class="cform" id="cform">
+          <div class="cf-row">
+            <div class="cf-field"><label for="nIn">Name <small>이름</small></label><input type="text" id="nIn" placeholder="Hong Gil-dong / 홍길동"/></div>
+            <div class="cf-field"><label for="eIn">Email</label><input type="email" id="eIn" placeholder="example@email.com"/></div>
+          </div>
+          <div class="cf-field"><label for="mIn">Message <small>메시지</small></label><textarea id="mIn" rows="5" placeholder="Hello! ... / 안녕하세요! ..."></textarea></div>
+          <button class="cf-btn" id="sendBtn">
+            <span id="btnTxt">Send <small>보내기</small></span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+        <div class="cf-done" id="cfDone">
+          <div class="done-ck">✓</div>
+          <p class="done-t">전송 완료!</p>
+          <p class="done-s">빠르게 답장드릴게요.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 푸터 -->
+  <footer class="footer">
+    <p>© 2026. Jaea Lee | 이재아. All rights reserved.</p>
+    <button class="top-btn" id="topBtn" aria-label="Top / 맨 위로">↑</button>
+  </footer>
+
+</main>
+
+<script>
+/* ====================================================
+   1. 타이핑 애니메이션
+==================================================== */
+const typedEl = document.getElementById('typed');
+const phrases = ['Frontend Developer','CS 2학년 개발자','Problem Solver','성장하는 개발자'];
+let pi=0, ci=0, del=false;
+function typeLoop(){
+  const ph=phrases[pi];
+  if(!del){ typedEl.textContent=ph.slice(0,ci+1); ci++;
+    if(ci===ph.length){ del=true; setTimeout(typeLoop,1800); return; }
+    setTimeout(typeLoop,100);
+  } else { typedEl.textContent=ph.slice(0,ci-1); ci--;
+    if(ci===0){ del=false; pi=(pi+1)%phrases.length; setTimeout(typeLoop,400); return; }
+    setTimeout(typeLoop,55);
+  }
+}
+setTimeout(typeLoop,600);
+
+/* ====================================================
+   2. 사이드 네비 active (스크롤 감지)
+==================================================== */
+const sideLinks = document.querySelectorAll('.side-link');
+const sections  = document.querySelectorAll('.section');
+
+const secObs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(!e.isIntersecting) return;
+    const id=e.target.id;
+    sideLinks.forEach(l=>l.classList.toggle('active', l.dataset.s===id));
+  });
+},{ rootMargin:'-40% 0px -40% 0px', threshold:0 });
+sections.forEach(s=>secObs.observe(s));
+
+/* ====================================================
+   3. 프로젝트 필터
+==================================================== */
+const ftabs    = document.querySelectorAll('.ftab');
+const projItems = document.querySelectorAll('.proj-item');
+
+ftabs.forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    const f=tab.dataset.f;
+    ftabs.forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    projItems.forEach(item=>{
+      item.classList.toggle('hidden', f!=='all' && item.dataset.c!==f);
+    });
+  });
+});
+
+/* ====================================================
+   4. 프로젝트 카드 페이드인 (IntersectionObserver)
+==================================================== */
+const fadeObs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(!e.isIntersecting) return;
+    e.target.style.opacity='1';
+    e.target.style.transform='translateY(0)';
+    fadeObs.unobserve(e.target);
+  });
+},{ threshold:0.1 });
+
+projItems.forEach((item,i)=>{
+  item.style.transitionDelay=`${i*0.06}s`;
+  fadeObs.observe(item);
+});
+
+/* ====================================================
+   5. 모바일 햄버거 메뉴
+==================================================== */
+const hbg        = document.getElementById('hbg');
+const mobOverlay = document.getElementById('mobOverlay');
+const mobLinks   = document.querySelectorAll('.mob-link');
+
+hbg.addEventListener('click',()=>{
+  const open=mobOverlay.classList.toggle('open');
+  hbg.classList.toggle('open',open);
+  document.body.style.overflow=open?'hidden':'';
+});
+mobLinks.forEach(l=>l.addEventListener('click',()=>{
+  mobOverlay.classList.remove('open');
+  hbg.classList.remove('open');
+  document.body.style.overflow='';
+}));
+
+/* ====================================================
+   6. Contact 폼 제출
+==================================================== */
+document.getElementById('sendBtn').addEventListener('click',()=>{
+  const n=document.getElementById('nIn').value.trim();
+  const e=document.getElementById('eIn').value.trim();
+  const m=document.getElementById('mIn').value.trim();
+
+  if(!n||!e||!m){
+    document.getElementById('cform').animate(
+      [{transform:'translateX(0)'},{transform:'translateX(-7px)'},{transform:'translateX(7px)'},{transform:'translateX(-5px)'},{transform:'translateX(5px)'},{transform:'translateX(0)'}],
+      {duration:360,easing:'ease'}
+    );
+    return;
+  }
+  if(!e.includes('@')){ alert('올바른 이메일을 입력해주세요.'); return; }
+
+  const btn=document.getElementById('sendBtn');
+  btn.disabled=true;
+  document.getElementById('btnTxt').textContent='전송 중...';
+
+  setTimeout(()=>{
+    document.getElementById('cform').style.display='none';
+    document.getElementById('cfDone').style.display='block';
+  },1000);
+});
+
+/* ====================================================
+   7. 맨 위로 버튼
+==================================================== */
+document.getElementById('topBtn').addEventListener('click',()=>{
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+</script>
+</body>
+</html>
