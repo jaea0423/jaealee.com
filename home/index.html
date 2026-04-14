@@ -299,6 +299,55 @@ body.dark .wx-rain    {background:linear-gradient(135deg,#0d2a4a,#0a1e38);color:
 body.dark .wx-snow    {background:linear-gradient(135deg,#1a2a3a,#0f1e2e);color:#90caf9}
 body.dark .wx-thunder {background:linear-gradient(135deg,#1a0a2e,#0f0820);color:#ce93d8}
 
+
+
+.wx-precip{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;flex-shrink:0;
+  border-left:1px solid rgba(255,255,255,0.2);
+  padding-left:16px;
+}
+.wx-precip-val{font-size:22px;font-weight:700;line-height:1;opacity:0.9}
+.wx-precip-lbl{font-size:10px;opacity:0.6;letter-spacing:0.04em}
+
+
+.wx-sun{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;flex-shrink:0;
+  border-left:1px solid rgba(255,255,255,0.2);
+  padding-left:16px;
+}
+.wx-sun-icon{font-size:20px;line-height:1}
+.wx-sun-time{font-size:18px;font-weight:700;line-height:1;opacity:0.9}
+.wx-sun-lbl{font-size:10px;opacity:0.6;letter-spacing:0.04em}
+
+/* 강수확률 그래프 */
+.wx-rain-chart{
+  display:flex;align-items:flex-end;gap:6px;
+  height:52px;flex-shrink:0;
+  border-left:1px solid rgba(255,255,255,0.2);
+  padding-left:16px;
+}
+.wx-bar-wrap{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  width:22px;
+}
+.wx-bar-bg{
+  width:10px;height:36px;
+  background:rgba(255,255,255,0.15);
+  border-radius:5px;
+  position:relative;overflow:hidden;
+  display:flex;align-items:flex-end;
+}
+.wx-bar-fill{
+  width:100%;border-radius:5px;
+  background:rgba(255,255,255,0.7);
+  transition:height 0.4s ease;
+  min-height:2px;
+}
+.wx-bar-pct{font-size:9px;opacity:0.75;line-height:1}
+.wx-bar-time{font-size:9px;opacity:0.6;line-height:1}
+
 /* ── 푸터 ── */
 .footer{text-align:center;margin-top:32px;font-size:11px;color:var(--txt-l);letter-spacing:0.05em}
 
@@ -365,7 +414,7 @@ body.dark .wx-thunder {background:linear-gradient(135deg,#1a0a2e,#0f0820);color:
 <!-- 헤더 -->
 <header class="header">
   <div class="header-left">
-    <div class="logo">JA<span>.</span></div>
+    <a href="https://jaealee.com/home" style="text-decoration:none;color:inherit"><div class="logo">JA<span>.</span></div></a>
     <div class="clock" id="clock"></div>
     <button class="dark-toggle" id="darkBtn" onclick="toggleDark()"><span class="toggle-icon" id="toggleIcon">🌙</span></button>
   </div>
@@ -583,6 +632,17 @@ body.dark .wx-thunder {background:linear-gradient(135deg,#1a0a2e,#0f0820);color:
   <div class="wx-hourly" id="wxHourly">
     <!-- JS로 채워짐 -->
   </div>
+  <div class="wx-sun">
+    <div class="wx-sun-time" id="wxSunTime">—:——</div>
+    <div class="wx-sun-lbl" id="wxSunLbl">일출</div>
+  </div>
+  <div class="wx-precip">
+    <div class="wx-precip-val" id="wxPrecip">— mm</div>
+    <div class="wx-precip-lbl">금일 강수량</div>
+  </div>
+  <div class="wx-rain-chart" id="wxRainChart">
+    <!-- JS로 채워짐 -->
+  </div>
 </div>
 
 <div class="footer" style="margin-top:16px">jaealee.com · personal dashboard</div>
@@ -626,24 +686,21 @@ async function fetchWeather(){
     const res = await fetch(
       'https://api.open-meteo.com/v1/forecast' +
       '?latitude=37.8813&longitude=127.7298' +
-      '&current=temperature_2m,weathercode' +
-      '&hourly=temperature_2m,weathercode' +
-      '&daily=temperature_2m_max,temperature_2m_min' +
+      '&current=temperature_2m,weather_code' +
+      '&hourly=temperature_2m,weather_code,precipitation_probability' +
+      '&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,sunrise,sunset' +
       '&timezone=Asia%2FSeoul&forecast_days=1'
     );
     const d = await res.json();
 
-    /* 현재 날씨 */
+    /* 현재 날씨 - weather_code 또는 weathercode 둘 다 대응 */
     const temp = Math.round(d.current.temperature_2m);
-    const code = d.current.weathercode;
+    const code = d.current.weather_code ?? d.current.weathercode ?? 0;
     const w    = wxInfo(code);
 
     /* 최저/최고 */
     const tmax = Math.round(d.daily.temperature_2m_max[0]);
     const tmin = Math.round(d.daily.temperature_2m_min[0]);
-
-    /* 헤더 작은 텍스트 */
-    document.getElementById('weather').textContent = `${w.icon} ${temp}°C`;
 
     /* 배너 */
     const banner = document.getElementById('wxBanner');
@@ -653,12 +710,32 @@ async function fetchWeather(){
     document.getElementById('wxDesc').textContent  = w.desc;
     document.getElementById('wxMinMax').textContent = `최저 ${tmin}° / 최고 ${tmax}°　춘천`;
 
-    /* 시간대별 (현재 시각부터 8시간) */
+
+    /* 일출/일몰 - 현재 시간 기준으로 표시 */
+    const sunriseStr = d.daily.sunrise?.[0]; /* "2026-04-15T05:32" 형식 */
+    const sunsetStr  = d.daily.sunset?.[0];
+    if(sunriseStr && sunsetStr){
+      const sunrise = new Date(sunriseStr);
+      const sunset  = new Date(sunsetStr);
+      const nowTime = new Date();
+      const fmt = t => `${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`;
+      /* 일출 전 or 일몰 후 → 일출 표시 / 일출 후 일몰 전 → 일몰 표시 */
+      const showSunset = nowTime >= sunrise && nowTime < sunset;
+      document.getElementById('wxSunTime').textContent = showSunset ? fmt(sunset) : fmt(sunrise);
+      document.getElementById('wxSunLbl').textContent  = showSunset ? '일몰' : '일출';
+    }
+
+    /* 금일 강수량 */
+    const precip = d.daily.precipitation_sum?.[0] ?? 0;
+    document.getElementById('wxPrecip').textContent = precip.toFixed(1) + ' mm';
+
+    /* 시간대별 (현재 시각부터 8칸) */
     const now    = new Date();
     const nowH   = now.getHours();
-    const times  = d.hourly.time;       /* "2026-04-15T00:00" 형식 */
+    const times  = d.hourly.time;
     const hTemps = d.hourly.temperature_2m;
-    const hCodes = d.hourly.weathercode;
+    const hCodes  = d.hourly.weather_code ?? d.hourly.weathercode;
+    const hRain   = d.hourly.precipitation_probability ?? [];
 
     /* 현재 시간 인덱스 찾기 */
     let startIdx = times.findIndex(t => parseInt(t.split('T')[1]) >= nowH);
@@ -687,9 +764,27 @@ async function fetchWeather(){
       hourlyEl.appendChild(el);
     }
 
+    /* 강수확률 바 그래프 (2시간 간격 8칸) */
+    const rainEl = document.getElementById('wxRainChart');
+    rainEl.innerHTML = '';
+    for(let i = 0; i < 8; i++){
+      const idx  = startIdx + i * 2;
+      if(idx >= times.length) break;
+      const hh   = parseInt(times[idx].split('T')[1]);
+      const pct  = hRain[idx] ?? 0;
+
+      const wrap = document.createElement('div');
+      wrap.className = 'wx-bar-wrap';
+      wrap.innerHTML = `
+        <div class="wx-bar-pct">${pct}%</div>
+        <div class="wx-bar-bg"><div class="wx-bar-fill" style="height:${pct}%"></div></div>
+        <div class="wx-bar-time">${String(hh).padStart(2,'0')}시</div>
+      `;
+      rainEl.appendChild(wrap);
+    }
+
   } catch(e){
-    document.getElementById('weather').textContent = '';
-    document.querySelector('.weather-sep').textContent = '';
+    console.error('날씨 오류:', e);
   }
 }
 fetchWeather();
@@ -700,7 +795,9 @@ function toggleDark(){
   const isDark = document.body.classList.toggle('dark');
   localStorage.setItem('dark', isDark);
 }
-if(localStorage.getItem('dark') === 'true'){
+/* 저장값 있으면 그걸 쓰고, 없으면 시스템 설정 따름 */
+const saved = localStorage.getItem('dark');
+if(saved === 'true' || (saved === null && window.matchMedia('(prefers-color-scheme: dark)').matches)){
   document.body.classList.add('dark');
 }
 
