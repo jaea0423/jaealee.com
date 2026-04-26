@@ -12,8 +12,14 @@
   --brd:rgba(0,0,0,0.07);--lime:#b5e030;--r:10px;--t:0.16s;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{font-size:20px;zoom:1.25}
-body{background:var(--bg);color:var(--txt);font-family:'Pretendard',sans-serif;font-weight:300;min-height:100vh;padding:40px 36px 72px}
+/* 모바일: zoom 제거, 데스크톱은 미디어쿼리로 별도 폰트 크기 지정 */
+html{font-size:16px}
+body{background:var(--bg);color:var(--txt);font-family:'Pretendard',sans-serif;font-weight:300;min-height:100vh;padding:20px 16px 60px}
+/* 데스크톱(769px 이상): 원래 디자인 의도대로 큰 폰트 + 넓은 여백 */
+@media (min-width:769px){
+  html{font-size:20px}
+  body{padding:40px 36px 72px}
+}
 a{text-decoration:none;color:inherit}
 
 /* ── 헤더 ── */
@@ -441,6 +447,101 @@ body.dark .wx-thunder {background:linear-gradient(135deg,#1a0a2e,#0f0820);color:
   content:'';position:absolute;right:60px;bottom:-70px;
   width:220px;height:220px;border-radius:50%;
   background:rgba(255,255,255,0.04);pointer-events:none;
+}
+
+/* ============================================
+   ── 모바일 대응 (768px 이하) ──
+   - 카테고리 가로 → 세로 1열 배치
+   - 헤더/검색/날씨/카테고리 폰트·여백 축소
+   - 시간대별 날씨는 가로 스크롤로 처리
+   ============================================ */
+@media (max-width:768px){
+  /* 헤더: 세로 정렬로 변경, 메일 버튼이 줄바꿈되도록 */
+  .header{
+    flex-direction:column;align-items:flex-start;
+    gap:12px;margin-bottom:16px;
+  }
+  .header-left{gap:12px;flex-wrap:wrap;width:100%}
+  .logo{font-size:20px}
+  .clock{font-size:11px}
+  /* 메일 버튼: 가로 꽉 채우기 + 작은 글자 */
+  .mail-btns{width:100%;flex-wrap:wrap;gap:5px}
+  .mail-btn{
+    flex:1;min-width:0;justify-content:center;
+    padding:7px 8px;font-size:10px;
+  }
+
+  /* 검색창: 패딩/폰트 축소 */
+  .search-area{margin-bottom:20px;gap:6px}
+  .srow{padding:8px 10px;gap:8px}
+  .badge{
+    min-width:60px;padding:3px 8px;font-size:10px;
+  }
+  .sinput{font-size:13px}
+  /* iOS 자동 확대 방지: 입력 시 16px 이상이어야 줌이 안 일어남 */
+  /* 작은 폰트를 유지하면서 줌 방지하려면 input 자체에만 16px 적용 */
+  input.sinput{font-size:16px}
+
+  /* 퀵액세스 원형 블럭: 크기 축소 + 간격 좁힘 */
+  .quick-grid{gap:14px}
+  .q-circle,.q-empty{width:52px;height:52px;font-size:20px}
+
+  /* ★ 핵심: 카테고리 가로 → 세로 1열로 변경 ★ */
+  .wrap{
+    flex-direction:column;
+    gap:18px;
+  }
+  .cat-col{min-width:0;width:100%}
+  .cat-head{padding-bottom:8px;font-size:10px}
+
+  /* 타일 크기 축소 (s3:큰칸 → 90px, s2:중간칸 → 60px) */
+  .s3{height:90px;font-size:14px}
+  .s3 .t-name{font-size:14px}
+  .s2{height:60px}
+  .s2 .t-name{font-size:13px}
+  .s1{height:52px}
+  .s1 .t-name{font-size:11px}
+  /* 큰 타일의 우측 아이콘은 모바일에서 살짝 작게 */
+  .tile-icon svg{width:32px;height:32px}
+
+  /* 날씨 배너: 위→아래로 정보를 쌓는 구조로 변경 */
+  .wx-banner{
+    flex-wrap:wrap;
+    margin-top:32px;padding:14px 16px;gap:12px;
+    border-radius:12px;
+  }
+  .wx-icon{font-size:36px}
+  .wx-temp{font-size:34px}
+  .wx-desc{font-size:14px}
+  .wx-minmax{font-size:11px}
+  /* 구분선은 모바일에서 숨김 (공간 절약) */
+  .wx-divider{display:none}
+  /* 시간대별 날씨: 화면을 가득 채우고 가로 스크롤 허용 */
+  .wx-hourly{
+    width:100%;flex:1 0 100%;
+    overflow-x:auto;overflow-y:hidden;
+    gap:14px;padding-bottom:4px;
+    /* iOS에서 부드러운 스크롤 */
+    -webkit-overflow-scrolling:touch;
+    /* 스크롤바 숨김 (선택사항) */
+    scrollbar-width:none;
+  }
+  .wx-hourly::-webkit-scrollbar{display:none}
+  /* 배너 장식 원은 모바일에서 더 작게 */
+  .wx-banner::after{width:120px;height:120px;right:-30px;top:-30px}
+  .wx-banner::before{width:140px;height:140px;right:30px;bottom:-50px}
+
+  /* 푸터 폰트 축소 */
+  .footer{font-size:10px;margin-top:24px}
+}
+
+/* 아주 작은 화면(360px 이하, 구형 폰) 추가 보정 */
+@media (max-width:380px){
+  body{padding:16px 12px 50px}
+  .mail-btn{font-size:9px;padding:6px 6px}
+  /* 메일 버튼이 3개 다 들어가지 않으면 KNU만 다음 줄로 */
+  .quick-grid{gap:10px}
+  .q-circle,.q-empty{width:46px;height:46px;font-size:18px}
 }
 </style>
 </head>
