@@ -859,8 +859,9 @@ async function fetchWeather(){
     const tmax = Math.round(d.daily.temperature_2m_max[0]);
     const tmin = Math.round(d.daily.temperature_2m_min[0]);
 
-    /* 헤더 작은 텍스트 */
-    document.getElementById('weather').textContent = `${w.icon} ${temp}°C`;
+    /* 헤더 작은 텍스트 (요소가 있을 때만 — 새 디자인엔 없음) */
+    const weatherHeaderEl = document.getElementById('weather');
+    if(weatherHeaderEl) weatherHeaderEl.textContent = `${w.icon} ${temp}°C`;
 
     /* 배너 */
     const banner = document.getElementById('wxBanner');
@@ -905,8 +906,15 @@ async function fetchWeather(){
     }
 
   } catch(e){
-    document.getElementById('weather').textContent = '';
-    document.querySelector('.weather-sep').textContent = '';
+    /* 에러 시 — 요소가 있을 때만 비움 (없어도 throw 안 나도록 안전 처리) */
+    const wEl  = document.getElementById('weather');
+    if(wEl) wEl.textContent = '';
+    const sep  = document.querySelector('.weather-sep');
+    if(sep) sep.textContent = '';
+    /* 배너에는 에러 표시 */
+    const desc = document.getElementById('wxDesc');
+    if(desc) desc.textContent = '날씨 불러오기 실패';
+    console.warn('weather fetch failed:', e);
   }
 }
 fetchWeather();
@@ -938,19 +946,4 @@ function go(e){
     return;
   }
 
-  const q = document.getElementById(inputId).value.trim();
-  if(!q) return; // 빈 검색어는 무시
-  window.location.href = url(q);
-}
-
-/* ── 퀵액세스 펼치기/접기 토글 ── */
-function toggleQuick(){
-  const grid = document.getElementById('quickGrid');
-  const btn  = document.getElementById('quickBtn');
-  // open 클래스를 토글하면 CSS transition으로 자연스럽게 펼쳐짐/접힘
-  grid.classList.toggle('open');
-  btn.classList.toggle('open');
-}
-</script>
-</body>
-</html>
+  const q = document.getElemen
