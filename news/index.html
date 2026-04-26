@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Daily News · JA</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet"/>
+<style>
+/* ── index.html과 동일한 색상/폰트 변수 ── */
+:root{
+  --bg:#f5f4f0;--card:#fff;--txt:#1a1a1a;--txt-l:#bbb;
+  --brd:rgba(0,0,0,0.07);--lime:#b5e030;--r:10px;--t:0.16s;
+  --err:#e54c4c;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:20px;zoom:1.25}
+body{
+  background:var(--bg);color:var(--txt);
+  font-family:'Pretendard',sans-serif;font-weight:300;
+  min-height:100vh;
+  /* 화면 상단 쪽으로 정렬 (justify-content:flex-start)
+     상단 바(80px) 아래로 카드가 자연스럽게 오도록 padding-top 조정 */
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  padding:120px 20px 40px;
+}
+a{text-decoration:none;color:inherit}
+
+/* ── 상단 로고 (index.html과 동일) ── */
+.top-bar{
+  position:absolute;top:30px;left:36px;right:36px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.logo{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:-0.5px}
+.logo span{color:var(--lime)}
+/* 메인 페이지로 돌아가기 링크 */
+.back-link{
+  font-size:12px;color:var(--txt-l);
+  display:inline-flex;align-items:center;gap:4px;
+  transition:color var(--t);
+}
+.back-link:hover{color:var(--txt)}
+
+/* ── 메인 카드 ── */
+.card{
+  background:var(--card);
+  border:1px solid var(--brd);
+  border-radius:16px;
+  padding:48px 40px;
+  width:100%;max-width:480px;
+  box-shadow:0 4px 24px rgba(0,0,0,0.06);
+  text-align:center;
+}
+
+/* 페이지 제목 */
+.page-title{
+  font-family:'Syne',sans-serif;
+  font-size:28px;font-weight:800;letter-spacing:-0.5px;
+  margin-bottom:8px;
+}
+.page-subtitle{
+  font-size:12px;color:var(--txt-l);
+  letter-spacing:0.05em;
+  margin-bottom:36px;
+}
+
+/* ── 날짜 선택 영역 ── */
+.date-row{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  margin-bottom:28px;
+}
+/* 이전/다음 화살표 버튼 */
+.arrow-btn{
+  width:38px;height:38px;
+  display:inline-flex;align-items:center;justify-content:center;
+  border:1px solid var(--brd);background:var(--card);
+  border-radius:50%;cursor:pointer;
+  color:var(--txt-l);
+  transition:all var(--t);
+  flex-shrink:0;
+}
+.arrow-btn:hover{color:var(--txt);box-shadow:0 3px 12px rgba(0,0,0,0.1);transform:translateY(-1px)}
+.arrow-btn:active{transform:translateY(0)}
+
+/* 날짜 입력 (달력 피커) */
+.date-input{
+  font-family:'Pretendard',sans-serif;
+  font-size:16px;font-weight:600;color:var(--txt);
+  border:1px solid var(--brd);background:var(--card);
+  border-radius:10px;
+  padding:10px 14px;
+  cursor:pointer;outline:none;
+  transition:border-color var(--t),box-shadow var(--t);
+  /* 달력 아이콘 위치 조정 */
+  text-align:center;
+  min-width:170px;
+}
+.date-input:hover{border-color:rgba(0,0,0,0.2)}
+.date-input:focus{border-color:var(--txt);box-shadow:0 0 0 3px rgba(0,0,0,0.05)}
+
+/* 요일 표시 */
+.weekday{
+  font-size:12px;color:var(--txt-l);
+  margin-bottom:24px;letter-spacing:0.05em;
+}
+
+/* ── 뉴스 보기 버튼 ── */
+.go-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:14px 24px;
+  background:var(--txt);color:var(--card);
+  border:none;border-radius:10px;
+  font-family:'Pretendard',sans-serif;
+  font-size:14px;font-weight:600;
+  cursor:pointer;
+  transition:transform var(--t),box-shadow var(--t),opacity var(--t);
+}
+.go-btn:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,0.15)}
+.go-btn:active{transform:translateY(0)}
+.go-btn:disabled{opacity:0.5;cursor:wait}
+
+/* ── 메시지 영역 (성공/에러) ── */
+.message{
+  margin-top:20px;padding:14px 18px;
+  border-radius:10px;
+  font-size:13px;font-weight:500;
+  /* 기본 상태: 숨김 */
+  opacity:0;max-height:0;overflow:hidden;
+  transition:opacity 0.25s ease,max-height 0.25s ease,margin-top 0.25s ease;
+}
+.message.show{opacity:1;max-height:80px;margin-top:20px}
+/* 에러 메시지 (파일 없음) */
+.message.error{
+  background:rgba(229,76,76,0.08);
+  color:var(--err);
+  border:1px solid rgba(229,76,76,0.2);
+}
+/* 로딩 메시지 */
+.message.loading{
+  background:rgba(0,0,0,0.04);
+  color:var(--txt-l);
+  border:1px solid var(--brd);
+}
+
+/* ── 다크 토글 (헤더 우측) ── */
+.dark-toggle{
+  position:relative;display:inline-flex;align-items:center;
+  width:28px;height:15px;
+  background:#ccc;border:none;border-radius:8px;
+  cursor:pointer;transition:background 0.3s;
+  padding:0;flex-shrink:0;
+  box-shadow:inset 0 1px 2px rgba(0,0,0,0.2);
+}
+.dark-toggle::after{
+  content:'';position:absolute;left:2px;
+  width:11px;height:11px;border-radius:50%;
+  background:#fff;transition:transform 0.3s;
+  box-shadow:0 1px 3px rgba(0,0,0,0.3);
+}
+body.dark .dark-toggle{background:#4a90d9}
+body.dark .dark-toggle::after{transform:translateX(13px)}
+
+/* ── 다크모드 (index.html과 동일) ── */
+body.dark{
+  --bg:#22222e;--card:#2c2c3a;--txt:#ededf0;--txt-l:#7070a0;
+  --brd:rgba(255,255,255,0.10);
+}
+body.dark .go-btn{background:var(--lime);color:#1a1a1a}
+body.dark .go-btn:hover{box-shadow:0 4px 16px rgba(181,224,48,0.3)}
+body.dark .date-input::-webkit-calendar-picker-indicator{filter:invert(0.7)}
+
+/* 푸터: 카드 아래 일반 흐름에 배치 */
+.footer{
+  margin-top:48px;
+  text-align:center;font-size:11px;color:var(--txt-l);
+  letter-spacing:0.05em;
+}
+</style>
+</head>
+<body>
+
+<!-- 상단 바: 로고 + 뒤로 가기 + 다크 토글 -->
+<div class="top-bar">
+  <a href="https://jaealee.com/home" class="back-link">← 메인으로</a>
+  <div style="display:flex;align-items:center;gap:14px">
+    <div class="logo">JA<span>.</span></div>
+    <button class="dark-toggle" onclick="toggleDark()" aria-label="다크모드 토글"></button>
+  </div>
+</div>
+
+<!-- 메인 카드 -->
+<div class="card">
+  <h1 class="page-title">Daily News</h1>
+  <p class="page-subtitle">날짜를 선택해주세요</p>
+
+  <!-- 날짜 선택 행: ◀ [날짜 입력] ▶ -->
+  <div class="date-row">
+    <button class="arrow-btn" onclick="changeDate(-1)" aria-label="이전 날짜">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
+    <input type="date" id="dateInput" class="date-input" onchange="onDateChange()"/>
+    <button class="arrow-btn" onclick="changeDate(1)" aria-label="다음 날짜">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- 선택된 날짜의 요일 -->
+  <div class="weekday" id="weekday">—</div>
+
+  <!-- 뉴스 보기 버튼 -->
+  <button class="go-btn" id="goBtn" onclick="openNews()">
+    뉴스 보기
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="9 18 15 12 9 6"/>
+    </svg>
+  </button>
+
+  <!-- 메시지 영역 (성공/에러) -->
+  <div class="message" id="message"></div>
+</div>
+
+<div class="footer">jaealee.com · daily news</div>
+
+<script>
+/* ───────────────────────────────────────────────────
+   1) 페이지 로드 시 기본 날짜 세팅
+   - 오전 7시 이전 → 어제 날짜
+   - 오전 7시 이후 → 오늘 날짜
+   ─────────────────────────────────────────────────── */
+function getDefaultDate(){
+  const now = new Date();
+  // 오전 7시 이전이면 하루 전으로 이동
+  if(now.getHours() < 7){
+    now.setDate(now.getDate() - 1);
+  }
+  return now;
+}
+
+/* Date 객체 → "YYYY-MM-DD" 문자열 (input[type=date]가 사용하는 형식) */
+function toDateString(d){
+  const yr = d.getFullYear();
+  const mo = String(d.getMonth() + 1).padStart(2, '0');
+  const dt = String(d.getDate()).padStart(2, '0');
+  return `${yr}-${mo}-${dt}`;
+}
+
+/* "YYYY-MM-DD" → "YYYYMMDD" (파일명에 들어가는 형식) */
+function toFileDateString(dateStr){
+  return dateStr.replace(/-/g, '');
+}
+
+/* "YYYY-MM-DD" → 요일 한글 ("월"~"일") */
+function getWeekdayKr(dateStr){
+  const days = ['일', '월', '화', '수', '목', '금', '토'];
+  // "YYYY-MM-DD"를 직접 Date로 만들면 시간대 이슈가 있어서 분리해서 생성
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  return days[date.getDay()];
+}
+
+/* 요일 표시 업데이트 */
+function updateWeekday(){
+  const dateStr = document.getElementById('dateInput').value;
+  if(!dateStr){
+    document.getElementById('weekday').textContent = '—';
+    return;
+  }
+  const wd = getWeekdayKr(dateStr);
+  document.getElementById('weekday').textContent = `${wd}요일`;
+}
+
+/* ───────────────────────────────────────────────────
+   2) 날짜 변경 함수들
+   ─────────────────────────────────────────────────── */
+/* 이전/다음 버튼: delta는 -1 또는 +1 */
+function changeDate(delta){
+  const input = document.getElementById('dateInput');
+  // 현재 input에 들어있는 값을 Date 객체로 변환
+  const [y, m, d] = input.value.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  // 하루 더하거나 빼기
+  date.setDate(date.getDate() + delta);
+  // 다시 input에 넣기
+  input.value = toDateString(date);
+  onDateChange();
+}
+
+/* 날짜가 바뀔 때마다 호출 (요일 갱신 + 메시지 숨기기) */
+function onDateChange(){
+  updateWeekday();
+  hideMessage(); // 이전에 떠있던 에러 메시지 숨김
+}
+
+/* ───────────────────────────────────────────────────
+   3) 메시지 표시/숨김
+   ─────────────────────────────────────────────────── */
+function showMessage(text, type){
+  const el = document.getElementById('message');
+  el.textContent = text;
+  // 클래스 초기화 후 새로 적용
+  el.className = 'message show ' + type;
+}
+function hideMessage(){
+  const el = document.getElementById('message');
+  el.className = 'message';
+}
+
+/* ───────────────────────────────────────────────────
+   4) 뉴스 보기 버튼: 파일 존재 확인 후 이동
+   ─────────────────────────────────────────────────── */
+async function openNews(){
+  const dateStr = document.getElementById('dateInput').value;
+  if(!dateStr){
+    showMessage('날짜를 선택해주세요.', 'error');
+    return;
+  }
+
+  // 파일명 생성: "News Source/Daily News_YYYYMMDD.html"
+  const fileDate = toFileDateString(dateStr);
+  // 공백이 포함된 경로는 encodeURI로 안전하게 처리
+  const url = `News Source/Daily News_${fileDate}.html`;
+  const encodedUrl = encodeURI(url);
+
+  // 버튼 비활성화 + 로딩 메시지
+  const btn = document.getElementById('goBtn');
+  btn.disabled = true;
+  showMessage('확인 중...', 'loading');
+
+  try{
+    /* fetch로 파일 존재 확인
+       method: 'HEAD' = 본문은 안 받고 헤더만 확인 (빠름)
+       cache: 'no-store' = 캐시 무시하고 항상 서버에 직접 확인 */
+    const res = await fetch(encodedUrl, { method: 'HEAD', cache: 'no-store' });
+
+    if(res.ok){
+      // 200~299 응답: 파일 존재 → 페이지 이동
+      window.location.href = encodedUrl;
+    } else {
+      // 404 등: 파일 없음 → 한글 메시지 표시
+      showMessage('⚠ 존재하지 않는 뉴스입니다.', 'error');
+      btn.disabled = false;
+    }
+  } catch(e){
+    /* fetch 자체가 실패한 경우 (네트워크 문제 또는 file:// 프로토콜에서 실행 시)
+       이 경우 일단 이동을 시도해볼 수도 있지만, 사용자 경험상 메시지를 띄우는 게 안전함 */
+    showMessage('⚠ 파일을 확인할 수 없습니다. 로컬 파일로 직접 실행 시 동작하지 않습니다.', 'error');
+    btn.disabled = false;
+  }
+}
+
+/* ───────────────────────────────────────────────────
+   5) 다크모드 (index.html과 localStorage 공유)
+   ─────────────────────────────────────────────────── */
+function toggleDark(){
+  const isDark = document.body.classList.toggle('dark');
+  localStorage.setItem('dark', isDark);
+}
+// 페이지 로드 시 저장된 다크모드 상태 적용
+if(localStorage.getItem('dark') === 'true'){
+  document.body.classList.add('dark');
+}
+
+/* ───────────────────────────────────────────────────
+   6) 초기 실행: 기본 날짜 세팅
+   ─────────────────────────────────────────────────── */
+const defaultDate = getDefaultDate();
+document.getElementById('dateInput').value = toDateString(defaultDate);
+updateWeekday();
+
+/* Enter 키로도 뉴스 보기 가능하게 */
+document.getElementById('dateInput').addEventListener('keydown', e => {
+  if(e.key === 'Enter') openNews();
+});
+</script>
+</body>
+</html>
