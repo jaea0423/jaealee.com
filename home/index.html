@@ -16,10 +16,7 @@ html{font-size:20px;zoom:1.25}
 body{background:var(--bg);color:var(--txt);font-family:'Pretendard',sans-serif;font-weight:300;min-height:100vh;padding:40px 36px 72px}
 a{text-decoration:none;color:inherit}
 
-/* ── 헤더+검색 묶음 ── */
-.top-area{display:contents}
-/* 모바일 전용 메일 버튼은 기본 숨김 */
-.mail-btns-mobile{display:none !important}
+/* ── 헤더 ── */
 .header{
   display:flex;align-items:center;justify-content:space-between;
   max-width:1200px;margin:0 auto 24px;gap:16px;
@@ -66,6 +63,7 @@ a{text-decoration:none;color:inherit}
 }
 .bg{background:#4285f4;color:#fff}
 .bn{background:#03c75a;color:#fff}
+.by{background:#ff0000;color:#fff} /* YouTube 뱃지 색상 */
 .sinput{
   flex:1;border:none;outline:none;background:transparent;
   font-family:'Pretendard',sans-serif;font-size:14px;font-weight:400;color:var(--txt);
@@ -79,6 +77,89 @@ a{text-decoration:none;color:inherit}
   max-width:1200px;margin:0 auto;
   display:flex;flex-direction:row;gap:20px;
   align-items:flex-start;
+}
+
+/* ── 퀵액세스 영역 (펼치기 버튼 + 5개 원형 블럭) ── */
+.quick-area{
+  max-width:1200px;margin:0 auto 20px;
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+}
+/* 펼치기 토글 버튼 (화살표만) */
+.quick-toggle{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:32px;height:32px;
+  border:1px solid var(--brd);background:var(--card);
+  border-radius:50%;cursor:pointer;
+  color:var(--txt-l);font-size:12px;
+  transition:transform var(--t),box-shadow var(--t),color var(--t);
+}
+.quick-toggle:hover{color:var(--txt);box-shadow:0 3px 12px rgba(0,0,0,0.1)}
+/* 펼쳐진 상태일 때 화살표 회전 */
+.quick-toggle.open svg{transform:rotate(180deg)}
+.quick-toggle svg{transition:transform var(--t)}
+
+/* 5개 원형 블럭 컨테이너 (가로 1줄 균등 배치) */
+.quick-grid{
+  display:flex;justify-content:center;gap:32px;
+  width:100%;
+  /* 기본 상태: 숨김 */
+  max-height:0;overflow:hidden;opacity:0;
+  transition:max-height 0.3s ease,opacity 0.3s ease,margin-top 0.3s ease;
+}
+/* 펼쳐진 상태 */
+.quick-grid.open{
+  max-height:200px;opacity:1;
+  padding:8px 0; /* 호버 시 살짝 떠오를 공간 확보 */
+}
+
+/* 원형 블럭 공통 스타일 */
+.q-circle{
+  display:flex;align-items:center;justify-content:center;
+  width:64px;height:64px;
+  border-radius:50%; /* 50% = 완전한 원 */
+  background:#2c2c2c; /* 다크 배경 (모든 원 공통) */
+  color:#888; /* 기본 글자색 (호버 전) */
+  font-family:'Syne',sans-serif;
+  font-size:26px;font-weight:800;
+  cursor:pointer;text-decoration:none;
+  border:2px solid transparent;
+  /* 호버 효과를 위한 transition */
+  transition:transform var(--t),box-shadow var(--t),
+             color var(--t),background var(--t),border-color var(--t);
+}
+/* 호버: 살짝 떠오르고, 컬러 포인트 색상으로 강조 */
+.q-circle:hover{
+  transform:translateY(-3px);
+  box-shadow:0 6px 16px rgba(0,0,0,0.2);
+}
+
+/* ── 컬러 포인트 (각 원별 고유 색상) ── */
+/* News: 빨강 - 뉴스의 긴급함/중요함 표현 */
+.q-circle.q-news{color:#ff6b6b}
+.q-circle.q-news:hover{background:#ff6b6b;color:#fff;border-color:#ff6b6b}
+/* Project: 녹색 - 성장/진행 표현 */
+.q-circle.q-proj{color:#7ab800}
+.q-circle.q-proj:hover{background:#7ab800;color:#fff;border-color:#7ab800}
+/* Drive: 파랑 - 저장소/안정감 표현 */
+.q-circle.q-drive{color:#4a90d9}
+.q-circle.q-drive:hover{background:#4a90d9;color:#fff;border-color:#4a90d9}
+
+/* 빈칸 원 (placeholder) */
+.q-empty{
+  display:flex;align-items:center;justify-content:center;
+  width:64px;height:64px;
+  border-radius:50%;
+  background:transparent;
+  border:2px dashed rgba(0,0,0,0.15);
+  color:rgba(0,0,0,0.25);
+  font-size:24px;font-weight:300;
+  cursor:default; /* 클릭 가능 표시 안 함 */
+}
+
+/* 다크모드: 빈칸 점선 색 조정 */
+body.dark .q-empty{
+  border-color:rgba(255,255,255,0.15);
+  color:rgba(255,255,255,0.25);
 }
 
 /* ── 카테고리 컬럼 ── */
@@ -302,55 +383,6 @@ body.dark .wx-rain    {background:linear-gradient(135deg,#0d2a4a,#0a1e38);color:
 body.dark .wx-snow    {background:linear-gradient(135deg,#1a2a3a,#0f1e2e);color:#90caf9}
 body.dark .wx-thunder {background:linear-gradient(135deg,#1a0a2e,#0f0820);color:#ce93d8}
 
-
-
-.wx-precip{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:3px;flex-shrink:0;
-  border-left:1px solid rgba(255,255,255,0.2);
-  padding-left:16px;
-}
-.wx-precip-val{font-size:22px;font-weight:700;line-height:1;opacity:0.9}
-.wx-precip-lbl{font-size:10px;opacity:0.6;letter-spacing:0.04em}
-
-
-.wx-sun{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:4px;flex-shrink:0;
-  border-left:1px solid rgba(255,255,255,0.2);
-  padding-left:16px;
-}
-.wx-sun-icon{font-size:20px;line-height:1}
-.wx-sun-time{font-size:18px;font-weight:700;line-height:1;opacity:0.9}
-.wx-sun-lbl{font-size:10px;opacity:0.6;letter-spacing:0.04em}
-
-/* 강수확률 그래프 */
-.wx-rain-chart{
-  display:flex;align-items:flex-end;gap:6px;
-  height:52px;flex-shrink:0;
-  border-left:1px solid rgba(255,255,255,0.2);
-  padding-left:16px;
-}
-.wx-bar-wrap{
-  display:flex;flex-direction:column;align-items:center;gap:3px;
-  width:22px;
-}
-.wx-bar-bg{
-  width:10px;height:36px;
-  background:rgba(255,255,255,0.15);
-  border-radius:5px;
-  position:relative;overflow:hidden;
-  display:flex;align-items:flex-end;
-}
-.wx-bar-fill{
-  width:100%;border-radius:5px;
-  background:rgba(255,255,255,0.7);
-  transition:height 0.4s ease;
-  min-height:2px;
-}
-.wx-bar-pct{font-size:9px;opacity:0.75;line-height:1}
-.wx-bar-time{font-size:9px;opacity:0.6;line-height:1}
-
 /* ── 푸터 ── */
 .footer{text-align:center;margin-top:32px;font-size:11px;color:var(--txt-l);letter-spacing:0.05em}
 
@@ -410,61 +442,19 @@ body.dark .wx-thunder {background:linear-gradient(135deg,#1a0a2e,#0f0820);color:
   width:220px;height:220px;border-radius:50%;
   background:rgba(255,255,255,0.04);pointer-events:none;
 }
-/* ── 반응형 ── */
-
-/* 태블릿 (1024px 이하): 카테고리 2열 그리드 */
-@media(max-width:1024px){
-  body{padding:28px 20px 60px}
-  .wrap{flex-wrap:wrap;gap:14px}
-  .cat-col{flex:1 1 calc(50% - 7px);min-width:0}
-  .search-area{max-width:100%}
-  .srow{padding:8px 12px}
-  .sinput{min-width:0}
-  .header{max-width:100%}
-  .wx-banner{max-width:100%;flex-wrap:wrap;gap:16px}
-}
-
-/* 모바일 (640px 이하): 1열 세로 스택 */
-@media(max-width:640px){
-  html{zoom:1}
-  body{padding:20px 14px 48px}
-  .header{flex-wrap:wrap;gap:10px;justify-content:center;padding:52px 0 40px}
-  .header-left{flex:none;width:100%;justify-content:center}
-  .clock{display:none}
-  .dark-toggle{display:none}
-  .logo{font-size:36px}
-  .mail-btns-desktop{display:none}
-  .mail-btns-mobile{display:flex !important;gap:4px;width:100%;justify-content:center;margin-bottom:20px}
-  .mail-btn{padding:4px 9px;font-size:10px}
-  .top-area{display:flex;flex-direction:column}
-  .wrap{flex-direction:column;gap:12px}
-  .cat-col{flex:none;width:100%}
-  .s3{height:90px}
-  .s2{height:60px}
-  .wx-banner{padding:14px 16px;gap:12px}
-  .wx-icon{font-size:36px}
-  .wx-temp{font-size:34px}
-  .wx-desc{font-size:14px}
-  .wx-divider{display:none}
-  .wx-hourly{gap:8px}
-  .wx-sun,.wx-precip,.wx-rain-chart{display:none}
-  .wx-banner{display:none}
-}
-
 </style>
 </head>
 <body>
 
-<!-- 헤더 + 검색창 묶음 -->
-<div class="top-area">
+<!-- 헤더 -->
 <header class="header">
   <div class="header-left">
-    <a href="https://jaealee.com/home" style="text-decoration:none;color:inherit"><div class="logo">JA<span>.</span></div></a>
+    <div class="logo">JA<span>.</span></div>
     <div class="clock" id="clock"></div>
     <button class="dark-toggle" id="darkBtn" onclick="toggleDark()"><span class="toggle-icon" id="toggleIcon">🌙</span></button>
   </div>
-  <!-- 메일 버튼 3개 (데스크탑) -->
-  <div class="mail-btns mail-btns-desktop">
+  <!-- 메일 버튼 3개 -->
+  <div class="mail-btns">
     <a href="https://mail.google.com" class="mail-btn mb-gmail">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/></svg>
       Gmail
@@ -498,23 +488,38 @@ body.dark .wx-thunder {background:linear-gradient(135deg,#1a0a2e,#0f0820);color:
     <input class="sinput" id="nIn" placeholder="Naver 검색 후 Enter" onkeydown="if(event.key==='Enter')go('n')"/>
     <button class="sgo" onclick="go('n')">→</button>
   </div>
+  <!-- YouTube 검색창 -->
+  <div class="srow">
+    <span class="badge by" onclick="window.location.href='https://www.youtube.com'" style="cursor:pointer">
+      <svg width="12" height="11" viewBox="0 0 24 24" fill="white"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+      YouTube
+    </span>
+    <input class="sinput" id="yIn" placeholder="YouTube 검색 후 Enter" onkeydown="if(event.key==='Enter')go('y')"/>
+    <button class="sgo" onclick="go('y')">→</button>
+  </div>
 </div>
 
-<!-- 메일 버튼 3개 (모바일용 - 검색창 아래) -->
-<div class="mail-btns mail-btns-mobile">
-  <a href="https://mail.google.com" class="mail-btn mb-gmail">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/></svg>
-    Gmail
-  </a>
-  <a href="https://mail.naver.com" class="mail-btn mb-naver">
-    <svg width="11" height="12" viewBox="0 0 24 24" fill="white"><path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg>
-    Naver Mail
-  </a>
-  <a href="https://mail.kangwon.ac.kr" class="mail-btn mb-knu">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-    KNU Mail
-  </a>
-</div>
+<!-- 퀵액세스: 펼치기 버튼 + 5개 블럭 -->
+<div class="quick-area">
+  <!-- 펼치기 토글 버튼 (화살표만) -->
+  <button class="quick-toggle" id="quickBtn" onclick="toggleQuick()" aria-label="펼치기">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="6 9 12 15 18 9"/>
+    </svg>
+  </button>
+  <!-- 5개 원형 블럭 그리드 -->
+  <div class="quick-grid" id="quickGrid">
+    <!-- 1. Daily News (N) -->
+    <a href="https://jaealee.com/news" class="q-circle q-news" title="Daily News">N</a>
+    <!-- 2. Project (P) -->
+    <a href="https://jaealee.com/projects" class="q-circle q-proj" title="Project">P</a>
+    <!-- 3. Drive (D) -->
+    <a href="https://jaealee.com/drive" class="q-circle q-drive" title="Drive">D</a>
+    <!-- 4. 빈칸 (추후 채울 예정) -->
+    <div class="q-empty">+</div>
+    <!-- 5. 빈칸 (추후 채울 예정) -->
+    <div class="q-empty">+</div>
+  </div>
 </div>
 
 <!-- 카테고리 가로 배치 -->
@@ -552,11 +557,11 @@ body.dark .wx-thunder {background:linear-gradient(135deg,#1a0a2e,#0f0820);color:
       </div>
       <div class="s1-row">
         <a href="https://cse.kangwon.ac.kr" class="s1 c-neutral"><span class="t-name">컴퓨터공학과</span></a>
-        <a href="https://translate.google.com" class="s1 c-neutral"><span class="t-name">Google 번역</span></a>
+        <a href="https://translate.google.com" class="s1 c-neutral"><span class="t-name">Google번역</span></a>
       </div>
       <div class="s1-row">
-        <a href="https://en.dict.naver.com" class="s1 c-neutral"><span class="t-name">네이버 사전</span></a>
-        <a href="https://dic.daum.net/index.do?dic=eng" class="s1 c-neutral"><span class="t-name">다음 사전</span></a>
+        <a href="https://en.dict.naver.com" class="s1 c-neutral"><span class="t-name">네이버사전</span></a>
+        <a href="https://dic.daum.net/index.do?dic=eng" class="s1 c-neutral"><span class="t-name">다음사전</span></a>
       </div>
     </div>
   </div>
@@ -678,13 +683,6 @@ body.dark .wx-thunder {background:linear-gradient(135deg,#1a0a2e,#0f0820);color:
       <a href="https://www.kyobobook.co.kr" class="tile s2 fill c-kyobo">
         <span class="t-name">교보문고</span>
       </a>
-      <div class="s1-row">
-        <a href="https://maps.google.com" class="s1 c-neutral"><span class="t-name">Google Maps</span></a>
-        <a href="https://map.naver.com" class="s1 c-neutral"><span class="t-name">네이버 지도</span></a>
-      </div>
-      <div class="s1-row">
-        <a href="https://cafe.naver.com" class="s1 c-neutral"><span class="t-name">네이버 카페</span></a>
-      </div>
     </div>
   </div>
 
@@ -699,17 +697,6 @@ body.dark .wx-thunder {background:linear-gradient(135deg,#1a0a2e,#0f0820);color:
   </div>
   <div class="wx-divider"></div>
   <div class="wx-hourly" id="wxHourly">
-    <!-- JS로 채워짐 -->
-  </div>
-  <div class="wx-sun">
-    <div class="wx-sun-time" id="wxSunTime">—:——</div>
-    <div class="wx-sun-lbl" id="wxSunLbl">일출</div>
-  </div>
-  <div class="wx-precip">
-    <div class="wx-precip-val" id="wxPrecip">— mm</div>
-    <div class="wx-precip-lbl">금일 강수량</div>
-  </div>
-  <div class="wx-rain-chart" id="wxRainChart">
     <!-- JS로 채워짐 -->
   </div>
 </div>
@@ -755,21 +742,24 @@ async function fetchWeather(){
     const res = await fetch(
       'https://api.open-meteo.com/v1/forecast' +
       '?latitude=37.8813&longitude=127.7298' +
-      '&current=temperature_2m,weather_code' +
-      '&hourly=temperature_2m,weather_code,precipitation_probability' +
-      '&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,sunrise,sunset' +
+      '&current=temperature_2m,weathercode' +
+      '&hourly=temperature_2m,weathercode' +
+      '&daily=temperature_2m_max,temperature_2m_min' +
       '&timezone=Asia%2FSeoul&forecast_days=1'
     );
     const d = await res.json();
 
-    /* 현재 날씨 - weather_code 또는 weathercode 둘 다 대응 */
+    /* 현재 날씨 */
     const temp = Math.round(d.current.temperature_2m);
-    const code = d.current.weather_code ?? d.current.weathercode ?? 0;
+    const code = d.current.weathercode;
     const w    = wxInfo(code);
 
     /* 최저/최고 */
     const tmax = Math.round(d.daily.temperature_2m_max[0]);
     const tmin = Math.round(d.daily.temperature_2m_min[0]);
+
+    /* 헤더 작은 텍스트 */
+    document.getElementById('weather').textContent = `${w.icon} ${temp}°C`;
 
     /* 배너 */
     const banner = document.getElementById('wxBanner');
@@ -779,32 +769,12 @@ async function fetchWeather(){
     document.getElementById('wxDesc').textContent  = w.desc;
     document.getElementById('wxMinMax').textContent = `최저 ${tmin}° / 최고 ${tmax}°　춘천`;
 
-
-    /* 일출/일몰 - 현재 시간 기준으로 표시 */
-    const sunriseStr = d.daily.sunrise?.[0]; /* "2026-04-15T05:32" 형식 */
-    const sunsetStr  = d.daily.sunset?.[0];
-    if(sunriseStr && sunsetStr){
-      const sunrise = new Date(sunriseStr);
-      const sunset  = new Date(sunsetStr);
-      const nowTime = new Date();
-      const fmt = t => `${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`;
-      /* 일출 전 or 일몰 후 → 일출 표시 / 일출 후 일몰 전 → 일몰 표시 */
-      const showSunset = nowTime >= sunrise && nowTime < sunset;
-      document.getElementById('wxSunTime').textContent = showSunset ? fmt(sunset) : fmt(sunrise);
-      document.getElementById('wxSunLbl').textContent  = showSunset ? '일몰' : '일출';
-    }
-
-    /* 금일 강수량 */
-    const precip = d.daily.precipitation_sum?.[0] ?? 0;
-    document.getElementById('wxPrecip').textContent = precip.toFixed(1) + ' mm';
-
-    /* 시간대별 (현재 시각부터 8칸) */
+    /* 시간대별 (현재 시각부터 8시간) */
     const now    = new Date();
     const nowH   = now.getHours();
-    const times  = d.hourly.time;
+    const times  = d.hourly.time;       /* "2026-04-15T00:00" 형식 */
     const hTemps = d.hourly.temperature_2m;
-    const hCodes  = d.hourly.weather_code ?? d.hourly.weathercode;
-    const hRain   = d.hourly.precipitation_probability ?? [];
+    const hCodes = d.hourly.weathercode;
 
     /* 현재 시간 인덱스 찾기 */
     let startIdx = times.findIndex(t => parseInt(t.split('T')[1]) >= nowH);
@@ -833,27 +803,9 @@ async function fetchWeather(){
       hourlyEl.appendChild(el);
     }
 
-    /* 강수확률 바 그래프 (2시간 간격 8칸) */
-    const rainEl = document.getElementById('wxRainChart');
-    rainEl.innerHTML = '';
-    for(let i = 0; i < 8; i++){
-      const idx  = startIdx + i * 2;
-      if(idx >= times.length) break;
-      const hh   = parseInt(times[idx].split('T')[1]);
-      const pct  = hRain[idx] ?? 0;
-
-      const wrap = document.createElement('div');
-      wrap.className = 'wx-bar-wrap';
-      wrap.innerHTML = `
-        <div class="wx-bar-pct">${pct}%</div>
-        <div class="wx-bar-bg"><div class="wx-bar-fill" style="height:${pct}%"></div></div>
-        <div class="wx-bar-time">${String(hh).padStart(2,'0')}시</div>
-      `;
-      rainEl.appendChild(wrap);
-    }
-
   } catch(e){
-    console.error('날씨 오류:', e);
+    document.getElementById('weather').textContent = '';
+    document.querySelector('.weather-sep').textContent = '';
   }
 }
 fetchWeather();
@@ -864,18 +816,39 @@ function toggleDark(){
   const isDark = document.body.classList.toggle('dark');
   localStorage.setItem('dark', isDark);
 }
-/* 저장값 있으면 그걸 쓰고, 없으면 시스템 설정 따름 */
-const saved = localStorage.getItem('dark');
-if(saved === 'true' || (saved === null && window.matchMedia('(prefers-color-scheme: dark)').matches)){
+if(localStorage.getItem('dark') === 'true'){
   document.body.classList.add('dark');
 }
 
 function go(e){
-  const q = document.getElementById(e==='g'?'gIn':'nIn').value.trim();
-  if(!q) return;
-  window.location.href = e==='g'
-    ? `https://www.google.com/search?q=${encodeURIComponent(q)}`
-    : `https://search.naver.com/search.naver?query=${encodeURIComponent(q)}`;
+  // 검색 엔진별 input id와 검색 URL 분기 처리
+  let inputId, url;
+  if(e === 'g'){
+    inputId = 'gIn';
+    url = q => `https://www.google.com/search?q=${encodeURIComponent(q)}`;
+  } else if(e === 'n'){
+    inputId = 'nIn';
+    url = q => `https://search.naver.com/search.naver?query=${encodeURIComponent(q)}`;
+  } else if(e === 'y'){
+    // YouTube 검색
+    inputId = 'yIn';
+    url = q => `https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`;
+  } else {
+    return;
+  }
+
+  const q = document.getElementById(inputId).value.trim();
+  if(!q) return; // 빈 검색어는 무시
+  window.location.href = url(q);
+}
+
+/* ── 퀵액세스 펼치기/접기 토글 ── */
+function toggleQuick(){
+  const grid = document.getElementById('quickGrid');
+  const btn  = document.getElementById('quickBtn');
+  // open 클래스를 토글하면 CSS transition으로 자연스럽게 펼쳐짐/접힘
+  grid.classList.toggle('open');
+  btn.classList.toggle('open');
 }
 </script>
 </body>
