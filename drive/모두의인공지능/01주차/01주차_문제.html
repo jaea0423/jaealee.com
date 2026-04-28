@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>모두의 인공지능 - 1주차 문제집</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;600;700&family=Nanum+Myeongjo:wght@400;700;800&display=swap');
+  :root {
+    --bg:#faf6ef; --paper:#fffdf7; --ink:#2c2418; --ink-light:#5b5040;
+    --accent:#8b4513; --accent-soft:#c69b7b; --rule:#d4c8b0; --highlight:#f4e4c1;
+    --quote-bg:#f7efde; --def-bg:#fff8e8; --def-border:#b08654;
+    --exam-bg:#fcecec; --exam-border:#b54848;
+    --ans-bg:#eaf3ec; --ans-border:#5a8a5e;
+  }
+  * { box-sizing:border-box; }
+  html, body { margin:0; padding:0; background:var(--bg); color:var(--ink);
+    font-family:'Noto Serif KR','Nanum Myeongjo',serif; line-height:1.85; font-size:17px; }
+  .page { max-width:880px; margin:0 auto; padding:60px 50px 80px; background:var(--paper);
+    box-shadow:0 0 30px rgba(80,60,30,.08); min-height:100vh; }
+  .cover { text-align:center; padding:80px 0 50px; border-bottom:3px double var(--accent); margin-bottom:30px; }
+  .cover .series { font-size:14px; letter-spacing:6px; color:var(--accent); margin-bottom:20px; }
+  .cover h1 { font-family:'Nanum Myeongjo',serif; font-size:42px; font-weight:800; margin:10px 0; line-height:1.3; }
+  .cover .subtitle { font-size:22px; color:var(--ink-light); margin-top:10px; font-weight:300; }
+  .cover .doctype { display:inline-block; margin-top:30px; padding:8px 24px; border:1px solid var(--accent);
+    border-radius:2px; font-size:16px; color:var(--accent); letter-spacing:4px; }
+  .cover .meta { margin-top:20px; font-size:14px; color:var(--ink-light); }
+
+  /* 컨트롤 바 */
+  .controls { background:#fff8e8; border:1px solid var(--def-border); padding:14px 20px;
+    margin:20px 0 30px; border-radius:6px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+    position:sticky; top:0; z-index:10; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
+  .controls .lab { font-weight:700; color:var(--accent); margin-right:10px; font-family:sans-serif; }
+  .controls button { background:var(--accent); color:#fff; border:none; padding:8px 16px; border-radius:4px;
+    cursor:pointer; font-size:14px; font-family:sans-serif; }
+  .controls button:hover { background:var(--ink); }
+  .controls .hint { color:var(--ink-light); font-size:13px; margin-left:auto; }
+
+  h2.chapter { font-family:'Nanum Myeongjo',serif; font-size:30px; color:var(--accent);
+    border-bottom:2px solid var(--accent); padding-bottom:10px; margin-top:50px; margin-bottom:25px; }
+  h2.chapter .badge { display:inline-block; background:var(--accent); color:#fff; padding:3px 14px;
+    border-radius:4px; font-size:16px; margin-right:12px; vertical-align:middle; font-family:sans-serif; }
+
+  .question {
+    background:#fff; border:1px solid var(--rule); border-left:5px solid var(--accent-soft);
+    padding:18px 22px; margin:18px 0; border-radius:4px;
+  }
+  .qhead { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .qhead .qno { font-weight:700; color:var(--accent); font-family:sans-serif; font-size:14px; letter-spacing:1px; }
+  .qhead .qtype { font-size:12px; padding:2px 8px; background:var(--highlight); border-radius:3px;
+    color:var(--ink-light); font-family:sans-serif; }
+  .qbody { font-size:17px; }
+  .options { margin:10px 0 0 20px; padding:0; list-style:none; }
+  .options li { padding:5px 0; }
+  .options .opt-num { font-weight:700; color:var(--accent); margin-right:6px; }
+  .answer-area {
+    background:#fafaf3; border:1px dashed var(--rule); border-radius:4px; padding:10px 14px;
+    margin:10px 0 0; min-height:50px; color:#bbb; font-size:14px; font-style:italic;
+  }
+  .answer-area::before { content:"(답안 작성 영역 — 인쇄용)"; }
+
+  .toggle-btn {
+    margin-top:10px; background:transparent; border:1px solid var(--ans-border); color:var(--ans-border);
+    padding:5px 12px; border-radius:4px; font-size:13px; cursor:pointer; font-family:sans-serif;
+  }
+  .toggle-btn:hover { background:var(--ans-border); color:#fff; }
+  .answer-box {
+    display:none; background:var(--ans-bg); border-left:4px solid var(--ans-border);
+    padding:12px 18px; margin-top:10px; border-radius:4px;
+  }
+  .answer-box.show { display:block; }
+  .answer-box .alabel { font-weight:700; color:var(--ans-border); display:block; margin-bottom:6px;
+    font-size:14px; letter-spacing:1px; font-family:sans-serif; }
+  .answer-box strong { color:var(--accent); background:#fff5d8; padding:0 4px; border-radius:2px; }
+  .answer-box .keyw { background:#fff5d8; padding:1px 6px; border-radius:3px; color:var(--accent); font-weight:600; }
+
+  .nav-links { margin-top:60px; padding:30px; border-top:3px double var(--accent); text-align:center; }
+  .nav-links a { display:inline-block; margin:0 10px; padding:10px 22px; background:var(--accent); color:#fff;
+    text-decoration:none; border-radius:4px; font-size:15px; font-family:sans-serif; }
+  .nav-links a:hover { background:var(--ink); }
+
+  @media print {
+    body { background:#fff; }
+    .page { box-shadow:none; padding:20px; }
+    .controls { display:none; }
+    .toggle-btn { display:none; }
+    .answer-box { display:block !important; page-break-inside:avoid; }
+    .question { page-break-inside:avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="cover">
+    <div class="series">모두의 인공지능 · 강태원 교수</div>
+    <h1>1주차 문제집</h1>
+    <div class="subtitle">인공지능이 인문학</div>
+    <div class="doctype">문 제 집</div>
+    <div class="meta">객관식 5 · 주관식 10 · 서술형 5</div>
+  </div>
+
+  <div class="controls">
+    <span class="lab">정답 보기</span>
+    <button onclick="showAll()">전체 보기</button>
+    <button onclick="hideAll()">전체 가리기</button>
+    <span class="hint">각 문항 옆 [정답 보기] 버튼으로 개별 토글 가능 · 인쇄 시 자동 표시</span>
+  </div>
+
+  <!-- ============ 객관식 ============ -->
+  <h2 class="chapter"><span class="badge">객관식</span>5문항</h2>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 1</span><span class="qtype">객관식</span></div>
+    <div class="qbody">Cambridge 사전이 정의한 지능(Intelligence)의 4요소가 <strong>아닌</strong> 것은?</div>
+    <ul class="options">
+      <li><span class="opt-num">①</span> Learn (배움)</li>
+      <li><span class="opt-num">②</span> Understand (이해)</li>
+      <li><span class="opt-num">③</span> Memorize (암기)</li>
+      <li><span class="opt-num">④</span> Make judgments based on reason (합리적 판단)</li>
+      <li><span class="opt-num">⑤</span> Have opinions based on reason (자신의 의견)</li>
+    </ul>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      <strong>③ Memorize (암기)</strong><br>
+      <span class="alabel">해설</span>
+      Cambridge 사전 정의는 <span class="keyw">"The ability to learn, understand, and make judgments or have opinions that are based on reason."</span>
+      따라서 <span class="keyw">Learn / Understand / Make judgments / Have opinions</span>의 4가지가 핵심이며, 마지막 두 가지는 <span class="keyw">based on reason(합리적 추론에 기반)</span>이라는 단서가 붙는다. 단순 암기는 지능의 정의에 포함되지 않는다.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 2</span><span class="qtype">객관식</span></div>
+    <div class="qbody">"AI가 인간을 멸종시킬지 모른다"라는 문장에서 사용된 <strong>인공지능</strong>의 의미로 가장 적절한 것은?</div>
+    <ul class="options">
+      <li><span class="opt-num">①</span> 학문 분야로서의 인공지능</li>
+      <li><span class="opt-num">②</span> 기술로서의 인공지능</li>
+      <li><span class="opt-num">③</span> 시스템(결과물)으로서의 인공지능</li>
+      <li><span class="opt-num">④</span> 알고리즘으로서의 인공지능</li>
+      <li><span class="opt-num">⑤</span> 데이터로서의 인공지능</li>
+    </ul>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      <strong>③ 시스템(결과물)으로서의 인공지능</strong><br>
+      <span class="alabel">해설</span>
+      인공지능은 맥락에 따라 <span class="keyw">① 학문 / ② 기술 / ③ 시스템</span> 세 가지 의미로 쓰인다.
+      "인간을 멸종시킬지 모른다"고 할 때 인공지능은 학문도 기술도 아닌, 그 기술이 적용된 <span class="keyw">결과물(시스템)</span>이 자율적으로 행동할 가능성을 의미한다.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 3</span><span class="qtype">객관식</span></div>
+    <div class="qbody">"세상의 딱딱함과 부드러움" 비교에서 <strong>잘못 짝지어진</strong> 것은?</div>
+    <ul class="options">
+      <li><span class="opt-num">①</span> 딱딱함 — How many / 부드러움 — How much</li>
+      <li><span class="opt-num">②</span> 딱딱함 — 이산적(Discrete) / 부드러움 — 연속적(Continuous)</li>
+      <li><span class="opt-num">③</span> 딱딱함 — 산술 / 부드러움 — 기하학</li>
+      <li><span class="opt-num">④</span> 딱딱함 — 우뇌 / 부드러움 — 좌뇌</li>
+      <li><span class="opt-num">⑤</span> 딱딱함 — 디지털 / 부드러움 — 아날로그</li>
+    </ul>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      <strong>④ 딱딱함 — 우뇌 / 부드러움 — 좌뇌</strong> (잘못된 짝)<br>
+      <span class="alabel">해설</span>
+      좌뇌 ↔ 우뇌가 반대로 되어 있다. 올바른 매핑은 <span class="keyw">딱딱함 = 좌뇌 (논리·수)</span>, <span class="keyw">부드러움 = 우뇌 (공간·이미지)</span>이다.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 4</span><span class="qtype">객관식</span></div>
+    <div class="qbody">톰 미첼(Tom Mitchell)의 학습 정의에서 <strong>E·T·P</strong>의 의미로 옳은 것은?</div>
+    <ul class="options">
+      <li><span class="opt-num">①</span> E = Evaluation, T = Time, P = Process</li>
+      <li><span class="opt-num">②</span> E = Experience, T = Task, P = Performance</li>
+      <li><span class="opt-num">③</span> E = Event, T = Train, P = Predict</li>
+      <li><span class="opt-num">④</span> E = Error, T = Target, P = Probability</li>
+      <li><span class="opt-num">⑤</span> E = Expert, T = Theory, P = Program</li>
+    </ul>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      <strong>② E = Experience, T = Task, P = Performance</strong><br>
+      <span class="alabel">해설</span>
+      "어떤 작업 <span class="keyw">T(Task)</span>에 대해 성능 측정 <span class="keyw">P(Performance)</span>가 경험 <span class="keyw">E(Experience)</span>에 의해 개선되면 그 프로그램은 학습한 것이다." 가장 빈출되는 정의이므로 정확히 외울 것.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 5</span><span class="qtype">객관식</span></div>
+    <div class="qbody">허먼(Herrmann)의 두뇌우성 모델에서 <strong>D 영역(우상)</strong>의 특징으로 가장 적절한 것은?</div>
+    <ul class="options">
+      <li><span class="opt-num">①</span> 논리·계산·분석</li>
+      <li><span class="opt-num">②</span> 계획·조직·통제·규칙</li>
+      <li><span class="opt-num">③</span> 음악·감정·관계</li>
+      <li><span class="opt-num">④</span> 시각·창의·도전·리스크</li>
+      <li><span class="opt-num">⑤</span> 본능적 반응</li>
+    </ul>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      <strong>④ 시각·창의·도전·리스크</strong><br>
+      <span class="alabel">해설</span>
+      허먼 4영역(반시계 방향): <span class="keyw">A(좌상)=논리</span>, <span class="keyw">B(좌하)=계획</span>, <span class="keyw">C(우하)=감정/관계</span>, <span class="keyw">D(우상)=시각/창의</span>. ①은 A, ②는 B, ③은 C에 해당한다.
+    </div>
+  </div>
+
+  <!-- ============ 주관식 ============ -->
+  <h2 class="chapter"><span class="badge">주관식</span>10문항</h2>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 6</span><span class="qtype">주관식</span></div>
+    <div class="qbody">인공지능을 한마디로 정의하면 무엇인가? (한국어로)</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      <strong>"만든 지능"</strong> (사람이 만든 지능)<br>
+      <span class="alabel">해설</span>
+      "인공"(Artificial) = 사람이 만든 것 + "지능"(Intelligence) = 배우고 판단하는 능력. 둘을 합치면 <span class="keyw">"만든 지능"</span>.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 7</span><span class="qtype">주관식</span></div>
+    <div class="qbody">"Artificial(인공)"의 사전적 정의 두 가지 핵심 요소를 한국어로 쓰시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      ① <strong>사람이 만든 것</strong> (Made by people)<br>
+      ② <strong>자연에 있는 것을 모방한 것</strong> (Copy of something natural)<br>
+      <span class="alabel">해설</span>
+      두 번째 조건이 핵심이다. 자연을 모방했기 때문에 <span class="keyw">자연에 있는 인간의 지능을 모방한 것</span>이 인공지능이며, 이것이 "AI = 인문학"의 출발점이다.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 8</span><span class="qtype">주관식</span></div>
+    <div class="qbody">지능 컴퓨터 시스템이 가져야 할 4가지 능력을 쓰시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      ① <strong>언어 이해</strong>(Understanding language)<br>
+      ② <strong>그림(상황) 인식</strong>(Recognize picture)<br>
+      ③ <strong>문제 해결</strong>(Solve problems)<br>
+      ④ <strong>학습</strong>(Learn)<br>
+      <span class="alabel">해설</span>
+      강의 2차시 퀴즈에 그대로 등장한 빈출 항목.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 9</span><span class="qtype">주관식</span></div>
+    <div class="qbody">"내 전공은 인공지능이다 / 감마Go라는 인공지능 프로그램 / 인공지능이 여기 두는 게 좋다고 한다." 각 문장에서 인공지능의 의미를 순서대로 쓰시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      ① <strong>학문 분야</strong> (Study)<br>
+      ② <strong>기술</strong> (Computer technology)<br>
+      ③ <strong>시스템</strong> (결과물 — 그 기술이 적용된 프로그램 자체)<br>
+      <span class="alabel">해설</span>
+      한 문장 안에 같은 단어가 세 번 나오면서 매번 다른 의미로 쓰이는 빈출 예시.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 10</span><span class="qtype">주관식</span></div>
+    <div class="qbody">톰 미첼의 학습 정의에서 E·T·P가 각각 무엇의 약자인지 영어로 쓰시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      <strong>E = Experience / T = Task / P = Performance</strong>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 11</span><span class="qtype">주관식</span></div>
+    <div class="qbody">세상의 "딱딱함(Hard)"에 해당하는 키워드 5가지 이상을 쓰시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답 (택 5)</span>
+      <strong>How many</strong>, <strong>수(Number)</strong>, <strong>디지털(Digital)</strong>, <strong>이산적(Discrete)</strong>, <strong>분리</strong>, <strong>산술(Arithmetic)</strong>, <strong>여러 개(독립)</strong>, <strong>좌뇌</strong>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 12</span><span class="qtype">주관식</span></div>
+    <div class="qbody">사람의 뇌를 진화 순서에 따라 안쪽부터 3층으로 쓰시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      ① <strong>파충류의 뇌</strong> (Reptilian Brain) — 본능<br>
+      ② <strong>포유류의 뇌 / 변연계</strong> (Limbic System) — 감정의 뇌<br>
+      ③ <strong>사람의 뇌 / 신피질</strong> (Neocortex) — 이성의 뇌
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 13</span><span class="qtype">주관식</span></div>
+    <div class="qbody">허먼의 두뇌우성 모델 4영역(A·B·C·D) 위치와 핵심 키워드를 쓰시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      <strong>A (좌상)</strong> — 논리·계산·분석 (분석적)<br>
+      <strong>B (좌하)</strong> — 계획·조직·통제·규칙 (관리적)<br>
+      <strong>C (우하)</strong> — 음악·감정·관계·사람 (대인적)<br>
+      <strong>D (우상)</strong> — 시각·창의·도전·리스크 (상상적)<br>
+      <span class="alabel">해설</span>
+      <span class="keyw">반시계 방향</span>(좌상→좌하→우하→우상)으로 A·B·C·D.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 14</span><span class="qtype">주관식</span></div>
+    <div class="qbody">강의에서 "지능에서 가장 강조되는 능력"으로 꼽은 것은 무엇인가?</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      <strong>학습 (Learn) — 배우는 능력</strong><br>
+      <span class="alabel">해설</span>
+      강아지 용호가 돌의 적당한 크기를 학습한 사례, 톰 미첼의 학습 정의 등 강의 전체가 학습 능력을 핵심으로 강조한다.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 15</span><span class="qtype">주관식</span></div>
+    <div class="qbody">강태원 교수가 정의한 "사람이 배운다는 것"의 의미를 한 단어로 쓰시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      <strong>"달라지는 것"</strong><br>
+      <span class="alabel">해설</span>
+      "내가 4년 다닌 후에도 입학 때와 지적으로 달라지지 않으면 배운 게 없는 것이다." — 톰 미첼의 컴퓨터 학습 정의(경험으로 성능이 달라짐)와 같은 본질을 가리킨다.
+    </div>
+  </div>
+
+  <!-- ============ 서술형 ============ -->
+  <h2 class="chapter"><span class="badge">서술형</span>5문항</h2>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 16</span><span class="qtype">서술형</span></div>
+    <div class="qbody">"인공지능"이 학문 / 기술 / 시스템 세 가지 의미로 쓰이는 점을, 직접 만든 한 문장 예시(인공지능이 3번 등장)를 들어 설명하시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">모범답안</span>
+      예시 문장: "<em>나는 대학에서 <strong>인공지능</strong>을 전공하면서 최근 추천 알고리즘에 <strong>인공지능</strong> 기술을 적용한 프로그램을 만들었는데, 그 <strong>인공지능</strong>이 내가 좋아할 법한 영화를 정확히 골라 추천했다.</em>"<br><br>
+      <strong>분석</strong> — 첫 번째는 ① <span class="keyw">학문 분야</span>(전공), 두 번째는 ② <span class="keyw">기술</span>(프로그램에 적용된 컴퓨터 기술), 세 번째는 ③ <span class="keyw">시스템</span>(그 기술이 만든 결과물 — 추천 프로그램 자체)을 의미한다. 이렇게 같은 단어가 맥락에 따라 다른 의미를 갖는다.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 17</span><span class="qtype">서술형</span></div>
+    <div class="qbody">톰 미첼(Tom Mitchell)의 학습 정의를 영어 원문으로 쓰고, 한국어로 풀어 쓴 뒤, 게임 프로그램을 예로 E·T·P를 각각 설명하시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">모범답안</span>
+      <strong>영어 원문</strong>: <em>"A computer program is said to learn from experience E with respect to some class of tasks T and performance measure P, if its performance at tasks in T, as measured by P, improves with experience E."</em><br><br>
+      <strong>한국어 풀이</strong>: 어떤 작업 <span class="keyw">T</span>의 성능을 측정 기준 <span class="keyw">P</span>로 평가할 때, 경험 <span class="keyw">E</span>가 쌓일수록 P가 개선되면 그 프로그램은 학습 능력을 가진 것이다.<br><br>
+      <strong>게임 프로그램의 예</strong>:
+      <ul>
+        <li><strong>E (경험)</strong> = 사용자와의 게임 기록·대국 결과</li>
+        <li><strong>T (작업)</strong> = 게임에서 승리하기</li>
+        <li><strong>P (성능)</strong> = 승률 또는 점수</li>
+      </ul>
+      처음 샀을 때보다 일주일 사용 후 게임 프로그램의 승률이 높아졌고, 그 변화가 사전에 코딩된 if-else가 아니라 사용자와의 상호작용으로 발생했다면, 이 프로그램은 학습 능력을 가진 것이다.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 18</span><span class="qtype">서술형</span></div>
+    <div class="qbody">"세상의 딱딱함과 부드러움"이라는 비유를 사용해, 사람의 뇌가 좌·우뇌로 기능을 나누어 진화한 이유를 설명하시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">모범답안</span>
+      자연 세계는 <span class="keyw">셀 수 있는 것(딱딱함, 이산적, How many)</span>과 <span class="keyw">셀 수 없는 것(부드러움, 연속적, How much)</span>이 공존한다. 두 속성은 성격이 매우 달라서 하나의 처리 방식으로 모두 다루는 것은 비효율적이다. 따라서 "딱딱한 것은 너가, 부드러운 것은 내가"처럼 <span class="keyw">기능을 나누어 처리</span>하는 것이 가장 효율적이다.<br><br>
+      이러한 진화의 결과 사람의 뇌는 <span class="keyw">좌뇌(딱딱함 — 논리·수)</span>와 <span class="keyw">우뇌(부드러움 — 공간·이미지)</span>로 기능이 분화되었으며, 이렇게 함으로써 자연에서 살아남는 데 더 효율적인 처리(에너지 절약, 생산성 증가)를 할 수 있게 되었다.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 19</span><span class="qtype">서술형</span></div>
+    <div class="qbody">강태원 교수가 "인공지능이 인문학(Humanities)이다"라고 주장하는 두 가지 이유를, 과거와 오늘날의 인공지능 정의 변화와 함께 설명하시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">모범답안</span>
+      <strong>이유 ①</strong>: 인공(Artificial)이라는 단어 자체가 <span class="keyw">자연에 있는 것을 모방하여 사람이 만드는 것</span>이라는 뜻이다. 따라서 인공지능은 자연에 있는 <span class="keyw">인간의 지능을 모방</span>하는 학문이며, 인간을 모르고는 인간 같은 것을 만들 수 없다. 그래서 인간(인문학적) 이해가 필수다.<br><br>
+      <strong>이유 ②</strong>: 시대별 정의가 바뀌었다.
+      <ul>
+        <li><strong>과거</strong>: "사람이 더 잘하던 일을 컴퓨터도 잘할 수 있게 하는 분야" — 좌뇌 영역(논리·계산)이 주된 대상이었다.</li>
+        <li><strong>오늘</strong>: 생성 AI(Generative AI)가 등장하면서 음악·그림·감정 같은 <span class="keyw">우뇌 영역(인간만의 영역)</span>까지 컴퓨터가 다루게 되었다. 이런 시대에는 사람의 감정·관계·예술에 대한 이해, 곧 <span class="keyw">인문학적 통찰</span>이 더욱 중요해진다.</li>
+      </ul>
+      따라서 인공지능 연구에는 공학적 지식뿐 아니라 인문학적 지식이 필수적이며, 이런 의미에서 "인공지능이 인문학"이다. 노벨상 수상자 힌튼(Geoffrey Hinton)이 AI를 우려하는 이유도 같은 맥락 — 인간을 잘 이해해야 안전한 AI를 만들 수 있기 때문이다.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 20</span><span class="qtype">서술형</span></div>
+    <div class="qbody">허먼(Herrmann)의 두뇌우성 모델 4영역을 두 축(좌·우 / 위·아래)을 기준으로 설명하고, 각 영역의 키워드를 제시하시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">모범답안</span>
+      허먼 모델은 두 개의 축으로 뇌를 4영역으로 나눈다.
+      <ul>
+        <li><strong>좌·우 축</strong>: 좌뇌 = <span class="keyw">딱딱함</span>(논리·수), 우뇌 = <span class="keyw">부드러움</span>(공간·이미지)</li>
+        <li><strong>위·아래 축</strong>: 위 = <span class="keyw">신피질(이성)</span>, 아래 = <span class="keyw">변연계(감정)</span></li>
+      </ul>
+      <strong>4영역</strong>(반시계 방향):
+      <ul>
+        <li><strong>A (좌상, 딱딱함+이성)</strong> — 논리·계산·분석·기술 (분석적, Analytical)</li>
+        <li><strong>B (좌하, 딱딱함+감정)</strong> — 계획·조직·통제·규칙·절차 (관리적, Sequential)</li>
+        <li><strong>C (우하, 부드러움+감정)</strong> — 음악·감정·관계·사람 (대인적, Interpersonal)</li>
+        <li><strong>D (우상, 부드러움+이성)</strong> — 시각·창의·도전·리스크 (상상적, Imaginative)</li>
+      </ul>
+      또한 한 영역만 발달한 것보다 <span class="keyw">4영역의 균형 발달</span>이 중요하며, 한쪽 영역이 손상되어도 다른 영역이 그 기능을 나누어 맡는 <span class="keyw">뇌의 가소성(Plasticity)</span>이 있어 영역 분리는 고정·불변이 아니다.
+    </div>
+  </div>
+
+  <div class="nav-links">
+    <a href="01주차_교과서.html">📚 교과서</a>
+    <a href="01주차_학습서.html">📖 학습서</a>
+  </div>
+
+</div>
+
+<script>
+  function toggleAns(btn) {
+    const box = btn.nextElementSibling;
+    box.classList.toggle('show');
+    btn.textContent = box.classList.contains('show') ? '정답 가리기' : '정답 보기';
+  }
+  function showAll() {
+    document.querySelectorAll('.answer-box').forEach(b => b.classList.add('show'));
+    document.querySelectorAll('.toggle-btn').forEach(b => b.textContent = '정답 가리기');
+  }
+  function hideAll() {
+    document.querySelectorAll('.answer-box').forEach(b => b.classList.remove('show'));
+    document.querySelectorAll('.toggle-btn').forEach(b => b.textContent = '정답 보기');
+  }
+</script>
+</body>
+</html>
