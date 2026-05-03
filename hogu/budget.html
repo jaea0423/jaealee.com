@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=420, initial-scale=1.0, user-scalable=yes">
+    <title>예산 | 호구 넷의 제주 투어</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Jua&family=Black+Han+Sans&family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* ===== 기본 리셋 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            /* KB국민은행 컬러 팔레트 */
+            --kb-yellow:      #FFCC00;   /* KB 메인 노랑 */
+            --kb-yellow-deep: #F5BC00;   /* 진한 노랑 (강조) */
+            --kb-yellow-soft: #FFE680;   /* 연한 노랑 (배경) */
+            --kb-yellow-bg:   #FFF9DD;   /* 아주 연한 노랑 */
+            --kb-black:       #1A1A1A;   /* KB 검정 */
+            --kb-gray-dark:   #3D3D3D;   /* 어두운 회색 */
+            --kb-gray:        #6E6E6E;   /* 중간 회색 */
+            --kb-gray-light:  #E8E8E8;   /* 밝은 회색 (구분선) */
+            --kb-bg:          #F7F7F5;   /* 페이지 배경 */
+            --kb-white:       #FFFFFF;
+            --text:           #1A1A1A;
+            --text-mute:      #8E8E8E;
+            --green:          #2BAA5F;   /* 결제 완료 표시 */
+            --red:            #E74C3C;   /* 지출 표시 */
+        }
+
+        html, body {
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        body {
+            font-family: 'Jua', sans-serif;
+            background: var(--kb-bg);
+            color: var(--text);
+            max-width: 420px;
+            margin: 0 auto;
+            min-height: 100vh;
+            box-shadow: 0 0 40px rgba(0,0,0,0.1);
+            padding-bottom: 50px;
+            position: relative;
+            overflow-x: hidden;
+            line-height: 1.5;
+        }
+
+        /* ===== 상단 바 (KB 검정) ===== */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            padding: 16px 18px;
+            background: var(--kb-black);
+            color: var(--kb-yellow);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border-bottom: 3px solid var(--kb-yellow);
+        }
+
+        .back-btn {
+            background: rgba(255, 204, 0, 0.15);
+            border: 1px solid var(--kb-yellow);
+            color: var(--kb-yellow);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .back-btn:active {
+            background: var(--kb-yellow);
+            color: var(--kb-black);
+        }
+
+        .top-title {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 22px;
+            margin-left: 12px;
+            letter-spacing: 2px;
+            color: #fff;
+        }
+
+        .top-title .emoji {
+            font-size: 20px;
+            margin-left: 4px;
+        }
+
+        /* ===== 메인 카드 (통장 표지 느낌) ===== */
+        .main-card {
+            margin: 20px 16px 0;
+            background: linear-gradient(135deg, var(--kb-yellow) 0%, var(--kb-yellow-deep) 100%);
+            border-radius: 22px;
+            padding: 28px 26px 24px;
+            color: var(--kb-black);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(245, 188, 0, 0.4);
+        }
+
+        /* 배경 KB 로고 느낌 */
+        .main-card::before {
+            content: '★';
+            position: absolute;
+            font-size: 200px;
+            opacity: 0.08;
+            top: -40px;
+            right: -30px;
+            color: var(--kb-black);
+        }
+
+        .main-card-label {
+            font-family: 'Inter', sans-serif;
+            font-size: 11px;
+            letter-spacing: 4px;
+            font-weight: 700;
+            color: var(--kb-black);
+            opacity: 0.7;
+            margin-bottom: 4px;
+        }
+
+        .main-card-title {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 24px;
+            letter-spacing: 1px;
+            color: var(--kb-black);
+            margin-bottom: 18px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .main-card-amount-label {
+            font-family: 'Jua', sans-serif;
+            font-size: 12px;
+            color: var(--kb-gray-dark);
+            margin-bottom: 4px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .main-card-amount {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 38px;
+            color: var(--kb-black);
+            letter-spacing: 1px;
+            line-height: 1;
+            position: relative;
+            z-index: 1;
+        }
+
+        .main-card-amount .won {
+            font-size: 22px;
+            margin-left: 4px;
+        }
+
+        .main-card-divider {
+            height: 1px;
+            background: rgba(0,0,0,0.15);
+            margin: 16px 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .main-card-per {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .main-card-per-label {
+            font-family: 'Jua', sans-serif;
+            font-size: 13px;
+            color: var(--kb-gray-dark);
+        }
+
+        .main-card-per-value {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 20px;
+            color: var(--kb-black);
+            letter-spacing: 0.5px;
+        }
+
+        /* ===== 섹션 제목 ===== */
+        .section-header {
+            padding: 28px 20px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-bar {
+            width: 5px;
+            height: 22px;
+            background: var(--kb-yellow);
+            border-radius: 3px;
+        }
+
+        .section-title-wrap {
+            flex: 1;
+        }
+
+        .section-title-en {
+            font-family: 'Inter', sans-serif;
+            font-size: 9px;
+            letter-spacing: 3px;
+            font-weight: 700;
+            color: var(--kb-gray);
+            margin-bottom: 2px;
+        }
+
+        .section-title {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 20px;
+            color: var(--kb-black);
+            letter-spacing: 1px;
+        }
+
+        /* ===== 결제 완료 카드 (받은 돈) ===== */
+        .paid-list {
+            margin: 0 16px;
+            background: #fff;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            border: 1px solid var(--kb-gray-light);
+        }
+
+        .paid-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--kb-gray-light);
+        }
+
+        .paid-row:last-of-type {
+            border-bottom: none;
+        }
+
+        .paid-info {
+            flex: 1;
+        }
+
+        .paid-icon-name {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+
+        .paid-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--kb-yellow-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .paid-name {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 14px;
+            color: var(--kb-black);
+            letter-spacing: 0.5px;
+        }
+
+        .paid-detail {
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            font-size: 12px;
+            color: var(--kb-gray);
+            margin-left: 42px;
+        }
+
+        .paid-amount {
+            text-align: right;
+        }
+
+        .paid-amount .total {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 16px;
+            color: var(--kb-black);
+            letter-spacing: 0.5px;
+        }
+
+        .paid-amount .per {
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            font-size: 11px;
+            color: var(--kb-gray);
+            margin-top: 2px;
+        }
+
+        /* 결제 완료 합계 행 */
+        .paid-total {
+            background: var(--kb-yellow-bg);
+            padding: 14px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 2px solid var(--kb-yellow);
+        }
+
+        .paid-total-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 14px;
+            color: var(--kb-black);
+            letter-spacing: 0.5px;
+        }
+
+        .check-badge {
+            display: inline-block;
+            background: var(--green);
+            color: #fff;
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .paid-total-amount {
+            text-align: right;
+        }
+
+        .paid-total-amount .total {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 18px;
+            color: var(--kb-black);
+        }
+
+        .paid-total-amount .per {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 12px;
+            color: var(--kb-gray-dark);
+            margin-top: 2px;
+        }
+
+        /* ===== 예상 비용 그리드 (현장 경비) ===== */
+        .estimate-grid {
+            margin: 0 16px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .estimate-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 16px 14px;
+            border: 1px solid var(--kb-gray-light);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 카드 위쪽 노랑 띠 */
+        .estimate-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--kb-yellow);
+        }
+
+        .estimate-icon {
+            font-size: 28px;
+            margin-bottom: 6px;
+        }
+
+        .estimate-name {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 14px;
+            color: var(--kb-black);
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .estimate-amount {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 18px;
+            color: var(--kb-gray-dark);
+            letter-spacing: 0.5px;
+        }
+
+        .estimate-amount .won {
+            font-size: 12px;
+            color: var(--kb-gray);
+            margin-left: 2px;
+        }
+
+        .estimate-detail {
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            font-size: 11px;
+            color: var(--kb-gray);
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+
+        /* ===== 예상 합계 박스 ===== */
+        .estimate-total {
+            margin: 14px 16px 0;
+            background: var(--kb-black);
+            color: var(--kb-yellow);
+            border-radius: 18px;
+            padding: 18px 22px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .estimate-total::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 80px;
+            background: linear-gradient(90deg, transparent, rgba(255, 204, 0, 0.1));
+        }
+
+        .estimate-total-label {
+            font-family: 'Inter', sans-serif;
+            font-size: 11px;
+            letter-spacing: 3px;
+            font-weight: 700;
+            color: var(--kb-yellow);
+            opacity: 0.85;
+            margin-bottom: 4px;
+        }
+
+        .estimate-total-title {
+            font-family: 'Jua', sans-serif;
+            font-size: 14px;
+            color: #fff;
+            margin-bottom: 12px;
+            opacity: 0.9;
+        }
+
+        .estimate-total-amount {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 32px;
+            color: var(--kb-yellow);
+            letter-spacing: 0.5px;
+            line-height: 1;
+        }
+
+        .estimate-total-amount .won {
+            font-size: 18px;
+            margin-left: 4px;
+        }
+
+        .estimate-total-divider {
+            height: 1px;
+            background: rgba(255, 204, 0, 0.2);
+            margin: 14px 0 12px;
+        }
+
+        .estimate-total-per {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .estimate-total-per-label {
+            font-family: 'Jua', sans-serif;
+            font-size: 13px;
+            color: #fff;
+            opacity: 0.85;
+        }
+
+        .estimate-total-per-value {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 18px;
+            color: var(--kb-yellow);
+            letter-spacing: 0.5px;
+        }
+
+        /* ===== 정산 안내 박스 ===== */
+        .settle-info {
+            margin: 0 16px;
+            background: #fff;
+            border-radius: 18px;
+            padding: 18px 20px;
+            border: 2px dashed var(--kb-yellow);
+        }
+
+        .settle-info-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 15px;
+            color: var(--kb-black);
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .settle-info-title .icon {
+            font-size: 20px;
+        }
+
+        .settle-info-text {
+            font-family: 'Jua', sans-serif;
+            font-size: 13px;
+            color: var(--kb-gray-dark);
+            line-height: 1.7;
+        }
+
+        .settle-info-text .highlight {
+            background: var(--kb-yellow-soft);
+            padding: 1px 6px;
+            border-radius: 4px;
+            color: var(--kb-black);
+            font-weight: 600;
+        }
+
+        /* 기념품·쇼핑 제외 안내 (작고 흐릿) */
+        .settle-info-text .exclude {
+            display: inline-block;
+            margin-top: 6px;
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            font-size: 12px;
+            color: var(--kb-gray);
+            font-style: italic;
+        }
+
+        /* ===== 최종 합산 박스 (완납액 + 예상액) ===== */
+        .grand-total {
+            margin: 0 16px;
+            background: linear-gradient(135deg, var(--kb-yellow) 0%, var(--kb-yellow-deep) 100%);
+            border-radius: 22px;
+            padding: 24px 26px;
+            color: var(--kb-black);
+            box-shadow: 0 8px 20px rgba(245, 188, 0, 0.35);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .grand-total::before {
+            content: '💰';
+            position: absolute;
+            font-size: 130px;
+            opacity: 0.1;
+            top: -15px;
+            right: -10px;
+        }
+
+        .grand-total-label {
+            font-family: 'Inter', sans-serif;
+            font-size: 11px;
+            letter-spacing: 4px;
+            font-weight: 700;
+            color: var(--kb-black);
+            opacity: 0.7;
+            margin-bottom: 4px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .grand-total-title {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 18px;
+            color: var(--kb-black);
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .grand-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .grand-row.sum {
+            border-top: 2px solid rgba(0,0,0,0.2);
+            margin-top: 8px;
+            padding-top: 14px;
+        }
+
+        .grand-row-label {
+            font-family: 'Jua', sans-serif;
+            font-size: 13px;
+            color: var(--kb-gray-dark);
+        }
+
+        .grand-row.sum .grand-row-label {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 15px;
+            color: var(--kb-black);
+            letter-spacing: 0.5px;
+        }
+
+        .grand-row-value {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 16px;
+            color: var(--kb-black);
+            letter-spacing: 0.5px;
+        }
+
+        .grand-row.sum .grand-row-value {
+            font-size: 22px;
+        }
+
+        /* 기납 제외 금액 (작고 흐릿하게) */
+        .grand-row.remaining {
+            padding: 6px 0 0;
+            margin-top: 2px;
+            opacity: 0.7;
+        }
+
+        .grand-row.remaining .grand-row-label {
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            font-size: 12px;
+            color: var(--kb-gray-dark);
+        }
+
+        .grand-row.remaining .grand-row-value {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 14px;
+            color: var(--kb-gray-dark);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== 상단 바 ===== -->
+    <header class="top-bar">
+        <a href="index.html" class="back-btn" aria-label="뒤로가기">←</a>
+        <h1 class="top-title">예산 <span class="emoji">💰</span></h1>
+    </header>
+
+    <!-- ===== 메인 카드 (통장 표지 느낌) ===== -->
+    <section class="main-card">
+        <div class="main-card-label">JEJU TRIP BUDGET</div>
+        <div class="main-card-title">호구 넷 여행 예산</div>
+
+        <div class="main-card-amount-label">예상 1인 부담금 (전체)</div>
+        <div class="main-card-amount">약 <span style="font-family: 'Black Han Sans';">430,000</span><span class="won">원</span></div>
+
+        <div class="main-card-divider"></div>
+
+        <div class="main-card-per">
+            <span class="main-card-per-label">기납 + 예상 여행경비 합계</span>
+            <span class="main-card-per-value">4명</span>
+        </div>
+    </section>
+
+    <!-- ===== 기납 ===== -->
+    <div class="section-header">
+        <div class="section-bar"></div>
+        <div class="section-title-wrap">
+            <div class="section-title-en">PREPAID</div>
+            <div class="section-title">기납</div>
+        </div>
+    </div>
+
+    <div class="paid-list">
+        <!-- 가는편 -->
+        <div class="paid-row">
+            <div class="paid-info">
+                <div class="paid-icon-name">
+                    <span class="paid-icon">✈️</span>
+                    <span class="paid-name">항공 · 가는편</span>
+                </div>
+                <div class="paid-detail">RS903 · 4명 · 7/15</div>
+            </div>
+            <div class="paid-amount">
+                <div class="total">218,000원</div>
+                <div class="per">인당 54,500원</div>
+            </div>
+        </div>
+
+        <!-- 오는편 -->
+        <div class="paid-row">
+            <div class="paid-info">
+                <div class="paid-icon-name">
+                    <span class="paid-icon">🛬</span>
+                    <span class="paid-name">항공 · 오는편</span>
+                </div>
+                <div class="paid-detail">RS906 · 3명 · 7/17</div>
+            </div>
+            <div class="paid-amount">
+                <div class="total">241,500원</div>
+                <div class="per">인당 80,500원</div>
+            </div>
+        </div>
+
+        <!-- 숙소 -->
+        <div class="paid-row">
+            <div class="paid-info">
+                <div class="paid-icon-name">
+                    <span class="paid-icon">🏨</span>
+                    <span class="paid-name">숙소</span>
+                </div>
+                <div class="paid-detail">신화월드 랜딩관 · 2박</div>
+            </div>
+            <div class="paid-amount">
+                <div class="total">647,806원</div>
+                <div class="per">인당 161,952원</div>
+            </div>
+        </div>
+
+        <!-- 합계 -->
+        <div class="paid-total">
+            <div class="paid-total-label">
+                💳 합계
+                <span class="check-badge">✓ 납부 완료</span>
+            </div>
+            <div class="paid-total-amount">
+                <div class="total">1,107,306원</div>
+                <div class="per">인당 평균 약 269,000원</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 여행 경비 ===== -->
+    <div class="section-header">
+        <div class="section-bar"></div>
+        <div class="section-title-wrap">
+            <div class="section-title-en">TRAVEL EXPENSES</div>
+            <div class="section-title">여행 경비 (예상)</div>
+        </div>
+    </div>
+
+    <div class="estimate-grid">
+        <!-- 식비 -->
+        <div class="estimate-card">
+            <div class="estimate-icon">🍽️</div>
+            <div class="estimate-name">식비</div>
+            <div class="estimate-amount">440,000<span class="won">원</span></div>
+            <div class="estimate-detail">8끼 × 4명<br>아침 3 · 점심 3 · 저녁 2</div>
+        </div>
+
+        <!-- 교통 -->
+        <div class="estimate-card">
+            <div class="estimate-icon">🚗</div>
+            <div class="estimate-name">교통</div>
+            <div class="estimate-amount">80,000<span class="won">원</span></div>
+            <div class="estimate-detail">주유 · 차량 보험<br>2박 3일 기준</div>
+        </div>
+
+        <!-- 관광 -->
+        <div class="estimate-card">
+            <div class="estimate-icon">🌅</div>
+            <div class="estimate-name">관광</div>
+            <div class="estimate-amount">80,000<span class="won">원</span></div>
+            <div class="estimate-detail">입장료 · 체험비</div>
+        </div>
+
+        <!-- 기타 -->
+        <div class="estimate-card">
+            <div class="estimate-icon">📦</div>
+            <div class="estimate-name">기타</div>
+            <div class="estimate-amount">40,000<span class="won">원</span></div>
+            <div class="estimate-detail">카페 · 간식<br>예비비 포함</div>
+        </div>
+    </div>
+
+    <!-- ===== 예상 합계 박스 (검정) ===== -->
+    <div class="estimate-total">
+        <div class="estimate-total-label">ESTIMATED TOTAL</div>
+        <div class="estimate-total-title">여행 경비 합계</div>
+        <div class="estimate-total-amount">약 640,000<span class="won">원</span></div>
+        <div class="estimate-total-divider"></div>
+        <div class="estimate-total-per">
+            <span class="estimate-total-per-label">1인당 1/N (4명 기준)</span>
+            <span class="estimate-total-per-value">약 160,000원</span>
+        </div>
+    </div>
+
+    <!-- ===== 정산 안내 ===== -->
+    <div class="section-header">
+        <div class="section-bar"></div>
+        <div class="section-title-wrap">
+            <div class="section-title-en">SETTLEMENT</div>
+            <div class="section-title">정산 방식</div>
+        </div>
+    </div>
+
+    <div class="settle-info">
+        <div class="settle-info-title">
+            <span class="icon">📌</span>
+            <span>여행 경비 정산 안내</span>
+        </div>
+        <div class="settle-info-text">
+            여행 경비는 따로 모으지 않고<br>
+            <span class="highlight">한 명이 결제 → 마지막에 1/N 청구</span><br>
+            방식으로 정산해요.<br>
+            <span class="exclude">(기념품, 쇼핑 제외 1/N)</span>
+        </div>
+    </div>
+
+    <!-- ===== 최종 합산 (완납 + 예상) ===== -->
+    <div class="section-header">
+        <div class="section-bar"></div>
+        <div class="section-title-wrap">
+            <div class="section-title-en">GRAND TOTAL</div>
+            <div class="section-title">전체 합산 (1인 기준)</div>
+        </div>
+    </div>
+
+    <div class="grand-total">
+        <div class="grand-total-label">PER PERSON</div>
+        <div class="grand-total-title">한 명당 총 부담</div>
+
+        <div class="grand-row">
+            <span class="grand-row-label">✓ 기납 (항공 + 숙소)</span>
+            <span class="grand-row-value">약 269,000원</span>
+        </div>
+        <div class="grand-row">
+            <span class="grand-row-label">+ 여행 경비</span>
+            <span class="grand-row-value">약 160,000원</span>
+        </div>
+        <div class="grand-row sum">
+            <span class="grand-row-label">총 예상</span>
+            <span class="grand-row-value">약 429,000원</span>
+        </div>
+        <!-- 기납 제외: 앞으로 모아둬야 할 금액 -->
+        <div class="grand-row remaining">
+            <span class="grand-row-label">└ 기납 제외</span>
+            <span class="grand-row-value">약 160,000원</span>
+        </div>
+    </div>
+
+</body>
+</html>
