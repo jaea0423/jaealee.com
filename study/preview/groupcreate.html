@@ -195,6 +195,25 @@
     line-height: 1.5;
     padding-left: 2px;
   }
+  /* 폼 내부 미니 라벨 (예: "총 모집 인원" / "최소 인원") */
+  .sub-label{
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 8px;
+    padding-left: 2px;
+  }
+  .sub-label-hint{
+    font-weight: 400;
+    color: var(--ink-mute);
+  }
+  /* 모집 인원 초과되어 disabled 된 최소 인원 칩 */
+  .chip:disabled,
+  .chip.disabled{
+    opacity: 0.35;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
 
   /* 칩 */
   .chip-group{
@@ -593,19 +612,38 @@
       <p>팀 규모와 팀원 조건을 정해주세요.</p>
     </div>
 
-    <!-- 05. 모집 인원 -->
+    <!-- 05. 인원 (모집 인원 + 최소 인원) -->
     <div class="form-block">
       <div class="form-label-row">
         <span class="form-num">05</span>
-        <span class="form-label">총 몇 명을 모집할까요?</span>
+        <span class="form-label">몇 명을 모집할까요?</span>
       </div>
-      <p class="form-sub">방장 본인 포함한 전체 인원이에요.</p>
+      <p class="form-sub">방장 본인을 포함한 인원이에요.</p>
+
+      <!-- 5-1. 총 모집 인원 (목표 정원) -->
+      <p class="sub-label">총 모집 인원</p>
       <div class="chip-group" id="capacity-chips">
         <button class="chip" onclick="selectSingle(this, 'capacity', 2)">2명</button>
         <button class="chip" onclick="selectSingle(this, 'capacity', 3)">3명</button>
         <button class="chip" onclick="selectSingle(this, 'capacity', 4)">4명</button>
         <button class="chip" onclick="selectSingle(this, 'capacity', 5)">5명</button>
         <button class="chip" onclick="selectSingle(this, 'capacity', 6)">6명</button>
+      </div>
+
+      <!-- 5-2. 최소 인원 (매칭 확정 기준) -->
+      <p class="sub-label" style="margin-top:14px">
+        최소 인원 <span class="sub-label-hint">— 이 인원 이상 수락하면 매칭 확정</span>
+      </p>
+      <div class="chip-group" id="min-members-chips">
+        <button class="chip" onclick="selectMinMembers(this, 2)">2명</button>
+        <button class="chip" onclick="selectMinMembers(this, 3)">3명</button>
+        <button class="chip" onclick="selectMinMembers(this, 4)">4명</button>
+        <button class="chip" onclick="selectMinMembers(this, 5)">5명</button>
+        <button class="chip" onclick="selectMinMembers(this, 6)">6명</button>
+      </div>
+      <div class="info-tip" style="margin-top:10px">
+        <span class="ico">💡</span>
+        <span>예: 4명 모집/최소 3명으로 두면 1명이 거절해도 3명으로 매칭이 확정돼요.</span>
       </div>
     </div>
 
@@ -771,7 +809,7 @@
     <div class="preview-room">
       <div class="preview-head">
         <span class="preview-tag" id="prev-category">시험 대비</span>
-        <span class="preview-recruit"><span id="prev-capacity">5</span>명 모집</span>
+        <span class="preview-recruit"><span id="prev-capacity">5</span>명 모집 · 최소 <span id="prev-min">3</span></span>
       </div>
       <div class="preview-name" id="prev-name">방 이름</div>
       <div class="preview-leader">방장 · 재아 · 컴퓨터공학과 · 2학년</div>
@@ -798,7 +836,8 @@
     category: '',
     topic: '',
     level: '',
-    capacity: '',
+    capacity: '',          // 총 모집 인원 (정원)
+    minMembers: '',        // 최소 인원 (매칭 확정 기준, capacity 이하)
     majorRange: '',
     times: [],
     style: [],
@@ -813,6 +852,46 @@
     group.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
     btn.classList.add('active');
     room[key] = value;
+
+    // capacity가 바뀌면 최소 인원 칩들 중 capacity 초과는 비활성, 자동 기본값 보정
+    if(key === 'capacity'){
+      syncMinMembersChips();
+    }
+  }
+
+  /* 최소 인원 선택 */
+  function selectMinMembers(btn, value){
+    if(btn.classList.contains('disabled')) return;
+    const group = btn.parentElement;
+    group.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    room.minMembers = value;
+  }
+
+  /* capacity 변경 시 최소 인원 칩 동기화
+     - capacity 초과 칩들은 disabled
+     - 현재 선택된 minMembers가 capacity 초과면 capacity로 자동 조정
+     - 아직 minMembers 미선택이면 capacity와 같은 값으로 디폴트 */
+  function syncMinMembersChips(){
+    const cap = parseInt(room.capacity, 10);
+    if(!cap) return;
+    const chips = document.querySelectorAll('#min-members-chips .chip');
+    chips.forEach(chip => {
+      const v = parseInt(chip.textContent, 10);
+      if(v > cap){
+        chip.classList.add('disabled');
+        chip.classList.remove('active');
+      } else {
+        chip.classList.remove('disabled');
+      }
+    });
+    // 현재 minMembers가 cap 초과이거나 미설정이면 cap으로 자동 설정
+    if(!room.minMembers || parseInt(room.minMembers, 10) > cap){
+      room.minMembers = cap;
+      chips.forEach(chip => {
+        chip.classList.toggle('active', parseInt(chip.textContent, 10) === cap);
+      });
+    }
   }
 
   /* 단일 선택 (큰 카드) */
@@ -871,12 +950,14 @@
     const prevName = document.getElementById('prev-name');
     const prevCategory = document.getElementById('prev-category');
     const prevCapacity = document.getElementById('prev-capacity');
+    const prevMin = document.getElementById('prev-min');
     const prevBio = document.getElementById('prev-bio');
     const prevMeta = document.getElementById('prev-meta');
 
     prevName.textContent = room.name || '방 이름';
     prevCategory.textContent = room.category || '카테고리';
     prevCapacity.textContent = room.capacity || '?';
+    prevMin.textContent = room.minMembers || '?';
 
     if(room.bio){
       prevBio.textContent = '"' + room.bio + '"';
@@ -909,7 +990,12 @@
       goStep(2);
     }
     else if(current === 2){
-      if(!room.capacity){ showToast('모집 인원을 선택해주세요'); return; }
+      if(!room.capacity){ showToast('총 모집 인원을 선택해주세요'); return; }
+      if(!room.minMembers){ showToast('최소 인원을 선택해주세요'); return; }
+      if(parseInt(room.minMembers, 10) > parseInt(room.capacity, 10)){
+        showToast('최소 인원은 모집 인원보다 클 수 없어요');
+        return;
+      }
       if(!room.majorRange){ showToast('팀원 전공 범위를 선택해주세요'); return; }
       goStep(3);
     }

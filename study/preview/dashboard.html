@@ -935,6 +935,12 @@
     background: var(--success);
     color: white;
   }
+  /* 최소 인원 충족 — 차분한 톤 (거의 다 찼어요와 색을 다르게) */
+  .room-badge.min-met{
+    background: var(--knu-blue-soft);
+    color: var(--knu-blue);
+    border: 1px solid var(--knu-blue);
+  }
 
   /* 방 카드 - 검색어 하이라이트 */
   .room-card mark{
@@ -2044,13 +2050,14 @@
      ============================================================ */
 
   // 더미 방 데이터 (실제는 서버에서 받아옴)
+  // members.min = 매칭 확정 최소 인원 (이 인원 이상 수락 시 무산되지 않음)
   const ROOMS = [
     {
       id: 1, name: '자료구조 트리 정복단', category: '시험 대비', emoji: '📚',
       topic: '트리, 백준 문제풀이', subject: '자료구조', level: '중급',
       leader: {nick: '민준', college: 'IT대학', grade: '3학년'},
       bio: '트리 챕터에서 막힌 분들 같이 풀어요. 백준 문제 같이 분석하고 토론하는 방식이에요.',
-      members: {cur: 2, max: 5},
+      members: {cur: 2, min: 3, max: 5},
       times: ['평일 저녁'], mode: ['대면'], style: ['문제풀이', '개념토론'],
       deadlineDays: 5, isNew: false
     },
@@ -2059,7 +2066,7 @@
       topic: '토익 800 목표', subject: '영어', level: '기본',
       leader: {nick: '서연', college: '인문대학', grade: '2학년'},
       bio: '6주 안에 800점 목표. 매주 모의고사 풀고 오답 정리 같이 해요. 비대면 위주.',
-      members: {cur: 3, max: 6},
+      members: {cur: 3, min: 4, max: 6},
       times: ['주말 오후'], mode: ['비대면'], style: ['문제풀이', '복습형'],
       deadlineDays: 3, isNew: false
     },
@@ -2068,7 +2075,7 @@
       topic: '백준 실버→골드', subject: '알고리즘', level: '중급',
       leader: {nick: '동현', college: 'IT대학', grade: '4학년'},
       bio: '실버에서 골드 올리는 게 목표. 매주 가상 대회 1세트씩 돌리고 같이 풀이 공유.',
-      members: {cur: 4, max: 5},
+      members: {cur: 4, min: 3, max: 5},
       times: ['평일 밤'], mode: ['비대면'], style: ['문제풀이'],
       deadlineDays: 1, isNew: false  // 마감 임박
     },
@@ -2077,7 +2084,7 @@
       topic: '리액트, 학과 행사 관리', subject: '웹개발', level: '기본',
       leader: {nick: '지호', college: 'IT대학', grade: '2학년'},
       bio: '리액트로 학과 행사 관리 서비스 만들어보고 싶어요. 디자이너 1, 백엔드 1, 프론트 2 모집.',
-      members: {cur: 1, max: 4},
+      members: {cur: 1, min: 3, max: 4},
       times: ['주말 오후', '주말 저녁'], mode: ['비대면'], style: ['프로젝트'],
       deadlineDays: 7, isNew: false
     },
@@ -2086,7 +2093,7 @@
       topic: '정보처리기사 필기', subject: '자격증', level: '기본',
       leader: {nick: '예린', college: '공과대학', grade: '3학년'},
       bio: '6주 단기 합격 목표. 매일 30문제씩 풀고 단톡방에서 모르는 거 공유.',
-      members: {cur: 2, max: 4},
+      members: {cur: 2, min: 2, max: 4},
       times: ['평일 오전'], mode: ['비대면'], style: ['문제풀이', '복습형'],
       deadlineDays: 4, isNew: false
     },
@@ -2095,7 +2102,7 @@
       topic: '프리토킹', subject: '영어회화', level: '기본',
       leader: {nick: '하은', college: '사범대학', grade: '2학년'},
       bio: '편하게 영어로 떠드는 게 목표예요. 주제 정해서 1시간 토킹, 끝나고 짧게 피드백.',
-      members: {cur: 2, max: 5},
+      members: {cur: 2, min: 3, max: 5},
       times: ['평일 저녁'], mode: ['대면'], style: ['개념토론'],
       deadlineDays: 10, isNew: false
     },
@@ -2104,7 +2111,7 @@
       topic: '코딩 면접, 알고리즘', subject: '알고리즘', level: '고급',
       leader: {nick: '시현', college: 'IT대학', grade: '4학년'},
       bio: '하반기 공채 대비. 매주 모의 면접 1회, 알고리즘 2문제 풀고 라이브 코딩 리뷰.',
-      members: {cur: 4, max: 5},  // 거의 다 찼음
+      members: {cur: 4, min: 4, max: 5},  // 거의 다 찼음
       times: ['주말 오전'], mode: ['비대면'], style: ['문제풀이', '개념토론'],
       deadlineDays: 2, isNew: false
     },
@@ -2113,7 +2120,7 @@
       topic: '미분, 적분, 기말고사', subject: '미적분학', level: '기본',
       leader: {nick: '재현', college: '자연과학대학', grade: '2학년'},
       bio: '기말 대비. 교재 연습문제 같이 풀고 막히는 부분 서로 설명해주는 방식.',
-      members: {cur: 5, max: 6},  // 거의 다 찼음
+      members: {cur: 5, min: 4, max: 6},  // 거의 다 찼음
       times: ['평일 오후'], mode: ['대면'], style: ['문제풀이', '예습형'],
       deadlineDays: 6, isNew: false
     },
@@ -2122,7 +2129,7 @@
       topic: '핸즈온 머신러닝, ML', subject: '머신러닝', level: '초보',
       leader: {nick: '소은', college: 'IT대학', grade: '3학년'},
       bio: '"핸즈온 머신러닝" 책 같이 읽어요. 매주 2챕터씩 발제 + 코드 실습.',
-      members: {cur: 1, max: 4},
+      members: {cur: 1, min: 2, max: 4},
       times: ['주말 저녁'], mode: ['비대면'], style: ['예습형', '개념토론'],
       deadlineDays: 14, isNew: false
     },
@@ -2131,7 +2138,7 @@
       topic: 'SQLD 자격증, MySQL', subject: 'SQL', level: '기본',
       leader: {nick: '준영', college: 'IT대학', grade: '3학년'},
       bio: '실제 DB 만들고 쿼리 짜는 실습. SQLD 자격증도 같이 준비. 주 2회 모임.',
-      members: {cur: 1, max: 3},
+      members: {cur: 1, min: 2, max: 3},
       times: ['평일 밤'], mode: ['비대면'], style: ['프로젝트', '문제풀이'],
       deadlineDays: 3, isNew: true  // NEW
     }
@@ -2141,7 +2148,7 @@
   const MY_ROOMS = [
     {
       id: 'm1', name: '컴공 자료구조 같이 정리해요', category: '시험 대비', emoji: '📚',
-      applicants: 3, members: {cur: 1, max: 4}, deadlineDays: 4
+      applicants: 3, members: {cur: 1, min: 3, max: 4}, deadlineDays: 4
     }
   ];
 
@@ -2289,8 +2296,9 @@
       if(browseState.time.length && !browseState.time.some(v => r.times.includes(v))) return false;
       // 학습 스타일
       if(browseState.style.length && !browseState.style.some(v => r.style.includes(v))) return false;
-      // 모집 인원 (max 기준)
+      // 모집 인원 (총 모집 정원 기준 = max)
       if(browseState.people.length && !browseState.people.includes(String(r.members.max))) return false;
+      // 최소 인원 미충족 (cur < min)인 방도 그대로 노출 — 사용자가 지원하면 충족 도움
       // 수준
       if(browseState.level.length && !browseState.level.includes(r.level)) return false;
       return true;
@@ -2345,12 +2353,14 @@
       const isOrange = ['어학','프로젝트','자율 학습'].includes(r.category);
       const isFull = r.members.cur >= r.members.max;
       const almostFull = !isFull && (r.members.max - r.members.cur) <= 1;
+      const minMet = r.members.cur >= r.members.min;  // 최소 인원 충족 여부
 
       // 배지들
       const badges = [];
       if(r.deadlineDays <= 1) badges.push('<span class="room-badge urgent">마감 D-' + r.deadlineDays + '</span>');
       if(almostFull) badges.push('<span class="room-badge almost-full">거의 다 찼어요</span>');
       if(r.isNew) badges.push('<span class="room-badge new">NEW</span>');
+      if(minMet && !isFull) badges.push('<span class="room-badge min-met">최소 인원 충족</span>');
 
       const timeText = r.times.join(' / ');
       const modeText = r.mode.join('/');
@@ -2360,7 +2370,7 @@
           ${badges.length ? `<div class="room-badges">${badges.join('')}</div>` : ''}
           <div class="room-card-head">
             <span class="room-tag${isOrange ? ' orange' : ''}">${r.emoji} ${escapeHtml(r.category)}</span>
-            <span class="room-recruiting">${r.members.cur} / ${r.members.max} 모집 중</span>
+            <span class="room-recruiting">${r.members.cur} / ${r.members.max} · 최소 ${r.members.min}</span>
           </div>
           <div class="room-name">${highlight(r.name, kw)}</div>
           <div class="room-leader">방장 · ${escapeHtml(r.leader.nick)} · ${escapeHtml(r.leader.college)} · ${escapeHtml(r.leader.grade)}</div>
@@ -2403,6 +2413,7 @@
           <div class="my-room-stats">
             <span><strong>${m.applicants}</strong> 지원자</span>
             <span><strong>${m.members.cur}/${m.members.max}</strong> 확정</span>
+            <span>최소 <strong>${m.members.min}</strong>명</span>
           </div>
           <div class="my-room-actions">
             <button class="my-room-btn" onclick="showToast('지원자 보기 (예정)')">지원자 보기</button>
