@@ -684,8 +684,10 @@
     padding: 20px 18px;
     margin-bottom: 12px;
     transition: all 0.15s;
+    cursor: pointer;
   }
   .room-card:active{ transform: scale(0.99); }
+  .room-card:hover{ border-color: var(--knu-blue); }
   .room-card-head{
     display: flex;
     justify-content: space-between;
@@ -2601,7 +2603,7 @@
       const modeText = r.mode.join('/');
 
       return `
-        <div class="room-card">
+        <div class="room-card" onclick="openTeamDetail(${r.id})">
           ${badges.length ? `<div class="room-badges">${badges.join('')}</div>` : ''}
           <div class="room-card-head">
             <span class="room-tag${isOrange ? ' orange' : ''}">${r.emoji} ${escapeHtml(r.category)}</span>
@@ -2613,7 +2615,7 @@
           <div class="room-foot">
             <span class="room-meta">${escapeHtml(timeText)} · ${escapeHtml(modeText)} · D-${r.deadlineDays}</span>
             <button class="room-apply-btn${isFull ? ' full' : ''}"
-                    onclick="${isFull ? '' : `applyToRoom(${r.id})`}"
+                    onclick="event.stopPropagation(); ${isFull ? '' : `applyToRoom(${r.id})`}"
                     ${isFull ? 'disabled' : ''}>
               ${isFull ? '마감' : '지원하기'}
             </button>
@@ -2623,10 +2625,14 @@
     }).join('');
   }
 
+  // 카드 전체 클릭 → 상세 화면
+  function openTeamDetail(roomId){
+    window.location.href = `team-detail.html?id=${roomId}`;
+  }
+
+  // 지원하기 버튼 → 상세 화면 + 자동 지원 모달
   function applyToRoom(roomId){
-    const r = ROOMS.find(x => x.id === roomId);
-    showToast(`'${r.name}' 지원 모달 (예정)`);
-    // 실제: 방 상세 + 지원 모달 화면으로 이동 또는 모달 오픈
+    window.location.href = `team-detail.html?id=${roomId}&support=1`;
   }
 
   /* ---- 내가 만든 방 (방장) 렌더링 ---- */
