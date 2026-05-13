@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>맛집 | 호구 넷의 제주 투어</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Jua&family=Black+Han+Sans&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ===== 기본 리셋 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --orange:        #F39237;
+            --orange-deep:   #D86A1F;
+            --orange-soft:   #FFD9A8;
+            --orange-bg:     #FFF4E5;
+            --orange-cream:  #FFFAF2;
+
+            --leaf-green:    #5BA862;
+            --leaf-deep:     #3F7A45;
+
+            --closed-text:   #999999;
+            --text:          #2A2620;
+            --text-mute:     #8B8579;
+            --warn:          #E74C3C;
+        }
+
+        html, body {
+            width: 100%;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        body {
+            font-family: 'Jua', sans-serif;
+            background: var(--orange-cream);
+            color: var(--text);
+            max-width: 420px;
+            margin: 0 auto;
+            min-height: 100vh;
+            box-shadow: 0 0 40px rgba(0,0,0,0.08);
+            padding-bottom: 50px;
+            position: relative;
+            overflow-x: hidden;
+            line-height: 1.5;
+        }
+
+        /* ===== 상단 바 ===== */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            padding: 16px 18px;
+            background: linear-gradient(135deg, var(--orange) 0%, var(--orange-deep) 100%);
+            color: #fff;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(216, 106, 31, 0.25);
+        }
+
+        .back-btn {
+            background: rgba(255,255,255,0.25);
+            border: 1px solid #fff;
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .back-btn:active { background: #fff; color: var(--orange-deep); }
+
+        .top-title {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 22px;
+            margin-left: 12px;
+            letter-spacing: 2px;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.15);
+        }
+
+        .top-title .emoji { font-size: 20px; margin-left: 4px; }
+
+        /* ===== 안내 ===== */
+        .map-intro {
+            text-align: center;
+            padding: 20px 20px 12px;
+        }
+
+        .map-intro-en {
+            font-family: 'Inter', sans-serif;
+            font-size: 10px;
+            letter-spacing: 4px;
+            font-weight: 600;
+            color: var(--orange-deep);
+            margin-bottom: 4px;
+        }
+
+        .map-intro-title {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 18px;
+            color: var(--text);
+            letter-spacing: 1px;
+        }
+
+        /* ===== 제주도 지도 SVG ===== */
+        .map-wrap {
+            margin: 0 16px 16px;
+            padding: 16px 12px;
+            background: linear-gradient(180deg, #E0F4FF 0%, #C8E8FF 100%);
+            border-radius: 22px;
+            position: relative;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+            overflow: hidden;
+        }
+
+        .map-wrap::before,
+        .map-wrap::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: rgba(255,255,255,0.5);
+        }
+        .map-wrap::before { top: 25%; }
+        .map-wrap::after  { bottom: 25%; }
+
+        .map-svg {
+            width: 100%;
+            height: auto;
+            display: block;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ===== 구역 라벨 (글씨만) ===== */
+        .region-pin {
+            cursor: pointer;
+        }
+
+        /* 라벨 배경 (둥근 사각형) */
+        .pin-bg {
+            fill: #fff;
+            stroke: var(--orange);
+            stroke-width: 1.5;
+            transition: all 0.2s;
+        }
+
+        .pin-text {
+            font-family: 'Jua', sans-serif;
+            font-size: 11px;
+            fill: var(--text);
+            text-anchor: middle;
+            dominant-baseline: central;
+            pointer-events: none;
+            font-weight: 700;
+            transition: all 0.2s;
+        }
+
+        .region-pin:active .pin-bg {
+            fill: var(--orange-soft);
+        }
+
+        .region-pin.active .pin-bg {
+            fill: var(--orange);
+            stroke: var(--orange-deep);
+            stroke-width: 2;
+        }
+
+        .region-pin.active .pin-text {
+            fill: #fff;
+            font-size: 12px;
+        }
+
+        /* 신화월드 (숙소) - 항상 진한 색 */
+        .region-pin.stay-pin .pin-bg {
+            fill: var(--orange-deep);
+            stroke: var(--orange-deep);
+        }
+
+        .region-pin.stay-pin .pin-text {
+            fill: #fff;
+        }
+
+        .region-pin.stay-pin.active .pin-bg {
+            fill: #B85A18;
+            stroke: #B85A18;
+        }
+
+        /* 한라산 */
+        .hallasan {
+            fill: var(--leaf-green);
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        .hallasan-label {
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            font-size: 11px;
+            fill: var(--leaf-deep);
+            text-anchor: middle;
+            pointer-events: none;
+        }
+
+        /* ===== 전체 보기 버튼 ===== */
+        .view-all-btn-wrap {
+            margin: 0 16px 16px;
+        }
+
+        .view-all-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid var(--leaf-deep);
+            background: linear-gradient(135deg, var(--leaf-green), var(--leaf-deep));
+            color: #fff;
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 15px;
+            border-radius: 14px;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(63, 122, 69, 0.3);
+        }
+
+        .view-all-btn:active {
+            transform: scale(0.97);
+        }
+
+        .view-all-btn.active {
+            background: linear-gradient(135deg, var(--leaf-deep), #2A5430);
+            box-shadow: 0 6px 16px rgba(63, 122, 69, 0.45);
+        }
+
+        /* ===== 가격 범례 ===== */
+        .price-legend {
+            margin: 0 16px 16px;
+            display: flex;
+            justify-content: space-around;
+            gap: 8px;
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            font-size: 12px;
+            color: var(--text-mute);
+            padding: 12px 14px;
+            background: var(--orange-bg);
+            border-radius: 12px;
+        }
+
+        .price-legend .item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .price-legend .symbol {
+            font-family: 'Black Han Sans', sans-serif;
+            color: var(--orange-deep);
+            font-size: 14px;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        /* ===== 구역 패널 ===== */
+        .region-panel {
+            display: none;
+            padding: 0 16px;
+        }
+
+        .region-panel.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .region-header {
+            background: linear-gradient(135deg, var(--orange) 0%, var(--orange-deep) 100%);
+            color: #fff;
+            padding: 16px 22px;
+            border-radius: 18px 18px 0 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .region-header.all-header {
+            background: linear-gradient(135deg, var(--leaf-green) 0%, var(--leaf-deep) 100%);
+        }
+
+        .region-header::before {
+            content: '🍊';
+            position: absolute;
+            font-size: 80px;
+            opacity: 0.15;
+            right: -10px;
+            top: -10px;
+        }
+
+        .region-header.all-header::before { content: '🌐'; }
+
+        .region-header-en {
+            font-family: 'Inter', sans-serif;
+            font-size: 10px;
+            letter-spacing: 4px;
+            font-weight: 600;
+            opacity: 0.9;
+            margin-bottom: 2px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .region-header-name {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 20px;
+            letter-spacing: 1px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.15);
+        }
+
+        .region-header-desc {
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            font-size: 12px;
+            margin-top: 4px;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ===== 맛집 카드 ===== */
+        .restaurant-list {
+            background: #fff;
+            border-radius: 0 0 18px 18px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            border: 1px solid var(--orange-soft);
+            border-top: none;
+            margin-bottom: 12px;
+        }
+
+        .restaurant-card {
+            padding: 18px 20px;
+            border-bottom: 1px dashed var(--orange-soft);
+        }
+
+        .restaurant-card:last-child { border-bottom: none; }
+
+        /* 전체 보기에서 - 구역 라벨 */
+        .rest-region-label {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: var(--orange-deep);
+            background: var(--orange-bg);
+            padding: 2px 8px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .rest-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .rest-name {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 17px;
+            color: var(--text);
+            letter-spacing: 0.5px;
+            flex: 1;
+            line-height: 1.25;
+        }
+
+        .rest-price {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 14px;
+            color: var(--orange-deep);
+            background: var(--orange-bg);
+            padding: 4px 8px;
+            border-radius: 8px;
+            white-space: nowrap;
+            letter-spacing: 1px;
+        }
+
+        .rest-price .dim { color: var(--orange-soft); }
+
+        /* 메뉴 키워드 */
+        .rest-menu {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 12px;
+        }
+
+        .menu-tag {
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            font-size: 11px;
+            color: var(--leaf-deep);
+            background: #E8F5E8;
+            padding: 4px 10px;
+            border-radius: 12px;
+            border: 1px solid var(--leaf-green);
+        }
+
+        /* 정보 행 */
+        .rest-info {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-family: 'Jua', sans-serif;
+            font-size: 12px;
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        .info-icon {
+            font-size: 13px;
+            width: 18px;
+            text-align: center;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .info-text { flex: 1; }
+        .info-row.address .info-text { color: var(--text-mute); }
+
+        .info-row.hours .closed {
+            color: var(--warn);
+            font-weight: 700;
+            background: #FFEAEA;
+            padding: 1px 6px;
+            border-radius: 4px;
+            margin-left: 4px;
+        }
+
+        .info-row.hours .lo {
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            color: var(--text-mute);
+            font-size: 11px;
+        }
+
+        .info-row.phone a {
+            color: var(--orange-deep);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .parking-badge {
+            display: inline-block;
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 8px;
+            margin-left: 4px;
+        }
+
+        .parking-badge.yes {
+            background: #E8F5E8;
+            color: var(--leaf-deep);
+        }
+
+        .parking-badge.no {
+            background: #FFEAEA;
+            color: var(--warn);
+        }
+
+        .parking-badge.maybe {
+            background: var(--orange-bg);
+            color: var(--orange-deep);
+        }
+
+        .parking-note {
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            font-size: 11px;
+            color: var(--text-mute);
+            margin-left: 4px;
+        }
+
+        .map-link {
+            display: inline-block;
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            font-size: 11px;
+            color: #03C75A;
+            background: #E8FBF1;
+            padding: 2px 8px;
+            border-radius: 6px;
+            margin-left: 4px;
+            text-decoration: none;
+            border: 1px solid #03C75A;
+        }
+
+        /* 빈 카드 */
+        .empty-card {
+            padding: 36px 22px;
+            text-align: center;
+            color: var(--text-mute);
+        }
+
+        .empty-card .big-icon {
+            font-size: 44px;
+            display: block;
+            margin-bottom: 10px;
+            opacity: 0.6;
+        }
+
+        .empty-card .text {
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--text-mute);
+        }
+
+        .empty-card .sub {
+            font-family: 'Jua', sans-serif;
+            font-size: 12px;
+            margin-top: 4px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== 상단 바 ===== -->
+    <header class="top-bar">
+        <a href="index.html" class="back-btn" aria-label="뒤로가기">←</a>
+        <h1 class="top-title">맛집 <span class="emoji">🍴</span></h1>
+    </header>
+
+    <!-- ===== 안내 ===== -->
+    <div class="map-intro">
+        <div class="map-intro-en">JEJU FOOD MAP</div>
+        <div class="map-intro-title">지도에서 구역을 선택하세요</div>
+    </div>
+
+    <!-- ===== 제주도 지도 SVG ===== -->
+    <div class="map-wrap">
+        <svg class="map-svg" viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg">
+            <!-- 트랙형 제주도 -->
+            <rect x="20" y="50" width="340" height="120" rx="60" ry="60"
+                  fill="#FFF4E5"
+                  stroke="#F39237"
+                  stroke-width="2.5"/>
+
+            <!-- 한라산 (섬 정중앙) -->
+            <ellipse cx="190" cy="110" rx="26" ry="16" class="hallasan"/>
+            <text x="190" y="114" class="hallasan-label">⛰ 한라산</text>
+
+            <!--
+                구역 라벨 8개 - 글씨만 (배경 둥근 사각형 + 텍스트)
+                배치 (테두리 안쪽 균등 간격):
+                - 위쪽 3개: 한림 / 애월 / 제주시 (아래쪽 4개와 간격 맞춤)
+                - 왼쪽 끝: 한경 (가운데 높이)
+                - 아래쪽 4개: 대정 / 중문 / 서귀포 (왼쪽으로 당김)
+                - 신화월드는 대정과 중문 사이 위쪽 (대정 바로 위)
+                rect: x, y, width, height
+                text: 중앙 좌표 기준
+            -->
+
+            <!-- 1. 한경 (왼쪽 끝, 세로 가운데) -->
+            <g class="region-pin" data-region="hangyeong" onclick="selectRegion('hangyeong')">
+                <rect x="32" y="99" width="42" height="22" rx="11" class="pin-bg"/>
+                <text x="53" y="110" class="pin-text">한경</text>
+            </g>
+
+            <!-- 2. 한림 (위쪽 줄 - 첫번째) -->
+            <g class="region-pin" data-region="hanlim" onclick="selectRegion('hanlim')">
+                <rect x="85" y="68" width="42" height="22" rx="11" class="pin-bg"/>
+                <text x="106" y="79" class="pin-text">한림</text>
+            </g>
+
+            <!-- 3. 애월 (위쪽 줄 - 두번째) -->
+            <g class="region-pin" data-region="aewol" onclick="selectRegion('aewol')">
+                <rect x="143" y="68" width="42" height="22" rx="11" class="pin-bg"/>
+                <text x="164" y="79" class="pin-text">애월</text>
+            </g>
+
+            <!-- 4. 제주시 (위쪽 줄 - 세번째) -->
+            <g class="region-pin" data-region="jeju" onclick="selectRegion('jeju')">
+                <rect x="201" y="68" width="50" height="22" rx="11" class="pin-bg"/>
+                <text x="226" y="79" class="pin-text">제주시</text>
+            </g>
+
+            <!-- 5. 대정 (아래쪽 줄 - 첫번째) -->
+            <g class="region-pin" data-region="daejeong" onclick="selectRegion('daejeong')">
+                <rect x="85" y="142" width="42" height="22" rx="11" class="pin-bg"/>
+                <text x="106" y="153" class="pin-text">대정</text>
+            </g>
+
+            <!-- 6. 중문 (아래쪽 줄 - 두번째) -->
+            <g class="region-pin" data-region="jungmun" onclick="selectRegion('jungmun')">
+                <rect x="143" y="142" width="42" height="22" rx="11" class="pin-bg"/>
+                <text x="164" y="153" class="pin-text">중문</text>
+            </g>
+
+            <!-- 7. 서귀포 (아래쪽 줄 - 세번째, 왼쪽으로 당김) -->
+            <g class="region-pin" data-region="seogwipo" onclick="selectRegion('seogwipo')">
+                <rect x="201" y="142" width="50" height="22" rx="11" class="pin-bg"/>
+                <text x="226" y="153" class="pin-text">서귀포</text>
+            </g>
+
+            <!-- 8. 신화월드 (대정·중문 사이 위쪽 = 대정 위) - 숙소 강조 -->
+            <g class="region-pin stay-pin" data-region="shinhwa" onclick="selectRegion('shinhwa')">
+                <rect x="100" y="115" width="62" height="22" rx="11" class="pin-bg"/>
+                <text x="131" y="126" class="pin-text">신화월드</text>
+            </g>
+        </svg>
+    </div>
+
+    <!-- ===== 전체 보기 버튼 ===== -->
+    <div class="view-all-btn-wrap">
+        <button class="view-all-btn active" data-region="all" onclick="selectRegion('all')">
+            🌐 전체 보기
+        </button>
+    </div>
+
+    <!-- ===== 가격 범례 ===== -->
+    <div class="price-legend">
+        <span class="item"><span class="symbol">₩</span>저렴</span>
+        <span class="item"><span class="symbol">₩₩</span>보통</span>
+        <span class="item"><span class="symbol">₩₩₩</span>비쌈</span>
+    </div>
+
+    <!-- ============================================
+         전체 보기 패널 (기본 활성)
+         ============================================ -->
+    <div class="region-panel active" id="panel-all">
+        <div class="region-header all-header">
+            <div class="region-header-en">ALL RESTAURANTS</div>
+            <div class="region-header-name">전체 맛집</div>
+            <div class="region-header-desc">구역 관계없이 모든 맛집을 한 번에</div>
+        </div>
+
+        <div class="restaurant-list">
+
+            <!-- 신화월드 - 순천미향 -->
+            <div class="restaurant-card">
+                <div class="rest-region-label">신화월드 · 안덕</div>
+                <div class="rest-top">
+                    <div class="rest-name">순천미향 제주산방산본점</div>
+                    <div class="rest-price">₩₩<span class="dim">₩</span></div>
+                </div>
+                <div class="rest-menu">
+                    <span class="menu-tag">순살 은갈치조림</span>
+                    <span class="menu-tag">제주 왕 은갈치조림</span>
+                    <span class="menu-tag">제주 왕 은갈치구이</span>
+                    <span class="menu-tag">제왕(제주)삼합</span>
+                </div>
+                <div class="rest-info">
+                    <div class="info-row address">
+                        <span class="info-icon">📍</span>
+                        <span class="info-text">
+                            제주 서귀포시 안덕면 사계남로216번길 24-73
+                            <a href="https://map.naver.com/p/search/순천미향%20제주산방산본점" target="_blank" class="map-link">지도 →</a>
+                        </span>
+                    </div>
+                    <div class="info-row hours">
+                        <span class="info-icon">🕐</span>
+                        <span class="info-text">
+                            10:00 ~ 20:00 <span class="lo">(L.O 19:00)</span>
+                            <span class="closed">목요일 휴무</span>
+                        </span>
+                    </div>
+                    <div class="info-row phone">
+                        <span class="info-icon">📞</span>
+                        <span class="info-text"><a href="tel:064-792-2004">064-792-2004</a></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-icon">🅿️</span>
+                        <span class="info-text">
+                            <span class="parking-badge yes">가능</span>
+                            <span class="parking-note">산방산 공영주차장 이용</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 한림 - 옹포바다횟집 -->
+            <div class="restaurant-card">
+                <div class="rest-region-label">한림</div>
+                <div class="rest-top">
+                    <div class="rest-name">옹포바다횟집</div>
+                    <div class="rest-price">₩₩<span class="dim">₩</span></div>
+                </div>
+                <div class="rest-menu">
+                    <span class="menu-tag">모듬회</span>
+                    <span class="menu-tag">광어</span>
+                    <span class="menu-tag">황돔</span>
+                    <span class="menu-tag">갓돔</span>
+                    <span class="menu-tag">구문쟁이</span>
+                    <span class="menu-tag">대방어</span>
+                </div>
+                <div class="rest-info">
+                    <div class="info-row address">
+                        <span class="info-icon">📍</span>
+                        <span class="info-text">
+                            제주 제주시 한림읍 옹포1길 24
+                            <a href="https://map.naver.com/p/search/옹포바다횟집" target="_blank" class="map-link">지도 →</a>
+                        </span>
+                    </div>
+                    <div class="info-row hours">
+                        <span class="info-icon">🕐</span>
+                        <span class="info-text">
+                            11:00 ~ 22:00 <span class="lo">(L.O 20:30)</span>
+                        </span>
+                    </div>
+                    <div class="info-row phone">
+                        <span class="info-icon">📞</span>
+                        <span class="info-text"><a href="tel:0507-1352-1406">0507-1352-1406</a></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-icon">🅿️</span>
+                        <span class="info-text">
+                            <span class="parking-badge maybe">가능</span>
+                            <span class="parking-note">전용 주차장 없음</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 한림 - 금능반지하 -->
+            <div class="restaurant-card">
+                <div class="rest-region-label">한림</div>
+                <div class="rest-top">
+                    <div class="rest-name">금능반지하</div>
+                    <div class="rest-price">₩<span class="dim">₩₩</span></div>
+                </div>
+                <div class="rest-menu">
+                    <span class="menu-tag">학센&amp;감자튀김</span>
+                    <span class="menu-tag">매콤떡볶이</span>
+                    <span class="menu-tag">해물라면</span>
+                    <span class="menu-tag">흑돼지 포카치아</span>
+                    <span class="menu-tag">하이볼</span>
+                </div>
+                <div class="rest-info">
+                    <div class="info-row address">
+                        <span class="info-icon">📍</span>
+                        <span class="info-text">
+                            제주 제주시 한림읍 금능9길 30
+                            <a href="https://map.naver.com/p/search/금능반지하" target="_blank" class="map-link">지도 →</a>
+                        </span>
+                    </div>
+                    <div class="info-row hours">
+                        <span class="info-icon">🕐</span>
+                        <span class="info-text">
+                            17:00 ~ 24:00
+                            <span class="closed">목요일 휴무</span>
+                        </span>
+                    </div>
+                    <div class="info-row phone">
+                        <span class="info-icon">📞</span>
+                        <span class="info-text"><a href="tel:010-4438-4337">010-4438-4337</a></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-icon">🅿️</span>
+                        <span class="info-text">
+                            <span class="parking-badge maybe">가능</span>
+                            <span class="parking-note">전용 주차장 없음</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 제주시 - 숙성도 -->
+            <div class="restaurant-card">
+                <div class="rest-region-label">제주시</div>
+                <div class="rest-top">
+                    <div class="rest-name">숙성도 제주본점</div>
+                    <div class="rest-price">₩₩<span class="dim">₩</span></div>
+                </div>
+                <div class="rest-menu">
+                    <span class="menu-tag">흑돼지</span>
+                    <span class="menu-tag">뼈등심</span>
+                    <span class="menu-tag">뼈목살</span>
+                    <span class="menu-tag">뼈대갈비</span>
+                    <span class="menu-tag">이백살</span>
+                </div>
+                <div class="rest-info">
+                    <div class="info-row address">
+                        <span class="info-icon">📍</span>
+                        <span class="info-text">
+                            제주 제주시 제원길 30 (2, 3층)
+                            <a href="https://map.naver.com/p/search/숙성도%20제주본점" target="_blank" class="map-link">지도 →</a>
+                        </span>
+                    </div>
+                    <div class="info-row hours">
+                        <span class="info-icon">🕐</span>
+                        <span class="info-text">
+                            11:30 ~ 22:00 <span class="lo">(L.O 21:10)</span>
+                        </span>
+                    </div>
+                    <div class="info-row phone">
+                        <span class="info-icon">📞</span>
+                        <span class="info-text"><a href="tel:064-743-8877">064-743-8877</a></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-icon">🅿️</span>
+                        <span class="info-text">
+                            <span class="parking-badge yes">가능</span>
+                            <span class="parking-note">전용 주차장 있음</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 애월 - 고기장 -->
+            <div class="restaurant-card">
+                <div class="rest-region-label">애월</div>
+                <div class="rest-top">
+                    <div class="rest-name">고기장</div>
+                    <div class="rest-price">₩₩<span class="dim">₩</span></div>
+                </div>
+                <div class="rest-menu">
+                    <span class="menu-tag">흑돼지</span>
+                    <span class="menu-tag">통목살</span>
+                    <span class="menu-tag">특상 삼겹살</span>
+                    <span class="menu-tag">특상 오겹살</span>
+                    <span class="menu-tag">가브리살</span>
+                    <span class="menu-tag">항정살</span>
+                </div>
+                <div class="rest-info">
+                    <div class="info-row address">
+                        <span class="info-icon">📍</span>
+                        <span class="info-text">
+                            제주 제주시 서해안로 446-1
+                            <a href="https://map.naver.com/p/search/고기장%20제주" target="_blank" class="map-link">지도 →</a>
+                        </span>
+                    </div>
+                    <div class="info-row hours">
+                        <span class="info-icon">🕐</span>
+                        <span class="info-text">
+                            12:00 ~ 22:00
+                            <span class="lo">(브레이크 15:00~16:30)</span>
+                        </span>
+                    </div>
+                    <div class="info-row phone">
+                        <span class="info-icon">📞</span>
+                        <span class="info-text"><a href="tel:0507-1446-1514">0507-1446-1514</a></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-icon">🅿️</span>
+                        <span class="info-text">
+                            <span class="parking-badge yes">가능</span>
+                            <span class="parking-note">전용 주차장 있음</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ============================================
+         구역별 패널
+         ============================================ -->
+
+    <!-- 한경 -->
+    <div class="region-panel" id="panel-hangyeong">
+        <div class="region-header">
+            <div class="region-header-en">HANGYEONG</div>
+            <div class="region-header-name">한경</div>
+            <div class="region-header-desc">서쪽 끝 · 차귀도·수월봉 인근</div>
+        </div>
+        <div class="restaurant-list">
+            <div class="empty-card">
+                <span class="big-icon">🌊</span>
+                <div class="text">한경 맛집 작성 중</div>
+                <div class="sub">바다 끝 노을 보며 식사할 곳</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 한림 -->
+    <div class="region-panel" id="panel-hanlim">
+        <div class="region-header">
+            <div class="region-header-en">HANLIM</div>
+            <div class="region-header-name">한림</div>
+            <div class="region-header-desc">서북부 해안 · 협재·금능 해변 인근</div>
+        </div>
+        <div class="restaurant-list">
+
+            <div class="restaurant-card">
+                <div class="rest-top">
+                    <div class="rest-name">옹포바다횟집</div>
+                    <div class="rest-price">₩₩<span class="dim">₩</span></div>
+                </div>
+                <div class="rest-menu">
+                    <span class="menu-tag">모듬회</span>
+                    <span class="menu-tag">광어</span>
+                    <span class="menu-tag">황돔</span>
+                    <span class="menu-tag">갓돔</span>
+                    <span class="menu-tag">구문쟁이</span>
+                    <span class="menu-tag">대방어</span>
+                </div>
+                <div class="rest-info">
+                    <div class="info-row address">
+                        <span class="info-icon">📍</span>
+                        <span class="info-text">
+                            제주 제주시 한림읍 옹포1길 24
+                            <a href="https://map.naver.com/p/search/옹포바다횟집" target="_blank" class="map-link">지도 →</a>
+                        </span>
+                    </div>
+                    <div class="info-row hours">
+                        <span class="info-icon">🕐</span>
+                        <span class="info-text">
+                            11:00 ~ 22:00 <span class="lo">(L.O 20:30)</span>
+                        </span>
+                    </div>
+                    <div class="info-row phone">
+                        <span class="info-icon">📞</span>
+                        <span class="info-text"><a href="tel:0507-1352-1406">0507-1352-1406</a></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-icon">🅿️</span>
+                        <span class="info-text">
+                            <span class="parking-badge maybe">가능</span>
+                            <span class="parking-note">전용 주차장 없음</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="restaurant-card">
+                <div class="rest-top">
+                    <div class="rest-name">금능반지하</div>
+                    <div class="rest-price">₩<span class="dim">₩₩</span></div>
+                </div>
+                <div class="rest-menu">
+                    <span class="menu-tag">학센&amp;감자튀김</span>
+                    <span class="menu-tag">매콤떡볶이</span>
+                    <span class="menu-tag">해물라면</span>
+                    <span class="menu-tag">흑돼지 포카치아</span>
+                    <span class="menu-tag">하이볼</span>
+                </div>
+                <div class="rest-info">
+                    <div class="info-row address">
+                        <span class="info-icon">📍</span>
+                        <span class="info-text">
+                            제주 제주시 한림읍 금능9길 30
+                            <a href="https://map.naver.com/p/search/금능반지하" target="_blank" class="map-link">지도 →</a>
+                        </span>
+                    </div>
+                    <div class="info-row hours">
+                        <span class="info-icon">🕐</span>
+                        <span class="info-text">
+                            17:00 ~ 24:00
+                            <span class="closed">목요일 휴무</span>
+                        </span>
+                    </div>
+                    <div class="info-row phone">
+                        <span class="info-icon">📞</span>
+                        <span class="info-text"><a href="tel:010-4438-4337">010-4438-4337</a></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-icon">🅿️</span>
+                        <span class="info-text">
+                            <span class="parking-badge maybe">가능</span>
+                            <span class="parking-note">전용 주차장 없음</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 애월 -->
+    <div class="region-panel" id="panel-aewol">
+        <div class="region-header">
+            <div class="region-header-en">AEWOL</div>
+            <div class="region-header-name">애월</div>
+            <div class="region-header-desc">서북부 해안 · 카페·바다 뷰</div>
+        </div>
+        <div class="restaurant-list">
+
+            <div class="restaurant-card">
+                <div class="rest-top">
+                    <div class="rest-name">고기장</div>
+                    <div class="rest-price">₩₩<span class="dim">₩</span></div>
+                </div>
+                <div class="rest-menu">
+                    <span class="menu-tag">흑돼지</span>
+                    <span class="menu-tag">통목살</span>
+                    <span class="menu-tag">특상 삼겹살</span>
+                    <span class="menu-tag">특상 오겹살</span>
+                    <span class="menu-tag">가브리살</span>
+                    <span class="menu-tag">항정살</span>
+                </div>
+                <div class="rest-info">
+                    <div class="info-row address">
+                        <span class="info-icon">📍</span>
+                        <span class="info-text">
+                            제주 제주시 서해안로 446-1
+                            <a href="https://map.naver.com/p/search/고기장%20제주" target="_blank" class="map-link">지도 →</a>
+                        </span>
+                    </div>
+                    <div class="info-row hours">
+                        <span class="info-icon">🕐</span>
+                        <span class="info-text">
+                            12:00 ~ 22:00
+                            <span class="lo">(브레이크 15:00~16:30)</span>
+                        </span>
+                    </div>
+                    <div class="info-row phone">
+                        <span class="info-icon">📞</span>
+                        <span class="info-text"><a href="tel:0507-1446-1514">0507-1446-1514</a></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-icon">🅿️</span>
+                        <span class="info-text">
+                            <span class="parking-badge yes">가능</span>
+                            <span class="parking-note">전용 주차장 있음</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 제주시 -->
+    <div class="region-panel" id="panel-jeju">
+        <div class="region-header">
+            <div class="region-header-en">JEJU CITY</div>
+            <div class="region-header-name">제주시</div>
+            <div class="region-header-desc">공항 인근 · 도시 식당가</div>
+        </div>
+        <div class="restaurant-list">
+
+            <div class="restaurant-card">
+                <div class="rest-top">
+                    <div class="rest-name">숙성도 제주본점</div>
+                    <div class="rest-price">₩₩<span class="dim">₩</span></div>
+                </div>
+                <div class="rest-menu">
+                    <span class="menu-tag">흑돼지</span>
+                    <span class="menu-tag">뼈등심</span>
+                    <span class="menu-tag">뼈목살</span>
+                    <span class="menu-tag">뼈대갈비</span>
+                    <span class="menu-tag">이백살</span>
+                </div>
+                <div class="rest-info">
+                    <div class="info-row address">
+                        <span class="info-icon">📍</span>
+                        <span class="info-text">
+                            제주 제주시 제원길 30 (2, 3층)
+                            <a href="https://map.naver.com/p/search/숙성도%20제주본점" target="_blank" class="map-link">지도 →</a>
+                        </span>
+                    </div>
+                    <div class="info-row hours">
+                        <span class="info-icon">🕐</span>
+                        <span class="info-text">
+                            11:30 ~ 22:00 <span class="lo">(L.O 21:10)</span>
+                        </span>
+                    </div>
+                    <div class="info-row phone">
+                        <span class="info-icon">📞</span>
+                        <span class="info-text"><a href="tel:064-743-8877">064-743-8877</a></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-icon">🅿️</span>
+                        <span class="info-text">
+                            <span class="parking-badge yes">가능</span>
+                            <span class="parking-note">전용 주차장 있음</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 신화월드 -->
+    <div class="region-panel" id="panel-shinhwa">
+        <div class="region-header">
+            <div class="region-header-en">SHINHWA WORLD · ANDEOK</div>
+            <div class="region-header-name">신화월드 · 안덕</div>
+            <div class="region-header-desc">숙소 인근 · 산방산 일대</div>
+        </div>
+        <div class="restaurant-list">
+
+            <div class="restaurant-card">
+                <div class="rest-top">
+                    <div class="rest-name">순천미향 제주산방산본점</div>
+                    <div class="rest-price">₩₩<span class="dim">₩</span></div>
+                </div>
+                <div class="rest-menu">
+                    <span class="menu-tag">순살 은갈치조림</span>
+                    <span class="menu-tag">제주 왕 은갈치조림</span>
+                    <span class="menu-tag">제주 왕 은갈치구이</span>
+                    <span class="menu-tag">제왕(제주)삼합</span>
+                </div>
+                <div class="rest-info">
+                    <div class="info-row address">
+                        <span class="info-icon">📍</span>
+                        <span class="info-text">
+                            제주 서귀포시 안덕면 사계남로216번길 24-73
+                            <a href="https://map.naver.com/p/search/순천미향%20제주산방산본점" target="_blank" class="map-link">지도 →</a>
+                        </span>
+                    </div>
+                    <div class="info-row hours">
+                        <span class="info-icon">🕐</span>
+                        <span class="info-text">
+                            10:00 ~ 20:00 <span class="lo">(L.O 19:00)</span>
+                            <span class="closed">목요일 휴무</span>
+                        </span>
+                    </div>
+                    <div class="info-row phone">
+                        <span class="info-icon">📞</span>
+                        <span class="info-text"><a href="tel:064-792-2004">064-792-2004</a></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-icon">🅿️</span>
+                        <span class="info-text">
+                            <span class="parking-badge yes">가능</span>
+                            <span class="parking-note">산방산 공영주차장 이용</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 대정 -->
+    <div class="region-panel" id="panel-daejeong">
+        <div class="region-header">
+            <div class="region-header-en">DAEJEONG</div>
+            <div class="region-header-name">대정</div>
+            <div class="region-header-desc">서남부 · 모슬포·송악산 인근</div>
+        </div>
+        <div class="restaurant-list">
+            <div class="empty-card">
+                <span class="big-icon">🐟</span>
+                <div class="text">대정 맛집 작성 중</div>
+                <div class="sub">방어회·해산물·어시장</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 중문 -->
+    <div class="region-panel" id="panel-jungmun">
+        <div class="region-header">
+            <div class="region-header-en">JUNGMUN</div>
+            <div class="region-header-name">중문</div>
+            <div class="region-header-desc">중문관광단지 · 색달해변 인근</div>
+        </div>
+        <div class="restaurant-list">
+            <div class="empty-card">
+                <span class="big-icon">🌅</span>
+                <div class="text">중문 맛집 작성 중</div>
+                <div class="sub">관광지 인근 식당·해안 카페</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 서귀포 -->
+    <div class="region-panel" id="panel-seogwipo">
+        <div class="region-header">
+            <div class="region-header-en">SEOGWIPO</div>
+            <div class="region-header-name">서귀포</div>
+            <div class="region-header-desc">남부 도심 · 올레시장·정방폭포</div>
+        </div>
+        <div class="restaurant-list">
+            <div class="empty-card">
+                <span class="big-icon">🍊</span>
+                <div class="text">서귀포 맛집 작성 중</div>
+                <div class="sub">갈치조림·고등어구이·향토음식</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 구역 선택 스크립트 ===== -->
+    <script>
+        function selectRegion(regionId) {
+            // 모든 SVG 라벨 비활성화
+            document.querySelectorAll('.region-pin').forEach(function(pin) {
+                pin.classList.remove('active');
+            });
+            // 전체 보기 버튼 비활성화
+            document.querySelector('.view-all-btn').classList.remove('active');
+            // 모든 패널 숨기기
+            document.querySelectorAll('.region-panel').forEach(function(panel) {
+                panel.classList.remove('active');
+            });
+
+            // 활성화
+            if (regionId === 'all') {
+                document.querySelector('.view-all-btn').classList.add('active');
+            } else {
+                const pin = document.querySelector('.region-pin[data-region="' + regionId + '"]');
+                if (pin) pin.classList.add('active');
+            }
+
+            const panel = document.getElementById('panel-' + regionId);
+            if (panel) panel.classList.add('active');
+        }
+    </script>
+
+</body>
+</html>

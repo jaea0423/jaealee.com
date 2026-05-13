@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>linux@z:~/drive/linux</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+        --bg-outer: #1a1a1a;
+        --bg-screen: #001b14;       /* PuTTY 다크그린 */
+        --bg-titlebar: #2d2d2d;
+        --text: #d4d0c8;            /* CRT 인광 회색 */
+        --text-bright: #ffffff;
+        --text-dim: #6b8a7e;
+        --amber: #ffb000;           /* 호박색 (옛날 모니터) */
+        --green: #4ade80;           /* 실행 가능 */
+        --blue: #60a5fa;            /* 디렉토리 */
+        --red: #ef4444;             /* 시험 강조 */
+        --border: #2a4a3e;
+    }
+
+    html, body {
+        min-height: 100vh;
+        background: var(--bg-outer);
+        font-family: 'IBM Plex Mono', 'Pretendard', monospace;
+        color: var(--text);
+        overflow-x: hidden;
+        background-image: radial-gradient(ellipse at 50% 0%, #2a2a2a 0%, #0a0a0a 70%);
+    }
+
+    /* === CRT 스캔라인 === */
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: repeating-linear-gradient(
+            0deg,
+            rgba(0, 0, 0, 0.15) 0px,
+            rgba(0, 0, 0, 0.15) 1px,
+            transparent 1px,
+            transparent 3px
+        );
+        pointer-events: none;
+        z-index: 100;
+        opacity: 0.5;
+    }
+
+    /* === CRT 깜빡임 === */
+    body::after {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: rgba(255, 176, 0, 0.012);
+        pointer-events: none;
+        z-index: 99;
+        animation: flicker 0.15s infinite;
+    }
+
+    @keyframes flicker {
+        0%, 100% { opacity: 0.85; }
+        50% { opacity: 1; }
+    }
+
+    /* === 메인 터미널 윈도우 === */
+    .terminal {
+        max-width: 1100px;
+        margin: 32px auto;
+        background: var(--bg-screen);
+        border-radius: 8px;
+        box-shadow: 
+            0 0 0 1px #444,
+            0 30px 80px rgba(0, 0, 0, 0.7),
+            0 0 60px rgba(255, 176, 0, 0.05);
+        overflow: hidden;
+        position: relative;
+    }
+
+    /* === 윈도우 타이틀바 === */
+    .titlebar {
+        background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
+        padding: 10px 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-bottom: 1px solid #1a1a1a;
+        position: relative;
+        z-index: 2;
+    }
+
+    .traffic-lights { display: flex; gap: 8px; }
+
+    .light {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #555;
+    }
+    .light.red { background: #ff5f57; }
+    .light.yellow { background: #febc2e; }
+    .light.green { background: #28c840; }
+
+    .window-title {
+        flex: 1;
+        text-align: center;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 12px;
+        color: #999;
+        letter-spacing: 0.05em;
+    }
+
+    .tab-info {
+        font-size: 10px;
+        color: #666;
+        letter-spacing: 0.1em;
+    }
+
+    /* === 터미널 본문 === */
+    .terminal-body {
+        padding: 32px 36px 48px;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 14px;
+        line-height: 1.7;
+        position: relative;
+        min-height: 70vh;
+    }
+
+    .terminal-body::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.4) 100%);
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .terminal-body > * { position: relative; z-index: 2; }
+
+    /* === 프롬프트 === */
+    .prompt-line { margin-bottom: 8px; color: var(--text); }
+
+    .user { color: var(--green); font-weight: 600; }
+    .at { color: var(--text-dim); }
+    .host { color: var(--green); font-weight: 600; }
+    .colon { color: var(--text-dim); }
+    .path { color: var(--blue); font-weight: 600; }
+    .dollar { color: var(--amber); margin: 0 6px; }
+    .cmd { color: var(--text-bright); }
+    .arg { color: var(--amber); }
+    .flag { color: #c084fc; }
+    .comment { color: var(--text-dim); font-style: italic; }
+    .output { color: var(--text); }
+
+    /* 깜빡이는 커서 */
+    .cursor {
+        display: inline-block;
+        width: 9px;
+        height: 16px;
+        background: var(--amber);
+        margin-left: 4px;
+        vertical-align: middle;
+        animation: blink 1s step-end infinite;
+        box-shadow: 0 0 8px var(--amber);
+    }
+
+    @keyframes blink {
+        0%, 50% { opacity: 1; }
+        51%, 100% { opacity: 0; }
+    }
+
+    /* === ASCII 배너 === */
+    .ascii-banner {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 12px;
+        line-height: 1.2;
+        color: var(--amber);
+        text-shadow: 0 0 8px rgba(255, 176, 0, 0.5);
+        white-space: pre;
+        margin: 20px 0 24px;
+        font-weight: 600;
+        overflow-x: auto;
+    }
+
+    /* === motd === */
+    .motd {
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--amber);
+        background: rgba(255, 176, 0, 0.03);
+        padding: 14px 18px;
+        margin: 20px 0 32px;
+        font-size: 12.5px;
+        line-height: 1.8;
+    }
+
+    .motd-title {
+        color: var(--amber);
+        font-weight: 600;
+        margin-bottom: 6px;
+        letter-spacing: 0.05em;
+    }
+
+    .motd-row { color: var(--text-dim); }
+    .motd-row .label { color: var(--text); display: inline-block; min-width: 110px; }
+    .motd-row .val { color: var(--amber); }
+
+    /* === 섹션 프롬프트 === */
+    .section-prompt {
+        margin: 28px 0 12px;
+        font-size: 14px;
+    }
+
+    /* === ls 출력 === */
+    .ls-output {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        margin: 8px 0 12px;
+        font-size: 13.5px;
+    }
+
+    /* 각 파일 행 */
+    .ls-row {
+        display: grid;
+        grid-template-columns: 100px 60px minmax(0, 1fr) auto;
+        gap: 16px;
+        padding: 7px 10px;
+        border-radius: 3px;
+        text-decoration: none;
+        color: var(--text);
+        transition: all 0.12s;
+        align-items: center;
+    }
+
+    .ls-row:hover { background: rgba(255, 176, 0, 0.08); }
+
+    .perm { 
+        color: var(--text-dim); 
+        font-size: 12px; 
+        white-space: nowrap;
+    }
+    .size { 
+        color: var(--text-dim); 
+        font-size: 12px; 
+        text-align: right; 
+        white-space: nowrap;
+    }
+
+    .ls-name { 
+        color: var(--blue); 
+        font-weight: 600; 
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .ls-row:hover .ls-name {
+        color: var(--amber);
+        text-shadow: 0 0 6px rgba(255, 176, 0, 0.4);
+    }
+
+    .ls-comment {
+        font-family: 'Pretendard', sans-serif;
+        color: var(--text-dim);
+        font-size: 12px;
+        font-weight: 400;
+        margin-left: 10px;
+    }
+
+    /* === 1차시/2차시 미니 버튼 === */
+    .lec-mini {
+        display: inline-flex;
+        gap: 6px;
+        margin-left: auto;
+    }
+
+    .lec-link {
+        font-size: 11px;
+        color: var(--text-dim);
+        text-decoration: none;
+        padding: 2px 8px;
+        border: 1px solid var(--border);
+        border-radius: 2px;
+        background: rgba(0, 0, 0, 0.3);
+        transition: all 0.12s;
+        font-weight: 500;
+    }
+
+    .lec-link:hover {
+        color: var(--amber);
+        border-color: var(--amber);
+        background: rgba(255, 176, 0, 0.08);
+        box-shadow: 0 0 6px rgba(255, 176, 0, 0.3);
+    }
+
+    /* === 비활성 (지난 내용) === */
+    .ls-row.disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+    }
+    .ls-row.disabled:hover {
+        background: transparent;
+    }
+    .ls-row.disabled .ls-name {
+        color: var(--text-dim);
+        text-decoration: line-through;
+        text-decoration-color: rgba(107, 138, 126, 0.5);
+    }
+    .ls-row.disabled:hover .ls-name {
+        color: var(--text-dim);
+        text-shadow: none;
+    }
+
+    /* 비활성 lec-link (클릭 불가) */
+    .lec-link.disabled {
+        color: var(--text-dim);
+        opacity: 0.4;
+        cursor: not-allowed;
+        pointer-events: none;
+        text-decoration: line-through;
+        text-decoration-color: rgba(107, 138, 126, 0.5);
+    }
+    .lec-link.disabled:hover {
+        color: var(--text-dim);
+        border-color: var(--border);
+        background: rgba(0, 0, 0, 0.3);
+        box-shadow: none;
+    }
+
+    /* === 시험 행 === */
+    .ls-row.exam .ls-name { color: var(--red); }
+    .ls-row.exam:hover .ls-name {
+        color: var(--red);
+        text-shadow: 0 0 6px rgba(239, 68, 68, 0.5);
+    }
+    .ls-row.exam:hover { background: rgba(239, 68, 68, 0.08); }
+    .ls-row.exam .perm { color: rgba(239, 68, 68, 0.5); }
+    .ls-row.exam { cursor: pointer; }
+
+    .exam-toggle {
+        font-size: 11px;
+        color: rgba(239, 68, 68, 0.8);
+        padding: 2px 8px;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 2px;
+        background: rgba(0, 0, 0, 0.3);
+        transition: all 0.12s;
+    }
+
+    .ls-row.exam:hover .exam-toggle {
+        background: rgba(239, 68, 68, 0.1);
+        border-color: var(--red);
+        color: var(--red);
+    }
+
+    /* 시험 펼침 영역 */
+    .exam-expand {
+        display: none;
+        margin-left: 102px;
+        margin-top: 4px;
+        margin-bottom: 8px;
+        padding: 12px 16px;
+        border: 1px dashed rgba(239, 68, 68, 0.3);
+        border-radius: 3px;
+        background: rgba(239, 68, 68, 0.04);
+    }
+
+    .ls-row.exam.expanded + .exam-expand {
+        display: block;
+    }
+
+    .exam-expand-title {
+        font-size: 11px;
+        color: var(--red);
+        margin-bottom: 8px;
+        letter-spacing: 0.1em;
+    }
+
+    .exam-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .exam-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 3px;
+        color: var(--text);
+        text-decoration: none;
+        font-family: 'Pretendard', sans-serif;
+        font-size: 12.5px;
+        transition: all 0.12s;
+    }
+
+    .exam-btn:hover {
+        background: rgba(239, 68, 68, 0.12);
+        border-color: var(--red);
+        box-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
+    }
+
+    .exam-btn .icon {
+        font-family: 'IBM Plex Mono', monospace;
+        color: var(--red);
+        font-weight: 600;
+    }
+
+    /* === 접이식 섹션 (Lec/Prac/HW) === */
+    .collapsible {
+        margin-top: 32px;
+    }
+
+    /* 섹션 헤더 (클릭 가능) */
+    .collapsible-header {
+        display: grid;
+        grid-template-columns: 100px 60px minmax(0, 1fr) auto;
+        gap: 16px;
+        padding: 8px 10px;
+        border: 1px solid var(--border);
+        border-radius: 3px;
+        background: rgba(255, 176, 0, 0.04);
+        cursor: pointer;
+        align-items: center;
+        transition: all 0.15s;
+        text-decoration: none;
+        color: var(--text);
+    }
+
+    .collapsible-header:hover {
+        background: rgba(255, 176, 0, 0.08);
+        border-color: rgba(255, 176, 0, 0.4);
+    }
+
+    .collapsible-header .perm { color: var(--amber); opacity: 0.7; }
+    .collapsible-header .ls-name { color: var(--amber); }
+    .collapsible-header:hover .ls-name {
+        text-shadow: 0 0 6px rgba(255, 176, 0, 0.4);
+    }
+
+    /* 펼침 토글 표시 */
+    .collapse-toggle {
+        font-size: 11px;
+        color: var(--amber);
+        padding: 2px 10px;
+        border: 1px solid rgba(255, 176, 0, 0.3);
+        border-radius: 2px;
+        background: rgba(0, 0, 0, 0.3);
+        font-family: 'IBM Plex Mono', monospace;
+        white-space: nowrap;
+    }
+
+    /* 섹션 본문 (기본은 숨김) */
+    .collapsible-body {
+        display: none;
+        margin-top: 4px;
+        padding: 8px 0 4px 8px;
+        border-left: 1px dashed var(--border);
+        margin-left: 14px;
+    }
+
+    .collapsible.expanded .collapsible-body {
+        display: block;
+    }
+
+    /* 펼친 상태에서 토글 텍스트 변경은 JS로 */
+
+    /* === 푸터 === */
+    .terminal-footer {
+        margin-top: 48px;
+        padding-top: 16px;
+        border-top: 1px dashed var(--border);
+        font-size: 12px;
+        color: var(--text-dim);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .terminal-footer a {
+        color: var(--text-dim);
+        text-decoration: none;
+        transition: color 0.15s;
+    }
+
+    .terminal-footer a:hover { color: var(--amber); }
+
+    /* 반응형 */
+    @media (max-width: 768px) {
+        .terminal { margin: 12px; border-radius: 6px; }
+        .terminal-body { padding: 24px 18px 32px; font-size: 12px; }
+        .ascii-banner { font-size: 8px; }
+        .ls-row,
+        .collapsible-header {
+            grid-template-columns: 1fr auto;
+            gap: 8px;
+            padding: 10px 8px;
+        }
+        .perm, .size { display: none; }
+        .ls-comment { display: block; margin-left: 0; margin-top: 2px; }
+        .exam-expand { margin-left: 0; }
+        .collapsible-body { margin-left: 0; padding-left: 4px; }
+        .window-title { font-size: 10px; }
+        .tab-info { display: none; }
+    }
+</style>
+</head>
+<body>
+
+<div class="terminal">
+
+    <!-- 윈도우 타이틀바 (macOS 스타일) -->
+    <div class="titlebar">
+        <div class="traffic-lights">
+            <span class="light red"></span>
+            <span class="light yellow"></span>
+            <span class="light green"></span>
+        </div>
+        <div class="window-title">linux@z: ~/drive/linux — bash — 100×40</div>
+        <div class="tab-info">tmux 0:linux*</div>
+    </div>
+
+    <!-- 터미널 본문 -->
+    <div class="terminal-body">
+
+        <!-- ssh 접속 라인 -->
+        <div class="prompt-line">
+            <span class="cmd">$ </span><span class="cmd">ssh</span> <span class="arg">z@kangwon.ac.kr</span>
+        </div>
+        <div class="output">
+            <span class="comment">Last login: Mon May  4 12:34:56 2026 from 10.0.0.42</span>
+        </div>
+
+        <!-- ASCII 펭귄 + 배너 -->
+        <div class="ascii-banner">     .--.         _      _                              
+    |o_o |       | |    (_)                             
+    |:_/ |       | |     _ _ __  _   ___  __            
+   //   \ \      | |    | | '_ \| | | \ \/ /            
+  (|     | )     | |____| | | | | |_| |>  <             
+  /'\_   _/`\    |______|_|_| |_|\__,_/_/\_\            
+  \___)=(___/                                            
+
+  +-------------------------------------------+
+  |   L I N U X  ·  P R O G R A M M I N G     |
+  +-------------------------------------------+</div>
+
+        <!-- motd -->
+        <div class="motd">
+            <div class="motd-title">// Welcome to Linux Programming Course</div>
+            <div class="motd-row"><span class="label">System........:</span> <span class="val">Ubuntu 22.04 LTS</span></div>
+            <div class="motd-row"><span class="label">Kernel........:</span> <span class="val">5.15.0-generic</span></div>
+            <div class="motd-row"><span class="label">Course........:</span> <span class="val">강원대학교 컴퓨터공학과 · 2025</span></div>
+            <div class="motd-row"><span class="label">Total weeks...:</span> <span class="val">15</span> <span class="comment"># 중간 = Week 8 / 기말 = Week 9</span></div>
+            <div class="motd-row"><span class="label">Topics........:</span> <span class="val">shell, grep, awk, gcc, fork, signal, ipc</span></div>
+        </div>
+
+        <!-- pwd -->
+        <div class="prompt-line">
+            <span class="user">z</span><span class="at">@</span><span class="host">drive</span><span class="colon">:</span><span class="path">~/linux</span><span class="dollar">$</span><span class="cmd">pwd</span>
+        </div>
+        <div class="output">/home/z/drive/linux</div>
+
+        <!-- 중간고사 (week08 위, 비활성) -->
+        <div class="section-prompt prompt-line" style="margin-top: 28px;">
+            <span class="user">z</span><span class="at">@</span><span class="host">drive</span><span class="colon">:</span><span class="path">~/linux</span><span class="dollar">$</span><span class="cmd">cat</span> <span class="arg">.midterm</span> <span class="comment"># 중간고사 (지난 시험)</span>
+        </div>
+
+        <div class="ls-row exam disabled" onclick="toggleExam(this)">
+            <span class="perm">-rwx------</span>
+            <span class="size">8.0K</span>
+            <span class="ls-name">midterm.exam<span class="ls-comment"># 중간고사 (지난 시험)</span></span>
+            <span class="lec-mini">
+                <span class="exam-toggle" style="opacity: 0.5;">[done]</span>
+            </span>
+        </div>
+
+        <!-- ls -la (전반부) -->
+        <div class="section-prompt prompt-line" style="margin-top: 28px;">
+            <span class="user">z</span><span class="at">@</span><span class="host">drive</span><span class="colon">:</span><span class="path">~/linux</span><span class="dollar">$</span><span class="cmd">ls</span> <span class="flag">-la</span> <span class="arg">week0*</span> <span class="comment"># 1~9주차 디렉토리</span>
+        </div>
+        <div class="output" style="margin: 4px 0 8px; color: var(--text-dim); font-size: 12px;">
+            total 9
+        </div>
+
+        <div class="ls-output">
+
+            <!-- Week 01 (지난 내용) -->
+            <div class="ls-row disabled">
+                <span class="perm">drwxr-xr-x</span>
+                <span class="size">4.0K</span>
+                <span class="ls-name">week01/<span class="ls-comment"># 1주차 (지난 내용)</span></span>
+                <span class="lec-mini">
+                    <span class="lec-link disabled">lec1</span>
+                    <span class="lec-link disabled">lec2</span>
+                </span>
+            </div>
+
+            <!-- Week 02 (지난 내용) -->
+            <div class="ls-row disabled">
+                <span class="perm">drwxr-xr-x</span>
+                <span class="size">4.0K</span>
+                <span class="ls-name">week02/<span class="ls-comment"># 2주차 (지난 내용)</span></span>
+                <span class="lec-mini">
+                    <span class="lec-link disabled">lec1</span>
+                    <span class="lec-link disabled">lec2</span>
+                </span>
+            </div>
+
+            <!-- Week 03 (지난 내용) -->
+            <div class="ls-row disabled">
+                <span class="perm">drwxr-xr-x</span>
+                <span class="size">4.0K</span>
+                <span class="ls-name">week03/<span class="ls-comment"># 3주차 (지난 내용)</span></span>
+                <span class="lec-mini">
+                    <span class="lec-link disabled">lec1</span>
+                    <span class="lec-link disabled">lec2</span>
+                </span>
+            </div>
+
+            <!-- Week 04 (지난 내용) -->
+            <div class="ls-row disabled">
+                <span class="perm">drwxr-xr-x</span>
+                <span class="size">4.0K</span>
+                <span class="ls-name">week04/<span class="ls-comment"># 4주차 (지난 내용)</span></span>
+                <span class="lec-mini">
+                    <span class="lec-link disabled">lec1</span>
+                    <span class="lec-link disabled">lec2</span>
+                </span>
+            </div>
+
+            <!-- Week 05 (지난 내용) -->
+            <div class="ls-row disabled">
+                <span class="perm">drwxr-xr-x</span>
+                <span class="size">4.0K</span>
+                <span class="ls-name">week05/<span class="ls-comment"># 5주차 (지난 내용)</span></span>
+                <span class="lec-mini">
+                    <span class="lec-link disabled">lec1</span>
+                    <span class="lec-link disabled">lec2</span>
+                </span>
+            </div>
+
+            <!-- Week 06 (지난 내용) -->
+            <div class="ls-row disabled">
+                <span class="perm">drwxr-xr-x</span>
+                <span class="size">4.0K</span>
+                <span class="ls-name">week06/<span class="ls-comment"># 6주차 (지난 내용)</span></span>
+                <span class="lec-mini">
+                    <span class="lec-link disabled">lec1</span>
+                    <span class="lec-link disabled">lec2</span>
+                </span>
+            </div>
+
+            <!-- Week 07 (지난 내용) -->
+            <div class="ls-row disabled">
+                <span class="perm">drwxr-xr-x</span>
+                <span class="size">4.0K</span>
+                <span class="ls-name">week07/<span class="ls-comment"># 7주차 (지난 내용)</span></span>
+                <span class="lec-mini">
+                    <span class="lec-link disabled">lec1</span>
+                    <span class="lec-link disabled">lec2</span>
+                </span>
+            </div>
+
+            <!-- Week 08: lec1 = 중간고사 / lec2 = 기말고사 범위 진도 -->
+            <div class="ls-row">
+                <span class="perm">drwxr-xr-x</span>
+                <span class="size">4.0K</span>
+                <span class="ls-name">week08/<span class="ls-comment"># 8주차 (lec1 = 중간고사 · lec2 = 기말 범위)</span></span>
+                <span class="lec-mini">
+                    <span class="lec-link disabled">lec1</span>
+                    <a href="week08/lec2.html" class="lec-link">lec2</a>
+                </span>
+            </div>
+
+            <!-- Week 09 -->
+            <div class="ls-row">
+                <span class="perm">drwxr-xr-x</span>
+                <span class="size">4.0K</span>
+                <span class="ls-name">week09/<span class="ls-comment"># 9주차</span></span>
+                <span class="lec-mini">
+                    <a href="week09/lec1.html" class="lec-link">lec1</a>
+                    <a href="week09/lec2.html" class="lec-link">lec2</a>
+                </span>
+            </div>
+
+        </div>
+
+        <!-- ls -la (후반부) -->
+        <div class="section-prompt prompt-line" style="margin-top: 28px;">
+            <span class="user">z</span><span class="at">@</span><span class="host">drive</span><span class="colon">:</span><span class="path">~/linux</span><span class="dollar">$</span><span class="cmd">ls</span> <span class="flag">-la</span> <span class="arg">week1*</span> <span class="comment"># 10~15주차 디렉토리</span>
+        </div>
+        <div class="output" style="margin: 4px 0 8px; color: var(--text-dim); font-size: 12px;">
+            total 6
+        </div>
+
+        <div class="ls-output">
+
+            <!-- Week 10 -->
+            <div class="ls-row">
+                <span class="perm">drwxr-xr-x</span>
+                <span class="size">4.0K</span>
+                <span class="ls-name">week10/<span class="ls-comment"># 10주차</span></span>
+                <span class="lec-mini">
+                    <a href="week10/lec1.html" class="lec-link">lec1</a>
+                    <a href="week10/lec2.html" class="lec-link">lec2</a>
+                </span>
+            </div>
+
+            <!-- Week 11 -->
+            <div class="ls-row">
+                <span class="perm">drwxr-xr-x</span>
+                <span class="size">4.0K</span>
+                <span class="ls-name">week11/<span class="ls-comment"># 11주차</span></span>
+                <span class="lec-mini">
+                    <a href="week11/lec1.html" class="lec-link">lec1</a>
+                    <a href="week11/lec2.html" class="lec-link">lec2</a>
+                </span>
+            </div>
+
+            <!-- Week 12 -->
+            <div class="ls-row">
+                <span class="perm">drwxr-xr-x</span>
+                <span class="size">4.0K</span>
+                <span class="ls-name">week12/<span class="ls-comment"># 12주차</span></span>
+                <span class="lec-mini">
+                    <a href="week12/lec1.html" class="lec-link">lec1</a>
+                    <a href="week12/lec2.html" class="lec-link">lec2</a>
+                </span>
+            </div>
+
+            <!-- Week 13 -->
+            <div class="ls-row">
+                <span class="perm">drwxr-xr-x</span>
+                <span class="size">4.0K</span>
+                <span class="ls-name">week13/<span class="ls-comment"># 13주차</span></span>
+                <span class="lec-mini">
+                    <a href="week13/lec1.html" class="lec-link">lec1</a>
+                    <a href="week13/lec2.html" class="lec-link">lec2</a>
+                </span>
+            </div>
+
+            <!-- Week 14 -->
+            <div class="ls-row">
+                <span class="perm">drwxr-xr-x</span>
+                <span class="size">4.0K</span>
+                <span class="ls-name">week14/<span class="ls-comment"># 14주차</span></span>
+                <span class="lec-mini">
+                    <a href="week14/lec1.html" class="lec-link">lec1</a>
+                    <a href="week14/lec2.html" class="lec-link">lec2</a>
+                </span>
+            </div>
+
+            <!-- Week 15 -->
+            <div class="ls-row">
+                <span class="perm">drwxr-xr-x</span>
+                <span class="size">4.0K</span>
+                <span class="ls-name">week15/<span class="ls-comment"># 15주차</span></span>
+                <span class="lec-mini">
+                    <a href="week15/lec1.html" class="lec-link">lec1</a>
+                    <a href="week15/lec2.html" class="lec-link">lec2</a>
+                </span>
+            </div>
+
+        </div>
+
+        <!-- 기말고사 (week15 아래) -->
+        <div class="section-prompt prompt-line" style="margin-top: 28px;">
+            <span class="user">z</span><span class="at">@</span><span class="host">drive</span><span class="colon">:</span><span class="path">~/linux</span><span class="dollar">$</span><span class="cmd">cat</span> <span class="arg">.final</span> <span class="comment"># 기말고사</span>
+        </div>
+
+        <div class="ls-row exam" onclick="toggleExam(this)">
+            <span class="perm">-rwx------</span>
+            <span class="size">8.0K</span>
+            <span class="ls-name">final.exam<span class="ls-comment"># 기말고사</span></span>
+            <span class="lec-mini">
+                <span class="exam-toggle">[+] open</span>
+            </span>
+        </div>
+        <div class="exam-expand">
+            <div class="exam-expand-title">// FINAL RESOURCES</div>
+            <div class="exam-buttons">
+                <a href="final/info.html" class="exam-btn">
+                    <span class="icon">①</span><span>시험정보</span>
+                </a>
+                <a href="final/notes.html" class="exam-btn">
+                    <span class="icon">②</span><span>정리노트</span>
+                </a>
+                <a href="final/problems.html" class="exam-btn">
+                    <span class="icon">③</span><span>문제은행</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- 강의자료 (Lectures) - 접이식                  -->
+        <!-- ============================================== -->
+        <div class="section-prompt prompt-line" style="margin-top: 36px;">
+            <span class="user">z</span><span class="at">@</span><span class="host">drive</span><span class="colon">:</span><span class="path">~/linux</span><span class="dollar">$</span><span class="cmd">ls</span> <span class="arg">materials/lectures/</span> <span class="comment"># 교수님 제공 강의자료</span>
+        </div>
+
+        <div class="collapsible" id="sec-lectures">
+            <!-- 섹션 헤더 (클릭하면 펼쳐짐) -->
+            <div class="collapsible-header" onclick="toggleSection(this)">
+                <span class="perm">drwxr-xr-x</span>
+                <span class="size">60K</span>
+                <span class="ls-name">lectures/<span class="ls-comment"># 강의자료 (Lec01 ~ Lec15)</span></span>
+                <span class="collapse-toggle">[+] 15 files</span>
+            </div>
+
+            <!-- 섹션 본문 (펼쳤을 때 보임) -->
+            <div class="collapsible-body">
+                <div class="ls-output">
+                    <div class="ls-row disabled">
+                        <span class="perm">-rw-r--r--</span><span class="size">2.4M</span>
+                        <span class="ls-name">Lec01</span>
+                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
+                    </div>
+                    <div class="ls-row disabled">
+                        <span class="perm">-rw-r--r--</span><span class="size">2.4M</span>
+                        <span class="ls-name">Lec02</span>
+                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
+                    </div>
+                    <div class="ls-row disabled">
+                        <span class="perm">-rw-r--r--</span><span class="size">2.4M</span>
+                        <span class="ls-name">Lec03</span>
+                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
+                    </div>
+                    <div class="ls-row disabled">
+                        <span class="perm">-rw-r--r--</span><span class="size">2.4M</span>
+                        <span class="ls-name">Lec04</span>
+                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
+                    </div>
+                    <div class="ls-row disabled">
+                        <span class="perm">-rw-r--r--</span><span class="size">2.4M</span>
+                        <span class="ls-name">Lec05</span>
+                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
+                    </div>
+                    <div class="ls-row disabled">
+                        <span class="perm">-rw-r--r--</span><span class="size">2.4M</span>
+                        <span class="ls-name">Lec06</span>
+                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
+                    </div>
+                    <div class="ls-row disabled">
+                        <span class="perm">-rw-r--r--</span><span class="size">2.4M</span>
+                        <span class="ls-name">Lec07</span>
+                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
+                    </div>
+                    <div class="ls-row disabled">
+                        <span class="perm">-rw-r--r--</span><span class="size">2.4M</span>
+                        <span class="ls-name">Lec08</span>
+                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
+                    </div>
+                    <div class="ls-row">
+                        <span class="perm">-rw-r--r--</span><span class="size">2.4M</span>
+                        <span class="ls-name">Lec09</span>
+                        <span class="lec-mini"><a href="materials/lectures/Lec09.html" class="lec-link">open</a></span>
+                    </div>
+                    <div class="ls-row">
+                        <span class="perm">-rw-r--r--</span><span class="size">2.4M</span>
+                        <span class="ls-name">Lec10</span>
+                        <span class="lec-mini"><a href="materials/lectures/Lec10.html" class="lec-link">open</a></span>
+                    </div>
+                    <div class="ls-row">
+                        <span class="perm">-rw-r--r--</span><span class="size">2.4M</span>
+                        <span class="ls-name">Lec11</span>
+                        <span class="lec-mini"><a href="materials/lectures/Lec11.html" class="lec-link">open</a></span>
+                    </div>
+                    <div class="ls-row">
+                        <span class="perm">-rw-r--r--</span><span class="size">2.4M</span>
+                        <span class="ls-name">Lec12</span>
+                        <span class="lec-mini"><a href="materials/lectures/Lec12.html" class="lec-link">open</a></span>
+                    </div>
+                    <div class="ls-row">
+                        <span class="perm">-rw-r--r--</span><span class="size">2.4M</span>
+                        <span class="ls-name">Lec13</span>
+                        <span class="lec-mini"><a href="materials/lectures/Lec13.html" class="lec-link">open</a></span>
+                    </div>
+                    <div class="ls-row">
+                        <span class="perm">-rw-r--r--</span><span class="size">2.4M</span>
+                        <span class="ls-name">Lec14</span>
+                        <span class="lec-mini"><a href="materials/lectures/Lec14.html" class="lec-link">open</a></span>
+                    </div>
+                    <div class="ls-row">
+                        <span class="perm">-rw-r--r--</span><span class="size">2.4M</span>
+                        <span class="ls-name">Lec15</span>
+                        <span class="lec-mini"><a href="materials/lectures/Lec15.html" class="lec-link">open</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- 실습 (Practices) - 접이식                     -->
+        <!-- ============================================== -->
+        <div class="section-prompt prompt-line" style="margin-top: 24px;">
+            <span class="user">z</span><span class="at">@</span><span class="host">drive</span><span class="colon">:</span><span class="path">~/linux</span><span class="dollar">$</span><span class="cmd">ls</span> <span class="arg">materials/practices/</span> <span class="comment"># 실습 자료</span>
+        </div>
+
+        <div class="collapsible" id="sec-practices">
+            <div class="collapsible-header" onclick="toggleSection(this)">
+                <span class="perm">drwxr-xr-x</span>
+                <span class="size">8K</span>
+                <span class="ls-name">practices/<span class="ls-comment"># 실습 (Prac01 ~ Prac15)</span></span>
+                <span class="collapse-toggle">[+] 15 files</span>
+            </div>
+
+            <div class="collapsible-body">
+                <div class="ls-output">
+                    <div class="ls-row disabled">
+                        <span class="perm">-rwxr-xr-x</span><span class="size">512</span>
+                        <span class="ls-name">Prac01</span>
+                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
+                    </div>
+                    <div class="ls-row disabled">
+                        <span class="perm">-rwxr-xr-x</span><span class="size">512</span>
+                        <span class="ls-name">Prac02</span>
+                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
+                    </div>
+                    <div class="ls-row disabled">
+                        <span class="perm">-rwxr-xr-x</span><span class="size">512</span>
+                        <span class="ls-name">Prac03</span>
+                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
+                    </div>
+                    <div class="ls-row disabled">
+                        <span class="perm">-rwxr-xr-x</span><span class="size">512</span>
+                        <span class="ls-name">Prac04</span>
+                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
+                    </div>
+                    <div class="ls-row disabled">
+                        <span class="perm">-rwxr-xr-x</span><span class="size">512</span>
+                        <span class="ls-name">Prac05</span>
+                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
+                    </div>
+                    <div class="ls-row disabled">
+                        <span class="perm">-rwxr-xr-x</span><span class="size">512</span>
+                        <span class="ls-name">Prac06</span>
+                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
+                    </div>
+                    <div class="ls-row disabled">
+                        <span class="perm">-rwxr-xr-x</span><span class="size">512</span>
+                        <span class="ls-name">Prac07</span>
+                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
+                    </div>
+                    <div class="ls-row disabled">
+                        <span class="perm">-rwxr-xr-x</span><span class="size">512</span>
+                        <span class="ls-name">Prac08</span>
+                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
+                    </div>
+                    <div class="ls-row disabled">
+                        <span class="perm">-rwxr-xr-x</span><span class="size">512</span>
+                        <span class="ls-name">Prac09</span>
+                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
+                    </div>
+                    <div class="ls-row">
+                        <span class="perm">-rwxr-xr-x</span><span class="size">512</span>
+                        <span class="ls-name">Prac10</span>
+                        <span class="lec-mini"><a href="materials/practices/Prac10.html" class="lec-link">open</a></span>
+                    </div>
+                    <div class="ls-row">
+                        <span class="perm">-rwxr-xr-x</span><span class="size">512</span>
+                        <span class="ls-name">Prac11</span>
+                        <span class="lec-mini"><a href="materials/practices/Prac11.html" class="lec-link">open</a></span>
+                    </div>
+                    <div class="ls-row">
+                        <span class="perm">-rwxr-xr-x</span><span class="size">512</span>
+                        <span class="ls-name">Prac12</span>
+                        <span class="lec-mini"><a href="materials/practices/Prac12.html" class="lec-link">open</a></span>
+                    </div>
+                    <div class="ls-row">
+                        <span class="perm">-rwxr-xr-x</span><span class="size">512</span>
+                        <span class="ls-name">Prac13</span>
+                        <span class="lec-mini"><a href="materials/practices/Prac13.html" class="lec-link">open</a></span>
+                    </div>
+                    <div class="ls-row">
+                        <span class="perm">-rwxr-xr-x</span><span class="size">512</span>
+                        <span class="ls-name">Prac14</span>
+                        <span class="lec-mini"><a href="materials/practices/Prac14.html" class="lec-link">open</a></span>
+                    </div>
+                    <div class="ls-row">
+                        <span class="perm">-rwxr-xr-x</span><span class="size">512</span>
+                        <span class="ls-name">Prac15</span>
+                        <span class="lec-mini"><a href="materials/practices/Prac15.html" class="lec-link">open</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- 과제 (Homeworks) - 접이식                     -->
+        <!-- ============================================== -->
+        <div class="section-prompt prompt-line" style="margin-top: 24px;">
+            <span class="user">z</span><span class="at">@</span><span class="host">drive</span><span class="colon">:</span><span class="path">~/linux</span><span class="dollar">$</span><span class="cmd">ls</span> <span class="arg">materials/homeworks/</span> <span class="comment"># 과제</span>
+        </div>
+
+        <div class="collapsible" id="sec-homeworks">
+            <div class="collapsible-header" onclick="toggleSection(this)">
+                <span class="perm">drwx------</span>
+                <span class="size">2K</span>
+                <span class="ls-name">homeworks/<span class="ls-comment"># 과제 (HW01 ~ HW15)</span></span>
+                <span class="collapse-toggle">[+] 15 files</span>
+            </div>
+
+            <div class="collapsible-body">
+                <div class="ls-output">
+                    <div class="ls-row disabled">
+                        <span class="perm">-rw-------</span><span class="size">128</span>
+                        <span class="ls-name">HW01</span>
+                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
+                    </div>
+                    <div class="ls-row disabled">
+                        <span class="perm">-rw-------</span><span class="size">128</span>
+                        <span class="ls-name">HW02</span>
+                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
+                    </div>
+                    <div class="ls-row disabled">
+                        <span class="perm">-rw-------</span><span class="size">128</span>
+                        <span class="ls-name">HW03</span>
+                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
+                    </div>
+                    <div class="ls-row disabled">
+                        <span class="perm">-rw-------</span><span class="size">128</span>
+                        <span class="ls-name">HW04</span>
+                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
+                    </div>
+                    <div class="ls-row disabled">
+                        <span class="perm">-rw-------</span><span class="size">128</span>
+                        <span class="ls-name">HW05</span>
+                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
+                    </div>
+                    <div class="ls-row disabled">
+                        <span class="perm">-rw-------</span><span class="size">128</span>
+                        <span class="ls-name">HW06</span>
+                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
+                    </div>
+                    <div class="ls-row disabled">
+                        <span class="perm">-rw-------</span><span class="size">128</span>
+                        <span class="ls-name">HW07</span>
+                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
+                    </div>
+                    <div class="ls-row">
+                        <span class="perm">-rw-------</span><span class="size">128</span>
+                        <span class="ls-name">HW08</span>
+                        <span class="lec-mini"><a href="materials/homeworks/HW08.html" class="lec-link">open</a></span>
+                    </div>
+                    <div class="ls-row">
+                        <span class="perm">-rw-------</span><span class="size">128</span>
+                        <span class="ls-name">HW09</span>
+                        <span class="lec-mini"><a href="materials/homeworks/HW09.html" class="lec-link">open</a></span>
+                    </div>
+                    <div class="ls-row">
+                        <span class="perm">-rw-------</span><span class="size">128</span>
+                        <span class="ls-name">HW10</span>
+                        <span class="lec-mini"><a href="materials/homeworks/HW10.html" class="lec-link">open</a></span>
+                    </div>
+                    <div class="ls-row">
+                        <span class="perm">-rw-------</span><span class="size">128</span>
+                        <span class="ls-name">HW11</span>
+                        <span class="lec-mini"><a href="materials/homeworks/HW11.html" class="lec-link">open</a></span>
+                    </div>
+                    <div class="ls-row">
+                        <span class="perm">-rw-------</span><span class="size">128</span>
+                        <span class="ls-name">HW12</span>
+                        <span class="lec-mini"><a href="materials/homeworks/HW12.html" class="lec-link">open</a></span>
+                    </div>
+                    <div class="ls-row">
+                        <span class="perm">-rw-------</span><span class="size">128</span>
+                        <span class="ls-name">HW13</span>
+                        <span class="lec-mini"><a href="materials/homeworks/HW13.html" class="lec-link">open</a></span>
+                    </div>
+                    <div class="ls-row">
+                        <span class="perm">-rw-------</span><span class="size">128</span>
+                        <span class="ls-name">HW14</span>
+                        <span class="lec-mini"><a href="materials/homeworks/HW14.html" class="lec-link">open</a></span>
+                    </div>
+                    <div class="ls-row">
+                        <span class="perm">-rw-------</span><span class="size">128</span>
+                        <span class="ls-name">HW15</span>
+                        <span class="lec-mini"><a href="materials/homeworks/HW15.html" class="lec-link">open</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 마지막 프롬프트 + 깜빡이는 커서 -->
+        <div class="section-prompt prompt-line" style="margin-top: 28px;">
+            <span class="user">z</span><span class="at">@</span><span class="host">drive</span><span class="colon">:</span><span class="path">~/linux</span><span class="dollar">$</span><span class="cursor"></span>
+        </div>
+
+        <!-- 푸터 -->
+        <div class="terminal-footer">
+            <span># © Jaea Lee · linux@z</span>
+            <a href="/drive/">cd ../</a>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    /**
+     * 시험 행 클릭 시 펼침/닫힘 토글
+     * 비활성(disabled) 카드는 무시
+     */
+    function toggleExam(row) {
+        if (row.classList.contains('disabled')) return;
+        row.classList.toggle('expanded');
+    }
+
+    /**
+     * Lec/Prac/HW 섹션 펼침/닫힘 토글
+     * - 헤더 클릭 → 부모 .collapsible에 .expanded 클래스 토글
+     * - 토글 버튼 텍스트도 [+]/[-]로 바꿈
+     */
+    function toggleSection(header) {
+        const section = header.closest('.collapsible');
+        section.classList.toggle('expanded');
+        
+        // 토글 표시 ([+] ↔ [-]) 변경
+        const toggle = header.querySelector('.collapse-toggle');
+        if (toggle) {
+            const isExpanded = section.classList.contains('expanded');
+            // 원래 텍스트에서 숫자 부분 추출 ("15 files")
+            const match = toggle.textContent.match(/(\d+\s*files?)/);
+            const fileText = match ? match[1] : '15 files';
+            toggle.textContent = isExpanded ? `[-] ${fileText}` : `[+] ${fileText}`;
+        }
+    }
+</script>
+
+</body>
+</html>

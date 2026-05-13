@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>일정표 | 호구 넷의 제주 투어</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Jua&family=Black+Han+Sans&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ===== 기본 리셋 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            /* 제주 바다 + 현무암 컬러 팔레트 */
+            --sea-deep:    #0A4D68;   /* 깊은 바다색 */
+            --sea-mid:     #088395;   /* 중간 바다색 */
+            --sea-bright:  #05BFDB;   /* 밝은 청록 */
+            --sea-light:   #B5EAEA;   /* 아주 밝은 민트 */
+            --sea-bg:      #E8F7F9;   /* 배경용 연한 청록 */
+            --foam:        #F5FBFC;   /* 거품 (배경) */
+
+            --basalt:      #1E1E1E;   /* 현무암 검정 */
+            --basalt-soft: #2A2A2A;   /* 부드러운 현무암 */
+            --basalt-light:#3D3D3D;   /* 밝은 현무암 */
+
+            --sand:        #F5EFE0;   /* 모래색 */
+            --text:        #1A2332;
+            --text-mute:   #5A6B7A;
+            --holiday:     #D63838;   /* 공휴일 빨강 */
+        }
+
+        html, body {
+            width: 100%;
+            min-height: 100vh;
+            overflow-x: hidden;
+            max-width: 100%;
+        }
+
+        body {
+            font-family: 'Jua', sans-serif;
+            background: var(--foam);
+            color: var(--text);
+            max-width: 420px;
+            margin: 0 auto;
+            min-height: 100vh;
+            box-shadow: 0 0 40px rgba(0,0,0,0.1);
+            padding-bottom: 50px;
+            position: relative;
+            overflow-x: hidden;
+            line-height: 1.5;
+        }
+
+        /* ===== 상단 바 ===== */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            padding: 18px 18px;
+            background: var(--basalt);
+            color: var(--sea-light);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 4px 16px rgba(10, 77, 104, 0.25);
+            border-bottom: 3px solid var(--sea-bright);
+        }
+
+        .back-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--sea-bright);
+            color: var(--sea-bright);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .back-btn:active {
+            background: var(--sea-bright);
+            color: var(--basalt);
+        }
+
+        .top-title {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 22px;
+            margin-left: 12px;
+            letter-spacing: 2px;
+            color: #fff;
+        }
+
+        .top-title .emoji {
+            font-size: 20px;
+            margin-left: 4px;
+        }
+
+        /* ===== 헤더 (바다 그라데이션) ===== */
+        .header-section {
+            background: linear-gradient(180deg,
+                var(--sea-deep) 0%,
+                var(--sea-mid) 60%,
+                var(--sea-bright) 100%);
+            color: #fff;
+            padding: 24px 20px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 배경 파도 SVG 패턴 */
+        .header-section::before {
+            content: '🌊';
+            position: absolute;
+            font-size: 100px;
+            opacity: 0.08;
+            top: -10px;
+            right: -10px;
+            transform: rotate(-15deg);
+        }
+        .header-section::after {
+            content: '🏝️';
+            position: absolute;
+            font-size: 80px;
+            opacity: 0.08;
+            bottom: -10px;
+            left: -10px;
+        }
+
+        .header-label {
+            font-family: 'Inter', sans-serif;
+            font-size: 11px;
+            letter-spacing: 4px;
+            font-weight: 600;
+            color: var(--sea-light);
+            margin-bottom: 6px;
+        }
+
+        .header-title {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 30px;
+            letter-spacing: 2px;
+            margin-bottom: 6px;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+        }
+
+        .header-period {
+            font-family: 'Jua', sans-serif;
+            font-size: 14px;
+            opacity: 0.95;
+        }
+
+        /* ===== 날짜 탭 (상단) ===== */
+        .date-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            background: var(--basalt);
+            position: sticky;
+            top: 73px; /* top-bar 바로 아래 */
+            z-index: 9;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        }
+
+        .date-tab {
+            padding: 14px 8px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background: var(--basalt);
+            color: rgba(255,255,255,0.5);
+            font-family: 'Jua', sans-serif;
+            font-size: 13px;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .date-tab:active {
+            background: var(--basalt-soft);
+        }
+
+        .date-tab.active {
+            color: #fff;
+            background: var(--basalt-soft);
+            border-bottom-color: var(--sea-bright);
+        }
+
+        /* 7월 17일 탭만 공휴일 표시 */
+        .date-tab.holiday.active {
+            border-bottom-color: var(--holiday);
+        }
+
+        .date-tab .day-num {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 22px;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .date-tab.holiday .day-num,
+        .date-tab.holiday {
+            color: rgba(255, 100, 100, 0.6);
+        }
+
+        .date-tab.holiday.active,
+        .date-tab.holiday.active .day-num {
+            color: #FF8888;
+        }
+
+        .date-tab .day-label {
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            font-size: 11px;
+        }
+
+        .date-tab .holiday-mark {
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            font-size: 9px;
+            display: block;
+            margin-top: 2px;
+            color: var(--holiday);
+        }
+
+        /* ===== 일정 컨테이너 ===== */
+        .schedule-content {
+            padding: 24px 16px 0;
+        }
+
+        /* 각 날짜 패널 */
+        .day-panel {
+            display: none;
+        }
+
+        .day-panel.active {
+            display: block;
+        }
+
+        /* 날짜 큰 제목 (패널 안) */
+        .day-heading {
+            margin-bottom: 20px;
+            padding: 16px 20px;
+            background: linear-gradient(135deg, var(--basalt) 0%, var(--basalt-soft) 100%);
+            color: #fff;
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+            border-left: 5px solid var(--sea-bright);
+        }
+
+        .day-panel.holiday .day-heading {
+            border-left-color: var(--holiday);
+        }
+
+        /* 배경 장식 */
+        .day-heading::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--sea-bright);
+            opacity: 0.15;
+        }
+
+        .day-panel.holiday .day-heading::before {
+            background: var(--holiday);
+        }
+
+        .day-heading-en {
+            font-family: 'Inter', sans-serif;
+            font-size: 11px;
+            letter-spacing: 3px;
+            font-weight: 600;
+            color: var(--sea-bright);
+            margin-bottom: 4px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .day-panel.holiday .day-heading-en {
+            color: #FF8888;
+        }
+
+        .day-heading-date {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 24px;
+            letter-spacing: 1px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .day-heading-day {
+            font-family: 'Jua', sans-serif;
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 2px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .holiday-badge {
+            display: inline-block;
+            background: var(--holiday);
+            color: #fff;
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 10px;
+            margin-top: 8px;
+            letter-spacing: 1px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ===== 타임라인 ===== */
+        .timeline {
+            position: relative;
+            padding-left: 24px;
+        }
+
+        /* 세로 라인 (타임라인) */
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 8px;
+            bottom: 8px;
+            width: 2px;
+            background: linear-gradient(180deg,
+                var(--sea-bright) 0%,
+                var(--sea-mid) 50%,
+                var(--sea-deep) 100%);
+            border-radius: 1px;
+        }
+
+        /* 일정 항목 (시간 있는 것) */
+        .timeline-item {
+            position: relative;
+            margin-bottom: 14px;
+            padding-bottom: 4px;
+        }
+
+        /* 점 (시간 있는 항목) */
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -22px;
+            top: 8px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #fff;
+            border: 3px solid var(--sea-mid);
+            box-shadow: 0 2px 6px rgba(8, 131, 149, 0.3);
+            z-index: 1;
+        }
+
+        /* 시간이 있는 항목 카드 */
+        .schedule-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 12px 14px;
+            box-shadow: 0 3px 10px rgba(10, 77, 104, 0.1);
+            border: 1px solid var(--sea-light);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;       /* flex 자식이 부모를 넘지 않도록 */
+            overflow: hidden;   /* 안쪽 내용도 잘리도록 보호 */
+        }
+
+        .schedule-time {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 15px;
+            color: var(--basalt);
+            background: var(--sea-light);
+            padding: 6px 8px;
+            border-radius: 8px;
+            min-width: 60px;       /* 75px → 60px 축소 */
+            text-align: center;
+            line-height: 1;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+            flex-shrink: 0;        /* 시간 박스가 줄어들지 않도록 */
+        }
+
+        /* 시간 범위 (예: 09:45~11:00) */
+        .schedule-time.range {
+            background: linear-gradient(135deg, var(--sea-mid), var(--sea-deep));
+            color: #fff;
+            font-size: 13px;
+        }
+
+        .schedule-text {
+            font-family: 'Jua', sans-serif;
+            font-size: 14px;
+            color: var(--text);
+            flex: 1;
+            line-height: 1.4;
+            min-width: 0;          /* flex 자식이 부모 폭을 넘지 않도록 */
+            word-break: break-word; /* 긴 단어도 줄바꿈 */
+        }
+
+        .schedule-text .question {
+            color: var(--text-mute);
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            font-size: 12px;
+            margin-left: 4px;
+        }
+
+        /* ===== 식당/장소 상세 정보 (이름 옆 작게) ===== */
+        .place-detail {
+            display: block;
+            margin-top: 4px;
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            font-size: 12px;
+            color: var(--text-mute);
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        .place-detail .place-tag {
+            display: inline-block;
+            font-size: 10px;
+            color: var(--sea-mid);
+            background: rgba(8, 131, 149, 0.1);
+            padding: 1px 6px;
+            border-radius: 4px;
+            margin-right: 4px;
+            margin-bottom: 2px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            max-width: 100%;
+            word-break: keep-all;
+        }
+
+        /* 오픈 시간 경고 (헛걸음 방지) */
+        .open-warn {
+            display: inline-block;
+            margin-left: 4px;
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            font-size: 11px;
+            color: var(--holiday);
+            background: #FFEAEA;
+            padding: 1px 6px;
+            border-radius: 4px;
+            letter-spacing: 0.3px;
+        }
+
+        /* 픽업 메모 (구매만 - 시간 자유 표시) */
+        .pickup-note {
+            display: inline-block;
+            margin-left: 4px;
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            font-size: 10px;
+            color: var(--sea-mid);
+            background: rgba(8, 131, 149, 0.12);
+            padding: 1px 6px;
+            border-radius: 4px;
+            letter-spacing: 0.3px;
+        }
+
+        /* timeline-flow 안 주소 표시 */
+        .flow-text .flow-place {
+            display: block;
+            font-size: 11px;
+            color: var(--text-mute);
+            margin-top: 2px;
+            font-style: normal;
+            font-weight: 700;
+        }
+
+        /* ===== 참고용 카드 (실제 일정 아닌 안내) ===== */
+        .timeline-item.reference::before {
+            display: none;  /* 타임라인 점 숨김 */
+        }
+
+        .schedule-card.reference {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            opacity: 0.6;
+            padding: 6px 12px;
+        }
+
+        .schedule-card.reference .schedule-time {
+            background: transparent;
+            color: var(--text-mute);
+            border: none;
+            font-size: 13px;
+            padding: 0;
+            min-width: auto;
+            margin-right: 8px;
+        }
+
+        .schedule-card.reference .schedule-text {
+            color: var(--text-mute);
+            font-size: 12px;
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+        }
+
+        .reference-tag {
+            display: inline-block;
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            font-size: 10px;
+            color: var(--text-mute);
+            background: rgba(0,0,0,0.05);
+            padding: 1px 6px;
+            border-radius: 4px;
+            margin-right: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        /* ===== 이동 시간 표시 ===== */
+        .travel-time {
+            position: relative;
+            margin: 4px 0 4px -22px;  /* 타임라인 라인 옆에 배치 */
+            padding: 4px 0 4px 28px;
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            font-size: 11px;
+            color: var(--text-mute);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* 이동 시간은 타임라인 점 없음 */
+        .travel-time .travel-icon {
+            font-size: 13px;
+            opacity: 0.7;
+        }
+
+        .travel-time .travel-alt {
+            font-size: 10px;
+            opacity: 0.7;
+            margin-left: 2px;
+        }
+
+        /* ===== 시간 없는 일정 (자연스러운 흐름) ===== */
+        .timeline-flow {
+            position: relative;
+            margin-bottom: 14px;
+        }
+
+        /* 흐름 항목은 작은 다이아몬드 */
+        .timeline-flow::before {
+            content: '◇';
+            position: absolute;
+            left: -25px;
+            top: 6px;
+            color: var(--sea-mid);
+            font-size: 16px;
+            background: var(--foam);
+            width: 18px;
+            text-align: center;
+        }
+
+        .flow-text {
+            font-family: 'Jua', sans-serif;
+            font-size: 14px;
+            color: var(--text-mute);
+            padding: 6px 16px;
+            display: inline-block;
+            font-style: italic;
+        }
+
+        .flow-text .question {
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            color: var(--sea-mid);
+            margin-left: 4px;
+        }
+
+        /* ===== 특수 항목 (출발/도착 강조) ===== */
+        .schedule-card.highlight {
+            background: linear-gradient(135deg, var(--sea-bright), var(--sea-mid));
+            color: #fff;
+            border: none;
+            box-shadow: 0 4px 14px rgba(8, 131, 149, 0.35);
+        }
+
+        .schedule-card.highlight .schedule-time {
+            background: rgba(0,0,0,0.35);
+            color: #fff;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+        }
+
+        .schedule-card.highlight .schedule-time.range {
+            background: rgba(0,0,0,0.4);
+        }
+
+        .schedule-card.highlight .schedule-text {
+            color: #fff;
+            font-weight: 600;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.4),
+                         0 0 8px rgba(0,0,0,0.2);
+        }
+
+        /* "쫑" 강조 카드 */
+        .schedule-card.end {
+            background: linear-gradient(135deg, var(--basalt) 0%, var(--basalt-soft) 100%);
+            color: #fff;
+            border: none;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+        }
+
+        .schedule-card.end .schedule-time {
+            background: var(--holiday);
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+        }
+
+        .schedule-card.end .schedule-text {
+            color: #fff;
+            font-weight: 600;
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 18px;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* 점심/식사 아이콘 */
+        .schedule-icon {
+            font-size: 18px;
+        }
+
+        /* 빈 일정 안내 (16일용) */
+        .empty-day {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-mute);
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            font-size: 16px;
+            background: #fff;
+            border-radius: 16px;
+            border: 2px dashed var(--sea-light);
+            margin-top: 8px;
+        }
+
+        .empty-day .big-emoji {
+            font-size: 50px;
+            display: block;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        .empty-day .sub {
+            font-family: 'Jua', sans-serif;
+            font-size: 13px;
+            color: var(--text-mute);
+            margin-top: 6px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== 상단 바 ===== -->
+    <header class="top-bar">
+        <a href="index.html" class="back-btn" aria-label="뒤로가기">←</a>
+        <h1 class="top-title">일정표 <span class="emoji">📅</span></h1>
+    </header>
+
+    <!-- ===== 헤더 ===== -->
+    <section class="header-section">
+        <div class="header-label">JEJU TRIP SCHEDULE</div>
+        <div class="header-title">2박 3일 일정</div>
+        <div class="header-period">2026.07.15 (수) ~ 07.17 (금)</div>
+    </section>
+
+    <!-- ===== 날짜 탭 ===== -->
+    <nav class="date-tabs">
+        <button class="date-tab active" onclick="switchDay('day1', this)">
+            <span class="day-num">15</span>
+            <span class="day-label">수요일</span>
+        </button>
+        <button class="date-tab" onclick="switchDay('day2', this)">
+            <span class="day-num">16</span>
+            <span class="day-label">목요일</span>
+        </button>
+        <button class="date-tab holiday" onclick="switchDay('day3', this)">
+            <span class="day-num">17</span>
+            <span class="day-label">금요일</span>
+            <span class="holiday-mark">제헌절</span>
+        </button>
+    </nav>
+
+    <!-- ===== 일정 컨텐츠 ===== -->
+    <main class="schedule-content">
+
+        <!-- ============ 7월 15일 (수) ============ -->
+        <div class="day-panel active" id="day1">
+            <div class="day-heading">
+                <div class="day-heading-en">DAY 01</div>
+                <div class="day-heading-date">7월 15일</div>
+                <div class="day-heading-day">수요일</div>
+            </div>
+
+            <div class="timeline">
+                <!-- 김포공항 집결 -->
+                <div class="timeline-item">
+                    <div class="schedule-card highlight">
+                        <div class="schedule-time">08:30</div>
+                        <div class="schedule-text">
+                            <span class="schedule-icon">📍</span> 김포공항 집결
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 탑승수속 (시간 없음 - 흐름) -->
+                <div class="timeline-flow">
+                    <span class="flow-text">탑승수속</span>
+                </div>
+
+                <!-- 비행 (시간 범위) -->
+                <div class="timeline-item">
+                    <div class="schedule-card highlight">
+                        <div class="schedule-time range">09:45<br>~11:00</div>
+                        <div class="schedule-text">
+                            <span class="schedule-icon">✈️</span> 김포 → 제주
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 수하물 찾기 (시간 없음) -->
+                <div class="timeline-flow">
+                    <span class="flow-text">수하물 찾기</span>
+                </div>
+
+                <!-- 차량 픽업 (시간 없음) -->
+                <div class="timeline-flow">
+                    <span class="flow-text">차량 픽업</span>
+                </div>
+
+                <!-- 모찌마루 픽업 (구매만 - 시간 자유) -->
+                <div class="timeline-flow">
+                    <span class="flow-text">
+                        🍡 <strong>모찌마루</strong> 픽업
+                        <span class="pickup-note">구매 후 호텔/식후 디저트로</span>
+                        <span class="flow-place">제주시 공항로1길 14 제1동 지하1층</span>
+                    </span>
+                </div>
+
+                <!-- 점심식사 - 고기장 -->
+                <div class="timeline-item">
+                    <div class="schedule-card">
+                        <div class="schedule-time">12:00</div>
+                        <div class="schedule-text">
+                            <span class="schedule-icon">🍽️</span> 점심 · <strong>고기장</strong>
+                            <span class="open-warn">⚠ 12시 오픈 · 일찍 가면 헛걸음</span>
+                            <span class="place-detail">
+                                <span class="place-tag">돼지고기구이</span>
+                                제주시 서해안로 446-1
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 이동: 고기장 → 버터모닝 -->
+                <div class="travel-time">
+                    <span class="travel-icon">🚗</span> 약 30분 이동
+                </div>
+
+                <!-- 버터모닝 -->
+                <div class="timeline-item">
+                    <div class="schedule-card">
+                        <div class="schedule-time">13:30</div>
+                        <div class="schedule-text">
+                            <span class="schedule-icon">🥐</span> <strong>버터모닝</strong>
+                            <span class="open-warn">⚠ 예약 필수</span>
+                            <span class="pickup-note">가는 길에 들르기</span>
+                            <span class="place-detail">제주시 하광로 279</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 이동: 버터모닝 → 랜디스도넛 -->
+                <div class="travel-time">
+                    <span class="travel-icon">🚗</span> 약 15분 이동
+                </div>
+
+                <!-- 랜디스도넛 -->
+                <div class="timeline-item">
+                    <div class="schedule-card">
+                        <div class="schedule-time">14:30</div>
+                        <div class="schedule-text">
+                            <span class="schedule-icon">🍩</span> <strong>랜디스도넛</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 이동: 랜디스도넛 → 협재해수욕장 -->
+                <div class="travel-time">
+                    <span class="travel-icon">🚗</span> 약 20분 이동
+                </div>
+
+                <!-- 협재해수욕장 -->
+                <div class="timeline-item">
+                    <div class="schedule-card">
+                        <div class="schedule-time">15:30</div>
+                        <div class="schedule-text">
+                            <span class="schedule-icon">🏖️</span> <strong>협재해수욕장</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 저녁식사 (미정) -->
+                <div class="timeline-item">
+                    <div class="schedule-card">
+                        <div class="schedule-time">17:00</div>
+                        <div class="schedule-text">
+                            <span class="schedule-icon">🍽️</span> 저녁 식사
+                            <span class="place-detail">장소 미정 · 협재/한림 근처</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 이동: → 금능반지하 -->
+                <div class="travel-time">
+                    <span class="travel-icon">🚗</span> 협재 근처 → 금능반지하 약 5분
+                </div>
+
+                <!-- 금능반지하 (저녁 후 2차) -->
+                <div class="timeline-item">
+                    <div class="schedule-card">
+                        <div class="schedule-time">18:30</div>
+                        <div class="schedule-text">
+                            <span class="schedule-icon">🍻</span> <strong>금능반지하</strong>
+                            <span class="open-warn">⚠ 17시 오픈</span>
+                            <span class="place-detail">
+                                <span class="place-tag">학센·해물라면·하이볼</span>
+                                제주시 한림읍 금능9길 30
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 이동: 금능반지하 → 호텔 -->
+                <div class="travel-time">
+                    <span class="travel-icon">🚗</span> 금능반지하 → 신화월드 약 30분
+                </div>
+
+                <!-- 호텔 체크인 -->
+                <div class="timeline-item">
+                    <div class="schedule-card highlight">
+                        <div class="schedule-time">20:30</div>
+                        <div class="schedule-text">
+                            <span class="schedule-icon">🏨</span> 신화월드 체크인
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 추후 추가 안내 -->
+                <div class="timeline-flow">
+                    <span class="flow-text">~~ 추가 예정 ~~</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ 7월 16일 (목) ============ -->
+        <div class="day-panel" id="day2">
+            <div class="day-heading">
+                <div class="day-heading-en">DAY 02</div>
+                <div class="day-heading-date">7월 16일</div>
+                <div class="day-heading-day">목요일</div>
+            </div>
+
+            <div class="timeline">
+                <!-- 호텔 출발 -->
+                <div class="timeline-item">
+                    <div class="schedule-card highlight">
+                        <div class="schedule-time">호텔</div>
+                        <div class="schedule-text">
+                            <span class="schedule-icon">🏨</span> 신화월드 출발
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 이동: 호텔 → 길갈팜랜드 -->
+                <div class="travel-time">
+                    <span class="travel-icon">🚗</span> 신화월드 → 길갈팜랜드 약 1시간
+                </div>
+
+                <!-- 길갈팜랜드 -->
+                <div class="timeline-item">
+                    <div class="schedule-card">
+                        <div class="schedule-time"></div>
+                        <div class="schedule-text">
+                            <span class="schedule-icon">🐎</span> <strong>길갈팜랜드</strong>
+                            <span class="place-detail">
+                                <span class="place-tag">목장·체험</span>
+                                시간 미정
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 이동: 길갈팜랜드 → 에코랜드 -->
+                <div class="travel-time">
+                    <span class="travel-icon">🚗</span> 길갈팜랜드 → 에코랜드 약 10분
+                </div>
+
+                <!-- 에코랜드 테마파크 -->
+                <div class="timeline-item">
+                    <div class="schedule-card">
+                        <div class="schedule-time"></div>
+                        <div class="schedule-text">
+                            <span class="schedule-icon">🌳</span> <strong>에코랜드 테마파크</strong>
+                            <span class="place-detail">
+                                <span class="place-tag">기차·곶자왈</span>
+                                시간 미정
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 추후 추가 안내 -->
+                <div class="timeline-flow">
+                    <span class="flow-text">~~ 추가 예정 ~~</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ 7월 17일 (금) - 제헌절 ============ -->
+        <div class="day-panel holiday" id="day3">
+            <div class="day-heading">
+                <div class="day-heading-en">DAY 03</div>
+                <div class="day-heading-date">7월 17일</div>
+                <div class="day-heading-day">금요일</div>
+                <span class="holiday-badge">제헌절</span>
+            </div>
+
+            <div class="timeline">
+                <!-- 아침 - 고기국수 -->
+                <div class="timeline-item">
+                    <div class="schedule-card">
+                        <div class="schedule-time">아침</div>
+                        <div class="schedule-text">
+                            <span class="schedule-icon">🍜</span> 아침 · <strong>고기국수</strong>
+                            <span class="place-detail">장소 미정</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 최후의 만찬 - 갈치조림 (순천미향) -->
+                <div class="timeline-item">
+                    <div class="schedule-card">
+                        <div class="schedule-time">12:00</div>
+                        <div class="schedule-text">
+                            <span class="schedule-icon">🍴</span> 최후의 만찬 · <strong>갈치조림</strong>
+                            <span class="place-detail">
+                                <span class="place-tag">순천미향 산방산본점</span>
+                                서귀포시 안덕면 사계남로216번길 24-73
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 카페 (시간 없음) -->
+                <div class="timeline-flow">
+                    <span class="flow-text"><span class="schedule-icon">☕</span> 카페</span>
+                </div>
+
+                <!-- 제주국제공항 이동 -->
+                <div class="timeline-item">
+                    <div class="schedule-card">
+                        <div class="schedule-time">14:00</div>
+                        <div class="schedule-text">
+                            <span class="schedule-icon">🚗</span> 제주국제공항 이동
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 제주국제공항 도착 -->
+                <div class="timeline-item">
+                    <div class="schedule-card highlight">
+                        <div class="schedule-time">15:00</div>
+                        <div class="schedule-text">
+                            <span class="schedule-icon">📍</span> 제주국제공항 도착
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 탑승수속 -->
+                <div class="timeline-flow">
+                    <span class="flow-text">탑승수속</span>
+                </div>
+
+                <!-- 비행 -->
+                <div class="timeline-item">
+                    <div class="schedule-card highlight">
+                        <div class="schedule-time range">15:55<br>~17:10</div>
+                        <div class="schedule-text">
+                            <span class="schedule-icon">✈️</span> 제주 → 김포
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 쫑 -->
+                <div class="timeline-item">
+                    <div class="schedule-card end">
+                        <div class="schedule-time">17:10</div>
+                        <div class="schedule-text">쫑 🎉</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ===== 날짜 탭 전환 스크립트 ===== -->
+    <script>
+        // 날짜 탭 클릭 시 해당 패널 보이기
+        function switchDay(dayId, btnEl) {
+            // 모든 탭 비활성
+            document.querySelectorAll('.date-tab').forEach(function(tab) {
+                tab.classList.remove('active');
+            });
+            // 모든 패널 숨기기
+            document.querySelectorAll('.day-panel').forEach(function(panel) {
+                panel.classList.remove('active');
+            });
+
+            // 클릭한 탭과 패널 활성화
+            btnEl.classList.add('active');
+            document.getElementById(dayId).classList.add('active');
+
+            // 페이지 상단으로 스크롤 (탭 바로 아래까지)
+            window.scrollTo({ top: 220, behavior: 'smooth' });
+        }
+    </script>
+
+</body>
+</html>

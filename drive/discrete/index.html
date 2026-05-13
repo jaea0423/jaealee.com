@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 시대의 이산수학 · Drive</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Fraunces: 잡지/표지 느낌의 세리프 / Pretendard: 굵은 한글 -->
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+        /* 사진의 라벤더 퍼플 톤 */
+        --bg-deep: #5a4ec0;            /* 진한 퍼플 (배경 어두운 부분) */
+        --bg-mid: #7c6dd6;             /* 메인 라벤더 */
+        --bg-light: #a99cef;           /* 밝은 라벤더 */
+        
+        /* 무지개 링 컬러 (사진 속) */
+        --c-red: #ff3366;
+        --c-orange: #ff8533;
+        --c-yellow: #ffcc33;
+        --c-green: #2dd9a4;
+        --c-cyan: #3dc7e0;
+        --c-pink: #ff66aa;
+        --c-magenta: #c44dff;
+        
+        /* 텍스트 */
+        --text: #1a1535;               /* 거의 검정 (퍼플 위에 올림) */
+        --text-light: #f5f3ff;         /* 화이트 */
+        --text-muted: #4a3f7a;
+        
+        --paper: #f5f3ff;              /* 종이색 (카드 배경) */
+        --ink: #1a1535;                /* 본문 잉크 */
+    }
+
+    html, body {
+        min-height: 100vh;
+        font-family: 'Pretendard', sans-serif;
+        background: var(--bg-mid);
+        color: var(--text);
+        overflow-x: hidden;
+        position: relative;
+    }
+
+    /* === 배경: 그라데이션 + 노이즈 === */
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: 
+            radial-gradient(circle at 20% 10%, rgba(196, 77, 255, 0.4) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(61, 199, 224, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 50% 50%, var(--bg-light) 0%, var(--bg-mid) 40%, var(--bg-deep) 100%);
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    /* === 떠있는 수학 기호들 === */
+    .math-symbols {
+        position: fixed;
+        inset: 0;
+        z-index: 1;
+        pointer-events: none;
+        overflow: hidden;
+    }
+
+    .math {
+        position: absolute;
+        font-family: 'Fraunces', serif;
+        color: var(--text-light);
+        opacity: 0.18;
+        font-weight: 300;
+        animation: float 20s ease-in-out infinite;
+        user-select: none;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(5deg); }
+    }
+
+    /* 각 기호 위치/크기 (수동 배치) */
+    .m1 { top: 8%;  left: 5%;   font-size: 80px; animation-delay: 0s; }
+    .m2 { top: 6%;  left: 35%;  font-size: 32px; animation-delay: 1s; }
+    .m3 { top: 14%; right: 8%;  font-size: 48px; animation-delay: 2s; }
+    .m4 { top: 30%; left: 12%;  font-size: 42px; animation-delay: 3s; }
+    .m5 { top: 25%; right: 15%; font-size: 56px; animation-delay: 4s; }
+    .m6 { top: 50%; left: 4%;   font-size: 90px; animation-delay: 1.5s; }
+    .m7 { top: 60%; right: 5%;  font-size: 38px; animation-delay: 2.5s; }
+    .m8 { top: 75%; left: 20%;  font-size: 50px; animation-delay: 3.5s; }
+    .m9 { top: 85%; right: 25%; font-size: 44px; animation-delay: 0.5s; }
+    .m10 { top: 45%; right: 38%; font-size: 28px; animation-delay: 5s; }
+    .m11 { top: 92%; left: 50%;  font-size: 36px; animation-delay: 4.5s; }
+    .m12 { top: 18%; left: 60%;  font-size: 26px; animation-delay: 1.2s; }
+    .m13 { top: 65%; left: 45%;  font-size: 60px; animation-delay: 2.8s; opacity: 0.12; }
+
+    /* === 메인 컨테이너 === */
+    .container {
+        position: relative;
+        z-index: 2;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 60px 32px 80px;
+    }
+
+    /* === 상단 라벨 (STEM@COOKBOOK 같은 거) === */
+    .top-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: 'Fraunces', serif;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.2em;
+        color: var(--text-light);
+        background: var(--text);
+        padding: 6px 14px;
+        border-radius: 2px;
+        margin-bottom: 60px;
+    }
+
+    .top-label .dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--c-yellow);
+    }
+
+    /* === 메인 타이틀 영역 === */
+    .header {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 40px;
+        align-items: end;
+        margin-bottom: 60px;
+        padding-bottom: 40px;
+        border-bottom: 2px solid var(--text);
+    }
+
+    /* 작은 영문 위 라벨 */
+    .pretitle {
+        font-family: 'Fraunces', serif;
+        font-style: italic;
+        font-size: 22px;
+        font-weight: 400;
+        color: var(--text);
+        margin-bottom: 8px;
+        letter-spacing: -0.01em;
+    }
+
+    /* 메인 한글 타이틀 (대형) */
+    .title-main {
+        font-family: 'Pretendard', sans-serif;
+        font-size: 96px;
+        font-weight: 900;
+        letter-spacing: -0.04em;
+        line-height: 0.95;
+        color: var(--text);
+        margin-bottom: 16px;
+    }
+
+    /* "with 파이썬" 같은 액센트 */
+    .title-accent {
+        display: inline-block;
+        font-family: 'Fraunces', serif;
+        font-size: 28px;
+        font-weight: 600;
+        font-style: italic;
+        color: var(--c-red);
+        margin-left: 12px;
+        vertical-align: top;
+        margin-top: 24px;
+    }
+
+    /* 부제목 영문 */
+    .subtitle {
+        font-family: 'Fraunces', serif;
+        font-size: 16px;
+        font-weight: 400;
+        font-style: italic;
+        color: var(--text-muted);
+        letter-spacing: 0.05em;
+    }
+
+    /* 우측 메타 정보 */
+    .meta-block {
+        text-align: right;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        color: var(--text);
+        line-height: 1.8;
+        letter-spacing: 0.05em;
+    }
+
+    .meta-block .label { color: var(--text-muted); }
+    .meta-block .val { font-weight: 600; }
+
+    /* === 챕터 인트로 라인 === */
+    .chapters-intro {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 24px;
+        align-items: center;
+        margin-bottom: 32px;
+    }
+
+    .chapters-label {
+        font-family: 'Fraunces', serif;
+        font-size: 14px;
+        font-weight: 600;
+        font-style: italic;
+        color: var(--text);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+    }
+
+    .chapters-divider {
+        height: 1px;
+        background: var(--text);
+        opacity: 0.3;
+    }
+
+    .chapters-count {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        color: var(--text-muted);
+        letter-spacing: 0.1em;
+    }
+
+    /* === 챕터 그리드 === */
+    .chapter-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+
+    /* 각 챕터 카드 */
+    .chapter {
+        position: relative;
+        background: var(--paper);
+        border: 2px solid var(--text);
+        border-radius: 4px;
+        padding: 28px 28px 24px;
+        text-decoration: none;
+        color: var(--text);
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        overflow: hidden;
+        min-height: 180px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    /* 호버: 살짝 떠오르고 그림자 */
+    .chapter:hover {
+        transform: translate(-4px, -4px);
+        box-shadow: 8px 8px 0 var(--text);
+    }
+
+    /* 좌측 컬러 띠 (사진의 무지개 링 모티브) */
+    .chapter::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 8px;
+        background: var(--c-magenta);
+        transition: width 0.3s;
+    }
+
+    .chapter:hover::before {
+        width: 16px;
+    }
+
+    /* 챕터별 컬러 */
+    .chapter:nth-child(1)::before { background: var(--c-red); }
+    .chapter:nth-child(2)::before { background: var(--c-orange); }
+    .chapter:nth-child(3)::before { background: var(--c-yellow); }
+    .chapter:nth-child(4)::before { background: var(--c-green); }
+    .chapter:nth-child(5)::before { background: var(--c-cyan); }
+    .chapter:nth-child(6)::before { background: var(--c-magenta); }
+
+    /* 챕터 번호 (큰 숫자) */
+    .ch-num {
+        font-family: 'Fraunces', serif;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.2em;
+        color: var(--text-muted);
+        margin-bottom: 4px;
+    }
+
+    .ch-num-big {
+        font-family: 'Fraunces', serif;
+        font-size: 56px;
+        font-weight: 700;
+        line-height: 0.9;
+        color: var(--text);
+        margin-bottom: 12px;
+        letter-spacing: -0.02em;
+    }
+
+    /* 챕터 제목 */
+    .ch-title {
+        font-family: 'Pretendard', sans-serif;
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--text);
+        line-height: 1.3;
+        letter-spacing: -0.02em;
+        margin-bottom: 8px;
+    }
+
+    /* 챕터 영문 부제 */
+    .ch-en {
+        font-family: 'Fraunces', serif;
+        font-size: 13px;
+        font-weight: 400;
+        font-style: italic;
+        color: var(--text-muted);
+        margin-bottom: 16px;
+    }
+
+    /* 우측 화살표 + 키워드 */
+    .ch-bottom {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-top: auto;
+    }
+
+    .ch-keywords {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 10px;
+        color: var(--text-muted);
+        letter-spacing: 0.05em;
+        line-height: 1.6;
+    }
+
+    .ch-arrow {
+        font-family: 'Fraunces', serif;
+        font-size: 24px;
+        font-weight: 400;
+        color: var(--text);
+        transition: transform 0.25s;
+    }
+
+    .chapter:hover .ch-arrow {
+        transform: translateX(6px);
+    }
+
+    /* === 기말고사 특별 카드 === */
+    .final-exam {
+        margin-top: 32px;
+        position: relative;
+        background: var(--text);
+        color: var(--text-light);
+        border: 2px solid var(--text);
+        border-radius: 4px;
+        padding: 36px 36px 32px;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 32px;
+        align-items: center;
+    }
+
+    .final-exam:hover {
+        transform: translate(-4px, -4px);
+        box-shadow: 8px 8px 0 var(--c-yellow);
+    }
+
+    /* 무지개 컬러 도트들 (사진의 링 모티브) */
+    .final-rings {
+        display: flex;
+        gap: 4px;
+    }
+
+    .ring {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: currentColor;
+    }
+
+    .ring:nth-child(1) { background: var(--c-red); }
+    .ring:nth-child(2) { background: var(--c-orange); }
+    .ring:nth-child(3) { background: var(--c-yellow); }
+    .ring:nth-child(4) { background: var(--c-green); }
+    .ring:nth-child(5) { background: var(--c-cyan); }
+    .ring:nth-child(6) { background: var(--c-magenta); }
+
+    .final-content {
+        flex: 1;
+    }
+
+    .final-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 10px;
+        font-weight: 600;
+        color: var(--c-yellow);
+        letter-spacing: 0.3em;
+        margin-bottom: 8px;
+    }
+
+    .final-title {
+        font-family: 'Pretendard', sans-serif;
+        font-size: 32px;
+        font-weight: 800;
+        color: var(--text-light);
+        letter-spacing: -0.02em;
+        margin-bottom: 4px;
+    }
+
+    .final-desc {
+        font-family: 'Fraunces', serif;
+        font-size: 14px;
+        font-weight: 400;
+        font-style: italic;
+        color: rgba(245, 243, 255, 0.7);
+    }
+
+    .final-arrow {
+        font-family: 'Fraunces', serif;
+        font-size: 36px;
+        color: var(--c-yellow);
+        transition: transform 0.25s;
+    }
+
+    .final-exam:hover .final-arrow {
+        transform: translateX(8px);
+    }
+
+    /* === 푸터 === */
+    .footer {
+        margin-top: 60px;
+        padding-top: 24px;
+        border-top: 1px solid var(--text);
+        opacity: 0.7;
+        display: flex;
+        justify-content: space-between;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        color: var(--text);
+        letter-spacing: 0.05em;
+    }
+
+    .footer a {
+        color: var(--text);
+        text-decoration: none;
+        transition: opacity 0.2s;
+    }
+
+    .footer a:hover { opacity: 0.6; }
+
+    /* === 반응형 === */
+    @media (max-width: 768px) {
+        .container { padding: 40px 20px 60px; }
+        .title-main { font-size: 56px; }
+        .title-accent { font-size: 18px; }
+        .header { 
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+        .meta-block { text-align: left; }
+        .chapter-grid { grid-template-columns: 1fr; }
+        .final-exam { 
+            grid-template-columns: 1fr; 
+            text-align: left;
+            gap: 20px;
+        }
+        .final-rings { justify-content: flex-start; }
+        .ch-num-big { font-size: 42px; }
+        .ch-title { font-size: 18px; }
+        .math { display: none; }  /* 모바일에선 배경 기호 숨김 (성능) */
+    }
+</style>
+</head>
+<body>
+
+<!-- 떠있는 수학 기호 배경 -->
+<div class="math-symbols">
+    <span class="math m1">∑</span>
+    <span class="math m2">A∪B</span>
+    <span class="math m3">∅</span>
+    <span class="math m4">P∧Q</span>
+    <span class="math m5">∀x</span>
+    <span class="math m6">⊕</span>
+    <span class="math m7">xRy</span>
+    <span class="math m8">G=(V,E)</span>
+    <span class="math m9">∃</span>
+    <span class="math m10">det(A)</span>
+    <span class="math m11">⊆</span>
+    <span class="math m12">¬</span>
+    <span class="math m13">π</span>
+</div>
+
+<div class="container">
+
+    <!-- 상단 라벨 -->
+    <div class="top-label">
+        <span class="dot"></span>
+        DRIVE @ JAEALEE.COM
+    </div>
+
+    <!-- 헤더 영역 -->
+    <header class="header">
+        <div>
+            <div class="pretitle">AI 시대의</div>
+            <h1 class="title-main">이산수학<span class="title-accent">with 파이썬</span></h1>
+            <div class="subtitle">Discrete Mathematics for the AI Era</div>
+        </div>
+
+        <div class="meta-block">
+            <div><span class="label">COURSE</span> · <span class="val">AI이산구조</span></div>
+            <div><span class="label">SEMESTER</span> · <span class="val">2025-1</span></div>
+            <div><span class="label">CHAPTERS</span> · <span class="val">07 — 12</span></div>
+            <div><span class="label">EXAM</span> · <span class="val">FINAL ONLY</span></div>
+        </div>
+    </header>
+
+    <!-- 챕터 섹션 라벨 -->
+    <div class="chapters-intro">
+        <span class="chapters-label">// Table of Contents</span>
+        <div class="chapters-divider"></div>
+        <span class="chapters-count">06 chapters</span>
+    </div>
+
+    <!-- 챕터 그리드 (6개) -->
+    <div class="chapter-grid">
+
+        <!-- Chapter 07 -->
+        <a href="ch07/" class="chapter">
+            <div>
+                <div class="ch-num">CHAPTER</div>
+                <div class="ch-num-big">07</div>
+                <div class="ch-title">부분순서관계와<br>부울대수</div>
+                <div class="ch-en">Partial Orders &amp; Boolean Algebra</div>
+            </div>
+            <div class="ch-bottom">
+                <div class="ch-keywords">
+                    poset · lattice<br>boolean function
+                </div>
+                <span class="ch-arrow">→</span>
+            </div>
+        </a>
+
+        <!-- Chapter 08 -->
+        <a href="ch08/" class="chapter">
+            <div>
+                <div class="ch-num">CHAPTER</div>
+                <div class="ch-num-big">08</div>
+                <div class="ch-title">그래프</div>
+                <div class="ch-en">Graphs</div>
+            </div>
+            <div class="ch-bottom">
+                <div class="ch-keywords">
+                    G=(V,E) · path<br>cycle · connectivity
+                </div>
+                <span class="ch-arrow">→</span>
+            </div>
+        </a>
+
+        <!-- Chapter 09 -->
+        <a href="ch09/" class="chapter">
+            <div>
+                <div class="ch-num">CHAPTER</div>
+                <div class="ch-num-big">09</div>
+                <div class="ch-title">트리</div>
+                <div class="ch-en">Trees</div>
+            </div>
+            <div class="ch-bottom">
+                <div class="ch-keywords">
+                    rooted · BST<br>traversal · spanning
+                </div>
+                <span class="ch-arrow">→</span>
+            </div>
+        </a>
+
+        <!-- Chapter 10 -->
+        <a href="ch10/" class="chapter">
+            <div>
+                <div class="ch-num">CHAPTER</div>
+                <div class="ch-num-big">10</div>
+                <div class="ch-title">경우의 수 세기와<br>확률</div>
+                <div class="ch-en">Counting &amp; Probability</div>
+            </div>
+            <div class="ch-bottom">
+                <div class="ch-keywords">
+                    permutation · combination<br>P(A) · expectation
+                </div>
+                <span class="ch-arrow">→</span>
+            </div>
+        </a>
+
+        <!-- Chapter 11 -->
+        <a href="ch11/" class="chapter">
+            <div>
+                <div class="ch-num">CHAPTER</div>
+                <div class="ch-num-big">11</div>
+                <div class="ch-title">점화 관계와<br>알고리즘</div>
+                <div class="ch-en">Recurrence &amp; Algorithms</div>
+            </div>
+            <div class="ch-bottom">
+                <div class="ch-keywords">
+                    a_n = f(a_{n-1})<br>master theorem
+                </div>
+                <span class="ch-arrow">→</span>
+            </div>
+        </a>
+
+        <!-- Chapter 12 -->
+        <a href="ch12/" class="chapter">
+            <div>
+                <div class="ch-num">CHAPTER</div>
+                <div class="ch-num-big">12</div>
+                <div class="ch-title">형식 언어와<br>오토마타</div>
+                <div class="ch-en">Formal Languages &amp; Automata</div>
+            </div>
+            <div class="ch-bottom">
+                <div class="ch-keywords">
+                    DFA · NFA · regex<br>Turing machine
+                </div>
+                <span class="ch-arrow">→</span>
+            </div>
+        </a>
+
+    </div>
+
+    <!-- 기말고사 특별 카드 -->
+    <a href="final/" class="final-exam">
+        <div class="final-rings">
+            <span class="ring"></span>
+            <span class="ring"></span>
+            <span class="ring"></span>
+            <span class="ring"></span>
+            <span class="ring"></span>
+            <span class="ring"></span>
+        </div>
+        <div class="final-content">
+            <div class="final-label">FINAL · CH 07—12 MIX</div>
+            <div class="final-title">기말고사</div>
+            <div class="final-desc">전 챕터 통합 · 시험정보 · 정리노트 · 문제은행</div>
+        </div>
+        <span class="final-arrow">→</span>
+    </a>
+
+    <!-- 푸터 -->
+    <footer class="footer">
+        <span>© Jaea Lee · 강원대학교 컴퓨터공학과</span>
+        <a href="/drive/">← back to drive</a>
+    </footer>
+
+</div>
+
+</body>
+</html>
