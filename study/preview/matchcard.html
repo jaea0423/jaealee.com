@@ -330,6 +330,67 @@
   }
   .char-counter.warn{ color: var(--knu-orange); }
 
+  /* ========== 팀장 희망 체크 ========== */
+  .leader-check{
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--paper-warm);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-m);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .leader-check:active{ transform: scale(0.99); }
+  .leader-check input{
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .leader-check-box{
+    width: 22px; height: 22px;
+    flex-shrink: 0;
+    border: 2px solid var(--line);
+    border-radius: 6px;
+    background: var(--paper);
+    margin-top: 1px;
+    position: relative;
+    transition: all 0.15s;
+  }
+  .leader-check input:checked ~ .leader-check-box{
+    background: var(--knu-orange);
+    border-color: var(--knu-orange);
+  }
+  .leader-check input:checked ~ .leader-check-box::after{
+    content: '';
+    position: absolute;
+    left: 6px; top: 2px;
+    width: 5px; height: 11px;
+    border: solid white;
+    border-width: 0 2.5px 2.5px 0;
+    transform: rotate(45deg);
+  }
+  .leader-check input:checked + .leader-check-box ~ .leader-check-text strong{
+    color: var(--knu-orange);
+  }
+  .leader-check-text{
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    line-height: 1.5;
+  }
+  .leader-check-text strong{
+    font-size: 14px;
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .leader-check-sub{
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+  }
+
   /* ========== 안내 박스 ========== */
   .info-tip{
     background: var(--knu-blue-soft);
@@ -849,6 +910,22 @@
       <div class="char-counter" id="char-counter">0 / 30</div>
     </div>
 
+    <!-- 10. 팀장 희망 -->
+    <div class="form-block">
+      <div class="form-label-row">
+        <span class="form-num">10</span>
+        <span class="form-label">팀장 희망 <span class="opt">선택</span></span>
+      </div>
+      <label class="leader-check" for="leader-check">
+        <input type="checkbox" id="leader-check" onchange="card.wantLeader = this.checked">
+        <span class="leader-check-box" aria-hidden="true"></span>
+        <span class="leader-check-text">
+          <strong>저는 팀장이 되고 싶어요</strong>
+          <span class="leader-check-sub">매칭된 팀의 팀장은 희망자 우선으로 배정돼요. 팀장이 되어 스터디를 주도해보세요!</span>
+        </span>
+      </label>
+    </div>
+
     <div class="bottom-area">
       <button class="btn-primary orange" onclick="submitCard()">
         🥔 매칭 시작하기
@@ -872,7 +949,8 @@
     times: [],          // 복수
     style: [],          // 복수
     meet: [],           // 복수
-    bio: ''             // 자유 입력 (선택)
+    bio: '',            // 자유 입력 (선택)
+    wantLeader: false   // 팀장 희망 여부
   };
 
   /* ========== 단일 선택 ========== */
@@ -972,6 +1050,14 @@
   function submitCard(){
     showToast('매칭 카드 생성 완료! 🥔');
     console.log('생성된 매칭 카드:', card);
+    // 데모: 카드를 localStorage에 저장하면 대시보드가 자동으로 '대기 중' 상태로 표시
+    try{
+      localStorage.setItem('studyPotato.userMatchCard', JSON.stringify({
+        ...card,
+        status: 'waiting',
+        createdAt: Date.now()
+      }));
+    } catch(e){ /* 시크릿 모드 등 */ }
     // 토스트 보여준 뒤 대시보드(매칭 대기 상태)로 이동
     setTimeout(() => { window.location.href = 'dashboard.html'; }, 1200);
   }
