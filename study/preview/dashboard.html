@@ -1233,6 +1233,114 @@
     margin-left: 2px;
   }
 
+  /* 스터디 카드 액션 (끝내기 / 나가기) */
+  .study-actions{
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--line);
+  }
+  .study-action-btn{
+    flex: 1;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    color: var(--ink-mute);
+    padding: 9px;
+    border-radius: var(--radius-s);
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .study-action-btn:active{
+    background: var(--paper-warm);
+    color: var(--ink-soft);
+  }
+  .study-action-btn.report{
+    color: var(--ink-mute);
+  }
+  /* 종료된 스터디 카드 */
+  .study-card.ended{
+    filter: grayscale(1);
+    opacity: 0.6;
+    pointer-events: none;
+    position: relative;
+  }
+  .study-card.ended .study-actions{ display: none; }
+  .study-ended-badge{
+    display: none;
+    position: absolute;
+    top: 14px; right: 14px;
+    background: var(--ink);
+    color: var(--cream);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+  }
+  .study-card.ended .study-ended-badge{ display: block; }
+  /* 나간 상태 (팀원이 나간 경우 카드 자체는 회색이지만 다른 라벨) */
+  .study-card.ended.left .study-ended-badge{ background: var(--ink-mute); }
+
+  /* ===== 공용 모달 ===== */
+  .modal-overlay{
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .modal-overlay.show{ display: flex; }
+  .modal{
+    background: var(--paper);
+    border-radius: var(--radius-l);
+    width: 100%; max-width: 380px;
+    padding: 24px 22px;
+  }
+  .modal h3{
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+  .modal p{
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.65;
+    margin-bottom: 14px;
+  }
+  .modal p strong{ color: var(--ink); }
+  .modal .notice{
+    background: var(--paper-warm);
+    border-left: 3px solid var(--knu-orange);
+    padding: 10px 12px;
+    border-radius: var(--radius-s);
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin: 8px 0 14px;
+    line-height: 1.55;
+  }
+  .modal-actions{
+    display: flex; gap: 8px;
+    margin-top: 14px;
+  }
+  .modal-btn{
+    flex: 1; padding: 11px;
+    border-radius: var(--radius-s);
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .modal-btn.cancel{
+    background: var(--line-soft);
+    color: var(--ink-soft);
+  }
+  .modal-btn.confirm{
+    background: var(--ink);
+    color: var(--cream);
+  }
+
   /* ========== 프로필 탭 ========== */
   .profile-summary{
     margin: 0 24px 16px;
@@ -1413,7 +1521,7 @@
         <div class="small">▸ TODAY</div>
         <h1><em>재아 감자</em>님,<br>안녕하세요</h1>
       </div>
-      <button class="bell-btn" onclick="showToast('알림 화면은 준비 중이에요')">
+      <button class="bell-btn" onclick="location.href='notifications.html'">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
           <path d="M13.73 21a2 2 0 01-3.46 0"/>
@@ -1844,8 +1952,9 @@
 
     <div class="study-list">
 
-      <!-- 스터디 1 -->
-      <div class="study-card">
+      <!-- 스터디 1: 본인이 팀장 -->
+      <div class="study-card" data-team-id="t1" data-role="leader">
+        <div class="study-ended-badge">종료됨</div>
         <div class="study-card-head">
           <div>
             <span class="study-tag">시험 대비</span>
@@ -1862,27 +1971,34 @@
 
         <div class="members-row">
           <div class="member-chip leader">
-            <div class="member-avatar">민</div>
-            <span>민준</span>
+            <div class="member-avatar">재</div>
+            <span>재아 (나)</span>
             <span class="leader-tag">팀장</span>
           </div>
           <div class="member-chip">
-            <div class="member-avatar">재</div>
-            <span>재아 (나)</span>
+            <div class="member-avatar">호</div>
+            <span>호빵맨</span>
           </div>
           <div class="member-chip">
-            <div class="member-avatar">수</div>
-            <span>수빈</span>
+            <div class="member-avatar">박</div>
+            <span>박수빈</span>
           </div>
           <div class="member-chip">
-            <div class="member-avatar">지</div>
-            <span>지호</span>
+            <div class="member-avatar">감</div>
+            <span>감자소녀</span>
           </div>
+        </div>
+
+        <!-- 팀장 액션: 끝내기 + 노쇼 신고 -->
+        <div class="study-actions">
+          <button class="study-action-btn report" onclick="openReportModal('t1')">노쇼 신고</button>
+          <button class="study-action-btn" onclick="openEndModal('t1')">스터디 끝내기</button>
         </div>
       </div>
 
-      <!-- 스터디 2 -->
-      <div class="study-card">
+      <!-- 스터디 2: 본인이 팀원 -->
+      <div class="study-card" data-team-id="t2" data-role="member">
+        <div class="study-ended-badge">나갔어요</div>
         <div class="study-card-head">
           <div>
             <span class="study-tag orange">코딩테스트</span>
@@ -1903,22 +2019,28 @@
             <span>재아 (나)</span>
           </div>
           <div class="member-chip leader">
-            <div class="member-avatar">동</div>
-            <span>동현</span>
+            <div class="member-avatar">알</div>
+            <span>알고리즘마스터</span>
             <span class="leader-tag">팀장</span>
           </div>
           <div class="member-chip">
-            <div class="member-avatar">서</div>
-            <span>서연</span>
+            <div class="member-avatar">김</div>
+            <span>김서연</span>
           </div>
           <div class="member-chip">
-            <div class="member-avatar">건</div>
-            <span>건우</span>
+            <div class="member-avatar">코</div>
+            <span>코드냥이</span>
           </div>
           <div class="member-chip">
-            <div class="member-avatar">유</div>
-            <span>유나</span>
+            <div class="member-avatar">S</div>
+            <span>SQL장인</span>
           </div>
+        </div>
+
+        <!-- 팀원 액션: 나가기 + 노쇼 신고 -->
+        <div class="study-actions">
+          <button class="study-action-btn report" onclick="openReportModal('t2')">노쇼 신고</button>
+          <button class="study-action-btn" onclick="openLeaveModal('t2')">팀에서 나가기</button>
         </div>
       </div>
 
@@ -1965,11 +2087,11 @@
 
     <div class="menu-section-title">설정</div>
     <div class="menu-list">
-      <button class="menu-item" onclick="showToast('프로필 수정 화면')">
+      <button class="menu-item" onclick="location.href='profile-edit.html'">
         <span>프로필 수정</span>
         <span class="right">→</span>
       </button>
-      <button class="menu-item" onclick="showToast('비밀번호 변경 화면')">
+      <button class="menu-item" onclick="location.href='password-change.html'">
         <span>비밀번호 변경</span>
         <span class="right">→</span>
       </button>
@@ -1981,15 +2103,15 @@
 
     <div class="menu-section-title">서비스 안내</div>
     <div class="menu-list">
-      <button class="menu-item" onclick="showToast('이용약관 화면')">
+      <button class="menu-item" onclick="location.href='terms.html'">
         <span>이용약관</span>
         <span class="right">→</span>
       </button>
-      <button class="menu-item" onclick="showToast('개인정보 처리방침 화면')">
+      <button class="menu-item" onclick="location.href='privacy.html'">
         <span>개인정보 처리방침</span>
         <span class="right">→</span>
       </button>
-      <button class="menu-item" onclick="showToast('운영 규칙 화면')">
+      <button class="menu-item" onclick="location.href='rules.html'">
         <span>매칭 운영 규칙</span>
         <span class="right">→</span>
       </button>
@@ -2060,6 +2182,62 @@
 </div>
 
 <!-- 토스트 -->
+<!-- ========== 모달: 스터디 끝내기 (팀장만) ========== -->
+<div class="modal-overlay" id="end-study-modal">
+  <div class="modal">
+    <h3>스터디를 끝내시겠어요?</h3>
+    <p>
+      <strong>모든 팀원에게 종료 처리</strong>가 적용돼요.
+      한 번 끝내면 같은 팀으로 다시 활성화할 수는 없어요.
+    </p>
+    <div class="notice">
+      💡 팀장과 팀원 모두에게 알림이 가요.<br>
+      정보는 삭제되지 않고 비활성 상태로 남아요.
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeEndModal()">취소</button>
+      <button class="modal-btn confirm" onclick="confirmEndStudy()">끝내기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 모달: 팀에서 나가기 (팀원) ========== -->
+<div class="modal-overlay" id="leave-study-modal">
+  <div class="modal">
+    <h3>이 팀에서 나가시겠어요?</h3>
+    <p>
+      한 번 나가면 같은 팀으로 다시 합류할 수는 없어요.
+      나가신 후에도 매칭 카드는 그대로 두어 다른 팀으로 매칭될 수 있어요.
+    </p>
+    <div class="notice">
+      💡 팀장과 다른 팀원 모두에게 알림이 가요.<br>
+      잦은 이탈은 페널티 대상이 될 수 있어요.
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeLeaveModal()">취소</button>
+      <button class="modal-btn confirm" onclick="confirmLeaveStudy()">나가기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 모달: 노쇼 신고 ========== -->
+<div class="modal-overlay" id="report-study-modal">
+  <div class="modal">
+    <h3>노쇼 신고</h3>
+    <p>
+      신고 내용은 운영진이 확인 후 처리해요.
+      신고 1건만으로 바로 제재되지 않으니 <strong>부담 없이 사실대로</strong> 알려주세요.
+    </p>
+    <div class="notice">
+      💡 운영진이 양측을 확인한 뒤 페널티 여부를 결정해요.
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeReportModal()">취소</button>
+      <button class="modal-btn confirm" onclick="confirmReport()">신고 접수</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -2617,6 +2795,60 @@
     toast.classList.add('show');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => toast.classList.remove('show'), 2400);
+  }
+
+  /* ============================================================
+     스터디 끝내기 / 나가기 / 노쇼 신고
+     ============================================================ */
+  let pendingTeamId = null;  // 모달이 작업할 팀 ID
+
+  function openEndModal(teamId){
+    pendingTeamId = teamId;
+    document.getElementById('end-study-modal').classList.add('show');
+  }
+  function closeEndModal(){
+    pendingTeamId = null;
+    document.getElementById('end-study-modal').classList.remove('show');
+  }
+  function confirmEndStudy(){
+    const card = document.querySelector(`[data-team-id="${pendingTeamId}"]`);
+    if(card){
+      card.classList.add('ended');
+      card.querySelector('.study-ended-badge').textContent = '종료됨';
+    }
+    closeEndModal();
+    showToast('스터디가 종료됐어요. 팀원들에게 알림이 가요.');
+  }
+
+  function openLeaveModal(teamId){
+    pendingTeamId = teamId;
+    document.getElementById('leave-study-modal').classList.add('show');
+  }
+  function closeLeaveModal(){
+    pendingTeamId = null;
+    document.getElementById('leave-study-modal').classList.remove('show');
+  }
+  function confirmLeaveStudy(){
+    const card = document.querySelector(`[data-team-id="${pendingTeamId}"]`);
+    if(card){
+      card.classList.add('ended', 'left');
+      card.querySelector('.study-ended-badge').textContent = '나갔어요';
+    }
+    closeLeaveModal();
+    showToast('팀에서 나왔어요. 팀장과 팀원들에게 알림이 가요.');
+  }
+
+  function openReportModal(teamId){
+    pendingTeamId = teamId;
+    document.getElementById('report-study-modal').classList.add('show');
+  }
+  function closeReportModal(){
+    pendingTeamId = null;
+    document.getElementById('report-study-modal').classList.remove('show');
+  }
+  function confirmReport(){
+    closeReportModal();
+    showToast('신고가 접수됐어요. 확인 후 처리해드릴게요.');
   }
 
   /* ============================================================
