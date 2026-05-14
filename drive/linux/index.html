@@ -1,1138 +1,2155 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>linux@z:~/drive/linux</title>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
-
+<meta charset="utf-8" />
+<title>리눅스 프로그래밍 자기주도학습서 (Second Half)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    :root {
-        --bg-outer: #1a1a1a;
-        --bg-screen: #001b14;       /* PuTTY 다크그린 */
-        --bg-titlebar: #2d2d2d;
-        --text: #d4d0c8;            /* CRT 인광 회색 */
-        --text-bright: #ffffff;
-        --text-dim: #6b8a7e;
-        --amber: #ffb000;           /* 호박색 (옛날 모니터) */
-        --green: #4ade80;           /* 실행 가능 */
-        --blue: #60a5fa;            /* 디렉토리 */
-        --red: #ef4444;             /* 시험 강조 */
-        --border: #2a4a3e;
-    }
-
-    html, body {
-        min-height: 100vh;
-        background: var(--bg-outer);
-        font-family: 'IBM Plex Mono', 'Pretendard', monospace;
-        color: var(--text);
-        overflow-x: hidden;
-        background-image: radial-gradient(ellipse at 50% 0%, #2a2a2a 0%, #0a0a0a 70%);
-    }
-
-    /* === CRT 스캔라인 === */
-    body::before {
-        content: '';
-        position: fixed;
-        inset: 0;
-        background: repeating-linear-gradient(
-            0deg,
-            rgba(0, 0, 0, 0.15) 0px,
-            rgba(0, 0, 0, 0.15) 1px,
-            transparent 1px,
-            transparent 3px
-        );
-        pointer-events: none;
-        z-index: 100;
-        opacity: 0.5;
-    }
-
-    /* === CRT 깜빡임 === */
-    body::after {
-        content: '';
-        position: fixed;
-        inset: 0;
-        background: rgba(255, 176, 0, 0.012);
-        pointer-events: none;
-        z-index: 99;
-        animation: flicker 0.15s infinite;
-    }
-
-    @keyframes flicker {
-        0%, 100% { opacity: 0.85; }
-        50% { opacity: 1; }
-    }
-
-    /* === 메인 터미널 윈도우 === */
-    .terminal {
-        max-width: 1100px;
-        margin: 32px auto;
-        background: var(--bg-screen);
-        border-radius: 8px;
-        box-shadow: 
-            0 0 0 1px #444,
-            0 30px 80px rgba(0, 0, 0, 0.7),
-            0 0 60px rgba(255, 176, 0, 0.05);
-        overflow: hidden;
-        position: relative;
-    }
-
-    /* === 윈도우 타이틀바 === */
-    .titlebar {
-        background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
-        padding: 10px 16px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        border-bottom: 1px solid #1a1a1a;
-        position: relative;
-        z-index: 2;
-    }
-
-    .traffic-lights { display: flex; gap: 8px; }
-
-    .light {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background: #555;
-    }
-    .light.red { background: #ff5f57; }
-    .light.yellow { background: #febc2e; }
-    .light.green { background: #28c840; }
-
-    .window-title {
-        flex: 1;
-        text-align: center;
-        font-family: 'IBM Plex Mono', monospace;
-        font-size: 12px;
-        color: #999;
-        letter-spacing: 0.05em;
-    }
-
-    .tab-info {
-        font-size: 10px;
-        color: #666;
-        letter-spacing: 0.1em;
-    }
-
-    /* === 터미널 본문 === */
-    .terminal-body {
-        padding: 32px 36px 48px;
-        font-family: 'IBM Plex Mono', monospace;
-        font-size: 14px;
-        line-height: 1.7;
-        position: relative;
-        min-height: 70vh;
-    }
-
-    .terminal-body::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.4) 100%);
-        pointer-events: none;
-        z-index: 1;
-    }
-
-    .terminal-body > * { position: relative; z-index: 2; }
-
-    /* === 프롬프트 === */
-    .prompt-line { margin-bottom: 8px; color: var(--text); }
-
-    .user { color: var(--green); font-weight: 600; }
-    .at { color: var(--text-dim); }
-    .host { color: var(--green); font-weight: 600; }
-    .colon { color: var(--text-dim); }
-    .path { color: var(--blue); font-weight: 600; }
-    .dollar { color: var(--amber); margin: 0 6px; }
-    .cmd { color: var(--text-bright); }
-    .arg { color: var(--amber); }
-    .flag { color: #c084fc; }
-    .comment { color: var(--text-dim); font-style: italic; }
-    .output { color: var(--text); }
-
-    /* 깜빡이는 커서 */
-    .cursor {
-        display: inline-block;
-        width: 9px;
-        height: 16px;
-        background: var(--amber);
-        margin-left: 4px;
-        vertical-align: middle;
-        animation: blink 1s step-end infinite;
-        box-shadow: 0 0 8px var(--amber);
-    }
-
-    @keyframes blink {
-        0%, 50% { opacity: 1; }
-        51%, 100% { opacity: 0; }
-    }
-
-    /* === ASCII 배너 === */
-    .ascii-banner {
-        font-family: 'IBM Plex Mono', monospace;
-        font-size: 12px;
-        line-height: 1.2;
-        color: var(--amber);
-        text-shadow: 0 0 8px rgba(255, 176, 0, 0.5);
-        white-space: pre;
-        margin: 20px 0 24px;
-        font-weight: 600;
-        overflow-x: auto;
-    }
-
-    /* === motd === */
-    .motd {
-        border: 1px solid var(--border);
-        border-left: 3px solid var(--amber);
-        background: rgba(255, 176, 0, 0.03);
-        padding: 14px 18px;
-        margin: 20px 0 32px;
-        font-size: 12.5px;
-        line-height: 1.8;
-    }
-
-    .motd-title {
-        color: var(--amber);
-        font-weight: 600;
-        margin-bottom: 6px;
-        letter-spacing: 0.05em;
-    }
-
-    .motd-row { color: var(--text-dim); }
-    .motd-row .label { color: var(--text); display: inline-block; min-width: 110px; }
-    .motd-row .val { color: var(--amber); }
-
-    /* === 섹션 프롬프트 === */
-    .section-prompt {
-        margin: 28px 0 12px;
-        font-size: 14px;
-    }
-
-    /* === ls 출력 === */
-    .ls-output {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        margin: 8px 0 12px;
-        font-size: 13.5px;
-    }
-
-    /* 각 파일 행 */
-    .ls-row {
-        display: grid;
-        grid-template-columns: 100px 60px minmax(0, 1fr) auto;
-        gap: 16px;
-        padding: 7px 10px;
-        border-radius: 3px;
-        text-decoration: none;
-        color: var(--text);
-        transition: all 0.12s;
-        align-items: center;
-    }
-
-    .ls-row:hover { background: rgba(255, 176, 0, 0.08); }
-
-    .perm { 
-        color: var(--text-dim); 
-        font-size: 12px; 
-        white-space: nowrap;
-    }
-    .size { 
-        color: var(--text-dim); 
-        font-size: 12px; 
-        text-align: right; 
-        white-space: nowrap;
-    }
-
-    .ls-name { 
-        color: var(--blue); 
-        font-weight: 600; 
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    .ls-row:hover .ls-name {
-        color: var(--amber);
-        text-shadow: 0 0 6px rgba(255, 176, 0, 0.4);
-    }
-
-    .ls-comment {
-        font-family: 'Pretendard', sans-serif;
-        color: var(--text-dim);
-        font-size: 12px;
-        font-weight: 400;
-        margin-left: 10px;
-    }
-
-    /* === 1차시/2차시 미니 버튼 === */
-    .lec-mini {
-        display: inline-flex;
-        gap: 6px;
-        margin-left: auto;
-    }
-
-    .lec-link {
-        font-size: 11px;
-        color: var(--text-dim);
-        text-decoration: none;
-        padding: 2px 8px;
-        border: 1px solid var(--border);
-        border-radius: 2px;
-        background: rgba(0, 0, 0, 0.3);
-        transition: all 0.12s;
-        font-weight: 500;
-    }
-
-    .lec-link:hover {
-        color: var(--amber);
-        border-color: var(--amber);
-        background: rgba(255, 176, 0, 0.08);
-        box-shadow: 0 0 6px rgba(255, 176, 0, 0.3);
-    }
-
-    /* === 비활성 (지난 내용) === */
-    .ls-row.disabled {
-        opacity: 0.35;
-        cursor: not-allowed;
-    }
-    .ls-row.disabled:hover {
-        background: transparent;
-    }
-    .ls-row.disabled .ls-name {
-        color: var(--text-dim);
-        text-decoration: line-through;
-        text-decoration-color: rgba(107, 138, 126, 0.5);
-    }
-    .ls-row.disabled:hover .ls-name {
-        color: var(--text-dim);
-        text-shadow: none;
-    }
-
-    /* 비활성 lec-link (클릭 불가) */
-    .lec-link.disabled {
-        color: var(--text-dim);
-        opacity: 0.4;
-        cursor: not-allowed;
-        pointer-events: none;
-        text-decoration: line-through;
-        text-decoration-color: rgba(107, 138, 126, 0.5);
-    }
-    .lec-link.disabled:hover {
-        color: var(--text-dim);
-        border-color: var(--border);
-        background: rgba(0, 0, 0, 0.3);
-        box-shadow: none;
-    }
-
-    /* === 시험 행 === */
-    .ls-row.exam .ls-name { color: var(--red); }
-    .ls-row.exam:hover .ls-name {
-        color: var(--red);
-        text-shadow: 0 0 6px rgba(239, 68, 68, 0.5);
-    }
-    .ls-row.exam:hover { background: rgba(239, 68, 68, 0.08); }
-    .ls-row.exam .perm { color: rgba(239, 68, 68, 0.5); }
-    .ls-row.exam { cursor: pointer; }
-
-    .exam-toggle {
-        font-size: 11px;
-        color: rgba(239, 68, 68, 0.8);
-        padding: 2px 8px;
-        border: 1px solid rgba(239, 68, 68, 0.3);
-        border-radius: 2px;
-        background: rgba(0, 0, 0, 0.3);
-        transition: all 0.12s;
-    }
-
-    .ls-row.exam:hover .exam-toggle {
-        background: rgba(239, 68, 68, 0.1);
-        border-color: var(--red);
-        color: var(--red);
-    }
-
-    /* 시험 펼침 영역 */
-    .exam-expand {
-        display: none;
-        margin-left: 102px;
-        margin-top: 4px;
-        margin-bottom: 8px;
-        padding: 12px 16px;
-        border: 1px dashed rgba(239, 68, 68, 0.3);
-        border-radius: 3px;
-        background: rgba(239, 68, 68, 0.04);
-    }
-
-    .ls-row.exam.expanded + .exam-expand {
-        display: block;
-    }
-
-    .exam-expand-title {
-        font-size: 11px;
-        color: var(--red);
-        margin-bottom: 8px;
-        letter-spacing: 0.1em;
-    }
-
-    .exam-buttons {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-
-    .exam-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 14px;
-        background: rgba(0, 0, 0, 0.4);
-        border: 1px solid rgba(239, 68, 68, 0.3);
-        border-radius: 3px;
-        color: var(--text);
-        text-decoration: none;
-        font-family: 'Pretendard', sans-serif;
-        font-size: 12.5px;
-        transition: all 0.12s;
-    }
-
-    .exam-btn:hover {
-        background: rgba(239, 68, 68, 0.12);
-        border-color: var(--red);
-        box-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
-    }
-
-    .exam-btn .icon {
-        font-family: 'IBM Plex Mono', monospace;
-        color: var(--red);
-        font-weight: 600;
-    }
-
-    /* === 접이식 섹션 (Lec/Prac/HW) === */
-    .collapsible {
-        margin-top: 32px;
-    }
-
-    /* 섹션 헤더 (클릭 가능) */
-    .collapsible-header {
-        display: grid;
-        grid-template-columns: 100px 60px minmax(0, 1fr) auto;
-        gap: 16px;
-        padding: 8px 10px;
-        border: 1px solid var(--border);
-        border-radius: 3px;
-        background: rgba(255, 176, 0, 0.04);
-        cursor: pointer;
-        align-items: center;
-        transition: all 0.15s;
-        text-decoration: none;
-        color: var(--text);
-    }
-
-    .collapsible-header:hover {
-        background: rgba(255, 176, 0, 0.08);
-        border-color: rgba(255, 176, 0, 0.4);
-    }
-
-    .collapsible-header .perm { color: var(--amber); opacity: 0.7; }
-    .collapsible-header .ls-name { color: var(--amber); }
-    .collapsible-header:hover .ls-name {
-        text-shadow: 0 0 6px rgba(255, 176, 0, 0.4);
-    }
-
-    /* 펼침 토글 표시 */
-    .collapse-toggle {
-        font-size: 11px;
-        color: var(--amber);
-        padding: 2px 10px;
-        border: 1px solid rgba(255, 176, 0, 0.3);
-        border-radius: 2px;
-        background: rgba(0, 0, 0, 0.3);
-        font-family: 'IBM Plex Mono', monospace;
-        white-space: nowrap;
-    }
-
-    /* 섹션 본문 (기본은 숨김) */
-    .collapsible-body {
-        display: none;
-        margin-top: 4px;
-        padding: 8px 0 4px 8px;
-        border-left: 1px dashed var(--border);
-        margin-left: 14px;
-    }
-
-    .collapsible.expanded .collapsible-body {
-        display: block;
-    }
-
-    /* 펼친 상태에서 토글 텍스트 변경은 JS로 */
-
-    /* === 푸터 === */
-    .terminal-footer {
-        margin-top: 48px;
-        padding-top: 16px;
-        border-top: 1px dashed var(--border);
-        font-size: 12px;
-        color: var(--text-dim);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .terminal-footer a {
-        color: var(--text-dim);
-        text-decoration: none;
-        transition: color 0.15s;
-    }
-
-    .terminal-footer a:hover { color: var(--amber); }
-
-    /* 반응형 */
-    @media (max-width: 768px) {
-        .terminal { margin: 12px; border-radius: 6px; }
-        .terminal-body { padding: 24px 18px 32px; font-size: 12px; }
-        .ascii-banner { font-size: 8px; }
-        .ls-row,
-        .collapsible-header {
-            grid-template-columns: 1fr auto;
-            gap: 8px;
-            padding: 10px 8px;
-        }
-        .perm, .size { display: none; }
-        .ls-comment { display: block; margin-left: 0; margin-top: 2px; }
-        .exam-expand { margin-left: 0; }
-        .collapsible-body { margin-left: 0; padding-left: 4px; }
-        .window-title { font-size: 10px; }
-        .tab-info { display: none; }
-    }
+  :root{
+    --bg:#f7f8fb; --card:#ffffff; --ink:#1a1f2e; --sub:#5b6477;
+    --line:#e6e8ef; --accent:#3457e0; --accent2:#0fa37f;
+    --warn:#d97706; --danger:#dc2626; --code-bg:#0f172a; --code-ink:#e2e8f0;
+    --chip:#eef2ff; --chip-ink:#3457e0;
+    --eng:#fff7ed; --kor:#ecfeff; --quiz:#f5f3ff; --sol:#f0fdf4;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+    font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,Arial,sans-serif;
+    line-height:1.65; font-size:15.5px}
+  header{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.92);
+    backdrop-filter: blur(6px); border-bottom:1px solid var(--line)}
+  .wrap{max-width:1080px;margin:0 auto;padding:18px 22px}
+  nav.top{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  nav.top a{font-size:13px;padding:5px 10px;border-radius:999px;border:1px solid var(--line);
+    background:#fff;color:var(--ink);text-decoration:none}
+  nav.top a:hover{background:var(--chip);color:var(--chip-ink);border-color:var(--chip-ink)}
+  h1{font-size:28px;margin:6px 0 4px}
+  h2{font-size:22px;margin:36px 0 8px;border-left:5px solid var(--accent);padding-left:10px}
+  h3{font-size:18px;margin:24px 0 6px;color:var(--ink)}
+  h4{font-size:16px;margin:18px 0 4px;color:var(--accent)}
+  p{margin:8px 0}
+  .sub{color:var(--sub);font-size:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:18px 20px;margin:14px 0;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+  .kw{color:var(--accent);font-weight:600}
+  .eng{color:#0c5b8a;font-style:italic;font-size:.93em}
+  code{background:#eef2ff;color:#1e293b;padding:1px 6px;border-radius:5px;
+    font-family:"JetBrains Mono","Consolas",ui-monospace,monospace;font-size:.92em}
+  pre{background:var(--code-bg);color:var(--code-ink);padding:14px 16px;border-radius:10px;
+    overflow:auto;font-family:"JetBrains Mono","Consolas",ui-monospace,monospace;font-size:13.5px;
+    line-height:1.55}
+  pre .c{color:#94a3b8}  /* comment */
+  pre .k{color:#f472b6}  /* keyword */
+  pre .s{color:#a7f3d0}  /* string */
+  pre .n{color:#fbbf24}  /* number */
+  pre .f{color:#93c5fd}  /* function */
+  pre .v{color:#fde68a}  /* var */
+  .tag{display:inline-block;padding:2px 8px;border-radius:999px;background:var(--chip);
+    color:var(--chip-ink);font-size:12px;margin-right:6px}
+  .tag.green{background:#dcfce7;color:#166534}
+  .tag.amber{background:#fef3c7;color:#92400e}
+  .tag.rose{background:#ffe4e6;color:#9f1239}
+  .callout{border-left:4px solid var(--accent2);background:#ecfdf5;
+    padding:10px 14px;border-radius:0 10px 10px 0;margin:10px 0}
+  .callout.warn{border-color:var(--warn);background:#fff7ed}
+  .callout.danger{border-color:var(--danger);background:#fef2f2}
+  details{border:1px solid var(--line);border-radius:10px;padding:10px 14px;
+    margin:10px 0;background:#fff}
+  details > summary{cursor:pointer;font-weight:600;color:var(--accent);
+    list-style:none}
+  details > summary::before{content:"▶ ";color:var(--sub);font-size:.9em;transition:transform .2s}
+  details[open] > summary::before{content:"▼ "}
+  details.eng{background:var(--eng)}
+  details.kor{background:var(--kor)}
+  details.sol{background:var(--sol)}
+  .quiz{background:var(--quiz);border:1px solid #ddd6fe;border-radius:12px;padding:14px 18px;margin:12px 0}
+  .quiz h4{color:#6d28d9;margin-top:0}
+  .q{margin:14px 0;padding:12px;background:#fff;border-radius:10px;border:1px solid #e9d5ff}
+  .q .num{font-weight:700;color:#6d28d9;margin-right:6px}
+  .opts{margin:6px 0 0 14px}
+  .opts label{display:block;padding:3px 0;cursor:pointer}
+  .opts input[type="radio"]{margin-right:8px}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top}
+  th{background:#f1f5f9;color:#1e293b}
+  .curriculum{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:10px}
+  .step{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;
+    transition:transform .15s, box-shadow .15s}
+  .step:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(52,87,224,.12)}
+  .step a{text-decoration:none;color:var(--ink);display:block}
+  .step .badge{display:inline-block;padding:2px 8px;border-radius:6px;
+    font-size:12px;font-weight:600;margin-bottom:8px}
+  .step.lec .badge{background:#dbeafe;color:#1e40af}
+  .step.pra .badge{background:#dcfce7;color:#166534}
+  .step.hw .badge{background:#fee2e2;color:#991b1b}
+  .step .ttl{font-weight:700;font-size:15px}
+  .step .dsc{font-size:13px;color:var(--sub);margin-top:4px}
+  .arrow{display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--sub)}
+  .toc{font-size:14px;color:var(--sub)}
+  .toc a{color:var(--accent);text-decoration:none}
+  .toc a:hover{text-decoration:underline}
+  hr.sep{border:none;border-top:2px dashed var(--line);margin:30px 0}
+  .pill{display:inline-block;padding:1px 7px;border-radius:999px;font-size:11.5px;
+    background:#fef9c3;color:#854d0e;border:1px solid #fde68a}
+  .quiz .ans{margin-top:6px;padding:8px 12px;background:#dcfce7;border-radius:8px;
+    color:#14532d;font-size:14px;display:none}
+  .quiz .ans.show{display:block}
+  .quiz .showbtn{margin-top:6px;font-size:13px;padding:4px 10px;border-radius:6px;
+    border:1px solid #c7d2fe;background:#eef2ff;color:#3730a3;cursor:pointer}
+  .float-nav{position:fixed;right:18px;bottom:18px;background:#fff;border:1px solid var(--line);
+    border-radius:12px;padding:8px 10px;box-shadow:0 8px 24px rgba(0,0,0,.08);font-size:13px}
+  .float-nav a{display:block;color:var(--accent);text-decoration:none;padding:2px 0}
+  .progress{height:4px;background:var(--accent);transition:width .2s;border-radius:0 4px 4px 0;
+    position:fixed;top:0;left:0;z-index:11}
+  ul.clean{padding-left:18px}
+  ul.clean li{margin:4px 0}
+  .kbd{background:#1f2937;color:#fef3c7;padding:1px 6px;border-radius:4px;font-family:monospace;font-size:12.5px}
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media (max-width:760px){ .twocol{grid-template-columns:1fr} .float-nav{display:none} }
 </style>
 </head>
 <body>
+<div class="progress" id="progress"></div>
+<header>
+  <div class="wrap">
+    <nav class="top">
+      <a href="#curriculum">🗺 커리큘럼</a>
+      <a href="#lec8">Lec8</a>
+      <a href="#hw08">HW08</a>
+      <a href="#lec9">Lec9</a>
+      <a href="#practice">Practice</a>
+      <a href="#lec10">Lec10</a>
+      <a href="#lec11">Lec11</a>
+      <a href="#hw09">HW09</a>
+      <a href="#cheatsheet">📒 치트시트</a>
+    </nav>
+  </div>
+</header>
 
-<div class="terminal">
+<main class="wrap">
+<h1>리눅스 프로그래밍 자기주도학습서</h1>
+<p class="sub">Second Half · Lec8 → Lec11 + Practice + Homework · 모든 슬라이드 풀어쓰기 + 객관식/단답 연습문제</p>
 
-    <!-- 윈도우 타이틀바 (macOS 스타일) -->
-    <div class="titlebar">
-        <div class="traffic-lights">
-            <span class="light red"></span>
-            <span class="light yellow"></span>
-            <span class="light green"></span>
-        </div>
-        <div class="window-title">linux@z: ~/drive/linux — bash — 100×40</div>
-        <div class="tab-info">tmux 0:linux*</div>
-    </div>
-
-    <!-- 터미널 본문 -->
-    <div class="terminal-body">
-
-        <!-- ssh 접속 라인 -->
-        <div class="prompt-line">
-            <span class="cmd">$ </span><span class="cmd">ssh</span> <span class="arg">z@kangwon.ac.kr</span>
-        </div>
-        <div class="output">
-            <span class="comment">Last login: Mon May  4 12:34:56 2026 from 10.0.0.42</span>
-        </div>
-
-        <!-- ASCII 펭귄 + 배너 -->
-        <div class="ascii-banner">     .--.         _      _                              
-    |o_o |       | |    (_)                             
-    |:_/ |       | |     _ _ __  _   ___  __            
-   //   \ \      | |    | | '_ \| | | \ \/ /            
-  (|     | )     | |____| | | | | |_| |>  <             
-  /'\_   _/`\    |______|_|_| |_|\__,_/_/\_\            
-  \___)=(___/                                            
-
-  +-------------------------------------------+
-  |   L I N U X  ·  P R O G R A M M I N G     |
-  +-------------------------------------------+</div>
-
-        <!-- motd -->
-        <div class="motd">
-            <div class="motd-title">// Welcome to Linux Programming Course</div>
-            <div class="motd-row"><span class="label">System........:</span> <span class="val">Ubuntu 22.04 LTS</span></div>
-            <div class="motd-row"><span class="label">Kernel........:</span> <span class="val">5.15.0-generic</span></div>
-            <div class="motd-row"><span class="label">Course........:</span> <span class="val">강원대학교 컴퓨터공학과 · 2025</span></div>
-            <div class="motd-row"><span class="label">Total weeks...:</span> <span class="val">15</span> <span class="comment"># 중간 = Week 8 / 기말 = Week 9</span></div>
-            <div class="motd-row"><span class="label">Topics........:</span> <span class="val">shell, grep, awk, gcc, fork, signal, ipc</span></div>
-        </div>
-
-        <!-- pwd -->
-        <div class="prompt-line">
-            <span class="user">z</span><span class="at">@</span><span class="host">drive</span><span class="colon">:</span><span class="path">~/linux</span><span class="dollar">$</span><span class="cmd">pwd</span>
-        </div>
-        <div class="output">/home/z/drive/linux</div>
-
-        <!-- 중간고사 (week08 위, 비활성) -->
-        <div class="section-prompt prompt-line" style="margin-top: 28px;">
-            <span class="user">z</span><span class="at">@</span><span class="host">drive</span><span class="colon">:</span><span class="path">~/linux</span><span class="dollar">$</span><span class="cmd">cat</span> <span class="arg">.midterm</span> <span class="comment"># 중간고사 (지난 시험)</span>
-        </div>
-
-        <div class="ls-row exam disabled" onclick="toggleExam(this)">
-            <span class="perm">-rwx------</span>
-            <span class="size">8.0K</span>
-            <span class="ls-name">midterm.exam<span class="ls-comment"># 중간고사 (지난 시험)</span></span>
-            <span class="lec-mini">
-                <span class="exam-toggle" style="opacity: 0.5;">[done]</span>
-            </span>
-        </div>
-
-        <!-- ls -la (전반부) -->
-        <div class="section-prompt prompt-line" style="margin-top: 28px;">
-            <span class="user">z</span><span class="at">@</span><span class="host">drive</span><span class="colon">:</span><span class="path">~/linux</span><span class="dollar">$</span><span class="cmd">ls</span> <span class="flag">-la</span> <span class="arg">week0*</span> <span class="comment"># 1~9주차 디렉토리</span>
-        </div>
-        <div class="output" style="margin: 4px 0 8px; color: var(--text-dim); font-size: 12px;">
-            total 9
-        </div>
-
-        <div class="ls-output">
-
-            <!-- Week 01 (지난 내용) -->
-            <div class="ls-row disabled">
-                <span class="perm">drwxr-xr-x</span>
-                <span class="size">4.0K</span>
-                <span class="ls-name">week01/<span class="ls-comment"># 1주차 (지난 내용)</span></span>
-                <span class="lec-mini">
-                    <span class="lec-link disabled">lec1</span>
-                    <span class="lec-link disabled">lec2</span>
-                </span>
-            </div>
-
-            <!-- Week 02 (지난 내용) -->
-            <div class="ls-row disabled">
-                <span class="perm">drwxr-xr-x</span>
-                <span class="size">4.0K</span>
-                <span class="ls-name">week02/<span class="ls-comment"># 2주차 (지난 내용)</span></span>
-                <span class="lec-mini">
-                    <span class="lec-link disabled">lec1</span>
-                    <span class="lec-link disabled">lec2</span>
-                </span>
-            </div>
-
-            <!-- Week 03 (지난 내용) -->
-            <div class="ls-row disabled">
-                <span class="perm">drwxr-xr-x</span>
-                <span class="size">4.0K</span>
-                <span class="ls-name">week03/<span class="ls-comment"># 3주차 (지난 내용)</span></span>
-                <span class="lec-mini">
-                    <span class="lec-link disabled">lec1</span>
-                    <span class="lec-link disabled">lec2</span>
-                </span>
-            </div>
-
-            <!-- Week 04 (지난 내용) -->
-            <div class="ls-row disabled">
-                <span class="perm">drwxr-xr-x</span>
-                <span class="size">4.0K</span>
-                <span class="ls-name">week04/<span class="ls-comment"># 4주차 (지난 내용)</span></span>
-                <span class="lec-mini">
-                    <span class="lec-link disabled">lec1</span>
-                    <span class="lec-link disabled">lec2</span>
-                </span>
-            </div>
-
-            <!-- Week 05 (지난 내용) -->
-            <div class="ls-row disabled">
-                <span class="perm">drwxr-xr-x</span>
-                <span class="size">4.0K</span>
-                <span class="ls-name">week05/<span class="ls-comment"># 5주차 (지난 내용)</span></span>
-                <span class="lec-mini">
-                    <span class="lec-link disabled">lec1</span>
-                    <span class="lec-link disabled">lec2</span>
-                </span>
-            </div>
-
-            <!-- Week 06 (지난 내용) -->
-            <div class="ls-row disabled">
-                <span class="perm">drwxr-xr-x</span>
-                <span class="size">4.0K</span>
-                <span class="ls-name">week06/<span class="ls-comment"># 6주차 (지난 내용)</span></span>
-                <span class="lec-mini">
-                    <span class="lec-link disabled">lec1</span>
-                    <span class="lec-link disabled">lec2</span>
-                </span>
-            </div>
-
-            <!-- Week 07 (지난 내용) -->
-            <div class="ls-row disabled">
-                <span class="perm">drwxr-xr-x</span>
-                <span class="size">4.0K</span>
-                <span class="ls-name">week07/<span class="ls-comment"># 7주차 (지난 내용)</span></span>
-                <span class="lec-mini">
-                    <span class="lec-link disabled">lec1</span>
-                    <span class="lec-link disabled">lec2</span>
-                </span>
-            </div>
-
-            <!-- Week 08: lec1 = 중간고사 / lec2 = 기말고사 범위 진도 -->
-            <div class="ls-row">
-                <span class="perm">drwxr-xr-x</span>
-                <span class="size">4.0K</span>
-                <span class="ls-name">week08/<span class="ls-comment"># 8주차 (lec1 = 중간고사 · lec2 = 기말 범위)</span></span>
-                <span class="lec-mini">
-                    <span class="lec-link disabled">lec1</span>
-                    <a href="week08/lec2.html" class="lec-link">lec2</a>
-                </span>
-            </div>
-
-            <!-- Week 09 -->
-            <div class="ls-row">
-                <span class="perm">drwxr-xr-x</span>
-                <span class="size">4.0K</span>
-                <span class="ls-name">week09/<span class="ls-comment"># 9주차</span></span>
-                <span class="lec-mini">
-                    <a href="week09/lec1.html" class="lec-link">lec1</a>
-                    <a href="week09/lec2.html" class="lec-link">lec2</a>
-                </span>
-            </div>
-
-        </div>
-
-        <!-- ls -la (후반부) -->
-        <div class="section-prompt prompt-line" style="margin-top: 28px;">
-            <span class="user">z</span><span class="at">@</span><span class="host">drive</span><span class="colon">:</span><span class="path">~/linux</span><span class="dollar">$</span><span class="cmd">ls</span> <span class="flag">-la</span> <span class="arg">week1*</span> <span class="comment"># 10~15주차 디렉토리</span>
-        </div>
-        <div class="output" style="margin: 4px 0 8px; color: var(--text-dim); font-size: 12px;">
-            total 6
-        </div>
-
-        <div class="ls-output">
-
-            <!-- Week 10 -->
-            <div class="ls-row">
-                <span class="perm">drwxr-xr-x</span>
-                <span class="size">4.0K</span>
-                <span class="ls-name">week10/<span class="ls-comment"># 10주차</span></span>
-                <span class="lec-mini">
-                    <a href="week10/lec1.html" class="lec-link">lec1</a>
-                    <a href="week10/lec2.html" class="lec-link">lec2</a>
-                </span>
-            </div>
-
-            <!-- Week 11 -->
-            <div class="ls-row">
-                <span class="perm">drwxr-xr-x</span>
-                <span class="size">4.0K</span>
-                <span class="ls-name">week11/<span class="ls-comment"># 11주차</span></span>
-                <span class="lec-mini">
-                    <a href="week11/lec1.html" class="lec-link">lec1</a>
-                    <a href="week11/lec2.html" class="lec-link">lec2</a>
-                </span>
-            </div>
-
-            <!-- Week 12 -->
-            <div class="ls-row">
-                <span class="perm">drwxr-xr-x</span>
-                <span class="size">4.0K</span>
-                <span class="ls-name">week12/<span class="ls-comment"># 12주차</span></span>
-                <span class="lec-mini">
-                    <a href="week12/lec1.html" class="lec-link">lec1</a>
-                    <a href="week12/lec2.html" class="lec-link">lec2</a>
-                </span>
-            </div>
-
-            <!-- Week 13 -->
-            <div class="ls-row">
-                <span class="perm">drwxr-xr-x</span>
-                <span class="size">4.0K</span>
-                <span class="ls-name">week13/<span class="ls-comment"># 13주차</span></span>
-                <span class="lec-mini">
-                    <a href="week13/lec1.html" class="lec-link">lec1</a>
-                    <a href="week13/lec2.html" class="lec-link">lec2</a>
-                </span>
-            </div>
-
-            <!-- Week 14 -->
-            <div class="ls-row">
-                <span class="perm">drwxr-xr-x</span>
-                <span class="size">4.0K</span>
-                <span class="ls-name">week14/<span class="ls-comment"># 14주차</span></span>
-                <span class="lec-mini">
-                    <a href="week14/lec1.html" class="lec-link">lec1</a>
-                    <a href="week14/lec2.html" class="lec-link">lec2</a>
-                </span>
-            </div>
-
-            <!-- Week 15 -->
-            <div class="ls-row">
-                <span class="perm">drwxr-xr-x</span>
-                <span class="size">4.0K</span>
-                <span class="ls-name">week15/<span class="ls-comment"># 15주차</span></span>
-                <span class="lec-mini">
-                    <a href="week15/lec1.html" class="lec-link">lec1</a>
-                    <a href="week15/lec2.html" class="lec-link">lec2</a>
-                </span>
-            </div>
-
-        </div>
-
-        <!-- 기말고사 (week15 아래) -->
-        <div class="section-prompt prompt-line" style="margin-top: 28px;">
-            <span class="user">z</span><span class="at">@</span><span class="host">drive</span><span class="colon">:</span><span class="path">~/linux</span><span class="dollar">$</span><span class="cmd">cat</span> <span class="arg">.final</span> <span class="comment"># 기말고사</span>
-        </div>
-
-        <div class="ls-row exam" onclick="toggleExam(this)">
-            <span class="perm">-rwx------</span>
-            <span class="size">8.0K</span>
-            <span class="ls-name">final.exam<span class="ls-comment"># 기말고사</span></span>
-            <span class="lec-mini">
-                <span class="exam-toggle">[+] open</span>
-            </span>
-        </div>
-        <div class="exam-expand">
-            <div class="exam-expand-title">// FINAL RESOURCES</div>
-            <div class="exam-buttons">
-                <a href="final/info.html" class="exam-btn">
-                    <span class="icon">①</span><span>시험정보</span>
-                </a>
-                <a href="final/notes.html" class="exam-btn">
-                    <span class="icon">②</span><span>정리노트</span>
-                </a>
-                <a href="final/problems.html" class="exam-btn">
-                    <span class="icon">③</span><span>문제은행</span>
-                </a>
-            </div>
-        </div>
-
-        <!-- ============================================== -->
-        <!-- 강의자료 (Lectures) - 접이식                  -->
-        <!-- ============================================== -->
-        <div class="section-prompt prompt-line" style="margin-top: 36px;">
-            <span class="user">z</span><span class="at">@</span><span class="host">drive</span><span class="colon">:</span><span class="path">~/linux</span><span class="dollar">$</span><span class="cmd">ls</span> <span class="arg">materials/lectures/</span> <span class="comment"># 교수님 제공 강의자료</span>
-        </div>
-
-        <div class="collapsible" id="sec-lectures">
-            <!-- 섹션 헤더 (클릭하면 펼쳐짐) -->
-            <div class="collapsible-header" onclick="toggleSection(this)">
-                <span class="perm">drwxr-xr-x</span>
-                <span class="size">60K</span>
-                <span class="ls-name">lectures/<span class="ls-comment"># 강의자료 (Lec01 ~ Lec15)</span></span>
-                <span class="collapse-toggle">[+] 15 files</span>
-            </div>
-
-            <!-- 섹션 본문 (펼쳤을 때 보임) -->
-            <div class="collapsible-body">
-                <div class="ls-output">
-                    <div class="ls-row disabled">
-                        <span class="perm">-rw-r--r--</span><span class="size">2.4M</span>
-                        <span class="ls-name">Lec01</span>
-                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
-                    </div>
-                    <div class="ls-row disabled">
-                        <span class="perm">-rw-r--r--</span><span class="size">2.4M</span>
-                        <span class="ls-name">Lec02</span>
-                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
-                    </div>
-                    <div class="ls-row disabled">
-                        <span class="perm">-rw-r--r--</span><span class="size">2.4M</span>
-                        <span class="ls-name">Lec03</span>
-                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
-                    </div>
-                    <div class="ls-row disabled">
-                        <span class="perm">-rw-r--r--</span><span class="size">2.4M</span>
-                        <span class="ls-name">Lec04</span>
-                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
-                    </div>
-                    <div class="ls-row disabled">
-                        <span class="perm">-rw-r--r--</span><span class="size">2.4M</span>
-                        <span class="ls-name">Lec05</span>
-                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
-                    </div>
-                    <div class="ls-row disabled">
-                        <span class="perm">-rw-r--r--</span><span class="size">2.4M</span>
-                        <span class="ls-name">Lec06</span>
-                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
-                    </div>
-                    <div class="ls-row disabled">
-                        <span class="perm">-rw-r--r--</span><span class="size">2.4M</span>
-                        <span class="ls-name">Lec07</span>
-                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
-                    </div>
-                    <div class="ls-row disabled">
-                        <span class="perm">-rw-r--r--</span><span class="size">2.4M</span>
-                        <span class="ls-name">Lec08</span>
-                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
-                    </div>
-                    <div class="ls-row">
-                        <span class="perm">-rw-r--r--</span><span class="size">2.4M</span>
-                        <span class="ls-name">Lec09</span>
-                        <span class="lec-mini"><a href="materials/lectures/Lec09.html" class="lec-link">open</a></span>
-                    </div>
-                    <div class="ls-row">
-                        <span class="perm">-rw-r--r--</span><span class="size">2.4M</span>
-                        <span class="ls-name">Lec10</span>
-                        <span class="lec-mini"><a href="materials/lectures/Lec10.html" class="lec-link">open</a></span>
-                    </div>
-                    <div class="ls-row">
-                        <span class="perm">-rw-r--r--</span><span class="size">2.4M</span>
-                        <span class="ls-name">Lec11</span>
-                        <span class="lec-mini"><a href="materials/lectures/Lec11.html" class="lec-link">open</a></span>
-                    </div>
-                    <div class="ls-row">
-                        <span class="perm">-rw-r--r--</span><span class="size">2.4M</span>
-                        <span class="ls-name">Lec12</span>
-                        <span class="lec-mini"><a href="materials/lectures/Lec12.html" class="lec-link">open</a></span>
-                    </div>
-                    <div class="ls-row">
-                        <span class="perm">-rw-r--r--</span><span class="size">2.4M</span>
-                        <span class="ls-name">Lec13</span>
-                        <span class="lec-mini"><a href="materials/lectures/Lec13.html" class="lec-link">open</a></span>
-                    </div>
-                    <div class="ls-row">
-                        <span class="perm">-rw-r--r--</span><span class="size">2.4M</span>
-                        <span class="ls-name">Lec14</span>
-                        <span class="lec-mini"><a href="materials/lectures/Lec14.html" class="lec-link">open</a></span>
-                    </div>
-                    <div class="ls-row">
-                        <span class="perm">-rw-r--r--</span><span class="size">2.4M</span>
-                        <span class="ls-name">Lec15</span>
-                        <span class="lec-mini"><a href="materials/lectures/Lec15.html" class="lec-link">open</a></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ============================================== -->
-        <!-- 실습 (Practices) - 접이식                     -->
-        <!-- ============================================== -->
-        <div class="section-prompt prompt-line" style="margin-top: 24px;">
-            <span class="user">z</span><span class="at">@</span><span class="host">drive</span><span class="colon">:</span><span class="path">~/linux</span><span class="dollar">$</span><span class="cmd">ls</span> <span class="arg">materials/practices/</span> <span class="comment"># 실습 자료</span>
-        </div>
-
-        <div class="collapsible" id="sec-practices">
-            <div class="collapsible-header" onclick="toggleSection(this)">
-                <span class="perm">drwxr-xr-x</span>
-                <span class="size">8K</span>
-                <span class="ls-name">practices/<span class="ls-comment"># 실습 (Prac01 ~ Prac15)</span></span>
-                <span class="collapse-toggle">[+] 15 files</span>
-            </div>
-
-            <div class="collapsible-body">
-                <div class="ls-output">
-                    <div class="ls-row disabled">
-                        <span class="perm">-rwxr-xr-x</span><span class="size">512</span>
-                        <span class="ls-name">Prac01</span>
-                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
-                    </div>
-                    <div class="ls-row disabled">
-                        <span class="perm">-rwxr-xr-x</span><span class="size">512</span>
-                        <span class="ls-name">Prac02</span>
-                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
-                    </div>
-                    <div class="ls-row disabled">
-                        <span class="perm">-rwxr-xr-x</span><span class="size">512</span>
-                        <span class="ls-name">Prac03</span>
-                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
-                    </div>
-                    <div class="ls-row disabled">
-                        <span class="perm">-rwxr-xr-x</span><span class="size">512</span>
-                        <span class="ls-name">Prac04</span>
-                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
-                    </div>
-                    <div class="ls-row disabled">
-                        <span class="perm">-rwxr-xr-x</span><span class="size">512</span>
-                        <span class="ls-name">Prac05</span>
-                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
-                    </div>
-                    <div class="ls-row disabled">
-                        <span class="perm">-rwxr-xr-x</span><span class="size">512</span>
-                        <span class="ls-name">Prac06</span>
-                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
-                    </div>
-                    <div class="ls-row disabled">
-                        <span class="perm">-rwxr-xr-x</span><span class="size">512</span>
-                        <span class="ls-name">Prac07</span>
-                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
-                    </div>
-                    <div class="ls-row disabled">
-                        <span class="perm">-rwxr-xr-x</span><span class="size">512</span>
-                        <span class="ls-name">Prac08</span>
-                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
-                    </div>
-                    <div class="ls-row disabled">
-                        <span class="perm">-rwxr-xr-x</span><span class="size">512</span>
-                        <span class="ls-name">Prac09</span>
-                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
-                    </div>
-                    <div class="ls-row">
-                        <span class="perm">-rwxr-xr-x</span><span class="size">512</span>
-                        <span class="ls-name">Prac10</span>
-                        <span class="lec-mini"><a href="materials/practices/Prac10.html" class="lec-link">open</a></span>
-                    </div>
-                    <div class="ls-row">
-                        <span class="perm">-rwxr-xr-x</span><span class="size">512</span>
-                        <span class="ls-name">Prac11</span>
-                        <span class="lec-mini"><a href="materials/practices/Prac11.html" class="lec-link">open</a></span>
-                    </div>
-                    <div class="ls-row">
-                        <span class="perm">-rwxr-xr-x</span><span class="size">512</span>
-                        <span class="ls-name">Prac12</span>
-                        <span class="lec-mini"><a href="materials/practices/Prac12.html" class="lec-link">open</a></span>
-                    </div>
-                    <div class="ls-row">
-                        <span class="perm">-rwxr-xr-x</span><span class="size">512</span>
-                        <span class="ls-name">Prac13</span>
-                        <span class="lec-mini"><a href="materials/practices/Prac13.html" class="lec-link">open</a></span>
-                    </div>
-                    <div class="ls-row">
-                        <span class="perm">-rwxr-xr-x</span><span class="size">512</span>
-                        <span class="ls-name">Prac14</span>
-                        <span class="lec-mini"><a href="materials/practices/Prac14.html" class="lec-link">open</a></span>
-                    </div>
-                    <div class="ls-row">
-                        <span class="perm">-rwxr-xr-x</span><span class="size">512</span>
-                        <span class="ls-name">Prac15</span>
-                        <span class="lec-mini"><a href="materials/practices/Prac15.html" class="lec-link">open</a></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ============================================== -->
-        <!-- 과제 (Homeworks) - 접이식                     -->
-        <!-- ============================================== -->
-        <div class="section-prompt prompt-line" style="margin-top: 24px;">
-            <span class="user">z</span><span class="at">@</span><span class="host">drive</span><span class="colon">:</span><span class="path">~/linux</span><span class="dollar">$</span><span class="cmd">ls</span> <span class="arg">materials/homeworks/</span> <span class="comment"># 과제</span>
-        </div>
-
-        <div class="collapsible" id="sec-homeworks">
-            <div class="collapsible-header" onclick="toggleSection(this)">
-                <span class="perm">drwx------</span>
-                <span class="size">2K</span>
-                <span class="ls-name">homeworks/<span class="ls-comment"># 과제 (HW01 ~ HW15)</span></span>
-                <span class="collapse-toggle">[+] 15 files</span>
-            </div>
-
-            <div class="collapsible-body">
-                <div class="ls-output">
-                    <div class="ls-row disabled">
-                        <span class="perm">-rw-------</span><span class="size">128</span>
-                        <span class="ls-name">HW01</span>
-                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
-                    </div>
-                    <div class="ls-row disabled">
-                        <span class="perm">-rw-------</span><span class="size">128</span>
-                        <span class="ls-name">HW02</span>
-                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
-                    </div>
-                    <div class="ls-row disabled">
-                        <span class="perm">-rw-------</span><span class="size">128</span>
-                        <span class="ls-name">HW03</span>
-                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
-                    </div>
-                    <div class="ls-row disabled">
-                        <span class="perm">-rw-------</span><span class="size">128</span>
-                        <span class="ls-name">HW04</span>
-                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
-                    </div>
-                    <div class="ls-row disabled">
-                        <span class="perm">-rw-------</span><span class="size">128</span>
-                        <span class="ls-name">HW05</span>
-                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
-                    </div>
-                    <div class="ls-row disabled">
-                        <span class="perm">-rw-------</span><span class="size">128</span>
-                        <span class="ls-name">HW06</span>
-                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
-                    </div>
-                    <div class="ls-row disabled">
-                        <span class="perm">-rw-------</span><span class="size">128</span>
-                        <span class="ls-name">HW07</span>
-                        <span class="lec-mini"><span class="lec-link disabled">open</span></span>
-                    </div>
-                    <div class="ls-row">
-                        <span class="perm">-rw-------</span><span class="size">128</span>
-                        <span class="ls-name">HW08</span>
-                        <span class="lec-mini"><a href="materials/homeworks/HW08.html" class="lec-link">open</a></span>
-                    </div>
-                    <div class="ls-row">
-                        <span class="perm">-rw-------</span><span class="size">128</span>
-                        <span class="ls-name">HW09</span>
-                        <span class="lec-mini"><a href="materials/homeworks/HW09.html" class="lec-link">open</a></span>
-                    </div>
-                    <div class="ls-row">
-                        <span class="perm">-rw-------</span><span class="size">128</span>
-                        <span class="ls-name">HW10</span>
-                        <span class="lec-mini"><a href="materials/homeworks/HW10.html" class="lec-link">open</a></span>
-                    </div>
-                    <div class="ls-row">
-                        <span class="perm">-rw-------</span><span class="size">128</span>
-                        <span class="ls-name">HW11</span>
-                        <span class="lec-mini"><a href="materials/homeworks/HW11.html" class="lec-link">open</a></span>
-                    </div>
-                    <div class="ls-row">
-                        <span class="perm">-rw-------</span><span class="size">128</span>
-                        <span class="ls-name">HW12</span>
-                        <span class="lec-mini"><a href="materials/homeworks/HW12.html" class="lec-link">open</a></span>
-                    </div>
-                    <div class="ls-row">
-                        <span class="perm">-rw-------</span><span class="size">128</span>
-                        <span class="ls-name">HW13</span>
-                        <span class="lec-mini"><a href="materials/homeworks/HW13.html" class="lec-link">open</a></span>
-                    </div>
-                    <div class="ls-row">
-                        <span class="perm">-rw-------</span><span class="size">128</span>
-                        <span class="ls-name">HW14</span>
-                        <span class="lec-mini"><a href="materials/homeworks/HW14.html" class="lec-link">open</a></span>
-                    </div>
-                    <div class="ls-row">
-                        <span class="perm">-rw-------</span><span class="size">128</span>
-                        <span class="ls-name">HW15</span>
-                        <span class="lec-mini"><a href="materials/homeworks/HW15.html" class="lec-link">open</a></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 마지막 프롬프트 + 깜빡이는 커서 -->
-        <div class="section-prompt prompt-line" style="margin-top: 28px;">
-            <span class="user">z</span><span class="at">@</span><span class="host">drive</span><span class="colon">:</span><span class="path">~/linux</span><span class="dollar">$</span><span class="cursor"></span>
-        </div>
-
-        <!-- 푸터 -->
-        <div class="terminal-footer">
-            <span># © Jaea Lee · linux@z</span>
-            <a href="/drive/">cd ../</a>
-        </div>
-
-    </div>
+<div class="card">
+  <p>👋 이 문서 사용법을 짧게 안내드립니다:</p>
+  <ul class="clean">
+    <li>위쪽 <strong>커리큘럼(Curriculum)</strong> 표를 클릭하면 해당 섹션으로 점프합니다.</li>
+    <li>각 강의는 <strong>슬라이드 단위로</strong> 풀어 썼습니다. 비유 → 개념 → 예시 → 코드 순서입니다.</li>
+    <li>연습문제는 영어 원문이 기본이며, <em>“🇰🇷 한국어로 보기”</em> 토글로 번역을 펼칠 수 있습니다.</li>
+    <li>풀이(Solution)는 한국어 중심으로 작성했습니다. 자기 답안을 먼저 작성한 뒤 펼쳐 보세요.</li>
+    <li>중요 용어는 <span class="kw">한글(영문)</span> 형태로 같이 표기했습니다.</li>
+  </ul>
 </div>
 
+<!-- ===================== CURRICULUM ===================== -->
+<h2 id="curriculum">🗺 커리큘럼 (Curriculum)</h2>
+<p class="sub">현재 자료 기준 학습 순서입니다. 자료가 추가되면 같은 구조로 확장하면 됩니다.</p>
+
+<div class="curriculum">
+  <div class="step lec"><a href="#lec8">
+    <span class="badge">Lecture 8</span>
+    <div class="ttl">Shell II → Process (입문)</div>
+    <div class="dsc">case·for·while·function, read, here-doc/here-string, 프로세스란?</div>
+  </a></div>
+  <div class="arrow">→</div>
+  <div class="step hw"><a href="#hw08">
+    <span class="badge">Homework 08</span>
+    <div class="ttl">Shell Script: 관계연산 스크립트</div>
+    <div class="dsc"><code>==</code>, <code>!=</code> 만 지원, 인자 3개 검증, IF/ELIF/ELSE</div>
+  </a></div>
+  <div class="arrow">→</div>
+  <div class="step lec"><a href="#lec9">
+    <span class="badge">Lecture 9</span>
+    <div class="ttl">Process II → Compile (gcc)</div>
+    <div class="dsc">fork/execve, kill, sleep, gcc 4단계(전처리·컴파일·어셈블·링크)</div>
+  </a></div>
+  <div class="arrow">→</div>
+  <div class="step pra"><a href="#practice">
+    <span class="badge">Practice (Lec9)</span>
+    <div class="ttl">Process 실습 5문제</div>
+    <div class="dsc"><code>bc</code> 백그라운드, <code>jobs</code>, ELF 분석, hex 패치(<code>nop</code>), <code>execvp</code></div>
+  </a></div>
+  <div class="arrow">→</div>
+  <div class="step lec"><a href="#lec10">
+    <span class="badge">Lecture 10</span>
+    <div class="ttl">Compile II → GDB → Multi-module</div>
+    <div class="dsc"><code>-g</code> 디버깅, gdb 명령어, header(.h)/object(.o)/link, 모듈화</div>
+  </a></div>
+  <div class="arrow">→</div>
+  <div class="step lec"><a href="#lec11">
+    <span class="badge">Lecture 11</span>
+    <div class="ttl">Makefile → Open-Source Build</div>
+    <div class="dsc">target/depend/command, dependency tree, ./configure && make && make install</div>
+  </a></div>
+  <div class="arrow">→</div>
+  <div class="step hw"><a href="#hw09">
+    <span class="badge">Homework 09</span>
+    <div class="ttl">Cross-Compilation (RISC-V)</div>
+    <div class="dsc">riscv-gnu-toolchain 빌드/설치, env 스크립트 작성, file 명령으로 ELF 확인</div>
+  </a></div>
+</div>
+
+<div class="callout warn">
+  <strong>📌 시험 출제 패턴 힌트:</strong>
+  강의별로 (1) 개념 정의 (2) 명령어/옵션의 의미 (3) 실행 결과 예측 (4) 짧은 코드/스크립트 빈칸 채우기가
+  잘 나옵니다. 각 섹션 끝 <em>퀴즈</em>는 이 패턴에 맞춰 만들었어요.
+</div>
+
+<!-- ===================== LECTURE 8 ===================== -->
+<h2 id="lec8">📘 Lecture 8 — Shell II & Process(입문)</h2>
+<p class="sub">자료: <code>09 lec8 - shell II and process.pdf</code> (28쪽)</p>
+
+<div class="card">
+<h3>🧭 한눈에 보기 (Overview)</h3>
+<ul class="clean">
+  <li><strong>전반부:</strong> Shell Script 문법 마무리 — <span class="kw">case</span>, <span class="kw">for</span>, <span class="kw">while</span>, <span class="kw">function</span>, <span class="kw">read</span>, <span class="kw">here-string/here-document</span></li>
+  <li><strong>후반부:</strong> <span class="kw">프로세스(Process)</span> 입문 — 메모리 구조, 상태(State), 전경/배경(<span class="eng">foreground/background</span>) 실행, <code>ps</code>·<code>top</code>·<code>htop</code>, <code>fork()</code> &amp; <code>execve()</code></li>
+</ul>
+</div>
+
+<h3>① Case 문 (Multiway Branch)</h3>
+<p>🍰 <strong>비유:</strong> if-else if-else를 길게 쓰는 대신, <em>“값에 딱 맞는 가지(case)”</em>를 골라 들어가는 분기문입니다. 마치 자판기에서 버튼을 누르면 그 줄만 떨어지는 느낌이에요.</p>
+<p><strong>개념:</strong> <span class="kw">case 변수 in 패턴) 명령 ;;</span> 로 다중 분기를 구현합니다. <em>오직 한 패턴만</em> 선택되며 패턴에는 와일드카드 <code>*</code>, <code>?</code>, <code>|</code> (또는), <code>[]</code> (집합)을 쓸 수 있습니다. 자바의 <code>switch</code>와 유사하다고 생각하면 됩니다.</p>
+<pre><span class="c">#!/bin/bash</span>
+<span class="c"># 사용자가 입력한 글자에 따라 분기</span>
+<span class="k">read</span> ch
+<span class="k">case</span> <span class="v">$ch</span> <span class="k">in</span>
+  [aeiou])  <span class="k">echo</span> <span class="s">"모음(vowel)"</span> ;;       <span class="c"># 한 글자 모음</span>
+  [a-z])    <span class="k">echo</span> <span class="s">"소문자 자음"</span> ;;       <span class="c"># 위에서 안 걸린 소문자</span>
+  q|Q)      <span class="k">echo</span> <span class="s">"종료"</span>; <span class="k">exit</span> 0 ;;  <span class="c"># q 또는 Q</span>
+  *)        <span class="k">echo</span> <span class="s">"기타"</span> ;;              <span class="c"># 와일드카드 = 그 외 전부</span>
+<span class="k">esac</span></pre>
+<div class="callout">⚠️ 각 줄 끝의 <code>;;</code> 가 break 역할입니다. 빼먹으면 문법 오류가 납니다.</div>
+
+<h3>② For Loop</h3>
+<p>🍡 <strong>비유:</strong> 꼬치에 꿰어진 재료를 하나씩 꺼내 굽는 것과 같아요. 미리 정한 <span class="kw">단어 목록(word-list)</span>을 처음부터 끝까지 한 번씩 돌립니다.</p>
+<pre><span class="k">for</span> 변수 <span class="k">in</span> 단어목록
+<span class="k">do</span>
+  <span class="c"># 반복할 명령</span>
+<span class="k">done</span></pre>
+<p><strong>단어 목록에 올 수 있는 것:</strong></p>
+<ul class="clean">
+  <li><strong>위치 매개변수(parameters):</strong> <code>$1 $2 ... $@</code> — 스크립트를 호출할 때 준 인자들</li>
+  <li><strong>문자열(strings):</strong> <code>"hello" "world" "1"</code></li>
+  <li><strong>파일명 패턴(filename glob):</strong> <code>*.c</code>, <code>file?.txt</code></li>
+  <li><strong>쉘 변수(shell variables):</strong> <code>$VAR1 $VAR2</code></li>
+  <li><strong>명령 치환(command substitution):</strong> <code>$(ls)</code> 또는 <code>`ls`</code> — 명령의 출력 결과를 그대로 끼워 넣기</li>
+</ul>
+<pre><span class="c"># 예시 1: 인자 전부 출력</span>
+<span class="k">for</span> a <span class="k">in</span> <span class="v">"$@"</span>; <span class="k">do</span> <span class="k">echo</span> <span class="v">$a</span>; <span class="k">done</span>
+
+<span class="c"># 예시 2: 명령 치환 — 현재 폴더의 .c 파일들에 대해 반복</span>
+<span class="k">for</span> f <span class="k">in</span> <span class="v">$(ls *.c)</span>; <span class="k">do</span>
+  <span class="k">echo</span> <span class="s">"컴파일: $f"</span>
+  gcc -c <span class="v">$f</span>
+<span class="k">done</span></pre>
+
+<h3>③ While Loop</h3>
+<p>🚦 <strong>비유:</strong> 신호등이 초록일 동안만 계속 걷는 것과 같아요. 조건이 참(<span class="kw">TRUE</span>)인 동안 반복합니다.</p>
+<pre><span class="k">while</span> 조건
+<span class="k">do</span>
+  <span class="c"># 반복할 명령</span>
+<span class="k">done</span>
+
+<span class="c"># 예: 1부터 5까지 출력</span>
+i=1
+<span class="k">while</span> [ <span class="v">$i</span> -le 5 ]
+<span class="k">do</span>
+  <span class="k">echo</span> <span class="v">$i</span>
+  i=<span class="v">$((i+1))</span>      <span class="c"># 산술 연산은 $(( ))</span>
+<span class="k">done</span></pre>
+
+<h3>④ Loop 제어 — break / continue</h3>
+<ul class="clean">
+  <li><code>break</code>: 현재 감싸고 있는(<span class="eng">enclosing</span>) 반복문을 <strong>즉시 빠져나감</strong>. 자바의 break와 동일.</li>
+  <li><code>continue</code>: 이번 반복은 건너뛰고 <strong>다음 조건/항목으로 점프</strong>.</li>
+</ul>
+
+<h3>⑤ Shell Function (함수)</h3>
+<p>🧰 <strong>비유:</strong> 자주 쓰는 도구를 도구함에 넣어두고 이름만 부르면 꺼내 쓰는 것. C/Java 함수와 비슷하지만 문법이 조금 다릅니다.</p>
+<pre><span class="c"># 정의 (definition)</span>
+greet() {
+  <span class="k">echo</span> <span class="s">"Hello, $1 and $2"</span>   <span class="c"># 함수 안에서 $1, $2 = 함수 인자</span>
+  <span class="k">return</span> 0                    <span class="c"># 0 = 성공</span>
+}
+
+<span class="c"># 호출 (call)</span>
+greet Alice Bob
+
+<span class="c"># 반환값 확인 — $? 에는 직전 명령의 종료 상태</span>
+<span class="k">echo</span> <span class="v">$?</span>
+
+<span class="c"># 환경 변수처럼 자식 쉘에도 함수 노출</span>
+<span class="k">export</span> -f greet</pre>
+<div class="callout warn">
+  💡 함수 내부의 <code>$1, $2</code>는 <strong>스크립트의 인자가 아니라 함수의 인자</strong>입니다.
+  변수 이름이 같아 보여도 스코프가 다르다는 것이 시험에 자주 나옵니다.
+</div>
+
+<h3>⑥ read — 표준 입력 한 줄 받기</h3>
+<p>키보드(<span class="kw">표준 입력 stdin</span>)에서 한 줄을 읽어 변수에 저장합니다.</p>
+<pre><span class="c"># 변수 한 개</span>
+<span class="k">read</span> name
+<span class="k">echo</span> <span class="s">"hi, $name"</span>
+
+<span class="c"># 변수 여러 개 — 공백으로 자동 분리</span>
+<span class="k">read</span> a b c
+<span class="c"># 입력: 1 2 3   →  $a=1 $b=2 $c=3</span></pre>
+
+<h4>read + 파이프(<code>|</code>)의 함정</h4>
+<pre><span class="k">echo</span> <span class="s">"hello world"</span> | <span class="k">read</span> arg1 arg2
+<span class="k">echo</span> <span class="v">$arg1</span> <span class="v">$arg2</span>     <span class="c"># 결과는?</span></pre>
+<p><strong>예상 결과:</strong> 빈 줄(아무것도 안 나옴).<br>
+<strong>왜?</strong> 파이프 오른쪽 <code>read</code>는 <strong>서브쉘(subshell)</strong>에서 실행됩니다. 거기서 만든 변수는 부모 쉘로 돌아오지 않으므로, 다음 줄 <code>echo</code>가 보는 <code>$arg1</code>은 비어 있어요. (이게 PDF의 “Why?” 슬라이드 정답입니다.)</p>
+
+<h4>해결법: brace 그룹 또는 here-string</h4>
+<pre><span class="c"># 방법 A: { ... } 그룹 — 같은 서브쉘 안에서 사용</span>
+<span class="k">echo</span> <span class="s">"hello world"</span> | {
+  <span class="k">read</span> arg1 arg2
+  <span class="k">echo</span> <span class="v">$arg1</span> <span class="v">$arg2</span>  <span class="c"># 여기서는 보임</span>
+}
+<span class="k">echo</span> <span class="v">$arg1</span> <span class="v">$arg2</span>    <span class="c"># 밖으로 나오면 다시 비어 있음</span>
+
+<span class="c"># 방법 B: here-string &lt;&lt;&lt;  → 부모 쉘에서 직접 읽기</span>
+<span class="k">read</span> arg1 arg2 &lt;&lt;&lt; <span class="s">"hello world"</span>
+<span class="k">echo</span> <span class="v">$arg1</span> <span class="v">$arg2</span>    <span class="c"># 정상 출력</span></pre>
+
+<h3>⑦ Here-document (<code>&lt;&lt;</code>)</h3>
+<p>🧾 <strong>비유:</strong> 한 줄짜리 인자가 아니라 <em>“여러 줄짜리 종이쪽지”</em>를 명령에 통째로 건네주는 방식.</p>
+<pre><span class="k">cat</span> &lt;&lt; EOF &gt; script.sh
+#!/bin/bash
+if test -f /bin/bash ; then
+  echo "exist"
+else
+  echo "not exist"
+fi
+EOF</pre>
+<p><code>&lt;&lt; EOF ... EOF</code> 사이의 모든 줄이 <code>cat</code>의 입력으로 들어가고, <code>&gt; script.sh</code> 로 파일로 저장됩니다. 쉘 스크립트가 다른 스크립트 파일을 만들 때 자주 사용합니다.</p>
+
+<hr class="sep">
+<h3>⑧ Process — 정의와 메모리 구조</h3>
+<p>📦 <strong>비유:</strong> <span class="kw">프로그램(program)</span>이 <em>레시피</em>라면, <span class="kw">프로세스(process)</span>는 <em>그 레시피로 실제로 요리하는 중인 행위</em>입니다.</p>
+<table>
+  <tr><th>구분</th><th>설명</th></tr>
+  <tr><td>Program</td><td><strong>정적(static)</strong> 객체 — 디스크에 저장된 실행 파일</td></tr>
+  <tr><td>Process</td><td><strong>능동(active)</strong> 객체 — 메모리에 올라가 실행 중인 인스턴스</td></tr>
+</table>
+<p><strong>프로세스를 구성하는 부분:</strong></p>
+<ul class="clean">
+  <li><span class="kw">Text section</span>: 실행할 <strong>코드(machine instructions)</strong>가 있는 영역</li>
+  <li><span class="kw">Data section</span>: <strong>전역 변수(global variable)</strong>가 있는 영역</li>
+  <li><span class="kw">Heap</span>: 실행 중에 <code>malloc</code> 등으로 <strong>동적 할당(dynamically allocated)</strong>되는 메모리</li>
+  <li><span class="kw">Stack</span>: <strong>함수 호출</strong> 정보(매개변수, 지역변수, return address)가 쌓이는 영역</li>
+  <li>현재 상태: <strong>program counter(PC)</strong>, 레지스터(register) 값들</li>
+</ul>
+<div class="callout">
+  🔍 <strong>자료구조 수업과 연결:</strong> Stack은 마지막에 들어간 게 먼저 나오는(LIFO) 자료구조죠?
+  함수 호출이 끝날 때 가장 최근 호출의 지역변수가 먼저 사라지는 이유가 바로 이것입니다.
+  Heap은 자료구조의 “힙(heap tree)”과 이름이 같지만 <strong>전혀 다른 개념</strong>이니 헷갈리지 마세요.
+</div>
+<pre><span class="c"># 실행 파일의 섹션 정보 확인</span>
+$ readelf -S /usr/bin/ls</pre>
+
+<h3>⑨ Process State (프로세스 상태)</h3>
+<table>
+  <tr><th>상태</th><th>의미</th></tr>
+  <tr><td>New</td><td>프로세스가 생성되는 중</td></tr>
+  <tr><td>Running</td><td>CPU가 현재 명령어를 실행 중</td></tr>
+  <tr><td>Waiting</td><td>I/O 완료 같은 이벤트를 기다리는 중</td></tr>
+  <tr><td>Ready</td><td>CPU만 할당되면 바로 실행 가능 (큐에서 대기)</td></tr>
+  <tr><td>Terminated</td><td>실행이 끝남</td></tr>
+</table>
+<p>🧠 <strong>핵심:</strong> 한 CPU 코어에는 <strong>정확히 한 프로세스만</strong> 동시에 Running 상태일 수 있습니다. 여러 개가 동시에 도는 것처럼 보이는 건 <span class="kw">시분할(time-sharing)</span> 덕분이에요.</p>
+
+<h3>⑩ Foreground vs Background</h3>
+<p>🍔 <strong>비유:</strong> Foreground는 “주문하고 음식 받을 때까지 카운터에 서 있는 손님”, Background는 “주문 후 진동벨 받고 자리 가서 다른 일 하는 손님”입니다.</p>
+<ul class="clean">
+  <li><strong>Foreground (interactive):</strong> 명령을 실행하면 끝날 때까지 쉘이 사용자 입력을 받지 않음.</li>
+  <li><strong>Background (batch):</strong> 명령 끝에 <code>&amp;</code> 를 붙이면 쉘이 즉시 다음 입력을 받음. 오래 걸리는 작업에 유용.</li>
+</ul>
+<pre>$ sleep 100 <span class="c"># foreground — 100초간 묶임</span>
+$ sleep 100 &amp;        <span class="c"># background — 즉시 프롬프트 복귀, [1] 12345 같이 PID 표시</span>
+$ <span class="k">jobs</span>             <span class="c"># 백그라운드 작업 목록 보기</span>
+$ <span class="k">fg</span> %1            <span class="c"># 1번 작업을 foreground 로 가져오기</span></pre>
+
+<h3>⑪ ps / top / htop</h3>
+<table>
+  <tr><th>명령</th><th>역할</th><th>주요 옵션</th></tr>
+  <tr><td><code>ps</code></td><td>현재 프로세스의 <strong>스냅샷</strong>(static)</td><td><code>ps aux</code> = 모든 사용자, CPU·MEM·상태·시간</td></tr>
+  <tr><td><code>top</code></td><td>주기적 갱신되는 <strong>동적 ps</strong></td><td>q로 종료</td></tr>
+  <tr><td><code>htop</code></td><td>top의 예쁘고 직관적인 버전</td><td><code>sudo apt install htop</code></td></tr>
+</table>
+
+<h3>⑫ Process Creation — fork() & execve()</h3>
+<p>🧬 <strong>비유:</strong> <code>fork()</code>는 자신을 <em>복사</em>하는 분열, <code>execve()</code>는 복사된 몸의 <em>껍데기는 두고 알맹이만 다른 프로그램으로 바꿔치기</em> 하는 변신입니다.</p>
+<pre>  /bin/bash (PID:70253)
+        |
+        v  fork()
+  /bin/bash (PID:88402)   <span class="c"># 똑같은 bash가 복사되어 새 PID 부여</span>
+        |
+        v  execve(<span class="s">"/usr/bin/bc"</span>)
+  /usr/bin/bc (PID:88402) <span class="c"># 같은 PID지만 내용물이 bc로 바뀜</span></pre>
+<ul class="clean">
+  <li><span class="kw">PID(process identifier)</span>: 0 이상의 유일한 정수. 자료구조에서 unique key 같은 역할.</li>
+  <li>한 <span class="kw">부모(parent)</span>는 여러 <span class="kw">자식(child)</span>을 가질 수 있지만, 자식은 부모가 단 하나입니다 → 자료구조의 <strong>트리(tree)</strong> 모양이죠.</li>
+  <li><code>pstree</code> 명령으로 프로세스 트리를 확인할 수 있습니다.</li>
+</ul>
+
+<!-- ===== QUIZ for Lec8 ===== -->
+<div class="quiz">
+  <h4>🧪 Lecture 8 퀴즈 — 12문제</h4>
+
+  <div class="q"><span class="num">Q1.</span> <strong>(쉬움)</strong> Shell의 <code>case</code> 문에서 각 패턴 줄을 종료할 때 반드시 붙여야 하는 기호는?
+    <div class="opts">
+      <label><input type="radio" name="q1"> ① <code>;</code></label>
+      <label><input type="radio" name="q1"> ② <code>;;</code></label>
+      <label><input type="radio" name="q1"> ③ <code>::</code></label>
+      <label><input type="radio" name="q1"> ④ <code>}</code></label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ②. <code>;;</code> 가 break 역할을 하며, 안 붙이면 문법 오류 또는 다음 case로 떨어집니다.</div>
+  </div>
+
+  <div class="q"><span class="num">Q2.</span> <strong>(쉬움)</strong> <code>for f in *.c; do echo $f; done</code> 가 활용한 “단어 목록 생성 방식”은?
+    <div class="opts">
+      <label><input type="radio" name="q2"> ① 위치 매개변수</label>
+      <label><input type="radio" name="q2"> ② 문자열 리터럴</label>
+      <label><input type="radio" name="q2"> ③ 파일명 글로빙(*, ?)</label>
+      <label><input type="radio" name="q2"> ④ 명령 치환</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ③. <code>*.c</code>는 쉘이 매칭되는 파일명 목록으로 펼쳐줍니다(파일명 globbing).</div>
+  </div>
+
+  <div class="q"><span class="num">Q3.</span> <strong>(쉬움)</strong> 함수에서 직전 명령의 종료 상태를 보관하는 변수는?
+    <div class="opts">
+      <label><input type="radio" name="q3"> ① <code>$#</code></label>
+      <label><input type="radio" name="q3"> ② <code>$@</code></label>
+      <label><input type="radio" name="q3"> ③ <code>$?</code></label>
+      <label><input type="radio" name="q3"> ④ <code>$!</code></label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ③. <code>$?</code> 는 마지막으로 종료된 명령(또는 함수)의 exit status입니다. 참고로 <code>$#</code>=인자 개수, <code>$@</code>=인자 전체, <code>$!</code>=마지막 백그라운드 PID.</div>
+  </div>
+
+  <div class="q"><span class="num">Q4.</span> <strong>(중)</strong> 아래 코드의 출력 결과는?
+<pre>echo "hello world" | read a b
+echo "[$a][$b]"</pre>
+    <div class="opts">
+      <label><input type="radio" name="q4"> ① <code>[hello][world]</code></label>
+      <label><input type="radio" name="q4"> ② <code>[][]</code></label>
+      <label><input type="radio" name="q4"> ③ <code>[hello world][]</code></label>
+      <label><input type="radio" name="q4"> ④ 컴파일 오류</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ②. 파이프 오른쪽의 <code>read</code>는 <span class="kw">서브쉘(subshell)</span>에서 동작하므로 변수가 부모 쉘로 전달되지 않습니다. <code>echo</code> 시점에는 빈 값.</div>
+  </div>
+
+  <div class="q"><span class="num">Q5.</span> <strong>(중)</strong> 위 Q4 문제를 “부모 쉘에서 그대로” 변수에 담고 싶을 때 가장 깔끔한 방법은?
+    <div class="opts">
+      <label><input type="radio" name="q5"> ① <code>read a b &lt; "hello world"</code></label>
+      <label><input type="radio" name="q5"> ② <code>read a b &lt;&lt;&lt; "hello world"</code></label>
+      <label><input type="radio" name="q5"> ③ <code>"hello world" &gt; read a b</code></label>
+      <label><input type="radio" name="q5"> ④ <code>read &lt;&lt; hello world a b</code></label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ②. <code>&lt;&lt;&lt;</code> 는 here-string으로, 좌변 문자열을 우변 명령의 stdin으로 직접 넣어줍니다. 서브쉘이 끼지 않아 변수가 살아남습니다.</div>
+  </div>
+
+  <div class="q"><span class="num">Q6.</span> <strong>(중)</strong> 프로세스 메모리 영역 중 <code>malloc()</code>으로 할당된 데이터가 머무는 곳은?
+    <div class="opts">
+      <label><input type="radio" name="q6"> ① Text</label>
+      <label><input type="radio" name="q6"> ② Data</label>
+      <label><input type="radio" name="q6"> ③ Stack</label>
+      <label><input type="radio" name="q6"> ④ Heap</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ④. 동적 할당 = Heap. Stack은 함수 호출 프레임, Data는 전역/static 변수, Text는 코드(읽기 전용)입니다.</div>
+  </div>
+
+  <div class="q"><span class="num">Q7.</span> <strong>(쉬움)</strong> 단답형: 프로세스가 “I/O 완료 같은 이벤트를 기다리고 있는” 상태의 이름은?
+    <button class="showbtn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="ans">정답: <strong>Waiting</strong> (Ready와 헷갈리지 말 것: Ready는 CPU만 받으면 바로 뛸 수 있는 상태)</div>
+  </div>
+
+  <div class="q"><span class="num">Q8.</span> <strong>(중)</strong> 명령 <code>$ sleep 60 &amp;</code> 를 실행한 직후 어떤 일이 일어날까요?
+    <div class="opts">
+      <label><input type="radio" name="q8"> ① 60초간 쉘이 입력을 받지 않는다</label>
+      <label><input type="radio" name="q8"> ② 즉시 프롬프트로 돌아오며 작업 ID와 PID가 표시된다</label>
+      <label><input type="radio" name="q8"> ③ <code>sleep</code> 이 끝날 때까지 다른 명령은 입력만 받고 실행은 안 된다</label>
+      <label><input type="radio" name="q8"> ④ 에러가 난다</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ②. <code>&amp;</code> 는 백그라운드 실행을 지시. 쉘은 즉시 사용자 입력을 받을 수 있고 <code>[1] 12345</code> 형태로 job 번호와 PID가 표시됩니다.</div>
+  </div>
+
+  <div class="q"><span class="num">Q9.</span> <strong>(중)</strong> <code>fork()</code> 와 <code>execve()</code> 에 대한 설명으로 옳은 것은?
+    <div class="opts">
+      <label><input type="radio" name="q9"> ① <code>fork()</code>는 PID를 그대로 유지하면서 프로그램을 교체한다</label>
+      <label><input type="radio" name="q9"> ② <code>execve()</code>는 호출한 프로세스를 복제해 자식 프로세스를 만든다</label>
+      <label><input type="radio" name="q9"> ③ <code>fork()</code>는 자식 프로세스를 새로 만들고, <code>execve()</code>는 현재 프로세스 이미지를 새 프로그램으로 덮어쓴다</label>
+      <label><input type="radio" name="q9"> ④ 둘 다 새 PID를 부여하면서 새 프로세스를 만든다</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ③. <code>fork()</code>=복제, <code>execve()</code>=이미지 교체. PID는 그대로 유지.</div>
+  </div>
+
+  <div class="q"><span class="num">Q10.</span> <strong>(중상)</strong> 단답형: 현재 실행 중인 모든 프로세스의 스냅샷을 자세히 보고 싶을 때 가장 흔히 쓰는 <code>ps</code> 옵션 조합은?
+    <button class="showbtn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="ans">정답: <code>ps aux</code> — a(모든 터미널), u(사용자 친화 포맷, CPU·MEM 포함), x(터미널 없는 데몬까지).</div>
+  </div>
+
+  <div class="q"><span class="num">Q11.</span> <strong>(중상)</strong> 다음 중 PDF 설명과 다른 것은?
+    <div class="opts">
+      <label><input type="radio" name="q11"> ① 한 부모 프로세스는 여러 자식 프로세스를 가질 수 있다</label>
+      <label><input type="radio" name="q11"> ② 자식 프로세스는 부모 프로세스를 단 하나만 가진다</label>
+      <label><input type="radio" name="q11"> ③ 자식 프로세스가 종료되면 부모에게 시그널로 통지된다</label>
+      <label><input type="radio" name="q11"> ④ 부모 프로세스는 어떤 경우에도 자식을 강제 종료할 수 없다</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ④. 자원 초과 등 사유가 있으면 부모는 자식을 강제 종료할 수 있고, 사용자는 <code>kill -9</code> 로도 종료 가능합니다.</div>
+  </div>
+
+  <div class="q"><span class="num">Q12.</span> <strong>(중상)</strong> 다음 here-document 가 만든 파일 <code>script.sh</code> 의 두 번째 줄은?
+<pre>cat &lt;&lt; EOF &gt; script.sh
+#!/bin/bash
+if test -f /bin/bash ; then
+  echo "exist"
+else
+  echo "not exist"
+fi
+EOF</pre>
+    <button class="showbtn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="ans">정답: <code>if test -f /bin/bash ; then</code>. here-doc 의 <code>&lt;&lt; EOF ... EOF</code> 사이의 모든 줄이 그대로 <code>cat</code> 입력 → 파일로 리다이렉트됩니다.</div>
+  </div>
+</div>
+
+<!-- ===================== HOMEWORK 08 ===================== -->
+<h2 id="hw08">📝 Homework 08 — 관계 연산 쉘 스크립트</h2>
+<p class="sub">자료: <code>2026 HW08.pdf</code> (3쪽) · 본문 제목은 “Homework #7”이지만 파일명 HW08 기준으로 정리합니다.</p>
+
+<details class="eng" open>
+  <summary>🇬🇧 English (원문 요약)</summary>
+  <p>Please write a shell script <code>relationop_studentID.sh</code> for relational operations.</p>
+  <ul>
+    <li>The script supports only the operators <code>==</code> and <code>!=</code>.</li>
+    <li>The operands are integer values.</li>
+    <li>The script takes exactly 3 command-line arguments: <code>operand1 operator operand2</code>.<br>
+      e.g., <code>$ bash ./relationop_2019012345.sh 10 == 22</code></li>
+    <li>Use IF / ELIF / ELSE statements.</li>
+    <li>If the number of arguments is not 3 → print an error and exit.</li>
+    <li>For an invalid operator → print an error and exit.</li>
+    <li>Output must be either <code>TRUE</code> or <code>FALSE</code>.</li>
+  </ul>
+</details>
+
+<details class="kor">
+  <summary>🇰🇷 한국어로 보기</summary>
+  <p><strong>관계 연산용 쉘 스크립트 <code>relationop_학번.sh</code> 를 작성하세요.</strong></p>
+  <ul class="clean">
+    <li>지원 연산자: <code>==</code> 와 <code>!=</code> <strong>두 가지만</strong>.</li>
+    <li>피연산자는 모두 <strong>정수</strong>로 가정합니다.</li>
+    <li>커맨드라인 인자(argument) <strong>정확히 3개</strong>를 받습니다 — 순서: <code>피연산자1 연산자 피연산자2</code>.<br>
+      예: <code>$ bash ./relationop_2019012345.sh 10 == 22</code></li>
+    <li><code>if / elif / else</code> 사용.</li>
+    <li>인자 개수가 3개가 아니면 → 에러 메시지 출력 후 종료.</li>
+    <li>지원하지 않는 연산자가 들어오면 → 에러 메시지 출력 후 종료.</li>
+    <li>결과는 반드시 <code>TRUE</code> 또는 <code>FALSE</code> 로 출력.</li>
+  </ul>
+</details>
+
+<details class="sol">
+  <summary>✅ 모범 풀이 (한국어 해설)</summary>
+
+  <p><strong>🧠 설계 순서 (먼저 머리로 정리해보기):</strong></p>
+  <ol>
+    <li>인자 개수 검증 → <code>$#</code> 이 3이 아니면 에러 출력 + <code>exit 1</code>.</li>
+    <li>인자 3개를 의미 있는 이름 변수에 담기 (가독성 ↑) — <code>op1=$1 op=$2 op2=$3</code>.</li>
+    <li>연산자 분기: <code>if/elif/else</code> 로 <code>==</code>, <code>!=</code>, 그 외 처리.</li>
+    <li>비교는 정수 비교이므로 산술 비교 연산자 <code>-eq</code>, <code>-ne</code> 사용. (<strong>주의:</strong> 쉘에서 <code>==</code> 는 문자열 비교용입니다. 입력 토큰이 <code>==</code> 라는 것과, 실제로 비교할 때 쓸 연산자는 다른 문제예요.)</li>
+    <li>결과는 <code>TRUE</code> / <code>FALSE</code> 둘 중 하나만 echo.</li>
+  </ol>
+
+  <p><strong>💻 정답 코드 (주석 포함):</strong></p>
+<pre><span class="c">#!/bin/bash</span>
+<span class="c"># relationop_2019012345.sh</span>
+<span class="c"># 인자 형식: $1 = 피연산자1, $2 = 연산자(== 또는 !=), $3 = 피연산자2</span>
+
+<span class="c"># 1) 인자 개수가 정확히 3개인지 검사</span>
+<span class="k">if</span> [ <span class="s">"$#"</span> -ne 3 ]; <span class="k">then</span>
+  <span class="k">echo</span> <span class="s">"Error: exactly 3 arguments are required (operand1 operator operand2)"</span>
+  <span class="k">exit</span> 1
+<span class="k">fi</span>
+
+<span class="c"># 2) 의미 있는 이름으로 인자 받기</span>
+op1=<span class="s">"$1"</span>
+op=<span class="s">"$2"</span>
+op2=<span class="s">"$3"</span>
+
+<span class="c"># 3) 연산자에 따라 분기 — IF/ELIF/ELSE</span>
+<span class="k">if</span> [ <span class="s">"$op"</span> = <span class="s">"=="</span> ]; <span class="k">then</span>
+  <span class="c"># 정수 동등 비교 → -eq</span>
+  <span class="k">if</span> [ <span class="s">"$op1"</span> -eq <span class="s">"$op2"</span> ]; <span class="k">then</span>
+    <span class="k">echo</span> <span class="s">"TRUE"</span>
+  <span class="k">else</span>
+    <span class="k">echo</span> <span class="s">"FALSE"</span>
+  <span class="k">fi</span>
+<span class="k">elif</span> [ <span class="s">"$op"</span> = <span class="s">"!="</span> ]; <span class="k">then</span>
+  <span class="c"># 정수 비동등 비교 → -ne</span>
+  <span class="k">if</span> [ <span class="s">"$op1"</span> -ne <span class="s">"$op2"</span> ]; <span class="k">then</span>
+    <span class="k">echo</span> <span class="s">"TRUE"</span>
+  <span class="k">else</span>
+    <span class="k">echo</span> <span class="s">"FALSE"</span>
+  <span class="k">fi</span>
+<span class="k">else</span>
+  <span class="c"># 4) 지원하지 않는 연산자</span>
+  <span class="k">echo</span> <span class="s">"Error: invalid operator '$op' (only == and != are supported)"</span>
+  <span class="k">exit</span> 1
+<span class="k">fi</span></pre>
+
+  <p><strong>🧪 채점 시나리오 직접 돌려보기:</strong></p>
+<pre>$ bash ./relationop_xxx.sh 10 == 10
+TRUE
+$ bash ./relationop_xxx.sh 10 == 22
+FALSE
+$ bash ./relationop_xxx.sh 10 != 22
+TRUE
+$ bash ./relationop_xxx.sh 10 22
+Error: exactly 3 arguments are required (operand1 operator operand2)
+$ bash ./relationop_xxx.sh 10 &gt; 22
+Error: invalid operator '&gt;' (only == and != are supported)</pre>
+
+  <div class="callout warn">
+    <strong>⚠️ 자주 하는 실수</strong>
+    <ul class="clean">
+      <li><code>[ $op == "==" ]</code> 처럼 따옴표 없이 쓰면 <code>$op</code>가 비어 있을 때 <code>[ == "==" ]</code> 가 되어 “unary operator expected” 에러가 납니다. 변수는 항상 <code>"$op"</code> 처럼 따옴표로 감싸세요.</li>
+      <li><code>[ $op1 == $op2 ]</code> 도 동작하지만 이건 <strong>문자열</strong> 비교입니다. 과제는 정수 가정이므로 <code>-eq</code>, <code>-ne</code> 가 더 의도에 맞습니다.</li>
+      <li>제출 파일명에 본인 학번을 꼭 넣으세요 — 채점 스크립트가 파일명 패턴으로 자동 인식할 가능성이 큽니다.</li>
+    </ul>
+  </div>
+</details>
+
+<!-- ===================== LECTURE 9 ===================== -->
+<h2 id="lec9">📘 Lecture 9 — Process II & Compile (gcc)</h2>
+<p class="sub">자료: <code>10_lec9 - process and compiler.pdf</code> (28쪽)</p>
+
+<div class="card">
+<h3>🧭 한눈에 보기</h3>
+<ul class="clean">
+  <li><strong>Process II:</strong> <code>fork/execve</code> 복습, 종료(<span class="kw">termination</span>)와 시그널, <code>kill</code> / <code>sleep</code> / <code>uptime</code> / <code>time</code>.</li>
+  <li><strong>Compile:</strong> <code>gcc</code> 가 사실은 <em>여러 도구의 묶음</em>이라는 사실 — 전처리(<span class="eng">pre-processor</span>) → 컴파일(<span class="eng">compile</span>) → 어셈블(<span class="eng">assemble</span>) → 링크(<span class="eng">link</span>) 4단계.</li>
+  <li>핵심 옵션: <code>-o</code>, <code>-E</code>, <code>-S</code>, <code>-c</code>, <code>-v --save-temps</code>, <code>-l</code>, <code>-L</code>, <code>-I</code>.</li>
+</ul>
+</div>
+
+<h3>① Process Termination — 종료의 의미</h3>
+<p>🔚 <strong>비유:</strong> 영화가 끝나면 엔딩 크레딧을 부모(영화관)에게 보여주고 자리를 정리하는 것과 비슷합니다.</p>
+<p>프로세스는 마지막 명령을 실행한 뒤 OS에 종료를 알립니다. 자식 프로세스가 종료되면 부모 프로세스에게 <span class="kw">시그널(signal)</span> 메커니즘으로 통지됩니다.</p>
+<p><strong>부모가 자식을 강제 종료하는 사유:</strong></p>
+<ul class="clean">
+  <li>자식이 허가된 자원을 초과해서 사용할 때</li>
+  <li>부모가 더 이상 자식이 필요 없을 때</li>
+</ul>
+<p>사용자가 강제로 죽이는 대표 명령은 <code>kill -9 PID</code>.</p>
+
+<h3>② <code>kill</code> 명령</h3>
+<pre>$ kill [-signal] PID
+$ kill -9   PID    <span class="c"># SIGKILL — 무조건 즉시 종료</span>
+$ kill -15  PID    <span class="c"># SIGTERM — 정중한 종료 요청(프로세스가 정리할 시간 줌, 기본값)</span>
+$ kill -l          <span class="c"># 사용 가능한 시그널 목록</span>
+$ <span class="k">man</span> kill        <span class="c"># 매뉴얼</span></pre>
+<div class="callout warn">
+  📌 <strong>중요:</strong> <code>kill</code> 은 “죽이는” 명령처럼 들리지만 정확히는 <em>“시그널을 보내는”</em> 명령입니다.
+  무슨 시그널이냐에 따라 종료, 일시정지, 무시 등 다양한 동작을 합니다.
+</div>
+
+<h3>③ <code>sleep</code> 명령</h3>
+<pre>$ sleep <span class="n">seconds</span>     <span class="c"># 지정한 초만큼 멈춤</span>
+$ sleep 3 &amp;&amp; <span class="k">echo</span> done   <span class="c"># 3초 뒤 done 출력</span></pre>
+<p>배치 처리 스크립트에서 <strong>의도적으로 시간 간격</strong>을 줄 때 자주 씁니다 (예: 서버 켜지길 기다린 뒤 클라이언트 시작).</p>
+
+<h3>④ <code>uptime</code>, <code>time</code></h3>
+<ul class="clean">
+  <li><code>uptime</code> : 시스템이 얼마나 오래 켜져 있었는지 + 평균 부하(load average)</li>
+  <li><code>time 명령</code> : 명령 실행에 걸린 시간 측정 (real / user / sys)</li>
+</ul>
+<pre>$ time gcc -O2 hello.c
+real    0m0.123s   <span class="c"># 실제 경과 시간 (wall-clock)</span>
+user    0m0.090s   <span class="c"># CPU 가 사용자 모드에서 쓴 시간</span>
+sys     0m0.020s   <span class="c"># CPU 가 커널 모드(시스템 콜)에서 쓴 시간</span></pre>
+
+<hr class="sep">
+
+<h3>⑤ gcc 란? — “컴파일러”가 아니라 “드라이버”</h3>
+<p>🚗 <strong>비유:</strong> <code>gcc</code> 는 자동차 자체가 아니라, 여러 부품(전처리기, 컴파일러, 어셈블러, 링커)을 순서대로 운전하는 <em>운전기사(driver)</em>입니다.</p>
+<p><span class="kw">GCC (GNU Compiler Collection)</span> 는 처음엔 C 전용이었지만, 이후 C++, Objective-C, Fortran, Java, Go 같은 언어로 확장됐고 ARM·x86·SPARC 등 수많은 CPU 아키텍처를 지원합니다.</p>
+<pre>$ sudo apt install gcc
+$ gcc [options] C-files</pre>
+
+<h3>⑥ 컴파일 4단계 (Compilation Pipeline)</h3>
+<table>
+  <tr><th>단계</th><th>도구</th><th>입력</th><th>출력</th></tr>
+  <tr><td>① 전처리(Pre-processing)</td><td><code>cpp0</code> / <code>cc -E</code></td><td><code>hello.c</code></td><td><code>hello.i</code></td></tr>
+  <tr><td>② 컴파일(Compile)</td><td><code>cc1</code></td><td><code>hello.i</code></td><td><code>hello.s</code></td></tr>
+  <tr><td>③ 어셈블(Assemble)</td><td><code>as</code></td><td><code>hello.s</code></td><td><code>hello.o</code></td></tr>
+  <tr><td>④ 링크(Link)</td><td><code>ld</code> / <code>collect2</code></td><td><code>hello.o</code> + 라이브러리</td><td>실행 파일 <code>hello</code></td></tr>
+</table>
+<p>4단계가 한 줄 명령(<code>gcc hello.c</code>)에 다 묻혀있는 것이지, 내부에서는 위 순서대로 실행됩니다. 시험에 단골입니다 ⭐</p>
+
+<h3>⑦ 단계별 옵션</h3>
+<pre>$ gcc hello.c                        <span class="c"># 4단계 다 → a.out 생성</span>
+$ gcc -o hello hello.c               <span class="c"># 결과 파일명 hello</span>
+
+<span class="c"># 중간 산출물도 모두 보고 싶을 때</span>
+$ gcc -v --save-temps -o hello hello.c
+<span class="c"># → hello.i (전처리), hello.s (어셈블리), hello.o (오브젝트), hello (실행) 모두 남김</span>
+
+<span class="c"># 단계별로 멈추기</span>
+$ gcc -E hello.c -o hello.i          <span class="c"># 전처리만 (#include, #define 펼침)</span>
+$ gcc -S hello.c -o hello.s          <span class="c"># 어셈블리까지</span>
+$ gcc -c hello.c -o hello.o          <span class="c"># 오브젝트까지 (링크 X)</span></pre>
+
+<h3>⑧ 라이브러리 옵션 — <code>-l</code> / <code>-L</code> / <code>-I</code></h3>
+<table>
+  <tr><th>옵션</th><th>의미</th><th>예시</th></tr>
+  <tr><td><code>-l<em>name</em></code></td><td><code>lib<em>name</em>.a</code> 또는 <code>lib<em>name</em>.so</code> 와 링크</td><td><code>-lm</code> → libm (수학 라이브러리), <code>-lcurses</code></td></tr>
+  <tr><td><code>-L<em>dir</em></code></td><td>라이브러리 <strong>탐색 경로</strong> 추가</td><td><code>-L/home/me/mylib</code></td></tr>
+  <tr><td><code>-I<em>dir</em></code></td><td>헤더 파일 <strong>탐색 경로</strong> 추가</td><td><code>-I/usr/local/include</code></td></tr>
+</table>
+<pre>$ gcc -o hello_box hello_box.c -lcurses          <span class="c"># ncurses(텍스트 UI) 와 링크</span>
+$ gcc -o app main.c -L/opt/mylib -lmymath -I/opt/include</pre>
+
+<h4>관련 환경변수</h4>
+<ul class="clean">
+  <li><code>LIBRARY_PATH</code>: 컴파일/링크 시점에 정적 라이브러리 탐색 경로</li>
+  <li><code>LD_LIBRARY_PATH</code>: <strong>실행</strong> 시점에 공유 라이브러리(<code>.so</code>) 탐색 경로</li>
+</ul>
+<pre>$ <span class="k">export</span> LD_LIBRARY_PATH=/opt/mylib:<span class="v">$LD_LIBRARY_PATH</span>
+$ source myenv          <span class="c"># myenv 파일 안의 export 들을 현재 쉘에 적용</span></pre>
+
+<h3>⑨ ncurses — 참고용 메모</h3>
+<p><span class="kw">ncurses</span> 는 터미널에서 텍스트 기반 UI(메뉴, 박스, 색상)를 그릴 수 있게 해주는 라이브러리입니다. 헤더 <code>&lt;curses.h&gt;</code> 를 포함하고 빌드할 때 <code>-lcurses</code> 또는 <code>-lncurses</code> 를 붙입니다. (시험에 깊게는 안 나와요. “이런 게 있구나” 수준.)</p>
+
+<!-- ===== QUIZ for Lec9 ===== -->
+<div class="quiz">
+  <h4>🧪 Lecture 9 퀴즈 — 12문제</h4>
+
+  <div class="q"><span class="num">Q1.</span> <strong>(쉬움)</strong> <code>gcc</code> 컴파일 파이프라인의 올바른 순서는?
+    <div class="opts">
+      <label><input type="radio" name="l9q1"> ① 컴파일 → 전처리 → 어셈블 → 링크</label>
+      <label><input type="radio" name="l9q1"> ② 전처리 → 컴파일 → 어셈블 → 링크</label>
+      <label><input type="radio" name="l9q1"> ③ 전처리 → 어셈블 → 컴파일 → 링크</label>
+      <label><input type="radio" name="l9q1"> ④ 링크 → 컴파일 → 어셈블 → 전처리</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ②. <code>.c → .i → .s → .o → 실행파일</code> 순.</div>
+  </div>
+
+  <div class="q"><span class="num">Q2.</span> <strong>(쉬움)</strong> 다음 옵션 중 “전처리(<span class="eng">pre-processing</span>)만 수행” 하는 것은?
+    <div class="opts">
+      <label><input type="radio" name="l9q2"> ① <code>-S</code></label>
+      <label><input type="radio" name="l9q2"> ② <code>-c</code></label>
+      <label><input type="radio" name="l9q2"> ③ <code>-E</code></label>
+      <label><input type="radio" name="l9q2"> ④ <code>-o</code></label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ③. <code>-E</code>=전처리, <code>-S</code>=어셈블리까지, <code>-c</code>=오브젝트까지(링크X), <code>-o</code>=출력 파일명 지정.</div>
+  </div>
+
+  <div class="q"><span class="num">Q3.</span> <strong>(쉬움)</strong> 단답형: <code>printf</code> 같은 함수를 사용했지만 링커가 <em>“undefined reference to <code>sqrt</code>”</em> 같은 에러를 낼 때, 보통 추가해야 하는 옵션 형식은 <code>-l___</code> 형태입니다. 수학 함수 <code>sqrt</code>의 경우 들어갈 라이브러리 이름은?
+    <button class="showbtn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="ans">정답: <code>m</code> → <code>-lm</code>. <code>libm.so</code> 와 링크하라는 뜻.</div>
+  </div>
+
+  <div class="q"><span class="num">Q4.</span> <strong>(쉬움)</strong> <code>kill -9 PID</code> 의 의미로 가장 정확한 것은?
+    <div class="opts">
+      <label><input type="radio" name="l9q4"> ① 9초 뒤에 종료한다</label>
+      <label><input type="radio" name="l9q4"> ② PID 프로세스에 SIGKILL 시그널을 보내 즉시 종료시킨다</label>
+      <label><input type="radio" name="l9q4"> ③ PID 프로세스를 일시정지한다</label>
+      <label><input type="radio" name="l9q4"> ④ PID 프로세스를 우선순위 9로 바꾼다</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ②. -9 = SIGKILL = 정리할 시간 없이 즉시 종료.</div>
+  </div>
+
+  <div class="q"><span class="num">Q5.</span> <strong>(중)</strong> <code>gcc -v --save-temps -o hello hello.c</code> 를 실행했을 때 폴더에 “남게 되는” 파일들의 조합은?
+    <div class="opts">
+      <label><input type="radio" name="l9q5"> ① <code>hello.c</code>, <code>hello</code> 두 개만</label>
+      <label><input type="radio" name="l9q5"> ② <code>hello.c</code>, <code>hello.i</code>, <code>hello.s</code>, <code>hello.o</code>, <code>hello</code></label>
+      <label><input type="radio" name="l9q5"> ③ <code>hello.c</code>, <code>hello.s</code>, <code>hello</code></label>
+      <label><input type="radio" name="l9q5"> ④ <code>hello.c</code> 만</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ②. <code>--save-temps</code> 가 중간 산출물을 모두 보존합니다.</div>
+  </div>
+
+  <div class="q"><span class="num">Q6.</span> <strong>(중)</strong> <code>-L</code> 옵션과 <code>-l</code> 옵션의 차이는?
+    <div class="opts">
+      <label><input type="radio" name="l9q6"> ① 둘 다 헤더 경로다</label>
+      <label><input type="radio" name="l9q6"> ② <code>-L</code> 은 라이브러리 “검색 경로”, <code>-l</code> 은 “라이브러리 이름”</label>
+      <label><input type="radio" name="l9q6"> ③ <code>-L</code> 은 큰 라이브러리, <code>-l</code> 은 작은 라이브러리</label>
+      <label><input type="radio" name="l9q6"> ④ 같은 의미의 별칭이다</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ②. <code>-L</code> 은 어디서 찾을지(폴더), <code>-l</code> 은 무엇을 찾을지(이름) 알려줍니다.</div>
+  </div>
+
+  <div class="q"><span class="num">Q7.</span> <strong>(중)</strong> 단답형: 실행 시점에 공유 라이브러리(<code>.so</code>) 검색 경로를 지정하는 환경변수 이름은?
+    <button class="showbtn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="ans">정답: <code>LD_LIBRARY_PATH</code>. 컴파일 시점의 <code>LIBRARY_PATH</code> 와 헷갈리지 말 것.</div>
+  </div>
+
+  <div class="q"><span class="num">Q8.</span> <strong>(중)</strong> <code>fork()</code> 직후 자식 프로세스의 특징으로 옳은 것은?
+    <div class="opts">
+      <label><input type="radio" name="l9q8"> ① 부모와 같은 PID를 갖는다</label>
+      <label><input type="radio" name="l9q8"> ② 부모의 메모리 이미지를 복제받으며 새로운 PID를 갖는다</label>
+      <label><input type="radio" name="l9q8"> ③ 코드 영역만 복제되고 데이터/스택은 부모와 공유한다</label>
+      <label><input type="radio" name="l9q8"> ④ 부모보다 먼저 종료되어야 한다</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ②. fork는 “복제 후 새 PID 부여”. 이후 <code>execve()</code> 로 알맹이만 바꾸는 패턴이 가장 흔합니다.</div>
+  </div>
+
+  <div class="q"><span class="num">Q9.</span> <strong>(중상)</strong> <code>time ./prog</code> 의 출력 중 “CPU가 사용자 모드에서 쓴 시간” 항목은?
+    <div class="opts">
+      <label><input type="radio" name="l9q9"> ① real</label>
+      <label><input type="radio" name="l9q9"> ② user</label>
+      <label><input type="radio" name="l9q9"> ③ sys</label>
+      <label><input type="radio" name="l9q9"> ④ wall</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ②. user=사용자 모드 CPU 시간, sys=커널 모드 CPU 시간, real=실제 경과 시간(wall-clock).</div>
+  </div>
+
+  <div class="q"><span class="num">Q10.</span> <strong>(중상)</strong> 다음 4단계 중 “라이브러리(libc, libm 등)와 합쳐 실행 파일을 만드는” 단계는?
+    <div class="opts">
+      <label><input type="radio" name="l9q10"> ① 전처리</label>
+      <label><input type="radio" name="l9q10"> ② 컴파일</label>
+      <label><input type="radio" name="l9q10"> ③ 어셈블</label>
+      <label><input type="radio" name="l9q10"> ④ 링크</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ④. 링크(<code>ld</code>) 단계에서 <code>.o</code> 파일들과 라이브러리를 합쳐 실행 파일을 만듭니다.</div>
+  </div>
+
+  <div class="q"><span class="num">Q11.</span> <strong>(중상)</strong> 단답형: <code>fork()</code> 가 만든 자식이 곧바로 다른 프로그램을 실행하려고 호출하는 시스템 콜은?
+    <button class="showbtn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="ans">정답: <code>execve()</code> (그리고 그 변형 <code>execvp()</code>, <code>execlp()</code> 등). 메모리 이미지를 통째로 교체합니다.</div>
+  </div>
+
+  <div class="q"><span class="num">Q12.</span> <strong>(중상)</strong> 아래 컴파일 명령 중 “링크 단계를 수행하지 않는” 것은?
+    <div class="opts">
+      <label><input type="radio" name="l9q12"> ① <code>gcc -o app main.c</code></label>
+      <label><input type="radio" name="l9q12"> ② <code>gcc main.c</code></label>
+      <label><input type="radio" name="l9q12"> ③ <code>gcc -c main.c</code></label>
+      <label><input type="radio" name="l9q12"> ④ <code>gcc main.c -lm</code></label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ③. <code>-c</code> 는 “컴파일/어셈블만 하고 링크하지 마”라는 뜻으로, <code>main.o</code>까지만 만듭니다.</div>
+  </div>
+</div>
+
+<!-- ===================== PRACTICE (Lec9) ===================== -->
+<h2 id="practice">🛠 Practice — Process & 실행 파일 다루기</h2>
+<p class="sub">자료: <code>10_lec9-practice - process.pdf</code> (11쪽). 총 5문제. 각 문제는 영어 원문 → 한국어 번역 토글 → 해설 순으로 정리.</p>
+
+<!-- Practice #1 -->
+<div class="card">
+<h3>Practice #1 — bc 백그라운드 실행과 종료</h3>
+<details class="eng" open><summary>🇬🇧 English</summary>
+<ul>
+  <li>Execute a <code>bc</code> program as a background process.</li>
+  <li>Check the process status using <code>ps</code>.</li>
+  <li>Send a KILL signal to the <code>bc</code> and confirm it is properly terminated.</li>
+</ul>
+</details>
+<details class="kor"><summary>🇰🇷 한국어</summary>
+<ul class="clean">
+  <li><code>bc</code> 프로그램을 백그라운드 프로세스로 실행합니다.</li>
+  <li><code>ps</code> 로 <code>bc</code> 의 프로세스 상태를 확인합니다.</li>
+  <li><code>bc</code> 에 KILL 시그널을 보내고, 제대로 종료됐는지 확인합니다.</li>
+</ul>
+</details>
+<details class="sol"><summary>✅ 풀이</summary>
+<pre>$ bc &amp;                <span class="c"># bc 를 백그라운드로 — [1] 12345 같이 PID 출력</span>
+[1] 12345
+$ ps -p 12345         <span class="c"># 해당 PID 의 상태만 콕 찍어 확인</span>
+   PID TTY          TIME CMD
+ 12345 pts/0    00:00:00 bc
+$ kill -9 12345       <span class="c"># SIGKILL 전송</span>
+$ ps -p 12345         <span class="c"># 다시 확인 — 결과 없음 = 종료됨</span>
+[1]+  Killed                  bc</pre>
+<div class="callout">
+  💡 PID 모르겠으면 <code>jobs -l</code> 또는 <code>pgrep bc</code> 로 찾을 수 있습니다.
+  팁: <code>kill %1</code> 처럼 job 번호로도 가능.
+</div>
+</details>
+</div>
+
+<!-- Practice #2 -->
+<div class="card">
+<h3>Practice #2 — more 5개 백그라운드 + jobs</h3>
+<details class="eng" open><summary>🇬🇧 English</summary>
+<ul>
+  <li>Execute <code>more /etc/group</code> 5 times as background processes.</li>
+  <li>Verify the five jobs with <code>jobs</code>.</li>
+  <li>Make the <strong>second</strong> background process foreground.</li>
+  <li>Send KILL signals to the others.</li>
+</ul>
+</details>
+<details class="kor"><summary>🇰🇷 한국어</summary>
+<ul class="clean">
+  <li><code>more /etc/group</code> 을 백그라운드로 5번 실행합니다.</li>
+  <li><code>jobs</code> 로 다섯 작업이 정상 실행됐는지 확인합니다.</li>
+  <li>두 번째로 실행한 작업을 포그라운드로 가져옵니다.</li>
+  <li>나머지에는 KILL 시그널을 보냅니다.</li>
+</ul>
+</details>
+<details class="sol"><summary>✅ 풀이</summary>
+<pre>$ more /etc/group &amp;
+$ more /etc/group &amp;
+$ more /etc/group &amp;
+$ more /etc/group &amp;
+$ more /etc/group &amp;
+
+$ jobs
+[1]   Stopped                 more /etc/group
+[2]   Stopped                 more /etc/group
+[3]   Stopped                 more /etc/group
+[4]   Stopped                 more /etc/group
+[5]+  Stopped                 more /etc/group
+
+<span class="c"># 두 번째 작업을 foreground 로 → q 로 종료</span>
+$ fg %2
+<span class="c"># …more 화면…  q 입력 후 종료</span>
+
+<span class="c"># 나머지 1,3,4,5 번에 KILL 시그널 전송</span>
+$ kill -9 %1 %3 %4 %5
+
+$ jobs
+<span class="c"># 모두 사라짐 (또는 Terminated 라고 표시 후 자동 정리)</span></pre>
+<div class="callout warn">
+  📌 <strong>주의:</strong> <code>more</code> 는 대화형(interactive) 프로그램이라 백그라운드에서 “Stopped” 상태가 되는 게 정상입니다.
+  <code>cat</code> 처럼 입력이 없으면 그냥 끝나버립니다.
+</div>
+</details>
+</div>
+
+<!-- Practice #3 -->
+<div class="card">
+<h3>Practice #3 — hello 컴파일 + ELF 분석 + hex 패치(nop)</h3>
+<details class="eng" open><summary>🇬🇧 English</summary>
+<ul>
+  <li>Write <code>hello.c</code> in VIM, compile with <code>gcc -o hello hello.c</code>.</li>
+  <li>Inspect where “hello” and “world” strings live (use <code>readelf</code> / <code>objdump</code>).</li>
+  <li>Find the assembly location that calls <code>printf</code> (e.g., address <code>117a</code>).</li>
+  <li>Open the executable with VIM in hex-edit mode (<code>:%!xxd</code>), replace
+    <code>e8 d1 fe ff ff</code> → <code>90 90 90 90 90</code>, then save with <code>:%!xxd -r</code>, <code>:wq!</code>.</li>
+  <li>Run the executable again and observe the result.</li>
+</ul>
+</details>
+<details class="kor"><summary>🇰🇷 한국어</summary>
+<ul class="clean">
+  <li>VIM 으로 <code>hello.c</code> 작성 후 <code>gcc -o hello hello.c</code> 로 컴파일.</li>
+  <li>“hello” 와 “world” 문자열이 어느 섹션에 들어가 있는지 확인 (<code>readelf</code>, <code>objdump</code>).</li>
+  <li>디스어셈블 결과에서 <code>printf</code> 를 호출하는 어셈블리의 위치를 찾기 (예: <code>117a</code>).</li>
+  <li>VIM 16진 편집 모드(<code>:%!xxd</code>)로 실행파일 열어 <code>e8 d1 fe ff ff</code> 를 <code>90 90 90 90 90</code> 으로 치환. (<code>:%!xxd -r</code> 로 되돌린 뒤 <code>:wq!</code> 로 저장)</li>
+  <li>실행 결과가 어떻게 달라지는지 확인.</li>
+</ul>
+</details>
+<details class="sol"><summary>✅ 풀이</summary>
+<p><strong>1) hello.c 작성 후 컴파일</strong></p>
+<pre><span class="c">// hello.c</span>
+<span class="k">#include</span> <span class="s">&lt;stdio.h&gt;</span>
+<span class="k">int</span> <span class="f">main</span>(<span class="k">void</span>) {
+  <span class="f">printf</span>(<span class="s">"hello\n"</span>);
+  <span class="f">printf</span>(<span class="s">"world\n"</span>);
+  <span class="k">return</span> 0;
+}</pre>
+<pre>$ gcc -o hello hello.c
+$ ./hello
+hello
+world</pre>
+
+<p><strong>2) 문자열이 어느 섹션에 있는지 확인</strong></p>
+<pre>$ readelf -S hello | <span class="k">grep</span> -E <span class="s">"rodata|text|data"</span>
+  [<em>n</em>] .text       PROGBITS  ... <span class="c"># 실행 코드</span>
+  [<em>n</em>] .rodata     PROGBITS  ... <span class="c"># 읽기 전용 데이터 (대부분 여기에 문자열 리터럴이 들어감)</span>
+
+$ <span class="k">strings</span> -t x hello | <span class="k">grep</span> -E <span class="s">"hello|world"</span>
+  2004 hello
+  200a world
+<span class="c"># 위 오프셋은 보통 .rodata 영역에 속합니다.</span></pre>
+
+<p><strong>3) printf 호출 위치(call instruction) 찾기</strong></p>
+<pre>$ objdump -d hello | <span class="k">grep</span> -A 30 <span class="s">"&lt;main&gt;:"</span>
+00000000000011<em>69</em> &lt;main&gt;:
+   ...
+   117a:  e8 d1 fe ff ff   call   1050 &lt;puts@plt&gt;   <span class="c"># printf("hello\n") 호출</span>
+   ...
+   <em>주소</em>:  e8 .. .. .. ..  call   ... &lt;puts@plt&gt;   <span class="c"># printf("world\n") 호출</span></pre>
+<p><code>e8</code> 은 x86-64에서 <span class="kw">상대 호출(call rel32)</span> 명령의 opcode 입니다. 뒤 4바이트는 점프할 상대 오프셋이에요.</p>
+
+<p><strong>4) VIM 으로 hex 편집 → nop 으로 덮기</strong></p>
+<pre>$ vim hello
+:%!xxd                        <span class="c"># 화면을 hex 보기로 전환</span>
+<span class="c"># e8 d1 fe ff ff 위치를 찾아 (예: /e8 d1)</span>
+<span class="c"># 90 90 90 90 90 로 직접 수정. 90 은 NOP(아무 일도 안 하는 명령)</span>
+:%!xxd -r                     <span class="c"># 다시 바이너리로 되돌림 (필수!)</span>
+:wq!                          <span class="c"># 강제 저장</span>
+
+$ ./hello
+world</pre>
+<p>첫 번째 <code>printf("hello\n")</code> 호출 명령(<code>call</code>)을 NOP 5개로 덮어버렸기 때문에 “hello”는 출력되지 않고 “world” 만 나옵니다.</p>
+
+<div class="callout">
+  🔑 <strong>핵심 용어:</strong>
+  <ul class="clean">
+    <li><span class="kw">NOP(No Operation, 0x90)</span>: 1바이트짜리 “아무 일 안 함” 명령. 이런 코드 변조에서 단골 손님.</li>
+    <li><span class="kw">opcode</span>: 어셈블리 명령에 대응하는 기계어 바이트. <code>e8 ..</code> = call.</li>
+    <li><span class="kw">.rodata</span>: read-only data 섹션. 문자열 상수는 거의 여기.</li>
+  </ul>
+</div>
+</details>
+</div>
+
+<!-- Practice #4 -->
+<div class="card">
+<h3>Practice #4 — secret_code 의 jle 패치로 “비밀번호” 우회</h3>
+<details class="eng" open><summary>🇬🇧 English</summary>
+<ul>
+  <li>Download the executable <code>secret_code</code> from E-ruri and run it.</li>
+  <li>Disassemble <code>main</code> and find the <code>jle</code> (jump if less or equal) instruction(s).</li>
+  <li>Replace all opcodes of those <code>jle</code> instructions with <code>90</code> (keep the same length).</li>
+  <li>Save and re-run. Did you find the password?</li>
+</ul>
+</details>
+<details class="kor"><summary>🇰🇷 한국어</summary>
+<ul class="clean">
+  <li>E-ruri 에서 실행 파일 <code>secret_code</code> 를 받아 실행해 본다.</li>
+  <li><code>main</code> 함수를 디스어셈블해서 <code>jle</code> (작거나 같으면 점프) 명령을 찾는다.</li>
+  <li>해당 <code>jle</code> 들의 <strong>opcode 전체</strong>를 <code>90</code> 으로 바꾼다 (길이는 그대로 유지).</li>
+  <li>저장 후 다시 실행 — 비밀번호가 보이는가? ☺</li>
+</ul>
+</details>
+<details class="sol"><summary>✅ 풀이</summary>
+<p><strong>아이디어:</strong> 프로그램은 보통 “입력값을 검사해서 틀리면 jle/je/jne 같은 조건 점프로 정답 출력을 건너뛰는” 구조입니다. 그 점프 명령을 NOP 으로 무력화하면 조건과 무관하게 “정답 경로”를 그대로 진행하게 됩니다.</p>
+
+<pre>$ objdump -d secret_code | <span class="k">grep</span> -E <span class="s">"jle|&lt;main&gt;"</span> -A 0
+&lt;main&gt;:
+  ....:  7e XX            jle    ....    <span class="c"># 8비트 상대 jle (총 2바이트)</span>
+  ....:  0f 8e XX XX XX XX jle    ....   <span class="c"># 32비트 상대 jle (총 6바이트)</span></pre>
+
+<p><strong>주의:</strong> <code>jle</code> 은 두 가지 형태가 있습니다.</p>
+<ul class="clean">
+  <li>짧은 형(short form): <code>7e XX</code> (2바이트) → <code>90 90</code> 으로 교체</li>
+  <li>긴 형(near form): <code>0f 8e XX XX XX XX</code> (6바이트) → <code>90 90 90 90 90 90</code> 으로 교체</li>
+</ul>
+<p>“길이를 그대로 유지” 라는 지시가 핵심 — 길이를 바꾸면 그 뒤 모든 명령 주소가 어긋나 프로그램이 망가집니다.</p>
+
+<pre>$ vim secret_code
+:%!xxd
+<span class="c"># 7e XX 를 90 90 로, 0f 8e XX XX XX XX 를 90 90 90 90 90 90 로 모두 치환</span>
+:%!xxd -r
+:wq!
+
+$ ./secret_code
+Password: ____   <span class="c"># 모든 조건 점프를 통과해버려 비밀번호 출력 경로로 무조건 진입</span></pre>
+<div class="callout warn">
+  ⚠️ 이 기법은 <strong>학습/CTF/리버스 엔지니어링 실습</strong> 목적입니다.
+  실제 상용 소프트웨어를 패치해서 사용하는 건 라이선스 위반이자 위법입니다.
+</div>
+</details>
+</div>
+
+<!-- Practice #5 -->
+<div class="card">
+<h3>Practice #5 — execvp 로 “ls -altr” 실행</h3>
+<details class="eng" open><summary>🇬🇧 English</summary>
+<p>Fill in the blanks so the program executes <code>ls -altr</code>. Refer to <code>man execvp</code>.</p>
+<pre><span class="k">#include</span> <span class="s">&lt;unistd.h&gt;</span>
+<span class="k">int</span> <span class="f">main</span>(<span class="k">void</span>) {
+    <span class="k">char</span> *args[] = { _____ , _____ , _____ };
+    <span class="f">execvp</span>( _____ , _____ );
+    <span class="k">return</span> 0;
+}</pre>
+</details>
+<details class="kor"><summary>🇰🇷 한국어</summary>
+<p><code>ls -altr</code> 가 실행되도록 빈칸을 채우세요. <code>man execvp</code> 참고.</p>
+</details>
+<details class="sol"><summary>✅ 풀이</summary>
+<p><strong>먼저 함수 시그니처부터 정확히 외우기:</strong></p>
+<pre><span class="k">int</span> <span class="f">execvp</span>(<span class="k">const char</span> *file, <span class="k">char</span> *<span class="k">const</span> argv[]);</pre>
+<ul class="clean">
+  <li><code>file</code> : 실행할 프로그램 이름 (PATH 에서 검색). 여기선 <code>"ls"</code>.</li>
+  <li><code>argv[]</code> : <strong>argv[0] 부터 시작</strong>해서 마지막은 <strong>반드시 <code>NULL</code></strong>. argv[0] 은 관례적으로 프로그램 이름.</li>
+</ul>
+
+<p><strong>완성 코드:</strong></p>
+<pre><span class="k">#include</span> <span class="s">&lt;unistd.h&gt;</span>     <span class="c">// execvp 선언이 들어 있는 헤더</span>
+
+<span class="k">int</span> <span class="f">main</span>(<span class="k">void</span>) {
+    <span class="c">// args[0] = 프로그램 이름, args[1] = 옵션, 마지막은 반드시 NULL</span>
+    <span class="k">char</span> *args[] = { <span class="s">"ls"</span>, <span class="s">"-altr"</span>, NULL };
+
+    <span class="c">// 첫 인자 = 실행할 파일 (PATH 검색), 둘째 인자 = argv 배열</span>
+    <span class="f">execvp</span>(<span class="s">"ls"</span>, args);
+
+    <span class="c">// execvp 가 성공하면 여기로 절대 안 옴 (현재 프로세스 이미지가 ls 로 교체됨)</span>
+    <span class="c">// 실패했을 때만 아래 코드가 실행됨</span>
+    <span class="k">return</span> 0;
+}</pre>
+
+<div class="callout">
+  🧠 <strong>왜 NULL 이 꼭 필요할까?</strong>
+  C 의 배열은 길이 정보를 함께 갖지 않습니다. <code>execvp</code> 는 “NULL 을 만나기 전까지가 인자”라고 약속해서 길이를 알아냅니다.
+  NULL 안 넣으면 메모리 쓰레기까지 인자로 해석해 SIGSEGV 가 납니다. 자료구조 수업에서 배운 sentinel(보초 값) 패턴과 같은 아이디어예요.
+</div>
+
+<p><strong>fork 와 함께 쓰는 표준 패턴 (실전):</strong></p>
+<pre><span class="k">#include</span> <span class="s">&lt;unistd.h&gt;</span>
+<span class="k">#include</span> <span class="s">&lt;sys/wait.h&gt;</span>
+
+<span class="k">int</span> <span class="f">main</span>(<span class="k">void</span>) {
+  pid_t pid = <span class="f">fork</span>();
+  <span class="k">if</span> (pid == 0) {              <span class="c">// 자식 프로세스</span>
+    <span class="k">char</span> *args[] = { <span class="s">"ls"</span>, <span class="s">"-altr"</span>, NULL };
+    <span class="f">execvp</span>(<span class="s">"ls"</span>, args);    <span class="c">// 자식만 ls 로 교체됨</span>
+    <span class="f">perror</span>(<span class="s">"execvp"</span>);          <span class="c">// 여기 오면 execvp 가 실패한 것</span>
+  } <span class="k">else</span> {                     <span class="c">// 부모 프로세스</span>
+    <span class="f">wait</span>(NULL);              <span class="c">// 자식이 끝날 때까지 기다림</span>
+  }
+  <span class="k">return</span> 0;
+}</pre>
+</details>
+</div>
+
+<!-- ===================== LECTURE 10 ===================== -->
+<h2 id="lec10">📘 Lecture 10 — Compile II → GDB → Multi-module</h2>
+<p class="sub">자료: <code>11_lec10 - compiler II and gdb.pdf</code> (17쪽)</p>
+
+<div class="card">
+<h3>🧭 한눈에 보기</h3>
+<ul class="clean">
+  <li><code>-g</code> 옵션으로 디버깅 정보(debugging info) 박아 넣기.</li>
+  <li><span class="kw">GDB (GNU Debugger)</span> 사용법: 실행, 중단점(breakpoint), 감시점(watchpoint), 스택 프레임(stack frame), 메모리 검사(<code>x</code>), 디스어셈블, step/next/until/finish.</li>
+  <li>대표적인 런타임 버그 종류: 오버플로(overflow), divide-by-zero, 메모리 오류(use-after-free, double-free, out-of-bound, uninitialized).</li>
+  <li><span class="kw">단일 모듈(single-module)</span> 프로그램과 <span class="kw">다중 모듈(multi-module)</span> 프로그램, 헤더(<code>.h</code>) / 오브젝트(<code>.o</code>) / 링크의 역할.</li>
+</ul>
+</div>
+
+<h3>① <code>-g</code> 옵션과 디버깅 정보</h3>
+<p>🧰 <strong>비유:</strong> 실행 파일에 “이게 어느 소스 파일 몇 번째 줄인지, 변수 이름이 뭔지” 적힌 <em>주석 라벨</em>을 덧붙이는 것입니다.</p>
+<pre>$ gcc -g -o bugprg bugprg.c</pre>
+<ul class="clean">
+  <li>내부 심볼(internal symbol)의 값/주소, 소스코드와의 매핑(mapping info)이 포함됩니다.</li>
+  <li><strong>실제 소스 코드 자체</strong>가 들어가는 건 아니고, “주소 ↔ 줄 번호” 매핑입니다.</li>
+  <li>이 정보가 있어야 GDB 가 변수 이름, 줄 번호, 함수 이름으로 디버깅할 수 있어요.</li>
+</ul>
+
+<h3>② 런타임 버그(Runtime bugs) 5종 세트</h3>
+<table>
+  <tr><th>종류</th><th>설명</th><th>예시</th></tr>
+  <tr><td><span class="kw">Overflow</span></td><td>연산 결과가 표현 범위를 넘어감</td><td><code>int</code> 에 매우 큰 두 수를 더함</td></tr>
+  <tr><td><span class="kw">Divide-by-zero</span></td><td>0 으로 나누기</td><td><code>a/0</code> 또는 <code>a%0</code></td></tr>
+  <tr><td><span class="kw">Use-after-free</span></td><td>해제된 포인터 사용</td><td><code>free(p); *p = 1;</code></td></tr>
+  <tr><td><span class="kw">Double-free</span></td><td>같은 포인터를 두 번 free</td><td><code>free(p); free(p);</code></td></tr>
+  <tr><td><span class="kw">Out-of-bound</span></td><td>배열 범위 벗어난 접근</td><td><code>int a[3]; a[10]=1;</code></td></tr>
+  <tr><td><span class="kw">Uninitialized data</span></td><td>초기화 안 한 메모리 사용</td><td><code>int x; printf("%d", x);</code></td></tr>
+</table>
+<p>💡 자바는 배열 경계 검사·GC 가 있어서 일부는 막아주지만, C 는 거의 다 직접 만나야 합니다.</p>
+
+<h3>③ GDB 사용법 — 시작</h3>
+<pre>$ gdb 프로그램                       <span class="c"># 실행파일 로드</span>
+$ gdb 프로그램 corefile              <span class="c"># 코어 덤프(crash 시 메모리 스냅샷)와 함께 분석</span>
+$ gdb 프로그램 PID                    <span class="c"># 이미 실행 중인 프로세스 붙이기</span>
+
+<span class="c"># 코어 덤프 활성화 (크기 제한 해제)</span>
+$ ulimit -a
+$ ulimit -c unlimited</pre>
+<p><span class="kw">Coredump</span>: 프로그램이 비정상 종료될 때(예: SIGSEGV) OS 가 그 순간 메모리/레지스터 상태를 파일로 떨궈주는 것. 이걸 gdb 로 열면 죽기 직전 상태를 마치 시간 정지 시킨 듯이 들여다볼 수 있습니다.</p>
+
+<h3>④ GDB 명령 — 외워두면 평생 쓰는 핵심</h3>
+
+<h4>🔹 보기 / 시작 / 종료</h4>
+<table>
+  <tr><th>명령</th><th>의미</th></tr>
+  <tr><td><code>q</code> (Ctrl+d)</td><td>gdb 종료</td></tr>
+  <tr><td><code>l</code> (list)</td><td>주변 소스코드 보기</td></tr>
+  <tr><td><code>l main</code> / <code>l 10</code> / <code>l file.c:func</code></td><td>특정 함수/줄/파일의 소스 보기</td></tr>
+  <tr><td><code>r</code> (run)</td><td>프로그램 실행 시작</td></tr>
+  <tr><td><code>r ARGS</code></td><td>인자와 함께 실행</td></tr>
+  <tr><td><code>r &lt; input.txt</code></td><td>표준입력을 파일로 리다이렉트해서 실행</td></tr>
+</table>
+
+<h4>🔹 중단점 / 감시점</h4>
+<table>
+  <tr><th>명령</th><th>의미</th></tr>
+  <tr><td><code>b 함수</code></td><td>그 함수 시작점에 breakpoint</td></tr>
+  <tr><td><code>b 줄번호</code></td><td>특정 줄에 breakpoint</td></tr>
+  <tr><td><code>b *0x12345678</code></td><td>특정 명령 주소에 breakpoint (저수준 디버깅용)</td></tr>
+  <tr><td><code>b [위치] if 조건</code></td><td>조건부 breakpoint (조건 참일 때만 멈춤)</td></tr>
+  <tr><td><code>watch 변수</code></td><td>그 변수가 변경될 때마다 멈춤</td></tr>
+  <tr><td><code>watch *(int*)0x1234</code></td><td>해당 주소의 int 가 변경될 때마다 멈춤</td></tr>
+  <tr><td><code>watch *(int*)0x1234 == 12</code></td><td>해당 주소의 int 가 12 가 되는 순간 멈춤</td></tr>
+  <tr><td><code>info breakpoints</code> / <code>info watchpoints</code></td><td>현재 등록된 것 모두 보기</td></tr>
+  <tr><td><code>delete ID</code></td><td>특정 ID 의 breakpoint/watchpoint 제거</td></tr>
+</table>
+
+<h4>🔹 실행 / 스텝</h4>
+<table>
+  <tr><th>명령</th><th>의미</th></tr>
+  <tr><td><code>s</code> (step)</td><td>한 줄 실행. 함수 호출이면 <strong>함수 내부로 들어감</strong></td></tr>
+  <tr><td><code>n</code> (next)</td><td>한 줄 실행. 함수 호출이면 <strong>한 줄로 건너뜀(step over)</strong></td></tr>
+  <tr><td><code>s 6</code> / <code>n 6</code></td><td>6줄만큼 진행</td></tr>
+  <tr><td><code>c</code> (continue)</td><td>다음 breakpoint 까지 또는 끝까지 실행 재개</td></tr>
+  <tr><td><code>u</code> (until)</td><td>현재 위치보다 뒤쪽 줄로 갈 때까지 실행 — <strong>루프 탈출</strong>에 유용</td></tr>
+  <tr><td><code>u 위치</code></td><td>지정한 위치/라벨/함수까지 실행 재개</td></tr>
+  <tr><td><code>finish</code></td><td>현재 함수 끝까지 실행 후 호출자로 복귀</td></tr>
+  <tr><td><code>return</code> / <code>return 123</code></td><td>현재 함수를 즉시 종료 (선택적으로 반환값 지정)</td></tr>
+  <tr><td><code>si</code> (stepi)</td><td>기계어 명령 단위로 한 단계 진행 (함수 안으로 들어감)</td></tr>
+  <tr><td><code>ni</code> (nexti)</td><td>기계어 한 단계, 함수 호출이면 통째로 건너뜀</td></tr>
+  <tr><td><code>call 함수(인자)</code></td><td>디버깅 중에 임의의 함수를 호출해 봄</td></tr>
+</table>
+
+<h4>🔹 상태 보기 / 출력</h4>
+<table>
+  <tr><th>명령</th><th>의미</th></tr>
+  <tr><td><code>p 변수</code></td><td>변수 값 출력</td></tr>
+  <tr><td><code>p *((int*)0x1234)</code></td><td>특정 주소의 int 값 출력</td></tr>
+  <tr><td><code>info registers</code></td><td>일반 레지스터 값</td></tr>
+  <tr><td><code>info all-registers</code></td><td>부동소수점/세그먼트 레지스터까지</td></tr>
+  <tr><td><code>info locals</code></td><td>현재 프레임의 지역변수</td></tr>
+  <tr><td><code>bt</code> (backtrace)</td><td>스택 프레임 호출 경로 보기 (가장 최근이 frame#0)</td></tr>
+  <tr><td><code>frame N</code></td><td>N번 프레임으로 이동</td></tr>
+</table>
+
+<h4>🔹 메모리 검사 — <code>x</code> 명령</h4>
+<p>형식: <code>x/[갯수][형식][단위] 주소</code></p>
+<table>
+  <tr><th>옵션</th><th>의미</th></tr>
+  <tr><td>형식</td><td><code>d</code> signed int, <code>u</code> unsigned int, <code>x</code> hex, <code>o</code> oct, <code>t</code> bin, <code>c</code> char, <code>s</code> string, <code>f</code> float, <code>i</code> assembly</td></tr>
+  <tr><td>단위</td><td><code>b</code> 1byte, <code>h</code> 2bytes, <code>w</code> 4bytes, <code>g</code> 8bytes</td></tr>
+  <tr><td>예시</td><td><code>x/100bx 0x1234</code> → 0x1234 부터 100바이트를 1바이트씩 hex 로</td></tr>
+  <tr><td>예시</td><td><code>x/s 0x1234</code> → 그 주소를 NULL 종료 문자열로 해석</td></tr>
+  <tr><td>예시</td><td><code>x/wd 0x1234</code> → 4바이트 정수 한 개</td></tr>
+  <tr><td>예시</td><td><code>x/gd 0x1234</code> → 8바이트 정수 한 개</td></tr>
+</table>
+
+<h4>🔹 디스어셈블</h4>
+<pre>(gdb) disassemble main
+(gdb) disassemble 0x1000, 0x1234   <span class="c"># 주소 범위</span></pre>
+
+<div class="callout">
+  🧠 <strong>step vs next</strong>를 한 번에 외우는 비유:
+  step 은 “문이 보이면 들어간다(into)”, next 는 “문이 보여도 그냥 지나간다(over)”.
+</div>
+
+<hr class="sep">
+<h3>⑤ Single-module → Multi-module Programming</h3>
+<p>단일 파일에 모든 함수를 다 적으면:</p>
+<ul class="clean">
+  <li><strong>재사용 어려움:</strong> <code>operation_plus</code> 함수가 다른 프로그램에서도 필요하면 매번 복사?</li>
+  <li><strong>협업 어려움:</strong> 함수 수백 개를 여러 사람이 한 파일에 작업하면 충돌 천국.</li>
+</ul>
+<p>그래서 모듈화(<span class="eng">modularity</span>):</p>
+<ul class="clean">
+  <li>기능별로 <code>.c</code> 파일을 나누고, 외부에 공개할 인터페이스만 <code>.h</code> 헤더에 적습니다.</li>
+  <li>각 <code>.c</code> 를 <code>gcc -c</code> 로 따로 컴파일 → <code>.o</code> (오브젝트 파일).</li>
+  <li>마지막에 <code>gcc</code> 로 <code>.o</code> 들을 <strong>링크</strong>해 실행 파일을 만듦.</li>
+</ul>
+
+<h4>헤더 파일에 들어가는 것</h4>
+<ul class="clean">
+  <li><strong>함수 프로토타입(prototype):</strong> <code>int operation_plus(int, int);</code></li>
+  <li><strong>상수 정의:</strong> <code>#define MY_PI 3.141592</code></li>
+  <li><strong>매크로 함수:</strong> <code>#define MIN(X,Y) ((X)&lt;(Y)?(X):(Y))</code></li>
+  <li><strong>extern</strong> 으로 다른 파일의 전역 변수를 참조</li>
+</ul>
+
+<h4>예시 빌드 흐름</h4>
+<pre><span class="c"># 1) 모듈별로 컴파일 (-c → .o 만 만들고 링크 안 함)</span>
+$ gcc -c operation_main.c   <span class="c"># → operation_main.o</span>
+$ gcc -c operation_plus.c   <span class="c"># → operation_plus.o</span>
+$ gcc -c operation_minus.c  <span class="c"># → operation_minus.o</span>
+
+<span class="c"># 2) 링크 — 실행 파일 생성</span>
+$ gcc -o operation operation_main.o operation_plus.o operation_minus.o
+$ ./operation 3 + 4
+7</pre>
+
+<div class="callout">
+  📌 <strong>웹프로그래밍과 비교:</strong> JS에서도 <code>import/export</code> 로 파일을 쪼개죠? 같은 모듈화 정신입니다.
+  C 에서는 <code>.h</code> 가 “이 모듈이 외부에 약속하는 API”, <code>.c</code> 가 “그 약속의 구현”입니다.
+</div>
+
+<!-- ===== QUIZ for Lec10 ===== -->
+<div class="quiz">
+  <h4>🧪 Lecture 10 퀴즈 — 14문제</h4>
+
+  <div class="q"><span class="num">Q1.</span> <strong>(쉬움)</strong> <code>gcc</code> 에 어떤 옵션을 줘야 GDB 디버깅 정보가 실행파일에 포함될까요?
+    <div class="opts">
+      <label><input type="radio" name="l10q1"> ① <code>-O2</code></label>
+      <label><input type="radio" name="l10q1"> ② <code>-g</code></label>
+      <label><input type="radio" name="l10q1"> ③ <code>-Wall</code></label>
+      <label><input type="radio" name="l10q1"> ④ <code>-c</code></label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ②. <code>-g</code> 가 디버그 심볼을 박아줍니다. 단, 소스 코드 자체가 들어가는 건 아니에요(매핑 정보만).</div>
+  </div>
+
+  <div class="q"><span class="num">Q2.</span> <strong>(쉬움)</strong> GDB 에서 <strong>현재 함수의 끝까지 실행하고 호출자로 돌아오는</strong> 명령은?
+    <div class="opts">
+      <label><input type="radio" name="l10q2"> ① <code>c</code></label>
+      <label><input type="radio" name="l10q2"> ② <code>n</code></label>
+      <label><input type="radio" name="l10q2"> ③ <code>finish</code></label>
+      <label><input type="radio" name="l10q2"> ④ <code>return</code></label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ③. <code>finish</code> 는 함수의 나머지 실행을 다 끝낸 뒤 호출자로 복귀. <code>return</code> 은 실행하지 <strong>않고</strong> 바로 빠져나옵니다.</div>
+  </div>
+
+  <div class="q"><span class="num">Q3.</span> <strong>(쉬움)</strong> <code>s</code> 와 <code>n</code> 의 차이는?
+    <div class="opts">
+      <label><input type="radio" name="l10q3"> ① <code>s</code> 는 함수 호출 시 그 함수 <strong>안으로 들어간다</strong>; <code>n</code> 은 한 줄로 <strong>건너뛴다</strong></label>
+      <label><input type="radio" name="l10q3"> ② 반대로다</label>
+      <label><input type="radio" name="l10q3"> ③ 둘은 같다</label>
+      <label><input type="radio" name="l10q3"> ④ <code>s</code> 는 속도가 빠르다</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ①. step into vs step over.</div>
+  </div>
+
+  <div class="q"><span class="num">Q4.</span> <strong>(중)</strong> 다음 중 “감시점(watchpoint)”과 가장 가까운 설명은?
+    <div class="opts">
+      <label><input type="radio" name="l10q4"> ① 특정 줄에 도달하면 멈춘다</label>
+      <label><input type="radio" name="l10q4"> ② 특정 변수/메모리의 값이 변할 때마다 멈춘다</label>
+      <label><input type="radio" name="l10q4"> ③ 함수 호출 횟수를 세준다</label>
+      <label><input type="radio" name="l10q4"> ④ 모든 시그널을 무시한다</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ②. <code>watch x</code> = x 값 변경 시 정지.</div>
+  </div>
+
+  <div class="q"><span class="num">Q5.</span> <strong>(중)</strong> <code>x/wd 0x4000</code> 의 의미로 옳은 것은?
+    <div class="opts">
+      <label><input type="radio" name="l10q5"> ① 주소 0x4000 의 1바이트를 hex 로 출력</label>
+      <label><input type="radio" name="l10q5"> ② 주소 0x4000 의 4바이트를 10진수로 출력</label>
+      <label><input type="radio" name="l10q5"> ③ 주소 0x4000 부터 4바이트짜리를 100개 출력</label>
+      <label><input type="radio" name="l10q5"> ④ 주소 0x4000 의 문자열을 출력</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ②. <code>w</code> = 4byte unit, <code>d</code> = signed decimal.</div>
+  </div>
+
+  <div class="q"><span class="num">Q6.</span> <strong>(중)</strong> 단답형: SIGSEGV 같은 비정상 종료 직전의 메모리 상태를 파일로 저장한 것을 무엇이라 부르나요?
+    <button class="showbtn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="ans">정답: <strong>coredump</strong> (core 파일). <code>ulimit -c unlimited</code> 로 크기 제한 해제 후 생성됩니다.</div>
+  </div>
+
+  <div class="q"><span class="num">Q7.</span> <strong>(중)</strong> 아래 GDB 세션의 빈칸에 들어갈 명령은?
+<pre>(gdb) b main
+(gdb) r
+... 멈춤 ...
+(gdb) ____    <span class="c"># 호출 스택을 보고 싶다</span>
+#0  main () at hello.c:4</pre>
+    <div class="opts">
+      <label><input type="radio" name="l10q7"> ① <code>info locals</code></label>
+      <label><input type="radio" name="l10q7"> ② <code>bt</code></label>
+      <label><input type="radio" name="l10q7"> ③ <code>l</code></label>
+      <label><input type="radio" name="l10q7"> ④ <code>p</code></label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ②. <code>bt</code> (backtrace) = 호출 스택 보기.</div>
+  </div>
+
+  <div class="q"><span class="num">Q8.</span> <strong>(쉬움)</strong> 메모리에서 해제한 포인터를 그 후에도 접근하는 버그를 무엇이라 부르나요?
+    <div class="opts">
+      <label><input type="radio" name="l10q8"> ① double-free</label>
+      <label><input type="radio" name="l10q8"> ② use-after-free</label>
+      <label><input type="radio" name="l10q8"> ③ buffer overflow</label>
+      <label><input type="radio" name="l10q8"> ④ stack smashing</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ②. use-after-free. double-free 는 “같은 포인터를 두 번 free”.</div>
+  </div>
+
+  <div class="q"><span class="num">Q9.</span> <strong>(중)</strong> 헤더 파일(<code>.h</code>) 에 “일반적으로” 들어가지 <strong>않는</strong> 것은?
+    <div class="opts">
+      <label><input type="radio" name="l10q9"> ① 함수 프로토타입</label>
+      <label><input type="radio" name="l10q9"> ② #define 상수</label>
+      <label><input type="radio" name="l10q9"> ③ extern 선언</label>
+      <label><input type="radio" name="l10q9"> ④ 무거운 함수 본문 구현</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ④. 구현은 <code>.c</code> 에. 헤더에 큰 본문을 넣으면 모든 포함 파일에 코드가 복제되어 컴파일 시간이 폭증하고 multiple definition 에러가 나기 쉽습니다.</div>
+  </div>
+
+  <div class="q"><span class="num">Q10.</span> <strong>(중)</strong> 단답형: <code>gcc -c</code> 는 어디까지 수행할까요? (단계 이름으로 답하기)
+    <button class="showbtn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="ans">정답: <strong>전처리 → 컴파일 → 어셈블까지</strong>. 즉 <code>.o</code> 생성까지만 하고 링크는 안 함.</div>
+  </div>
+
+  <div class="q"><span class="num">Q11.</span> <strong>(중상)</strong> 다음 명령의 의미는?
+<pre>(gdb) b mylib.c:42 if x == 0</pre>
+    <div class="opts">
+      <label><input type="radio" name="l10q11"> ① 42번 줄에서 x를 0으로 설정한다</label>
+      <label><input type="radio" name="l10q11"> ② <code>mylib.c</code>의 42번 줄에 “x가 0일 때만” 멈추는 조건부 breakpoint를 건다</label>
+      <label><input type="radio" name="l10q11"> ③ x가 0이 될 때까지 42번 줄을 반복 실행한다</label>
+      <label><input type="radio" name="l10q11"> ④ 42개의 breakpoint를 건다</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ②. 조건부 breakpoint. 무한 루프 디버깅이나 “특정 입력일 때만 죽는” 버그를 잡을 때 매우 유용.</div>
+  </div>
+
+  <div class="q"><span class="num">Q12.</span> <strong>(중상)</strong> <code>info locals</code> 와 <code>info registers</code> 의 차이는?
+    <div class="opts">
+      <label><input type="radio" name="l10q12"> ① 둘은 동일하다</label>
+      <label><input type="radio" name="l10q12"> ② <code>info locals</code>=현재 프레임의 지역 변수, <code>info registers</code>=CPU 레지스터 값</label>
+      <label><input type="radio" name="l10q12"> ③ <code>info locals</code>=전역 변수, <code>info registers</code>=메모리 주소</label>
+      <label><input type="radio" name="l10q12"> ④ <code>info locals</code>=함수 호출 스택, <code>info registers</code>=하드웨어 인터럽트</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ②.</div>
+  </div>
+
+  <div class="q"><span class="num">Q13.</span> <strong>(중상)</strong> 다음 중 “루프 안에서 무한 루프 같은 곳”을 빠르게 빠져나가는 가장 적절한 GDB 명령은?
+    <div class="opts">
+      <label><input type="radio" name="l10q13"> ① <code>s</code></label>
+      <label><input type="radio" name="l10q13"> ② <code>n</code></label>
+      <label><input type="radio" name="l10q13"> ③ <code>until</code></label>
+      <label><input type="radio" name="l10q13"> ④ <code>watch</code></label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ③. <code>until</code> 은 “현재 위치보다 뒤쪽 줄에 도달할 때까지” 실행하므로 현재 루프 바깥으로 점프하기 좋습니다.</div>
+  </div>
+
+  <div class="q"><span class="num">Q14.</span> <strong>(중상)</strong> 다중 모듈 빌드에서 <strong>링크 단계</strong>를 담당하는 것은?
+    <div class="opts">
+      <label><input type="radio" name="l10q14"> ① <code>cpp</code></label>
+      <label><input type="radio" name="l10q14"> ② <code>cc1</code></label>
+      <label><input type="radio" name="l10q14"> ③ <code>as</code></label>
+      <label><input type="radio" name="l10q14"> ④ <code>ld</code> (또는 <code>collect2</code>)</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ④. <code>ld</code> 가 여러 <code>.o</code> + 라이브러리를 합쳐 실행 파일을 만듭니다.</div>
+  </div>
+</div>
+
+<!-- ===================== LECTURE 11 ===================== -->
+<h2 id="lec11">📘 Lecture 11 — Makefile & Open-Source Build</h2>
+<p class="sub">자료: <code>12_Lec11 - gdb and make (r3).pdf</code> (19쪽)</p>
+
+<div class="card">
+<h3>🧭 한눈에 보기</h3>
+<ul class="clean">
+  <li><span class="kw">make</span> 유틸리티가 무엇이고 왜 필요한지.</li>
+  <li><span class="kw">Makefile</span> 의 기본 문법: <em>target / dependency / command</em>.</li>
+  <li><span class="kw">의존성 트리(dependency tree)</span>가 어떻게 만들어지고, make 가 “바뀐 것만 다시 빌드”하는 원리.</li>
+  <li>오픈소스 프로젝트의 일반적인 구조와 <code>./configure &amp;&amp; make &amp;&amp; sudo make install</code> 파이프라인.</li>
+  <li>자주 만나는 빌드 에러 4가지와 해결법.</li>
+</ul>
+</div>
+
+<h3>① make 가 뭐길래?</h3>
+<p>🍳 <strong>비유:</strong> 라면 끓일 때 “물 끓이기 → 면 넣기 → 스프 넣기 → 계란” 순서를 외워두는 메모지가 <span class="kw">Makefile</span> 이고, 그 메모지대로 실행해주는 요리사가 <code>make</code> 입니다.</p>
+<ul class="clean">
+  <li><span class="kw">build automation tool</span> — 여러 소스 파일을 어떤 순서로, 어떤 명령으로 빌드할지 자동화.</li>
+  <li>“어느 파일이 바뀌었는가”를 <strong>수정 시간(modification time)</strong>으로 판별해, <strong>바뀐 것만</strong> 다시 컴파일. 큰 프로젝트일수록 시간 절약.</li>
+</ul>
+
+<h3>② Makefile 기본 문법</h3>
+<pre>targetList: dependencyList
+&lt;TAB&gt;commandList</pre>
+<ul class="clean">
+  <li><strong>targetList:</strong> 만들고 싶은 결과물(<code>.o</code>, 실행파일 등). 보통 한 줄에 한 개.</li>
+  <li><strong>dependencyList:</strong> 그 target 을 만들기 위해 필요한 파일들. 이 파일들 중 하나라도 target 보다 최근에 바뀌었으면 다시 만든다.</li>
+  <li><strong>commandList:</strong> 실제로 실행할 명령들. <strong>반드시 줄 맨 앞이 탭(TAB) 문자</strong>여야 합니다. 스페이스 8칸으로 들여쓰면 “missing separator” 에러가 나요.</li>
+</ul>
+<pre>$ make                <span class="c"># 현재 폴더의 Makefile (또는 makefile) 사용</span>
+$ make -f mymakefile  <span class="c"># 특정 이름의 makefile 사용</span></pre>
+
+<h3>③ 예시 — operation 프로젝트</h3>
+<p>아래 트리는 다중 모듈(<code>main</code>, <code>plus</code>, <code>minus</code>)로 구성된 “operation” 프로그램입니다.</p>
+<pre>                 operation (executable)
+               /            |            \
+   main.o              plus.o              minus.o
+    /  \              /  \                /  \
+ main.c main.h     plus.c plus.h    minus.c minus.h</pre>
+
+<pre><span class="c"># Makefile</span>
+operation: operation_main.o operation_plus.o operation_minus.o
+	gcc -o operation operation_main.o operation_plus.o operation_minus.o
+
+operation_main.o: operation_main.c operation_main.h
+	gcc -c operation_main.c
+
+operation_plus.o: operation_plus.c operation_plus.h
+	gcc -c operation_plus.c
+
+operation_minus.o: operation_minus.c operation_minus.h
+	gcc -c operation_minus.c
+
+<span class="c"># 청소용 가짜 target</span>
+clean:
+	rm -f *.o operation</pre>
+<div class="callout warn">
+  💡 <strong>첫 번째 target</strong>이 <strong>트리의 root</strong>(최종 결과물)여야 합니다. <code>make</code> 만 쳤을 때 기본으로 이 첫 번째 target 을 만들기 때문.
+</div>
+
+<h3>④ make 가 “바뀐 것만” 다시 빌드하는 원리</h3>
+<p><code>make</code> 는 의존성 트리를 <strong>리프(leaf)부터 루트(root)로</strong> 거슬러 올라가며 각 노드의 수정 시간을 비교합니다. <em>자식 노드가 부모 노드보다 새로 수정되었다면</em> → 부모를 다시 만듭니다.</p>
+<table>
+  <tr><th>케이스</th><th>동작</th></tr>
+  <tr><td>plus.c 만 수정</td><td>plus.o 다시 만듦 → 그것이 operation 보다 새로워졌으므로 링크도 다시 수행</td></tr>
+  <tr><td>아무 것도 안 바뀜</td><td>"Nothing to be done" 출력하고 끝</td></tr>
+  <tr><td>main.h 수정</td><td>main.o 를 새로 컴파일 → 링크 다시 수행</td></tr>
+</table>
+<div class="callout">
+  🔍 <strong>이산수학 수업과 연결:</strong> 의존성 트리는 사실 <span class="kw">DAG(Directed Acyclic Graph)</span> 이며, make 가 빌드 순서를 정하는 건 <span class="kw">위상 정렬(topological sort)</span> 의 일종이라고 생각해도 좋습니다.
+</div>
+
+<hr class="sep">
+
+<h3>⑤ 오픈소스 프로젝트 빌드 — 한 줄을 진짜로 이해해보기</h3>
+<pre>$ git clone &lt;repo&gt; &amp;&amp; cd &lt;repo&gt;
+$ ./configure &amp;&amp; make &amp;&amp; sudo make install</pre>
+<p>이 한 줄을 단계별로 뜯어봅시다.</p>
+
+<h4>📦 1) 소스 받기 — 여러 방법</h4>
+<table>
+  <tr><th>방법</th><th>특징</th><th>예시</th></tr>
+  <tr><td><code>git clone</code></td><td>전체 버전 관리 이력 포함. PR 보낼 때 필수</td><td><code>git clone https://github.com/user/repo.git</code></td></tr>
+  <tr><td>shallow clone</td><td>최근 N개 커밋만 — 시간/용량 절약. 1회용 빌드</td><td><code>git clone --depth 1 ...</code></td></tr>
+  <tr><td><code>wget</code>/<code>curl</code> + tarball</td><td>릴리스 압축본. git 불필요</td><td><code>wget ...foo-1.2.3.tar.gz &amp;&amp; tar xzf ...</code></td></tr>
+  <tr><td>GitHub release archive</td><td>특정 tag/release 의 ZIP/tar — <strong>재현 가능한 빌드</strong></td><td><code>curl -L .../tags/v1.2.3.tar.gz | tar xz</code></td></tr>
+</table>
+
+<h4>📁 2) 흔한 폴더 구조</h4>
+<pre>myproject/
+├── configure         <span class="c"># 환경 검사 후 Makefile 생성 (autoconf 결과물)</span>
+├── configure.ac      <span class="c"># configure 의 “원본 레시피” (M4 매크로)</span>
+├── Makefile.in       <span class="c"># Makefile 템플릿</span>
+├── Makefile.am       <span class="c"># automake 가 읽는 상위 레벨 정의</span>
+├── src/              <span class="c"># 핵심 소스</span>
+├── include/          <span class="c"># 공개 헤더</span>
+├── docs/             <span class="c"># 문서, man 페이지 원본</span>
+├── tests/            <span class="c"># 테스트 (make check)</span>
+├── README.md         <span class="c"># 프로젝트 개요 — 가장 먼저 읽기</span>
+├── INSTALL           <span class="c"># 설치 절차 상세</span>
+├── LICENSE           <span class="c"># 라이선스</span>
+└── CHANGELOG         <span class="c"># 변경 이력</span></pre>
+
+<h4>🔧 3) Autoconf / Autotools 이해</h4>
+<p>왜 <code>./configure</code> 가 필요한가? — <strong>이식성(portability)</strong> 때문입니다. 리눅스/macOS/BSD/Solaris 마다 헤더 위치, 라이브러리 이름, 컴파일러가 다 다릅니다. Autoconf 는 빌드 환경을 자동 점검해서 <em>그 환경에 맞는 Makefile</em>을 만들어줍니다.</p>
+<pre>configure.ac  ──autoconf──▶  configure  ──사용자 시스템 점검──▶  Makefile
+(매크로 정의)              (실행 가능한 쉘 스크립트)      (Makefile.in 템플릿 + 점검결과 = 진짜 Makefile)</pre>
+<table>
+  <tr><th>도구</th><th>역할</th></tr>
+  <tr><td><code>autoconf</code></td><td><code>configure</code> 스크립트 생성</td></tr>
+  <tr><td><code>automake</code></td><td><code>Makefile.in</code> 템플릿 생성</td></tr>
+  <tr><td><code>libtool</code></td><td>공유 라이브러리 빌드</td></tr>
+  <tr><td><code>autoreconf</code></td><td>위 도구들을 한 번에 다 돌려줌 (라이프 세이버)</td></tr>
+</table>
+
+<h4>🚀 4) 빌드 파이프라인 — ./configure → make → make install</h4>
+<pre><span class="c"># 4-1) configure — 환경 점검 + Makefile 생성</span>
+$ ./configure --prefix=/usr/local
+$ ./configure --prefix=<span class="v">$HOME</span>/.local       <span class="c"># 사용자 폴더에만 설치</span>
+$ ./configure --help                          <span class="c"># 어떤 옵션이 가능한지</span>
+<span class="c">  주요 옵션: --prefix=DIR, --bindir=DIR, CC=clang, CFLAGS="..."</span>
+
+<span class="c"># 4-2) make — Makefile 기반 빌드</span>
+$ make
+$ make -j<span class="v">$(nproc)</span>                          <span class="c"># 코어 수만큼 병렬 빌드 (빠름!)</span>
+$ make check                                  <span class="c"># 테스트 실행</span>
+
+<span class="c"># 4-3) make install — 시스템에 설치</span>
+$ sudo make install                           <span class="c"># /usr/local 같은 시스템 경로면 sudo 필요</span>
+$ sudo make uninstall                         <span class="c"># (지원하는 경우) 제거</span></pre>
+
+<h3>⑥ 자주 만나는 빌드 에러 4가지</h3>
+
+<h4>Error #1 — “package not found”</h4>
+<pre>configure: error: Package requirements (openssl &gt;= 1.1) were not met:
+No package 'openssl' found</pre>
+<p><strong>해결:</strong> 의존 패키지 설치. <code>apt-cache search openssl</code> 로 이름 찾고 <code>sudo apt install libssl-dev pkg-config</code> 처럼 dev 패키지를 설치. (보통 <code>-dev</code> 접미사가 붙은 게 헤더/링크 정보 포함)</p>
+
+<h4>Error #2 — <code>./configure</code> 가 없거나 실행 권한이 없음</h4>
+<pre>bash: ./configure: No such file or directory
+bash: ./configure: Permission denied</pre>
+<p><strong>해결:</strong> <code>configure.ac</code> 가 있다면</p>
+<pre>$ autoreconf -ivf &amp;&amp; chmod +x ./configure</pre>
+<p><code>autoreconf -ivf</code> = autoconf/automake/libtool 을 자동 실행해서 <code>configure</code> 를 생성합니다.</p>
+
+<h4>Error #3 — “undefined reference to ___”</h4>
+<pre>main.o: undefined reference to `sqrt'</pre>
+<p><strong>해결:</strong> <span class="kw">링커 에러(linker error)</span> — 라이브러리 누락. <code>-lm</code> 처럼 필요한 <code>-l라이브러리</code> 를 추가.</p>
+
+<h4>Error #4 — “fatal error: ___.h: No such file or directory”</h4>
+<pre>fatal error: zlib.h: No such file or directory</pre>
+<p><strong>해결:</strong></p>
+<ul class="clean">
+  <li>헤더 경로 추가: <code>-I/path/to/include</code></li>
+  <li>또는 dev 패키지 설치: <code>sudo apt install zlib1g-dev</code></li>
+</ul>
+
+<h3>⑦ 빌드 에러 디버깅 일반 순서</h3>
+<ol>
+  <li><strong>스크롤 위로</strong> 올려서 <strong>가장 처음 나온</strong> 에러 메시지를 찾는다. (뒤쪽 에러는 보통 첫 에러의 “2차 피해”)</li>
+  <li>파일명과 줄 번호를 확인. <code>Makefile</code> / <code>configure</code> / 헤더 / 소스 어디서 났는가?</li>
+  <li>에러 메시지를 그대로 검색하거나 의미를 해석. 위 4가지 패턴이면 위 해결책 적용.</li>
+  <li>더 자세히 보고 싶으면 <code>make V=1</code> 또는 <code>make VERBOSE=1</code> 로 실행. configure 실패면 <code>config.log</code> 확인.</li>
+</ol>
+
+<!-- ===== QUIZ for Lec11 ===== -->
+<div class="quiz">
+  <h4>🧪 Lecture 11 퀴즈 — 14문제</h4>
+
+  <div class="q"><span class="num">Q1.</span> <strong>(쉬움)</strong> Makefile 의 command 줄을 들여쓸 때 반드시 사용해야 하는 문자는?
+    <div class="opts">
+      <label><input type="radio" name="l11q1"> ① 스페이스 4칸</label>
+      <label><input type="radio" name="l11q1"> ② 스페이스 8칸</label>
+      <label><input type="radio" name="l11q1"> ③ TAB 한 개</label>
+      <label><input type="radio" name="l11q1"> ④ 어떤 공백이든 OK</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ③. TAB 이 아니면 <em>“missing separator”</em> 에러가 납니다. 초보자 단골 함정이에요.</div>
+  </div>
+
+  <div class="q"><span class="num">Q2.</span> <strong>(쉬움)</strong> <code>make</code> 명령에 아무 인자도 안 주면 Makefile 의 어느 target 이 실행되나요?
+    <div class="opts">
+      <label><input type="radio" name="l11q2"> ① 마지막 target</label>
+      <label><input type="radio" name="l11q2"> ② <code>all</code> 이라는 이름의 target 만</label>
+      <label><input type="radio" name="l11q2"> ③ 첫 번째 target</label>
+      <label><input type="radio" name="l11q2"> ④ 알파벳 순으로 가장 빠른 target</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ③. 그래서 보통 첫 번째 target 을 <code>all</code> 또는 최종 결과물로 둡니다.</div>
+  </div>
+
+  <div class="q"><span class="num">Q3.</span> <strong>(쉬움)</strong> 다음 중 <code>make</code> 가 <strong>다시 빌드를 결정하는 기준</strong>은?
+    <div class="opts">
+      <label><input type="radio" name="l11q3"> ① 파일 크기</label>
+      <label><input type="radio" name="l11q3"> ② 파일 수정 시간(modification time)</label>
+      <label><input type="radio" name="l11q3"> ③ 파일 권한</label>
+      <label><input type="radio" name="l11q3"> ④ 파일 이름의 알파벳 순서</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ②. 자식(의존 파일) 의 mtime 이 부모(target) 의 mtime 보다 새로우면 다시 빌드.</div>
+  </div>
+
+  <div class="q"><span class="num">Q4.</span> <strong>(중)</strong> 다음 Makefile 에서 <code>make</code> 만 쳤을 때 실행되는 명령들의 <strong>순서</strong>는?
+<pre>app: main.o util.o
+	gcc -o app main.o util.o
+main.o: main.c
+	gcc -c main.c
+util.o: util.c
+	gcc -c util.c</pre>
+    <div class="opts">
+      <label><input type="radio" name="l11q4"> ① gcc -o app, gcc -c main.c, gcc -c util.c</label>
+      <label><input type="radio" name="l11q4"> ② gcc -c main.c, gcc -c util.c, gcc -o app</label>
+      <label><input type="radio" name="l11q4"> ③ gcc -c util.c, gcc -c main.c, gcc -o app</label>
+      <label><input type="radio" name="l11q4"> ④ ② 또는 ③ 중 하나 (의존성 만족하면 순서 무관)</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ④. 의존성만 만족하면 <code>.o</code> 둘 중 어느 게 먼저든 OK. 그 다음 마지막에 링크. (병렬 빌드에서는 동시에 진행되기도 합니다.)</div>
+  </div>
+
+  <div class="q"><span class="num">Q5.</span> <strong>(중)</strong> 단답형: 사용자가 사용하는 시스템의 CPU 코어 수만큼 병렬로 빌드하라는 옵션은?
+    <button class="showbtn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="ans">정답: <code>-j$(nproc)</code> (예: <code>make -j$(nproc)</code>). <code>-j</code> 만 쓰면 무제한 병렬이라 위험합니다.</div>
+  </div>
+
+  <div class="q"><span class="num">Q6.</span> <strong>(중)</strong> <code>./configure --prefix=/usr/local</code> 의 의미로 가장 정확한 것은?
+    <div class="opts">
+      <label><input type="radio" name="l11q6"> ① <code>/usr/local</code> 에 있는 컴파일러를 사용한다</label>
+      <label><input type="radio" name="l11q6"> ② 빌드 결과물을 <code>make install</code> 시 <code>/usr/local</code> 아래로 설치하도록 Makefile 을 만든다</label>
+      <label><input type="radio" name="l11q6"> ③ <code>/usr/local</code> 에서만 동작하도록 잠근다</label>
+      <label><input type="radio" name="l11q6"> ④ 빌드 속도를 빠르게 한다</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ②. <code>--prefix</code> = 설치 루트. <code>$HOME/.local</code> 처럼 개인 폴더로 잡으면 <code>sudo</code> 없이 설치 가능.</div>
+  </div>
+
+  <div class="q"><span class="num">Q7.</span> <strong>(중)</strong> 단답형: <code>configure.ac</code> 만 있고 <code>configure</code> 스크립트가 없을 때, 그것을 자동으로 만들어 주는 한 줄 명령은?
+    <button class="showbtn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="ans">정답: <code>autoreconf -ivf</code>. autoconf/automake/libtool 을 적절한 순서로 다 호출해 줍니다.</div>
+  </div>
+
+  <div class="q"><span class="num">Q8.</span> <strong>(중)</strong> 다음 에러의 가장 흔한 원인은?
+<pre>main.o: undefined reference to `sqrt'</pre>
+    <div class="opts">
+      <label><input type="radio" name="l11q8"> ① 헤더 파일이 없음</label>
+      <label><input type="radio" name="l11q8"> ② <code>-lm</code> 으로 수학 라이브러리를 링크하지 않음</label>
+      <label><input type="radio" name="l11q8"> ③ <code>sqrt</code> 매크로가 정의되지 않음</label>
+      <label><input type="radio" name="l11q8"> ④ <code>sqrt</code> 가 deprecated 됨</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ②. <span class="kw">linker error</span> 의 전형. <code>gcc main.c -lm</code> 처럼 라이브러리를 추가.</div>
+  </div>
+
+  <div class="q"><span class="num">Q9.</span> <strong>(중)</strong> 다음 에러의 해결로 가장 적절한 것은?
+<pre>fatal error: zlib.h: No such file or directory</pre>
+    <div class="opts">
+      <label><input type="radio" name="l11q9"> ① <code>-lzlib</code> 추가</label>
+      <label><input type="radio" name="l11q9"> ② <code>sudo apt install zlib1g-dev</code> 또는 <code>-I/path/to/include</code> 추가</label>
+      <label><input type="radio" name="l11q9"> ③ Makefile 첫 줄을 다시 쓴다</label>
+      <label><input type="radio" name="l11q9"> ④ 컴파일러를 재설치</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ②. 헤더 파일이 안 보이는 것이므로 <strong>dev 패키지 설치</strong> 또는 <strong>헤더 경로 추가</strong>.</div>
+  </div>
+
+  <div class="q"><span class="num">Q10.</span> <strong>(중상)</strong> 의존성 트리에서 make 가 빌드 여부를 결정하는 비교는?
+    <div class="opts">
+      <label><input type="radio" name="l11q10"> ① target 의 mtime &gt; dependency 의 mtime → 다시 빌드</label>
+      <label><input type="radio" name="l11q10"> ② target 의 mtime &lt; dependency 의 mtime → 다시 빌드</label>
+      <label><input type="radio" name="l11q10"> ③ 항상 다시 빌드</label>
+      <label><input type="radio" name="l11q10"> ④ 절대 다시 빌드 안 함</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ②. “의존 파일이 target 보다 최근에 수정됐다면” 새로 만들어야 함.</div>
+  </div>
+
+  <div class="q"><span class="num">Q11.</span> <strong>(중상)</strong> 다음 중 <strong>Autotools 도구</strong>가 <strong>아닌</strong> 것은?
+    <div class="opts">
+      <label><input type="radio" name="l11q11"> ① autoconf</label>
+      <label><input type="radio" name="l11q11"> ② automake</label>
+      <label><input type="radio" name="l11q11"> ③ libtool</label>
+      <label><input type="radio" name="l11q11"> ④ valgrind</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ④. <code>valgrind</code> 는 메모리 디버깅 도구이지 빌드 도구가 아닙니다.</div>
+  </div>
+
+  <div class="q"><span class="num">Q12.</span> <strong>(중상)</strong> 단답형: 오픈소스 프로젝트를 받자마자 가장 먼저 읽어야 하는 두 파일은?
+    <button class="showbtn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="ans">정답: <code>README</code> 와 <code>INSTALL</code>. 각각 “이 프로젝트가 뭐 하는 건지”와 “어떻게 빌드/설치하는지”를 담고 있습니다. (라이선스 확인은 <code>LICENSE</code>)</div>
+  </div>
+
+  <div class="q"><span class="num">Q13.</span> <strong>(중상)</strong> 빌드 실패 디버깅 절차로 가장 권장되는 순서는?
+    <div class="opts">
+      <label><input type="radio" name="l11q13"> ① 마지막 줄부터 읽고 컴파일러를 재설치</label>
+      <label><input type="radio" name="l11q13"> ② 가장 처음 나온 에러를 찾고 → 파일/줄 번호 확인 → 의미 해석 → 필요시 <code>make V=1</code></label>
+      <label><input type="radio" name="l11q13"> ③ 무작위로 옵션을 바꿔본다</label>
+      <label><input type="radio" name="l11q13"> ④ <code>make clean</code> 만 반복한다</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ②. 첫 에러가 진짜 원인일 가능성이 가장 높습니다. 뒤쪽 에러는 “2차 피해” 일 때가 많아요.</div>
+  </div>
+
+  <div class="q"><span class="num">Q14.</span> <strong>(중상)</strong> 다음 Makefile 의 잘못된 점은?
+<pre>app: main.o
+&nbsp;&nbsp;&nbsp;&nbsp;gcc -o app main.o
+main.o: main.c
+&nbsp;&nbsp;&nbsp;&nbsp;gcc -c main.c</pre>
+    <div class="opts">
+      <label><input type="radio" name="l11q14"> ① target 이름이 잘못됨</label>
+      <label><input type="radio" name="l11q14"> ② 명령 들여쓰기가 <strong>스페이스</strong>로 되어 있어 <em>missing separator</em> 에러가 남 (TAB 이어야 함)</label>
+      <label><input type="radio" name="l11q14"> ③ <code>gcc</code> 옵션이 잘못됨</label>
+      <label><input type="radio" name="l11q14"> ④ <code>app</code> 의 의존성이 빠짐</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ②. Makefile 의 명령 줄 들여쓰기는 반드시 TAB 한 개여야 합니다. 시험 단골 함정.</div>
+  </div>
+</div>
+
+<!-- ===================== HOMEWORK 09 ===================== -->
+<h2 id="hw09">📝 Homework 09 — Cross Compilation (RISC-V)</h2>
+<p class="sub">자료: <code>2026 HW09.pdf</code> (7쪽) · 만점 100점 (5 + 40 + 40 + 15)</p>
+
+<div class="callout danger">
+  ⛔ <strong>과제 정책 (HW09.pdf 마지막 페이지):</strong>
+  “All errors that you will face in the homework should be resolved by yourself.
+  <strong>No TA help, No LLM help.</strong> But you can Google it.”
+  <br><br>
+  ✏️ 따라서 이 학습서는 <strong>완성된 답안</strong>이 아니라,
+  <strong>개념 이해 + 어디서부터 손대야 할지에 대한 가이드</strong>를 제공합니다.
+  실제 빌드/스크립트는 직접 시도하면서 막히는 부분만 검색·디버깅하세요.
+  특히 <code>env-riscv-gcc.sh</code> 의 정확한 한 줄까지 받아쓰면 정책 위반입니다.
+</div>
+
+<details class="eng" open><summary>🇬🇧 English (원문 요약)</summary>
+<ul>
+  <li><strong>Concept:</strong> <em>Cross-compilation</em> = generating executables for a <em>target</em> architecture that differs from the <em>host</em> (the machine where the compiler runs). i.e., <code>build machine != execution machine</code>.</li>
+  <li><strong>Example:</strong> host = x86-64 Linux PC, target = RISC-V (or ARM64) embedded board.</li>
+  <li><strong>Why needed:</strong>
+    <ul>
+      <li>The target system has no compiler (limited resources).</li>
+      <li>The target is too slow to compile on (e.g., Raspberry Pi 1 hour vs x86 PC 5 minutes).</li>
+      <li>The target hardware doesn't exist yet (early development).</li>
+    </ul>
+  </li>
+  <li><strong>Objective #1 (5 pt):</strong> Download <code>riscv-gnu-toolchain</code> from <a href="https://github.com/riscv-collab/riscv-gnu-toolchain">github.com/riscv-collab/riscv-gnu-toolchain</a>. Screenshot the source tree.</li>
+  <li><strong>Objective #2 (40 pt):</strong> Build the project and install into <code>riscv-objs/</code>. <code>ls</code>, <code>ls riscv-objs</code>, <code>ls riscv-objs/bin</code> must match the figure.</li>
+  <li><strong>Objective #3 (40 pt):</strong> In <code>~/TEST</code>, write <code>hello.c</code>. The first <code>./hello</code> + <code>file ./hello</code> output should be shown. Then write <code>env-riscv-gcc.sh</code> so that after <code>source env-riscv-gcc.sh</code>, the commands <code>riscv-gcc...</code>, <code>ls</code>, <code>./hello</code>, <code>file hello</code> behave exactly as shown.</li>
+  <li><strong>Objective #4 (15 pt):</strong> Screenshot the contents of your <code>env-riscv-gcc.sh</code>.</li>
+  <li><strong>Hand-in:</strong> One PDF report containing four screenshots.</li>
+</ul>
+</details>
+
+<details class="kor"><summary>🇰🇷 한국어로 보기</summary>
+<ul class="clean">
+  <li><strong>핵심 개념:</strong> <span class="kw">교차 컴파일(Cross-Compilation)</span> = 컴파일러가 도는 컴퓨터(<span class="kw">host</span>)와 그 결과물이 실행될 컴퓨터(<span class="kw">target</span>) 의 CPU 아키텍처가 <strong>서로 다른</strong> 경우의 컴파일.</li>
+  <li><strong>예:</strong> 호스트 = x86-64 Linux PC, 타겟 = RISC-V (또는 ARM64) 임베디드 보드.</li>
+  <li><strong>왜 필요?</strong>
+    <ul class="clean">
+      <li>임베디드 시스템에는 보통 컴파일러가 없거나(리소스 제한) 설치할 공간이 없음.</li>
+      <li>타겟 보드가 너무 느려서(예: Raspberry Pi) 직접 컴파일하면 1시간 → x86 PC 에서 5분.</li>
+      <li>새 시스템 개발 초기에는 타겟 하드웨어가 아직 없을 수도 있음.</li>
+    </ul>
+  </li>
+  <li><strong>Objective #1 (5점):</strong> <code>riscv-gnu-toolchain</code> 소스를 받고, 받은 소스 트리를 스크린샷.</li>
+  <li><strong>Objective #2 (40점):</strong> 프로젝트를 빌드해서 <code>riscv-objs/</code> 디렉토리에 설치. <code>ls</code>, <code>ls riscv-objs</code>, <code>ls riscv-objs/bin</code> 결과가 PDF 그림과 동일해야 함.</li>
+  <li><strong>Objective #3 (40점):</strong> 홈 디렉토리에 <code>TEST</code> 폴더를 만들고 <code>hello.c</code> 작성. 처음에 일반 gcc 결과(<code>./hello</code>, <code>file ./hello</code>)를 확인한 뒤, <code>env-riscv-gcc.sh</code> 를 작성. <code>source env-riscv-gcc.sh</code> 후의 <code>riscv-gcc...</code>, <code>ls</code>, <code>./hello</code>, <code>file hello</code> 결과가 PDF 와 정확히 같아야 함.</li>
+  <li><strong>Objective #4 (15점):</strong> 작성한 <code>env-riscv-gcc.sh</code> 의 내용을 스크린샷.</li>
+  <li><strong>제출:</strong> 4개 스크린샷을 담은 PDF 보고서 1개.</li>
+</ul>
+</details>
+
+<div class="card">
+<h3>🧭 개념 다지기 — Host vs Target (시험에도 자주 나옴)</h3>
+<table>
+  <tr><th>용어</th><th>의미</th><th>HW09 상황</th></tr>
+  <tr><td><span class="kw">Host (machine)</span></td><td>컴파일러가 <strong>실행되는</strong> 컴퓨터</td><td>여러분의 x86-64 Linux PC</td></tr>
+  <tr><td><span class="kw">Target (machine)</span></td><td>컴파일 결과 <strong>실행 파일이 돌아갈</strong> 컴퓨터</td><td>RISC-V 보드</td></tr>
+  <tr><td><span class="kw">Native compilation</span></td><td>host == target. 우리가 평소에 하는 일반 컴파일</td><td><code>gcc hello.c</code> 로 만든 x86 ELF</td></tr>
+  <tr><td><span class="kw">Cross-compilation</span></td><td>host ≠ target</td><td><code>riscv64-unknown-elf-gcc hello.c</code> 로 만든 RISC-V ELF</td></tr>
+</table>
+<p>🧠 <strong>비유:</strong> 한국 공장(x86-64 host)에서 <em>유럽형 콘센트가 달린 가전(RISC-V target)</em> 을 만드는 것. 만드는 곳과 쓰는 곳의 전기 규격이 달라서 “전용 공구(=cross-compiler)” 가 따로 필요합니다.</p>
+<p>💡 같은 코드 <code>hello.c</code> 라도 어떤 컴파일러를 쓰느냐에 따라 결과 ELF 의 아키텍처가 달라집니다. 그래서 <code>file ./hello</code> 로 “이 실행파일이 어느 ISA(Instruction Set Architecture) 용인지”를 확인하는 게 채점 포인트예요.</p>
+</div>
+
+<div class="card">
+<h3>🛠 빌드 절차 가이드 (Objective #1 ~ #2)</h3>
+<p class="sub">PDF 와 RISC-V 공식 README 에 적힌 절차의 “큰 그림”만 정리합니다. 정확한 명령은 본인 환경에서 README 를 보고 직접 실행하세요.</p>
+
+<p><strong>Step 1. 소스 받기</strong></p>
+<pre>$ <span class="k">cd</span> ~                                     <span class="c"># 홈 디렉토리로</span>
+$ git clone https://github.com/riscv-collab/riscv-gnu-toolchain
+$ <span class="k">cd</span> riscv-gnu-toolchain
+$ ls                                       <span class="c"># Objective #1 스크린샷: 이 소스 트리 화면</span></pre>
+<div class="callout">
+  ⚠️ riscv-gnu-toolchain 은 내부적으로 binutils, gcc, glibc, newlib 등 <strong>여러 큰 서브프로젝트</strong>를 git submodule 로 가져옵니다.
+  최근 버전은 <code>git clone</code> 만 해도 알아서 submodule 을 받지만, 빌드 도중 "No such file or directory" 가 나면
+  <code>git submodule update --init --recursive</code> 를 직접 해보세요. (Lec11 의 Error #2 패턴)
+</div>
+
+<p><strong>Step 2. 의존 패키지 설치</strong></p>
+<p>README 의 "Prerequisites" 섹션을 보고 본인 배포판(Ubuntu/Debian/Fedora 등)에 맞춰 설치합니다. 헤더 누락(<em>fatal error: ___.h: No such file</em>) 또는 패키지 누락 에러는 대부분 이 단계에서 막힙니다 → Lec11 Error #1, #4 패턴.</p>
+
+<p><strong>Step 3. configure → make</strong></p>
+<pre>$ ./configure --prefix=<span class="v">$PWD</span>/riscv-objs
+<span class="c"># --prefix : make install 시 설치될 루트 경로 (Lec11 핵심)</span>
+<span class="c"># $PWD/riscv-objs → 현재 폴더 안의 riscv-objs/ 폴더에 설치 (sudo 불필요!)</span>
+
+$ make linux -j<span class="v">$(nproc)</span>
+<span class="c"># 'linux' 또는 'newlib' 같은 target 이름은 toolchain README 참고.</span>
+<span class="c"># 무엇이 만들어지는지(예: riscv64-unknown-linux-gnu-gcc) 결과 폴더를 확인.</span></pre>
+<div class="callout warn">
+  ⏰ <strong>주의:</strong> 이 빌드는 진짜 오래 걸립니다 (수십 분 ~ 1시간 이상). 시간 여유 가지고 시작하세요.
+  중간에 끊으면 처음부터 다시 해야 할 수도 있어요. <code>nohup</code> + <code>&amp;</code> 또는 <code>tmux</code> 로 안전하게 돌리는 것을 추천.
+</div>
+
+<p><strong>Step 4. 설치 결과 확인 (Objective #2 스크린샷)</strong></p>
+<pre>$ ls                          <span class="c"># 같은 디렉토리에 riscv-objs/ 폴더가 생긴 것 확인</span>
+$ ls riscv-objs/              <span class="c"># bin/, lib/, share/, riscv64-unknown-linux-gnu/ 등</span>
+$ ls riscv-objs/bin/          <span class="c"># riscv64-unknown-linux-gnu-gcc, -g++, -ld 등 cross 도구들</span></pre>
+<p>여기서 만들어진 <code>riscv64-unknown-...-gcc</code> 가 바로 <strong>RISC-V용 cross-compiler</strong> 입니다. 이름의 "<code>riscv64-unknown-linux-gnu-</code>" 부분이 "target triple" 인데, "타겟 아키텍처-벤더-OS-ABI" 형식이라는 것만 알아두세요.</p>
+</div>
+
+<div class="card">
+<h3>🧪 Objective #3 — TEST 폴더에서 cross-gcc 사용 (가이드만)</h3>
+
+<p><strong>Step 1. 일반 native 빌드 먼저 (대조군)</strong></p>
+<pre>$ <span class="k">cd</span> ~
+$ mkdir TEST &amp;&amp; <span class="k">cd</span> TEST
+$ <span class="k">cat</span> &gt; hello.c &lt;&lt; <span class="s">'EOF'</span>
+#include &lt;stdio.h&gt;
+int main(void) { printf("hello, world\n"); return 0; }
+EOF
+$ gcc -o hello hello.c
+$ ./hello
+hello, world
+$ file ./hello
+./hello: ELF 64-bit LSB ..., x86-64, ...     <span class="c"># 평소 native 결과</span></pre>
+
+<p><strong>Step 2. cross-gcc 로 빌드하면 어떻게 다를까?</strong></p>
+<p>아직 <code>env-riscv-gcc.sh</code> 를 적용하지 않은 상태에서는 시스템이 RISC-V 컴파일러를 못 찾습니다. 그래서 PATH 환경변수에 toolchain 의 <code>bin</code> 경로를 추가해줘야 합니다 — 그것이 바로 <strong>Objective #4</strong> 의 <code>env-riscv-gcc.sh</code> 의 역할이에요.</p>
+
+<p><strong>Step 3. <code>env-riscv-gcc.sh</code> 가 해야 할 일 (힌트만)</strong></p>
+<p>"No LLM help" 정책 때문에 정답 코드는 안 적습니다. 하지만 "무엇을 해야 하는 스크립트인가" 까지는 학습 차원에서 안내드릴게요. 다음 세 가지 질문에 본인이 답을 채우면 스크립트가 완성됩니다.</p>
+<ol>
+  <li><strong>Q.</strong> <code>riscv64-unknown-linux-gnu-gcc</code> 가 들어있는 폴더는 어디인가요? (Step 4 에서 본 그 경로) <br>
+      <strong>A.</strong> <code>~/riscv-gnu-toolchain/riscv-objs/bin</code> 같은 절대 경로.</li>
+  <li><strong>Q.</strong> Bash 에서 "쉘이 명령을 찾을 때 검색하는 폴더 목록" 환경변수의 이름은? <br>
+      <strong>A.</strong> Lec9 와 Lec11 에서 나왔던 그 변수입니다. (힌트: 콜론 <code>:</code> 으로 구분된 경로 리스트)</li>
+  <li><strong>Q.</strong> 이 스크립트는 <code>source</code> 로 실행해야 부모 쉘에 영향을 줍니다. <code>./env-riscv-gcc.sh</code> 처럼 일반 실행하면 왜 안 될까요? <br>
+      <strong>A.</strong> Lec8 의 "read 와 파이프" 함정과 같은 이유입니다 — 일반 실행은 <span class="kw">서브쉘(subshell)</span> 에서 돌아서 환경변수 변경이 부모 쉘로 안 돌아옵니다. <code>source</code> 는 현재 쉘에서 명령을 직접 실행시켜 환경이 유지됩니다.</li>
+</ol>
+<div class="callout">
+  💡 위 3개 질문에 답이 떠오르지 않는다면, 학습서의 <a href="#lec9">Lec9 ⑧ 라이브러리 옵션</a> 과
+  <a href="#lec11">Lec11 ⑤ 빌드 파이프라인</a> 그리고 <a href="#lec8">Lec8 ⑥ read 함정</a> 부분을 다시 읽어보세요.
+  답이 모두 거기에 있습니다.
+</div>
+
+<p><strong>Step 4. source 적용 후 결과 (PDF 그림과 일치해야 채점됨)</strong></p>
+<pre>$ source env-riscv-gcc.sh           <span class="c"># PATH 가 업데이트됨</span>
+$ <span class="k">which</span> riscv64-unknown-linux-gnu-gcc <span class="c"># cross-gcc 가 잡히는지 확인 (디버깅용)</span>
+$ riscv64-unknown-linux-gnu-gcc -o hello hello.c
+$ ls                                <span class="c"># hello.c, hello 둘 다 보이게</span>
+$ file hello
+hello: ELF 64-bit LSB executable, UCB RISC-V, RVC, double-float ABI, ...
+                                    <span class="c"># ★ "x86-64" 가 아니라 "RISC-V" 라고 나오면 성공!</span></pre>
+<p><code>./hello</code> 를 직접 돌리면 "cannot execute binary file: Exec format error" 같은 메시지가 정상입니다 — 우리 PC 가 RISC-V CPU 가 아니니까 실행 못 하는 게 당연. 그래서 <code>file</code> 로만 확인하는 거예요. (PDF 그림에도 실행은 안 되고 file 결과만 나옵니다)</p>
+</div>
+
+<div class="card">
+<h3>🐛 자주 막히는 지점 체크리스트</h3>
+<ul class="clean">
+  <li><strong>의존 패키지 부족:</strong> README 의 Prerequisites 다 깔았는지. 보통 <code>autoconf automake autotools-dev curl python3 libmpc-dev libmpfr-dev libgmp-dev gawk build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev libexpat-dev</code> 같은 게 필요해요.</li>
+  <li><strong>디스크 공간:</strong> 전체 toolchain 빌드는 수 GB 가 필요합니다. <code>df -h .</code> 로 여유 확인.</li>
+  <li><strong>configure 실패:</strong> Lec11 Error #2 패턴 — <code>autoreconf -ivf</code> 시도.</li>
+  <li><strong>헤더 없음:</strong> Lec11 Error #4 — <code>-dev</code> 패키지 설치.</li>
+  <li><strong>빌드 중단되었다 재시작:</strong> 단순 <code>make</code> 재실행은 보통 "이어서" 진행됩니다. 정 안 풀리면 깨끗하게 <code>make clean</code> 후 다시.</li>
+  <li><strong>스크립트가 동작 안 함:</strong> <code>source</code> 를 빼먹지 않았는지. <code>echo $PATH</code> 로 toolchain 경로가 들어갔는지 확인.</li>
+</ul>
+</div>
+
+<div class="card">
+<h3>📸 제출 보고서 만들 때 체크리스트</h3>
+<ol>
+  <li><strong>스크린샷 4장</strong>이 모두 또렷하게 보이는지 (글자 깨짐, 잘림 X).</li>
+  <li>각 스크린샷에 어떤 Objective 인지 캡션을 달면 채점이 빨라집니다.</li>
+  <li>PDF 한 개로 합쳐서 제출. 파일명에 학번을 넣어두면 안전합니다.</li>
+  <li><code>file</code> 명령 결과가 <strong>RISC-V</strong> 로 찍혀 있는지 — Obj #3 의 핵심 채점 포인트.</li>
+  <li><code>env-riscv-gcc.sh</code> 의 내용 스크린샷에서 <strong>본인이 직접 작성한 흔적</strong>(주석 한국어 등)을 남기면 표절 의심을 덜 받을 수 있어요.</li>
+</ol>
+</div>
+
+<div class="quiz">
+  <h4>🧪 HW09 개념 점검 퀴즈 — 6문제 (이건 학습용, 제출과 무관)</h4>
+
+  <div class="q"><span class="num">Q1.</span> <strong>(쉬움)</strong> 다음 중 <strong>cross-compilation</strong> 에 해당하는 상황은?
+    <div class="opts">
+      <label><input type="radio" name="hw9q1"> ① x86-64 PC 에서 <code>gcc hello.c</code> 로 만든 ELF 를 같은 PC 에서 실행</label>
+      <label><input type="radio" name="hw9q1"> ② x86-64 PC 에서 RISC-V 보드용 ELF 를 생성</label>
+      <label><input type="radio" name="hw9q1"> ③ Java 코드를 javac 로 컴파일</label>
+      <label><input type="radio" name="hw9q1"> ④ Python 스크립트 실행</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ②. host(빌드 PC) ≠ target(실행 환경) 인 경우가 cross-compilation. ①은 native.</div>
+  </div>
+
+  <div class="q"><span class="num">Q2.</span> <strong>(쉬움)</strong> PDF 에서 강조한 "cross-compilation 이 필요한 이유"가 <strong>아닌</strong> 것은?
+    <div class="opts">
+      <label><input type="radio" name="hw9q2"> ① 타겟 시스템에 컴파일러를 설치할 공간이 없다</label>
+      <label><input type="radio" name="hw9q2"> ② 타겟 시스템 성능이 낮아 컴파일이 오래 걸린다</label>
+      <label><input type="radio" name="hw9q2"> ③ 타겟 하드웨어가 아직 존재하지 않는다</label>
+      <label><input type="radio" name="hw9q2"> ④ 컴파일러 라이선스 비용을 줄이기 위해</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ④. ①②③ 이 PDF 의 3가지 이유. 라이선스 얘기는 안 나옵니다.</div>
+  </div>
+
+  <div class="q"><span class="num">Q3.</span> <strong>(중)</strong> <code>env-riscv-gcc.sh</code> 를 <code>./env-riscv-gcc.sh</code> 로 실행하면 PATH 가 부모 쉘에 적용되지 <strong>않는</strong> 이유는?
+    <div class="opts">
+      <label><input type="radio" name="hw9q3"> ① 실행 권한이 없어서</label>
+      <label><input type="radio" name="hw9q3"> ② 일반 실행은 자식 서브쉘에서 동작하고, 그 환경 변경은 부모로 돌아오지 않기 때문</label>
+      <label><input type="radio" name="hw9q3"> ③ bash 가 PATH 를 읽기 전용으로 잠가두기 때문</label>
+      <label><input type="radio" name="hw9q3"> ④ 스크립트 내부에 export 가 없으면 안 되기 때문에만</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ②. 그래서 <code>source</code>(또는 <code>.</code>) 로 실행해 현재 쉘 안에서 직접 명령들을 평가해야 PATH 가 갱신됩니다.</div>
+  </div>
+
+  <div class="q"><span class="num">Q4.</span> <strong>(중)</strong> <code>./configure --prefix=$PWD/riscv-objs</code> 의 의미로 가장 정확한 것은?
+    <div class="opts">
+      <label><input type="radio" name="hw9q4"> ① 시스템 전역(<code>/usr/local</code>)에 설치한다</label>
+      <label><input type="radio" name="hw9q4"> ② <code>make install</code> 시 <strong>현재 폴더 안의 riscv-objs/</strong> 디렉토리에 설치한다 (sudo 불필요)</label>
+      <label><input type="radio" name="hw9q4"> ③ riscv-objs 라는 환경변수를 설정한다</label>
+      <label><input type="radio" name="hw9q4"> ④ 빌드 속도를 빠르게 한다</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ②. <code>--prefix</code> = 설치 루트. <code>$PWD</code> 는 현재 작업 디렉토리의 절대 경로로 치환됩니다. sudo 없이 개인 영역에 설치 가능.</div>
+  </div>
+
+  <div class="q"><span class="num">Q5.</span> <strong>(중)</strong> 단답형: 만든 실행 파일이 어떤 ISA(아키텍처)용인지 확인할 때 쓰는 명령은?
+    <button class="showbtn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="ans">정답: <code>file 파일명</code>. 채점 핵심은 이 결과에 "RISC-V" 라는 단어가 들어가 있는지입니다.</div>
+  </div>
+
+  <div class="q"><span class="num">Q6.</span> <strong>(중상)</strong> Objective #3 에서 <code>./hello</code> 를 직접 실행하면 "Exec format error" 가 나는 가장 정확한 이유는?
+    <div class="opts">
+      <label><input type="radio" name="hw9q6"> ① 실행 권한이 없어서</label>
+      <label><input type="radio" name="hw9q6"> ② 코드에 버그가 있어서</label>
+      <label><input type="radio" name="hw9q6"> ③ 만들어진 ELF 가 RISC-V 용이라 호스트(x86-64) 커널이 해당 명령어를 해석할 수 없어서</label>
+      <label><input type="radio" name="hw9q6"> ④ 파일이 손상되어서</label>
+    </div>
+    <button class="showbtn" onclick="toggleAns(this)">정답·해설 보기</button>
+    <div class="ans">정답: ③. 이건 "정상적인 cross-compile 결과" 입니다. 실제 RISC-V 보드(또는 QEMU) 위에서만 실행 가능. PDF 도 <code>./hello</code> 의 정상 출력 대신 <code>file hello</code> 만 확인하는 이유.</div>
+  </div>
+</div>
+
+<!-- ===================== CHEATSHEET ===================== -->
+<h2 id="cheatsheet">📒 시험 직전 치트시트 (Cheat Sheet)</h2>
+
+<div class="twocol">
+  <div class="card">
+    <h3>Shell Script 핵심</h3>
+    <table>
+      <tr><th>구문</th><th>예</th></tr>
+      <tr><td>if</td><td><code>if [ "$x" -eq 0 ]; then ... fi</code></td></tr>
+      <tr><td>elif / else</td><td><code>elif [ ... ]; then ... else ... fi</code></td></tr>
+      <tr><td>case</td><td><code>case $v in pat) cmd ;; *) cmd ;; esac</code></td></tr>
+      <tr><td>for</td><td><code>for f in *.c; do ... done</code></td></tr>
+      <tr><td>while</td><td><code>while [ ... ]; do ... done</code></td></tr>
+      <tr><td>함수</td><td><code>name() { ...; return n; }</code></td></tr>
+      <tr><td>read</td><td><code>read a b &lt;&lt;&lt; "x y"</code></td></tr>
+      <tr><td>here-doc</td><td><code>cat &lt;&lt; EOF &gt; f.txt ... EOF</code></td></tr>
+      <tr><td>인자</td><td><code>$#</code>=개수, <code>$@</code>=전체, <code>$1..$9</code>=각각, <code>$?</code>=직전 종료상태</td></tr>
+      <tr><td>정수비교</td><td><code>-eq -ne -lt -le -gt -ge</code></td></tr>
+      <tr><td>문자열비교</td><td><code>= != -z(빈?) -n(안빈?)</code></td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>gcc 옵션 핵심</h3>
+    <table>
+      <tr><th>옵션</th><th>의미</th></tr>
+      <tr><td><code>-o file</code></td><td>출력 파일명 지정</td></tr>
+      <tr><td><code>-E</code></td><td>전처리만</td></tr>
+      <tr><td><code>-S</code></td><td>어셈블리(.s)까지</td></tr>
+      <tr><td><code>-c</code></td><td>오브젝트(.o)까지 (링크 X)</td></tr>
+      <tr><td><code>-g</code></td><td>디버그 심볼 포함 (gdb 용)</td></tr>
+      <tr><td><code>-Wall</code></td><td>웬만한 경고 다 켜기</td></tr>
+      <tr><td><code>-l<em>name</em></code></td><td><code>lib<em>name</em></code> 와 링크</td></tr>
+      <tr><td><code>-L dir</code></td><td>라이브러리 검색 경로</td></tr>
+      <tr><td><code>-I dir</code></td><td>헤더 검색 경로</td></tr>
+      <tr><td><code>-O0..-O3</code></td><td>최적화 레벨</td></tr>
+      <tr><td><code>--save-temps</code></td><td>중간 산출물 보존</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>GDB 자주 쓰는 명령</h3>
+    <table>
+      <tr><th>명령</th><th>의미</th></tr>
+      <tr><td><code>r</code></td><td>실행 시작</td></tr>
+      <tr><td><code>b 함수/줄</code></td><td>breakpoint</td></tr>
+      <tr><td><code>watch x</code></td><td>x 변경 시 정지</td></tr>
+      <tr><td><code>c</code></td><td>계속 실행</td></tr>
+      <tr><td><code>s</code> / <code>n</code></td><td>step into / step over</td></tr>
+      <tr><td><code>finish</code></td><td>현재 함수 끝까지</td></tr>
+      <tr><td><code>until</code></td><td>현재 위치보다 뒤로</td></tr>
+      <tr><td><code>p var</code></td><td>값 출력</td></tr>
+      <tr><td><code>x/형식 주소</code></td><td>메모리 검사</td></tr>
+      <tr><td><code>bt</code></td><td>backtrace</td></tr>
+      <tr><td><code>info locals</code></td><td>지역변수 다 보기</td></tr>
+      <tr><td><code>disassemble</code></td><td>디스어셈블</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>Process / 시스템 콜</h3>
+    <table>
+      <tr><th>항목</th><th>의미</th></tr>
+      <tr><td>fork()</td><td>현재 프로세스 복제. 자식에 새 PID 부여</td></tr>
+      <tr><td>execve()</td><td>현재 프로세스 이미지를 새 프로그램으로 교체</td></tr>
+      <tr><td>wait()</td><td>자식이 끝날 때까지 대기</td></tr>
+      <tr><td>kill -9</td><td>SIGKILL — 강제 즉시 종료</td></tr>
+      <tr><td>kill -15</td><td>SIGTERM — 정중한 종료(기본)</td></tr>
+      <tr><td>ps aux</td><td>모든 프로세스 자세히</td></tr>
+      <tr><td>top / htop</td><td>동적 ps</td></tr>
+      <tr><td>jobs</td><td>백그라운드 작업 목록</td></tr>
+      <tr><td>fg %N</td><td>N번 작업 포그라운드로</td></tr>
+      <tr><td>bg %N</td><td>N번 작업 백그라운드로</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>Makefile / 빌드</h3>
+<pre>target: deps
+&lt;TAB&gt;commands</pre>
+    <table>
+      <tr><th>흐름</th><th>설명</th></tr>
+      <tr><td>./configure</td><td>환경 점검 + Makefile 생성</td></tr>
+      <tr><td>make</td><td>의존성 트리 따라 빌드</td></tr>
+      <tr><td>make -j$(nproc)</td><td>병렬 빌드</td></tr>
+      <tr><td>make check</td><td>테스트 실행</td></tr>
+      <tr><td>sudo make install</td><td>시스템에 설치</td></tr>
+      <tr><td>make clean</td><td>중간 산출물 청소</td></tr>
+    </table>
+    <p class="sub">make 가 다시 빌드하는 기준: <strong>의존 파일 mtime &gt; target mtime</strong>.</p>
+  </div>
+
+  <div class="card">
+    <h3>메모리 영역 4종</h3>
+    <table>
+      <tr><th>영역</th><th>저장되는 것</th></tr>
+      <tr><td>Text</td><td>기계어 코드 (읽기 전용)</td></tr>
+      <tr><td>Data</td><td>전역/static 변수 (초기화 + BSS)</td></tr>
+      <tr><td>Heap</td><td>malloc/calloc 으로 할당된 동적 메모리</td></tr>
+      <tr><td>Stack</td><td>함수 호출 프레임(지역변수, 매개변수, return addr)</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>Cross-Compilation (HW09)</h3>
+    <table>
+      <tr><th>용어</th><th>의미</th></tr>
+      <tr><td>Host</td><td>컴파일러가 실행되는 머신 (예: x86-64 PC)</td></tr>
+      <tr><td>Target</td><td>실행파일이 돌아갈 머신 (예: RISC-V 보드)</td></tr>
+      <tr><td>Native</td><td>host == target</td></tr>
+      <tr><td>Cross</td><td>host ≠ target</td></tr>
+      <tr><td>target triple</td><td><code>arch-vendor-os-abi</code> (예: <code>riscv64-unknown-linux-gnu</code>)</td></tr>
+      <tr><td>file 명령</td><td>실행파일이 어느 ISA용인지 확인</td></tr>
+      <tr><td>env 스크립트</td><td>cross-gcc 폴더를 PATH 에 추가. 반드시 <code>source</code> 로 실행</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="card" style="margin-top:24px">
+  <h3>📌 시험 직전 한 줄 정리 (1분 컷)</h3>
+  <ul class="clean">
+    <li><strong>fork()</strong>=복제, <strong>execve()</strong>=교체. 둘 다 자주 같이 등장.</li>
+    <li>gcc 4단계: <strong>E → cc1 → as → ld</strong> = <code>.c→.i→.s→.o→exe</code>.</li>
+    <li><code>-c</code> = 링크 안 함, <code>-g</code> = 디버그, <code>-l m</code> = libm 와 링크.</li>
+    <li>GDB: <strong>s</strong>=into, <strong>n</strong>=over, <strong>finish</strong>=함수 끝까지, <strong>until</strong>=뒤로 점프.</li>
+    <li>Makefile 들여쓰기는 <strong>TAB</strong>. 첫 target 이 root.</li>
+    <li>오픈소스: <code>./configure &amp;&amp; make &amp;&amp; sudo make install</code>. 에러는 첫 줄부터 읽기.</li>
+    <li>read 와 파이프 같이 쓰면 서브쉘 함정. <code>&lt;&lt;&lt;</code> 또는 <code>{ ... }</code> 그룹으로 해결.</li>
+    <li>Cross-compile: host ≠ target. <code>file</code> 결과에 RISC-V 가 찍히면 성공. env 스크립트는 반드시 <code>source</code>.</li>
+  </ul>
+</div>
+
+<hr class="sep">
+<p class="sub" style="text-align:center;margin:30px 0">
+  📚 자료가 추가되면 같은 구조로 섹션을 이어 붙일 수 있게 만들어두었어요.<br>
+  새 강의/실습/과제 자료가 생기면 알려주세요.
+</p>
+
+</main>
+
 <script>
-    /**
-     * 시험 행 클릭 시 펼침/닫힘 토글
-     * 비활성(disabled) 카드는 무시
-     */
-    function toggleExam(row) {
-        if (row.classList.contains('disabled')) return;
-        row.classList.toggle('expanded');
+  // 정답 토글
+  function toggleAns(btn){
+    var ans = btn.nextElementSibling;
+    ans.classList.toggle('show');
+    btn.textContent = ans.classList.contains('show') ? '해설 닫기' : btn.textContent.replace('닫기','보기');
+  }
+  // 상단 진행도 바
+  (function(){
+    var bar = document.getElementById('progress');
+    function update(){
+      var h = document.documentElement;
+      var pct = (h.scrollTop) / (h.scrollHeight - h.clientHeight);
+      bar.style.width = Math.max(0,Math.min(1,pct))*100 + '%';
     }
-
-    /**
-     * Lec/Prac/HW 섹션 펼침/닫힘 토글
-     * - 헤더 클릭 → 부모 .collapsible에 .expanded 클래스 토글
-     * - 토글 버튼 텍스트도 [+]/[-]로 바꿈
-     */
-    function toggleSection(header) {
-        const section = header.closest('.collapsible');
-        section.classList.toggle('expanded');
-        
-        // 토글 표시 ([+] ↔ [-]) 변경
-        const toggle = header.querySelector('.collapse-toggle');
-        if (toggle) {
-            const isExpanded = section.classList.contains('expanded');
-            // 원래 텍스트에서 숫자 부분 추출 ("15 files")
-            const match = toggle.textContent.match(/(\d+\s*files?)/);
-            const fileText = match ? match[1] : '15 files';
-            toggle.textContent = isExpanded ? `[-] ${fileText}` : `[+] ${fileText}`;
-        }
-    }
+    document.addEventListener('scroll', update, {passive:true});
+    update();
+  })();
 </script>
-
 </body>
 </html>
