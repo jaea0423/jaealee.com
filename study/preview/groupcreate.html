@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>공부하는 감자 — 팀 만들기</title>
+<title>공-감 — 팀 만들기</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -620,8 +620,10 @@
       </div>
       <p class="form-sub">팀장 본인을 포함한 인원이에요.</p>
 
-      <!-- 5-1. 총 모집 인원 (목표 정원) -->
-      <p class="sub-label">총 모집 인원</p>
+      <!-- 5-1. 확정인원 (정원 / 모집 목표) -->
+      <p class="sub-label">
+        확정인원 <span class="sub-label-hint">— 모집하려는 정원</span>
+      </p>
       <div class="chip-group" id="capacity-chips">
         <button class="chip" onclick="selectSingle(this, 'capacity', 2)">2명</button>
         <button class="chip" onclick="selectSingle(this, 'capacity', 3)">3명</button>
@@ -630,9 +632,9 @@
         <button class="chip" onclick="selectSingle(this, 'capacity', 6)">6명</button>
       </div>
 
-      <!-- 5-2. 최소 인원 (매칭 확정 기준) -->
+      <!-- 5-2. 최소인원 (매칭 확정 기준) -->
       <p class="sub-label" style="margin-top:14px">
-        최소 인원 <span class="sub-label-hint">— 이 인원 이상 수락하면 매칭 확정</span>
+        최소인원 <span class="sub-label-hint">— 이 인원 이상 수락하면 팀 확정 (최소 2명, 확정인원 이하)</span>
       </p>
       <div class="chip-group" id="min-members-chips">
         <button class="chip" onclick="selectMinMembers(this, 2)">2명</button>
@@ -643,7 +645,7 @@
       </div>
       <div class="info-tip" style="margin-top:10px">
         <span class="ico">💡</span>
-        <span>예: 4명 모집/최소 3명으로 두면 1명이 거절해도 3명으로 매칭이 확정돼요.</span>
+        <span>예: 확정인원 4명/최소인원 3명으로 두면 1명이 거절해도 3명으로 팀이 확정돼요.</span>
       </div>
     </div>
 
@@ -809,7 +811,7 @@
     <div class="preview-room">
       <div class="preview-head">
         <span class="preview-tag" id="prev-category">시험 대비</span>
-        <span class="preview-recruit"><span id="prev-capacity">5</span>명 모집 · 최소 <span id="prev-min">3</span></span>
+        <span class="preview-recruit">확정 <span id="prev-capacity">5</span> · 최소 <span id="prev-min">3</span></span>
       </div>
       <div class="preview-name" id="prev-name">팀 이름</div>
       <div class="preview-leader">팀장 · 재아 · 컴퓨터공학과 · 2학년</div>
@@ -990,10 +992,14 @@
       goStep(2);
     }
     else if(current === 2){
-      if(!room.capacity){ showToast('총 모집 인원을 선택해주세요'); return; }
-      if(!room.minMembers){ showToast('최소 인원을 선택해주세요'); return; }
+      if(!room.capacity){ showToast('확정인원을 선택해주세요'); return; }
+      if(!room.minMembers){ showToast('최소인원을 선택해주세요'); return; }
+      if(parseInt(room.minMembers, 10) < 2){
+        showToast('최소인원은 2명 이상이어야 해요');
+        return;
+      }
       if(parseInt(room.minMembers, 10) > parseInt(room.capacity, 10)){
-        showToast('최소 인원은 모집 인원보다 클 수 없어요');
+        showToast('최소인원은 확정인원보다 클 수 없어요');
         return;
       }
       if(!room.majorRange){ showToast('팀원 전공 범위를 선택해주세요'); return; }

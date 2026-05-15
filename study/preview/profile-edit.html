@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>공부하는 감자 — 프로필 수정</title>
+<title>공-감 — 프로필 수정</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css" />
@@ -143,6 +143,32 @@
   .input-hint.error{ color: var(--error); }
   .input-hint.success{ color: var(--success); font-weight: 600; }
 
+  /* 닉네임 변경 메타 (마지막 변경 / 다음 변경 가능일) */
+  .nick-meta{
+    margin-top: 8px;
+    padding: 10px 12px;
+    background: var(--paper-warm);
+    border-radius: var(--radius-s);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    line-height: 1.65;
+    display: none;
+  }
+  .nick-meta.show{ display: block; }
+  .nick-meta .row{
+    display: flex;
+    justify-content: space-between;
+  }
+  .nick-meta .k{ color: var(--ink-mute); }
+  .nick-meta .v{ color: var(--ink); font-weight: 600; }
+  .nick-meta.locked{
+    background: #FEEAEA;
+    color: var(--error);
+  }
+  .nick-meta.locked .k,
+  .nick-meta.locked .v{ color: var(--error); }
+
   /* 칩 */
   .chip-group{
     display: flex;
@@ -274,8 +300,9 @@
   <div class="form-block">
     <div class="form-label-row">
       <span class="form-label">닉네임</span>
+      <span class="badge" id="nick-lock-badge" style="display:none">변경 잠금</span>
     </div>
-    <div class="form-sub">2~10자, 다른 이용자와 겹치지 않게.</div>
+    <div class="form-sub">2~10자, 다른 이용자와 겹치지 않게. <strong>한 번 변경하면 30일 동안 다시 변경할 수 없어요.</strong></div>
     <div class="input-wrap">
       <input class="form-input" id="nick-input" type="text"
              value="감자대장" maxlength="10"
@@ -283,6 +310,9 @@
       <button class="check-btn disabled" id="check-btn" onclick="checkNick()">중복확인</button>
     </div>
     <div class="input-hint" id="nick-hint">현재 닉네임이에요.</div>
+    <div class="nick-meta" id="nick-meta">
+      <!-- JS로 채움: 마지막 변경일 / 다음 변경 가능일 -->
+    </div>
   </div>
 
   <!-- 알림 받을 메일 -->
@@ -321,14 +351,14 @@
     </div>
   </div>
 
-  <!-- 출생연도 -->
+  <!-- 출생연도 (수정 불가) -->
   <div class="form-block">
     <div class="form-label-row">
       <span class="form-label">출생연도</span>
+      <span class="badge locked">수정 불가</span>
     </div>
-    <select class="form-select" id="birth-select">
-      <!-- JS로 채움 -->
-    </select>
+    <div class="form-sub">가입 시 한 번만 입력하고 변경할 수 없어요.</div>
+    <input class="form-input locked" type="text" id="birth-display" value="2005년" readonly>
   </div>
 
   <!-- 변경 안내 -->
@@ -356,29 +386,69 @@
     notifyEmail: 'jaea0423@gmail.com',
     grade: '2학년',
     status: '재학 중',
-    birthYear: 2005
+    birthYear: 2005,
+    // 닉네임 마지막 변경일 (데모 — 실제는 서버에서 받아옴)
+    // 아래 날짜를 오늘 기준 30일 안으로 두면 잠금 상태 시뮬레이션 가능
+    nickChangedAt: '2026-05-01'   // 13일 전 (= 17일 후 변경 가능)
   };
 
   // 현재 폼 상태
   const form = { ...ORIGINAL };
   let nickChecked = true;  // 기존 닉네임은 이미 확인된 상태
+  let nickLocked = false;  // 30일 미경과 시 true
+
+  /* 출생연도는 가입 시 입력 후 수정 불가 — 단순 표시만 */
+  function showBirthYear(){
+    const display = document.getElementById('birth-display');
+    if(display) display.value = ORIGINAL.birthYear + '년';
+  }
 
   /* ============================================================
-     출생연도 셀렉트 채우기 (최근 25년)
+     닉네임 30일 변경 제한 체크
      ============================================================ */
-  function fillBirthSelect(){
-    const sel = document.getElementById('birth-select');
-    const currentYear = new Date().getFullYear();
-    let html = '';
-    for(let y = currentYear - 17; y >= currentYear - 40; y--){
-      const selected = y === ORIGINAL.birthYear ? 'selected' : '';
-      html += `<option value="${y}" ${selected}>${y}년</option>`;
+  const NICK_LOCK_DAYS = 30;
+
+  function fmtDate(d){
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2,'0');
+    const day = String(d.getDate()).padStart(2,'0');
+    return `${y}.${m}.${day}`;
+  }
+
+  function checkNickLock(){
+    const last = new Date(ORIGINAL.nickChangedAt + 'T00:00:00');
+    const next = new Date(last);
+    next.setDate(next.getDate() + NICK_LOCK_DAYS);
+    const now = new Date();
+    const daysLeft = Math.ceil((next - now) / (24 * 3600 * 1000));
+
+    nickLocked = daysLeft > 0;
+
+    const meta = document.getElementById('nick-meta');
+    const lockBadge = document.getElementById('nick-lock-badge');
+    const input = document.getElementById('nick-input');
+    const checkBtn = document.getElementById('check-btn');
+
+    meta.classList.add('show');
+
+    if(nickLocked){
+      // 잠금 — 입력 자체를 막음
+      input.disabled = true;
+      input.classList.add('locked');
+      checkBtn.classList.add('disabled');
+      lockBadge.style.display = 'inline-block';
+      meta.classList.add('locked');
+      meta.innerHTML = `
+        <div class="row"><span class="k">▸ LAST CHANGED</span><span class="v">${fmtDate(last)}</span></div>
+        <div class="row"><span class="k">▸ AVAILABLE FROM</span><span class="v">${fmtDate(next)} (${daysLeft}일 남음)</span></div>
+      `;
+    } else {
+      meta.classList.remove('locked');
+      meta.innerHTML = `
+        <div class="row"><span class="k">▸ LAST CHANGED</span><span class="v">${fmtDate(last)}</span></div>
+        <div class="row"><span class="k">▸ STATUS</span><span class="v" style="color:var(--success)">변경 가능</span></div>
+      `;
     }
-    sel.innerHTML = html;
-    sel.addEventListener('change', () => {
-      form.birthYear = parseInt(sel.value, 10);
-      updateChangesUI();
-    });
   }
 
   /* ============================================================
@@ -396,6 +466,7 @@
      닉네임 변경
      ============================================================ */
   function onNickChange(){
+    if(nickLocked) return;
     const v = document.getElementById('nick-input').value.trim();
     form.nick = v;
     const hint = document.getElementById('nick-hint');
@@ -428,6 +499,7 @@
   }
 
   function checkNick(){
+    if(nickLocked) return;
     const v = document.getElementById('nick-input').value.trim();
     if(v.length < 2 || v === ORIGINAL.nick) return;
 
@@ -468,7 +540,6 @@
     if(form.notifyEmail !== ORIGINAL.notifyEmail) changed.push('알림 메일');
     if(form.grade !== ORIGINAL.grade) changed.push('학년');
     if(form.status !== ORIGINAL.status) changed.push('재학 상태');
-    if(form.birthYear !== ORIGINAL.birthYear) changed.push('출생연도');
     return changed;
   }
 
@@ -533,7 +604,8 @@
      초기화
      ============================================================ */
   document.addEventListener('DOMContentLoaded', () => {
-    fillBirthSelect();
+    showBirthYear();
+    checkNickLock();
   });
 </script>
 </body>
