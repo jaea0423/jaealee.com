@@ -296,6 +296,39 @@
     cursor: not-allowed;
   }
 
+  /* 팀장 모드 안내 배지 */
+  .leader-mode-badge{
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--knu-orange);
+    color: white;
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 7px 14px;
+    border-radius: 999px;
+    z-index: 90;
+    box-shadow: 0 4px 14px rgba(254,80,0,0.3);
+    pointer-events: none;
+  }
+
+  /* 수정 모달 input */
+  .edit-input{
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-s);
+    background: var(--paper-warm);
+    font-size: 14px;
+    font-family: var(--font-kr);
+    font-weight: 600;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .edit-input:focus{ border-color: var(--knu-blue); border-style: solid; }
+
   /* ===== 지원 모달 ===== */
   .modal-overlay{
     display: none;
@@ -437,7 +470,7 @@
     <button class="back-btn" onclick="history.back()" aria-label="뒤로가기">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
     </button>
-    <div class="top-title">TEAM DETAIL</div>
+    <div class="top-title">팀 상세</div>
     <button class="top-action" onclick="showToast('신고 화면 (예정)')" aria-label="신고">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
     </button>
@@ -478,7 +511,7 @@
 
   <!-- 상세 정보 -->
   <section class="section">
-    <div class="section-title">▸ DETAILS</div>
+    <div class="section-title">▸ 상세 정보</div>
     <div class="info-card">
       <div class="info-row">
         <div class="info-k">카테고리</div>
@@ -509,7 +542,7 @@
 
   <!-- 일정 / 운영 -->
   <section class="section">
-    <div class="section-title">▸ WHEN & HOW</div>
+    <div class="section-title">▸ 일정 / 운영</div>
     <div class="info-card">
       <div class="info-row">
         <div class="info-k">시간대</div>
@@ -540,13 +573,51 @@
 
 </div>
 
-<!-- 하단 고정 지원 버튼 -->
+<!-- 하단 고정 액션 버튼 (지원 / 팀장 모드 수정) -->
 <div class="bottom-bar">
   <div class="bottom-inner">
     <button class="apply-btn" id="apply-btn" onclick="openApplyModal()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
       <span>이 팀에 지원하기</span>
     </button>
+  </div>
+</div>
+
+<!-- ============================================================
+     팀장 모드 안내 배지 (?edit=1 일 때만 노출)
+     ============================================================ -->
+<div class="leader-mode-badge" id="leader-mode-badge" style="display:none">
+  👑 팀장 모드 — 팀 정보를 수정할 수 있어요
+</div>
+
+<!-- ============================================================
+     팀 정보 수정 모달 (바텀 시트)
+     ============================================================ -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <h3>팀 정보 <em>수정</em></h3>
+    <p class="modal-sub">
+      변경 내용은 <strong>모든 팀원에게 알림</strong>이 가요.
+      매칭 확정 시점과 지금 상황이 달라졌으면 함께 정리해주세요.
+    </p>
+
+    <div class="form-label">팀명</div>
+    <input type="text" id="edit-name" class="edit-input" maxlength="15" />
+
+    <div class="form-label" style="margin-top:14px">팀 소개</div>
+    <div class="textarea-wrap">
+      <textarea class="form-textarea" id="edit-bio" maxlength="120" rows="4"></textarea>
+    </div>
+
+    <div class="modal-tip">
+      💡 자세한 시간대·장소·운영 규칙은 카카오톡 오픈채팅에서 정해주세요.
+    </div>
+
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeEditModal()">취소</button>
+      <button class="modal-btn confirm" onclick="saveEdit()">저장</button>
+    </div>
   </div>
 </div>
 
@@ -689,6 +760,22 @@
     if(p.get('support') === '1' && !isFull){
       setTimeout(() => openApplyModal(), 250);
     }
+
+    // URL ?edit=1 이면 팀장 모드 — 하단 버튼을 "팀 정보 수정"으로 변경
+    if(p.get('edit') === '1'){
+      const applyBtn = document.getElementById('apply-btn');
+      applyBtn.classList.remove('applied');
+      applyBtn.disabled = false;
+      applyBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg><span>팀 정보 수정하기</span>';
+      applyBtn.onclick = openEditModal;
+
+      // 팀장 안내 배지
+      document.getElementById('leader-mode-badge').style.display = 'block';
+
+      // 수정 모달 input에 현재 값 채워두기
+      document.getElementById('edit-name').value = team.name;
+      document.getElementById('edit-bio').value = team.bio;
+    }
   }
 
   function renderTags(containerId, list){
@@ -734,6 +821,34 @@
 
     // 데모: 일정 시간 후 대시보드로 이동 (필요시)
     // setTimeout(() => { window.location.href = 'dashboard.html'; }, 1800);
+  }
+
+  /* ============================================================
+     팀장 모드: 팀 정보 수정 모달
+     ============================================================ */
+  function openEditModal(){
+    document.getElementById('edit-modal').classList.add('show');
+    setTimeout(() => document.getElementById('edit-name').focus(), 250);
+  }
+  function closeEditModal(){
+    document.getElementById('edit-modal').classList.remove('show');
+  }
+  function saveEdit(){
+    const newName = document.getElementById('edit-name').value.trim();
+    const newBio = document.getElementById('edit-bio').value.trim();
+    if(!newName || newName.length < 4){
+      showToast('팀명은 4자 이상이어야 해요');
+      return;
+    }
+    if(!newBio){
+      showToast('팀 소개를 입력해주세요');
+      return;
+    }
+    // 화면에 즉시 반영
+    document.getElementById('hero-name').textContent = newName;
+    document.getElementById('bio-text').textContent = newBio;
+    closeEditModal();
+    showToast('팀 정보가 저장됐어요. 팀원들에게 알림이 갑니다.');
   }
 
   /* 토스트 */
