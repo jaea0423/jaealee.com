@@ -342,6 +342,89 @@
             font-weight: 700;
             letter-spacing: 1px;
         }
+
+        /* ============================================
+           폐쇄 카드 (귀찮아서 폐쇄)
+           ============================================ */
+        .card.closed {
+            cursor: default;
+        }
+
+        /* 카드 안 기존 콘텐츠 흐릿하게 (회색조 + 투명) */
+        .card.closed .card-icon,
+        .card.closed .card-title,
+        .card.closed .card-en {
+            opacity: 0.2;
+            filter: grayscale(100%);
+        }
+
+        /* 상단 띠는 공사장 노랑으로 (현무암 검정 대신) */
+        .card.closed::before {
+            background: #FFD93D;
+        }
+
+        /* 폐쇄 오버레이 (상단 띠 제외 전체 덮음) */
+        .closed-overlay {
+            position: absolute;
+            top: 4px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(30, 30, 30, 0.88);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 4;
+            overflow: hidden;
+            border-radius: 0 0 16px 16px;
+        }
+
+        /* X 두 줄 (공사장 노란 테이프) */
+        .closed-x::before,
+        .closed-x::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -10%;
+            width: 120%;
+            height: 6px;
+            background: #FFD93D;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+        .closed-x::before { transform: rotate(35deg); }
+        .closed-x::after  { transform: rotate(-35deg); }
+
+        /* "폐쇄" 빨간 도장 (살짝 기울어진) */
+        .closed-stamp {
+            position: relative;
+            z-index: 2;
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 22px;
+            color: #fff;
+            letter-spacing: 3px;
+            background: #E74C3C;
+            padding: 4px 12px;
+            border: 2px solid #fff;
+            transform: rotate(-6deg);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            line-height: 1;
+        }
+
+        /* "귀찮아서" 작은 이유 텍스트 */
+        .closed-reason {
+            position: relative;
+            z-index: 2;
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            font-size: 11px;
+            color: #FFD93D;
+            margin-top: 6px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 2px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+        }
     </style>
 </head>
 <body>
@@ -422,11 +505,18 @@
                 <div class="card-en">Stay</div>
             </a>
 
-            <a href="food.html" class="card">
+            <!-- 맛집 카드 - 폐쇄 처리 (클릭 불가) -->
+            <div class="card closed">
                 <span class="card-icon">🍜</span>
                 <div class="card-title">맛집</div>
                 <div class="card-en">Food</div>
-            </a>
+                <!-- 폐쇄 오버레이 -->
+                <div class="closed-overlay">
+                    <div class="closed-x"></div>
+                    <div class="closed-stamp">폐쇄</div>
+                    <div class="closed-reason">귀찮아서</div>
+                </div>
+            </div>
 
             <a href="checklist.html" class="card">
                 <span class="card-icon">🎒</span>
