@@ -1,0 +1,3354 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>자료구조 11주차-1 | RB 트리 높이 상계 개선</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  :root {
+    --bg: #f8f7f5;
+    --surface: #ffffff;
+    --ink: #18181b;
+    --ink-soft: #3f3f46;
+    --ink-muted: #71717a;
+    --line: #e4e4e7;
+    --line-soft: #f4f4f5;
+    
+    --purple: #7c3aed;
+    --purple-deep: #5b21b6;
+    --purple-soft: #ddd6fe;
+    --purple-bg: #f5f3ff;
+    
+    --teal: #0d9488;
+    --teal-bg: #f0fdfa;
+    
+    --red: #dc2626;
+    --red-bg: #fef2f2;
+    
+    --gold: #b45309;
+    --gold-soft: #fde68a;
+    --gold-bg: #fffbeb;
+    
+    --indigo: #4f46e5;
+    --indigo-bg: #eef2ff;
+    
+    --slate: #475569;
+    --slate-bg: #f1f5f9;
+    
+    --code-bg: #18181b;
+    --code-text: #e4e4e7;
+  }
+  
+  body {
+    font-family: -apple-system, "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.7;
+    font-size: 15.5px;
+    letter-spacing: -0.01em;
+  }
+  
+  .wrapper {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+  
+  aside.toc {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    padding: 40px 20px;
+    border-right: 1px solid var(--line);
+    background: var(--surface);
+    overflow-y: auto;
+    font-size: 13.5px;
+  }
+  
+  aside.toc h3 {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 14px;
+    font-weight: 600;
+  }
+  
+  aside.toc ol {
+    list-style: none;
+    counter-reset: toc;
+  }
+  
+  aside.toc li {
+    counter-increment: toc;
+    margin-bottom: 5px;
+  }
+  
+  aside.toc a {
+    color: var(--ink-soft);
+    text-decoration: none;
+    display: block;
+    padding: 5px 10px;
+    border-radius: 6px;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+    line-height: 1.4;
+  }
+  
+  aside.toc a::before {
+    content: counter(toc, decimal-leading-zero) "  ";
+    color: var(--ink-muted);
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+  }
+  
+  aside.toc a:hover {
+    background: var(--purple-bg);
+    color: var(--purple);
+    border-left-color: var(--purple);
+  }
+  
+  aside.toc .group {
+    font-size: 11px;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 16px 0 8px 10px;
+    font-weight: 600;
+  }
+  
+  main {
+    padding: 60px 50px 100px;
+    background: var(--surface);
+    min-width: 0;
+  }
+  
+  .doc-header {
+    margin-bottom: 60px;
+    padding-bottom: 28px;
+    border-bottom: 3px solid var(--ink);
+    position: relative;
+  }
+  
+  .doc-header::after {
+    content: "";
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 80px;
+    height: 3px;
+    background: var(--purple);
+  }
+  
+  .doc-meta {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 16px;
+    font-size: 12.5px;
+    color: var(--ink-muted);
+    flex-wrap: wrap;
+  }
+  
+  .doc-meta .badge {
+    background: var(--ink);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  
+  .doc-meta .exam-tag {
+    background: var(--purple-bg);
+    color: var(--purple);
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-weight: 600;
+    border: 1px solid var(--purple);
+  }
+  
+  .doc-header h1 {
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: 8px;
+  }
+  
+  .doc-header h1 .accent { color: var(--purple); }
+  
+  .doc-header .sub {
+    color: var(--ink-soft);
+    font-size: 16px;
+  }
+  
+  section {
+    margin-bottom: 56px;
+    scroll-margin-top: 20px;
+  }
+  
+  h2 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    letter-spacing: -0.02em;
+  }
+  
+  h2 .num {
+    color: var(--purple);
+    font-size: 16px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  
+  h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 28px 0 12px;
+    color: var(--ink);
+  }
+  
+  h3::before {
+    content: "▸ ";
+    color: var(--purple);
+    margin-right: 4px;
+  }
+  
+  h4 {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 18px 0 8px;
+    color: var(--ink-soft);
+  }
+  
+  p { margin-bottom: 12px; color: var(--ink-soft); }
+  
+  .kw { color: var(--purple); font-weight: 600; }
+  
+  .en {
+    font-size: 0.88em;
+    color: var(--ink-muted);
+    font-weight: 400;
+    font-style: italic;
+  }
+  
+  code {
+    font-family: "JetBrains Mono", "D2Coding", "SF Mono", Consolas, monospace;
+    font-size: 0.92em;
+    background: var(--slate-bg);
+    color: var(--ink);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--line-soft);
+  }
+  
+  /* 코드 블록 전체 */
+  .code-block {
+    margin: 18px 0;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    border: 1px solid #2a2a2e;
+  }
+  
+  /* 코드 헤더 (라벨 + 색깔 점) */
+  .code-label {
+    display: flex;
+    align-items: center;
+    background: #2a2a2e;
+    color: #e4e4e7;
+    padding: 8px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    font-family: -apple-system, sans-serif;
+    text-transform: uppercase;
+    border-bottom: 1px solid #3f3f46;
+  }
+  
+  .code-label::before {
+    content: "";
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--purple);
+    margin-right: 10px;
+  }
+  
+  .code-label.python::before { background: #3776ab; }
+  .code-label.pseudo::before { background: #b45309; }
+  .code-label.algo::before { background: var(--indigo); }
+  
+  pre {
+    background: #1a1b1e;
+    color: #e8e8ec;
+    padding: 18px 22px;
+    margin: 0;
+    overflow-x: auto;
+    font-family: "JetBrains Mono", "D2Coding", "Cascadia Code", "SF Mono", Consolas, monospace;
+    font-size: 13.5px;
+    line-height: 1.7;
+    border-radius: 0;
+  }
+  
+  /* 코드 블록 안에 있지 않은 pre (단독) */
+  pre:not(.code-block pre) {
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    border: 1px solid #2a2a2e;
+  }
+  
+  pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    border: none;
+    font-size: inherit;
+    font-family: inherit;
+  }
+  
+  /* 신택스 하이라이팅 색상 */
+  .c-key { color: #c4a8ff; font-weight: 600; }      /* 키워드 (def, if, while, return) - 연보라 */
+  .c-fn { color: #ffd866; }                          /* 함수명 - 황금 */
+  .c-cmt { color: #6c7280; font-style: italic; }    /* 주석 - 회색 이탤릭 */
+  .c-num { color: #ff9eb5; }                         /* 숫자 - 분홍 */
+  .c-str { color: #a3e88c; }                         /* 문자열 - 초록 */
+  .c-cls { color: #78dce8; }                         /* 클래스명 - 청록 */
+  .c-op { color: #ff7b72; }                          /* 연산자 - 살구 */
+  .c-self { color: #f5a3ff; font-style: italic; }   /* self - 분홍 */
+  
+  .callout {
+    margin: 18px 0;
+    padding: 16px 20px;
+    border-radius: 8px;
+    border-left: 4px solid;
+    font-size: 14.5px;
+  }
+  
+  .callout-title {
+    font-weight: 700;
+    margin-bottom: 6px;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  
+  .callout.tip { background: var(--purple-bg); border-color: var(--purple); }
+  .callout.tip .callout-title { color: var(--purple); }
+  .callout.tip .callout-title::before { content: "💡 "; }
+  
+  .callout.warn { background: var(--gold-bg); border-color: var(--gold); }
+  .callout.warn .callout-title { color: var(--gold); }
+  .callout.warn .callout-title::before { content: "⚠️ "; }
+  
+  .callout.connect { background: var(--indigo-bg); border-color: var(--indigo); }
+  .callout.connect .callout-title { color: var(--indigo); }
+  .callout.connect .callout-title::before { content: "🔗 "; }
+  
+  .callout.star {
+    background: linear-gradient(135deg, var(--gold-bg) 0%, var(--surface) 100%);
+    border-color: var(--gold);
+    border-left-width: 5px;
+  }
+  .callout.star .callout-title { color: var(--gold); }
+  .callout.star .callout-title::before { content: "⭐ "; }
+  
+  .callout.review {
+    background: var(--teal-bg);
+    border-color: var(--teal);
+  }
+  .callout.review .callout-title { color: var(--teal); }
+  .callout.review .callout-title::before { content: "🔁 "; }
+  
+  .math {
+    font-family: "Cambria Math", "Times New Roman", serif;
+    font-style: italic;
+    font-size: 1.05em;
+  }
+  
+  .math-block {
+    text-align: center;
+    margin: 16px 0;
+    padding: 18px 24px;
+    background: var(--slate-bg);
+    border-radius: 8px;
+    font-size: 16px;
+    font-family: "Cambria Math", "Times New Roman", serif;
+    font-style: italic;
+    line-height: 2;
+  }
+  
+  .math-block .step-note {
+    font-family: -apple-system, sans-serif;
+    font-style: normal;
+    font-size: 12px;
+    color: var(--ink-muted);
+    display: block;
+    margin-top: 4px;
+  }
+  
+  .frac {
+    display: inline-flex;
+    flex-direction: column;
+    vertical-align: middle;
+    text-align: center;
+    margin: 0 3px;
+    font-size: 0.88em;
+  }
+  .frac .num-f { border-bottom: 1px solid currentColor; padding: 0 4px; }
+  .frac .den-f { padding: 0 4px; }
+  
+  sup, sub {
+    font-size: 0.72em;
+    font-style: normal;
+  }
+  sup { vertical-align: super; }
+  sub { vertical-align: sub; }
+  
+  .log {
+    font-style: normal;
+    font-family: -apple-system, sans-serif;
+    font-weight: 500;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 18px 0;
+    font-size: 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  th {
+    background: var(--ink);
+    color: white;
+    font-weight: 600;
+    padding: 12px 14px;
+    text-align: left;
+    font-size: 13px;
+  }
+  
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line-soft);
+    color: var(--ink-soft);
+    vertical-align: top;
+  }
+  
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg); }
+  
+  td.highlight {
+    background: var(--purple-bg);
+    color: var(--purple);
+    font-weight: 600;
+  }
+  
+  .tree-viz {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    text-align: center;
+  }
+  
+  .tree-viz .caption {
+    font-size: 13px;
+    color: var(--ink-muted);
+    margin-top: 10px;
+  }
+  
+  .point {
+    border-left: 3px solid var(--purple);
+    padding: 4px 0 4px 16px;
+    margin: 14px 0;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  
+  ul, ol { margin: 10px 0 14px 22px; color: var(--ink-soft); }
+  ul li, ol li { margin-bottom: 6px; }
+  
+  /* 증명 단계 박스 */
+  .proof-step {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--purple);
+    border-radius: 8px;
+    padding: 18px 22px;
+    margin: 14px 0;
+  }
+  
+  .proof-step .label {
+    color: var(--purple);
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+  
+  /* 핵심 결과 */
+  .key-result {
+    background: linear-gradient(135deg, var(--purple-bg) 0%, var(--surface) 100%);
+    border: 2px solid var(--purple);
+    border-radius: 12px;
+    padding: 22px 26px;
+    margin: 22px 0;
+    text-align: center;
+  }
+  
+  .key-result .label {
+    color: var(--purple);
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    margin-bottom: 10px;
+  }
+  
+  .key-result .formula {
+    font-size: 20px;
+    font-family: "Cambria Math", serif;
+    font-style: italic;
+  }
+  
+  /* 비교 카드 */
+  .compare-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 18px 0;
+  }
+  
+  .compare-3 > div {
+    padding: 16px 18px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+  }
+  
+  .compare-3 .winner {
+    border: 2px solid var(--purple);
+    background: var(--purple-bg);
+  }
+  
+  .compare-3 h4 {
+    font-size: 14px;
+    margin-bottom: 6px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  
+  .compare-3 .winner h4 { color: var(--purple); }
+  
+  .compare-3 .value {
+    font-size: 18px;
+    font-family: "Cambria Math", serif;
+    font-style: italic;
+    margin: 6px 0;
+    color: var(--ink);
+  }
+  
+  .compare-3 .note {
+    font-size: 12px;
+    color: var(--ink-muted);
+  }
+  
+  /* 수식 박스 (계산 단계) */
+  .calc-step {
+    background: var(--gold-bg);
+    border-left: 4px solid var(--gold);
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 10px 0;
+    font-family: "Cambria Math", serif;
+    font-style: italic;
+    font-size: 15px;
+  }
+  
+  .calc-step .desc {
+    font-family: -apple-system, sans-serif;
+    font-style: normal;
+    color: var(--gold);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+  
+  /* 시험 포인트 */
+  .exam-points {
+    background: var(--ink);
+    color: white;
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin: 20px 0;
+  }
+  
+  .exam-points .label {
+    color: var(--purple-soft);
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    margin-bottom: 14px;
+  }
+  
+  .exam-points ol {
+    margin-left: 22px;
+    color: white;
+  }
+  
+  .exam-points ol li { margin-bottom: 8px; }
+  .exam-points strong { color: var(--purple-soft); }
+  
+  /* SVG 노드 (변환 그림용) */
+  .node-rect-234 {
+    fill: white;
+    stroke: var(--ink);
+    stroke-width: 2;
+  }
+  .node-rect-234.empty-slot {
+    fill: #fafafa;
+    stroke: #d4d4d8;
+    stroke-dasharray: 3,3;
+  }
+  .node-divider {
+    stroke: var(--ink);
+    stroke-width: 1.5;
+  }
+  .node-divider.dashed {
+    stroke: #d4d4d8;
+    stroke-dasharray: 3,3;
+  }
+  .node-text-234 {
+    font-family: "JetBrains Mono", -apple-system, monospace;
+    font-size: 13px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+    fill: var(--ink);
+  }
+  .node-text-234.empty {
+    fill: #d4d4d8;
+  }
+  
+  .edge {
+    stroke: #52525b;
+    stroke-width: 1.6;
+    fill: none;
+  }
+  
+  .label-text {
+    font-family: -apple-system, sans-serif;
+    font-size: 11px;
+    fill: var(--ink-muted);
+    text-anchor: middle;
+  }
+  
+  /* 로그 성질 박스 */
+  .log-rule {
+    background: var(--indigo-bg);
+    border: 1px solid var(--indigo);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 14px 0;
+  }
+  
+  .log-rule .rule-title {
+    color: var(--indigo);
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  
+  .log-rule .formula {
+    font-family: "Cambria Math", serif;
+    font-style: italic;
+    font-size: 15px;
+    text-align: center;
+    padding: 6px;
+    background: white;
+    border-radius: 4px;
+    margin-top: 6px;
+  }
+  
+  .doc-footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    color: var(--ink-muted);
+    font-size: 13px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+<aside class="toc">
+  <h3>목차</h3>
+  
+  <div class="group">복습</div>
+  <ol>
+    <li><a href="#s1">두 트리의 치환</a></li>
+    <li><a href="#s2">기존 높이 분석</a></li>
+  </ol>
+  
+  <div class="group">개선된 분석</div>
+  <ol start="3">
+    <li><a href="#s3">핵심 질문</a></li>
+    <li><a href="#s4">3-노드가 worst case</a></li>
+    <li><a href="#s5">3-노드 높이 = log₃n</a></li>
+    <li><a href="#s6">h' ≤ 2·log₃n 유도</a></li>
+  </ol>
+  
+  <div class="group">로그 밑 변환</div>
+  <ol start="7">
+    <li><a href="#s7">밑 변환 공식</a></li>
+    <li><a href="#s8">log₂3은 얼마?</a></li>
+    <li><a href="#s9">최종 결론</a></li>
+  </ol>
+  
+  <div class="group">RB 트리 마무리</div>
+  <ol start="10">
+    <li><a href="#s10">왜 h를 줄이려 하나?</a></li>
+  </ol>
+  
+  <div class="group">Union-Find 도입</div>
+  <ol start="11">
+    <li><a href="#s11">Union-Find란?</a></li>
+    <li><a href="#s12">집합과 연산 종류</a></li>
+  </ol>
+  
+  <div class="group">Union-Find 연산</div>
+  <ol start="13">
+    <li><a href="#s13">Python set과 3개 핵심 연산</a></li>
+    <li><a href="#s14">목표 시간복잡도</a></li>
+    <li><a href="#s15">방법 1 — 연결 리스트</a></li>
+    <li><a href="#s16">방법 2 — 트리 (핵심)</a></li>
+    <li><a href="#s17">트리로 union 구현</a></li>
+  </ol>
+  
+  <div class="group">Union by Rank</div>
+  <ol start="18">
+    <li><a href="#s18">누가 누구의 부모로?</a></li>
+    <li><a href="#s19">Union by Height 원칙</a></li>
+    <li><a href="#s20">Node 클래스와 make_set</a></li>
+    <li><a href="#s21">find 의사코드</a></li>
+    <li><a href="#s22">union 의사코드</a></li>
+    <li><a href="#s23">실행 예제</a></li>
+  </ol>
+  
+  <div class="group">마무리 분석</div>
+  <ol start="24">
+    <li><a href="#s24">높이 분석 — h = O(log n)</a></li>
+    <li><a href="#s25">최종 시간복잡도</a></li>
+    <li><a href="#s26">학기 트리 총정리</a></li>
+  </ol>
+  
+  <div class="group">정리</div>
+  <ol start="27">
+    <li><a href="#s27">시험 포인트</a></li>
+  </ol>
+</aside>
+
+<main>
+
+<header class="doc-header">
+  <div class="doc-meta">
+    <span class="badge">자료구조 · 11주차-1</span>
+    <span class="exam-tag">기말고사 범위</span>
+    <span>2026-05-14</span>
+  </div>
+  <h1><span class="accent">레드블랙 트리</span> 높이 상계 개선</h1>
+  <p class="sub">2-3-4 트리와의 관계로 더 타이트한 bound 구하기</p>
+</header>
+
+<!-- ============================================== -->
+<!-- 1. 두 트리 치환 -->
+<!-- ============================================== -->
+<section id="s1">
+  <h2><span class="num">01</span> 복습 — 두 트리는 치환 가능</h2>
+  
+  <div class="callout review">
+    <div class="callout-title">지난 시간 복습</div>
+    <p style="margin-top:6px;">탐색 트리에는 <strong>레드블랙 트리</strong>와 <strong>2-3-4 트리</strong>가 있고, 둘은 서로 1:1로 치환됩니다.</p>
+  </div>
+  
+  <h3>치환 규칙 정리</h3>
+  
+  <table>
+    <tr>
+      <th>2-3-4 트리</th>
+      <th>레드블랙 트리</th>
+      <th>레벨 수</th>
+    </tr>
+    <tr>
+      <td><strong>2-노드</strong> (자식 2개)</td>
+      <td>1개 노드 (black)</td>
+      <td>1레벨</td>
+    </tr>
+    <tr>
+      <td><strong>3-노드</strong> (자식 3개)</td>
+      <td>상위: black / 하위: red 1개</td>
+      <td>2레벨</td>
+    </tr>
+    <tr>
+      <td><strong>4-노드</strong> (자식 4개)</td>
+      <td>상위: black / 하위: red 2개</td>
+      <td>2레벨</td>
+    </tr>
+  </table>
+  
+  <p>변환 후 모든 리프는 None으로 처리됩니다 (레드블랙 트리의 정의상).</p>
+  
+  <h3>왜 3-노드와 4-노드가 2레벨?</h3>
+  
+  <div class="callout connect">
+    <div class="callout-title">연결 학습 — 레드블랙 트리</div>
+    레드블랙 트리는 <strong>이진 탐색 트리(BST)</strong>예요. 자식이 최대 2개. 그래서 3-노드(자식 3)나 4-노드(자식 4)를 직접 표현 못 함 → 2레벨로 펼쳐서 표현.
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 2. 기존 높이 분석 -->
+<!-- ============================================== -->
+<section id="s2">
+  <h2><span class="num">02</span> 복습 — 기존 높이 분석</h2>
+  
+  <h3>레드블랙 트리 높이</h3>
+  
+  <p>10주차-1에서 증명한 결과:</p>
+  
+  <div class="math-block">
+    h' ≤ 2 · <span class="log">log</span><sub>2</sub> n
+    <span class="step-note">즉 O(2·log₂n) = O(log n)</span>
+  </div>
+  
+  <h3>2-3-4 트리 높이</h3>
+  
+  <p>10주차-2에서 본 결과:</p>
+  
+  <div class="math-block">
+    <span class="log">log</span><sub>4</sub> n &nbsp;≤&nbsp; h &nbsp;≤&nbsp; <span class="log">log</span><sub>2</sub> n
+    <span class="step-note">최선(모두 4-노드) ~ 최악(모두 2-노드)</span>
+  </div>
+  
+  <div class="callout warn">
+    <div class="callout-title">표기 약속</div>
+    이번 시간 내내:
+    <ul style="margin-top:6px;">
+      <li>2-3-4 트리 높이 = <strong>h</strong></li>
+      <li>레드블랙 트리 높이 = <strong>h'</strong></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 3. 핵심 질문 -->
+<!-- ============================================== -->
+<section id="s3">
+  <h2><span class="num">03</span> 핵심 질문 — h'을 더 타이트하게?</h2>
+  
+  <p>기존 결과 <strong>h' ≤ 2·log₂ n</strong>은 상계. 더 작은 상계(더 타이트한 bound)를 구할 수 있을까?</p>
+  
+  <div class="callout connect">
+    <div class="callout-title">연결 학습 — 상계는 작을수록 좋다</div>
+    지난 시간 마지막에 배운 것: <strong>상계(upper bound)는 작을수록 좋음</strong>. 알고리즘의 최악 성능을 더 정밀하게 보여주기 때문.
+  </div>
+  
+  <h3>접근 방법</h3>
+  
+  <div class="point">
+    2-3-4 트리를 레드블랙 트리로 바꿨을 때, <strong>레드블랙 트리 높이 h'이 최대가 되는 경우</strong>를 찾으면 그게 곧 h'의 상계.
+  </div>
+  
+  <p>즉, "2-3-4 트리가 어떤 모양일 때 변환 결과의 높이가 가장 클까?"라는 질문.</p>
+</section>
+
+<!-- ============================================== -->
+<!-- 4. 3-노드가 worst case -->
+<!-- ============================================== -->
+<section id="s4">
+  <h2><span class="num">04</span> 답 — 모두 3-노드일 때 h'이 최대</h2>
+  
+  <p>3종류 노드 각각의 "키 1개당 레벨 수"를 비교해봅시다.</p>
+  
+  <table>
+    <tr>
+      <th>노드 종류</th>
+      <th>키 개수</th>
+      <th>레드블랙 레벨</th>
+      <th>키 1개당 레벨</th>
+    </tr>
+    <tr>
+      <td>2-노드</td>
+      <td>1개</td>
+      <td>1레벨</td>
+      <td>1 레벨/키</td>
+    </tr>
+    <tr>
+      <td class="highlight">3-노드</td>
+      <td class="highlight">2개</td>
+      <td class="highlight">2레벨</td>
+      <td class="highlight">1 레벨/키</td>
+    </tr>
+    <tr>
+      <td>4-노드</td>
+      <td>3개</td>
+      <td>2레벨</td>
+      <td>0.67 레벨/키</td>
+    </tr>
+  </table>
+  
+  <h3>왜 3-노드가 worst?</h3>
+  
+  <p>각 노드를 레드블랙으로 변환했을 때, 같은 키 개수 n에서 얼마나 깊어지는지 비교:</p>
+  
+  <div class="compare-3">
+    <div>
+      <h4>모두 2-노드</h4>
+      <div class="value">h = log₂ n</div>
+      <div class="note">→ h' = log₂ n × 1<br>= log₂ n</div>
+    </div>
+    <div class="winner">
+      <h4>모두 3-노드 ★</h4>
+      <div class="value">h = log₃ n</div>
+      <div class="note">→ h' = log₃ n × 2<br>= 2·log₃ n ≈ 1.26·log₂ n</div>
+    </div>
+    <div>
+      <h4>모두 4-노드</h4>
+      <div class="value">h = log₄ n</div>
+      <div class="note">→ h' = log₄ n × 2<br>= 2·log₄ n = log₂ n</div>
+    </div>
+  </div>
+  
+  <div class="callout star">
+    <div class="callout-title">결론</div>
+    셋 중 <strong>3-노드일 때 h'이 가장 큼</strong>. 그래서 worst case 분석은 "모두 3-노드"로 가정하고 시작합니다.
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 5. 3-노드 높이 = log_3 n -->
+<!-- ============================================== -->
+<section id="s5">
+  <h2><span class="num">05</span> 3-노드만 있을 때 2-3-4 트리 높이</h2>
+  
+  <p>모든 노드가 3-노드라고 가정. 그러면 각 노드는 자식이 정확히 3개씩.</p>
+  
+  <h3>일반 공식</h3>
+  
+  <div class="callout connect">
+    <div class="callout-title">연결 학습 — 균형 트리의 높이</div>
+    이진 트리에서 자식 꽉 채우면 h = log₂ n이었음. 이걸 일반화하면:
+    <p style="margin-top:6px;">자식이 <strong>x개</strong>씩 있는 균형 트리에서 노드 n개의 높이 = <strong>log<sub>x</sub> n</strong></p>
+  </div>
+  
+  <h3>3-노드 트리에 적용</h3>
+  
+  <p>자식이 3개씩 → x = 3:</p>
+  
+  <div class="math-block">
+    h = <span class="log">log</span><sub>3</sub> n
+    <span class="step-note">모두 3-노드 가정</span>
+  </div>
+  
+  <h3>예시 — 3-노드 2-3-4 트리</h3>
+  
+  <div class="tree-viz">
+    <svg width="100%" viewBox="0 0 800 280" xmlns="http://www.w3.org/2000/svg">
+      
+      <!-- Level 0 -->
+      <rect x="370" y="20" width="30" height="36" class="node-rect-234" rx="3"/>
+      <rect x="400" y="20" width="30" height="36" class="node-rect-234"/>
+      <rect x="430" y="20" width="20" height="36" class="node-rect-234 empty-slot"/>
+      <line x1="400" y1="20" x2="400" y2="56" class="node-divider"/>
+      <line x1="430" y1="20" x2="430" y2="56" class="node-divider"/>
+      <text x="385" y="38" class="node-text-234">a</text>
+      <text x="415" y="38" class="node-text-234">b</text>
+      <text x="440" y="38" class="node-text-234 empty">·</text>
+      
+      <!-- Level 1 -->
+      <rect x="100" y="120" width="30" height="36" class="node-rect-234" rx="3"/>
+      <rect x="130" y="120" width="30" height="36" class="node-rect-234"/>
+      <rect x="160" y="120" width="20" height="36" class="node-rect-234 empty-slot"/>
+      <line x1="130" y1="120" x2="130" y2="156" class="node-divider"/>
+      <line x1="160" y1="120" x2="160" y2="156" class="node-divider"/>
+      <text x="115" y="138" class="node-text-234">c</text>
+      <text x="145" y="138" class="node-text-234">d</text>
+      <text x="170" y="138" class="node-text-234 empty">·</text>
+      
+      <rect x="370" y="120" width="30" height="36" class="node-rect-234" rx="3"/>
+      <rect x="400" y="120" width="30" height="36" class="node-rect-234"/>
+      <rect x="430" y="120" width="20" height="36" class="node-rect-234 empty-slot"/>
+      <line x1="400" y1="120" x2="400" y2="156" class="node-divider"/>
+      <line x1="430" y1="120" x2="430" y2="156" class="node-divider"/>
+      <text x="385" y="138" class="node-text-234">e</text>
+      <text x="415" y="138" class="node-text-234">f</text>
+      <text x="440" y="138" class="node-text-234 empty">·</text>
+      
+      <rect x="640" y="120" width="30" height="36" class="node-rect-234" rx="3"/>
+      <rect x="670" y="120" width="30" height="36" class="node-rect-234"/>
+      <rect x="700" y="120" width="20" height="36" class="node-rect-234 empty-slot"/>
+      <line x1="670" y1="120" x2="670" y2="156" class="node-divider"/>
+      <line x1="700" y1="120" x2="700" y2="156" class="node-divider"/>
+      <text x="655" y="138" class="node-text-234">g</text>
+      <text x="685" y="138" class="node-text-234">h</text>
+      <text x="710" y="138" class="node-text-234 empty">·</text>
+      
+      <!-- 간선 - 루트의 자식 3개 -->
+      <line x1="390" y1="56" x2="145" y2="120" class="edge"/>
+      <line x1="408" y1="56" x2="385" y2="120" class="edge"/>
+      <line x1="430" y1="56" x2="655" y2="120" class="edge"/>
+      
+      <!-- Level 2 (간략화 - 점) -->
+      <text x="145" y="200" class="label-text">⋮</text>
+      <text x="115" y="200" class="label-text">⋮</text>
+      <text x="170" y="200" class="label-text">⋮</text>
+      <text x="385" y="200" class="label-text">⋮</text>
+      <text x="415" y="200" class="label-text">⋮</text>
+      <text x="440" y="200" class="label-text">⋮</text>
+      <text x="655" y="200" class="label-text">⋮</text>
+      <text x="685" y="200" class="label-text">⋮</text>
+      <text x="710" y="200" class="label-text">⋮</text>
+      
+      <text x="400" y="250" class="label-text" style="font-size:13px; fill:var(--ink); font-weight:600;">모든 노드가 3-노드 (자식 3개씩) → 높이 h = log₃ n</text>
+      
+    </svg>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 6. h' <= 2h 유도 -->
+<!-- ============================================== -->
+<section id="s6">
+  <h2><span class="num">06</span> 변환 결과 — h' ≤ 2·log₃ n</h2>
+  
+  <p>이제 이 3-노드 트리를 레드블랙 트리로 바꿔봅시다.</p>
+  
+  <h3>3-노드 1개 → 레드블랙 2레벨</h3>
+  
+  <p>치환 규칙: 3-노드는 레드블랙에서 <strong>2레벨</strong>로 표현됨.</p>
+  
+  <div class="tree-viz">
+    <svg width="80%" viewBox="0 0 500 220" xmlns="http://www.w3.org/2000/svg">
+      
+      <!-- Before: 3-노드 -->
+      <text x="100" y="25" class="label-text" style="font-size:13px; fill:var(--ink); font-weight:600;">2-3-4 트리</text>
+      
+      <rect x="60" y="50" width="30" height="36" class="node-rect-234" rx="3"/>
+      <rect x="90" y="50" width="30" height="36" class="node-rect-234"/>
+      <rect x="120" y="50" width="20" height="36" class="node-rect-234 empty-slot"/>
+      <line x1="90" y1="50" x2="90" y2="86" class="node-divider"/>
+      <line x1="120" y1="50" x2="120" y2="86" class="node-divider"/>
+      <text x="75" y="68" class="node-text-234">a</text>
+      <text x="105" y="68" class="node-text-234">b</text>
+      <text x="130" y="68" class="node-text-234 empty">·</text>
+      
+      <text x="100" y="120" class="label-text">1 노드</text>
+      <text x="100" y="138" class="label-text" style="font-size:14px; fill:var(--purple); font-weight:700;">= 1 레벨</text>
+      
+      <!-- 화살표 -->
+      <line x1="180" y1="80" x2="240" y2="80" class="edge" style="stroke:var(--purple); stroke-width:2;"/>
+      <polygon points="240,80 232,76 232,84" fill="var(--purple)"/>
+      <text x="210" y="100" class="label-text" style="fill:var(--purple); font-weight:600;">변환</text>
+      
+      <!-- After: 레드블랙 2레벨 -->
+      <text x="380" y="25" class="label-text" style="font-size:13px; fill:var(--ink); font-weight:600;">레드블랙 트리</text>
+      
+      <!-- Black [b] 위 -->
+      <circle cx="380" cy="55" r="16" fill="#18181b" stroke="#18181b"/>
+      <text x="380" y="55" style="fill:white; font-size:13px; font-weight:700; text-anchor:middle; dominant-baseline:central; font-family:monospace;">b</text>
+      
+      <!-- Red <a> 아래 왼쪽 -->
+      <circle cx="340" cy="115" r="14" fill="#dc2626" stroke="#991b1b"/>
+      <text x="340" y="115" style="fill:white; font-size:12px; font-weight:700; text-anchor:middle; dominant-baseline:central; font-family:monospace;">a</text>
+      
+      <line x1="370" y1="68" x2="346" y2="105" class="edge"/>
+      
+      <text x="380" y="160" class="label-text">2 레벨</text>
+      <text x="380" y="178" class="label-text" style="font-size:14px; fill:var(--purple); font-weight:700;">= 1 노드의 2배</text>
+      
+    </svg>
+    <div class="caption">3-노드 [a, b] 하나가 레드블랙에서 2레벨로 펼쳐짐</div>
+  </div>
+  
+  <h3>전체 높이로 확장</h3>
+  
+  <p>2-3-4 트리의 모든 노드(h개의 레벨)가 각각 2배로 늘어남:</p>
+  
+  <div class="math-block">
+    h' ≤ 2 · h
+    <span class="step-note">최악의 경우 (모두 3-노드)</span>
+  </div>
+  
+  <p>그런데 위에서 모두 3-노드일 때 h = log₃ n이므로:</p>
+  
+  <div class="key-result">
+    <div class="label">중간 결과</div>
+    <div class="formula">h' ≤ 2 · <span class="log">log</span><sub>3</sub> n</div>
+  </div>
+  
+  <div class="callout warn">
+    <div class="callout-title">잠깐, 이게 2·log₂n보다 작아?</div>
+    겉보기엔 잘 모르겠죠. 두 식을 직접 비교하려면 <strong>밑을 통일</strong>해야 해요. 다음 섹션에서 처리합니다.
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 7. 로그 밑 변환 공식 -->
+<!-- ============================================== -->
+<section id="s7">
+  <h2><span class="num">07</span> 로그의 밑 변환 공식</h2>
+  
+  <p>2·log₃n과 2·log₂n을 비교하려면 둘의 밑을 같게 만들어야 합니다.</p>
+  
+  <div class="log-rule">
+    <div class="rule-title">로그 밑 변환 공식 <span class="en">(Change of Base Formula)</span></div>
+    <div class="formula">
+      <span class="log">log</span><sub>a</sub> b = <span class="frac"><span class="num-f"><span class="log">log</span><sub>c</sub> b</span><span class="den-f"><span class="log">log</span><sub>c</sub> a</span></span>
+    </div>
+    <p style="margin-top:8px; font-size:13px; color:var(--ink-soft);">밑이 a인 로그를 밑이 c인 로그로 바꾸려면 분자에 log<sub>c</sub>b, 분모에 log<sub>c</sub>a.</p>
+  </div>
+  
+  <h3>log₃n을 밑 2로 바꾸기</h3>
+  
+  <p>a=3, b=n, c=2 대입:</p>
+  
+  <div class="calc-step">
+    <div class="desc">Step 1 · 공식 적용</div>
+    <span class="log">log</span><sub>3</sub> n = <span class="frac"><span class="num-f"><span class="log">log</span><sub>2</sub> n</span><span class="den-f"><span class="log">log</span><sub>2</sub> 3</span></span>
+  </div>
+  
+  <div class="calc-step">
+    <div class="desc">Step 2 · 2를 곱해서 정리</div>
+    2 · <span class="log">log</span><sub>3</sub> n = <span class="frac"><span class="num-f">2</span><span class="den-f"><span class="log">log</span><sub>2</sub> 3</span></span> · <span class="log">log</span><sub>2</sub> n
+  </div>
+  
+  <p>즉:</p>
+  
+  <div class="math-block">
+    h' ≤ <span class="frac"><span class="num-f">2</span><span class="den-f"><span class="log">log</span><sub>2</sub> 3</span></span> · <span class="log">log</span><sub>2</sub> n
+    <span class="step-note">밑을 2로 통일한 형태</span>
+  </div>
+  
+  <p>이제 기존 식 <strong>2·log₂n</strong>과 비교 가능. 그러려면 <strong>2/log₂3</strong>이 얼마인지 알아야 함.</p>
+</section>
+
+<!-- ============================================== -->
+<!-- 8. log_2 3은 얼마? -->
+<!-- ============================================== -->
+<section id="s8">
+  <h2><span class="num">08</span> log₂3은 얼마쯤?</h2>
+  
+  <h3>부등식으로 추론하기</h3>
+  
+  <p>정확한 값 안 구해도 범위만 알면 됨. 로그가 <strong>단조증가 함수</strong>인 점을 이용합니다.</p>
+  
+  <div class="callout connect">
+    <div class="callout-title">연결 학습 — 단조증가 함수</div>
+    log<sub>2</sub>x는 x가 커질수록 log<sub>2</sub>x도 커지는 단조증가 함수. 따라서 a &lt; b이면 log<sub>2</sub>a &lt; log<sub>2</sub>b. <strong>부등호 방향 안 바뀜.</strong>
+  </div>
+  
+  <h3>유도 과정</h3>
+  
+  <div class="proof-step">
+    <div class="label">Step 1 · 2 &lt; 3 &lt; 4 부등식 시작</div>
+    <p style="margin-top:6px;">자명한 사실:</p>
+    <div class="math-block">2 &lt; 3 &lt; 4</div>
+  </div>
+  
+  <div class="proof-step">
+    <div class="label">Step 2 · 양변에 log₂ 씌우기</div>
+    <p style="margin-top:6px;">단조증가 함수이므로 부등호 방향 그대로:</p>
+    <div class="math-block">
+      <span class="log">log</span><sub>2</sub> 2 &lt; <span class="log">log</span><sub>2</sub> 3 &lt; <span class="log">log</span><sub>2</sub> 4
+    </div>
+  </div>
+  
+  <div class="proof-step">
+    <div class="label">Step 3 · 양 끝 값 계산</div>
+    <p style="margin-top:6px;">log<sub>2</sub>2 = 1은 자명. log<sub>2</sub>4는 로그 성질을 써서 계산:</p>
+    
+    <div class="log-rule">
+      <div class="rule-title">로그 성질</div>
+      <div class="formula">
+        <span class="log">log</span><sub>a</sub> b<sup>c</sup> = c · <span class="log">log</span><sub>a</sub> b
+      </div>
+    </div>
+    
+    <p>4 = 2² 이므로:</p>
+    <div class="math-block">
+      <span class="log">log</span><sub>2</sub> 4 = <span class="log">log</span><sub>2</sub> 2<sup>2</sup> = 2 · <span class="log">log</span><sub>2</sub> 2 = 2 · 1 = 2
+    </div>
+  </div>
+  
+  <div class="proof-step">
+    <div class="label">Step 4 · 종합</div>
+    <div class="math-block">
+      1 &lt; <span class="log">log</span><sub>2</sub> 3 &lt; 2
+    </div>
+    <p style="margin-top:6px;">즉 log₂3은 <strong>1과 2 사이의 어떤 값</strong>. 실제 값은 약 1.585 정도.</p>
+  </div>
+  
+  <h3>2/log₂3은 얼마?</h3>
+  
+  <p>log₂3 ≈ 1.585이므로:</p>
+  
+  <div class="math-block">
+    <span class="frac"><span class="num-f">2</span><span class="den-f"><span class="log">log</span><sub>2</sub> 3</span></span> ≈ <span class="frac"><span class="num-f">2</span><span class="den-f">1.585</span></span> ≈ 1.26
+  </div>
+  
+  <div class="callout tip">
+    <div class="callout-title">정확한 값보다 중요한 것</div>
+    핵심은 <strong>2/log₂3 &lt; 2</strong>라는 것. log₂3 &gt; 1이니까 2를 그보다 큰 수로 나누면 당연히 2보다 작음.
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 9. 최종 결론 -->
+<!-- ============================================== -->
+<section id="s9">
+  <h2><span class="num">09</span> 최종 결론 — 더 타이트한 상계</h2>
+  
+  <h3>비교</h3>
+  
+  <div class="compare-3" style="grid-template-columns: 1fr 1fr;">
+    <div>
+      <h4>기존 상계</h4>
+      <div class="value">h' ≤ 2 · log₂ n</div>
+      <div class="note">계수 = 2.0</div>
+    </div>
+    <div class="winner">
+      <h4>개선된 상계 ★</h4>
+      <div class="value">h' ≤ 1.26 · log₂ n</div>
+      <div class="note">계수 ≈ 1.26 (더 작음!)</div>
+    </div>
+  </div>
+  
+  <div class="key-result">
+    <div class="label">최종 결론</div>
+    <div class="formula">h' ≤ <span class="frac"><span class="num-f">2</span><span class="den-f"><span class="log">log</span><sub>2</sub> 3</span></span> · <span class="log">log</span><sub>2</sub> n ≈ 1.26 · <span class="log">log</span><sub>2</sub> n</div>
+  </div>
+  
+  <h3>의미</h3>
+  
+  <div class="callout star">
+    <div class="callout-title">왜 이게 중요한가</div>
+    <ul style="margin-top:6px;">
+      <li>2·log₂n과 1.26·log₂n은 둘 다 빅오로는 <strong>O(log n)</strong>으로 같음</li>
+      <li>하지만 <strong>실제 상수 계수</strong>까지 보면 1.26이 훨씬 작음</li>
+      <li>즉 같은 빅오라도 "더 정밀한" 분석이 가능</li>
+      <li>레드블랙 트리가 우리가 생각한 것보다 <strong>실제로는 더 균형 잡혀있다</strong>는 의미</li>
+    </ul>
+  </div>
+  
+  <h3>증명 전체 흐름 정리</h3>
+  
+  <div class="proof-step">
+    <div class="label">증명 요약</div>
+    <ol style="margin-top:6px;">
+      <li>h'이 최대가 되는 2-3-4 트리는? → 모두 3-노드인 경우</li>
+      <li>모두 3-노드일 때 2-3-4 높이: h = log₃n</li>
+      <li>3-노드 → 레드블랙 2레벨이므로: h' ≤ 2h = 2·log₃n</li>
+      <li>밑 변환: 2·log₃n = (2/log₂3) · log₂n</li>
+      <li>log₂3 &gt; 1이므로 2/log₂3 &lt; 2</li>
+      <li>따라서 h' ≤ 1.26·log₂n &lt; 2·log₂n → 더 타이트한 상계 ✓</li>
+    </ol>
+  </div>
+  
+  <div class="callout connect">
+    <div class="callout-title">상계와 하계 다시 보기</div>
+    <ul style="margin-top:6px;">
+      <li>상계: 비용 ≤ c → <strong>작을수록 좋음</strong> (더 정밀한 분석)</li>
+      <li>오늘 한 일: 상계를 2 → 1.26으로 줄였음 → <strong>더 좋은 분석</strong></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 10. 왜 h를 줄이려 하나? -->
+<!-- ============================================== -->
+<section id="s10">
+  <h2><span class="num">10</span> 왜 h를 줄이려고 하나?</h2>
+  
+  <div class="callout star">
+    <div class="callout-title">교수님이 강조하신 부분</div>
+    "h를 줄이는 것 = 수행 시간을 줄이는 것". 트리에서 모든 연산(search, insert, delete)이 <strong>O(h)</strong>이기 때문.
+    이 논리를 꼭 이해해야 한다고 강조하셨음.
+  </div>
+  
+  <h3>비유 — 에러 허용치</h3>
+  
+  <p>두 시스템 중 어떤 게 더 좋을까요?</p>
+  
+  <div class="compare-3" style="grid-template-columns: 1fr 1fr;">
+    <div>
+      <h4>시스템 A</h4>
+      <div class="value">error ≤ 10</div>
+      <div class="note">최악의 오차 10</div>
+    </div>
+    <div class="winner">
+      <h4>시스템 B ★</h4>
+      <div class="value">error ≤ 2</div>
+      <div class="note">최악의 오차 2 (더 정밀)</div>
+    </div>
+  </div>
+  
+  <div class="point">
+    당연히 <strong>error ≤ 2</strong>가 좋음. <strong>상계가 작을수록</strong> 시스템이 더 신뢰할 만함.
+  </div>
+  
+  <h3>트리에서도 같은 논리</h3>
+  
+  <p>트리에서 연산 시간은 높이 h에 비례:</p>
+  
+  <div class="math-block">
+    수행 시간 = O(h)
+  </div>
+  
+  <p>따라서:</p>
+  
+  <ul>
+    <li><strong>h가 작다</strong> = 연산이 빠르다</li>
+    <li><strong>h의 상계가 작다</strong> = 최악의 경우에도 빠르다는 보장</li>
+  </ul>
+  
+  <h3>오늘 우리가 한 일의 의미</h3>
+  
+  <div class="proof-step">
+    <div class="label">개선 결과</div>
+    <table style="margin-top:8px;">
+      <tr>
+        <th>분석</th>
+        <th>레드블랙 높이 상계</th>
+        <th>최악 연산 시간</th>
+      </tr>
+      <tr>
+        <td>기존</td>
+        <td>2 · log₂n</td>
+        <td>2 · log₂n</td>
+      </tr>
+      <tr>
+        <td class="highlight">개선</td>
+        <td class="highlight">1.26 · log₂n</td>
+        <td class="highlight">1.26 · log₂n</td>
+      </tr>
+    </table>
+  </div>
+  
+  <div class="callout tip">
+    <div class="callout-title">"조금의 차이"가 왜 중요한가</div>
+    <ul style="margin-top:6px;">
+      <li>n = 1,000,000일 때 log₂n ≈ 20</li>
+      <li>기존: 2 × 20 = 40번의 연산</li>
+      <li>개선: 1.26 × 20 ≈ 25번의 연산</li>
+      <li>큰 데이터에서는 이 차이가 누적되어 <strong>실제로 큰 차이</strong>가 됨</li>
+    </ul>
+  </div>
+  
+  <h3>레드블랙 트리 단원 마무리</h3>
+  
+  <div class="callout review">
+    <div class="callout-title">정리</div>
+    <ul style="margin-top:6px;">
+      <li>레드블랙 트리는 균형 BST의 대표</li>
+      <li>2-3-4 트리와 1:1 대응 (같은 트리의 두 가지 표현)</li>
+      <li>모든 연산 O(log n) 보장</li>
+      <li>높이 상계가 2·log₂n → 1.26·log₂n으로 더 타이트하게 분석됨</li>
+    </ul>
+    <p style="margin-top:8px;">이걸로 균형 탐색 트리 챕터(BST → AVL → 레드블랙 / 2-3-4)는 마무리됩니다.</p>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 11. Union-Find란? -->
+<!-- ============================================== -->
+<section id="s11">
+  <h2><span class="num">11</span> Union-Find 자료구조</h2>
+  
+  <div class="point">
+    이제 마지막으로 배울 트리: <span class="kw">Union-Find <span class="en">(Disjoint Set)</span></span> 자료구조.
+  </div>
+  
+  <h3>이름의 의미</h3>
+  
+  <div class="callout tip">
+    <div class="callout-title">두 가지 이름</div>
+    <ul style="margin-top:6px;">
+      <li><strong>Union-Find</strong>: <strong>Union</strong>(합집합)과 <strong>Find</strong>(찾기) 두 연산에 특화되었기 때문</li>
+      <li><strong>Disjoint Set</strong> (분리 집합): 
+        <ul style="margin-top:4px;">
+          <li><strong>dis</strong> (부정) + <strong>joint</strong> (겹치는) + <strong>set</strong> (집합)</li>
+          <li>= "서로 겹치지 않는 집합"이라는 뜻</li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+  
+  <h3>핵심 정의</h3>
+  
+  <div class="key-result">
+    <div class="label">Union-Find</div>
+    <div class="formula" style="font-size:17px;">집합(set)에 대한 연산을 효율적으로 제공하는 자료구조</div>
+  </div>
+  
+  <div class="callout connect">
+    <div class="callout-title">연결 학습 — 이산수학의 집합</div>
+    이산수학에서 배운 집합 개념을 자료구조로 직접 표현한 것. 합집합, 교집합, 차집합 같은 연산을 빠르게 처리하기 위해 만들어진 자료구조예요.
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 12. 집합과 연산 종류 -->
+<!-- ============================================== -->
+<section id="s12">
+  <h2><span class="num">12</span> 집합 예시와 연산 종류</h2>
+  
+  <h3>집합 예시</h3>
+  
+  <p>두 집합 S와 T를 가지고 생각해봅시다:</p>
+  
+  <div class="math-block" style="font-style:normal; font-family:'JetBrains Mono', monospace;">
+    S = { 1, 8, 4, −7 }<br>
+    T = { 2, 5, 4 }
+  </div>
+  
+  <div class="callout warn">
+    <div class="callout-title">표현 방식</div>
+    각 원소는 <strong>노드의 key 값</strong>으로 생각합니다. 트리 형태로 저장될 때 각 노드가 집합의 원소를 담는 구조.
+  </div>
+  
+  <h3>집합의 성질 — 중복 허용 X</h3>
+  
+  <div class="callout connect">
+    <div class="callout-title">연결 학습 — 집합의 정의</div>
+    이산수학의 집합 정의: <strong>같은 원소를 두 번 갖지 않음</strong>. 중복되는 원소가 있어도 1개만 작성.
+    <p style="margin-top:6px;">예: { 1, 2, 2, 3 } = { 1, 2, 3 }</p>
+  </div>
+  
+  <h3>제공할 연산들</h3>
+  
+  <p>Union-Find가 다루는 연산은 크게 두 종류:</p>
+  
+  <!-- 연산 1: membership (find) -->
+  <h4>① Membership 연산 (find)</h4>
+  
+  <div class="proof-step">
+    <div class="label">정의</div>
+    <p style="margin-top:6px;"><strong>특정 원소가 어떤 집합에 포함되는지</strong> 확인하는 연산.</p>
+    
+    <div class="math-block" style="font-family:'JetBrains Mono', monospace; font-style:normal;">
+      "2 ∈ S ?" → True / False
+    </div>
+    
+    <p style="margin-top:6px;">예시:</p>
+    <ul>
+      <li>"2 ∈ S?" → S = {1, 8, 4, -7}에 2 없음 → <strong>False</strong></li>
+      <li>"2 ∈ T?" → T = {2, 5, 4}에 2 있음 → <strong>True</strong></li>
+      <li>"4 ∈ S?" → S에 4 있음 → <strong>True</strong></li>
+    </ul>
+  </div>
+  
+  <!-- 연산 2: 집합 기본 연산 -->
+  <h4>② 집합 기본 연산 ★</h4>
+  
+  <div class="proof-step">
+    <div class="label">정의</div>
+    <p style="margin-top:6px;">두 집합을 입력으로 받아서 새 집합 또는 결과를 반환:</p>
+    
+    <table style="margin-top:10px;">
+      <tr>
+        <th>연산</th>
+        <th>기호</th>
+        <th>의미</th>
+      </tr>
+      <tr>
+        <td><strong>합집합 <span class="en">(Union)</span></strong></td>
+        <td>S ∪ T</td>
+        <td>S와 T의 모든 원소를 합친 집합</td>
+      </tr>
+      <tr>
+        <td><strong>교집합 <span class="en">(Intersection)</span></strong></td>
+        <td>S ∩ T</td>
+        <td>S와 T 둘 다에 있는 원소만 모은 집합</td>
+      </tr>
+      <tr>
+        <td><strong>차집합 <span class="en">(Difference)</span></strong></td>
+        <td>S − T</td>
+        <td>S에 있고 T에 없는 원소만 모은 집합</td>
+      </tr>
+    </table>
+  </div>
+  
+  <h3>예시 — S, T로 직접 계산</h3>
+  
+  <div class="tree-viz">
+    <svg width="100%" viewBox="0 0 800 220" xmlns="http://www.w3.org/2000/svg">
+      
+      <!-- S -->
+      <ellipse cx="200" cy="80" rx="140" ry="60" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="2" opacity="0.7"/>
+      <text x="100" y="50" style="font-size:14px; font-weight:700; fill:var(--purple); font-family:sans-serif;">S</text>
+      <text x="130" y="85" style="font-size:13px; fill:var(--ink); font-family:monospace;">1</text>
+      <text x="160" y="100" style="font-size:13px; fill:var(--ink); font-family:monospace;">8</text>
+      <text x="195" y="60" style="font-size:13px; fill:var(--ink); font-family:monospace;">−7</text>
+      
+      <!-- T -->
+      <ellipse cx="400" cy="80" rx="140" ry="60" fill="var(--gold-bg)" stroke="var(--gold)" stroke-width="2" opacity="0.7"/>
+      <text x="510" y="50" style="font-size:14px; font-weight:700; fill:var(--gold); font-family:sans-serif;">T</text>
+      <text x="460" y="100" style="font-size:13px; fill:var(--ink); font-family:monospace;">2</text>
+      <text x="490" y="85" style="font-size:13px; fill:var(--ink); font-family:monospace;">5</text>
+      
+      <!-- 교집합 영역 (4) -->
+      <text x="300" y="85" style="font-size:14px; fill:var(--red); font-family:monospace; font-weight:700;">4</text>
+      
+      <!-- 라벨 -->
+      <text x="300" y="180" style="font-size:13px; fill:var(--ink-muted); text-anchor:middle; font-family:sans-serif;">4가 두 집합에 공통으로 있음 (교집합)</text>
+      
+      <!-- 결과 박스 -->
+      <text x="600" y="40" style="font-size:13px; font-weight:700; fill:var(--ink); font-family:sans-serif;">결과:</text>
+      <text x="600" y="65" style="font-size:12px; fill:var(--ink-soft); font-family:monospace;">S ∪ T = {1,8,4,−7,2,5}</text>
+      <text x="600" y="90" style="font-size:12px; fill:var(--ink-soft); font-family:monospace;">S ∩ T = {4}</text>
+      <text x="600" y="115" style="font-size:12px; fill:var(--ink-soft); font-family:monospace;">S − T = {1,8,−7}</text>
+      <text x="600" y="140" style="font-size:12px; fill:var(--ink-soft); font-family:monospace;">T − S = {2,5}</text>
+      
+    </svg>
+    <div class="caption">두 집합 S와 T의 관계 — 공통 원소 4가 교집합</div>
+  </div>
+  
+  <h3>이걸 왜 자료구조로?</h3>
+  
+  <div class="callout tip">
+    <div class="callout-title">미리보기</div>
+    <ul style="margin-top:6px;">
+      <li>집합 연산을 단순 배열이나 리스트로 하면 매번 전체 순회 필요 → O(n)</li>
+      <li>Union-Find는 트리 구조 + 영리한 트릭으로 <strong>거의 O(1)</strong> 수준까지 최적화 가능</li>
+      <li>특히 union과 find가 핵심 (그래서 이름이 Union-Find)</li>
+    </ul>
+    <p style="margin-top:8px;">구체적인 트리 표현 방식과 알고리즘은 다음 시간에 이어집니다.</p>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 13. Python set과 3개 핵심 연산 -->
+<!-- ============================================== -->
+<section id="s13">
+  <h2><span class="num">13</span> Python set과 3개 핵심 연산</h2>
+  
+  <h3>Python의 set 자료형</h3>
+  
+  <p>Python은 집합을 직접 다룰 수 있는 <code>set</code> 자료형을 제공합니다. 집합의 효율적인 구현체.</p>
+  
+  <div class="code-block">
+    <span class="code-label python">Python</span>
+<pre><code><span class="c-cmt"># 빈 집합 선언</span>
+A = <span class="c-fn">set</span>()        <span class="c-cmt"># A = {} (공집합)</span>
+
+<span class="c-cmt"># 원소가 있는 집합 - 중복은 자동 제거</span>
+B = {<span class="c-num">3</span>, <span class="c-num">5</span>, <span class="c-num">1</span>, <span class="c-num">3</span>} <span class="c-cmt"># B = {3, 5, 1} (3 중복 제거됨)</span></code></pre>
+  </div>
+  
+  <div class="callout connect">
+    <div class="callout-title">집합의 성질 재확인</div>
+    {3, 5, 1, 3}처럼 적어도 Python이 자동으로 중복을 제거해서 {3, 5, 1}로 처리. 집합 정의(원소는 한 번씩만)와 일치.
+  </div>
+  
+  <h3>앞으로 집중할 2개 연산</h3>
+  
+  <div class="point">
+    Union-Find 자료구조에서 가장 중요한 두 연산: <span class="kw">membership (find)</span>와 <span class="kw">union (합집합)</span>.
+  </div>
+  
+  <h3>3개 핵심 연산 정의</h3>
+  
+  <div class="proof-step">
+    <div class="label">① make-set(x)</div>
+    <p style="margin-top:6px;"><strong>x만으로 구성된 새 집합 { x }를 만드는 연산</strong></p>
+    <ul style="margin-top:6px;">
+      <li>입력: 원소 x</li>
+      <li>결과: 새 집합 {x}가 생성됨</li>
+    </ul>
+  </div>
+  
+  <div class="proof-step">
+    <div class="label">② find(x)</div>
+    <p style="margin-top:6px;"><strong>x가 속한 집합 (또는 집합의 대표 원소)을 반환하는 연산</strong></p>
+    <ul style="margin-top:6px;">
+      <li>입력: 원소 x</li>
+      <li>결과: x가 속한 집합의 식별자 (보통 대표 원소)</li>
+      <li>membership 연산에 해당</li>
+    </ul>
+  </div>
+  
+  <div class="proof-step">
+    <div class="label">③ union(x, y)</div>
+    <p style="margin-top:6px;"><strong>x와 y가 각각 속한 두 집합을 하나로 합치는 연산</strong></p>
+    <ul style="margin-top:6px;">
+      <li>입력: 두 원소 x, y (key 값)</li>
+      <li>결과: x가 속한 집합과 y가 속한 집합이 합쳐짐</li>
+      <li>주의: 합쳐지는 건 x, y가 아니라 그들이 <strong>속한 집합</strong></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 14. 목표 시간복잡도 -->
+<!-- ============================================== -->
+<section id="s14">
+  <h2><span class="num">14</span> 목표 — find와 union이 O(log n)</h2>
+  
+  <div class="key-result">
+    <div class="label">우리의 목표</div>
+    <div class="formula">find와 union이 모두 O(<span class="log">log</span> n) 안에 끝나도록 만들기</div>
+  </div>
+  
+  <div class="callout connect">
+    <div class="callout-title">왜 O(log n)을 목표로 하나?</div>
+    <ul style="margin-top:6px;">
+      <li>지금까지 본 균형 트리들(AVL, 레드블랙, 2-3-4)도 모두 O(log n)</li>
+      <li>현실적으로 만들 수 있는 효율적인 자료구조의 한 기준선</li>
+      <li>대량 데이터에서도 충분히 빠름</li>
+    </ul>
+  </div>
+  
+  <h3>접근 — 2가지 방법 비교</h3>
+  
+  <p>두 가지 방법을 살펴봅니다:</p>
+  
+  <ul>
+    <li><strong>방법 1</strong>: 원형 양방향 연결 리스트 — 비교용 (공부 필요 X)</li>
+    <li><strong>방법 2</strong>: 트리 ★ — 실제로 쓰는 방법</li>
+  </ul>
+  
+  <div class="callout warn">
+    <div class="callout-title">교수님 안내</div>
+    방법 1은 <strong>왜 방법 2가 좋은지 보여주기 위한 비교용</strong>. 시험에서 자세히 묻지 않을 가능성 높음. 그래도 비교 결과는 알아두기.
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 15. 방법 1 - 연결 리스트 -->
+<!-- ============================================== -->
+<section id="s15">
+  <h2><span class="num">15</span> 방법 1 — 원형 양방향 연결 리스트</h2>
+  
+  <div class="callout warn">
+    <div class="callout-title">참고용</div>
+    이 방법은 <strong>비교를 위한 학습용</strong>. 실제로 사용하지는 않음. 트리 방식이 왜 좋은지 보여주려고 가져온 것.
+  </div>
+  
+  <h3>구조</h3>
+  
+  <p>각 집합을 <strong>원형 양방향 연결 리스트 <span class="en">(Circular Doubly Linked List)</span></strong>로 표현. 더미 헤드(공집합 표시)를 두고, 원소들이 양방향으로 연결됨.</p>
+  
+  <h3>make-set(x)</h3>
+  
+  <div class="tree-viz">
+    <svg width="80%" viewBox="0 0 500 180" xmlns="http://www.w3.org/2000/svg">
+      
+      <!-- 더미 헤드 -->
+      <rect x="180" y="60" width="60" height="50" fill="var(--slate-bg)" stroke="var(--ink)" stroke-width="2" rx="6"/>
+      <text x="210" y="80" style="font-size:11px; fill:var(--ink-muted); text-anchor:middle; font-family:sans-serif;">더미헤드</text>
+      <text x="210" y="98" style="font-size:13px; fill:var(--ink); text-anchor:middle; font-family:monospace; font-weight:600;">∅</text>
+      
+      <!-- x 노드 -->
+      <rect x="280" y="60" width="60" height="50" fill="white" stroke="var(--purple)" stroke-width="2" rx="6"/>
+      <text x="310" y="92" style="font-size:16px; fill:var(--ink); text-anchor:middle; font-family:monospace; font-weight:700;">x</text>
+      
+      <!-- 양방향 화살표 -->
+      <line x1="240" y1="78" x2="280" y2="78" stroke="var(--ink-soft)" stroke-width="1.5"/>
+      <polygon points="280,78 274,75 274,81" fill="var(--ink-soft)"/>
+      <line x1="280" y1="92" x2="240" y2="92" stroke="var(--ink-soft)" stroke-width="1.5"/>
+      <polygon points="240,92 246,89 246,95" fill="var(--ink-soft)"/>
+      
+      <!-- 원형 연결 -->
+      <path d="M 340 85 Q 410 85 410 30 Q 410 -10 210 -10 Q 90 -10 90 85 Q 90 130 180 90" 
+            fill="none" stroke="var(--ink-soft)" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <text x="400" y="155" style="font-size:11px; fill:var(--ink-muted); text-anchor:middle; font-style:italic; font-family:sans-serif;">원형으로 연결됨</text>
+      
+    </svg>
+    <div class="caption">make-set(x) — 더미헤드와 x가 양방향 원형으로 연결</div>
+  </div>
+  
+  <div class="math-block">
+    make-set(x) = O(1)
+    <span class="step-note">노드 2개 연결만 하면 됨</span>
+  </div>
+  
+  <h3>find(x)</h3>
+  
+  <p>x가 어떤 집합에 속하는지 찾으려면 <strong>리스트를 전부 훑어야</strong> 함. 노드 n개면 최악 n번 탐색.</p>
+  
+  <div class="tree-viz">
+    <svg width="90%" viewBox="0 0 700 130" xmlns="http://www.w3.org/2000/svg">
+      
+      <!-- 더미헤드 -->
+      <rect x="40" y="40" width="60" height="50" fill="var(--slate-bg)" stroke="var(--ink)" stroke-width="2" rx="6"/>
+      <text x="70" y="60" style="font-size:11px; fill:var(--ink-muted); text-anchor:middle; font-family:sans-serif;">더미헤드</text>
+      <text x="70" y="78" style="font-size:13px; fill:var(--ink); text-anchor:middle; font-family:monospace; font-weight:600;">∅</text>
+      
+      <!-- 노드들 -->
+      <rect x="130" y="40" width="50" height="50" fill="white" stroke="var(--ink)" stroke-width="2" rx="6"/>
+      <text x="155" y="72" style="font-size:16px; fill:var(--ink-muted); text-anchor:middle; font-family:monospace;">?</text>
+      
+      <rect x="210" y="40" width="50" height="50" fill="white" stroke="var(--ink)" stroke-width="2" rx="6"/>
+      <text x="235" y="72" style="font-size:16px; fill:var(--ink-muted); text-anchor:middle; font-family:monospace;">?</text>
+      
+      <rect x="290" y="40" width="50" height="50" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="3" rx="6"/>
+      <text x="315" y="72" style="font-size:16px; fill:var(--purple); text-anchor:middle; font-family:monospace; font-weight:700;">x</text>
+      
+      <rect x="370" y="40" width="50" height="50" fill="white" stroke="var(--ink)" stroke-width="2" rx="6"/>
+      <text x="395" y="72" style="font-size:16px; fill:var(--ink-muted); text-anchor:middle; font-family:monospace;">?</text>
+      
+      <rect x="450" y="40" width="50" height="50" fill="white" stroke="var(--ink)" stroke-width="2" rx="6"/>
+      <text x="475" y="72" style="font-size:16px; fill:var(--ink-muted); text-anchor:middle; font-family:monospace;">?</text>
+      
+      <!-- 연결선 (양방향) -->
+      <line x1="100" y1="60" x2="130" y2="60" stroke="var(--ink-soft)"/>
+      <line x1="180" y1="60" x2="210" y2="60" stroke="var(--ink-soft)"/>
+      <line x1="260" y1="60" x2="290" y2="60" stroke="var(--purple)" stroke-width="2"/>
+      <line x1="340" y1="60" x2="370" y2="60" stroke="var(--ink-soft)"/>
+      <line x1="420" y1="60" x2="450" y2="60" stroke="var(--ink-soft)"/>
+      
+      <!-- 점선 (원형 연결) -->
+      <line x1="500" y1="60" x2="540" y2="60" stroke="var(--ink-soft)" stroke-dasharray="3,3"/>
+      <text x="555" y="65" style="font-size:18px; fill:var(--ink-muted); font-family:sans-serif;">···</text>
+      
+      <!-- 화살표 (탐색) -->
+      <text x="280" y="115" style="font-size:12px; fill:var(--red); text-anchor:middle; font-weight:700; font-family:sans-serif;">↑ x를 찾을 때까지 순회</text>
+      
+    </svg>
+    <div class="caption">x를 찾으려면 더미헤드부터 차례로 비교 → 최악 n번</div>
+  </div>
+  
+  <div class="math-block">
+    find(x) = O(n)
+    <span class="step-note">원형 양방향 리스트의 한계 — 전체 탐색 필요</span>
+  </div>
+  
+  <p>find가 끝나면 발견된 집합의 식별자(예: 더미헤드)를 반환:</p>
+  
+  <div class="code-block">
+    <span class="code-label pseudo">의사코드</span>
+<pre><code>v = <span class="c-fn">find</span>(x)  <span class="c-cmt"># v는 x가 속한 집합의 대표 (예: 더미헤드)</span></code></pre>
+  </div>
+  
+  <h3>union(x, y)</h3>
+  
+  <p>x가 속한 집합과 y가 속한 집합을 합치려면:</p>
+  
+  <div class="code-block">
+    <span class="code-label pseudo">의사코드</span>
+<pre><code>v = <span class="c-fn">find</span>(x)         <span class="c-cmt"># O(n) — x가 속한 집합</span>
+w = <span class="c-fn">find</span>(y)         <span class="c-cmt"># O(n) — y가 속한 집합</span>
+<span class="c-key">if</span> v != w:          <span class="c-cmt"># 이미 같은 집합이면 합칠 필요 없음</span>
+    <span class="c-fn">join</span>(v, w)      <span class="c-cmt"># O(1) — 두 리스트를 연결</span></code></pre>
+  </div>
+  
+  <div class="callout warn">
+    <div class="callout-title">왜 v != w 체크?</div>
+    이미 두 원소 x, y가 같은 집합에 있다면 합집합 결과가 원래 집합이랑 같음 → 합칠 필요 없음.
+  </div>
+  
+  <div class="math-block">
+    union(x, y) = O(n) + O(n) + O(1) = O(n)
+    <span class="step-note">find 비용이 지배적</span>
+  </div>
+  
+  <h3>방법 1 시간복잡도 정리</h3>
+  
+  <table>
+    <tr>
+      <th>연산</th>
+      <th>시간복잡도</th>
+      <th>평가</th>
+    </tr>
+    <tr>
+      <td>make-set</td>
+      <td>O(1)</td>
+      <td>좋음</td>
+    </tr>
+    <tr>
+      <td>find</td>
+      <td>O(n)</td>
+      <td style="color:var(--red);">나쁨</td>
+    </tr>
+    <tr>
+      <td>union</td>
+      <td>O(n)</td>
+      <td style="color:var(--red);">나쁨</td>
+    </tr>
+  </table>
+  
+  <div class="callout warn">
+    <div class="callout-title">결론</div>
+    O(n)은 좋지 않음. 우리 목표(O(log n))를 달성 못함. <strong>트리로 바꿔보자.</strong>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 16. 방법 2 - 트리 -->
+<!-- ============================================== -->
+<section id="s16">
+  <h2><span class="num">16</span> 방법 2 — 트리 (핵심) ★</h2>
+  
+  <h3>핵심 발상</h3>
+  
+  <div class="callout star">
+    <div class="callout-title">Union-Find의 트리 구조</div>
+    <ul style="margin-top:6px;">
+      <li>각 집합을 <strong>하나의 트리</strong>로 표현</li>
+      <li>각 노드는 <strong>부모를 가리키는 링크만</strong> 가짐 (자식 X)</li>
+      <li><strong>루트 노드는 자기 자신을 가리킴</strong></li>
+      <li>같은 트리(=같은 루트)에 있으면 <strong>같은 집합</strong></li>
+    </ul>
+  </div>
+  
+  <div class="callout connect">
+    <div class="callout-title">이전 트리들과의 차이</div>
+    BST, AVL, 레드블랙, 2-3-4 트리는 <strong>부모 → 자식</strong> 링크를 썼음. Union-Find는 반대로 <strong>자식 → 부모</strong> 링크만 씀. 같은 트리지만 활용 방식이 정반대.
+  </div>
+  
+  <h3>예시 — S = {1, 3, 5, 2}</h3>
+  
+  <p>집합 S의 모든 원소를 트리 하나로 묶기. 3을 루트로 하고 나머지가 모두 3을 부모로 가리킨다고 하면:</p>
+  
+  <div class="tree-viz">
+    <svg width="70%" viewBox="0 0 500 280" xmlns="http://www.w3.org/2000/svg">
+      
+      <!-- 루트: 3 -->
+      <circle cx="250" cy="60" r="26" fill="white" stroke="var(--purple)" stroke-width="3"/>
+      <text x="250" y="60" style="font-size:18px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">3</text>
+      <text x="295" y="60" style="font-size:11px; fill:var(--purple-deep); font-style:italic; font-family:sans-serif;">루트</text>
+      
+      <!-- 자기 자신을 가리키는 self-loop -->
+      <path d="M 270 45 Q 295 25 285 55" fill="none" stroke="var(--purple)" stroke-width="1.8"/>
+      <polygon points="285,55 278,52 281,60" fill="var(--purple)"/>
+      
+      <!-- 자식들 (실제로는 부모를 가리키는 자식) -->
+      <circle cx="130" cy="180" r="22" fill="white" stroke="var(--ink)" stroke-width="2"/>
+      <text x="130" y="180" style="font-size:16px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">1</text>
+      
+      <circle cx="250" cy="180" r="22" fill="white" stroke="var(--ink)" stroke-width="2"/>
+      <text x="250" y="180" style="font-size:16px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">5</text>
+      
+      <circle cx="370" cy="180" r="22" fill="white" stroke="var(--ink)" stroke-width="2"/>
+      <text x="370" y="180" style="font-size:16px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">2</text>
+      
+      <!-- 자식 → 부모 화살표 (부모를 가리키는 방향) -->
+      <line x1="138" y1="160" x2="232" y2="80" stroke="var(--ink-soft)" stroke-width="1.8"/>
+      <polygon points="232,80 232,90 240,86" fill="var(--ink-soft)"/>
+      
+      <line x1="250" y1="158" x2="250" y2="90" stroke="var(--ink-soft)" stroke-width="1.8"/>
+      <polygon points="250,90 246,98 254,98" fill="var(--ink-soft)"/>
+      
+      <line x1="362" y1="160" x2="268" y2="80" stroke="var(--ink-soft)" stroke-width="1.8"/>
+      <polygon points="268,80 260,86 268,90" fill="var(--ink-soft)"/>
+      
+      <text x="250" y="240" style="font-size:13px; fill:var(--ink-muted); text-anchor:middle; font-style:italic; font-family:sans-serif;">화살표 방향 = 부모를 가리킴 (자식 → 부모)</text>
+      <text x="250" y="260" style="font-size:12px; fill:var(--ink-muted); text-anchor:middle; font-family:sans-serif;">S = { 1, 3, 5, 2 }</text>
+      
+    </svg>
+    <div class="caption">루트 3은 자기 자신을 가리킴. 나머지는 모두 3을 부모로 가리킴</div>
+  </div>
+  
+  <div class="callout tip">
+    <div class="callout-title">자식 수 제한 없음</div>
+    Union-Find 트리는 한 노드가 자식을 몇 개든 가질 수 있어요 (2-3-4 트리와 달리 제한 없음). 다진 트리 형태.
+  </div>
+  
+  <h3>find(x) 구현</h3>
+  
+  <div class="point">
+    find(x)는 <strong>x에서 부모 링크를 따라 올라가며 루트를 찾는 것</strong>. 루트가 곧 집합의 식별자.
+  </div>
+  
+  <h4>예시</h4>
+  
+  <ul>
+    <li><code>find(2)</code> → 2의 부모 = 3 → 3은 자기 자신(루트) → <strong>3 반환</strong></li>
+    <li><code>find(1)</code> → 1의 부모 = 3 → 루트 → <strong>3 반환</strong></li>
+    <li><code>find(2) == find(1)</code> → 둘 다 3 → 같은 집합 ✓</li>
+  </ul>
+  
+  <h4>핵심 활용</h4>
+  
+  <div class="callout star">
+    <div class="callout-title">두 원소가 같은 집합인지 판별</div>
+    <code>find(x) == find(y)</code>이면 같은 집합. 다르면 다른 집합. 이게 Union-Find의 핵심 사용 패턴.
+  </div>
+  
+  <h3>또 다른 예시 트리 — 자식 3개</h3>
+  
+  <div class="tree-viz">
+    <svg width="60%" viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">
+      
+      <!-- 루트: 7 -->
+      <circle cx="200" cy="50" r="24" fill="white" stroke="var(--purple)" stroke-width="3"/>
+      <text x="200" y="50" style="font-size:16px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">7</text>
+      
+      <!-- self-loop -->
+      <path d="M 218 38 Q 240 18 232 45" fill="none" stroke="var(--purple)" stroke-width="1.5"/>
+      <polygon points="232,45 226,42 229,50" fill="var(--purple)"/>
+      
+      <!-- 자식들 -->
+      <circle cx="100" cy="160" r="20" fill="white" stroke="var(--ink)" stroke-width="2"/>
+      <text x="100" y="160" style="font-size:15px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">4</text>
+      
+      <circle cx="200" cy="160" r="20" fill="white" stroke="var(--ink)" stroke-width="2"/>
+      <text x="200" y="160" style="font-size:15px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">9</text>
+      
+      <circle cx="300" cy="160" r="20" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="2.5"/>
+      <text x="300" y="160" style="font-size:15px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">6</text>
+      
+      <!-- 자식 → 부모 화살표 -->
+      <line x1="108" y1="142" x2="184" y2="68" stroke="var(--ink-soft)" stroke-width="1.8"/>
+      <polygon points="184,68 184,78 192,74" fill="var(--ink-soft)"/>
+      
+      <line x1="200" y1="140" x2="200" y2="76" stroke="var(--ink-soft)" stroke-width="1.8"/>
+      <polygon points="200,76 196,84 204,84" fill="var(--ink-soft)"/>
+      
+      <line x1="292" y1="142" x2="216" y2="68" stroke="var(--purple)" stroke-width="2"/>
+      <polygon points="216,68 216,78 208,74" fill="var(--purple)"/>
+      
+      <text x="200" y="205" style="font-size:12px; fill:var(--ink-muted); text-anchor:middle; font-family:sans-serif;">find(6) = 6의 부모(7) → 루트 → <tspan fill="var(--purple)" font-weight="700">7 반환</tspan></text>
+      
+    </svg>
+    <div class="caption">find(6) — 6의 부모 7이 루트이므로 7을 반환</div>
+  </div>
+  
+  <h3>find 수행시간</h3>
+  
+  <p>find(x)는 x에서 루트까지 부모를 따라 올라감. 가는 거리 = 트리 높이.</p>
+  
+  <div class="math-block">
+    find(x) = O(h)
+    <span class="step-note">h는 트리 높이</span>
+  </div>
+  
+  <div class="callout connect">
+    <div class="callout-title">왜 O(h)?</div>
+    리프(또는 깊은 노드)에서 시작해서 한 레벨씩 부모로 올라가면 최대 h번 이동. 균형 잡힌 트리라면 h = O(log n).
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 17. 트리로 union 구현 -->
+<!-- ============================================== -->
+<section id="s17">
+  <h2><span class="num">17</span> 트리로 union(x, y) 구현</h2>
+  
+  <h3>아이디어</h3>
+  
+  <p>x와 y가 속한 두 트리(집합)를 찾아서, 하나의 트리로 합치면 됨. 합칠 때는 <strong>한 트리의 루트가 다른 트리의 루트를 가리키게</strong>.</p>
+  
+  <h3>예시 — union(2, 6)</h3>
+  
+  <p>두 개의 별개 집합이 있다고 가정:</p>
+  
+  <ul>
+    <li>집합 1: 루트 3, 자식 1, 5, 2</li>
+    <li>집합 2: 루트 7, 자식 4, 9, 6</li>
+  </ul>
+  
+  <div class="tree-viz">
+    <svg width="100%" viewBox="0 0 900 280" xmlns="http://www.w3.org/2000/svg">
+      
+      <text x="200" y="30" style="font-size:13px; font-weight:700; fill:var(--ink); text-anchor:middle; font-family:sans-serif;">집합 1 (2의 트리)</text>
+      <text x="700" y="30" style="font-size:13px; font-weight:700; fill:var(--ink); text-anchor:middle; font-family:sans-serif;">집합 2 (6의 트리)</text>
+      
+      <!-- 집합 1 -->
+      <circle cx="200" cy="70" r="22" fill="white" stroke="var(--purple)" stroke-width="3"/>
+      <text x="200" y="70" style="font-size:14px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">3</text>
+      <path d="M 218 60 Q 235 45 228 65" fill="none" stroke="var(--purple)" stroke-width="1.5"/>
+      <polygon points="228,65 222,62 225,70" fill="var(--purple)"/>
+      
+      <circle cx="100" cy="170" r="18" fill="white" stroke="var(--ink)" stroke-width="2"/>
+      <text x="100" y="170" style="font-size:13px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">1</text>
+      
+      <circle cx="200" cy="170" r="18" fill="white" stroke="var(--ink)" stroke-width="2"/>
+      <text x="200" y="170" style="font-size:13px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">5</text>
+      
+      <circle cx="300" cy="170" r="18" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="2.5"/>
+      <text x="300" y="170" style="font-size:13px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">2</text>
+      
+      <line x1="108" y1="154" x2="184" y2="86" stroke="var(--ink-soft)" stroke-width="1.6"/>
+      <polygon points="184,86 184,94 192,90" fill="var(--ink-soft)"/>
+      <line x1="200" y1="152" x2="200" y2="92" stroke="var(--ink-soft)" stroke-width="1.6"/>
+      <polygon points="200,92 196,100 204,100" fill="var(--ink-soft)"/>
+      <line x1="292" y1="154" x2="216" y2="86" stroke="var(--ink-soft)" stroke-width="1.6"/>
+      <polygon points="216,86 216,94 208,90" fill="var(--ink-soft)"/>
+      
+      <!-- 집합 2 -->
+      <circle cx="700" cy="70" r="22" fill="white" stroke="var(--purple)" stroke-width="3"/>
+      <text x="700" y="70" style="font-size:14px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">7</text>
+      <path d="M 718 60 Q 735 45 728 65" fill="none" stroke="var(--purple)" stroke-width="1.5"/>
+      <polygon points="728,65 722,62 725,70" fill="var(--purple)"/>
+      
+      <circle cx="600" cy="170" r="18" fill="white" stroke="var(--ink)" stroke-width="2"/>
+      <text x="600" y="170" style="font-size:13px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">4</text>
+      
+      <circle cx="700" cy="170" r="18" fill="white" stroke="var(--ink)" stroke-width="2"/>
+      <text x="700" y="170" style="font-size:13px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">9</text>
+      
+      <circle cx="800" cy="170" r="18" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="2.5"/>
+      <text x="800" y="170" style="font-size:13px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">6</text>
+      
+      <line x1="608" y1="154" x2="684" y2="86" stroke="var(--ink-soft)" stroke-width="1.6"/>
+      <polygon points="684,86 684,94 692,90" fill="var(--ink-soft)"/>
+      <line x1="700" y1="152" x2="700" y2="92" stroke="var(--ink-soft)" stroke-width="1.6"/>
+      <polygon points="700,92 696,100 704,100" fill="var(--ink-soft)"/>
+      <line x1="792" y1="154" x2="716" y2="86" stroke="var(--ink-soft)" stroke-width="1.6"/>
+      <polygon points="716,86 716,94 708,90" fill="var(--ink-soft)"/>
+      
+      <text x="450" y="230" style="font-size:13px; fill:var(--ink-muted); text-anchor:middle; font-family:sans-serif;">두 트리는 별개의 집합 — 합쳐야 함</text>
+      
+    </svg>
+    <div class="caption">union(2, 6) 직전 상태 — 별개의 두 트리</div>
+  </div>
+  
+  <h3>알고리즘</h3>
+  
+  <div class="code-block">
+    <span class="code-label pseudo">의사코드</span>
+<pre><code><span class="c-cmt"># union(x, y)</span>
+v = <span class="c-fn">find</span>(x)          <span class="c-cmt"># x가 속한 집합의 루트 — O(h)</span>
+w = <span class="c-fn">find</span>(y)          <span class="c-cmt"># y가 속한 집합의 루트 — O(h)</span>
+<span class="c-key">if</span> v != w:           <span class="c-cmt"># 이미 같은 집합이면 합칠 필요 없음</span>
+    w.parent = v     <span class="c-cmt"># w의 부모를 v로 설정 — O(1)</span></code></pre>
+  </div>
+  
+  <h3>단계별 진행</h3>
+  
+  <div class="proof-step">
+    <div class="label">Step 1 · find(2)</div>
+    <p style="margin-top:6px;">2 → 부모 3 (루트) → 반환값 <strong>v = 3</strong></p>
+  </div>
+  
+  <div class="proof-step">
+    <div class="label">Step 2 · find(6)</div>
+    <p style="margin-top:6px;">6 → 부모 7 (루트) → 반환값 <strong>w = 7</strong></p>
+  </div>
+  
+  <div class="proof-step">
+    <div class="label">Step 3 · v != w 확인</div>
+    <p style="margin-top:6px;">v = 3, w = 7 → 서로 다름 → 합쳐야 함</p>
+  </div>
+  
+  <div class="proof-step">
+    <div class="label">Step 4 · w.parent = v</div>
+    <p style="margin-top:6px;">7의 부모를 3으로 설정 → 7이 더 이상 자기 자신을 가리키지 않고 3을 가리킴 → 트리 하나로 합쳐짐</p>
+  </div>
+  
+  <h3>union 후 상태</h3>
+  
+  <div class="tree-viz">
+    <svg width="80%" viewBox="0 0 600 320" xmlns="http://www.w3.org/2000/svg">
+      
+      <!-- 새 루트: 3 -->
+      <circle cx="300" cy="50" r="22" fill="white" stroke="var(--purple)" stroke-width="3"/>
+      <text x="300" y="50" style="font-size:14px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">3</text>
+      <path d="M 318 40 Q 335 25 328 45" fill="none" stroke="var(--purple)" stroke-width="1.5"/>
+      <polygon points="328,45 322,42 325,50" fill="var(--purple)"/>
+      <text x="340" y="50" style="font-size:11px; fill:var(--purple-deep); font-style:italic; font-family:sans-serif;">새 루트</text>
+      
+      <!-- 3의 자식: 1, 5, 2, 7 -->
+      <circle cx="120" cy="170" r="18" fill="white" stroke="var(--ink)" stroke-width="2"/>
+      <text x="120" y="170" style="font-size:13px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">1</text>
+      
+      <circle cx="220" cy="170" r="18" fill="white" stroke="var(--ink)" stroke-width="2"/>
+      <text x="220" y="170" style="font-size:13px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">5</text>
+      
+      <circle cx="320" cy="170" r="18" fill="white" stroke="var(--ink)" stroke-width="2"/>
+      <text x="320" y="170" style="font-size:13px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">2</text>
+      
+      <!-- 7 (이제 3의 자식) -->
+      <circle cx="450" cy="170" r="20" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="2.5"/>
+      <text x="450" y="170" style="font-size:14px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">7</text>
+      
+      <!-- 3의 자식 화살표들 -->
+      <line x1="128" y1="154" x2="284" y2="66" stroke="var(--ink-soft)" stroke-width="1.6"/>
+      <polygon points="284,66 284,76 292,72" fill="var(--ink-soft)"/>
+      <line x1="220" y1="152" x2="296" y2="66" stroke="var(--ink-soft)" stroke-width="1.6"/>
+      <polygon points="296,66 290,72 297,76" fill="var(--ink-soft)"/>
+      <line x1="320" y1="152" x2="304" y2="74" stroke="var(--ink-soft)" stroke-width="1.6"/>
+      <polygon points="304,74 300,82 308,82" fill="var(--ink-soft)"/>
+      
+      <!-- 7 → 3 새 화살표 (강조) -->
+      <line x1="438" y1="154" x2="316" y2="66" stroke="var(--purple)" stroke-width="2.5"/>
+      <polygon points="316,66 316,76 324,72" fill="var(--purple)"/>
+      <text x="395" y="115" style="font-size:11px; fill:var(--purple); font-weight:700; font-family:sans-serif;">새 링크!</text>
+      
+      <!-- 7의 자식: 4, 9, 6 -->
+      <circle cx="380" cy="270" r="16" fill="white" stroke="var(--ink)" stroke-width="2"/>
+      <text x="380" y="270" style="font-size:12px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">4</text>
+      
+      <circle cx="450" cy="270" r="16" fill="white" stroke="var(--ink)" stroke-width="2"/>
+      <text x="450" y="270" style="font-size:12px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">9</text>
+      
+      <circle cx="520" cy="270" r="16" fill="white" stroke="var(--ink)" stroke-width="2"/>
+      <text x="520" y="270" style="font-size:12px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">6</text>
+      
+      <line x1="386" y1="256" x2="438" y2="188" stroke="var(--ink-soft)" stroke-width="1.6"/>
+      <polygon points="438,188 438,198 446,194" fill="var(--ink-soft)"/>
+      <line x1="450" y1="254" x2="450" y2="192" stroke="var(--ink-soft)" stroke-width="1.6"/>
+      <polygon points="450,192 446,200 454,200" fill="var(--ink-soft)"/>
+      <line x1="514" y1="256" x2="462" y2="188" stroke="var(--ink-soft)" stroke-width="1.6"/>
+      <polygon points="462,188 462,198 454,194" fill="var(--ink-soft)"/>
+      
+    </svg>
+    <div class="caption">union 후 — 7이 3을 부모로 가리키면서 두 트리가 하나로 합쳐짐. 트리 높이가 1 증가</div>
+  </div>
+  
+  <h3>union 수행시간</h3>
+  
+  <div class="proof-step">
+    <div class="label">시간 분석</div>
+    <table style="margin-top:8px;">
+      <tr>
+        <th>단계</th>
+        <th>작업</th>
+        <th>시간</th>
+      </tr>
+      <tr>
+        <td>1</td>
+        <td>v = find(x)</td>
+        <td>O(h)</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>w = find(y)</td>
+        <td>O(h)</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>v != w 비교</td>
+        <td>O(1)</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>w.parent = v 설정</td>
+        <td>O(1)</td>
+      </tr>
+    </table>
+  </div>
+  
+  <div class="math-block">
+    union(x, y) = O(h) + O(h) + O(1) = O(h)
+    <span class="step-note">find 비용이 지배적</span>
+  </div>
+  
+  <h3>방법 1과 방법 2 비교</h3>
+  
+  <table>
+    <tr>
+      <th>연산</th>
+      <th>방법 1 (연결 리스트)</th>
+      <th>방법 2 (트리)</th>
+    </tr>
+    <tr>
+      <td>make-set</td>
+      <td>O(1)</td>
+      <td>O(1)</td>
+    </tr>
+    <tr>
+      <td>find</td>
+      <td style="color:var(--red);">O(n)</td>
+      <td style="color:var(--purple); font-weight:700;">O(h)</td>
+    </tr>
+    <tr>
+      <td>union</td>
+      <td style="color:var(--red);">O(n)</td>
+      <td style="color:var(--purple); font-weight:700;">O(h)</td>
+    </tr>
+  </table>
+  
+  <div class="callout star">
+    <div class="callout-title">트리 방식의 장점</div>
+    <ul style="margin-top:6px;">
+      <li>O(n) → O(h)로 줄었음</li>
+      <li>균형 잡힌 트리면 h = O(log n) → <strong>목표 달성</strong></li>
+      <li>단, 트리가 한쪽으로 치우치면 h = O(n)이 될 수도 있음 → 이걸 막는 트릭이 필요 (다음 시간 예고)</li>
+    </ul>
+  </div>
+  
+  <div class="callout warn">
+    <div class="callout-title">아직 안전하지 않은 이유</div>
+    union을 잘못 하면 트리가 한쪽으로 쏠려서 결국 O(n)이 될 수 있어요. 그래서 <strong>weighted union</strong>이나 <strong>path compression</strong> 같은 최적화가 필요. 다음 시간에 이어집니다.
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 18. 누가 누구의 부모로? -->
+<!-- ============================================== -->
+<section id="s18">
+  <h2><span class="num">18</span> union의 핵심 질문 — 누가 누구의 부모로?</h2>
+  
+  <p>지난 시간 union 알고리즘에는 빠진 부분이 있었어요. <strong>v와 w 중 누가 부모가 될지</strong> 결정하는 부분.</p>
+  
+  <div class="code-block">
+    <span class="code-label pseudo">union 의사코드 (불완전)</span>
+<pre><code><span class="c-cmt"># union(x, y)</span>
+v = <span class="c-fn">find</span>(x)          <span class="c-cmt"># O(h)</span>
+w = <span class="c-fn">find</span>(y)
+<span class="c-key">if</span> v != w:
+    <span class="c-cmt"># ❓ v.parent = w 인가, w.parent = v 인가?</span>
+    ???</code></pre>
+  </div>
+  
+  <h3>두 가지 선택지</h3>
+  
+  <p>v와 w가 각각 루트인 두 트리가 있다고 할 때, 합치는 방법은 두 가지:</p>
+  
+  <div class="tree-viz">
+    <svg width="100%" viewBox="0 0 800 280" xmlns="http://www.w3.org/2000/svg">
+      
+      <text x="200" y="30" style="font-size:13px; font-weight:700; fill:var(--ink); text-anchor:middle; font-family:sans-serif;">선택지 1: w 밑에 v</text>
+      <text x="600" y="30" style="font-size:13px; font-weight:700; fill:var(--ink); text-anchor:middle; font-family:sans-serif;">선택지 2: v 밑에 w</text>
+      
+      <!-- 선택지 1: w가 루트, v가 자식 -->
+      <circle cx="200" cy="70" r="22" fill="white" stroke="var(--purple)" stroke-width="3"/>
+      <text x="200" y="70" style="font-size:14px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">w</text>
+      <path d="M 218 60 Q 235 45 228 65" fill="none" stroke="var(--purple)" stroke-width="1.5"/>
+      <polygon points="228,65 222,62 225,70" fill="var(--purple)"/>
+      
+      <!-- w의 기존 서브트리 (삼각형) -->
+      <polygon points="240,90 290,90 265,160" fill="var(--gold-bg)" stroke="var(--gold)" stroke-width="2"/>
+      <text x="265" y="130" style="font-size:11px; fill:var(--gold); text-anchor:middle; font-family:sans-serif; font-style:italic;">w 서브트리</text>
+      
+      <!-- v 노드 -->
+      <circle cx="140" cy="160" r="18" fill="white" stroke="var(--ink)" stroke-width="2"/>
+      <text x="140" y="160" style="font-size:13px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">v</text>
+      
+      <!-- v의 서브트리 -->
+      <polygon points="115,180 165,180 140,240" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="2"/>
+      <text x="140" y="215" style="font-size:11px; fill:var(--teal); text-anchor:middle; font-family:sans-serif; font-style:italic;">v 서브트리</text>
+      
+      <!-- v → w 화살표 -->
+      <line x1="148" y1="144" x2="184" y2="86" stroke="var(--purple)" stroke-width="2.5"/>
+      <polygon points="184,86 184,96 192,92" fill="var(--purple)"/>
+      <text x="155" y="115" style="font-size:11px; fill:var(--purple); font-weight:700; font-family:sans-serif;">v.parent = w</text>
+      
+      <!-- 선택지 2: v가 루트, w가 자식 -->
+      <circle cx="600" cy="70" r="22" fill="white" stroke="var(--purple)" stroke-width="3"/>
+      <text x="600" y="70" style="font-size:14px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">v</text>
+      <path d="M 618 60 Q 635 45 628 65" fill="none" stroke="var(--purple)" stroke-width="1.5"/>
+      <polygon points="628,65 622,62 625,70" fill="var(--purple)"/>
+      
+      <!-- v의 기존 서브트리 -->
+      <polygon points="510,90 560,90 535,160" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="2"/>
+      <text x="535" y="130" style="font-size:11px; fill:var(--teal); text-anchor:middle; font-family:sans-serif; font-style:italic;">v 서브트리</text>
+      
+      <!-- w 노드 -->
+      <circle cx="660" cy="160" r="18" fill="white" stroke="var(--ink)" stroke-width="2"/>
+      <text x="660" y="160" style="font-size:13px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">w</text>
+      
+      <!-- w의 서브트리 -->
+      <polygon points="635,180 685,180 660,240" fill="var(--gold-bg)" stroke="var(--gold)" stroke-width="2"/>
+      <text x="660" y="215" style="font-size:11px; fill:var(--gold); text-anchor:middle; font-family:sans-serif; font-style:italic;">w 서브트리</text>
+      
+      <!-- w → v 화살표 -->
+      <line x1="652" y1="144" x2="616" y2="86" stroke="var(--purple)" stroke-width="2.5"/>
+      <polygon points="616,86 616,96 624,92" fill="var(--purple)"/>
+      <text x="660" y="115" style="font-size:11px; fill:var(--purple); font-weight:700; font-family:sans-serif;">w.parent = v</text>
+      
+    </svg>
+    <div class="caption">두 트리를 합치는 두 가지 방법 — 어느 쪽이 더 좋을까?</div>
+  </div>
+  
+  <h3>판단 기준</h3>
+  
+  <div class="callout star">
+    <div class="callout-title">원칙</div>
+    <p style="margin-top:6px;">우리는 <strong>높이를 낮게</strong> 만들고 싶음. 트리 연산 시간이 높이에 비례하니까(O(h)).</p>
+    <p style="margin-top:6px;">결론: <strong>높이 낮은 트리를 높이 높은 트리 밑에 붙이자!</strong></p>
+  </div>
+  
+  <p>왜냐하면 낮은 게 위로 가면 전체 높이가 +1 되는데, 낮은 게 아래로 가면 전체 높이가 그대로 유지되기 때문.</p>
+</section>
+
+<!-- ============================================== -->
+<!-- 19. Union by Height 원칙 -->
+<!-- ============================================== -->
+<section id="s19">
+  <h2><span class="num">19</span> Union by Height — 3가지 경우</h2>
+  
+  <h3>의사코드 (height 사용 버전)</h3>
+  
+  <div class="code-block">
+    <span class="code-label pseudo">의사코드</span>
+<pre><code><span class="c-cmt"># 두 트리의 높이를 비교해서 합치기</span>
+<span class="c-key">if</span> v != w:
+    <span class="c-key">if</span> v.height &gt; w.height:       <span class="c-cmt"># v가 더 높음</span>
+        w.parent = v               <span class="c-cmt"># v 밑에 w를 달음</span>
+        <span class="c-cmt"># 결합 후 높이 = v.height (그대로)</span>
+    <span class="c-key">elif</span> v.height &lt; w.height:    <span class="c-cmt"># w가 더 높음</span>
+        v.parent = w               <span class="c-cmt"># w 밑에 v를 달음</span>
+        <span class="c-cmt"># 결합 후 높이 = w.height (그대로)</span>
+    <span class="c-key">else</span>:                          <span class="c-cmt"># 둘 다 같음</span>
+        v.parent = w               <span class="c-cmt"># 아무 방향이나 OK</span>
+        <span class="c-cmt"># 결합 후 높이 = w.height + 1 (1 증가!)</span></code></pre>
+  </div>
+  
+  <h3>왜 else일 때만 높이가 +1?</h3>
+  
+  <p>두 트리 높이가 같을 때, 한쪽이 다른 쪽 밑에 들어가면 한 단계 더 깊어짐.</p>
+  
+  <div class="tree-viz">
+    <svg width="100%" viewBox="0 0 800 320" xmlns="http://www.w3.org/2000/svg">
+      
+      <!-- Before -->
+      <text x="200" y="30" style="font-size:13px; font-weight:700; fill:var(--ink); text-anchor:middle; font-family:sans-serif;">Before — 두 트리 (높이 2)</text>
+      
+      <!-- 트리 1 (v 루트) -->
+      <circle cx="120" cy="65" r="18" fill="white" stroke="var(--purple)" stroke-width="2.5"/>
+      <text x="120" y="65" style="font-size:13px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">v</text>
+      
+      <circle cx="90" cy="140" r="14" fill="white" stroke="var(--ink)" stroke-width="1.5"/>
+      <circle cx="150" cy="140" r="14" fill="white" stroke="var(--ink)" stroke-width="1.5"/>
+      
+      <line x1="96" y1="128" x2="112" y2="80" stroke="var(--ink-soft)" stroke-width="1.4"/>
+      <polygon points="112,80 110,90 118,86" fill="var(--ink-soft)"/>
+      <line x1="144" y1="128" x2="128" y2="80" stroke="var(--ink-soft)" stroke-width="1.4"/>
+      <polygon points="128,80 122,86 130,90" fill="var(--ink-soft)"/>
+      
+      <circle cx="75" cy="200" r="11" fill="white" stroke="var(--ink)" stroke-width="1.5"/>
+      <line x1="79" y1="190" x2="86" y2="153" stroke="var(--ink-soft)" stroke-width="1.4"/>
+      <polygon points="86,153 84,162 90,159" fill="var(--ink-soft)"/>
+      
+      <text x="120" y="240" style="font-size:11px; fill:var(--ink-muted); text-anchor:middle; font-family:sans-serif;">높이 = 2</text>
+      
+      <!-- 트리 2 (w 루트) -->
+      <circle cx="320" cy="65" r="18" fill="white" stroke="var(--purple)" stroke-width="2.5"/>
+      <text x="320" y="65" style="font-size:13px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">w</text>
+      
+      <circle cx="290" cy="140" r="14" fill="white" stroke="var(--ink)" stroke-width="1.5"/>
+      <circle cx="350" cy="140" r="14" fill="white" stroke="var(--ink)" stroke-width="1.5"/>
+      
+      <line x1="296" y1="128" x2="312" y2="80" stroke="var(--ink-soft)" stroke-width="1.4"/>
+      <polygon points="312,80 310,90 318,86" fill="var(--ink-soft)"/>
+      <line x1="344" y1="128" x2="328" y2="80" stroke="var(--ink-soft)" stroke-width="1.4"/>
+      <polygon points="328,80 322,86 330,90" fill="var(--ink-soft)"/>
+      
+      <circle cx="365" cy="200" r="11" fill="white" stroke="var(--ink)" stroke-width="1.5"/>
+      <line x1="361" y1="190" x2="354" y2="153" stroke="var(--ink-soft)" stroke-width="1.4"/>
+      <polygon points="354,153 354,162 358,159" fill="var(--ink-soft)"/>
+      
+      <text x="320" y="240" style="font-size:11px; fill:var(--ink-muted); text-anchor:middle; font-family:sans-serif;">높이 = 2</text>
+      
+      <!-- 화살표 -->
+      <line x1="430" y1="150" x2="490" y2="150" stroke="var(--purple)" stroke-width="2.5"/>
+      <polygon points="490,150 482,146 482,154" fill="var(--purple)"/>
+      <text x="460" y="140" style="font-size:11px; fill:var(--purple); text-anchor:middle; font-weight:700; font-family:sans-serif;">union</text>
+      
+      <!-- After -->
+      <text x="650" y="30" style="font-size:13px; font-weight:700; fill:var(--ink); text-anchor:middle; font-family:sans-serif;">After — 합친 트리 (높이 3)</text>
+      
+      <!-- 새 루트: w -->
+      <circle cx="650" cy="55" r="18" fill="white" stroke="var(--purple)" stroke-width="2.5"/>
+      <text x="650" y="55" style="font-size:13px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">w</text>
+      
+      <!-- v (이제 w의 자식) -->
+      <circle cx="580" cy="125" r="16" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="2"/>
+      <text x="580" y="125" style="font-size:13px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">v</text>
+      
+      <!-- w의 원래 자식 -->
+      <circle cx="650" cy="125" r="12" fill="white" stroke="var(--ink)" stroke-width="1.5"/>
+      <circle cx="720" cy="125" r="12" fill="white" stroke="var(--ink)" stroke-width="1.5"/>
+      
+      <!-- v → w 새 링크 (강조) -->
+      <line x1="590" y1="110" x2="634" y2="68" stroke="var(--purple)" stroke-width="2.5"/>
+      <polygon points="634,68 634,78 642,74" fill="var(--purple)"/>
+      
+      <line x1="650" y1="113" x2="650" y2="73" stroke="var(--ink-soft)" stroke-width="1.4"/>
+      <polygon points="650,73 646,82 654,82" fill="var(--ink-soft)"/>
+      <line x1="714" y1="115" x2="666" y2="70" stroke="var(--ink-soft)" stroke-width="1.4"/>
+      <polygon points="666,70 666,80 658,76" fill="var(--ink-soft)"/>
+      
+      <!-- v의 자식들 (원래 있던) -->
+      <circle cx="555" cy="195" r="11" fill="white" stroke="var(--ink)" stroke-width="1.5"/>
+      <circle cx="605" cy="195" r="11" fill="white" stroke="var(--ink)" stroke-width="1.5"/>
+      
+      <line x1="558" y1="185" x2="574" y2="140" stroke="var(--ink-soft)" stroke-width="1.4"/>
+      <polygon points="574,140 572,148 578,146" fill="var(--ink-soft)"/>
+      <line x1="601" y1="185" x2="585" y2="140" stroke="var(--ink-soft)" stroke-width="1.4"/>
+      <polygon points="585,140 580,146 588,150" fill="var(--ink-soft)"/>
+      
+      <!-- w의 원래 손자 -->
+      <circle cx="735" cy="195" r="11" fill="white" stroke="var(--ink)" stroke-width="1.5"/>
+      <line x1="731" y1="185" x2="724" y2="140" stroke="var(--ink-soft)" stroke-width="1.4"/>
+      <polygon points="724,140 724,148 728,145" fill="var(--ink-soft)"/>
+      
+      <!-- v의 손자 -->
+      <circle cx="540" cy="260" r="9" fill="white" stroke="var(--ink)" stroke-width="1.5"/>
+      <line x1="543" y1="252" x2="551" y2="207" stroke="var(--ink-soft)" stroke-width="1.4"/>
+      <polygon points="551,207 549,214 555,212" fill="var(--ink-soft)"/>
+      
+      <text x="650" y="295" style="font-size:11px; fill:var(--red); text-anchor:middle; font-weight:700; font-family:sans-serif;">높이 = 3 (1 증가!)</text>
+      
+    </svg>
+    <div class="caption">같은 높이의 두 트리를 합치면 한 쪽이 다른 쪽 밑으로 들어가면서 높이 +1</div>
+  </div>
+  
+  <h3>3가지 경우 정리</h3>
+  
+  <table>
+    <tr>
+      <th>경우</th>
+      <th>처리</th>
+      <th>결합 후 높이</th>
+    </tr>
+    <tr>
+      <td>v.height &gt; w.height</td>
+      <td>w.parent = v</td>
+      <td>v.height (그대로)</td>
+    </tr>
+    <tr>
+      <td>v.height &lt; w.height</td>
+      <td>v.parent = w</td>
+      <td>w.height (그대로)</td>
+    </tr>
+    <tr>
+      <td class="highlight">v.height == w.height</td>
+      <td class="highlight">아무 방향이나</td>
+      <td class="highlight">+1 증가</td>
+    </tr>
+  </table>
+</section>
+
+<!-- ============================================== -->
+<!-- 20. Node 클래스와 make_set -->
+<!-- ============================================== -->
+<section id="s20">
+  <h2><span class="num">20</span> Node 클래스와 make_set 구현</h2>
+  
+  <div class="code-block">
+    <span class="code-label python">Python</span>
+<pre><code><span class="c-key">class</span> <span class="c-cls">Node</span>:
+    <span class="c-key">def</span> <span class="c-fn">__init__</span>(<span class="c-self">self</span>, key):
+        <span class="c-self">self</span>.key = key           <span class="c-cmt"># 노드의 값</span>
+        <span class="c-self">self</span>.parent = <span class="c-self">self</span>      <span class="c-cmt"># 부모 = 자기 자신 (루트)</span>
+        <span class="c-self">self</span>.rank = <span class="c-num">0</span>            <span class="c-cmt"># 높이 추적용 (초기값 0)</span>
+
+<span class="c-key">def</span> <span class="c-fn">make_set</span>(x):
+    <span class="c-key">return</span> <span class="c-cls">Node</span>(x)              <span class="c-cmt"># 새 노드 생성해서 반환</span></code></pre>
+  </div>
+  
+  <h3>rank가 뭔지?</h3>
+  
+  <div class="callout star">
+    <div class="callout-title">rank = 트리 높이의 상한선</div>
+    <p style="margin-top:6px;">실제 height와 살짝 다른 개념. <strong>"이 트리의 높이는 최대 rank 정도다"</strong>라는 상한선 역할.</p>
+    <ul style="margin-top:6px;">
+      <li>단원소 트리는 rank = 0 (높이 0)</li>
+      <li>union할 때만 갱신, find 호출은 rank 안 바꿈</li>
+      <li>나중에 배울 <strong>path compression</strong> 같은 최적화에서 실제 높이가 줄어도 rank는 그대로 → 그래서 "rank"라고 부름 (정확한 높이 ≠ rank)</li>
+    </ul>
+    <p style="margin-top:6px;">지금은 일단 <strong>"높이 추적용 변수"</strong>로 이해하면 충분.</p>
+  </div>
+  
+  <h3>사용 예시</h3>
+  
+  <div class="code-block">
+    <span class="code-label python">Python</span>
+<pre><code><span class="c-cmt"># 5개의 단원소 집합 생성</span>
+a = <span class="c-fn">make_set</span>(<span class="c-num">1</span>)
+b = <span class="c-fn">make_set</span>(<span class="c-num">2</span>)
+c = <span class="c-fn">make_set</span>(<span class="c-num">3</span>)
+d = <span class="c-fn">make_set</span>(<span class="c-num">4</span>)
+e = <span class="c-fn">make_set</span>(<span class="c-num">5</span>)</code></pre>
+  </div>
+  
+  <h3>초기 상태 시각화</h3>
+  
+  <div class="tree-viz">
+    <svg width="100%" viewBox="0 0 800 180" xmlns="http://www.w3.org/2000/svg">
+      
+      <!-- 5개 단원소 트리 -->
+      <!-- a -->
+      <circle cx="100" cy="80" r="26" fill="white" stroke="var(--purple)" stroke-width="2.5"/>
+      <text x="100" y="80" style="font-size:16px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">1</text>
+      <path d="M 122 70 Q 142 55 132 78" fill="none" stroke="var(--purple)" stroke-width="1.5"/>
+      <polygon points="132,78 126,75 128,82" fill="var(--purple)"/>
+      <text x="100" y="125" style="font-size:13px; fill:var(--ink-soft); text-anchor:middle; font-family:monospace; font-weight:700;">a</text>
+      <text x="100" y="50" style="font-size:10px; fill:var(--gold); text-anchor:middle; font-family:sans-serif; font-weight:600;">rank=0</text>
+      
+      <!-- b -->
+      <circle cx="240" cy="80" r="26" fill="white" stroke="var(--purple)" stroke-width="2.5"/>
+      <text x="240" y="80" style="font-size:16px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">2</text>
+      <path d="M 262 70 Q 282 55 272 78" fill="none" stroke="var(--purple)" stroke-width="1.5"/>
+      <polygon points="272,78 266,75 268,82" fill="var(--purple)"/>
+      <text x="240" y="125" style="font-size:13px; fill:var(--ink-soft); text-anchor:middle; font-family:monospace; font-weight:700;">b</text>
+      <text x="240" y="50" style="font-size:10px; fill:var(--gold); text-anchor:middle; font-family:sans-serif; font-weight:600;">rank=0</text>
+      
+      <!-- c -->
+      <circle cx="380" cy="80" r="26" fill="white" stroke="var(--purple)" stroke-width="2.5"/>
+      <text x="380" y="80" style="font-size:16px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">3</text>
+      <path d="M 402 70 Q 422 55 412 78" fill="none" stroke="var(--purple)" stroke-width="1.5"/>
+      <polygon points="412,78 406,75 408,82" fill="var(--purple)"/>
+      <text x="380" y="125" style="font-size:13px; fill:var(--ink-soft); text-anchor:middle; font-family:monospace; font-weight:700;">c</text>
+      <text x="380" y="50" style="font-size:10px; fill:var(--gold); text-anchor:middle; font-family:sans-serif; font-weight:600;">rank=0</text>
+      
+      <!-- d -->
+      <circle cx="520" cy="80" r="26" fill="white" stroke="var(--purple)" stroke-width="2.5"/>
+      <text x="520" y="80" style="font-size:16px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">4</text>
+      <path d="M 542 70 Q 562 55 552 78" fill="none" stroke="var(--purple)" stroke-width="1.5"/>
+      <polygon points="552,78 546,75 548,82" fill="var(--purple)"/>
+      <text x="520" y="125" style="font-size:13px; fill:var(--ink-soft); text-anchor:middle; font-family:monospace; font-weight:700;">d</text>
+      <text x="520" y="50" style="font-size:10px; fill:var(--gold); text-anchor:middle; font-family:sans-serif; font-weight:600;">rank=0</text>
+      
+      <!-- e -->
+      <circle cx="660" cy="80" r="26" fill="white" stroke="var(--purple)" stroke-width="2.5"/>
+      <text x="660" y="80" style="font-size:16px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">5</text>
+      <path d="M 682 70 Q 702 55 692 78" fill="none" stroke="var(--purple)" stroke-width="1.5"/>
+      <polygon points="692,78 686,75 688,82" fill="var(--purple)"/>
+      <text x="660" y="125" style="font-size:13px; fill:var(--ink-soft); text-anchor:middle; font-family:monospace; font-weight:700;">e</text>
+      <text x="660" y="50" style="font-size:10px; fill:var(--gold); text-anchor:middle; font-family:sans-serif; font-weight:600;">rank=0</text>
+      
+      <text x="400" y="165" style="font-size:12px; fill:var(--ink-muted); text-anchor:middle; font-family:sans-serif; font-style:italic;">5개의 단원소 집합 — 각각 자기 자신을 가리킴 (루트), 노드 안은 key값(1~5), 아래는 변수명(a~e)</text>
+      
+    </svg>
+    <div class="caption">make_set 5번 실행 후 초기 상태</div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 21. find 의사코드 -->
+<!-- ============================================== -->
+<section id="s21">
+  <h2><span class="num">21</span> find 의사코드</h2>
+  
+  <div class="code-block">
+    <span class="code-label python">Python</span>
+<pre><code><span class="c-key">def</span> <span class="c-fn">find</span>(x):
+    <span class="c-key">while</span> x.parent != x:    <span class="c-cmt"># parent가 자신이면 루트</span>
+        x = x.parent          <span class="c-cmt"># 부모를 따라 올라감</span>
+    <span class="c-key">return</span> x                 <span class="c-cmt"># 루트 노드 반환</span></code></pre>
+  </div>
+  
+  <h3>동작 방식</h3>
+  
+  <ol>
+    <li>x에서 시작</li>
+    <li>x.parent가 자기 자신(x)이면 → x는 루트 → 반환</li>
+    <li>아니면 x를 x.parent로 갱신하고 반복</li>
+  </ol>
+  
+  <div class="callout tip">
+    <div class="callout-title">왜 while문?</div>
+    얼마나 올라가야 하는지 모르니까. 루트(parent == self)에 도달할 때까지 반복.
+  </div>
+  
+  <div class="math-block">
+    find(x) = O(h)
+    <span class="step-note">최악의 경우 트리 높이만큼 올라감</span>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 22. union 의사코드 -->
+<!-- ============================================== -->
+<section id="s22">
+  <h2><span class="num">22</span> union 의사코드 (rank 사용)</h2>
+  
+  <div class="code-block">
+    <span class="code-label python">Python</span>
+<pre><code><span class="c-key">def</span> <span class="c-fn">union</span>(x, y):
+    v, w = <span class="c-fn">find</span>(x), <span class="c-fn">find</span>(y)        <span class="c-cmt"># 각자의 루트 찾기 — O(h)</span>
+    
+    <span class="c-key">if</span> v.rank &gt; w.rank:           <span class="c-cmt"># v가 더 높으면</span>
+        v, w = w, v                <span class="c-cmt"># v와 w 자리 바꿈 (트릭!)</span>
+    
+    <span class="c-cmt"># 여기서부터 w는 항상 rank가 큰 (또는 같은) 쪽</span>
+    v.parent = w                   <span class="c-cmt"># v를 w 밑에 달기</span>
+    
+    <span class="c-key">if</span> v.rank == w.rank:          <span class="c-cmt"># 둘 rank가 같았다면</span>
+        w.rank += <span class="c-num">1</span>                <span class="c-cmt"># 합친 후 높이 +1</span></code></pre>
+  </div>
+  
+  <h3>코드 트릭 — v, w 자리 바꾸기</h3>
+  
+  <div class="callout warn">
+    <div class="callout-title">왜 if/elif/else가 아니라 swap 하나로?</div>
+    <p style="margin-top:6px;">v.rank &gt; w.rank이면 v, w 자리만 바꿔놓음. 그러면 이후 코드에서 <strong>항상 w가 rank 큰 쪽</strong>이라 가정 가능. 코드가 간결해짐.</p>
+  </div>
+  
+  <h3>의사코드와 실제 동작 매칭</h3>
+  
+  <table>
+    <tr>
+      <th>원래 경우</th>
+      <th>swap 후</th>
+      <th>실행되는 코드</th>
+      <th>결과</th>
+    </tr>
+    <tr>
+      <td>v.rank &gt; w.rank</td>
+      <td>(swap) → w가 큰 쪽</td>
+      <td>v.parent = w</td>
+      <td>큰 거 밑에 작은 거 ✓</td>
+    </tr>
+    <tr>
+      <td>v.rank &lt; w.rank</td>
+      <td>(그대로)</td>
+      <td>v.parent = w</td>
+      <td>큰 거 밑에 작은 거 ✓</td>
+    </tr>
+    <tr>
+      <td>v.rank == w.rank</td>
+      <td>(그대로)</td>
+      <td>v.parent = w<br>w.rank += 1</td>
+      <td>아무 쪽이나 + 높이 +1 ✓</td>
+    </tr>
+  </table>
+</section>
+
+<!-- ============================================== -->
+<!-- 23. 실행 예제 -->
+<!-- ============================================== -->
+<section id="s23">
+  <h2><span class="num">23</span> 실행 예제 — 단계별 union</h2>
+  
+  <p>위에서 만든 a, b, c, d, e 5개 노드로 union을 차례로 실행해봅니다.</p>
+  
+  <h3>Step 1 — union(a, b)</h3>
+  
+  <div class="proof-step">
+    <div class="label">실행 과정</div>
+    <ul style="margin-top:6px;">
+      <li>v = find(a) = a, w = find(b) = b</li>
+      <li>v.rank = 0, w.rank = 0 → 같음 (swap 안 함)</li>
+      <li>a.parent = b → <strong>a가 b 밑으로</strong></li>
+      <li>같았으므로 → <strong>b.rank += 1</strong> → b.rank = 1</li>
+    </ul>
+  </div>
+  
+  <div class="tree-viz">
+    <svg width="100%" viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+      
+      <!-- b (이제 합쳐진 트리의 루트) -->
+      <circle cx="100" cy="60" r="22" fill="white" stroke="var(--purple)" stroke-width="2.5"/>
+      <text x="100" y="60" style="font-size:14px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">b</text>
+      <path d="M 118 50 Q 135 35 128 56" fill="none" stroke="var(--purple)" stroke-width="1.5"/>
+      <polygon points="128,56 122,53 124,60" fill="var(--purple)"/>
+      <text x="100" y="32" style="font-size:10px; fill:var(--red); text-anchor:middle; font-family:sans-serif; font-weight:700;">rank=1</text>
+      
+      <!-- a (이제 b의 자식) -->
+      <circle cx="100" cy="140" r="20" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="2"/>
+      <text x="100" y="140" style="font-size:14px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">a</text>
+      
+      <line x1="100" y1="122" x2="100" y2="84" stroke="var(--purple)" stroke-width="2"/>
+      <polygon points="100,84 96,93 104,93" fill="var(--purple)"/>
+      
+      <!-- c, d, e (그대로) -->
+      <circle cx="280" cy="100" r="22" fill="white" stroke="var(--purple)" stroke-width="2.5"/>
+      <text x="280" y="100" style="font-size:14px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">c</text>
+      <path d="M 298 90 Q 315 75 308 96" fill="none" stroke="var(--purple)" stroke-width="1.5"/>
+      <polygon points="308,96 302,93 304,100" fill="var(--purple)"/>
+      <text x="280" y="72" style="font-size:10px; fill:var(--gold); text-anchor:middle; font-family:sans-serif; font-weight:600;">rank=0</text>
+      
+      <circle cx="420" cy="100" r="22" fill="white" stroke="var(--purple)" stroke-width="2.5"/>
+      <text x="420" y="100" style="font-size:14px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">d</text>
+      <path d="M 438 90 Q 455 75 448 96" fill="none" stroke="var(--purple)" stroke-width="1.5"/>
+      <polygon points="448,96 442,93 444,100" fill="var(--purple)"/>
+      <text x="420" y="72" style="font-size:10px; fill:var(--gold); text-anchor:middle; font-family:sans-serif; font-weight:600;">rank=0</text>
+      
+      <circle cx="560" cy="100" r="22" fill="white" stroke="var(--purple)" stroke-width="2.5"/>
+      <text x="560" y="100" style="font-size:14px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">e</text>
+      <path d="M 578 90 Q 595 75 588 96" fill="none" stroke="var(--purple)" stroke-width="1.5"/>
+      <polygon points="588,96 582,93 584,100" fill="var(--purple)"/>
+      <text x="560" y="72" style="font-size:10px; fill:var(--gold); text-anchor:middle; font-family:sans-serif; font-weight:600;">rank=0</text>
+      
+    </svg>
+    <div class="caption">union(a, b) 후 — a가 b 밑으로, b.rank=1</div>
+  </div>
+  
+  <h3>Step 2 — union(a, c)</h3>
+  
+  <div class="proof-step">
+    <div class="label">실행 과정</div>
+    <ul style="margin-top:6px;">
+      <li>v = find(a) = b (a의 루트), w = find(c) = c</li>
+      <li>v.rank = 1, w.rank = 0 → <strong>v &gt; w → swap!</strong></li>
+      <li>swap 후: v = c, w = b (이제 w가 큰 쪽)</li>
+      <li>v.parent = w → <strong>c.parent = b</strong> (c가 b 밑으로)</li>
+      <li>rank가 달랐으므로 rank 변화 없음 → b.rank = 1 그대로</li>
+    </ul>
+  </div>
+  
+  <div class="tree-viz">
+    <svg width="100%" viewBox="0 0 800 220" xmlns="http://www.w3.org/2000/svg">
+      
+      <!-- b -->
+      <circle cx="150" cy="60" r="22" fill="white" stroke="var(--purple)" stroke-width="2.5"/>
+      <text x="150" y="60" style="font-size:14px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">b</text>
+      <path d="M 168 50 Q 185 35 178 56" fill="none" stroke="var(--purple)" stroke-width="1.5"/>
+      <polygon points="178,56 172,53 174,60" fill="var(--purple)"/>
+      <text x="150" y="32" style="font-size:10px; fill:var(--gold); text-anchor:middle; font-family:sans-serif; font-weight:600;">rank=1</text>
+      
+      <!-- a -->
+      <circle cx="100" cy="150" r="20" fill="white" stroke="var(--ink)" stroke-width="2"/>
+      <text x="100" y="150" style="font-size:14px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">a</text>
+      
+      <!-- c (이제 b의 자식) -->
+      <circle cx="200" cy="150" r="20" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="2"/>
+      <text x="200" y="150" style="font-size:14px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">c</text>
+      
+      <line x1="108" y1="135" x2="142" y2="80" stroke="var(--ink-soft)" stroke-width="1.6"/>
+      <polygon points="142,80 142,90 150,86" fill="var(--ink-soft)"/>
+      
+      <line x1="192" y1="135" x2="158" y2="80" stroke="var(--purple)" stroke-width="2"/>
+      <polygon points="158,80 158,90 150,86" fill="var(--purple)"/>
+      
+      <!-- d, e -->
+      <circle cx="400" cy="100" r="22" fill="white" stroke="var(--purple)" stroke-width="2.5"/>
+      <text x="400" y="100" style="font-size:14px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">d</text>
+      <path d="M 418 90 Q 435 75 428 96" fill="none" stroke="var(--purple)" stroke-width="1.5"/>
+      <polygon points="428,96 422,93 424,100" fill="var(--purple)"/>
+      <text x="400" y="72" style="font-size:10px; fill:var(--gold); text-anchor:middle; font-family:sans-serif; font-weight:600;">rank=0</text>
+      
+      <circle cx="540" cy="100" r="22" fill="white" stroke="var(--purple)" stroke-width="2.5"/>
+      <text x="540" y="100" style="font-size:14px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">e</text>
+      <path d="M 558 90 Q 575 75 568 96" fill="none" stroke="var(--purple)" stroke-width="1.5"/>
+      <polygon points="568,96 562,93 564,100" fill="var(--purple)"/>
+      <text x="540" y="72" style="font-size:10px; fill:var(--gold); text-anchor:middle; font-family:sans-serif; font-weight:600;">rank=0</text>
+      
+      <text x="150" y="200" style="font-size:11px; fill:var(--ink-muted); text-anchor:middle; font-family:sans-serif; font-style:italic;">b 트리 (rank=1)</text>
+      
+    </svg>
+    <div class="caption">union(a, c) 후 — c가 b 밑으로, rank 그대로</div>
+  </div>
+  
+  <h3>Step 3 — union(d, e)</h3>
+  
+  <div class="proof-step">
+    <div class="label">실행 과정</div>
+    <ul style="margin-top:6px;">
+      <li>v = find(d) = d, w = find(e) = e</li>
+      <li>v.rank = 0, w.rank = 0 → 같음 (swap 안 함)</li>
+      <li>d.parent = e → <strong>d가 e 밑으로</strong></li>
+      <li>같았으므로 → <strong>e.rank += 1</strong> → e.rank = 1</li>
+    </ul>
+  </div>
+  
+  <div class="tree-viz">
+    <svg width="100%" viewBox="0 0 800 220" xmlns="http://www.w3.org/2000/svg">
+      
+      <!-- b 트리 -->
+      <circle cx="150" cy="60" r="22" fill="white" stroke="var(--purple)" stroke-width="2.5"/>
+      <text x="150" y="60" style="font-size:14px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">b</text>
+      <path d="M 168 50 Q 185 35 178 56" fill="none" stroke="var(--purple)" stroke-width="1.5"/>
+      <polygon points="178,56 172,53 174,60" fill="var(--purple)"/>
+      <text x="150" y="32" style="font-size:10px; fill:var(--gold); text-anchor:middle; font-family:sans-serif; font-weight:600;">rank=1</text>
+      
+      <circle cx="100" cy="150" r="20" fill="white" stroke="var(--ink)" stroke-width="2"/>
+      <text x="100" y="150" style="font-size:14px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">a</text>
+      
+      <circle cx="200" cy="150" r="20" fill="white" stroke="var(--ink)" stroke-width="2"/>
+      <text x="200" y="150" style="font-size:14px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">c</text>
+      
+      <line x1="108" y1="135" x2="142" y2="80" stroke="var(--ink-soft)" stroke-width="1.6"/>
+      <polygon points="142,80 142,90 150,86" fill="var(--ink-soft)"/>
+      <line x1="192" y1="135" x2="158" y2="80" stroke="var(--ink-soft)" stroke-width="1.6"/>
+      <polygon points="158,80 158,90 150,86" fill="var(--ink-soft)"/>
+      
+      <!-- e 트리 (새로 합쳐짐) -->
+      <circle cx="500" cy="60" r="22" fill="white" stroke="var(--purple)" stroke-width="2.5"/>
+      <text x="500" y="60" style="font-size:14px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">e</text>
+      <path d="M 518 50 Q 535 35 528 56" fill="none" stroke="var(--purple)" stroke-width="1.5"/>
+      <polygon points="528,56 522,53 524,60" fill="var(--purple)"/>
+      <text x="500" y="32" style="font-size:10px; fill:var(--red); text-anchor:middle; font-family:sans-serif; font-weight:700;">rank=1</text>
+      
+      <circle cx="500" cy="150" r="20" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="2"/>
+      <text x="500" y="150" style="font-size:14px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">d</text>
+      
+      <line x1="500" y1="132" x2="500" y2="84" stroke="var(--purple)" stroke-width="2"/>
+      <polygon points="500,84 496,93 504,93" fill="var(--purple)"/>
+      
+      <text x="150" y="200" style="font-size:11px; fill:var(--ink-muted); text-anchor:middle; font-family:sans-serif; font-style:italic;">b 트리 (rank=1)</text>
+      <text x="500" y="200" style="font-size:11px; fill:var(--ink-muted); text-anchor:middle; font-family:sans-serif; font-style:italic;">e 트리 (rank=1)</text>
+      
+    </svg>
+    <div class="caption">union(d, e) 후 — d가 e 밑으로, e.rank=1</div>
+  </div>
+  
+  <h3>Step 4 — union(c, d) ★ 핵심 케이스</h3>
+  
+  <div class="proof-step">
+    <div class="label">실행 과정</div>
+    <ul style="margin-top:6px;">
+      <li>v = find(c) = b (c의 루트), w = find(d) = e (d의 루트)</li>
+      <li>v.rank = 1, w.rank = 1 → 같음 (swap 안 함)</li>
+      <li>v.parent = w → <strong>b.parent = e</strong> (b가 e 밑으로)</li>
+      <li>같았으므로 → <strong>e.rank += 1</strong> → e.rank = 2</li>
+    </ul>
+  </div>
+  
+  <div class="callout star">
+    <div class="callout-title">중요 관찰</div>
+    union(c, d)는 c, d 자체를 합치는 게 아니라 <strong>c가 속한 트리(루트 b)와 d가 속한 트리(루트 e)</strong>를 합치는 거예요. find가 먼저 호출되어 루트를 찾는 이유.
+  </div>
+  
+  <div class="tree-viz">
+    <svg width="100%" viewBox="0 0 800 320" xmlns="http://www.w3.org/2000/svg">
+      
+      <!-- 최종 루트: e -->
+      <circle cx="400" cy="50" r="24" fill="white" stroke="var(--purple)" stroke-width="3"/>
+      <text x="400" y="50" style="font-size:14px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">e</text>
+      <path d="M 420 40 Q 438 25 430 46" fill="none" stroke="var(--purple)" stroke-width="1.5"/>
+      <polygon points="430,46 424,43 426,50" fill="var(--purple)"/>
+      <text x="400" y="22" style="font-size:11px; fill:var(--red); text-anchor:middle; font-family:sans-serif; font-weight:700;">rank=2</text>
+      
+      <!-- b (e의 자식) -->
+      <circle cx="270" cy="150" r="22" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="2.5"/>
+      <text x="270" y="150" style="font-size:14px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">b</text>
+      <text x="225" y="150" style="font-size:10px; fill:var(--gold); text-anchor:middle; font-family:sans-serif; font-weight:600;">rank=1</text>
+      
+      <!-- d (e의 자식) -->
+      <circle cx="500" cy="150" r="22" fill="white" stroke="var(--ink)" stroke-width="2"/>
+      <text x="500" y="150" style="font-size:14px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">d</text>
+      
+      <!-- b → e 새 화살표 -->
+      <line x1="280" y1="132" x2="382" y2="68" stroke="var(--purple)" stroke-width="2.5"/>
+      <polygon points="382,68 384,78 392,72" fill="var(--purple)"/>
+      <text x="305" y="105" style="font-size:11px; fill:var(--purple); font-weight:700; font-family:sans-serif;">새 링크!</text>
+      
+      <!-- d → e -->
+      <line x1="492" y1="132" x2="416" y2="70" stroke="var(--ink-soft)" stroke-width="1.6"/>
+      <polygon points="416,70 416,80 410,76" fill="var(--ink-soft)"/>
+      
+      <!-- a (b의 자식) -->
+      <circle cx="200" cy="250" r="18" fill="white" stroke="var(--ink)" stroke-width="2"/>
+      <text x="200" y="250" style="font-size:13px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">a</text>
+      
+      <!-- c (b의 자식) -->
+      <circle cx="320" cy="250" r="18" fill="white" stroke="var(--ink)" stroke-width="2"/>
+      <text x="320" y="250" style="font-size:13px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">c</text>
+      
+      <line x1="208" y1="234" x2="252" y2="170" stroke="var(--ink-soft)" stroke-width="1.6"/>
+      <polygon points="252,170 252,180 260,176" fill="var(--ink-soft)"/>
+      <line x1="312" y1="234" x2="278" y2="172" stroke="var(--ink-soft)" stroke-width="1.6"/>
+      <polygon points="278,172 278,182 270,178" fill="var(--ink-soft)"/>
+      
+      <text x="400" y="295" style="font-size:13px; fill:var(--purple); text-anchor:middle; font-weight:700; font-family:sans-serif;">최종 합쳐진 트리 (모든 5개 노드가 하나의 집합)</text>
+      
+    </svg>
+    <div class="caption">union(c, d) 후 — b가 e 밑으로, e.rank=2. 모든 노드가 e 아래 하나의 트리</div>
+  </div>
+  
+  <h3>전체 진행 요약</h3>
+  
+  <table>
+    <tr>
+      <th>단계</th>
+      <th>실행</th>
+      <th>변화</th>
+      <th>이후 rank</th>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>union(a, b)</td>
+      <td>a → b</td>
+      <td>b.rank = 1</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>union(a, c)</td>
+      <td>c → b (find로 a→b 따라감)</td>
+      <td>b.rank = 1 (그대로)</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>union(d, e)</td>
+      <td>d → e</td>
+      <td>e.rank = 1</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>union(c, d)</td>
+      <td>b → e (두 트리 합침)</td>
+      <td>e.rank = 2</td>
+    </tr>
+  </table>
+  
+  <div class="callout tip">
+    <div class="callout-title">관찰</div>
+    <ul style="margin-top:6px;">
+      <li>rank가 다를 때는 단순히 작은 게 큰 것 밑으로 → rank 변화 없음</li>
+      <li>rank가 같을 때만 +1 증가 → 신중하게 높이 관리</li>
+      <li>5개 노드를 다 합쳤는데 최종 높이가 2 → <strong>매우 균형 잡힘</strong></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 24. 높이 분석 -->
+<!-- ============================================== -->
+<section id="s24">
+  <h2><span class="num">24</span> 높이 분석 — h = O(log n)</h2>
+  
+  <p>이 union 방식으로 트리 높이가 어떻게 되는지 분석해봅시다. 연산이 O(h)이니까 높이가 진짜 중요해요.</p>
+  
+  <h3>핵심 관찰</h3>
+  
+  <div class="callout star">
+    <div class="callout-title">언제 높이가 변하나?</div>
+    <p style="margin-top:6px;">union 알고리즘에서 <strong>높이가 +1 되는 경우는 딱 하나</strong>: <code>v.rank == w.rank</code>일 때.</p>
+    <p style="margin-top:6px;">즉 같은 rank의 두 트리를 합칠 때만 높이가 증가합니다.</p>
+  </div>
+  
+  <p>이 사실에서 한 가지 직관이 나옵니다:</p>
+  
+  <div class="point">
+    <strong>노드 수가 (대략) 2배가 될 때 높이가 +1 증가</strong>
+  </div>
+  
+  <p>왜냐하면 같은 rank의 두 트리를 합칠 때 노드 수가 정확히 2배가 되니까. 이걸 수학적으로 정리해봅시다.</p>
+  
+  <h3>N<sub>h</sub> 정의</h3>
+  
+  <div class="key-result">
+    <div class="label">정의</div>
+    <div class="formula">N<sub>h</sub> = 높이가 h인 union-find 트리의 <strong>최소 노드 개수</strong></div>
+  </div>
+  
+  <h3>케이스 분석</h3>
+  
+  <!-- h=0 -->
+  <h4>h = 0인 경우</h4>
+  
+  <div class="tree-viz">
+    <svg width="40%" viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="100" cy="60" r="22" fill="white" stroke="var(--purple)" stroke-width="2.5"/>
+      <text x="100" y="60" style="font-size:14px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">a</text>
+      <path d="M 118 50 Q 135 35 128 56" fill="none" stroke="var(--purple)" stroke-width="1.5"/>
+      <polygon points="128,56 122,53 124,60" fill="var(--purple)"/>
+      <text x="100" y="105" style="font-size:11px; fill:var(--ink-muted); text-anchor:middle; font-family:sans-serif;">노드 1개, 높이 0</text>
+    </svg>
+  </div>
+  
+  <div class="math-block">
+    N<sub>0</sub> = 1
+    <span class="step-note">단일 노드 (자신을 가리킴)</span>
+  </div>
+  
+  <!-- h=1 -->
+  <h4>h = 1인 경우</h4>
+  
+  <div class="tree-viz">
+    <svg width="40%" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="100" cy="50" r="20" fill="white" stroke="var(--purple)" stroke-width="2.5"/>
+      <text x="100" y="50" style="font-size:13px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">b</text>
+      <path d="M 116 42 Q 130 28 124 48" fill="none" stroke="var(--purple)" stroke-width="1.5"/>
+      <polygon points="124,48 119,45 121,52" fill="var(--purple)"/>
+      
+      <circle cx="100" cy="140" r="18" fill="white" stroke="var(--ink)" stroke-width="2"/>
+      <text x="100" y="140" style="font-size:13px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">a</text>
+      
+      <line x1="100" y1="124" x2="100" y2="74" stroke="var(--ink-soft)" stroke-width="1.6"/>
+      <polygon points="100,74 96,82 104,82" fill="var(--ink-soft)"/>
+      
+      <text x="100" y="180" style="font-size:11px; fill:var(--ink-muted); text-anchor:middle; font-family:sans-serif;">노드 2개, 높이 1</text>
+    </svg>
+  </div>
+  
+  <div class="math-block">
+    N<sub>1</sub> = 2
+    <span class="step-note">단일 노드 두 개를 union → 높이 1, 노드 2개</span>
+  </div>
+  
+  <div class="callout warn">
+    <div class="callout-title">왜 3이 아니라 2?</div>
+    <p style="margin-top:6px;">"높이 1짜리는 자식이 1개일 수도 있고 2개일 수도 있는데, 왜 최소가 2개?"라고 헷갈릴 수 있어요.</p>
+    <p style="margin-top:6px;">N<sub>h</sub>는 <strong>최소</strong> 노드 수니까, 가장 적은 케이스를 봅니다. 자식 1개짜리(노드 총 2개)가 가장 적음.</p>
+    <p style="margin-top:6px;">참고: union by rank로는 노드 3개짜리 직선(a→b→c)은 만들 수 없어요. 단독 노드(rank 0)는 항상 rank 1 트리 밑에 직접 붙으므로 높이가 늘지 않음.</p>
+  </div>
+  
+  <!-- h=2 -->
+  <h4>h = 2인 경우</h4>
+  
+  <p>높이 2인 트리는 어떻게 만들어지나? <strong>높이 1인 두 트리를 union</strong>하면 됩니다 (rank가 같아서 +1).</p>
+  
+  <div class="tree-viz">
+    <svg width="60%" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+      
+      <!-- 루트 -->
+      <circle cx="200" cy="40" r="20" fill="white" stroke="var(--purple)" stroke-width="2.5"/>
+      <text x="200" y="40" style="font-size:13px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">d</text>
+      <path d="M 216 32 Q 230 18 224 38" fill="none" stroke="var(--purple)" stroke-width="1.5"/>
+      <polygon points="224,38 219,35 221,42" fill="var(--purple)"/>
+      
+      <!-- 2단계 자식들 -->
+      <circle cx="140" cy="110" r="18" fill="white" stroke="var(--ink)" stroke-width="2"/>
+      <text x="140" y="110" style="font-size:13px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">b</text>
+      
+      <circle cx="260" cy="110" r="18" fill="white" stroke="var(--ink)" stroke-width="2"/>
+      <text x="260" y="110" style="font-size:13px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">c</text>
+      
+      <line x1="148" y1="96" x2="184" y2="56" stroke="var(--ink-soft)" stroke-width="1.6"/>
+      <polygon points="184,56 184,66 192,62" fill="var(--ink-soft)"/>
+      <line x1="252" y1="96" x2="216" y2="56" stroke="var(--ink-soft)" stroke-width="1.6"/>
+      <polygon points="216,56 216,66 208,62" fill="var(--ink-soft)"/>
+      
+      <!-- 손자 -->
+      <circle cx="140" cy="170" r="14" fill="white" stroke="var(--ink)" stroke-width="2"/>
+      <text x="140" y="170" style="font-size:12px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; font-family:monospace; font-weight:700;">a</text>
+      
+      <line x1="140" y1="156" x2="140" y2="130" stroke="var(--ink-soft)" stroke-width="1.6"/>
+      <polygon points="140,130 136,138 144,138" fill="var(--ink-soft)"/>
+      
+      <text x="200" y="195" style="font-size:11px; fill:var(--ink-muted); text-anchor:middle; font-family:sans-serif;">노드 4개, 높이 2</text>
+    </svg>
+  </div>
+  
+  <div class="math-block">
+    N<sub>2</sub> = 4
+    <span class="step-note">N<sub>1</sub>인 두 트리(각 2개) 합치면 4개</span>
+  </div>
+  
+  <h3>점화식 유도</h3>
+  
+  <div class="proof-step">
+    <div class="label">일반화</div>
+    <p style="margin-top:6px;">높이 h인 트리는 <strong>높이 h-1인 두 트리를 union</strong>해서 만들어짐 (rank가 같아야 높이가 +1).</p>
+    <p style="margin-top:6px;">노드 수를 최소화하려면 두 트리가 각각 N<sub>h-1</sub>일 때:</p>
+    
+    <div class="math-block">
+      N<sub>h</sub> = 2 · N<sub>h-1</sub>
+      <span class="step-note">노드 수 두 배씩 증가</span>
+    </div>
+  </div>
+  
+  <h3>일반항 풀기</h3>
+  
+  <div class="calc-step">
+    <div class="desc">전개</div>
+    N<sub>h</sub> = 2 · N<sub>h-1</sub><br>
+    = 2 · 2 · N<sub>h-2</sub><br>
+    = 2 · 2 · 2 · N<sub>h-3</sub><br>
+    = ... = 2<sup>h</sup> · N<sub>0</sub>
+  </div>
+  
+  <p>N<sub>0</sub> = 1이므로:</p>
+  
+  <div class="math-block">
+    N<sub>h</sub> = 2<sup>h</sup>
+  </div>
+  
+  <h3>n에 대한 부등식</h3>
+  
+  <p>전체 노드 수 n은 적어도 N<sub>h</sub> 이상이어야 함 (N<sub>h</sub>가 최소이므로):</p>
+  
+  <div class="proof-step">
+    <div class="label">유도 과정</div>
+    <div class="math-block">
+      N<sub>h</sub> ≤ n<br>
+      2<sup>h</sup> ≤ n
+    </div>
+    
+    <p style="margin-top:8px;">양변에 log₂ 씌우기 (단조증가, 부등호 방향 유지):</p>
+    
+    <div class="math-block">
+      <span class="log">log</span><sub>2</sub> 2<sup>h</sup> ≤ <span class="log">log</span><sub>2</sub> n<br>
+      h · <span class="log">log</span><sub>2</sub> 2 ≤ <span class="log">log</span><sub>2</sub> n<br>
+      h ≤ <span class="log">log</span><sub>2</sub> n
+    </div>
+  </div>
+  
+  <div class="key-result">
+    <div class="label">결론</div>
+    <div class="formula">h ≤ <span class="log">log</span><sub>2</sub> n &nbsp;⟹&nbsp; h = O(<span class="log">log</span> n)</div>
+  </div>
+  
+  <div class="callout connect">
+    <div class="callout-title">증명 흐름 정리</div>
+    <ol style="margin-top:6px;">
+      <li>같은 rank의 두 트리 union일 때만 높이 +1</li>
+      <li>이때 노드 수도 정확히 2배</li>
+      <li>최소 노드 수: N<sub>h</sub> = 2·N<sub>h-1</sub> = 2<sup>h</sup></li>
+      <li>2<sup>h</sup> ≤ n → h ≤ log₂n</li>
+      <li>∴ h = O(log n)</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 25. 최종 시간복잡도 -->
+<!-- ============================================== -->
+<section id="s25">
+  <h2><span class="num">25</span> 최종 시간복잡도</h2>
+  
+  <p>이제 §24의 결과 <strong>h = O(log n)</strong>을 union과 find에 적용해봅시다.</p>
+  
+  <div class="proof-step">
+    <div class="label">find(x)</div>
+    <div class="math-block">
+      find(x) = O(h) = O(<span class="log">log</span> n)
+    </div>
+  </div>
+  
+  <div class="proof-step">
+    <div class="label">union(x, y)</div>
+    <div class="math-block">
+      union(x, y) = O(h) = O(<span class="log">log</span> n)
+    </div>
+  </div>
+  
+  <h3>방법 1과 최종 비교</h3>
+  
+  <table>
+    <tr>
+      <th>연산</th>
+      <th>방법 1 (연결 리스트)</th>
+      <th>방법 2 (트리 + by rank)</th>
+    </tr>
+    <tr>
+      <td>make-set</td>
+      <td>O(1)</td>
+      <td>O(1)</td>
+    </tr>
+    <tr>
+      <td>find</td>
+      <td style="color:var(--red);">O(n)</td>
+      <td style="color:var(--purple); font-weight:700;">O(log n) ✓</td>
+    </tr>
+    <tr>
+      <td>union</td>
+      <td style="color:var(--red);">O(n)</td>
+      <td style="color:var(--purple); font-weight:700;">O(log n) ✓</td>
+    </tr>
+  </table>
+  
+  <div class="key-result">
+    <div class="label">달성!</div>
+    <div class="formula">우리가 처음 세운 목표(find와 union이 O(log n))를 달성 ✓</div>
+  </div>
+  
+  <h3>Union-Find의 의의</h3>
+  
+  <div class="callout star">
+    <div class="callout-title">정리</div>
+    <ul style="margin-top:6px;">
+      <li>Union-Find는 집합(set) 연산에 특화된 자료구조</li>
+      <li>이런 연산이 빠르게 일어나야 한다는 게 목표</li>
+      <li>방법 2(트리 + union by rank)로 O(h)로 표현 가능</li>
+      <li>높이 분석으로 h = O(log n) 증명</li>
+      <li>방법 1의 O(n) 대비 <strong>훨씬 좋아짐</strong> ★</li>
+    </ul>
+  </div>
+  
+  <div class="callout warn">
+    <div class="callout-title">더 나아가면?</div>
+    Union-Find는 사실 한 번 더 최적화 가능. <strong>Path Compression</strong>(경로 압축)을 추가하면 거의 O(1) 수준까지 갈 수 있어요 (정확히는 inverse Ackermann 함수). 다음 시간에 다룰 가능성.
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 26. 학기 트리 총정리 -->
+<!-- ============================================== -->
+<section id="s26">
+  <h2><span class="num">26</span> 지금까지 배운 트리 총정리</h2>
+  
+  <p>한 학기 동안 배운 트리들을 한눈에 정리해봅니다.</p>
+  
+  <div class="tree-viz" style="text-align:left; padding:30px;">
+    <svg width="100%" viewBox="0 0 900 480" xmlns="http://www.w3.org/2000/svg">
+      
+      <!-- 탐색 트리 그룹 -->
+      <rect x="20" y="20" width="600" height="380" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="2" stroke-dasharray="6,4" rx="12" opacity="0.4"/>
+      <text x="40" y="45" style="font-size:14px; font-weight:700; fill:var(--teal); font-family:sans-serif;">탐색 트리 (Search Tree)</text>
+      
+      <!-- BST -->
+      <rect x="60" y="75" width="180" height="80" fill="white" stroke="var(--ink)" stroke-width="2" rx="8"/>
+      <text x="150" y="100" style="font-size:14px; font-weight:700; fill:var(--ink); text-anchor:middle; font-family:sans-serif;">BST</text>
+      <text x="150" y="118" style="font-size:11px; fill:var(--ink-muted); text-anchor:middle; font-family:sans-serif;">이진 탐색 트리</text>
+      <text x="150" y="138" style="font-size:11px; fill:var(--ink-muted); text-anchor:middle; font-family:sans-serif; font-style:italic;">왼쪽 &lt; 부모 &lt; 오른쪽</text>
+      
+      <!-- BST에서 두 줄기 -->
+      <line x1="240" y1="115" x2="300" y2="200" stroke="var(--purple)" stroke-width="2"/>
+      <polygon points="300,200 295,192 304,191" fill="var(--purple)"/>
+      <line x1="240" y1="115" x2="300" y2="290" stroke="var(--purple)" stroke-width="2"/>
+      <polygon points="300,290 295,282 304,281" fill="var(--purple)"/>
+      
+      <text x="270" y="150" style="font-size:10px; fill:var(--purple); font-family:sans-serif; font-style:italic;">균형 유지</text>
+      
+      <!-- AVL -->
+      <rect x="310" y="170" width="180" height="80" fill="white" stroke="var(--teal)" stroke-width="2" rx="8"/>
+      <text x="400" y="195" style="font-size:14px; font-weight:700; fill:var(--teal); text-anchor:middle; font-family:sans-serif;">AVL 트리</text>
+      <text x="400" y="213" style="font-size:11px; fill:var(--ink-muted); text-anchor:middle; font-family:sans-serif;">서브트리 높이차 ≤ 1</text>
+      <text x="400" y="232" style="font-size:11px; fill:var(--ink-muted); text-anchor:middle; font-family:sans-serif; font-style:italic;">엄격한 균형</text>
+      
+      <!-- RB -->
+      <rect x="310" y="280" width="180" height="80" fill="white" stroke="var(--red)" stroke-width="2" rx="8"/>
+      <text x="400" y="305" style="font-size:14px; font-weight:700; fill:var(--red); text-anchor:middle; font-family:sans-serif;">레드블랙 트리</text>
+      <text x="400" y="323" style="font-size:11px; fill:var(--ink-muted); text-anchor:middle; font-family:sans-serif;">빨강/검정 색 규칙</text>
+      <text x="400" y="342" style="font-size:11px; fill:var(--ink-muted); text-anchor:middle; font-family:sans-serif; font-style:italic;">느슨한 균형</text>
+      
+      <!-- 2-3-4 트리 (별도, RB와 1:1) -->
+      <rect x="540" y="280" width="180" height="80" fill="white" stroke="var(--gold)" stroke-width="2" rx="8"/>
+      <text x="630" y="305" style="font-size:14px; font-weight:700; fill:var(--gold); text-anchor:middle; font-family:sans-serif;">2-3-4 트리</text>
+      <text x="630" y="323" style="font-size:11px; fill:var(--ink-muted); text-anchor:middle; font-family:sans-serif;">자식 2/3/4개</text>
+      <text x="630" y="342" style="font-size:11px; fill:var(--ink-muted); text-anchor:middle; font-family:sans-serif; font-style:italic;">이진 트리 아님</text>
+      
+      <!-- RB ↔ 2-3-4 화살표 -->
+      <line x1="490" y1="320" x2="540" y2="320" stroke="var(--purple)" stroke-width="2.5"/>
+      <polygon points="540,320 532,316 532,324" fill="var(--purple)"/>
+      <line x1="540" y1="332" x2="490" y2="332" stroke="var(--purple)" stroke-width="2.5"/>
+      <polygon points="490,332 498,328 498,336" fill="var(--purple)"/>
+      <text x="515" y="370" style="font-size:11px; fill:var(--purple); font-weight:700; text-anchor:middle; font-family:sans-serif;">1:1 호환</text>
+      
+      <!-- Union-Find 그룹 (탐색트리 아님) -->
+      <rect x="660" y="20" width="220" height="380" fill="var(--purple-bg)" stroke="var(--purple)" stroke-width="2" stroke-dasharray="6,4" rx="12" opacity="0.5"/>
+      <text x="680" y="45" style="font-size:14px; font-weight:700; fill:var(--purple); font-family:sans-serif;">탐색 트리 아님</text>
+      
+      <rect x="690" y="170" width="160" height="100" fill="white" stroke="var(--purple)" stroke-width="2" rx="8"/>
+      <text x="770" y="200" style="font-size:14px; font-weight:700; fill:var(--purple); text-anchor:middle; font-family:sans-serif;">Union-Find</text>
+      <text x="770" y="218" style="font-size:11px; fill:var(--ink-muted); text-anchor:middle; font-family:sans-serif;">(Disjoint Set)</text>
+      <text x="770" y="238" style="font-size:11px; fill:var(--ink-muted); text-anchor:middle; font-family:sans-serif; font-style:italic;">집합 연산 특화</text>
+      <text x="770" y="255" style="font-size:11px; fill:var(--ink-muted); text-anchor:middle; font-family:sans-serif; font-style:italic;">부모 링크만 사용</text>
+      
+      <!-- 하단 라벨 -->
+      <text x="450" y="430" style="font-size:12px; fill:var(--ink-soft); text-anchor:middle; font-family:sans-serif;">한 학기 동안 배운 트리 자료구조 정리</text>
+      <text x="450" y="450" style="font-size:11px; fill:var(--ink-muted); text-anchor:middle; font-family:sans-serif; font-style:italic;">모든 자료구조 핵심 연산 O(log n) 보장</text>
+      
+    </svg>
+  </div>
+  
+  <h3>각 자료구조 핵심 요약</h3>
+  
+  <table>
+    <tr>
+      <th>자료구조</th>
+      <th>핵심 특징</th>
+      <th>주요 연산 시간</th>
+      <th>분류</th>
+    </tr>
+    <tr>
+      <td><strong>BST</strong></td>
+      <td>이진 탐색 트리, 왼&lt;부&lt;오</td>
+      <td>O(h) — 균형 보장 X</td>
+      <td>탐색 트리</td>
+    </tr>
+    <tr>
+      <td><strong>AVL</strong></td>
+      <td>서브트리 높이차 ≤ 1</td>
+      <td>O(log n) — 엄격 균형</td>
+      <td>탐색 트리</td>
+    </tr>
+    <tr>
+      <td><strong>레드블랙</strong></td>
+      <td>색 규칙으로 균형</td>
+      <td>O(log n) — 느슨 균형</td>
+      <td>탐색 트리</td>
+    </tr>
+    <tr>
+      <td><strong>2-3-4 트리</strong></td>
+      <td>자식 2~4개, RB와 1:1</td>
+      <td>O(log n)</td>
+      <td>탐색 트리 (이진 X)</td>
+    </tr>
+    <tr>
+      <td><strong>Union-Find</strong></td>
+      <td>집합 연산, 부모 링크만</td>
+      <td>O(log n)</td>
+      <td>탐색 트리 아님</td>
+    </tr>
+  </table>
+  
+  <div class="callout star">
+    <div class="callout-title">학기 한 줄 정리</div>
+    <p style="margin-top:6px;">"같은 자료구조라도 균형을 어떻게 잡느냐에 따라 성능이 달라지고, 균형을 잘 잡으면 모두 O(log n)에 동작한다."</p>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 27. 시험 포인트 -->
+<!-- ============================================== -->
+<section id="s27">
+  <h2><span class="num">27</span> 오늘 꼭 기억할 것</h2>
+  
+  <div class="exam-points">
+    <div class="label">시험 포인트</div>
+    <ol>
+      <li><strong>치환 규칙</strong>: 2-노드 → 1레벨(black), 3/4-노드 → 2레벨(black+red)</li>
+      <li><strong>레드블랙 worst case</strong>: 모두 3-노드일 때 h'이 최대</li>
+      <li><strong>로그 밑 변환 공식</strong>: log<sub>a</sub>b = log<sub>c</sub>b / log<sub>c</sub>a</li>
+      <li><strong>log₂3의 범위</strong>: 1 &lt; log₂3 &lt; 2 (≈ 1.585)</li>
+      <li><strong>레드블랙 개선된 상계</strong>: h' ≤ 1.26·log₂n (기존 2·log₂n보다 타이트)</li>
+      <li><strong>왜 h를 줄이려 하나?</strong>: 트리 연산 시간 = O(h), 상계 작을수록 좋음</li>
+      <li><strong>Union-Find</strong>: 집합 연산 특화 자료구조 (= Disjoint Set)</li>
+      <li><strong>3개 핵심 연산</strong>: make-set(x), find(x), union(x, y)</li>
+      <li><strong>방법 1 (연결 리스트)</strong>: find/union = O(n) → 안 좋음</li>
+      <li><strong>★ 방법 2 (트리)</strong>:
+        <ul style="margin-top:4px; color:white;">
+          <li>각 집합 = 하나의 트리</li>
+          <li>노드는 부모 링크만 (자식 X)</li>
+          <li>루트는 자기 자신을 가리킴</li>
+          <li>같은 트리 = 같은 집합</li>
+        </ul>
+      </li>
+      <li><strong>find(x)</strong>: parent 따라 루트까지 → O(h)</li>
+      <li><strong>★ Union by Rank</strong>:
+        <ul style="margin-top:4px; color:white;">
+          <li>높이 낮은 트리 → 높은 트리 밑에</li>
+          <li>v.rank &gt; w.rank: w를 v 밑에</li>
+          <li>v.rank &lt; w.rank: v를 w 밑에</li>
+          <li><strong>v.rank == w.rank: 아무 쪽이나 + rank +1</strong></li>
+        </ul>
+      </li>
+      <li><strong>Node 클래스</strong>: key, parent(=self), rank(=0)</li>
+      <li><strong>rank</strong>: 트리 높이의 상한선</li>
+      <li><strong>union 코드 트릭</strong>: swap으로 w를 항상 큰 쪽으로 만들기</li>
+      <li><strong>★ 높이 변화 조건</strong>: rank 같을 때만 +1 (그 외는 그대로)</li>
+      <li><strong>★ 핵심 관찰</strong>: 노드 수 2배 될 때마다 높이 +1</li>
+      <li><strong>N<sub>h</sub> 정의</strong>: 높이 h인 union-find 트리의 최소 노드 수
+        <ul style="margin-top:4px; color:white;">
+          <li>N<sub>0</sub> = 1 (단일 노드)</li>
+          <li>N<sub>1</sub> = 2 (두 단일 노드 union)</li>
+          <li>N<sub>2</sub> = 4 (N<sub>1</sub> 둘 union)</li>
+        </ul>
+      </li>
+      <li><strong>점화식</strong>: N<sub>h</sub> = 2·N<sub>h-1</sub> → N<sub>h</sub> = 2<sup>h</sup></li>
+      <li><strong>★ 높이 증명</strong>:
+        <ul style="margin-top:4px; color:white;">
+          <li>2<sup>h</sup> ≤ n (N<sub>h</sub>는 최소)</li>
+          <li>양변 log₂ → h ≤ log₂n</li>
+          <li>∴ h = O(log n)</li>
+        </ul>
+      </li>
+      <li><strong>최종 시간복잡도</strong>: find = union = O(log n) → 목표 달성!</li>
+      <li><strong>학기 트리 정리</strong>:
+        <ul style="margin-top:4px; color:white;">
+          <li>BST → AVL (엄격) / 레드블랙 (느슨)</li>
+          <li>2-3-4 트리 (이진 X, 레드블랙과 1:1)</li>
+          <li>Union-Find (탐색 트리 아님, 집합 연산용)</li>
+          <li>모두 균형 잡으면 O(log n)</li>
+        </ul>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<div class="doc-footer">
+  자료구조 · 11주차-1 강의노트 &nbsp;·&nbsp; 강원대학교 컴퓨터공학과 &nbsp;·&nbsp; 2026.05.14
+</div>
+
+</main>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>모두의 인공지능 - 5주차 문제집</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;600;700&family=Nanum+Myeongjo:wght@400;700;800&display=swap');
+  :root { --bg:#faf6ef; --paper:#fffdf7; --ink:#2c2418; --ink-light:#5b5040; --accent:#8b4513; --accent-soft:#c69b7b; --rule:#d4c8b0; --highlight:#f4e4c1; --quote-bg:#f7efde; --def-bg:#fff8e8; --def-border:#b08654; --exam-bg:#fcecec; --exam-border:#b54848; --ans-bg:#eaf3ec; --ans-border:#5a8a5e; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; padding:0; background:var(--bg); color:var(--ink); font-family:'Noto Serif KR','Nanum Myeongjo',serif; line-height:1.85; font-size:17px; }
+  .page { max-width:880px; margin:0 auto; padding:60px 50px 80px; background:var(--paper); box-shadow:0 0 30px rgba(80,60,30,.08); min-height:100vh; }
+  .cover { text-align:center; padding:80px 0 50px; border-bottom:3px double var(--accent); margin-bottom:30px; }
+  .cover .series { font-size:14px; letter-spacing:6px; color:var(--accent); margin-bottom:20px; }
+  .cover h1 { font-family:'Nanum Myeongjo',serif; font-size:42px; font-weight:800; margin:10px 0; line-height:1.3; }
+  .cover .subtitle { font-size:22px; color:var(--ink-light); margin-top:10px; font-weight:300; }
+  .cover .doctype { display:inline-block; margin-top:30px; padding:8px 24px; border:1px solid var(--accent); border-radius:2px; font-size:16px; color:var(--accent); letter-spacing:4px; }
+  .cover .meta { margin-top:20px; font-size:14px; color:var(--ink-light); }
+  .controls { background:#fff8e8; border:1px solid var(--def-border); padding:14px 20px; margin:20px 0 30px; border-radius:6px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; position:sticky; top:0; z-index:10; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
+  .controls .lab { font-weight:700; color:var(--accent); margin-right:10px; font-family:sans-serif; }
+  .controls button { background:var(--accent); color:#fff; border:none; padding:8px 16px; border-radius:4px; cursor:pointer; font-size:14px; font-family:sans-serif; }
+  .controls button:hover { background:var(--ink); }
+  .controls .hint { color:var(--ink-light); font-size:13px; margin-left:auto; }
+  h2.chapter { font-family:'Nanum Myeongjo',serif; font-size:30px; color:var(--accent); border-bottom:2px solid var(--accent); padding-bottom:10px; margin-top:50px; margin-bottom:25px; }
+  h2.chapter .badge { display:inline-block; background:var(--accent); color:#fff; padding:3px 14px; border-radius:4px; font-size:16px; margin-right:12px; vertical-align:middle; font-family:sans-serif; }
+  .question { background:#fff; border:1px solid var(--rule); border-left:5px solid var(--accent-soft); padding:18px 22px; margin:18px 0; border-radius:4px; }
+  .qhead { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .qhead .qno { font-weight:700; color:var(--accent); font-family:sans-serif; font-size:14px; letter-spacing:1px; }
+  .qhead .qtype { font-size:12px; padding:2px 8px; background:var(--highlight); border-radius:3px; color:var(--ink-light); font-family:sans-serif; }
+  .qbody { font-size:17px; }
+  .options { margin:10px 0 0 20px; padding:0; list-style:none; }
+  .options li { padding:5px 0; }
+  .options .opt-num { font-weight:700; color:var(--accent); margin-right:6px; }
+  code { background:#f4ecd8; padding:1px 6px; border-radius:3px; font-family:'Consolas',monospace; font-size:14px; color:#5a3920; }
+  .answer-area { background:#fafaf3; border:1px dashed var(--rule); border-radius:4px; padding:10px 14px; margin:10px 0 0; min-height:50px; color:#bbb; font-size:14px; font-style:italic; }
+  .answer-area::before { content:"(답안 작성 영역 — 인쇄용)"; }
+  .toggle-btn { margin-top:10px; background:transparent; border:1px solid var(--ans-border); color:var(--ans-border); padding:5px 12px; border-radius:4px; font-size:13px; cursor:pointer; font-family:sans-serif; }
+  .toggle-btn:hover { background:var(--ans-border); color:#fff; }
+  .answer-box { display:none; background:var(--ans-bg); border-left:4px solid var(--ans-border); padding:12px 18px; margin-top:10px; border-radius:4px; }
+  .answer-box.show { display:block; }
+  .answer-box .alabel { font-weight:700; color:var(--ans-border); display:block; margin-bottom:6px; font-size:14px; letter-spacing:1px; font-family:sans-serif; }
+  .answer-box strong { color:var(--accent); background:#fff5d8; padding:0 4px; border-radius:2px; }
+  .answer-box .keyw { background:#fff5d8; padding:1px 6px; border-radius:3px; color:var(--accent); font-weight:600; }
+  .nav-links { margin-top:60px; padding:30px; border-top:3px double var(--accent); text-align:center; }
+  .nav-links a { display:inline-block; margin:0 10px; padding:10px 22px; background:var(--accent); color:#fff; text-decoration:none; border-radius:4px; font-size:15px; font-family:sans-serif; }
+  .nav-links a:hover { background:var(--ink); }
+  @media print { body { background:#fff; } .page { box-shadow:none; padding:20px; } .controls { display:none; } .toggle-btn { display:none; } .answer-box { display:block !important; page-break-inside:avoid; } .question { page-break-inside:avoid; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="cover">
+    <div class="series">모두의 인공지능 · 강태원 교수</div>
+    <h1>5주차 문제집</h1>
+    <div class="subtitle">뇌세포가 카톡을!</div>
+    <div class="doctype">문 제 집</div>
+    <div class="meta">객관식 5 · 주관식 10 · 서술형 5</div>
+  </div>
+
+  <div class="controls">
+    <span class="lab">정답 보기</span>
+    <button onclick="showAll()">전체 보기</button>
+    <button onclick="hideAll()">전체 가리기</button>
+    <span class="hint">개별 토글 가능 · 인쇄 시 자동 표시</span>
+  </div>
+
+  <h2 class="chapter"><span class="badge">객관식</span>5문항</h2>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 1</span><span class="qtype">객관식</span></div>
+    <div class="qbody">인공 뉴런(Artificial Neuron)의 특징으로 <strong>옳지 않은</strong> 것은?</div>
+    <ul class="options">
+      <li><span class="opt-num">①</span> 입력은 여러 개, 출력은 단 하나(n:1)이다.</li>
+      <li><span class="opt-num">②</span> 가중치(Weight)는 생물학적 시냅스에 해당한다.</li>
+      <li><span class="opt-num">③</span> 가중치 합은 Σ Wᵢ·Xᵢ로 계산한다.</li>
+      <li><span class="opt-num">④</span> 활성함수를 거치지 않은 가중치 합 자체가 곧 출력이다.</li>
+      <li><span class="opt-num">⑤</span> ChatGPT의 매개변수 수가 곧 가중치 수이다.</li>
+    </ul>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span><strong>④</strong> (가중치 합 자체는 보통 활성함수를 거쳐 출력으로 변환됨)<br>
+      <span class="alabel">해설</span> 가중치 합을 그대로 보내는 경우도 있지만 <span class="keyw">일반적으로 활성함수(Step/Sigmoid/ReLU)를 거쳐서 출력</span>한다.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 2</span><span class="qtype">객관식</span></div>
+    <div class="qbody">시그모이드(Sigmoid) 활성함수의 식과 출력 범위로 <strong>옳은</strong> 것은?</div>
+    <ul class="options">
+      <li><span class="opt-num">①</span> max(0, x), 출력 [0, ∞)</li>
+      <li><span class="opt-num">②</span> 1/(1+e⁻ˣ), 출력 (0, 1)</li>
+      <li><span class="opt-num">③</span> x ≥ 0이면 1, 아니면 0; 출력 {0, 1}</li>
+      <li><span class="opt-num">④</span> tanh(x), 출력 (-1, 1)</li>
+      <li><span class="opt-num">⑤</span> ax + b, 출력 (-∞, ∞)</li>
+    </ul>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span><strong>② 1/(1+e⁻ˣ), 출력 (0, 1)</strong><br>
+      <span class="alabel">해설</span> ①은 ReLU, ③은 계단함수. 시그모이드는 S자 곡선으로 출력이 항상 0과 1 사이.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 3</span><span class="qtype">객관식</span></div>
+    <div class="qbody">다층 신경망의 <strong>입력층(Input Layer)</strong>에 대한 설명으로 옳은 것은?</div>
+    <ul class="options">
+      <li><span class="opt-num">①</span> 가중치를 가지고 있어 입력값에 곱셈을 수행한다.</li>
+      <li><span class="opt-num">②</span> 활성함수로 시그모이드를 주로 사용한다.</li>
+      <li><span class="opt-num">③</span> "헛개비" — 가중치 없이 값을 그대로 다음 층으로 뿌려준다.</li>
+      <li><span class="opt-num">④</span> 학습 시 가장 많이 갱신되는 층이다.</li>
+      <li><span class="opt-num">⑤</span> 출력층보다 뉴런 수가 항상 적다.</li>
+    </ul>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span><strong>③ 헛개비 — 가중치 없이 값을 그대로 다음 층으로 뿌려준다</strong><br>
+      <span class="alabel">해설</span> 입력층은 가중치도 활성함수도 없으며 값을 바이패스(bypass)할 뿐. Keras 등에서도 입력층은 개수만 지정한다.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 4</span><span class="qtype">객관식</span></div>
+    <div class="qbody">다층 신경망의 두 가지 핵심 규칙으로 옳은 짝은?</div>
+    <ul class="options">
+      <li><span class="opt-num">①</span> 역전파(Backpropagation) + 부분 연결(Partial Connection)</li>
+      <li><span class="opt-num">②</span> 전진 전파(Feed Forward) + 완전 연결(Fully Connected)</li>
+      <li><span class="opt-num">③</span> 순환 연결(Recurrent) + 합성곱(Convolution)</li>
+      <li><span class="opt-num">④</span> 정규화(Normalization) + 드롭아웃(Dropout)</li>
+      <li><span class="opt-num">⑤</span> 분기 연결(Branching) + 풀링(Pooling)</li>
+    </ul>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span><strong>② 전진 전파 + 완전 연결</strong><br>
+      <span class="alabel">해설</span>
+      <span class="keyw">Feed Forward</span>: 한 층 → 다음 층 방향. <span class="keyw">Fully Connected</span>: 한 뉴런 출력이 다음 층 모든 뉴런으로. 강의 부제 "이웃에만 공평하게".
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 5</span><span class="qtype">객관식</span></div>
+    <div class="qbody">다음 인공 뉴런의 출력은? (입력 X₁=1, X₂=1, 가중치 W₁=1, W₂=1, 바이어스 가중치 θ=1.5, 활성함수=Step)</div>
+    <ul class="options">
+      <li><span class="opt-num">①</span> 0</li>
+      <li><span class="opt-num">②</span> 0.5</li>
+      <li><span class="opt-num">③</span> 1</li>
+      <li><span class="opt-num">④</span> -1.5</li>
+      <li><span class="opt-num">⑤</span> 1.5</li>
+    </ul>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span><strong>③ 1</strong><br>
+      <span class="alabel">해설</span>
+      가중치 합 = 1·1 + 1·1 − 1.5 = <span class="keyw">0.5</span>. 0.5 ≥ 0이므로 Step Function 출력은 <span class="keyw">1</span>.
+    </div>
+  </div>
+
+  <h2 class="chapter"><span class="badge">주관식</span>10문항</h2>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 6</span><span class="qtype">주관식</span></div>
+    <div class="qbody">인공 뉴런의 5가지 구성 요소를 쓰시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      ① <strong>입력 (X₁ ~ Xₙ)</strong> ② <strong>가중치 (W₁ ~ Wₙ)</strong> ③ <strong>가중치 합 (Σ Wᵢ·Xᵢ)</strong> ④ <strong>활성함수 (Activation Function)</strong> ⑤ <strong>출력 (y, 단 하나)</strong>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 7</span><span class="qtype">주관식</span></div>
+    <div class="qbody">생물학적 뉴런과 인공 뉴런의 매핑 관계를 4가지 쓰시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      ① 수상돌기(Dendrite) → 입력(X)<br>
+      ② 축색돌기(Axon) → 출력(y)<br>
+      ③ <strong>시냅스(Synapse) → 가중치(Weight)</strong> ★ 가장 중요<br>
+      ④ 몸통/핵 → 활성함수(Activation)
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 8</span><span class="qtype">주관식</span></div>
+    <div class="qbody">대표적인 활성함수 3가지의 이름과 식을 각각 쓰시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      ① <strong>계단함수(Step)</strong>: x ≥ 0이면 1, 아니면 0<br>
+      ② <strong>시그모이드(Sigmoid)</strong>: 1 / (1 + e⁻ˣ)<br>
+      ③ <strong>ReLU</strong>: max(0, x)
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 9</span><span class="qtype">주관식</span></div>
+    <div class="qbody">바이어스(Bias) 입력이 무엇이며, 왜 필요한지 한두 줄로 쓰시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      외부 입력과 무관하게 <strong>항상 정해진 값(보통 -1)이 들어가는 추가 입력</strong>. 학습에 필수적이며, 모든 실용 신경망에 포함되어 있다. 활성함수의 임계값을 조절하는 효과를 준다.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 10</span><span class="qtype">주관식</span></div>
+    <div class="qbody">ChatGPT 같은 모델이 "수천억 매개변수(Parameters)"를 가졌다고 할 때, 매개변수가 신경망에서 무엇을 의미하는지 쓰시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      매개변수 = <strong>가중치(Weight)와 바이어스 가중치의 수</strong>. 신경망 학습은 곧 매개변수를 조정하는 과정이며, 매개변수가 많을수록 더 복잡한 패턴을 학습할 수 있다.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 11</span><span class="qtype">주관식</span></div>
+    <div class="qbody">다층 신경망의 3종류 층 이름을 입력 → 출력 순서로 쓰시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      <strong>입력층(Input Layer) → 중간층/은닉층(Hidden Layer) → 출력층(Output Layer)</strong>. 중간층은 1개 이상이며 "은닉층"이라고도 한다.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 12</span><span class="qtype">주관식</span></div>
+    <div class="qbody">"전진 전파(Feed Forward)"와 "완전 연결(Fully Connected)"의 의미를 각각 한 문장으로 쓰시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      <strong>전진 전파</strong>: 정보가 한 층에서 다음 층 방향으로만 전달된다.<br>
+      <strong>완전 연결</strong>: 한 뉴런의 출력이 다음 층의 모든 뉴런에 빠짐없이 전달된다.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 13</span><span class="qtype">주관식</span></div>
+    <div class="qbody">시그모이드 함수에서 e가 무엇인지 쓰시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      <strong>오일러 상수(Euler's number, e ≈ 2.71828…)</strong>. 원주율 π처럼 자연계에 자주 등장하는 무리수이며 자연상수라고도 한다.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 14</span><span class="qtype">주관식</span></div>
+    <div class="qbody">다음 인공 뉴런의 가중치 합을 구하시오. 입력 X₁=2, X₂=3, X₃=1; 가중치 W₁=0.5, W₂=0.2, W₃=-0.4; 바이어스 θ=0.1.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      가중치 합 = 2·0.5 + 3·0.2 + 1·(-0.4) - 0.1 = 1 + 0.6 - 0.4 - 0.1 = <strong>1.1</strong>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 15</span><span class="qtype">주관식</span></div>
+    <div class="qbody">신경망 학습이 본질적으로 무엇을 조정하는 과정인지 한 단어로 쓰시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      <strong>가중치(Weight)</strong> 또는 매개변수(Parameter). 학습 = 가중치 조정 = 시냅스의 신호 강도 조절(생물학적 비유).
+    </div>
+  </div>
+
+  <h2 class="chapter"><span class="badge">서술형</span>5문항</h2>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 16</span><span class="qtype">서술형</span></div>
+    <div class="qbody">생물학적 뉴런과 인공 뉴런을 비교하여 설명하시오. 인공 뉴런의 5가지 구성 요소(입력·가중치·가중치 합·활성함수·출력)와 그것들이 생물학적 뉴런의 어떤 부위에 대응되는지 함께 서술하시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">모범답안</span>
+      <strong>생물학적 뉴런</strong>은 사람의 뇌를 구성하는 신경세포로, 4부위 — 몸통/핵(Soma), 수상돌기(Dendrite, 입력), 축색돌기(Axon, 출력), 시냅스(Synapse, 접합부) — 로 구성된다. 한 뉴런의 출력 신호가 시냅스를 통해 다른 뉴런의 수상돌기로 전달되며, 이때 시냅스의 수용체 수에 따라 신호의 양이 조절된다.<br><br>
+      <strong>인공 뉴런</strong>은 이를 단순화한 계산 모델로, 강의 표현으로 "<span class="keyw">뼈만 추리자</span>"라고 한다. 5가지 구성 요소:
+      <ul>
+        <li>① <strong>입력(X₁ ~ Xₙ)</strong> — 수상돌기에 대응. 여러 개</li>
+        <li>② <strong>가중치(W₁ ~ Wₙ)</strong> — <span class="keyw">시냅스에 대응</span>. 입력 신호의 강도를 조절</li>
+        <li>③ <strong>가중치 합(Σ Wᵢ·Xᵢ)</strong> — 뉴런이 받아들이는 총 입력</li>
+        <li>④ <strong>활성함수</strong> — 가중치 합을 출력으로 변환 (Step/Sigmoid/ReLU)</li>
+        <li>⑤ <strong>출력(y)</strong> — 축색돌기에 대응. <span class="keyw">단 하나(n:1)</span></li>
+      </ul>
+      가장 중요한 매핑은 <strong>시냅스 ↔ 가중치</strong>이며, 신경망 학습 = 가중치 조정 = 시냅스의 신호 강도 조절에 해당한다. ChatGPT의 "수천억 개 매개변수"라는 표현이 곧 이 가중치의 수를 의미한다.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 17</span><span class="qtype">서술형</span></div>
+    <div class="qbody">활성함수(Activation Function)가 무엇이며 왜 필요한지 설명하고, 대표적인 3가지 활성함수의 이름·식·출력 범위를 비교 서술하시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">모범답안</span>
+      <strong>활성함수</strong>는 인공 뉴런에서 가중치 합을 출력으로 변환하는 비선형 함수이다. 활성함수가 없다면 신경망은 단순한 선형 함수의 조합에 불과하여 복잡한 패턴을 학습할 수 없다. 또한 생물학적 뉴런에서 신호가 일정 임계값 이상일 때만 발화하는 것을 모델링한다.<br><br>
+      <strong>대표 3가지</strong>:
+      <ul>
+        <li>① <span class="keyw">계단함수 (Step Function)</span>: x ≥ 0이면 1, 아니면 0. 출력 범위 {0, 1}. 가장 단순. 초기 신경망에 사용.</li>
+        <li>② <span class="keyw">시그모이드 (Sigmoid)</span>: 1/(1+e⁻ˣ). 출력 범위 (0, 1). S자 곡선으로 연속적이며 미분 가능. 학습에 유리.</li>
+        <li>③ <span class="keyw">ReLU (Rectified Linear Unit)</span>: max(0, x). 출력 범위 [0, ∞). 0 이하는 0, 양수는 그대로. 딥러닝 시대의 표준이며 계산이 빠르고 깊은 신경망에 적합.</li>
+      </ul>
+      e는 <strong>오일러 상수(≈2.71828)</strong>이며, 시그모이드는 입력이 아무리 커도 출력이 1을 넘지 않아 신호가 폭발하지 않게 해준다.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 18</span><span class="qtype">서술형</span></div>
+    <div class="qbody">다층 신경망(Multi-Layer Neural Network)의 구조를 설명하고, "전진 전파(Feed Forward)"와 "완전 연결(Fully Connected)" 규칙이 무엇을 의미하는지 서술하시오. 또한 입력층이 왜 "헛개비"라고 불리는지 함께 설명하시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">모범답안</span>
+      <strong>다층 신경망</strong>은 인공 뉴런들을 <span class="keyw">층(layer) 단위로 줄을 맞춰</span> 연결한 구조이다. 실제 사람의 뇌는 자유분방하게 얽혀 있지만, 컴퓨터로 계산하기 위해 줄을 맞춰 두면 효율적이기 때문이다. 강의 부제 "줄을 잘 서야 들어가요!"가 이를 의미한다.<br><br>
+      구조는 ① <strong>입력층(Input Layer)</strong>, ② <strong>중간층/은닉층(Hidden Layer, 1개 이상)</strong>, ③ <strong>출력층(Output Layer)</strong>으로 되어 있다.<br><br>
+      <strong>전진 전파(Feed Forward)</strong>: 정보가 입력층 → 중간층 → 출력층 방향으로만 전달된다. 역방향이나 같은 층 내부 연결은 없다.<br><br>
+      <strong>완전 연결(Fully Connected)</strong>: 한 층의 한 뉴런 출력이 <span class="keyw">다음 층의 모든 뉴런</span>으로 빠짐없이 전달된다. 강의 부제 "이웃에만 공평하게"가 이를 표현한다.<br><br>
+      <strong>입력층 = "헛개비"인 이유</strong>: 입력층의 노드들은 <span class="keyw">가중치도 활성함수도 없으며</span>, 외부 입력값을 그대로 다음 층의 모든 뉴런으로 뿌려주는 역할만 한다. Keras 등 실제 딥러닝 프레임워크에서도 입력층은 단지 "입력 차원 수"를 지정할 뿐 별도 계산이 없다. 따라서 진정한 의미의 "뉴런"은 아니다.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 19</span><span class="qtype">서술형</span></div>
+    <div class="qbody">다음 다층 신경망에 입력 (X₁=1, X₂=1)이 들어왔을 때 최종 출력 Y₅를 구하는 과정을 단계별로 서술하시오.<br>가중치: W₁₃=0.5, W₁₄=0.9, W₂₃=0.4, W₂₄=1.0, W₃₅=-1.2, W₄₅=1.0. 활성함수: 시그모이드 (1/(1+e⁻ˣ)). (소수점 첫째 자리에서 반올림하여 1자리 정수로 답)</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">모범답안</span>
+      <strong>단계 1 — Y₃ 계산</strong>:
+      <ul>
+        <li>가중치 합 = X₁·W₁₃ + X₂·W₂₃ = 1·0.5 + 1·0.4 = <span class="keyw">0.9</span></li>
+        <li>Y₃ = 1/(1 + e⁻⁰·⁹) ≈ <strong>0.71 ≈ 0.7</strong></li>
+      </ul>
+      <strong>단계 2 — Y₄ 계산</strong>:
+      <ul>
+        <li>가중치 합 = X₁·W₁₄ + X₂·W₂₄ = 1·0.9 + 1·1.0 = <span class="keyw">1.9</span></li>
+        <li>Y₄ = 1/(1 + e⁻¹·⁹) ≈ <strong>0.87 ≈ 0.9</strong></li>
+      </ul>
+      <strong>단계 3 — Y₅ 계산 (최종 출력)</strong>:
+      <ul>
+        <li>가중치 합 = Y₃·W₃₅ + Y₄·W₄₅ = 0.7·(-1.2) + 0.9·1.0 = -0.84 + 0.9 = <span class="keyw">0.06</span></li>
+        <li>Y₅ = 1/(1 + e⁻⁰·⁰⁶) ≈ <strong>0.515 ≈ 0.5</strong></li>
+      </ul>
+      따라서 최종 출력 <strong>Y₅ ≈ 0.5</strong>이다.<br><br>
+      <strong>풀이 핵심</strong>: 입력층부터 출력층까지 <span class="keyw">층 단위로 차례차례</span> 가중치 합과 활성함수를 적용한다. 이것이 다층 신경망의 전진 전파(Feed Forward) 계산이다.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 20</span><span class="qtype">서술형</span></div>
+    <div class="qbody">"가중치(Weight)"가 신경망에서 갖는 의미를 4주차에서 배운 시냅스의 학습 원리와 연결하여 설명하고, 신경망 학습이 본질적으로 무엇을 하는 것인지 서술하시오. ChatGPT 같은 대규모 언어 모델과의 연결도 함께 설명하시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">모범답안</span>
+      <strong>가중치(Weight)</strong>는 인공 뉴런에서 각 입력에 곱해지는 값으로, 한 입력이 다음 뉴런에 얼마나 영향을 주는지를 결정한다. 이것은 <span class="keyw">생물학적 시냅스</span>의 역할을 모델링한 것이다.<br><br>
+      <strong>4주차 시냅스 원리와의 연결</strong>: 시냅스에서는 한 뉴런의 출력이 다른 뉴런의 입력으로 전달될 때 전기 신호 → 화학 물질 → 전기 신호로 변환되며, 이 과정에서 신호의 양이 조절된다. <span class="keyw">수용체 수가 많아지면 더 많은 신호가 전달</span>되고, 적으면 적게 전달된다. 같은 입력이 와도 시냅스의 상태에 따라 출력이 달라진다 — 이것이 <strong>학습</strong>의 본질이다.<br><br>
+      인공 뉴런에서는 이 시냅스의 신호 강도가 <strong>가중치 W</strong>로 표현된다. 따라서 <span class="keyw">신경망 학습 = 가중치 조정</span>이라는 등식이 성립한다. 적절한 가중치를 찾으면 신경망은 입력과 원하는 출력 사이의 관계를 표현하게 된다.<br><br>
+      <strong>ChatGPT와의 연결</strong>: ChatGPT 같은 대규모 언어 모델은 <strong>"수천억 개 매개변수(Parameter)"</strong>를 가졌다고 알려져 있는데, 이 매개변수가 곧 가중치이다. 우리가 프롬프트를 입력하면 신경망 내부에서 이 수천억 개 가중치를 사용한 가중치 합과 활성함수 계산이 수없이 일어나며, 그 결과로 답변이 생성된다. 매개변수가 많을수록 더 복잡한 패턴(언어 이해·생성)을 학습할 수 있다. 학습은 방대한 텍스트 데이터를 보면서 이 가중치들을 조금씩 조정해 나가는 과정이며, 6주차부터 본격적으로 다룬다.
+    </div>
+  </div>
+
+  <div class="nav-links">
+    <a href="05주차_교과서.html">📚 교과서</a>
+    <a href="05주차_학습서.html">📖 학습서</a>
+  </div>
+</div>
+<script>
+  function toggleAns(btn){const box=btn.nextElementSibling;box.classList.toggle('show');btn.textContent=box.classList.contains('show')?'정답 가리기':'정답 보기';}
+  function showAll(){document.querySelectorAll('.answer-box').forEach(b=>b.classList.add('show'));document.querySelectorAll('.toggle-btn').forEach(b=>b.textContent='정답 가리기');}
+  function hideAll(){document.querySelectorAll('.answer-box').forEach(b=>b.classList.remove('show'));document.querySelectorAll('.toggle-btn').forEach(b=>b.textContent='정답 보기');}
+</script>
+</body>
+</html>
