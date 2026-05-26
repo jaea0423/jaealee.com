@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>인공지능시대의 윤리 · 학습 자료실</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600;700;900&family=Nanum+Myeongjo:wght@400;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --ivory: #f6f1e3;
+    --ivory-light: #fbf6e9;
+    --ivory-dark: #e8dfc7;
+    --ultramarine: #1c39bb;
+    --ultramarine-dark: #0a1f7c;
+    --ultramarine-light: #3955d5;
+    --bopo-red: #c8102e;
+    --bopo-bg: #f7e0e4;
+    --ink: #1a1814;
+    --ink-soft: #4a4640;
+    --ink-mute: #8c8579;
+    --line: #d8cdb0;
+    --gold: #b8893c;
+}
+
+html, body {
+    min-height: 100vh;
+    background: var(--ivory);
+    color: var(--ink);
+    font-family: 'Noto Serif KR', 'Nanum Myeongjo', serif;
+    overflow-x: hidden;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(circle at 15% 10%, rgba(28,57,187,0.06), transparent 50%),
+        radial-gradient(circle at 85% 90%, rgba(28,57,187,0.04), transparent 50%);
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* ===== 헤더 ===== */
+.hero {
+    position: relative;
+    z-index: 1;
+    padding: 80px 28px 50px;
+    text-align: center;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.hero-tag {
+    display: inline-block;
+    background: var(--ultramarine);
+    color: var(--ivory);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 6px 14px;
+    border-radius: 4px;
+    letter-spacing: 0.15em;
+    margin-bottom: 18px;
+}
+
+h1.title {
+    font-family: 'Nanum Myeongjo', serif;
+    font-size: 52px;
+    font-weight: 800;
+    color: var(--ultramarine-dark);
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    margin-bottom: 12px;
+}
+
+.subtitle {
+    font-size: 17px;
+    color: var(--ink-mute);
+    margin-bottom: 36px;
+    line-height: 1.5;
+}
+
+/* ===== 시험 모드 CTA ===== */
+.exam-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--ultramarine);
+    color: var(--ivory);
+    padding: 22px 38px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-size: 19px;
+    font-weight: 700;
+    box-shadow: 0 8px 24px rgba(28,57,187,0.25);
+    transition: all 0.2s;
+    font-family: 'Noto Serif KR', serif;
+}
+.exam-cta:hover {
+    background: var(--ultramarine-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(28,57,187,0.35);
+}
+.exam-cta .icon {
+    font-size: 28px;
+}
+.exam-cta .sub {
+    display: block;
+    font-size: 12px;
+    font-weight: 400;
+    opacity: 0.85;
+    margin-top: 2px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.08em;
+}
+
+/* ===== 검색바 ===== */
+.search-wrap {
+    max-width: 720px;
+    margin: 40px auto 30px;
+    position: relative;
+    z-index: 5;
+}
+.search-input {
+    width: 100%;
+    padding: 18px 22px;
+    font-family: 'Noto Serif KR', serif;
+    font-size: 17px;
+    border: 2px solid var(--line);
+    border-radius: 8px;
+    background: var(--ivory-light);
+    color: var(--ink);
+    outline: none;
+    transition: all 0.15s;
+}
+.search-input:focus {
+    border-color: var(--ultramarine);
+    box-shadow: 0 0 0 4px rgba(28,57,187,0.1);
+}
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    margin-top: 6px;
+    max-height: 400px;
+    overflow-y: auto;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    display: none;
+    z-index: 10;
+}
+.search-results.visible { display: block; }
+.search-result-item {
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+    transition: background 0.1s;
+}
+.search-result-item:last-child { border-bottom: none; }
+.search-result-item:hover, .search-result-item.focused { background: var(--ivory-light); }
+.search-result-item .title {
+    font-weight: 700;
+    color: var(--ultramarine-dark);
+    margin-bottom: 4px;
+    font-size: 15px;
+}
+.search-result-item .summary {
+    font-size: 13px;
+    color: var(--ink-soft);
+}
+.search-result-item .badges {
+    display: inline-flex;
+    gap: 4px;
+    margin-left: 6px;
+}
+.search-result-item .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 2px;
+    background: var(--ultramarine);
+    color: #fff;
+    font-weight: 700;
+}
+.search-result-item .badge.bopo { background: var(--bopo-red); }
+
+/* ===== 주차별 카드 그리드 ===== */
+.weeks-section {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 30px auto 0;
+    padding: 0 28px 80px;
+}
+
+.weeks-title {
+    font-family: 'Nanum Myeongjo', serif;
+    font-size: 24px;
+    color: var(--ultramarine-dark);
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--ultramarine);
+    font-weight: 800;
+}
+
+.weeks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+}
+
+.week-card {
+    background: var(--ivory-light);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 22px 24px;
+    transition: all 0.15s;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    position: relative;
+    overflow: hidden;
+}
+.week-card:hover {
+    border-color: var(--ultramarine);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(28,57,187,0.12);
+}
+.week-card .week-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ultramarine);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    margin-bottom: 8px;
+}
+.week-card .week-title {
+    font-family: 'Nanum Myeongjo', serif;
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--ultramarine-dark);
+    margin-bottom: 8px;
+    line-height: 1.3;
+}
+.week-card .week-keywords {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+}
+.week-card .bopo-mark {
+    display: inline-block;
+    background: var(--bopo-red);
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    margin-left: 4px;
+    font-weight: 700;
+}
+
+/* 시험·과제 카드 */
+.week-card.exam-week {
+    background: var(--bopo-bg);
+    border-color: var(--bopo-red);
+}
+.week-card.exam-week .week-num,
+.week-card.exam-week .week-title { color: var(--bopo-red); }
+
+/* 강의 없음 (15주차 향후) */
+.week-card.placeholder {
+    background: #f0ede2;
+    border-style: dashed;
+    opacity: 0.6;
+    cursor: default;
+}
+.week-card.placeholder:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* ===== 안내 박스 ===== */
+.info-box {
+    background: var(--ivory-light);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--ultramarine);
+    padding: 18px 22px;
+    border-radius: 0 8px 8px 0;
+    margin: 30px 0;
+}
+.info-box h3 {
+    font-family: 'Nanum Myeongjo', serif;
+    color: var(--ultramarine-dark);
+    font-size: 17px;
+    margin-bottom: 8px;
+}
+.info-box p {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+}
+.info-box ul {
+    margin-top: 8px;
+    margin-left: 22px;
+    font-size: 14px;
+    color: var(--ink-soft);
+}
+.info-box li { margin: 3px 0; }
+
+/* ===== Footer ===== */
+footer {
+    text-align: center;
+    padding: 30px 20px;
+    color: var(--ink-mute);
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    border-top: 1px solid var(--line);
+    margin-top: 40px;
+}
+
+@media (max-width: 600px) {
+    h1.title { font-size: 36px; }
+    .exam-cta { padding: 18px 28px; font-size: 17px; }
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+    <div class="hero-tag">ETHICS · IN · THE · AGE · OF · AI</div>
+    <h1 class="title">인공지능시대의 윤리</h1>
+    <p class="subtitle">학습 자료실 · 시험 대비 검색 · 강의 정리</p>
+
+    <a href="exam.html" class="exam-cta">
+        <span class="icon">📝</span>
+        <span>
+            시험 모드 시작
+            <span class="sub">15분 카운트다운 · 키워드 즉시 검색</span>
+        </span>
+    </a>
+
+    <div class="search-wrap">
+        <input type="search" class="search-input" id="quick-search"
+               placeholder="🔍 키워드 빠른 검색 (예: 칸트, 트롤리, XAI, 책무성, 휴머노이드…)"
+               autocomplete="off" spellcheck="false">
+        <div class="search-results" id="search-results"></div>
+    </div>
+</header>
+
+<main class="weeks-section">
+    <h2 class="weeks-title">📚 주차별 학습 자료</h2>
+
+    <div class="weeks-grid" id="weeks-grid">
+        <a href="01주차/01주차_학습서.html" class="week-card">
+            <div class="week-num">WEEK 01</div>
+            <div class="week-title">윤리이론 <span class="bopo-mark">족보 3</span></div>
+            <div class="week-keywords">공리주의·칸트·플레처 상황윤리</div>
+        </a>
+
+        <a href="02주차/02주차_학습서.html" class="week-card">
+            <div class="week-num">WEEK 02</div>
+            <div class="week-title">AI 정의·유형 <span class="bopo-mark">족보 2</span></div>
+            <div class="week-keywords">다트머스·ANI/AGI/ASI·비지도학습·비전</div>
+        </a>
+
+        <a href="03주차/03주차_학습서.html" class="week-card">
+            <div class="week-num">WEEK 03 ★</div>
+            <div class="week-title">편향성·투명성·책무성 <span class="bopo-mark">족보 5 최다</span></div>
+            <div class="week-keywords">편향vs편견·XAI·책무성·발명자 인정</div>
+        </a>
+
+        <a href="04주차/04주차_학습서.html" class="week-card">
+            <div class="week-num">WEEK 04</div>
+            <div class="week-title">자율성·전자인격 <span class="bopo-mark">족보 2</span></div>
+            <div class="week-keywords">칸트·아시모프·전자인격·데카르트</div>
+        </a>
+
+        <a href="05주차/05주차_학습서.html" class="week-card">
+            <div class="week-num">WEEK 05</div>
+            <div class="week-title">위험관리·마케팅·분배정의 <span class="bopo-mark">족보 1</span></div>
+            <div class="week-keywords">셸·라나플라자·코틀러·롤즈·로봇세</div>
+        </a>
+
+        <a href="06주차/06주차_학습서.html" class="week-card">
+            <div class="week-num">WEEK 06</div>
+            <div class="week-title">자율주행차 윤리 <span class="bopo-mark">족보 1</span></div>
+            <div class="week-keywords">SAE 6단계·말레 실험·모럴 머신·죄수 딜레마</div>
+        </a>
+
+        <a href="07주차/07주차_학습서.html" class="week-card">
+            <div class="week-num">WEEK 07</div>
+            <div class="week-title">사용주의·신뢰성·인간중심</div>
+            <div class="week-keywords">GAN·딥페이크·튜링·중국어방·신뢰성 4요소</div>
+        </a>
+
+        <a href="08주차/08주차_시험정보.html" class="week-card exam-week">
+            <div class="week-num">WEEK 08 · EXAM</div>
+            <div class="week-title">📝 중간시험 / 과제</div>
+            <div class="week-keywords">15분 · 객관식+단답형 · 20문제</div>
+        </a>
+
+        <a href="09주차/09주차_학습서.html" class="week-card">
+            <div class="week-num">WEEK 09 ★</div>
+            <div class="week-title">응용·인간향상·로봇 <span class="bopo-mark">족보 3</span></div>
+            <div class="week-keywords">로봇 회복vs강화·BCI·데카르트·SPA(감지)</div>
+        </a>
+
+        <a href="10주차/10주차_학습서.html" class="week-card">
+            <div class="week-num">WEEK 10</div>
+            <div class="week-title">소셜·수술·군사로봇 <span class="bopo-mark">족보 2</span></div>
+            <div class="week-keywords">파로·다빈치·LAWS·휴머노이드·자율무기</div>
+        </a>
+
+        <a href="11주차/11주차_학습서.html" class="week-card">
+            <div class="week-num">WEEK 11</div>
+            <div class="week-title">미래사회·미래직업</div>
+            <div class="week-keywords">하라리·데이터이즘·프레카리아트·존 헨리</div>
+        </a>
+
+        <a href="12주차/12주차_학습서.html" class="week-card">
+            <div class="week-num">WEEK 12</div>
+            <div class="week-title">권력·감시·사회조종</div>
+            <div class="week-keywords">감시 자본주의·중국 사회신용·페북 감정실험</div>
+        </a>
+
+        <div class="week-card placeholder">
+            <div class="week-num">WEEK 13 · 미공개</div>
+            <div class="week-title">강의 추가 예정</div>
+            <div class="week-keywords">강의가 올라오는 대로 추가</div>
+        </div>
+
+        <div class="week-card placeholder">
+            <div class="week-num">WEEK 14 · 미공개</div>
+            <div class="week-title">강의 추가 예정</div>
+            <div class="week-keywords">강의가 올라오는 대로 추가</div>
+        </div>
+
+        <div class="week-card placeholder exam-week" style="background:rgba(247,224,228,0.4);">
+            <div class="week-num">WEEK 15 · EXAM</div>
+            <div class="week-title">📝 기말시험 / 과제</div>
+            <div class="week-keywords">강의 없음 · 정보 추가 예정</div>
+        </div>
+    </div>
+
+    <div class="info-box">
+        <h3>📌 시험 정보</h3>
+        <ul>
+            <li><strong>시험 형식</strong>: 온라인 오픈북 · 15분 · 20문제 (객관식 + 단답형)</li>
+            <li><strong>족보 출제 분포</strong>: 3주차 5문제 (최다), 1·9주차 각 3문제, 2·10주차 각 2문제</li>
+            <li><strong>전략</strong>: 시험 모드에서 키워드 한 단어로 즉시 검색 — 속도가 생명</li>
+            <li>⚠️ 족보는 2024학년도 겨울학기 자료. 2025학년도 여름학기는 다르게 출제됨 (키워드 파악용)</li>
+        </ul>
+    </div>
+
+    <div class="info-box" style="border-left-color:var(--bopo-red);">
+        <h3>🔥 족보 출제 주차 (★ 우선 학습)</h3>
+        <ul>
+            <li><strong>3주차 (편향성·투명성·책무성)</strong> — 5문제 (편향vs편견 · XAI · 책무성 · 투명성·책무성 관계 · AI 발명자)</li>
+            <li><strong>1주차 (윤리이론)</strong> — 3문제 (칸트 3원칙 · 플레처 6원칙 · 칸트 자율)</li>
+            <li><strong>9주차 (인간향상·로봇)</strong> — 3문제 (로봇 회복·강화 · 데카르트 · 감지(SPA))</li>
+        </ul>
+    </div>
+</main>
+
+<footer>
+    인공지능시대의 윤리 · 학습 자료실 · 총 216개 키워드 · 족보 매칭 39개
+</footer>
+
+<script src="keywords-data.js"></script>
+<script>
+// 빠른 검색 (메인 페이지용)
+const ALL_ITEMS = [];
+
+// 족보 우선
+(PAST_EXAM.객관식 || []).forEach(q => {
+    ALL_ITEMS.push({
+        type: 'bopo',
+        bopo: true,
+        weight: 500,
+        title: q.질문,
+        주차: q.주차,
+        주제: q.주제,
+        searchText: [q.질문, q.주제, Array.isArray(q.정답)?q.정답.join(' '):q.정답, q.해설||''].join(' ')
+    });
+});
+(PAST_EXAM.단답형 || []).forEach(q => {
+    ALL_ITEMS.push({
+        type: 'bopo',
+        bopo: true,
+        weight: 500,
+        title: q.질문,
+        주차: q.주차,
+        주제: q.주제,
+        searchText: [q.질문, q.주제, q.정답, q.해설||''].join(' ')
+    });
+});
+
+(KEYWORDS || []).forEach(kw => {
+    ALL_ITEMS.push({
+        type: 'keyword',
+        bopo: !!kw.fromBopo,
+        weight: kw.fromBopo ? 300 : 100,
+        title: kw.keyword,
+        english: kw.english,
+        category: kw.category,
+        주차: kw.week,
+        file: kw.file,
+        anchor: kw.anchor,
+        summary: kw.summary,
+        searchText: [kw.keyword, kw.english||'', kw.summary||'', kw.category||''].join(' ')
+    });
+});
+
+function searchItems(query) {
+    if (!query || query.trim() === '') return [];
+    const q = query.trim().toLowerCase();
+    const tokens = q.split(/\s+/).filter(t => t);
+
+    const scored = ALL_ITEMS.map(item => {
+        let score = item.weight;
+        const text = item.searchText.toLowerCase();
+        const title = (item.title || '').toLowerCase();
+        let hits = 0;
+        tokens.forEach(t => {
+            if (title.includes(t)) { score += 200; hits++; }
+            else if (text.includes(t)) { score += 50; hits++; }
+            if (item.english && item.english.toLowerCase().includes(t)) { score += 150; hits++; }
+        });
+        if (hits === 0) return null;
+        return { item, score };
+    }).filter(Boolean);
+
+    scored.sort((a,b) => b.score - a.score);
+    return scored.slice(0, 6).map(s => s.item);
+}
+
+const searchInput = document.getElementById('quick-search');
+const searchResults = document.getElementById('search-results');
+
+let timeout;
+searchInput.addEventListener('input', e => {
+    clearTimeout(timeout);
+    const val = e.target.value;
+    if (!val) {
+        searchResults.classList.remove('visible');
+        return;
+    }
+    timeout = setTimeout(() => {
+        const items = searchItems(val);
+        if (items.length === 0) {
+            searchResults.innerHTML = '<div class="search-result-item"><div class="summary">결과 없음. 시험 모드에서 더 자세히 검색해보세요.</div></div>';
+            searchResults.classList.add('visible');
+            return;
+        }
+        searchResults.innerHTML = items.map(item => {
+            const badges = [];
+            if (item.bopo) badges.push('<span class="badge bopo">족보</span>');
+            if (item.주차) badges.push(`<span class="badge">${item.주차}주차</span>`);
+            const href = item.file ? (item.file + (item.anchor ? '#'+item.anchor : '')) : 'exam.html';
+            return `<div class="search-result-item" data-href="${href}">
+                <div class="title">${item.title}<span class="badges">${badges.join('')}</span></div>
+                <div class="summary">${item.summary || item.주제 || ''}</div>
+            </div>`;
+        }).join('');
+        searchResults.classList.add('visible');
+        searchResults.querySelectorAll('.search-result-item').forEach(el => {
+            el.addEventListener('click', () => {
+                const href = el.getAttribute('data-href');
+                if (href) window.location.href = href;
+            });
+        });
+    }, 100);
+});
+
+// Esc로 닫기
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+        searchInput.value = '';
+        searchResults.classList.remove('visible');
+    }
+});
+
+// 검색 결과 밖 클릭 시 닫기
+document.addEventListener('click', e => {
+    if (!e.target.closest('.search-wrap')) {
+        searchResults.classList.remove('visible');
+    }
+});
+</script>
+
+</body>
+</html>

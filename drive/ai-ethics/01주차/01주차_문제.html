@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>01주차 문제집 · 윤리이론</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600;700;900&family=Nanum+Myeongjo:wght@400;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+    --ivory: #f6f1e3; --ivory-light: #fbf6e9; --ivory-dark: #e8dfc7;
+    --ultramarine: #1c39bb; --ultramarine-dark: #0a1f7c;
+    --bopo-red: #c8102e; --bopo-bg: #f7e0e4;
+    --ink: #1a1814; --ink-soft: #4a4640; --ink-mute: #8c8579;
+    --line: #d8cdb0; --correct: #2d7a2d;
+}
+html, body { background: var(--ivory); color: var(--ink); font-family: 'Noto Serif KR', serif; line-height: 1.7; }
+.topbar { position: sticky; top: 0; z-index: 100; background: rgba(246,241,227,0.95); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); padding: 12px 28px; display: flex; justify-content: space-between; align-items: center; }
+.topbar a { color: var(--ultramarine-dark); text-decoration: none; font-weight: 600; font-size: 14px; }
+.brand { font-family: 'Nanum Myeongjo', serif; font-weight: 800; font-size: 16px; color: var(--ultramarine-dark); }
+.brand-sub { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--ink-mute); margin-left: 8px; }
+.container { max-width: 820px; margin: 0 auto; padding: 40px 28px 80px; }
+h1.page-title { font-family: 'Nanum Myeongjo', serif; font-weight: 800; font-size: 30px; color: var(--ultramarine-dark); margin-bottom: 8px; }
+.page-sub { color: var(--ink-mute); font-size: 13px; margin-bottom: 30px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.05em; }
+h2.section-h { font-family: 'Nanum Myeongjo', serif; font-size: 22px; color: var(--ultramarine-dark); margin: 36px 0 18px; padding-bottom: 8px; border-bottom: 2px solid var(--ultramarine); font-weight: 800; }
+.question { background: var(--ivory-light); border: 1px solid var(--line); border-radius: 8px; padding: 18px 22px; margin: 14px 0; }
+.question.bopo { background: var(--bopo-bg); border-color: var(--bopo-red); border-left: 5px solid var(--bopo-red); }
+.q-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.q-num { background: var(--ultramarine); color: var(--ivory); font-family: 'JetBrains Mono', monospace; font-weight: 700; padding: 4px 10px; border-radius: 4px; font-size: 12px; }
+.bopo-badge { background: var(--bopo-red); color: #fff; font-family: 'JetBrains Mono', monospace; font-weight: 700; padding: 4px 10px; border-radius: 4px; font-size: 11px; letter-spacing: 0.05em; }
+.q-tag { background: var(--ivory-dark); color: var(--ink-soft); font-size: 11px; padding: 3px 8px; border-radius: 3px; }
+.q-text { font-size: 16px; font-weight: 500; margin-bottom: 12px; color: var(--ink); line-height: 1.6; }
+.choices { list-style: none; padding-left: 0; }
+.choices li { padding: 6px 10px; margin: 4px 0; background: #fff; border-radius: 4px; font-size: 15px; color: var(--ink-soft); cursor: pointer; transition: background 0.15s; border: 1px solid transparent; }
+.choices li:hover { background: var(--ivory-dark); }
+.choices li.show-correct { background: rgba(45,122,45,0.12); border-color: var(--correct); color: var(--correct); font-weight: 700; }
+.choices li::before { content: attr(data-num) ". "; font-weight: 700; color: var(--ultramarine); font-family: 'JetBrains Mono', monospace; }
+.answer-toggle { display: inline-block; margin-top: 10px; padding: 6px 14px; background: var(--ultramarine); color: var(--ivory); border: none; border-radius: 4px; cursor: pointer; font-family: 'Noto Serif KR', serif; font-size: 13px; }
+.answer-toggle:hover { background: var(--ultramarine-dark); }
+.answer-box { display: none; margin-top: 12px; padding: 12px 16px; background: var(--ivory); border-left: 4px solid var(--correct); border-radius: 0 4px 4px 0; }
+.answer-box.visible { display: block; }
+.answer-box .ans-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--correct); font-weight: 700; letter-spacing: 0.1em; margin-bottom: 4px; }
+.answer-box .ans { font-weight: 700; color: var(--ink); font-size: 15px; margin-bottom: 4px; }
+.answer-box .exp { font-size: 13px; color: var(--ink-soft); line-height: 1.6; }
+.short-input { width: 100%; padding: 8px 12px; border: 1px solid var(--line); border-radius: 4px; font-family: 'Noto Serif KR', serif; font-size: 14px; margin: 6px 0; background: #fff; }
+.controls { display: flex; gap: 10px; margin: 20px 0; }
+.controls button { padding: 10px 18px; border: 1px solid var(--ultramarine); background: var(--ivory-light); color: var(--ultramarine-dark); border-radius: 4px; cursor: pointer; font-family: 'Noto Serif KR', serif; font-size: 14px; font-weight: 600; }
+.controls button:hover { background: var(--ultramarine); color: var(--ivory); }
+.nav-pages { display: flex; justify-content: space-between; gap: 12px; margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--line); }
+.nav-pages a { flex: 1; background: var(--ivory-light); border: 1px solid var(--line); padding: 14px 18px; border-radius: 6px; text-decoration: none; color: var(--ultramarine-dark); font-weight: 600; text-align: center; }
+.nav-pages a:hover { background: var(--ultramarine); color: var(--ivory); }
+strong { color: var(--ultramarine-dark); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+    <a href="../index.html">← 메인</a>
+    <div><span class="brand">인공지능시대의 윤리</span><span class="brand-sub">WEEK 01 / QUIZ</span></div>
+    <a href="../exam.html">📝 시험 모드</a>
+</header>
+
+<div class="container">
+    <h1 class="page-title">01주차 문제집</h1>
+    <div class="page-sub">족보 출제 3문제 + 예상 객관식 7문제 + 단답형 12문제</div>
+
+    <div class="controls">
+        <button id="show-all">모든 정답 보기</button>
+        <button id="hide-all">모든 정답 숨기기</button>
+    </div>
+
+    <h2 class="section-h">객관식</h2>
+
+    <!-- 족보 객관식 1 -->
+    <div class="question bopo">
+        <div class="q-head">
+            <span class="q-num">Q1</span>
+            <span class="bopo-badge">🔥 족보 출제</span>
+            <span class="q-tag">상황윤리</span>
+        </div>
+        <div class="q-text">플레처의 6개의 기초 원칙에 해당하지 않는 것은?</div>
+        <ul class="choices" data-correct="1">
+            <li data-num="1">사랑의 결정은 상황보다는 관례와 규칙에 따라야 한다.</li>
+            <li data-num="2">오직 사랑만이 본래적으로 선하다.</li>
+            <li data-num="3">기독교에서 행동을 결정하게 하는 규범은 사랑이다.</li>
+            <li data-num="4">목적만이 수단을 정당화한다.</li>
+            <li data-num="5">사랑과 정의는 동일한 것이다.</li>
+        </ul>
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box">
+            <div class="ans-label">ANSWER</div>
+            <div class="ans">① 사랑의 결정은 상황보다는 관례와 규칙에 따라야 한다.</div>
+            <div class="exp">플레처(Fletcher)의 6원칙 중 6번째는 "사랑의 결정은 <strong>상황에 따라</strong> 달라진다"임. 관례·규칙을 따른다는 진술은 정반대이므로 6원칙에 해당하지 않음.</div>
+        </div>
+    </div>
+
+    <!-- 족보 객관식 2 -->
+    <div class="question bopo">
+        <div class="q-head">
+            <span class="q-num">Q2</span>
+            <span class="bopo-badge">🔥 족보 출제</span>
+            <span class="q-tag">칸트</span>
+        </div>
+        <div class="q-text">칸트의 세 원칙인 보편성, 인격성, 자율성과 그 설명이 잘못 서술된 것은?</div>
+        <ul class="choices" data-correct="3">
+            <li data-num="1">인격성: 너 자신과 다른 사람의 인격을 언제나 목적으로 대우하고, 단순한 수단으로 대우하지 말라.</li>
+            <li data-num="2">보편성: 네 의지의 격률이 언제나 보편적 입법의 원리로서 타당할 수 있게끔 행위 하라.</li>
+            <li data-num="3">자율성: 모든 존재자는 그 준칙에 의해 항상 보편적 목적의 왕국의 입법적 성원인 것 같이 행위하라.</li>
+        </ul>
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box">
+            <div class="ans-label">ANSWER</div>
+            <div class="ans">③ 자율성에 대한 설명이 잘못됨.</div>
+            <div class="exp">③번은 사실상 <strong>"목적의 왕국(Kingdom of Ends)"</strong>이나 보편성에 가까운 설명. <strong>자율성(Autonomy)의 정확한 의미는 "의지가 스스로 보편적 법칙을 부여하는 능력"</strong>이다. 칸트 자율 = 인간이 자기 삶에서 무엇을 할 것인지, 어떤 도덕 규칙에 따라 살아갈 것인지를 결정할 수 있는 능력.</div>
+        </div>
+    </div>
+
+    <!-- 예상 Q3 -->
+    <div class="question">
+        <div class="q-head">
+            <span class="q-num">Q3</span>
+            <span class="q-tag">공리주의</span>
+        </div>
+        <div class="q-text">벤담의 쾌락 계산법(Hedonic Calculus)에 포함되지 <strong>않는</strong> 척도는?</div>
+        <ul class="choices" data-correct="4">
+            <li data-num="1">강도 (Intensity)</li>
+            <li data-num="2">지속성 (Duration)</li>
+            <li data-num="3">순수성 (Purity)</li>
+            <li data-num="4">창의성 (Creativity)</li>
+            <li data-num="5">범위 (Extent)</li>
+        </ul>
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box">
+            <div class="ans-label">ANSWER</div>
+            <div class="ans">④ 창의성</div>
+            <div class="exp">7가지 척도: 강도·지속성·확실성·근접성·다산성·순수성·범위. 창의성은 포함되지 않음. 강의 내 확인문제로도 출제됨.</div>
+        </div>
+    </div>
+
+    <!-- 예상 Q4 -->
+    <div class="question">
+        <div class="q-head">
+            <span class="q-num">Q4</span>
+            <span class="q-tag">공리주의 / 사례</span>
+        </div>
+        <div class="q-text">자율주행차의 트롤리 딜레마에서 공리주의(벤담)가 추구하는 목표로 가장 적절한 것은?</div>
+        <ul class="choices" data-correct="4">
+            <li data-num="1">탑승자의 안전 절대 우선</li>
+            <li data-num="2">보행자 모두를 항상 우선</li>
+            <li data-num="3">모든 결정의 동의·설명 보장</li>
+            <li data-num="4">생존의 총합 / 피해의 총합 최소화</li>
+        </ul>
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box">
+            <div class="ans-label">ANSWER</div>
+            <div class="ans">④ 생존의 총합 / 피해의 총합 최소화</div>
+            <div class="exp">강의 확인 문제로도 출제됨. 공리주의는 전체적인 행복·생존 확률의 합계를 극대화하는 것을 목표로 함. "누구인가"보다 "얼마나 많이"를 묻는다.</div>
+        </div>
+    </div>
+
+    <!-- 예상 Q5 -->
+    <div class="question">
+        <div class="q-head">
+            <span class="q-num">Q5</span>
+            <span class="q-tag">밀</span>
+        </div>
+        <div class="q-text">밀(J.S. Mill)이 벤담의 공리주의에 가한 핵심적 수정은?</div>
+        <ul class="choices" data-correct="2">
+            <li data-num="1">행복을 계산할 수 없다고 보았다</li>
+            <li data-num="2">쾌락에는 질(質)의 차이가 있다고 보았다</li>
+            <li data-num="3">결과보다 동기를 우선시했다</li>
+            <li data-num="4">사랑을 유일한 도덕 기준으로 삼았다</li>
+        </ul>
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box">
+            <div class="ans-label">ANSWER</div>
+            <div class="ans">② 쾌락에는 질(質)의 차이가 있다</div>
+            <div class="exp">"배부른 돼지보다 배고픈 인간이, 만족한 바보보다 불만족한 소크라테스가 낫다." 지적·도덕적·미적 쾌락이 단순 쾌락보다 더 높은 질을 가진다고 봄.</div>
+        </div>
+    </div>
+
+    <!-- 예상 Q6 -->
+    <div class="question">
+        <div class="q-head">
+            <span class="q-num">Q6</span>
+            <span class="q-tag">칸트 / 사례</span>
+        </div>
+        <div class="q-text">칸트의 관점에서 다음 중 가장 도덕적인 행동은?</div>
+        <ul class="choices" data-correct="3">
+            <li data-num="1">신고당할까 봐 거스름돈을 정확히 돌려준 행동</li>
+            <li data-num="2">친구가 좋아할 것 같아 약속을 지킨 행동</li>
+            <li data-num="3">의무감 때문에 거짓말을 하지 않은 행동</li>
+            <li data-num="4">평판이 떨어질까 봐 약속을 지킨 행동</li>
+        </ul>
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box">
+            <div class="ans-label">ANSWER</div>
+            <div class="ans">③ 의무감 때문에 거짓말을 하지 않은 행동</div>
+            <div class="exp">칸트에게 도덕적 가치는 결과나 외적 보상이 아니라 <strong>동기(Motive)</strong>에 있다. "의무감"이라는 내적 원리에서 비롯된 행동만이 도덕적이다.</div>
+        </div>
+    </div>
+
+    <!-- 예상 Q7 -->
+    <div class="question">
+        <div class="q-head">
+            <span class="q-num">Q7</span>
+            <span class="q-tag">상황윤리 / 사랑</span>
+        </div>
+        <div class="q-text">플레처의 상황윤리에서 말하는 "사랑(Agape)"에 대한 설명으로 옳은 것은?</div>
+        <ul class="choices" data-correct="2">
+            <li data-num="1">감정적 호감을 의미한다</li>
+            <li data-num="2">감정이 아니라 의지의 행위이다</li>
+            <li data-num="3">개인적 친밀감을 우선한다</li>
+            <li data-num="4">규칙을 절대화하는 원리이다</li>
+        </ul>
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box">
+            <div class="ans-label">ANSWER</div>
+            <div class="ans">② 감정이 아니라 의지의 행위이다</div>
+            <div class="exp">플레처: "사랑은 감정이 아니라 결단이다." 좋아하는 사람을 돕는 건 호감일 뿐이고, 미운 사람의 행복까지 선택하는 의지적 행위가 사랑이다.</div>
+        </div>
+    </div>
+
+    <!-- 예상 Q8 -->
+    <div class="question">
+        <div class="q-head">
+            <span class="q-num">Q8</span>
+            <span class="q-tag">감시도시 / 판옵티콘</span>
+        </div>
+        <div class="q-text">감시 도시 사례에서 흥미롭게도 <strong>판옵티콘(Panopticon)</strong> 구상을 처음 제안한 철학자는?</div>
+        <ul class="choices" data-correct="1">
+            <li data-num="1">제러미 벤담</li>
+            <li data-num="2">임마누엘 칸트</li>
+            <li data-num="3">조셉 플레처</li>
+            <li data-num="4">존 스튜어트 밀</li>
+        </ul>
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box">
+            <div class="ans-label">ANSWER</div>
+            <div class="ans">① 제러미 벤담</div>
+            <div class="exp">벤담은 "감시는 사회 질서의 가장 합리적 장치"라는 효율의 관점에서 판옵티콘을 구상했다. 그러나 행복 합계를 높이려다 자유의 총합을 갉아먹는 자기 모순이 발생한다는 비판이 따른다.</div>
+        </div>
+    </div>
+
+    <!-- 예상 Q9 -->
+    <div class="question">
+        <div class="q-head">
+            <span class="q-num">Q9</span>
+            <span class="q-tag">샌델 비판</span>
+        </div>
+        <div class="q-text">마이클 샌델이 손다이크(Thorndike)의 실험을 인용해 공리주의를 비판한 핵심 논지는?</div>
+        <ul class="choices" data-correct="3">
+            <li data-num="1">계산의 정확성이 부족하다</li>
+            <li data-num="2">행복은 더 많이 측정될수록 정확해진다</li>
+            <li data-num="3">모든 것을 가격으로 환산하면 인간의 존엄이 사라진다</li>
+            <li data-num="4">결과주의는 실용적 효용이 있다</li>
+        </ul>
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box">
+            <div class="ans-label">ANSWER</div>
+            <div class="ans">③ 모든 것을 가격으로 환산하면 인간의 존엄이 사라진다</div>
+            <div class="exp">우리가 가치를 부여하는 것들은 "단일 통화로 환산될 수 없음"을 손다이크의 실험 결과가 역설적으로 보여줌.</div>
+        </div>
+    </div>
+
+    <!-- 예상 Q10 -->
+    <div class="question">
+        <div class="q-head">
+            <span class="q-num">Q10</span>
+            <span class="q-tag">종합 비교</span>
+        </div>
+        <div class="q-text">"효용으로 설계하고, 권리로 경계를 긋고, 사랑으로 예외를 판단하라"는 종합 명제에서 각 윤리이론의 연결로 옳은 것은?</div>
+        <ul class="choices" data-correct="1">
+            <li data-num="1">효용 = 공리주의 / 권리 = 칸트 / 사랑 = 상황윤리</li>
+            <li data-num="2">효용 = 칸트 / 권리 = 상황윤리 / 사랑 = 공리주의</li>
+            <li data-num="3">효용 = 상황윤리 / 권리 = 공리주의 / 사랑 = 칸트</li>
+            <li data-num="4">효용 = 공리주의 / 권리 = 상황윤리 / 사랑 = 칸트</li>
+        </ul>
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box">
+            <div class="ans-label">ANSWER</div>
+            <div class="ans">① 효용=공리주의 / 권리=칸트 / 사랑=상황윤리</div>
+            <div class="exp">공리주의=항해 지도(효용 설계), 칸트=등대(권리·금지선), 상황윤리=현장 선장(예외 판단).</div>
+        </div>
+    </div>
+
+    <h2 class="section-h">단답형 주관식</h2>
+
+    <!-- 족보 단답 1 -->
+    <div class="question bopo">
+        <div class="q-head">
+            <span class="q-num">S1</span>
+            <span class="bopo-badge">🔥 족보 출제</span>
+            <span class="q-tag">칸트 자율</span>
+        </div>
+        <div class="q-text">다음 괄호 안에 들어갈 인물명을 쓰시오.<br>"( ? ) 윤리학에서의 자율: 인간이 자기 삶에서 무엇을 할 것인지, 어떤 도덕 규칙에 따라 살아갈 것인지를 결정할 수 있는 능력"</div>
+        <input class="short-input" placeholder="답을 입력해보세요 (확인은 정답 보기)">
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box">
+            <div class="ans-label">ANSWER</div>
+            <div class="ans">칸트</div>
+            <div class="exp">칸트(Immanuel Kant) 윤리학의 핵심 개념. 자율(Autonomy) = 의지의 자기 입법 능력.</div>
+        </div>
+    </div>
+
+    <div class="question">
+        <div class="q-head"><span class="q-num">S2</span><span class="q-tag">공리주의</span></div>
+        <div class="q-text">"최대 다수의 최대 행복"을 슬로건으로 하는 윤리이론을 쓰시오.</div>
+        <input class="short-input">
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">공리주의 (Utilitarianism)</div><div class="exp">결과주의(Consequentialism)의 대표 이론.</div></div>
+    </div>
+
+    <div class="question">
+        <div class="q-head"><span class="q-num">S3</span><span class="q-tag">벤담</span></div>
+        <div class="q-text">벤담이 행복을 측정 가능한 수량으로 보고 제시한 계산법의 명칭은?</div>
+        <input class="short-input">
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">쾌락 계산법 (Hedonic Calculus)</div><div class="exp">7가지 척도: 강도·지속성·확실성·근접성·다산성·순수성·범위.</div></div>
+    </div>
+
+    <div class="question">
+        <div class="q-head"><span class="q-num">S4</span><span class="q-tag">칸트</span></div>
+        <div class="q-text">"내가 인간이라면 반드시 그렇게 해야 한다"는 조건 없는 도덕 명령을 무엇이라 하는가?</div>
+        <input class="short-input">
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">정언명령 (Categorical Imperative)</div><div class="exp">조건부(가언) 명령과 대비됨.</div></div>
+    </div>
+
+    <div class="question">
+        <div class="q-head"><span class="q-num">S5</span><span class="q-tag">칸트</span></div>
+        <div class="q-text">칸트의 정언명령 중 "타인을 결코 단순한 수단이 아니라 목적 그 자체로 대하라"는 원칙의 이름은?</div>
+        <input class="short-input">
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">인격성(의 원칙) — Humanity (Formula of Humanity)</div><div class="exp">보편성·인격성·자율성 중 인격성.</div></div>
+    </div>
+
+    <div class="question">
+        <div class="q-head"><span class="q-num">S6</span><span class="q-tag">플레처</span></div>
+        <div class="q-text">플레처가 제시한 윤리이론의 명칭은?</div>
+        <input class="short-input">
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">상황윤리 (Situation Ethics)</div><div class="exp">율법주의와 무율법주의 사이의 제3의 길.</div></div>
+    </div>
+
+    <div class="question">
+        <div class="q-head"><span class="q-num">S7</span><span class="q-tag">플레처</span></div>
+        <div class="q-text">플레처의 상황윤리에서 유일한 절대 기준이 되는 개념은?</div>
+        <input class="short-input">
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">사랑 (Agape)</div><div class="exp">감정이 아니라 의지의 선택.</div></div>
+    </div>
+
+    <div class="question">
+        <div class="q-head"><span class="q-num">S8</span><span class="q-tag">철학자</span></div>
+        <div class="q-text">"내가 죽은 뒤에라도 사람들에게 유용하고 싶다"며 자기 유해를 전시한 오토아이콘으로 알려진 영국 공리주의 사상가는?</div>
+        <input class="short-input">
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">제러미 벤담 (Jeremy Bentham)</div></div>
+    </div>
+
+    <div class="question">
+        <div class="q-head"><span class="q-num">S9</span><span class="q-tag">밀</span></div>
+        <div class="q-text">밀의 유명한 명제: "배부른 돼지보다 배고픈 ( ? )이, 만족한 바보보다 불만족한 ( ? )가 낫다."</div>
+        <input class="short-input">
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">인간 / 소크라테스</div><div class="exp">쾌락의 질적 차이를 강조.</div></div>
+    </div>
+
+    <div class="question">
+        <div class="q-head"><span class="q-num">S10</span><span class="q-tag">감시 / 벤담</span></div>
+        <div class="q-text">벤담이 제안한 원형 감시 시설로, 감시 도시 사례에서 자주 언급되는 개념은?</div>
+        <input class="short-input">
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">판옵티콘 (Panopticon)</div><div class="exp">"언제든 관찰당할 수 있다면 스스로 도덕적으로 행동한다"는 효율 논리.</div></div>
+    </div>
+
+    <div class="question">
+        <div class="q-head"><span class="q-num">S11</span><span class="q-tag">샌델</span></div>
+        <div class="q-text">손다이크의 실험을 인용해 "모든 것을 가격으로 계산하는 순간 인간의 존엄이 사라진다"고 공리주의를 비판한 하버드대 철학자는?</div>
+        <input class="short-input">
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">마이클 샌델 (Michael Sandel)</div></div>
+    </div>
+
+    <div class="question">
+        <div class="q-head"><span class="q-num">S12</span><span class="q-tag">종합</span></div>
+        <div class="q-text">공리주의·칸트·상황윤리의 종합 명제: "효용으로 설계하고, ( ? )로 경계를 긋고, 사랑으로 예외를 판단하라."</div>
+        <input class="short-input">
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">권리</div><div class="exp">칸트(권리)가 경계선·금지선을 비추는 등대 역할.</div></div>
+    </div>
+
+    <div class="nav-pages">
+        <a href="01주차_교과서.html">📖 교과서</a>
+        <a href="01주차_학습서.html">📘 학습서</a>
+    </div>
+</div>
+
+<script>
+// 정답 토글
+document.querySelectorAll('.answer-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const box = btn.nextElementSibling;
+        const isVisible = box.classList.contains('visible');
+        box.classList.toggle('visible');
+        // 객관식 정답 하이라이트
+        const q = btn.closest('.question');
+        const choices = q.querySelector('.choices');
+        if (choices) {
+            const correctNum = choices.getAttribute('data-correct');
+            choices.querySelectorAll('li').forEach(li => {
+                if (li.getAttribute('data-num') === correctNum) {
+                    li.classList.toggle('show-correct', !isVisible);
+                }
+            });
+        }
+        btn.textContent = isVisible ? '정답·해설 보기' : '정답·해설 숨기기';
+    });
+});
+
+document.getElementById('show-all').addEventListener('click', () => {
+    document.querySelectorAll('.answer-box').forEach(box => box.classList.add('visible'));
+    document.querySelectorAll('.choices').forEach(c => {
+        const correct = c.getAttribute('data-correct');
+        c.querySelectorAll('li').forEach(li => {
+            if (li.getAttribute('data-num') === correct) li.classList.add('show-correct');
+        });
+    });
+    document.querySelectorAll('.answer-toggle').forEach(b => b.textContent = '정답·해설 숨기기');
+});
+document.getElementById('hide-all').addEventListener('click', () => {
+    document.querySelectorAll('.answer-box').forEach(box => box.classList.remove('visible'));
+    document.querySelectorAll('.choices li').forEach(li => li.classList.remove('show-correct'));
+    document.querySelectorAll('.answer-toggle').forEach(b => b.textContent = '정답·해설 보기');
+});
+</script>
+
+</body>
+</html>

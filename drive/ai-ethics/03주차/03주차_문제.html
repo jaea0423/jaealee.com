@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>03주차 문제집 · 편향성·투명성·책무성</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600;700;900&family=Nanum+Myeongjo:wght@400;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--ivory:#f6f1e3;--ivory-light:#fbf6e9;--ivory-dark:#e8dfc7;--ultramarine:#1c39bb;--ultramarine-dark:#0a1f7c;--bopo-red:#c8102e;--bopo-bg:#f7e0e4;--ink:#1a1814;--ink-soft:#4a4640;--ink-mute:#8c8579;--line:#d8cdb0;--correct:#2d7a2d}
+html,body{background:var(--ivory);color:var(--ink);font-family:'Noto Serif KR',serif;line-height:1.7}
+.topbar{position:sticky;top:0;z-index:100;background:rgba(246,241,227,0.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:12px 28px;display:flex;justify-content:space-between;align-items:center}
+.topbar a{color:var(--ultramarine-dark);text-decoration:none;font-weight:600;font-size:14px}
+.brand{font-family:'Nanum Myeongjo',serif;font-weight:800;font-size:16px;color:var(--ultramarine-dark)}
+.brand-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-mute);margin-left:8px}
+.container{max-width:820px;margin:0 auto;padding:40px 28px 80px}
+h1.page-title{font-family:'Nanum Myeongjo',serif;font-weight:800;font-size:30px;color:var(--ultramarine-dark);margin-bottom:8px}
+.page-sub{color:var(--ink-mute);font-size:13px;margin-bottom:30px;font-family:'JetBrains Mono',monospace}
+h2.section-h{font-family:'Nanum Myeongjo',serif;font-size:22px;color:var(--ultramarine-dark);margin:36px 0 18px;padding-bottom:8px;border-bottom:2px solid var(--ultramarine);font-weight:800}
+.question{background:var(--ivory-light);border:1px solid var(--line);border-radius:8px;padding:18px 22px;margin:14px 0}
+.question.bopo{background:var(--bopo-bg);border-color:var(--bopo-red);border-left:5px solid var(--bopo-red)}
+.q-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.q-num{background:var(--ultramarine);color:var(--ivory);font-family:'JetBrains Mono',monospace;font-weight:700;padding:4px 10px;border-radius:4px;font-size:12px}
+.bopo-badge{background:var(--bopo-red);color:#fff;font-family:'JetBrains Mono',monospace;font-weight:700;padding:4px 10px;border-radius:4px;font-size:11px}
+.q-tag{background:var(--ivory-dark);color:var(--ink-soft);font-size:11px;padding:3px 8px;border-radius:3px}
+.q-text{font-size:16px;font-weight:500;margin-bottom:12px;color:var(--ink);line-height:1.6}
+.choices{list-style:none;padding-left:0}
+.choices li{padding:6px 10px;margin:4px 0;background:#fff;border-radius:4px;font-size:15px;color:var(--ink-soft);cursor:pointer;border:1px solid transparent}
+.choices li:hover{background:var(--ivory-dark)}
+.choices li.show-correct{background:rgba(45,122,45,0.12);border-color:var(--correct);color:var(--correct);font-weight:700}
+.choices li::before{content:attr(data-num)". ";font-weight:700;color:var(--ultramarine);font-family:'JetBrains Mono',monospace}
+.answer-toggle{display:inline-block;margin-top:10px;padding:6px 14px;background:var(--ultramarine);color:var(--ivory);border:none;border-radius:4px;cursor:pointer;font-family:'Noto Serif KR',serif;font-size:13px}
+.answer-toggle:hover{background:var(--ultramarine-dark)}
+.answer-box{display:none;margin-top:12px;padding:12px 16px;background:var(--ivory);border-left:4px solid var(--correct);border-radius:0 4px 4px 0}
+.answer-box.visible{display:block}
+.answer-box .ans-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--correct);font-weight:700;letter-spacing:0.1em;margin-bottom:4px}
+.answer-box .ans{font-weight:700;color:var(--ink);font-size:15px;margin-bottom:4px}
+.answer-box .exp{font-size:13px;color:var(--ink-soft);line-height:1.6}
+.short-input{width:100%;padding:8px 12px;border:1px solid var(--line);border-radius:4px;font-family:'Noto Serif KR',serif;font-size:14px;margin:6px 0;background:#fff}
+.controls{display:flex;gap:10px;margin:20px 0}
+.controls button{padding:10px 18px;border:1px solid var(--ultramarine);background:var(--ivory-light);color:var(--ultramarine-dark);border-radius:4px;cursor:pointer;font-family:'Noto Serif KR',serif;font-size:14px;font-weight:600}
+.controls button:hover{background:var(--ultramarine);color:var(--ivory)}
+.nav-pages{display:flex;justify-content:space-between;gap:12px;margin-top:40px;padding-top:24px;border-top:1px solid var(--line)}
+.nav-pages a{flex:1;background:var(--ivory-light);border:1px solid var(--line);padding:14px 18px;border-radius:6px;text-decoration:none;color:var(--ultramarine-dark);font-weight:600;text-align:center}
+strong{color:var(--ultramarine-dark)}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+    <a href="../index.html">← 메인</a>
+    <div><span class="brand">인공지능시대의 윤리</span><span class="brand-sub">WEEK 03 / QUIZ ★</span></div>
+    <a href="../exam.html">📝 시험 모드</a>
+</header>
+
+<div class="container">
+    <h1 class="page-title">03주차 문제집</h1>
+    <div class="page-sub">★ 족보 객관식 4 + 단답형 2 (총 6문제) + 예상 객관식 6 + 단답형 8</div>
+
+    <div class="controls">
+        <button id="show-all">모든 정답 보기</button>
+        <button id="hide-all">모든 정답 숨기기</button>
+    </div>
+
+    <h2 class="section-h">객관식 — 족보 출제</h2>
+
+    <div class="question bopo">
+        <div class="q-head"><span class="q-num">Q1</span><span class="bopo-badge">🔥 족보</span><span class="q-tag">편향vs편견</span></div>
+        <div class="q-text">편향과 편견의 차이를 바르게 설명한 것은?</div>
+        <ul class="choices" data-correct="2">
+            <li data-num="1">편향은 행동보다는 심리적인 고정 관념을 의미한다.</li>
+            <li data-num="2">편향은 특정 행동 성향을 자동으로 야기할 수 있다.</li>
+            <li data-num="3">편견은 개개인 자신의 국한된 경험과는 무관하게 생겨난다.</li>
+            <li data-num="4">편견은 행동 메커니즘 자체가 치우친 상태를 말한다.</li>
+        </ul>
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">② 편향은 특정 행동 성향을 자동으로 야기할 수 있다</div><div class="exp">편견=심리적 고정관념, 편향=시스템의 구조적 기울어짐(자동으로 행동 성향 야기). 보기 ①④는 편향과 편견을 거꾸로 설명. ③은 편견의 정의가 잘못됨.</div></div>
+    </div>
+
+    <div class="question bopo">
+        <div class="q-head"><span class="q-num">Q2</span><span class="bopo-badge">🔥 족보</span><span class="q-tag">XAI 효과</span></div>
+        <div class="q-text">설명가능 인공지능(Explainable AI)의 효과에 관한 설명으로 적절하지 않은 것은?</div>
+        <ul class="choices" data-correct="1">
+            <li data-num="1">주어진 알고리즘을 예측할 수 있다.</li>
+            <li data-num="2">인공지능 모형에 대해 이해 가능해진다.</li>
+            <li data-num="3">인간 간의 이해를 증진할 수 있다.</li>
+            <li data-num="4">인간 개입 시점을 계획할 수 있다.</li>
+        </ul>
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">① 주어진 알고리즘을 예측할 수 있다</div><div class="exp">XAI는 결과·판단의 '이유'를 설명하는 기술. 알고리즘 자체의 출력을 예측하는 기술이 아님. ②③④는 모두 XAI의 효과.</div></div>
+    </div>
+
+    <div class="question bopo">
+        <div class="q-head"><span class="q-num">Q3</span><span class="bopo-badge">🔥 족보</span><span class="q-tag">AI 발명자</span></div>
+        <div class="q-text">인공지능이 발명자로 인정받기 위해 고려해야 할 두 가지 사항에 관한 질문을 고르면? (정답 두 개 모두 체크)</div>
+        <ul class="choices" data-correct="1,4">
+            <li data-num="1">인공지능이 법인격을 가질 수 있는가?</li>
+            <li data-num="2">인공지능의 발명품이 고부가가치의 제품인가?</li>
+            <li data-num="3">인공지능은 인간과 같은 지능을 갖고 있는가?</li>
+            <li data-num="4">인공지능의 창작이 발명이 될 수 있는가?</li>
+        </ul>
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">① 법인격 + ④ 창작이 발명인가</div><div class="exp">(1) AI에게 법인격(Legal Personhood) 부여 가능성, (2) AI의 창작 행위가 '발명'의 범주에 들어가는가 — 이 둘이 핵심 쟁점.</div></div>
+    </div>
+
+    <div class="question bopo">
+        <div class="q-head"><span class="q-num">Q4</span><span class="bopo-badge">🔥 족보</span><span class="q-tag">투명성·책무성</span></div>
+        <div class="q-text">AI 윤리에서 책무성과 투명성의 관계에 대한 설명으로 옳지 않은 것은?</div>
+        <ul class="choices" data-correct="1">
+            <li data-num="1">투명성이 높아지면 책무성과 책임 부여가 오히려 어려워진다.</li>
+            <li data-num="2">투명성과 책무성은 '관련성'만 있을 뿐 '인과 관계'는 아니다.</li>
+            <li data-num="3">투명성이 높아진다고 자동적으로 책무성이 확보되는 것은 아니다.</li>
+            <li data-num="4">학습과정의 문제보다는 데이터의 내용이 편향될 수 있으므로 알고리즘 공개를 하여도 어느 부분이 잘못인지 잘 설명되지 않을 수 있다.</li>
+        </ul>
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">① 투명성이 높아지면 책무성·책임 부여가 오히려 어려워진다</div><div class="exp">투명성이 책무성을 어렵게 만드는 게 아님. 다만 '자동 보장'하지도 않을 뿐. ②③④는 모두 정상적인 진술.</div></div>
+    </div>
+
+    <h2 class="section-h">객관식 — 예상</h2>
+
+    <div class="question">
+        <div class="q-head"><span class="q-num">Q5</span><span class="q-tag">XAI 제안기관</span></div>
+        <div class="q-text">설명 가능한 인공지능(XAI) 개념을 2017년 공식 제안한 미국 기관은?</div>
+        <ul class="choices" data-correct="3">
+            <li data-num="1">NASA</li>
+            <li data-num="2">OECD</li>
+            <li data-num="3">DARPA (국방고등연구계획국)</li>
+            <li data-num="4">FDA</li>
+        </ul>
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">③ DARPA</div></div>
+    </div>
+
+    <div class="question">
+        <div class="q-head"><span class="q-num">Q6</span><span class="q-tag">편향 사례</span></div>
+        <div class="q-text">플로리다주 법원에서 재범 위험 점수 산출에 사용되며, 인종 변수가 없음에도 흑인을 고위험으로 분류한 사례는?</div>
+        <ul class="choices" data-correct="2">
+            <li data-num="1">EVAAS</li>
+            <li data-num="2">COMPAS</li>
+            <li data-num="3">애플카드</li>
+            <li data-num="4">DEKA Arm</li>
+        </ul>
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">② COMPAS</div><div class="exp">거주지·경제수준 등 인종과 연관된 대리 변수(Proxy)가 작동.</div></div>
+    </div>
+
+    <div class="question">
+        <div class="q-head"><span class="q-num">Q7</span><span class="q-tag">책임 vs 책무성</span></div>
+        <div class="q-text">책무성(Accountability)에 대한 설명으로 가장 적절한 것은?</div>
+        <ul class="choices" data-correct="2">
+            <li data-num="1">사고 발생 후 누가 잘못했는지 따지는 사후적 귀속</li>
+            <li data-num="2">행위·결정의 설명·정당화 의무로, 사전적 예방을 포함하는 개념</li>
+            <li data-num="3">투명성이 확보되면 자동으로 따라오는 결과</li>
+            <li data-num="4">기계의 결함에 대한 제조자 책임</li>
+        </ul>
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">② 행위·결정의 설명·정당화 의무</div><div class="exp">강의 확인 문제로도 출제. 책임=사후 귀속, 책무성=사전 설명 의무.</div></div>
+    </div>
+
+    <div class="question">
+        <div class="q-head"><span class="q-num">Q8</span><span class="q-tag">GDPR</span></div>
+        <div class="q-text">2018년 EU가 제정한 일반 데이터 보호 규정으로, 개인이 AI 결정 근거를 요구하고 데이터 삭제를 요청할 권리를 보장하는 법은?</div>
+        <ul class="choices" data-correct="2">
+            <li data-num="1">CCPA</li>
+            <li data-num="2">GDPR</li>
+            <li data-num="3">HIPAA</li>
+            <li data-num="4">SOX</li>
+        </ul>
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">② GDPR</div><div class="exp">AI 윤리를 기술이 아닌 제도로 확립한 첫 사례.</div></div>
+    </div>
+
+    <div class="question">
+        <div class="q-head"><span class="q-num">Q9</span><span class="q-tag">DEKA Arm</span></div>
+        <div class="q-text">인공지능 의수(DEKA Arm)와 같이 인간 신경 시스템과 AI가 결합된 경우, 사고 책임의 가장 복잡한 쟁점은?</div>
+        <ul class="choices" data-correct="3">
+            <li data-num="1">제조사 책임만 명확함</li>
+            <li data-num="2">사용자 책임만 명확함</li>
+            <li data-num="3">행위가 인간의 것인지 기계의 것인지 구분 불가</li>
+            <li data-num="4">AI에게 모든 책임이 귀속됨</li>
+        </ul>
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">③ 행위가 인간/기계 중 누구의 것인지 구분 불가</div></div>
+    </div>
+
+    <div class="question">
+        <div class="q-head"><span class="q-num">Q10</span><span class="q-tag">블랙박스</span></div>
+        <div class="q-text">AI가 블랙박스(Black Box)로 불리는 가장 적절한 이유는?</div>
+        <ul class="choices" data-correct="3">
+            <li data-num="1">하드웨어가 검은색이라서</li>
+            <li data-num="2">입력 데이터를 외부에서 알 수 없어서</li>
+            <li data-num="3">입력과 출력은 보이지만 판단 과정이 가려져 있어서</li>
+            <li data-num="4">출력 결과를 사용자가 볼 수 없어서</li>
+        </ul>
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">③ 입력·출력은 보이지만 판단 과정이 가려짐</div><div class="exp">강의 확인 문제로도 출제.</div></div>
+    </div>
+
+    <h2 class="section-h">단답형 — 족보 출제</h2>
+
+    <div class="question bopo">
+        <div class="q-head"><span class="q-num">S1</span><span class="bopo-badge">🔥 족보</span><span class="q-tag">책무성</span></div>
+        <div class="q-text">다음 괄호 안에 공통으로 들어갈 개념으로 가장 적절한 것은?<br>"인공지능이 단순한 자동 시스템을 넘어 자율 시스템이 되면서 ( ? )의 측면이 더 중요해진다. ( ? )이란 특정 이해 당사자가 자신의 행위와 관련한 책임과 의무를 식별하고 설명하거나 행위의 정당성에 대한 물음에 답하는 것이다."</div>
+        <input class="short-input">
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">책무성 (Accountability)</div><div class="exp">책임(Responsibility)을 넘어 '설명·정당화'까지 포함.</div></div>
+    </div>
+
+    <div class="question bopo">
+        <div class="q-head"><span class="q-num">S2</span><span class="bopo-badge">🔥 족보</span><span class="q-tag">XAI</span></div>
+        <div class="q-text">"( ? ) 인공지능은 판단에 대한 이유를 사람이 이해할 수 있는 방식으로 제시하는 인공지능을 일컫는다. 특정한 판단에 대해 알고리즘의 설계자조차도 그 이유를 설명할 수 없는 '블랙박스' 인공지능과 대비되는 개념이다."</div>
+        <input class="short-input">
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">설명 가능한 (Explainable AI · XAI)</div></div>
+    </div>
+
+    <h2 class="section-h">단답형 — 예상</h2>
+
+    <div class="question">
+        <div class="q-head"><span class="q-num">S3</span><span class="q-tag">편향</span></div>
+        <div class="q-text">AI가 학습 데이터를 선택·수집·분류·활용하거나 알고리즘을 구성하는 과정에서 공평하지 않은 기준이 개입되는 현상을 무엇이라 하는가?</div>
+        <input class="short-input">
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">알고리즘 편향 (Algorithmic Bias)</div></div>
+    </div>
+
+    <div class="question">
+        <div class="q-head"><span class="q-num">S4</span><span class="q-tag">블랙박스</span></div>
+        <div class="q-text">입력과 출력은 보이지만 그 사이의 판단 과정이 외부에서 확인되지 않는 AI를 부르는 용어는?</div>
+        <input class="short-input">
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">블랙박스 (Black Box)</div></div>
+    </div>
+
+    <div class="question">
+        <div class="q-head"><span class="q-num">S5</span><span class="q-tag">사례</span></div>
+        <div class="q-text">2019년 동일한 신용·소득 부부 중 여성이 남성의 1/10 신용한도를 받은 사건으로 알려진 AI 신용카드는?</div>
+        <input class="short-input">
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">애플카드 (Apple Card)</div><div class="exp">골드만삭스 발행. 결정 과정 설명 불가.</div></div>
+    </div>
+
+    <div class="question">
+        <div class="q-head"><span class="q-num">S6</span><span class="q-tag">사례</span></div>
+        <div class="q-text">플로리다주 법원에서 사용된 재범 예측 프로그램의 명칭은?</div>
+        <input class="short-input">
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">COMPAS</div></div>
+    </div>
+
+    <div class="question">
+        <div class="q-head"><span class="q-num">S7</span><span class="q-tag">법</span></div>
+        <div class="q-text">2018년 EU가 제정한 일반 데이터 보호 규정의 약자는?</div>
+        <input class="short-input">
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">GDPR (General Data Protection Regulation)</div></div>
+    </div>
+
+    <div class="question">
+        <div class="q-head"><span class="q-num">S8</span><span class="q-tag">의수</span></div>
+        <div class="q-text">세그웨이 개발자 딘 카멘이 설립한 데카 연구소에서 개발한 인공지능 의수의 명칭은?</div>
+        <input class="short-input">
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">데카암 (DEKA Arm)</div></div>
+    </div>
+
+    <div class="question">
+        <div class="q-head"><span class="q-num">S9</span><span class="q-tag">개념</span></div>
+        <div class="q-text">자율 시스템에서 설계자·제작자·데이터 제공자·운영자에 걸쳐 책임이 흩어지는 현상을 무엇이라 하는가?</div>
+        <input class="short-input">
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">분산된 책임 (Distributed Responsibility)</div></div>
+    </div>
+
+    <div class="question">
+        <div class="q-head"><span class="q-num">S10</span><span class="q-tag">기관</span></div>
+        <div class="q-text">2017년 XAI 개념을 공식 제안한 미국 국방부 산하 기관의 약자는?</div>
+        <input class="short-input">
+        <button class="answer-toggle">정답·해설 보기</button>
+        <div class="answer-box"><div class="ans-label">ANSWER</div><div class="ans">DARPA (Defense Advanced Research Projects Agency)</div></div>
+    </div>
+
+    <div class="nav-pages">
+        <a href="03주차_교과서.html">📖 교과서</a>
+        <a href="03주차_학습서.html">📘 학습서</a>
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('.answer-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const box = btn.nextElementSibling;
+        const isVisible = box.classList.contains('visible');
+        box.classList.toggle('visible');
+        const q = btn.closest('.question');
+        const choices = q.querySelector('.choices');
+        if (choices) {
+            const correctStr = choices.getAttribute('data-correct') || '';
+            const corrects = correctStr.split(',').map(s => s.trim());
+            choices.querySelectorAll('li').forEach(li => {
+                if (corrects.includes(li.getAttribute('data-num'))) li.classList.toggle('show-correct', !isVisible);
+            });
+        }
+        btn.textContent = isVisible ? '정답·해설 보기' : '정답·해설 숨기기';
+    });
+});
+document.getElementById('show-all').addEventListener('click', () => {
+    document.querySelectorAll('.answer-box').forEach(box => box.classList.add('visible'));
+    document.querySelectorAll('.choices').forEach(c => {
+        const corrects = (c.getAttribute('data-correct') || '').split(',').map(s => s.trim());
+        c.querySelectorAll('li').forEach(li => { if (corrects.includes(li.getAttribute('data-num'))) li.classList.add('show-correct'); });
+    });
+    document.querySelectorAll('.answer-toggle').forEach(b => b.textContent = '정답·해설 숨기기');
+});
+document.getElementById('hide-all').addEventListener('click', () => {
+    document.querySelectorAll('.answer-box').forEach(box => box.classList.remove('visible'));
+    document.querySelectorAll('.choices li').forEach(li => li.classList.remove('show-correct'));
+    document.querySelectorAll('.answer-toggle').forEach(b => b.textContent = '정답·해설 보기');
+});
+</script>
+
+</body>
+</html>

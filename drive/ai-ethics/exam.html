@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>시험 모드 · 인공지능시대의 윤리</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600;700;900&family=Nanum+Myeongjo:wght@400;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --ivory: #f6f1e3;
+    --ivory-light: #fbf6e9;
+    --ivory-dark: #e8dfc7;
+    --ultramarine: #1c39bb;
+    --ultramarine-dark: #0a1f7c;
+    --ultramarine-light: #3955d5;
+    --bopo-red: #c8102e;
+    --bopo-red-light: #f7e0e4;
+    --ink: #1a1814;
+    --ink-soft: #4a4640;
+    --ink-mute: #8c8579;
+    --line: #d8cdb0;
+    --warn: #d4641a;
+    --danger: #b91c1c;
+}
+
+html, body {
+    min-height: 100vh;
+    background: var(--ivory);
+    color: var(--ink);
+    font-family: 'Noto Serif KR', 'Nanum Myeongjo', serif;
+    overflow-x: hidden;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(circle at 20% 10%, rgba(28,57,187,0.04), transparent 50%),
+        radial-gradient(circle at 80% 90%, rgba(28,57,187,0.03), transparent 50%);
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* ===== 상단 바 ===== */
+.topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(246, 241, 227, 0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.brand-mark {
+    width: 32px; height: 32px;
+    background: var(--ultramarine);
+    color: var(--ivory);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 4px;
+    font-size: 13px;
+}
+.brand-title {
+    font-family: 'Nanum Myeongjo', serif;
+    font-weight: 800;
+    font-size: 17px;
+    color: var(--ultramarine-dark);
+}
+.brand-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-mute);
+    letter-spacing: 0.1em;
+}
+
+/* ===== 타이머 ===== */
+.timer-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.timer {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--ultramarine);
+    letter-spacing: 0.05em;
+    min-width: 120px;
+    text-align: right;
+}
+.timer.warning { color: var(--warn); }
+.timer.danger {
+    color: var(--danger);
+    animation: blink 0.8s ease-in-out infinite;
+}
+@keyframes blink {
+    50% { opacity: 0.5; }
+}
+.timer-btns {
+    display: flex;
+    gap: 6px;
+}
+.timer-btn {
+    background: var(--ivory-light);
+    border: 1px solid var(--line);
+    color: var(--ultramarine-dark);
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Noto Serif KR', serif;
+    font-size: 12px;
+    font-weight: 500;
+}
+.timer-btn:hover {
+    background: var(--ultramarine);
+    color: var(--ivory);
+}
+.timer-btn.primary {
+    background: var(--ultramarine);
+    color: var(--ivory);
+    border-color: var(--ultramarine);
+}
+.timer-btn.primary:hover {
+    background: var(--ultramarine-dark);
+}
+
+/* ===== 메인 영역 ===== */
+.main {
+    position: relative;
+    z-index: 1;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 40px 28px 60px;
+}
+
+.hero {
+    text-align: center;
+    margin-bottom: 32px;
+}
+.hero-title {
+    font-family: 'Nanum Myeongjo', serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--ultramarine-dark);
+    letter-spacing: -0.02em;
+}
+.hero-sub {
+    font-size: 14px;
+    color: var(--ink-mute);
+    margin-top: 8px;
+}
+
+/* ===== 검색창 ===== */
+.search-wrap {
+    position: relative;
+    margin-bottom: 24px;
+}
+.search-input {
+    width: 100%;
+    padding: 26px 28px;
+    font-family: 'Noto Serif KR', serif;
+    font-size: 22px;
+    border: 2px solid var(--ultramarine);
+    border-radius: 8px;
+    background: var(--ivory-light);
+    color: var(--ink);
+    outline: none;
+    transition: all 0.15s;
+}
+.search-input:focus {
+    border-color: var(--ultramarine-dark);
+    box-shadow: 0 0 0 4px rgba(28,57,187,0.12);
+}
+.search-input::placeholder {
+    color: var(--ink-mute);
+    font-style: italic;
+}
+
+/* ===== 카테고리 필터 ===== */
+.cat-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+    justify-content: center;
+}
+.cat-chip {
+    background: var(--ivory-light);
+    border: 1px solid var(--line);
+    color: var(--ink-soft);
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: 'Noto Serif KR', serif;
+    font-size: 13px;
+    transition: all 0.12s;
+}
+.cat-chip:hover {
+    border-color: var(--ultramarine);
+    color: var(--ultramarine);
+}
+.cat-chip.active {
+    background: var(--ultramarine);
+    color: var(--ivory);
+    border-color: var(--ultramarine);
+}
+
+/* ===== 결과 영역 ===== */
+.results {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--ink-mute);
+    font-size: 15px;
+}
+.empty-state .kbd {
+    display: inline-block;
+    background: var(--ivory-light);
+    border: 1px solid var(--line);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    margin: 0 3px;
+}
+
+.card {
+    background: var(--ivory-light);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 22px 26px;
+    transition: all 0.12s;
+    cursor: pointer;
+}
+.card:hover, .card.focused {
+    border-color: var(--ultramarine);
+    background: #fff;
+    box-shadow: 0 4px 14px rgba(28,57,187,0.08);
+}
+
+.card-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+.badge.bopo {
+    background: var(--bopo-red);
+    color: #fff;
+}
+.badge.week {
+    background: var(--ultramarine);
+    color: var(--ivory);
+}
+.badge.cat {
+    background: var(--ivory-dark);
+    color: var(--ink-soft);
+}
+.badge.type {
+    background: var(--ivory-dark);
+    color: var(--ink-soft);
+}
+
+.card-title {
+    font-family: 'Nanum Myeongjo', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ultramarine-dark);
+    line-height: 1.4;
+    margin-bottom: 10px;
+}
+
+.card-body {
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--ink);
+}
+
+.answer-box {
+    margin-top: 14px;
+    padding: 14px 18px;
+    background: var(--ivory);
+    border-left: 4px solid var(--ultramarine);
+    border-radius: 0 4px 4px 0;
+    font-size: 16px;
+}
+.answer-box .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--ultramarine);
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+}
+.answer-box .ans {
+    font-weight: 700;
+    color: var(--ultramarine-dark);
+    font-size: 18px;
+    line-height: 1.5;
+}
+.answer-box .exp {
+    margin-top: 8px;
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+}
+
+.opt-list {
+    margin: 10px 0;
+    padding-left: 0;
+    list-style: none;
+}
+.opt-list li {
+    padding: 6px 12px;
+    margin: 4px 0;
+    background: var(--ivory);
+    border-radius: 4px;
+    font-size: 15px;
+    color: var(--ink-soft);
+}
+.opt-list li.correct {
+    background: rgba(28,57,187,0.08);
+    color: var(--ultramarine-dark);
+    font-weight: 700;
+    border-left: 3px solid var(--ultramarine);
+}
+
+.card-link {
+    display: inline-block;
+    margin-top: 10px;
+    color: var(--ultramarine);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+}
+.card-link:hover { text-decoration: underline; }
+
+.hl {
+    background: rgba(255, 200, 0, 0.4);
+    padding: 0 2px;
+    border-radius: 2px;
+}
+
+/* ===== 하단 도움말 ===== */
+.helpbar {
+    margin-top: 32px;
+    padding: 18px;
+    background: var(--ivory-light);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    justify-content: center;
+}
+.helpbar .kbd {
+    display: inline-block;
+    background: var(--ivory);
+    border: 1px solid var(--line);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    margin: 0 2px;
+    color: var(--ultramarine-dark);
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+    <a href="index.html" class="brand" style="text-decoration:none;color:inherit;">
+        <div class="brand-mark">AI</div>
+        <div>
+            <div class="brand-title">인공지능시대의 윤리</div>
+            <div class="brand-sub">EXAM · MODE · 15:00</div>
+        </div>
+    </a>
+    <div class="timer-wrap">
+        <div class="timer" id="timer">15:00</div>
+        <div class="timer-btns">
+            <button class="timer-btn primary" id="btn-start">시작</button>
+            <button class="timer-btn" id="btn-pause">정지</button>
+            <button class="timer-btn" id="btn-reset">리셋</button>
+        </div>
+    </div>
+</header>
+
+<main class="main">
+    <div class="hero">
+        <h1 class="hero-title">시험 모드 · 빠른 검색</h1>
+        <p class="hero-sub">15분 안에 답을 찾는 데 최적화된 검색입니다. 키워드 한 단어만 입력해도 충분합니다.</p>
+    </div>
+
+    <div class="search-wrap">
+        <input type="search" class="search-input" id="search"
+               placeholder="🔍 키워드를 입력하세요 (예: 편향, 칸트, 트롤리, 데카르트, XAI…)"
+               autofocus autocomplete="off" spellcheck="false">
+    </div>
+
+    <div class="cat-bar" id="catbar">
+        <div class="cat-chip active" data-cat="all">전체</div>
+        <div class="cat-chip" data-cat="bopo">🔥 족보만</div>
+        <div class="cat-chip" data-cat="윤리이론">윤리이론</div>
+        <div class="cat-chip" data-cat="인물">인물</div>
+        <div class="cat-chip" data-cat="개념">개념</div>
+        <div class="cat-chip" data-cat="사례">사례</div>
+        <div class="cat-chip" data-cat="기술">기술</div>
+    </div>
+
+    <div class="results" id="results">
+        <div class="empty-state" id="empty">
+            <p style="font-size:18px;margin-bottom:10px;">검색어를 입력하세요</p>
+            <p>족보 키워드는 빨간 <strong style="color:var(--bopo-red);">🔥 족보</strong> 배지가 표시됩니다.</p>
+            <p style="margin-top:14px;">단축키: <span class="kbd">/</span> 검색창 포커스 · <span class="kbd">Esc</span> 초기화 · <span class="kbd">↑↓</span> 결과 이동 · <span class="kbd">Enter</span> 열기</p>
+        </div>
+    </div>
+
+    <div class="helpbar">
+        <span><span class="kbd">/</span> 검색창 포커스</span>
+        <span><span class="kbd">Esc</span> 검색 초기화</span>
+        <span><span class="kbd">↑</span> <span class="kbd">↓</span> 결과 이동</span>
+        <span><span class="kbd">Enter</span> 학습서 새 탭으로 열기</span>
+        <span><span class="kbd">Space</span> 타이머 시작/정지</span>
+    </div>
+</main>
+
+<!-- 데이터 -->
+<script src="keywords-data.js"></script>
+
+<script>
+// keywords-data.js가 없을 경우를 대비한 폴백
+if (typeof KEYWORDS === 'undefined') window.KEYWORDS = [];
+if (typeof PAST_EXAM === 'undefined') window.PAST_EXAM = { 객관식: [], 단답형: [] };
+
+// ===== 검색 데이터 통합 =====
+const ALL_ITEMS = [];
+
+// 족보 데이터 추가 (우선순위 +500)
+(PAST_EXAM.객관식 || []).forEach(q => {
+    ALL_ITEMS.push({
+        type: 'bopo-mc',
+        bopo: true,
+        weight: 500,
+        title: q.질문,
+        주차: q.주차,
+        주제: q.주제,
+        보기: q.보기,
+        정답: q.정답,
+        해설: q.해설,
+        searchText: [q.질문, q.주제, ...(q.보기||[]), Array.isArray(q.정답)?q.정답.join(' '):q.정답, q.해설].join(' ')
+    });
+});
+
+(PAST_EXAM.단답형 || []).forEach(q => {
+    ALL_ITEMS.push({
+        type: 'bopo-sa',
+        bopo: true,
+        weight: 500,
+        title: q.질문,
+        주차: q.주차,
+        주제: q.주제,
+        정답: q.정답,
+        해설: q.해설,
+        searchText: [q.질문, q.주제, q.정답, q.해설].join(' ')
+    });
+});
+
+// 일반 키워드 데이터 추가
+(KEYWORDS || []).forEach(kw => {
+    ALL_ITEMS.push({
+        type: 'keyword',
+        bopo: !!kw.fromBopo,
+        weight: kw.fromBopo ? 300 : 100,
+        title: kw.keyword,
+        english: kw.english,
+        category: kw.category,
+        주차: kw.week,
+        file: kw.file,
+        anchor: kw.anchor,
+        summary: kw.summary,
+        searchText: [kw.keyword, kw.english||'', kw.summary||'', kw.category||''].join(' ')
+    });
+});
+
+// ===== 검색 알고리즘 =====
+function searchItems(query, category) {
+    if (!query || query.trim() === '') return [];
+    const q = query.trim().toLowerCase();
+    const tokens = q.split(/\s+/).filter(t => t);
+
+    const scored = ALL_ITEMS.map(item => {
+        let score = item.weight;
+        const text = item.searchText.toLowerCase();
+        const title = (item.title || '').toLowerCase();
+
+        // 토큰별 매칭
+        let hits = 0;
+        tokens.forEach(t => {
+            if (title.includes(t)) { score += 200; hits++; }
+            else if (text.includes(t)) { score += 50; hits++; }
+            // 영문 약자 매칭 (예: XAI)
+            if (item.english && item.english.toLowerCase().includes(t)) { score += 150; hits++; }
+        });
+
+        if (hits === 0) return null;
+        return { item, score };
+    }).filter(Boolean);
+
+    // 카테고리 필터
+    let filtered = scored;
+    if (category && category !== 'all') {
+        if (category === 'bopo') {
+            filtered = scored.filter(s => s.item.bopo);
+        } else {
+            filtered = scored.filter(s => s.item.category === category || s.item.주제 === category);
+        }
+    }
+
+    filtered.sort((a, b) => b.score - a.score);
+    return filtered.slice(0, 8).map(s => s.item);
+}
+
+// ===== 렌더링 =====
+function highlight(text, query) {
+    if (!query || !text) return text || '';
+    const tokens = query.trim().split(/\s+/).filter(t => t.length > 0);
+    let result = String(text);
+    tokens.forEach(t => {
+        const re = new RegExp('(' + t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+        result = result.replace(re, '<span class="hl">$1</span>');
+    });
+    return result;
+}
+
+function renderItem(item, q, idx) {
+    const isBopo = item.bopo;
+    const badges = [];
+    if (isBopo) badges.push('<span class="badge bopo">🔥 족보</span>');
+    if (item.주차) badges.push(`<span class="badge week">${item.주차}주차</span>`);
+    if (item.주제) badges.push(`<span class="badge cat">${item.주제}</span>`);
+    else if (item.category) badges.push(`<span class="badge cat">${item.category}</span>`);
+    if (item.type === 'bopo-mc') badges.push('<span class="badge type">객관식</span>');
+    if (item.type === 'bopo-sa') badges.push('<span class="badge type">단답형</span>');
+
+    let body = '';
+    if (item.type === 'bopo-mc') {
+        const ans = Array.isArray(item.정답) ? item.정답 : [item.정답];
+        const opts = (item.보기 || []).map(opt => {
+            const isCorrect = ans.some(a => opt.trim() === a.trim());
+            return `<li class="${isCorrect ? 'correct' : ''}">${highlight(opt, q)}</li>`;
+        }).join('');
+        body = `
+            <ul class="opt-list">${opts}</ul>
+            <div class="answer-box">
+                <div class="label">정답</div>
+                <div class="ans">${ans.map(a => highlight(a, q)).join(' / ')}</div>
+                <div class="exp">${highlight(item.해설 || '', q)}</div>
+            </div>
+        `;
+    } else if (item.type === 'bopo-sa') {
+        body = `
+            <div class="answer-box">
+                <div class="label">정답</div>
+                <div class="ans">${highlight(item.정답, q)}</div>
+                <div class="exp">${highlight(item.해설 || '', q)}</div>
+            </div>
+        `;
+    } else if (item.type === 'keyword') {
+        body = `
+            <div class="card-body">${highlight(item.summary || '', q)}</div>
+            ${item.english ? `<div style="margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--ink-mute);">${item.english}</div>` : ''}
+            ${item.file ? `<a class="card-link" href="${item.file}${item.anchor ? '#' + item.anchor : ''}" target="_blank">학습서 새 탭으로 열기 →</a>` : ''}
+        `;
+    }
+
+    return `
+        <div class="card" data-idx="${idx}" ${item.file ? `data-href="${item.file}${item.anchor ? '#' + item.anchor : ''}"` : ''}>
+            <div class="card-head">${badges.join('')}</div>
+            <div class="card-title">${highlight(item.title, q)}</div>
+            ${body}
+        </div>
+    `;
+}
+
+let currentResults = [];
+let focusedIdx = -1;
+let currentCategory = 'all';
+
+function render(query) {
+    const wrap = document.getElementById('results');
+    const items = searchItems(query, currentCategory);
+    currentResults = items;
+    focusedIdx = -1;
+
+    if (items.length === 0) {
+        wrap.innerHTML = `<div class="empty-state"><p style="font-size:18px;">"${query}"에 대한 결과가 없습니다.</p><p style="margin-top:8px;">다른 키워드를 시도해보세요.</p></div>`;
+        return;
+    }
+
+    wrap.innerHTML = items.map((item, i) => renderItem(item, query, i)).join('');
+
+    // 카드 클릭 이벤트
+    wrap.querySelectorAll('.card').forEach(card => {
+        card.addEventListener('click', () => {
+            const href = card.getAttribute('data-href');
+            if (href) window.open(href, '_blank');
+        });
+    });
+}
+
+// ===== 이벤트 =====
+const searchInput = document.getElementById('search');
+let searchTimeout;
+searchInput.addEventListener('input', e => {
+    clearTimeout(searchTimeout);
+    const val = e.target.value;
+    if (!val) {
+        document.getElementById('results').innerHTML = document.getElementById('empty').outerHTML;
+        return;
+    }
+    searchTimeout = setTimeout(() => render(val), 80);
+});
+
+// 카테고리 필터
+document.querySelectorAll('.cat-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+        document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        currentCategory = chip.getAttribute('data-cat');
+        if (searchInput.value) render(searchInput.value);
+    });
+});
+
+// 단축키
+document.addEventListener('keydown', e => {
+    // / → 검색 포커스
+    if (e.key === '/' && document.activeElement !== searchInput) {
+        e.preventDefault();
+        searchInput.focus();
+        searchInput.select();
+        return;
+    }
+    // Esc → 초기화
+    if (e.key === 'Escape') {
+        searchInput.value = '';
+        searchInput.focus();
+        document.getElementById('results').innerHTML = document.getElementById('empty').outerHTML;
+        return;
+    }
+    // ↑↓ 결과 이동
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        if (currentResults.length === 0) return;
+        e.preventDefault();
+        focusedIdx += (e.key === 'ArrowDown' ? 1 : -1);
+        if (focusedIdx < 0) focusedIdx = currentResults.length - 1;
+        if (focusedIdx >= currentResults.length) focusedIdx = 0;
+        document.querySelectorAll('.card').forEach((c, i) => {
+            c.classList.toggle('focused', i === focusedIdx);
+            if (i === focusedIdx) c.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        });
+        return;
+    }
+    // Enter → 새 탭으로 열기
+    if (e.key === 'Enter' && focusedIdx >= 0 && document.activeElement === searchInput) {
+        const card = document.querySelectorAll('.card')[focusedIdx];
+        const href = card && card.getAttribute('data-href');
+        if (href) window.open(href, '_blank');
+        return;
+    }
+    // Space → 타이머 토글 (단, 검색창 포커스 시는 일반 입력)
+    if (e.key === ' ' && document.activeElement !== searchInput) {
+        e.preventDefault();
+        toggleTimer();
+    }
+});
+
+// ===== 타이머 =====
+let timerSec = 15 * 60;
+let timerInterval = null;
+const timerEl = document.getElementById('timer');
+
+function fmt(s) {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+}
+
+function updateTimerDisplay() {
+    timerEl.textContent = fmt(timerSec);
+    timerEl.classList.remove('warning', 'danger');
+    if (timerSec <= 60) timerEl.classList.add('danger');
+    else if (timerSec <= 180) timerEl.classList.add('warning');
+}
+
+function startTimer() {
+    if (timerInterval) return;
+    timerInterval = setInterval(() => {
+        if (timerSec <= 0) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timerEl.textContent = '00:00';
+            timerEl.classList.add('danger');
+            return;
+        }
+        timerSec--;
+        updateTimerDisplay();
+    }, 1000);
+}
+function pauseTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+}
+function resetTimer() {
+    pauseTimer();
+    timerSec = 15 * 60;
+    updateTimerDisplay();
+}
+function toggleTimer() {
+    if (timerInterval) pauseTimer(); else startTimer();
+}
+
+document.getElementById('btn-start').addEventListener('click', startTimer);
+document.getElementById('btn-pause').addEventListener('click', pauseTimer);
+document.getElementById('btn-reset').addEventListener('click', resetTimer);
+
+updateTimerDisplay();
+searchInput.focus();
+</script>
+
+</body>
+</html>
