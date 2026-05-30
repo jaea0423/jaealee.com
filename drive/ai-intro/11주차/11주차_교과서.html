@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>모두의 인공지능 - 11주차 교과서: 개미의 길찾기</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;600;700&family=Nanum+Myeongjo:wght@400;700;800&display=swap');
+  :root { --bg:#faf6ef; --paper:#fffdf7; --ink:#2c2418; --ink-light:#5b5040; --accent:#8b4513; --accent-soft:#c69b7b; --rule:#d4c8b0; --highlight:#f4e4c1; --quote-bg:#f7efde; --def-bg:#fff8e8; --def-border:#b08654; --exam-bg:#fcecec; --exam-border:#b54848; --tldr-bg:#ecf3eb; --tldr-border:#6b8e6b; --connect-bg:#e8eef5; --connect-border:#4a6b8a; --img-bg:#f0ebe0; --watch-bg:#fff4e8; --watch-border:#d68a3c; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; padding:0; background:var(--bg); color:var(--ink); font-family:'Noto Serif KR','Nanum Myeongjo',serif; line-height:1.85; font-size:17px; }
+  .page { max-width:880px; margin:0 auto; padding:60px 50px 80px; background:var(--paper); box-shadow:0 0 30px rgba(80,60,30,.08); min-height:100vh; }
+  .cover { text-align:center; padding:80px 0 50px; border-bottom:3px double var(--accent); margin-bottom:50px; }
+  .cover .series { font-size:14px; letter-spacing:6px; color:var(--accent); margin-bottom:20px; }
+  .cover h1 { font-family:'Nanum Myeongjo',serif; font-size:42px; font-weight:800; margin:10px 0; line-height:1.3; }
+  .cover .subtitle { font-size:22px; color:var(--ink-light); margin-top:10px; font-weight:300; }
+  .cover .meta { margin-top:40px; font-size:14px; color:var(--ink-light); }
+  .cover .doctype { display:inline-block; margin-top:30px; padding:8px 24px; border:1px solid var(--accent); border-radius:2px; font-size:16px; color:var(--accent); letter-spacing:4px; }
+  .toc { background:#fffaf0; border:1px solid var(--rule); padding:30px 40px; margin-bottom:40px; }
+  .toc h2 { font-family:'Nanum Myeongjo',serif; font-size:24px; margin:0 0 20px; text-align:center; color:var(--accent); }
+  .toc ol { padding-left:20px; margin:0; } .toc ol li { padding:4px 0; border-bottom:1px dotted var(--rule); }
+  .toc a { color:var(--ink); text-decoration:none; } .toc a:hover { color:var(--accent); text-decoration:underline; }
+  h2.chapter { font-family:'Nanum Myeongjo',serif; font-size:30px; color:var(--accent); border-bottom:2px solid var(--accent); padding-bottom:10px; margin-top:60px; margin-bottom:25px; }
+  h2.chapter .num { display:inline-block; background:var(--accent); color:#fff; padding:2px 12px; border-radius:4px; font-size:18px; margin-right:12px; vertical-align:middle; }
+  h3.slide { font-family:'Nanum Myeongjo',serif; font-size:22px; color:var(--ink); margin-top:35px; margin-bottom:12px; padding-left:14px; border-left:5px solid var(--accent-soft); }
+  h4 { font-size:18px; color:var(--accent); margin-top:22px; margin-bottom:8px; }
+  p { margin:10px 0; text-align:justify; }
+  strong { color:var(--accent); font-weight:600; }
+  em { color:var(--ink-light); font-style:italic; }
+  code { background:#f4ecd8; padding:1px 6px; border-radius:3px; font-family:'Consolas',monospace; font-size:14px; color:#5a3920; }
+  .section-tldr { background:var(--tldr-bg); border-left:5px solid var(--tldr-border); padding:12px 18px; margin:15px 0 25px; font-size:16px; border-radius:4px; }
+  .section-tldr::before { content:"TL;DR  "; font-weight:700; color:var(--tldr-border); letter-spacing:1px; }
+  .definition { background:var(--def-bg); border:1px solid var(--def-border); border-left:5px solid var(--def-border); padding:14px 20px; margin:18px 0; border-radius:4px; }
+  .definition .label { display:block; font-weight:700; color:var(--def-border); margin-bottom:6px; font-size:15px; letter-spacing:1px; }
+  .exam-point { background:var(--exam-bg); border-left:5px solid var(--exam-border); padding:14px 20px; margin:18px 0; border-radius:4px; }
+  .exam-point .label { display:block; font-weight:700; color:var(--exam-border); margin-bottom:6px; font-size:15px; letter-spacing:1px; }
+  .quote { background:var(--quote-bg); border-left:4px solid var(--accent-soft); padding:12px 24px; margin:18px 0; font-style:italic; color:var(--ink-light); position:relative; }
+  .quote::before { content:"\201C"; font-size:36px; color:var(--accent-soft); position:absolute; left:8px; top:0; }
+  .quote .who { display:block; text-align:right; font-style:normal; font-size:14px; margin-top:8px; color:var(--accent); }
+  .connect { background:var(--connect-bg); border:1px dashed var(--connect-border); padding:14px 20px; margin:22px 0; border-radius:6px; }
+  .connect .label { display:block; font-weight:700; color:var(--connect-border); font-size:14px; margin-bottom:8px; letter-spacing:1px; }
+  .connect .label::before { content:"[연결학습] "; }
+  .summary-box { background:linear-gradient(135deg,#fff8e8,#f7efde); border:2px solid var(--accent); padding:25px 30px; margin:40px 0; border-radius:8px; }
+  .summary-box h3 { margin-top:0; color:var(--accent); font-family:'Nanum Myeongjo',serif; text-align:center; border:none; padding:0; }
+  .summary-box ol { padding-left:22px; } .summary-box ol li { padding:5px 0; }
+  table { width:100%; border-collapse:collapse; margin:20px 0; background:#fff; }
+  th, td { border:1px solid var(--rule); padding:10px 14px; text-align:left; }
+  th { background:var(--highlight); color:var(--ink); font-weight:700; }
+  .goals { background:#fff8e8; border:1px solid var(--def-border); padding:20px 28px; margin:30px 0; border-radius:6px; }
+  .goals h2 { font-family:'Nanum Myeongjo',serif; font-size:22px; margin:0 0 12px; color:var(--accent); border:none; padding:0; }
+  .goals ul { margin:0; padding-left:22px; } .goals ul li { padding:4px 0; }
+  .nav-links { margin-top:60px; padding:30px; border-top:3px double var(--accent); text-align:center; }
+  .nav-links a { display:inline-block; margin:0 10px; padding:10px 22px; background:var(--accent); color:#fff; text-decoration:none; border-radius:4px; font-size:15px; font-family:sans-serif; }
+  .nav-links a:hover { background:var(--ink); }
+  @media print { body { background:#fff; font-size:12px; } .page { box-shadow:none; padding:20px; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="cover">
+    <div class="series">모두의 인공지능 · 강태원 교수</div>
+    <h1>개미의 길찾기</h1>
+    <div class="subtitle">자연 컴퓨팅 · 군집 지능 · 개미 군집 최적화 (ACO)</div>
+    <div class="doctype">교 과 서</div>
+    <div class="meta">11주차 (1·2·3차시) — 정리 노트</div>
+  </div>
+
+  <div class="toc">
+    <h2>목 차</h2>
+    <ol>
+      <li><a href="#goals">학습 목표</a></li>
+      <li><a href="#ses1">1차시 — 자연 컴퓨팅: 자연에서 배우기</a></li>
+      <li><a href="#ses2">2차시 — 자연 합성하기, 자연 사용하기</a></li>
+      <li><a href="#ses3">3차시 — 개미 집단 알고리즘 (누가 지시하는가!)</a></li>
+      <li><a href="#summary">핵심 정리</a></li>
+    </ol>
+  </div>
+
+  <div class="goals" id="goals">
+    <h2>학습 목표</h2>
+    <ul>
+      <li><strong>자연 컴퓨팅(Natural Computing)</strong>의 3대 범주 — 자연에서 배우기 / 자연 합성하기 / 자연 사용하기를 구분한다.</li>
+      <li>군집 지능(Swarm Intelligence)·진화 컴퓨팅·뉴럴 컴퓨팅 등 다양한 자연 컴퓨팅 갈래를 안다.</li>
+      <li><strong>개미 군집 최적화(ACO)</strong>의 작동 원리(페로몬·증발·스티그머지)를 이해한다.</li>
+      <li>DNA 컴퓨팅·양자 컴퓨팅 등 "자연 사용하기" 사례를 안다.</li>
+      <li><strong>자기 조직화(Self-Organization)</strong> 개념을 이해한다.</li>
+    </ul>
+  </div>
+
+  <!-- ============= 1차시 ============= -->
+  <h2 class="chapter" id="ses1"><span class="num">1차시</span>자연 컴퓨팅 — 자연에서 배우기</h2>
+  <div class="section-tldr">자연 컴퓨팅 = 자연을 흉내·합성·이용하는 컴퓨팅. 3대 범주는 <strong>자연에서 배우기 / 자연 합성하기 / 자연 사용하기</strong>.</div>
+
+  <h3 class="slide">자연 컴퓨팅의 3대 범주</h3>
+  <div class="definition">
+    <span class="label">자연 컴퓨팅 (Natural Computing)</span>
+    자연 현상에서 영감을 얻거나, 자연을 합성·이용하는 컴퓨팅 기술 전체. 세 가지 범주로 나뉜다.<br><br>
+    ① <strong>자연에서 배우기 (Learning from Nature)</strong> — 자연에서 아이디어를 가져와 문제 해결 기술을 만듦<br>
+    ② <strong>자연 합성하기 (Synthesizing Nature)</strong> — 컴퓨터로 자연/생명을 합성<br>
+    ③ <strong>자연 사용하기 (Using Nature)</strong> — 자연 물질을 직접 컴퓨팅에 이용 (DNA·양자)
+  </div>
+
+  <h3 class="slide">자연에서 배우기 — 주요 갈래</h3>
+  <table>
+    <thead><tr><th>분야</th><th>아이디어 원천</th><th>대표</th></tr></thead>
+    <tbody>
+      <tr><td><strong>세포 자동자</strong>(Cellular Automata)</td><td>세포의 생사</td><td>라이프 게임 (13주차 예정)</td></tr>
+      <tr><td><strong>뉴럴 컴퓨팅</strong>(Neural Computing)</td><td>뇌·뉴런</td><td>인공신경망, 딥러닝 (5~7주차)</td></tr>
+      <tr><td><strong>진화 컴퓨팅</strong>(Evolutionary Computing)</td><td>자연 선택·다윈의 진화</td><td>유전 알고리즘 GA (12주차 예정)</td></tr>
+      <tr><td><strong>군집 지능</strong>(Swarm Intelligence)</td><td>개미·꿀벌·새·물고기 떼</td><td>개미 군집 최적화 (ACO)</td></tr>
+      <tr><td><strong>입자 군집 최적화</strong>(PSO)</td><td>물리 입자의 군집</td><td>이웃 정보 활용</td></tr>
+      <tr><td><strong>면역 컴퓨팅</strong>(Immune Computing)</td><td>항원-항체 반응</td><td>침입 탐지 시스템</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="slide">입자 군집 최적화 (PSO, Particle Swarm Optimization)</h3>
+  <p>등고선처럼 그려진 함수의 <strong>가장 깊은 계곡(전역 최적해)</strong>을 찾는 문제. 경사하강법(6주차)과의 차이:</p>
+
+  <div class="definition">
+    <span class="label">PSO의 핵심 — 이웃 정보 활용</span>
+    경사하강법은 <em>자기 위치의 기울기만</em> 본다. PSO는 <strong>자신의 기울기 + 이웃 입자들의 기울기</strong>를 함께 합쳐 진행 방향을 정한다.
+  </div>
+
+  <div class="quote">
+    "이웃의 정보를 활용한다 — 정말 중요한, 11주부터 마지막 강의까지 포함되어 있는 중요한 개념."
+    <span class="who">— 강태원 교수</span>
+  </div>
+
+  <p>멀리 보지 않고 주위만 살피면서 결정하지만 결과는 강력합니다. 자기 조직화의 핵심 원리.</p>
+
+  <!-- ============= 2차시 ============= -->
+  <h2 class="chapter" id="ses2"><span class="num">2차시</span>자연 합성하기, 자연 사용하기</h2>
+  <div class="section-tldr">컴퓨터로 자연/생명을 합성하기(L-시스템, 가상 생명체), 자연 물질을 직접 쓰기(DNA·양자).</div>
+
+  <h3 class="slide">L-시스템 (L-System, Lindenmayer System)</h3>
+  <div class="definition">
+    <span class="label">L-시스템</span>
+    생물학자 <strong>린덴마이어(Aristid Lindenmayer)</strong>가 개발한, 식물 성장 과정을 수학적으로 표현한 <strong>프랙탈(Fractal)</strong> 시스템.
+  </div>
+
+  <p><strong>4가지 기호</strong> (터틀 그래픽 비유):</p>
+  <table>
+    <thead><tr><th>기호</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td><code>F</code></td><td>앞으로 가면서 흔적(선) 남김 (Forward)</td></tr>
+      <tr><td><code>f</code></td><td>앞으로 가지만 흔적 없음</td></tr>
+      <tr><td><code>+</code></td><td>좌회전</td></tr>
+      <tr><td><code>−</code></td><td>우회전</td></tr>
+    </tbody>
+  </table>
+
+  <p>한 번에 가는 거리와 회전 각도(예: 22.5°, 90°)는 사전 정의. 게임·영화의 숲과 나무는 거의 다 이 기술로 만들어집니다.</p>
+
+  <div class="quote">
+    "내가 횡성에서 찍은 실제 나무 사진과 L-시스템으로 생성한 나무가 거의 똑같더라."
+    <span class="who">— 강태원 교수</span>
+  </div>
+
+  <h3 class="slide">칼 심스의 가상 생명체 (1994)</h3>
+  <p>칼 심스(Karl Sims)가 1994년에 만든 <strong>Evolved Virtual Creatures</strong>. 나무 토막에 관절을 단 가상 생명체에 "걷는 방법"을 가르치지 않고, <strong>신경망(NN) + 유전 알고리즘(GA)</strong>으로 스스로 학습시킴.</p>
+
+  <div class="exam-point">
+    <span class="label">중요 — 백프로퍼게이션이 아닌 GA</span>
+    이 사례는 6주차의 역전파가 아니라 <strong>유전 알고리즘(GA, 12주차 예정)</strong>으로 학습. 오늘날 강화학습 사족 로봇 학습("Learning to walk in one hour")의 선조.
+  </div>
+
+  <h3 class="slide">DNA 컴퓨팅 (DNA Computing)</h3>
+  <p>실험실에서 DNA를 직접 계산에 이용. 디지털 vs DNA 비교:</p>
+
+  <table>
+    <thead><tr><th>구분</th><th>디지털 컴퓨터</th><th>DNA 컴퓨터</th></tr></thead>
+    <tbody>
+      <tr><td>진법</td><td><strong>2진법</strong> (0, 1)</td><td><strong>4진법</strong> (A·G·C·T)</td></tr>
+      <tr><td>저장 용량</td><td>한정적</td><td>1g에 <strong>약 10억 TB</strong></td></tr>
+      <tr><td>보존성</td><td>유한</td><td>거의 영구</td></tr>
+    </tbody>
+  </table>
+
+  <p>A=아데닌(Adenine), G=구아닌(Guanine), C=시토신(Cytosine), T=티민(Thymine). NP 문제(경로 찾기 등)를 화학 반응으로 빠르게 풀 수 있음.</p>
+
+  <h3 class="slide">양자 컴퓨팅 (Quantum Computing)</h3>
+  <div class="definition">
+    <span class="label">양자 중첩 (Quantum Superposition)</span>
+    슈뢰딩거의 고양이(Schrödinger's Cat) 사고 실험에서 알려진 개념. 고양이가 살아있거나 죽었는데 우리가 모를 뿐인 게 아니라, <strong>여는 순간 결정되며, 그 전까지 두 상태에 동시에 있다</strong>.
+  </div>
+
+  <p><strong>큐비트(Qubit)</strong>: 양자 컴퓨팅의 기본 단위. 0과 1이 동시에 중첩. 큐비트 4개 = 2⁴ = <strong>16가지 상태를 동시에 표현</strong>. 기존 컴퓨터는 16가지 중 1가지만.</p>
+
+  <!-- ============= 3차시 ============= -->
+  <h2 class="chapter" id="ses3"><span class="num">3차시</span>개미 집단 알고리즘 — 누가 지시하는가!</h2>
+  <div class="section-tldr">개미는 시력이 거의 없는데 어떻게 길을 잘 찾는가? 답: <strong>페로몬 + 증발 + 스티그머지</strong>. 누구도 지시하지 않는다.</div>
+
+  <h3 class="slide">개미 길찾기의 비밀</h3>
+  <p>1989년 아르헨티나 개미(Argentine Ant) 연구 — 두 갈래 길(짧은 길, 긴 길)에 개미를 풀어 놓으면 시간이 지날수록 짧은 길로 몰림. 시력이 거의 0인데 어떻게?</p>
+
+  <div class="definition">
+    <span class="label">페로몬 (Pheromone)</span>
+    개미가 지나가면서 길에 남기는 <strong>냄새 물질</strong>. 다른 개미들이 이 냄새를 따라간다.
+  </div>
+
+  <h3 class="slide">핵심 메커니즘 — 증발(Evaporation)</h3>
+  <p>페로몬은 시간이 지나면 <strong>증발</strong>합니다. 이것이 알고리즘의 핵심.</p>
+
+  <ul>
+    <li><strong>긴 길</strong>: 왕복 시간이 길어서 처음 남긴 페로몬이 많이 증발됨 → 점점 약해짐</li>
+    <li><strong>짧은 길</strong>: 왕복 시간이 짧아서 페로몬이 계속 누적·강화</li>
+    <li>결과: 후속 개미들은 페로몬이 강한 짧은 길로 가게 됨 → <strong>빈익빈 부익부 강화</strong></li>
+  </ul>
+
+  <h3 class="slide">스티그머지 (Stigmergy) ★시험 빈출★</h3>
+  <div class="definition">
+    <span class="label">스티그머지</span>
+    개체가 <strong>환경을 바꿈으로써</strong> 다른 개체와 의도하지 않은 잠재적 소통이 일어나는 것. 개미는 페로몬으로 환경(땅)을 바꿔서 다른 개미에게 정보 전달.
+  </div>
+
+  <div class="quote">
+    "내가 말을 하면 공기가 진동하여 우리 사이 환경이 달라진다. 개미가 페로몬을 남긴 거나 내가 공기를 흔든 거나 원리적으로 같다 — 단지 센서가 다를 뿐."
+    <span class="who">— 강태원 교수</span>
+  </div>
+
+  <h3 class="slide">개미 군집 최적화 (Ant Colony Optimization, ACO)</h3>
+  <p>인공 개미들의 다음 노드 이동 확률 계산 — 페로몬 양과 휴리스틱(거리) 정보를 결합. 핵심 초매개변수:</p>
+
+  <table>
+    <thead><tr><th>기호</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td><strong>α (alpha)</strong></td><td>페로몬 가중치</td></tr>
+      <tr><td><strong>β (beta)</strong></td><td>거리/휴리스틱 정보 가중치</td></tr>
+      <tr><td><strong>ρ (rho)</strong></td><td>페로몬 증발 상수 (Evaporation Rate)</td></tr>
+    </tbody>
+  </table>
+
+  <p>자연 개미는 거리를 모르지만 <strong>인공 개미는 "레이저 거리 측정기"를 가지고 있다</strong> — 휴리스틱 정보를 직접 활용 가능.</p>
+
+  <h3 class="slide">ACO의 장점 — 동적 환경에 강력</h3>
+  <p><strong>외판원 문제(TSP, Traveling Salesperson Problem)</strong> 같은 NP 문제에 강함.</p>
+  <ul>
+    <li>도시 100개 → 200개로 늘면 계산량 폭증(지수적)</li>
+    <li>전통 알고리즘: 길이 바뀌면 처음부터 다시 계산</li>
+    <li>ACO: <strong>페로몬을 재구성하며 적응</strong> — 동적 환경(Dynamic Environment)에 최적</li>
+  </ul>
+
+  <h3 class="slide">"말 안 듣는 개미"의 가치</h3>
+  <p>모두가 페로몬을 따라가지 않고 다른 길을 시도하는 비순응자(Exploration)가 있어야 환경 변화에 적응 가능. 다양성의 가치.</p>
+
+  <div class="quote">
+    "공부 잘하는 학생도, 못하는 학생도 있어야 한다… 모두가 의사면 안 된다."
+    <span class="who">— 강태원 교수의 사회적 함의</span>
+  </div>
+
+  <h3 class="slide">자기 조직화 (Self-Organization)</h3>
+  <div class="definition">
+    <span class="label">자기 조직화</span>
+    어떤 중앙 지시자도 없이 <strong>저절로 질서가 만들어지는</strong> 시스템. 자연의 핵심 특징. 부제 "누가 지시하는가!"의 답: <strong>아무도 지시하지 않는다</strong>.
+  </div>
+
+  <div class="connect">
+    <span class="label">앞 주차와의 연결</span>
+    9주차 <strong>페이지랭크(PageRank)</strong> — 누가 지시 안 해도 사용자 활동이 모여 순위 형성.<br>
+    6~7주차 <strong>딥러닝의 가중치</strong> — 각 뉴런이 자기 수도꼭지를 정한 값들이 모여 답을 냄.<br>
+    인간의 뇌도 같은 원리.
+  </div>
+
+  <div class="summary-box" id="summary">
+    <h3>11주차 핵심 정리 (10가지)</h3>
+    <ol>
+      <li>자연 컴퓨팅 3대 범주: <strong>자연에서 배우기 / 자연 합성하기 / 자연 사용하기</strong>.</li>
+      <li>자연에서 배우기 갈래: 뉴럴 컴퓨팅·진화 컴퓨팅·군집 지능·PSO·면역 컴퓨팅·세포 자동자.</li>
+      <li><strong>PSO(입자 군집 최적화)</strong>: 자신의 기울기 + 이웃 입자들의 기울기 → "이웃 정보 활용".</li>
+      <li><strong>L-시스템</strong>: 식물 성장 모방 프랙탈. F·f·+·− 4기호.</li>
+      <li>칼 심스(1994) 가상 생명체: <strong>신경망 + 유전 알고리즘</strong>으로 학습.</li>
+      <li><strong>DNA 컴퓨팅</strong>: A·G·C·T 4진법. 1g에 약 10억 TB.</li>
+      <li><strong>양자 컴퓨팅</strong>: 양자 중첩(슈뢰딩거 고양이). 큐비트 4개 = 16가지 상태 동시 표현.</li>
+      <li><strong>개미 군집 최적화 (ACO)</strong>: 페로몬 + 증발 + 휴리스틱. α·β·ρ 매개변수.</li>
+      <li><strong>스티그머지(Stigmergy)</strong>: 환경 변화를 통한 간접 상호작용. 개미의 페로몬이 대표.</li>
+      <li><strong>자기 조직화</strong>: 누가 지시하지 않아도 저절로 질서가 형성. 페이지랭크·딥러닝·뇌의 공통 원리.</li>
+    </ol>
+  </div>
+
+  <div class="nav-links">
+    <a href="11주차_학습서.html">📖 학습서 (시험 대비)</a>
+    <a href="11주차_문제.html">📝 문제집</a>
+  </div>
+</div>
+</body>
+</html>
