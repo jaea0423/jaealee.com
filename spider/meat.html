@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>산청숯불가든 을지로 🥩 | 을지로 1박 2일</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥩</text></svg>">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Nanum+Myeongjo:wght@400;700;800&family=Gaegu:wght@400;700&family=Gowun+Batang:wght@400;700&family=Single+Day&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* ===== 숯불/불판 네온 팔레트 (빨강 + 주황) ===== */
+        :root {
+            --red:       #FF3D3D;   /* 네온 빨강 */
+            --red-soft:  #FF8A8A;
+            --orange:    #FF7A00;   /* 네온 주황 */
+            --orange-soft: #FFB266;
+            --ember:     #FFD166;   /* 숯불빛 */
+            --black:     #0A0A0F;
+            --night:     #1F1310;
+            --card-bg:   #1A1212;
+        }
+
+        html, body {
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        body {
+            font-family: 'Gowun Batang', serif;
+            background: var(--black);
+            position: relative;
+            max-width: 420px;
+            margin: 0 auto;
+            box-shadow: 0 0 40px rgba(255, 122, 0, 0.3);
+            min-height: 100vh;
+            padding-bottom: 30px;
+            overflow-x: hidden;
+            /* 숯불빛 배경 그라데이션 */
+            background-image:
+                radial-gradient(ellipse at 30% 20%, rgba(255, 61, 61, 0.18) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 80%, rgba(255, 122, 0, 0.15) 0%, transparent 60%),
+                radial-gradient(ellipse at 50% 50%, var(--night) 0%, var(--black) 100%);
+        }
+
+        /* 별 / 불티 점박이 */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            max-width: 420px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-image:
+                radial-gradient(circle at 10% 15%, rgba(255, 200, 100, 0.4) 1px, transparent 1.5px),
+                radial-gradient(circle at 25% 80%, rgba(255, 122, 0, 0.3) 1px, transparent 1.5px),
+                radial-gradient(circle at 80% 25%, rgba(255, 200, 100, 0.4) 1px, transparent 1.5px),
+                radial-gradient(circle at 45% 60%, rgba(255, 122, 0, 0.25) 1px, transparent 1.5px),
+                radial-gradient(circle at 90% 70%, rgba(255, 200, 100, 0.3) 1px, transparent 1.5px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ===== 상단 바 ===== */
+        .top-bar {
+            background: var(--black);
+            color: var(--orange);
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid var(--red);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .back-btn {
+            color: var(--orange);
+            text-decoration: none;
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 14px;
+            letter-spacing: 1px;
+            text-shadow: 0 0 8px var(--orange);
+        }
+
+        .top-bar .page-title {
+            font-family: 'Nanum Myeongjo', serif; font-weight: 800;
+            font-size: 16px;
+            color: var(--red);
+            letter-spacing: 4px;
+            text-shadow: 0 0 8px var(--red);
+        }
+
+        .top-bar .placeholder { width: 50px; }
+
+        /* ============================================
+           네온 간판 (산청숯불가든)
+           ============================================ */
+        .neon-sign {
+            margin: 36px 20px 0;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .neon-sign .han {
+            font-family: 'Nanum Myeongjo', serif; font-weight: 800;
+            font-size: 20px;
+            color: var(--orange);
+            letter-spacing: 6px;
+            margin-bottom: 8px;
+            text-shadow:
+                0 0 6px var(--orange),
+                0 0 14px var(--orange),
+                0 0 24px rgba(255, 122, 0, 0.5);
+            animation: orangeFlicker 4s infinite;
+        }
+
+        .neon-sign .name {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 42px;
+            color: var(--red);
+            letter-spacing: 2px;
+            line-height: 1;
+            text-shadow:
+                0 0 8px var(--red),
+                0 0 18px var(--red),
+                0 0 32px var(--red),
+                0 0 50px rgba(255, 61, 61, 0.5);
+            animation: redFlicker 3.5s infinite;
+        }
+
+        .neon-sign .branch {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 22px;
+            color: var(--ember);
+            letter-spacing: 8px;
+            margin-top: 8px;
+            text-shadow:
+                0 0 6px var(--ember),
+                0 0 14px var(--ember);
+            animation: orangeFlicker 5s infinite;
+        }
+
+        .neon-sign .emoji {
+            font-size: 28px;
+            margin-top: 14px;
+            filter: drop-shadow(0 0 8px rgba(255, 122, 0, 0.6));
+            animation: bob 3s ease-in-out infinite;
+        }
+
+        /* "營業中" 영업중 표시 */
+        .open-sign {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 8px 18px;
+            background: rgba(255, 122, 0, 0.12);
+            border: 2px solid var(--orange);
+            color: var(--orange);
+            font-family: 'Nanum Myeongjo', serif; font-weight: 800;
+            font-size: 18px;
+            letter-spacing: 6px;
+            box-shadow:
+                0 0 12px rgba(255, 122, 0, 0.5),
+                inset 0 0 12px rgba(255, 122, 0, 0.2);
+            text-shadow: 0 0 6px var(--orange);
+            animation: orangeFlicker 2.5s infinite;
+        }
+
+        /* 깜빡임 */
+        @keyframes redFlicker {
+            0%, 100% { opacity: 1; }
+            41% { opacity: 1; }
+            42% { opacity: 0.85; }
+            43% { opacity: 1; }
+            45% { opacity: 0.6; }
+            46% { opacity: 1; }
+            93% { opacity: 1; }
+            94% { opacity: 0.9; }
+            95% { opacity: 1; }
+        }
+
+        @keyframes orangeFlicker {
+            0%, 100% { opacity: 1; }
+            70% { opacity: 1; }
+            71% { opacity: 0.7; }
+            72% { opacity: 1; }
+        }
+
+        @keyframes bob {
+            0%, 100% { transform: translateY(0); }
+            50%      { transform: translateY(-4px); }
+        }
+
+        /* ===== 가게 정보 ===== */
+        .shop-info {
+            margin: 20px 16px 0;
+            background: rgba(31, 19, 16, 0.7);
+            border: 1px dashed var(--orange);
+            color: var(--orange-soft);
+            padding: 10px 14px;
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            text-align: center;
+            line-height: 1.5;
+            box-shadow: inset 0 0 8px rgba(255, 122, 0, 0.08);
+            position: relative;
+            z-index: 1;
+        }
+
+        .shop-info .icon {
+            color: var(--red);
+            margin-right: 2px;
+        }
+
+        /* ============================================
+           메뉴판 (네온 카드)
+           ============================================ */
+        .menu-paper {
+            margin: 20px 16px 0;
+            background: rgba(26, 18, 18, 0.85);
+            border: 2px solid var(--red);
+            padding: 22px 18px;
+            position: relative;
+            box-shadow:
+                0 0 14px rgba(255, 61, 61, 0.4),
+                inset 0 0 12px rgba(255, 61, 61, 0.05);
+            backdrop-filter: blur(2px);
+            z-index: 1;
+        }
+
+        /* 메뉴판 상단 */
+        .menu-header {
+            text-align: center;
+            border-bottom: 2px dashed var(--orange);
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+
+        .menu-header .han {
+            font-family: 'Nanum Myeongjo', serif; font-weight: 800;
+            font-size: 22px;
+            color: var(--orange);
+            letter-spacing: 8px;
+            margin-bottom: 4px;
+            text-shadow: 0 0 6px var(--orange);
+        }
+
+        .menu-header .ko {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 16px;
+            color: var(--ember);
+            letter-spacing: 4px;
+            text-shadow: 0 0 5px var(--ember);
+        }
+
+        /* 카테고리 */
+        .category {
+            margin-bottom: 22px;
+        }
+
+        .category:last-child {
+            margin-bottom: 0;
+        }
+
+        /* 카테고리 타이틀 (네온 박스) */
+        .category-title {
+            display: inline-block;
+            background: rgba(255, 61, 61, 0.15);
+            color: var(--red);
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 16px;
+            letter-spacing: 3px;
+            padding: 5px 14px;
+            border: 2px solid var(--red);
+            box-shadow:
+                0 0 10px rgba(255, 61, 61, 0.5),
+                inset 0 0 8px rgba(255, 61, 61, 0.1);
+            text-shadow: 0 0 6px var(--red);
+            margin-bottom: 10px;
+            transform: rotate(-1deg);
+        }
+
+        /* 카테고리 안내 문구 */
+        .category-note {
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            font-size: 11px;
+            color: var(--orange-soft);
+            line-height: 1.5;
+            margin-bottom: 12px;
+            padding: 6px 10px;
+            background: rgba(255, 122, 0, 0.08);
+            border-left: 3px solid var(--orange);
+        }
+
+        /* 서브 그룹 */
+        .menu-group {
+            border-left: 3px solid var(--orange);
+            padding-left: 10px;
+            margin: 10px 0 12px;
+        }
+
+        .menu-group-label {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 13px;
+            color: var(--orange);
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+            text-shadow: 0 0 5px var(--orange);
+        }
+
+        /* 메뉴 항목 */
+        .menu-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 7px 2px;
+            font-family: 'Gowun Batang', serif;
+            font-weight: 700;
+            font-size: 14px;
+            color: #fff;
+            border-bottom: 1px dotted rgba(255, 122, 0, 0.25);
+            gap: 8px;
+        }
+
+        .menu-item:last-child { border-bottom: none; }
+
+        .menu-item .name-wrap {
+            flex: 1;
+            line-height: 1.35;
+        }
+
+        .menu-item .name {
+            font-family: 'Gowun Batang', serif;
+            font-weight: 700;
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .menu-item .unit {
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            font-size: 11px;
+            color: var(--orange-soft);
+            margin-left: 4px;
+        }
+
+        .menu-item .sub {
+            display: block;
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            font-size: 11px;
+            color: var(--orange-soft);
+            margin-top: 2px;
+            line-height: 1.4;
+            opacity: 0.85;
+        }
+
+        .menu-item .limited {
+            color: var(--red);
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            font-size: 11px;
+            margin-left: 4px;
+            text-shadow: 0 0 4px var(--red);
+        }
+
+        .menu-item .price {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 15px;
+            color: var(--ember);
+            white-space: nowrap;
+            text-shadow: 0 0 5px rgba(255, 209, 102, 0.6);
+        }
+
+        /* 한우 강조 */
+        .menu-item.highlight .name {
+            color: var(--red);
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 15px;
+            letter-spacing: 0.5px;
+            text-shadow: 0 0 6px var(--red);
+        }
+
+        .menu-item.highlight .price {
+            color: var(--red);
+            text-shadow: 0 0 6px var(--red);
+        }
+
+        /* 콜키지 박스 */
+        .corkage-box {
+            background: rgba(255, 209, 102, 0.06);
+            border: 1px dashed var(--ember);
+            padding: 10px 12px;
+            margin-top: 10px;
+        }
+
+        .corkage-box .corkage-label {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 14px;
+            color: var(--ember);
+            letter-spacing: 2px;
+            margin-bottom: 4px;
+            text-shadow: 0 0 5px var(--ember);
+        }
+
+        .corkage-box .corkage-en {
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            font-size: 10px;
+            color: var(--orange);
+            margin-left: 4px;
+            letter-spacing: 1px;
+        }
+
+        /* 도장 */
+        .seal {
+            position: absolute;
+            bottom: 12px;
+            right: 14px;
+            width: 50px;
+            height: 50px;
+            border: 2.5px solid var(--red);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Nanum Myeongjo', serif; font-weight: 800;
+            font-size: 11px;
+            color: var(--red);
+            transform: rotate(-10deg);
+            line-height: 1.1;
+            text-align: center;
+            letter-spacing: 1px;
+            background: rgba(255, 61, 61, 0.06);
+            text-shadow: 0 0 4px var(--red);
+            box-shadow: 0 0 8px rgba(255, 61, 61, 0.4);
+        }
+
+        /* 옛 카피 */
+        .copy {
+            margin: 20px 16px 0;
+            text-align: center;
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--ember);
+            letter-spacing: 1px;
+            padding: 10px;
+            text-shadow: 0 0 5px rgba(255, 209, 102, 0.5);
+        }
+
+        .copy::before, .copy::after {
+            content: '— ';
+            color: var(--red);
+        }
+        .copy::after { content: ' —'; }
+
+    </style>
+</head>
+<body>
+
+    <!-- 상단 바 -->
+    <div class="top-bar">
+        <a href="index.html" class="back-btn">◀ 뒤로</a>
+        <div class="page-title">肉</div>
+        <div class="placeholder"></div>
+    </div>
+
+    <!-- ============================================
+         네온 간판 (산청숯불가든)
+         ============================================ -->
+    <div class="neon-sign">
+        <div class="han">智 異 山 直 火</div>
+        <div class="name">산청숯불가든</div>
+        <div class="branch">을 지 로</div>
+        <div class="emoji">🔥</div>
+
+        <div class="open-sign">營 業 中</div>
+    </div>
+
+    <!-- 가게 정보 -->
+    <div class="shop-info">
+        <span class="icon">📍</span> 서울 중구 을지로3가 343-1
+    </div>
+
+    <!-- ============================================
+         메뉴판 본체
+         ============================================ -->
+    <div class="menu-paper">
+
+        <div class="menu-header">
+            <div class="han">本 日 의 메 뉴</div>
+            <div class="ko">M E N U</div>
+        </div>
+
+        <!-- [구이류] -->
+        <div class="category">
+            <div class="category-title">구이류 / 燒肉</div>
+            <div class="category-note">
+                재래식 소금구이를 제외한 구이류는 첫 주문 시
+                동일 메뉴 2인분 이상 주문 가능합니다.
+            </div>
+
+            <div class="menu-group">
+                <div class="menu-group-label">산청 흑돼지 / 黑豚</div>
+
+                <div class="menu-item">
+                    <span class="name-wrap">
+                        <span class="name">재래식 소금구이</span>
+                        <span class="unit">500g / 한접시</span>
+                    </span>
+                    <span class="price">59,000원</span>
+                </div>
+
+                <div class="menu-item">
+                    <span class="name-wrap">
+                        <span class="name">* 추가 반접시</span>
+                        <span class="unit">250g</span>
+                    </span>
+                    <span class="price">29,000원</span>
+                </div>
+
+                <div class="menu-item">
+                    <span class="name-wrap">
+                        <span class="name">고초장 양념구이</span>
+                        <span class="unit">160g</span>
+                        <span class="sub">(고추장) ※ 재래식 소금구이를 먼저 드신 후<br>
+                        양념구이를 드시길 추천드립니다.</span>
+                    </span>
+                    <span class="price">19,000원</span>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <span class="name-wrap">
+                    <span class="name">가브리살</span>
+                    <span class="unit">160g</span>
+                    <span class="limited">(한정판매)</span>
+                </span>
+                <span class="price">20,000원</span>
+            </div>
+
+            <div class="menu-item">
+                <span class="name-wrap">
+                    <span class="name">통갈매기살</span>
+                    <span class="unit">160g</span>
+                    <span class="limited">(한정판매)</span>
+                </span>
+                <span class="price">20,000원</span>
+            </div>
+
+            <div class="menu-item">
+                <span class="name-wrap">
+                    <span class="name">항정살</span>
+                    <span class="unit">160g</span>
+                    <span class="limited">(한정판매)</span>
+                </span>
+                <span class="price">22,000원</span>
+            </div>
+
+            <div class="menu-item highlight">
+                <span class="name-wrap">
+                    <span class="name">한우 생등심 1++</span>
+                    <span class="unit">120g</span>
+                </span>
+                <span class="price">42,000원</span>
+            </div>
+        </div>
+
+        <!-- [식사류] -->
+        <div class="category">
+            <div class="category-title">식사류 / 食事</div>
+            <div class="category-note">
+                식사류는 주문과 동시에 조리되어 10분 정도 소요됩니다.
+            </div>
+
+            <div class="menu-item">
+                <span class="name-wrap">
+                    <span class="name">검은콩 한우된장</span>
+                    <span class="sub">(2인 분량)</span>
+                </span>
+                <span class="price">9,500원</span>
+            </div>
+
+            <div class="menu-item">
+                <span class="name-wrap">
+                    <span class="name">산청 볶음밥</span>
+                    <span class="sub">(2인 분량)</span>
+                </span>
+                <span class="price">11,000원</span>
+            </div>
+
+            <div class="menu-item">
+                <span class="name-wrap">
+                    <span class="name">흑돼지 김치찌개</span>
+                    <span class="sub">(2인 분량)</span>
+                </span>
+                <span class="price">9,500원</span>
+            </div>
+
+            <div class="menu-item">
+                <span class="name-wrap">
+                    <span class="name">재첩된장술밥</span>
+                    <span class="sub">(하동·섬진강)</span>
+                </span>
+                <span class="price">10,000원</span>
+            </div>
+
+            <div class="menu-item">
+                <span class="name-wrap">
+                    <span class="name">애호박 온국수</span>
+                </span>
+                <span class="price">7,000원</span>
+            </div>
+
+            <div class="menu-item">
+                <span class="name-wrap">
+                    <span class="name">지리산 칡냉면</span>
+                    <span class="sub">(물 / 비빔) ※ 오이가 들어간 메뉴입니다.<br>
+                    오이를 못 드시는 분은 주문 시 미리 말씀해 주세요.</span>
+                </span>
+                <span class="price">8,000원</span>
+            </div>
+        </div>
+
+        <!-- [곁들임] -->
+        <div class="category">
+            <div class="category-title">곁들임 / 副菜</div>
+
+            <div class="menu-item">
+                <span class="name-wrap">
+                    <span class="name">한우 암소육회</span>
+                    <span class="unit">120g</span>
+                </span>
+                <span class="price">24,000원</span>
+            </div>
+
+            <div class="menu-item">
+                <span class="name-wrap">
+                    <span class="name">계란찜</span>
+                    <span class="sub">※ 조리시간 20분 소요</span>
+                </span>
+                <span class="price">5,000원</span>
+            </div>
+
+            <div class="menu-item">
+                <span class="name-wrap">
+                    <span class="name">야채 추가</span>
+                    <span class="sub">(쪽파 · 표고버섯)</span>
+                </span>
+                <span class="price">4,000원</span>
+            </div>
+        </div>
+
+        <!-- [주류·음료] -->
+        <div class="category">
+            <div class="category-title">주류·음료 / 酒</div>
+            <div class="category-note">
+                ※ 산청숯불가든에서는 청정지역
+                지리산 산청의 생수를 제공합니다.
+            </div>
+
+            <div class="menu-group">
+                <div class="menu-group-label">★ 추천 하이볼</div>
+
+                <div class="menu-item">
+                    <span class="name-wrap">
+                        <span class="name">산청 하이볼</span>
+                        <span class="sub">* 샷 추가 3,000원</span>
+                    </span>
+                    <span class="price">8,000원</span>
+                </div>
+
+                <div class="menu-item">
+                    <span class="name-wrap">
+                        <span class="name">산토리 하이볼</span>
+                        <span class="sub">(플레인 / 진저 / 얼그레이)<br>
+                        * 샷 추가 2,000원</span>
+                    </span>
+                    <span class="price">6,000원</span>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <span class="name-wrap"><span class="name">지리산 약주 솔송주</span></span>
+                <span class="price">16,000원</span>
+            </div>
+            <div class="menu-item">
+                <span class="name-wrap"><span class="name">지리산 증류주 담솔</span></span>
+                <span class="price">36,000원</span>
+            </div>
+            <div class="menu-item">
+                <span class="name-wrap">
+                    <span class="name">소주</span>
+                    <span class="sub">(참이슬 / 처음처럼 / 진로 / 새로)</span>
+                </span>
+                <span class="price">5,500원</span>
+            </div>
+            <div class="menu-item">
+                <span class="name-wrap">
+                    <span class="name">맥주</span>
+                    <span class="sub">(카스 / 테라 / 클라우드 / 켈리)</span>
+                </span>
+                <span class="price">6,000원</span>
+            </div>
+            <div class="menu-item">
+                <span class="name-wrap"><span class="name">보해 소주 / 청하</span></span>
+                <span class="price">6,000원</span>
+            </div>
+            <div class="menu-item">
+                <span class="name-wrap"><span class="name">생백세주</span></span>
+                <span class="price">10,000원</span>
+            </div>
+            <div class="menu-item">
+                <span class="name-wrap"><span class="name">복분자</span></span>
+                <span class="price">15,000원</span>
+            </div>
+            <div class="menu-item">
+                <span class="name-wrap"><span class="name">일품진로 / 화요25</span></span>
+                <span class="price">29,000원</span>
+            </div>
+            <div class="menu-item">
+                <span class="name-wrap"><span class="name">일품진로 오크</span></span>
+                <span class="price">30,000원</span>
+            </div>
+            <div class="menu-item">
+                <span class="name-wrap">
+                    <span class="name">음료</span>
+                    <span class="sub">(콜라 / 사이다 / 제로콜라)</span>
+                </span>
+                <span class="price">2,500원</span>
+            </div>
+            <div class="menu-item">
+                <span class="name-wrap"><span class="name">토닉워터 / 진저에일 / 클럽소다</span></span>
+                <span class="price">2,500원</span>
+            </div>
+            <div class="menu-item">
+                <span class="name-wrap"><span class="name">프리미엄 토닉워터 피버트리</span></span>
+                <span class="price">4,000원</span>
+            </div>
+            <div class="menu-item">
+                <span class="name-wrap"><span class="name">레몬 추가</span></span>
+                <span class="price">2,000원</span>
+            </div>
+            <div class="menu-item">
+                <span class="name-wrap">
+                    <span class="name">카스 0.0</span>
+                    <span class="sub">(논알콜)</span>
+                </span>
+                <span class="price">6,000원</span>
+            </div>
+
+            <!-- 콜키지 -->
+            <div class="corkage-box">
+                <div class="corkage-label">콜키지 <span class="corkage-en">Corkage</span></div>
+                <div class="menu-item" style="border-bottom: 1px dotted rgba(255, 209, 102, 0.25); padding: 4px 2px;">
+                    <span class="name-wrap"><span class="name">와인</span></span>
+                    <span class="price">20,000원</span>
+                </div>
+                <div class="menu-item" style="border-bottom: none; padding: 4px 2px;">
+                    <span class="name-wrap"><span class="name">위스키</span></span>
+                    <span class="price">30,000원</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 도장 -->
+        <div class="seal">智異山<br>山淸</div>
+    </div>
+
+    <!-- 옛 카피 -->
+    <div class="copy">지리산 산청에서 직송한 흑돼지</div>
+
+</body>
+</html>
