@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>자료구조 9주차-1 문제은행 | AVL 트리 (정의·높이 분석)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #fafaf7;
+    --surface: #ffffff;
+    --ink: #1a2332;
+    --ink-soft: #4a5568;
+    --ink-muted: #718096;
+    --line: #e2e8f0;
+    --line-soft: #edf2f7;
+    --teal: #0d9488;
+    --teal-soft: #ccfbf1;
+    --teal-bg: #f0fdfa;
+    --amber: #d97706;
+    --amber-soft: #fef3c7;
+    --amber-bg: #fffbeb;
+    --rose: #e11d48;
+    --rose-bg: #fff1f2;
+    --indigo: #4f46e5;
+    --indigo-soft: #e0e7ff;
+    --indigo-bg: #eef2ff;
+    --slate-bg: #f1f5f9;
+    --code-bg: #1e293b;
+    --code-text: #e2e8f0;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  }
+  body {
+    font-family: -apple-system, "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.7;
+    font-size: 15.5px;
+    letter-spacing: -0.01em;
+  }
+  .wrapper { max-width: 860px; margin: 0 auto; padding: 56px 24px 120px; }
+
+  /* ===== 헤더 ===== */
+  .doc-header { margin-bottom: 36px; padding-bottom: 24px; border-bottom: 2px solid var(--ink); }
+  .doc-meta { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; font-size: 12.5px; flex-wrap: wrap; }
+  .doc-meta .badge { background: var(--teal); color: #fff; padding: 3px 10px; border-radius: 4px; font-weight: 600; }
+  .doc-meta .range { background: var(--amber-soft); color: var(--amber); padding: 3px 10px; border-radius: 4px; font-weight: 600; border: 1px solid var(--amber); }
+  .doc-header h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 8px; }
+  .doc-header .sub { color: var(--ink-soft); font-size: 15px; }
+  .back { display: inline-block; margin-bottom: 22px; color: var(--ink-muted); text-decoration: none; font-size: 13px; }
+  .back:hover { color: var(--teal); }
+
+  /* ===== 안내 박스 ===== */
+  .note { background: var(--teal-bg); border: 1px solid var(--teal-soft); border-left: 3px solid var(--teal);
+          border-radius: 8px; padding: 14px 18px; margin-bottom: 14px; font-size: 14px; color: var(--ink-soft); }
+  .note b { color: var(--teal); }
+
+  /* ===== 전체 토글 버튼 ===== */
+  .controls { display: flex; gap: 8px; margin: 22px 0 32px; }
+  .controls button {
+    font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+    background: var(--surface); border: 1px solid var(--line); color: var(--ink-soft);
+    padding: 8px 14px; border-radius: 7px; transition: all 0.15s;
+  }
+  .controls button:hover { border-color: var(--teal); color: var(--teal); background: var(--teal-bg); }
+
+  /* ===== 문제 카드 ===== */
+  article.q {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 24px 26px; margin-bottom: 18px; box-shadow: var(--shadow);
+  }
+  .q-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .q-num { font-weight: 700; font-size: 16px; color: var(--teal); font-variant-numeric: tabular-nums; }
+  .q-tag { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; letter-spacing: 0.02em; }
+  .tag-mc   { background: var(--indigo-soft); color: var(--indigo); }
+  .tag-calc { background: var(--teal-soft);   color: var(--teal); }
+  .tag-fill { background: var(--amber-soft);  color: var(--amber); }
+  .tag-write{ background: var(--slate-bg);    color: var(--ink-soft); }
+  .tag-code { background: #1e293b;            color: #e2e8f0; }
+
+  .q-body { color: var(--ink); }
+  .q-body p { margin-bottom: 10px; }
+  .q-body ol.choices { list-style: none; counter-reset: ch; margin: 12px 0 4px; }
+  .q-body ol.choices li { counter-increment: ch; padding: 7px 0 7px 34px; position: relative; color: var(--ink-soft); }
+  .q-body ol.choices li::before {
+    content: counter(ch); position: absolute; left: 0; top: 7px;
+    width: 22px; height: 22px; border: 1px solid var(--line); border-radius: 50%;
+    text-align: center; line-height: 21px; font-size: 12px; font-weight: 600; color: var(--ink-muted);
+  }
+  .kw { color: var(--teal); font-weight: 600; }
+  .en { font-size: 0.86em; color: var(--ink-muted); font-style: italic; }
+  code { font-family: "JetBrains Mono","SF Mono",Consolas,monospace; font-size: 0.9em;
+         background: var(--slate-bg); padding: 2px 6px; border-radius: 4px; }
+  pre { background: var(--code-bg); color: var(--code-text); padding: 16px 20px; border-radius: 10px;
+        overflow-x: auto; margin: 12px 0; font-size: 13.5px; line-height: 1.6; }
+  pre code { background: none; padding: 0; color: inherit; font-size: 1em; }
+  .tree { font-family: "JetBrains Mono",Consolas,monospace; background: var(--slate-bg);
+          padding: 14px 18px; border-radius: 8px; font-size: 13.5px; line-height: 1.7; margin: 12px 0; white-space: pre; }
+  table.tbl { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 14px; }
+  table.tbl th, table.tbl td { border: 1px solid var(--line); padding: 8px 12px; text-align: center; }
+  table.tbl th { background: var(--slate-bg); font-weight: 600; }
+
+  /* ===== 정답/풀이 펼치기 ===== */
+  details.sol { margin-top: 16px; border-top: 1px dashed var(--line); padding-top: 14px; }
+  details.sol > summary {
+    list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13.5px; font-weight: 600; color: var(--teal);
+    background: var(--teal-bg); border: 1px solid var(--teal-soft);
+    padding: 8px 16px; border-radius: 8px; transition: all 0.15s; user-select: none;
+  }
+  details.sol > summary::-webkit-details-marker { display: none; }
+  details.sol > summary::before { content: "▸"; font-size: 12px; transition: transform 0.15s; }
+  details.sol[open] > summary::before { transform: rotate(90deg); }
+  details.sol > summary:hover { background: var(--teal-soft); }
+  .sol-body {
+    margin-top: 14px; background: var(--teal-bg); border: 1px solid var(--teal-soft);
+    border-radius: 8px; padding: 16px 18px; font-size: 14.5px; color: var(--ink-soft);
+  }
+  .sol-body .ans { color: var(--ink); font-weight: 600; margin-bottom: 8px; }
+  .sol-body .ans b { color: var(--rose); }
+  .sol-body p { margin-bottom: 8px; }
+  .sol-body p:last-child { margin-bottom: 0; }
+
+  footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid var(--line);
+           font-size: 12.5px; color: var(--ink-muted); text-align: center; }
+  sub, sup { font-size: 0.72em; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <a href="../index.html" class="back">← 자료구조 목차로</a>
+
+  <header class="doc-header">
+    <div class="doc-meta">
+      <span class="badge">9주차 · 1차시</span>
+      <span class="range">기말 범위 시작</span>
+    </div>
+    <h1>문제은행 — AVL 트리 (1)</h1>
+    <p class="sub">정의 · 균형 인수(Balance Factor) · 높이와 노드 개수 · h = O(log n) 증명</p>
+  </header>
+
+  <div class="note">
+    이 문제집은 <b>9주차 1차시 강의노트</b> 범위에서 출제했습니다. 회전(Rotation, LL/RR/LR/RL)은 2차시 내용이라 제외했습니다.
+  </div>
+  <div class="note">
+    난이도·유형은 <b>중간고사 족보</b>를 기준으로 맞췄습니다 (복수선택 객관식 · 코드/시간복잡도 분석 · 빈칸 채우기 · 표 채우기 · 계산 · 서술).
+  </div>
+
+  <div class="controls">
+    <button onclick="document.querySelectorAll('details.sol').forEach(d=>d.open=true)">전체 풀이 펼치기</button>
+    <button onclick="document.querySelectorAll('details.sol').forEach(d=>d.open=false)">전체 접기</button>
+  </div>
+
+  <!-- Q1 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q1</span><span class="q-tag tag-mc">객관식 · 복수선택</span></div>
+    <div class="q-body">
+      <p>다음 중 <span class="kw">AVL 트리</span>에 대한 설명으로 옳은 것을 <b>모두</b> 고르시오.</p>
+      <ol class="choices">
+        <li>모든 노드에서 |BF| ≤ 1을 만족한다.</li>
+        <li>AVL 트리는 이진 탐색 트리(BST)가 아니어도 된다.</li>
+        <li>최악의 경우 탐색 시간이 O(n)이다.</li>
+        <li>역사상 최초의 자가 균형 이진 탐색 트리(Self-balancing BST)이다.</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>1, 4</b></p>
+        <p>2번 — AVL은 BST의 조건(왼쪽 &lt; 루트 &lt; 오른쪽)을 그대로 지키면서 균형 조건이 <i>추가</i>된 것이므로 반드시 BST입니다.</p>
+        <p>3번 — AVL은 높이가 항상 O(log n)으로 제한되어 최악에도 탐색이 O(log n)입니다. 최악 O(n)은 균형을 강제하지 않는 <b>일반 BST</b>의 약점입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q2 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q2</span><span class="q-tag tag-fill">빈칸 채우기</span></div>
+    <div class="q-body">
+      <p>균형 인수(Balance Factor)의 정의를 완성하시오.</p>
+      <pre><code>BF(v) = height(________ 서브트리) − height(________ 서브트리)</code></pre>
+      <p>또한 AVL 조건을 만족하는 노드의 BF로 가능한 값을 모두 쓰시오.</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>왼쪽</b>, <b>오른쪽</b> / 가능한 BF 값 = <b>−1, 0, +1</b></p>
+        <p>BF(v) = height(왼쪽 서브트리) − height(오른쪽 서브트리). AVL 조건은 모든 노드 v에 대해 |BF(v)| ≤ 1이므로 BF는 −1, 0, +1 셋 중 하나입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q3 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q3</span><span class="q-tag tag-calc">계산</span></div>
+    <div class="q-body">
+      <p>어떤 노드 v의 왼쪽 서브트리 높이가 <b>2</b>, 오른쪽 서브트리 높이가 <b>3</b>이다. (단, 잎 노드의 높이는 0, 빈 서브트리의 높이는 −1로 한다.)</p>
+      <p>(1) BF(v)를 구하시오. &nbsp;(2) 이 노드는 AVL 조건을 만족하는가?</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>BF(v) = −1, AVL 조건 만족</b></p>
+        <p>BF(v) = 2 − 3 = −1. |−1| ≤ 1 이므로 이 노드는 AVL 조건을 만족합니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q4 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q4</span><span class="q-tag tag-fill">빈칸 채우기</span></div>
+    <div class="q-body">
+      <p>높이가 h인 AVL 트리가 가질 수 있는 <b>최소 노드 수</b>를 N<sub>h</sub>라 할 때, 점화식(Recurrence)을 완성하시오.</p>
+      <pre><code>N<sub>h</sub> = N<sub>____</sub> + N<sub>____</sub> + ____      (단, N₀ = 1, N₁ = 2)</code></pre>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>N<sub>h</sub> = N<sub>h−1</sub> + N<sub>h−2</sub> + 1</b></p>
+        <p>전체 높이를 h로 만들려면 한쪽 서브트리는 높이 h−1이어야 하고, 다른 쪽은 노드를 최소로 줄이기 위해 AVL이 허용하는 한 가장 낮은 h−2까지 낮춥니다. 여기에 루트 1개를 더해 N<sub>h−1</sub> + N<sub>h−2</sub> + 1이 됩니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q5 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q5</span><span class="q-tag tag-calc">계산</span></div>
+    <div class="q-body">
+      <p>Q4의 점화식을 이용하여 N₂, N₃, N₄, <b>N₅</b>를 차례로 구하시오.</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: N₂ = 4, N₃ = 7, N₄ = 12, <b>N₅ = 20</b></p>
+        <p>N₂ = N₁ + N₀ + 1 = 2 + 1 + 1 = 4<br>
+           N₃ = N₂ + N₁ + 1 = 4 + 2 + 1 = 7<br>
+           N₄ = N₃ + N₂ + 1 = 7 + 4 + 1 = 12<br>
+           N₅ = N₄ + N₃ + 1 = 12 + 7 + 1 = <b>20</b></p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q6 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q6</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>비어 있는 <b>일반 BST</b>에 키를 <code>1, 2, 3, …, n</code> 순서(오름차순)로 삽입하였다. 이때 만들어지는 트리의 높이와 탐색의 최악 시간복잡도로 옳은 것은?</p>
+      <ol class="choices">
+        <li>높이 O(log n), 탐색 O(log n)</li>
+        <li>높이 O(n), 탐색 O(n)</li>
+        <li>높이 O(1), 탐색 O(1)</li>
+        <li>높이 O(n), 탐색 O(log n)</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>2번</b></p>
+        <p>정렬된 순서로 넣으면 모든 노드가 오른쪽으로만 이어져 사실상 연결 리스트(Linked List)가 됩니다. 높이가 n−1 = O(n)이고, 탐색도 O(n)으로 떨어집니다. 바로 이 편향(skew) 때문에 AVL 같은 균형 트리가 필요합니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q7 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q7</span><span class="q-tag tag-calc">계산 · 트리 판별</span></div>
+    <div class="q-body">
+      <p>다음 트리가 AVL 트리인지 판별하고, 아니라면 위반이 일어난 노드와 그 BF 값을 쓰시오. (잎 높이 0, 빈 서브트리 −1)</p>
+      <div class="tree">        10
+       /  \
+      5    15
+     /
+    3
+   /
+  1</div>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>AVL 아님 — 노드 5에서 BF = +2</b></p>
+        <p>각 노드 높이: 1→0, 3→1, 5→2, 15→0, 10→3.</p>
+        <p>BF(5) = height(왼쪽=3, 높이1) − height(오른쪽=없음, −1) = 1 − (−1) = <b>2</b> → |2| &gt; 1 이므로 AVL 조건 위반. (참고로 BF(10) = 2 − 0 = 2 도 위반입니다.)</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q8 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q8</span><span class="q-tag tag-write">표 채우기</span></div>
+    <div class="q-body">
+      <p>탐색·삽입·삭제 연산에 대해 <b>일반 BST</b>와 <b>AVL 트리</b>의 시간복잡도를 빈칸에 채우시오. (n은 노드 개수)</p>
+      <table class="tbl">
+        <tr><th>자료구조</th><th>평균</th><th>최악</th></tr>
+        <tr><td>일반 BST</td><td>?</td><td>?</td></tr>
+        <tr><td>AVL 트리</td><td>?</td><td>?</td></tr>
+      </table>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <table class="tbl">
+          <tr><th>자료구조</th><th>평균</th><th>최악</th></tr>
+          <tr><td>일반 BST</td><td>O(log n)</td><td><b>O(n)</b></td></tr>
+          <tr><td>AVL 트리</td><td>O(log n)</td><td><b>O(log n)</b></td></tr>
+        </table>
+        <p>모든 연산은 트리 높이 h에 비례(O(h))합니다. 일반 BST는 편향되면 h = O(n)이지만, AVL은 균형 조건으로 h = O(log n)이 보장되어 최악도 O(log n)입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q9 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q9</span><span class="q-tag tag-write">서술</span></div>
+    <div class="q-body">
+      <p>높이 h와 노드 개수 n의 관계를 분석할 때, 왜 "<b>높이가 h인 AVL 트리의 최소 노드 수</b> N<sub>h</sub>"를 따지는가? 그 이유를 한 문장으로 쓰시오.</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답 요지</p>
+        <p>노드는 가장 적은데 높이는 가장 높은 <b>최악의 경우</b>를 분석해야, 높이의 상한(즉 빅오)을 구할 수 있기 때문입니다. "같은 높이에서 노드가 최소" = "같은 노드 수에서 높이가 최대"라서 이 경우만 막으면 모든 경우가 O(log n)으로 보장됩니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q10 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q10</span><span class="q-tag tag-write">서술 · 증명</span></div>
+    <div class="q-body">
+      <p>점화식 N<sub>h</sub> = N<sub>h−1</sub> + N<sub>h−2</sub> + 1 에서 출발하여 <b>N<sub>h</sub> &gt; 2·N<sub>h−2</sub></b> 를 유도하는 핵심 아이디어를 설명하시오.</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답 요지</p>
+        <p>높이가 클수록 최소 노드 수도 크므로 N<sub>h−2</sub> &lt; N<sub>h−1</sub> 입니다. 점화식의 N<sub>h−1</sub>을 더 작은 N<sub>h−2</sub>로 바꿔치기하면 부등식이 성립합니다:</p>
+        <p>N<sub>h</sub> = N<sub>h−1</sub> + N<sub>h−2</sub> + 1 ≥ N<sub>h−2</sub> + N<sub>h−2</sub> + 1 = 2·N<sub>h−2</sub> + 1 &gt; 2·N<sub>h−2</sub>.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q11 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q11</span><span class="q-tag tag-calc">계산 · 증명 적용</span></div>
+    <div class="q-body">
+      <p>N<sub>h</sub> &gt; 2·N<sub>h−2</sub> 를 반복 적용하면 N<sub>h</sub> ≥ 2<sup>h/2</sup> 가 유도된다. 이를 이용해, AVL 트리에서 노드 수 n과 높이 h 사이에 성립하는 부등식을 쓰고, 이로부터 h의 상한을 log를 이용해 나타내시오.</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>n ≥ 2<sup>h/2</sup> ⟹ h ≤ 2·log₂ n</b></p>
+        <p>실제 노드 수 n은 최소 노드 수보다 크거나 같으므로 n ≥ N<sub>h</sub> ≥ 2<sup>h/2</sup>. 양변에 log₂(증가함수)를 씌우면 log₂ n ≥ h/2, 따라서 h ≤ 2·log₂ n = O(log n).</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q12 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q12</span><span class="q-tag tag-calc">계산</span></div>
+    <div class="q-body">
+      <p>증명 결과 h ≤ 2·log₂ n 을 이용한다. 노드가 n = 1,048,576 (= 2<sup>20</sup>)개인 AVL 트리의 <b>높이 상한</b>은 얼마인가?</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>h ≤ 40</b></p>
+        <p>h ≤ 2·log₂(2<sup>20</sup>) = 2 × 20 = 40. (이 한계는 다소 느슨한 상한이며, 실제 AVL 높이는 보통 이보다 낮습니다.)</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q13 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q13</span><span class="q-tag tag-fill">빈칸 채우기</span></div>
+    <div class="q-body">
+      <p>점화식 N<sub>h</sub> = N<sub>h−1</sub> + N<sub>h−2</sub> + 1 은 이산수학(Discrete Mathematics)에서 배운 <b>(___________)</b> 수열의 점화식과 거의 같은 모양이다. 그래서 N<sub>h</sub>를 만족하는 최소 AVL 트리를 <b>(___________) 트리</b>라고도 부른다. 빈칸을 채우시오.</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>피보나치(Fibonacci)</b> 수열 / <b>피보나치(Fibonacci) 트리</b></p>
+        <p>피보나치 점화식 F<sub>n</sub> = F<sub>n−1</sub> + F<sub>n−2</sub> 와 +1 차이만 있을 뿐 구조가 동일합니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q14 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q14</span><span class="q-tag tag-mc">객관식 · 복수선택</span></div>
+    <div class="q-body">
+      <p>다음 시간복잡도를 빠른(성능이 좋은) 것부터 느린 순서로 보았을 때, O(n)보다 <b>빠른(더 좋은)</b> 것을 모두 고르시오.</p>
+      <ol class="choices">
+        <li>O(n log n)</li>
+        <li>O(log n)</li>
+        <li>O(1)</li>
+        <li>O(n²)</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>2, 3</b></p>
+        <p>증가율 순서: O(1) &lt; O(log n) &lt; O(n) &lt; O(n log n) &lt; O(n²). O(n)보다 빠른(작은) 것은 O(log n)과 O(1)입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q15 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q15</span><span class="q-tag tag-code">코드 빈칸 채우기</span></div>
+    <div class="q-body">
+      <p>AVL 클래스는 BST를 상속(inheritance)하여 구현한다. 부모 클래스를 초기화하는 빈칸을 채우시오.</p>
+      <pre><code>class AVL(BST):          # BST의 모든 기능을 물려받음
+    def __init__(self):
+        ________________  # 부모(BST) 초기화 → root=None, size=0</code></pre>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>super().__init__()</b></p>
+        <p><code>super()</code>는 부모 클래스(BST)를 가리키며, 자바의 <code>super</code>와 같은 개념입니다. 파이썬의 <code>class AVL(BST)</code>는 자바의 <code>class AVL extends BST</code>와 동일한 의미입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q16 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q16</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>AVL 클래스에서 BST와 같은 이름의 <code>insert</code> 메서드를 다시 정의(오버라이딩, overriding)했다. <code>avl.insert(5)</code>를 호출하면 실행되는 것은?</p>
+      <ol class="choices">
+        <li>BST의 insert</li>
+        <li>AVL의 insert</li>
+        <li>둘 다 동시에 실행</li>
+        <li>오류가 발생한다</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>2번 (AVL의 insert)</b></p>
+        <p>자식 클래스에서 같은 이름의 메서드를 정의하면 그것이 우선 호출됩니다(오버라이딩). 필요하면 그 안에서 <code>super().insert()</code>로 부모의 insert를 불러 쓸 수 있습니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q17 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q17</span><span class="q-tag tag-fill">빈칸 채우기 · 코드</span></div>
+    <div class="q-body">
+      <p>AVL에서 균형을 잡으려면 각 노드의 높이를 알아야 한다. 그래서 Node 클래스에 BST에는 없던 필드를 하나 추가한다. 빈칸에 들어갈 필드 이름을 쓰시오.</p>
+      <pre><code>class Node:
+    def __init__(self, key, parent=None):
+        self.key = key
+        self.parent = parent
+        self.left = None
+        self.right = None
+        self._______ = 0    # ★ AVL용: 이 노드를 루트로 한 서브트리의 높이</code></pre>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>height</b> (<code>self.height = 0</code>)</p>
+        <p>AVL은 BST 구조에 각 노드의 <code>height</code> 필드만 추가하고, 삽입 후 루트까지 올라가며 height를 갱신해 균형을 검사합니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q18 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q18</span><span class="q-tag tag-calc">계산</span></div>
+    <div class="q-body">
+      <p>가장 균형 잡힌(꽉 찬) <b>포화 이진 트리</b>는 높이 h일 때 n = 2<sup>h+1</sup> − 1 개의 노드를 가진다. 높이 h = 3인 포화 이진 트리의 노드 수를 구하고, 이때 h를 n으로 근사하면 어떤 형태가 되는지 쓰시오.</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>n = 15, &nbsp; h ≈ log₂ n</b></p>
+        <p>n = 2<sup>3+1</sup> − 1 = 16 − 1 = 15. 그리고 n ≈ 2<sup>h</sup> 이므로 h ≈ log₂ n. AVL은 이 이상적 경우보다 살짝 느슨하지만 여전히 O(log n)을 보장합니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q19 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q19</span><span class="q-tag tag-calc">계산 · 응용</span></div>
+    <div class="q-body">
+      <p>노드가 n = 1,000,000개일 때, 다음 두 경우의 대략적인 비교 횟수를 쓰시오. (log₂ 1,000,000 ≈ 20)</p>
+      <p>(1) 편향된 일반 BST에서의 최악 탐색 &nbsp; (2) AVL 트리에서의 탐색</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>(1) 약 1,000,000번 &nbsp; (2) 약 20번</b></p>
+        <p>편향 BST는 O(n) ≈ 1,000,000번, AVL은 O(log n) ≈ 20번. 약 50,000배 차이입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q20 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q20</span><span class="q-tag tag-write">서술 · 핵심 정리</span></div>
+    <div class="q-body">
+      <p>"AVL 트리의 모든 연산이 O(log n)이다"가 성립하는 논리 흐름을, 아래 4개의 키워드를 순서대로 사용해 한 줄로 설명하시오.</p>
+      <p><code>균형 조건(|BF|≤1)</code> → <code>점화식</code> → <code>N<sub>h</sub> ≥ 2<sup>h/2</sup></code> → <code>h = O(log n)</code></p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답 요지</p>
+        <p>모든 노드에 균형 조건 |BF| ≤ 1을 강제하면 최소 노드 수가 점화식 N<sub>h</sub> = N<sub>h−1</sub> + N<sub>h−2</sub> + 1을 따르고, 이로부터 N<sub>h</sub> ≥ 2<sup>h/2</sup> 가 유도되어 n ≥ 2<sup>h/2</sup> ⟹ h ≤ 2·log₂ n = O(log n)이 된다. 모든 연산은 O(h)이므로 결국 모두 O(log n)으로 보장된다.</p>
+      </div>
+    </details>
+  </article>
+
+  <footer>
+    자료구조 · 9주차-1 문제은행 &nbsp;·&nbsp; AVL 트리 (정의·높이 분석) &nbsp;·&nbsp; 총 20문제
+  </footer>
+
+</div>
+</body>
+</html>
