@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>자료구조 11주차-1 문제은행 | RB 높이 상계 · Union-Find</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root{--bg:#fafaf7;--surface:#fff;--ink:#1a2332;--ink-soft:#4a5568;--ink-muted:#718096;--line:#e2e8f0;--line-soft:#edf2f7;--teal:#0d9488;--teal-soft:#ccfbf1;--teal-bg:#f0fdfa;--amber:#d97706;--amber-soft:#fef3c7;--rose:#e11d48;--indigo:#4f46e5;--indigo-soft:#e0e7ff;--slate-bg:#f1f5f9;--code-bg:#1e293b;--code-text:#e2e8f0;--shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);}
+  body{font-family:-apple-system,"Pretendard","Apple SD Gothic Neo","Noto Sans KR",sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;font-size:15.5px;letter-spacing:-.01em;}
+  .wrapper{max-width:860px;margin:0 auto;padding:56px 24px 120px;}
+  .doc-header{margin-bottom:36px;padding-bottom:24px;border-bottom:2px solid var(--ink);}
+  .doc-meta{display:flex;gap:10px;align-items:center;margin-bottom:14px;font-size:12.5px;flex-wrap:wrap;}
+  .doc-meta .badge{background:var(--teal);color:#fff;padding:3px 10px;border-radius:4px;font-weight:600;}
+  .doc-meta .range{background:var(--amber-soft);color:var(--amber);padding:3px 10px;border-radius:4px;font-weight:600;border:1px solid var(--amber);}
+  .doc-header h1{font-size:28px;font-weight:700;letter-spacing:-.03em;margin-bottom:8px;}
+  .doc-header .sub{color:var(--ink-soft);font-size:15px;}
+  .back{display:inline-block;margin-bottom:22px;color:var(--ink-muted);text-decoration:none;font-size:13px;}
+  .back:hover{color:var(--teal);}
+  .note{background:var(--teal-bg);border:1px solid var(--teal-soft);border-left:3px solid var(--teal);border-radius:8px;padding:14px 18px;margin-bottom:14px;font-size:14px;color:var(--ink-soft);}
+  .note b{color:var(--teal);}
+  .sec{display:flex;align-items:center;gap:12px;margin:36px 0 18px;}
+  .sec h2{font-size:18px;font-weight:700;color:var(--ink);white-space:nowrap;}
+  .sec .line{flex:1;height:1px;background:var(--line);}
+  .controls{display:flex;gap:8px;margin:22px 0 32px;}
+  .controls button{font:inherit;font-size:13px;font-weight:600;cursor:pointer;background:var(--surface);border:1px solid var(--line);color:var(--ink-soft);padding:8px 14px;border-radius:7px;transition:all .15s;}
+  .controls button:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-bg);}
+  article.q{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:24px 26px;margin-bottom:18px;box-shadow:var(--shadow);}
+  .q-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .q-num{font-weight:700;font-size:16px;color:var(--teal);font-variant-numeric:tabular-nums;}
+  .q-tag{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;letter-spacing:.02em;}
+  .tag-mc{background:var(--indigo-soft);color:var(--indigo);}
+  .tag-calc{background:var(--teal-soft);color:var(--teal);}
+  .tag-fill{background:var(--amber-soft);color:var(--amber);}
+  .tag-write{background:var(--slate-bg);color:var(--ink-soft);}
+  .tag-code{background:#1e293b;color:#e2e8f0;}
+  .q-body{color:var(--ink);} .q-body p{margin-bottom:10px;}
+  .q-body ol.choices{list-style:none;counter-reset:ch;margin:12px 0 4px;}
+  .q-body ol.choices li{counter-increment:ch;padding:7px 0 7px 34px;position:relative;color:var(--ink-soft);}
+  .q-body ol.choices li::before{content:counter(ch);position:absolute;left:0;top:7px;width:22px;height:22px;border:1px solid var(--line);border-radius:50%;text-align:center;line-height:21px;font-size:12px;font-weight:600;color:var(--ink-muted);}
+  .kw{color:var(--teal);font-weight:600;}
+  code{font-family:"JetBrains Mono","SF Mono",Consolas,monospace;font-size:.9em;background:var(--slate-bg);padding:2px 6px;border-radius:4px;}
+  pre{background:var(--code-bg);color:var(--code-text);padding:16px 20px;border-radius:10px;overflow-x:auto;margin:12px 0;font-size:13.5px;line-height:1.6;}
+  pre code{background:none;padding:0;color:inherit;font-size:1em;}
+  .tree{font-family:"JetBrains Mono",Consolas,monospace;background:var(--slate-bg);padding:14px 18px;border-radius:8px;font-size:13px;line-height:1.7;margin:12px 0;white-space:pre;overflow-x:auto;}
+  table.tbl{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px;}
+  table.tbl th,table.tbl td{border:1px solid var(--line);padding:8px 12px;text-align:center;}
+  table.tbl th{background:var(--slate-bg);font-weight:600;}
+  details.sol{margin-top:16px;border-top:1px dashed var(--line);padding-top:14px;}
+  details.sol>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--teal);background:var(--teal-bg);border:1px solid var(--teal-soft);padding:8px 16px;border-radius:8px;transition:all .15s;user-select:none;}
+  details.sol>summary::-webkit-details-marker{display:none;}
+  details.sol>summary::before{content:"▸";font-size:12px;transition:transform .15s;}
+  details.sol[open]>summary::before{transform:rotate(90deg);}
+  details.sol>summary:hover{background:var(--teal-soft);}
+  .sol-body{margin-top:14px;background:var(--teal-bg);border:1px solid var(--teal-soft);border-radius:8px;padding:16px 18px;font-size:14.5px;color:var(--ink-soft);}
+  .sol-body .ans{color:var(--ink);font-weight:600;margin-bottom:8px;}
+  .sol-body .ans b{color:var(--rose);}
+  .sol-body p{margin-bottom:8px;} .sol-body p:last-child{margin-bottom:0;}
+  footer{margin-top:50px;padding-top:20px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-muted);text-align:center;}
+  sub,sup{font-size:.72em;}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <a href="../index.html" class="back">← 자료구조 목차로</a>
+
+  <header class="doc-header">
+    <div class="doc-meta"><span class="badge">11주차 · 1차시</span><span class="range">기말 범위</span></div>
+    <h1>문제은행 — RB 높이 상계 개선 · Union-Find</h1>
+    <p class="sub">레드블랙 타이트 bound(1.26·log₂n) · 로그 밑 변환 · Union-Find(Disjoint Set) · Union by Rank</p>
+  </header>
+
+  <div class="note">이 문제집은 <b>11주차 1차시 강의노트</b> 범위에서 출제했습니다. 크게 두 주제: ① 레드블랙 높이 상계 개선 ② Union-Find 자료구조.</div>
+  <div class="note">난이도·유형은 <b>중간고사 족보</b> 기준입니다 (객관식 · 계산 · 추적 · 빈칸 채우기 · 표 채우기 · 서술 · 코드).</div>
+
+  <div class="controls">
+    <button onclick="document.querySelectorAll('details.sol').forEach(d=>d.open=true)">전체 풀이 펼치기</button>
+    <button onclick="document.querySelectorAll('details.sol').forEach(d=>d.open=false)">전체 접기</button>
+  </div>
+
+  <div class="sec"><h2>Part A. 레드블랙 트리 높이 상계 개선</h2><div class="line"></div></div>
+
+  <!-- A1 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q1</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>이미 알고 있는 상계 h' ≤ 2·log₂ n이 있는데도 "더 작은(타이트한) 상계"를 구하려는 이유로 가장 알맞은 것은?</p>
+      <ol class="choices">
+        <li>빅오가 O(log n)에서 O(1)로 바뀌기 때문</li>
+        <li>트리 연산 시간이 O(h)라서, 높이 상계가 작을수록 최악의 경우 성능 보장이 더 정밀해지기 때문</li>
+        <li>상계는 클수록 좋기 때문</li>
+        <li>트리가 더 많은 키를 담을 수 있기 때문</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>2번</b></p>
+        <p>모든 트리 연산은 O(h)입니다. 상계를 2·log₂n → 1.26·log₂n으로 줄이면 빅오는 같아도(둘 다 O(log n)) 실제 상수 계수가 작아져 더 정밀한 성능 보장이 됩니다. (상계는 작을수록 좋음.)</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- A2 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q2</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>2-3-4 트리를 레드블랙으로 변환했을 때 높이 h'이 <b>최대</b>가 되는(worst case) 노드 구성은? (키 1개당 레벨 수 기준)</p>
+      <ol class="choices">
+        <li>모두 2-노드</li>
+        <li>모두 3-노드</li>
+        <li>모두 4-노드</li>
+        <li>노드 구성과 무관하다</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>2번 (모두 3-노드)</b></p>
+        <p>키 1개당 레벨 수: 2-노드 = 1레벨/1키 = 1, 3-노드 = 2레벨/2키 = 1, 4-노드 = 2레벨/3키 ≈ 0.67. 같은 키 개수에서 변환 결과가 가장 깊어지는 건 3-노드입니다(h' = 2·log₃n ≈ 1.26·log₂n, 셋 중 최대).</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- A3 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q3</span><span class="q-tag tag-calc">계산</span></div>
+    <div class="q-body">
+      <p>모든 노드가 3-노드(자식 3개)인 2-3-4 트리가 있다. (1) 이 트리의 높이 h를 n에 대한 로그로 쓰고, (2) 레드블랙으로 변환한 높이 h'의 상계를 쓰시오.</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>(1) h = log₃ n &nbsp; (2) h' ≤ 2·log₃ n</b></p>
+        <p>자식이 x개씩인 균형 트리의 높이는 logₓ n이므로 3-노드 트리는 log₃ n. 3-노드 하나가 레드블랙에서 2레벨로 펼쳐지므로 모든 레벨이 2배 → h' ≤ 2·h = 2·log₃ n.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- A4 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q4</span><span class="q-tag tag-fill">빈칸 채우기</span></div>
+    <div class="q-body">
+      <p>로그의 밑 변환 공식(Change of Base)을 완성하시오.</p>
+      <pre><code>log<sub>a</sub> b = ( __________ ) / ( __________ )      (밑을 c로 변환)</code></pre>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>log<sub>a</sub> b = log<sub>c</sub> b / log<sub>c</sub> a</b></p>
+        <p>이를 써서 2·log₃ n = (2 / log₂3) · log₂ n 으로 밑을 2로 통일할 수 있습니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- A5 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q5</span><span class="q-tag tag-calc">계산 · 부등식</span></div>
+    <div class="q-body">
+      <p>log₂ 3의 값의 범위를 부등식으로 유도하시오. (단조증가성과 log₂4 = 2를 이용)</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>1 &lt; log₂ 3 &lt; 2 (≈ 1.585)</b></p>
+        <p>2 &lt; 3 &lt; 4 에 단조증가 함수 log₂를 씌우면 log₂2 &lt; log₂3 &lt; log₂4, 즉 1 &lt; log₂3 &lt; 2. (log₂4 = log₂2² = 2·log₂2 = 2)</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- A6 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q6</span><span class="q-tag tag-calc">계산 · 결론</span></div>
+    <div class="q-body">
+      <p>(1) 개선된 레드블랙 높이 상계를 log₂ n에 대한 계수로 나타내시오. (2) n = 1,000,000(log₂n ≈ 20)일 때 기존 상계(2·log₂n)와 개선된 상계의 최악 연산 횟수를 비교하시오.</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>(1) h' ≤ (2/log₂3)·log₂n ≈ 1.26·log₂n &nbsp; (2) 기존 40번 → 개선 25번</b></p>
+        <p>2/log₂3 ≈ 2/1.585 ≈ 1.26. n=10⁶: 기존 2×20 = 40번, 개선 1.26×20 ≈ 25번. log₂3 &gt; 1이라 2/log₂3 &lt; 2 → 항상 기존보다 타이트합니다. (빅오는 둘 다 O(log n).)</p>
+      </div>
+    </details>
+  </article>
+
+  <div class="sec"><h2>Part B. Union-Find (Disjoint Set)</h2><div class="line"></div></div>
+
+  <!-- B1 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q7</span><span class="q-tag tag-fill">빈칸 채우기</span></div>
+    <div class="q-body">
+      <p>Union-Find 자료구조는 <b>(______) Set</b>(분리 집합)이라고도 부른다. 이 자료구조의 3가지 핵심 연산의 이름과 의미를 채우시오.</p>
+      <p>• <code>make-set(x)</code> : ______ <br>• <code>find(x)</code> : ______ <br>• <code>union(x, y)</code> : ______</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>Disjoint</b> Set</p>
+        <p>• make-set(x): x만으로 된 새 집합 {x} 생성<br>• find(x): x가 속한 집합의 대표(루트)를 반환 (membership 확인)<br>• union(x, y): x와 y가 <b>각각 속한 두 집합</b>을 하나로 합침 (x, y 자체가 아님)</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- B2 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q8</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>비교용으로 본 방법 1(원형 양방향 연결 리스트) 구현의 시간복잡도로 옳은 것은?</p>
+      <ol class="choices">
+        <li>make-set O(1), find O(n), union O(n)</li>
+        <li>make-set O(n), find O(1), union O(1)</li>
+        <li>모두 O(log n)</li>
+        <li>모두 O(1)</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>1번</b></p>
+        <p>make-set은 노드 2개 연결로 O(1)이지만, find는 리스트를 전부 훑어야 해 O(n), union은 find가 지배적이라 O(n). 목표 O(log n)에 못 미쳐서 트리 방식으로 넘어갑니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- B3 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q9</span><span class="q-tag tag-mc">객관식 · 복수선택</span></div>
+    <div class="q-body">
+      <p>Union-Find의 트리 표현(방법 2)에 대한 설명으로 옳은 것을 모두 고르시오.</p>
+      <ol class="choices">
+        <li>각 노드는 부모를 가리키는 링크만 가진다 (자식 링크 없음).</li>
+        <li>루트 노드는 자기 자신을 가리킨다.</li>
+        <li>같은 트리(같은 루트)에 있으면 같은 집합이다.</li>
+        <li>한 노드의 자식 수는 최대 4개로 제한된다.</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>1, 2, 3</b></p>
+        <p>4번 틀림 — Union-Find 트리는 자식 수 제한이 없는 다진 트리입니다. BST 계열과 반대로 자식→부모 링크만 사용하며, 루트는 자기 자신을 가리키고, 같은 루트면 같은 집합입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- B4 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q10</span><span class="q-tag tag-calc">추적</span></div>
+    <div class="q-body">
+      <p>다음 트리에서(화살표 = 부모를 가리킴) find와 집합 판별을 수행하시오.</p>
+      <div class="tree">   3(루트)              7(루트)
+   / | \                / \
+  1  5  2              4   6</div>
+      <p>(1) find(2)의 반환값 (2) find(6)의 반환값 (3) 2와 6은 같은 집합인가?</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>(1) 3 &nbsp; (2) 7 &nbsp; (3) 아니다 (다른 집합)</b></p>
+        <p>find(2): 2 → 부모 3(루트) → 3 반환. find(6): 6 → 부모 7(루트) → 7 반환. find(2)=3 ≠ find(6)=7 이므로 서로 다른 집합입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- B5 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q11</span><span class="q-tag tag-code">코드 빈칸 채우기</span></div>
+    <div class="q-body">
+      <p>find(x)의 의사코드를 완성하고, 시간복잡도를 쓰시오.</p>
+      <pre><code>def find(x):
+    while x.parent ____ x:   # ★ ⓐ 루트 조건
+        x = ____________     # ★ ⓑ 한 단계 위로
+    return x</code></pre>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>ⓐ != &nbsp; ⓑ x.parent</b> / 시간복잡도 <b>O(h)</b></p>
+        <p>부모가 자기 자신이 아니면(<code>x.parent != x</code>) 루트가 아니므로, <code>x = x.parent</code>로 올라갑니다. 루트까지 거리 = 트리 높이 → O(h).</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- B6 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q12</span><span class="q-tag tag-write">서술</span></div>
+    <div class="q-body">
+      <p>두 트리를 union할 때 "누가 누구의 부모가 되는지"를 정하는 원칙(Union by Rank/Height)과 그 이유를 설명하시오.</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답 요지: <b>높이(rank) 낮은 트리를 높은 트리 밑에 붙인다</b></p>
+        <p>연산 시간이 O(h)라 높이를 낮게 유지해야 합니다. 낮은 트리를 높은 트리 밑에 붙이면 전체 높이가 그대로 유지되지만, 반대로 하면 높이가 +1 늘어납니다. 그래서 낮은 쪽을 아래로 보냅니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- B7 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q13</span><span class="q-tag tag-write">표 채우기</span></div>
+    <div class="q-body">
+      <p>Union by Height(rank)의 3가지 경우에 따른 처리와 결합 후 높이를 채우시오. (v, w는 두 루트)</p>
+      <table class="tbl">
+        <tr><th>경우</th><th>처리</th><th>결합 후 높이</th></tr>
+        <tr><td>v.rank &gt; w.rank</td><td>?</td><td>?</td></tr>
+        <tr><td>v.rank &lt; w.rank</td><td>?</td><td>?</td></tr>
+        <tr><td>v.rank == w.rank</td><td>?</td><td>?</td></tr>
+      </table>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <table class="tbl">
+          <tr><th>경우</th><th>처리</th><th>결합 후 높이</th></tr>
+          <tr><td>v.rank &gt; w.rank</td><td>w.parent = v</td><td>v.rank (그대로)</td></tr>
+          <tr><td>v.rank &lt; w.rank</td><td>v.parent = w</td><td>w.rank (그대로)</td></tr>
+          <tr><td>v.rank == w.rank</td><td>아무 방향 (예: v.parent=w)</td><td>+1 증가</td></tr>
+        </table>
+        <p>rank가 다르면 작은 쪽을 큰 쪽 밑에 → 높이 유지. 같을 때만 한 단계 깊어져 +1.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- B8 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q14</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>Node 클래스의 <code>rank</code> 필드에 대한 설명으로 옳은 것은?</p>
+      <ol class="choices">
+        <li>항상 정확한 트리 높이와 같다.</li>
+        <li>트리 높이의 상한선 역할을 하며, make_set 시 0으로 시작한다.</li>
+        <li>find를 호출할 때마다 1씩 증가한다.</li>
+        <li>노드의 key 값과 같다.</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>2번</b></p>
+        <p>rank는 "높이의 상한선"입니다. make_set에서 0으로 시작하고 union(같은 rank일 때만)에서 갱신됩니다. find는 rank를 바꾸지 않습니다. 경로 압축 등 최적화로 실제 높이가 rank보다 작아질 수 있어 "height"가 아닌 "rank"라 부릅니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- B9 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q15</span><span class="q-tag tag-calc">추적 · Union 실행</span></div>
+    <div class="q-body">
+      <p>단원소 집합 <code>a=1, b=2, c=3, d=4, e=5</code>를 만든 뒤 Union by Rank로 다음을 차례로 실행한다.</p>
+      <pre><code>union(a, b)
+union(a, c)
+union(d, e)
+union(c, d)</code></pre>
+      <p>최종 트리의 (1) 루트와 (2) 그 루트의 rank를 구하시오.</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>(1) 루트 = e(=5) &nbsp; (2) rank = 2</b></p>
+        <p>① union(a,b): 같은 rank0 → a→b, b.rank=1. ② union(a,c): find(a)=b(rank1), c(rank0) → c→b, rank 유지. ③ union(d,e): d→e, e.rank=1. ④ union(c,d): find(c)=b(rank1), find(d)=e(rank1) → 같은 rank → b→e, e.rank=2. 5개가 e 아래 하나의 트리, 최종 높이 2(매우 균형).</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- B10 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q16</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>Union by Rank에서 트리의 높이가 +1 증가하는 경우는?</p>
+      <ol class="choices">
+        <li>find를 호출할 때마다</li>
+        <li>rank가 다른 두 트리를 합칠 때</li>
+        <li>rank가 같은 두 트리를 합칠 때</li>
+        <li>make_set을 호출할 때</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>3번</b></p>
+        <p>rank가 같은 두 트리를 합칠 때만 한 단계 깊어져 +1. 이때 노드 수는 정확히 2배가 됩니다 → "노드 수가 2배 될 때마다 높이 +1"이라는 핵심 관찰로 이어집니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- B11 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q17</span><span class="q-tag tag-calc">계산 · 증명</span></div>
+    <div class="q-body">
+      <p>높이 h인 Union-Find 트리의 최소 노드 수를 N<sub>h</sub>라 하자. (N₀ = 1) (1) 점화식을 세우고 (2) 일반항을 구한 뒤 (3) 높이 h의 상한을 n으로 나타내시오.</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>(1) N<sub>h</sub> = 2·N<sub>h−1</sub> &nbsp; (2) N<sub>h</sub> = 2<sup>h</sup> &nbsp; (3) h ≤ log₂ n</b></p>
+        <p>높이 h 트리는 높이 h−1인 두 트리(rank 같음)를 합쳐 만들어지므로 최소 노드는 N<sub>h</sub> = 2·N<sub>h−1</sub> = 2<sup>h</sup>·N₀ = 2<sup>h</sup>. 전체 노드 n ≥ N<sub>h</sub> = 2<sup>h</sup> → 양변 log₂ → h ≤ log₂ n = O(log n).</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- B12 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q18</span><span class="q-tag tag-write">표 채우기 · 비교</span></div>
+    <div class="q-body">
+      <p>방법 1(연결 리스트)과 방법 2(트리 + Union by Rank)의 시간복잡도를 채우시오.</p>
+      <table class="tbl">
+        <tr><th>연산</th><th>방법 1</th><th>방법 2</th></tr>
+        <tr><td>make-set</td><td>?</td><td>?</td></tr>
+        <tr><td>find</td><td>?</td><td>?</td></tr>
+        <tr><td>union</td><td>?</td><td>?</td></tr>
+      </table>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <table class="tbl">
+          <tr><th>연산</th><th>방법 1</th><th>방법 2</th></tr>
+          <tr><td>make-set</td><td>O(1)</td><td>O(1)</td></tr>
+          <tr><td>find</td><td>O(n)</td><td>O(log n)</td></tr>
+          <tr><td>union</td><td>O(n)</td><td>O(log n)</td></tr>
+        </table>
+        <p>트리 + Union by Rank로 h = O(log n)이 보장되어 find·union이 O(log n). (경로 압축까지 더하면 거의 O(1), 정확히는 역 아커만 함수.)</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- B13 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q19</span><span class="q-tag tag-mc">객관식 · 복수선택</span></div>
+    <div class="q-body">
+      <p>한 학기 동안 배운 트리들의 분류이다. <b>탐색 트리(Search Tree)</b>에 해당하는 것을 모두 고르시오.</p>
+      <ol class="choices">
+        <li>BST / AVL / 레드블랙 트리</li>
+        <li>2-3-4 트리</li>
+        <li>Union-Find (Disjoint Set)</li>
+        <li>위 모두 탐색 트리이다</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>1, 2</b></p>
+        <p>BST·AVL·레드블랙·2-3-4는 키 탐색을 위한 탐색 트리입니다. Union-Find는 집합 연산에 특화된 자료구조로, 부모 링크만 쓰며 탐색 트리가 <b>아닙니다</b>. 다만 다섯 가지 모두 핵심 연산이 O(log n)으로 동작합니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <footer>자료구조 · 11주차-1 문제은행 · RB 높이 상계 개선 + Union-Find · 총 19문제</footer>
+</div>
+</body>
+</html>

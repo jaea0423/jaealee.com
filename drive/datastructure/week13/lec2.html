@@ -1,0 +1,2873 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>자료구조 13주차-2 | 그래프 순회</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  :root {
+    --bg: #f7f9f8;
+    --surface: #ffffff;
+    --ink: #18181b;
+    --ink-soft: #3f3f46;
+    --ink-muted: #71717a;
+    --line: #e4e4e7;
+    --line-soft: #f4f4f5;
+    
+    --teal: #0d9488;
+    --teal-deep: #0f766e;
+    --teal-soft: #99f6e4;
+    --teal-bg: #f0fdfa;
+    
+    --green: #16a34a;
+    --green-bg: #f0fdf4;
+    
+    --red: #dc2626;
+    --red-bg: #fef2f2;
+    
+    --gold: #b45309;
+    --gold-soft: #fde68a;
+    --gold-bg: #fffbeb;
+    
+    --blue: #2563eb;
+    --blue-bg: #eff6ff;
+    
+    --purple: #7c3aed;
+    --purple-bg: #f5f3ff;
+    
+    --slate: #475569;
+    --slate-bg: #f1f5f9;
+    
+    --code-bg: #1a1b1e;
+    --code-text: #e8e8ec;
+  }
+  
+  body {
+    font-family: -apple-system, "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.7;
+    font-size: 15.5px;
+    letter-spacing: -0.01em;
+  }
+  
+  .wrapper {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+  
+  aside.toc {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    padding: 40px 20px;
+    border-right: 1px solid var(--line);
+    background: var(--surface);
+    overflow-y: auto;
+    font-size: 13.5px;
+  }
+  
+  aside.toc h3 {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 14px;
+    font-weight: 600;
+  }
+  
+  aside.toc ol {
+    list-style: none;
+    counter-reset: toc;
+  }
+  
+  aside.toc li {
+    counter-increment: toc;
+    margin-bottom: 5px;
+  }
+  
+  aside.toc a {
+    color: var(--ink-soft);
+    text-decoration: none;
+    display: block;
+    padding: 5px 10px;
+    border-radius: 6px;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+    line-height: 1.4;
+  }
+  
+  aside.toc a::before {
+    content: counter(toc, decimal-leading-zero) "  ";
+    color: var(--ink-muted);
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+  }
+  
+  aside.toc a:hover {
+    background: var(--teal-bg);
+    color: var(--teal);
+    border-left-color: var(--teal);
+  }
+  
+  aside.toc .group {
+    font-size: 11px;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 16px 0 8px 10px;
+    font-weight: 600;
+  }
+  
+  main {
+    padding: 60px 50px 100px;
+    background: var(--surface);
+    min-width: 0;
+  }
+  
+  .doc-header {
+    margin-bottom: 60px;
+    padding-bottom: 28px;
+    border-bottom: 3px solid var(--ink);
+    position: relative;
+  }
+  
+  .doc-header::after {
+    content: "";
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 80px;
+    height: 3px;
+    background: var(--teal);
+  }
+  
+  .doc-meta {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 16px;
+    font-size: 12.5px;
+    color: var(--ink-muted);
+    flex-wrap: wrap;
+  }
+  
+  .doc-meta .badge {
+    background: var(--ink);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  
+  .doc-meta .exam-tag {
+    background: var(--teal-bg);
+    color: var(--teal);
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-weight: 600;
+    border: 1px solid var(--teal);
+  }
+  
+  .doc-header h1 {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: 8px;
+  }
+  
+  .doc-header h1 .accent { color: var(--teal); }
+  
+  .doc-header .sub {
+    color: var(--ink-soft);
+    font-size: 16px;
+  }
+  
+  section {
+    margin-bottom: 56px;
+    scroll-margin-top: 20px;
+  }
+  
+  h2 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    letter-spacing: -0.02em;
+  }
+  
+  h2 .num {
+    color: var(--teal);
+    font-size: 16px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  
+  h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 28px 0 12px;
+    color: var(--ink);
+  }
+  
+  h3::before {
+    content: "▸ ";
+    color: var(--teal);
+    margin-right: 4px;
+  }
+  
+  h4 {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 18px 0 8px;
+    color: var(--ink-soft);
+  }
+  
+  p { margin-bottom: 12px; color: var(--ink-soft); }
+  
+  .kw { color: var(--teal); font-weight: 600; }
+  
+  .en {
+    font-size: 0.88em;
+    color: var(--ink-muted);
+    font-weight: 400;
+    font-style: italic;
+  }
+  
+  code {
+    font-family: "JetBrains Mono", "D2Coding", "SF Mono", Consolas, monospace;
+    font-size: 0.92em;
+    background: var(--slate-bg);
+    color: var(--ink);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--line-soft);
+  }
+  
+  /* 코드 블록 */
+  .code-block {
+    margin: 18px 0;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    border: 1px solid #2a2a2e;
+  }
+  
+  .code-label {
+    display: flex;
+    align-items: center;
+    background: #2a2a2e;
+    color: #e4e4e7;
+    padding: 8px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    font-family: -apple-system, sans-serif;
+    text-transform: uppercase;
+    border-bottom: 1px solid #3f3f46;
+  }
+  
+  .code-label::before {
+    content: "";
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--teal);
+    margin-right: 10px;
+  }
+  
+  .code-label.python::before { background: #3776ab; }
+  .code-label.pseudo::before { background: #b45309; }
+  .code-label.algo::before { background: var(--teal); }
+  .code-label.result::before { background: var(--green); }
+  
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 18px 22px;
+    margin: 0;
+    overflow-x: auto;
+    font-family: "JetBrains Mono", "D2Coding", "Cascadia Code", "SF Mono", Consolas, monospace;
+    font-size: 13.5px;
+    line-height: 1.7;
+  }
+  
+  pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    border: none;
+    font-size: inherit;
+    font-family: inherit;
+  }
+  
+  .c-key { color: #c4a8ff; font-weight: 600; }
+  .c-fn { color: #ffd866; }
+  .c-cmt { color: #6c7280; font-style: italic; }
+  .c-num { color: #ff9eb5; }
+  .c-str { color: #a3e88c; }
+  .c-cls { color: #78dce8; }
+  .c-self { color: #f5a3ff; font-style: italic; }
+  
+  .callout {
+    margin: 18px 0;
+    padding: 16px 20px;
+    border-radius: 8px;
+    border-left: 4px solid;
+    font-size: 14.5px;
+  }
+  
+  .callout-title {
+    font-weight: 700;
+    margin-bottom: 6px;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  
+  .callout.tip { background: var(--teal-bg); border-color: var(--teal); }
+  .callout.tip .callout-title { color: var(--teal); }
+  .callout.tip .callout-title::before { content: "💡 "; }
+  
+  .callout.warn { background: var(--gold-bg); border-color: var(--gold); }
+  .callout.warn .callout-title { color: var(--gold); }
+  .callout.warn .callout-title::before { content: "⚠️ "; }
+  
+  .callout.connect { background: var(--blue-bg); border-color: var(--blue); }
+  .callout.connect .callout-title { color: var(--blue); }
+  .callout.connect .callout-title::before { content: "🔗 "; }
+  
+  .callout.star {
+    background: linear-gradient(135deg, var(--gold-bg) 0%, var(--surface) 100%);
+    border-color: var(--gold);
+    border-left-width: 5px;
+  }
+  .callout.star .callout-title { color: var(--gold); }
+  .callout.star .callout-title::before { content: "⭐ "; }
+  
+  .callout.review {
+    background: var(--teal-bg);
+    border-color: var(--teal-deep);
+  }
+  .callout.review .callout-title { color: var(--teal-deep); }
+  .callout.review .callout-title::before { content: "🔁 "; }
+  
+  .callout.exam {
+    background: var(--purple-bg);
+    border-color: var(--purple);
+  }
+  .callout.exam .callout-title { color: var(--purple); }
+  .callout.exam .callout-title::before { content: "📝 "; }
+  
+  .math {
+    font-family: "Cambria Math", "Times New Roman", serif;
+    font-style: italic;
+    font-size: 1.05em;
+  }
+  
+  .math-block {
+    text-align: center;
+    margin: 16px 0;
+    padding: 18px 24px;
+    background: var(--slate-bg);
+    border-radius: 8px;
+    font-size: 16px;
+    font-family: "Cambria Math", "Times New Roman", serif;
+    font-style: italic;
+    line-height: 2;
+  }
+  
+  .math-block .step-note {
+    font-family: -apple-system, sans-serif;
+    font-style: normal;
+    font-size: 12px;
+    color: var(--ink-muted);
+    display: block;
+    margin-top: 4px;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 18px 0;
+    font-size: 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  th {
+    background: var(--ink);
+    color: white;
+    font-weight: 600;
+    padding: 12px 14px;
+    text-align: left;
+    font-size: 13px;
+  }
+  
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line-soft);
+    color: var(--ink-soft);
+    vertical-align: top;
+  }
+  
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg); }
+  
+  /* 트리/그래프 시각화 */
+  .tree-viz {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 18px 0;
+    text-align: center;
+  }
+  
+  .tree-viz .caption {
+    font-size: 13px;
+    color: var(--ink-muted);
+    margin-top: 10px;
+  }
+  
+  /* 트리 노드 */
+  .t-node {
+    fill: white;
+    stroke: var(--teal);
+    stroke-width: 2.5;
+  }
+  .t-node-visit {
+    fill: var(--teal-bg);
+    stroke: var(--teal);
+    stroke-width: 3;
+  }
+  .t-node-label {
+    font-family: "JetBrains Mono", -apple-system, monospace;
+    font-size: 15px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+    fill: var(--ink);
+  }
+  .t-edge {
+    stroke: var(--ink-soft);
+    stroke-width: 1.8;
+    fill: none;
+  }
+  
+  /* 그래프 노드 */
+  .g-node {
+    fill: white;
+    stroke: var(--teal);
+    stroke-width: 2.5;
+  }
+  .g-node-label {
+    font-family: "JetBrains Mono", -apple-system, monospace;
+    font-size: 16px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+    fill: var(--ink);
+  }
+  .g-edge {
+    stroke: var(--ink-soft);
+    stroke-width: 2;
+    fill: none;
+  }
+  /* 방문 순서 화살표 (DFS/BFS 경로) */
+  .traverse-edge {
+    stroke: var(--red);
+    stroke-width: 2.5;
+    fill: none;
+  }
+  .traverse-edge-bfs {
+    stroke: var(--blue);
+    stroke-width: 2.5;
+    fill: none;
+  }
+  .order-badge {
+    font-family: -apple-system, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    fill: var(--red);
+  }
+  .order-badge-bfs {
+    font-family: -apple-system, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    fill: var(--blue);
+  }
+  
+  .point {
+    border-left: 3px solid var(--teal);
+    padding: 4px 0 4px 16px;
+    margin: 14px 0;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  
+  ul, ol { margin: 10px 0 14px 22px; color: var(--ink-soft); }
+  ul li, ol li { margin-bottom: 6px; }
+  
+  .def-box {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 14px 0;
+  }
+  .def-box .term {
+    font-weight: 700;
+    color: var(--teal-deep);
+  }
+  
+  .key-result {
+    background: linear-gradient(135deg, var(--teal-bg) 0%, var(--surface) 100%);
+    border: 2px solid var(--teal);
+    border-radius: 12px;
+    padding: 22px 26px;
+    margin: 22px 0;
+    text-align: center;
+  }
+  
+  .key-result .label {
+    color: var(--teal);
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    margin-bottom: 10px;
+  }
+  
+  .key-result .formula {
+    font-size: 20px;
+    font-family: "Cambria Math", serif;
+    font-style: italic;
+  }
+  
+  .doc-footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    color: var(--ink-muted);
+    font-size: 13px;
+    text-align: center;
+  }
+  
+  /* 시험 포인트 */
+  .exam-points {
+    background: var(--ink);
+    color: white;
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin: 20px 0;
+  }
+  
+  .exam-points .label {
+    color: var(--teal-soft);
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    margin-bottom: 14px;
+  }
+  
+  .exam-points ol {
+    margin-left: 22px;
+    color: white;
+  }
+  
+  .exam-points ol li { margin-bottom: 8px; }
+  .exam-points strong { color: var(--teal-soft); }
+  
+  /* 순회 결과 시퀀스 */
+  .seq {
+    display: inline-flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin: 10px 0;
+  }
+  .seq .item {
+    background: var(--teal);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .seq .arrow {
+    color: var(--ink-muted);
+    align-self: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+<aside class="toc">
+  <h3>목차</h3>
+  
+  <div class="group">트리 순회 복습</div>
+  <ol>
+    <li><a href="#s1">트리 순회란?</a></li>
+    <li><a href="#s2">preorder / inorder / postorder</a></li>
+  </ol>
+  
+  <div class="group">그래프 순회</div>
+  <ol start="3">
+    <li><a href="#s3">DFS — 깊이 우선 탐색</a></li>
+    <li><a href="#s4">BFS — 너비 우선 탐색 (간단히)</a></li>
+    <li><a href="#s5">DFS 의사코드 (재귀 + 스택)</a></li>
+    <li><a href="#s6">DFS 실행 추적 (인터랙티브)</a></li>
+  </ol>
+  
+  <div class="group">DFS 깊이 분석</div>
+  <ol start="7">
+    <li><a href="#s7">DFS 트리와 Back Edge</a></li>
+    <li><a href="#s8">pre/post 범위 시각화</a></li>
+    <li><a href="#s9">DFSALL — 비연결 그래프</a></li>
+  </ol>
+  
+  <div class="group">방향 그래프</div>
+  <ol start="10">
+    <li><a href="#s10">방향 그래프와 DAG</a></li>
+    <li><a href="#s11">위상 정렬</a></li>
+  </ol>
+  
+  <div class="group">정리</div>
+  <ol start="12">
+    <li><a href="#s12">시험 포인트</a></li>
+  </ol>
+</aside>
+
+<main>
+
+<header class="doc-header">
+  <div class="doc-meta">
+    <span class="badge">자료구조 · 13주차-2</span>
+    <span class="exam-tag">기말고사 범위</span>
+    <span>2026-06-01</span>
+  </div>
+  <h1><span class="accent">그래프 순회</span> — DFS와 BFS</h1>
+  <p class="sub">트리 순회 복습부터 깊이/너비 우선 탐색까지</p>
+</header>
+
+<!-- ============================================== -->
+<!-- 1. 트리 순회란? -->
+<!-- ============================================== -->
+<section id="s1">
+  <h2><span class="num">01</span> 트리 순회 복습</h2>
+  
+  <div class="callout review">
+    <div class="callout-title">복습으로 시작</div>
+    그래프 순회를 배우기 전에, 이미 배운 <strong>트리 순회(traversal)</strong>를 가볍게 복습합니다.
+  </div>
+  
+  <h3>순회란?</h3>
+  
+  <div class="point">
+    <span class="kw">순회 <span class="en">(traversal)</span></span>는 <strong>트리(또는 그래프)의 모든 노드를 일정한 순서로 한 번씩 읽는 것</strong>.
+  </div>
+  
+  <p>"어떤 순서로 노드를 방문하느냐"가 핵심. 트리에서는 자기 자신을 언제 읽느냐에 따라 세 가지 방식이 있음.</p>
+  
+  <h3>예시 트리</h3>
+  
+  <p>다음 트리를 사용합니다. 루트는 a, a의 자식은 b, d, g (3개).</p>
+  
+  <div class="tree-viz">
+    <svg width="70%" viewBox="0 0 560 360" xmlns="http://www.w3.org/2000/svg">
+      
+      <!-- 루트 a -->
+      <circle cx="280" cy="45" r="24" class="t-node"/>
+      <text x="280" y="45" class="t-node-label">a</text>
+      
+      <!-- Level 1: b, d, g -->
+      <circle cx="130" cy="140" r="22" class="t-node"/>
+      <text x="130" y="140" class="t-node-label">b</text>
+      
+      <circle cx="300" cy="140" r="22" class="t-node"/>
+      <text x="300" y="140" class="t-node-label">d</text>
+      
+      <circle cx="450" cy="140" r="22" class="t-node"/>
+      <text x="450" y="140" class="t-node-label">g</text>
+      
+      <line x1="263" y1="62" x2="147" y2="124" class="t-edge"/>
+      <line x1="284" y1="68" x2="297" y2="117" class="t-edge"/>
+      <line x1="298" y1="64" x2="432" y2="124" class="t-edge"/>
+      
+      <!-- Level 2: c (b의 자식), e f (d의 자식) -->
+      <circle cx="100" cy="240" r="20" class="t-node"/>
+      <text x="100" y="240" class="t-node-label">c</text>
+      
+      <circle cx="250" cy="240" r="20" class="t-node"/>
+      <text x="250" y="240" class="t-node-label">e</text>
+      
+      <circle cx="340" cy="240" r="20" class="t-node"/>
+      <text x="340" y="240" class="t-node-label">f</text>
+      
+      <line x1="124" y1="156" x2="106" y2="222" class="t-edge"/>
+      <line x1="289" y1="158" x2="261" y2="224" class="t-edge"/>
+      <line x1="311" y1="158" x2="333" y2="222" class="t-edge"/>
+      
+      <!-- Level 3: h (c의 자식) -->
+      <circle cx="100" cy="330" r="18" class="t-node"/>
+      <text x="100" y="330" class="t-node-label">h</text>
+      
+      <line x1="100" y1="260" x2="100" y2="312" class="t-edge"/>
+      
+    </svg>
+    <div class="caption">예시 트리 — a(루트) 아래 b·d·g, b 아래 c, c 아래 h, d 아래 e·f</div>
+  </div>
+  
+  <h3>트리 구조 정리</h3>
+  
+  <table>
+    <tr>
+      <th>노드</th>
+      <th>자식</th>
+    </tr>
+    <tr><td><strong>a</strong> (루트)</td><td>b, d, g</td></tr>
+    <tr><td><strong>b</strong></td><td>c</td></tr>
+    <tr><td><strong>c</strong></td><td>h</td></tr>
+    <tr><td><strong>d</strong></td><td>e, f</td></tr>
+    <tr><td><strong>g</strong></td><td>없음</td></tr>
+  </table>
+  
+  <div class="callout warn">
+    <div class="callout-title">이진 트리 아님</div>
+    이 트리는 자식이 3개인 노드(a)가 있어서 <strong>이진 트리가 아님</strong>. 이 점이 뒤에서 inorder를 다루지 않는 이유가 됨.
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 2. preorder / inorder / postorder -->
+<!-- ============================================== -->
+<section id="s2">
+  <h2><span class="num">02</span> preorder / inorder / postorder</h2>
+  
+  <p>세 가지 순회는 <strong>자기 자신(노드)을 언제 읽느냐</strong>로 구분됨. 자식들은 항상 왼쪽(L)부터 오른쪽(R) 순.</p>
+  
+  <h3>preorder — 자신이 먼저 (pre)</h3>
+  
+  <div class="def-box">
+    <div class="term">순서: 자신 → L → R</div>
+    <p style="margin-top:4px;">노드에 도착하면 <strong>자기 자신을 먼저 읽고</strong>, 그 다음 자식들을 왼쪽부터 차례로 순회.</p>
+  </div>
+  
+  <p>예시 트리에 적용하면:</p>
+  
+  <div class="code-block">
+    <span class="code-label result">preorder 결과</span>
+<pre><code><span class="c-cmt"># 자신 먼저 → 왼쪽 자식부터 재귀</span>
+a → b → c → h → d → e → f → g</code></pre>
+  </div>
+  
+  <div class="seq">
+    <span class="item">a</span><span class="arrow">→</span>
+    <span class="item">b</span><span class="arrow">→</span>
+    <span class="item">c</span><span class="arrow">→</span>
+    <span class="item">h</span><span class="arrow">→</span>
+    <span class="item">d</span><span class="arrow">→</span>
+    <span class="item">e</span><span class="arrow">→</span>
+    <span class="item">f</span><span class="arrow">→</span>
+    <span class="item">g</span>
+  </div>
+  
+  <p style="font-size:14px;">읽는 흐름: a(자신) → b로 내려가 b(자신) → c(자신) → h(자신) → 다시 올라와 d(자신) → e → f → 마지막 g</p>
+  
+  <h3>inorder — 자신이 가운데 (in)</h3>
+  
+  <div class="callout warn">
+    <div class="callout-title">이번 트리에서는 다루지 않음</div>
+    <ul style="margin-top:6px;">
+      <li>inorder는 "왼쪽 → <strong>자신</strong> → 오른쪽" 순서</li>
+      <li>이건 <strong>이진 트리</strong>(자식 최대 2개)에서만 명확함 — 자신을 왼쪽 자식과 오른쪽 자식 "사이"에 넣으니까</li>
+      <li>이 트리처럼 자식이 3개면 자신을 <strong>어디에 넣을지 기준이 모호</strong>함</li>
+      <li>그래서 이번 예시에서는 inorder를 고려하지 않음</li>
+    </ul>
+  </div>
+  
+  <h3>postorder — 자신이 나중에 (post)</h3>
+  
+  <div class="def-box">
+    <div class="term">순서: L → R → 자신</div>
+    <p style="margin-top:4px;">자식들을 왼쪽부터 모두 순회한 <strong>다음에 자기 자신을 읽음</strong>.</p>
+  </div>
+  
+  <p>예시 트리에 적용하면:</p>
+  
+  <div class="code-block">
+    <span class="code-label result">postorder 결과</span>
+<pre><code><span class="c-cmt"># 왼쪽 자식부터 재귀 → 자신 나중에</span>
+h → c → b → e → f → d → g → a</code></pre>
+  </div>
+  
+  <div class="seq">
+    <span class="item">h</span><span class="arrow">→</span>
+    <span class="item">c</span><span class="arrow">→</span>
+    <span class="item">b</span><span class="arrow">→</span>
+    <span class="item">e</span><span class="arrow">→</span>
+    <span class="item">f</span><span class="arrow">→</span>
+    <span class="item">d</span><span class="arrow">→</span>
+    <span class="item">g</span><span class="arrow">→</span>
+    <span class="item">a</span>
+  </div>
+  
+  <p style="font-size:14px;">읽는 흐름: 가장 깊은 h부터 → c → b (b 서브트리 끝) → e → f → d (d 서브트리 끝) → g → 마지막에 루트 a</p>
+  
+  <h3>두 방식 비교</h3>
+  
+  <table>
+    <tr>
+      <th>방식</th>
+      <th>자신 위치</th>
+      <th>순서</th>
+      <th>결과</th>
+    </tr>
+    <tr>
+      <td><strong>preorder</strong></td>
+      <td>먼저</td>
+      <td>자신 → L → R</td>
+      <td>a b c h d e f g</td>
+    </tr>
+    <tr>
+      <td><strong>inorder</strong></td>
+      <td>가운데</td>
+      <td>L → 자신 → R</td>
+      <td>이진 트리에서만</td>
+    </tr>
+    <tr>
+      <td><strong>postorder</strong></td>
+      <td>나중</td>
+      <td>L → R → 자신</td>
+      <td>h c b e f d g a</td>
+    </tr>
+  </table>
+  
+  <div class="callout connect">
+    <div class="callout-title">여기까지는 트리 순회</div>
+    이제 이 "순서대로 노드를 읽는다"는 개념을 <strong>그래프</strong>로 확장합니다.
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 3. DFS -->
+<!-- ============================================== -->
+<section id="s3">
+  <h2><span class="num">03</span> DFS — 깊이 우선 탐색</h2>
+  
+  <div class="key-result">
+    <div class="label">DFS</div>
+    <div class="formula" style="font-style:normal; font-family:-apple-system, sans-serif;">
+      <strong>D</strong>epth(깊이) <strong>F</strong>irst(우선) <strong>S</strong>earch(탐색)
+    </div>
+  </div>
+  
+  <p>한 방향으로 <strong>갈 수 있는 데까지 깊이 들어간 다음</strong>, 막히면 되돌아와서 다른 길을 탐색하는 방식.</p>
+  
+  <h3>예시 그래프</h3>
+  
+  <p>정점 6개(a~f), 무방향 그래프. a와 f가 좌우 양 끝, 가운데 b·e·d·c가 사각형 형태.</p>
+  
+  <div class="tree-viz">
+    <svg width="75%" viewBox="0 0 560 320" xmlns="http://www.w3.org/2000/svg">
+      
+      <!-- 엣지 먼저 (노드 뒤로) -->
+      <!-- a-b, a-c -->
+      <line x1="70" y1="160" x2="190" y2="80" class="g-edge"/>
+      <line x1="70" y1="160" x2="190" y2="240" class="g-edge"/>
+      <!-- b-c (가운데 사각형 왼쪽 변) -->
+      <line x1="190" y1="80" x2="190" y2="240" class="g-edge"/>
+      <!-- b-e (위쪽 변) -->
+      <line x1="190" y1="80" x2="370" y2="80" class="g-edge"/>
+      <!-- b-d (대각선) -->
+      <line x1="190" y1="80" x2="370" y2="240" class="g-edge"/>
+      <!-- c-e (대각선) -->
+      <line x1="190" y1="240" x2="370" y2="80" class="g-edge"/>
+      <!-- c-d (아래쪽 변) -->
+      <line x1="190" y1="240" x2="370" y2="240" class="g-edge"/>
+      <!-- d-e (가운데 사각형 오른쪽 변) -->
+      <line x1="370" y1="80" x2="370" y2="240" class="g-edge"/>
+      <!-- e-f, d-f -->
+      <line x1="370" y1="80" x2="490" y2="160" class="g-edge"/>
+      <line x1="370" y1="240" x2="490" y2="160" class="g-edge"/>
+      
+      <!-- 노드 -->
+      <circle cx="70" cy="160" r="26" class="g-node"/>
+      <text x="70" y="160" class="g-node-label">a</text>
+      
+      <circle cx="190" cy="80" r="26" class="g-node"/>
+      <text x="190" y="80" class="g-node-label">b</text>
+      
+      <circle cx="370" cy="80" r="26" class="g-node"/>
+      <text x="370" y="80" class="g-node-label">e</text>
+      
+      <circle cx="370" cy="240" r="26" class="g-node"/>
+      <text x="370" y="240" class="g-node-label">d</text>
+      
+      <circle cx="190" cy="240" r="26" class="g-node"/>
+      <text x="190" y="240" class="g-node-label">c</text>
+      
+      <circle cx="490" cy="160" r="26" class="g-node"/>
+      <text x="490" y="160" class="g-node-label">f</text>
+      
+    </svg>
+    <div class="caption">예시 그래프 — 정점 {a,b,c,d,e,f}, 무방향. 가운데 사각형은 b(좌상)·e(우상)·d(우하)·c(좌하)</div>
+  </div>
+  
+  <h3>연결 관계 정리</h3>
+  
+  <table>
+    <tr>
+      <th>정점</th>
+      <th>인접한 정점 (알파벳 순)</th>
+    </tr>
+    <tr><td><strong>a</strong></td><td>b, c</td></tr>
+    <tr><td><strong>b</strong></td><td>a, c, d, e</td></tr>
+    <tr><td><strong>c</strong></td><td>a, b, d, e</td></tr>
+    <tr><td><strong>d</strong></td><td>b, c, e, f</td></tr>
+    <tr><td><strong>e</strong></td><td>b, c, d, f</td></tr>
+    <tr><td><strong>f</strong></td><td>d, e</td></tr>
+  </table>
+  
+  <h3>DFS 진행 과정 (a에서 시작)</h3>
+  
+  <p>규칙: 갈 수 있는 인접 정점 중 <strong>알파벳이 빠른 것</strong>으로, 안 가본 곳을 향해 계속 깊이 들어감.</p>
+  
+  <div class="code-block">
+    <span class="code-label result">DFS 방문 순서</span>
+<pre><code><span class="c-cmt"># a에서 시작, 안 가본 인접 정점 중 알파벳 빠른 순</span>
+a → b → c → d → e → f
+
+<span class="c-cmt"># 단계별:</span>
+a   <span class="c-cmt"># 시작</span>
+→ b <span class="c-cmt"># a의 이웃 b,c 중 빠른 b</span>
+→ c <span class="c-cmt"># b의 이웃 중 안 가본 곳, c (a는 이미 방문)</span>
+→ d <span class="c-cmt"># c의 이웃 중 안 가본 곳, d</span>
+→ e <span class="c-cmt"># d의 이웃 중 안 가본 곳, e</span>
+→ f <span class="c-cmt"># e의 이웃 중 안 가본 곳, f</span>
+<span class="c-cmt"># 모든 노드 방문 완료 → 끝</span></code></pre>
+  </div>
+  
+  <h3>DFS 경로 시각화</h3>
+  
+  <p>이 그래프를 탐색 흐름에 맞춰 펼치면 — a에서 시작해 깊이 들어가는 모양이 보임.</p>
+  
+  <div class="tree-viz">
+    <svg width="60%" viewBox="0 0 420 420" xmlns="http://www.w3.org/2000/svg">
+      
+      <!-- 트리처럼 펼친 DFS 구조 -->
+      <!-- a (맨 위) -->
+      <!-- 원래 그래프 엣지 (회색, 얇게) -->
+      <line x1="210" y1="50" x2="130" y2="130" class="g-edge" opacity="0.3"/>
+      <line x1="210" y1="50" x2="290" y2="130" class="g-edge" opacity="0.3"/>
+      <line x1="130" y1="130" x2="290" y2="130" class="g-edge" opacity="0.3"/>
+      <line x1="130" y1="130" x2="130" y2="220" class="g-edge" opacity="0.3"/>
+      <line x1="130" y1="130" x2="290" y2="220" class="g-edge" opacity="0.3"/>
+      <line x1="290" y1="130" x2="130" y2="220" class="g-edge" opacity="0.3"/>
+      <line x1="290" y1="130" x2="290" y2="220" class="g-edge" opacity="0.3"/>
+      <line x1="130" y1="220" x2="290" y2="220" class="g-edge" opacity="0.3"/>
+      <line x1="130" y1="220" x2="210" y2="310" class="g-edge" opacity="0.3"/>
+      <line x1="290" y1="220" x2="210" y2="310" class="g-edge" opacity="0.3"/>
+      
+      <!-- DFS 방문 경로 (빨강 굵게): a→b→c→d→e→f -->
+      <line x1="210" y1="50" x2="130" y2="130" class="traverse-edge"/>
+      <line x1="130" y1="130" x2="290" y2="130" class="traverse-edge"/>
+      <line x1="290" y1="130" x2="130" y2="220" class="traverse-edge"/>
+      <line x1="130" y1="220" x2="290" y2="220" class="traverse-edge"/>
+      <line x1="290" y1="220" x2="210" y2="310" class="traverse-edge"/>
+      
+      <!-- 노드들 -->
+      <!-- a -->
+      <circle cx="210" cy="50" r="24" class="t-node-visit"/>
+      <text x="210" y="50" class="t-node-label">a</text>
+      <text x="210" y="18" class="order-badge" style="text-anchor:middle;">①</text>
+      
+      <!-- b (좌) -->
+      <circle cx="130" cy="130" r="22" class="t-node-visit"/>
+      <text x="130" y="130" class="t-node-label">b</text>
+      <text x="92" y="125" class="order-badge">②</text>
+      
+      <!-- c (우) -->
+      <circle cx="290" cy="130" r="22" class="t-node-visit"/>
+      <text x="290" y="130" class="t-node-label">c</text>
+      <text x="322" y="125" class="order-badge">③</text>
+      
+      <!-- d (좌하) -->
+      <circle cx="130" cy="220" r="22" class="t-node-visit"/>
+      <text x="130" y="220" class="t-node-label">d</text>
+      <text x="92" y="215" class="order-badge">④</text>
+      
+      <!-- e (우하) -->
+      <circle cx="290" cy="220" r="22" class="t-node-visit"/>
+      <text x="290" y="220" class="t-node-label">e</text>
+      <text x="322" y="215" class="order-badge">⑤</text>
+      
+      <!-- f (맨 아래) -->
+      <circle cx="210" cy="310" r="22" class="t-node-visit"/>
+      <text x="210" y="310" class="t-node-label">f</text>
+      <text x="210" y="350" class="order-badge" style="text-anchor:middle;">⑥</text>
+      
+    </svg>
+    <div class="caption">DFS 경로 — 빨간 화살표가 방문 순서 (a→b→c→d→e→f), 회색은 원래 그래프 엣지</div>
+  </div>
+  
+  <h3>DFS 핵심</h3>
+  
+  <div class="callout star">
+    <div class="callout-title">DFS의 특징</div>
+    <ul style="margin-top:6px;">
+      <li><strong>한 길로 끝까지</strong> 들어간 뒤, 막히면 되돌아와(backtrack) 다른 길 탐색</li>
+      <li>방문한 노드는 다시 안 감 (visited 표시 필요)</li>
+      <li>보통 <strong>재귀</strong> 또는 <strong>스택(stack)</strong>으로 구현</li>
+      <li>"깊이"를 우선하므로 트리의 preorder와 비슷한 느낌</li>
+    </ul>
+  </div>
+  
+  <h3>backtrack이 드러나는 예시</h3>
+  
+  <p>앞 예시는 한 줄로 쭉 이어졌지만, 보통은 <strong>막다른 길에서 되돌아가는(backtrack)</strong> 과정이 생김. 다음 그래프로 확인.</p>
+  
+  <div class="def-box">
+    <div class="term">예시 그래프 2</div>
+    <ul style="margin-top:6px;">
+      <li>정점: a, b, c, d, e, f, g, h (8개)</li>
+      <li>간선: a-b, a-c, b-c, b-h, b-e, c-d, d-f, e-g</li>
+    </ul>
+  </div>
+  
+  <div class="tree-viz">
+    <svg width="80%" viewBox="0 0 620 380" xmlns="http://www.w3.org/2000/svg">
+      
+      <!-- 엣지 먼저 -->
+      <!-- a-b, a-c -->
+      <line x1="70" y1="200" x2="220" y2="110" class="g-edge"/>
+      <line x1="70" y1="200" x2="220" y2="270" class="g-edge"/>
+      <!-- b-c (사각형 왼쪽 변) -->
+      <line x1="220" y1="110" x2="220" y2="270" class="g-edge"/>
+      <!-- b-e (사각형 위쪽 변) -->
+      <line x1="220" y1="110" x2="400" y2="110" class="g-edge"/>
+      <!-- c-d (사각형 아래쪽 변) -->
+      <line x1="220" y1="270" x2="400" y2="270" class="g-edge"/>
+      <!-- b-h -->
+      <line x1="220" y1="110" x2="330" y2="40" class="g-edge"/>
+      <!-- e-g -->
+      <line x1="400" y1="110" x2="510" y2="180" class="g-edge"/>
+      <!-- d-f -->
+      <line x1="400" y1="270" x2="320" y2="200" class="g-edge"/>
+      
+      <!-- 노드 -->
+      <circle cx="70" cy="200" r="24" class="g-node"/>
+      <text x="70" y="200" class="g-node-label">a</text>
+      
+      <circle cx="220" cy="110" r="24" class="g-node"/>
+      <text x="220" y="110" class="g-node-label">b</text>
+      
+      <circle cx="400" cy="110" r="24" class="g-node"/>
+      <text x="400" y="110" class="g-node-label">e</text>
+      
+      <circle cx="220" cy="270" r="24" class="g-node"/>
+      <text x="220" y="270" class="g-node-label">c</text>
+      
+      <circle cx="400" cy="270" r="24" class="g-node"/>
+      <text x="400" y="270" class="g-node-label">d</text>
+      
+      <!-- g (e 우하) -->
+      <circle cx="510" cy="180" r="24" class="g-node"/>
+      <text x="510" y="180" class="g-node-label">g</text>
+      
+      <!-- f (d 좌상) -->
+      <circle cx="320" cy="200" r="24" class="g-node"/>
+      <text x="320" y="200" class="g-node-label">f</text>
+      
+      <!-- h (b 우상) -->
+      <circle cx="330" cy="40" r="24" class="g-node"/>
+      <text x="330" y="40" class="g-node-label">h</text>
+      
+    </svg>
+    <div class="caption">예시 그래프 2 — a 좌측, 가운데 사각형 b·e·c·d, h(b 우상)·g(e 우하)·f(d 좌상)</div>
+  </div>
+  
+  <h3>연결 관계 정리</h3>
+  
+  <table>
+    <tr>
+      <th>정점</th>
+      <th>인접한 정점 (알파벳 순)</th>
+    </tr>
+    <tr><td><strong>a</strong></td><td>b, c</td></tr>
+    <tr><td><strong>b</strong></td><td>a, c, e, h</td></tr>
+    <tr><td><strong>c</strong></td><td>a, b, d</td></tr>
+    <tr><td><strong>d</strong></td><td>c, f</td></tr>
+    <tr><td><strong>e</strong></td><td>b, g</td></tr>
+    <tr><td><strong>f</strong></td><td>d</td></tr>
+    <tr><td><strong>g</strong></td><td>e</td></tr>
+    <tr><td><strong>h</strong></td><td>b</td></tr>
+  </table>
+  
+  <h3>DFS 진행 과정 (backtrack 포함)</h3>
+  
+  <div class="code-block">
+    <span class="code-label result">DFS 방문 순서</span>
+<pre><code><span class="c-cmt"># a에서 시작</span>
+a → b → c → d → f      <span class="c-cmt"># 깊이 들어감, f에서 막힘</span>
+   ↓ backtrack          <span class="c-cmt"># f→d→c→b 거꾸로 올라가며 안 읽은 곳 찾기</span>
+b → e → g               <span class="c-cmt"># b에 남은 길 e, e→g, g에서 막힘</span>
+   ↓ backtrack          <span class="c-cmt"># g→e→b 거꾸로</span>
+b → h                   <span class="c-cmt"># b에 남은 길 h</span>
+
+<span class="c-cmt"># 최종 방문 순서:</span>
+a, b, c, d, f, e, g, h</code></pre>
+  </div>
+  
+  <h4>단계별 상세</h4>
+  
+  <ol>
+    <li><strong>a → b</strong>: a의 이웃 b, c 중 빠른 b</li>
+    <li><strong>b → c</strong>: b의 이웃(a,c,e,h) 중 안 가본 곳 빠른 c</li>
+    <li><strong>c → d</strong>: c의 이웃 중 안 가본 d</li>
+    <li><strong>d → f</strong>: d의 이웃 중 안 가본 f</li>
+    <li><strong>f 막힘</strong>: f의 이웃은 d뿐(이미 방문) → <strong>backtrack</strong></li>
+    <li><strong>d, c 거꾸로</strong>: d·c 모두 남은 이웃 없음 → 계속 backtrack</li>
+    <li><strong>b까지 올라옴</strong>: b에 안 가본 이웃 e 있음 → <strong>b → e</strong></li>
+    <li><strong>e → g</strong>: e의 이웃 중 안 가본 g</li>
+    <li><strong>g 막힘</strong>: g의 이웃은 e뿐 → backtrack</li>
+    <li><strong>b까지 올라옴</strong>: b에 안 가본 이웃 h 있음 → <strong>b → h</strong></li>
+    <li><strong>h 막힘 + 모든 정점 방문 완료</strong> → 끝</li>
+  </ol>
+  
+  <h3>backtrack 경로 시각화</h3>
+  
+  <div class="tree-viz">
+    <svg width="75%" viewBox="0 0 560 440" xmlns="http://www.w3.org/2000/svg">
+      
+      <!-- DFS 트리 구조로 펼침 -->
+      <!-- a(루트) → b → [c, e, h] / c → d → f / e → g -->
+      
+      <!-- 방문 경로 (빨강) -->
+      <!-- a→b -->
+      <line x1="100" y1="50" x2="180" y2="130" class="traverse-edge"/>
+      <!-- b→c -->
+      <line x1="180" y1="130" x2="120" y2="220" class="traverse-edge"/>
+      <!-- c→d -->
+      <line x1="120" y1="220" x2="120" y2="310" class="traverse-edge"/>
+      <!-- d→f -->
+      <line x1="120" y1="310" x2="120" y2="395" class="traverse-edge"/>
+      <!-- b→e -->
+      <line x1="180" y1="130" x2="290" y2="220" class="traverse-edge"/>
+      <!-- e→g -->
+      <line x1="290" y1="220" x2="290" y2="310" class="traverse-edge"/>
+      <!-- b→h -->
+      <line x1="180" y1="130" x2="420" y2="130" class="traverse-edge"/>
+      
+      <!-- backtrack 점선 화살표 (회색) -->
+      <path d="M 135 390 Q 175 355 175 320" fill="none" stroke="var(--ink-muted)" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <path d="M 175 300 Q 200 260 195 225" fill="none" stroke="var(--ink-muted)" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <text x="210" y="290" style="font-size:10px; fill:var(--ink-muted); font-family:sans-serif; font-style:italic;">backtrack</text>
+      
+      <!-- 노드 -->
+      <!-- a -->
+      <circle cx="100" cy="50" r="22" class="t-node-visit"/>
+      <text x="100" y="50" class="t-node-label">a</text>
+      <text x="68" y="45" class="order-badge">①</text>
+      
+      <!-- b -->
+      <circle cx="180" cy="130" r="22" class="t-node-visit"/>
+      <text x="180" y="130" class="t-node-label">b</text>
+      <text x="180" y="100" class="order-badge" style="text-anchor:middle;">②</text>
+      
+      <!-- c -->
+      <circle cx="120" cy="220" r="22" class="t-node-visit"/>
+      <text x="120" y="220" class="t-node-label">c</text>
+      <text x="85" y="215" class="order-badge">③</text>
+      
+      <!-- d -->
+      <circle cx="120" cy="310" r="22" class="t-node-visit"/>
+      <text x="120" y="310" class="t-node-label">d</text>
+      <text x="85" y="305" class="order-badge">④</text>
+      
+      <!-- f -->
+      <circle cx="120" cy="395" r="22" class="t-node-visit"/>
+      <text x="120" y="395" class="t-node-label">f</text>
+      <text x="85" y="390" class="order-badge">⑤</text>
+      
+      <!-- e -->
+      <circle cx="290" cy="220" r="22" class="t-node-visit"/>
+      <text x="290" y="220" class="t-node-label">e</text>
+      <text x="322" y="215" class="order-badge">⑥</text>
+      
+      <!-- g -->
+      <circle cx="290" cy="310" r="22" class="t-node-visit"/>
+      <text x="290" y="310" class="t-node-label">g</text>
+      <text x="322" y="305" class="order-badge">⑦</text>
+      
+      <!-- h -->
+      <circle cx="420" cy="130" r="22" class="t-node-visit"/>
+      <text x="420" y="130" class="t-node-label">h</text>
+      <text x="452" y="125" class="order-badge">⑧</text>
+      
+    </svg>
+    <div class="caption">DFS 경로 — a b c d f 깊이 진입 후 backtrack → e g → backtrack → h (방문 순서 ①~⑧)</div>
+  </div>
+  
+  <h3>중요 — 모든 엣지를 훑는 건 아님</h3>
+  
+  <div class="callout star">
+    <div class="callout-title">핵심 주의</div>
+    <ul style="margin-top:6px;">
+      <li>DFS 순회의 목표는 <strong>모든 정점(노드)을 한 번씩 읽는 것</strong></li>
+      <li><strong>모든 모서리(엣지)를 다 훑어야 하는 것은 아님</strong></li>
+      <li>예: b-c 간선은 a-b-c로 이미 b, c를 방문했으니 굳이 다시 지나지 않음</li>
+      <li>방문한 노드로 가는 엣지는 무시 (visited 체크)</li>
+    </ul>
+  </div>
+  
+  <div class="callout connect">
+    <div class="callout-title">트리 비유</div>
+    DFS가 실제로 지나간 빨간 경로만 모으면 <strong>트리 모양</strong>이 됨 (이걸 DFS 신장 트리라고 부름). 안 쓴 엣지는 제외됨.
+  </div>
+  
+  <h3>DFS 트리</h3>
+  
+  <div class="point">
+    <span class="kw">DFS 트리</span>는 DFS에서 <strong>부모 관계(parent)가 표시된 선들만 추출하여</strong>, 시작 노드를 루트로 만든 트리.
+  </div>
+  
+  <p>방금 그래프(a~h)에서 DFS를 돌렸을 때 만들어진 부모 관계는:</p>
+  
+  <ul>
+    <li>a → b (b의 부모 = a)</li>
+    <li>b → c (c의 부모 = b)</li>
+    <li>b → e</li>
+    <li>b → h</li>
+    <li>c → d</li>
+    <li>d → f</li>
+    <li>e → g</li>
+  </ul>
+  
+  <p>이 7개 선만 남기고 루트를 a로 두면:</p>
+  
+  <div class="tree-viz">
+    <svg width="65%" viewBox="0 0 540 460" xmlns="http://www.w3.org/2000/svg">
+      
+      <!-- 부모-자식 엣지 -->
+      <line x1="270" y1="60" x2="270" y2="135" class="t-edge"/>          <!-- a-b -->
+      <line x1="255" y1="155" x2="120" y2="225" class="t-edge"/>         <!-- b-c -->
+      <line x1="270" y1="160" x2="270" y2="225" class="t-edge"/>         <!-- b-e -->
+      <line x1="285" y1="155" x2="420" y2="225" class="t-edge"/>         <!-- b-h -->
+      <line x1="120" y1="247" x2="120" y2="315" class="t-edge"/>         <!-- c-d -->
+      <line x1="270" y1="247" x2="270" y2="315" class="t-edge"/>         <!-- e-g -->
+      <line x1="120" y1="335" x2="120" y2="405" class="t-edge"/>         <!-- d-f -->
+      
+      <!-- 노드 -->
+      <circle cx="270" cy="40" r="24" class="t-node"/>
+      <text x="270" y="40" class="t-node-label">a</text>
+      
+      <circle cx="270" cy="135" r="22" class="t-node"/>
+      <text x="270" y="135" class="t-node-label">b</text>
+      
+      <!-- b의 자식 3개: c, e, h -->
+      <circle cx="120" cy="225" r="22" class="t-node"/>
+      <text x="120" y="225" class="t-node-label">c</text>
+      
+      <circle cx="270" cy="225" r="22" class="t-node"/>
+      <text x="270" y="225" class="t-node-label">e</text>
+      
+      <circle cx="420" cy="225" r="22" class="t-node"/>
+      <text x="420" y="225" class="t-node-label">h</text>
+      
+      <!-- c의 자식 d, e의 자식 g -->
+      <circle cx="120" cy="315" r="20" class="t-node"/>
+      <text x="120" y="315" class="t-node-label">d</text>
+      
+      <circle cx="270" cy="315" r="20" class="t-node"/>
+      <text x="270" y="315" class="t-node-label">g</text>
+      
+      <!-- d의 자식 f -->
+      <circle cx="120" cy="405" r="20" class="t-node"/>
+      <text x="120" y="405" class="t-node-label">f</text>
+      
+    </svg>
+    <div class="caption">DFS 트리 — 시작 노드 a가 루트, 부모 관계의 선들만 남김 (총 7개 선, 8개 노드)</div>
+  </div>
+  
+  <div class="callout star">
+    <div class="callout-title">DFS 트리의 의미</div>
+    <ul style="margin-top:6px;">
+      <li>원래 그래프의 엣지 8개 중 <strong>7개만 사용됨</strong> (a-c는 안 씀 — c는 b를 거쳐 도달)</li>
+      <li>노드 8개 → 트리 엣지 7개 (n−1 법칙)</li>
+      <li>방문 순서를 따라 자연스럽게 트리가 만들어짐</li>
+      <li>이 트리에서 pre 값을 순서대로 늘어놓으면 DFS 방문 순서(a,b,c,d,f,e,g,h)와 일치</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 4. BFS (간단히) -->
+<!-- ============================================== -->
+<section id="s4">
+  <h2><span class="num">04</span> BFS — 너비 우선 탐색 (간단히)</h2>
+  
+  <div class="callout tip">
+    <div class="callout-title">이번 시간엔 가볍게</div>
+    DFS와 짝을 이루는 방식으로 <strong>BFS</strong>도 존재. 깊이 다루지는 않고 개념만 짚고 넘어감.
+  </div>
+  
+  <div class="key-result">
+    <div class="label">BFS</div>
+    <div class="formula" style="font-style:normal; font-family:-apple-system, sans-serif;">
+      <strong>B</strong>readth(너비) <strong>F</strong>irst(우선) <strong>S</strong>earch(탐색)
+    </div>
+  </div>
+  
+  <p>DFS가 깊이를 우선한다면, BFS는 <strong>가까운 노드부터 넓게</strong> 훑는 방식. 시작점에서 한 겹씩 바깥으로 펼쳐나감.</p>
+  
+  <h3>BFS 진행 과정 (a에서 시작)</h3>
+  
+  <p>규칙: 시작점의 모든 이웃을 먼저 방문하고, 그 다음 이웃의 이웃을 방문 (한 겹씩 바깥으로).</p>
+  
+  <div class="code-block">
+    <span class="code-label result">BFS 방문 순서 (8정점 그래프)</span>
+<pre><code><span class="c-cmt"># a에서 시작, 가까운 노드부터 한 겹씩</span>
+거리 0: a            <span class="c-cmt"># 시작점</span>
+거리 1: b, c         <span class="c-cmt"># a의 이웃 전부 먼저</span>
+거리 2: d, e, h      <span class="c-cmt"># 거리 1 노드들의 이웃 중 안 가본 곳</span>
+거리 3: f, g         <span class="c-cmt"># 거리 2 노드들의 이웃</span>
+
+<span class="c-cmt"># 최종 방문 순서:</span>
+a, b, c, d, e, h, f, g</code></pre>
+  </div>
+  
+  <div class="callout warn">
+    <div class="callout-title">DFS와 다름</div>
+    <ul style="margin-top:6px;">
+      <li>DFS 순서: a, b, c, d, f, e, g, h (깊이 우선)</li>
+      <li>BFS 순서: a, b, c, d, e, h, f, g (거리 우선)</li>
+      <li>같은 그래프, 같은 시작점이라도 결과가 다름</li>
+    </ul>
+  </div>
+  
+  <h3>BFS 시각화 (거리 층으로 펼침)</h3>
+  
+  <div class="tree-viz">
+    <svg width="65%" viewBox="0 0 540 380" xmlns="http://www.w3.org/2000/svg">
+      
+      <!-- 거리별 라벨 -->
+      <text x="30" y="55" style="font-size:11px; fill:var(--blue); font-weight:700; font-family:sans-serif;">거리 0</text>
+      <text x="30" y="135" style="font-size:11px; fill:var(--blue); font-weight:700; font-family:sans-serif;">거리 1</text>
+      <text x="30" y="235" style="font-size:11px; fill:var(--blue); font-weight:700; font-family:sans-serif;">거리 2</text>
+      <text x="30" y="335" style="font-size:11px; fill:var(--blue); font-weight:700; font-family:sans-serif;">거리 3</text>
+      
+      <line x1="100" y1="90" x2="520" y2="90" stroke="var(--line)" stroke-width="1" stroke-dasharray="4,4"/>
+      <line x1="100" y1="180" x2="520" y2="180" stroke="var(--line)" stroke-width="1" stroke-dasharray="4,4"/>
+      <line x1="100" y1="280" x2="520" y2="280" stroke="var(--line)" stroke-width="1" stroke-dasharray="4,4"/>
+      
+      <!-- BFS 펼침 경로 (파랑) -->
+      <line x1="300" y1="50" x2="200" y2="135" class="traverse-edge-bfs"/>
+      <line x1="300" y1="50" x2="400" y2="135" class="traverse-edge-bfs"/>
+      <line x1="200" y1="135" x2="160" y2="235" class="traverse-edge-bfs"/>
+      <line x1="200" y1="135" x2="280" y2="235" class="traverse-edge-bfs"/>
+      <line x1="200" y1="135" x2="400" y2="235" class="traverse-edge-bfs"/>
+      <line x1="160" y1="235" x2="240" y2="320" class="traverse-edge-bfs"/>
+      <line x1="280" y1="235" x2="360" y2="320" class="traverse-edge-bfs"/>
+      
+      <!-- 거리 0: a -->
+      <circle cx="300" cy="50" r="22" class="t-node-visit"/>
+      <text x="300" y="50" class="t-node-label">a</text>
+      <text x="332" y="45" class="order-badge-bfs">①</text>
+      
+      <!-- 거리 1: b, c -->
+      <circle cx="200" cy="135" r="20" class="t-node-visit"/>
+      <text x="200" y="135" class="t-node-label">b</text>
+      <text x="165" y="130" class="order-badge-bfs">②</text>
+      
+      <circle cx="400" cy="135" r="20" class="t-node-visit"/>
+      <text x="400" y="135" class="t-node-label">c</text>
+      <text x="432" y="130" class="order-badge-bfs">③</text>
+      
+      <!-- 거리 2: d, e, h -->
+      <circle cx="160" cy="235" r="20" class="t-node-visit"/>
+      <text x="160" y="235" class="t-node-label">d</text>
+      <text x="128" y="230" class="order-badge-bfs">④</text>
+      
+      <circle cx="280" cy="235" r="20" class="t-node-visit"/>
+      <text x="280" y="235" class="t-node-label">e</text>
+      <text x="312" y="230" class="order-badge-bfs">⑤</text>
+      
+      <circle cx="400" cy="235" r="20" class="t-node-visit"/>
+      <text x="400" y="235" class="t-node-label">h</text>
+      <text x="432" y="230" class="order-badge-bfs">⑥</text>
+      
+      <!-- 거리 3: f, g -->
+      <circle cx="240" cy="320" r="20" class="t-node-visit"/>
+      <text x="240" y="320" class="t-node-label">f</text>
+      <text x="208" y="315" class="order-badge-bfs">⑦</text>
+      
+      <circle cx="360" cy="320" r="20" class="t-node-visit"/>
+      <text x="360" y="320" class="t-node-label">g</text>
+      <text x="392" y="315" class="order-badge-bfs">⑧</text>
+      
+    </svg>
+    <div class="caption">BFS — 시작점에서 거리(겹) 단위로 펼침. 같은 거리는 같은 층</div>
+  </div>
+  
+  <h3>DFS vs BFS 비교</h3>
+  
+  <table>
+    <tr>
+      <th>구분</th>
+      <th>DFS (깊이 우선)</th>
+      <th>BFS (너비 우선)</th>
+    </tr>
+    <tr>
+      <td><strong>탐색 방향</strong></td>
+      <td>한 길로 끝까지 깊이</td>
+      <td>가까운 곳부터 넓게</td>
+    </tr>
+    <tr>
+      <td><strong>자료구조</strong></td>
+      <td>스택 (또는 재귀)</td>
+      <td>큐 (queue)</td>
+    </tr>
+    <tr>
+      <td><strong>특기</strong></td>
+      <td>경로 존재 여부, 사이클 탐지</td>
+      <td>최단 거리 (무가중치)</td>
+    </tr>
+  </table>
+  
+  <div class="callout connect">
+    <div class="callout-title">이번 시간은 DFS 중심</div>
+    BFS는 여기까지만 다루고 다시 DFS로 돌아갑니다. 이제 DFS 코드를 자세히 보겠습니다.
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 5. DFS 의사코드 -->
+<!-- ============================================== -->
+<section id="s5">
+  <h2><span class="num">05</span> DFS 의사코드 — 재귀 + 스택</h2>
+  
+  <p>앞에서 본 8정점 그래프를 코드로 풀어봅시다.</p>
+  
+  <div class="tree-viz">
+    <svg width="80%" viewBox="0 0 620 380" xmlns="http://www.w3.org/2000/svg">
+      
+      <!-- 엣지 -->
+      <line x1="70" y1="200" x2="220" y2="110" class="g-edge"/>
+      <line x1="70" y1="200" x2="220" y2="270" class="g-edge"/>
+      <line x1="220" y1="110" x2="220" y2="270" class="g-edge"/>
+      <line x1="220" y1="110" x2="400" y2="110" class="g-edge"/>
+      <line x1="220" y1="270" x2="400" y2="270" class="g-edge"/>
+      <line x1="220" y1="110" x2="330" y2="40" class="g-edge"/>
+      <line x1="400" y1="110" x2="510" y2="180" class="g-edge"/>
+      <line x1="400" y1="270" x2="320" y2="200" class="g-edge"/>
+      
+      <!-- 노드 -->
+      <circle cx="70" cy="200" r="24" class="g-node"/>
+      <text x="70" y="200" class="g-node-label">a</text>
+      <circle cx="220" cy="110" r="24" class="g-node"/>
+      <text x="220" y="110" class="g-node-label">b</text>
+      <circle cx="400" cy="110" r="24" class="g-node"/>
+      <text x="400" y="110" class="g-node-label">e</text>
+      <circle cx="220" cy="270" r="24" class="g-node"/>
+      <text x="220" y="270" class="g-node-label">c</text>
+      <circle cx="400" cy="270" r="24" class="g-node"/>
+      <text x="400" y="270" class="g-node-label">d</text>
+      <circle cx="510" cy="180" r="24" class="g-node"/>
+      <text x="510" y="180" class="g-node-label">g</text>
+      <circle cx="320" cy="200" r="24" class="g-node"/>
+      <text x="320" y="200" class="g-node-label">f</text>
+      <circle cx="330" cy="40" r="24" class="g-node"/>
+      <text x="330" y="40" class="g-node-label">h</text>
+      
+    </svg>
+    <div class="caption">같은 8정점 그래프 — 이번엔 코드로 분석</div>
+  </div>
+  
+  <h3>의사코드</h3>
+  
+  <div class="code-block">
+    <span class="code-label pseudo">의사코드</span>
+<pre><code>curr_time = <span class="c-num">1</span>                       <span class="c-cmt"># 전역 시각 카운터, 1부터 시작</span>
+
+<span class="c-key">def</span> <span class="c-fn">DFS</span>(v):                       <span class="c-cmt"># v부터 DFS 순회 시작</span>
+    mark[v] = <span class="c-str">"visited"</span>          <span class="c-cmt"># v 방문 표시 (재방문 방지)</span>
+    pre[v] = curr_time            <span class="c-cmt"># v에 처음 들어온 시각 기록</span>
+    curr_time += <span class="c-num">1</span>
+
+    <span class="c-key">for</span> each edge (v, w):         <span class="c-cmt"># v에 인접한 모든 w에 대해</span>
+        <span class="c-key">if</span> mark[w] != <span class="c-str">"visited"</span>:   <span class="c-cmt"># 아직 안 간 곳이면</span>
+            parent[w] = v         <span class="c-cmt"># w가 어디서 왔는지(부모) 기록</span>
+            <span class="c-fn">DFS</span>(w)                <span class="c-cmt"># w로 더 깊이 들어감 (재귀)</span>
+
+    <span class="c-cmt"># for문 종료 = v의 모든 이웃을 다 살펴봄 = 더 갈 곳 없음</span>
+    post[v] = curr_time           <span class="c-cmt"># v에서 DFS가 완전히 끝난 시각</span>
+    curr_time += <span class="c-num">1</span></code></pre>
+  </div>
+  
+  <h3>각 부분 설명</h3>
+  
+  <table>
+    <tr>
+      <th>코드</th>
+      <th>의미</th>
+    </tr>
+    <tr>
+      <td><code>mark[v] = "visited"</code></td>
+      <td>이미 순회한 노드를 다시 읽지 않기 위한 표시</td>
+    </tr>
+    <tr>
+      <td><code>pre[v] = curr_time</code></td>
+      <td>v에 <strong>처음 들어온</strong> 시각 (방문 시작)</td>
+    </tr>
+    <tr>
+      <td><code>for each edge (v, w)</code></td>
+      <td>v에 연결된 이웃 w를 하나씩 살펴봄</td>
+    </tr>
+    <tr>
+      <td><code>parent[w] = v</code></td>
+      <td>w의 출처(부모) 저장 — 나중에 경로 복원용</td>
+    </tr>
+    <tr>
+      <td><code>DFS(w)</code></td>
+      <td>w를 새 시작점으로 더 깊이 들어감 (재귀)</td>
+    </tr>
+    <tr>
+      <td><code>post[v] = curr_time</code></td>
+      <td>v에서 DFS가 <strong>완전히 끝난</strong> 시각</td>
+    </tr>
+  </table>
+  
+  <h3>네가 헷갈린 부분 정리</h3>
+  
+  <div class="callout tip">
+    <div class="callout-title">"for문을 나왔다 = 모든 인접 노드 고려" 이해</div>
+    <ul style="margin-top:6px;">
+      <li>v를 <strong>갈림길</strong>이라고 생각</li>
+      <li>각 엣지 = 갈림길에서 뻗은 길</li>
+      <li>for문 = 그 갈림길의 모든 길을 하나씩 가보는 것</li>
+      <li>for문을 다 돌았다 = <strong>이 갈림길에서 갈 수 있는 길을 전부 시도함</strong></li>
+      <li>= 여기선 더 갈 데 없음 → backtrack → 그래서 <code>post[v]</code> 기록</li>
+    </ul>
+  </div>
+  
+  <div class="callout tip">
+    <div class="callout-title">curr_time / pre / post 가 뭔가</div>
+    <ul style="margin-top:6px;">
+      <li><code>curr_time</code>: 전역 시각 카운터. 노드를 들어가고 나올 때마다 1씩 증가</li>
+      <li><code>pre[v]</code>: v에 <strong>처음 들어간</strong> 시각 (발견 시각)</li>
+      <li><code>post[v]</code>: v를 <strong>완전히 떠나는</strong> 시각 (종료 시각)</li>
+      <li>이 타임스탬프로 누가 누구의 조상인지, 사이클이 있는지 등을 분석 가능</li>
+    </ul>
+  </div>
+  
+  <h3>★ w를 어떻게 결정하나? (알파벳 순서 문제)</h3>
+  
+  <div class="callout warn">
+    <div class="callout-title">의사코드 자체는 알파벳 순서를 보장하지 않음</div>
+    <ul style="margin-top:6px;">
+      <li><code>for each edge (v, w)</code>는 "v의 이웃을 순서대로 본다"일 뿐</li>
+      <li>그 순서는 <strong>인접 리스트에 저장된 순서</strong>에 달려 있음</li>
+      <li>알파벳 빠른 순으로 방문하려면:
+        <ul style="margin-top:4px;">
+          <li>인접 리스트를 <strong>미리 알파벳 순으로 정렬</strong>해서 저장하거나</li>
+          <li>for문에서 매번 정렬된 순서로 꺼내야 함</li>
+        </ul>
+      </li>
+      <li>수업/시험에서 "알파벳 빠른 순"으로 푸는 건 <strong>인접 리스트가 알파벳 순으로 정렬돼 있다고 약속</strong>한 것</li>
+    </ul>
+  </div>
+  
+  <h3>pre / post 시각 추적표</h3>
+  
+  <p>위 그래프에서 a부터 DFS를 돌리면 (인접 리스트가 알파벳 순 정렬이라 가정):</p>
+  
+  <div class="code-block">
+    <span class="code-label result">실행 추적</span>
+<pre><code>time 1:  pre[a]=1   <span class="c-cmt"># a 진입</span>
+time 2:  pre[b]=2   <span class="c-cmt"># a→b</span>
+time 3:  pre[c]=3   <span class="c-cmt"># b→c</span>
+time 4:  pre[d]=4   <span class="c-cmt"># c→d</span>
+time 5:  pre[f]=5   <span class="c-cmt"># d→f</span>
+time 6:  post[f]=6  <span class="c-cmt"># f 막힘, 종료</span>
+time 7:  post[d]=7  <span class="c-cmt"># d 종료 (backtrack)</span>
+time 8:  post[c]=8  <span class="c-cmt"># c 종료</span>
+time 9:  pre[e]=9   <span class="c-cmt"># b→e (b에 남은 이웃)</span>
+time 10: pre[g]=10  <span class="c-cmt"># e→g</span>
+time 11: post[g]=11 <span class="c-cmt"># g 막힘, 종료</span>
+time 12: post[e]=12 <span class="c-cmt"># e 종료</span>
+time 13: pre[h]=13  <span class="c-cmt"># b→h (b에 남은 이웃)</span>
+time 14: post[h]=14 <span class="c-cmt"># h 종료</span>
+time 15: post[b]=15 <span class="c-cmt"># b 종료</span>
+time 16: post[a]=16 <span class="c-cmt"># a 종료 → 전체 완료</span></code></pre>
+  </div>
+  
+  <table>
+    <tr>
+      <th>정점</th>
+      <th>pre (진입)</th>
+      <th>post (종료)</th>
+    </tr>
+    <tr><td><strong>a</strong></td><td>1</td><td>16</td></tr>
+    <tr><td><strong>b</strong></td><td>2</td><td>15</td></tr>
+    <tr><td><strong>c</strong></td><td>3</td><td>8</td></tr>
+    <tr><td><strong>d</strong></td><td>4</td><td>7</td></tr>
+    <tr><td><strong>f</strong></td><td>5</td><td>6</td></tr>
+    <tr><td><strong>e</strong></td><td>9</td><td>12</td></tr>
+    <tr><td><strong>g</strong></td><td>10</td><td>11</td></tr>
+    <tr><td><strong>h</strong></td><td>13</td><td>14</td></tr>
+  </table>
+  
+  <div class="callout star">
+    <div class="callout-title">pre 순서 = 방문 순서</div>
+    <p style="margin-top:6px;">pre 값을 순서대로 늘어놓으면 <strong>a, b, c, d, f, e, g, h</strong> — 앞에서 손으로 푼 DFS 방문 순서와 정확히 일치.</p>
+  </div>
+  
+  <h3>스택 기반 버전 — 재귀 없이 구현</h3>
+  
+  <p>위 코드는 <strong>재귀 호출</strong>로 DFS를 구현했음. 그런데 같은 동작을 <strong>스택(stack) 자료구조</strong>로도 만들 수 있음.</p>
+  
+  <div class="def-box">
+    <div class="term">스택 (Stack)</div>
+    <p style="margin-top:4px;">맨 위에서만 <strong>push(넣기)</strong>와 <strong>pop(빼기)</strong>이 가능한 자료구조. 가장 마지막에 넣은 것이 가장 먼저 빠짐 (LIFO).</p>
+  </div>
+  
+  <h4>새 예시 — c-f 간선 추가</h4>
+  
+  <p>기존 8정점 그래프에 <strong>c-f 간선 하나</strong>를 추가한 그래프로 진행. 이 간선이 나중에 중요한 역할을 함.</p>
+  
+  <div class="tree-viz">
+    <svg width="80%" viewBox="0 0 620 380" xmlns="http://www.w3.org/2000/svg">
+      <!-- 기존 엣지 -->
+      <line x1="70" y1="200" x2="220" y2="110" class="g-edge"/>
+      <line x1="70" y1="200" x2="220" y2="270" class="g-edge"/>
+      <line x1="220" y1="110" x2="220" y2="270" class="g-edge"/>
+      <line x1="220" y1="110" x2="400" y2="110" class="g-edge"/>
+      <line x1="220" y1="270" x2="400" y2="270" class="g-edge"/>
+      <line x1="220" y1="110" x2="330" y2="40" class="g-edge"/>
+      <line x1="400" y1="110" x2="510" y2="180" class="g-edge"/>
+      <line x1="400" y1="270" x2="320" y2="200" class="g-edge"/>
+      
+      <!-- 새로 추가된 c-f 간선 (보라색 강조) -->
+      <line x1="220" y1="270" x2="320" y2="200" stroke="#7c3aed" stroke-width="3" stroke-dasharray="6,4"/>
+      <text x="245" y="225" style="font-size:11px; font-weight:700; fill:#7c3aed; font-family:sans-serif;">c-f (새 간선)</text>
+      
+      <!-- 노드 -->
+      <circle cx="70" cy="200" r="24" class="g-node"/>
+      <text x="70" y="200" class="g-node-label">a</text>
+      <circle cx="220" cy="110" r="24" class="g-node"/>
+      <text x="220" y="110" class="g-node-label">b</text>
+      <circle cx="400" cy="110" r="24" class="g-node"/>
+      <text x="400" y="110" class="g-node-label">e</text>
+      <circle cx="220" cy="270" r="24" class="g-node"/>
+      <text x="220" y="270" class="g-node-label">c</text>
+      <circle cx="400" cy="270" r="24" class="g-node"/>
+      <text x="400" y="270" class="g-node-label">d</text>
+      <circle cx="510" cy="180" r="24" class="g-node"/>
+      <text x="510" y="180" class="g-node-label">g</text>
+      <circle cx="320" cy="200" r="24" class="g-node"/>
+      <text x="320" y="200" class="g-node-label">f</text>
+      <circle cx="330" cy="40" r="24" class="g-node"/>
+      <text x="330" y="40" class="g-node-label">h</text>
+    </svg>
+    <div class="caption">8정점 그래프 + 새 간선 c-f (보라 점선)</div>
+  </div>
+  
+  <h4>스택 기반 의사코드</h4>
+  
+  <div class="code-block">
+    <span class="code-label pseudo">의사코드 — 스택 버전</span>
+<pre><code><span class="c-key">def</span> <span class="c-fn">DFS</span>(s):                       <span class="c-cmt"># s부터 DFS 시작 (재귀 없음!)</span>
+    stack.<span class="c-fn">push</span>((∅, s))           <span class="c-cmt"># (부모, 현재) 쌍을 스택에 넣음, 첫 부모는 공집합</span>
+    
+    <span class="c-key">while</span> stack is not empty:
+        p, v = stack.<span class="c-fn">pop</span>()
+        <span class="c-key">if</span> v is unmarked:        <span class="c-cmt"># 아직 visited가 아니라면</span>
+            mark[v] = <span class="c-str">"visited"</span>
+            parent[v] = p
+            <span class="c-key">for</span> each edge (v, w):
+                <span class="c-key">if</span> w is unmarked:
+                    stack.<span class="c-fn">push</span>((v, w))   <span class="c-cmt"># (부모=v, 자식=w) 쌍을 push</span></code></pre>
+  </div>
+  
+  <h4>핵심 포인트</h4>
+  
+  <div class="callout star">
+    <div class="callout-title">왜 (부모, 현재) 쌍을 저장?</div>
+    <ul style="margin-top:6px;">
+      <li>재귀 버전은 호출 스택이 자동으로 "어디서 왔는지" 기억해줌</li>
+      <li>스택 버전은 그게 자동이 아니라 <strong>직접 (parent, current) 쌍으로 저장</strong>해야 함</li>
+      <li>v를 방문할 때 parent[v] = p로 기록</li>
+    </ul>
+  </div>
+  
+  <div class="callout warn">
+    <div class="callout-title">알파벳 빠른 순으로 방문하려면?</div>
+    <ul style="margin-top:6px;">
+      <li>스택은 LIFO — 마지막에 push한 게 먼저 pop됨</li>
+      <li>그래서 <strong>알파벳이 느린 것부터 push</strong>해야 빠른 것이 먼저 pop됨</li>
+      <li>예: v=b의 이웃이 c, e, h라면 h → e → c 순으로 push (pop은 c → e → h)</li>
+      <li>이렇게 해야 기존 재귀 버전과 같은 결과(a,b,c,d,f,e,g,h)가 나옴</li>
+    </ul>
+  </div>
+  
+  <h4>스택 동작 흐름 (요약)</h4>
+  
+  <p>c-f 간선이 추가된 그래프에서 스택 기반 DFS가 어떻게 도는지:</p>
+  
+  <div class="code-block">
+    <span class="code-label result">스택 추적</span>
+<pre><code>초기: stack = [(∅, a)]
+
+<span class="c-cmt"># pop (∅,a) → a 방문 / a 이웃 c,b push (느린→빠른)</span>
+stack = [(a,c), (a,b)]
+
+<span class="c-cmt"># pop (a,b) → b 방문 / b 이웃 h,e,c push (a는 visited)</span>
+stack = [(a,c), (b,h), (b,e), (b,c)]
+
+<span class="c-cmt"># pop (b,c) → c 방문 / c 이웃 f,d push (a,b는 visited)</span>
+<span class="c-cmt"># * c-f 간선 덕분에 f도 push됨</span>
+stack = [(a,c), (b,h), (b,e), (c,f), (c,d)]
+
+<span class="c-cmt"># pop (c,d) → d 방문 / d 이웃 f push (c는 visited)</span>
+stack = [(a,c), (b,h), (b,e), (c,f), (d,f)]
+
+<span class="c-cmt"># pop (d,f) → f 방문 (parent=d) / f 이웃 c는 visited</span>
+stack = [(a,c), (b,h), (b,e), (c,f)]
+
+<span class="c-cmt"># pop (c,f) → f는 이미 visited! 그냥 버림 ★</span>
+stack = [(a,c), (b,h), (b,e)]
+
+<span class="c-cmt"># pop (b,e) → e 방문 / e 이웃 g push</span>
+stack = [(a,c), (b,h), (e,g)]
+
+<span class="c-cmt"># pop (e,g) → g 방문, 더 갈 곳 없음</span>
+stack = [(a,c), (b,h)]
+
+<span class="c-cmt"># pop (b,h) → h 방문, 더 갈 곳 없음</span>
+stack = [(a,c)]
+
+<span class="c-cmt"># pop (a,c) → c는 이미 visited! 버림</span>
+stack = []  →  종료
+
+<span class="c-cmt"># 최종 방문 순서: a, b, c, d, f, e, g, h (재귀 버전과 동일!)</span></code></pre>
+  </div>
+  
+  <div class="callout connect">
+    <div class="callout-title">★ 중복된 쌍이 스택에 쌓일 수 있음</div>
+    <ul style="margin-top:6px;">
+      <li>스택에 (c,f)와 (d,f)가 둘 다 들어있었음 — c와 d 둘 다 f의 이웃이라서</li>
+      <li>먼저 pop된 (d,f)에서 f가 방문됨 → parent[f] = d</li>
+      <li>나중에 (c,f) pop했을 때는 f가 이미 visited → 그냥 버림</li>
+      <li>이렇게 <strong>스택에는 같은 노드가 여러 번 들어갈 수 있지만, 실제 방문은 한 번만</strong></li>
+    </ul>
+  </div>
+  
+  <div class="callout tip">
+    <div class="callout-title">재귀 vs 스택 — 결과는 같다</div>
+    <ul style="margin-top:6px;">
+      <li>재귀 버전이 더 짧고 직관적</li>
+      <li>스택 버전은 <strong>재귀 깊이 제한 걱정 없음</strong> (큰 그래프에서 유리)</li>
+      <li>두 버전 다 같은 DFS 결과 — 어느 쪽이든 본질은 같음</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 6. DFS 실행 추적 (인터랙티브) -->
+<!-- ============================================== -->
+<section id="s6">
+  <h2><span class="num">06</span> DFS 실행 추적 — 한 스텝씩</h2>
+  
+  <p>위 코드가 그래프에서 <strong>실제로 어떻게 도는지</strong> 한 단계씩 따라가 봅시다. 아래 버튼으로 직접 넘기면서 curr_time, 콜스택, pre/post가 어떻게 바뀌는지 보세요.</p>
+  
+  <div class="callout tip">
+    <div class="callout-title">사용법</div>
+    <strong>다음 ▶</strong> 버튼을 누르면 코드가 한 줄 실행됨. 노드 색: <span style="color:var(--ink-muted);">흰색=미방문</span>, <span style="color:var(--teal);">청록=스택에 있음(진행 중)</span>, <span style="color:var(--slate);">회색=종료(post 찍음)</span>.
+  </div>
+  
+  <div style="background:var(--bg); border:1px solid var(--line); border-radius:12px; padding:24px; margin:18px 0;">
+    
+    <!-- 그래프 + 상태 패널 -->
+    <div style="display:grid; grid-template-columns:1.3fr 1fr; gap:20px; align-items:start;">
+      
+      <!-- 왼쪽: 그래프 -->
+      <div>
+        <svg id="dfs-svg" width="100%" viewBox="0 0 620 400" xmlns="http://www.w3.org/2000/svg">
+          <!-- 엣지 -->
+          <line id="e-ab" x1="70" y1="220" x2="220" y2="130" stroke="#d4d4d8" stroke-width="2"/>
+          <line id="e-ac" x1="70" y1="220" x2="220" y2="290" stroke="#d4d4d8" stroke-width="2"/>
+          <line id="e-bc" x1="220" y1="130" x2="220" y2="290" stroke="#d4d4d8" stroke-width="2"/>
+          <line id="e-be" x1="220" y1="130" x2="400" y2="130" stroke="#d4d4d8" stroke-width="2"/>
+          <line id="e-cd" x1="220" y1="290" x2="400" y2="290" stroke="#d4d4d8" stroke-width="2"/>
+          <line id="e-bh" x1="220" y1="130" x2="330" y2="55" stroke="#d4d4d8" stroke-width="2"/>
+          <line id="e-eg" x1="400" y1="130" x2="510" y2="200" stroke="#d4d4d8" stroke-width="2"/>
+          <line id="e-df" x1="400" y1="290" x2="320" y2="215" stroke="#d4d4d8" stroke-width="2"/>
+          <!-- c-f 추가 간선 -->
+          <line id="e-cf" x1="220" y1="290" x2="320" y2="215" stroke="#d4d4d8" stroke-width="2"/>
+          
+          <!-- 노드 (그룹: 원 + 라벨 + pre/post 텍스트) -->
+          <g id="n-a">
+            <circle cx="70" cy="220" r="24" fill="white" stroke="#0d9488" stroke-width="2.5"/>
+            <text x="70" y="220" text-anchor="middle" dominant-baseline="central" font-family="JetBrains Mono, monospace" font-size="16" font-weight="700" fill="#18181b">a</text>
+            <text id="t-a" x="70" y="258" text-anchor="middle" font-family="monospace" font-size="10" fill="#71717a"></text>
+          </g>
+          <g id="n-b">
+            <circle cx="220" cy="130" r="24" fill="white" stroke="#0d9488" stroke-width="2.5"/>
+            <text x="220" y="130" text-anchor="middle" dominant-baseline="central" font-family="JetBrains Mono, monospace" font-size="16" font-weight="700" fill="#18181b">b</text>
+            <text id="t-b" x="220" y="100" text-anchor="middle" font-family="monospace" font-size="10" fill="#71717a"></text>
+          </g>
+          <g id="n-e">
+            <circle cx="400" cy="130" r="24" fill="white" stroke="#0d9488" stroke-width="2.5"/>
+            <text x="400" y="130" text-anchor="middle" dominant-baseline="central" font-family="JetBrains Mono, monospace" font-size="16" font-weight="700" fill="#18181b">e</text>
+            <text id="t-e" x="400" y="100" text-anchor="middle" font-family="monospace" font-size="10" fill="#71717a"></text>
+          </g>
+          <g id="n-c">
+            <circle cx="220" cy="290" r="24" fill="white" stroke="#0d9488" stroke-width="2.5"/>
+            <text x="220" y="290" text-anchor="middle" dominant-baseline="central" font-family="JetBrains Mono, monospace" font-size="16" font-weight="700" fill="#18181b">c</text>
+            <text id="t-c" x="180" y="295" text-anchor="middle" font-family="monospace" font-size="10" fill="#71717a"></text>
+          </g>
+          <g id="n-d">
+            <circle cx="400" cy="290" r="24" fill="white" stroke="#0d9488" stroke-width="2.5"/>
+            <text x="400" y="290" text-anchor="middle" dominant-baseline="central" font-family="JetBrains Mono, monospace" font-size="16" font-weight="700" fill="#18181b">d</text>
+            <text id="t-d" x="400" y="328" text-anchor="middle" font-family="monospace" font-size="10" fill="#71717a"></text>
+          </g>
+          <g id="n-g">
+            <circle cx="510" cy="200" r="24" fill="white" stroke="#0d9488" stroke-width="2.5"/>
+            <text x="510" y="200" text-anchor="middle" dominant-baseline="central" font-family="JetBrains Mono, monospace" font-size="16" font-weight="700" fill="#18181b">g</text>
+            <text id="t-g" x="552" y="200" text-anchor="middle" font-family="monospace" font-size="10" fill="#71717a"></text>
+          </g>
+          <g id="n-f">
+            <circle cx="320" cy="215" r="24" fill="white" stroke="#0d9488" stroke-width="2.5"/>
+            <text x="320" y="215" text-anchor="middle" dominant-baseline="central" font-family="JetBrains Mono, monospace" font-size="16" font-weight="700" fill="#18181b">f</text>
+            <text id="t-f" x="320" y="253" text-anchor="middle" font-family="monospace" font-size="10" fill="#71717a"></text>
+          </g>
+          <g id="n-h">
+            <circle cx="330" cy="55" r="24" fill="white" stroke="#0d9488" stroke-width="2.5"/>
+            <text x="330" y="55" text-anchor="middle" dominant-baseline="central" font-family="JetBrains Mono, monospace" font-size="16" font-weight="700" fill="#18181b">h</text>
+            <text id="t-h" x="330" y="25" text-anchor="middle" font-family="monospace" font-size="10" fill="#71717a"></text>
+          </g>
+        </svg>
+      </div>
+      
+      <!-- 오른쪽: 상태 패널 -->
+      <div>
+        <!-- curr_time -->
+        <div style="background:white; border:2px solid var(--teal); border-radius:8px; padding:12px 16px; margin-bottom:12px; text-align:center;">
+          <div style="font-size:11px; color:var(--teal); font-weight:700; letter-spacing:0.1em;">CURR_TIME</div>
+          <div id="dfs-time" style="font-size:32px; font-weight:700; font-family:monospace; color:var(--ink);">1</div>
+        </div>
+        
+        <!-- 콜스택 -->
+        <div style="background:white; border:1px solid var(--line); border-radius:8px; padding:12px 16px; margin-bottom:12px;">
+          <div style="font-size:11px; color:var(--ink-muted); font-weight:700; letter-spacing:0.1em; margin-bottom:8px;">콜스택 (CALL STACK)</div>
+          <div id="dfs-stack" style="display:flex; flex-direction:column-reverse; gap:4px; min-height:40px;">
+            <span style="color:var(--ink-muted); font-size:13px; font-style:italic;">(비어있음)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 설명 + 컨트롤 -->
+    <div style="background:white; border:1px solid var(--line); border-radius:8px; padding:14px 18px; margin-top:16px;">
+      <div style="font-size:11px; color:var(--ink-muted); font-weight:700; letter-spacing:0.1em; margin-bottom:6px;">
+        STEP <span id="dfs-stepnum">0</span> / 16
+      </div>
+      <div id="dfs-desc" style="font-size:14.5px; color:var(--ink); min-height:42px;">시작 전 — 모든 노드 미방문, curr_time = 1. "다음 ▶"을 눌러 시작하세요.</div>
+    </div>
+    
+    <div style="display:flex; gap:10px; margin-top:14px; justify-content:center;">
+      <button id="dfs-prev" style="padding:10px 20px; border:1px solid var(--line); background:white; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; color:var(--ink-soft);">◀ 이전</button>
+      <button id="dfs-reset" style="padding:10px 20px; border:1px solid var(--line); background:white; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; color:var(--ink-soft);">↺ 처음으로</button>
+      <button id="dfs-next" style="padding:10px 24px; border:none; background:var(--teal); color:white; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer;">다음 ▶</button>
+    </div>
+    
+    <!-- pre/post 테이블 -->
+    <div style="margin-top:18px;">
+      <div style="font-size:11px; color:var(--ink-muted); font-weight:700; letter-spacing:0.1em; margin-bottom:8px;">PRE / POST 기록</div>
+      <table style="margin:0;">
+        <tr>
+          <th>정점</th><th>a</th><th>b</th><th>c</th><th>d</th><th>f</th><th>e</th><th>g</th><th>h</th>
+        </tr>
+        <tr>
+          <td style="font-weight:700; color:var(--teal-deep);">pre</td>
+          <td id="pre-a"></td><td id="pre-b"></td><td id="pre-c"></td><td id="pre-d"></td>
+          <td id="pre-f"></td><td id="pre-e"></td><td id="pre-g"></td><td id="pre-h"></td>
+        </tr>
+        <tr>
+          <td style="font-weight:700; color:var(--slate);">post</td>
+          <td id="post-a"></td><td id="post-b"></td><td id="post-c"></td><td id="post-d"></td>
+          <td id="post-f"></td><td id="post-e"></td><td id="post-g"></td><td id="post-h"></td>
+        </tr>
+      </table>
+    </div>
+    
+  </div>
+  
+  <script>
+  (function() {
+    // 각 노드의 부모 (트리 엣지 강조용)
+    const parentEdge = { b:'e-ab', c:'e-bc', d:'e-cd', f:'e-df', e:'e-be', g:'e-eg', h:'e-bh' };
+    
+    // 실행 이벤트 시퀀스 (op: pre 또는 post)
+    const ops = [
+      {desc:"DFS(a) 호출 → a 방문 표시, pre[a]=1. curr_time이 2로 증가.", op:'pre', node:'a'},
+      {desc:"a의 이웃 중 b 발견 → DFS(b). pre[b]=2.", op:'pre', node:'b'},
+      {desc:"b의 이웃 c 발견 (a는 이미 방문) → DFS(c). pre[c]=3.", op:'pre', node:'c'},
+      {desc:"c의 이웃 d 발견 → DFS(d). pre[d]=4.", op:'pre', node:'d'},
+      {desc:"d의 이웃 f 발견 → DFS(f). pre[f]=5.", op:'pre', node:'f'},
+      {desc:"f의 이웃은 d뿐(이미 방문). 더 갈 곳 없음 → post[f]=6. backtrack 시작.", op:'post', node:'f'},
+      {desc:"d로 복귀. d의 이웃 모두 방문함 → post[d]=7. 계속 backtrack.", op:'post', node:'d'},
+      {desc:"c로 복귀. c의 이웃 모두 방문함 → post[c]=8. backtrack.", op:'post', node:'c'},
+      {desc:"b로 복귀. b에 안 간 이웃 e 발견 → DFS(e). pre[e]=9.", op:'pre', node:'e'},
+      {desc:"e의 이웃 g 발견 → DFS(g). pre[g]=10.", op:'pre', node:'g'},
+      {desc:"g의 이웃은 e뿐(이미 방문) → post[g]=11. backtrack.", op:'post', node:'g'},
+      {desc:"e로 복귀. 이웃 모두 방문함 → post[e]=12. backtrack.", op:'post', node:'e'},
+      {desc:"b로 복귀. b에 안 간 이웃 h 발견 → DFS(h). pre[h]=13.", op:'pre', node:'h'},
+      {desc:"h의 이웃은 b뿐(이미 방문) → post[h]=14. backtrack.", op:'post', node:'h'},
+      {desc:"b로 복귀. b의 이웃 모두 방문함 → post[b]=15. backtrack.", op:'post', node:'b'},
+      {desc:"a로 복귀. 이웃 c도 방문함, 남은 이웃 없음 → post[a]=16. 전체 완료!", op:'post', node:'a'},
+    ];
+    
+    const nodes = ['a','b','c','d','e','f','g','h'];
+    let cur = 0; // 0 = 초기상태, 1..16 = ops[0..15] 적용 후
+    
+    function computeState(step) {
+      // step까지 ops 적용한 상태 계산
+      let time = 1;
+      const pre = {}, post = {};
+      const stack = [];
+      const state = {}; // unvisited / active / finished
+      nodes.forEach(n => state[n] = 'unvisited');
+      
+      for (let i = 0; i < step; i++) {
+        const e = ops[i];
+        if (e.op === 'pre') {
+          pre[e.node] = time; time++;
+          stack.push(e.node);
+          state[e.node] = 'active';
+        } else {
+          post[e.node] = time; time++;
+          state[e.node] = 'finished';
+          // 스택에서 제거
+          const idx = stack.lastIndexOf(e.node);
+          if (idx >= 0) stack.splice(idx, 1);
+        }
+      }
+      return { time, pre, post, stack, state };
+    }
+    
+    function render() {
+      const st = computeState(cur);
+      
+      // curr_time
+      document.getElementById('dfs-time').textContent = st.time;
+      
+      // 노드 색
+      nodes.forEach(n => {
+        const g = document.getElementById('n-' + n);
+        const circle = g.querySelector('circle');
+        const label = g.querySelectorAll('text')[0];
+        const ann = document.getElementById('t-' + n);
+        if (st.state[n] === 'unvisited') {
+          circle.setAttribute('fill', 'white');
+          circle.setAttribute('stroke', '#0d9488');
+          label.setAttribute('fill', '#18181b');
+        } else if (st.state[n] === 'active') {
+          circle.setAttribute('fill', '#0d9488');
+          circle.setAttribute('stroke', '#0f766e');
+          label.setAttribute('fill', 'white');
+        } else {
+          circle.setAttribute('fill', '#cbd5e1');
+          circle.setAttribute('stroke', '#475569');
+          label.setAttribute('fill', '#334155');
+        }
+        // pre/post 주석
+        let txt = '';
+        if (st.pre[n] !== undefined) txt += 'pre' + st.pre[n];
+        if (st.post[n] !== undefined) txt += (txt ? ' post' : 'post') + st.post[n];
+        ann.textContent = txt;
+        ann.setAttribute('fill', st.state[n] === 'finished' ? '#475569' : '#0f766e');
+      });
+      
+      // 트리 엣지 강조 (pre 찍힌 노드의 부모 엣지)
+      Object.keys(parentEdge).forEach(n => {
+        const edge = document.getElementById(parentEdge[n]);
+        if (st.pre[n] !== undefined) {
+          edge.setAttribute('stroke', '#dc2626');
+          edge.setAttribute('stroke-width', '3');
+        } else {
+          edge.setAttribute('stroke', '#d4d4d8');
+          edge.setAttribute('stroke-width', '2');
+        }
+      });
+      
+      // 콜스택
+      const stackDiv = document.getElementById('dfs-stack');
+      if (st.stack.length === 0) {
+        stackDiv.innerHTML = '<span style="color:#71717a; font-size:13px; font-style:italic;">(비어있음)</span>';
+      } else {
+        stackDiv.innerHTML = st.stack.map((n, i) =>
+          '<span style="background:' + (i === st.stack.length-1 ? '#0d9488' : '#e2e8f0') +
+          '; color:' + (i === st.stack.length-1 ? 'white' : '#475569') +
+          '; padding:4px 12px; border-radius:5px; font-family:monospace; font-weight:700; font-size:13px; text-align:center;">DFS(' + n + ')</span>'
+        ).join('');
+      }
+      
+      // 설명
+      document.getElementById('dfs-stepnum').textContent = cur;
+      document.getElementById('dfs-desc').textContent =
+        cur === 0 ? '시작 전 — 모든 노드 미방문, curr_time = 1. "다음 ▶"을 눌러 시작하세요.' : ops[cur-1].desc;
+      
+      // pre/post 테이블
+      nodes.forEach(n => {
+        document.getElementById('pre-' + n).textContent = st.pre[n] !== undefined ? st.pre[n] : '';
+        document.getElementById('post-' + n).textContent = st.post[n] !== undefined ? st.post[n] : '';
+      });
+      
+      // 버튼 활성화
+      document.getElementById('dfs-prev').disabled = (cur === 0);
+      document.getElementById('dfs-next').disabled = (cur === ops.length);
+      document.getElementById('dfs-prev').style.opacity = (cur === 0) ? '0.4' : '1';
+      document.getElementById('dfs-next').style.opacity = (cur === ops.length) ? '0.4' : '1';
+    }
+    
+    document.getElementById('dfs-next').addEventListener('click', () => {
+      if (cur < ops.length) { cur++; render(); }
+    });
+    document.getElementById('dfs-prev').addEventListener('click', () => {
+      if (cur > 0) { cur--; render(); }
+    });
+    document.getElementById('dfs-reset').addEventListener('click', () => {
+      cur = 0; render();
+    });
+    
+    render();
+  })();
+  </script>
+  
+  <h3>핵심 흐름 요약</h3>
+  
+  <div class="callout star">
+    <div class="callout-title">curr_time이 도는 패턴</div>
+    <ul style="margin-top:6px;">
+      <li><strong>노드에 들어갈 때</strong> (pre 찍기): curr_time 1 증가</li>
+      <li><strong>노드에서 나올 때</strong> (post 찍기): curr_time 1 증가</li>
+      <li>노드 8개 → pre 8번 + post 8번 = 총 16번 증가 → 마지막 curr_time = 17</li>
+      <li>콜스택은 깊이 들어갈수록 쌓이고, backtrack할 때 위에서부터 빠짐</li>
+    </ul>
+  </div>
+  
+  <div class="callout connect">
+    <div class="callout-title">스택과 재귀의 관계</div>
+    재귀 호출 DFS(w)가 일어날 때마다 콜스택에 쌓이고, 함수가 끝나면(post) 스택에서 빠짐. 이 콜스택의 움직임이 바로 DFS의 "깊이 우선" 동작 그 자체.
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 7. DFS 트리와 Back Edge -->
+<!-- ============================================== -->
+<section id="s7">
+  <h2><span class="num">07</span> DFS 트리와 Back Edge</h2>
+  
+  <p>방금 본 그래프(a~h + c-f 간선)에서 DFS 트리를 다시 그려보면, <strong>c-f 간선이 사라져 있음</strong>을 알 수 있어요.</p>
+  
+  <h3>DFS 트리 (간선 비교)</h3>
+  
+  <div class="tree-viz">
+    <svg width="65%" viewBox="0 0 540 460" xmlns="http://www.w3.org/2000/svg">
+      
+      <!-- back edge: a-c, c-f (점선 보라색) -->
+      <path d="M 240 50 Q 100 130 105 215" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-dasharray="6,4"/>
+      <text x="60" y="135" style="font-size:11px; font-weight:700; fill:#7c3aed; font-family:sans-serif;">a-c</text>
+      <text x="60" y="148" style="font-size:10px; fill:#7c3aed; font-family:sans-serif;">(back edge)</text>
+      
+      <path d="M 140 235 Q 180 360 110 395" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-dasharray="6,4"/>
+      <text x="175" y="335" style="font-size:11px; font-weight:700; fill:#7c3aed; font-family:sans-serif;">c-f</text>
+      <text x="175" y="348" style="font-size:10px; fill:#7c3aed; font-family:sans-serif;">(back edge)</text>
+      
+      <!-- DFS 트리 엣지 (검정) -->
+      <line x1="270" y1="60" x2="270" y2="135" class="t-edge"/>
+      <line x1="255" y1="155" x2="120" y2="225" class="t-edge"/>
+      <line x1="270" y1="160" x2="270" y2="225" class="t-edge"/>
+      <line x1="285" y1="155" x2="420" y2="225" class="t-edge"/>
+      <line x1="120" y1="247" x2="120" y2="315" class="t-edge"/>
+      <line x1="270" y1="247" x2="270" y2="315" class="t-edge"/>
+      <line x1="120" y1="335" x2="120" y2="405" class="t-edge"/>
+      
+      <!-- 노드 -->
+      <circle cx="270" cy="40" r="24" class="t-node"/>
+      <text x="270" y="40" class="t-node-label">a</text>
+      
+      <circle cx="270" cy="135" r="22" class="t-node"/>
+      <text x="270" y="135" class="t-node-label">b</text>
+      
+      <circle cx="120" cy="225" r="22" class="t-node"/>
+      <text x="120" y="225" class="t-node-label">c</text>
+      
+      <circle cx="270" cy="225" r="22" class="t-node"/>
+      <text x="270" y="225" class="t-node-label">e</text>
+      
+      <circle cx="420" cy="225" r="22" class="t-node"/>
+      <text x="420" y="225" class="t-node-label">h</text>
+      
+      <circle cx="120" cy="315" r="20" class="t-node"/>
+      <text x="120" y="315" class="t-node-label">d</text>
+      
+      <circle cx="270" cy="315" r="20" class="t-node"/>
+      <text x="270" y="315" class="t-node-label">g</text>
+      
+      <circle cx="120" cy="405" r="20" class="t-node"/>
+      <text x="120" y="405" class="t-node-label">f</text>
+      
+    </svg>
+    <div class="caption">DFS 트리 — 검정 실선은 트리 간선, 보라 점선이 <strong>back edge</strong> (a-c, c-f)</div>
+  </div>
+  
+  <h3>Back Edge란?</h3>
+  
+  <div class="def-box">
+    <div class="term">Back Edge (역방향 간선)</div>
+    <p style="margin-top:4px;">원래 그래프에는 있지만 <strong>DFS 트리에는 안 나타나는 간선</strong>. 이미 방문한 조상 노드로 돌아가는 모양이라 "back"이라고 부름.</p>
+  </div>
+  
+  <p>이 예시에서:</p>
+  <ul>
+    <li><strong>a-c 간선</strong>: c는 a를 거쳐 b → c로 도달했음. 하지만 a와 c는 원래 그래프에서 직접 연결 → DFS 트리에는 안 보이지만 그래프엔 있음 → back edge</li>
+    <li><strong>c-f 간선</strong>: f는 c→d→f 경로로 도달. c-f 직접 연결은 트리에 안 보임 → back edge</li>
+  </ul>
+  
+  <h3>★ Back Edge가 있다 = 순환(Cycle)이 존재</h3>
+  
+  <div class="callout star">
+    <div class="callout-title">중요한 통찰</div>
+    <p style="margin-top:6px;"><strong>Back edge가 존재한다는 것은 그래프에 순환(cycle)이 있다는 뜻</strong>.</p>
+    <ul style="margin-top:6px;">
+      <li>예: c-f가 back edge → c → d → f → (back edge) → c로 돌아옴 → 사이클!</li>
+      <li>예: a-c가 back edge → a → b → c → (back edge) → a로 돌아옴 → 사이클!</li>
+      <li>반대로, back edge가 하나도 없으면 그 그래프는 <strong>순환 없음</strong></li>
+    </ul>
+  </div>
+  
+  <div class="callout connect">
+    <div class="callout-title">활용</div>
+    이 성질을 이용하면 DFS로 <strong>사이클이 있는지 검사</strong>할 수 있음. DFS 돌릴 때 back edge가 한 번이라도 발견되면 사이클 존재.
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 8. pre/post 범위 시각화 -->
+<!-- ============================================== -->
+<section id="s8">
+  <h2><span class="num">08</span> pre / post 범위 시각화</h2>
+  
+  <p>각 노드의 <strong>pre 시각부터 post 시각까지의 구간</strong>을 막대로 그려보면 흥미로운 구조가 보입니다.</p>
+  
+  <h3>각 노드의 [pre, post] 구간</h3>
+  
+  <table>
+    <tr>
+      <th>노드</th><th>pre</th><th>post</th><th>구간 [pre, post]</th>
+    </tr>
+    <tr><td><strong>a</strong></td><td>1</td><td>16</td><td>[1, 16]</td></tr>
+    <tr><td><strong>b</strong></td><td>2</td><td>15</td><td>[2, 15]</td></tr>
+    <tr><td><strong>c</strong></td><td>3</td><td>8</td><td>[3, 8]</td></tr>
+    <tr><td><strong>d</strong></td><td>4</td><td>7</td><td>[4, 7]</td></tr>
+    <tr><td><strong>f</strong></td><td>5</td><td>6</td><td>[5, 6]</td></tr>
+    <tr><td><strong>e</strong></td><td>9</td><td>12</td><td>[9, 12]</td></tr>
+    <tr><td><strong>g</strong></td><td>10</td><td>11</td><td>[10, 11]</td></tr>
+    <tr><td><strong>h</strong></td><td>13</td><td>14</td><td>[13, 14]</td></tr>
+  </table>
+  
+  <h3>막대 그래프 (수직 구간)</h3>
+  
+  <p>수직선에 시각 1~16을 표시하고, 각 노드의 [pre, post] 구간을 막대로 그리면:</p>
+  
+  <div class="tree-viz">
+    <svg width="90%" viewBox="0 0 700 540" xmlns="http://www.w3.org/2000/svg">
+      
+      <!-- 시간 축 -->
+      <line x1="60" y1="40" x2="60" y2="500" stroke="var(--ink)" stroke-width="2"/>
+      <text x="35" y="45" style="font-size:11px; fill:var(--ink-muted); font-family:sans-serif;">time</text>
+      
+      <!-- 시각 눈금 1~16 -->
+      <g style="font-family:monospace; font-size:11px; fill:var(--ink-muted);">
+        <line x1="55" y1="60" x2="65" y2="60" stroke="var(--ink-muted)"/>
+        <text x="30" y="64">1</text>
+        <line x1="55" y1="88" x2="65" y2="88" stroke="var(--ink-muted)"/>
+        <text x="30" y="92">2</text>
+        <line x1="55" y1="116" x2="65" y2="116" stroke="var(--ink-muted)"/>
+        <text x="30" y="120">3</text>
+        <line x1="55" y1="144" x2="65" y2="144" stroke="var(--ink-muted)"/>
+        <text x="30" y="148">4</text>
+        <line x1="55" y1="172" x2="65" y2="172" stroke="var(--ink-muted)"/>
+        <text x="30" y="176">5</text>
+        <line x1="55" y1="200" x2="65" y2="200" stroke="var(--ink-muted)"/>
+        <text x="30" y="204">6</text>
+        <line x1="55" y1="228" x2="65" y2="228" stroke="var(--ink-muted)"/>
+        <text x="30" y="232">7</text>
+        <line x1="55" y1="256" x2="65" y2="256" stroke="var(--ink-muted)"/>
+        <text x="30" y="260">8</text>
+        <line x1="55" y1="284" x2="65" y2="284" stroke="var(--ink-muted)"/>
+        <text x="30" y="288">9</text>
+        <line x1="55" y1="312" x2="65" y2="312" stroke="var(--ink-muted)"/>
+        <text x="25" y="316">10</text>
+        <line x1="55" y1="340" x2="65" y2="340" stroke="var(--ink-muted)"/>
+        <text x="25" y="344">11</text>
+        <line x1="55" y1="368" x2="65" y2="368" stroke="var(--ink-muted)"/>
+        <text x="25" y="372">12</text>
+        <line x1="55" y1="396" x2="65" y2="396" stroke="var(--ink-muted)"/>
+        <text x="25" y="400">13</text>
+        <line x1="55" y1="424" x2="65" y2="424" stroke="var(--ink-muted)"/>
+        <text x="25" y="428">14</text>
+        <line x1="55" y1="452" x2="65" y2="452" stroke="var(--ink-muted)"/>
+        <text x="25" y="456">15</text>
+        <line x1="55" y1="480" x2="65" y2="480" stroke="var(--ink-muted)"/>
+        <text x="25" y="484">16</text>
+      </g>
+      
+      <!-- 막대들. y좌표: time t → y = 60 + (t-1)*28 -->
+      <!-- a: 1~16 -->
+      <rect x="100" y="60" width="44" height="420" fill="none" stroke="#0d9488" stroke-width="2.5" rx="3"/>
+      <text x="122" y="80" text-anchor="middle" style="font-size:14px; font-weight:700; fill:#0d9488; font-family:monospace;">a</text>
+      <text x="122" y="495" text-anchor="middle" style="font-size:10px; fill:var(--ink-muted); font-family:monospace;">[1,16]</text>
+      
+      <!-- b: 2~15 -->
+      <rect x="160" y="88" width="44" height="364" fill="none" stroke="#0d9488" stroke-width="2.5" rx="3"/>
+      <text x="182" y="108" text-anchor="middle" style="font-size:14px; font-weight:700; fill:#0d9488; font-family:monospace;">b</text>
+      <text x="182" y="467" text-anchor="middle" style="font-size:10px; fill:var(--ink-muted); font-family:monospace;">[2,15]</text>
+      
+      <!-- c: 3~8 -->
+      <rect x="220" y="116" width="44" height="140" fill="none" stroke="#0d9488" stroke-width="2.5" rx="3"/>
+      <text x="242" y="136" text-anchor="middle" style="font-size:14px; font-weight:700; fill:#0d9488; font-family:monospace;">c</text>
+      <text x="242" y="271" text-anchor="middle" style="font-size:10px; fill:var(--ink-muted); font-family:monospace;">[3,8]</text>
+      
+      <!-- d: 4~7 -->
+      <rect x="280" y="144" width="44" height="84" fill="none" stroke="#0d9488" stroke-width="2.5" rx="3"/>
+      <text x="302" y="164" text-anchor="middle" style="font-size:13px; font-weight:700; fill:#0d9488; font-family:monospace;">d</text>
+      <text x="302" y="243" text-anchor="middle" style="font-size:10px; fill:var(--ink-muted); font-family:monospace;">[4,7]</text>
+      
+      <!-- f: 5~6 -->
+      <rect x="340" y="172" width="44" height="28" fill="none" stroke="#0d9488" stroke-width="2.5" rx="3"/>
+      <text x="362" y="190" text-anchor="middle" style="font-size:12px; font-weight:700; fill:#0d9488; font-family:monospace;">f</text>
+      <text x="362" y="215" text-anchor="middle" style="font-size:10px; fill:var(--ink-muted); font-family:monospace;">[5,6]</text>
+      
+      <!-- e: 9~12 (c와 같은 줄 = b의 자식) -->
+      <rect x="220" y="284" width="44" height="84" fill="none" stroke="#0d9488" stroke-width="2.5" rx="3"/>
+      <text x="242" y="304" text-anchor="middle" style="font-size:14px; font-weight:700; fill:#0d9488; font-family:monospace;">e</text>
+      <text x="242" y="383" text-anchor="middle" style="font-size:10px; fill:var(--ink-muted); font-family:monospace;">[9,12]</text>
+      
+      <!-- g: 10~11 (d와 같은 줄 = e의 자식) -->
+      <rect x="280" y="312" width="44" height="28" fill="none" stroke="#0d9488" stroke-width="2.5" rx="3"/>
+      <text x="302" y="330" text-anchor="middle" style="font-size:13px; font-weight:700; fill:#0d9488; font-family:monospace;">g</text>
+      <text x="302" y="355" text-anchor="middle" style="font-size:10px; fill:var(--ink-muted); font-family:monospace;">[10,11]</text>
+      
+      <!-- h: 13~14 (c와 같은 줄 = b의 자식) -->
+      <rect x="220" y="396" width="44" height="28" fill="none" stroke="#0d9488" stroke-width="2.5" rx="3"/>
+      <text x="242" y="414" text-anchor="middle" style="font-size:13px; font-weight:700; fill:#0d9488; font-family:monospace;">h</text>
+      <text x="242" y="439" text-anchor="middle" style="font-size:10px; fill:var(--ink-muted); font-family:monospace;">[13,14]</text>
+      
+      <!-- 포함 관계 선 (부모→자식) 빨강 점선 -->
+      <!-- a→b -->
+      <line x1="144" y1="270" x2="160" y2="270" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3,3"/>
+      <!-- b→c -->
+      <line x1="204" y1="186" x2="220" y2="186" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3,3"/>
+      <!-- b→e -->
+      <line x1="204" y1="326" x2="220" y2="326" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3,3"/>
+      <!-- b→h -->
+      <line x1="204" y1="410" x2="220" y2="410" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3,3"/>
+      <!-- c→d -->
+      <line x1="264" y1="186" x2="280" y2="186" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3,3"/>
+      <!-- d→f -->
+      <line x1="324" y1="186" x2="340" y2="186" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3,3"/>
+      <!-- e→g -->
+      <line x1="264" y1="326" x2="280" y2="326" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3,3"/>
+      
+      <!-- 설명 -->
+      <text x="450" y="80" style="font-size:13px; font-weight:700; fill:var(--ink); font-family:sans-serif;">막대의 의미</text>
+      <text x="450" y="100" style="font-size:12px; fill:var(--ink-soft); font-family:sans-serif;">각 노드의 [pre, post] 구간</text>
+      <text x="450" y="118" style="font-size:12px; fill:var(--ink-soft); font-family:sans-serif;">= 그 노드의 "생존 시간"</text>
+      
+      <text x="450" y="160" style="font-size:13px; font-weight:700; fill:#dc2626; font-family:sans-serif;">★ 핵심 관찰</text>
+      <text x="450" y="180" style="font-size:12px; fill:var(--ink-soft); font-family:sans-serif;">a 막대 ⊃ b 막대</text>
+      <text x="450" y="198" style="font-size:12px; fill:var(--ink-soft); font-family:sans-serif;">b 막대 ⊃ c, e, h 막대</text>
+      <text x="450" y="216" style="font-size:12px; fill:var(--ink-soft); font-family:sans-serif;">c 막대 ⊃ d 막대</text>
+      <text x="450" y="234" style="font-size:12px; fill:var(--ink-soft); font-family:sans-serif;">d 막대 ⊃ f 막대</text>
+      <text x="450" y="252" style="font-size:12px; fill:var(--ink-soft); font-family:sans-serif;">e 막대 ⊃ g 막대</text>
+      
+      <text x="450" y="290" style="font-size:13px; font-weight:700; fill:var(--teal-deep); font-family:sans-serif;">= DFS 트리의 부모-자식</text>
+      
+      <text x="450" y="330" style="font-size:11px; fill:var(--ink-muted); font-style:italic; font-family:sans-serif;">막대를 좌우 90도</text>
+      <text x="450" y="345" style="font-size:11px; fill:var(--ink-muted); font-style:italic; font-family:sans-serif;">뒤집어 보면</text>
+      <text x="450" y="360" style="font-size:11px; fill:var(--ink-muted); font-style:italic; font-family:sans-serif;">= DFS 트리 그대로</text>
+      
+    </svg>
+    <div class="caption">각 노드의 [pre, post] 막대 — 막대 포함 관계(빨간 점선)가 곧 DFS 트리의 부모-자식 관계</div>
+  </div>
+  
+  <h3>핵심 통찰</h3>
+  
+  <div class="callout star">
+    <div class="callout-title">막대 포함 = DFS 트리 부모-자식</div>
+    <ul style="margin-top:6px;">
+      <li>노드 u가 노드 v의 조상이면 → u의 막대가 v의 막대를 <strong>완전히 포함</strong></li>
+      <li>두 노드가 조상 관계가 아니면 → 막대가 <strong>겹치지 않음</strong>
+        <ul style="margin-top:4px;">
+          <li>예: c [3,8]과 e [9,12]는 겹치지 않음 (둘 다 b의 자식, 형제 관계)</li>
+        </ul>
+      </li>
+      <li>이 구조를 보면 <strong>막대들을 옆으로 눕히면 그대로 DFS 트리</strong>가 됨</li>
+    </ul>
+  </div>
+  
+  <div class="callout connect">
+    <div class="callout-title">왜 이런 구조인가?</div>
+    <p style="margin-top:6px;">DFS가 u에서 v로 들어가면 v의 pre는 u의 pre보다 크고, v를 다 끝낸 뒤(post 찍은 뒤) u가 끝남(post 찍음). 그래서 v의 [pre, post]는 u의 [pre, post] 안에 완전히 포함됨. 이게 콜스택의 push-pop 구조와 정확히 같음.</p>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 9. DFSALL - 비연결 그래프 -->
+<!-- ============================================== -->
+<section id="s9">
+  <h2><span class="num">09</span> DFSALL — 비연결 그래프 순회</h2>
+  
+  <p>지금까지 본 DFS는 한 정점에서 출발해 갈 수 있는 곳만 훑음. 그런데 그래프가 <strong>여러 조각으로 끊어져 있으면</strong> 어떻게 될까?</p>
+  
+  <h3>문제 — 비연결 그래프</h3>
+  
+  <p>다음과 같이 두 덩어리로 분리된 그래프를 봅시다.</p>
+  
+  <div class="def-box">
+    <div class="term">예시: 비연결 그래프</div>
+    <ul style="margin-top:6px;">
+      <li>왼쪽 덩어리: a-b-c (삼각형)</li>
+      <li>오른쪽 덩어리: d-e</li>
+      <li>두 덩어리 사이는 <strong>이어진 간선 없음</strong></li>
+    </ul>
+  </div>
+  
+  <div class="tree-viz">
+    <svg width="65%" viewBox="0 0 520 280" xmlns="http://www.w3.org/2000/svg">
+      
+      <!-- 왼쪽 덩어리: a-b-c 삼각형 -->
+      <line x1="100" y1="80" x2="180" y2="200" class="g-edge"/>
+      <line x1="180" y1="200" x2="60" y2="200" class="g-edge"/>
+      <line x1="60" y1="200" x2="100" y2="80" class="g-edge"/>
+      
+      <circle cx="100" cy="80" r="24" class="g-node"/>
+      <text x="100" y="80" class="g-node-label">a</text>
+      
+      <circle cx="60" cy="200" r="24" class="g-node"/>
+      <text x="60" y="200" class="g-node-label">b</text>
+      
+      <circle cx="180" cy="200" r="24" class="g-node"/>
+      <text x="180" y="200" class="g-node-label">c</text>
+      
+      <!-- 점선 구분 -->
+      <line x1="270" y1="40" x2="270" y2="240" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="6,4"/>
+      <text x="270" y="265" text-anchor="middle" style="font-size:11px; fill:var(--ink-muted); font-family:sans-serif; font-style:italic;">두 덩어리 사이 연결 없음</text>
+      
+      <!-- 오른쪽 덩어리: d-e -->
+      <line x1="360" y1="140" x2="460" y2="140" class="g-edge"/>
+      
+      <circle cx="360" cy="140" r="24" class="g-node"/>
+      <text x="360" y="140" class="g-node-label">d</text>
+      
+      <circle cx="460" cy="140" r="24" class="g-node"/>
+      <text x="460" y="140" class="g-node-label">e</text>
+      
+    </svg>
+    <div class="caption">비연결 그래프 — 두 컴포넌트(덩어리)로 분리됨</div>
+  </div>
+  
+  <h3>DFS(a)만 돌리면?</h3>
+  
+  <div class="callout warn">
+    <div class="callout-title">문제 발생</div>
+    <ul style="margin-top:6px;">
+      <li>DFS(a)는 a에서 갈 수 있는 곳만 탐색 → a, b, c만 방문</li>
+      <li><strong>d, e는 영영 방문 못 함</strong> (a 쪽에서 도달 불가)</li>
+      <li>=&gt; 순회가 안 됨 (모든 정점을 못 읽음)</li>
+    </ul>
+  </div>
+  
+  <h3>해결 — DFSALL 함수</h3>
+  
+  <p>모든 정점을 빠짐없이 순회하려면, <strong>아직 방문 안 된 정점이 남아 있으면 거기서 DFS를 또 시작</strong>해야 함.</p>
+  
+  <div class="code-block">
+    <span class="code-label pseudo">의사코드</span>
+<pre><code><span class="c-key">def</span> <span class="c-fn">DFSALL</span>(G):                    <span class="c-cmt"># 그래프 G 전체를 DFS</span>
+    <span class="c-key">for</span> all nodes v <span class="c-key">in</span> G:        <span class="c-cmt"># 모든 노드 초기화</span>
+        mark[v] = <span class="c-str">"unvisited"</span>
+    
+    <span class="c-key">for</span> all nodes v <span class="c-key">in</span> G:        <span class="c-cmt"># 모든 노드 확인</span>
+        <span class="c-key">if</span> mark[v] != <span class="c-str">"visited"</span>: <span class="c-cmt"># 아직 방문 안 됐으면</span>
+            <span class="c-fn">DFS</span>(v)                <span class="c-cmt"># 거기서 DFS 새로 시작</span></code></pre>
+  </div>
+  
+  <h3>각 부분 설명</h3>
+  
+  <table>
+    <tr>
+      <th>코드</th>
+      <th>의미</th>
+    </tr>
+    <tr>
+      <td>첫 for문 (초기화)</td>
+      <td>모든 노드를 "unvisited"로 표시 — 시작 전 깨끗한 상태 만들기</td>
+    </tr>
+    <tr>
+      <td>두 번째 for문</td>
+      <td>모든 노드를 하나씩 살펴보며, 아직 방문 안 된 노드 발견 시 DFS 시작</td>
+    </tr>
+    <tr>
+      <td><code>DFS(v)</code> 호출</td>
+      <td>v에서 도달 가능한 모든 정점을 한꺼번에 훑음</td>
+    </tr>
+  </table>
+  
+  <h3>위 비연결 그래프에 DFSALL 적용</h3>
+  
+  <div class="code-block">
+    <span class="code-label result">실행 흐름</span>
+<pre><code><span class="c-cmt"># 초기화: 모든 노드 unvisited</span>
+
+<span class="c-cmt"># 첫 번째 노드 a 확인 → unvisited</span>
+<span class="c-fn">DFS</span>(a)   →  a, b, c 방문 (왼쪽 덩어리 완료)
+
+<span class="c-cmt"># b, c 차례 → 이미 visited, 넘어감</span>
+
+<span class="c-cmt"># d 확인 → unvisited</span>
+<span class="c-fn">DFS</span>(d)   →  d, e 방문 (오른쪽 덩어리 완료)
+
+<span class="c-cmt"># e 차례 → 이미 visited, 끝</span>
+
+<span class="c-cmt"># 최종: 모든 정점 a, b, c, d, e 방문 완료</span></code></pre>
+  </div>
+  
+  <div class="callout star">
+    <div class="callout-title">DFSALL의 의미</div>
+    <ul style="margin-top:6px;">
+      <li>그래프가 <strong>연결되어 있든 아니든</strong> 모든 정점을 빠짐없이 순회 보장</li>
+      <li>DFS가 호출된 횟수 = 그래프의 <strong>연결 요소 개수</strong>
+        <ul style="margin-top:4px;">
+          <li>위 예시: DFS 2번 호출 → 연결 요소 2개</li>
+        </ul>
+      </li>
+      <li>방금까지 본 a~h 그래프는 한 덩어리라 DFS(a) 한 번으로 끝났음</li>
+      <li>실제 코드에서는 보통 DFS만 부르지 않고 <strong>DFSALL을 부름</strong></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 8. 시험 포인트 -->
+<!-- ============================================== -->
+<!-- ============================================== -->
+<!-- 10. 방향 그래프와 DAG -->
+<!-- ============================================== -->
+<section id="s10">
+  <h2><span class="num">10</span> 방향 그래프와 DAG</h2>
+  
+  <p>지금까지 본 그래프는 모두 <strong>무방향</strong>이었음 (간선에 방향이 없어서 양쪽으로 다 갈 수 있음). 이제 방향이 있는 그래프를 봅시다.</p>
+  
+  <h3>무방향 vs 방향 — 비교</h3>
+  
+  <div class="tree-viz">
+    <svg width="80%" viewBox="0 0 700 280" xmlns="http://www.w3.org/2000/svg">
+      
+      <defs>
+        <marker id="arrowDir" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink-soft)"/>
+        </marker>
+      </defs>
+      
+      <!-- 왼쪽: 무방향 그래프 ABCD -->
+      <text x="160" y="30" text-anchor="middle" style="font-size:14px; font-weight:700; fill:var(--ink); font-family:sans-serif;">무방향 그래프</text>
+      <text x="160" y="48" text-anchor="middle" style="font-size:11px; fill:var(--ink-muted); font-family:sans-serif; font-style:italic;">양쪽으로 자유롭게 이동</text>
+      
+      <line x1="80" y1="100" x2="220" y2="100" class="g-edge"/>
+      <line x1="80" y1="100" x2="150" y2="200" class="g-edge"/>
+      <line x1="220" y1="100" x2="150" y2="200" class="g-edge"/>
+      <line x1="220" y1="100" x2="280" y2="200" class="g-edge"/>
+      
+      <circle cx="80" cy="100" r="22" class="g-node"/>
+      <text x="80" y="100" class="g-node-label">A</text>
+      <circle cx="220" cy="100" r="22" class="g-node"/>
+      <text x="220" y="100" class="g-node-label">C</text>
+      <circle cx="150" cy="200" r="22" class="g-node"/>
+      <text x="150" y="200" class="g-node-label">B</text>
+      <circle cx="280" cy="200" r="22" class="g-node"/>
+      <text x="280" y="200" class="g-node-label">D</text>
+      
+      <text x="160" y="255" text-anchor="middle" style="font-size:11px; fill:var(--ink-muted); font-family:monospace;">A-B, A-C, B-C, C-D</text>
+      
+      <!-- 구분선 -->
+      <line x1="370" y1="40" x2="370" y2="240" stroke="var(--line)" stroke-width="1" stroke-dasharray="4,4"/>
+      
+      <!-- 오른쪽: 방향 그래프 ABC -->
+      <text x="540" y="30" text-anchor="middle" style="font-size:14px; font-weight:700; fill:var(--ink); font-family:sans-serif;">방향 그래프</text>
+      <text x="540" y="48" text-anchor="middle" style="font-size:11px; fill:var(--ink-muted); font-family:sans-serif; font-style:italic;">화살표 방향대로만 이동</text>
+      
+      <line x1="470" y1="100" x2="610" y2="100" stroke="var(--ink-soft)" stroke-width="2" marker-end="url(#arrowDir)"/>
+      <line x1="470" y1="100" x2="540" y2="195" stroke="var(--ink-soft)" stroke-width="2" marker-end="url(#arrowDir)"/>
+      <line x1="540" y1="200" x2="608" y2="120" stroke="var(--ink-soft)" stroke-width="2" marker-end="url(#arrowDir)"/>
+      
+      <circle cx="470" cy="100" r="22" class="g-node"/>
+      <text x="470" y="100" class="g-node-label">A</text>
+      <circle cx="618" cy="100" r="22" class="g-node"/>
+      <text x="618" y="100" class="g-node-label">C</text>
+      <circle cx="540" cy="200" r="22" class="g-node"/>
+      <text x="540" y="200" class="g-node-label">B</text>
+      
+      <text x="540" y="255" text-anchor="middle" style="font-size:11px; fill:var(--ink-muted); font-family:monospace;">A→B, A→C, B→C</text>
+      
+    </svg>
+    <div class="caption">왼쪽 무방향(선) vs 오른쪽 방향(화살표) — 같은 ABC라도 의미가 다름</div>
+  </div>
+  
+  <h3>DAG — Directed Acyclic Graph</h3>
+  
+  <div class="key-result">
+    <div class="label">DAG</div>
+    <div class="formula" style="font-style:normal; font-family:-apple-system, sans-serif;">
+      <strong>D</strong>irected(방향이 있고) <strong>A</strong>cyclic(사이클이 없는) <strong>G</strong>raph
+    </div>
+  </div>
+  
+  <div class="callout tip">
+    <div class="callout-title">DAG의 핵심 성질</div>
+    <ul style="margin-top:6px;">
+      <li>모든 간선에 방향이 있음 (방향 그래프)</li>
+      <li><strong>어떤 노드에서 출발해도 자기 자신으로 돌아오는 경로가 없음</strong> (acyclic)</li>
+      <li>"일의 순서"를 표현하기에 좋음 — 앞 일이 끝나야 뒤 일을 할 수 있는 의존 관계</li>
+    </ul>
+  </div>
+  
+  <h3>DAG 예시</h3>
+  
+  <p>다음 그래프는 8개 정점으로 이루어진 DAG.</p>
+  
+  <div class="def-box">
+    <div class="term">그래프 정보</div>
+    <ul style="margin-top:6px;">
+      <li>정점: A, B, C, D, F, G, H, I</li>
+      <li>간선: A→B, A→C, A→D / B→F, B→H / C→B, C→F / D→G, D→I / F→D, F→H / H→G / I→G</li>
+    </ul>
+  </div>
+  
+  <div class="tree-viz">
+    <svg width="100%" viewBox="0 0 800 320" xmlns="http://www.w3.org/2000/svg">
+      
+      <defs>
+        <marker id="arrDAG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink-soft)"/>
+        </marker>
+      </defs>
+      
+      <!-- 노드 위치: A(60) | C(170) | B(280) | F(390) | D,H(500) | I(610) | G(720) -->
+      <!-- 간선 (방향) -->
+      <!-- A→B, A→C, A→D -->
+      <line x1="80" y1="160" x2="252" y2="160" stroke="var(--ink-soft)" stroke-width="1.8" marker-end="url(#arrDAG)"/>
+      <line x1="80" y1="160" x2="148" y2="160" stroke="var(--ink-soft)" stroke-width="1.8" marker-end="url(#arrDAG)"/>
+      <line x1="80" y1="160" x2="478" y2="220" stroke="var(--ink-soft)" stroke-width="1.8" marker-end="url(#arrDAG)"/>
+      <!-- B→F, B→H -->
+      <line x1="302" y1="160" x2="368" y2="160" stroke="var(--ink-soft)" stroke-width="1.8" marker-end="url(#arrDAG)"/>
+      <line x1="296" y1="146" x2="482" y2="106" stroke="var(--ink-soft)" stroke-width="1.8" marker-end="url(#arrDAG)"/>
+      <!-- C→B, C→F -->
+      <line x1="192" y1="160" x2="258" y2="160" stroke="var(--ink-soft)" stroke-width="1.8" marker-end="url(#arrDAG)"/>
+      <line x1="188" y1="170" x2="372" y2="160" stroke="var(--ink-soft)" stroke-width="1.8" marker-end="url(#arrDAG)"/>
+      <!-- D→G, D→I -->
+      <line x1="522" y1="220" x2="698" y2="220" stroke="var(--ink-soft)" stroke-width="1.8" marker-end="url(#arrDAG)"/>
+      <line x1="518" y1="208" x2="595" y2="170" stroke="var(--ink-soft)" stroke-width="1.8" marker-end="url(#arrDAG)"/>
+      <!-- F→D, F→H -->
+      <line x1="395" y1="170" x2="488" y2="215" stroke="var(--ink-soft)" stroke-width="1.8" marker-end="url(#arrDAG)"/>
+      <line x1="395" y1="148" x2="490" y2="105" stroke="var(--ink-soft)" stroke-width="1.8" marker-end="url(#arrDAG)"/>
+      <!-- H→G -->
+      <line x1="520" y1="105" x2="700" y2="208" stroke="var(--ink-soft)" stroke-width="1.8" marker-end="url(#arrDAG)"/>
+      <!-- I→G -->
+      <line x1="625" y1="160" x2="698" y2="210" stroke="var(--ink-soft)" stroke-width="1.8" marker-end="url(#arrDAG)"/>
+      
+      <!-- 노드 -->
+      <circle cx="60" cy="160" r="22" class="g-node"/>
+      <text x="60" y="160" class="g-node-label">A</text>
+      
+      <circle cx="170" cy="160" r="22" class="g-node"/>
+      <text x="170" y="160" class="g-node-label">C</text>
+      
+      <circle cx="280" cy="160" r="22" class="g-node"/>
+      <text x="280" y="160" class="g-node-label">B</text>
+      
+      <circle cx="390" cy="160" r="22" class="g-node"/>
+      <text x="390" y="160" class="g-node-label">F</text>
+      
+      <circle cx="500" cy="90" r="22" class="g-node"/>
+      <text x="500" y="90" class="g-node-label">H</text>
+      
+      <circle cx="500" cy="220" r="22" class="g-node"/>
+      <text x="500" y="220" class="g-node-label">D</text>
+      
+      <circle cx="610" cy="160" r="22" class="g-node"/>
+      <text x="610" y="160" class="g-node-label">I</text>
+      
+      <circle cx="720" cy="220" r="22" class="g-node"/>
+      <text x="720" y="220" class="g-node-label">G</text>
+      
+    </svg>
+    <div class="caption">DAG 예시 — 화살표 방향대로만 이동, 사이클 없음. 왼쪽에서 오른쪽으로 흐르는 의존 관계</div>
+  </div>
+  
+  <div class="callout connect">
+    <div class="callout-title">현실 비유 — 일의 순서</div>
+    <ul style="margin-top:6px;">
+      <li>A를 끝내야 B, C, D를 시작할 수 있음</li>
+      <li>B와 C 둘 다 끝나야 F를 시작 가능 (혹은 두 길 중 어디든)</li>
+      <li>F가 끝나야 D와 H를 시작…</li>
+      <li>이런 "선후 관계가 있는 작업"을 모델링할 때 DAG가 자연스러움</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 11. 위상 정렬 -->
+<!-- ============================================== -->
+<section id="s11">
+  <h2><span class="num">11</span> 위상 정렬 — Topological Sort</h2>
+  
+  <div class="key-result">
+    <div class="label">위상 정렬</div>
+    <div class="formula" style="font-style:normal; font-family:-apple-system, sans-serif;">
+      DAG의 정점들을 <strong>일의 순서대로 한 줄로 늘어놓는 것</strong>
+    </div>
+  </div>
+  
+  <p>"앞 일이 끝나야 뒤 일을 할 수 있다"는 규칙을 만족하도록 정점을 줄세우는 것. 다시 말해, 간선 u→v가 있으면 정렬에서 u가 v보다 앞에 와야 함.</p>
+  
+  <h3>위상 정렬과 DFS의 관계 — 시험 핵심</h3>
+  
+  <div class="callout star">
+    <div class="callout-title">위상 정렬을 DFS로 구하는 방법</div>
+    <ul style="margin-top:6px;">
+      <li>DAG에 DFS를 돌림</li>
+      <li>각 노드의 <strong>post 값</strong>을 기록</li>
+      <li><strong>post 값이 큰 순서대로 (역순)</strong> 늘어놓으면 = 위상 정렬!</li>
+    </ul>
+  </div>
+  
+  <h3>실제 DAG로 확인</h3>
+  
+  <p>위 DAG에 A부터 DFS(인접 리스트 알파벳 순)를 돌리면:</p>
+  
+  <div class="code-block">
+    <span class="code-label result">DFS 추적 (A부터, 알파벳 순)</span>
+<pre><code>pre[A]=1   A → B (B,C,D 중 알파벳 빠른 B)
+pre[B]=2     B → F (F,H 중 F)
+pre[F]=3       F → D (D,H 중 D)
+pre[D]=4         D → G (G,I 중 G)
+pre[G]=5           G는 나갈 곳 없음
+post[G]=6        backtrack to D
+pre[I]=7         D → I
+post[I]=8        I → G (방문함)
+post[D]=9      backtrack to F
+pre[H]=10      F → H
+post[H]=11     H → G (방문함)
+post[F]=12   backtrack to B
+post[B]=13   backtrack to A
+pre[C]=14    A → C
+post[C]=15   C → B (방문함), C → F (방문함)
+post[A]=16</code></pre>
+  </div>
+  
+  <h3>PRE 순서 vs POST 순서</h3>
+  
+  <table>
+    <tr>
+      <th>노드</th><th>A</th><th>B</th><th>C</th><th>D</th><th>F</th><th>G</th><th>H</th><th>I</th>
+    </tr>
+    <tr>
+      <td><strong>pre</strong></td>
+      <td>1</td><td>2</td><td>14</td><td>4</td><td>3</td><td>5</td><td>10</td><td>7</td>
+    </tr>
+    <tr>
+      <td><strong>post</strong></td>
+      <td>16</td><td>13</td><td>15</td><td>9</td><td>12</td><td>6</td><td>11</td><td>8</td>
+    </tr>
+  </table>
+  
+  <h4>① PRE 값 오름차순 = DFS 순회 순서</h4>
+  
+  <div class="seq">
+    <span class="item">A</span><span class="arrow">→</span>
+    <span class="item">B</span><span class="arrow">→</span>
+    <span class="item">F</span><span class="arrow">→</span>
+    <span class="item">D</span><span class="arrow">→</span>
+    <span class="item">G</span><span class="arrow">→</span>
+    <span class="item">I</span><span class="arrow">→</span>
+    <span class="item">H</span><span class="arrow">→</span>
+    <span class="item">C</span>
+  </div>
+  
+  <p style="font-size:13px; color:var(--ink-muted);">→ DFS가 노드를 방문한 순서 (pre 1, 2, 3, 4, 5, 7, 10, 14)</p>
+  
+  <h4>② POST 값 내림차순 = 위상 정렬</h4>
+  
+  <div class="seq">
+    <span class="item">A</span><span class="arrow">→</span>
+    <span class="item">C</span><span class="arrow">→</span>
+    <span class="item">B</span><span class="arrow">→</span>
+    <span class="item">F</span><span class="arrow">→</span>
+    <span class="item">H</span><span class="arrow">→</span>
+    <span class="item">D</span><span class="arrow">→</span>
+    <span class="item">I</span><span class="arrow">→</span>
+    <span class="item">G</span>
+  </div>
+  
+  <p style="font-size:13px; color:var(--ink-muted);">→ post 16, 15, 13, 12, 11, 9, 8, 6 (역순)</p>
+  
+  <h3>검증 — 정말 위상 정렬인가?</h3>
+  
+  <div class="callout tip">
+    <div class="callout-title">간선 방향 확인</div>
+    <p style="margin-top:6px;">A → C → B → F → H → D → I → G 순서에서 모든 간선이 "앞에서 뒤로" 가는지 확인:</p>
+    <ul style="margin-top:6px;">
+      <li>A→B ✓ (A 1번째, B 3번째)</li>
+      <li>A→C ✓ (A 1번째, C 2번째)</li>
+      <li>A→D ✓ (A 1번째, D 6번째)</li>
+      <li>B→F ✓ / B→H ✓</li>
+      <li>C→B ✓ / C→F ✓</li>
+      <li>D→G ✓ / D→I ✓</li>
+      <li>F→D ✓ / F→H ✓</li>
+      <li>H→G ✓ / I→G ✓</li>
+    </ul>
+    <p style="margin-top:6px;">모든 간선이 앞→뒤 방향 → <strong>유효한 위상 정렬</strong> ✓</p>
+  </div>
+  
+  <h3>왜 POST 역순이 위상 정렬일까?</h3>
+  
+  <div class="callout connect">
+    <div class="callout-title">직관적 이해</div>
+    <ul style="margin-top:6px;">
+      <li>DFS에서 u → v 간선을 따라가면 v를 먼저 다 끝낸 다음 u가 끝남</li>
+      <li>즉 post[u] &gt; post[v] (간선 u→v가 있을 때)</li>
+      <li>그래서 post가 큰 노드부터 줄세우면 자연스럽게 "선행 작업" 먼저 옴</li>
+      <li>이게 정확히 위상 정렬의 정의</li>
+    </ul>
+  </div>
+  
+  <div class="callout star">
+    <div class="callout-title">시험 핵심 요약</div>
+    <table>
+      <tr>
+        <th>기준</th><th>결과</th>
+      </tr>
+      <tr>
+        <td>PRE 값 오름차순</td>
+        <td>DFS 방문 순서</td>
+      </tr>
+      <tr>
+        <td><strong>POST 값 내림차순</strong></td>
+        <td><strong>위상 정렬</strong></td>
+      </tr>
+    </table>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 12. 시험 포인트 -->
+<!-- ============================================== -->
+<section id="s12">
+  <h2><span class="num">12</span> 오늘 꼭 기억할 것</h2>
+  
+  <div class="exam-points">
+    <div class="label">시험 포인트</div>
+    <ol>
+      <li><strong>순회(traversal)</strong>: 모든 노드를 일정한 순서로 한 번씩 읽기. 모든 <strong>정점</strong>을 읽는 것이지 모든 엣지를 훑는 건 아님</li>
+      <li><strong>트리 순회 3가지</strong>: preorder(자신 먼저) / inorder(자신 가운데, 이진트리 전용) / postorder(자신 나중)</li>
+      <li><strong>★ DFS (Depth First Search)</strong>: 한 길로 끝까지 → 막히면 backtrack. 스택 또는 재귀로 구현</li>
+      <li><strong>★ DFS 의사코드 (재귀 버전) 핵심</strong>:
+        <ul style="margin-top:4px; color:white;">
+          <li>mark[v]="visited" → pre[v]=curr_time → 이웃 재귀 호출 → post[v]=curr_time</li>
+          <li>pre[v]: v에 처음 들어간 시각 / post[v]: v 완전히 끝난 시각</li>
+          <li>pre 순서 = 방문 순서</li>
+          <li>parent[w]=v: 부모 기록 (경로 복원용)</li>
+        </ul>
+      </li>
+      <li><strong>★ DFS 스택 버전 (재귀 없이)</strong>:
+        <ul style="margin-top:4px; color:white;">
+          <li>스택에 <strong>(부모, 현재)</strong> 쌍을 push</li>
+          <li>pop해서 unmarked면 방문, 이웃을 push</li>
+          <li>알파벳 순으로 방문하려면 <strong>느린 알파벳부터 push</strong> (LIFO이므로)</li>
+          <li>스택에는 같은 노드가 여러 번 들어갈 수 있지만 실제 방문은 한 번만</li>
+        </ul>
+      </li>
+      <li><strong>방문 순서(알파벳 순)는 어디서?</strong>: 의사코드 자체 보장 X. 인접 리스트가 알파벳 순으로 정렬돼 있다고 약속</li>
+      <li><strong>★ DFS 트리</strong>: parent 관계 선들만 추출, 시작 노드가 루트. 노드 n개 → 트리 엣지 n−1개</li>
+      <li><strong>★ Back Edge</strong>:
+        <ul style="margin-top:4px; color:white;">
+          <li>원래 그래프엔 있지만 DFS 트리에는 안 나타나는 간선</li>
+          <li>이미 방문한 조상으로 돌아가는 모양</li>
+          <li><strong>Back edge 존재 ⇔ 사이클(순환) 존재</strong></li>
+        </ul>
+      </li>
+      <li><strong>★ pre/post 막대 구조</strong>:
+        <ul style="margin-top:4px; color:white;">
+          <li>각 노드를 [pre, post] 구간 막대로 그림</li>
+          <li>u가 v의 조상 ⇔ u 막대가 v 막대를 완전히 포함</li>
+          <li>형제 관계면 막대가 겹치지 않음</li>
+          <li>막대 포함 관계를 뒤집으면 = DFS 트리</li>
+        </ul>
+      </li>
+      <li><strong>★ DFSALL(G) — 비연결 그래프 대응</strong>:
+        <ul style="margin-top:4px; color:white;">
+          <li>DFS(v)만 부르면 v 쪽 덩어리만 훑음</li>
+          <li>DFSALL: unvisited 초기화 → 안 가본 노드마다 DFS 새로 시작</li>
+          <li>DFS 호출 횟수 = 연결 요소(component) 개수</li>
+        </ul>
+      </li>
+      <li><strong>방향 그래프 vs 무방향</strong>: 간선에 방향이 있으면 화살표 방향대로만 이동</li>
+      <li><strong>★ DAG (Directed Acyclic Graph)</strong>:
+        <ul style="margin-top:4px; color:white;">
+          <li>Directed(방향 있음) + Acyclic(사이클 없음) + Graph</li>
+          <li>"일의 순서" 같은 선후 관계 모델링에 사용</li>
+        </ul>
+      </li>
+      <li><strong>★★ 위상 정렬 (Topological Sort) — 시험 핵심</strong>:
+        <ul style="margin-top:4px; color:white;">
+          <li>DAG의 정점을 "앞 일 → 뒤 일" 순서로 한 줄 정렬</li>
+          <li>간선 u→v가 있으면 정렬에서 u가 v보다 앞</li>
+          <li><strong>DFS를 돌린 후 POST 값을 내림차순으로 나열하면 위상 정렬</strong></li>
+          <li>PRE 오름차순 = DFS 방문 순서 / POST 내림차순 = 위상 정렬</li>
+        </ul>
+      </li>
+      <li><strong>BFS (너비 우선 탐색)</strong>: 가까운 노드부터 한 겹씩, 큐로 구현. DFS와 결과 다름</li>
+      <li><strong>방문 표시(visited)</strong>: 그래프는 사이클이 있으니 필수</li>
+    </ol>
+  </div>
+</section>
+
+<div class="doc-footer">
+  자료구조 · 13주차-2 강의노트 &nbsp;·&nbsp; 강원대학교 컴퓨터공학과 &nbsp;·&nbsp; 2026.06.01
+</div>
+
+</main>
+</div>
+
+</body>
+</html>

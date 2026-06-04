@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>자료구조 9주차-2 문제은행 | AVL 트리 (삽입·삭제)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#fafaf7; --surface:#fff; --ink:#1a2332; --ink-soft:#4a5568; --ink-muted:#718096;
+    --line:#e2e8f0; --line-soft:#edf2f7; --teal:#0d9488; --teal-soft:#ccfbf1; --teal-bg:#f0fdfa;
+    --amber:#d97706; --amber-soft:#fef3c7; --rose:#e11d48; --indigo:#4f46e5; --indigo-soft:#e0e7ff;
+    --slate-bg:#f1f5f9; --code-bg:#1e293b; --code-text:#e2e8f0;
+    --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  }
+  body{font-family:-apple-system,"Pretendard","Apple SD Gothic Neo","Noto Sans KR",sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;font-size:15.5px;letter-spacing:-.01em;}
+  .wrapper{max-width:860px;margin:0 auto;padding:56px 24px 120px;}
+  .doc-header{margin-bottom:36px;padding-bottom:24px;border-bottom:2px solid var(--ink);}
+  .doc-meta{display:flex;gap:10px;align-items:center;margin-bottom:14px;font-size:12.5px;flex-wrap:wrap;}
+  .doc-meta .badge{background:var(--teal);color:#fff;padding:3px 10px;border-radius:4px;font-weight:600;}
+  .doc-meta .range{background:var(--amber-soft);color:var(--amber);padding:3px 10px;border-radius:4px;font-weight:600;border:1px solid var(--amber);}
+  .doc-header h1{font-size:30px;font-weight:700;letter-spacing:-.03em;margin-bottom:8px;}
+  .doc-header .sub{color:var(--ink-soft);font-size:15px;}
+  .back{display:inline-block;margin-bottom:22px;color:var(--ink-muted);text-decoration:none;font-size:13px;}
+  .back:hover{color:var(--teal);}
+  .note{background:var(--teal-bg);border:1px solid var(--teal-soft);border-left:3px solid var(--teal);border-radius:8px;padding:14px 18px;margin-bottom:14px;font-size:14px;color:var(--ink-soft);}
+  .note b{color:var(--teal);}
+  .controls{display:flex;gap:8px;margin:22px 0 32px;}
+  .controls button{font:inherit;font-size:13px;font-weight:600;cursor:pointer;background:var(--surface);border:1px solid var(--line);color:var(--ink-soft);padding:8px 14px;border-radius:7px;transition:all .15s;}
+  .controls button:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-bg);}
+  article.q{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:24px 26px;margin-bottom:18px;box-shadow:var(--shadow);}
+  .q-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .q-num{font-weight:700;font-size:16px;color:var(--teal);font-variant-numeric:tabular-nums;}
+  .q-tag{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;letter-spacing:.02em;}
+  .tag-mc{background:var(--indigo-soft);color:var(--indigo);}
+  .tag-calc{background:var(--teal-soft);color:var(--teal);}
+  .tag-fill{background:var(--amber-soft);color:var(--amber);}
+  .tag-write{background:var(--slate-bg);color:var(--ink-soft);}
+  .tag-code{background:#1e293b;color:#e2e8f0;}
+  .q-body{color:var(--ink);} .q-body p{margin-bottom:10px;}
+  .q-body ol.choices{list-style:none;counter-reset:ch;margin:12px 0 4px;}
+  .q-body ol.choices li{counter-increment:ch;padding:7px 0 7px 34px;position:relative;color:var(--ink-soft);}
+  .q-body ol.choices li::before{content:counter(ch);position:absolute;left:0;top:7px;width:22px;height:22px;border:1px solid var(--line);border-radius:50%;text-align:center;line-height:21px;font-size:12px;font-weight:600;color:var(--ink-muted);}
+  .kw{color:var(--teal);font-weight:600;}
+  code{font-family:"JetBrains Mono","SF Mono",Consolas,monospace;font-size:.9em;background:var(--slate-bg);padding:2px 6px;border-radius:4px;}
+  pre{background:var(--code-bg);color:var(--code-text);padding:16px 20px;border-radius:10px;overflow-x:auto;margin:12px 0;font-size:13.5px;line-height:1.6;}
+  pre code{background:none;padding:0;color:inherit;font-size:1em;}
+  .tree{font-family:"JetBrains Mono",Consolas,monospace;background:var(--slate-bg);padding:14px 18px;border-radius:8px;font-size:13.5px;line-height:1.7;margin:12px 0;white-space:pre;}
+  table.tbl{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px;}
+  table.tbl th,table.tbl td{border:1px solid var(--line);padding:8px 12px;text-align:center;}
+  table.tbl th{background:var(--slate-bg);font-weight:600;}
+  details.sol{margin-top:16px;border-top:1px dashed var(--line);padding-top:14px;}
+  details.sol>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--teal);background:var(--teal-bg);border:1px solid var(--teal-soft);padding:8px 16px;border-radius:8px;transition:all .15s;user-select:none;}
+  details.sol>summary::-webkit-details-marker{display:none;}
+  details.sol>summary::before{content:"▸";font-size:12px;transition:transform .15s;}
+  details.sol[open]>summary::before{transform:rotate(90deg);}
+  details.sol>summary:hover{background:var(--teal-soft);}
+  .sol-body{margin-top:14px;background:var(--teal-bg);border:1px solid var(--teal-soft);border-radius:8px;padding:16px 18px;font-size:14.5px;color:var(--ink-soft);}
+  .sol-body .ans{color:var(--ink);font-weight:600;margin-bottom:8px;}
+  .sol-body .ans b{color:var(--rose);}
+  .sol-body p{margin-bottom:8px;} .sol-body p:last-child{margin-bottom:0;}
+  footer{margin-top:50px;padding-top:20px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-muted);text-align:center;}
+  sub,sup{font-size:.72em;}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <a href="../index.html" class="back">← 자료구조 목차로</a>
+
+  <header class="doc-header">
+    <div class="doc-meta">
+      <span class="badge">9주차 · 2차시</span>
+      <span class="range">기말 범위</span>
+    </div>
+    <h1>문제은행 — AVL 트리 (2)</h1>
+    <p class="sub">삽입·삭제 · 회전(Rotation) LL/RR/LR/RL · x·y·z 찾기 · 시간복잡도</p>
+  </header>
+
+  <div class="note">이 문제집은 <b>9주차 2차시 강의노트</b>(AVL 삽입·삭제) 범위에서 출제했습니다.</div>
+  <div class="note">유형·난이도는 <b>중간고사 족보</b> 기준입니다 (객관식 · 추적 · 빈칸 채우기 · 표 채우기 · 서술 · 코드 분석).</div>
+
+  <div class="controls">
+    <button onclick="document.querySelectorAll('details.sol').forEach(d=>d.open=true)">전체 풀이 펼치기</button>
+    <button onclick="document.querySelectorAll('details.sol').forEach(d=>d.open=false)">전체 접기</button>
+  </div>
+
+  <!-- Q1 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q1</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>AVL 트리의 삽입(insert)이 일반 BST의 삽입과 다른 점으로 옳은 것은?</p>
+      <ol class="choices">
+        <li>키를 정렬된 순서로만 삽입할 수 있다.</li>
+        <li>삽입 후 균형을 검사하고, 깨졌으면 회전(Rotation)으로 복구하는 단계가 추가된다.</li>
+        <li>삽입 위치를 찾는 방식 자체가 BST와 완전히 다르다.</li>
+        <li>중복 키를 허용한다.</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>2번</b></p>
+        <p>AVL 삽입은 ① 상속받은 BST insert로 일단 삽입 → ② 위로 올라가며 처음 불균형 노드 z 찾기 → ③ rebalance(회전) → ④ 루트 갱신. 삽입 위치 탐색은 BST와 동일합니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q2 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q2</span><span class="q-tag tag-fill">빈칸 채우기</span></div>
+    <div class="q-body">
+      <p>rebalance에 쓰이는 세 노드 x, y, z의 정의를 완성하시오. (z, y, x는 위에서 아래로 연속된 3개 노드)</p>
+      <ul style="list-style:none;padding-left:6px;">
+        <li>• z : 삽입 위치에서 위로 올라가며 처음으로 ____________ 노드 (가장 가까운 불균형 조상)</li>
+        <li>• y : z의 자식 중 더 ____________ 쪽</li>
+        <li>• x : y의 자식 중 더 ____________ 쪽</li>
+      </ul>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>균형이 깨진</b> / <b>무거운(높은)</b> / <b>무거운(높은)</b></p>
+        <p>z는 처음 만나는 불균형 조상, y는 z의 더 높은(무거운) 자식, x는 y의 더 높은 자식입니다. 삽입의 경우 "올라온 방향"이 곧 무거운 방향이라 자연스럽게 결정됩니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q3 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q3</span><span class="q-tag tag-calc">추적</span></div>
+    <div class="q-body">
+      <p>키 <code>10, 5, 15</code>가 있고 5의 오른쪽 자식으로 <code>7</code>이 있는 AVL 트리에 <code>9</code>를 삽입했더니 균형이 깨졌다.</p>
+      <div class="tree">      10
+     /  \
+    5    15
+     \
+      7
+       \
+        9   ← 새로 삽입</div>
+      <p>이때 z, y, x에 해당하는 노드를 각각 쓰시오.</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>z = 5, y = 7, x = 9</b></p>
+        <p>9를 넣은 자리에서 위로 올라가면 7(OK) → 5에서 BF=2로 처음 깨짐 → z=5. z에서 올라온 방향의 자식 7 → y, 그 방향의 자식 9 → x. z-y-x가 우-우(오른쪽-오른쪽)로 이어지므로 <b>RR 케이스</b>입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q4 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q4</span><span class="q-tag tag-write">표 채우기</span></div>
+    <div class="q-body">
+      <p>AVL 회전 4가지 케이스의 빈칸을 채우시오.</p>
+      <table class="tbl">
+        <tr><th>케이스</th><th>모양 (z-y-x)</th><th>회전 방법</th><th>회전 횟수</th></tr>
+        <tr><td>LL</td><td>좌-좌</td><td>?</td><td>?</td></tr>
+        <tr><td>RR</td><td>우-우</td><td>?</td><td>?</td></tr>
+        <tr><td>LR</td><td>좌-우 (꺾임)</td><td>?</td><td>?</td></tr>
+        <tr><td>RL</td><td>우-좌 (꺾임)</td><td>?</td><td>?</td></tr>
+      </table>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <table class="tbl">
+          <tr><th>케이스</th><th>회전 방법</th><th>횟수</th></tr>
+          <tr><td>LL</td><td>rotateRight(z)</td><td>1번</td></tr>
+          <tr><td>RR</td><td>rotateLeft(z)</td><td>1번</td></tr>
+          <tr><td>LR</td><td>rotateLeft(y) → rotateRight(z)</td><td>2번</td></tr>
+          <tr><td>RL</td><td>rotateRight(y) → rotateLeft(z)</td><td>2번</td></tr>
+        </table>
+        <p>일자형(LL·RR)은 1번, 꺾인형(LR·RL)은 꺾인 부분을 먼저 펴고 처리하므로 2번입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q5 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q5</span><span class="q-tag tag-calc">추적</span></div>
+    <div class="q-body">
+      <p>다음은 LL 케이스로 불균형이 생긴 트리이다. (T1~T4는 서브트리)</p>
+      <div class="tree">        z
+       / \
+      y   T4
+     / \
+    x   T3
+   / \
+  T1  T2</div>
+      <p>(1) <code>rotateRight(z)</code> 후 새 루트가 되는 노드는? (2) 회전 후 z의 왼쪽 서브트리로 옮겨가는 것은?</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>(1) y &nbsp; (2) T3</b></p>
+        <p>y가 위로 올라가 새 루트가 되고, z는 y의 오른쪽 자식으로 내려갑니다. 이때 y의 원래 오른쪽 서브트리 <b>T3</b>가 z의 왼쪽으로 옮겨갑니다. (x는 y의 왼쪽 자식으로 유지)</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q6 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q6</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>회전(Rotation)을 해도 BST 조건이 깨지지 않는 이유로 가장 알맞은 것은?</p>
+      <ol class="choices">
+        <li>회전은 노드의 키 값을 바꾸기 때문</li>
+        <li>회전 후에도 중위 순회(in-order) 결과가 변하지 않기 때문</li>
+        <li>회전은 잎 노드에서만 일어나기 때문</li>
+        <li>회전 후 트리를 다시 정렬하기 때문</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>2번</b></p>
+        <p>회전은 키 순서(중위 순회 결과)를 보존한 채 트리 모양만 바꿉니다. in-order 결과가 그대로이므로 "왼쪽 &lt; 루트 &lt; 오른쪽"이라는 BST 조건이 유지됩니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q7 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q7</span><span class="q-tag tag-write">서술</span></div>
+    <div class="q-body">
+      <p>LR(좌-우 꺾임) 케이스를 처리하는 핵심 아이디어를 한 문장으로 설명하고, 두 회전의 순서를 쓰시오.</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답 요지 / 순서: <b>rotateLeft(y) → rotateRight(z)</b></p>
+        <p>꺾인 부분을 먼저 펴서 일자형(Case 1, LL 모양)으로 만든 다음 Case 1처럼 회전합니다. 즉 1단계 <code>rotateLeft(y)</code>로 z-x-y가 왼쪽 일자가 되게 만들고, 2단계 <code>rotateRight(z)</code>로 균형을 맞춥니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q8 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q8</span><span class="q-tag tag-calc">케이스 판별</span></div>
+    <div class="q-body">
+      <p>비어 있는 AVL 트리에 <code>30, 10, 20</code> 순서로 삽입하면 균형이 깨진다. (1) z, y, x를 쓰고 (2) 케이스(LL/RR/LR/RL)와 (3) 필요한 회전을 쓰시오.</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>z=30, y=10, x=20 / LR 케이스 / rotateLeft(10) → rotateRight(30)</b></p>
+        <p>30 삽입 → 10은 30의 왼쪽 자식 → 20은 10의 오른쪽 자식. 30에서 BF=2로 깨짐(z=30). z의 왼쪽 10이 y, y의 오른쪽 20이 x → 좌-우 꺾임 = LR. 결과적으로 20이 루트, 10과 30이 양쪽 자식이 됩니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q9 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q9</span><span class="q-tag tag-calc">계산 · 시간복잡도</span></div>
+    <div class="q-body">
+      <p>AVL 삽입의 각 단계별 시간복잡도를 쓰고, 총 시간복잡도를 구하시오.</p>
+      <table class="tbl">
+        <tr><th>단계</th><th>작업</th><th>시간복잡도</th></tr>
+        <tr><td>1</td><td>BST insert (내려가기)</td><td>?</td></tr>
+        <tr><td>2</td><td>x, y, z 찾기 (올라가기)</td><td>?</td></tr>
+        <tr><td>3</td><td>rebalance (회전)</td><td>?</td></tr>
+      </table>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>O(log n) + O(log n) + O(1) = O(log n)</b></p>
+        <p>1단계·2단계는 트리 높이 h = O(log n)만큼 이동, 3단계 회전은 포인터 몇 개만 바꾸므로 O(1). 합치면 O(log n)입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q10 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q10</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>AVL <b>삽입</b>에서 rebalance(회전)는 한 번의 삽입당 최대 몇 번 일어나는가?</p>
+      <ol class="choices">
+        <li>최대 1번 (한 번 맞추면 위쪽도 모두 OK)</li>
+        <li>최대 O(log n)번</li>
+        <li>최대 O(n)번</li>
+        <li>항상 2번</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>1번</b></p>
+        <p>삽입에서는 한 번 회전으로 균형을 맞추면 그 위쪽 조상들의 높이가 원래대로 돌아와 전체가 다시 균형을 이룹니다. (삭제는 다름 → 다음 문제)</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q11 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q11</span><span class="q-tag tag-write">서술 · 비교</span></div>
+    <div class="q-body">
+      <p>AVL <b>삭제</b>가 삽입과 결정적으로 다른 점은 무엇이며, 그 이유는 무엇인가? (rebalance 횟수 관점에서)</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답 요지</p>
+        <p>삽입은 rebalance가 최대 1번이지만, 삭제는 <b>최대 O(log n)번(연쇄 rebalance)</b> 일어날 수 있습니다. 이유: 삭제 후 한 곳을 회전해 맞춰도 그 부모 노드에서 또 균형이 깨질 수 있어, 루트까지 올라가며 반복 검사해야 하기 때문입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q12 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q12</span><span class="q-tag tag-code">코드 빈칸 채우기</span></div>
+    <div class="q-body">
+      <p>AVL 삭제 의사코드의 빈칸을 채우시오.</p>
+      <pre><code>def delete(self, u):
+    v = super().deleteByCopying(u)   # v = 지운 노드의 부모
+    while v is _______:              # ★ ⓐ 루트까지 올라가며 검사
+        if not v.is_balanced():
+            z = v
+            if z.left.height > z.right.height:
+                y = z.left
+            else:
+                y = z.right
+            ...
+            v = rebalance(x, y, z)
+            w = v
+        v = v._______                # ★ ⓑ 한 단계 위로
+    self.root = w</code></pre>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>ⓐ not None &nbsp; ⓑ parent</b></p>
+        <p><code>while v is not None</code> 으로 루트까지 올라가며 검사(삽입과 결정적 차이), 매 반복 끝에 <code>v = v.parent</code> 로 한 단계 위로 올라갑니다. 루프가 끝나면 w가 항상 루트가 됩니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q13 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q13</span><span class="q-tag tag-code">코드 빈칸 채우기</span></div>
+    <div class="q-body">
+      <p>삭제 시 y(그리고 x)를 고르는 규칙이다. 빈칸을 채우시오. ("무거운 쪽 = 높이가 더 큰 쪽")</p>
+      <pre><code># z의 무거운 쪽 자식을 y로
+if z.left.height > z.right.height:
+    y = z._______
+else:
+    y = z._______</code></pre>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>y = z.left</b> (if), <b>y = z.right</b> (else)</p>
+        <p>z의 자식 중 높이가 더 큰(무거운) 쪽으로 내려가 y를 정하고, x도 같은 방식으로 y의 무거운 자식을 고릅니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q14 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q14</span><span class="q-tag tag-write">표 채우기 · 종합</span></div>
+    <div class="q-body">
+      <p>AVL 트리의 연산별 시간복잡도를 채우시오. (n = 노드 개수)</p>
+      <table class="tbl">
+        <tr><th>연산</th><th>시간복잡도</th></tr>
+        <tr><td>탐색 (search)</td><td>?</td></tr>
+        <tr><td>삽입 (insert)</td><td>?</td></tr>
+        <tr><td>삭제 (delete)</td><td>?</td></tr>
+        <tr><td>높이 (height)</td><td>?</td></tr>
+      </table>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>모두 O(log n)</b></p>
+        <p>삭제는 BST 삭제 O(log n) + 연쇄 rebalance O(log n)×O(1)이지만 합쳐도 O(log n)입니다. 균형 조건 덕에 높이가 O(log n)으로 보장되어 모든 연산이 O(log n)입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <footer>자료구조 · 9주차-2 문제은행 · AVL 삽입·삭제 (회전) · 총 14문제</footer>
+</div>
+</body>
+</html>

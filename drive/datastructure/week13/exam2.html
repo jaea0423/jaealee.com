@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>자료구조 13주차-2 문제은행 | 그래프 순회 (DFS·BFS)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root{--bg:#fafaf7;--surface:#fff;--ink:#1a2332;--ink-soft:#4a5568;--ink-muted:#718096;--line:#e2e8f0;--line-soft:#edf2f7;--teal:#0d9488;--teal-soft:#ccfbf1;--teal-bg:#f0fdfa;--amber:#d97706;--amber-soft:#fef3c7;--rose:#e11d48;--indigo:#4f46e5;--indigo-soft:#e0e7ff;--slate-bg:#f1f5f9;--code-bg:#1e293b;--code-text:#e2e8f0;--shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);}
+  body{font-family:-apple-system,"Pretendard","Apple SD Gothic Neo","Noto Sans KR",sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;font-size:15.5px;letter-spacing:-.01em;}
+  .wrapper{max-width:860px;margin:0 auto;padding:56px 24px 120px;}
+  .doc-header{margin-bottom:36px;padding-bottom:24px;border-bottom:2px solid var(--ink);}
+  .doc-meta{display:flex;gap:10px;align-items:center;margin-bottom:14px;font-size:12.5px;flex-wrap:wrap;}
+  .doc-meta .badge{background:var(--teal);color:#fff;padding:3px 10px;border-radius:4px;font-weight:600;}
+  .doc-meta .range{background:var(--amber-soft);color:var(--amber);padding:3px 10px;border-radius:4px;font-weight:600;border:1px solid var(--amber);}
+  .doc-header h1{font-size:30px;font-weight:700;letter-spacing:-.03em;margin-bottom:8px;}
+  .doc-header .sub{color:var(--ink-soft);font-size:15px;}
+  .back{display:inline-block;margin-bottom:22px;color:var(--ink-muted);text-decoration:none;font-size:13px;}
+  .back:hover{color:var(--teal);}
+  .note{background:var(--teal-bg);border:1px solid var(--teal-soft);border-left:3px solid var(--teal);border-radius:8px;padding:14px 18px;margin-bottom:14px;font-size:14px;color:var(--ink-soft);}
+  .note b{color:var(--teal);}
+  .controls{display:flex;gap:8px;margin:22px 0 32px;}
+  .controls button{font:inherit;font-size:13px;font-weight:600;cursor:pointer;background:var(--surface);border:1px solid var(--line);color:var(--ink-soft);padding:8px 14px;border-radius:7px;transition:all .15s;}
+  .controls button:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-bg);}
+  article.q{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:24px 26px;margin-bottom:18px;box-shadow:var(--shadow);}
+  .q-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .q-num{font-weight:700;font-size:16px;color:var(--teal);font-variant-numeric:tabular-nums;}
+  .q-tag{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;letter-spacing:.02em;}
+  .tag-mc{background:var(--indigo-soft);color:var(--indigo);}
+  .tag-calc{background:var(--teal-soft);color:var(--teal);}
+  .tag-fill{background:var(--amber-soft);color:var(--amber);}
+  .tag-write{background:var(--slate-bg);color:var(--ink-soft);}
+  .tag-code{background:#1e293b;color:#e2e8f0;}
+  .q-body{color:var(--ink);} .q-body p{margin-bottom:10px;}
+  .q-body ol.choices{list-style:none;counter-reset:ch;margin:12px 0 4px;}
+  .q-body ol.choices li{counter-increment:ch;padding:7px 0 7px 34px;position:relative;color:var(--ink-soft);}
+  .q-body ol.choices li::before{content:counter(ch);position:absolute;left:0;top:7px;width:22px;height:22px;border:1px solid var(--line);border-radius:50%;text-align:center;line-height:21px;font-size:12px;font-weight:600;color:var(--ink-muted);}
+  .kw{color:var(--teal);font-weight:600;}
+  code{font-family:"JetBrains Mono","SF Mono",Consolas,monospace;font-size:.9em;background:var(--slate-bg);padding:2px 6px;border-radius:4px;}
+  pre{background:var(--code-bg);color:var(--code-text);padding:16px 20px;border-radius:10px;overflow-x:auto;margin:12px 0;font-size:13.5px;line-height:1.6;}
+  pre code{background:none;padding:0;color:inherit;font-size:1em;}
+  .tree{font-family:"JetBrains Mono",Consolas,monospace;background:var(--slate-bg);padding:14px 18px;border-radius:8px;font-size:13px;line-height:1.7;margin:12px 0;white-space:pre;overflow-x:auto;}
+  table.tbl{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px;}
+  table.tbl th,table.tbl td{border:1px solid var(--line);padding:8px 12px;text-align:center;}
+  table.tbl th{background:var(--slate-bg);font-weight:600;}
+  details.sol{margin-top:16px;border-top:1px dashed var(--line);padding-top:14px;}
+  details.sol>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--teal);background:var(--teal-bg);border:1px solid var(--teal-soft);padding:8px 16px;border-radius:8px;transition:all .15s;user-select:none;}
+  details.sol>summary::-webkit-details-marker{display:none;}
+  details.sol>summary::before{content:"▸";font-size:12px;transition:transform .15s;}
+  details.sol[open]>summary::before{transform:rotate(90deg);}
+  details.sol>summary:hover{background:var(--teal-soft);}
+  .sol-body{margin-top:14px;background:var(--teal-bg);border:1px solid var(--teal-soft);border-radius:8px;padding:16px 18px;font-size:14.5px;color:var(--ink-soft);}
+  .sol-body .ans{color:var(--ink);font-weight:600;margin-bottom:8px;}
+  .sol-body .ans b{color:var(--rose);}
+  .sol-body p{margin-bottom:8px;} .sol-body p:last-child{margin-bottom:0;}
+  footer{margin-top:50px;padding-top:20px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-muted);text-align:center;}
+  sub,sup{font-size:.72em;}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <a href="../index.html" class="back">← 자료구조 목차로</a>
+
+  <header class="doc-header">
+    <div class="doc-meta"><span class="badge">13주차 · 2차시</span><span class="range">기말 범위</span></div>
+    <h1>문제은행 — 그래프 순회 (DFS · BFS)</h1>
+    <p class="sub">트리 순회 · DFS/BFS · pre/post · DFS 트리·back edge · DFSALL · DAG · 위상 정렬</p>
+  </header>
+
+  <div class="note">이 문제집은 <b>13주차 2차시 강의노트</b>(그래프 순회) 범위입니다. <b>위상 정렬</b>은 강의에서 ★★ 시험 핵심으로 강조됐습니다.</div>
+  <div class="note">난이도·유형은 <b>중간고사 족보</b> 기준입니다 (객관식 · 추적 · 빈칸 채우기 · 표 채우기 · 서술 · 코드).</div>
+
+  <div class="controls">
+    <button onclick="document.querySelectorAll('details.sol').forEach(d=>d.open=true)">전체 풀이 펼치기</button>
+    <button onclick="document.querySelectorAll('details.sol').forEach(d=>d.open=false)">전체 접기</button>
+  </div>
+
+  <!-- Q1 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q1</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>그래프 순회(traversal)의 목표로 옳은 것은?</p>
+      <ol class="choices">
+        <li>모든 모서리(엣지)를 빠짐없이 한 번씩 지나는 것</li>
+        <li>모든 정점(노드)을 일정한 순서로 한 번씩 읽는 것 (모든 엣지를 다 훑는 것은 아님)</li>
+        <li>가장 짧은 경로만 찾는 것</li>
+        <li>그래프를 정렬하는 것</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>2번</b></p>
+        <p>순회는 모든 "정점"을 한 번씩 읽는 것입니다. 이미 방문한 노드로 가는 엣지는 무시하므로 모든 엣지를 다 지나는 것은 아닙니다. (visited 표시 필요.)</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q2 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q2</span><span class="q-tag tag-fill">빈칸 채우기</span></div>
+    <div class="q-body">
+      <p>트리 순회 3가지를 "자신을 언제 읽느냐" 기준으로 채우고, inorder가 이번 예시에서 다뤄지지 않은 이유를 쓰시오.</p>
+      <p>• preorder: 순서 ______ → L → R<br>• inorder: L → ______ → R<br>• postorder: L → R → ______</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: preorder = <b>자신</b> 먼저 / inorder = <b>자신</b> 가운데 / postorder = <b>자신</b> 나중</p>
+        <p>inorder는 자신을 "왼쪽과 오른쪽 사이"에 넣는데, 이는 자식이 최대 2개인 이진 트리에서만 명확합니다. 예시 트리는 자식이 3개인 노드(a)가 있어 자신을 어디 둘지 모호하므로 inorder를 다루지 않습니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q3 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q3</span><span class="q-tag tag-calc">추적 · 트리 순회</span></div>
+    <div class="q-body">
+      <p>다음 트리(이진 트리 아님)의 preorder와 postorder 결과를 쓰시오. (자식은 왼쪽부터)</p>
+      <div class="tree">        a
+      / | \
+     b  d  g
+     |  / \
+     c e   f
+     |
+     h</div>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: preorder = <b>a b c h d e f g</b> / postorder = <b>h c b e f d g a</b></p>
+        <p>preorder(자신→자식): a → (b→c→h) → (d→e→f) → g. postorder(자식→자신): 가장 깊은 h→c→b → e→f→d → g → 마지막 루트 a.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q4 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q4</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>DFS(깊이 우선 탐색)에 대한 설명으로 옳은 것은?</p>
+      <ol class="choices">
+        <li>가까운 노드부터 한 겹씩 넓게 방문하며, 큐로 구현한다.</li>
+        <li>한 길로 갈 수 있는 데까지 깊이 들어간 뒤 막히면 backtrack하며, 스택 또는 재귀로 구현한다.</li>
+        <li>항상 최단 경로를 보장한다.</li>
+        <li>방문 표시(visited)가 필요 없다.</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>2번</b></p>
+        <p>DFS는 깊이 우선 + backtrack, 스택/재귀로 구현합니다. 1번은 BFS(큐)입니다. 그래프는 사이클이 있을 수 있어 visited 표시가 필수입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q5 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q5</span><span class="q-tag tag-calc">추적 · DFS</span></div>
+    <div class="q-body">
+      <p>다음 무방향 그래프에서 <code>a</code>부터 DFS를 수행한 방문 순서를 쓰시오. (안 가본 인접 정점 중 알파벳 빠른 순)</p>
+      <pre><code>인접: a:{b,c}  b:{a,c,e,h}  c:{a,b,d}  d:{c,f}
+      e:{b,g}  f:{d}        g:{e}      h:{b}</code></pre>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>a, b, c, d, f, e, g, h</b></p>
+        <p>a→b(빠른 쪽)→c→d→f(막힘) → backtrack → b의 남은 이웃 e→g(막힘) → backtrack → b의 h. 깊이 우선이라 한 길을 끝까지 판 뒤 되돌아옵니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q6 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q6</span><span class="q-tag tag-code">코드 빈칸 채우기</span></div>
+    <div class="q-body">
+      <p>DFS 재귀 의사코드의 빈칸을 채우시오.</p>
+      <pre><code>def DFS(v):
+    mark[v] = "visited"
+    pre[v] = curr_time;  curr_time += 1   # ⓐ ____에 들어간 시각
+    for each edge (v, w):
+        if mark[w] != "visited":
+            parent[w] = ____               # ⓑ w의 부모 기록
+            DFS(w)
+    post[v] = curr_time;  curr_time += 1   # ⓒ v를 ____ 시각</code></pre>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>ⓐ v에 처음 들어간 &nbsp; ⓑ parent[w] = v &nbsp; ⓒ 완전히 끝낸(떠나는)</b></p>
+        <p>pre[v]는 진입(발견) 시각, post[v]는 종료 시각. parent[w]=v로 부모를 기록해 나중에 경로(DFS 트리)를 복원합니다. pre 값을 순서대로 늘어놓으면 방문 순서가 됩니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q7 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q7</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>DFS를 재귀 대신 <b>스택</b>으로 구현할 때 옳은 설명을 고르시오.</p>
+      <ol class="choices">
+        <li>스택은 LIFO라, 알파벳 빠른 순 방문을 원하면 알파벳이 느린 이웃부터 push해야 한다.</li>
+        <li>스택에는 같은 노드가 절대 두 번 들어갈 수 없다.</li>
+        <li>스택 버전은 부모 정보를 저장할 수 없다.</li>
+        <li>스택 버전과 재귀 버전은 방문 순서가 항상 다르다.</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>1번</b></p>
+        <p>LIFO라 마지막에 push한 게 먼저 pop됩니다. 알파벳 빠른 순으로 방문하려면 느린 것부터 push해야 합니다. 스택에는 같은 노드가 여러 번 들어갈 수 있지만(여러 이웃이 push) 실제 방문은 한 번만(이미 visited면 버림). (부모, 현재) 쌍을 저장해 부모 정보도 유지하며, 결과는 재귀와 같습니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q8 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q8</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>각 노드의 구간 [pre, post]를 막대로 그렸을 때, 두 노드 u, v의 관계 해석으로 옳은 것은?</p>
+      <ol class="choices">
+        <li>u가 v의 조상이면 u의 막대가 v의 막대를 완전히 포함한다.</li>
+        <li>형제 관계여도 막대가 서로 포함한다.</li>
+        <li>막대가 겹치면 항상 사이클이다.</li>
+        <li>pre와 post는 항상 같은 값이다.</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>1번</b></p>
+        <p>DFS가 u→v로 들어가면 v는 u보다 늦게 진입하고 먼저 끝나므로 [pre(v),post(v)] ⊂ [pre(u),post(u)]. 즉 조상이면 막대 포함, 형제면 겹치지 않습니다. 이 포함 관계가 곧 DFS 트리의 부모-자식 구조이며, 콜스택의 push-pop과 같습니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q9 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q9</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>DFS 트리에 대한 설명으로 옳은 것은? (정점 n개 그래프)</p>
+      <ol class="choices">
+        <li>parent 관계의 선들만 모으고 시작 노드를 루트로 한 트리이며, 트리 엣지는 n−1개이다.</li>
+        <li>원래 그래프의 모든 엣지를 포함한다.</li>
+        <li>트리 엣지는 항상 n개이다.</li>
+        <li>시작 노드와 무관하게 항상 같은 모양이다.</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>1번</b></p>
+        <p>DFS 트리는 parent[] 관계 선만 추출, 시작 노드가 루트입니다. 노드 n개 → 트리 엣지 n−1개. 원래 그래프 엣지 중 트리에 안 들어간 것이 back edge입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q10 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q10</span><span class="q-tag tag-write">서술</span></div>
+    <div class="q-body">
+      <p>Back Edge(역방향 간선)란 무엇이며, back edge의 존재가 그래프에 대해 무엇을 의미하는가?</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답 요지: <b>back edge 존재 ⇔ 사이클(순환) 존재</b></p>
+        <p>back edge는 원래 그래프엔 있지만 DFS 트리에는 없는 간선으로, 이미 방문한 조상으로 돌아가는 모양입니다. 조상으로 되돌아가는 간선이 있으면 그 경로가 닫혀 사이클이 생깁니다. 따라서 DFS 중 back edge가 하나라도 발견되면 사이클이 있고, 없으면 순환이 없습니다 (사이클 검사에 활용).</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q11 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q11</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>DFSALL(G)에 대한 설명으로 옳은 것은?</p>
+      <ol class="choices">
+        <li>연결 그래프에서만 동작한다.</li>
+        <li>아직 방문 안 된 노드가 있으면 거기서 DFS를 새로 시작하며, DFS 호출 횟수 = 연결 요소(component) 개수이다.</li>
+        <li>항상 DFS를 정확히 1번만 호출한다.</li>
+        <li>BFS로만 구현된다.</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>2번</b></p>
+        <p>DFS(v)는 v가 속한 덩어리만 훑으므로, 비연결 그래프는 안 가본 노드마다 DFS를 다시 시작해야 모든 정점을 읽습니다. DFS가 호출된 횟수가 곧 연결 요소의 개수입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q12 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q12</span><span class="q-tag tag-write">표 채우기 · 비교</span></div>
+    <div class="q-body">
+      <p>DFS와 BFS를 비교한 표의 빈칸을 채우시오.</p>
+      <table class="tbl">
+        <tr><th>구분</th><th>DFS</th><th>BFS</th></tr>
+        <tr><td>탐색 방향</td><td>?</td><td>?</td></tr>
+        <tr><td>사용 자료구조</td><td>?</td><td>?</td></tr>
+        <tr><td>대표 활용</td><td>?</td><td>?</td></tr>
+      </table>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <table class="tbl">
+          <tr><th>구분</th><th>DFS</th><th>BFS</th></tr>
+          <tr><td>탐색 방향</td><td>한 길로 끝까지 (깊이)</td><td>가까운 곳부터 넓게 (너비)</td></tr>
+          <tr><td>자료구조</td><td>스택(또는 재귀)</td><td>큐(queue)</td></tr>
+          <tr><td>활용</td><td>경로 존재·사이클 탐지</td><td>최단 거리(무가중치)</td></tr>
+        </table>
+        <p>같은 그래프·시작점이라도 방문 순서가 다릅니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q13 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q13</span><span class="q-tag tag-calc">추적 · BFS</span></div>
+    <div class="q-body">
+      <p>Q5와 같은 그래프에서 <code>a</code>부터 <b>BFS</b>를 수행한 방문 순서를 쓰시오. (같은 거리는 알파벳 빠른 순)</p>
+      <pre><code>인접: a:{b,c}  b:{a,c,e,h}  c:{a,b,d}  d:{c,f}
+      e:{b,g}  f:{d}        g:{e}      h:{b}</code></pre>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>a, b, c, d, e, h, f, g</b></p>
+        <p>거리0: a / 거리1: a의 이웃 b,c / 거리2: b·c의 안 가본 이웃 d,e,h / 거리3: f,g. 한 겹씩 바깥으로 펼칩니다. (DFS 결과 a,b,c,d,f,e,g,h와 다름.)</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q14 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q14</span><span class="q-tag tag-fill">빈칸 채우기</span></div>
+    <div class="q-body">
+      <p>DAG의 약자를 풀어 쓰고, 그 핵심 성질과 대표 용도를 쓰시오.</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>Directed Acyclic Graph</b> (방향이 있고 사이클이 없는 그래프)</p>
+        <p>모든 간선에 방향이 있고, 어느 노드에서 출발해도 자기 자신으로 돌아오는 경로가 없습니다. "앞 일이 끝나야 뒤 일을 한다"는 <b>선후(의존) 관계</b> 모델링에 적합합니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q15 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q15</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>위상 정렬(Topological Sort)의 정의로 옳은 것은?</p>
+      <ol class="choices">
+        <li>간선 u→v가 있으면 정렬에서 u가 v보다 <b>앞</b>에 오도록 DAG의 정점을 한 줄로 세우는 것</li>
+        <li>정점을 알파벳 순으로 정렬하는 것</li>
+        <li>간선 u→v가 있으면 v가 u보다 앞에 오도록 세우는 것</li>
+        <li>사이클이 있는 그래프에서만 가능하다</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>1번</b></p>
+        <p>위상 정렬은 DAG의 정점을 "선행 작업 → 후행 작업" 순서로 줄세우는 것입니다. 간선 u→v는 "u가 먼저"를 뜻하므로 u가 v보다 앞에 와야 합니다. 사이클이 있으면 순서를 정할 수 없어 DAG에서만 가능합니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q16 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q16</span><span class="q-tag tag-mc">객관식 · 시험 핵심</span></div>
+    <div class="q-body">
+      <p>DFS의 pre/post 값으로 그래프를 분석할 때 옳은 것은?</p>
+      <ol class="choices">
+        <li>PRE 오름차순 = 위상 정렬 / POST 오름차순 = DFS 방문 순서</li>
+        <li>PRE 오름차순 = DFS 방문 순서 / POST 내림차순 = 위상 정렬</li>
+        <li>POST 오름차순 = 위상 정렬</li>
+        <li>PRE와 POST는 분석에 쓸 수 없다</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>2번</b></p>
+        <p>PRE 값을 오름차순으로 늘어놓으면 DFS가 노드를 방문한 순서이고, POST 값을 <b>내림차순</b>(역순)으로 늘어놓으면 위상 정렬이 됩니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q17 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q17</span><span class="q-tag tag-calc">계산 · 위상 정렬</span></div>
+    <div class="q-body">
+      <p>어떤 DAG에 DFS를 돌려 다음 post 값을 얻었다. 위상 정렬 결과를 쓰시오.</p>
+      <table class="tbl">
+        <tr><th>정점</th><td>A</td><td>B</td><td>C</td><td>D</td><td>F</td><td>G</td><td>H</td><td>I</td></tr>
+        <tr><th>post</th><td>16</td><td>13</td><td>15</td><td>9</td><td>12</td><td>6</td><td>11</td><td>8</td></tr>
+      </table>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>A, C, B, F, H, D, I, G</b></p>
+        <p>post 값을 내림차순으로 정렬: A(16) → C(15) → B(13) → F(12) → H(11) → D(9) → I(8) → G(6). 이것이 위상 정렬입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q18 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q18</span><span class="q-tag tag-write">서술 · 시험 핵심</span></div>
+    <div class="q-body">
+      <p>"POST 값을 내림차순으로 늘어놓으면 위상 정렬이 된다"가 왜 성립하는지 간선 u→v 기준으로 설명하시오.</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답 요지: <b>간선 u→v가 있으면 post[u] &gt; post[v]</b></p>
+        <p>DFS가 u에서 v로 들어가면 v를 완전히 끝낸(post 찍은) 뒤에야 u가 끝납니다. 즉 간선 u→v에 대해 항상 post[u] &gt; post[v]. 따라서 post가 큰 노드부터 줄세우면 모든 간선이 "앞→뒤"를 향하게 되어, 선행 작업 u가 후행 작업 v보다 앞에 오는 위상 정렬이 됩니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <footer>자료구조 · 13주차-2 문제은행 · 그래프 순회 (DFS·BFS·위상 정렬) · 총 18문제</footer>
+</div>
+</body>
+</html>

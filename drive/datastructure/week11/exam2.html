@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>자료구조 11주차-2 문제은행 | 그래프 기본</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root{--bg:#fafaf7;--surface:#fff;--ink:#1a2332;--ink-soft:#4a5568;--ink-muted:#718096;--line:#e2e8f0;--line-soft:#edf2f7;--teal:#0d9488;--teal-soft:#ccfbf1;--teal-bg:#f0fdfa;--amber:#d97706;--amber-soft:#fef3c7;--rose:#e11d48;--indigo:#4f46e5;--indigo-soft:#e0e7ff;--slate-bg:#f1f5f9;--code-bg:#1e293b;--code-text:#e2e8f0;--shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);}
+  body{font-family:-apple-system,"Pretendard","Apple SD Gothic Neo","Noto Sans KR",sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;font-size:15.5px;letter-spacing:-.01em;}
+  .wrapper{max-width:860px;margin:0 auto;padding:56px 24px 120px;}
+  .doc-header{margin-bottom:36px;padding-bottom:24px;border-bottom:2px solid var(--ink);}
+  .doc-meta{display:flex;gap:10px;align-items:center;margin-bottom:14px;font-size:12.5px;flex-wrap:wrap;}
+  .doc-meta .badge{background:var(--teal);color:#fff;padding:3px 10px;border-radius:4px;font-weight:600;}
+  .doc-meta .range{background:var(--amber-soft);color:var(--amber);padding:3px 10px;border-radius:4px;font-weight:600;border:1px solid var(--amber);}
+  .doc-header h1{font-size:30px;font-weight:700;letter-spacing:-.03em;margin-bottom:8px;}
+  .doc-header .sub{color:var(--ink-soft);font-size:15px;}
+  .back{display:inline-block;margin-bottom:22px;color:var(--ink-muted);text-decoration:none;font-size:13px;}
+  .back:hover{color:var(--teal);}
+  .note{background:var(--teal-bg);border:1px solid var(--teal-soft);border-left:3px solid var(--teal);border-radius:8px;padding:14px 18px;margin-bottom:14px;font-size:14px;color:var(--ink-soft);}
+  .note b{color:var(--teal);}
+  .controls{display:flex;gap:8px;margin:22px 0 32px;}
+  .controls button{font:inherit;font-size:13px;font-weight:600;cursor:pointer;background:var(--surface);border:1px solid var(--line);color:var(--ink-soft);padding:8px 14px;border-radius:7px;transition:all .15s;}
+  .controls button:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-bg);}
+  article.q{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:24px 26px;margin-bottom:18px;box-shadow:var(--shadow);}
+  .q-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .q-num{font-weight:700;font-size:16px;color:var(--teal);font-variant-numeric:tabular-nums;}
+  .q-tag{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;letter-spacing:.02em;}
+  .tag-mc{background:var(--indigo-soft);color:var(--indigo);}
+  .tag-calc{background:var(--teal-soft);color:var(--teal);}
+  .tag-fill{background:var(--amber-soft);color:var(--amber);}
+  .tag-write{background:var(--slate-bg);color:var(--ink-soft);}
+  .tag-code{background:#1e293b;color:#e2e8f0;}
+  .q-body{color:var(--ink);} .q-body p{margin-bottom:10px;}
+  .q-body ol.choices{list-style:none;counter-reset:ch;margin:12px 0 4px;}
+  .q-body ol.choices li{counter-increment:ch;padding:7px 0 7px 34px;position:relative;color:var(--ink-soft);}
+  .q-body ol.choices li::before{content:counter(ch);position:absolute;left:0;top:7px;width:22px;height:22px;border:1px solid var(--line);border-radius:50%;text-align:center;line-height:21px;font-size:12px;font-weight:600;color:var(--ink-muted);}
+  .kw{color:var(--teal);font-weight:600;}
+  code{font-family:"JetBrains Mono","SF Mono",Consolas,monospace;font-size:.9em;background:var(--slate-bg);padding:2px 6px;border-radius:4px;}
+  pre{background:var(--code-bg);color:var(--code-text);padding:16px 20px;border-radius:10px;overflow-x:auto;margin:12px 0;font-size:13.5px;line-height:1.6;}
+  pre code{background:none;padding:0;color:inherit;font-size:1em;}
+  .tree{font-family:"JetBrains Mono",Consolas,monospace;background:var(--slate-bg);padding:14px 18px;border-radius:8px;font-size:13px;line-height:1.7;margin:12px 0;white-space:pre;overflow-x:auto;}
+  table.tbl{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px;}
+  table.tbl th,table.tbl td{border:1px solid var(--line);padding:8px 12px;text-align:center;}
+  table.tbl th{background:var(--slate-bg);font-weight:600;}
+  details.sol{margin-top:16px;border-top:1px dashed var(--line);padding-top:14px;}
+  details.sol>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--teal);background:var(--teal-bg);border:1px solid var(--teal-soft);padding:8px 16px;border-radius:8px;transition:all .15s;user-select:none;}
+  details.sol>summary::-webkit-details-marker{display:none;}
+  details.sol>summary::before{content:"▸";font-size:12px;transition:transform .15s;}
+  details.sol[open]>summary::before{transform:rotate(90deg);}
+  details.sol>summary:hover{background:var(--teal-soft);}
+  .sol-body{margin-top:14px;background:var(--teal-bg);border:1px solid var(--teal-soft);border-radius:8px;padding:16px 18px;font-size:14.5px;color:var(--ink-soft);}
+  .sol-body .ans{color:var(--ink);font-weight:600;margin-bottom:8px;}
+  .sol-body .ans b{color:var(--rose);}
+  .sol-body p{margin-bottom:8px;} .sol-body p:last-child{margin-bottom:0;}
+  footer{margin-top:50px;padding-top:20px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-muted);text-align:center;}
+  sub,sup{font-size:.72em;}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <a href="../index.html" class="back">← 자료구조 목차로</a>
+
+  <header class="doc-header">
+    <div class="doc-meta"><span class="badge">11주차 · 2차시</span><span class="range">기말 범위</span></div>
+    <h1>문제은행 — 그래프 기본</h1>
+    <p class="sub">G = (V, E) · 인접 행렬 / 인접 리스트 · 방향/무방향 · 기본 연산 시간복잡도</p>
+  </header>
+
+  <div class="note">이 문제집은 <b>11주차 2차시 강의노트</b>(그래프 기본) 범위에서 출제했습니다.</div>
+  <div class="note">난이도·유형은 <b>중간고사 족보</b> 기준입니다 (객관식 · 계산 · 추적 · 빈칸 채우기 · 표 채우기 · 서술).</div>
+
+  <div class="controls">
+    <button onclick="document.querySelectorAll('details.sol').forEach(d=>d.open=true)">전체 풀이 펼치기</button>
+    <button onclick="document.querySelectorAll('details.sol').forEach(d=>d.open=false)">전체 접기</button>
+  </div>
+
+  <!-- Q1 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q1</span><span class="q-tag tag-fill">빈칸 채우기</span></div>
+    <div class="q-body">
+      <p>그래프의 수학적 정의 <code>G = (V, E)</code>에서 V와 E가 각각 무엇인지(영어 용어와 우리말) 채우시오.</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>V = Vertex(꼭짓점·정점·노드)의 집합, E = Edge(모서리·간선)의 집합</b></p>
+        <p>그래프는 "어떤 노드가 있는지(V)"와 "어떤 노드끼리 연결됐는지(E)" 두 집합으로 정의됩니다. 각 모서리는 두 꼭짓점의 쌍 (u, v)입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q2 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q2</span><span class="q-tag tag-calc">계산</span></div>
+    <div class="q-body">
+      <p>다음 그래프에서 n과 m을 구하시오. (표기: |V| = n, |E| = m)</p>
+      <pre><code>V = {1, 2, 3, 4, 5, 6}
+E = {(1,2), (1,5), (2,5), (2,3), (5,4), (4,6)}</code></pre>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>n = 6, m = 6</b></p>
+        <p>n = |V| = 꼭짓점 6개, m = |E| = 모서리 6개. (1, 2, 5는 서로 모두 연결되어 삼각형 사이클을 이룹니다.)</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q3 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q3</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>무방향 그래프와 방향(유향) 그래프에서 모서리 표기 (u, v)에 대한 설명으로 옳은 것은?</p>
+      <ol class="choices">
+        <li>무방향: (u,v) = (v,u) / 방향: (u,v) ≠ (v,u)</li>
+        <li>무방향: (u,v) ≠ (v,u) / 방향: (u,v) = (v,u)</li>
+        <li>둘 다 (u,v) = (v,u)</li>
+        <li>둘 다 (u,v) ≠ (v,u)</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>1번</b></p>
+        <p>무방향 그래프에서 (u,v)와 (v,u)는 같은 모서리입니다. 방향 그래프에서는 (u,v)가 "u→v"만 의미하므로 (v,u)와 다릅니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q4 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q4</span><span class="q-tag tag-calc">계산 · 최단 경로</span></div>
+    <div class="q-body">
+      <p>도시 거리 그래프의 일부이다. (가중치 = km)</p>
+      <pre><code>서울—원주: 110    서울—수원: 30    수원—원주: 80
+서울—춘천: 70     춘천—원주: 90</code></pre>
+      <p>서울에서 원주까지 가는 <b>최단 거리</b>와 그 경로(들)를 구하시오.</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>110 km</b></p>
+        <p>직접: 서울→원주 = 110. 경유1: 서울→수원→원주 = 30+80 = 110. 경유2: 서울→춘천→원주 = 70+90 = 160. 최단은 110 (직접 경로와 수원 경유 경로 둘 다 110).</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q5 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q5</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>이 수업의 약속에서 인접 행렬의 주대각 성분 <code>A[i][i] = 1</code>의 의미로 옳은 것은?</p>
+      <ol class="choices">
+        <li>모든 노드에 self-loop(자기 자신으로 가는 모서리)가 실제로 존재한다.</li>
+        <li>실제 모서리는 아니고, 단순히 약속(관례)으로 1로 채운 것이다.</li>
+        <li>노드 i의 이웃 수가 1개라는 뜻이다.</li>
+        <li>노드 i가 루트라는 뜻이다.</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>2번</b></p>
+        <p>교수님 약속으로 주대각을 1로 채우는 것이며 self-loop가 있다는 뜻이 아닙니다(그림에 자기 자신 선 없음). 교과서에 따라 0으로 두기도 하지만 이 수업·시험에서는 1로 통일합니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q6 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q6</span><span class="q-tag tag-calc">작성 · 인접 행렬</span></div>
+    <div class="q-body">
+      <p>다음 무방향 그래프의 인접 행렬(6×6, 주대각 1 약속)에서 <b>노드 4의 행</b>(A[4][1]~A[4][6])을 쓰시오.</p>
+      <pre><code>V = {1,2,3,4,5,6}
+E = {(1,2),(1,5),(2,3),(2,5),(3,4),(4,5),(4,6)}</code></pre>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>0 0 1 1 1 1</b></p>
+        <p>노드 4의 이웃: 3, 5, 6 (모서리 (3,4),(4,5),(4,6))에 자기 자신 4를 더함 → A[4][3]=A[4][4]=A[4][5]=A[4][6]=1, 나머지(1,2열)=0. 따라서 행 = [0,0,1,1,1,1].</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q7 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q7</span><span class="q-tag tag-calc">계산 · 메모리 사용률</span></div>
+    <div class="q-body">
+      <p>n = 6, m = 7인 무방향 그래프를 인접 행렬(주대각 1 약속)로 표현했다. (1) 행렬에서 값이 1인 칸의 총 개수와 (2) 전체 칸 대비 사용률을 구하시오.</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>(1) 20개 &nbsp; (2) 20/36 ≈ 55.6%</b></p>
+        <p>1의 개수 = (주대각) n + (무방향 모서리 양방향) 2m = 6 + 2×7 = 20. 전체 칸 = n² = 36. 사용률 ≈ 55.6%. 모서리가 적은 희소(sparse) 그래프일수록 0이 많아져 행렬은 메모리 낭비가 큽니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q8 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q8</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>인접 행렬의 대칭성에 대한 설명으로 옳은 것은?</p>
+      <ol class="choices">
+        <li>무방향 그래프는 A[i][j] = A[j][i] (대각선 대칭), 방향 그래프는 비대칭일 수 있다.</li>
+        <li>무방향 그래프가 비대칭, 방향 그래프가 대칭이다.</li>
+        <li>둘 다 항상 대칭이다.</li>
+        <li>대칭성은 노드 개수에만 의존한다.</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>1번</b></p>
+        <p>무방향은 (u,v)=(v,u)라 A[u][v]=A[v][u]로 대각선 대칭입니다. 그래서 위쪽(또는 아래쪽) 삼각형만 저장해 메모리를 절반으로 줄일 수 있습니다. 방향 그래프는 한 방향만 1이라 비대칭이 됩니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q9 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q9</span><span class="q-tag tag-fill">빈칸 채우기</span></div>
+    <div class="q-body">
+      <p>인접 리스트(Adjacency List)의 구조와 메모리에 관한 빈칸을 채우시오.</p>
+      <p>노드 개수만큼의 <b>(______)</b>(헤더)가 있고, 각 칸은 그 노드의 이웃들을 담은 <b>(______)</b>를 가리킨다. 전체 메모리 사용량은 <b>O(______)</b>이다.</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>배열</b> / <b>연결 리스트</b> / <b>O(n + m)</b></p>
+        <p>배열(노드 n개) + 모서리 수에 비례하는 연결 리스트 노드들 → O(n + m). 행렬의 O(n²)보다 희소 그래프에서 훨씬 효율적입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q10 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q10</span><span class="q-tag tag-calc">추적 · 방향 그래프</span></div>
+    <div class="q-body">
+      <p>다음 방향 그래프의 인접 행렬(주대각 1 약속, 행=from·열=to)에서 세 칸의 값을 구하시오.</p>
+      <pre><code>V = {1,2,3,4}
+E = {(1,2), (2,4), (3,1), (3,2), (4,3)}   # (u,v)=u→v</code></pre>
+      <p>(1) A[1][2] &nbsp; (2) A[2][1] &nbsp; (3) A[3][2]</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>(1) 1 &nbsp; (2) 0 &nbsp; (3) 1</b></p>
+        <p>A[1][2]=1 (1→2 있음). A[2][1]=0 (2→1 모서리 없음, 방향이라 별개). A[3][2]=1 (3→2 있음). 방향 그래프라 A[u][v]와 A[v][u]가 독립입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q11 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q11</span><span class="q-tag tag-write">표 채우기</span></div>
+    <div class="q-body">
+      <p>그래프 기본 연산의 시간복잡도를 인접 행렬과 인접 리스트 각각에 대해 채우시오. (n=노드, m=모서리)</p>
+      <table class="tbl">
+        <tr><th>연산</th><th>인접 행렬</th><th>인접 리스트</th></tr>
+        <tr><td>① 메모리</td><td>?</td><td>?</td></tr>
+        <tr><td>② (u,v)∈E? 확인</td><td>?</td><td>?</td></tr>
+        <tr><td>③ u의 인접 노드 순회</td><td>?</td><td>?</td></tr>
+        <tr><td>④ 모서리 삽입</td><td>?</td><td>?</td></tr>
+        <tr><td>⑤ 모서리 삭제</td><td>?</td><td>?</td></tr>
+      </table>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <table class="tbl">
+          <tr><th>연산</th><th>인접 행렬</th><th>인접 리스트</th></tr>
+          <tr><td>① 메모리</td><td>O(n²)</td><td>O(n+m)</td></tr>
+          <tr><td>② 모서리 확인</td><td>O(1)</td><td>O(n)</td></tr>
+          <tr><td>③ 인접 노드 순회</td><td>O(n)</td><td>O(n) (실질 O(이웃수))</td></tr>
+          <tr><td>④ 삽입</td><td>O(1)</td><td>O(1)</td></tr>
+          <tr><td>⑤ 삭제</td><td>O(1)</td><td>O(n)</td></tr>
+        </table>
+        <p>행렬은 모서리 확인·삭제가 O(1)로 유리, 리스트는 메모리·실질 순회가 유리합니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q12 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q12</span><span class="q-tag tag-write">서술</span></div>
+    <div class="q-body">
+      <p>인접 리스트에서 모서리 삭제가 O(n)으로 인접 행렬(O(1))보다 느린 이유를 설명하시오.</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답 요지</p>
+        <p>연결 리스트는 인덱스로 직접 접근할 수 없어, 삭제할 이웃 노드 v를 찾으려면 리스트를 처음부터 순회해야 합니다(search = O(n)). 찾은 뒤 제거 자체는 포인터 재연결로 O(1)이지만, 탐색이 지배적이라 전체 O(n)입니다. 행렬은 G[u][v]=0 한 칸만 바꾸면 되어 O(1)입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q13 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q13</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>그래프 밀도에 따른 표현법 선택으로 옳은 것은?</p>
+      <ol class="choices">
+        <li>Sparse(m 작음) → 인접 리스트 / Dense(m이 n²에 가까움) → 인접 행렬</li>
+        <li>Sparse → 인접 행렬 / Dense → 인접 리스트</li>
+        <li>밀도와 무관하게 항상 인접 행렬</li>
+        <li>밀도와 무관하게 항상 인접 리스트</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>1번</b></p>
+        <p>희소 그래프는 m이 작아 O(n+m)인 리스트가 메모리 효율적입니다. 빽빽한 그래프는 m ≈ n²이라 리스트도 O(n²)에 포인터 오버헤드까지 생기므로 행렬이 낫습니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q14 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q14</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>앞으로 배울 BFS, DFS 같은 그래프 탐색 알고리즘은 주로 어떤 표현법을 사용하며 그 이유는?</p>
+      <ol class="choices">
+        <li>인접 행렬 — 모서리 확인이 O(1)이라서</li>
+        <li>인접 리스트 — 탐색의 핵심이 "인접 노드 순회"인데 리스트가 실제 이웃만큼만 순회해서</li>
+        <li>둘 다 성능이 같아서 아무거나</li>
+        <li>가중치 행렬만 사용한다</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>2번</b></p>
+        <p>BFS·DFS는 "한 노드의 인접 노드를 모두 방문"이 핵심입니다. 인접 리스트는 실제 이웃 수만큼만 순회하지만(행렬은 이웃이 없어도 n번 검사), 그래서 탐색 알고리즘은 대부분 인접 리스트를 씁니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q15 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q15</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>인접 리스트에 새 모서리를 추가할 때 리스트의 맨 뒤가 아니라 <b>맨 앞</b>에 넣는(pushfront) 이유는?</p>
+      <ol class="choices">
+        <li>맨 앞 추가는 O(1), 맨 뒤 추가는 끝까지 가야 해서 O(n)이고, 이웃 순서는 중요하지 않기 때문</li>
+        <li>맨 앞에 넣어야 정렬이 유지되기 때문</li>
+        <li>맨 뒤 추가는 불가능하기 때문</li>
+        <li>메모리를 절반으로 줄이기 위해</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>1번</b></p>
+        <p>연결 리스트 맨 앞 삽입은 포인터 한 번 연결로 O(1)이고, 맨 뒤는 끝 노드까지 이동해야 해 O(n)입니다. 인접 리스트는 이웃의 순서가 의미 없으므로 빠른 pushfront를 씁니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <footer>자료구조 · 11주차-2 문제은행 · 그래프 기본 · 총 15문제</footer>
+</div>
+</body>
+</html>
