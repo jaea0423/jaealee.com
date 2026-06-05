@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>모두의 인공지능 - 3주차 교과서: 바둑, 다음 수는 어딜까!</title>
-<link href="../theme.css?v=20260605i" rel="stylesheet"/>
+<link href="../theme.css?v=20260605m" rel="stylesheet"/>
 </head>
 <body>
 <!-- HOME_BTN_START -->
@@ -23,6 +23,14 @@
 <div class="series">모두의 인공지능 · 강태원 교수</div>
 <h1>바둑, 다음 수는 어딜까!</h1>
 <div class="subtitle">상태공간 탐색 · 맹목적 탐색 · 휴리스틱 탐색 · 게임 트리</div>
+<figure class="lecture-img">
+  <img src="img/03-3-5-게임-트리-AND-OR.png" alt="게임 트리(Game Tree) — 선수(OR) · 후수(AND) 표기" loading="lazy">
+  <figcaption>게임 트리(Game Tree) — 선수(OR) · 후수(AND) 표기</figcaption>
+</figure>
+<figure class="lecture-img">
+  <img src="img/03-2-3-탐색트리-BFS-DFS-비교.png" alt="맹목적 탐색 — 너비우선(BFS) vs 깊이우선(DFS) 트리 방문 순서 비교" loading="lazy">
+  <figcaption>맹목적 탐색 — 너비우선(BFS) vs 깊이우선(DFS) 트리 방문 순서 비교</figcaption>
+</figure>
 <div class="doctype">교 과 서</div>
 <div class="meta">3주차 (1·2·3차시) — 정리 노트</div>
 </div>
@@ -43,7 +51,19 @@
 <li>상태공간 탐색 과정이 자연스럽게 <strong>탐색 트리(Search Tree)</strong>로 표현됨을 이해한다.</li>
 <li><strong>맹목적 탐색(Blind Search)</strong>의 두 종류 BFS(너비우선)·DFS(깊이우선)를 구분한다.</li>
 <li>탐색 전략의 필요성을 이해하고 <strong>휴리스틱(Heuristic)</strong> 함수와 <strong>A* 알고리즘</strong>을 안다.</li>
+<figure class="lecture-img">
+  <img src="img/03-2-4-A-f-n-g-n-h-n-공식.png" alt="A* 알고리즘 — 평가함수 f(n) = g(n) + h(n)" loading="lazy">
+  <figcaption>A* 알고리즘 — 평가함수 f(n) = g(n) + h(n)</figcaption>
+</figure>
 <li>게임 트리에서 <strong>Min-Max 전략</strong>과 <strong>αβ 가지치기(Pruning)</strong>의 원리를 이해한다.</li>
+<figure class="lecture-img">
+  <img src="img/03-3-7-알파-베타-가지치기.png" alt="알파-베타 가지치기(α-β Pruning) — 불필요한 가지 잘라내기" loading="lazy">
+  <figcaption>알파-베타 가지치기(α-β Pruning) — 불필요한 가지 잘라내기</figcaption>
+</figure>
+<figure class="lecture-img">
+  <img src="img/03-3-6-Min-Max-전략-도식.png" alt="Min-Max 전략 — 게임 트리에서 자신은 max, 상대는 min을 선택" loading="lazy">
+  <figcaption>Min-Max 전략 — 게임 트리에서 자신은 max, 상대는 min을 선택</figcaption>
+</figure>
 <li>알파고 역시 본질은 <strong>탐색 시스템</strong>이라는 점을 이해한다.</li>
 </ul>
 </div>
@@ -87,281 +107,15 @@
 <li><strong>연산자</strong>: 특정 위치로 이동(상·하·좌·우)</li>
 </ul>
 <p>미로 찾기는 이렇게 어떤 출발 위치에서 시작해 목적지에 도달하는 문제이며, 문제 해결은 곧 "길을 찾는 것"입니다.</p>
-<div class="img-placeholder">
-<span class="ph-title">[PDF 슬라이드 추출 가능]</span>
-    미로 그림 — 입구 S와 출구 G가 표시된 격자형 미로
-    <span class="hint">3주차 슬라이드 p.3</span>
-<span class="src">출처: 3주차 강의 PDF</span>
-</div>
-<h3 class="slide">예제 2 — 8-퍼즐 (8-Puzzle)</h3>
-<p>3×3 = 9칸 중 한 칸이 비어 있고, 나머지 8칸에 1~8 숫자가 임의로 놓인 상태에서 시작해, 빈 칸으로 인접 숫자를 옮겨 1~8을 시계 방향으로 정렬하는 퍼즐. 어렸을 때 셔플하면서 그림 맞추는 그 장난감과 같은 원리입니다.</p>
-<ul>
-<li><strong>초기상태 S</strong>: 무작위로 섞인 숫자판</li>
-<li><strong>목적상태 G</strong>: 1~8이 (시계방향으로) 정렬된 상태</li>
-<li><strong>연산자</strong>: 빈 칸으로 인접 숫자를 이동(상·하·좌·우)</li>
-</ul>
-<p>예: 시작 상태에서 가능한 연산은 보통 3가지(왼쪽 옆 숫자를 빈칸으로, 위 숫자를 아래로, 오른쪽 옆 숫자를 왼쪽으로 등)입니다.</p>
-<h3 class="slide">예제 3 — 틱택토 (Tic-Tac-Toe)</h3>
-<p>3×3 보드에 두 명이 번갈아 X·O를 놓아, 가로·세로·대각선으로 자기 표시 3개를 먼저 만드는 사람이 이기는 게임. "초소형 바둑판"이라고 비유합니다.</p>
-<ul>
-<li><strong>초기상태 S</strong>: 아무것도 놓이지 않은 빈 3×3 보드</li>
-<li><strong>목적상태 G</strong>: X 또는 O가 가로·세로·대각선 3개 나란히 놓인 상태 (먼저 두는 X, 나중에 두는 O)</li>
-<li><strong>연산자</strong>: <strong>차례대로</strong> 빈 곳에 자기 표시 (남의 것을 치우는 게 아님)</li>
-</ul>
-<div class="quote">
-    "지능적인 사람은 Tic-Tac-Toe를 잘 둔다 — 곧, 상태 공간을 남들보다 효과적으로 탐색하는 능력이 있다는 뜻."
-    <span class="who">— 강태원 교수</span>
-</div>
-<h3 class="slide">예제 4 — 선교사와 식인종 (Missionaries and Cannibals)</h3>
-<p>고전적인 강 건너기 문제. 선교사 3명과 식인종 3명이 배 한 척으로 강을 건너야 합니다.</p>
-<p><strong>규칙</strong>:</p>
-<ul>
-<li>배는 한 번에 1~2명만 탑승</li>
-<li>빈 배는 이동 불가 (배에 한 명은 반드시 타고 노를 저어야 함)</li>
-<li>어느 강변에서든 <strong>식인종 수가 선교사 수보다 많으면 잡아먹힘</strong> (선교사 수가 0이면 안 잡아먹힘 — 식인종만 있는 상태)</li>
-</ul>
-<div class="definition">
-<span class="label">상태 표현 (인코딩, Encoding)</span>
-<strong>(왼쪽 선교사 수, 왼쪽 식인종 수, 배의 위치)</strong>로 표현. 배 위치는 왼쪽=1, 오른쪽=-1.<br/><br/>
-    ① <strong>초기상태 S</strong>: <code>(3, 3, 1)</code> — 선교사 3명·식인종 3명·배가 모두 왼쪽<br/>
-    ② <strong>목적상태 G</strong>: <code>(0, 0, -1)</code> — 모두 오른쪽으로 이동<br/>
-    ③ <strong>연산자</strong>: 배로 1~2명 이동 (규칙 준수)
-  </div>
-<p>예: 선교사·식인종 1명씩 배에 타고 오른쪽으로 건너가면 상태는 <code>(2, 2, -1)</code>가 됩니다. 강의에서는 <em>"식인종이 셔틀이 된다"</em>며 식인종 두 명이 왔다 갔다 하면서 다른 사람들을 옮기는 풀이가 있습니다.</p>
-<div class="exam-point">
-<span class="label">시험 포인트 · 빈출 4문제</span>
-    상태공간 탐색의 4가지 예제 — <strong>① 미로 ② 8-퍼즐 ③ 틱택토 ④ 선교사와 식인종</strong>. 각각의 ① 초기상태 ② 목적상태 ③ 연산자를 정확히 쓸 수 있어야 합니다. 특히 선교사와 식인종은 상태 표현이 <code>(선교사수, 식인종수, 배위치)</code>인 점, 배 위치 1=왼쪽 / -1=오른쪽이라는 점.
-  </div>
-<div class="connect">
-<span class="label">자료구조와의 연결 (★중요★)</span>
-    상태공간 탐색은 본질적으로 <strong>그래프(Graph)</strong> 또는 <strong>트리(Tree)</strong> 자료구조 위에서 동작합니다. 자료구조에서 배우는 그래프의 정점(Vertex)이 "상태", 간선(Edge)이 "연산자"에 대응합니다. 자료구조 수업에서 그래프 표현(인접 행렬·인접 리스트)과 그래프 순회(Graph Traversal)를 배웠다면, 그것이 그대로 AI 탐색의 도구입니다.
-  </div>
-<!-- ============= 2차시 ============= -->
-</div><div class="chapter-card"><h2 class="chapter" id="ses2"><span class="num">2차시</span>내가 지나온 길에 나뭇가지를 — 탐색 트리와 맹목적 탐색</h2>
-<div class="section-tldr">
-    상태공간 탐색은 자연스럽게 <strong>나무 형태</strong>로 그려지며, 트리를 어떤 순서로 방문하느냐에 따라 <strong>BFS(너비우선)</strong>와 <strong>DFS(깊이우선)</strong>로 나뉜다.
-  </div>
-<h3 class="slide">부제 의미 — 헨젤과 그레텔</h3>
-<p>2차시 부제 <em>"내가 지나온 길에 나뭇가지를"</em>은 <strong>헨젤과 그레텔</strong>이 길을 잃지 않으려고 빵 부스러기·자갈을 떨어뜨리며 지나간 일화에서 따온 것입니다. 탐색 트리(Search Tree)도 같은 맥락 — 우리가 지나온 길과 가능한 가지를 모두 추적해 두는 구조입니다.</p>
-<h3 class="slide">탐색 트리 (Search Tree)</h3>
-<div class="definition">
-<span class="label">정의 — 탐색 트리</span>
-    문제를 상태공간으로 표현하고, 답을 찾기 위해 연산자를 적용하면서 새로운 시도를 할 때 자연스럽게 만들어지는 <strong>나무 모양의 자료구조</strong>. 루트(Root)는 시작 상태, 자식 노드는 연산자 적용 결과 상태.
-  </div>
-<p>이 나무는 <strong>거꾸로 된 나무</strong>입니다. 컴퓨터 과학에서 가장 중요한 자료구조 중 하나인 트리(Tree). 뿌리가 위에 있고 잎이 아래로 뻗어 가는 모양이죠.</p>
-<div class="ascii-tree">                S (시작 상태 = 루트)
-             ╱     │     ╲
-            A      B      C    ← 1번 시도
-           ╱╲           ╱╲
-          D  E         F  G   ← 2번 시도
-                       ⋮
-                  목적상태 도달까지 계속</div>
-<p>예제별 탐색 트리:</p>
-<ul>
-<li><strong>미로 찾기</strong>: 단순한 분기. 막다른 길에서는 되돌아가야 함.</li>
-<li><strong>8-퍼즐</strong>: 미로보다 가지가 풍성한 트리.</li>
-<li><strong>Tic-Tac-Toe</strong>: 시작 상태에서 둘 수 있는 9칸 중 회전 대칭을 무시하면 3가지(귀퉁이·정중앙·변 중간). 그 후 더 복잡한 트리로 확장.</li>
-<li><strong>선교사와 식인종</strong>: 가지치기가 많아 상대적으로 좁은 트리. (가지가 풍성하지 않은 마른 나무 같음.)</li>
-</ul>
-<h3 class="slide">맹목적 탐색 (Blind Search) — "눈 감고 문고리 잡기"</h3>
-<div class="definition">
-<span class="label">정의 — 맹목적 탐색</span>
-    탐색 트리에 대한 <strong>아무 사전 지식 없이</strong> 무작위 또는 정해진 순서로 노드를 방문하는 방법. 두 가지 유형:<br/>
-    ① <strong>랜덤(Random) 탐색</strong> — 그냥 아무 데나 가본다. 운 좋으면 답을 찾고 아니면 못 찾고.<br/>
-    ② <strong>순차(Sequential, Exhaustive) 탐색</strong> — 정해진 규칙대로 모든 가능한 노드를 빠짐없이 방문. <em>Exhaustive</em>는 "지칠 때까지"라는 뜻.
-  </div>
-<p>강의 비유: <em>"운 좋게 아무 생각 없이 툭툭 둬도 이기는 사람들이 있다"</em>(랜덤). 그러나 일반적으로 효과적이지 않으므로, 체계적인 순차 탐색(BFS·DFS)부터 출발합니다.</p>
-<h4>BFS — 너비우선 탐색 (Breadth-First Search)</h4>
-<p>같은 깊이(Level)의 노드를 <strong>모두 방문한 다음</strong> 다음 깊이로 내려가는 방식. 즉, <strong>옆으로 옆으로</strong> 가다가 한 단계 내려갑니다.</p>
-<p><strong>구현 자료구조</strong>: <strong>큐(Queue, FIFO)</strong></p>
-<div class="ascii-tree">BFS 방문 순서:
-       1                           ← 루트부터
-      ╱│╲                          시도하지 않은 형제 먼저
-     2 3 4                         ← 같은 레벨 모두 방문
-    ╱╲ ╱╲                          (시작에서 A,B,C 다 보고)
-   5 6 7 8                         (그 후 A의 자식들로)</div>
-<h4>DFS — 깊이우선 탐색 (Depth-First Search)</h4>
-<p>한 가지를 끝까지(가장 깊은 곳까지) 따라간 다음, <strong>되돌아와(backtrack)</strong> 다른 가지를 탐색. <strong>아래로 아래로</strong> 끝까지 갔다가 막히면 위로 올라옵니다.</p>
-<p><strong>구현 자료구조</strong>: <strong>스택(Stack, LIFO)</strong> 또는 재귀(Recursion)</p>
-<div class="ascii-tree">DFS 방문 순서:
-       1                           ← 루트
-      ╱│╲                          왼쪽부터 끝까지
-     2 5 6                         (A 따라 D까지 끝까지)
-    ╱╲ ╱╲                          (D에서 막히면 올라와 E)
-   3 4 7 8                         (그 후 B로 이동)</div>
-<h3 class="slide">미로 문제에 BFS·DFS 적용 — 6번 vs 5번</h3>
-<p>강의의 미로 예시에서, 답이 트리 어디에 있느냐에 따라 효율이 달라집니다. 강의의 미로 트리에서:</p>
-<ul>
-<li><strong>BFS</strong>: 1→2→3→4→5→<strong>6</strong>(목표) — 6번 만에 도달</li>
-<li><strong>DFS</strong>: 1→2(막다른 길)→되돌아 3→4→<strong>5</strong>(목표) — 5번 만에 도달</li>
-</ul>
-<p>이 미로에서는 DFS가 한 번 빨랐지만, <strong>일반적으로 어느 것이 더 좋은지 정해져 있지 않습니다</strong>.</p>
-<div class="exam-point">
-<span class="label">시험 포인트 · 빈출</span>
-<strong>BFS = 큐(Queue), DFS = 스택(Stack) 또는 재귀</strong>. <br/>
-    답이 <strong>탐색 트리의 위쪽</strong>에 있으면 <strong>BFS</strong>가 유리, <strong>왼쪽 깊은 곳</strong>에 있으면 <strong>DFS</strong>가 유리. 답의 위치를 모르는 일반 문제에서는 어느 쪽이 더 좋다고 단정할 수 없다.
-  </div>
-<h3 class="slide">탐색 전략의 필요성</h3>
-<p>미로 같은 단순 문제는 맹목적 탐색으로 충분하지만, <strong>Tic-Tac-Toe만 해도 경우의 수가 매우 많고, 바둑은 그 비교가 안 됩니다</strong>. 이런 큰 탐색 공간에서는 <strong>전략(Strategy) — 성공을 위한 상세한 계획</strong>이 필요합니다.</p>
-<div class="quote">
-    "Strategy: a detailed plan for achieving success."
-  </div>
-<div class="connect">
-<span class="label">자료구조와의 연결 (★시험 직결★)</span>
-    BFS·DFS는 자료구조 수업의 핵심 알고리즘과 동일합니다. 자료구조에서 BFS는 <strong>큐(Queue)를 사용한 그래프 순회</strong>, DFS는 <strong>스택(Stack) 또는 재귀로 구현하는 그래프 순회</strong>로 배웠을 것입니다. 또한 <strong>트리(Tree) 자료구조</strong>의 순회(Traversal)가 곧 탐색 트리 방문 알고리즘입니다.
-  </div>
-<!-- ============= 3차시 ============= -->
-</div><div class="chapter-card"><h2 class="chapter" id="ses3"><span class="num">3차시</span>알파고의 수 읽기 — 휴리스틱 탐색·게임 트리</h2>
-<div class="section-tldr">
-    문제에 내포된 정보·경험을 활용하면 탐색이 훨씬 효율적이 된다(휴리스틱). 교대 게임에서는 <strong>Min-Max</strong>와 <strong>αβ 가지치기</strong>로 푼다. 알파고도 본질은 탐색이다.
-  </div>
-<h3 class="slide">알파고도 결국 탐색 시스템 (MCTS + 딥러닝)</h3>
-<p>알파고는 <strong>몬테카를로 트리 탐색(Monte Carlo Tree Search, MCTS)</strong>이라는 탐색 시스템에 딥러닝과 강화학습을 결합한 것입니다. MCTS의 "트리"가 바로 우리가 지금 배우고 있는 탐색 트리입니다.</p>
-<h3 class="slide">휴리스틱(Heuristic) — "경험"</h3>
-<p>휴리스틱(Heuristic)은 사전적으로 <em>경험적·발견적·교육법</em>이라는 뜻이지만, 강의에서는 <strong>"경험"</strong>이라는 의미가 가장 적절합니다. 맹목적 탐색은 문제에 내포된 경험·지식을 전혀 사용하지 않는 반면, 휴리스틱 탐색은 그것을 적극 활용합니다.</p>
-<div class="quote">
-    "산속에서 길을 잃었을 때, 어디서 사람 소리가 들리거나 쫄쫄쫄 물소리가 들린다 — 그쪽으로 가면 등산로가 있을 가능성이 높다. 그 '가능성'을 활용하는 것이 휴리스틱이다."
-    <span class="who">— 강태원 교수의 비유</span>
-</div>
-<h3 class="slide">A* 알고리즘 (A-star Algorithm)</h3>
-<p>가장 유명한 휴리스틱 탐색 알고리즘. 오늘날 거의 모든 길찾기에 적용됩니다(스타크래프트의 부대 이동 등). 다음 평가함수를 사용합니다.</p>
-<div class="formula">
-<strong>f(n) = g(n) + h(n)</strong>
-</div>
-<table>
-<thead><tr><th>기호</th><th>의미</th></tr></thead>
-<tbody>
-<tr><td><strong>n</strong></td><td>현재 상태(n번째 시도까지 도달한 노드)</td></tr>
-<tr><td><strong>g(n)</strong></td><td>시작 상태에서 현재 상태 n까지의 <strong>실제 비용</strong> (지금까지 시도 횟수)</td></tr>
-<tr><td><strong>h(n)</strong></td><td>현재 상태 n에서 목적 상태까지의 <strong>추정 비용 (휴리스틱 함수)</strong></td></tr>
-<tr><td><strong>f(n)</strong></td><td>n을 거쳐 목적상태까지 가는 <strong>총 추정 비용</strong></td></tr>
-</tbody>
-</table>
-<p>A* 알고리즘은 항상 <strong>f(n)이 가장 작은 노드를 우선 확장</strong>합니다. 이론적으로 좋은 h(n)을 만들면 항상 <strong>최적해(Best Solution)</strong>를 보장하는 것이 증명되어 있습니다.</p>
-<h3 class="slide">A* 알고리즘 — 8-퍼즐 적용 사례</h3>
-<p>8-퍼즐에 A*를 적용하려면 두 함수를 정의해야 합니다.</p>
-<div class="definition">
-<span class="label">8-퍼즐의 g(n)과 h(n)</span>
-<strong>g(n)</strong> — 지금까지 숫자 조각을 옮긴 횟수<br/>
-<strong>h(n)</strong> — 현재 상태와 목표 상태에서 <strong>일치하지 않는 칸의 수</strong> (빈칸 제외, 1~8 숫자 기준)
-  </div>
-<p>예시 진행:</p>
-<ol>
-<li><strong>시작 상태</strong>: g=0, h=4 (4개 칸이 일치하지 않음) → f = 0+4 = <strong>4</strong></li>
-<li>가능한 3가지 다음 상태에 대해 f 계산: <strong>6, 4, 6</strong> → 중간(f=4)을 선택</li>
-<li>다음 단계: <strong>5, 5, 6</strong> → 동점일 때는 무작위 선택 후 진행</li>
-<li>...반복하며 f가 최소인 곳을 우선 확장</li>
-<li>마지막에 h=0이 되면 답 도달</li>
-</ol>
-<div class="img-placeholder">
-<span class="ph-title">[PDF 슬라이드 추출 가능]</span>
-    8-퍼즐 A* 진행 과정 — 각 노드의 f, g, h 값
-    <span class="hint">3주차 3차시 강의 14:00~22:00 부근. 슬라이드 다이어그램.</span>
-<span class="src">출처: 3주차 강의 슬라이드</span>
-</div>
-<p>비교: 만약 BFS를 쓰면 모든 같은 깊이를 다 살펴봐야 하고, DFS를 쓰면 한쪽으로 깊이 내려가다 답에 못 다다를 수 있습니다. 그러나 <strong>A*는 정보를 활용해 빠르게 도달</strong>합니다.</p>
-<div class="exam-point">
-<span class="label">시험 포인트</span>
-<strong>A* 평가함수 f(n) = g(n) + h(n)</strong>. g = 실제 비용(지나온 길), h = 휴리스틱 추정 비용(앞으로 갈 길). 8-퍼즐의 휴리스틱 = <strong>현재 상태와 목표 상태에서 일치하지 않는 칸 수</strong>(빈칸 제외).
-  </div>
-<h3 class="slide">게임 트리(Game Tree) — 교대로 두는 게임의 탐색 트리</h3>
-<p>탐색 트리이지만 특히 <strong>두 명이 교대로 두는 게임</strong>(바둑·장기·체스·Tic-Tac-Toe 등)에 대한 탐색 트리를 <strong>게임 트리(Game Tree)</strong>라고 합니다.</p>
-<h3 class="slide">예시 게임 — "5 외치기" (Say-5 Game)</h3>
-<div class="definition">
-<span class="label">규칙</span>
-    두 명이 번갈아 1부터 차례로 정수를 말한다. 한 번에 <strong>연속한 1~3개의 정수</strong>를 말할 수 있고, <strong>5를 말한 사람이 이긴다</strong>.
-  </div>
-<p>강의의 게임 트리 표기 약속:</p>
-<ul>
-<li><strong>동그라미(○) 노드</strong> = 나(선수)의 차례 (먼저 두는 사람)</li>
-<li><strong>네모(□) 노드</strong> = 너(상대)의 차례 (나중에 두는 사람)</li>
-<li><strong>괄호 안 숫자</strong>(1)·(2)·(3) = 그 사람이 한 번에 말한 정수의 개수</li>
-<li><strong>테두리 네모</strong> □ = 선수가 이기는 종료 상태 (값=1)</li>
-<li><strong>채워진 네모</strong> ■ = 후수가 이기는 종료 상태 (값=0)</li>
-</ul>
-<p>예: 내가 1만 말하고 → 너가 2,3,4를 말하면 → 내가 5를 말해 <strong>선수 승리(1)</strong>. 반대로 내가 1,2,3을 말하고 → 너가 4,5를 말하면 → <strong>후수 승리(0)</strong>.</p>
-<div class="img-placeholder">
-<span class="ph-title">[PDF 슬라이드 추출 가능]</span>
-    "5 외치기" 게임 트리 — AND-OR 트리 형태, 1·0 표시
-    <span class="hint">3주차 슬라이드 p.13~14. 강의 3차시 23:30~30:00 부근.</span>
-<span class="src">출처: 3주차 강의 슬라이드</span>
-</div>
-<h3 class="slide">AND-OR 트리</h3>
-<p>게임 트리는 <strong>AND-OR 트리</strong> 형태로 그려집니다.</p>
-<div class="definition">
-<span class="label">OR 노드 vs AND 노드</span>
-<strong>OR 노드 (나의 차례)</strong> — 자식 중 <strong>하나라도</strong> 1(이김)이면 그쪽으로 가면 되므로 <strong>OR 연산</strong>: 1·0·0 → <strong>1</strong>.<br/>
-<strong>AND 노드 (상대의 차례)</strong> — 상대가 바보가 아닌 이상 자기에게 유리한 0(상대 승)을 무조건 선택하므로 <strong>AND 연산</strong>: 1·0 → <strong>0</strong>.<br/><br/>
-    즉, 한 가지에라도 0이 있으면 상대는 그리로 갈 것이므로 그 노드는 0으로 봐야 한다.
-  </div>
-<h3 class="slide">Min-Max 전략 (Minimax Strategy)</h3>
-<div class="definition">
-<span class="label">정의 — Min-Max 전략</span>
-    상대가 최선의 수를 둘 것이라고 가정하고 결정. <strong>나의 이익</strong>을 기준으로:<br/>
-    ① <strong>나의 차례 (OR 노드)</strong>: 나의 이익이 <strong>최대(Max)</strong>가 되는 자식 선택<br/>
-    ② <strong>상대의 차례 (AND 노드)</strong>: 나의 이익이 <strong>최소(Min)</strong>가 되는 자식이 선택될 것으로 가정 (= 상대 이익이 최대)
-  </div>
-<p>이렇게 함으로써 <strong>"보장된 최소 이익"</strong>을 최대화하는 안전한 수를 찾습니다. Min-Max 전략은 알파고 이전까지 게임 AI의 가장 중요한 탐색 전략이었습니다.</p>
-<p>그러나 바둑처럼 경우의 수가 너무 많으면 Min-Max만으로는 역부족이며, 그래서 등장한 것이 <strong>딥러닝·강화학습 결합</strong>입니다(알파고).</p>
-<h3 class="slide">αβ 가지치기 (Alpha-Beta Pruning)</h3>
-<p>Min-Max 전략을 그대로 쓰면 모든 노드를 다 살펴봐야 하므로 비효율적입니다. <strong>αβ 가지치기</strong>는 <em>"이쪽은 더 살펴봐야 결과가 안 좋다"</em>는 게 보이는 가지를 잘라내(Prune) 탐색을 가속화합니다.</p>
-<div class="definition">
-<span class="label">α와 β의 의미</span>
-<strong>α (alpha)</strong> — 선수(나)가 <strong>보장받을 수 있는 최소 이익</strong> (최악의 경우라도 이만큼은 얻는다)<br/>
-<strong>β (beta)</strong> — 후수(상대)가 <strong>보장받을 수 있는 최대 이익</strong> (상대가 최악의 경우라도 이만큼은 얻는다)<br/><br/>
-<strong>가지치기란?</strong> 사과나무의 필요 없는 가지를 잘라내듯, 결과에 영향을 주지 않을 가지를 잘라 탐색 양을 줄이는 것.
-  </div>
-<h3 class="slide">β 가지치기 — 상대 차례에서 상한선 발견</h3>
-<p><em>예시</em>: 내가 한 가지를 따라가면 이익 7을 얻을 수 있는 것이 확정된 상태에서, 다른 가지를 살펴보다가 상대 노드의 한 자식 값으로 <strong>8</strong>이 나왔다. 상대는 자기에게 유리한 쪽(나의 이익이 작은 쪽)을 고를 것이므로 이 가지의 결과는 <strong>최대 8 이하</strong>가 보장. 그런데 이미 다른 가지로 가면 7이 보장되므로, 이 가지가 7보다 클 가능성은 있어도 그것은 상대가 절대 선택하지 않을 길. <strong>이 가지의 나머지를 더 계산해 볼 필요가 없다</strong>.</p>
-<h3 class="slide">α 가지치기 — 나의 차례에서 하한선 발견</h3>
-<p><em>예시</em>: 한 가지로 가면 이익 7이 보장되어 있는데, 다른 가지를 살펴보다가 한 자식 값으로 <strong>5</strong>가 나왔다. 그 가지의 결과는 <strong>최소 5 이상</strong>인데, 이미 7이 보장되므로 이 가지로 갈 이유가 없다. <strong>이 가지의 나머지 자식들을 더 살필 필요 없다</strong>.</p>
-<div class="exam-point">
-<span class="label">시험 포인트 · 빈출</span>
-    ① <strong>Min-Max</strong>: 나=Max, 상대=Min을 가정해 보장된 최소 이익을 최대화. <br/>
-    ② <strong>αβ 가지치기</strong>: <strong>α</strong>=선수의 보장된 최소이익, <strong>β</strong>=후수의 보장된 최대이익. <br/>
-    ③ 결과에 영향을 주지 않으면서 탐색을 줄이는 것이 가지치기의 핵심.
-  </div>
-<div class="watch-rec">
-<span class="label">📍 αβ 가지치기 — 깊이 있게 알고 싶다면</span>
-    강태원 교수가 직접 언급: <em>"αβ 가지치기를 제대로 설명하려면 3시간이 필요하다"</em>. 시험에서는 직관적 의미와 α·β의 의미만 알면 충분하지만, 컴퓨터 학생·게임 관심자는 교재의 자세한 풀이를 참고하길 권장.
-  </div>
-<div class="connect">
-<span class="label">알파고와의 연결</span>
-    알파고의 핵심 골격 <strong>MCTS(Monte Carlo Tree Search)</strong>는 본질적으로 게임 트리 탐색입니다. 바둑은 경우의 수가 너무 많아 Min-Max + αβ로도 부족하기에, MCTS는 <strong>무작위 시뮬레이션</strong>(Monte Carlo)을 더해 유망한 수를 추정하고, 거기에 <strong>딥러닝(CNN)</strong>으로 가치를 평가하며, <strong>강화학습</strong>으로 자가 대국으로 학습합니다.
-  </div>
-<!-- ============= 핵심 정리 ============= -->
-</div><div class="summary-box" id="summary">
-<h3>3주차 핵심 정리 (12가지)</h3>
-<ol>
-<li><strong>탐색(Search)</strong>은 인공지능 초기부터 연구되어 온 가장 기본적인 분야이며, 알파고도 본질은 탐색 시스템(MCTS).</li>
-<li><strong>상태공간 탐색</strong>: 문제를 ① 초기상태(S) ② 목적상태(G) ③ 연산자(Operator)로 표현해 해를 찾는 방법.</li>
-<li>대표 4가지 문제: <strong>미로 / 8-퍼즐 / 틱택토 / 선교사와 식인종</strong>.</li>
-<li>선교사와 식인종 상태 표현: <strong>(선교사수, 식인종수, 배위치)</strong>. 배 위치 1=왼쪽, -1=오른쪽.</li>
-<li><strong>탐색 트리(Search Tree)</strong>: 상태공간 탐색이 자연스럽게 나무 형태로 표현된 것.</li>
-<li><strong>맹목적 탐색(Blind Search)</strong> = "눈 감고 문고리 잡기". 랜덤 탐색과 순차 탐색(BFS·DFS)으로 나뉨.</li>
-<li><strong>BFS = 큐(Queue), DFS = 스택(Stack)/재귀</strong>. 답 위치에 따라 효율이 다름.</li>
-<li><strong>휴리스틱(Heuristic)</strong>: 경험·문제 내포 정보를 활용한 어림짐작.</li>
-<li><strong>A* 알고리즘 평가함수</strong>: <code>f(n) = g(n) + h(n)</code>. g=실제 비용, h=추정 비용. 좋은 h를 만들면 항상 최적해 보장(이론적 증명).</li>
-<li><strong>게임 트리</strong>는 교대 게임의 탐색 트리이며 <strong>AND-OR 트리</strong> 형태로 표현됨.</li>
-<li><strong>Min-Max 전략</strong>: 나=Max(OR 노드), 상대=Min(AND 노드). 보장된 최소 이익을 최대화.</li>
-<li><strong>αβ 가지치기</strong>: α=선수의 보장된 최소이익, β=후수의 보장된 최대이익. 결과에 영향 없는 가지를 잘라 탐색을 효율화.</li>
-</ol>
-</div>
+<figure class="lecture-img">
+  <img src="img/03-1-1-상태공간-4가지-예시.png" alt="상태공간 탐색의 4가지 대표 문제 — 미로·8퍼즐·틱택토·선교사와 식인종" loading="lazy">
+<figure class="lecture-img">
+  <img src="img/03-1-2-8-퍼즐-도식.png" alt="8-퍼즐(8-puzzle) — 3×3 격자에 빈칸 1개와 숫자 8개" loading="lazy">
+  <figcaption>8-퍼즐(8-puzzle) — 3×3 격자에 빈칸 1개와 숫자 8개</figcaption>
+</figure>
+  <figcaption>상태공간 탐색의 4가지 대표 문제 — 미로·8퍼즐·틱택토·선교사와 식인종</figcaption>
+</figure>
 
-
-<!-- LECTURE_QUIZ_SECTION_START -->
-<div class="lecture-quiz-box">
-  <h2 class="lq-title">🎯 강의 끝 퀴즈 (시험 1순위)</h2>
-  <p class="lq-desc">강의 영상 마지막에 등장하는 빈칸 채우기 — 핑크 단어가 정답입니다.</p>
-
-    <div class="lq-session">
-      <span class="lq-stag">1차시</span>
-      <p class="lq-filled">초기 인공지능 연구자들은 문제 풀이를 <span class="lq-fill">( <b>상태공간</b> )</span> 탐색이라는 개념으로 추상화하여 체계적으로 다룬다. 세상의 모든 문제는 문제를 해결해야 할 시점에 특정 상태에 있으며 해결되었을 때를 나타내는 상태가 있다. 문제를 푼다는 건 현재 상태를 해결되었을 때를 나타내는 상태로 바꾸는 방법이나 과정을 알아내는 것과 같다.</p>
-    </div>
-    <div class="lq-session">
-      <span class="lq-stag">2차시</span>
-      <p class="lq-filled">문제를 추상화하여 상태공간을 정의하면 상태공간 탐색 시스템은 초기 상태에 일련의 연산자를 적용해서 목적 상태에 도달하는 방법을 찾는다. 목적 상태에 도달하면 문제는 해결된 것이다. 시스템이 목적 상태에 도달하기 위해 일련의 연산자를 적용하는 과정을 그림으로 나타내면 나뭇가지가 뻗어 나가는 모양을 얻을 수 있다. 이것을 <span class="lq-fill">( <b>탐색 트리</b> )</span>라고 부른다.</p>
-    </div>
     <div class="lq-session">
       <span class="lq-stag">3차시</span>
       <p class="lq-filled">바둑이나 장기처럼 교대로 자기 수를 두는 게임에서 생성되는 탐색 트리를 특히 <span class="lq-fill">( <b>게임</b> )</span> 트리라 부른다. 이 트리는 보통 and-or 형태를 취한다. 자기 차례에서는 자기가 이길 수 있는 상태를 선택할 수 있으므로 or 형태의 가지로 표시하고, 상대 차례에서는 (항상 실수 없이) 상대가 자신이 이길 수 있는 상태를 선택할 것이 분명함으로 and 형태의 가지로 나타낸다.</p>

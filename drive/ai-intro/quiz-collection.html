@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>모두의 인공지능 — 강의 퀴즈 모음 (시험 1순위)</title>
-<link rel="stylesheet" href="theme.css?v=20260605i">
+<link rel="stylesheet" href="theme.css?v=20260605m">
 <style>
   .alert-box { background:#ffcfde !important; border:2px solid #ff66a8 !important; border-left:6px solid #ff66a8 !important; padding:20px 26px !important; margin:20px 0 30px !important; border-radius:16px !important; }
   .alert-box h3 { font-family:'Jua',sans-serif !important; color:#c1376b !important; font-size:20px !important; margin-bottom:10px !important; border:none !important; padding:0 !important; }
@@ -40,6 +40,14 @@
     <h3>🎯 가장 중요한 페이지</h3>
     <p>빈칸 채우기 퀴즈는 <strong>시험에 가장 직접적으로 출제</strong>됩니다. 핑크색 강조 단어가 정답입니다.</p>
     <p>시험 직전에는 이 페이지를 가장 먼저 훑어보세요.</p>
+  </div>
+
+  <!-- 페이지 내 검색 -->
+  <div class="page-search">
+    <span class="ps-icon">🔍</span>
+    <input type="text" id="psInput" placeholder="이 페이지에서 검색 — 베이즈, CNN, 알파고, 튜링..." autocomplete="off">
+    <span class="ps-stat" id="psStat"></span>
+    <button class="ps-clear" id="psClear" type="button">지우기</button>
   </div>
 
   <div class="week-card-quiz">
@@ -308,6 +316,46 @@
         <p class="filled-text">음악에 인공지능을 응용한다면 음악 하는 사람이 잘할 수 있을까? <span class="filled-answer">( <b>컴퓨터공학자</b> )</span>가 잘할 수 있을까? 미술에 인공지능을 응용한다면 미술 하는 사람이 잘할 수 있을까? <span class="filled-answer">( <b>컴퓨터공학자</b> )</span>가 잘할 수 있을까? ... 내 분야에 인공지능을 응용한다면 내가 잘할 수 있을까? <span class="filled-answer">( <b>컴퓨터공학자</b> )</span>가 잘할 수 있을까? 그래서 모두에 의한, 모두를 위한, 모두의 인공지능이다!</p>
       </div>
   </div>
-</div>
+
+<script>
+(function(){
+  const input = document.getElementById("psInput");
+  const stat = document.getElementById("psStat");
+  const clear = document.getElementById("psClear");
+  if (!input) return;
+  const cards = Array.from(document.querySelectorAll(".week-card-quiz"));
+  const sessions = Array.from(document.querySelectorAll(".session-block"));
+  // 원본 텍스트 저장 (하이라이트 복구용)
+  sessions.forEach(s => { s.dataset.text = s.textContent.toLowerCase(); });
+  cards.forEach(c => { c.dataset.text = c.textContent.toLowerCase(); });
+  function filter(q) {
+    q = (q||"").trim().toLowerCase();
+    if (!q) {
+      sessions.forEach(s => s.classList.remove("ps-hidden"));
+      cards.forEach(c => c.classList.remove("ps-hidden"));
+      stat.textContent = "";
+      return;
+    }
+    let matchCount = 0;
+    cards.forEach(card => {
+      const sessionsInCard = Array.from(card.querySelectorAll(".session-block"));
+      let anyMatch = false;
+      sessionsInCard.forEach(s => {
+        const hit = s.dataset.text.includes(q);
+        s.classList.toggle("ps-hidden", !hit);
+        if (hit) { anyMatch = true; matchCount++; }
+      });
+      card.classList.toggle("ps-hidden", !anyMatch);
+    });
+    stat.textContent = matchCount + "개 매칭";
+  }
+  input.addEventListener("input", e => filter(e.target.value));
+  clear.addEventListener("click", () => { input.value = ""; filter(""); input.focus(); });
+  // Esc로 초기화
+  input.addEventListener("keydown", e => {
+    if (e.key === "Escape") { input.value = ""; filter(""); input.blur(); }
+  });
+})();
+</script>
 </body>
 </html>

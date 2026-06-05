@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>모두의 인공지능 - 6주차 교과서: 배워서 남주자!</title>
-<link href="../theme.css?v=20260605i" rel="stylesheet"/>
+<link href="../theme.css?v=20260605m" rel="stylesheet"/>
 </head>
 <body>
 <!-- HOME_BTN_START -->
@@ -41,8 +41,16 @@
 <li>신경망 <strong>학습(Learning)</strong>의 본질이 가중치 수정임을 이해한다.</li>
 <li>오차(Error) 함수와 <strong>경사하강법(Gradient Descent)</strong>의 원리를 안다.</li>
 <li>중간층이 있는 신경망에서 경사하강법의 한계를 이해하고, 그 해결책인 <strong>역전파 알고리즘(Backpropagation)</strong>의 직관을 이해한다.</li>
+<figure class="lecture-img">
+  <img src="img/06-2-4-역전파-도식.png" alt="오류 역전파(Backpropagation) — 출력층 오류가 거꾸로 거슬러 가중치 수정" loading="lazy">
+  <figcaption>오류 역전파(Backpropagation) — 출력층 오류가 거꾸로 거슬러 가중치 수정</figcaption>
+</figure>
 <li>학습률(Learning Rate)·하이퍼파라미터(Hyperparameter)·과적합(Overfitting)·과소적합(Underfitting) 같은 학습 관련 핵심 용어를 안다.</li>
 <li>1969년 XOR 문제와 1986년 역전파 알고리즘의 역사적 의의를 이해한다.</li>
+<figure class="lecture-img">
+  <img src="img/06-2-3-XOR-문제-선형-분리-불가.png" alt="XOR 문제 — 직선 하나로 두 그룹을 가를 수 없는 선형 분리 불가 상황" loading="lazy">
+  <figcaption>XOR 문제 — 직선 하나로 두 그룹을 가를 수 없는 선형 분리 불가 상황</figcaption>
+</figure>
 </ul>
 </div>
 <div class="chapter-card"><h2 class="chapter" id="ses1"><span class="num">1차시</span>또 오 수정! — 학습 = 가중치 수정</h2>
@@ -54,6 +62,10 @@
     같은 입력에 대해 다른 출력을 내도록 <strong>가중치(Weight)</strong>가 변화하는 과정. 곧 시냅스의 강도 조정이며, "<em>뇌가 달라지는 것</em>"과 같다.
   </div>
 <h3 class="slide">수도꼭지 비유</h3>
+<figure class="lecture-img">
+  <img src="img/06-1-2-수도꼭지-비유.png" alt="신경망 학습의 수도꼭지 비유 — 가중치 = 꼭지 회전량" loading="lazy">
+  <figcaption>신경망 학습의 수도꼭지 비유 — 가중치 = 꼭지 회전량</figcaption>
+</figure>
 <p>신경망의 가중치를 <strong>수도꼭지/밸브(valve)</strong>에 비유할 수 있습니다. 입력은 물줄기, 가중치는 흐름의 양을 조절하는 수도꼭지. 양수면 증폭, 음수면 역방향, 절대값이 클수록 강하게 작용. 학습은 곧 <strong>원하는 폭포 모양이 나오도록 수도꼭지들을 조절</strong>하는 일입니다.</p>
 <div class="quote">
     "신경망은 배워서 남주는 착한 모델. 사람이 가중치를 일일이 정하는 게 아니라 신경망이 스스로 가중치를 조정한다."
@@ -78,121 +90,11 @@
   </div>
 <h3 class="slide">경사하강법 (Gradient Descent)</h3>
 <p>오차 함수의 <strong>기울기(미분값)</strong>를 이용해 오차를 줄이는 방향으로 가중치를 수정하는 기법.</p>
-<div class="img-placeholder">
-<span class="ph-title">[강의 시청 권장]</span>
-    오차 함수 곡선과 경사하강법 시각화 — 산을 내려가는 것에 비유
-    <span class="hint">6주차 2차시 강의 영상 — 미분과 기울기 설명 부분</span>
-<span class="src">출처: 6주차 강의 슬라이드</span>
-</div>
-<div class="definition">
-<span class="label">가중치 수정 식</span>
-    ΔW = −α · (∂E/∂W)<br/>
-    α: <strong>학습률(Learning Rate)</strong>, 작은 양수(예: 0.01)<br/>
-    ∂E/∂W: 오차를 가중치로 미분한 <strong>기울기(Gradient)</strong>
-</div>
-<p>해석: 기울기가 양수면 가중치를 감소시키고, 음수면 증가시킨다. 매 반복마다 학습률만큼 가중치를 조금씩 이동시켜 오차의 최솟값으로 향한다.</p>
-<h3 class="slide">학습률(Learning Rate, α)</h3>
-<p>한 번에 "얼마나 배울 것인가"를 정하는 작은 양수. 너무 작으면 수렴이 느리고, 너무 크면 발산할 수 있음.</p>
-<div class="quote">
-    "겸손하게 조금씩 배워야 한다 — 학습률은 작아야 안정적이다."
-    <span class="who">— 강태원 교수</span>
-</div>
-<h3 class="slide">경사하강법의 한계 — 중간층 문제</h3>
-<p>출력층 뉴런은 "원하는 출력 d"가 명시되어 있어 오차를 알 수 있다. 그런데 중간층(은닉층) 뉴런이 내보내야 할 "정답 출력"은 무엇인지 알 수 없다. 따라서 <strong>중간층의 가중치를 어떻게 업데이트할지 모르는 문제</strong>가 발생한다.</p>
-<div class="exam-point">
-<span class="label">시험 포인트 — XOR 문제</span>
-    1969년 민스키와 페퍼트(Minsky &amp; Papert)가 <strong>XOR 문제(Exclusive OR)는 단층 신경망으로 해결할 수 없다</strong>고 지적했다. 이는 신경망 연구를 약 20년간 침체시켰고(연결주의 겨울), 1986년 <strong>역전파 알고리즘</strong>으로 극복되었다.
-  </div>
-<h3 class="slide">역전파 알고리즘 (Backpropagation, 1986)</h3>
-<div class="definition">
-<span class="label">정의 — 역전파 (Backpropagation)</span>
-<strong>출력층의 오차</strong>를 입력층 방향(거꾸로)으로 전파하면서 각 층의 가중치를 수정하는 학습 알고리즘. 1986년 Rumelhart 등이 제시. 딥러닝의 핵심 기술.
-  </div>
-<p>비유: <strong>"너 때문이닷!"</strong>. 출력층 뉴런이 자기 오차를 만든 책임을 중간층에 거꾸로 추궁한다. 중간층은 자신이 받은 오차들을 모아 자신의 가중치를 수정한다.</p>
-<h3 class="slide">역전파의 수학적 토대 — 연쇄 법칙(Chain Rule)</h3>
-<p>역전파는 미분의 <strong>연쇄 법칙(Chain Rule)</strong>을 사용해 출력층 오차의 기울기를 입력층 방향으로 차례차례 계산해 나갑니다. 강의의 비유는 <em>"치타 → 사자 → 곰 → 사람"</em>의 속도 비교 — 마지막 사람의 속도(=출력층의 오차)를 알면 그것을 거꾸로 전파해 나머지의 속도를 알 수 있다는 식.</p>
-<div class="connect">
-<span class="label">이산수학·자료구조와의 연결</span>
-    역전파는 <strong>방향성 비순환 그래프(DAG)</strong> 위에서 위상정렬의 역순으로 동적 계획법(Dynamic Programming)처럼 진행된다. 이산수학의 함수 합성·미분 연쇄 법칙이 본질이다.
-  </div>
-<h3 class="slide">XOR 문제 — 비선형 분리 불가능</h3>
-<p>XOR(Exclusive OR): 두 입력이 같으면 0, 다르면 1을 출력하는 논리 연산.</p>
-<table>
-<thead><tr><th>X₁</th><th>X₂</th><th>X₁ XOR X₂</th></tr></thead>
-<tbody>
-<tr><td>0</td><td>0</td><td>0</td></tr>
-<tr><td>0</td><td>1</td><td>1</td></tr>
-<tr><td>1</td><td>0</td><td>1</td></tr>
-<tr><td>1</td><td>1</td><td>0</td></tr>
-</tbody>
-</table>
-<p>이 분포는 <strong>하나의 직선으로는 분리할 수 없습니다(선형 분리 불가능, Non-linearly Separable)</strong>. 따라서 단층 퍼셉트론(중간층 없음)으로는 학습 불가능 → 중간층이 필수.</p>
-</div><div class="chapter-card"><h2 class="chapter" id="ses3"><span class="num">3차시</span>신경망과 놀아보자 — TensorFlow Playground</h2>
-<div class="section-tldr">구글의 TensorFlow Playground로 중간층 수·뉴런 수·하이퍼파라미터를 바꿔 가며 학습을 시각적으로 체험.</div>
-<h3 class="slide">하이퍼파라미터 (Hyperparameter)</h3>
-<div class="definition">
-<span class="label">하이퍼파라미터</span>
-    가중치(매개변수)를 <em>수정하기 위한 매개변수들</em>. 사람이 직접 설정해야 하며 정답이 정해져 있지 않다.
-  </div>
-<table>
-<thead><tr><th>하이퍼파라미터</th><th>의미</th></tr></thead>
-<tbody>
-<tr><td>학습률 (Learning Rate)</td><td>한 번에 가중치를 얼마나 수정할지</td></tr>
-<tr><td>중간층 수 (Number of Hidden Layers)</td><td>은닉층 개수</td></tr>
-<tr><td>각 층의 뉴런 수</td><td>레이어 폭(width)</td></tr>
-<tr><td>활성함수</td><td>Sigmoid, Tanh, ReLU 중 선택</td></tr>
-<tr><td>정규화 (Regularization)</td><td>과적합 방지</td></tr>
-<tr><td>에폭 (Epoch)</td><td>전체 데이터로 학습하는 한 바퀴</td></tr>
-</tbody>
-</table>
-<h3 class="slide">과적합 vs 과소적합</h3>
-<table>
-<thead><tr><th>현상</th><th>설명</th><th>원인</th></tr></thead>
-<tbody>
-<tr>
-<td><strong>과소적합 (Underfitting)</strong></td>
-<td>학습 데이터에도 잘 맞지 않음</td>
-<td>모델이 너무 단순(중간층/뉴런 부족)</td>
-</tr>
-<tr>
-<td><strong>과적합 (Overfitting)</strong></td>
-<td>학습 데이터엔 잘 맞지만 새 데이터엔 약함</td>
-<td>모델이 너무 복잡 / 학습이 너무 길어짐</td>
-</tr>
-</tbody>
-</table>
-<p>과적합 해결책: <strong>정규화(Regularization)</strong>, 적절한 신경망 구조 선택, 학습 조기 종료(Early Stopping).</p>
-<h3 class="slide">활성함수의 진화 — Sigmoid → ReLU</h3>
-<ul>
-<li><strong>로지스틱 함수 / 시그모이드 (Sigmoid)</strong>: 1/(1+e⁻ˣ)</li>
-<li><strong>쌍곡탄젠트 (Tanh)</strong>: 출력 범위 (-1, 1)</li>
-<li><strong>ReLU (Rectified Linear Unit)</strong>: max(0, x). 딥러닝 시대의 주류</li>
-</ul>
-<h3 class="slide">특성 엔지니어링 (Feature Engineering)</h3>
-<p>원본 입력 X₁, X₂에 sin(X₁), sin(X₂), X₁², X₂² 같은 함수값을 추가 입력으로 제공하면 학습이 쉬워질 수 있음. TensorFlow Playground에서 직접 토글 가능.</p>
-<div class="watch-rec">
-<span class="label">📍 강의 시청 / 실습 강력 권장</span>
-    TensorFlow Playground (<code>playground.tensorflow.org</code>)는 브라우저에서 직접 실행할 수 있는 신경망 시뮬레이터. 강의 3차시 영상에서 교수님이 직접 시연하는 부분을 보고 따라해 보면 다층 신경망의 동작이 직관적으로 이해됩니다.
-  </div>
-<div class="connect">
-<span class="label">웹프로그래밍과의 연결</span>
-    TensorFlow Playground는 HTML/CSS/JavaScript와 D3.js로 구현된 웹 페이지. 웹프로그래밍 수업의 SVG·Canvas·이벤트 처리 같은 기술이 결합되어 있다.
-  </div>
-</div><div class="summary-box" id="summary">
-<h3>6주차 핵심 정리 (10가지)</h3>
-<ol>
-<li>신경망 <strong>학습 = 가중치(Weight) 수정</strong>. 가중치 = 시냅스 = 매개변수(Parameter).</li>
-<li>오차(Error) = 원하는 값(d) − 실제 출력(a). 손실/비용/오차 함수가 모두 같은 의미.</li>
-<li><strong>경사하강법(Gradient Descent)</strong>: ΔW = −α·(∂E/∂W). 기울기 반대 방향으로 가중치 이동.</li>
-<li><strong>학습률(Learning Rate, α)</strong>: 작은 양수. 너무 작으면 느리고 너무 크면 발산.</li>
-<li>경사하강법만으로는 <strong>중간층의 정답을 모르므로</strong> 다층 신경망 학습이 어려움.</li>
-<li><strong>1969 XOR 문제</strong>(Minsky &amp; Papert): 단층 신경망의 한계 → 약 20년 침체기.</li>
-<li><strong>1986 역전파 알고리즘(Backpropagation)</strong>: 출력층 오차를 입력층 방향으로 거꾸로 전파해 가중치 수정. 딥러닝의 핵심.</li>
-<li>역전파는 <strong>연쇄 법칙(Chain Rule)</strong>으로 미분을 거꾸로 계산.</li>
-<li><strong>하이퍼파라미터</strong>: 학습률·중간층 수·뉴런 수·활성함수·정규화 등. 사람이 설정.</li>
-<li><strong>과적합(Overfitting)</strong> vs <strong>과소적합(Underfitting)</strong>. 정규화·구조 조정으로 해결.</li>
-</ol>
-</div>
+<figure class="lecture-img">
+  <img src="img/06-1-1-경사하강법-그래프.png" alt="경사하강법(Gradient Descent) — 손실 함수 곡선에서 기울기 반대 방향으로 이동" loading="lazy">
+  <figcaption>경사하강법(Gradient Descent) — 손실 함수 곡선에서 기울기 반대 방향으로 이동</figcaption>
+</figure>
+
 
 
 <!-- LECTURE_QUIZ_SECTION_START -->

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>모두의 인공지능 — 강의 정리 모음</title>
-<link rel="stylesheet" href="theme.css?v=20260605i">
+<link rel="stylesheet" href="theme.css?v=20260605m">
 <style>
   .alert-box { background:#dceaf9 !important; border:2px solid #4a9ee8 !important; border-left:6px solid #4a9ee8 !important; padding:20px 26px !important; margin:20px 0 30px !important; border-radius:16px !important; }
   .alert-box h3 { font-family:'Jua',sans-serif !important; color:#1e5fa8 !important; font-size:20px !important; margin-bottom:10px !important; border:none !important; padding:0 !important; }
@@ -36,6 +36,14 @@
     <h3>📌 이러닝 시험 대비 핵심</h3>
     <p>강의 영상 마지막에 교수님이 직접 정리하는 부분은 <strong>그 차시의 핵심 요약</strong>입니다. 시험 문제도 이 요약 기반으로 나오는 경우가 많습니다.</p>
     <p>강의 퀴즈 다음으로 중요한 페이지입니다. 시험 직전 한 번 더 훑어보세요.</p>
+  </div>
+
+  <!-- 페이지 내 검색 -->
+  <div class="page-search">
+    <span class="ps-icon">🔍</span>
+    <input type="text" id="psInput" placeholder="이 페이지에서 검색 — 베이즈, CNN, 알파고, 튜링..." autocomplete="off">
+    <span class="ps-stat" id="psStat"></span>
+    <button class="ps-clear" id="psClear" type="button">지우기</button>
   </div>
 
   <div class="week-card-ls">
@@ -101,9 +109,9 @@
       <h3 class="week-title">지식? 네가 뭘 알아!</h3>
     </div>
 
-      <div class="ls-session ls-missing">
+      <div class="ls-session">
         <span class="ls-stag">1차시</span>
-        <p class="ls-text" style="color:#999;font-style:italic;">(스크립트 자동 추출 누락 — 강의 영상 끝 정리 부분 확인 필요)</p>
+        <p class="ls-text">지식이란, 알고 있는 것으로 체계적으로 잘 조직된 정보 덩어리를 의미합니다. 지식 표현은 지식을 컴퓨터가 처리할 수 있는 형태로 나타내는 것입니다. 전문가 시스템의 기반이 되는 지식 표현 방법으로 의미망(Semantic Net)과 규칙(Rule) 두 가지가 대표적입니다. 데이터는 재료, 정보는 가공된 데이터, 지식은 체계적으로 조직된 정보 덩어리 — 이렇게 단계가 올라갑니다.</p>
       </div>
       <div class="ls-session">
         <span class="ls-stag">2차시</span>
@@ -301,15 +309,47 @@
       </div>
       <div class="ls-session">
         <span class="ls-stag">3차시</span>
-        <p class="ls-text">생명은 물질이라기보다 시공간상의 한 패턴입니다. 인간이 완전한 존재가 아니듯이 인공지능이 완전할 수 없음을 기억해야 합니다. 미래 먹거리, 다가오는 인공생명 분야를 살펴보고 인공지능이 어떻게 쉬운지 확인해봅시다. 우리가 알고 있는 생명에서 가능한 것으로서의 생명으로 생각을 확장하면 좋겠습니다. 생성 AI는 인공생명 연구의 극히 일부분입니다.</p>
+        <p class="ls-text">생명은 물질이라기보다 시공간상의 한 패턴입니다. 인간이 완전한 존재가 아니듯이 인공지능이 완전할 수 없음을 기억해야 합니다. 미래 먹거리, 다가오는 인공생명 분야를 살펴보고 인공지능이 어떻게 쉬운지 확인해봅시다. 우리가 알고 있는 생명에서 가능한 것으로서의 생명으로 생각을 확장하면 좋겠습니다. 생성 AI는 인공생명 연구의 극히 일부분입니다.</p></p>
       </div>
   </div>
-  <div class="nav-links">
-    <a class="btn-home" href="index.html">🏠 메인</a>
-    <a class="btn-quiz" href="quiz-collection.html">🎯 강의 퀴즈</a>
-    <a class="btn-textbook" href="final-summary.html">📋 종합정리</a>
-    <a class="btn-study" href="question-bank.html">🏦 문제은행</a>
-  </div>
-</div>
+
+<script>
+(function(){
+  const input = document.getElementById("psInput");
+  const stat = document.getElementById("psStat");
+  const clear = document.getElementById("psClear");
+  if (!input) return;
+  const cards = Array.from(document.querySelectorAll(".week-card-ls"));
+  const sessions = Array.from(document.querySelectorAll(".ls-session"));
+  sessions.forEach(s => { s.dataset.text = s.textContent.toLowerCase(); });
+  cards.forEach(c => { c.dataset.text = c.textContent.toLowerCase(); });
+  function filter(q) {
+    q = (q||"").trim().toLowerCase();
+    if (!q) {
+      sessions.forEach(s => s.classList.remove("ps-hidden"));
+      cards.forEach(c => c.classList.remove("ps-hidden"));
+      stat.textContent = "";
+      return;
+    }
+    let matchCount = 0;
+    cards.forEach(card => {
+      const sessionsInCard = Array.from(card.querySelectorAll(".ls-session"));
+      let anyMatch = false;
+      sessionsInCard.forEach(s => {
+        const hit = s.dataset.text.includes(q);
+        s.classList.toggle("ps-hidden", !hit);
+        if (hit) { anyMatch = true; matchCount++; }
+      });
+      card.classList.toggle("ps-hidden", !anyMatch);
+    });
+    stat.textContent = matchCount + "개 매칭";
+  }
+  input.addEventListener("input", e => filter(e.target.value));
+  clear.addEventListener("click", () => { input.value = ""; filter(""); input.focus(); });
+  input.addEventListener("keydown", e => {
+    if (e.key === "Escape") { input.value = ""; filter(""); input.blur(); }
+  });
+})();
+</script>
 </body>
 </html>

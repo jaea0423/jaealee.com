@@ -247,6 +247,62 @@
     font-size: 14px;
   }
 
+  /* ============ 우선 액션 바 (강의 퀴즈 / 강의 정리) ============ */
+  .priority-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 24px 0 8px;
+  }
+  .priority-actions .pa-btn {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 20px 26px;
+    border-radius: 22px;
+    text-decoration: none;
+    color: #fff;
+    background: linear-gradient(135deg, var(--accent-pink), #c1376b);
+    box-shadow: 0 10px 28px rgba(255, 102, 168, 0.35);
+    border: 2px solid rgba(255,255,255,0.7);
+    transition: transform 0.18s, box-shadow 0.18s;
+    position: relative;
+  }
+  .priority-actions .pa-btn.summary {
+    background: linear-gradient(135deg, var(--accent-blue), #1e5fa8);
+    box-shadow: 0 10px 28px rgba(74, 158, 232, 0.35);
+  }
+  .priority-actions .pa-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 36px rgba(91,69,130,0.4);
+  }
+  .priority-actions .pa-emoji { font-size: 40px; line-height: 1; }
+  .priority-actions .pa-text { flex: 1; }
+  .priority-actions .pa-title {
+    font-family: 'Jua', sans-serif;
+    font-size: 22px;
+    margin-bottom: 4px;
+  }
+  .priority-actions .pa-sub {
+    font-size: 13px;
+    opacity: 0.95;
+    font-family: 'Noto Sans KR';
+  }
+  .priority-actions .pa-badge {
+    background: rgba(255,255,255,0.28);
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-family: 'Jua', sans-serif;
+    backdrop-filter: blur(6px);
+  }
+  @media (max-width: 700px) {
+    .priority-actions { grid-template-columns: 1fr; }
+    .priority-actions .pa-btn { padding: 16px 20px; }
+    .priority-actions .pa-emoji { font-size: 32px; }
+    .priority-actions .pa-title { font-size: 18px; }
+  }
+
   /* ============ 섹션 타이틀 ============ */
   .section-title {
     font-family: 'Jua', sans-serif;
@@ -605,6 +661,26 @@
     <div class="search-results" id="searchResults" role="listbox"></div>
   </div>
 
+  <!-- ===== 우선 액션 — 강의 퀴즈 / 강의 정리 ===== -->
+  <div class="priority-actions">
+    <a class="pa-btn" href="quiz-collection.html">
+      <span class="pa-emoji">🎯</span>
+      <span class="pa-text">
+        <div class="pa-title">강의 퀴즈</div>
+        <div class="pa-sub">42차시 빈칸·정답 한눈에 보기</div>
+      </span>
+      <span class="pa-badge">1순위</span>
+    </a>
+    <a class="pa-btn summary" href="lecture-summary.html">
+      <span class="pa-emoji">📚</span>
+      <span class="pa-text">
+        <div class="pa-title">강의 정리</div>
+        <div class="pa-sub">각 차시 마지막 교수님 정리</div>
+      </span>
+      <span class="pa-badge">차시별</span>
+    </a>
+  </div>
+
   <!-- ===== 주차별 카드 ===== -->
   <h2 class="section-title">
     <span class="emoji">📖</span>
@@ -644,18 +720,6 @@
     <span class="count">완성</span>
   </h2>
   <div class="prep-grid">
-    <a class="prep-card active" href="quiz-collection.html" style="border-color:#ff66a8; background:linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,225,236,0.85));">
-      <div class="ribbon-new" style="background:linear-gradient(135deg, #ff66a8, #c1376b);">🎯 1순위</div>
-      <div class="pemoji active">🎯</div>
-      <h4>강의 퀴즈</h4>
-      <p><strong style="color:#c1376b;">시험 출제 1순위</strong> · 42차시 빈칸 채우기 정답 (캡쳐 확인 완료)</p>
-    </a>
-    <a class="prep-card active" href="lecture-summary.html" style="border-color:#4a9ee8; background:linear-gradient(135deg, rgba(255,255,255,0.95), rgba(220,234,249,0.85));">
-      <div class="ribbon-new" style="background:linear-gradient(135deg, #4a9ee8, #1e5fa8);">📚 차시별</div>
-      <div class="pemoji active">📚</div>
-      <h4>강의 정리</h4>
-      <p>각 차시 마지막 교수님 정리 — 이러닝 시험 대비</p>
-    </a>
     <a class="prep-card active" href="final-summary.html">
       <div class="ribbon-new">NEW</div>
       <div class="pemoji active">📋</div>
@@ -805,7 +869,7 @@ function renderResults(query) {
 
   searchResults.classList.add('active');
   searchResults.innerHTML = `
-    <div class="result-count">총 ${currentResults.length}개 결과 · ↑↓ 이동, Enter로 새 창에서 열기 ↗</div>
+    <div class="result-count">총 ${currentResults.length}개 결과 · ↑↓ 이동, Enter로 이동</div>
     ${currentResults.slice(0, 30).map((item, i) => `
       <a href="${item.file}#${item.anchor}"
          class="result-item${i===0?' selected':''}" data-idx="${i}">
@@ -813,7 +877,6 @@ function renderResults(query) {
           <span class="rkw">${highlight(item.keyword, query)}</span>
           <span class="reng">${highlight(item.english, query)}</span>
           <span class="rmeta">${item.week}주차 · ${item.category}</span>
-          <span class="ropen">↗</span>
         </div>
         <div class="rsum">${highlight(item.summary, query)}</div>
       </a>
@@ -853,5 +916,62 @@ function highlight(text, query) {
   const safe = escapeHtml(text || '');
   if (!query.trim()) return safe;
   const q = escapeHtml(query.trim());
-  const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-  return safe.replace(re
+  const re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+  return safe.replace(re, '<mark>$1</mark>');
+}
+
+/* ============ 검색 입력 이벤트 ============ */
+searchInput.addEventListener('input', function(e){ renderResults(e.target.value); });
+
+searchInput.addEventListener('keydown', function(e){
+  if (currentResults.length === 0) return;
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    selectedIdx = Math.min(selectedIdx + 1, currentResults.length - 1);
+    updateSelection();
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    selectedIdx = Math.max(selectedIdx - 1, 0);
+    updateSelection();
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    var sel = searchResults.querySelector('.result-item.selected');
+    if (sel) window.location.href = sel.href;
+  } else if (e.key === 'Escape') {
+    searchInput.value = '';
+    renderResults('');
+    searchInput.blur();
+  }
+});
+
+/* ============ 전역 단축키 ============ */
+document.addEventListener('keydown', function(e){
+  var isMac = navigator.platform.toLowerCase().indexOf('mac') >= 0;
+  var modKey = isMac ? e.metaKey : e.ctrlKey;
+  if (modKey && e.key.toLowerCase() === 'k') {
+    e.preventDefault();
+    searchInput.focus();
+    searchInput.select();
+  } else if (e.key === '/' && document.activeElement !== searchInput) {
+    e.preventDefault();
+    searchInput.focus();
+  }
+});
+
+document.addEventListener('click', function(e){
+  if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+    searchResults.classList.remove('active');
+  }
+});
+searchInput.addEventListener('focus', function(){
+  if (currentResults.length > 0) searchResults.classList.add('active');
+});
+
+if (typeof KEYWORDS === 'undefined' || !Array.isArray(KEYWORDS)) {
+  console.warn('KEYWORDS not loaded');
+  window.KEYWORDS = [];
+}
+console.log('keywords loaded: ' + KEYWORDS.length);
+</script>
+</body>
+</html>
