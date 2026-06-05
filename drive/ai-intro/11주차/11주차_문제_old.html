@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>모두의 인공지능 - 11주차 문제집</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;600;700&family=Nanum+Myeongjo:wght@400;700;800&display=swap');
+  :root { --bg:#faf6ef; --paper:#fffdf7; --ink:#2c2418; --ink-light:#5b5040; --accent:#8b4513; --accent-soft:#c69b7b; --rule:#d4c8b0; --highlight:#f4e4c1; --quote-bg:#f7efde; --def-bg:#fff8e8; --def-border:#b08654; --exam-bg:#fcecec; --exam-border:#b54848; --ans-bg:#eaf3ec; --ans-border:#5a8a5e; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; padding:0; background:var(--bg); color:var(--ink); font-family:'Noto Serif KR','Nanum Myeongjo',serif; line-height:1.85; font-size:17px; }
+  .page { max-width:880px; margin:0 auto; padding:60px 50px 80px; background:var(--paper); box-shadow:0 0 30px rgba(80,60,30,.08); min-height:100vh; }
+  .cover { text-align:center; padding:80px 0 50px; border-bottom:3px double var(--accent); margin-bottom:30px; }
+  .cover .series { font-size:14px; letter-spacing:6px; color:var(--accent); margin-bottom:20px; }
+  .cover h1 { font-family:'Nanum Myeongjo',serif; font-size:42px; font-weight:800; margin:10px 0; line-height:1.3; }
+  .cover .subtitle { font-size:22px; color:var(--ink-light); margin-top:10px; font-weight:300; }
+  .cover .doctype { display:inline-block; margin-top:30px; padding:8px 24px; border:1px solid var(--accent); border-radius:2px; font-size:16px; color:var(--accent); letter-spacing:4px; }
+  .cover .meta { margin-top:20px; font-size:14px; color:var(--ink-light); }
+  .controls { background:#fff8e8; border:1px solid var(--def-border); padding:14px 20px; margin:20px 0 30px; border-radius:6px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; position:sticky; top:0; z-index:10; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
+  .controls .lab { font-weight:700; color:var(--accent); margin-right:10px; font-family:sans-serif; }
+  .controls button { background:var(--accent); color:#fff; border:none; padding:8px 16px; border-radius:4px; cursor:pointer; font-size:14px; font-family:sans-serif; }
+  .controls button:hover { background:var(--ink); }
+  .controls .hint { color:var(--ink-light); font-size:13px; margin-left:auto; }
+  h2.chapter { font-family:'Nanum Myeongjo',serif; font-size:30px; color:var(--accent); border-bottom:2px solid var(--accent); padding-bottom:10px; margin-top:50px; margin-bottom:25px; }
+  h2.chapter .badge { display:inline-block; background:var(--accent); color:#fff; padding:3px 14px; border-radius:4px; font-size:16px; margin-right:12px; vertical-align:middle; font-family:sans-serif; }
+  .question { background:#fff; border:1px solid var(--rule); border-left:5px solid var(--accent-soft); padding:18px 22px; margin:18px 0; border-radius:4px; }
+  .qhead { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .qhead .qno { font-weight:700; color:var(--accent); font-family:sans-serif; font-size:14px; letter-spacing:1px; }
+  .qhead .qtype { font-size:12px; padding:2px 8px; background:var(--highlight); border-radius:3px; color:var(--ink-light); font-family:sans-serif; }
+  .qbody { font-size:17px; }
+  .options { margin:10px 0 0 20px; padding:0; list-style:none; }
+  .options li { padding:5px 0; }
+  .options .opt-num { font-weight:700; color:var(--accent); margin-right:6px; }
+  code { background:#f4ecd8; padding:1px 6px; border-radius:3px; font-family:'Consolas',monospace; font-size:14px; color:#5a3920; }
+  .answer-area { background:#fafaf3; border:1px dashed var(--rule); border-radius:4px; padding:10px 14px; margin:10px 0 0; min-height:50px; color:#bbb; font-size:14px; font-style:italic; }
+  .answer-area::before { content:"(답안 작성 영역 — 인쇄용)"; }
+  .toggle-btn { margin-top:10px; background:transparent; border:1px solid var(--ans-border); color:var(--ans-border); padding:5px 12px; border-radius:4px; font-size:13px; cursor:pointer; font-family:sans-serif; }
+  .toggle-btn:hover { background:var(--ans-border); color:#fff; }
+  .answer-box { display:none; background:var(--ans-bg); border-left:4px solid var(--ans-border); padding:12px 18px; margin-top:10px; border-radius:4px; }
+  .answer-box.show { display:block; }
+  .answer-box .alabel { font-weight:700; color:var(--ans-border); display:block; margin-bottom:6px; font-size:14px; letter-spacing:1px; font-family:sans-serif; }
+  .answer-box strong { color:var(--accent); background:#fff5d8; padding:0 4px; border-radius:2px; }
+  .answer-box .keyw { background:#fff5d8; padding:1px 6px; border-radius:3px; color:var(--accent); font-weight:600; }
+  .nav-links { margin-top:60px; padding:30px; border-top:3px double var(--accent); text-align:center; }
+  .nav-links a { display:inline-block; margin:0 10px; padding:10px 22px; background:var(--accent); color:#fff; text-decoration:none; border-radius:4px; font-size:15px; font-family:sans-serif; }
+  .nav-links a:hover { background:var(--ink); }
+  @media print { body { background:#fff; } .page { box-shadow:none; padding:20px; } .controls { display:none; } .toggle-btn { display:none; } .answer-box { display:block !important; page-break-inside:avoid; } .question { page-break-inside:avoid; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="cover">
+    <div class="series">모두의 인공지능 · 강태원 교수</div>
+    <h1>11주차 문제집</h1>
+    <div class="subtitle">개미의 길찾기</div>
+    <div class="doctype">문 제 집</div>
+    <div class="meta">객관식 5 · 주관식 10 · 서술형 5</div>
+  </div>
+
+  <div class="controls">
+    <span class="lab">정답 보기</span>
+    <button onclick="showAll()">전체 보기</button>
+    <button onclick="hideAll()">전체 가리기</button>
+    <span class="hint">개별 토글 가능 · 인쇄 시 자동 표시</span>
+  </div>
+
+  <h2 class="chapter"><span class="badge">객관식</span>5문항</h2>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 1</span><span class="qtype">객관식</span></div>
+    <div class="qbody">자연 컴퓨팅의 3대 범주에 해당하지 <strong>않는</strong> 것은?</div>
+    <ul class="options">
+      <li><span class="opt-num">①</span> 자연에서 배우기 (Learning from Nature)</li>
+      <li><span class="opt-num">②</span> 자연 합성하기 (Synthesizing Nature)</li>
+      <li><span class="opt-num">③</span> 자연 사용하기 (Using Nature)</li>
+      <li><span class="opt-num">④</span> 자연 파괴하기 (Destroying Nature)</li>
+      <li><span class="opt-num">⑤</span> 해당 사항 없음</li>
+    </ul>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span><strong>④ 자연 파괴하기</strong> (그런 범주는 없음)<br>
+      <span class="alabel">해설</span>자연 컴퓨팅의 3대 범주 = <span class="keyw">자연에서 배우기 / 자연 합성하기 / 자연 사용하기</span>.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 2</span><span class="qtype">객관식</span></div>
+    <div class="qbody">개미가 길에 남기는 화학 물질의 이름과, 시간이 지나면서 발생하는 핵심 현상으로 옳은 짝은?</div>
+    <ul class="options">
+      <li><span class="opt-num">①</span> 페로몬 (Pheromone) — 증발 (Evaporation)</li>
+      <li><span class="opt-num">②</span> 호르몬 (Hormone) — 합성 (Synthesis)</li>
+      <li><span class="opt-num">③</span> 페로몬 (Pheromone) — 확산 (Diffusion)</li>
+      <li><span class="opt-num">④</span> 도파민 (Dopamine) — 증발 (Evaporation)</li>
+      <li><span class="opt-num">⑤</span> 항원 (Antigen) — 항체 형성</li>
+    </ul>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span><strong>① 페로몬 — 증발</strong><br>
+      <span class="alabel">해설</span>페로몬은 시간이 지나면 <span class="keyw">증발</span>한다. 이게 ACO의 핵심 — 긴 길은 증발이 많아 약해지고, 짧은 길은 누적 강화된다.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 3</span><span class="qtype">객관식</span></div>
+    <div class="qbody">개체가 환경을 바꿈으로써 다른 개체와 간접적으로 소통하는 현상을 무엇이라 하는가?</div>
+    <ul class="options">
+      <li><span class="opt-num">①</span> 자기 조직화 (Self-Organization)</li>
+      <li><span class="opt-num">②</span> 스티그머지 (Stigmergy)</li>
+      <li><span class="opt-num">③</span> 양자 중첩 (Superposition)</li>
+      <li><span class="opt-num">④</span> 증발 (Evaporation)</li>
+      <li><span class="opt-num">⑤</span> 휴리스틱 (Heuristic)</li>
+    </ul>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span><strong>② 스티그머지</strong><br>
+      <span class="alabel">해설</span>개미가 페로몬으로 환경을 바꿔 다른 개미와 소통하는 것. 강의 비유: "내가 말하면 공기가 진동하여 환경이 달라지는 것과 같은 원리".
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 4</span><span class="qtype">객관식</span></div>
+    <div class="qbody">DNA 컴퓨팅의 진법과 디지털 컴퓨터의 진법으로 옳은 짝은?</div>
+    <ul class="options">
+      <li><span class="opt-num">①</span> 디지털 = 4진법, DNA = 2진법</li>
+      <li><span class="opt-num">②</span> 디지털 = 2진법, DNA = 4진법(A·G·C·T)</li>
+      <li><span class="opt-num">③</span> 디지털 = 10진법, DNA = 4진법</li>
+      <li><span class="opt-num">④</span> 둘 다 2진법</li>
+      <li><span class="opt-num">⑤</span> DNA = 16진법</li>
+    </ul>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span><strong>② 디지털 = 2진법, DNA = 4진법</strong><br>
+      <span class="alabel">해설</span>DNA의 4진법 = <span class="keyw">A(아데닌), G(구아닌), C(시토신), T(티민)</span>. 1g에 약 10억 TB 저장 가능.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 5</span><span class="qtype">객관식</span></div>
+    <div class="qbody">3차시 부제 "누가 지시하는가!"의 답은?</div>
+    <ul class="options">
+      <li><span class="opt-num">①</span> 우두머리 개미가 지시한다</li>
+      <li><span class="opt-num">②</span> 페로몬이 지시한다</li>
+      <li><span class="opt-num">③</span> 아무도 지시하지 않는다 — 자기 조직화</li>
+      <li><span class="opt-num">④</span> 자연의 신이 지시한다</li>
+      <li><span class="opt-num">⑤</span> 환경이 지시한다</li>
+    </ul>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span><strong>③ 아무도 지시하지 않는다 — 자기 조직화</strong><br>
+      <span class="alabel">해설</span><span class="keyw">자기 조직화(Self-Organization)</span>가 자연의 핵심 특징. 페이지랭크·딥러닝 가중치·인간 뇌 모두 같은 원리.
+    </div>
+  </div>
+
+  <h2 class="chapter"><span class="badge">주관식</span>10문항</h2>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 6</span><span class="qtype">주관식</span></div>
+    <div class="qbody">자연 컴퓨팅의 3대 범주를 쓰시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      ① <strong>자연에서 배우기 (Learning from Nature)</strong><br>
+      ② <strong>자연 합성하기 (Synthesizing Nature)</strong><br>
+      ③ <strong>자연 사용하기 (Using Nature)</strong>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 7</span><span class="qtype">주관식</span></div>
+    <div class="qbody">자연에서 배우기에 속하는 컴퓨팅 갈래를 4가지 이상 쓰시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      ① <strong>뉴럴 컴퓨팅(Neural Computing)</strong> — 뇌·뉴런<br>
+      ② <strong>진화 컴퓨팅(Evolutionary Computing)</strong> — 자연 선택<br>
+      ③ <strong>군집 지능(Swarm Intelligence)</strong> — 개미·꿀벌<br>
+      ④ <strong>입자 군집 최적화(PSO)</strong> — 물리 입자<br>
+      ⑤ 면역 컴퓨팅, 세포 자동자
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 8</span><span class="qtype">주관식</span></div>
+    <div class="qbody">PSO(입자 군집 최적화)가 경사하강법과 다른 핵심을 한 줄로 쓰시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      경사하강법은 자기 위치 기울기만 보지만, PSO는 <strong>자신의 기울기 + 이웃 입자들의 기울기를 함께 활용</strong>한다 ("이웃 정보 활용").
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 9</span><span class="qtype">주관식</span></div>
+    <div class="qbody">L-시스템의 4가지 기호와 그 의미를 쓰시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      <strong>F</strong> = 전진 + 흔적 남김 / <strong>f</strong> = 전진 (흔적 없음) / <strong>+</strong> = 좌회전 / <strong>−</strong> = 우회전
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 10</span><span class="qtype">주관식</span></div>
+    <div class="qbody">DNA의 4가지 염기를 영어 약자와 한국어로 쓰시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      <strong>A</strong>(Adenine, 아데닌) / <strong>G</strong>(Guanine, 구아닌) / <strong>C</strong>(Cytosine, 시토신) / <strong>T</strong>(Thymine, 티민)
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 11</span><span class="qtype">주관식</span></div>
+    <div class="qbody">양자 컴퓨팅의 기본 단위 이름과, 4개 단위로 동시에 표현할 수 있는 상태의 수를 쓰시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      기본 단위: <strong>큐비트 (Qubit)</strong><br>
+      4개 큐비트 = <strong>2⁴ = 16가지 상태 동시 표현</strong> (기존 컴퓨터는 16가지 중 1가지만)
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 12</span><span class="qtype">주관식</span></div>
+    <div class="qbody">개미 군집 최적화(ACO)의 3대 초매개변수를 기호와 의미로 쓰시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      <strong>α (alpha)</strong> = 페로몬 가중치<br>
+      <strong>β (beta)</strong> = 거리/휴리스틱 가중치<br>
+      <strong>ρ (rho)</strong> = 페로몬 증발 상수 (Evaporation Rate)
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 13</span><span class="qtype">주관식</span></div>
+    <div class="qbody">"스티그머지(Stigmergy)"의 정의를 한 문장으로 쓰시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      개체가 <strong>환경을 바꿈으로써</strong> 다른 개체와 간접적으로 소통하는 것 (개미의 페로몬이 대표).
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 14</span><span class="qtype">주관식</span></div>
+    <div class="qbody">자기 조직화(Self-Organization)의 정의를 쓰시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      <strong>중앙 지시자 없이 저절로 질서가 형성</strong>되는 현상. 자연의 핵심 특징. ACO·페이지랭크·딥러닝·인간 뇌가 모두 이 원리.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 15</span><span class="qtype">주관식</span></div>
+    <div class="qbody">ACO가 특히 강력한 문제의 종류는 무엇이며, 그 이유는?</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span>
+      <strong>동적 환경(Dynamic Environment)의 NP 문제 (예: TSP)</strong>에 강력. 길이 바뀌어도 페로몬을 재구성하며 적응한다. 전통 알고리즘은 처음부터 다시 계산해야 하지만 ACO는 적응적.
+    </div>
+  </div>
+
+  <h2 class="chapter"><span class="badge">서술형</span>5문항</h2>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 16</span><span class="qtype">서술형</span></div>
+    <div class="qbody">자연 컴퓨팅의 3대 범주를 설명하고, 각 범주에 해당하는 대표 사례를 1개 이상씩 들어 서술하시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">모범답안</span>
+      <strong>자연 컴퓨팅(Natural Computing)</strong>은 자연 현상에서 영감을 얻거나, 자연을 합성·이용하는 컴퓨팅 기술 전체를 의미한다. 세 가지 범주로 나뉜다.<br><br>
+      <strong>① 자연에서 배우기 (Learning from Nature)</strong>: 자연 현상에서 아이디어를 가져와 우리의 문제를 해결하는 기술을 만든다.
+      <ul>
+        <li>뉴럴 컴퓨팅(딥러닝): 뇌의 뉴런 작동 방식 모방</li>
+        <li>진화 컴퓨팅(유전 알고리즘): 자연 선택·다윈 진화 모방</li>
+        <li>군집 지능(ACO): 개미·꿀벌의 집단 행동 모방</li>
+        <li>면역 컴퓨팅: 항원-항체 반응을 보안에 활용</li>
+      </ul>
+      <strong>② 자연 합성하기 (Synthesizing Nature)</strong>: 컴퓨터 기술로 자연/생명을 합성하여 더 잘 이해·활용한다.
+      <ul>
+        <li>L-시스템: 식물 성장을 모방한 프랙탈로 게임·영화의 숲을 생성</li>
+        <li>칼 심스의 가상 생명체(1994): 신경망+GA로 학습</li>
+      </ul>
+      <strong>③ 자연 사용하기 (Using Nature)</strong>: 자연에 있는 물질·현상을 직접 컴퓨팅에 활용한다.
+      <ul>
+        <li>DNA 컴퓨팅: A·G·C·T의 4진법, 1g에 10억 TB</li>
+        <li>양자 컴퓨팅: 양자 중첩으로 큐비트가 동시 다중 상태</li>
+      </ul>
+      이 분류는 <span class="keyw">"인공지능 역시 자연 지능의 합성"</span>이라는 큰 관점을 제공하며, 11~14주차의 모든 후속 주제를 묶는 지도 역할을 한다.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 17</span><span class="qtype">서술형</span></div>
+    <div class="qbody">개미 군집 최적화(ACO)의 작동 원리를 설명하고, "왜 ACO가 동적 환경에서 강력한가"를 서술하시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">모범답안</span>
+      <strong>ACO 작동 원리</strong>:
+      <ul>
+        <li>① 개미가 길을 갈 때 <span class="keyw">페로몬(Pheromone)</span>을 남긴다.</li>
+        <li>② 시간이 지나면 페로몬은 <span class="keyw">증발(Evaporation)</span>한다.</li>
+        <li>③ <strong>짧은 길</strong>: 왕복 시간이 짧아 페로몬이 계속 누적·강화됨.</li>
+        <li>④ <strong>긴 길</strong>: 왕복이 오래 걸려 페로몬이 많이 증발되어 약해짐.</li>
+        <li>⑤ 후속 개미들은 페로몬이 강한 짧은 길로 몰림 → <strong>빈익빈 부익부 강화</strong>로 자연스럽게 최단 경로 수렴.</li>
+      </ul>
+      <strong>인공 ACO의 매개변수</strong>:
+      <ul>
+        <li>α(알파): 페로몬 가중치</li>
+        <li>β(베타): 거리/휴리스틱 가중치 (자연 개미와 달리 인공 개미는 거리 정보 활용 가능)</li>
+        <li>ρ(로우): 증발 상수</li>
+      </ul>
+      <strong>동적 환경에서 강력한 이유</strong>: TSP(외판원 문제) 같은 NP 문제에서, 전통적 알고리즘은 도로가 막히거나 새 도시가 추가되면 <span class="keyw">처음부터 다시 계산</span>해야 한다. 그러나 ACO는 <span class="keyw">페로몬을 재구성하며 적응</span>한다. 막힌 길의 페로몬은 증발해 사라지고, 새로 발견된 우회로에 페로몬이 쌓이면서 자연스럽게 새 경로로 수렴. 영상에서 실제로 둥지와 먹이 사이에 장벽을 설치하면 우회 경로를 찾고, 다시 열어주면 더 짧은 길로 복귀하는 모습이 보였다.<br><br>
+      <strong>"말 안 듣는 개미"의 가치</strong>도 중요. 모두가 페로몬을 따라가지 않고 다른 길을 시도하는 비순응자(Exploration)가 있어야 환경 변화에 적응 가능. 이는 사회의 <span class="keyw">다양성</span>과 같은 가치를 시사한다.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 18</span><span class="qtype">서술형</span></div>
+    <div class="qbody">"스티그머지(Stigmergy)"가 무엇인지 설명하고, 왜 그것이 인간의 언어 소통과 원리적으로 같다고 강의에서 설명했는지 서술하시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">모범답안</span>
+      <strong>스티그머지(Stigmergy)</strong>는 개체가 <span class="keyw">환경을 바꿈으로써</span> 다른 개체와 의도하지 않은 잠재적 소통이 일어나는 현상이다. 개체끼리 직접 신호를 주고받지 않아도 환경 변화를 통해 정보가 전달된다.<br><br>
+      <strong>개미의 사례</strong>: 개미는 시력이 거의 없고 무선 통신도 안 한다. 그러나 페로몬을 길에 남김으로써 <span class="keyw">땅이라는 환경을 변화</span>시킨다. 다른 개미들은 이 환경 변화(페로몬 농도)를 코로 감지해 길 정보를 얻는다 — 직접 소통은 없지만 정보는 전달된다.<br><br>
+      <strong>인간 언어와의 원리적 동일성</strong>: 강태원 교수는 "내가 말을 하면 공기가 진동하여 우리 사이의 환경이 달라진다. 개미가 페로몬을 남긴 거나 내가 공기를 흔든 거나 <span class="keyw">원리적으로 같다 — 단지 센서가 다를 뿐</span>"이라고 설명했다.
+      <ul>
+        <li>개미: <strong>엉덩이(분비) → 환경(땅에 페로몬) → 코(감지)</strong></li>
+        <li>인간: <strong>입(발성) → 환경(공기 진동) → 귀(감지)</strong></li>
+      </ul>
+      두 경우 모두 매개체가 환경이며, 환경 변화를 통해 정보가 전달된다는 점에서 동일한 원리이다.<br><br>
+      <strong>의의</strong>: 이런 환경 매개 소통은 <span class="keyw">자기 조직화(Self-Organization)</span>의 핵심 메커니즘이다. 중앙 지시자 없이도, 직접 소통 없이도, 환경을 통해 군집 전체가 일사불란하게 움직일 수 있다. 인터넷의 페이지랭크(9주차)도 마찬가지 — 사용자들이 직접 소통하지 않아도 클릭·링크라는 환경 변화를 통해 페이지의 권위가 자연 발생적으로 형성된다.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 19</span><span class="qtype">서술형</span></div>
+    <div class="qbody">DNA 컴퓨팅과 양자 컴퓨팅의 원리를 각각 설명하고, 디지털 컴퓨터와 무엇이 근본적으로 다른지 서술하시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">모범답안</span>
+      <strong>DNA 컴퓨팅(DNA Computing)</strong>은 DNA 분자를 직접 계산에 활용하는 컴퓨팅으로, 실험실에서 진행된다.
+      <ul>
+        <li>디지털: 2진법(0, 1) | DNA: <strong>4진법 — A(아데닌), G(구아닌), C(시토신), T(티민)</strong></li>
+        <li>저장 용량: 1g의 DNA에 약 <strong>10억 테라바이트(TB)</strong> 저장 가능, 거의 영구 보존</li>
+        <li>응용: NP 문제(경로 찾기)를 화학 반응으로 푸는 방식. 예: 4개 도시 경로를 DNA 염기 사슬로 표현하고 화학 용액에 담가 합성된 사슬을 추출</li>
+      </ul>
+      <strong>양자 컴퓨팅(Quantum Computing)</strong>은 양자역학의 원리(특히 양자 중첩)를 이용한다.
+      <ul>
+        <li><strong>양자 중첩(Superposition)</strong>: 슈뢰딩거의 고양이 사고실험 — 고양이는 이미 살았거나 죽은 게 아니라, <span class="keyw">상자를 여는 순간 결정</span>되며 그 전까지 두 상태에 동시 존재</li>
+        <li><strong>큐비트(Qubit)</strong>: 양자 컴퓨팅의 기본 단위. 0과 1이 동시에 중첩 상태로 존재</li>
+        <li>큐비트 4개 = 2⁴ = <span class="keyw">16가지 상태 동시 표현</span> (기존 컴퓨터는 16가지 중 1가지만)</li>
+        <li>n개 큐비트 = 2ⁿ개 상태를 한꺼번에 처리 → 일부 알고리즘에서 지수적 가속</li>
+      </ul>
+      <strong>디지털 컴퓨터와의 근본적 차이</strong>:
+      <ul>
+        <li>디지털: <span class="keyw">한 번에 하나의 상태</span>만 처리. 빠르더라도 순차적.</li>
+        <li>DNA: 화학 반응의 <span class="keyw">병렬성</span>을 이용 — 수십억 가닥이 동시에 반응. 거대한 자료 저장.</li>
+        <li>양자: 중첩 상태로 <span class="keyw">동시에 다중 계산</span>. 측정 시 하나의 결과로 붕괴.</li>
+      </ul>
+      <strong>의의</strong>: 양자 컴퓨터가 일반화되면 알파고 같은 시스템도 패러다임이 바뀐다고 강의는 예고한다. 모든 경우를 동시에 계산할 수 있으니 NP 문제도 다른 방식으로 접근 가능해지며, 암호 체계도 무너질 수 있다 — 그래서 양자 내성 암호(Post-Quantum Cryptography) 연구가 활발하다.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 20</span><span class="qtype">서술형</span></div>
+    <div class="qbody">자기 조직화(Self-Organization)의 개념을 설명하고, 이 원리가 ACO·페이지랭크(9주차)·딥러닝(7주차)에서 어떻게 공통적으로 나타나는지 서술하시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">모범답안</span>
+      <strong>자기 조직화(Self-Organization)</strong>는 어떤 <span class="keyw">중앙 지시자(Central Controller)도 없이 시스템 전체가 저절로 질서를 만들어 내는 현상</span>이다. 자연이 가진 가장 신비로운 특징 중 하나이며, 강의 부제 "누가 지시하는가!"의 답은 <strong>"아무도 지시하지 않는다"</strong>이다.<br><br>
+      <strong>ACO(개미 군집 최적화)에서의 자기 조직화</strong>:
+      <ul>
+        <li>우두머리 개미가 "짧은 길로 가라"고 지시하지 않는다.</li>
+        <li>각 개미는 자기 앞 페로몬만 보고 행동한다.</li>
+        <li>그러나 페로몬+증발 메커니즘으로 군집 전체가 <span class="keyw">자연스럽게 최단 경로에 수렴</span>한다.</li>
+        <li>스티그머지(환경 매개 소통)가 이를 가능케 한다.</li>
+      </ul>
+      <strong>페이지랭크(9주차)에서의 자기 조직화</strong>:
+      <ul>
+        <li>구글이 "이 페이지가 더 중요하다"고 지시하지 않는다.</li>
+        <li>각 웹사이트 운영자는 자기가 좋다고 생각하는 페이지에 링크를 단다.</li>
+        <li>이런 무수한 링크가 모여 <span class="keyw">자연스럽게 페이지의 권위(랭크)가 형성</span>된다.</li>
+        <li>사용자들의 클릭·링크라는 환경 변화가 정보를 만들어 낸다 — 스티그머지의 디지털 버전.</li>
+      </ul>
+      <strong>딥러닝(6~7주차)에서의 자기 조직화</strong>:
+      <ul>
+        <li>프로그래머가 "이 뉴런의 가중치는 0.7이어야 한다"고 지시하지 않는다.</li>
+        <li>각 뉴런(수도꼭지)은 역전파를 통해 자기 가중치를 조정한다.</li>
+        <li>수많은 뉴런의 자율적 조정이 합쳐져 <span class="keyw">전체 신경망이 학습한다</span>.</li>
+        <li>ChatGPT의 1750억 매개변수가 모두 이런 자기 조직화의 결과.</li>
+      </ul>
+      <strong>인간의 뇌</strong>도 같은 원리이며, 강태원 교수의 전공인 <span class="keyw">계산 지능(Computational Intelligence)</span>의 핵심 패러다임이기도 하다.<br><br>
+      <strong>철학적 의의</strong>: 자기 조직화는 "지능은 중앙에서 통제되어야 한다"는 옛 관념을 뒤집는다. 단순한 규칙을 따르는 다수가 모이면, 누구도 의도하지 않은 복잡하고 지능적인 행동이 출현(emergence)한다. 이는 13주차 라이프 게임, 14주차 인공생명으로 이어지는 핵심 주제이며, 강의 전반에 흐르는 "다양성과 개체의 자율성"이라는 가치와 직결된다.
+    </div>
+  </div>
+
+  <div class="nav-links">
+    <a href="11주차_교과서.html">📚 교과서</a>
+    <a href="11주차_학습서.html">📖 학습서</a>
+  </div>
+</div>
+<script>
+  function toggleAns(btn){const box=btn.nextElementSibling;box.classList.toggle('show');btn.textContent=box.classList.contains('show')?'정답 가리기':'정답 보기';}
+  function showAll(){document.querySelectorAll('.answer-box').forEach(b=>b.classList.add('show'));document.querySelectorAll('.toggle-btn').forEach(b=>b.textContent='정답 가리기');}
+  function hideAll(){document.querySelectorAll('.answer-box').forEach(b=>b.classList.remove('show'));document.querySelectorAll('.toggle-btn').forEach(b=>b.textContent='정답 보기');}
+</script>
+</body>
+</html>

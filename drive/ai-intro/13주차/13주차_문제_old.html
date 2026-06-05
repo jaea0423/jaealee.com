@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>모두의 인공지능 - 13주차 문제집</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;600;700&family=Nanum+Myeongjo:wght@400;700;800&display=swap');
+  :root { --bg:#faf6ef; --paper:#fffdf7; --ink:#2c2418; --ink-light:#5b5040; --accent:#8b4513; --accent-soft:#c69b7b; --rule:#d4c8b0; --highlight:#f4e4c1; --quote-bg:#f7efde; --def-bg:#fff8e8; --def-border:#b08654; --exam-bg:#fcecec; --exam-border:#b54848; --ans-bg:#eaf3ec; --ans-border:#5a8a5e; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; padding:0; background:var(--bg); color:var(--ink); font-family:'Noto Serif KR','Nanum Myeongjo',serif; line-height:1.85; font-size:17px; }
+  .page { max-width:880px; margin:0 auto; padding:60px 50px 80px; background:var(--paper); box-shadow:0 0 30px rgba(80,60,30,.08); min-height:100vh; }
+  .cover { text-align:center; padding:80px 0 50px; border-bottom:3px double var(--accent); margin-bottom:30px; }
+  .cover .series { font-size:14px; letter-spacing:6px; color:var(--accent); margin-bottom:20px; }
+  .cover h1 { font-family:'Nanum Myeongjo',serif; font-size:42px; font-weight:800; margin:10px 0; line-height:1.3; }
+  .cover .subtitle { font-size:22px; color:var(--ink-light); margin-top:10px; font-weight:300; }
+  .cover .doctype { display:inline-block; margin-top:30px; padding:8px 24px; border:1px solid var(--accent); border-radius:2px; font-size:16px; color:var(--accent); letter-spacing:4px; }
+  .cover .meta { margin-top:20px; font-size:14px; color:var(--ink-light); }
+  .controls { background:#fff8e8; border:1px solid var(--def-border); padding:14px 20px; margin:20px 0 30px; border-radius:6px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; position:sticky; top:0; z-index:10; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
+  .controls .lab { font-weight:700; color:var(--accent); margin-right:10px; font-family:sans-serif; }
+  .controls button { background:var(--accent); color:#fff; border:none; padding:8px 16px; border-radius:4px; cursor:pointer; font-size:14px; font-family:sans-serif; }
+  .controls button:hover { background:var(--ink); }
+  .controls .hint { color:var(--ink-light); font-size:13px; margin-left:auto; }
+  h2.chapter { font-family:'Nanum Myeongjo',serif; font-size:30px; color:var(--accent); border-bottom:2px solid var(--accent); padding-bottom:10px; margin-top:50px; margin-bottom:25px; }
+  h2.chapter .badge { display:inline-block; background:var(--accent); color:#fff; padding:3px 14px; border-radius:4px; font-size:16px; margin-right:12px; vertical-align:middle; font-family:sans-serif; }
+  .question { background:#fff; border:1px solid var(--rule); border-left:5px solid var(--accent-soft); padding:18px 22px; margin:18px 0; border-radius:4px; }
+  .qhead { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .qhead .qno { font-weight:700; color:var(--accent); font-family:sans-serif; font-size:14px; letter-spacing:1px; }
+  .qhead .qtype { font-size:12px; padding:2px 8px; background:var(--highlight); border-radius:3px; color:var(--ink-light); font-family:sans-serif; }
+  .qbody { font-size:17px; }
+  .options { margin:10px 0 0 20px; padding:0; list-style:none; }
+  .options li { padding:5px 0; }
+  .options .opt-num { font-weight:700; color:var(--accent); margin-right:6px; }
+  code { background:#f4ecd8; padding:1px 6px; border-radius:3px; font-family:'Consolas',monospace; font-size:14px; color:#5a3920; }
+  .answer-area { background:#fafaf3; border:1px dashed var(--rule); border-radius:4px; padding:10px 14px; margin:10px 0 0; min-height:50px; color:#bbb; font-size:14px; font-style:italic; }
+  .answer-area::before { content:"(답안 작성 영역 — 인쇄용)"; }
+  .toggle-btn { margin-top:10px; background:transparent; border:1px solid var(--ans-border); color:var(--ans-border); padding:5px 12px; border-radius:4px; font-size:13px; cursor:pointer; font-family:sans-serif; }
+  .toggle-btn:hover { background:var(--ans-border); color:#fff; }
+  .answer-box { display:none; background:var(--ans-bg); border-left:4px solid var(--ans-border); padding:12px 18px; margin-top:10px; border-radius:4px; }
+  .answer-box.show { display:block; }
+  .answer-box .alabel { font-weight:700; color:var(--ans-border); display:block; margin-bottom:6px; font-size:14px; letter-spacing:1px; font-family:sans-serif; }
+  .answer-box strong { color:var(--accent); background:#fff5d8; padding:0 4px; border-radius:2px; }
+  .answer-box .keyw { background:#fff5d8; padding:1px 6px; border-radius:3px; color:var(--accent); font-weight:600; }
+  .nav-links { margin-top:60px; padding:30px; border-top:3px double var(--accent); text-align:center; }
+  .nav-links a { display:inline-block; margin:0 10px; padding:10px 22px; background:var(--accent); color:#fff; text-decoration:none; border-radius:4px; font-size:15px; font-family:sans-serif; }
+  .nav-links a:hover { background:var(--ink); }
+  @media print { body { background:#fff; } .page { box-shadow:none; padding:20px; } .controls { display:none; } .toggle-btn { display:none; } .answer-box { display:block !important; page-break-inside:avoid; } .question { page-break-inside:avoid; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="cover">
+    <div class="series">모두의 인공지능 · 강태원 교수</div>
+    <h1>13주차 문제집</h1>
+    <div class="subtitle">단순한 복잡함</div>
+    <div class="doctype">문 제 집</div>
+    <div class="meta">객관식 5 · 주관식 10 · 서술형 5</div>
+  </div>
+
+  <div class="controls">
+    <span class="lab">정답 보기</span>
+    <button onclick="showAll()">전체 보기</button>
+    <button onclick="hideAll()">전체 가리기</button>
+    <span class="hint">개별 토글 가능 · 인쇄 시 자동 표시</span>
+  </div>
+
+  <h2 class="chapter"><span class="badge">객관식</span>5문항</h2>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 1</span><span class="qtype">객관식</span></div>
+    <div class="qbody">혼돈(Chaos) 시스템의 특징이 <strong>아닌</strong> 것은?</div>
+    <ul class="options">
+      <li><span class="opt-num">①</span> 초기치 민감성 (Butterfly Effect)</li>
+      <li><span class="opt-num">②</span> 주기 배증 (Bifurcation)</li>
+      <li><span class="opt-num">③</span> 자기유사성 (Self-similarity)</li>
+      <li><span class="opt-num">④</span> 완전한 무질서 (Total Disorder)</li>
+      <li><span class="opt-num">⑤</span> 예측 불가능한 변화</li>
+    </ul>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span><strong>④ 완전한 무질서</strong><br>
+      <span class="alabel">해설</span>혼돈은 <span class="keyw">무질서와 구별됨</span>. 혼돈은 예측 불가능하지만 그 안에서 새로운 패턴(생명)이 나옴. 무질서는 패턴 없이 그냥 랜덤. "Life at the Edge of Chaos".
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 2</span><span class="qtype">객관식</span></div>
+    <div class="qbody">1차원 세포 자동자(CA)에서 가능한 <strong>규칙의 총 개수</strong>는?</div>
+    <ul class="options">
+      <li><span class="opt-num">①</span> 8개</li>
+      <li><span class="opt-num">②</span> 16개</li>
+      <li><span class="opt-num">③</span> 64개</li>
+      <li><span class="opt-num">④</span> 128개</li>
+      <li><span class="opt-num">⑤</span> 256개</li>
+    </ul>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span><strong>⑤ 256개</strong><br>
+      <span class="alabel">해설</span>이웃 패턴은 2³=8가지(000~111). 각 패턴마다 결과를 0 또는 1로 정할 수 있으므로 가능한 규칙 = <span class="keyw">2⁸ = 256개</span>.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 3</span><span class="qtype">객관식</span></div>
+    <div class="qbody">콘웨이의 라이프 게임에서 사용하는 이웃 정의(8개)는?</div>
+    <ul class="options">
+      <li><span class="opt-num">①</span> 무어 이웃 (Moore Neighborhood)</li>
+      <li><span class="opt-num">②</span> 폰 노이만 이웃 (von Neumann Neighborhood)</li>
+      <li><span class="opt-num">③</span> 유클리드 이웃</li>
+      <li><span class="opt-num">④</span> 만델브로 이웃</li>
+      <li><span class="opt-num">⑤</span> 콘웨이 이웃</li>
+    </ul>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span><strong>① 무어 이웃</strong><br>
+      <span class="alabel">해설</span><span class="keyw">무어 이웃</span>은 상하좌우 + 대각선 4개 = 8개. <span class="keyw">폰 노이만 이웃</span>은 상하좌우만 = 4개. 콘웨이는 무어를 사용.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 4</span><span class="qtype">객관식</span></div>
+    <div class="qbody">콘웨이의 라이프 게임에서 살아있는 세포가 <strong>다음 단계에 살아남는</strong> 조건은?</div>
+    <ul class="options">
+      <li><span class="opt-num">①</span> 이웃이 1명</li>
+      <li><span class="opt-num">②</span> 이웃이 2명 또는 3명</li>
+      <li><span class="opt-num">③</span> 이웃이 정확히 3명</li>
+      <li><span class="opt-num">④</span> 이웃이 4명 이상</li>
+      <li><span class="opt-num">⑤</span> 이웃이 8명 모두</li>
+    </ul>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span><strong>② 이웃이 2명 또는 3명</strong><br>
+      <span class="alabel">해설</span>규칙 1(살아있는 세포): 이웃 <span class="keyw">2 또는 3개 → 생존</span>. 1개 이하 → 쓸쓸해서 사망. 4개 이상 → 시끄러워서 사망. 정답 ③은 빈 세포의 탄생 조건.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 5</span><span class="qtype">객관식</span></div>
+    <div class="qbody">2차원 세포 자동자에서 공간의 양 끝을 이어붙여 만들어진 형태는?</div>
+    <ul class="options">
+      <li><span class="opt-num">①</span> 구(Sphere)</li>
+      <li><span class="opt-num">②</span> 원통(Cylinder)</li>
+      <li><span class="opt-num">③</span> 토러스(Torus, 원환체)</li>
+      <li><span class="opt-num">④</span> 뫼비우스의 띠</li>
+      <li><span class="opt-num">⑤</span> 평면(Plane)</li>
+    </ul>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span><strong>③ 토러스</strong><br>
+      <span class="alabel">해설</span>2차원 평면의 좌우를 이어붙이면 원통, 그 원통의 위아래를 또 이어붙이면 <span class="keyw">토러스(도넛 모양)</span>가 됨. 1차원 CA는 좌우만 이어붙이므로 원통.
+    </div>
+  </div>
+
+  <h2 class="chapter"><span class="badge">주관식</span>10문항</h2>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 6</span><span class="qtype">주관식</span></div>
+    <div class="qbody">로렌츠(Lorenz)가 발견한, 작은 차이가 큰 변화를 일으키는 현상을 무엇이라 하는가? (영어 명칭도 함께)</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span><strong>나비효과 (Butterfly Effect) = 초기치 민감성 (Sensitivity to Initial Conditions)</strong><br>
+      <span class="alabel">해설</span>로렌츠가 소수점 뒷자리를 잘라낸 입력값으로 완전히 다른 결과를 얻은 데서 유래. 로렌츠의 <span class="keyw">이상한 끌개(Strange Attractor)</span> 그림이 나비 모양.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 7</span><span class="qtype">주관식</span></div>
+    <div class="qbody">혼돈 시스템에서 주기가 1 → 2 → 4 → 8 → 16... 두 배씩 늘어나는 현상을 무엇이라 하는가?</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span><strong>주기 배증 (Bifurcation)</strong><br>
+      <span class="alabel">해설</span>Bi = 두 갈래. 식 xₙ₊₁ = A·xₙ·(1−xₙ)에서 A 값을 늘려가면 한 값 → 두 값 → 네 값 → ... 이렇게 갈라짐.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 8</span><span class="qtype">주관식</span></div>
+    <div class="qbody">일부를 확대해서 보면 전체와 닮은 모양이 나오는, 혼돈과 프랙털의 공통 특징은?</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span><strong>자기유사성 (Self-similarity)</strong><br>
+      <span class="alabel">해설</span>코흐 곡선, 시에르핀스키 삼각형, 만델브로 집합, 주식 그래프, 산과 구름 — 모두 자기유사성을 보임. 자연이 작동하는 방식.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 9</span><span class="qtype">주관식</span></div>
+    <div class="qbody">"자연의 기하학"이라 불리는, 만델브로가 정립한 기하학의 이름은?</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span><strong>프랙털 기하학 (Fractal Geometry)</strong><br>
+      <span class="alabel">해설</span>유클리드 기하학은 직선·원·삼각형 같은 인공물용. 프랙털 기하학은 나무·구름·파도·산 같은 자연 형태를 다룸. <span class="keyw">만델브로(Benoit Mandelbrot)</span>가 정립.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 10</span><span class="qtype">주관식</span></div>
+    <div class="qbody">삼각형 가운데를 계속 파내는 방식으로 만들어지며, 면적은 0이지만 점은 무한히 많은 프랙털의 이름은?</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span><strong>시에르핀스키 삼각형 (Sierpinski Triangle)</strong><br>
+      <span class="alabel">해설</span>강의 비유: "아이스크림을 끝없이 파먹는 방법". 사각형 버전은 <span class="keyw">시에르핀스키 카펫</span>. 1차원 CA의 72번 규칙에서도 자연적으로 생성됨.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 11</span><span class="qtype">주관식</span></div>
+    <div class="qbody">"렌즈가 여러 개 달린 복사기"로 비유되는, 반슬리(Barnsley)가 정리한 프랙털 생성 시스템의 영문 약어는?</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span><strong>IFS (Iterative Function System, 반복함수 시스템)</strong><br>
+      <span class="alabel">해설</span>한 종이를 여러 렌즈로 축소·회전·복사 → 결과를 다시 입력으로 → 반복. 고사리(Fern), 나무, 구름 등 자연 형태가 생성됨. 게임·영화의 풍경 생성에 활용.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 12</span><span class="qtype">주관식</span></div>
+    <div class="qbody">1차원 세포 자동자에서 시작 상태가 한 점(아담 한 마리)일 때, <strong>시에르핀스키 삼각형</strong> 모양을 만들어내는 규칙의 번호는?</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span><strong>72번 규칙</strong><br>
+      <span class="alabel">해설</span>72 = 64 + 8. 8개 입력 패턴에 대한 결과 비트 중 64 자리와 8 자리에 1. 단순 if-else 규칙이지만 결과는 프랙털. <span class="keyw">단순한 규칙 → 복잡한 행태</span>의 대표 사례.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 13</span><span class="qtype">주관식</span></div>
+    <div class="qbody">스티븐 울프램(Stephen Wolfram)이 분류한 세포 자동자의 4가지 행태는?</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span><strong>① 수렴, ② 주기적, ③ 혼돈(Chaotic), ④ 무질서</strong><br>
+      <span class="alabel">해설</span>이 중 <span class="keyw">③ 혼돈 영역에 생명이 있다</span>. 너무 단순(수렴·주기적)하지도, 완전 무질서하지도 않은 곳. 울프램은 Mathematica 개발자이자 물리학자.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 14</span><span class="qtype">주관식</span></div>
+    <div class="qbody">콘웨이의 라이프 게임에서 <strong>빈 세포에 새 생명이 탄생</strong>하는 조건은?</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span><strong>이웃 8개 중 살아있는 게 정확히 3개일 때</strong><br>
+      <span class="alabel">해설</span>"3명이 사는 동네면 살 만하다고 입주"라는 비유. 그 외(0, 1, 2, 4~8)는 계속 빈 채로 유지.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 15</span><span class="qtype">주관식</span></div>
+    <div class="qbody">콘웨이 라이프 게임에서 주기적으로 글라이더(Glider)를 발사하여 CPU의 클럭처럼 작동하는 패턴의 이름은?</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">정답</span><strong>글라이더 건 (Glider Gun)</strong><br>
+      <span class="alabel">해설</span>모든 전자회로의 기본인 클럭(신호 발생기) 역할. 이를 활용하면 AND·OR·NOT 게이트도 만들 수 있고, 결국 <span class="keyw">튜링 머신(컴퓨터)</span>까지 라이프 게임 위에 구현 가능.
+    </div>
+  </div>
+
+  <h2 class="chapter"><span class="badge">서술형</span>5문항</h2>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 16</span><span class="qtype">서술형</span></div>
+    <div class="qbody"><strong>혼돈(Chaos)</strong>과 <strong>무질서(Disorder)</strong>의 차이를 설명하고, "생명이 혼돈의 언저리에 있다"는 말이 의미하는 바를 함께 서술하시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">모범 답안</span>
+      혼돈은 <span class="keyw">예측 불가능한 변화를 내포하지만 그 안에 패턴과 자기유사성이 있는 상태</span>다. 반면 무질서는 패턴이 전혀 없는 완전한 랜덤이다. 혼돈은 어지러우면서도 새로운 것이 생겨날 수 있는 "긴장된 균형" 상태이고, 무질서에서는 아무것도 새로 나오지 않는다. 울프램의 4분류에서 ① 수렴과 ② 주기적은 너무 단순해 새로운 것이 나오지 않고, ④ 무질서는 너무 흩어져 의미 있는 구조가 만들어지지 않는다. <span class="keyw">③ 혼돈(Chaotic) 영역만이 생명이 자라날 수 있는 "균형의 가장자리"</span>다. 그래서 "생명은 혼돈의 언저리(Edge of Chaos)에 있다"고 말한다.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 17</span><span class="qtype">서술형</span></div>
+    <div class="qbody">강의 1차시의 부제 <strong>"나비와 꽃"</strong>이 의미하는 바를, 혼돈과 프랙털의 관계 측면에서 서술하시오. 주식 시장 예시를 함께 들어 설명할 것.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">모범 답안</span>
+      "나비"는 <span class="keyw">혼돈(Chaos)</span>을 상징한다 — 버터플라이 이펙트, 즉 초기치 민감성. "꽃"은 <span class="keyw">프랙털(Fractal)</span>을 상징한다 — 자연이 만들어내는 자기유사적 형태. 두 개념은 분리된 것이 아니라 <span class="keyw">항상 같이 등장</span>한다. 혼돈 시스템이 만들어내는 그림 안에서 자기유사적 프랙털 구조가 나타나고, 프랙털을 보여주는 자연 현상은 대개 초기치 민감성을 동반한다.
+      대표적 예가 주식 시장이다. 주식 그래프의 일부를 확대해보면 전체와 비슷한 모양이 나타난다(<span class="keyw">프랙털성</span>). 그리고 사람들의 기대·소문이라는 자기 참조성과 초기 작은 사건이 큰 변동으로 이어지는 <span class="keyw">혼돈성</span>을 함께 가진다. 그래서 주식은 예측 불가능하다. 한 시스템 안에 나비(혼돈)와 꽃(프랙털)이 동시에 존재하는 것이다.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 18</span><span class="qtype">서술형</span></div>
+    <div class="qbody">1차원 세포 자동자에서 "32번 규칙"이라는 표현이 어떻게 만들어지는지, <strong>인코딩 방식</strong>을 단계별로 설명하시오. 가능한 규칙의 총 수가 256개인 이유도 함께 밝힐 것.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">모범 답안</span>
+      1차원 CA에서 한 칸의 다음 상태는 자기 자신 + 양 옆 이웃(총 3칸)의 상태로 결정된다. 3칸 각각이 0/1이므로 가능한 입력 패턴은 <span class="keyw">2³ = 8가지</span>: 000, 001, 010, 011, 100, 101, 110, 111. 각 패턴마다 결과를 0 또는 1로 정해야 하므로 가능한 규칙은 <span class="keyw">2⁸ = 256개</span>다.
+      "32번 규칙"이란 8개의 결과 비트를 일렬로 늘어놓은 다음 그것을 <span class="keyw">2진수로 보고 10진수로 변환한 값</span>이다. 자리값 1, 2, 4, 8, 16, 32, 64, 128 중에서 32 자리에만 1이 있으면 32번 규칙이 된다. 마치 유전 알고리즘에서 DNA(비트 수열)를 인코딩하는 것처럼, <span class="keyw">8비트가 규칙의 DNA 역할</span>을 한다. 72번 규칙이라면 64 + 8 자리에 1이 있다는 뜻이다.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 19</span><span class="qtype">서술형</span></div>
+    <div class="qbody"><strong>콘웨이의 라이프 게임(Game of Life)</strong>의 두 가지 규칙을 정확히 기술하고, 단순한 규칙에서 어떻게 <strong>튜링 머신(Turing Machine, 컴퓨터)</strong>까지 만들 수 있는지 설명하시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">모범 답안</span>
+      <strong>두 규칙:</strong><br>
+      <span class="keyw">규칙 1 (살아있는 세포)</span>: 무어 이웃(상하좌우 + 대각선) 8개 중 살아있는 게 2개 또는 3개면 다음 단계에도 살아남는다. 그 외(1개 이하 또는 4개 이상)는 사망.<br>
+      <span class="keyw">규칙 2 (빈 세포)</span>: 8개 이웃 중 살아있는 게 정확히 3개면 새 생명이 탄생한다. 그 외는 계속 빈 채.<br><br>
+      이 규칙만으로 매우 다양한 패턴이 생겨난다. <span class="keyw">글라이더(Glider)</span>는 4단계 주기로 모양이 바뀌며 대각선 이동하는 패턴이고, <span class="keyw">글라이더 건(Glider Gun)</span>은 주기적으로 글라이더를 발사하는 신호 생성기 역할을 한다. CPU의 클럭과 같다.
+      이 글라이더들이 충돌하고 결합하는 패턴을 잘 배치하면 AND, OR, NOT 같은 논리 게이트를 만들 수 있다. 논리 게이트로는 모든 계산이 가능하다(튜링 완전성). 따라서 콘웨이의 라이프 게임만으로도 <span class="keyw">이론적으로 어떤 컴퓨터, 심지어 휴대폰까지 구현 가능</span>하다. 이것이 13주차의 핵심 메시지: 단순한 규칙 → 무한한 복잡함의 창발.
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="qhead"><span class="qno">문제 20</span><span class="qtype">서술형</span></div>
+    <div class="qbody">13주차의 핵심 메시지인 <strong>"단순한 규칙 → 복잡한 행태의 창발(Emergence)"</strong>이 의미하는 바를 설명하고, 1차원 CA·콘웨이 라이프 게임·조개껍질 무늬·개미 알고리즘 등 여러 사례에서 공통적으로 발견되는 원리를 정리하시오.</div>
+    <div class="answer-area"></div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답 보기</button>
+    <div class="answer-box">
+      <span class="alabel">모범 답안</span>
+      <span class="keyw">창발(Emergence)</span>이란 구성요소의 단순한 상호작용에서 예측하지 못한 새로운 성질이나 행태가 갑자기 나타나는 현상이다. 13주차에서 본 모든 사례에는 공통된 세 가지 원리가 있다.<br><br>
+      <strong>① 단순한 규칙</strong>: 1차원 CA는 8개 입력에 대한 0/1 출력. 콘웨이 라이프 게임은 단 2개 규칙. 조개껍질은 옆 칸 색만 보고 다음 색 결정. 개미는 페로몬 냄새만 맡음. 어디에도 복잡한 알고리즘은 없다.<br>
+      <strong>② 이웃 정보만 사용</strong>: 전체를 볼 필요가 없다. 자신과 주변의 가까운 칸·개체만 본다. 멀리 있는 정보는 무시. 이것이 자연이 작동하는 효율적 방식이다.<br>
+      <strong>③ 복잡한 행태 창발</strong>: 결과는 누가 시킨 것처럼 정교한 패턴 — 시에르핀스키 삼각형, 글라이더 건, 조개껍질의 아름다운 무늬, 개미 떼의 최단 경로 — 이 갑자기 튀어나온다.<br><br>
+      이는 인공지능을 만들 때 시스템 내부가 복잡해야 할 필요가 없다는 강력한 증거다. <span class="keyw">"복잡해 보이는 것의 내부는 단순할 수 있다"</span>는 메시지가 13주차 전체를 관통한다. 14주차의 보이드(Boid) 알고리즘은 이 철학의 "끝판왕"이 될 것이다.
+    </div>
+  </div>
+
+  <div class="nav-links">
+    <a href="13주차_학습서.html">학습서로</a>
+    <a href="13주차_교과서.html">교과서로</a>
+    <a href="../index.html">메인으로</a>
+  </div>
+</div>
+<script>
+function toggleAns(btn) { var box = btn.nextElementSibling; box.classList.toggle('show'); btn.textContent = box.classList.contains('show') ? '정답 숨기기' : '정답 보기'; }
+function showAll() { document.querySelectorAll('.answer-box').forEach(b => b.classList.add('show')); document.querySelectorAll('.toggle-btn').forEach(b => b.textContent = '정답 숨기기'); }
+function hideAll() { document.querySelectorAll('.answer-box').forEach(b => b.classList.remove('show')); document.querySelectorAll('.toggle-btn').forEach(b => b.textContent = '정답 보기'); }
+</script>
+</body>
+</html>

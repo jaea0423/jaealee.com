@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>모두의 인공지능 — 문제 은행</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;600;700&family=Nanum+Myeongjo:wght@400;700;800&family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+  :root { --bg:#faf6ef; --paper:#fffdf7; --ink:#2c2418; --ink-light:#5b5040; --accent:#7b5cd6; --accent2:#ec8fc1; --accent3:#5db8ee; --rule:#d4c8b0; --highlight:#f4e4c1; --def-bg:#fff8e8; --exam-border:#b54848; --ans-bg:#eaf3ec; --ans-border:#5a8a5e; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html, body { background:var(--bg); color:var(--ink); font-family:'Noto Serif KR','Nanum Myeongjo',serif; line-height:1.7; font-size:16px; }
+  .page { max-width:1000px; margin:0 auto; padding:40px 32px 80px; background:var(--paper); box-shadow:0 0 30px rgba(80,60,30,.08); min-height:100vh; }
+  .cover { text-align:center; padding:40px 0 30px; border-bottom:3px double var(--accent); margin-bottom:30px; }
+  .cover .series { font-size:13px; letter-spacing:5px; color:var(--accent); margin-bottom:12px; }
+  .cover h1 { font-family:'Jua', sans-serif; font-size:48px; font-weight:800; margin:6px 0; background:linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .cover .subtitle { font-size:18px; color:var(--ink-light); margin-top:4px; }
+  .controls { background:#fff8e8; border:1.5px solid var(--accent); padding:18px 22px; margin:20px 0 30px; border-radius:10px; position:sticky; top:8px; z-index:50; box-shadow:0 4px 12px rgba(0,0,0,0.06); }
+  .filter-row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:10px; }
+  .filter-row .lab { font-family:'Noto Sans KR', sans-serif; font-weight:700; color:var(--accent); margin-right:6px; font-size:13px; letter-spacing:1px; }
+  .filter-btn { background:#fff; border:1.5px solid var(--accent); color:var(--accent); padding:6px 12px; border-radius:20px; cursor:pointer; font-size:13px; font-family:sans-serif; transition:all 0.15s; }
+  .filter-btn:hover { background:rgba(123,92,214,0.1); }
+  .filter-btn.active { background:var(--accent); color:#fff; }
+  .actions { display:flex; gap:8px; margin-top:6px; }
+  .actions button { background:var(--accent2); color:#fff; border:none; padding:7px 14px; border-radius:6px; cursor:pointer; font-size:13px; font-family:sans-serif; }
+  .actions button:hover { background:var(--accent); }
+  .counter { margin-left:auto; font-size:13px; color:var(--ink-light); font-family:sans-serif; }
+  .question { background:#fff; border:1px solid var(--rule); border-left:5px solid var(--accent); padding:18px 22px; margin:16px 0; border-radius:6px; }
+  .question.hidden { display:none; }
+  .qhead { display:flex; gap:8px; align-items:center; margin-bottom:10px; flex-wrap:wrap; }
+  .qhead .qbadge { background:var(--accent); color:#fff; padding:3px 10px; border-radius:4px; font-size:12px; font-family:sans-serif; font-weight:700; letter-spacing:1px; }
+  .qhead .qweek { background:#fff5d8; color:var(--accent); padding:3px 10px; border-radius:4px; font-size:12px; font-family:sans-serif; font-weight:700; }
+  .qhead .qtype { background:var(--highlight); color:var(--ink-light); padding:3px 10px; border-radius:4px; font-size:12px; font-family:sans-serif; }
+  .qbody { font-size:16px; margin-bottom:8px; }
+  .options { margin:8px 0 0 18px; padding:0; list-style:none; }
+  .options li { padding:3px 0; font-size:15px; }
+  .options .opt-num { font-weight:700; color:var(--accent); margin-right:4px; }
+  code { background:#f4ecd8; padding:1px 5px; border-radius:3px; font-family:'Consolas',monospace; font-size:14px; color:#5a3920; }
+  .toggle-btn { margin-top:8px; background:transparent; border:1px solid var(--ans-border); color:var(--ans-border); padding:5px 12px; border-radius:4px; font-size:12px; cursor:pointer; font-family:sans-serif; }
+  .toggle-btn:hover { background:var(--ans-border); color:#fff; }
+  .answer-box { display:none; background:var(--ans-bg); border-left:4px solid var(--ans-border); padding:10px 14px; margin-top:8px; border-radius:4px; }
+  .answer-box.show { display:block; }
+  .answer-box .alabel { font-weight:700; color:var(--ans-border); display:block; margin-bottom:4px; font-size:13px; font-family:sans-serif; }
+  .answer-box strong { color:var(--accent); background:#fff5d8; padding:0 4px; border-radius:2px; }
+  .answer-box .keyw { background:#fff5d8; padding:1px 5px; border-radius:3px; color:var(--accent); font-weight:600; }
+  .week-divider { margin:40px 0 20px; padding-bottom:8px; border-bottom:2px solid var(--accent2); font-family:'Jua', sans-serif; font-size:22px; color:var(--accent); }
+  .nav-links { margin-top:60px; padding:24px; border-top:3px double var(--accent); text-align:center; }
+  .nav-links a { display:inline-block; margin:0 8px; padding:10px 20px; background:var(--accent); color:#fff; text-decoration:none; border-radius:6px; font-size:14px; font-family:sans-serif; }
+  .nav-links a:hover { background:var(--accent2); }
+  @media print { body { background:#fff; } .page { box-shadow:none; padding:20px; } .controls { display:none; } .toggle-btn { display:none; } .answer-box { display:block !important; page-break-inside:avoid; } .question { page-break-inside:avoid; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="cover">
+    <div class="series">모두의 인공지능 · 강태원 교수</div>
+    <h1>문제 은행</h1>
+    <div class="subtitle">전 주차 통합 문제집 · 카테고리별 필터링</div>
+  </div>
+
+  <div class="controls">
+    <div class="filter-row">
+      <span class="lab">주차</span>
+      <button class="filter-btn week-filter active" data-week="all">전체</button>
+      <button class="filter-btn week-filter" data-week="10">10</button>
+      <button class="filter-btn week-filter" data-week="11">11</button>
+      <button class="filter-btn week-filter" data-week="12">12</button>
+      <button class="filter-btn week-filter" data-week="13">13</button>
+      <button class="filter-btn week-filter" data-week="14">14</button>
+    </div>
+    <div class="filter-row">
+      <span class="lab">유형</span>
+      <button class="filter-btn type-filter active" data-type="all">전체</button>
+      <button class="filter-btn type-filter" data-type="객관식">객관식</button>
+      <button class="filter-btn type-filter" data-type="주관식">주관식</button>
+      <button class="filter-btn type-filter" data-type="서술형">서술형</button>
+    </div>
+    <div class="actions">
+      <button onclick="showAll()">정답 모두 보기</button>
+      <button onclick="hideAll()">정답 모두 가리기</button>
+      <span class="counter" id="counter"></span>
+    </div>
+  </div>
+
+  <!-- === 10주차 === -->
+  <div class="week-divider" data-week="10">10주차 — 이 영화 보세요!</div>
+
+  <div class="question" data-week="10" data-type="객관식">
+    <div class="qhead"><span class="qbadge">Q</span><span class="qweek">10주차</span><span class="qtype">객관식</span></div>
+    <div class="qbody">머신러닝의 세 가지 학습 방식이 아닌 것은?</div>
+    <ul class="options">
+      <li><span class="opt-num">①</span> 지도학습 (Supervised Learning)</li>
+      <li><span class="opt-num">②</span> 비지도학습 (Unsupervised Learning)</li>
+      <li><span class="opt-num">③</span> 강화학습 (Reinforcement Learning)</li>
+      <li><span class="opt-num">④</span> 자동학습 (Automatic Learning)</li>
+    </ul>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답</button>
+    <div class="answer-box"><span class="alabel">정답</span><strong>④ 자동학습</strong><br><span class="alabel">해설</span>머신러닝은 <span class="keyw">지도·비지도·강화</span> 세 가지. 자동학습이라는 용어는 없음.</div>
+  </div>
+
+  <div class="question" data-week="10" data-type="주관식">
+    <div class="qhead"><span class="qbadge">Q</span><span class="qweek">10주차</span><span class="qtype">주관식</span></div>
+    <div class="qbody">사용자가 본 영화·평점 데이터로 비슷한 취향의 사용자를 찾아 추천하는 방식의 이름은?</div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답</button>
+    <div class="answer-box"><span class="alabel">정답</span><strong>협업 필터링 (Collaborative Filtering)</strong><br><span class="alabel">해설</span>콘텐츠 기반(Content-based)은 영화 자체의 특성으로 추천. 협업 필터링은 사용자 행동으로 추천.</div>
+  </div>
+
+  <!-- === 11주차 === -->
+  <div class="week-divider" data-week="11">11주차 — 개미의 길찾기</div>
+
+  <div class="question" data-week="11" data-type="객관식">
+    <div class="qhead"><span class="qbadge">Q</span><span class="qweek">11주차</span><span class="qtype">객관식</span></div>
+    <div class="qbody">개미 알고리즘(ACO)에서 개미가 길을 찾는 데 사용하는 화학 물질은?</div>
+    <ul class="options">
+      <li><span class="opt-num">①</span> 페로몬 (Pheromone)</li>
+      <li><span class="opt-num">②</span> 도파민 (Dopamine)</li>
+      <li><span class="opt-num">③</span> 인슐린 (Insulin)</li>
+      <li><span class="opt-num">④</span> 셀룰로오스 (Cellulose)</li>
+    </ul>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답</button>
+    <div class="answer-box"><span class="alabel">정답</span><strong>① 페로몬</strong><br><span class="alabel">해설</span>개미는 <span class="keyw">페로몬</span> 냄새를 따라 이동. 짧은 길은 페로몬이 많이 쌓여 강화. 14주차 보이드와 같은 "이웃 정보만 사용" 철학.</div>
+  </div>
+
+  <div class="question" data-week="11" data-type="주관식">
+    <div class="qhead"><span class="qbadge">Q</span><span class="qweek">11주차</span><span class="qtype">주관식</span></div>
+    <div class="qbody">개미 알고리즘이 푸는 대표적 NP 문제는 무엇인가?</div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답</button>
+    <div class="answer-box"><span class="alabel">정답</span><strong>외판원 문제 (TSP, Traveling Salesman Problem)</strong><br><span class="alabel">해설</span>모든 도시를 한 번씩 방문하고 돌아오는 최단 경로 찾기. 도시가 늘면 경우의 수가 폭발적 증가.</div>
+  </div>
+
+  <!-- === 12주차 === -->
+  <div class="week-divider" data-week="12">12주차 — 발가락이 닮았네</div>
+
+  <div class="question" data-week="12" data-type="객관식">
+    <div class="qhead"><span class="qbadge">Q</span><span class="qweek">12주차</span><span class="qtype">객관식</span></div>
+    <div class="qbody">자연 진화를 구성하는 두 축은?</div>
+    <ul class="options">
+      <li><span class="opt-num">①</span> 학습 + 추론</li>
+      <li><span class="opt-num">②</span> 선택(Selection) + 유전(Heredity)</li>
+      <li><span class="opt-num">③</span> 교차 + 돌연변이</li>
+      <li><span class="opt-num">④</span> 부모 + 자식</li>
+    </ul>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답</button>
+    <div class="answer-box"><span class="alabel">정답</span><strong>② 선택 + 유전</strong><br><span class="alabel">해설</span>둘 다 있어야 진화. 교차·돌연변이는 GA의 유전 연산.</div>
+  </div>
+
+  <div class="question" data-week="12" data-type="객관식">
+    <div class="qhead"><span class="qbadge">Q</span><span class="qweek">12주차</span><span class="qtype">객관식</span></div>
+    <div class="qbody">유전 알고리즘에서 <strong>사람</strong>이 직접 해야 할 가장 중요한 두 가지는?</div>
+    <ul class="options">
+      <li><span class="opt-num">①</span> 모집단 구성 + 선택</li>
+      <li><span class="opt-num">②</span> 교차 + 돌연변이</li>
+      <li><span class="opt-num">③</span> 인코딩 + 적합도 함수 정의</li>
+      <li><span class="opt-num">④</span> 모든 단계를 사람이 한다</li>
+    </ul>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답</button>
+    <div class="answer-box"><span class="alabel">정답</span><strong>③ 인코딩 + 적합도 함수 정의</strong><br><span class="alabel">해설</span>나머지는 컴퓨터가 무작위로. 사람의 몫은 <span class="keyw">문제를 비트로 표현</span>(인코딩)과 <span class="keyw">무엇이 좋은 해</span>(적합도) 정의.</div>
+  </div>
+
+  <div class="question" data-week="12" data-type="주관식">
+    <div class="qhead"><span class="qbadge">Q</span><span class="qweek">12주차</span><span class="qtype">주관식</span></div>
+    <div class="qbody">GA의 선택 방식 중 적합도가 높은 개체일수록 뽑힐 확률이 비례하는 방식은?</div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답</button>
+    <div class="answer-box"><span class="alabel">정답</span><strong>룰렛휠 선택 (Roulette Wheel Selection)</strong><br><span class="alabel">해설</span>적합도 비율만큼 룰렛 면적 배분 → 0~1 사이 랜덤 넘버로 뽑기. 다양성 보존. 반대로 <span class="keyw">엘리티시즘</span>은 상위 개체 무조건 선택 → 빠른 수렴.</div>
+  </div>
+
+  <div class="question" data-week="12" data-type="주관식">
+    <div class="qhead"><span class="qbadge">Q</span><span class="qweek">12주차</span><span class="qtype">주관식</span></div>
+    <div class="qbody">"유전형(Genotype)"과 "표현형(Phenotype)"의 차이를 라면 예시로 설명하시오.</div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답</button>
+    <div class="answer-box"><span class="alabel">정답</span><strong>유전형: DNA 비트 표현(예: 1101) / 표현형: 발현된 실제 모습(예: 김 O 라면)</strong><br><span class="alabel">해설</span>유전형은 컴퓨터 내부 비트 코드, 표현형은 그것이 실제 세상에 표현된 모습. 강 교수의 라면 비유.</div>
+  </div>
+
+  <!-- === 13주차 === -->
+  <div class="week-divider" data-week="13">13주차 — 단순한 복잡함</div>
+
+  <div class="question" data-week="13" data-type="객관식">
+    <div class="qhead"><span class="qbadge">Q</span><span class="qweek">13주차</span><span class="qtype">객관식</span></div>
+    <div class="qbody">혼돈(Chaos) 시스템의 특징이 <strong>아닌</strong> 것은?</div>
+    <ul class="options">
+      <li><span class="opt-num">①</span> 초기치 민감성</li>
+      <li><span class="opt-num">②</span> 주기 배증</li>
+      <li><span class="opt-num">③</span> 자기유사성</li>
+      <li><span class="opt-num">④</span> 완전한 무질서</li>
+    </ul>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답</button>
+    <div class="answer-box"><span class="alabel">정답</span><strong>④ 완전한 무질서</strong><br><span class="alabel">해설</span>혼돈은 <span class="keyw">무질서와 다름</span>. "Life at the Edge of Chaos" — 생명은 혼돈 영역에 있다.</div>
+  </div>
+
+  <div class="question" data-week="13" data-type="객관식">
+    <div class="qhead"><span class="qbadge">Q</span><span class="qweek">13주차</span><span class="qtype">객관식</span></div>
+    <div class="qbody">1차원 세포 자동자에서 가능한 규칙의 총 개수는?</div>
+    <ul class="options">
+      <li><span class="opt-num">①</span> 8개</li>
+      <li><span class="opt-num">②</span> 64개</li>
+      <li><span class="opt-num">③</span> 128개</li>
+      <li><span class="opt-num">④</span> 256개</li>
+    </ul>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답</button>
+    <div class="answer-box"><span class="alabel">정답</span><strong>④ 256개</strong><br><span class="alabel">해설</span>이웃 패턴 2³=8가지. 각 패턴마다 결과 0 또는 1 → <span class="keyw">2⁸ = 256</span>.</div>
+  </div>
+
+  <div class="question" data-week="13" data-type="객관식">
+    <div class="qhead"><span class="qbadge">Q</span><span class="qweek">13주차</span><span class="qtype">객관식</span></div>
+    <div class="qbody">콘웨이 라이프 게임에서 살아있는 세포가 다음 단계에 살아남는 조건은?</div>
+    <ul class="options">
+      <li><span class="opt-num">①</span> 이웃이 1명</li>
+      <li><span class="opt-num">②</span> 이웃이 2명 또는 3명</li>
+      <li><span class="opt-num">③</span> 이웃이 정확히 3명</li>
+      <li><span class="opt-num">④</span> 이웃이 4명 이상</li>
+    </ul>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답</button>
+    <div class="answer-box"><span class="alabel">정답</span><strong>② 이웃이 2명 또는 3명</strong><br><span class="alabel">해설</span>규칙 1(살아있는 세포): 이웃 <span class="keyw">2 또는 3 → 생존</span>. 정답 ③은 빈 세포 탄생 조건.</div>
+  </div>
+
+  <div class="question" data-week="13" data-type="주관식">
+    <div class="qhead"><span class="qbadge">Q</span><span class="qweek">13주차</span><span class="qtype">주관식</span></div>
+    <div class="qbody">로렌츠가 발견한 "작은 차이가 큰 변화를 일으키는" 현상의 이름은? (영어 포함)</div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답</button>
+    <div class="answer-box"><span class="alabel">정답</span><strong>나비효과 (Butterfly Effect) = 초기치 민감성</strong><br><span class="alabel">해설</span>로렌츠의 <span class="keyw">이상한 끌개(Strange Attractor)</span>가 나비 모양에서 유래.</div>
+  </div>
+
+  <div class="question" data-week="13" data-type="주관식">
+    <div class="qhead"><span class="qbadge">Q</span><span class="qweek">13주차</span><span class="qtype">주관식</span></div>
+    <div class="qbody">"렌즈가 여러 개 달린 복사기"로 비유되는, 반슬리의 프랙털 생성 시스템의 약어는?</div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답</button>
+    <div class="answer-box"><span class="alabel">정답</span><strong>IFS (Iterative Function System)</strong><br><span class="alabel">해설</span>고사리·나무·구름 등 자연 형태 생성에 사용. 게임·영화의 풍경에 활용.</div>
+  </div>
+
+  <div class="question" data-week="13" data-type="주관식">
+    <div class="qhead"><span class="qbadge">Q</span><span class="qweek">13주차</span><span class="qtype">주관식</span></div>
+    <div class="qbody">2차원 CA의 공간을 양 끝을 이어붙여 만든 도넛 모양 형태의 이름은?</div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답</button>
+    <div class="answer-box"><span class="alabel">정답</span><strong>토러스 (Torus, 원환체)</strong><br><span class="alabel">해설</span>좌우를 이어 원통, 위아래를 또 이어 도넛 모양. 1차원 CA는 좌우만 이어 원통.</div>
+  </div>
+
+  <div class="question" data-week="13" data-type="서술형">
+    <div class="qhead"><span class="qbadge">Q</span><span class="qweek">13주차</span><span class="qtype">서술형</span></div>
+    <div class="qbody">콘웨이 라이프 게임의 두 규칙을 정확히 기술하시오.</div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답</button>
+    <div class="answer-box"><span class="alabel">정답</span>
+    <strong>규칙 1 (살아있는 세포)</strong>: 8개 무어 이웃 중 살아있는 게 <span class="keyw">2개 또는 3개</span>면 생존. 그 외는 사망.<br>
+    <strong>규칙 2 (빈 세포)</strong>: 8개 이웃 중 살아있는 게 <span class="keyw">정확히 3개</span>면 새 생명 탄생. 그 외는 계속 빔.<br>
+    이 단순 규칙으로 글라이더·글라이더 건·우주선 등 복잡한 패턴 창발. 튜링 머신(컴퓨터)도 구현 가능.</div>
+  </div>
+
+  <!-- === 14주차 === -->
+  <div class="week-divider" data-week="14">14주차 — 이제는 인공생명</div>
+
+  <div class="question" data-week="14" data-type="객관식">
+    <div class="qhead"><span class="qbadge">Q</span><span class="qweek">14주차</span><span class="qtype">객관식</span></div>
+    <div class="qbody">보이드(Boid) 알고리즘의 3가지 규칙이 아닌 것은?</div>
+    <ul class="options">
+      <li><span class="opt-num">①</span> 분리 (Separation)</li>
+      <li><span class="opt-num">②</span> 정렬 (Alignment)</li>
+      <li><span class="opt-num">③</span> 응집 (Cohesion)</li>
+      <li><span class="opt-num">④</span> 회피 (Avoidance)</li>
+    </ul>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답</button>
+    <div class="answer-box"><span class="alabel">정답</span><strong>④ 회피</strong><br><span class="alabel">해설</span>보이드 = <span class="keyw">분리·정렬·응집</span>뿐. 회피는 다른 알고리즘 용어.</div>
+  </div>
+
+  <div class="question" data-week="14" data-type="객관식">
+    <div class="qhead"><span class="qbadge">Q</span><span class="qweek">14주차</span><span class="qtype">객관식</span></div>
+    <div class="qbody">새 떼를 나타내는 영어 단어는?</div>
+    <ul class="options">
+      <li><span class="opt-num">①</span> School</li>
+      <li><span class="opt-num">②</span> Flock</li>
+      <li><span class="opt-num">③</span> Herd</li>
+      <li><span class="opt-num">④</span> Swarm</li>
+    </ul>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답</button>
+    <div class="answer-box"><span class="alabel">정답</span><strong>② Flock</strong><br><span class="alabel">해설</span>School=물고기, <span class="keyw">Flock=새</span>, Herd=동물 무리, Swarm=벌·곤충.</div>
+  </div>
+
+  <div class="question" data-week="14" data-type="객관식">
+    <div class="qhead"><span class="qbadge">Q</span><span class="qweek">14주차</span><span class="qtype">객관식</span></div>
+    <div class="qbody">AI가 "모두의 것"이 된 진짜 이유는?</div>
+    <ul class="options">
+      <li><span class="opt-num">①</span> AI가 중요해졌기 때문에</li>
+      <li><span class="opt-num">②</span> 국가 정책 때문에</li>
+      <li><span class="opt-num">③</span> 중요할 뿐 아니라 쉬워졌기 때문에</li>
+      <li><span class="opt-num">④</span> 컴퓨터가 빨라졌기 때문에</li>
+    </ul>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답</button>
+    <div class="answer-box"><span class="alabel">정답</span><strong>③ 중요할 뿐 아니라 쉬워졌기 때문에</strong><br><span class="alabel">해설</span>중요해도 어려우면 다 못 함(예: 양자역학). AI는 <span class="keyw">쉬워졌으니까</span> 모두가 해야.</div>
+  </div>
+
+  <div class="question" data-week="14" data-type="주관식">
+    <div class="qhead"><span class="qbadge">Q</span><span class="qweek">14주차</span><span class="qtype">주관식</span></div>
+    <div class="qbody">1986년에 보이드 알고리즘을 발표한 학자는?</div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답</button>
+    <div class="answer-box"><span class="alabel">정답</span><strong>크레이그 레이놀즈 (Craig Reynolds)</strong></div>
+  </div>
+
+  <div class="question" data-week="14" data-type="주관식">
+    <div class="qhead"><span class="qbadge">Q</span><span class="qweek">14주차</span><span class="qtype">주관식</span></div>
+    <div class="qbody">크리스 랭턴(Chris Langton)이 학문 분야로 정립한 것은? (영어 포함)</div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답</button>
+    <div class="answer-box"><span class="alabel">정답</span><strong>인공생명 (Artificial Life, ALife)</strong><br><span class="alabel">해설</span>그의 명언: <span class="keyw">"Life as we know it" → "Life as it could be"</span>.</div>
+  </div>
+
+  <div class="question" data-week="14" data-type="주관식">
+    <div class="qhead"><span class="qbadge">Q</span><span class="qweek">14주차</span><span class="qtype">주관식</span></div>
+    <div class="qbody">인공생명은 마른 인공생명과 ( ? ) 인공생명으로 나뉜다. 빈칸은?</div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답</button>
+    <div class="answer-box"><span class="alabel">정답</span><strong>젖은 (Wet)</strong><br><span class="alabel">해설</span>Dry ALife = 기계·로봇 / Wet ALife = 합성 생물·사이보그. 강 AI vs 약 AI와 비슷한 분류.</div>
+  </div>
+
+  <div class="question" data-week="14" data-type="서술형">
+    <div class="qhead"><span class="qbadge">Q</span><span class="qweek">14주차</span><span class="qtype">서술형</span></div>
+    <div class="qbody">보이드 알고리즘의 3가지 규칙을 각각 설명하시오.</div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답</button>
+    <div class="answer-box"><span class="alabel">정답</span>
+    <strong>① 분리(Separation)</strong>: 주변 동료들 방향의 반대로 → 충돌 회피.<br>
+    <strong>② 정렬(Alignment)</strong>: 주변 동료들 방향의 평균에 맞춰 → 줄 맞춤.<br>
+    <strong>③ 응집(Cohesion)</strong>: 주변 동료들의 중심점 방향으로 → 떼 유지.<br>
+    각 새는 매 순간 세 벡터를 합산해 다음 이동 방향 결정. 모든 새가 같은 규칙을 적용하고 자기 주변만 본다. 누가 지시하지 않아도 자연스러운 군집 이동 창발.</div>
+  </div>
+
+  <div class="question" data-week="14" data-type="서술형">
+    <div class="qhead"><span class="qbadge">Q</span><span class="qweek">14주차</span><span class="qtype">서술형</span></div>
+    <div class="qbody">강의 마지막 결론인 "좌뇌·우뇌 균형"의 의미를, 닭·풀·소 짝짓기 실험과 1주차 "인공지능 인문학"에 연결하여 서술하시오.</div>
+    <button class="toggle-btn" onclick="toggleAns(this)">정답</button>
+    <div class="answer-box"><span class="alabel">정답</span>
+    닭·풀·소 실험에서 동양인은 <span class="keyw">소-풀(관계 중심, 우뇌)</span>, 서양인은 <span class="keyw">닭-소(분류 중심, 좌뇌)</span>로 묶는다. 정답이 있는 게 아니라 사고 방식의 차이. AI는 인간 지능 모방이므로 양쪽 모두 필요. <span class="keyw">"한 손, 한 다리로는 일할 수 없다"</span>.<br>
+    1주차 "인공지능 인문학" 메시지(이공계도 인문학, 문과도 AI)와 정확히 일치 — 강의 전체가 <span class="keyw">수미상관</span>으로 닫힘. AI 시대에는 분류적 사고(좌)와 관계적 창의(우)를 모두 키우는 사람만 살아남는다.</div>
+  </div>
+
+  <div class="nav-links">
+    <a href="index.html">메인으로</a>
+    <a href="final-summary.html">종합정리</a>
+    <a href="mock-exam.html">모의고사</a>
+  </div>
+</div>
+<script>
+let weekFilter = 'all';
+let typeFilter = 'all';
+
+function toggleAns(btn) { var box = btn.nextElementSibling; box.classList.toggle('show'); btn.textContent = box.classList.contains('show') ? '닫기' : '정답'; }
+function showAll() { document.querySelectorAll('.answer-box').forEach(b => b.classList.add('show')); document.querySelectorAll('.toggle-btn').forEach(b => b.textContent = '닫기'); }
+function hideAll() { document.querySelectorAll('.answer-box').forEach(b => b.classList.remove('show')); document.querySelectorAll('.toggle-btn').forEach(b => b.textContent = '정답'); }
+
+function applyFilters() {
+  let visibleCount = 0;
+  document.querySelectorAll('.question').forEach(q => {
+    const w = q.dataset.week, t = q.dataset.type;
+    const showWeek = (weekFilter === 'all' || w === weekFilter);
+    const showType = (typeFilter === 'all' || t === typeFilter);
+    if (showWeek && showType) { q.classList.remove('hidden'); visibleCount++; }
+    else { q.classList.add('hidden'); }
+  });
+  document.querySelectorAll('.week-divider').forEach(d => {
+    const w = d.dataset.week;
+    d.style.display = (weekFilter === 'all' || w === weekFilter) ? 'block' : 'none';
+  });
+  document.getElementById('counter').textContent = `표시: ${visibleCount}문제`;
+}
+
+document.querySelectorAll('.week-filter').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.week-filter').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    weekFilter = btn.dataset.week;
+    applyFilters();
+  });
+});
+document.querySelectorAll('.type-filter').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.type-filter').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    typeFilter = btn.dataset.type;
+    applyFilters();
+  });
+});
+applyFilters();
+</script>
+</body>
+</html>

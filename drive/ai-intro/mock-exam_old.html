@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>모두의 인공지능 — 모의고사</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;600;700&family=Nanum+Myeongjo:wght@400;700;800&family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+  :root { --bg:#faf6ef; --paper:#fffdf7; --ink:#2c2418; --ink-light:#5b5040; --accent:#7b5cd6; --accent2:#ec8fc1; --accent3:#5db8ee; --rule:#d4c8b0; --highlight:#f4e4c1; --correct:#5a8a5e; --wrong:#b54848; --warn:#d97706; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html, body { background:var(--bg); color:var(--ink); font-family:'Noto Serif KR','Nanum Myeongjo',serif; line-height:1.7; font-size:16px; }
+  .page { max-width:900px; margin:0 auto; padding:40px 32px 80px; background:var(--paper); box-shadow:0 0 30px rgba(80,60,30,.08); min-height:100vh; }
+  .cover { text-align:center; padding:40px 0 20px; border-bottom:3px double var(--accent); margin-bottom:24px; }
+  .cover .series { font-size:13px; letter-spacing:5px; color:var(--accent); margin-bottom:12px; }
+  .cover h1 { font-family:'Jua', sans-serif; font-size:48px; font-weight:800; background:linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .cover .subtitle { font-size:18px; color:var(--ink-light); margin-top:4px; }
+  .intro-card { background:linear-gradient(135deg, #fff8e8, #fff5dd); border:2px solid var(--accent); padding:30px 32px; border-radius:12px; margin:20px 0 30px; }
+  .intro-card h2 { font-family:'Jua', sans-serif; color:var(--accent); font-size:24px; margin-bottom:14px; }
+  .intro-card ul { margin:12px 0 0 22px; }
+  .intro-card li { margin:6px 0; }
+  .start-btn { background:linear-gradient(135deg, var(--accent), var(--accent2)); color:#fff; border:none; padding:14px 40px; border-radius:10px; font-size:18px; font-family:'Jua', sans-serif; cursor:pointer; margin-top:20px; display:block; width:100%; transition:transform 0.15s; }
+  .start-btn:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(123,92,214,0.3); }
+  .timer-bar { position:sticky; top:8px; z-index:50; background:var(--accent); color:#fff; padding:14px 22px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; box-shadow:0 4px 12px rgba(0,0,0,0.15); font-family:sans-serif; }
+  .timer-bar.warn { background:var(--warn); animation:pulse 1s infinite; }
+  @keyframes pulse { 0%, 100% { opacity:1; } 50% { opacity:0.85; } }
+  .timer-bar .timer { font-size:24px; font-weight:700; font-family:'Consolas',monospace; }
+  .timer-bar .progress { font-size:13px; }
+  .timer-bar button { background:#fff; color:var(--accent); border:none; padding:8px 16px; border-radius:6px; font-weight:700; cursor:pointer; }
+  .timer-bar button:hover { background:var(--highlight); }
+  .question { background:#fff; border:1px solid var(--rule); border-left:5px solid var(--accent); padding:20px 24px; margin:18px 0; border-radius:6px; }
+  .question.correct { border-left-color:var(--correct); background:#f0f9f1; }
+  .question.wrong { border-left-color:var(--wrong); background:#fdf3f3; }
+  .qhead { display:flex; gap:8px; align-items:center; margin-bottom:10px; flex-wrap:wrap; }
+  .qhead .qno { background:var(--accent); color:#fff; padding:4px 12px; border-radius:4px; font-size:13px; font-family:sans-serif; font-weight:700; }
+  .qhead .qtype { background:var(--highlight); color:var(--ink-light); padding:3px 10px; border-radius:4px; font-size:12px; font-family:sans-serif; }
+  .qhead .qweek { color:var(--ink-light); font-size:12px; font-family:sans-serif; }
+  .qbody { font-size:17px; margin-bottom:12px; }
+  .options { margin:10px 0 0 0; padding:0; list-style:none; }
+  .options li { padding:8px 14px; border:1.5px solid var(--rule); border-radius:6px; margin:6px 0; cursor:pointer; transition:all 0.15s; }
+  .options li:hover { background:#fff5d8; border-color:var(--accent); }
+  .options li.selected { background:rgba(123,92,214,0.15); border-color:var(--accent); font-weight:600; }
+  .options li.correct-opt { background:#e0f0e1; border-color:var(--correct); }
+  .options li.wrong-opt { background:#fce0e0; border-color:var(--wrong); }
+  .options .opt-num { font-weight:700; color:var(--accent); margin-right:8px; }
+  .text-answer { width:100%; min-height:50px; padding:10px 14px; border:1.5px solid var(--rule); border-radius:6px; font-family:inherit; font-size:15px; resize:vertical; margin-top:8px; }
+  .text-answer:focus { outline:none; border-color:var(--accent); }
+  .explanation { background:#eaf3ec; border-left:4px solid var(--correct); padding:12px 16px; margin-top:12px; border-radius:4px; display:none; font-size:14px; }
+  .explanation.show { display:block; }
+  .explanation .label { font-weight:700; color:var(--correct); display:block; margin-bottom:4px; font-family:sans-serif; font-size:13px; }
+  .explanation strong { color:var(--accent); background:#fff5d8; padding:0 4px; border-radius:2px; }
+  .explanation .wronglabel { color:var(--wrong); }
+  .submit-area { margin-top:30px; text-align:center; }
+  .submit-btn { background:var(--accent); color:#fff; border:none; padding:16px 50px; border-radius:10px; font-size:18px; font-family:'Jua', sans-serif; cursor:pointer; transition:transform 0.15s; }
+  .submit-btn:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(123,92,214,0.3); }
+  .result-card { background:linear-gradient(135deg, #fff8e8, #fff5dd); border:3px solid var(--accent); padding:36px; border-radius:12px; margin:30px 0; text-align:center; }
+  .result-card h2 { font-family:'Jua', sans-serif; color:var(--accent); font-size:32px; margin-bottom:16px; }
+  .result-card .score { font-size:72px; font-family:'Jua', sans-serif; background:linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .result-card .breakdown { font-size:16px; color:var(--ink-light); margin-top:10px; }
+  .nav-links { margin-top:50px; padding:24px; border-top:3px double var(--accent); text-align:center; }
+  .nav-links a { display:inline-block; margin:0 8px; padding:10px 20px; background:var(--accent); color:#fff; text-decoration:none; border-radius:6px; font-size:14px; font-family:sans-serif; }
+  .nav-links a:hover { background:var(--accent2); }
+  .hidden { display:none; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="cover">
+    <div class="series">모두의 인공지능 · 강태원 교수</div>
+    <h1>모의고사</h1>
+    <div class="subtitle">실제 시험 형식 · 45분 시간 제한</div>
+  </div>
+
+  <!-- 인트로 화면 -->
+  <div id="intro-screen">
+    <div class="intro-card">
+      <h2>모의고사 안내</h2>
+      <ul>
+        <li><strong>총 문항</strong>: 20문제 (객관식 10 + 주관식 8 + 서술형 2)</li>
+        <li><strong>시간</strong>: 45분 (실제 기말고사와 동일)</li>
+        <li><strong>점수</strong>: 객관식 4점 × 10 = 40점 / 주관식 5점 × 8 = 40점 / 서술형 10점 × 2 = 20점 / <strong>총 100점</strong></li>
+        <li><strong>채점</strong>: 객관식·주관식만 자동 채점. 서술형은 모범 답안 비교</li>
+        <li><strong>범위</strong>: 10~14주차 중심 (기말 시험 범위)</li>
+        <li><strong>주의</strong>: 시간 초과 시 자동 제출됩니다</li>
+      </ul>
+      <button class="start-btn" onclick="startExam()">시험 시작</button>
+    </div>
+  </div>
+
+  <!-- 시험 화면 -->
+  <div id="exam-screen" class="hidden">
+    <div class="timer-bar" id="timerBar">
+      <div>
+        <div class="timer" id="timer">45:00</div>
+        <div class="progress">남은 시간</div>
+      </div>
+      <div style="text-align:right;">
+        <button onclick="submitExam()">제출하기</button>
+      </div>
+    </div>
+
+    <div id="questions-container">
+      <!-- 객관식 10 -->
+      <div class="question" data-type="mc" data-answer="2" data-points="4">
+        <div class="qhead"><span class="qno">1</span><span class="qtype">객관식 (4점)</span><span class="qweek">12주차</span></div>
+        <div class="qbody">자연 진화를 구성하는 두 축은?</div>
+        <ul class="options">
+          <li data-val="1"><span class="opt-num">①</span> 학습 + 추론</li>
+          <li data-val="2"><span class="opt-num">②</span> 선택 + 유전</li>
+          <li data-val="3"><span class="opt-num">③</span> 교차 + 돌연변이</li>
+          <li data-val="4"><span class="opt-num">④</span> 부모 + 자식</li>
+        </ul>
+        <div class="explanation"><span class="label">해설</span><strong>선택(Selection) + 유전(Heredity)</strong>. 둘 다 있어야 진화. 교차·돌연변이는 GA의 유전 연산.</div>
+      </div>
+
+      <div class="question" data-type="mc" data-answer="3" data-points="4">
+        <div class="qhead"><span class="qno">2</span><span class="qtype">객관식 (4점)</span><span class="qweek">12주차</span></div>
+        <div class="qbody">유전 알고리즘에서 사람이 직접 해야 할 가장 중요한 두 가지는?</div>
+        <ul class="options">
+          <li data-val="1"><span class="opt-num">①</span> 모집단 구성 + 선택</li>
+          <li data-val="2"><span class="opt-num">②</span> 교차 + 돌연변이</li>
+          <li data-val="3"><span class="opt-num">③</span> 인코딩 + 적합도 함수 정의</li>
+          <li data-val="4"><span class="opt-num">④</span> 모든 단계를 사람이 한다</li>
+        </ul>
+        <div class="explanation"><span class="label">해설</span><strong>인코딩 + 적합도 함수 정의</strong>. 나머지는 컴퓨터가 무작위로.</div>
+      </div>
+
+      <div class="question" data-type="mc" data-answer="4" data-points="4">
+        <div class="qhead"><span class="qno">3</span><span class="qtype">객관식 (4점)</span><span class="qweek">13주차</span></div>
+        <div class="qbody">혼돈(Chaos) 시스템의 특징이 아닌 것은?</div>
+        <ul class="options">
+          <li data-val="1"><span class="opt-num">①</span> 초기치 민감성</li>
+          <li data-val="2"><span class="opt-num">②</span> 주기 배증</li>
+          <li data-val="3"><span class="opt-num">③</span> 자기유사성</li>
+          <li data-val="4"><span class="opt-num">④</span> 완전한 무질서</li>
+        </ul>
+        <div class="explanation"><span class="label">해설</span>혼돈은 무질서와 <strong>다르다</strong>. "Life at the Edge of Chaos".</div>
+      </div>
+
+      <div class="question" data-type="mc" data-answer="4" data-points="4">
+        <div class="qhead"><span class="qno">4</span><span class="qtype">객관식 (4점)</span><span class="qweek">13주차</span></div>
+        <div class="qbody">1차원 세포 자동자에서 가능한 규칙의 총 개수는?</div>
+        <ul class="options">
+          <li data-val="1"><span class="opt-num">①</span> 8개</li>
+          <li data-val="2"><span class="opt-num">②</span> 64개</li>
+          <li data-val="3"><span class="opt-num">③</span> 128개</li>
+          <li data-val="4"><span class="opt-num">④</span> 256개</li>
+        </ul>
+        <div class="explanation"><span class="label">해설</span>2³=8가지 패턴 × 각 0/1 결과 = <strong>2⁸ = 256개</strong>.</div>
+      </div>
+
+      <div class="question" data-type="mc" data-answer="2" data-points="4">
+        <div class="qhead"><span class="qno">5</span><span class="qtype">객관식 (4점)</span><span class="qweek">13주차</span></div>
+        <div class="qbody">콘웨이 라이프 게임에서 살아있는 세포가 다음 단계에 살아남는 조건은?</div>
+        <ul class="options">
+          <li data-val="1"><span class="opt-num">①</span> 이웃 1명</li>
+          <li data-val="2"><span class="opt-num">②</span> 이웃 2명 또는 3명</li>
+          <li data-val="3"><span class="opt-num">③</span> 이웃 정확히 3명</li>
+          <li data-val="4"><span class="opt-num">④</span> 이웃 4명 이상</li>
+        </ul>
+        <div class="explanation"><span class="label">해설</span>규칙 1: 이웃 <strong>2 또는 3 → 생존</strong>. ③은 빈 세포 탄생 조건.</div>
+      </div>
+
+      <div class="question" data-type="mc" data-answer="3" data-points="4">
+        <div class="qhead"><span class="qno">6</span><span class="qtype">객관식 (4점)</span><span class="qweek">13주차</span></div>
+        <div class="qbody">2차원 CA의 공간을 양 끝을 이어붙여 만든 도넛 모양 형태는?</div>
+        <ul class="options">
+          <li data-val="1"><span class="opt-num">①</span> 구</li>
+          <li data-val="2"><span class="opt-num">②</span> 원통</li>
+          <li data-val="3"><span class="opt-num">③</span> 토러스</li>
+          <li data-val="4"><span class="opt-num">④</span> 평면</li>
+        </ul>
+        <div class="explanation"><span class="label">해설</span><strong>토러스(Torus, 원환체)</strong>. 좌우→원통, 위아래→토러스.</div>
+      </div>
+
+      <div class="question" data-type="mc" data-answer="4" data-points="4">
+        <div class="qhead"><span class="qno">7</span><span class="qtype">객관식 (4점)</span><span class="qweek">14주차</span></div>
+        <div class="qbody">보이드(Boid) 알고리즘의 3가지 규칙이 아닌 것은?</div>
+        <ul class="options">
+          <li data-val="1"><span class="opt-num">①</span> 분리</li>
+          <li data-val="2"><span class="opt-num">②</span> 정렬</li>
+          <li data-val="3"><span class="opt-num">③</span> 응집</li>
+          <li data-val="4"><span class="opt-num">④</span> 회피</li>
+        </ul>
+        <div class="explanation"><span class="label">해설</span>보이드 = <strong>분리·정렬·응집</strong>뿐. 회피는 다른 알고리즘 용어.</div>
+      </div>
+
+      <div class="question" data-type="mc" data-answer="2" data-points="4">
+        <div class="qhead"><span class="qno">8</span><span class="qtype">객관식 (4점)</span><span class="qweek">14주차</span></div>
+        <div class="qbody">새 떼를 나타내는 영어 단어는?</div>
+        <ul class="options">
+          <li data-val="1"><span class="opt-num">①</span> School</li>
+          <li data-val="2"><span class="opt-num">②</span> Flock</li>
+          <li data-val="3"><span class="opt-num">③</span> Herd</li>
+          <li data-val="4"><span class="opt-num">④</span> Swarm</li>
+        </ul>
+        <div class="explanation"><span class="label">해설</span>School=물고기, <strong>Flock=새</strong>, Herd=동물 무리.</div>
+      </div>
+
+      <div class="question" data-type="mc" data-answer="3" data-points="4">
+        <div class="qhead"><span class="qno">9</span><span class="qtype">객관식 (4점)</span><span class="qweek">14주차</span></div>
+        <div class="qbody">AI가 "모두의 것"이 된 진짜 이유는?</div>
+        <ul class="options">
+          <li data-val="1"><span class="opt-num">①</span> AI가 중요해졌기 때문에</li>
+          <li data-val="2"><span class="opt-num">②</span> 국가 정책 때문에</li>
+          <li data-val="3"><span class="opt-num">③</span> 중요할 뿐 아니라 쉬워졌기 때문에</li>
+          <li data-val="4"><span class="opt-num">④</span> 일자리가 없어지기 때문에</li>
+        </ul>
+        <div class="explanation"><span class="label">해설</span>중요해도 어려우면 못 함. <strong>쉬워졌으니까</strong>.</div>
+      </div>
+
+      <div class="question" data-type="mc" data-answer="1" data-points="4">
+        <div class="qhead"><span class="qno">10</span><span class="qtype">객관식 (4점)</span><span class="qweek">14주차</span></div>
+        <div class="qbody">랭턴의 개미가 흑색 셀에 도착했을 때의 행동은?</div>
+        <ul class="options">
+          <li data-val="1"><span class="opt-num">①</span> 왼쪽 90° 회전 후 이동</li>
+          <li data-val="2"><span class="opt-num">②</span> 오른쪽 90° 회전 후 이동</li>
+          <li data-val="3"><span class="opt-num">③</span> 180° 회전</li>
+          <li data-val="4"><span class="opt-num">④</span> 정지</li>
+        </ul>
+        <div class="explanation"><span class="label">해설</span>흑색 → 좌회전, 백색 → 우회전. 떠난 자리 색 반전. 어떤 초기 상태에서도 <strong>하이웨이</strong> 생성.</div>
+      </div>
+
+      <!-- 주관식 8 -->
+      <div class="question" data-type="short" data-answer="룰렛휠 선택,룰렛휠,Roulette,Roulette Wheel,Roulette Wheel Selection" data-points="5">
+        <div class="qhead"><span class="qno">11</span><span class="qtype">주관식 (5점)</span><span class="qweek">12주차</span></div>
+        <div class="qbody">GA의 선택 방식 중 적합도가 높은 개체일수록 뽑힐 확률이 비례하는 방식의 이름은?</div>
+        <textarea class="text-answer" placeholder="답안을 입력하세요"></textarea>
+        <div class="explanation"><span class="label">정답</span><strong>룰렛휠 선택 (Roulette Wheel Selection)</strong>. 다양성 보존. 반대 방식은 엘리티시즘.</div>
+      </div>
+
+      <div class="question" data-type="short" data-answer="배낭 문제,배낭문제,Knapsack,Knapsack Problem" data-points="5">
+        <div class="qhead"><span class="qno">12</span><span class="qtype">주관식 (5점)</span><span class="qweek">12주차</span></div>
+        <div class="qbody">유전 알고리즘이 푸는 대표적 NP 문제로, "용량 제한이 있는 가방에 가치를 최대화하는 물건을 담는" 문제는?</div>
+        <textarea class="text-answer" placeholder="답안을 입력하세요"></textarea>
+        <div class="explanation"><span class="label">정답</span><strong>배낭 문제 (Knapsack Problem)</strong>. 적합도 = 1/|용량 − 부피|. 엘리티시즘과 함께 자주 사용.</div>
+      </div>
+
+      <div class="question" data-type="short" data-answer="나비효과,Butterfly Effect,초기치 민감성,초기 민감성,Sensitivity to Initial Conditions" data-points="5">
+        <div class="qhead"><span class="qno">13</span><span class="qtype">주관식 (5점)</span><span class="qweek">13주차</span></div>
+        <div class="qbody">로렌츠가 발견한 "작은 차이가 큰 변화를 일으키는" 현상의 이름은?</div>
+        <textarea class="text-answer" placeholder="답안을 입력하세요"></textarea>
+        <div class="explanation"><span class="label">정답</span><strong>나비효과 (Butterfly Effect) = 초기치 민감성</strong>. 로렌츠의 이상한 끌개에서 유래.</div>
+      </div>
+
+      <div class="question" data-type="short" data-answer="시에르핀스키 삼각형,시에르핀스키,Sierpinski,Sierpinski Triangle" data-points="5">
+        <div class="qhead"><span class="qno">14</span><span class="qtype">주관식 (5점)</span><span class="qweek">13주차</span></div>
+        <div class="qbody">삼각형 가운데를 계속 파내는 방식으로 만들어지며, 면적은 0이지만 점은 무한히 많은 프랙털의 이름은?</div>
+        <textarea class="text-answer" placeholder="답안을 입력하세요"></textarea>
+        <div class="explanation"><span class="label">정답</span><strong>시에르핀스키 삼각형 (Sierpinski Triangle)</strong>. 1차원 CA 72번 규칙으로도 생성됨.</div>
+      </div>
+
+      <div class="question" data-type="short" data-answer="울프램,Wolfram,Stephen Wolfram,스티븐 울프램" data-points="5">
+        <div class="qhead"><span class="qno">15</span><span class="qtype">주관식 (5점)</span><span class="qweek">13주차</span></div>
+        <div class="qbody">CA의 행태를 4가지(수렴·주기·혼돈·무질서)로 분류한 물리학자이자 Mathematica의 개발자는?</div>
+        <textarea class="text-answer" placeholder="답안을 입력하세요"></textarea>
+        <div class="explanation"><span class="label">정답</span><strong>스티븐 울프램 (Stephen Wolfram)</strong>. 생명은 ③ 혼돈 영역.</div>
+      </div>
+
+      <div class="question" data-type="short" data-answer="크레이그 레이놀즈,레이놀즈,Craig Reynolds,Reynolds" data-points="5">
+        <div class="qhead"><span class="qno">16</span><span class="qtype">주관식 (5점)</span><span class="qweek">14주차</span></div>
+        <div class="qbody">1986년에 보이드 알고리즘을 발표한 학자의 이름은?</div>
+        <textarea class="text-answer" placeholder="답안을 입력하세요"></textarea>
+        <div class="explanation"><span class="label">정답</span><strong>크레이그 레이놀즈 (Craig Reynolds)</strong>.</div>
+      </div>
+
+      <div class="question" data-type="short" data-answer="크리스 랭턴,랭턴,Chris Langton,Langton" data-points="5">
+        <div class="qhead"><span class="qno">17</span><span class="qtype">주관식 (5점)</span><span class="qweek">14주차</span></div>
+        <div class="qbody">인공생명(ALife)을 학문 분야로 정립하고 "Life as we know it → Life as it could be"라는 명언을 남긴 학자는?</div>
+        <textarea class="text-answer" placeholder="답안을 입력하세요"></textarea>
+        <div class="explanation"><span class="label">정답</span><strong>크리스 랭턴 (Chris Langton)</strong>. 랭턴의 개미도 같은 인물.</div>
+      </div>
+
+      <div class="question" data-type="short" data-answer="하이웨이,Highway,고속도로" data-points="5">
+        <div class="qhead"><span class="qno">18</span><span class="qtype">주관식 (5점)</span><span class="qweek">14주차</span></div>
+        <div class="qbody">랭턴의 개미가 어떤 초기 상태에서도 결국 생성해내는 직선 패턴의 이름은? (수학 미해결 문제)</div>
+        <textarea class="text-answer" placeholder="답안을 입력하세요"></textarea>
+        <div class="explanation"><span class="label">정답</span><strong>하이웨이 (Highway, 고속도로)</strong>. 항상 생긴다는 증명도, 안 생기는 반례도 미발견.</div>
+      </div>
+
+      <!-- 서술형 2 -->
+      <div class="question" data-type="essay" data-points="10">
+        <div class="qhead"><span class="qno">19</span><span class="qtype">서술형 (10점)</span><span class="qweek">13주차</span></div>
+        <div class="qbody">콘웨이 라이프 게임의 두 규칙을 정확히 기술하고, 단순한 규칙에서 어떻게 튜링 머신(컴퓨터)까지 만들 수 있는지 설명하시오.</div>
+        <textarea class="text-answer" style="min-height:120px;" placeholder="답안을 입력하세요"></textarea>
+        <div class="explanation"><span class="label">모범 답안</span>
+        <strong>규칙 1 (살아있는 세포)</strong>: 8개 무어 이웃 중 살아있는 게 <strong>2개 또는 3개</strong>면 생존. 그 외 사망.<br>
+        <strong>규칙 2 (빈 세포)</strong>: 8개 이웃 중 정확히 <strong>3개</strong>면 새 생명 탄생.<br>
+        이 규칙으로 <strong>글라이더</strong>(4단계 주기 이동), <strong>글라이더 건</strong>(주기적 신호 발사 = CPU 클럭)이 만들어진다. 글라이더들의 충돌·결합으로 AND·OR·NOT 논리 게이트 구현 가능 → 튜링 완전 → 어떤 컴퓨터도 이론적으로 구현 가능.<br>
+        <strong>채점 기준</strong>: 두 규칙 정확히 기술(4점) + 글라이더/글라이더 건 언급(3점) + 튜링 머신 연결 설명(3점)</div>
+      </div>
+
+      <div class="question" data-type="essay" data-points="10">
+        <div class="qhead"><span class="qno">20</span><span class="qtype">서술형 (10점)</span><span class="qweek">14주차</span></div>
+        <div class="qbody">보이드 알고리즘의 3가지 규칙을 각각 설명하고, 이 알고리즘이 "단순한 규칙 → 복잡한 행태"의 끝판왕이라 불리는 이유를 서술하시오.</div>
+        <textarea class="text-answer" style="min-height:120px;" placeholder="답안을 입력하세요"></textarea>
+        <div class="explanation"><span class="label">모범 답안</span>
+        <strong>① 분리(Separation)</strong>: 주변 동료들 방향의 반대로 → 충돌 회피.<br>
+        <strong>② 정렬(Alignment)</strong>: 주변 동료들 방향의 평균에 맞춰 → 줄 맞춤.<br>
+        <strong>③ 응집(Cohesion)</strong>: 주변 동료들의 중심점 방향으로 → 떼 유지.<br>
+        각 새는 매 순간 세 벡터를 합산해 다음 이동 방향 결정. 모든 새가 같은 규칙을 적용하고 자기 주변(눈치 반경)만 본다. <strong>전체를 지시하는 누군가가 없음</strong>에도 자연스러운 군집 이동이 창발. 영화·게임의 새 떼, 횡단보도 말뚝 설계 등에 활용. 13주차의 CA보다 더 직관적이고 강력하게 "단순 규칙 + 이웃 정보만 → 전역 복잡 행태"를 보여주기 때문에 끝판왕이라 불림.<br>
+        <strong>채점 기준</strong>: 3 규칙 각각 정확히 설명(6점) + "이웃 정보만" 언급(2점) + 응용 예시(2점)</div>
+      </div>
+    </div>
+
+    <div class="submit-area">
+      <button class="submit-btn" onclick="submitExam()">시험 제출</button>
+    </div>
+  </div>
+
+  <!-- 결과 화면 -->
+  <div id="result-screen" class="hidden"></div>
+
+  <div class="nav-links">
+    <a href="index.html">메인으로</a>
+    <a href="final-summary.html">종합정리</a>
+    <a href="question-bank.html">문제은행</a>
+  </div>
+</div>
+
+<script>
+let timerInterval = null;
+let timeLeft = 45 * 60; // 45분 (초)
+let examStarted = false;
+let examSubmitted = false;
+
+function startExam() {
+  examStarted = true;
+  document.getElementById('intro-screen').classList.add('hidden');
+  document.getElementById('exam-screen').classList.remove('hidden');
+
+  // 옵션 선택 이벤트
+  document.querySelectorAll('.options li').forEach(li => {
+    li.addEventListener('click', function() {
+      if (examSubmitted) return;
+      const ul = this.parentElement;
+      ul.querySelectorAll('li').forEach(x => x.classList.remove('selected'));
+      this.classList.add('selected');
+    });
+  });
+
+  // 타이머 시작
+  updateTimer();
+  timerInterval = setInterval(updateTimer, 1000);
+}
+
+function updateTimer() {
+  timeLeft--;
+  if (timeLeft <= 0) {
+    timeLeft = 0;
+    submitExam();
+    return;
+  }
+  const m = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+  const s = String(timeLeft % 60).padStart(2, '0');
+  document.getElementById('timer').textContent = `${m}:${s}`;
+  if (timeLeft <= 300) { // 5분 이하 경고
+    document.getElementById('timerBar').classList.add('warn');
+  }
+}
+
+function normalizeText(s) {
+  return String(s || '').trim().toLowerCase().replace(/\s+/g, '').replace(/[.,!?·]/g, '');
+}
+
+function submitExam() {
+  if (examSubmitted) return;
+  if (examStarted && !confirm('시험을 제출하시겠습니까? 제출 후에는 수정할 수 없습니다.')) return;
+  examSubmitted = true;
+  clearInterval(timerInterval);
+
+  let totalScore = 0;
+  let mcCorrect = 0, mcTotal = 0;
+  let shortCorrect = 0, shortTotal = 0;
+  let essayCount = 0;
+
+  document.querySelectorAll('.question').forEach(q => {
+    const type = q.dataset.type;
+    const points = parseInt(q.dataset.points);
+
+    if (type === 'mc') {
+      mcTotal++;
+      const answer = q.dataset.answer;
+      const selected = q.querySelector('.options li.selected');
+      // 정답 표시
+      q.querySelector(`.options li[data-val="${answer}"]`).classList.add('correct-opt');
+      if (selected) {
+        const userVal = selected.dataset.val;
+        if (userVal === answer) {
+          totalScore += points;
+          mcCorrect++;
+          q.classList.add('correct');
+        } else {
+          selected.classList.add('wrong-opt');
+          q.classList.add('wrong');
+        }
+      } else {
+        q.classList.add('wrong');
+      }
+    } else if (type === 'short') {
+      shortTotal++;
+      const validAnswers = q.dataset.answer.split(',').map(normalizeText);
+      const userAns = normalizeText(q.querySelector('.text-answer').value);
+      let correct = false;
+      if (userAns) {
+        for (const va of validAnswers) {
+          if (va && (userAns === va || userAns.includes(va) || va.includes(userAns))) {
+            correct = true;
+            break;
+          }
+        }
+      }
+      if (correct) {
+        totalScore += points;
+        shortCorrect++;
+        q.classList.add('correct');
+      } else {
+        q.classList.add('wrong');
+      }
+    } else if (type === 'essay') {
+      essayCount++;
+      const userAns = q.querySelector('.text-answer').value.trim();
+      if (userAns.length > 0) {
+        // 서술형은 글자 수 기준 부분 점수 (실제 채점은 모범 답안 참조)
+        q.classList.add('correct');
+      } else {
+        q.classList.add('wrong');
+      }
+    }
+
+    // 모든 문항 해설 표시
+    const exp = q.querySelector('.explanation');
+    if (exp) exp.classList.add('show');
+    // 입력 비활성화
+    q.querySelectorAll('textarea').forEach(t => t.readOnly = true);
+  });
+
+  // 결과 카드 표시
+  const resultHTML = `
+    <div class="result-card">
+      <h2>채점 결과</h2>
+      <div class="score">${totalScore} <span style="font-size:30px;">/ 80</span></div>
+      <div class="breakdown">
+        <strong>객관식</strong>: ${mcCorrect}/${mcTotal} (${mcCorrect * 4}점)<br>
+        <strong>주관식</strong>: ${shortCorrect}/${shortTotal} (${shortCorrect * 5}점)<br>
+        <strong>서술형</strong>: ${essayCount}/2 (모범 답안 비교 필요, 최대 20점)<br>
+        <small style="color:#888;">※ 서술형은 자동 채점이 어려워 80점 만점 기준입니다. 모범 답안을 보고 직접 채점하세요.</small>
+      </div>
+    </div>
+  `;
+  const resultScreen = document.getElementById('result-screen');
+  resultScreen.innerHTML = resultHTML;
+  resultScreen.classList.remove('hidden');
+  resultScreen.scrollIntoView({ behavior: 'smooth' });
+
+  // 타이머 정지 상태 표시
+  document.getElementById('timer').textContent = '제출됨';
+  document.querySelector('.timer-bar button').textContent = '결과 보기';
+  document.querySelector('.timer-bar button').onclick = () => resultScreen.scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+</body>
+</html>

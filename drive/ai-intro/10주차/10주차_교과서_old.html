@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>모두의 인공지능 - 10주차 교과서: 이 영화 보세요!</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;600;700&family=Nanum+Myeongjo:wght@400;700;800&display=swap');
+  :root { --bg:#faf6ef; --paper:#fffdf7; --ink:#2c2418; --ink-light:#5b5040; --accent:#8b4513; --accent-soft:#c69b7b; --rule:#d4c8b0; --highlight:#f4e4c1; --quote-bg:#f7efde; --def-bg:#fff8e8; --def-border:#b08654; --exam-bg:#fcecec; --exam-border:#b54848; --tldr-bg:#ecf3eb; --tldr-border:#6b8e6b; --connect-bg:#e8eef5; --connect-border:#4a6b8a; --img-bg:#f0ebe0; --watch-bg:#fff4e8; --watch-border:#d68a3c; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; padding:0; background:var(--bg); color:var(--ink); font-family:'Noto Serif KR','Nanum Myeongjo',serif; line-height:1.85; font-size:17px; }
+  .page { max-width:880px; margin:0 auto; padding:60px 50px 80px; background:var(--paper); box-shadow:0 0 30px rgba(80,60,30,.08); min-height:100vh; }
+  .cover { text-align:center; padding:80px 0 50px; border-bottom:3px double var(--accent); margin-bottom:50px; }
+  .cover .series { font-size:14px; letter-spacing:6px; color:var(--accent); margin-bottom:20px; }
+  .cover h1 { font-family:'Nanum Myeongjo',serif; font-size:42px; font-weight:800; margin:10px 0; line-height:1.3; }
+  .cover .subtitle { font-size:22px; color:var(--ink-light); margin-top:10px; font-weight:300; }
+  .cover .meta { margin-top:40px; font-size:14px; color:var(--ink-light); }
+  .cover .doctype { display:inline-block; margin-top:30px; padding:8px 24px; border:1px solid var(--accent); border-radius:2px; font-size:16px; color:var(--accent); letter-spacing:4px; }
+  .toc { background:#fffaf0; border:1px solid var(--rule); padding:30px 40px; margin-bottom:40px; }
+  .toc h2 { font-family:'Nanum Myeongjo',serif; font-size:24px; margin:0 0 20px; text-align:center; color:var(--accent); }
+  .toc ol { padding-left:20px; margin:0; } .toc ol li { padding:4px 0; border-bottom:1px dotted var(--rule); }
+  .toc a { color:var(--ink); text-decoration:none; } .toc a:hover { color:var(--accent); text-decoration:underline; }
+  h2.chapter { font-family:'Nanum Myeongjo',serif; font-size:30px; color:var(--accent); border-bottom:2px solid var(--accent); padding-bottom:10px; margin-top:60px; margin-bottom:25px; }
+  h2.chapter .num { display:inline-block; background:var(--accent); color:#fff; padding:2px 12px; border-radius:4px; font-size:18px; margin-right:12px; vertical-align:middle; }
+  h3.slide { font-family:'Nanum Myeongjo',serif; font-size:22px; color:var(--ink); margin-top:35px; margin-bottom:12px; padding-left:14px; border-left:5px solid var(--accent-soft); }
+  h4 { font-size:18px; color:var(--accent); margin-top:22px; margin-bottom:8px; }
+  p { margin:10px 0; text-align:justify; }
+  strong { color:var(--accent); font-weight:600; }
+  em { color:var(--ink-light); font-style:italic; }
+  code { background:#f4ecd8; padding:1px 6px; border-radius:3px; font-family:'Consolas',monospace; font-size:14px; color:#5a3920; }
+  .section-tldr { background:var(--tldr-bg); border-left:5px solid var(--tldr-border); padding:12px 18px; margin:15px 0 25px; font-size:16px; border-radius:4px; }
+  .section-tldr::before { content:"TL;DR  "; font-weight:700; color:var(--tldr-border); letter-spacing:1px; }
+  .definition { background:var(--def-bg); border:1px solid var(--def-border); border-left:5px solid var(--def-border); padding:14px 20px; margin:18px 0; border-radius:4px; }
+  .definition .label { display:block; font-weight:700; color:var(--def-border); margin-bottom:6px; font-size:15px; letter-spacing:1px; }
+  .exam-point { background:var(--exam-bg); border-left:5px solid var(--exam-border); padding:14px 20px; margin:18px 0; border-radius:4px; }
+  .exam-point .label { display:block; font-weight:700; color:var(--exam-border); margin-bottom:6px; font-size:15px; letter-spacing:1px; }
+  .quote { background:var(--quote-bg); border-left:4px solid var(--accent-soft); padding:12px 24px; margin:18px 0; font-style:italic; color:var(--ink-light); position:relative; }
+  .quote::before { content:"\201C"; font-size:36px; color:var(--accent-soft); position:absolute; left:8px; top:0; }
+  .quote .who { display:block; text-align:right; font-style:normal; font-size:14px; margin-top:8px; color:var(--accent); }
+  .connect { background:var(--connect-bg); border:1px dashed var(--connect-border); padding:14px 20px; margin:22px 0; border-radius:6px; }
+  .connect .label { display:block; font-weight:700; color:var(--connect-border); font-size:14px; margin-bottom:8px; letter-spacing:1px; }
+  .connect .label::before { content:"[연결학습] "; }
+  .summary-box { background:linear-gradient(135deg,#fff8e8,#f7efde); border:2px solid var(--accent); padding:25px 30px; margin:40px 0; border-radius:8px; }
+  .summary-box h3 { margin-top:0; color:var(--accent); font-family:'Nanum Myeongjo',serif; text-align:center; border:none; padding:0; }
+  .summary-box ol { padding-left:22px; } .summary-box ol li { padding:5px 0; }
+  table { width:100%; border-collapse:collapse; margin:20px 0; background:#fff; }
+  th, td { border:1px solid var(--rule); padding:10px 14px; text-align:left; }
+  th { background:var(--highlight); color:var(--ink); font-weight:700; }
+  .goals { background:#fff8e8; border:1px solid var(--def-border); padding:20px 28px; margin:30px 0; border-radius:6px; }
+  .goals h2 { font-family:'Nanum Myeongjo',serif; font-size:22px; margin:0 0 12px; color:var(--accent); border:none; padding:0; }
+  .goals ul { margin:0; padding-left:22px; } .goals ul li { padding:4px 0; }
+  .nav-links { margin-top:60px; padding:30px; border-top:3px double var(--accent); text-align:center; }
+  .nav-links a { display:inline-block; margin:0 10px; padding:10px 22px; background:var(--accent); color:#fff; text-decoration:none; border-radius:4px; font-size:15px; font-family:sans-serif; }
+  .nav-links a:hover { background:var(--ink); }
+  .formula { background:#fff8e8; border:1px solid var(--def-border); padding:14px; margin:14px 0; text-align:center; font-family:'Times New Roman',serif; font-size:18px; border-radius:4px; }
+  @media print { body { background:#fff; font-size:12px; } .page { box-shadow:none; padding:20px; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="cover">
+    <div class="series">모두의 인공지능 · 강태원 교수</div>
+    <h1>이 영화 보세요!</h1>
+    <div class="subtitle">머신러닝 · 회귀/분류/군집화 · 추천 시스템</div>
+    <div class="doctype">교 과 서</div>
+    <div class="meta">10주차 (1·2·3차시) — 정리 노트</div>
+  </div>
+
+  <div class="toc">
+    <h2>목 차</h2>
+    <ol>
+      <li><a href="#goals">학습 목표</a></li>
+      <li><a href="#ses1">1차시 — 선생님, 고맙습니다 (회귀와 분류)</a></li>
+      <li><a href="#ses2">2차시 — 선생님 어디 계세요? (군집화)</a></li>
+      <li><a href="#ses3">3차시 — 이 영화 보세요! (추천 시스템)</a></li>
+      <li><a href="#summary">핵심 정리</a></li>
+    </ol>
+  </div>
+
+  <div class="goals" id="goals">
+    <h2>학습 목표</h2>
+    <ul>
+      <li><strong>머신러닝(Machine Learning, ML)</strong>의 정의와 인공지능·신경망·딥러닝과의 포함 관계를 안다.</li>
+      <li>지도학습(Supervised Learning)의 두 알고리즘 — <strong>회귀(Regression)</strong>와 <strong>분류(Classification)</strong>의 차이를 안다.</li>
+      <li>비지도학습(Unsupervised Learning)의 대표 알고리즘인 <strong>군집화(Clustering)</strong>와 <strong>k-Means</strong>를 이해한다.</li>
+      <li><strong>추천 시스템(Recommendation System)</strong>의 두 가지 관점과 <strong>협업 필터링(Collaborative Filtering)</strong>의 유사성 측정 원리를 안다.</li>
+    </ul>
+  </div>
+
+  <!-- ============= 1차시 ============= -->
+  <h2 class="chapter" id="ses1"><span class="num">1차시</span>선생님, 고맙습니다 — 회귀와 분류</h2>
+  <div class="section-tldr">지도학습 = "정답을 알려주는 선생님이 있다". <strong>회귀</strong>는 관계식 찾기, <strong>분류</strong>는 어디 속하는지 가려내기.</div>
+
+  <h3 class="slide">머신러닝(Machine Learning)이란</h3>
+  <div class="definition">
+    <span class="label">머신러닝 정의 (Wikipedia)</span>
+    인공지능의 한 분야로, <strong>학습 능력이 있는 알고리즘 시스템</strong>을 만드는 연구 분야. 데이터로부터 명시적 명령 없이 무언가를 배우고, 그것을 <strong>일반화(Generalization)</strong>하여 새 상황에서도 결론을 낼 수 있게 한다.
+  </div>
+
+  <h3 class="slide">AI 포함 관계</h3>
+  <p>가장 큰 범위부터: <strong>인공지능(AI) ⊃ 머신러닝(ML) ⊃ 신경망(NN) ⊃ 딥러닝(DL)</strong>.</p>
+  <p>다만 오늘날 딥러닝이 너무 발전하여 일반인 사이에서는 "딥러닝 = 인공지능"으로 통용되기도 합니다. 강의는 두 갈래 도구를 정리합니다:</p>
+  <table>
+    <thead><tr><th>접근법</th><th>대표 도구</th></tr></thead>
+    <tbody>
+      <tr><td><strong>연결주의</strong>(Connectionism)</td><td>TensorFlow, Keras — 딥러닝 중심</td></tr>
+      <tr><td><strong>기호주의</strong>(Symbolism)</td><td><strong>Scikit-learn</strong> — 분류·회귀·군집화·KNN 등 머신러닝 알고리즘 집대성</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="slide">머신러닝 vs 데이터 마이닝</h3>
+  <p>두 분야는 방법이 많이 겹치지만 초점이 다릅니다.</p>
+  <ul>
+    <li><strong>머신러닝</strong>: <strong>예측(Prediction)</strong>에 초점. 학문/과학적 방법.</li>
+    <li><strong>데이터 마이닝(Data Mining)</strong>: 이전에 모르던 <strong>새 사실(Unknown Property)</strong>을 알아내는 데 초점. "쓸모없는 광석을 금으로 만드는 행위" (9주차 비유).</li>
+  </ul>
+
+  <h3 class="slide">회귀 (Regression)</h3>
+  <div class="definition">
+    <span class="label">회귀 — 한 줄 정의</span>
+    <strong>"관계식을 알아내는 것"</strong>. 입력과 출력 사이의 함수 관계를 찾는 것.
+  </div>
+
+  <p>예: 공부 시간(T)과 학점(G) 사이의 관계 → <code>G = f(T)</code>. 선형회귀(Linear Regression)는 <code>Y = mx + b</code> 형태로 기울기(m)와 절편(b)을 구함.</p>
+
+  <table>
+    <thead><tr><th>전통적 방법</th><th>신경망 방법</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>최소자승법(Least Squares)</strong><br>미적분으로 m, b를 직접 계산</td>
+        <td>데이터만 주고 <strong>오류역전파(Backpropagation)</strong>로 가중치 학습 → 자동으로 관계식 학습</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="exam-point">
+    <span class="label">사례</span>
+    "키 175cm 소개팅 상대 몸무게 예측" — 키와 몸무게 사이 회귀선으로 추정. 다만 <strong>상관관계 ≠ 인과관계</strong>(9주차)임에 주의.
+  </div>
+
+  <h3 class="slide">분류 (Classification)</h3>
+  <div class="definition">
+    <span class="label">분류 — 한 줄 정의</span>
+    <strong>"어디에 속하는지 가려내는 것"</strong>. 데이터가 어느 클래스(Class)에 속하는지 결정.
+  </div>
+
+  <p>예: "너 몇 반이야?" / 스팸 메일 필터(스팸 vs <strong>햄(Ham)</strong> — 정상 메일을 부르는 ML 용어).</p>
+
+  <h4>베이즈 정리 기반 스팸 필터</h4>
+  <div class="formula">
+    P(스팸|단어) = P(단어|스팸) × P(스팸) / P(단어)
+  </div>
+  <p>8주차의 베이즈 정리가 그대로 적용됩니다. 단어가 들어있을 때 스팸일 확률을 계산.</p>
+
+  <p>이미지 분류는 과거에는 어려웠으나 <strong>CNN(합성곱 신경망)</strong>(7주차) 등장으로 가능해짐.</p>
+
+  <div class="exam-point">
+    <span class="label">★ 면접 단골 질문 ★</span>
+    "<strong>분류와 군집화의 차이</strong>를 설명하시오" — 입사 면접 단골. 분류는 <em>정답이 있는 지도학습</em>, 군집화는 <em>정답이 없는 비지도학습</em>.
+  </div>
+
+  <h3 class="slide">레이블링(Labeling)</h3>
+  <p>군집화 후 만들어진 덩어리에 이름을 붙이는 작업. 교수님 강조: <strong>"라벨링이 아니라 레이블링"</strong> — 영어 발음 정확히 쓰자.</p>
+
+  <!-- ============= 2차시 ============= -->
+  <h2 class="chapter" id="ses2"><span class="num">2차시</span>선생님 어디 계세요? — 군집화 (비지도학습)</h2>
+  <div class="section-tldr">정답을 알려주는 선생님이 없다. 비슷한 것끼리 덩어리를 묶는 게 <strong>군집화</strong>. 대표 알고리즘은 <strong>k-Means</strong>.</div>
+
+  <h3 class="slide">군집화 (Clustering)</h3>
+  <div class="definition">
+    <span class="label">군집화 — 한 줄 정의</span>
+    <strong>"덩어리를 묶어내는 것"</strong>. 같은 성질을 갖는 것들을 한 묶음(Cluster)으로 모음. 정답이 없으므로 <strong>비지도학습</strong>.
+  </div>
+
+  <p>인간의 가장 기본적인 인지 작용입니다. 갓 태어난 아기도 "얼음"이라는 단어는 몰라도 흰색 덩어리들을 한 묶음으로 인식할 수 있는 능력 — 이것이 군집화. 분류보다 더 낮은 수준의 인식.</p>
+
+  <h3 class="slide">k-Means 알고리즘</h3>
+  <div class="definition">
+    <span class="label">k-Means</span>
+    K개의 덩어리가 있다고 <strong>가정</strong>하고 그 개수만큼 묶어내는 알고리즘. k = 덩어리 개수, means = 평균.
+  </div>
+
+  <p>작동 순서:</p>
+  <ol>
+    <li>K개의 중심(Centroid)을 임의로 배치</li>
+    <li>각 데이터에서 K개 중심까지 거리 측정 → 가까운 쪽으로 소속</li>
+    <li>각 그룹의 <strong>무게중심(평균)</strong>으로 중심점 이동</li>
+    <li>변동이 없을 때까지 2~3 반복</li>
+  </ol>
+
+  <div class="exam-point">
+    <span class="label">k-Means의 한계</span>
+    K값(덩어리 개수)을 <strong>사람이 미리 정해야 한다</strong>. 어떤 K가 적절한지 알기 어렵다.
+  </div>
+
+  <h3 class="slide">계층적 알고리즘(Hierarchical)</h3>
+  <p>처음에 데이터 개수(N개)만큼 각자 한 덩어리로 시작 → 가까운 것끼리 묶어가며 K를 줄여나감.</p>
+  <p>K=N → K=4 → K=3 → K=2 → K=1(전체 하나). 거리는 물리적 거리일 수도 있고, 색깔 같은 유사성일 수도 있음.</p>
+
+  <h3 class="slide">MDS — Multi-Dimensional Scaling</h3>
+  <p>색깔 선호도 같은 다차원 데이터를 2D/3D로 시각화하는 머신러닝 기법(9주차에서도 언급).</p>
+
+  <div class="connect">
+    <span class="label">자료구조와의 연결</span>
+    k-Means는 거리 계산이 핵심. 자료구조의 <strong>유클리드 거리(Euclidean Distance)</strong> 계산과 동일. 또한 무게중심 이동은 반복문(iteration) 기반 알고리즘.
+  </div>
+
+  <!-- ============= 3차시 ============= -->
+  <h2 class="chapter" id="ses3"><span class="num">3차시</span>이 영화 보세요! — 추천 시스템과 협업 필터링</h2>
+  <div class="section-tldr">넷플릭스·아마존의 성공 비결. 추천의 핵심은 <strong>유사성(Similarity) 측정</strong>이며, <strong>협업 필터링</strong>이 대표 알고리즘.</div>
+
+  <h3 class="slide">추천 시스템 (Recommendation System)</h3>
+  <p>두 가지 관점:</p>
+  <ul>
+    <li><strong>사용자 기반(User-based)</strong>: "<em>너랑 취향이 비슷한 사람이 본 영화 → 너도 봐라</em>"</li>
+    <li><strong>아이템 기반(Item-based)</strong>: "<em>이 책을 산 사람이 이 영화도 보더라</em>"</li>
+  </ul>
+
+  <p>활용 데이터:</p>
+  <ol>
+    <li><strong>상품 자체의 정적 데이터</strong>: 스펙·장르·감독 등 (전통적)</li>
+    <li><strong>고객의 동적 데이터</strong>: 구매 행위·별점·사이트 활동 (오늘날 핵심)</li>
+  </ol>
+
+  <h3 class="slide">협업 필터링 (Collaborative Filtering)</h3>
+  <div class="definition">
+    <span class="label">협업 필터링</span>
+    추천 시스템의 가장 대표적 알고리즘. 사용자들의 평가를 모아서 <strong>비슷한 취향의 사람을 찾고</strong>, 그들이 좋아한 것을 추천. <strong>유사성(Similarity) 측정이 시작이자 끝</strong>.
+  </div>
+
+  <h3 class="slide">유사성 측정 방법</h3>
+  <table>
+    <thead><tr><th>방법</th><th>설명</th></tr></thead>
+    <tbody>
+      <tr><td><strong>유클리드 거리(Euclidean Distance)</strong></td><td>두 점 사이의 직선 거리. d = √(Σ(p−q)²)</td></tr>
+      <tr><td><strong>상관계수(Correlation Coefficient, R)</strong></td><td>절대값보다 경향성이 중요할 때 사용</td></tr>
+      <tr><td>코사인 거리(Cosine Distance)</td><td>벡터 사이 각도</td></tr>
+      <tr><td>맨해튼 거리(Manhattan Distance)</td><td>축에 평행하게 측정한 거리</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="slide">추천 점수 계산식</h3>
+  <div class="formula">
+    추천 점수 = Σ(유사성 × 평점) / Σ유사성<br>
+    = Σ(Sᵢ · Mᵢ) / Σ Sᵢ
+  </div>
+
+  <p>유사성과 평점을 모두 반영. 단순 유사성 1등만 보지 않고, 가까운 다른 사람들의 평점까지 <strong>비율적으로</strong> 반영합니다.</p>
+
+  <div class="exam-point">
+    <span class="label">★ 시험 핵심 ★</span>
+    추천 시스템에서 <strong>유사성 측정이 시작이자 끝</strong>. 유클리드 거리는 절대값이 중요할 때, 상관계수는 경향성(패턴)이 중요할 때 사용.
+  </div>
+
+  <h3 class="slide">집단지능 (Collective Intelligence)</h3>
+  <p>불특정 다수의 행동·평가를 모으면 집단 지혜가 나타남. 9주차에서 다룬 페이지랭크와 같은 맥락. <strong>"딥러닝 이후의 핵심"</strong>으로 강의는 강조.</p>
+
+  <div class="quote">
+    "이 교양 수업 듣는 학생 중에 노벨상 받는 학생이 나올 수도 있다. 데이터로부터 어떤 생각을 해내느냐가 경쟁력이다."
+    <span class="who">— 강태원 교수</span>
+  </div>
+
+  <div class="connect">
+    <span class="label">8·9주차와의 연결</span>
+    8주차 베이즈 정리 → 스팸 필터에 그대로 적용. 9주차 페이지랭크/집단지능 → 추천 시스템에 그대로 적용. 모든 머신러닝의 토대.
+  </div>
+
+  <div class="summary-box" id="summary">
+    <h3>10주차 핵심 정리 (10가지)</h3>
+    <ol>
+      <li><strong>머신러닝(ML)</strong> = 데이터에서 학습하여 일반화하는 알고리즘 시스템.</li>
+      <li>포함 관계: <strong>AI ⊃ ML ⊃ NN ⊃ DL</strong>.</li>
+      <li>도구: 연결주의 = TensorFlow/Keras / 기호주의 = <strong>Scikit-learn</strong>.</li>
+      <li>지도학습 두 알고리즘: <strong>회귀(관계식 찾기)</strong> + <strong>분류(어디에 속하는지)</strong>.</li>
+      <li>선형회귀 <code>Y = mx + b</code>. 전통은 최소자승법, 신경망은 역전파.</li>
+      <li>스팸 필터 = 베이즈 정리 응용. P(스팸|단어) 계산. 정상 메일은 <strong>햄(Ham)</strong>.</li>
+      <li>비지도학습 = <strong>군집화(Clustering)</strong>. "덩어리 묶기".</li>
+      <li><strong>k-Means</strong>: K개 중심 → 가까운 데이터 모음 → 무게중심 이동 → 반복. <strong>K값 결정이 한계</strong>.</li>
+      <li>추천 시스템 = <strong>사용자 기반 + 아이템 기반</strong>. <strong>협업 필터링</strong>이 대표.</li>
+      <li>유사성 측정 = 시작이자 끝. 유클리드 거리, 상관계수 등. 추천 점수 = Σ(유사성×평점) / Σ유사성.</li>
+    </ol>
+  </div>
+
+  <div class="nav-links">
+    <a href="10주차_학습서.html">📖 학습서 (시험 대비)</a>
+    <a href="10주차_문제.html">📝 문제집</a>
+  </div>
+</div>
+</body>
+</html>
