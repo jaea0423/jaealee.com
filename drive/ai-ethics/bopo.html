@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔥 족보 전용 · 인공지능시대의 윤리</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600;700;900&family=Nanum+Myeongjo:wght@400;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --ivory: #f6f1e3;
+    --ivory-light: #fbf6e9;
+    --ivory-dark: #e8dfc7;
+    --ultramarine: #1c39bb;
+    --ultramarine-dark: #0a1f7c;
+    --bopo-red: #c8102e;
+    --bopo-red-dark: #a00d24;
+    --bopo-bg: #f7e0e4;
+    --ink: #1a1814;
+    --ink-soft: #4a4640;
+    --ink-mute: #8c8579;
+    --line: #d8cdb0;
+    --correct: #2d7a2d;
+    --warn: #d4641a;
+    --danger: #b91c1c;
+}
+
+html, body {
+    min-height: 100vh;
+    background: var(--ivory);
+    color: var(--ink);
+    font-family: 'Noto Serif KR', 'Nanum Myeongjo', serif;
+    overflow-x: hidden;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(circle at 20% 10%, rgba(200,16,46,0.05), transparent 50%),
+        radial-gradient(circle at 80% 90%, rgba(200,16,46,0.03), transparent 50%);
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* ===== 상단 바 ===== */
+.topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(246, 241, 227, 0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+}
+.brand-mark {
+    width: 36px; height: 36px;
+    background: var(--bopo-red);
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 6px;
+    font-size: 14px;
+}
+.brand-title {
+    font-family: 'Nanum Myeongjo', serif;
+    font-weight: 800;
+    font-size: 17px;
+    color: var(--ultramarine-dark);
+}
+.brand-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-mute);
+    letter-spacing: 0.1em;
+}
+
+.topbar-actions {
+    display: flex;
+    gap: 10px;
+}
+.topbar-actions a {
+    color: var(--ultramarine-dark);
+    text-decoration: none;
+    font-size: 13px;
+    padding: 8px 14px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--ivory-light);
+}
+.topbar-actions a:hover { border-color: var(--ultramarine); }
+.topbar-actions a.primary { background: var(--ultramarine); color: var(--ivory); border-color: var(--ultramarine); }
+.topbar-actions a.primary:hover { background: var(--ultramarine-dark); }
+
+/* ===== 메인 ===== */
+.main {
+    position: relative;
+    z-index: 1;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 36px 28px 80px;
+}
+
+.hero {
+    text-align: center;
+    margin-bottom: 28px;
+}
+.hero-tag {
+    display: inline-block;
+    background: var(--bopo-red);
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 6px 14px;
+    border-radius: 4px;
+    letter-spacing: 0.15em;
+    margin-bottom: 14px;
+}
+.hero-title {
+    font-family: 'Nanum Myeongjo', serif;
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--bopo-red);
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+}
+.hero-sub {
+    font-size: 15px;
+    color: var(--ink-mute);
+}
+
+/* ===== 안내 박스 ===== */
+.notice {
+    background: var(--ivory-light);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--bopo-red);
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 20px 0;
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+}
+.notice strong { color: var(--bopo-red); }
+
+/* ===== 검색창 ===== */
+.search-wrap {
+    margin: 24px 0;
+    position: relative;
+}
+.search-input {
+    width: 100%;
+    padding: 20px 24px;
+    font-family: 'Noto Serif KR', serif;
+    font-size: 18px;
+    border: 2px solid var(--bopo-red);
+    border-radius: 8px;
+    background: var(--ivory-light);
+    color: var(--ink);
+    outline: none;
+    transition: all 0.15s;
+}
+.search-input:focus {
+    border-color: var(--bopo-red-dark);
+    box-shadow: 0 0 0 4px rgba(200,16,46,0.12);
+}
+.search-input::placeholder {
+    color: var(--ink-mute);
+    font-style: italic;
+}
+
+/* ===== 필터 바 ===== */
+.filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 22px;
+    justify-content: center;
+}
+.filter-chip {
+    background: var(--ivory-light);
+    border: 1px solid var(--line);
+    color: var(--ink-soft);
+    padding: 7px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: 'Noto Serif KR', serif;
+    font-size: 13px;
+    transition: all 0.12s;
+}
+.filter-chip:hover {
+    border-color: var(--bopo-red);
+    color: var(--bopo-red);
+}
+.filter-chip.active {
+    background: var(--bopo-red);
+    color: #fff;
+    border-color: var(--bopo-red);
+    font-weight: 700;
+}
+
+/* ===== 통계 카드 ===== */
+.stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin: 20px 0;
+}
+.stat-card {
+    background: var(--ivory-light);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px 16px;
+    text-align: center;
+}
+.stat-card .num {
+    font-family: 'Nanum Myeongjo', serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--bopo-red);
+}
+.stat-card .label {
+    font-size: 12px;
+    color: var(--ink-mute);
+    margin-top: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.05em;
+}
+
+/* ===== 문제 카드 ===== */
+.results {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 24px;
+}
+.card {
+    background: var(--bopo-bg);
+    border: 1px solid var(--bopo-red);
+    border-left: 5px solid var(--bopo-red);
+    border-radius: 8px;
+    padding: 22px 26px;
+    transition: all 0.12s;
+}
+.card:hover {
+    box-shadow: 0 4px 14px rgba(200,16,46,0.12);
+}
+
+.card-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 11px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+.badge.bopo {
+    background: var(--bopo-red);
+    color: #fff;
+}
+.badge.week {
+    background: var(--ultramarine);
+    color: var(--ivory);
+}
+.badge.type {
+    background: var(--ivory-dark);
+    color: var(--ink-soft);
+}
+.badge.subject {
+    background: #fff;
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+}
+
+.card-title {
+    font-family: 'Nanum Myeongjo', serif;
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.5;
+    margin-bottom: 12px;
+}
+
+.opt-list {
+    margin: 12px 0;
+    padding-left: 0;
+    list-style: none;
+}
+.opt-list li {
+    padding: 8px 14px;
+    margin: 5px 0;
+    background: var(--ivory-light);
+    border-radius: 4px;
+    font-size: 15px;
+    color: var(--ink-soft);
+}
+.opt-list li.correct {
+    background: rgba(45,122,45,0.12);
+    color: var(--correct);
+    font-weight: 700;
+    border-left: 3px solid var(--correct);
+}
+
+.answer-box {
+    margin-top: 14px;
+    padding: 14px 18px;
+    background: var(--ivory-light);
+    border-left: 4px solid var(--correct);
+    border-radius: 0 4px 4px 0;
+    font-size: 16px;
+}
+.answer-box .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--correct);
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+}
+.answer-box .ans {
+    font-weight: 700;
+    color: var(--correct);
+    font-size: 17px;
+    line-height: 1.5;
+    margin-bottom: 6px;
+}
+.answer-box .exp {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+}
+
+.card-link {
+    display: inline-block;
+    margin-top: 12px;
+    color: var(--bopo-red);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+}
+.card-link:hover { text-decoration: underline; }
+
+.hl {
+    background: rgba(255, 200, 0, 0.4);
+    padding: 0 2px;
+    border-radius: 2px;
+}
+
+.empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--ink-mute);
+    font-size: 15px;
+}
+
+.section-title {
+    font-family: 'Nanum Myeongjo', serif;
+    font-size: 22px;
+    color: var(--bopo-red);
+    margin: 30px 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--bopo-red);
+    font-weight: 800;
+}
+
+footer {
+    text-align: center;
+    padding: 30px 20px 0;
+    color: var(--ink-mute);
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+    <a href="index.html" class="brand">
+        <div class="brand-mark">🔥</div>
+        <div>
+            <div class="brand-title">족보 전용 · 인공지능시대의 윤리</div>
+            <div class="brand-sub">PAST · EXAM · ONLY</div>
+        </div>
+    </a>
+    <div class="topbar-actions">
+        <a href="index.html">메인</a>
+        <a href="exam.html" class="primary">📝 시험 모드</a>
+    </div>
+</header>
+
+<main class="main">
+    <div class="hero">
+        <div class="hero-tag">★ PAST EXAM · 족보 20문제 ★</div>
+        <h1 class="hero-title">🔥 족보 전용 페이지</h1>
+        <p class="hero-sub">2024학년도 겨울학기 족보 — 객관식 11 + 단답형 9 = 총 20문제</p>
+    </div>
+
+    <div class="notice">
+        ⚠️ <strong>2025학년도 여름학기는 족보와 다르게 출제됨</strong> (족보 첫 줄 명시).
+        하지만 출제 키워드와 주제 패턴은 매우 유사하므로 <strong>핵심 키워드를 파악하는 용도로 활용</strong>하세요.
+    </div>
+
+    <div class="stats" id="stats"></div>
+
+    <div class="search-wrap">
+        <input type="search" class="search-input" id="search"
+               placeholder="🔥 족보 내 검색 (예: 칸트, 트롤리, 휴머노이드, XAI, 책무성…)"
+               autofocus autocomplete="off" spellcheck="false">
+    </div>
+
+    <div class="filter-bar" id="filterbar">
+        <div class="filter-chip active" data-filter="all">전체 (20)</div>
+        <div class="filter-chip" data-filter="mc">객관식 (11)</div>
+        <div class="filter-chip" data-filter="sa">단답형 (9)</div>
+        <div class="filter-chip" data-filter="w1">1주차 (3)</div>
+        <div class="filter-chip" data-filter="w2">2주차 (2)</div>
+        <div class="filter-chip" data-filter="w3">3주차 (5)</div>
+        <div class="filter-chip" data-filter="w4">4주차 (2)</div>
+        <div class="filter-chip" data-filter="w5">5주차 (1)</div>
+        <div class="filter-chip" data-filter="w6">6주차 (1)</div>
+        <div class="filter-chip" data-filter="w9">9주차 (3)</div>
+        <div class="filter-chip" data-filter="w10">10주차 (2)</div>
+    </div>
+
+    <h2 class="section-title" id="results-title">전체 족보 (객관식 + 단답형)</h2>
+    <div class="results" id="results"></div>
+</main>
+
+<footer>
+    족보 전용 페이지 · 2024학년도 겨울학기 자료 · 학습용으로만 사용
+</footer>
+
+<script src="keywords-data.js"></script>
+<script>
+if (typeof PAST_EXAM === 'undefined') window.PAST_EXAM = { 객관식: [], 단답형: [] };
+if (typeof KEYWORDS === 'undefined') window.KEYWORDS = [];
+
+// 학습서 매핑 (주차별)
+const STUDY_GUIDES = {
+    1: { file: '01주차/01주차_학습서.html', title: '윤리이론' },
+    2: { file: '02주차/02주차_학습서.html', title: 'AI 정의·유형·한계' },
+    3: { file: '03주차/03주차_학습서.html', title: '편향성·투명성·책무성' },
+    4: { file: '04주차/04주차_학습서.html', title: '자율성·전자인격' },
+    5: { file: '05주차/05주차_학습서.html', title: '위험관리·마케팅·분배정의' },
+    6: { file: '06주차/06주차_학습서.html', title: '자율주행차 윤리' },
+    7: { file: '07주차/07주차_학습서.html', title: '사용 주의·신뢰성·인간중심' },
+    9: { file: '09주차/09주차_학습서.html', title: '응용·인간향상·로봇' },
+    10: { file: '10주차/10주차_학습서.html', title: '소셜·수술·군사로봇' },
+    11: { file: '11주차/11주차_학습서.html', title: '미래사회·미래직업' },
+    12: { file: '12주차/12주차_학습서.html', title: '권력·감시·사회조종' },
+    13: { file: '13주차/13주차_학습서.html', title: '인간 관계·인간 감정' },
+    14: { file: '14주차/14주차_학습서.html', title: '정체성·존엄성·자유의지' }
+};
+
+// 전체 족보 데이터 통합
+const BOPO_ITEMS = [];
+
+(PAST_EXAM.객관식 || []).forEach(q => {
+    BOPO_ITEMS.push({
+        type: 'mc',
+        typeLabel: '객관식',
+        주차: q.주차,
+        주제: q.주제,
+        title: q.질문,
+        보기: q.보기,
+        정답: q.정답,
+        해설: q.해설,
+        searchText: [q.질문, q.주제, ...(q.보기||[]), Array.isArray(q.정답)?q.정답.join(' '):q.정답, q.해설].join(' ')
+    });
+});
+
+(PAST_EXAM.단답형 || []).forEach(q => {
+    BOPO_ITEMS.push({
+        type: 'sa',
+        typeLabel: '단답형',
+        주차: q.주차,
+        주제: q.주제,
+        title: q.질문,
+        정답: q.정답,
+        해설: q.해설,
+        searchText: [q.질문, q.주제, q.정답, q.해설].join(' ')
+    });
+});
+
+// 통계 렌더
+function renderStats() {
+    const byWeek = {};
+    BOPO_ITEMS.forEach(it => {
+        byWeek[it.주차] = (byWeek[it.주차] || 0) + 1;
+    });
+    const topWeek = Object.entries(byWeek).sort((a,b) => b[1]-a[1])[0];
+    const mcCount = BOPO_ITEMS.filter(i => i.type === 'mc').length;
+    const saCount = BOPO_ITEMS.filter(i => i.type === 'sa').length;
+    document.getElementById('stats').innerHTML = `
+        <div class="stat-card"><div class="num">${BOPO_ITEMS.length}</div><div class="label">전체 문제</div></div>
+        <div class="stat-card"><div class="num">${mcCount}</div><div class="label">객관식</div></div>
+        <div class="stat-card"><div class="num">${saCount}</div><div class="label">단답형</div></div>
+        <div class="stat-card"><div class="num">${topWeek[0]}주차</div><div class="label">최다 출제 (${topWeek[1]}문제)</div></div>
+    `;
+}
+renderStats();
+
+// 하이라이트
+function highlight(text, query) {
+    if (!query || !text) return text || '';
+    const tokens = query.trim().split(/\s+/).filter(t => t.length > 0);
+    let result = String(text);
+    tokens.forEach(t => {
+        const re = new RegExp('(' + t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+        result = result.replace(re, '<span class="hl">$1</span>');
+    });
+    return result;
+}
+
+// 카드 렌더
+function renderCard(item, q) {
+    const badges = [
+        '<span class="badge bopo">🔥 족보</span>',
+        `<span class="badge week">${item.주차}주차</span>`,
+        `<span class="badge type">${item.typeLabel}</span>`,
+        `<span class="badge subject">${item.주제}</span>`,
+    ].join('');
+
+    let body = '';
+    if (item.type === 'mc') {
+        const ans = Array.isArray(item.정답) ? item.정답 : [item.정답];
+        const opts = (item.보기 || []).map((opt, i) => {
+            const isCorrect = ans.some(a => opt.trim() === a.trim());
+            return `<li class="${isCorrect ? 'correct' : ''}">${highlight(opt, q)}</li>`;
+        }).join('');
+        body = `
+            <ul class="opt-list">${opts}</ul>
+            <div class="answer-box">
+                <div class="label">★ 정답</div>
+                <div class="ans">${ans.map(a => highlight(a, q)).join(' / ')}</div>
+                <div class="exp">${highlight(item.해설 || '', q)}</div>
+            </div>
+        `;
+    } else {
+        body = `
+            <div class="answer-box">
+                <div class="label">★ 정답</div>
+                <div class="ans">${highlight(item.정답, q)}</div>
+                <div class="exp">${highlight(item.해설 || '', q)}</div>
+            </div>
+        `;
+    }
+
+    const guide = STUDY_GUIDES[item.주차];
+    const link = guide ? `<a class="card-link" href="${guide.file}" target="_blank">${item.주차}주차 학습서로 이동 (${guide.title}) →</a>` : '';
+
+    return `
+        <div class="card">
+            <div class="card-head">${badges}</div>
+            <div class="card-title">${highlight(item.title, q)}</div>
+            ${body}
+            ${link}
+        </div>
+    `;
+}
+
+let currentQuery = '';
+let currentFilter = 'all';
+
+function render() {
+    let items = BOPO_ITEMS.slice();
+
+    // 필터 적용
+    if (currentFilter === 'mc') items = items.filter(i => i.type === 'mc');
+    else if (currentFilter === 'sa') items = items.filter(i => i.type === 'sa');
+    else if (currentFilter.startsWith('w')) {
+        const w = parseInt(currentFilter.slice(1));
+        items = items.filter(i => i.주차 === w);
+    }
+
+    // 검색 적용
+    if (currentQuery) {
+        const tokens = currentQuery.toLowerCase().trim().split(/\s+/).filter(t => t);
+        items = items.filter(item => {
+            const text = item.searchText.toLowerCase();
+            return tokens.every(t => text.includes(t));
+        });
+    }
+
+    const wrap = document.getElementById('results');
+    const titleEl = document.getElementById('results-title');
+
+    titleEl.textContent = currentQuery
+        ? `"${currentQuery}" 검색 결과 (${items.length}건)`
+        : currentFilter === 'all' ? `전체 족보 (객관식 + 단답형) — ${items.length}건`
+        : `필터 결과 — ${items.length}건`;
+
+    if (items.length === 0) {
+        wrap.innerHTML = '<div class="empty">조건에 맞는 문제가 없습니다.</div>';
+        return;
+    }
+
+    wrap.innerHTML = items.map(item => renderCard(item, currentQuery)).join('');
+}
+
+// 검색
+const searchInput = document.getElementById('search');
+let searchTimeout;
+searchInput.addEventListener('input', e => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        currentQuery = e.target.value;
+        render();
+    }, 80);
+});
+
+// 필터
+document.querySelectorAll('.filter-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        currentFilter = chip.getAttribute('data-filter');
+        render();
+    });
+});
+
+// 단축키
+document.addEventListener('keydown', e => {
+    if (e.key === '/' && document.activeElement !== searchInput) {
+        e.preventDefault();
+        searchInput.focus();
+        searchInput.select();
+    }
+    if (e.key === 'Escape') {
+        searchInput.value = '';
+        currentQuery = '';
+        render();
+        searchInput.focus();
+    }
+});
+
+// 초기 렌더
+render();
+</script>
+
+</body>
+</html>

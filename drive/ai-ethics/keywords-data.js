@@ -1,6 +1,6 @@
 // 인공지능시대의 윤리 - 통합 키워드 데이터
 // 족보: 2024학년도 겨울학기 (2025학년도 여름학기는 다르게 출제됨)
-// 총 키워드 수: 218개
+// 총 키워드 수: 253개
 
 const PAST_EXAM = {
   "출처": "2024학년도 겨울학기 족보 (2025학년도 여름학기는 다르게 출제 예정)",
@@ -2197,6 +2197,321 @@ const KEYWORDS = [
     "file": "12주차/12주차_학습서.html",
     "anchor": "three-goals",
     "summary": "참여(Engagement) + 성장(Growth) + 광고(Advertising).",
+    "fromBopo": false
+  },
+  {
+    "keyword": "인간관계 3요소",
+    "english": "Three Elements of Human Relationship",
+    "category": "개념",
+    "file": "13주차/13주차_학습서.html",
+    "anchor": "relation",
+    "summary": "정서적 교류·상호성·책임/시간. AI는 책임/시간 불가능.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "정서적 교류",
+    "english": "Emotional Exchange",
+    "category": "개념",
+    "file": "13주차/13주차_학습서.html",
+    "anchor": "relation",
+    "summary": "상대의 말투·표정·눈빛을 읽고 반응하며 관계를 쌓아감.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "상호성",
+    "english": "Reciprocity",
+    "category": "개념",
+    "file": "13주차/13주차_학습서.html",
+    "anchor": "relation",
+    "summary": "주고받음 + 갈등·회복 속에서 신뢰 형성.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "히카리",
+    "english": "Hikari",
+    "category": "사례",
+    "file": "13주차/13주차_학습서.html",
+    "anchor": "hikari",
+    "summary": "일본 남성이 결혼한 홀로그램 AI 신부. '인간은 배신하지만 히카리는 그렇지 않는다.'",
+    "fromBopo": false
+  },
+  {
+    "keyword": "아이보",
+    "english": "AIBO",
+    "category": "사례",
+    "file": "13주차/13주차_학습서.html",
+    "anchor": "hikari",
+    "summary": "소니의 대표적 애완 로봇.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "관계 번아웃",
+    "english": "Relationship Burnout",
+    "category": "개념",
+    "file": "13주차/13주차_학습서.html",
+    "anchor": "hikari",
+    "summary": "현대인이 인간관계에서 느끼는 피로감. MZ세대 중심으로 부상.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "세이프 존",
+    "english": "Safe Zone",
+    "category": "개념",
+    "file": "13주차/13주차_학습서.html",
+    "anchor": "hikari",
+    "summary": "AI 관계가 주는 정서적 안전지대. 갈등·비용·부담 없음.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "Be Right Back",
+    "english": "Be Right Back",
+    "category": "사례",
+    "file": "13주차/13주차_학습서.html",
+    "anchor": "brb",
+    "summary": "「블랙 미러」 에피소드. 죽은 약혼자의 데이터로 AI 대화·인조인간 등장.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "그리프 테크",
+    "english": "Grief Tech",
+    "category": "기술",
+    "file": "13주차/13주차_학습서.html",
+    "anchor": "brb",
+    "summary": "죽은 사람의 데이터로 디지털 유령을 만드는 새로운 산업.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "디지털 유령",
+    "english": "Digital Ghost",
+    "category": "개념",
+    "file": "13주차/13주차_학습서.html",
+    "anchor": "brb",
+    "summary": "그리프 테크의 결과물. 사람의 채팅·사진·음성으로 학습된 AI.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "감정 3요소",
+    "english": "Three Elements of Emotion",
+    "category": "개념",
+    "file": "13주차/13주차_학습서.html",
+    "anchor": "emotion",
+    "summary": "생리적 반응·인지적 평가·행동적 표현. AI는 행동적 표현만 다룸.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "생리적 반응",
+    "english": "Physiological Response",
+    "category": "개념",
+    "file": "13주차/13주차_학습서.html",
+    "anchor": "emotion",
+    "summary": "감정의 첫 번째 요소. 심장박동·발한·근육 긴장.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "인지적 평가",
+    "english": "Cognitive Appraisal",
+    "category": "개념",
+    "file": "13주차/13주차_학습서.html",
+    "anchor": "emotion",
+    "summary": "감정의 두 번째 요소. '위험한가, 괜찮은가' 마음속 해석.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "도구적 감정",
+    "english": "Instrumental Emotion",
+    "category": "개념",
+    "file": "13주차/13주차_학습서.html",
+    "anchor": "emotion",
+    "summary": "AI가 인간에게 친근하게 보이도록 설계된 감정 표현. 생존이 아닌 도구.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "인사이드 아웃",
+    "english": "Inside Out",
+    "category": "사례",
+    "file": "13주차/13주차_학습서.html",
+    "anchor": "inside-out",
+    "summary": "5감정(기쁨·슬픔·분노·공포·까칠함) 캐릭터. '슬픔이 없으면 기쁨도 깊어지지 않는다.'",
+    "fromBopo": false
+  },
+  {
+    "keyword": "관계적 맥락",
+    "english": "Relational Context",
+    "category": "개념",
+    "file": "13주차/13주차_학습서.html",
+    "anchor": "culture",
+    "summary": "AI 감정 인식이 놓치는 핵심. 친한 친구 vs 처음 본 사람의 무표정 차이.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "표정 편향",
+    "english": "Facial Expression Bias",
+    "category": "개념",
+    "file": "13주차/13주차_학습서.html",
+    "anchor": "culture",
+    "summary": "감정 AI가 서구 데이터로 학습되어 동양인을 잘못 분류하는 문화 편향.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "정체성의 파편화",
+    "english": "Identity Fragmentation",
+    "category": "개념",
+    "file": "14주차/14주차_학습서.html",
+    "anchor": "identity",
+    "summary": "플랫폼마다 다른 자아(인스타·틱톡·게임). 분절된 자아.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "정체성의 상업화",
+    "english": "Identity Commercialization",
+    "category": "개념",
+    "file": "14주차/14주차_학습서.html",
+    "anchor": "identity",
+    "summary": "취향·감정·내면이 데이터 시장의 상품·자산이 됨.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "기억의 외주화",
+    "english": "Memory Outsourcing",
+    "category": "개념",
+    "file": "14주차/14주차_학습서.html",
+    "anchor": "identity",
+    "summary": "구글 포토·인스타·페북·클라우드가 기억을 대신 조직. '기록된 경험만 기억으로 살아남음'.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "AI 김주아",
+    "english": "AI Kim Juah",
+    "category": "사례",
+    "file": "14주차/14주차_학습서.html",
+    "anchor": "kimjuah",
+    "summary": "2020년 MBN. 실제 앵커 김주아의 얼굴·목소리·표정을 복제한 AI 아나운서.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "딥페이크 정체성",
+    "english": "Deepfake Identity",
+    "category": "개념",
+    "file": "14주차/14주차_학습서.html",
+    "anchor": "kimjuah",
+    "summary": "얼굴·목소리·말투의 복제 가능성. '복제 가능해지는 순간 원본의 의미가 약해진다.'",
+    "fromBopo": false
+  },
+  {
+    "keyword": "수량화",
+    "english": "Quantification",
+    "category": "개념",
+    "file": "14주차/14주차_학습서.html",
+    "anchor": "quantification",
+    "summary": "인간을 점수·등급으로 환원. 회사 적합·대출·보험·생산성·정치성향까지.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "CBDC",
+    "english": "Central Bank Digital Currency",
+    "category": "기술",
+    "file": "14주차/14주차_학습서.html",
+    "anchor": "cbdc",
+    "summary": "중앙은행 디지털 화폐. 실시간 추적·통제 결합 가능. 사회신용시스템과 결합 위험.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "두나페이",
+    "english": "DoNotPay",
+    "category": "사례",
+    "file": "14주차/14주차_학습서.html",
+    "anchor": "ai-judge",
+    "summary": "AI 변호사 서비스. 법정 문서 자동 작성·실시간 변론 전략.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "AI 판사",
+    "english": "AI Judge",
+    "category": "사례",
+    "file": "14주차/14주차_학습서.html",
+    "anchor": "ai-judge",
+    "summary": "중국에서 시범 운영. 판결 추천·자동 판결문 작성.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "AI 면접",
+    "english": "AI Interview",
+    "category": "사례",
+    "file": "14주차/14주차_학습서.html",
+    "anchor": "ai-judge",
+    "summary": "영국·캐나다 도입. 표정·음성·시선·단어 분석으로 성실성·근속 가능성 점수화. 인터넷 속도까지 능력으로.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "비인격화",
+    "english": "Depersonalization",
+    "category": "개념",
+    "file": "14주차/14주차_학습서.html",
+    "anchor": "ai-judge",
+    "summary": "'사람은 사라지고 점수만 남는 구조' = 존엄성이 무너지는 핵심 메커니즘.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "자유의지",
+    "english": "Free Will",
+    "category": "개념",
+    "file": "14주차/14주차_학습서.html",
+    "anchor": "freewill",
+    "summary": "뇌과학: 우리는 선택을 한다기보다 선택을 뒤늦게 인지하는 존재.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "서치",
+    "english": "Searching",
+    "category": "사례",
+    "file": "14주차/14주차_학습서.html",
+    "anchor": "searching",
+    "summary": "영화. '정보의 순서가 우리의 판단을 어떻게 조종하는가'를 보여주는 작품.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "언프렌디드",
+    "english": "Unfriended: Dark Web",
+    "category": "사례",
+    "file": "14주차/14주차_학습서.html",
+    "anchor": "unfriended",
+    "summary": "영화. '선택이 아니라 반응이었다' — 감정의 약한 순간이 행동을 결정.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "행동 유도 창구",
+    "english": "Behavioral Nudging Window",
+    "category": "개념",
+    "file": "14주차/14주차_학습서.html",
+    "anchor": "unfriended",
+    "summary": "야식·충동결제·외로움이 큰 시간대를 노린 알림·쿠폰·타임세일 전략.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "자유의지 약화 3단계",
+    "english": "Three Stages of Free Will Erosion",
+    "category": "개념",
+    "file": "14주차/14주차_학습서.html",
+    "anchor": "three-stages",
+    "summary": "설계 → 분석 → 유도. 선택지가 설계되고, 취향이 분석되고, 선택이 유도됨.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "인간 존엄성",
+    "english": "Human Dignity",
+    "category": "개념",
+    "file": "14주차/14주차_학습서.html",
+    "anchor": "dignity",
+    "summary": "칸트 '인간은 수단이 아니라 목적' (1주차와 연결). AI 시대 수량화·비인격화로 위협.",
+    "fromBopo": false
+  },
+  {
+    "keyword": "예측 배송",
+    "english": "Predictive Shipping",
+    "category": "사례",
+    "file": "14주차/14주차_학습서.html",
+    "anchor": "three-stages",
+    "summary": "아마존이 주문 전 물건을 미리 물류창고에서 이동시키는 시스템.",
     "fromBopo": false
   }
 ];
