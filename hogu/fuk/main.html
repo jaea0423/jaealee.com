@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>눈떠보니 후쿠오카 🏮</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏮</text></svg>">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gowun+Batang:wght@400;700&family=Hahmlet:wght@400;500;700&family=Single+Day&display=swap" rel="stylesheet">
+
+    <style>
+        /* ===== 기본 리셋 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* ===== 후쿠오카 야타이 야간 컬러 팔레트 ===== */
+        :root {
+            --bg-deep:           #0E0E12;   /* 깊은 밤 검정 (헤더 위) */
+            --bg-mid:            #1A2535;   /* 어두운 네이비 (메뉴 영역) */
+            --bg-light:          #2A3548;   /* 강물 반사 색 */
+            --lantern-red:       #C8242C;   /* 등불 빨강 */
+            --lantern-red-deep:  #8B1A1F;   /* 등불 그림자 빨강 */
+            --lantern-glow:      #F4B942;   /* 등불 노랑 빛 */
+            --paper:             #E8DCC0;   /* 미색 종이 */
+            --river:             #4A6B6F;   /* 강물 청록 */
+            --ink:               #2A2620;   /* 묵빛 텍스트 */
+            --mist:              #7A7569;   /* 안개 회색 */
+            --text-on-dark:      #E8DCC0;   /* 어두운 배경 위 텍스트 */
+        }
+
+        html, body {
+            width: 100%;
+            height: 100vh;       /* 화면 전체 높이 고정 */
+            overflow: hidden;    /* 스크롤 방지 */
+        }
+
+        body {
+            font-family: 'Gowun Batang', serif;
+            background: var(--bg-deep);
+            position: relative;
+            max-width: 420px;
+            margin: 0 auto;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            color: var(--text-on-dark);
+        }
+
+        /* ============================================
+           헤더 (상단 50%) - 야간 후쿠오카
+           ============================================ */
+        .header {
+            flex: 0 0 50%;
+            /* 깊은 밤 → 네이비 → 강물 빛 그라데이션 */
+            background: linear-gradient(180deg,
+                var(--bg-deep) 0%,
+                var(--bg-mid) 60%,
+                var(--bg-light) 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px 20px 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 등불 주변 따뜻한 빛 번짐 (radial-gradient) */
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 18%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 380px;
+            height: 280px;
+            background: radial-gradient(ellipse,
+                rgba(244, 185, 66, 0.22) 0%,
+                rgba(200, 36, 44, 0.08) 35%,
+                transparent 70%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* 강물 반사 (헤더 하단 수평선) */
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 30px;
+            background: linear-gradient(180deg,
+                transparent 0%,
+                rgba(74, 107, 111, 0.4) 50%,
+                rgba(244, 185, 66, 0.18) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* ===== 야타이 등불 (제등) ===== */
+        .lantern {
+            position: absolute;
+            z-index: 2;
+            animation: sway 5s ease-in-out infinite;
+            /* 빛이 등불 바깥으로 번지는 효과 */
+            filter: drop-shadow(0 0 18px rgba(244, 185, 66, 0.45))
+                    drop-shadow(0 0 8px rgba(200, 36, 44, 0.5));
+        }
+        .lantern-1 { top: 7%;  left: 10%;  width: 52px; animation-delay: 0s; }
+        .lantern-2 { top: 12%; right: 12%; width: 44px; animation-delay: 2.5s; }
+
+        /* 바람에 흔들리는 등불 (좌우로 살짝) */
+        @keyframes sway {
+            0%, 100% { transform: rotate(-2deg); }
+            50%      { transform: rotate(3deg); }
+        }
+
+        /* 등불 불빛 깜빡임 (미세하게) */
+        .lantern-light {
+            animation: flicker 4s ease-in-out infinite;
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50%      { opacity: 0.85; }
+        }
+
+        /* ===== 타이틀 ===== */
+        /* 한자 양념 (위쪽, 작게) - 일본어 자제로 福岡 한 번만 */
+        .title-kanji {
+            font-family: 'Hahmlet', serif;
+            font-size: 18px;
+            color: var(--lantern-glow);
+            letter-spacing: 10px;
+            margin-bottom: 14px;
+            position: relative;
+            z-index: 3;
+            opacity: 0.65;
+        }
+
+        /* 메인 타이틀 - 한글 */
+        .title-main {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 42px;
+            line-height: 1.1;
+            color: var(--paper);
+            letter-spacing: 2px;
+            position: relative;
+            z-index: 3;
+            /* 미색 종이 → 등불 빛처럼 빛남 */
+            text-shadow:
+                0 0 30px rgba(244, 185, 66, 0.4),
+                3px 3px 0 rgba(0, 0, 0, 0.4);
+        }
+
+        .title-main .glow {
+            color: var(--lantern-glow);
+        }
+
+        /* 멤버 이름 (손글씨 느낌) */
+        .title-sub {
+            font-family: 'Single Day', cursive;
+            font-size: 14px;
+            color: var(--mist);
+            letter-spacing: 3px;
+            margin-top: 16px;
+            position: relative;
+            z-index: 3;
+        }
+
+        .title-sub .dot {
+            color: var(--lantern-red);
+            margin: 0 5px;
+        }
+
+        /* 날짜 박스 - 미색 종이 (어둠 속의 종이 한 장) */
+        .date {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 22px;
+            background: var(--paper);
+            color: var(--ink);
+            font-family: 'Gowun Batang', serif;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            position: relative;
+            z-index: 3;
+            box-shadow:
+                0 6px 18px rgba(0, 0, 0, 0.5),
+                0 0 20px rgba(244, 185, 66, 0.15);
+            border: 1px solid var(--lantern-glow);
+            white-space: nowrap;
+        }
+
+        .date .sep {
+            margin: 0 6px;
+            color: var(--lantern-red);
+        }
+
+        /* ===== D-Day 배지 ===== */
+        .dday-badge {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: var(--lantern-red);
+            color: var(--paper);
+            padding: 12px 10px;
+            border-radius: 50%;
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 15px;
+            border: 2px solid var(--lantern-glow);
+            box-shadow:
+                0 0 15px rgba(200, 36, 44, 0.5),
+                0 6px 14px rgba(0, 0, 0, 0.5);
+            z-index: 5;
+            min-width: 56px;
+            text-align: center;
+            line-height: 1;
+            letter-spacing: 1px;
+        }
+
+        .dday-badge .small-text {
+            display: block;
+            font-size: 9px;
+            margin-bottom: 2px;
+            opacity: 0.8;
+            font-family: 'Hahmlet', serif;
+            letter-spacing: 2px;
+        }
+
+        /* ============================================
+           메뉴 (하단 50%) - 미색 종이 아닌 어두운 카운터
+           ============================================ */
+        .menu-wrap {
+            flex: 1;
+            background: var(--bg-mid);
+            display: flex;
+            align-items: center;
+            padding: 0 16px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 메뉴 영역 점박이 (어둠 속 작은 빛 입자) */
+        .menu-wrap::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                radial-gradient(circle at 25% 30%, rgba(244, 185, 66, 0.06) 1px, transparent 2px),
+                radial-gradient(circle at 75% 70%, rgba(244, 185, 66, 0.05) 1px, transparent 2px),
+                radial-gradient(circle at 50% 50%, rgba(200, 36, 44, 0.04) 1px, transparent 2px);
+            background-size: 50px 50px, 40px 40px, 70px 70px;
+            pointer-events: none;
+        }
+
+        /* 메뉴 상단 가는 빛 라인 (헤더와 경계) */
+        .menu-wrap::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 16px;
+            right: 16px;
+            height: 1px;
+            background: linear-gradient(90deg,
+                transparent,
+                var(--lantern-red) 30%,
+                var(--lantern-glow) 50%,
+                var(--lantern-red) 70%,
+                transparent);
+            opacity: 0.5;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ===== 카드 (어두운 배경에 떠있는 작은 등불) ===== */
+        .card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            background: var(--bg-deep);
+            border-radius: 14px;
+            padding: 14px 6px 12px;
+            text-align: center;
+            box-shadow:
+                0 4px 14px rgba(0, 0, 0, 0.5),
+                inset 0 0 20px rgba(244, 185, 66, 0.04);
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--bg-light);
+            aspect-ratio: 1 / 1.05;
+        }
+
+        .card:active {
+            transform: scale(0.94);
+            box-shadow:
+                0 2px 8px rgba(0, 0, 0, 0.5),
+                inset 0 0 25px rgba(244, 185, 66, 0.15);
+        }
+
+        /* 카드 위 빨간 띠 - 등불 잔영 */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: var(--lantern-red);
+            box-shadow: 0 0 8px var(--lantern-red);
+        }
+
+        /* 카드 하단 노랑 빛 (활성화 시) */
+        .card::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 50%;
+            transform: translateX(-50%);
+            width: 0%;
+            height: 2px;
+            background: var(--lantern-glow);
+            transition: width 0.2s;
+            box-shadow: 0 0 8px var(--lantern-glow);
+        }
+        .card:active::after { width: 60%; }
+
+        .card-icon {
+            font-size: 30px;
+            margin-bottom: 6px;
+            line-height: 1;
+            filter: drop-shadow(0 0 6px rgba(244, 185, 66, 0.25));
+        }
+
+        .card-title {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 15px;
+            color: var(--paper);
+            margin-bottom: 3px;
+            letter-spacing: 1px;
+        }
+
+        .card-en {
+            font-family: 'Single Day', cursive;
+            font-size: 11px;
+            color: var(--lantern-glow);
+            letter-spacing: 1.5px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== D-Day 배지 ===== -->
+    <div class="dday-badge">
+        <span class="small-text">FUKUOKA</span>
+        D-?
+    </div>
+
+    <!-- ============================================
+         헤더 (야간 후쿠오카)
+         ============================================ -->
+    <header class="header">
+
+        <!-- 야타이 등불 (제등) 2개 - SVG -->
+        <svg class="lantern lantern-1" viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg">
+            <!-- 매단 줄 -->
+            <line x1="30" y1="0" x2="30" y2="10" stroke="#2A2620" stroke-width="1"/>
+            <!-- 위쪽 검정 캡 (등불 위 마감) -->
+            <rect x="18" y="10" width="24" height="6" fill="#1A1A1A" rx="2"/>
+            <!-- 빨간 등불 본체 + 가로 결 -->
+            <g class="lantern-light">
+                <ellipse cx="30" cy="42" rx="22" ry="26" fill="#C8242C"/>
+                <line x1="10" y1="32" x2="50" y2="32" stroke="#1A1A1A" stroke-width="0.7" opacity="0.5"/>
+                <line x1="8"  y1="42" x2="52" y2="42" stroke="#1A1A1A" stroke-width="0.7" opacity="0.5"/>
+                <line x1="10" y1="52" x2="50" y2="52" stroke="#1A1A1A" stroke-width="0.7" opacity="0.5"/>
+            </g>
+            <!-- 아래쪽 검정 캡 -->
+            <rect x="20" y="66" width="20" height="5" fill="#1A1A1A" rx="2"/>
+            <!-- 술 (장식) -->
+            <line x1="30" y1="71" x2="30" y2="78" stroke="#F4B942" stroke-width="1.5"/>
+        </svg>
+
+        <svg class="lantern lantern-2" viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg">
+            <line x1="30" y1="0" x2="30" y2="10" stroke="#2A2620" stroke-width="1"/>
+            <rect x="18" y="10" width="24" height="6" fill="#1A1A1A" rx="2"/>
+            <g class="lantern-light">
+                <ellipse cx="30" cy="42" rx="22" ry="26" fill="#C8242C"/>
+                <line x1="10" y1="32" x2="50" y2="32" stroke="#1A1A1A" stroke-width="0.7" opacity="0.5"/>
+                <line x1="8"  y1="42" x2="52" y2="42" stroke="#1A1A1A" stroke-width="0.7" opacity="0.5"/>
+                <line x1="10" y1="52" x2="50" y2="52" stroke="#1A1A1A" stroke-width="0.7" opacity="0.5"/>
+            </g>
+            <rect x="20" y="66" width="20" height="5" fill="#1A1A1A" rx="2"/>
+            <line x1="30" y1="71" x2="30" y2="78" stroke="#F4B942" stroke-width="1.5"/>
+        </svg>
+
+        <!-- 타이틀 영역 -->
+        <div class="title-kanji">福 岡</div>
+        <h1 class="title-main">눈떠보니<br><span class="glow">후쿠오카</span></h1>
+
+        <!-- 멤버 이름 (손글씨 톤) -->
+        <div class="title-sub">
+            박보영<span class="dot">·</span>이재아<span class="dot">·</span>이채현<span class="dot">·</span>장서희
+        </div>
+
+        <!-- 날짜 -->
+        <div class="date">
+            2026.08.09 (일)<span class="sep">▸</span>08.12 (수)<span class="sep">·</span>3박 4일
+        </div>
+
+    </header>
+
+    <!-- ============================================
+         메뉴 (3x2 그리드)
+         ============================================ -->
+    <div class="menu-wrap">
+        <nav class="menu-grid">
+
+            <a href="schedule.html" class="card">
+                <span class="card-icon">📅</span>
+                <div class="card-title">일정표</div>
+                <div class="card-en">Schedule</div>
+            </a>
+
+            <a href="flight.html" class="card">
+                <span class="card-icon">✈️</span>
+                <div class="card-title">항공</div>
+                <div class="card-en">Flight</div>
+            </a>
+
+            <a href="stay.html" class="card">
+                <span class="card-icon">🏨</span>
+                <div class="card-title">숙소</div>
+                <div class="card-en">Stay</div>
+            </a>
+
+            <a href="food.html" class="card">
+                <span class="card-icon">🍜</span>
+                <div class="card-title">맛집</div>
+                <div class="card-en">Food</div>
+            </a>
+
+            <a href="checklist.html" class="card">
+                <span class="card-icon">🎒</span>
+                <div class="card-title">준비물</div>
+                <div class="card-en">Checklist</div>
+            </a>
+
+            <a href="budget.html" class="card">
+                <span class="card-icon">💴</span>
+                <div class="card-title">예산</div>
+                <div class="card-en">Budget</div>
+            </a>
+
+        </nav>
+    </div>
+
+    <!-- ===== D-Day 자동 계산 스크립트 ===== -->
+    <script>
+        // 출발일: 2026년 8월 9일 (Date 객체의 월은 0부터 시작 → 7 = 8월)
+        const departureDate = new Date(2026, 7, 9, 0, 0, 0);
+        const ddayEl = document.querySelector('.dday-badge');
+
+        function updateDday() {
+            const now = new Date();
+            const diff = departureDate - now;  // 밀리초 차이
+
+            if (diff < 0) {
+                // 출발 이후
+                ddayEl.innerHTML = '<span class="small-text">FUKUOKA</span>GO!';
+                return;
+            }
+            // 남은 일수 계산
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            ddayEl.innerHTML = '<span class="small-text">FUKUOKA</span>D-' + days;
+        }
+        updateDday();
+        // 하루마다 갱신 (정확도는 충분)
+        setInterval(updateDday, 3600000);
+    </script>
+
+</body>
+</html>
