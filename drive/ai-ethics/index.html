@@ -49,7 +49,7 @@ body::before {
 /* ===== 헤더 ===== */
 .hero {
     position: relative;
-    z-index: 1;
+    z-index: 50;
     padding: 80px 28px 50px;
     text-align: center;
     max-width: 1100px;
@@ -147,7 +147,7 @@ h1.title {
     max-width: 720px;
     margin: 40px auto 30px;
     position: relative;
-    z-index: 5;
+    z-index: 999;
 }
 .search-input {
     width: 100%;
@@ -171,14 +171,14 @@ h1.title {
     left: 0;
     right: 0;
     background: #fff;
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    margin-top: 6px;
-    max-height: 400px;
+    border: 1px solid var(--ultramarine);
+    border-radius: 8px;
+    margin-top: 8px;
+    max-height: 480px;
     overflow-y: auto;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    box-shadow: 0 12px 40px rgba(28,57,187,0.18), 0 4px 12px rgba(0,0,0,0.08);
     display: none;
-    z-index: 10;
+    z-index: 1000;
 }
 .search-results.visible { display: block; }
 .search-result-item {
@@ -222,6 +222,34 @@ h1.title {
     max-width: 1100px;
     margin: 30px auto 0;
     padding: 0 28px 80px;
+}
+
+/* 검색 결과 하이라이트 */
+.search-result-item .hl {
+    background: rgba(255, 200, 0, 0.4);
+    padding: 0 2px;
+    border-radius: 2px;
+}
+
+/* 검색 도움말 */
+.search-hint {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--ink-mute);
+    font-family: 'JetBrains Mono', monospace;
+}
+.search-hint .kbd {
+    display: inline-block;
+    background: var(--ivory);
+    border: 1px solid var(--line);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 10px;
+    margin: 0 2px;
+    color: var(--ultramarine-dark);
+    font-weight: 700;
 }
 
 .weeks-title {
@@ -385,6 +413,12 @@ footer {
                placeholder="🔍 키워드 빠른 검색 (예: 칸트, 트롤리, XAI, 책무성, 휴머노이드…)"
                autocomplete="off" spellcheck="false">
         <div class="search-results" id="search-results"></div>
+    </div>
+    <div class="search-hint">
+        <span class="kbd">/</span> 검색 포커스 ·
+        <span class="kbd">↑</span> <span class="kbd">↓</span> 결과 이동 ·
+        <span class="kbd">Enter</span> 열기 ·
+        <span class="kbd">Esc</span> 초기화
     </div>
 </header>
 
@@ -573,11 +607,35 @@ function searchItems(query) {
     }).filter(Boolean);
 
     scored.sort((a,b) => b.score - a.score);
-    return scored.slice(0, 6).map(s => s.item);
+    return scored.slice(0, 8).map(s => s.item);
+}
+
+function highlight(text, query) {
+    if (!query || !text) return text || '';
+    const tokens = query.trim().split(/\s+/).filter(t => t.length > 0);
+    let result = String(text);
+    tokens.forEach(t => {
+        const re = new RegExp('(' + t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+        result = result.replace(re, '<span class="hl">$1</span>');
+    });
+    return result;
 }
 
 const searchInput = document.getElementById('quick-search');
 const searchResults = document.getElementById('search-results');
+
+let currentItems = [];
+let focusedIdx = -1;
+
+function updateFocusedItem() {
+    const items = searchResults.querySelectorAll('.search-result-item');
+    items.forEach((el, i) => {
+        el.classList.toggle('focused', i === focusedIdx);
+        if (i === focusedIdx) {
+            el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+    });
+}
 
 let timeout;
 searchInput.addEventListener('input', e => {
@@ -585,40 +643,80 @@ searchInput.addEventListener('input', e => {
     const val = e.target.value;
     if (!val) {
         searchResults.classList.remove('visible');
+        currentItems = [];
+        focusedIdx = -1;
         return;
     }
     timeout = setTimeout(() => {
         const items = searchItems(val);
+        currentItems = items;
+        focusedIdx = items.length > 0 ? 0 : -1;
         if (items.length === 0) {
             searchResults.innerHTML = '<div class="search-result-item"><div class="summary">결과 없음. 시험 모드에서 더 자세히 검색해보세요.</div></div>';
             searchResults.classList.add('visible');
             return;
         }
-        searchResults.innerHTML = items.map(item => {
+        searchResults.innerHTML = items.map((item, i) => {
             const badges = [];
             if (item.bopo) badges.push('<span class="badge bopo">족보</span>');
             if (item.주차) badges.push(`<span class="badge">${item.주차}주차</span>`);
             const href = item.file ? (item.file + (item.anchor ? '#'+item.anchor : '')) : 'exam.html';
-            return `<div class="search-result-item" data-href="${href}">
-                <div class="title">${item.title}<span class="badges">${badges.join('')}</span></div>
-                <div class="summary">${item.summary || item.주제 || ''}</div>
+            return `<div class="search-result-item${i===0?' focused':''}" data-href="${href}" data-idx="${i}">
+                <div class="title">${highlight(item.title, val)}<span class="badges">${badges.join('')}</span></div>
+                <div class="summary">${highlight(item.summary || item.주제 || '', val)}</div>
             </div>`;
         }).join('');
         searchResults.classList.add('visible');
         searchResults.querySelectorAll('.search-result-item').forEach(el => {
             el.addEventListener('click', () => {
                 const href = el.getAttribute('data-href');
-                if (href) window.location.href = href;
+                if (href) window.open(href, '_blank');
+            });
+            el.addEventListener('mouseenter', () => {
+                focusedIdx = parseInt(el.getAttribute('data-idx')) || 0;
+                updateFocusedItem();
             });
         });
     }, 100);
 });
 
-// Esc로 닫기
+// 단축키 처리
 document.addEventListener('keydown', e => {
+    // / 키로 검색 포커스 (검색창 외에서 눌렀을 때만)
+    if (e.key === '/' && document.activeElement !== searchInput) {
+        e.preventDefault();
+        searchInput.focus();
+        searchInput.select();
+        return;
+    }
+    // Esc 초기화
     if (e.key === 'Escape') {
         searchInput.value = '';
         searchResults.classList.remove('visible');
+        currentItems = [];
+        focusedIdx = -1;
+        searchInput.blur();
+        return;
+    }
+    // ↑↓ Enter는 검색창 포커스 + 결과 있을 때만
+    const resultsVisible = searchResults.classList.contains('visible') && currentItems.length > 0;
+    if (!resultsVisible) return;
+
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        focusedIdx = (focusedIdx + 1) % currentItems.length;
+        updateFocusedItem();
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        focusedIdx = (focusedIdx - 1 + currentItems.length) % currentItems.length;
+        updateFocusedItem();
+    } else if (e.key === 'Enter' && document.activeElement === searchInput) {
+        e.preventDefault();
+        if (focusedIdx >= 0 && currentItems[focusedIdx]) {
+            const item = currentItems[focusedIdx];
+            const href = item.file ? (item.file + (item.anchor ? '#'+item.anchor : '')) : 'exam.html';
+            window.open(href, '_blank');
+        }
     }
 });
 
@@ -626,6 +724,13 @@ document.addEventListener('keydown', e => {
 document.addEventListener('click', e => {
     if (!e.target.closest('.search-wrap')) {
         searchResults.classList.remove('visible');
+    }
+});
+
+// 검색창 다시 포커스 시 결과가 있으면 다시 보여주기
+searchInput.addEventListener('focus', () => {
+    if (currentItems.length > 0 && searchInput.value) {
+        searchResults.classList.add('visible');
     }
 });
 </script>
