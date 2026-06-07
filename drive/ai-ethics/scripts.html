@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>강의 스크립트 전체 · 인공지능시대의 윤리 (Ctrl+F 검색용)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600;700;800&family=Nanum+Myeongjo:wght@400;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --ivory:#f6f1e3; --ivory-light:#fbf6e9; --ivory-dark:#e8dfc7;
+  --ultramarine:#1c39bb; --ultramarine-dark:#0a1f7c;
+  --bopo-red:#c8102e;
+  --ink:#1a1814; --ink-soft:#4a4640; --ink-mute:#8c8579;
+  --line:#d8cdb0;
+}
+html,body{background:var(--ivory);color:var(--ink);font-family:'Noto Serif KR','Nanum Myeongjo',serif;line-height:1.8;}
+
+/* ===== 상단 바 ===== */
+.topbar{position:sticky;top:0;z-index:100;background:rgba(246,241,227,0.97);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:12px 28px;display:flex;justify-content:space-between;align-items:center;gap:14px;}
+.topbar a{color:var(--ultramarine-dark);text-decoration:none;font-weight:600;font-size:14px;}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;}
+.brand-mark{width:36px;height:36px;background:var(--ultramarine);color:#fff;font-family:'JetBrains Mono',monospace;font-weight:700;display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:13px;}
+.brand-title{font-family:'Nanum Myeongjo',serif;font-weight:800;font-size:17px;color:var(--ultramarine-dark);}
+.brand-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-mute);letter-spacing:0.1em;}
+.topbar-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.topbar-actions a{padding:7px 12px;border:1px solid var(--line);border-radius:4px;background:var(--ivory-light);font-size:12px;}
+.topbar-actions a:hover{border-color:var(--ultramarine);}
+.topbar-actions a.primary{background:var(--ultramarine);color:#fff;border-color:var(--ultramarine);}
+.topbar-actions a.primary:hover{background:var(--ultramarine-dark);}
+.topbar-actions a.bopo{background:var(--bopo-red);color:#fff;border-color:var(--bopo-red);}
+
+/* ===== 안내 박스 ===== */
+.notice{background:#fff4e6;border:1px solid #f4c98a;border-left:5px solid #d4641a;padding:14px 22px;margin:18px auto;max-width:1200px;border-radius:0 8px 8px 0;font-size:14px;line-height:1.7;color:var(--ink-soft);}
+.notice strong{color:#d4641a;}
+.notice kbd{display:inline-block;background:#fff;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:2px 8px;font-family:'JetBrains Mono',monospace;font-size:11px;margin:0 2px;color:var(--ultramarine-dark);font-weight:700;}
+
+.error-notice{background:#f7e0e4;border-left:5px solid var(--bopo-red);padding:14px 22px;margin:18px auto;max-width:1200px;border-radius:0 8px 8px 0;font-size:14px;line-height:1.7;color:var(--ink-soft);display:none;}
+.error-notice.visible{display:block;}
+.error-notice strong{color:var(--bopo-red);}
+.error-notice code{background:#fff;padding:1px 6px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:12px;}
+
+/* ===== 레이아웃 ===== */
+.layout{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:240px 1fr;gap:32px;padding:24px 28px 80px;}
+@media (max-width: 800px){.layout{grid-template-columns:1fr;padding:16px 16px 60px;} .toc{position:static!important;max-height:none!important;}}
+
+/* ===== TOC ===== */
+.toc{position:sticky;top:80px;align-self:start;background:var(--ivory-light);border:1px solid var(--line);border-radius:8px;padding:16px 14px;max-height:calc(100vh - 100px);overflow-y:auto;}
+.toc-title{font-family:'Nanum Myeongjo',serif;font-weight:800;color:var(--ultramarine-dark);font-size:14px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--line);}
+.toc-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;text-decoration:none;color:var(--ink);font-size:13px;transition:background 0.12s;}
+.toc-item:hover{background:#fff;}
+.toc-item.active{background:#fff;border-left:3px solid var(--ultramarine);padding-left:7px;}
+.toc-item .toc-num{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--ultramarine);background:#fff;border:1px solid var(--line);padding:2px 7px;border-radius:3px;font-size:11px;min-width:32px;text-align:center;}
+.toc-item .toc-title-text{flex:1;line-height:1.35;}
+
+/* ===== 본문 ===== */
+.content{min-width:0;}
+.hero{text-align:center;padding:24px 0 36px;border-bottom:2px solid var(--line);margin-bottom:36px;}
+.hero h1{font-family:'Nanum Myeongjo',serif;font-weight:800;font-size:36px;color:var(--ultramarine-dark);letter-spacing:-0.02em;margin-bottom:8px;}
+.hero p{color:var(--ink-mute);font-size:14px;}
+.hero .stats{display:inline-block;margin-top:14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ultramarine-dark);background:var(--ivory-light);padding:6px 14px;border-radius:20px;border:1px solid var(--line);letter-spacing:0.05em;}
+
+.loading{text-align:center;padding:60px 20px;color:var(--ink-mute);}
+.loading .spinner{display:inline-block;width:32px;height:32px;border:3px solid var(--ivory-dark);border-top-color:var(--ultramarine);border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:12px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.week{margin-bottom:56px;}
+.week-header{font-family:'Nanum Myeongjo',serif;font-size:28px;color:var(--ultramarine-dark);font-weight:800;padding:14px 0;border-bottom:3px solid var(--ultramarine);margin-bottom:24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;scroll-margin-top:80px;}
+.week-badge{background:var(--ultramarine);color:#fff;font-family:'JetBrains Mono',monospace;font-size:12px;padding:5px 12px;border-radius:4px;letter-spacing:0.08em;}
+
+.chasi{margin-bottom:36px;padding-left:18px;border-left:3px solid var(--ivory-dark);scroll-margin-top:80px;}
+.chasi:target{border-left-color:var(--bopo-red);background:rgba(247,224,228,0.3);padding:14px 18px;border-radius:0 8px 8px 0;}
+.chasi-title{font-family:'Nanum Myeongjo',serif;font-size:18px;color:var(--ultramarine);font-weight:700;margin-bottom:14px;padding-bottom:6px;border-bottom:1px dashed var(--line);}
+
+.chasi p{margin:10px 0;font-size:15.5px;color:var(--ink);line-height:1.85;text-align:justify;word-break:keep-all;}
+.chasi p.note{background:var(--ivory-light);border-left:3px solid var(--ink-mute);padding:10px 14px;font-size:13px;color:var(--ink-mute);font-style:italic;}
+
+::selection{background:rgba(255,200,0,0.5);color:var(--ink);}
+
+/* 위로 가기 */
+.to-top{position:fixed;bottom:24px;right:24px;background:var(--ultramarine);color:#fff;width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:20px;box-shadow:0 4px 14px rgba(28,57,187,0.3);transition:all 0.15s;z-index:50;border:none;cursor:pointer;}
+.to-top:hover{background:var(--ultramarine-dark);transform:translateY(-2px);}
+
+footer{text-align:center;padding:30px 20px 60px;color:var(--ink-mute);font-size:12px;font-family:'JetBrains Mono',monospace;border-top:1px solid var(--line);margin-top:40px;}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+    <a href="index.html" class="brand">
+        <div class="brand-mark">스크</div>
+        <div>
+            <div class="brand-title">강의 스크립트 전체</div>
+            <div class="brand-sub">FULL · LECTURE · SCRIPTS</div>
+        </div>
+    </a>
+    <div class="topbar-actions">
+        <a href="index.html">메인</a>
+        <a href="exam.html" class="primary">📝 시험 모드</a>
+        <a href="bopo.html" class="bopo">🔥 족보</a>
+    </div>
+</header>
+
+<div class="notice">
+    💡 <strong>Ctrl+F (Mac: ⌘+F)</strong> 로 브라우저 기본 검색을 사용하세요. 키워드 정리에서 누락된 단어도 강의 본문 원문에서 직접 찾을 수 있습니다.
+    <br>예: <kbd>판옵티콘</kbd> · <kbd>오토아이콘</kbd> · <kbd>모다피닐</kbd> · <kbd>그리프</kbd> · <kbd>가용성 휴리스틱</kbd> 등.
+</div>
+
+<div class="error-notice" id="error-notice">
+    ⚠️ <strong>강의 스크립트를 불러올 수 없습니다.</strong>
+    <br>이 페이지는 웹 서버에서 동작합니다 (file:// 직접 열기 ❌). GitHub Pages·로컬 서버·실제 호스팅에서 정상 동작합니다.
+    <br>로컬에서 보려면: <code>python -m http.server</code> 명령으로 임시 서버를 띄우고 <code>http://localhost:8000/scripts.html</code> 로 접속하세요.
+</div>
+
+<div class="layout">
+
+<aside class="toc">
+    <div class="toc-title">📚 빠른 이동</div>
+    <div id="toc-list"></div>
+</aside>
+
+<main class="content">
+    <div class="hero">
+        <h1>강의 스크립트 전체 모음</h1>
+        <p>1~14주차 강의 본문 원문 · 타임코드 제거 · 단락 정리</p>
+        <div class="stats" id="stats-bar">불러오는 중…</div>
+    </div>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>강의 스크립트를 불러오는 중입니다…</p>
+    </div>
+
+    <div id="content-body"></div>
+</main>
+
+</div>
+
+<button class="to-top" id="to-top" title="맨 위로" style="display:none;">↑</button>
+
+<footer>
+    강의 스크립트 통합 · Ctrl+F 검색 전용 페이지 · 인공지능시대의 윤리
+</footer>
+
+<script>
+const WEEK_INFO = {
+    1: "윤리이론 (공리주의·칸트·상황윤리)",
+    2: "AI 정의·역사·유형·한계",
+    3: "편향성·투명성·책무성 ★ 족보 최다",
+    4: "자율성·전자인격",
+    5: "위험관리·마케팅·분배정의",
+    6: "자율주행차 윤리",
+    7: "사용 주의·신뢰성·인간중심성",
+    9: "응용·인간향상·로봇 ★ 족보",
+    10: "소셜·수술·군사로봇 ★ 족보",
+    11: "미래사회·미래직업",
+    12: "권력·감시·사회조종",
+    13: "인간 관계·인간 감정",
+    14: "정체성·존엄성·자유의지",
+};
+
+// 강의 스크립트 정리 (타임코드 제거, 차시 구분)
+function cleanScript(text) {
+    const lines = text.split('\n');
+    const out = [];
+    for (const line of lines) {
+        const s = line.trim();
+        if (!s) continue;
+        // 차시 헤더
+        if (/^\[\s*\d+주차\s+\d+차시\s*\]/.test(s)) {
+            out.push({type: 'chasi', text: s});
+            continue;
+        }
+        // 타임코드만 (예: "0:09")
+        if (/^\d+:\d+(?::\d+)?$/.test(s)) continue;
+        // 운영 안내 제외
+        if (s.includes('진도처리기간') || s.includes('동영상을 시청하시더라도')) continue;
+        // 안내문 (괄호로 시작하거나, 강의 없음/추후 업데이트 등)
+        if (/^\(/.test(s) || /^\d+주차는/.test(s)) {
+            out.push({type: 'note', text: s});
+            continue;
+        }
+        out.push({type: 'line', text: s});
+    }
+    return out;
+}
+
+function escapeHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// 한 주차 HTML 생성
+function renderWeek(week, items) {
+    const blocks = [];
+    let title = null, lines = [];
+    for (const it of items) {
+        if (it.type === 'chasi') {
+            if (title !== null) blocks.push({title, lines});
+            title = it.text;
+            lines = [];
+        } else {
+            lines.push(it);
+        }
+    }
+    if (title !== null) blocks.push({title, lines});
+    if (blocks.length === 0 && items.length > 0) {
+        blocks.push({title: null, lines: items});
+    }
+
+    const parts = [];
+    for (const {title: t, lines: ls} of blocks) {
+        const m = t ? t.match(/(\d+)차시/) : null;
+        const cnum = m ? m[1] : '?';
+        const anchor = t ? `w${week}-c${cnum}` : `w${week}`;
+        parts.push(`<section class="chasi" id="${anchor}">`);
+        if (t) parts.push(`<h3 class="chasi-title">${escapeHtml(t)}</h3>`);
+        // 단락 결합
+        let para = [];
+        for (const it of ls) {
+            if (it.type === 'note') {
+                if (para.length > 0) {
+                    parts.push('<p>' + para.map(escapeHtml).join(' ') + '</p>');
+                    para = [];
+                }
+                parts.push(`<p class="note">※ ${escapeHtml(it.text)}</p>`);
+            } else {
+                para.push(it.text);
+                // 문장 끝 + 3줄 이상이면 단락 끊기
+                const last = it.text.slice(-2);
+                if (para.length >= 3 && /[.?!다죠요함음임됨]$/.test(it.text)) {
+                    parts.push('<p>' + para.map(escapeHtml).join(' ') + '</p>');
+                    para = [];
+                }
+            }
+        }
+        if (para.length > 0) {
+            parts.push('<p>' + para.map(escapeHtml).join(' ') + '</p>');
+        }
+        parts.push('</section>');
+    }
+    return parts.join('\n');
+}
+
+// 모든 강의 스크립트 fetch
+async function loadAllScripts() {
+    const weeks = Object.keys(WEEK_INFO).map(Number).sort((a,b) => a-b);
+    const tocList = document.getElementById('toc-list');
+    const contentBody = document.getElementById('content-body');
+    const loading = document.getElementById('loading');
+    const errorNotice = document.getElementById('error-notice');
+    const statsBar = document.getElementById('stats-bar');
+
+    // TOC 먼저
+    tocList.innerHTML = weeks.map(w =>
+        `<a href="#week-${w}" class="toc-item" data-week="${w}">
+            <span class="toc-num">${String(w).padStart(2,'0')}</span>
+            <span class="toc-title-text">${escapeHtml(WEEK_INFO[w])}</span>
+        </a>`
+    ).join('');
+
+    let totalChars = 0, totalLines = 0, loaded = 0, failed = 0;
+    const sections = [];
+
+    for (const week of weeks) {
+        const ws = String(week).padStart(2,'0') + '주차';
+        const fname = encodeURIComponent(`${ws} 강의 스크립트.txt`);
+        const path = `${ws}/${fname}`;
+        try {
+            const res = await fetch(path);
+            if (!res.ok) throw new Error('Fetch failed: ' + res.status);
+            const txt = await res.text();
+            const items = cleanScript(txt);
+            const lines = items.filter(i => i.type === 'line');
+            totalChars += lines.reduce((a, b) => a + b.text.length, 0);
+            totalLines += lines.length;
+            loaded++;
+            const html = renderWeek(week, items);
+            sections.push(`<article class="week" id="week-${week}">
+                <h2 class="week-header"><span class="week-badge">WEEK ${String(week).padStart(2,'0')}</span>${escapeHtml(WEEK_INFO[week])}</h2>
+                ${html}
+            </article>`);
+        } catch (e) {
+            failed++;
+            console.warn('Failed:', path, e);
+        }
+    }
+
+    loading.style.display = 'none';
+
+    if (loaded === 0) {
+        errorNotice.classList.add('visible');
+        statsBar.textContent = '불러오기 실패';
+        return;
+    }
+
+    contentBody.innerHTML = sections.join('\n');
+    statsBar.textContent = `총 ${totalChars.toLocaleString()}자 · ${totalLines.toLocaleString()}개 라인 · ${loaded}/${weeks.length}개 주차`;
+    if (failed > 0) {
+        errorNotice.classList.add('visible');
+        errorNotice.innerHTML = `⚠️ <strong>${failed}개 주차의 강의 스크립트를 불러올 수 없습니다.</strong> 파일이 존재하지 않거나 서버 설정 문제일 수 있습니다.`;
+    }
+
+    setupTOCActive();
+}
+
+// 스크롤에 따라 TOC 활성화
+function setupTOCActive() {
+    const tocItems = document.querySelectorAll('.toc-item');
+    const sections = Array.from(document.querySelectorAll('article.week'));
+    if (sections.length === 0) return;
+
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                const id = e.target.id;
+                const week = id.replace('week-', '');
+                tocItems.forEach(it => it.classList.toggle('active', it.dataset.week === week));
+            }
+        });
+    }, { rootMargin: '-30% 0px -60% 0px' });
+    sections.forEach(s => observer.observe(s));
+}
+
+// 위로 가기
+const toTop = document.getElementById('to-top');
+window.addEventListener('scroll', () => {
+    toTop.style.display = window.scrollY > 400 ? 'flex' : 'none';
+});
+toTop.addEventListener('click', e => {
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// 시작
+loadAllScripts();
+</script>
+
+</body>
+</html>
