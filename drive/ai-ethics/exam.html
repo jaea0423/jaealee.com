@@ -460,7 +460,7 @@ body::before {
         <span><span class="kbd">/</span> 검색창 포커스</span>
         <span><span class="kbd">Esc</span> 검색 초기화</span>
         <span><span class="kbd">↑</span> <span class="kbd">↓</span> 결과 이동</span>
-        <span><span class="kbd">Enter</span> 학습서 새 탭으로 열기</span>
+        <span><span class="kbd">Enter</span> 학습서로 이동</span>
         <span><span class="kbd">Space</span> 타이머 시작/정지</span>
     </div>
 </main>
@@ -610,7 +610,7 @@ function renderItem(item, q, idx) {
         body = `
             <div class="card-body">${highlight(item.summary || '', q)}</div>
             ${item.english ? `<div style="margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--ink-mute);">${item.english}</div>` : ''}
-            ${item.file ? `<a class="card-link" href="${item.file}${item.anchor ? '#' + item.anchor : ''}" target="_blank">학습서 새 탭으로 열기 →</a>` : ''}
+            ${item.file ? `<a class="card-link" href="${item.file}${item.anchor ? '#' + item.anchor : ''}">학습서로 이동 →</a>` : ''}
         `;
     }
 
@@ -644,7 +644,7 @@ function render(query) {
     wrap.querySelectorAll('.card').forEach(card => {
         card.addEventListener('click', () => {
             const href = card.getAttribute('data-href');
-            if (href) window.open(href, '_blank');
+            if (href) window.location.href = href;
         });
     });
 }
@@ -701,11 +701,11 @@ document.addEventListener('keydown', e => {
         });
         return;
     }
-    // Enter → 새 탭으로 열기
+    // Enter → 학습서로 이동 (현재 탭)
     if (e.key === 'Enter' && focusedIdx >= 0 && document.activeElement === searchInput) {
         const card = document.querySelectorAll('.card')[focusedIdx];
         const href = card && card.getAttribute('data-href');
-        if (href) window.open(href, '_blank');
+        if (href) window.location.href = href;
         return;
     }
     // Space → 타이머 토글 (단, 검색창 포커스 시는 일반 입력)
