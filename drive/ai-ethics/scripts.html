@@ -84,6 +84,11 @@ html,body{background:var(--ivory);color:var(--ink);font-family:'Noto Serif KR','
 .to-top:hover{background:var(--ultramarine-dark);transform:translateY(-2px);}
 
 footer{text-align:center;padding:30px 20px 60px;color:var(--ink-mute);font-size:12px;font-family:'JetBrains Mono',monospace;border-top:1px solid var(--line);margin-top:40px;}
+
+/* 다운로드 안내 */
+.download-notice{background:rgba(45,122,45,0.08);border:1px solid #2d7a2d;border-left:5px solid #2d7a2d;padding:14px 22px;margin:18px auto;max-width:1200px;border-radius:0 8px 8px 0;font-size:14px;line-height:1.7;color:var(--ink-soft);}
+.download-notice strong{color:#2d7a2d;}
+.download-notice code{background:#fff;padding:1px 6px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:12px;}
 </style>
 </head>
 <body>
@@ -100,12 +105,19 @@ footer{text-align:center;padding:30px 20px 60px;color:var(--ink-mute);font-size:
         <a href="index.html">메인</a>
         <a href="exam.html" class="primary">📝 시험 모드</a>
         <a href="bopo.html" class="bopo">🔥 족보</a>
+        <a href="#" id="download-md" style="background:#2d7a2d;color:#fff;border-color:#2d7a2d;">📥 study-pack.md</a>
     </div>
 </header>
 
 <div class="notice">
     💡 <strong>Ctrl+F (Mac: ⌘+F)</strong> 로 브라우저 기본 검색을 사용하세요. 키워드 정리에서 누락된 단어도 강의 본문 원문에서 직접 찾을 수 있습니다.
     <br>예: <kbd>판옵티콘</kbd> · <kbd>오토아이콘</kbd> · <kbd>모다피닐</kbd> · <kbd>그리프</kbd> · <kbd>가용성 휴리스틱</kbd> 등.
+</div>
+
+<div class="download-notice">
+    📥 <strong>study-pack.md 다운로드</strong> — 상단 초록 버튼을 누르면 <strong>족보 + 강의 + 키워드</strong>가 합쳐진 마크다운 파일이 다운로드됩니다.
+    <br>새 Claude 세션·코워크에 이 파일을 첨부 + 파일 상단의 <strong>시스템 프롬프트를 복사해서 사용</strong>하세요.
+    <br>답변 우선순위: <strong>① 족보 → ② 강의 스크립트 → ③ 외부 지식</strong> (출처 자동 표시).
 </div>
 
 <div class="error-notice" id="error-notice">
@@ -144,6 +156,7 @@ footer{text-align:center;padding:30px 20px 60px;color:var(--ink-mute);font-size:
     강의 스크립트 통합 · Ctrl+F 검색 전용 페이지 · 인공지능시대의 윤리
 </footer>
 
+<script src="keywords-data.js"></script>
 <script>
 const WEEK_INFO = {
     1: "윤리이론 (공리주의·칸트·상황윤리)",
@@ -243,6 +256,9 @@ function renderWeek(week, items) {
     return parts.join('\n');
 }
 
+// 강의 스크립트 데이터를 메모리에 보관 (다운로드용)
+const SCRIPT_DATA = {};
+
 // 모든 강의 스크립트 fetch
 async function loadAllScripts() {
     const weeks = Object.keys(WEEK_INFO).map(Number).sort((a,b) => a-b);
@@ -276,6 +292,7 @@ async function loadAllScripts() {
             totalChars += lines.reduce((a, b) => a + b.text.length, 0);
             totalLines += lines.length;
             loaded++;
+            SCRIPT_DATA[week] = items;  // 다운로드용 저장
             const html = renderWeek(week, items);
             sections.push(`<article class="week" id="week-${week}">
                 <h2 class="week-header"><span class="week-badge">WEEK ${String(week).padStart(2,'0')}</span>${escapeHtml(WEEK_INFO[week])}</h2>
@@ -331,6 +348,207 @@ window.addEventListener('scroll', () => {
 toTop.addEventListener('click', e => {
     e.preventDefault();
     window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// ===== study-pack.md 다운로드 =====
+function buildMarkdown() {
+    const md = [];
+    md.push('# 인공지능시대의 윤리 — 학습 통합본 (study-pack.md)');
+    md.push('');
+    md.push('> **이 파일 = 족보 + 강의 스크립트 + 핵심 키워드 정리.**');
+    md.push('> 새 Claude 세션이나 코워크에 첨부하고 아래 시스템 프롬프트를 사용하세요.');
+    md.push('');
+    md.push('## ⚙️ 시스템 프롬프트 (복사해서 사용)');
+    md.push('');
+    md.push('```');
+    md.push('첨부한 study-pack.md만 보고 답한다. 외부 지식은 마지막 수단.');
+    md.push('');
+    md.push('답변 우선순위 (반드시 이 순서로):');
+    md.push('1. 족보(🔥) 섹션에서 먼저 찾는다. 있으면 즉시 답.');
+    md.push('2. 없으면 강의 스크립트 전문에서 찾는다.');
+    md.push('3. 그래도 없으면 외부 지식으로 답한다.');
+    md.push('');
+    md.push('답변 형식 (짧고 빠르게):');
+    md.push('- **정답**: [단어 또는 ①②③ 번호]');
+    md.push('- **출처**: [족보 / 강의 N주차 / 외부]');
+    md.push('- **근거**: [한 줄 핵심]');
+    md.push('');
+    md.push('장황한 설명 금지. 헤더·인사·생각 과정 출력 금지.');
+    md.push('객관식이면 정답 보기 번호 + 단어. 단답형이면 정확한 단어 하나만.');
+    md.push('확신 없으면 "확신 부족: [후보 답]" 으로 표시.');
+    md.push('```');
+    md.push('');
+    md.push('---');
+    md.push('');
+    md.push('## 📋 빠른 사용 예시');
+    md.push('');
+    md.push('**입력 (캡처 또는 텍스트)**: "편향과 편견의 차이를 바르게 설명한 것은?"');
+    md.push('');
+    md.push('**기대 출력**:');
+    md.push('```');
+    md.push('정답: ② 편향은 특정 행동 성향을 자동으로 야기할 수 있다.');
+    md.push('출처: 족보 객관식 Q1 (3주차 편향성)');
+    md.push('근거: 편견=심리적 고정관념, 편향=시스템의 구조적 기울어짐(자동으로 행동 야기).');
+    md.push('```');
+    md.push('');
+    md.push('---');
+    md.push('');
+
+    // 1. 족보 섹션
+    if (typeof PAST_EXAM !== 'undefined') {
+        md.push('## 🔥 족보 (2024학년도 겨울학기 — 총 20문제)');
+        md.push('');
+        md.push('> ⚠️ 2025학년도 여름학기는 다르게 출제됨. 키워드·주제 패턴 참고용.');
+        md.push('');
+
+        // 객관식
+        md.push('### 객관식 (' + (PAST_EXAM.객관식 || []).length + '문제)');
+        md.push('');
+        (PAST_EXAM.객관식 || []).forEach((q, i) => {
+            md.push(`#### Q${i+1}. [${q.주차}주차 · ${q.주제}]`);
+            md.push('');
+            md.push(`**문제**: ${q.질문}`);
+            md.push('');
+            md.push('**보기**:');
+            (q.보기 || []).forEach((opt, j) => {
+                const ans = Array.isArray(q.정답) ? q.정답 : [q.정답];
+                const isCorrect = ans.some(a => opt.trim() === a.trim());
+                md.push(`- ${isCorrect ? '✅ ' : ''}${j+1}) ${opt}`);
+            });
+            md.push('');
+            const ansStr = Array.isArray(q.정답) ? q.정답.join(' / ') : q.정답;
+            md.push(`**정답**: ${ansStr}`);
+            md.push('');
+            if (q.해설) md.push(`**해설**: ${q.해설}`);
+            md.push('');
+        });
+
+        // 단답형
+        md.push('### 단답형 주관식 (' + (PAST_EXAM.단답형 || []).length + '문제)');
+        md.push('');
+        (PAST_EXAM.단답형 || []).forEach((q, i) => {
+            md.push(`#### S${i+1}. [${q.주차}주차 · ${q.주제}]`);
+            md.push('');
+            md.push(`**문제**: ${q.질문}`);
+            md.push('');
+            md.push(`**정답**: ${q.정답}`);
+            md.push('');
+            if (q.해설) md.push(`**해설**: ${q.해설}`);
+            md.push('');
+        });
+    }
+
+    md.push('---');
+    md.push('');
+
+    // 2. 핵심 키워드 섹션
+    if (typeof KEYWORDS !== 'undefined') {
+        md.push('## 📚 핵심 키워드 정리 (' + KEYWORDS.length + '개)');
+        md.push('');
+
+        // 주차별 그룹화
+        const byWeek = {};
+        KEYWORDS.forEach(k => {
+            let w = '?';
+            for (let i = 1; i <= 14; i++) {
+                if (k.file && k.file.startsWith(String(i).padStart(2,'0') + '주차/')) {
+                    w = i; break;
+                }
+            }
+            if (!byWeek[w]) byWeek[w] = [];
+            byWeek[w].push(k);
+        });
+
+        Object.keys(byWeek).sort((a,b) => Number(a) - Number(b)).forEach(w => {
+            md.push(`### WEEK ${String(w).padStart(2,'0')} — ${WEEK_INFO[w] || ''}`);
+            md.push('');
+            byWeek[w].forEach(k => {
+                const bopo = k.fromBopo ? ' 🔥' : '';
+                const eng = k.english ? ` (*${k.english}*)` : '';
+                md.push(`- **${k.keyword}**${eng}${bopo}: ${k.summary || ''}`);
+            });
+            md.push('');
+        });
+    }
+
+    md.push('---');
+    md.push('');
+
+    // 3. 강의 스크립트 전문
+    md.push('## 📖 강의 스크립트 전문');
+    md.push('');
+
+    Object.keys(SCRIPT_DATA).sort((a,b) => Number(a) - Number(b)).forEach(w => {
+        const items = SCRIPT_DATA[w];
+        md.push(`### WEEK ${String(w).padStart(2,'0')} — ${WEEK_INFO[w] || ''}`);
+        md.push('');
+
+        // 차시별로 묶기
+        let title = null, lines = [];
+        const blocks = [];
+        items.forEach(it => {
+            if (it.type === 'chasi') {
+                if (title !== null) blocks.push({title, lines});
+                title = it.text;
+                lines = [];
+            } else {
+                lines.push(it);
+            }
+        });
+        if (title !== null) blocks.push({title, lines});
+        if (blocks.length === 0 && items.length > 0) blocks.push({title: null, lines: items});
+
+        blocks.forEach(({title: t, lines: ls}) => {
+            if (t) {
+                md.push(`#### ${t.replace(/^\[\s*|\s*\]$/g, '')}`);
+                md.push('');
+            }
+            // 단락 결합
+            let para = [];
+            ls.forEach(it => {
+                if (it.type === 'note') {
+                    if (para.length > 0) {
+                        md.push(para.join(' '));
+                        md.push('');
+                        para = [];
+                    }
+                    md.push(`> ※ ${it.text}`);
+                    md.push('');
+                } else {
+                    para.push(it.text);
+                    if (para.length >= 3 && /[.?!다죠요함음임됨]$/.test(it.text)) {
+                        md.push(para.join(' '));
+                        md.push('');
+                        para = [];
+                    }
+                }
+            });
+            if (para.length > 0) {
+                md.push(para.join(' '));
+                md.push('');
+            }
+        });
+
+        md.push('');
+    });
+
+    return md.join('\n');
+}
+
+document.getElementById('download-md').addEventListener('click', e => {
+    e.preventDefault();
+    if (Object.keys(SCRIPT_DATA).length === 0) {
+        alert('아직 강의 스크립트가 불러와지지 않았습니다. 잠시 후 다시 시도하세요.\n(웹 서버 환경에서만 동작합니다 — http://localhost 또는 GitHub Pages)');
+        return;
+    }
+    const md = buildMarkdown();
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'study-pack.md';
+    a.click();
+    URL.revokeObjectURL(url);
 });
 
 // 시작
