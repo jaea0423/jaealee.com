@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>랜덤 출제 - 강의 연습문제 30개</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;700;900&family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg-cream:#f5ecd7;--bg-paper:#ede0c4;--bg-deep:#e0cfa8;--text-dark:#3d2817;--text-sub:#5a3a22;--accent-red:#8b2c1f;--accent-gold:#a8843a;--border-dark:#7a5230;--border-light:#c3a574;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Serif KR','Nanum Myeongjo',serif;background:var(--bg-cream);background-image:radial-gradient(circle at 20% 30%,rgba(168,132,58,0.08) 0%,transparent 50%),radial-gradient(circle at 80% 70%,rgba(139,44,31,0.05) 0%,transparent 50%);color:var(--text-dark);line-height:1.8;min-height:100vh}
+.container{max-width:880px;margin:0 auto;padding:40px 30px 80px}
+
+/* 헤더 */
+header{text-align:center;padding:36px 20px;border-top:3px double var(--border-dark);border-bottom:3px double var(--border-dark);margin-bottom:30px;background:var(--bg-paper)}
+header::before,header::after{content:"❦";font-size:22px;color:var(--accent-red);display:block;margin:6px 0}
+header .week-label{font-size:13px;letter-spacing:8px;color:var(--accent-red);font-weight:700}
+header h1{font-family:'Nanum Myeongjo',serif;font-size:28px;font-weight:800;margin:10px 0 4px}
+header .subtitle{font-size:14px;color:var(--text-sub);font-style:italic}
+
+/* 안내 */
+.guide{background:#fff8e7;border:2px solid var(--accent-red);padding:18px 22px;margin:24px 0 30px;border-radius:6px;font-size:14px}
+.guide::before{content:"🎲 사 용 법";display:block;color:var(--accent-red);font-weight:700;letter-spacing:3px;margin-bottom:8px;font-size:13px}
+.guide strong{color:var(--accent-red)}
+
+/* 컨트롤 패널 */
+.control-panel{background:var(--bg-paper);border:2px solid var(--border-dark);border-radius:8px;padding:20px;margin:24px 0;position:sticky;top:10px;z-index:100;box-shadow:0 4px 12px rgba(61,40,23,0.15)}
+
+/* 모드 탭 */
+.mode-tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:14px}
+.mode-tab{padding:10px 12px;background:#fff;border:2px solid var(--border-light);border-radius:5px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:var(--text-sub);transition:all 0.2s;text-align:center}
+.mode-tab:hover{background:var(--bg-deep);border-color:var(--accent-gold)}
+.mode-tab.active{background:var(--accent-red);color:#fff;border-color:var(--accent-red)}
+.mode-tab .icon{display:block;font-size:18px;margin-bottom:3px}
+.mode-tab .label{font-size:11px;letter-spacing:1px}
+
+/* 액션 버튼들 */
+.action-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;padding-top:14px;border-top:1px dashed var(--border-light)}
+.btn{padding:9px 18px;background:var(--accent-red);color:#fff;border:none;border-radius:4px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;letter-spacing:1px;transition:background 0.2s}
+.btn:hover{background:var(--text-dark)}
+.btn.secondary{background:var(--accent-gold)}
+.btn.secondary:hover{background:var(--text-sub)}
+.btn.outline{background:transparent;color:var(--accent-red);border:2px solid var(--accent-red)}
+.btn.outline:hover{background:var(--accent-red);color:#fff}
+
+/* 필터 */
+.filter-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--text-sub)}
+.filter-row label{display:inline-flex;align-items:center;gap:4px;cursor:pointer;background:#fff;padding:4px 10px;border-radius:14px;border:1px solid var(--border-light);transition:all 0.15s}
+.filter-row label:hover{background:var(--bg-deep)}
+.filter-row label input[type="checkbox"]{accent-color:var(--accent-red)}
+.filter-row label.checked{background:var(--bg-deep);border-color:var(--accent-red);color:var(--text-dark);font-weight:600}
+
+/* 상태 표시 */
+.status-bar{background:var(--bg-deep);padding:10px 16px;border-radius:4px;margin-top:10px;font-size:13px;color:var(--text-dark);text-align:center;border:1px dashed var(--accent-gold)}
+.status-bar strong{color:var(--accent-red)}
+
+/* 문제 카드 (공통) */
+.q-card{background:var(--bg-paper);border:2px solid var(--border-dark);border-radius:6px;padding:20px 24px;margin:18px 0;position:relative;box-shadow:0 2px 6px rgba(61,40,23,0.08)}
+.q-num-display{position:absolute;top:14px;right:20px;font-family:'Nanum Myeongjo',serif;font-size:30px;color:var(--accent-red);opacity:0.2;font-weight:800}
+.tag-row{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tag{display:inline-block;padding:3px 12px;font-size:11px;font-weight:700;letter-spacing:2px;border-radius:3px}
+.tag.week{background:var(--accent-red);color:#fff}
+.tag.session{background:var(--accent-gold);color:#fff}
+
+.q-text{font-size:15px;color:var(--text-dark);font-weight:500;padding:14px 18px;background:#fff;border-left:5px solid var(--accent-gold);border-radius:3px;line-height:1.7;margin-bottom:14px}
+.q-text::before{content:"Q. ";color:var(--accent-red);font-weight:700}
+
+/* 토글 정답 */
+.answer-toggle{background:var(--accent-red);color:#fff;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;letter-spacing:1px;width:100%;text-align:left;display:flex;justify-content:space-between;align-items:center}
+.answer-toggle:hover{background:var(--text-dark)}
+.answer-toggle::before{content:"🔒 정답 확인하기"}
+.answer-toggle.open::before{content:"🔓 정답 펼침"}
+.answer-toggle .arr{transition:transform 0.2s}
+.answer-toggle.open .arr{transform:rotate(180deg)}
+
+.answer-box{max-height:0;overflow:hidden;transition:max-height 0.3s ease;background:var(--bg-deep);border-radius:4px;margin-top:8px}
+.answer-box.open{max-height:600px;padding:14px 18px;border:1px solid var(--accent-red)}
+.answer-box .a-short{font-size:15px;font-weight:700;color:var(--accent-red);background:#fff8e7;padding:8px 12px;border-radius:3px;margin-bottom:8px}
+.answer-box .a-short::before{content:"✔ "}
+.answer-box .a-full{font-size:13px;color:var(--text-sub);line-height:1.7}
+.answer-box .a-full::before{content:"📝 강의 원문: ";color:var(--accent-gold);font-weight:700}
+
+/* === 카드 뒤집기 모드 === */
+.flip-card{perspective:1000px;height:240px;margin:18px 0;cursor:pointer}
+.flip-card-inner{position:relative;width:100%;height:100%;transition:transform 0.6s;transform-style:preserve-3d}
+.flip-card.flipped .flip-card-inner{transform:rotateY(180deg)}
+.flip-card-front,.flip-card-back{position:absolute;width:100%;height:100%;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:8px;padding:20px 24px;display:flex;flex-direction:column;justify-content:center;box-shadow:0 4px 12px rgba(61,40,23,0.15)}
+.flip-card-front{background:var(--bg-paper);border:2px solid var(--border-dark)}
+.flip-card-back{background:var(--bg-deep);border:2px solid var(--accent-red);transform:rotateY(180deg)}
+.flip-card .q-num-display{top:10px;right:16px;font-size:24px}
+.flip-card .hint{position:absolute;bottom:10px;right:16px;font-size:11px;color:var(--text-sub);font-style:italic}
+.flip-card .flip-q{font-size:15px;line-height:1.6;color:var(--text-dark)}
+.flip-card .flip-q::before{content:"Q. ";color:var(--accent-red);font-weight:700}
+.flip-card .flip-a-short{font-size:16px;font-weight:700;color:var(--accent-red);background:#fff8e7;padding:8px 12px;border-radius:3px;margin-bottom:8px}
+.flip-card .flip-a-short::before{content:"✔ 정답: "}
+.flip-card .flip-a-full{font-size:13px;color:var(--text-dark);line-height:1.6;font-style:italic}
+
+/* === 객관식 모드 === */
+.mc-card{background:var(--bg-paper);border:2px solid var(--border-dark);border-radius:6px;padding:20px 24px;margin:18px 0;box-shadow:0 2px 6px rgba(61,40,23,0.08)}
+.mc-options{list-style:none;padding:0;margin:14px 0}
+.mc-options li{padding:10px 14px;margin:6px 0;background:#fff;border:2px solid var(--border-light);border-radius:5px;cursor:pointer;font-size:14px;display:flex;align-items:center;gap:10px;transition:all 0.15s}
+.mc-options li:hover{background:var(--bg-deep);border-color:var(--accent-gold)}
+.mc-options li.selected{border-color:var(--accent-red);background:var(--bg-deep)}
+.mc-options li.correct{background:#e7f5e0;border-color:#2d8a3e;color:#1c5526}
+.mc-options li.wrong{background:#fce4e4;border-color:var(--accent-red);color:var(--accent-red)}
+.mc-options li .label{display:inline-block;width:24px;height:24px;background:var(--accent-red);color:#fff;border-radius:50%;text-align:center;line-height:24px;font-weight:700;font-size:12px;flex-shrink:0}
+.mc-options li.correct .label{background:#2d8a3e}
+.mc-feedback{margin-top:12px;padding:10px 14px;border-radius:4px;font-size:13px;display:none}
+.mc-feedback.show{display:block}
+.mc-feedback.correct{background:#e7f5e0;color:#1c5526;border-left:4px solid #2d8a3e}
+.mc-feedback.wrong{background:#fce4e4;color:var(--accent-red);border-left:4px solid var(--accent-red)}
+
+/* === 1문제 모드 === */
+.single-mode-wrap{text-align:center;padding:20px 0}
+.single-counter{font-size:13px;color:var(--text-sub);margin-bottom:14px;letter-spacing:2px}
+.single-counter strong{color:var(--accent-red);font-size:16px}
+.single-controls{margin-top:24px;display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+
+/* 빈 상태 */
+.empty-state{text-align:center;padding:60px 20px;color:var(--text-sub);font-style:italic}
+.empty-state::before{content:"📚";display:block;font-size:48px;margin-bottom:14px}
+
+/* 점수 카드 */
+.score-card{background:var(--bg-deep);border:3px double var(--accent-red);padding:24px;border-radius:6px;margin:24px 0;text-align:center}
+.score-card h3{color:var(--accent-red);font-size:18px;margin-bottom:10px;letter-spacing:2px}
+.score-card .score-big{font-size:36px;font-weight:800;color:var(--text-dark);margin:10px 0}
+.score-card .score-big .num{color:var(--accent-red)}
+
+.back-home{display:inline-block;margin:40px auto 0;padding:10px 24px;background:var(--accent-red);color:var(--bg-cream);text-decoration:none;border-radius:4px;font-weight:500;letter-spacing:2px;font-size:14px}
+.center{text-align:center}
+
+@media(max-width:600px){
+  .container{padding:20px 16px 60px}
+  header h1{font-size:22px}
+  .mode-tabs{grid-template-columns:repeat(2,1fr)}
+  .flip-card{height:280px}
+  .control-panel{position:relative;top:0}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <div class="week-label">랜 덤 출 제 문 제 은 행</div>
+  <h1>강의 연습문제 30개 — 무작위 순서</h1>
+  <div class="subtitle">4가지 풀이 모드 · 여러 번 다시 풀기 가능</div>
+</header>
+
+<div class="guide">
+이 페이지는 강의 마지막에 나온 <strong>연습문제 30개만</strong> 모은 무작위 출제 페이지입니다.<br>
+<strong>① 모드</strong>를 골라서 → <strong>② 다시 섞기</strong>로 순서를 바꿔가며 여러 번 풀어보세요. 정답은 가려져 있고 클릭하면 펼쳐집니다.
+</div>
+
+<!-- ============ 컨트롤 패널 ============ -->
+<div class="control-panel">
+
+  <div class="mode-tabs">
+    <button class="mode-tab active" data-mode="classic">
+      <span class="icon">📋</span>
+      <span class="label">클래식</span>
+    </button>
+    <button class="mode-tab" data-mode="flip">
+      <span class="icon">🔄</span>
+      <span class="label">카드 뒤집기</span>
+    </button>
+    <button class="mode-tab" data-mode="mc">
+      <span class="icon">✅</span>
+      <span class="label">객관식</span>
+    </button>
+    <button class="mode-tab" data-mode="single">
+      <span class="icon">🎯</span>
+      <span class="label">1문제 출제</span>
+    </button>
+  </div>
+
+  <div class="filter-row" id="filterRow">
+    <span style="margin-right:4px">주차 필터:</span>
+    <label class="checked"><input type="checkbox" data-week="9" checked> 9주차</label>
+    <label class="checked"><input type="checkbox" data-week="10" checked> 10주차</label>
+    <label class="checked"><input type="checkbox" data-week="11" checked> 11주차</label>
+    <label class="checked"><input type="checkbox" data-week="12" checked> 12주차</label>
+    <label class="checked"><input type="checkbox" data-week="13" checked> 13주차</label>
+    <label class="checked"><input type="checkbox" data-week="14" checked> 14주차</label>
+  </div>
+
+  <div class="action-row">
+    <button class="btn" id="reshuffleBtn">🔀 다시 섞기</button>
+    <button class="btn outline" id="resetAnswersBtn">🙈 모든 정답 다시 가리기</button>
+    <button class="btn secondary" id="showAllBtn">👁 모든 정답 펼치기</button>
+  </div>
+
+  <div class="status-bar" id="statusBar">
+    현재 모드: <strong>클래식</strong> · 출제 문제: <strong>30개</strong>
+  </div>
+
+</div>
+
+<!-- ============ 문제 표시 영역 ============ -->
+<div id="quizArea"></div>
+
+<div class="center">
+<a href="../index.html" class="back-home">← 메인으로 돌아가기</a>
+</div>
+
+</div>
+
+<script>
+// ========== 강의 연습문제 30개 데이터 ==========
+const QUESTIONS = [
+  // 9주차 (6문제)
+  {week:9, session:"1차시", q:"페스트가 유럽으로 확산된 계기가 무엇인지 생각해 보세요.", short:"몽골 제국의 교역로", full:"페스트는 몽골 제국의 교역로를 통해 유럽으로 확산되었습니다."},
+  {week:9, session:"2차시", q:"1346년 페스트가 유럽으로 확산된 주요 경로는 어디를 통한 해양 루트였는지 생각해 보세요.", short:"흑해와 지중해", full:"1346년 페스트가 유럽으로 확산된 주요 경로는 흑해와 지중해를 통한 해양 루트였습니다."},
+  {week:9, session:"3차시", q:"1315년부터 1317년까지 중세 유럽의 대기근의 주요 원인은 무엇인지 생각해 보세요.", short:"소빙기로 인한 기후 악화와 강수량 증가", full:"1315년부터 1317년까지 중세 유럽의 대기근의 주요 원인은 소빙기로 인한 기후 악화와 강수량 증가입니다."},
+  {week:9, session:"4차시", q:"13세기 말 이후 유럽 교역로의 안정성을 위협한 주요 요인은 무엇인지 생각해 보세요.", short:"전쟁의 일상화와 불안정한 전시 상황", full:"전쟁의 일상화와 불안정한 전시 상황으로 13세기 말 이후 유럽 교역로의 안정성을 위협받았습니다."},
+  {week:9, session:"5차시", q:"브루스 캠벨이 제시한 흑사병 확산의 주요 촉진 요인은 무엇인지 생각해 보세요.", short:"소빙기로 인한 기후변화", full:"브루스 캠벨이 제시한 흑사병 확산의 주요 촉진 요인은 소빙기로 인한 기후변화입니다."},
+  {week:9, session:"6차시", q:"흑사병 이후 유럽에서 농노제가 붕괴된 주된 이유가 무엇인지 생각해 보세요.", short:"인구 감소로 노동력 부족 → 농노 협상력 강화", full:"흑사병 이후 유럽에서 농노제가 붕괴된 것은 인구 감소로 노동력이 부족해지면서 농노의 협상력이 강화되었기 때문입니다."},
+  // 10주차 (4문제)
+  {week:10, session:"1차시", q:"르네상스가 처음 시작된 지역은 어디인지 생각해 보세요.", short:"이탈리아", full:"르네상스가 처음 시작된 지역은 이탈리아입니다."},
+  {week:10, session:"2차시", q:"루터가 면죄부 판매를 반대한 이유는 무엇인지 생각해 보세요.", short:"성경에 근거하지 않는다고 보았기 때문", full:"돈으로 죄를 사면받는다는 가톨릭 교회의 주장은 성경에 근거하지 않는다고 보았기 때문입니다."},
+  {week:10, session:"3차시", q:"대항해의 시대 초기 대서양항로를 가장 먼저 개척한 두 나라는 어디인지 생각해 보세요.", short:"포르투갈과 에스파냐", full:"대항해의 시대 초기 대서양항로를 가장 먼저 개척한 두 나라는 포르투갈과 에스파냐입니다."},
+  {week:10, session:"4차시", q:"근대 과학 발전의 배경이 된 사상은 무엇인가요?", short:"프로테스탄티즘", full:"근대 과학 발전의 배경이 된 사상을 프로테스탄티즘이라고 합니다."},
+  // 11주차 (6문제)
+  {week:11, session:"1차시", q:"프랑스 대혁명의 인권선언에서 모든 주권은 누구에게 있다고 명시되었는지 생각해 보세요.", short:"국민", full:"프랑스 대혁명의 인권선언에서 모든 주권은 국민에게 있다고 명시되었습니다."},
+  {week:11, session:"2차시", q:"산업혁명이 처음 시작된 나라는 어디인지 생각해 보세요.", short:"영국", full:"산업혁명이 처음 시작된 나라는 영국입니다."},
+  {week:11, session:"3차시", q:"콜럼버스의 교환에서 신대륙에서 구대륙으로 전파된 대표적인 전염병은 무엇인지 생각해 보세요.", short:"매독", full:"콜럼버스의 교환에서 신대륙에서 구대륙으로 전파된 대표적인 전염병은 매독입니다."},
+  {week:11, session:"4차시", q:"유럽인들이 가져온 천연두가 아스텍과 잉카 제국에 미친 주요 영향은 무엇인지 생각해 보세요.", short:"대규모 사망 → 두 제국 멸망 + 신앙체계 붕괴", full:"전염병으로 인해 대규모 사망자가 발생하며 두 제국이 멸망하고 기존 신앙체계가 붕괴되었습니다."},
+  {week:11, session:"5차시", q:"신대륙에서 유럽으로 전파된 매독이 처음으로 유럽에 창궐한 사건은 어느 전쟁 중 발생했는지 생각해 보세요.", short:"1495년 프랑스-이탈리아 전쟁", full:"신대륙에서 유럽으로 전파된 매독이 처음으로 유럽에 창궐한 사건은 1495년 프랑스, 이탈리아 전쟁 때 발생했습니다."},
+  {week:11, session:"6차시", q:"매독이 유럽에서 창궐하게 된 주요 원인 중 하나로 지목되는 사건은 무엇인지 생각해 보세요.", short:"콜럼버스와 그의 대원들의 이동", full:"매독이 유럽에서 창궐하게 된 주요 원인 중 하나로 지목되는 사건은 콜럼버스와 그의 대원들의 이동입니다."},
+  // 12주차 (4문제)
+  {week:12, session:"1차시", q:"산업혁명 이후 도시 빈민 노동자들의 평균 수명이 크게 낮아진 주요 원인이 무엇인지 생각해 보세요.", short:"열악한 위생·주거환경·인구밀도·상하수도 미비로 인한 전염병", full:"산업혁명 이후 도시 노동자들은 열악한 위생과 주거환경, 높은 인구밀도 속에서 살아야 했고, 상수도와 하수도가 잘 갖춰지지 않아 오염된 물과 음식으로 인해 전염병에 쉽게 걸려 평균 수명이 크게 낮아졌습니다."},
+  {week:12, session:"2차시", q:"결핵이 산업혁명 이후 급속히 확산된 주된 이유는 무엇인지 생각해 보세요.", short:"도시화·비위생적 환경·과도한 노동·불균형한 식사", full:"산업혁명으로 도시화가 급격히 진행되면서 도시 환경이 열악해졌고, 비위생적인 주거 환경과 불균형한 식사, 과도한 노동이 결핵 확산을 촉진했습니다."},
+  {week:12, session:"3차시", q:"19세기 미국에서 결핵이 확산되었던 주요 원인과 이를 해결하기 위한 버지니아주 정부의 노력에 대해 생각해 보세요.", short:"열악한 환경·산업화로 확산 / 결핵 요양소 설립 / 흑인 요양소는 큰 저항", full:"미국에서 결핵은 열악한 환경과 산업화로 확산되었고, 버지니아주 정부는 결핵 요양소를 설립해 대응했으나, 인종차별로 흑인 결핵 요양소 설립은 큰 저항을 받았습니다."},
+  {week:12, session:"4차시", q:"셔우드 홀 박사가 1928년 한국에 설립한 결핵 요양원은 당시 결핵 치료에 어떤 전환점을 마련했는지 생각해 보세요.", short:"결핵 예방과 치료에 체계적인 접근을 도입", full:"셔우드 홀 박사는 결핵 예방과 치료에 체계적인 접근을 도입하여 결핵 관리에 중요한 전환점을 만들었습니다."},
+  // 13주차 (4문제)
+  {week:13, session:"1차시", q:"19세기 콜레라 팬데믹은 공중보건의 발전에 어떤 영향을 미쳤는지 생각해 보세요.", short:"공중보건 체계 개선과 위생정책 수립에 큰 영향", full:"도시의 비위생적인 환경과 오염된 물 공급이 질병 확산의 주요 원인임을 부각시켜 공중보건 체계의 개선과 위생정책 수립에 큰 영향을 미쳤습니다."},
+  {week:13, session:"2차시", q:"존 스노의 연구가 현대 역학과 공중보건 분야에 미친 영향은 무엇인지 생각해 보세요.", short:"데이터 기반 질병 전파 경로 분석 → 현대 역학·공중보건의 토대 마련", full:"존 스노의 연구는 데이터 기반의 질병 전파 경로 분석을 통해 현대 역학과 공중보건의 토대를 마련하였습니다."},
+  {week:13, session:"3차시", q:"아시아 지역에서 콜레라가 확산된 주요 경로와 그로 인한 사회적 영향에 대해 생각해 보세요.", short:"해상 교역망(인도→동남아→중국→일본→조선) / 공중보건체계 개혁 촉진", full:"19세기 아시아에서 콜레라는 해상 교역망을 통해 인도에서 동남아시아, 중국, 일본, 조선 등으로 확산되었으며 각국의 공중보건체계 개혁을 촉진하는 계기가 되었습니다."},
+  {week:13, session:"4차시", q:"19세기 런던에서 콜레라 확산을 막기 위해 시행된 공중위생 개혁이 중요한 이유가 무엇인지 생각해 보세요.", short:"깨끗한 식수 공급과 하수 처리 시스템이 수인성 전염병 예방·시민 건강 보호에 필수", full:"깨끗한 식수 공급과 하수 처리 시스템은 수인성 전염병을 예방하고 시민들의 건강을 보호하는 데 필수적이기 때문입니다."},
+  // 14주차 (6문제)
+  {week:14, session:"1차시", q:"아편전쟁 이후 중국의 대변혁운동은 무엇이 있는지 생각해 보세요.", short:"태평천국 · 양무 · 변법자강 · 의화단 · 신해혁명", full:"아편전쟁 이후 중국의 대변혁 운동에는 태평 천국 운동, 양무 운동, 변법 자강 운동, 의화단 운동, 신해혁명이 있습니다."},
+  {week:14, session:"2차시", q:"20세기 초의 중국의 역사를 나열해 보세요.", short:"1917 러시아 혁명 / 1919 5.4운동·국민당 개칭 / 1921 공산당 / 1924 국공합작", full:"1917년 러시아 볼세비키 혁명을 시작으로 1919년 5.4운동, 1919년 중국 국민당 개칭, 1921년 중국 공산당 성립, 1924년 제1차 국공합작 등의 사건이 20세기 초 중국에서 발생했습니다."},
+  {week:14, session:"3차시 ①", q:"독일 3B 정책은 무엇인지 생각해 보세요.", short:"베를린 · 비잔티움 · 바그다드", full:"3B는 독일의 베를린, 터키의 비잔티움, 이라크의 바그다드를 의미합니다."},
+  {week:14, session:"3차시 ②", q:"영국 3C 정책은 무엇인지 생각해 보세요.", short:"카이로 · 케이프타운 · 캘커타", full:"3C 정책은 영국이 카이로, 케이프타운, 켈커타를 점령한 후 연결하여 식민지배를 강화하기 위해 실행한 정책입니다."},
+  {week:14, session:"4차시", q:"제1차 만주페스트는 페페스트라 말한 사람이 누구인지 생각해 보세요.", short:"우롄더(Wu Lien-Teh)", full:"제1차 만주페스트가 선페스트가 아닌 폐페스트라고 한 사람은 우롄더입니다."},
+  {week:14, session:"5차시", q:"제2차 만주 폐페스트 유행 이후 각종 방역 법령에 포함된 새로운 방역 조치를 생각해 보세요.", short:"새 방역체계 검증 + 중국인 군대 망동 제어", full:"제2차 만주 폐페스트는 제1차 발생 이후 10년 만에 다시 발생한 만큼 새롭게 구축된 방역체계가 얼마나 효과적으로 작동하는지를 검증할 수 있는 중요한 사건이었습니다. 방역의 관건은 군벌전쟁 중에 갑작스럽게 증가된 중국인 군대의 망동을 어떻게 제어하느냐에 달려있었습니다."}
+];
+
+// ========== 상태 변수 ==========
+let currentMode = 'classic';  // 현재 모드
+let shuffled = [];            // 무작위 섞인 문제 배열
+let selectedWeeks = new Set([9,10,11,12,13,14]);  // 선택된 주차
+let singleIdx = 0;            // 1문제 모드의 현재 인덱스
+
+// ========== 무작위 섞기 (Fisher-Yates) ==========
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ========== 출제 문제 필터링 + 섞기 ==========
+function rebuildQuestionPool(){
+  // 선택된 주차에 해당하는 문제만 골라 무작위 섞기
+  const filtered = QUESTIONS.filter(q => selectedWeeks.has(q.week));
+  shuffled = shuffle(filtered);
+  singleIdx = 0;
+  updateStatus();
+}
+
+// ========== 상태바 갱신 ==========
+function updateStatus(){
+  const modeNames = {classic:'클래식', flip:'카드 뒤집기', mc:'객관식', single:'1문제 출제'};
+  document.getElementById('statusBar').innerHTML =
+    `현재 모드: <strong>${modeNames[currentMode]}</strong> · 출제 문제: <strong>${shuffled.length}개</strong>` +
+    (currentMode === 'single' ? ` · 진행: <strong>${singleIdx+1}/${shuffled.length}</strong>` : '');
+}
+
+// ========== HTML 이스케이프 ==========
+function esc(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ========== 모드 1: 클래식 (질문 + 펼치기 정답) ==========
+function renderClassic(){
+  const area = document.getElementById('quizArea');
+  if(shuffled.length === 0){
+    area.innerHTML = '<div class="empty-state">선택된 주차가 없습니다. 위에서 주차를 선택해 주세요.</div>';
+    return;
+  }
+  area.innerHTML = shuffled.map((q, i) => `
+    <div class="q-card">
+      <span class="q-num-display">${i+1}</span>
+      <div class="tag-row">
+        <span class="tag week">${q.week}주차</span>
+        <span class="tag session">${q.session}</span>
+      </div>
+      <div class="q-text">${esc(q.q)}</div>
+      <button class="answer-toggle" onclick="toggleAnswer(this)">
+        <span></span>
+        <span class="arr">▼</span>
+      </button>
+      <div class="answer-box">
+        <div class="a-short">${esc(q.short)}</div>
+        <div class="a-full">${esc(q.full)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// 정답 토글 (클래식 모드)
+function toggleAnswer(btn){
+  btn.classList.toggle('open');
+  btn.nextElementSibling.classList.toggle('open');
+}
+
+// ========== 모드 2: 카드 뒤집기 ==========
+function renderFlip(){
+  const area = document.getElementById('quizArea');
+  if(shuffled.length === 0){
+    area.innerHTML = '<div class="empty-state">선택된 주차가 없습니다. 위에서 주차를 선택해 주세요.</div>';
+    return;
+  }
+  area.innerHTML = shuffled.map((q, i) => `
+    <div class="flip-card" onclick="this.classList.toggle('flipped')">
+      <div class="flip-card-inner">
+        <div class="flip-card-front">
+          <span class="q-num-display">${i+1}</span>
+          <div class="tag-row">
+            <span class="tag week">${q.week}주차</span>
+            <span class="tag session">${q.session}</span>
+          </div>
+          <div class="flip-q">${esc(q.q)}</div>
+          <span class="hint">카드를 클릭하면 정답</span>
+        </div>
+        <div class="flip-card-back">
+          <span class="q-num-display">${i+1}</span>
+          <div class="flip-a-short">${esc(q.short)}</div>
+          <div class="flip-a-full">${esc(q.full)}</div>
+          <span class="hint">다시 클릭하면 문제</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ========== 모드 3: 객관식 (다른 문제의 정답을 오답으로 섞음) ==========
+function renderMC(){
+  const area = document.getElementById('quizArea');
+  if(shuffled.length === 0){
+    area.innerHTML = '<div class="empty-state">선택된 주차가 없습니다. 위에서 주차를 선택해 주세요.</div>';
+    return;
+  }
+  area.innerHTML = shuffled.map((q, i) => {
+    // 다른 문제의 정답들 중 3개를 무작위로 골라서 오답 보기로 사용
+    const others = shuffled.filter(x => x !== q).map(x => x.short);
+    const wrongs = shuffle(others).slice(0, 3);
+    const options = shuffle([q.short, ...wrongs]);
+    const correctIdx = options.indexOf(q.short);
+    const labels = ['①','②','③','④'];
+    return `
+      <div class="mc-card" data-correct="${correctIdx}" data-idx="${i}">
+        <span class="q-num-display">${i+1}</span>
+        <div class="tag-row">
+          <span class="tag week">${q.week}주차</span>
+          <span class="tag session">${q.session}</span>
+        </div>
+        <div class="q-text">${esc(q.q)}</div>
+        <ul class="mc-options">
+          ${options.map((opt, k) => `
+            <li data-key="${k}" onclick="selectMC(this)">
+              <span class="label">${labels[k]}</span>
+              <span>${esc(opt)}</span>
+            </li>
+          `).join('')}
+        </ul>
+        <div class="mc-feedback"></div>
+      </div>
+    `;
+  }).join('');
+}
+
+// 객관식 선택 처리
+function selectMC(li){
+  const card = li.closest('.mc-card');
+  if(card.dataset.answered === 'yes') return;  // 이미 답한 문제는 잠금
+  card.dataset.answered = 'yes';
+  const correctKey = parseInt(card.dataset.correct);
+  const myKey = parseInt(li.dataset.key);
+  const feedback = card.querySelector('.mc-feedback');
+  // 모든 보기 시각화
+  card.querySelectorAll('.mc-options li').forEach(o => {
+    const k = parseInt(o.dataset.key);
+    if(k === correctKey) o.classList.add('correct');
+    else if(k === myKey) o.classList.add('wrong');
+  });
+  // 피드백
+  const idx = parseInt(card.dataset.idx);
+  const q = shuffled[idx];
+  if(myKey === correctKey){
+    feedback.className = 'mc-feedback show correct';
+    feedback.innerHTML = `✅ 정답입니다!<br><small style="opacity:0.85">📝 ${esc(q.full)}</small>`;
+  } else {
+    feedback.className = 'mc-feedback show wrong';
+    feedback.innerHTML = `❌ 오답입니다. 정답: <strong>${esc(q.short)}</strong><br><small style="opacity:0.85">📝 ${esc(q.full)}</small>`;
+  }
+  updateScore();
+}
+
+// ========== 모드 4: 1문제 출제 (한 문제씩) ==========
+function renderSingle(){
+  const area = document.getElementById('quizArea');
+  if(shuffled.length === 0){
+    area.innerHTML = '<div class="empty-state">선택된 주차가 없습니다. 위에서 주차를 선택해 주세요.</div>';
+    return;
+  }
+  const q = shuffled[singleIdx];
+  area.innerHTML = `
+    <div class="single-mode-wrap">
+      <div class="single-counter">진행 <strong>${singleIdx+1}</strong> / ${shuffled.length}</div>
+      <div class="q-card" style="text-align:left">
+        <span class="q-num-display">${singleIdx+1}</span>
+        <div class="tag-row">
+          <span class="tag week">${q.week}주차</span>
+          <span class="tag session">${q.session}</span>
+        </div>
+        <div class="q-text" style="font-size:17px;padding:18px 22px">${esc(q.q)}</div>
+        <button class="answer-toggle" onclick="toggleAnswer(this)">
+          <span></span>
+          <span class="arr">▼</span>
+        </button>
+        <div class="answer-box">
+          <div class="a-short">${esc(q.short)}</div>
+          <div class="a-full">${esc(q.full)}</div>
+        </div>
+      </div>
+      <div class="single-controls">
+        <button class="btn outline" onclick="prevSingle()" ${singleIdx === 0 ? 'disabled style="opacity:0.4;cursor:not-allowed"' : ''}>◀ 이전 문제</button>
+        <button class="btn" onclick="nextSingle()">${singleIdx === shuffled.length - 1 ? '🔀 처음으로 (다시 섞기)' : '다음 문제 ▶'}</button>
+      </div>
+    </div>
+  `;
+  updateStatus();
+}
+
+function prevSingle(){
+  if(singleIdx > 0){
+    singleIdx--;
+    renderSingle();
+  }
+}
+
+function nextSingle(){
+  if(singleIdx < shuffled.length - 1){
+    singleIdx++;
+    renderSingle();
+  } else {
+    // 마지막 문제 → 다시 섞고 처음으로
+    rebuildQuestionPool();
+    renderSingle();
+  }
+}
+
+// ========== 객관식 점수 업데이트 ==========
+function updateScore(){
+  if(currentMode !== 'mc') return;
+  const total = shuffled.length;
+  const answered = document.querySelectorAll('.mc-card[data-answered="yes"]').length;
+  const correct = document.querySelectorAll('.mc-options li.correct').length;
+  // 모두 답한 경우 점수 카드 표시
+  if(answered === total && !document.getElementById('mcScore')){
+    const card = document.createElement('div');
+    card.id = 'mcScore';
+    card.className = 'score-card';
+    card.innerHTML = `
+      <h3>◆ 모든 문제 풀이 완료 ◆</h3>
+      <div class="score-big"><span class="num">${correct}</span> / ${total}</div>
+      <div style="font-size:13px;color:var(--text-sub);font-style:italic">${Math.round(correct/total*100)}% 정답</div>
+      <button class="btn" style="margin-top:14px" onclick="doReshuffle()">🔀 다시 풀기</button>
+    `;
+    document.getElementById('quizArea').appendChild(card);
+    card.scrollIntoView({behavior:'smooth', block:'center'});
+  }
+}
+
+// ========== 모드 전환 ==========
+function renderCurrentMode(){
+  // 점수 카드 제거(객관식 재진입 시)
+  const old = document.getElementById('mcScore');
+  if(old) old.remove();
+  if(currentMode === 'classic') renderClassic();
+  else if(currentMode === 'flip') renderFlip();
+  else if(currentMode === 'mc') renderMC();
+  else if(currentMode === 'single') renderSingle();
+}
+
+// ========== 다시 섞기 ==========
+function doReshuffle(){
+  rebuildQuestionPool();
+  renderCurrentMode();
+  // 상단으로 부드럽게 스크롤
+  document.querySelector('.control-panel').scrollIntoView({behavior:'smooth'});
+}
+
+// ========== 정답 모두 가리기 / 모두 펼치기 ==========
+function hideAllAnswers(){
+  document.querySelectorAll('.answer-toggle.open').forEach(b => {
+    b.classList.remove('open');
+    b.nextElementSibling.classList.remove('open');
+  });
+  document.querySelectorAll('.flip-card.flipped').forEach(c => c.classList.remove('flipped'));
+}
+function showAllAnswers(){
+  document.querySelectorAll('.answer-toggle:not(.open)').forEach(b => {
+    b.classList.add('open');
+    b.nextElementSibling.classList.add('open');
+  });
+  document.querySelectorAll('.flip-card:not(.flipped)').forEach(c => c.classList.add('flipped'));
+}
+
+// ========== 이벤트 바인딩 ==========
+// 모드 탭 클릭
+document.querySelectorAll('.mode-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentMode = tab.dataset.mode;
+    // 모드 전환 시 새로 섞기
+    rebuildQuestionPool();
+    renderCurrentMode();
+  });
+});
+
+// 주차 필터 체크박스
+document.querySelectorAll('#filterRow input[type="checkbox"]').forEach(cb => {
+  cb.addEventListener('change', () => {
+    const w = parseInt(cb.dataset.week);
+    if(cb.checked){
+      selectedWeeks.add(w);
+      cb.parentElement.classList.add('checked');
+    } else {
+      selectedWeeks.delete(w);
+      cb.parentElement.classList.remove('checked');
+    }
+    rebuildQuestionPool();
+    renderCurrentMode();
+  });
+});
+
+// 다시 섞기 버튼
+document.getElementById('reshuffleBtn').addEventListener('click', doReshuffle);
+// 정답 가리기 / 펼치기
+document.getElementById('resetAnswersBtn').addEventListener('click', hideAllAnswers);
+document.getElementById('showAllBtn').addEventListener('click', showAllAnswers);
+
+// ========== 초기 실행 ==========
+rebuildQuestionPool();
+renderCurrentMode();
+</script>
+
+</body>
+</html>
