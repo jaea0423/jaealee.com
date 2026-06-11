@@ -1,0 +1,2037 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>자료구조 15주차-1 · 그래프 복습</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<style>
+:root{
+  /* 딥 퍼플 테마 */
+  --accent:#7c3aed;
+  --accent-light:#a78bfa;
+  --accent-dark:#5b21b6;
+  --accent-soft:#ede9fe;
+  --accent-bg:#f5f3ff;
+  --node-fill:#ede9fe;
+  --node-stroke:#7c3aed;
+  --node-text:#4c1d95;
+
+  --ink:#1f2024;
+  --ink-soft:#4b4d57;
+  --ink-faint:#6c7280;
+  --line:#e5e3ee;
+  --bg:#ffffff;
+  --bg-soft:#faf9fe;
+
+  /* 코드블록 */
+  --code-bg:#1a1b1e;
+  --code-kw:#c4a8ff;
+  --code-fn:#ffd866;
+  --code-cm:#6c7280;
+  --code-str:#a3e88c;
+  --code-num:#ff9eb5;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Pretendard','Noto Sans KR',sans-serif;
+  color:var(--ink);
+  background:var(--bg);
+  line-height:1.75;
+  font-size:16px;
+}
+
+/* ===== 레이아웃 ===== */
+.wrap{display:flex;max-width:1180px;margin:0 auto;}
+.toc{
+  width:250px;flex:0 0 250px;
+  position:sticky;top:0;align-self:flex-start;
+  height:100vh;overflow-y:auto;
+  padding:28px 18px 60px;
+  border-right:1px solid var(--line);
+  background:var(--bg-soft);
+}
+.toc h2{
+  font-size:13px;letter-spacing:.04em;color:var(--accent-dark);
+  font-weight:800;margin-bottom:14px;
+  font-family:'JetBrains Mono',monospace;
+}
+.toc .grp{font-size:11px;font-weight:800;color:var(--ink-faint);
+  letter-spacing:.06em;text-transform:uppercase;margin:18px 0 6px;
+  font-family:'JetBrains Mono',monospace;}
+.toc a{
+  display:block;font-size:13.5px;color:var(--ink-soft);
+  text-decoration:none;padding:5px 10px;border-radius:7px;
+  border-left:2px solid transparent;line-height:1.4;
+}
+.toc a:hover{background:var(--accent-soft);color:var(--accent-dark);}
+.toc a .n{color:var(--accent);font-family:'JetBrains Mono',monospace;
+  font-weight:700;font-size:12px;margin-right:7px;}
+
+.main{flex:1;min-width:0;padding:42px 48px 120px;}
+
+/* ===== 헤더 ===== */
+.doc-head{margin-bottom:42px;padding-bottom:26px;border-bottom:2px solid var(--accent);}
+.doc-head .tag{
+  display:inline-block;font-family:'JetBrains Mono',monospace;
+  font-size:12px;font-weight:700;color:#fff;background:var(--accent);
+  padding:4px 12px;border-radius:20px;letter-spacing:.03em;margin-bottom:14px;
+}
+.doc-head h1{font-size:30px;font-weight:900;letter-spacing:-.02em;line-height:1.3;}
+.doc-head .sub{color:var(--ink-faint);font-size:14.5px;margin-top:8px;}
+
+/* ===== 섹션 ===== */
+section{margin-bottom:46px;scroll-margin-top:24px;}
+h2.sec{
+  font-size:22px;font-weight:800;letter-spacing:-.01em;
+  margin-bottom:18px;padding-left:14px;
+  border-left:5px solid var(--accent);line-height:1.35;
+}
+h3{font-size:17px;font-weight:700;margin:22px 0 10px;color:var(--accent-dark);}
+p{margin:10px 0;color:var(--ink-soft);}
+strong{color:var(--ink);font-weight:700;}
+.eng{color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:.9em;font-weight:500;}
+
+/* 정의 박스 */
+.def{
+  background:var(--accent-bg);border:1px solid var(--accent-light);
+  border-radius:12px;padding:18px 22px;margin:16px 0;
+}
+.def .label{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;
+  color:var(--accent-dark);letter-spacing:.04em;margin-bottom:8px;}
+.def .formula{
+  font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;
+  color:var(--accent-dark);text-align:center;padding:8px 0;
+}
+
+/* 키-밸류 리스트 */
+.kv{list-style:none;margin:12px 0;}
+.kv li{padding:8px 0;border-bottom:1px dashed var(--line);display:flex;gap:14px;}
+.kv li:last-child{border-bottom:none;}
+.kv .k{flex:0 0 92px;font-weight:800;color:var(--accent-dark);
+  font-family:'JetBrains Mono',monospace;font-size:14px;}
+.kv .v{color:var(--ink-soft);}
+
+/* ===== 콜아웃 6종 ===== */
+.callout{border-radius:10px;padding:14px 18px 14px 16px;margin:18px 0;
+  border-left:4px solid;font-size:14.5px;}
+.callout . co-t{font-weight:800;font-size:13px;letter-spacing:.02em;
+  display:flex;align-items:center;gap:7px;margin-bottom:5px;}
+.callout p{margin:5px 0;}
+.co-tip{background:#f0f7ff;border-color:#3b82f6;}
+.co-tip .co-t{color:#1d4ed8;}
+.co-warn{background:#fff5f3;border-color:#f97316;}
+.co-warn .co-t{color:#c2410c;}
+.co-connect{background:#effcf9;border-color:#14b8a6;}
+.co-connect .co-t{color:#0f766e;}
+.co-star{background:#fffbeb;border-color:#f59e0b;}
+.co-star .co-t{color:#b45309;}
+.co-review{background:var(--accent-bg);border-color:var(--accent);}
+.co-review .co-t{color:var(--accent-dark);}
+.co-exam{background:#1a1b1e;border-color:#ffd866;color:#e6e6e9;}
+.co-exam .co-t{color:#ffd866;}
+.co-exam strong{color:#fff;}
+
+/* ===== 그래프 시각화 ===== */
+.graph-card{
+  background:var(--bg-soft);border:1px solid var(--line);
+  border-radius:14px;padding:14px;margin:18px 0;
+}
+.graph-card .gc-title{
+  font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:700;
+  color:var(--accent-dark);text-align:center;margin-bottom:6px;letter-spacing:.02em;
+}
+.graph-card svg{width:100%;height:auto;display:block;}
+
+.node-circle{fill:var(--node-fill);stroke:var(--node-stroke);stroke-width:2.5;}
+.node-label{fill:var(--node-text);font-family:'Pretendard','Noto Sans KR',sans-serif;
+  font-weight:700;font-size:16px;text-anchor:middle;dominant-baseline:central;}
+.edge-line{stroke:#5b5d6b;stroke-width:2.2;fill:none;}
+.edge-w-bg{fill:#ffffff;stroke:var(--line);stroke-width:1;}
+.edge-w-txt{fill:var(--accent-dark);font-family:'JetBrains Mono',monospace;
+  font-weight:700;font-size:13px;text-anchor:middle;dominant-baseline:central;}
+
+/* 비교 그리드 */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0;}
+@media(max-width:760px){.grid2{grid-template-columns:1fr;}}
+
+/* 인접 행렬 표 */
+.mtx-wrap{display:flex;justify-content:center;align-items:flex-start;padding-top:6px;}
+.mtx{border-collapse:collapse;font-family:'JetBrains Mono',monospace;}
+.mtx td,.mtx th{width:40px;height:40px;text-align:center;
+  border:1px solid var(--line);font-size:15px;}
+.mtx th{background:var(--accent-soft);color:var(--accent-dark);font-weight:700;font-size:14px;}
+.mtx th.corner{background:transparent;border:none;}
+.mtx td.zero{color:#d2cfe2;}
+.mtx td.val{background:var(--accent);color:#fff;font-weight:700;}
+.mtx td.diag{background:#efeef6;color:#b8b5cc;}
+.mtx-legend{font-size:12.5px;color:var(--ink-faint);text-align:center;margin-top:10px;
+  font-family:'JetBrains Mono',monospace;line-height:1.7;}
+
+/* 인접 리스트 (연결 리스트 박스) */
+.ll-wrap{overflow-x:auto;padding:6px 2px;}
+.ll-row{display:flex;align-items:center;gap:5px;margin:9px 0;min-height:42px;}
+.ll-head{flex:0 0 auto;width:34px;height:40px;display:flex;align-items:center;
+  justify-content:center;border:2px solid var(--accent-dark);border-radius:6px;
+  font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--accent-dark);
+  background:var(--accent-soft);}
+.ll-arrow{color:var(--ink-faint);font-weight:700;flex:0 0 auto;font-size:15px;}
+.ll-node{display:flex;align-items:stretch;border:2px solid var(--accent);
+  border-radius:6px;overflow:hidden;flex:0 0 auto;height:40px;background:#fff;}
+.ll-v{display:flex;align-items:center;justify-content:center;min-width:30px;padding:0 9px;
+  font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--ink);}
+.ll-w{display:flex;align-items:center;justify-content:center;min-width:26px;padding:0 7px;
+  font-family:'JetBrains Mono',monospace;font-weight:700;color:#e11d48;
+  border-left:1px solid var(--line);background:#fff5f7;}
+.ll-next{width:20px;border-left:1px solid var(--line);}
+.ll-next.null{background:linear-gradient(to top right,transparent 46%,var(--ink-faint) 46%,var(--ink-faint) 54%,transparent 54%);}
+
+/* BFS 트레이스 위젯 */
+.trace{background:var(--bg-soft);border:1px solid var(--line);border-radius:14px;
+  padding:16px;margin:18px 0;}
+.trace svg{width:100%;height:auto;display:block;max-width:420px;margin:0 auto;}
+.trace-bar{display:flex;gap:8px;justify-content:center;margin:12px 0;flex-wrap:wrap;}
+.trace-btn{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;
+  padding:7px 16px;border-radius:8px;border:2px solid var(--accent);
+  background:#fff;color:var(--accent-dark);cursor:pointer;}
+.trace-btn:hover{background:var(--accent-soft);}
+.trace-btn:disabled{opacity:.4;cursor:not-allowed;}
+.trace-btn.primary{background:var(--accent);color:#fff;}
+.trace-queue{display:flex;align-items:center;gap:8px;justify-content:center;
+  margin:10px 0;flex-wrap:wrap;}
+.trace-queue .lbl{font-family:'JetBrains Mono',monospace;font-size:13px;
+  font-weight:700;color:var(--accent-dark);}
+.q-box{display:flex;gap:4px;min-height:38px;align-items:center;
+  border:2px dashed var(--accent-light);border-radius:8px;padding:5px 10px;min-width:120px;
+  justify-content:flex-start;}
+.q-cell{width:30px;height:30px;display:flex;align-items:center;justify-content:center;
+  background:var(--accent);color:#fff;border-radius:6px;font-weight:700;
+  font-family:'JetBrains Mono',monospace;font-size:14px;}
+.q-front{font-size:11px;color:var(--ink-faint);font-family:'JetBrains Mono',monospace;}
+.trace-desc{text-align:center;font-size:14px;color:var(--ink);margin-top:10px;
+  min-height:42px;padding:8px 12px;background:#fff;border-radius:8px;border:1px solid var(--line);}
+.trace-order{text-align:center;font-family:'JetBrains Mono',monospace;font-size:13px;
+  color:var(--accent-dark);margin-top:8px;font-weight:700;}
+/* 트리 노드 상태색 */
+.tn{stroke-width:2.5;}
+.tn-white{fill:#fff;stroke:#b8b5cc;}
+.tn-queued{fill:#fde68a;stroke:#f59e0b;}
+.tn-current{fill:var(--accent);stroke:var(--accent-dark);}
+.tn-done{fill:#c7f0dd;stroke:#10b981;}
+.tn-txt{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;
+  text-anchor:middle;dominant-baseline:central;}
+
+/* DFS 스택 박스 (세로로 쌓임, 위가 top) */
+.stk-wrap{display:flex;flex-direction:column-reverse;align-items:center;gap:4px;
+  min-height:60px;justify-content:flex-start;border:2px dashed var(--accent-light);
+  border-radius:8px;padding:8px 10px;min-width:80px;margin:0 auto;}
+.stk-cell{width:44px;height:30px;display:flex;align-items:center;justify-content:center;
+  background:var(--accent);color:#fff;border-radius:6px;font-weight:700;
+  font-family:'JetBrains Mono',monospace;font-size:14px;}
+.stk-cell.top{background:var(--accent-dark);box-shadow:0 0 0 3px var(--accent-light);}
+.stk-label{text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;
+  color:var(--ink-faint);font-weight:700;margin-bottom:4px;}
+
+/* 다익스트라 heap 배열 */
+.heap-arr{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:8px 0;min-height:52px;align-items:center;}
+.heap-cell{display:flex;flex-direction:column;align-items:center;border:2px solid var(--accent);
+  border-radius:8px;padding:4px 9px;background:#fff;}
+.heap-cell.root{border-color:#e11d48;background:#fff5f7;box-shadow:0 0 0 3px #fecdd6;}
+.heap-cell .hc-cost{font-weight:700;color:var(--accent-dark);font-family:'JetBrains Mono',monospace;font-size:16px;}
+.heap-cell .hc-node{font-size:10px;color:var(--ink-faint);font-family:'JetBrains Mono',monospace;}
+.heap-empty{color:#b8b5cc;font-size:13px;font-family:'JetBrains Mono',monospace;}
+.heap-tree svg{max-width:380px;margin:0 auto;display:block;}
+/* 거리 표 */
+.dist-table{width:100%;max-width:520px;margin:10px auto;border-collapse:collapse;font-size:13px;}
+.dist-table th,.dist-table td{border:1px solid var(--line);padding:6px 8px;text-align:center;
+  font-family:'JetBrains Mono',monospace;}
+.dist-table th{background:var(--accent-soft);color:var(--accent-dark);font-weight:700;}
+.dist-table td.fixed{background:#c7f0dd;font-weight:700;}
+.dist-table td.inf{color:#cfcde0;}
+
+/* 표 */
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px;}
+th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;}
+th{background:var(--accent-soft);color:var(--accent-dark);font-weight:700;
+  font-family:'JetBrains Mono',monospace;font-size:13px;}
+td .eng{font-size:.92em;}
+
+@media(max-width:860px){
+  .toc{display:none;}
+  .main{padding:28px 20px 80px;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- ===== 사이드바 TOC ===== -->
+  <nav class="toc">
+    <h2>📚 15주차-1</h2>
+    <div class="grp">개념</div>
+    <a href="#s1"><span class="n">1</span>그래프란?</a>
+    <a href="#s2"><span class="n">2</span>정점과 간선</a>
+    <a href="#s3"><span class="n">3</span>인접 (adjacent)</a>
+    <div class="grp">그래프의 종류</div>
+    <a href="#s4"><span class="n">4</span>무향 그래프</a>
+    <a href="#s5"><span class="n">5</span>가중 그래프</a>
+    <a href="#s6"><span class="n">6</span>방향 그래프</a>
+    <a href="#s7"><span class="n">7</span>가중 방향 그래프</a>
+    <a href="#s8"><span class="n">8</span>네 종류 한눈에</a>
+    <div class="grp">표현 방법</div>
+    <a href="#s9"><span class="n">9</span>인접 행렬이란?</a>
+    <a href="#s10"><span class="n">10</span>행렬 · 무향</a>
+    <a href="#s11"><span class="n">11</span>행렬 · 가중 무향</a>
+    <a href="#s12"><span class="n">12</span>행렬 · 방향</a>
+    <a href="#s13"><span class="n">13</span>행렬 · 가중 방향</a>
+    <a href="#s14"><span class="n">14</span>행렬의 ∞ (거리)</a>
+    <div class="grp">인접 리스트</div>
+    <a href="#s15"><span class="n">15</span>인접 리스트란?</a>
+    <a href="#s16"><span class="n">16</span>리스트 · 무향</a>
+    <a href="#s17"><span class="n">17</span>리스트 · 가중 무향</a>
+    <a href="#s18"><span class="n">18</span>리스트 · 방향</a>
+    <a href="#s19"><span class="n">19</span>리스트 · 가중 방향</a>
+    <div class="grp">그래프 순회</div>
+    <a href="#s20"><span class="n">20</span>순회란? BFS·DFS</a>
+    <a href="#s21"><span class="n">21</span>BFS 순서 (너비)</a>
+    <a href="#s22"><span class="n">22</span>DFS 순서 (깊이)</a>
+    <a href="#s23"><span class="n">23</span>BFS 코드 + 추적</a>
+    <a href="#s24"><span class="n">24</span>DFS 코드 (재귀)</a>
+    <a href="#s25"><span class="n">25</span>DFS 스택 + 추적</a>
+    <a href="#s26"><span class="n">26</span>DFS 예시 (스택 완성)</a>
+    <div class="grp">최단 경로</div>
+    <a href="#s27"><span class="n">27</span>최단 경로란?</a>
+    <a href="#s28"><span class="n">28</span>다익스트라 + 완화</a>
+    <a href="#s29"><span class="n">29</span>다익스트라 추적 🔥</a>
+    <a href="#s30"><span class="n">30</span>완화 미니 예시</a>
+    <a href="#s31"><span class="n">31</span>음수 간선 실패 예시</a>
+    <div class="grp">벨만-포드</div>
+    <a href="#s32"><span class="n">32</span>벨만-포드 + 추적 🔥</a>
+    <a href="#s33"><span class="n">33</span>음의 사이클 실패</a>
+    <a href="#s34"><span class="n">34</span>플로이드-워셜 (참고)</a>
+    <div class="grp">마무리</div>
+    <a href="#s35"><span class="n">35</span>📝 시험 포인트</a>
+  </nav>
+
+  <!-- ===== 본문 ===== -->
+  <main class="main">
+    <div class="doc-head">
+      <span class="tag">DATA STRUCTURE · WEEK 15-1</span>
+      <h1>그래프 복습 — 정의와 네 가지 종류</h1>
+      <div class="sub">강원대학교 자료구조 · 2026.06.11 · 그래프(Graph) 종합 정리</div>
+    </div>
+
+    <div class="callout co-review">
+      <div class="co-t">🔁 복습 단원</div>
+      <p>오늘은 새로운 내용이 아니라 <strong>그래프 기본을 다시 정리</strong>하는 시간입니다. 11주차에서 처음 배운 정의를, 표현 방식(가중치·방향)을 하나씩 더해가며 네 종류로 확장해 봅니다.</p>
+    </div>
+
+    <!-- 1 -->
+    <section id="s1">
+      <h2 class="sec">1. 그래프란?</h2>
+      <p>한 줄 요약: <strong>그래프(graph)는 "대상들"과 "그 대상들 사이의 관계"를 점과 선으로 그린 그림</strong>입니다.</p>
+      <p>일상 비유로 보면, 지하철 노선도가 딱 그래프입니다. 역(대상)들이 점으로 찍혀 있고, 역과 역을 잇는 노선(관계)이 선으로 연결돼 있습니다. 사람 관계도(친구 관계)나 도로망도 모두 같은 구조입니다.</p>
+
+      <div class="def">
+        <div class="label">DEFINITION</div>
+        <div class="formula">G = (V, E)</div>
+        <ul class="kv">
+          <li><span class="k">V</span><span class="v">정점(vertex / node)<span class="eng"> vertex</span>들의 집합 — 즉 "대상"들의 모음</span></li>
+          <li><span class="k">E</span><span class="v">간선(edge)<span class="eng"> edge</span>들의 집합 — 즉 "관계"들의 모음</span></li>
+        </ul>
+      </div>
+      <p>그래프 G는 두 개의 집합으로 정의됩니다. 정점들의 집합 <strong>V</strong>(vertices)와 간선들의 집합 <strong>E</strong>(edges)입니다. 둘을 묶어서 <span class="eng">G = (V, E)</span> 라고 씁니다.</p>
+    </section>
+
+    <!-- 2 -->
+    <section id="s2">
+      <h2 class="sec">2. 정점과 간선</h2>
+      <ul class="kv">
+        <li><span class="k">정점</span><span class="v"><strong>대상</strong>을 나타냅니다 — 사물, 사람, 개념, 장소 등 무엇이든 될 수 있습니다.</span></li>
+        <li><span class="k">간선</span><span class="v">대상들 <strong>사이의 관계</strong>를 나타냅니다.</span></li>
+      </ul>
+
+      <div class="callout co-warn">
+        <div class="co-t">⚠️ 표현 정밀하게</div>
+        <p>"간선이 가중치를 <strong>나타낸다</strong>"가 아니라, "간선은 가중치(weight)를 <strong>가질 수 있다</strong>"가 더 정확합니다. 간선의 본질은 어디까지나 <strong>관계 표현</strong>이고, 그 관계에 길이·비용 같은 값이 <strong>덧붙는</strong> 구조입니다. (가중치가 없는 간선도 얼마든지 있습니다 → 4번 무향 그래프)</p>
+      </div>
+
+      <p>간선에 붙는 가중치(weight)<span class="eng"> weight</span>는 보통 <strong>길이, 비용, 거리, 시간</strong> 같은 "그 관계의 크기"를 뜻합니다. 예를 들어 도시 A와 B를 잇는 간선의 가중치 100은 "두 도시 사이 거리가 100km"라는 의미가 됩니다.</p>
+    </section>
+
+    <!-- 3 -->
+    <section id="s3">
+      <h2 class="sec">3. 인접 (adjacent)</h2>
+      <p>한 줄 요약: <strong>간선 하나로 직접 연결된 두 정점</strong>을 서로 <strong>인접하다(adjacent)</strong><span class="eng"> adjacent</span>고 합니다.</p>
+
+      <div class="graph-card" style="max-width:420px;margin-left:auto;margin-right:auto;">
+        <div class="gc-title">인접한 두 정점</div>
+        <svg viewBox="0 0 420 170" xmlns="http://www.w3.org/2000/svg">
+          <line x1="120" y1="100" x2="300" y2="100" class="edge-line"/>
+          <rect x="186" y="118" width="48" height="22" rx="5" class="edge-w-bg"/>
+          <text x="210" y="130" class="edge-w-txt" style="fill:var(--ink-faint)">간선</text>
+          <circle cx="120" cy="100" r="34" class="node-circle"/>
+          <text x="120" y="100" class="node-label">정점</text>
+          <circle cx="300" cy="100" r="34" class="node-circle"/>
+          <text x="300" y="100" class="node-label">정점</text>
+          <text x="210" y="40" text-anchor="middle" style="fill:var(--accent-dark);font-weight:800;font-size:18px;">인접 (adjacent)</text>
+          <line x1="160" y1="58" x2="125" y2="62" stroke="var(--accent)" stroke-width="2" marker-end="url(#ar3)"/>
+          <line x1="260" y1="58" x2="295" y2="62" stroke="var(--accent)" stroke-width="2" marker-end="url(#ar3)"/>
+          <defs><marker id="ar3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--accent)"/></marker></defs>
+        </svg>
+      </div>
+
+      <div class="callout co-tip">
+        <div class="co-t">💡 헷갈리기 쉬운 용어 한 쌍</div>
+        <p><strong>인접(adjacent)</strong>은 <strong>정점 ↔ 정점</strong> 사이의 관계입니다. 반면 <strong>정점과 간선</strong> 사이의 관계는 부속(incident)<span class="eng"> incident</span>이라는 다른 용어를 씁니다. ("정점 v는 간선 e에 부속한다") 교수님이 다루셨는지 확인해서, 안 나왔으면 가볍게만 기억해 두세요.</p>
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section id="s4">
+      <h2 class="sec">4. 무향 그래프 (undirected graph)</h2>
+      <p>한 줄 요약: <strong>간선에 방향이 없는</strong><span class="eng"> undirected</span> 가장 기본적인 그래프입니다. 연결되면 양쪽 모두 통합니다.</p>
+      <p>일상 비유로는 <strong>친구 관계</strong>가 딱 무향입니다. 내가 너의 친구이면, 너도 자동으로 내 친구입니다. 방향이라는 게 의미가 없습니다. 아래는 6명의 친구 관계 그래프입니다.</p>
+
+      <div class="graph-card">
+        <div class="gc-title">무향 그래프 — 친구 관계</div>
+        <svg id="g-undirected" viewBox="0 0 640 460" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+      <p>철수는 영희·준호·승우·동건과 인접합니다(간선 4개). 간선에 방향이 없으므로, "철수–영희"와 "영희–철수"는 <strong>완전히 같은 하나의 간선</strong>입니다.</p>
+    </section>
+
+    <!-- 5 -->
+    <section id="s5">
+      <h2 class="sec">5. 가중 그래프 (weighted graph)</h2>
+      <p>한 줄 요약: 무향 그래프의 <strong>각 간선에 숫자(가중치)를 붙인</strong><span class="eng"> weighted</span> 그래프입니다.</p>
+      <p>비유로는, 친구 사이에 "친밀도 점수"나 "두 집 사이 거리"를 적어 둔 것과 같습니다. 똑같은 연결이라도 어떤 관계는 더 가깝거나(작은 값) 멀(큰 값) 수 있습니다.</p>
+
+      <div class="graph-card">
+        <div class="gc-title">가중 그래프 — 간선마다 가중치</div>
+        <svg id="g-weighted" viewBox="0 0 640 460" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+
+      <div class="callout co-connect">
+        <div class="co-t">🔗 다른 단원 연결</div>
+        <p>이 가중 그래프가 바로 <strong>다익스트라(Dijkstra)·벨만-포드(Bellman-Ford)·플로이드-워셜(Floyd-Warshall)</strong>의 입력입니다(14주차). "가중치 = 거리"로 두면 최단 경로 문제가 됩니다. 또 <strong>이산수학</strong>에서 배운 그래프 이론(graph theory)과도 같은 대상입니다 — 자료구조는 "컴퓨터에 어떻게 저장하고 알고리즘을 돌릴까", 이산수학은 "수학적 성질을 어떻게 증명할까"에 초점이 다를 뿐입니다.</p>
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section id="s6">
+      <h2 class="sec">6. 방향 그래프 (directed graph)</h2>
+      <p>한 줄 요약: 간선에 <strong>화살표(방향)가 있는</strong><span class="eng"> directed</span> 그래프입니다. 한쪽으로만 갈 수 있습니다. 유향 그래프라고도 합니다.</p>
+      <p>비유로는 <strong>일방통행 도로</strong> 또는 <strong>인스타 팔로우</strong>입니다. 내가 너를 팔로우해도, 네가 나를 팔로우한다는 보장은 없습니다. A→B가 있다고 해서 B→A가 자동으로 생기지 않습니다.</p>
+
+      <div class="graph-card">
+        <div class="gc-title">방향 그래프 — 화살표 방향이 핵심</div>
+        <svg id="g-directed" viewBox="0 0 640 460" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+      <p>철수↔영희, 철수↔준호처럼 <strong>양쪽 다 화살표</strong>가 있으면 서로 오갈 수 있습니다(간선 2개). 반면 철수→승우, 동건→재상은 <strong>한 방향뿐</strong>입니다.</p>
+
+      <div class="callout co-tip">
+        <div class="co-t">💡 양방향 = 간선 2개</div>
+        <p>방향 그래프에서 A↔B는 "무향 간선 하나"가 아니라 <strong>방향이 반대인 간선 2개(A→B, B→A)</strong>로 셉니다. 무향 그래프와 헷갈리지 않게 주의하세요.</p>
+      </div>
+    </section>
+
+    <!-- 7 -->
+    <section id="s7">
+      <h2 class="sec">7. 가중 방향 그래프 (weighted directed graph)</h2>
+      <p>한 줄 요약: <strong>방향 + 가중치를 둘 다 가진</strong> 그래프입니다. 가장 일반적인 형태입니다.</p>
+      <p>핵심 포인트가 하나 있습니다. 방향마다 <strong>가중치가 다를 수 있다</strong>는 점입니다. 비유로는 <strong>오르막/내리막 길</strong>입니다. A에서 B로 올라갈 때(힘듦, 비용 9)와 B에서 A로 내려올 때(편함, 비용 8)의 비용이 다른 것과 같습니다.</p>
+
+      <div class="graph-card">
+        <div class="gc-title">가중 방향 그래프 — 방향마다 다른 가중치</div>
+        <svg id="g-wdirected" viewBox="0 0 640 460" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+
+      <div class="callout co-star">
+        <div class="co-t">⭐ 꼭 보기</div>
+        <p>영희↔철수를 보세요. <strong>영희→철수는 9</strong>, <strong>철수→영희는 8</strong>로 값이 다릅니다. 무향 가중 그래프(5번)에서는 영희–철수가 그냥 9 하나였는데, 방향이 생기면서 두 개의 다른 값으로 갈라진 것입니다. 시험에서 "같은 두 정점인데 가중치가 둘"이면 방향 그래프 신호입니다.</p>
+      </div>
+    </section>
+
+    <!-- 8 -->
+    <section id="s8">
+      <h2 class="sec">8. 네 종류 한눈에</h2>
+      <p>같은 6명을 네 가지 방식으로 표현했습니다. <strong>"방향 유무"와 "가중치 유무"</strong>의 조합이 곧 그래프의 종류입니다.</p>
+
+      <table>
+        <thead>
+          <tr><th></th><th>가중치 없음</th><th>가중치 있음</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>방향 없음</th>
+            <td>무향 그래프<br><span class="eng">undirected</span></td>
+            <td>가중 그래프<br><span class="eng">weighted</span></td>
+          </tr>
+          <tr>
+            <th>방향 있음</th>
+            <td>방향 그래프<br><span class="eng">directed</span></td>
+            <td>가중 방향 그래프<br><span class="eng">weighted directed</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout co-review">
+        <div class="co-t">🔁 핵심 한 줄씩</div>
+        <p><strong>무향</strong>: 연결되면 양쪽 통함 (친구) · <strong>가중</strong>: 간선에 숫자(거리/비용) · <strong>방향</strong>: 화살표 한쪽만 (팔로우) · <strong>가중 방향</strong>: 방향마다 값이 다를 수 있음 (오르막/내리막)</p>
+      </div>
+    </section>
+
+    <!-- 9 -->
+    <section id="s9">
+      <h2 class="sec">9. 인접 행렬이란? (adjacency matrix)</h2>
+      <p>한 줄 요약: <strong>그래프를 n×n 표(행렬)로 저장하는 방법</strong>입니다. "정점 i와 j가 연결됐나?"를 표의 한 칸에 적습니다.</p>
+
+      <p>일상 비유로는 <strong>출석부 옆자리 표</strong> 같은 겁니다. 가로줄·세로줄에 학생 번호를 똑같이 적어 두고, "i번과 j번이 짝꿍인가?"를 칸마다 O/X로 채우는 표라고 보면 됩니다.</p>
+
+      <div class="def">
+        <div class="label">RULE</div>
+        <ul class="kv">
+          <li><span class="k">크기</span><span class="v">정점이 n개면 <strong>n × n</strong> 행렬 A (여기서는 6×6)</span></li>
+          <li><span class="k">A[i][j]</span><span class="v">정점 i와 j 사이 간선이 <strong>있으면 1, 없으면 0</strong></span></li>
+          <li><span class="k">가중치면</span><span class="v">1 대신 <strong>가중치 값</strong>을 적음 (없으면 0)</span></li>
+          <li><span class="k">대각선</span><span class="v">A[i][i]는 보통 <strong>0</strong> — 자기 자신으로 가는 간선(self-loop)이 없으므로</span></li>
+        </ul>
+      </div>
+
+      <div class="callout co-tip">
+        <div class="co-t">💡 행과 열 읽는 법</div>
+        <p><strong>행(가로줄) i = 출발</strong>, <strong>열(세로줄) j = 도착</strong>으로 읽습니다. 즉 A[i][j]는 "i에서 j로"를 뜻합니다. 방향 그래프에서 이 방향이 매우 중요해집니다(12번).</p>
+      </div>
+    </section>
+
+    <!-- 10 -->
+    <section id="s10">
+      <h2 class="sec">10. 인접 행렬 — 무향 그래프</h2>
+      <p>한 줄 요약: 무향 그래프의 행렬은 <strong>대각선을 기준으로 완벽히 대칭(symmetric)</strong>입니다.</p>
+      <div class="grid2">
+        <div class="graph-card">
+          <div class="gc-title">그래프 (번호)</div>
+          <svg id="m-undirected-g" viewBox="0 0 640 460" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+        <div class="graph-card">
+          <div class="gc-title">인접 행렬 6×6</div>
+          <div class="mtx-wrap"><div id="m-undirected"></div></div>
+          <div class="mtx-legend">0 철수 · 1 영희 · 2 동건<br>3 준호 · 4 재상 · 5 승우</div>
+        </div>
+      </div>
+      <div class="callout co-star">
+        <div class="co-t">⭐ 왜 대칭일까?</div>
+        <p>무향에서 "0–1 연결"은 곧 "1–0 연결"과 같은 말입니다. 그래서 <strong>A[i][j]와 A[j][i]가 항상 같습니다</strong>. 표를 대각선으로 반 접으면 위아래가 거울처럼 포개집니다. 예: A[0][2]=1이면 A[2][0]도 반드시 1.</p>
+      </div>
+    </section>
+
+    <!-- 11 -->
+    <section id="s11">
+      <h2 class="sec">11. 인접 행렬 — 가중 무향 그래프</h2>
+      <p>한 줄 요약: 무향 행렬과 똑같이 <strong>대칭</strong>인데, 1 자리에 <strong>가중치 값</strong>이 들어갑니다.</p>
+      <div class="grid2">
+        <div class="graph-card">
+          <div class="gc-title">그래프 (가중치)</div>
+          <svg id="m-weighted-g" viewBox="0 0 640 460" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+        <div class="graph-card">
+          <div class="gc-title">인접 행렬 6×6</div>
+          <div class="mtx-wrap"><div id="m-weighted"></div></div>
+          <div class="mtx-legend">0 철수 · 1 영희 · 2 동건<br>3 준호 · 4 재상 · 5 승우</div>
+        </div>
+      </div>
+      <div class="callout co-warn">
+        <div class="co-t">⚠️ 0의 두 가지 의미가 섞임</div>
+        <p>가중 행렬에서 0은 "간선 없음"을 뜻합니다. 그런데 만약 <strong>가중치가 진짜 0인 간선</strong>이 있다면 "없음"과 구별이 안 됩니다. 그래서 실제 코드에서는 "없음"을 0 대신 <strong>∞(무한대)</strong>로 두기도 합니다 — 이게 14주차 최단경로에서 INF를 쓴 이유와 연결됩니다.</p>
+      </div>
+    </section>
+
+    <!-- 12 -->
+    <section id="s12">
+      <h2 class="sec">12. 인접 행렬 — 방향 그래프</h2>
+      <p>한 줄 요약: 방향 그래프 행렬은 <strong>대칭이 아닙니다(비대칭, asymmetric)</strong>. A[i][j]는 오직 <strong>i→j</strong>만 의미합니다.</p>
+      <div class="grid2">
+        <div class="graph-card">
+          <div class="gc-title">그래프 (방향)</div>
+          <svg id="m-directed-g" viewBox="0 0 640 460" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+        <div class="graph-card">
+          <div class="gc-title">인접 행렬 6×6</div>
+          <div class="mtx-wrap"><div id="m-directed"></div></div>
+          <div class="mtx-legend">행 i = 출발 → 열 j = 도착</div>
+        </div>
+      </div>
+      <div class="callout co-star">
+        <div class="co-t">⭐ 비대칭이 핵심</div>
+        <p>철수(0)→승우(5)는 있지만 승우→철수는 없습니다. 그래서 <strong>A[0][5]=1, A[5][0]=0</strong>으로 위아래 값이 다릅니다. 반대로 철수↔영희처럼 양방향이면 A[0][1]=1, A[1][0]=1 둘 다 1입니다. <strong>표가 대칭이면 무향, 비대칭이면 방향</strong> — 이게 한눈에 구분하는 법입니다.</p>
+      </div>
+    </section>
+
+    <!-- 13 -->
+    <section id="s13">
+      <h2 class="sec">13. 인접 행렬 — 가중 방향 그래프</h2>
+      <p>한 줄 요약: <strong>비대칭 + 가중치</strong>. 방향마다 값이 다르므로 A[i][j]와 A[j][i]가 서로 다른 숫자일 수 있습니다.</p>
+      <div class="grid2">
+        <div class="graph-card">
+          <div class="gc-title">그래프 (가중·방향)</div>
+          <svg id="m-wdirected-g" viewBox="0 0 640 460" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+        <div class="graph-card">
+          <div class="gc-title">인접 행렬 6×6</div>
+          <div class="mtx-wrap"><div id="m-wdirected"></div></div>
+          <div class="mtx-legend">A[i][j] = i→j 가중치</div>
+        </div>
+      </div>
+      <div class="callout co-star">
+        <div class="co-t">⭐ 같은 칸쌍, 다른 값</div>
+        <p>철수(0)와 영희(1)를 보세요. <strong>A[0][1]=8</strong>(철수→영희=8), <strong>A[1][0]=9</strong>(영희→철수=9). 같은 두 정점인데 위아래 값이 다릅니다. 11번 가중 무향에서는 둘 다 9로 같았는데, 방향이 생기며 8과 9로 갈라진 것입니다.</p>
+      </div>
+
+      <div class="callout co-connect">
+        <div class="co-t">🔗 정리 + 다음 예고</div>
+        <p>인접 행렬의 최대 단점은 <strong>공간 낭비</strong>입니다. 정점이 n개면 간선이 몇 개든 무조건 n×n 칸을 잡습니다. 위 행렬들도 대부분 칸이 0인데(희소 그래프, sparse graph) 6×6=36칸을 다 차지합니다. 이 문제를 줄이는 게 다음에 나올 <strong>인접 리스트(adjacency list)</strong>입니다. 또 행렬 형태라서 <strong>플로이드-워셜(Floyd-Warshall)</strong>이 인접 행렬을 그대로 입력으로 썼던 것과 이어집니다(14주차-2).</p>
+      </div>
+    </section>
+
+    <!-- 14 -->
+    <section id="s14">
+      <h2 class="sec">14. 인접 행렬의 ∞ — "갈 수 없음"을 무한대로</h2>
+      <p>한 줄 요약: 가중치가 <strong>거리·비용</strong>을 뜻할 때는, 연결 안 된 칸을 0이 아니라 <strong>∞(무한대)</strong>로 적습니다.</p>
+
+      <p>왜 0이 아닐까요? <strong>거리에서 0은 "없음"이 아니라 "아주 가까움(공짜로 이동)"을 뜻하기 때문</strong>입니다. 비유로, "갈 수 없는 길"을 거리 0으로 적으면 컴퓨터가 "여기 거리 0이네? 제일 가깝다!" 하고 <strong>없는 길을 최단 경로로 착각</strong>합니다. 그래서 "못 감"은 정반대인 무한히 먼 ∞로 적어야 알고리즘이 "여긴 못 가"로 올바르게 처리합니다.</p>
+
+      <div class="callout co-tip">
+        <div class="co-t">💡 언제 0, 언제 ∞?</div>
+        <p><strong>단순 연결(1/0)이나 일반 가중치(친밀도 등)</strong> → 없음 = <strong>0</strong> (앞 12·13번)<br>
+        <strong>가중치가 거리·비용</strong> → 없음 = <strong>∞</strong> · 자기 자신 A[i][i] = <strong>0</strong> ("자기까지 거리는 0")</p>
+      </div>
+
+      <div class="callout co-warn">
+        <div class="co-t">⚠️ 교수님 슬라이드 주의 (변환 누락)</div>
+        <p>이 그래프의 ∞ 행렬에서 <strong>A[2][5]와 A[5][5]가 0으로 남아</strong> 있습니다. 동건(2)→승우(5)는 간선이 없으니 원칙상 ∞여야 합니다. 0을 ∞로 바꾸다 두 칸을 놓친 것으로 보입니다. 시험에서 직접 그릴 땐 <strong>"연결 안 됨은 전부 ∞"</strong> 원칙을 일관되게 적용하세요.</p>
+      </div>
+
+      <div class="callout co-connect">
+        <div class="co-t">🔗 14주차와 직결</div>
+        <p>이 ∞ 행렬이 바로 <strong>플로이드-워셜(Floyd-Warshall)</strong>의 시작 행렬 d<sub>0</sub>입니다. "직접 연결 안 됨 = ∞"로 깔아두고, 거쳐가는 정점을 하나씩 늘리며 ∞ 자리를 더 짧은 실제 거리로 채워나갔던 그 표입니다.</p>
+      </div>
+    </section>
+
+    <!-- 15 -->
+    <section id="s15">
+      <h2 class="sec">15. 인접 리스트란? (adjacency list)</h2>
+      <p>한 줄 요약: 각 정점마다 <strong>"내가 연결된 정점들"만 줄줄이 매단 리스트</strong>로 그래프를 저장하는 방법입니다.</p>
+
+      <p>일상 비유로는 <strong>휴대폰 연락처</strong>입니다. 행렬이 "전교생 전원 × 전원" 출석부에 일일이 O/X를 채우는 거라면, 인접 리스트는 사람마다 "내가 실제로 아는 사람만" 적은 개인 연락처입니다. 안 아는 사람은 아예 적지 않으니 공간이 훨씬 절약됩니다.</p>
+
+      <div class="def">
+        <div class="label">RULE</div>
+        <ul class="kv">
+          <li><span class="k">구조</span><span class="v">정점이 n개면 <strong>n개의 연결 리스트(linked list)</strong></span></li>
+          <li><span class="k">리스트 i</span><span class="v">정점 i에 <strong>연결된 정점들</strong>만 노드로 매닮</span></li>
+          <li><span class="k">가중치</span><span class="v">있으면 <span style="color:#e11d48;font-weight:700">정점 번호 옆에 같이</span> 기록</span></li>
+          <li><span class="k">끝</span><span class="v">리스트 마지막 노드는 <strong>null(빗금)</strong>로 끝남</span></li>
+        </ul>
+      </div>
+
+      <div class="callout co-star">
+        <div class="co-t">⭐ 행렬 vs 리스트 한 줄 비교</div>
+        <p><strong>행렬</strong>: 무조건 n×n 칸 → 간선 적으면 0 칸 낭비, 하지만 "i–j 연결?"을 <strong>한 번에</strong> 확인<br>
+        <strong>리스트</strong>: 실제 간선만 저장 → <strong>공간 절약(희소 그래프에 유리)</strong>, 하지만 "i–j 연결?"은 리스트를 <strong>훑어야</strong> 함</p>
+      </div>
+    </section>
+
+    <!-- 16 -->
+    <section id="s16">
+      <h2 class="sec">16. 인접 리스트 — 무향 그래프</h2>
+      <p>한 줄 요약: 무향은 양쪽이 통하므로, <strong>간선 하나가 양쪽 리스트에 모두</strong> 들어갑니다.</p>
+      <div class="ll-wrap"><div id="l-undirected"></div></div>
+      <div class="mtx-legend">0 철수 · 1 영희 · 2 동건 · 3 준호 · 4 재상 · 5 승우</div>
+      <div class="callout co-tip">
+        <div class="co-t">💡 간선 1개 = 노드 2개</div>
+        <p>0–1 간선 하나 때문에 <strong>0의 리스트에 1</strong>, <strong>1의 리스트에 0</strong>이 둘 다 생깁니다. 그래서 무향 그래프 인접 리스트의 노드 총개수는 <strong>간선 수 × 2</strong>가 됩니다.</p>
+      </div>
+    </section>
+
+    <!-- 17 -->
+    <section id="s17">
+      <h2 class="sec">17. 인접 리스트 — 가중 무향 그래프</h2>
+      <p>한 줄 요약: 16번과 똑같은 구조에, 각 노드에 <span style="color:#e11d48;font-weight:700">가중치</span>를 한 칸 더 붙입니다.</p>
+      <div class="ll-wrap"><div id="l-weighted"></div></div>
+      <p>예를 들어 0번 리스트의 첫 노드 <strong>(1, <span style="color:#e11d48">9</span>)</strong>는 "철수(0)는 영희(1)와 연결, 가중치 9"라는 뜻입니다.</p>
+    </section>
+
+    <!-- 18 -->
+    <section id="s18">
+      <h2 class="sec">18. 인접 리스트 — 방향 그래프</h2>
+      <p>한 줄 요약: 방향 그래프는 <strong>나가는 간선(out-edge)만</strong> 리스트에 넣습니다.</p>
+      <div class="ll-wrap"><div id="l-directed"></div></div>
+      <div class="callout co-star">
+        <div class="co-t">⭐ 무향과 결정적 차이</div>
+        <p>2번(동건) 리스트를 보세요. <strong>1·4만</strong> 있고 0은 없습니다. 동건은 1·4로 <strong>나가기만</strong> 하고, 0(철수)→동건은 "동건으로 들어오는" 간선이라 동건 리스트엔 안 들어갑니다. 16번 무향에서 2번 리스트가 0·1·4였던 것과 비교해 보세요.</p>
+      </div>
+    </section>
+
+    <!-- 19 -->
+    <section id="s19">
+      <h2 class="sec">19. 인접 리스트 — 가중 방향 그래프</h2>
+      <p>한 줄 요약: <strong>나가는 간선만 + 그 방향의 가중치</strong>를 기록합니다.</p>
+      <div class="ll-wrap"><div id="l-wdirected"></div></div>
+
+      <div class="callout co-warn">
+        <div class="co-t">⚠️ 교수님 슬라이드 정정</div>
+        <p>강의 슬라이드의 "가중 방향 인접 리스트" 그림은 사실 <strong>가중 <u>무향</u> 리스트(17번)가 잘못 들어간 것</strong>입니다. 위 그림이 올바른 가중 방향 버전입니다. 차이를 두 곳만 확인하세요:<br>
+        · <strong>0번 리스트</strong>: 무향은 (1,9)로 시작하지만, 방향은 0→1 가중치라 <strong>(1,<span style="color:#e11d48">8</span>)</strong>로 시작<br>
+        · <strong>2번 리스트</strong>: 무향은 (0,7)(1,9)(4,5) 3개지만, 방향은 동건이 나가는 곳만이라 <strong>(1,9)(4,5) 2개</strong></p>
+      </div>
+
+      <div class="callout co-connect">
+        <div class="co-t">🔗 정리</div>
+        <p>행렬·리스트 둘 다 무향→가중→방향→가중방향 순으로 "방향과 가중치를 어떻게 담는가"가 일관됩니다. <strong>방향이면 나가는 것만, 가중치면 값을 같이</strong> — 이 두 원칙만 기억하면 네 종류를 다 그릴 수 있습니다.</p>
+      </div>
+    </section>
+
+    <!-- 20 -->
+    <section id="s20">
+      <h2 class="sec">20. 그래프 순회란? (BFS · DFS)</h2>
+      <p>한 줄 요약: <strong>한 정점에서 시작해, 도달 가능한 모든 정점을 빠짐없이 한 번씩 방문</strong>하는 것입니다.</p>
+      <p>대표적인 두 방법이 있습니다. <strong>너비 우선 탐색(BFS)</strong><span class="eng"> Breadth-First Search</span>과 <strong>깊이 우선 탐색(DFS)</strong><span class="eng"> Depth-First Search</span>입니다. 둘의 차이는 "다음에 어디로 갈까"를 정하는 순서뿐입니다.</p>
+
+      <div class="callout co-star">
+        <div class="co-t">⭐ 한 줄 차이</div>
+        <p><strong>BFS</strong>: 가까운 곳부터 — 현재 정점의 <strong>이웃을 전부</strong> 본 뒤 다음 레벨로 (옆으로 쫙)<br>
+        <strong>DFS</strong>: 갈 수 있는 데까지 — <strong>한 길로 끝까지</strong> 내려간 뒤 막히면 되돌아옴 (아래로 쭉)</p>
+      </div>
+
+      <div class="callout co-review">
+        <div class="co-t">🔁 13주차에서 이미</div>
+        <p>BFS·DFS 자체는 13주차-2에서 다뤘습니다. 여기서는 <strong>방문 순서가 트리에서 어떻게 번호로 찍히는지</strong>와 <strong>BFS 의사코드 해석</strong>에 집중합니다.</p>
+      </div>
+    </section>
+
+    <!-- 21 -->
+    <section id="s21">
+      <h2 class="sec">21. BFS 방문 순서 — 레벨(너비) 우선</h2>
+      <p>한 줄 요약: 같은 깊이(레벨)를 <strong>좌→우로 다 훑고</strong> 나서 아래 레벨로 내려갑니다. 노드 안 숫자가 방문 순서입니다.</p>
+      <div class="trace" style="padding-bottom:6px;">
+        <svg id="tree-bfs" viewBox="0 0 1120 700" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+      <p>레벨 0의 1을 보고 → 레벨 1의 2·3 → 레벨 2의 4·5·6·7·8 → 레벨 3의 9~13. <strong>레벨별로 색이 같습니다.</strong> 한 레벨을 완전히 끝내야 다음 레벨로 넘어가는 게 너비 우선입니다.</p>
+    </section>
+
+    <!-- 22 -->
+    <section id="s22">
+      <h2 class="sec">22. DFS 방문 순서 — 깊이 우선</h2>
+      <p>한 줄 요약: <strong>같은 트리 구조</strong>인데, 번호 매기는 순서만 다릅니다. 한 가지를 <strong>끝까지 내려갔다가</strong> 막히면 되돌아옵니다(백트래킹, backtracking).</p>
+      <div class="trace" style="padding-bottom:6px;">
+        <svg id="tree-dfs" viewBox="0 0 1120 700" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+      <p>점선이 방문 순서(1→2→…→13)입니다. 1→2→3→4까지 <strong>쭉 내려간 뒤</strong>, 막히면 위로 되돌아와 5, 6으로 갑니다. 6에서 다시 7→8 내려가고… 왼쪽 가지를 완전히 턴 다음에야 오른쪽(9 이후)으로 넘어갑니다.</p>
+      <div class="callout co-star">
+        <div class="co-t">⭐ 21번과 같은 트리를 비교</div>
+        <p>두 트리는 <strong>모양(부모-자식 관계)이 완전히 같습니다.</strong> 다른 건 번호뿐입니다. 루트 오른쪽 자식이 BFS에선 <strong>3</strong>(레벨이 먼저라 일찍), DFS에선 <strong>9</strong>(왼쪽 가지를 다 턴 뒤라 늦게)입니다. 같은 자리, 다른 순서 — 이게 BFS와 DFS의 차이를 한눈에 보여줍니다.</p>
+      </div>
+    </section>
+
+    <!-- 23 -->
+    <section id="s23">
+      <h2 class="sec">23. BFS 의사코드 + 큐 추적</h2>
+      <p>한 줄 요약: 큐(선입선출)에 <strong>넣고 → 꺼내고 → 이웃을 넣고</strong>를 큐가 빌 때까지 반복합니다.</p>
+
+      <div style="background:#1a1b1e;border-radius:12px;padding:18px 20px;margin:16px 0;font-family:'JetBrains Mono',monospace;font-size:13.5px;line-height:1.85;overflow-x:auto;color:#e6e6e9;white-space:pre;">
+<span style="color:#c4a8ff">BFS</span>(G, s):<span style="color:#6c7280">              // G: 그래프, s: 시작 정점</span>
+    <span style="color:#c4a8ff">for each</span> v ∈ V-{s}     <span style="color:#6c7280">// s를 뺀 모든 정점에 대해</span>
+        v.visited ← <span style="color:#ff9eb5">NO</span>      <span style="color:#6c7280">//   "아직 안 감"으로 초기화</span>
+    s.visited ← <span style="color:#a3e88c">YES</span>         <span style="color:#6c7280">// 시작점만 "갔음"으로 표시</span>
+    <span style="color:#ffd866">enqueue</span>(Q, s)           <span style="color:#6c7280">// 큐에 시작점 넣기(줄 세우기)</span>
+    <span style="color:#c4a8ff">while</span> (Q ≠ ∅)           <span style="color:#6c7280">// 큐가 빌 때까지 반복</span>
+        u ← <span style="color:#ffd866">dequeue</span>(Q)      <span style="color:#6c7280">// 줄 맨 앞 꺼내기(처음엔 s)</span>
+        <span style="color:#c4a8ff">for each</span> v ∈ u.adj  <span style="color:#6c7280">// u의 이웃들 각각에 대해</span>
+            <span style="color:#c4a8ff">if</span> (v.visited = <span style="color:#ff9eb5">NO</span>)   <span style="color:#6c7280">// 아직 안 갔으면</span>
+                v.visited ← <span style="color:#a3e88c">YES</span>   <span style="color:#6c7280">// 갔음으로 표시하고</span>
+                <span style="color:#ffd866">enqueue</span>(Q, v)     <span style="color:#6c7280">// 줄 끝에 세우기</span>
+      </div>
+
+      <div class="callout co-warn">
+        <div class="co-t">⚠️ visited는 "큐에 넣을 때" 찍는다</div>
+        <p>꺼낼 때가 아니라 <strong>enqueue 직전</strong>에 표시합니다. 그래야 한 정점이 여러 이웃에게 동시에 발견돼도 <strong>큐에 두 번 들어가지 않습니다.</strong></p>
+      </div>
+
+      <p>아래에서 <strong>[다음] 버튼</strong>을 누르며 큐가 어떻게 변하는지 따라가 보세요. 앞에서 쓴 친구 그래프(무향)를 <strong>0번 철수부터</strong> BFS로 돕니다.</p>
+
+      <div class="trace">
+        <svg id="bfs-trace-svg" viewBox="0 0 640 460" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="trace-queue">
+          <span class="lbl">Q =</span>
+          <span class="q-front">앞→</span>
+          <div class="q-box" id="bfs-queue"></div>
+        </div>
+        <div class="trace-desc" id="bfs-desc">시작 전입니다. [다음 ▶]을 눌러 BFS를 시작하세요.</div>
+        <div class="trace-order" id="bfs-order">방문 순서: -</div>
+        <div class="trace-bar">
+          <button class="trace-btn" id="bfs-prev">◀ 이전</button>
+          <button class="trace-btn primary" id="bfs-next">다음 ▶</button>
+          <button class="trace-btn" id="bfs-reset">↻ 처음</button>
+        </div>
+        <div style="text-align:center;font-size:12px;color:var(--ink-faint);font-family:'JetBrains Mono',monospace;">
+          ⬜ 미방문 · 🟨 큐에 있음 · 🟪 지금 꺼낸 u · 🟩 처리 완료
+        </div>
+      </div>
+
+      <div class="callout co-connect">
+        <div class="co-t">🔗 큐 색으로 읽기</div>
+        <p>🟨(노랑)이 "줄 서서 대기 중", 🟪(보라)가 "지금 처리 중인 u", 🟩(초록)이 "이웃까지 다 본 완료". 노랑이 한꺼번에 여러 개 생겼다가 하나씩 보라→초록으로 바뀌는 게 <strong>"가까운 것부터 차례로"</strong>인 너비 우선의 모습입니다.</p>
+      </div>
+    </section>
+
+    <!-- 24 -->
+    <section id="s24">
+      <h2 class="sec">24. DFS 의사코드 — 재귀 버전</h2>
+      <p>한 줄 요약: <strong>방문 표시 → 미방문 이웃이 있으면 그쪽으로 즉시 재귀</strong>. 갈 수 있는 데까지 내려가는 게 핵심입니다.</p>
+
+      <div style="background:#1a1b1e;border-radius:12px;padding:18px 20px;margin:16px 0;font-family:'JetBrains Mono',monospace;font-size:13.5px;line-height:1.85;overflow-x:auto;color:#e6e6e9;white-space:pre;">
+<span style="color:#c4a8ff">DFS</span>(G, v):<span style="color:#6c7280">              // G: 그래프, v: 지금 방문 중인 정점</span>
+    v.visited ← <span style="color:#a3e88c">YES</span>         <span style="color:#6c7280">// 지금 정점 v를 방문 표시</span>
+    <span style="color:#c4a8ff">for each</span> x ∈ v.adj    <span style="color:#6c7280">// v의 이웃 x 각각에 대해</span>
+        <span style="color:#c4a8ff">if</span> (x.visited = <span style="color:#ff9eb5">NO</span>)  <span style="color:#6c7280">// 아직 안 갔으면</span>
+            <span style="color:#c4a8ff">DFS</span>(G, x)         <span style="color:#6c7280">// 그 이웃으로 바로 내려감(재귀)</span>
+      </div>
+
+      <div class="callout co-star">
+        <div class="co-t">⭐ BFS와 코드 모양만 비교</div>
+        <p><strong>BFS</strong>는 이웃을 <strong>전부 큐에 넣고</strong> 다음으로 넘어갑니다(옆으로). <strong>DFS</strong>는 미방문 이웃을 만나면 <strong>그 자리에서 바로 내려갑니다</strong>(아래로). 코드에서 `enqueue` 대신 `DFS(G,x)` 재귀 호출이 그 차이입니다.</p>
+      </div>
+
+      <div class="callout co-warn">
+        <div class="co-t">⚠️ v는 "시작점"이 아니라 "지금 정점"</div>
+        <p>재귀라서 v는 호출될 때마다 바뀝니다. 첫 호출만 시작점이고, 그 다음부터는 "막 내려온 정점"입니다. 그래서 `v.visited ← YES`는 매 호출마다 서로 다른 정점을 표시합니다.</p>
+      </div>
+    </section>
+
+    <!-- 25 -->
+    <section id="s25">
+      <h2 class="sec">25. DFS 스택 버전 — 재귀와 같은 알고리즘</h2>
+      <p>한 줄 요약: 재귀 버전과 <strong>완전히 같은 DFS</strong>입니다. 재귀가 자동으로 쓰던 스택을 <strong>손으로 직접</strong> 만든 것뿐입니다.</p>
+
+      <p>핵심 통찰: <strong>재귀 버전도 사실 스택을 쓰고 있습니다.</strong> 함수가 자기를 부를 때(`DFS(G,x)`), 컴퓨터가 "어디까지 했는지"를 <strong>호출 스택(call stack)</strong>에 몰래 쌓아두고, 돌아올 때 꺼냅니다. 아래 스택 버전은 그 숨은 스택을 우리가 직접 드러낸 것입니다.</p>
+
+      <div style="background:#1a1b1e;border-radius:12px;padding:18px 20px;margin:16px 0;font-family:'JetBrains Mono',monospace;font-size:13.5px;line-height:1.85;overflow-x:auto;color:#e6e6e9;white-space:pre;">
+<span style="color:#c4a8ff">DFS</span>(v):
+    stack.<span style="color:#ffd866">push</span>(v)                <span style="color:#6c7280">// 시작점을 스택에 올림</span>
+    mark[v] ← <span style="color:#a3e88c">VISITED</span>          <span style="color:#6c7280">// 방문 표시</span>
+    <span style="color:#c4a8ff">while</span> (!stack.isEmpty())    <span style="color:#6c7280">// 스택이 빌 때까지</span>
+        <span style="color:#c4a8ff">if</span> (스택 top의 미방문 이웃이 없으면)
+            stack.<span style="color:#ffd866">pop</span>()           <span style="color:#6c7280">// 되돌아감(백트래킹)</span>
+        <span style="color:#c4a8ff">else</span>
+            top의 미방문 이웃 w 하나 선택
+            stack.<span style="color:#ffd866">push</span>(w)          <span style="color:#6c7280">// 그 이웃으로 내려감</span>
+            mark[w] ← <span style="color:#a3e88c">VISITED</span>      <span style="color:#6c7280">// 방문 표시</span>
+      </div>
+
+      <div class="callout co-tip">
+        <div class="co-t">💡 스택 top = "지금 서 있는 곳"</div>
+        <p>스택 맨 위(top)는 항상 "내가 지금 서 있는 정점"입니다. 갈 데가 있으면 한 발 더 내려가(push), 막히면 한 발 되돌아옵니다(pop). 미로에서 길을 되짚는 것과 똑같습니다.</p>
+      </div>
+
+      <p>아래 <strong>[다음 ▶]</strong>으로 스택이 쌓였다 빠지는 걸 따라가 보세요. 23번과 <strong>같은 친구 그래프, 같은 시작점(0)</strong>입니다. 그래야 BFS와 순서가 어떻게 달라지는지 비교됩니다.</p>
+
+      <div class="trace">
+        <svg id="dfs-trace-svg" viewBox="0 0 640 460" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="stk-label">스택 (위 = top)</div>
+        <div class="stk-wrap" id="dfs-stack"></div>
+        <div class="trace-desc" id="dfs-desc" style="margin-top:12px;">시작 전입니다. [다음 ▶]을 눌러 DFS를 시작하세요.</div>
+        <div class="trace-order" id="dfs-order">방문 순서: -</div>
+        <div class="trace-bar">
+          <button class="trace-btn" id="dfs-prev">◀ 이전</button>
+          <button class="trace-btn primary" id="dfs-next">다음 ▶</button>
+          <button class="trace-btn" id="dfs-reset">↻ 처음</button>
+        </div>
+        <div style="text-align:center;font-size:12px;color:var(--ink-faint);font-family:'JetBrains Mono',monospace;">
+          ⬜ 미방문 · 🟨 스택에 있음(경로) · 🟪 top(현재 위치) · 🟩 pop됨(완료)
+        </div>
+      </div>
+
+      <div class="callout co-star">
+        <div class="co-t">⭐ BFS와 방문 순서 비교</div>
+        <p>같은 그래프, 같은 시작점 0인데 순서가 다릅니다.<br>
+        · <strong>BFS</strong> (23번, 큐): 0 → 1 → 2 → 3 → 5 → 4 &nbsp;(가까운 레벨부터)<br>
+        · <strong>DFS</strong> (25번, 스택): 0 → 1 → 2 → 4 → 5 → 3 &nbsp;(한 길로 깊이 먼저)<br>
+        큐는 "옆으로 퍼지고", 스택은 "아래로 파고든다" — 자료구조(FIFO vs LIFO) 하나 바꿨을 뿐인데 순회 성격이 완전히 달라집니다.</p>
+      </div>
+    </section>
+
+    <!-- 26 -->
+    <section id="s26">
+      <h2 class="sec">26. DFS 예시 — 스택 완성하기 (a~i)</h2>
+      <p>한 줄 요약: 시작 정점 a부터 DFS를 돌리면 스택(방문 순서)은 <strong>a → b → c → d → g → e → f → h → i</strong>가 됩니다.</p>
+
+      <div class="trace" style="padding-bottom:6px;">
+        <svg id="dfs-example" viewBox="0 0 820 520" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div style="text-align:center;font-size:12px;color:var(--ink-faint);font-family:'JetBrains Mono',monospace;margin-top:4px;">
+          🔴 빨강 = DFS가 타고 내려간 길(트리 간선) · ⚪ 회색 = 안 탄 간선 · 노드 위 작은 숫자 = 방문 순서
+        </div>
+      </div>
+
+      <p>빨강 간선이 <strong>실제로 타고 내려간 경로</strong>입니다. a→b→c→d까지 깊이 내려간 뒤, d에서 g로 더 내려가 e·f를 보고, 막히면 되돌아와 h, 마지막에 a로 돌아와 i를 봅니다.</p>
+
+      <div class="callout co-tip">
+        <div class="co-t">💡 회색 간선은 왜 안 탔나</div>
+        <p>회색(a-f, b-e, c-e)은 <strong>이미 방문한 정점으로 이어진 간선</strong>이라 건너뜁니다. 예를 들어 f는 a와도 이어져 있지만, DFS는 이미 g를 거쳐 f에 도착했으므로 a-f는 쓰지 않습니다. "안 탄 간선"이 곧 회색입니다.</p>
+      </div>
+
+      <div class="callout co-star">
+        <div class="co-t">⭐ 같은 그래프, BFS vs DFS</div>
+        <p>시작점 a로 같지만 순서가 완전히 다릅니다.<br>
+        · <strong>BFS</strong> (큐): <code style="font-family:'JetBrains Mono',monospace">a b f i c e g d h</code> — 가까운 것부터 옆으로<br>
+        · <strong>DFS</strong> (스택): <code style="font-family:'JetBrains Mono',monospace">a b c d g e f h i</code> — 한 길로 깊이 먼저<br>
+        BFS는 a의 이웃(b·f·i)을 <strong>먼저 다 보고</strong> 멀리 가지만, DFS는 b로 들어가면 <strong>b 쪽 끝까지</strong> 판 뒤에야 i로 돌아옵니다. 그래서 DFS에서 i가 가장 마지막입니다.</p>
+      </div>
+    </section>
+
+    <!-- 27 -->
+    <section id="s27">
+      <h2 class="sec">27. 최단 경로란? (shortest path)</h2>
+      <p>한 줄 요약: 두 정점을 잇는 여러 경로 중, <strong>지나는 간선들의 가중치 합이 가장 작은 경로</strong>입니다.</p>
+
+      <p>비유로는 <strong>내비게이션</strong>입니다. 출발지에서 목적지까지 가는 길은 여러 갈래인데, "가중치(거리·시간·요금) 합이 최소"인 길을 찾는 것이 최단 경로입니다.</p>
+
+      <div class="def">
+        <div class="label">문제를 일반화하는 3가지 해석</div>
+        <ul class="kv">
+          <li><span class="k">기본형</span><span class="v"><strong>가중 방향 그래프</strong>에서 정의</span></li>
+          <li><span class="k">무향도 OK</span><span class="v">무향 간선은 <strong>양방향(앞뒤 둘 다 가능)</strong>으로 보면 방향 그래프로 해석됨</span></li>
+          <li><span class="k">가중 없어도 OK</span><span class="v">가중치가 없으면 <strong>모든 간선 가중치 = 1</strong>로 보면 가중 그래프로 해석됨 (이때는 BFS가 곧 최단경로!)</span></li>
+        </ul>
+      </div>
+
+      <div class="callout co-warn">
+        <div class="co-t">⚠️ 음의 사이클(negative cycle)이면 문제 자체가 깨짐</div>
+        <p>가중치 합이 음수인 사이클이 있으면, 그 사이클을 <strong>돌 때마다 거리가 계속 줄어듭니다.</strong> "최소"가 무한히 내려가버려서 최단 경로라는 개념 자체가 성립하지 않습니다.</p>
+      </div>
+
+      <table>
+        <thead><tr><th>알고리즘</th><th>간선 가중치 조건</th></tr></thead>
+        <tbody>
+          <tr><td>다익스트라(Dijkstra)</td><td>모든 간선이 <strong>음이 아님</strong>(≥ 0)</td></tr>
+          <tr><td>벨만-포드(Bellman-Ford)</td><td>음수 가중치 <strong>허용</strong>, 단 음의 사이클은 <strong>불허</strong></td></tr>
+        </tbody>
+      </table>
+      <p><strong>목표</strong>: 출발 정점 하나에서 <strong>모든 정점까지의 최단 경로</strong>를 한 번에 구합니다(단일 출발점, single-source).</p>
+    </section>
+
+    <!-- 28 -->
+    <section id="s28">
+      <h2 class="sec">28. 다익스트라 의사코드 + 완화(relaxation)</h2>
+      <p>한 줄 요약: <strong>가장 가까운 미확정 정점부터 거리를 확정</strong>(그리디)하고, 그 정점을 거쳐 더 짧아지는 이웃을 <strong>갱신</strong>(완화)합니다.</p>
+
+      <div style="background:#1a1b1e;border-radius:12px;padding:18px 20px;margin:16px 0;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.85;overflow-x:auto;color:#e6e6e9;white-space:pre;">
+<span style="color:#c4a8ff">Dijkstra</span>(G, r):<span style="color:#6c7280">          // G=(V,E), r: 시작 정점</span>
+    S ← {r}                <span style="color:#6c7280">// S: 거리 확정된 정점 집합</span>
+    r.cost ← <span style="color:#ff9eb5">0</span>             <span style="color:#6c7280">// 시작점 자신까지 거리는 0</span>
+    <span style="color:#c4a8ff">for each</span> u ∈ V-{r}      <span style="color:#6c7280">// 나머지 정점들의 cost 초기화</span>
+        u.cost ← w(r,u)    <span style="color:#6c7280">//   r에서 직접 가는 간선값(없으면 ∞)</span>
+    <span style="color:#c4a8ff">while</span> (S ≠ V)            <span style="color:#6c7280">// 모든 정점 확정될 때까지(n-1회)</span>
+        u ← <span style="color:#ffd866">deleteMin</span>(V-S)   <span style="color:#6c7280">// 미확정 중 cost 최소 정점 뽑기 ★그리디</span>
+        S ← S ∪ {u}        <span style="color:#6c7280">// u를 확정 집합에 추가</span>
+        <span style="color:#c4a8ff">for each</span> v ∈ u.adj    <span style="color:#6c7280">// u의 이웃 v마다</span>
+            <span style="color:#c4a8ff">if</span> (v ∈ V-S <span style="color:#c4a8ff">and</span> u.cost + w(u,v) < v.cost)
+                v.cost ← u.cost + w(u,v)  <span style="color:#ff5555">// ★완화 Relaxation!</span>
+                v.prev ← u                <span style="color:#6c7280">// 최단경로 역추적용</span>
+</div>
+
+      <ul class="kv">
+        <li><span class="k">cost</span><span class="v">r에서 그 정점까지 <strong>지금까지 알아낸 최단 거리 추정치</strong></span></li>
+        <li><span class="k">S</span><span class="v">최단 거리가 <strong>확정된</strong> 정점들의 집합</span></li>
+        <li><span class="k">deleteMin</span><span class="v">미확정(V-S) 중 cost 최소 정점 반환 → 그게 <strong>확정</strong>됨</span></li>
+        <li><span class="k">prev</span><span class="v">최단 경로의 <strong>직전 정점</strong> 기억 (거꾸로 따라가면 경로 복원)</span></li>
+      </ul>
+
+      <h3>완화(relaxation)가 일어나는 순간</h3>
+      <p>"u를 거쳐 v로 가는 길이 지금 아는 v.cost보다 짧으면 갱신"하는 것이 완화입니다.</p>
+      <div class="graph-card">
+        <div class="gc-title">u를 거쳐 가니 더 짧다 → 갱신!</div>
+        <svg viewBox="0 0 560 230" xmlns="http://www.w3.org/2000/svg">
+          <!-- r -->
+          <circle cx="70" cy="115" r="30" class="node-circle"/>
+          <text x="70" y="115" class="node-label">r</text>
+          <!-- u -->
+          <line x1="100" y1="115" x2="250" y2="115" class="edge-line"/>
+          <rect x="150" y="92" width="46" height="22" rx="5" class="edge-w-bg"/>
+          <text x="173" y="104" class="edge-w-txt">3</text>
+          <circle cx="280" cy="115" r="30" class="node-circle"/>
+          <text x="280" y="108" class="node-label" style="font-size:15px">u</text>
+          <text x="280" y="126" class="edge-w-txt" style="font-size:11px">cost 3</text>
+          <!-- v -->
+          <line x1="310" y1="115" x2="460" y2="115" class="edge-line"/>
+          <rect x="368" y="92" width="46" height="22" rx="5" class="edge-w-bg"/>
+          <text x="391" y="104" class="edge-w-txt">2</text>
+          <circle cx="490" cy="115" r="30" class="node-circle"/>
+          <text x="490" y="108" class="node-label" style="font-size:15px">v</text>
+          <text x="490" y="126" class="edge-w-txt" style="font-size:11px">cost 7→5</text>
+          <text x="280" y="185" text-anchor="middle" style="fill:var(--ink-faint);font-size:13px;font-family:'JetBrains Mono',monospace">u.cost(3) + w(2) = 5</text>
+          <text x="280" y="208" text-anchor="middle" style="fill:#e11d48;font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace">5 &lt; 7 이므로 v.cost ← 5 (완화!)</text>
+        </svg>
+      </div>
+
+      <div class="callout co-star">
+        <div class="co-t">⭐ deleteMin이 핵심: 왜 그리디가 맞나</div>
+        <p>간선이 <strong>음수가 아니면</strong>, 미확정 정점 중 가장 가까운 것은 <strong>다른 길로 돌아가도 더 짧아질 수 없습니다</strong>(돌아가면 거리가 늘기만 함). 그래서 안심하고 "확정 도장"을 찍습니다. 음수 간선이 있으면 이 보장이 깨져서 → <strong>벨만-포드</strong>를 써야 합니다.</p>
+      </div>
+
+      <div class="callout co-connect">
+        <div class="co-t">🔗 14주차-1과 같은 알고리즘</div>
+        <p>이 코드가 14주차-1에서 만든 <strong>인터랙티브 다익스트라 추적기</strong>와 동일합니다. 거기서 그래프 + min-heap으로 cost가 갱신되는 과정을 단계별로 봤던 그 알고리즘입니다. 이번 복습은 코드 구조와 완화 개념을 다시 정리하는 데 초점을 둡니다.</p>
+      </div>
+    </section>
+
+    <!-- 29 -->
+    <section id="s29">
+      <h2 class="sec">29. 다익스트라 단계별 추적 🔥</h2>
+      <p>한 줄 요약: <strong>[다음 ▶]</strong>을 누르며 거리(dist)·힙(heap)·확정 정점이 어떻게 변하는지 직접 따라가 보세요. 가중 그래프를 <strong>0번부터</strong> 돕니다.</p>
+
+      <div class="callout co-tip">
+        <div class="co-t">💡 읽는 법</div>
+        <p>그래프 노드 위 작은 숫자가 <strong>현재 dist(거리 추정치)</strong>입니다. 힙(heap)은 "다음에 확정할 후보"들을 cost 순으로 담은 <strong>우선순위 큐</strong>이고, <strong>빨간 셀(루트)이 항상 최소</strong>라 그게 다음에 뽑힙니다(deleteMin).</p>
+      </div>
+
+      <div class="trace">
+        <svg id="dij-graph" viewBox="0 0 640 470" xmlns="http://www.w3.org/2000/svg"></svg>
+
+        <div class="stk-label" style="margin-top:8px;">힙(min-heap) — 빨강 = 루트(최소)</div>
+        <div class="heap-arr" id="dij-heap-arr"></div>
+        <div class="heap-tree"><svg id="dij-heap-tree" viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg"></svg></div>
+
+        <table class="dist-table" id="dij-dist"></table>
+
+        <div class="trace-desc" id="dij-desc">시작 전입니다. [다음 ▶]을 눌러 다익스트라를 시작하세요.</div>
+        <div class="trace-bar">
+          <button class="trace-btn" id="dij-prev">◀ 이전</button>
+          <button class="trace-btn primary" id="dij-next">다음 ▶</button>
+          <button class="trace-btn" id="dij-reset">↻ 처음</button>
+        </div>
+        <div style="text-align:center;font-size:12px;color:var(--ink-faint);font-family:'JetBrains Mono',monospace;">
+          ⬜ 미도달(∞) · 🟨 힙에 있음 · 🟪 지금 확정한 u · 🟩 거리 확정됨
+        </div>
+      </div>
+
+      <div class="callout co-star">
+        <div class="co-t">⭐ 이 예시의 볼거리</div>
+        <p>4번(재상)을 주목하세요. <strong>0→2→4</strong>로 가면 7+5=12지만, <strong>0→5→4</strong>로 가면 6+1=7로 더 짧습니다. 그래서 5를 먼저 확정한 뒤 4가 7로 완화됩니다. "한 번 확정된 거리는 다시 안 바뀐다"는 다익스트라의 성질도 확인할 수 있습니다.</p>
+      </div>
+    </section>
+
+    <!-- 30 -->
+    <section id="s30">
+      <h2 class="sec">30. 완화 미니 예시 — 돌아가는 길이 더 짧다</h2>
+      <p>한 줄 요약: 정점 1의 거리가 <strong>직접 가는 10에서 → 돌아가는 8</strong>로 완화되는 과정입니다.</p>
+
+      <div class="graph-card">
+        <div class="gc-title">0→1 직접(10) vs 0→2→3→1 우회(8)</div>
+        <svg viewBox="0 0 620 340" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="ar30" markerWidth="11" markerHeight="11" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,4 L0,8 Z" fill="#5b5d6b"/></marker>
+          <marker id="ar30r" markerWidth="11" markerHeight="11" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,4 L0,8 Z" fill="#ef4444"/></marker></defs>
+          <!-- 0->1 직접 점선(완화 전 길) -->
+          <line x1="135" y1="120" x2="305" y2="95" stroke="#9498a6" stroke-width="2.5" stroke-dasharray="7 6" marker-end="url(#ar30)"/>
+          <rect x="200" y="86" width="34" height="22" rx="5" class="edge-w-bg"/><text x="217" y="98" class="edge-w-txt">10</text>
+          <!-- 0->2 빨강 우회 -->
+          <line x1="120" y1="145" x2="300" y2="265" stroke="#ef4444" stroke-width="3.5" marker-end="url(#ar30r)"/>
+          <rect x="185" y="200" width="26" height="22" rx="5" class="edge-w-bg"/><text x="198" y="212" class="edge-w-txt" style="fill:#e11d48">5</text>
+          <!-- 2->3 빨강 -->
+          <line x1="365" y1="270" x2="520" y2="135" stroke="#ef4444" stroke-width="3.5" marker-end="url(#ar30r)"/>
+          <rect x="430" y="195" width="26" height="22" rx="5" class="edge-w-bg"/><text x="443" y="207" class="edge-w-txt" style="fill:#e11d48">2</text>
+          <!-- 3->1 빨강 -->
+          <line x1="520" y1="100" x2="370" y2="88" stroke="#ef4444" stroke-width="3.5" marker-end="url(#ar30r)"/>
+          <rect x="438" y="74" width="26" height="22" rx="5" class="edge-w-bg"/><text x="451" y="86" class="edge-w-txt" style="fill:#e11d48">1</text>
+          <!-- 노드 -->
+          <circle cx="105" cy="130" r="30" fill="#2b6a8f" stroke="#1d4e6b" stroke-width="2.5"/><text x="105" y="122" class="node-label" style="fill:#fff;font-size:16px">0</text><text x="105" y="140" style="fill:#cde6f5;font-size:10px;text-anchor:middle;font-family:'JetBrains Mono',monospace">cost 0</text>
+          <circle cx="335" cy="85" r="30" class="node-circle"/><text x="335" y="78" class="node-label" style="font-size:16px">1</text><text x="335" y="96" class="edge-w-txt" style="font-size:10px">10→8</text>
+          <circle cx="335" cy="285" r="30" class="node-circle"/><text x="335" y="285" class="node-label" style="font-size:16px">2</text>
+          <circle cx="550" cy="115" r="30" class="node-circle"/><text x="550" y="115" class="node-label" style="font-size:16px">3</text>
+        </svg>
+      </div>
+      <p>0→1로 <strong>직접 가면 10</strong>(회색 점선)입니다. 그런데 <strong>0→2→3→1로 돌아가면 5+2+1=8</strong>(빨강)로 더 짧습니다. 그래서 1의 거리가 <strong>10에서 8로 완화</strong>됩니다. "직접 = 항상 최단"이 아니라는 걸 보여주는 예시입니다.</p>
+    </section>
+
+    <!-- 31 -->
+    <section id="s31">
+      <h2 class="sec">31. 다익스트라가 틀리는 예 — 음수 간선</h2>
+      <p>한 줄 요약: 음의 간선이 있으면 <strong>이미 확정한 거리가 나중에 더 짧아질 수 있어</strong> 다익스트라가 틀린 답을 냅니다.</p>
+
+      <div class="graph-card">
+        <div class="gc-title">9→8 간선이 -15 → 8번이 틀린 채 확정됨</div>
+        <svg viewBox="0 0 560 340" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="ar31" markerWidth="11" markerHeight="11" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,4 L0,8 Z" fill="#5b5d6b"/></marker>
+          <marker id="ar31r" markerWidth="11" markerHeight="11" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,4 L0,8 Z" fill="#ef4444"/></marker></defs>
+          <!-- 0->a(8노드) -->
+          <line x1="135" y1="150" x2="320" y2="100" stroke="#5b5d6b" stroke-width="2.5" marker-end="url(#ar31)"/>
+          <rect x="210" y="105" width="26" height="22" rx="5" class="edge-w-bg"/><text x="223" y="117" class="edge-w-txt">8</text>
+          <!-- 0->b(9노드) -->
+          <line x1="135" y1="185" x2="320" y2="265" stroke="#5b5d6b" stroke-width="2.5" marker-end="url(#ar31)"/>
+          <rect x="210" y="220" width="26" height="22" rx="5" class="edge-w-bg"/><text x="223" y="232" class="edge-w-txt">9</text>
+          <!-- b->a -15 빨강 -->
+          <line x1="355" y1="265" x2="355" y2="130" stroke="#ef4444" stroke-width="3.5" marker-end="url(#ar31r)"/>
+          <rect x="365" y="186" width="40" height="22" rx="5" class="edge-w-bg"/><text x="385" y="198" class="edge-w-txt" style="fill:#e11d48">-15</text>
+          <!-- 노드 -->
+          <circle cx="105" cy="168" r="30" fill="#2b6a8f" stroke="#1d4e6b" stroke-width="2.5"/><text x="105" y="161" class="node-label" style="fill:#fff;font-size:15px">0</text><text x="105" y="179" style="fill:#cde6f5;font-size:10px;text-anchor:middle;font-family:'JetBrains Mono',monospace">cost 0</text>
+          <circle cx="355" cy="95" r="32" fill="#c7f0dd" stroke="#10b981" stroke-width="3"/><text x="355" y="88" class="node-label" style="font-size:15px">8번</text><text x="355" y="106" class="edge-w-txt" style="font-size:10px;fill:#0f766e">확정 8 ✗</text>
+          <circle cx="355" cy="290" r="32" fill="#ede9fe" stroke="#7c3aed" stroke-width="2.5"/><text x="355" y="283" class="node-label" style="font-size:15px">9번</text><text x="355" y="301" class="edge-w-txt" style="font-size:10px">cost 9</text>
+        </svg>
+      </div>
+
+      <div class="callout co-warn">
+        <div class="co-t">⚠️ 무슨 일이 일어났나</div>
+        <p>① 0 확정 → 8번=8, 9번=9. ② 더 작은 <strong>8번을 거리 8로 확정</strong>(도장 쾅). ③ 9번 확정 후 9→8 완화 시도: 9+(-15)=<strong>-6</strong>으로 8보다 짧음! ④ 하지만 8번은 <strong>이미 확정</strong>이라 다익스트라는 안 고침 → 틀린 답 <strong>8</strong>(진짜는 -6).</p>
+      </div>
+
+      <div class="callout co-star">
+        <div class="co-t">⭐ 근본 원인</div>
+        <p>다익스트라의 그리디는 "<strong>앞으로 갈수록 거리는 늘기만 한다</strong>"는 가정에 기댑니다. 음수 간선은 "더 갈수록 줄어드는" 상황을 만들어 이 가정을 깹니다. 그래서 음수 간선엔 → <strong>벨만-포드(Bellman-Ford)</strong>. 음수 사이클까지 있으면(27번) 최단경로 자체가 없습니다.</p>
+      </div>
+    </section>
+
+    <!-- 32 -->
+    <section id="s32">
+      <h2 class="sec">32. 벨만-포드 의사코드 + 단계별 추적 🔥</h2>
+      <p>한 줄 요약: <strong>모든 간선을 n-1번 완화</strong>하고, 마지막에 한 번 더 돌려 <strong>음의 사이클을 검사</strong>합니다.</p>
+
+      <div style="background:#1a1b1e;border-radius:12px;padding:18px 20px;margin:16px 0;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.85;overflow-x:auto;color:#e6e6e9;white-space:pre;">
+<span style="color:#c4a8ff">BellmanFord</span>(G, r):
+    <span style="color:#c4a8ff">for each</span> u ∈ V
+        u.cost ← ∞        <span style="color:#6c7280">// 전부 무한대로 초기화</span>
+    r.cost ← <span style="color:#ff9eb5">0</span>            <span style="color:#6c7280">// 시작점만 0</span>
+    <span style="color:#c4a8ff">for</span> i ← 1 <span style="color:#c4a8ff">to</span> n-1     <span style="color:#6c7280">// ① n-1번 반복 (n=정점 수)</span>
+        <span style="color:#c4a8ff">for each</span> (u→v) ∈ E  <span style="color:#6c7280">// ② 모든 방향 간선</span>
+            <span style="color:#c4a8ff">if</span> (u.cost + w(u,v) < v.cost)   <span style="color:#6c7280">// ③</span>
+                v.cost ← u.cost + w(u,v)  <span style="color:#ff5555">// ④ 완화!</span>
+                v.prev ← u                <span style="color:#6c7280">// ⑤</span>
+    <span style="color:#6c7280">// 음의 사이클 검사</span>
+    <span style="color:#c4a8ff">for each</span> (u→v) ∈ E      <span style="color:#6c7280">// ⑥ 한 번 더 돌려봄</span>
+        <span style="color:#c4a8ff">if</span> (u.cost + w(u,v) < v.cost) <span style="color:#c4a8ff">output</span> <span style="color:#a3e88c">"해 없음: 음의 사이클"</span>
+</div>
+
+      <div class="callout co-tip">
+        <div class="co-t">💡 왜 n-1번? 왜 ⑥이 사이클을 잡나</div>
+        <p>최단 경로는 간선을 <strong>최대 n-1개</strong>만 지납니다(그 이상이면 사이클). 라운드마다 최소 한 간선씩 확정되니 <strong>n-1번이면 완성</strong>됩니다. ⑥에서 <strong>그 후에도 또 줄어들면</strong> = "돌수록 짧아지는" 음의 사이클이 있다는 증거입니다.</p>
+      </div>
+
+      <p><strong>[다음 ▶]</strong>으로 라운드(i)마다 거리가 전파되는 걸 보세요. 음수 간선이 섞인 방향 그래프를 <strong>0번부터</strong> 돕니다(음의 사이클은 없는 정상 케이스).</p>
+
+      <div class="trace">
+        <svg id="bf-graph" viewBox="0 0 600 420" xmlns="http://www.w3.org/2000/svg"></svg>
+        <table class="dist-table" id="bf-dist"></table>
+        <div class="trace-desc" id="bf-desc">시작 전입니다. [다음 ▶]을 눌러 시작하세요.</div>
+        <div class="trace-bar">
+          <button class="trace-btn" id="bf-prev">◀ 이전</button>
+          <button class="trace-btn primary" id="bf-next">다음 ▶</button>
+          <button class="trace-btn" id="bf-reset">↻ 처음</button>
+        </div>
+        <div style="text-align:center;font-size:12px;color:var(--ink-faint);font-family:'JetBrains Mono',monospace;">
+          🟥 이번 라운드에 거리 갱신됨 · 노드 안 숫자 = 현재 거리
+        </div>
+      </div>
+
+      <div class="callout co-star">
+        <div class="co-t">⭐ 다익스트라와 다른 점</div>
+        <p>"확정 도장"이 없습니다. 4번 정점은 라운드1에서 2였다가 라운드3에서 -2로 <strong>한 번 더 줄어듭니다</strong>. 다익스트라라면 이미 확정해서 못 고쳤을 값을, 벨만-포드는 라운드를 반복하며 <strong>음수 간선의 효과를 끝까지 반영</strong>합니다.</p>
+      </div>
+    </section>
+
+    <!-- 33 -->
+    <section id="s33">
+      <h2 class="sec">33. 음의 사이클이면 "해 없음"</h2>
+      <p>한 줄 요약: 음의 사이클이 있으면 거리가 <strong>라운드마다 무한히 줄어들어</strong>, ⑥번 검사가 이를 잡아냅니다.</p>
+
+      <div class="graph-card">
+        <div class="gc-title">사이클 1→2→3→1 = (-2)+(-1)+(-1) = -4 (음수!)</div>
+        <svg viewBox="0 0 520 280" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="ar33" markerWidth="11" markerHeight="11" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,4 L0,8 Z" fill="#ef4444"/></marker>
+          <marker id="ar33b" markerWidth="11" markerHeight="11" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,4 L0,8 Z" fill="#5b5d6b"/></marker></defs>
+          <!-- 0->1 -->
+          <line x1="95" y1="140" x2="180" y2="140" stroke="#5b5d6b" stroke-width="2.5" marker-end="url(#ar33b)"/>
+          <rect x="125" y="118" width="26" height="22" rx="5" class="edge-w-bg"/><text x="138" y="130" class="edge-w-txt">4</text>
+          <!-- 사이클 1->2->3->1 빨강 -->
+          <line x1="240" y1="120" x2="345" y2="75" stroke="#ef4444" stroke-width="3" marker-end="url(#ar33)"/>
+          <rect x="280" y="80" width="30" height="22" rx="5" class="edge-w-bg"/><text x="295" y="92" class="edge-w-txt" style="fill:#e11d48">-2</text>
+          <line x1="400" y1="100" x2="400" y2="190" stroke="#ef4444" stroke-width="3" marker-end="url(#ar33)"/>
+          <rect x="408" y="135" width="30" height="22" rx="5" class="edge-w-bg"/><text x="423" y="147" class="edge-w-txt" style="fill:#e11d48">-1</text>
+          <line x1="345" y1="215" x2="240" y2="165" stroke="#ef4444" stroke-width="3" marker-end="url(#ar33)"/>
+          <rect x="280" y="195" width="30" height="22" rx="5" class="edge-w-bg"/><text x="295" y="207" class="edge-w-txt" style="fill:#e11d48">-1</text>
+          <!-- 노드 -->
+          <circle cx="65" cy="140" r="28" fill="#2b6a8f" stroke="#1d4e6b" stroke-width="2.5"/><text x="65" y="140" class="node-label" style="fill:#fff;font-size:16px">0</text>
+          <circle cx="210" cy="140" r="28" class="node-circle"/><text x="210" y="140" class="node-label" style="font-size:16px">1</text>
+          <circle cx="375" cy="65" r="28" class="node-circle"/><text x="375" y="65" class="node-label" style="font-size:16px">2</text>
+          <circle cx="375" cy="225" r="28" class="node-circle"/><text x="375" y="225" class="node-label" style="font-size:16px">3</text>
+        </svg>
+      </div>
+
+      <p>1→2→3→1을 한 바퀴 돌 때마다 거리가 <strong>4씩 줄어듭니다.</strong> 라운드를 거듭하면:</p>
+      <table>
+        <thead><tr><th>라운드</th><th>0</th><th>1</th><th>2</th><th>3</th></tr></thead>
+        <tbody>
+          <tr><td>초기</td><td>0</td><td class="inf" style="color:#cfcde0">∞</td><td class="inf" style="color:#cfcde0">∞</td><td class="inf" style="color:#cfcde0">∞</td></tr>
+          <tr><td>i=1</td><td>0</td><td>0</td><td>2</td><td>1</td></tr>
+          <tr><td>i=2</td><td>0</td><td>-4</td><td>-2</td><td>-3</td></tr>
+          <tr><td>i=3</td><td>0</td><td>-8</td><td>-6</td><td>-7</td></tr>
+          <tr><td>⑥ 검사</td><td colspan="4" style="color:#e11d48;font-weight:700">아직도 줄어듦 → "해 없음: 음의 사이클"</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout co-warn">
+        <div class="co-t">⚠️ 왜 최단 경로가 없나</div>
+        <p>음의 사이클을 <strong>무한히 돌수록 거리가 무한히 작아지므로</strong>, "최소"라는 값이 존재하지 않습니다(−∞로 발산). 그래서 최단 경로 문제 자체가 성립하지 않고, 벨만-포드는 이를 정직하게 "해 없음"으로 알려줍니다. 다익스트라는 이런 검사 자체가 없어서 음수를 만나면 그냥 틀린 답을 냅니다(31번).</p>
+      </div>
+    </section>
+
+    <!-- 34 플로이드-워셜 (참고, 수업 외) -->
+    <section id="s34">
+      <h2 class="sec">34. 플로이드-워셜 — 모든 쌍 최단경로 (참고)</h2>
+      <div class="callout co-review">
+        <div class="co-t">🔁 수업에선 안 다뤘지만, 그래프 총정리 차원에서</div>
+        <p>다익스트라·벨만-포드는 <strong>시작점 하나</strong>에서 모두까지 구하는 <strong>단일 출발점(single-source)</strong> 방식입니다. 플로이드-워셜(Floyd-Warshall)<span class="eng"> Floyd-Warshall</span>은 한 걸음 더 나아가 <strong>모든 정점에서 모든 정점까지(all-pairs)</strong>를 한 번에 구합니다.</p>
+      </div>
+
+      <p>한 줄 요약: <strong>경유 정점을 0개, 1개, 2개… 하나씩 늘려가며</strong> "그 정점을 거치면 더 짧아지나?"를 모든 칸에 대해 갱신합니다.</p>
+
+      <p>비유로, 다익스트라/벨만-포드가 "<strong>내 집에서 동네 모두까지</strong> 거리"라면, 플로이드-워셜은 "<strong>동네 사람 전원 사이의 거리표</strong>"를 한 번에 만드는 것입니다. "k를 경유해서 가면 더 가까운가?"를 k를 바꿔가며 모든 (i, j) 쌍에 묻습니다.</p>
+
+      <div class="def">
+        <div class="label">핵심 점화식 (k를 경유지로 허용)</div>
+        <div class="formula">d[i][j] = min( d[i][j], &nbsp;d[i][k] + d[k][j] )</div>
+        <p style="text-align:center;color:var(--ink-soft);font-size:14px;margin-top:4px;">"i→j 직접" vs "i→k→j 우회" 중 더 짧은 쪽</p>
+      </div>
+
+      <table>
+        <thead><tr><th></th><th>다익스트라 / 벨만-포드</th><th>플로이드-워셜</th></tr></thead>
+        <tbody>
+          <tr><td>구하는 것</td><td>한 출발점 → 모두 (single-source)</td><td>모든 쌍 (all-pairs)</td></tr>
+          <tr><td>기반</td><td>완화 + 큐/반복</td><td>인접 행렬 + 3중 반복</td></tr>
+          <tr><td>시간복잡도</td><td>O((V+E)logV) / O(VE)</td><td>O(n³)</td></tr>
+          <tr><td>음수 간선</td><td>벨만-포드만 가능</td><td>가능 (음의 사이클은 불가)</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout co-connect">
+        <div class="co-t">🔗 14주차-2와 직결</div>
+        <p>이게 14주차-2에서 d<sub>0</sub> → d<sub>4</sub> 표를 단계별로 갱신했던 바로 그 알고리즘입니다. "연결 안 됨 = ∞"로 시작한 인접 행렬(14번)을 입력으로 받아, 경유 정점을 늘리며 ∞ 자리를 실제 최단거리로 채워나갑니다. <strong>이쪽이 시험 범위</strong>이니 14주차-2 노트로 자세히 복습하세요.</p>
+      </div>
+    </section>
+
+    <!-- 35 시험 포인트 -->
+    <section id="s35">
+      <h2 class="sec">35. 📝 시험 포인트 총정리</h2>
+      <p>15주차-1 그래프 복습 전체에서 시험에 자주 나오는 핵심만 모았습니다.</p>
+
+      <div class="callout co-exam">
+        <div class="co-t">📝 그래프 기본 & 표현</div>
+        <p>• <strong>G=(V,E)</strong>: 정점(vertex) 집합 + 간선(edge) 집합. 간선으로 직접 연결 = <strong>인접(adjacent)</strong><br>
+        • 4종류: 무향 / 가중 / 방향 / 가중방향 (방향 유무 × 가중치 유무)<br>
+        • <strong>인접 행렬</strong>: 무향=<strong>대칭</strong>, 방향=<strong>비대칭</strong>, 공간 <strong>O(n²)</strong>. 거리 맥락에서 "연결 안 됨"=<strong>∞</strong>, 자기 자신=0<br>
+        • <strong>인접 리스트</strong>: 실제 간선만 저장(공간 절약). 방향이면 <strong>나가는 간선만</strong>. 무향은 간선 1개가 노드 2개</p>
+      </div>
+
+      <div class="callout co-exam">
+        <div class="co-t">📝 그래프 순회 (BFS · DFS)</div>
+        <p>• <strong>BFS</strong>: <strong>큐(FIFO)</strong>, 레벨(너비) 우선. visited는 <strong>enqueue할 때</strong> 표시(중복 삽입 방지)<br>
+        • <strong>DFS</strong>: <strong>스택(LIFO)/재귀</strong>, 깊이 우선. 재귀 = 호출 스택(call stack)을 자동으로 쓰는 것<br>
+        • 같은 그래프·같은 시작점이라도 BFS와 DFS는 <strong>방문 순서가 다름</strong> (큐는 옆으로, 스택은 아래로)</p>
+      </div>
+
+      <div class="callout co-exam">
+        <div class="co-t">📝 최단 경로</div>
+        <p>• <strong>완화(relaxation)</strong>: u.cost + w(u,v) &lt; v.cost 이면 v.cost 갱신 — 모든 최단경로 알고리즘의 공통 핵심<br>
+        • <strong>다익스트라</strong>: 그리디, deleteMin으로 가장 가까운 것부터 확정. <strong>음수 간선 불가</strong>. O((V+E)logV)<br>
+        • <strong>벨만-포드</strong>: 모든 간선 <strong>n-1번 완화</strong>. 음수 OK, ⑥에서 음의 사이클 탐지. O(VE)<br>
+        • <strong>플로이드-워셜</strong>(참고): <strong>모든 쌍(all-pairs)</strong> 최단경로, 경유 정점 k로 d[i][j]=min(d[i][j], d[i][k]+d[k][j]), O(n³)<br>
+        • <strong>음의 사이클</strong>: 거리가 무한히 작아져 최단 경로가 <strong>존재하지 않음</strong></p>
+      </div>
+
+      <div class="callout co-exam">
+        <div class="co-t">📝 자주 틀리는 포인트</div>
+        <p>• 발음·표기: <strong>다익스트라</strong>(다이스트라 X), <strong>벨만-포드</strong><br>
+        • 방향 그래프 행렬에서 A[i][j]는 <strong>i→j만</strong> (A[i][j]≠A[j][i] 가능)<br>
+        • 다익스트라가 음수에서 틀리는 이유: "한 번 확정한 거리는 다시 안 본다"는 가정이 음수에서 깨짐<br>
+        • 완화 부등호는 <strong>&lt;</strong> (더 짧을 때만 갱신), 갱신 시 <strong>prev도 같이</strong> 기록</p>
+      </div>
+
+      <p style="text-align:center;color:var(--accent-dark);font-weight:700;margin-top:30px;font-family:'JetBrains Mono',monospace;">— 15주차-1 그래프 복습 끝 —</p>
+    </section>
+  </main>
+</div>
+
+<script>
+/* ===========================================================
+   그래프 렌더러
+   - 6개 노드 좌표를 한 곳에서 관리 (네 그래프 모두 동일 배치)
+   - edges 데이터만 바꿔 무향/가중/방향/가중방향을 그림
+   - dir: 'none'(무향) | 'fwd'(단방향) | 'both'(양방향)
+=========================================================== */
+const NODES = {
+  철수:{x:280,y:80},
+  영희:{x:110,y:225},
+  준호:{x:330,y:235},
+  승우:{x:545,y:215},
+  동건:{x:130,y:400},
+  재상:{x:400,y:405}
+};
+const R = 36;               // 노드 반지름
+const SVGNS = "http://www.w3.org/2000/svg";
+
+// 두 점 사이에서, 노드 경계까지 잘라낸 좌표 반환 (화살표가 원 안으로 안 들어가게)
+function trim(a, b, pad){
+  const dx=b.x-a.x, dy=b.y-a.y, len=Math.hypot(dx,dy);
+  const ux=dx/len, uy=dy/len;
+  return {
+    sx:a.x+ux*pad, sy:a.y+uy*pad,
+    ex:b.x-ux*pad, ey:b.y-uy*pad,
+    ux, uy, len
+  };
+}
+function el(tag, attrs){
+  const n=document.createElementNS(SVGNS, tag);
+  for(const k in attrs) n.setAttribute(k, attrs[k]);
+  return n;
+}
+// 가중치 라벨 (흰 배경 박스 + 글자)
+function weightLabel(svg, x, y, w){
+  const txt=String(w);
+  const bw=txt.length*9+12;
+  svg.appendChild(el("rect",{x:x-bw/2,y:y-11,width:bw,height:22,rx:5,class:"edge-w-bg"}));
+  const t=el("text",{x:x,y:y,class:"edge-w-txt"}); t.textContent=txt;
+  svg.appendChild(t);
+}
+
+const IDX={철수:0,영희:1,동건:2,준호:3,재상:4,승우:5};
+
+function drawGraph(svgId, edges, showIdx){
+  const svg=document.getElementById(svgId);
+  svg.innerHTML="";
+  // 화살표 마커 정의
+  const defs=el("defs",{});
+  defs.innerHTML=`<marker id="arrow" markerWidth="11" markerHeight="11" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L9,4 L0,8 Z" fill="#5b5d6b"></path></marker>`;
+  svg.appendChild(defs);
+
+  // 간선 먼저 그림 (노드 아래 깔리도록)
+  edges.forEach(e=>{
+    const a=NODES[e.from], b=NODES[e.to];
+    if(e.dir==='both'){
+      // 양방향: 서로 반대로 휘는 두 곡선
+      drawCurved(svg, a, b, e.from, e.to,  1, e.w1);  // from→to
+      drawCurved(svg, b, a, e.to, e.from, 1, e.w2);   // to→from
+    } else {
+      // 직선 (무향 dir='none' / 단방향 dir='fwd')
+      const arrow = (e.dir==='fwd');
+      const t=trim(a, b, arrow? R : 0);
+      const ln=el("line",{x1:t.sx,y1:t.sy,x2:t.ex,y2:t.ey,class:"edge-line"});
+      if(arrow) ln.setAttribute("marker-end","url(#arrow)");
+      svg.appendChild(ln);
+      if(e.w!==undefined){
+        const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+        weightLabel(svg, mx, my, e.w);
+      }
+    }
+  });
+
+  // 노드 그림
+  for(const name in NODES){
+    const p=NODES[name];
+    svg.appendChild(el("circle",{cx:p.x,cy:p.y,r:R,class:"node-circle"}));
+    if(showIdx){
+      // 번호(위) + 이름(아래)
+      const ni=el("text",{x:p.x,y:p.y-12,class:"node-label",style:"font-size:13px;fill:var(--accent)"});
+      ni.textContent=IDX[name]; svg.appendChild(ni);
+      const nm=el("text",{x:p.x,y:p.y+9,class:"node-label"});
+      nm.textContent=name; svg.appendChild(nm);
+    } else {
+      const t=el("text",{x:p.x,y:p.y,class:"node-label"}); t.textContent=name;
+      svg.appendChild(t);
+    }
+  }
+}
+
+// 양방향용 곡선 (a에서 b로, side만큼 휘게)
+function drawCurved(svg, a, b, fromName, toName, side, weight){
+  const dx=b.x-a.x, dy=b.y-a.y, len=Math.hypot(dx,dy);
+  const ux=dx/len, uy=dy/len;          // 진행 방향 단위벡터
+  const px=-uy, py=ux;                  // 수직(법선) 단위벡터
+  const bend=16;                        // 휘는 정도
+  // 시작/끝을 노드 경계로 자르고, 살짝 옆으로 띄움
+  const sx=a.x+ux*R + px*6*side, sy=a.y+uy*R + py*6*side;
+  const ex=b.x-ux*R + px*6*side, ey=b.y-uy*R + py*6*side;
+  const cx=(a.x+b.x)/2 + px*bend*side, cy=(a.y+b.y)/2 + py*bend*side;
+  const path=el("path",{d:`M${sx},${sy} Q${cx},${cy} ${ex},${ey}`,class:"edge-line"});
+  path.setAttribute("marker-end","url(#arrow)");
+  svg.appendChild(path);
+  if(weight!==undefined){
+    // 라벨은 곡선 바깥쪽 control 근처
+    const lx=cx+px*8*side, ly=cy+py*8*side;
+    weightLabel(svg, lx, ly, weight);
+  }
+}
+
+/* ===== 데이터 ===== */
+// 4. 무향 그래프
+drawGraph("g-undirected",[
+  {from:'철수',to:'영희',dir:'none'},
+  {from:'철수',to:'준호',dir:'none'},
+  {from:'철수',to:'동건',dir:'none'},
+  {from:'철수',to:'승우',dir:'none'},
+  {from:'영희',to:'동건',dir:'none'},
+  {from:'준호',to:'승우',dir:'none'},
+  {from:'승우',to:'재상',dir:'none'},
+  {from:'동건',to:'재상',dir:'none'},
+]);
+
+// 5. 가중 그래프
+drawGraph("g-weighted",[
+  {from:'철수',to:'영희',dir:'none',w:9},
+  {from:'철수',to:'준호',dir:'none',w:5},
+  {from:'철수',to:'동건',dir:'none',w:7},
+  {from:'철수',to:'승우',dir:'none',w:6},
+  {from:'영희',to:'동건',dir:'none',w:9},
+  {from:'준호',to:'승우',dir:'none',w:5},
+  {from:'승우',to:'재상',dir:'none',w:1},
+  {from:'동건',to:'재상',dir:'none',w:5},
+]);
+
+// 6. 방향 그래프
+drawGraph("g-directed",[
+  {from:'철수',to:'영희',dir:'both'},
+  {from:'철수',to:'준호',dir:'both'},
+  {from:'영희',to:'동건',dir:'both'},
+  {from:'승우',to:'재상',dir:'both'},
+  {from:'철수',to:'승우',dir:'fwd'},
+  {from:'철수',to:'동건',dir:'fwd'},
+  {from:'준호',to:'승우',dir:'fwd'},
+  {from:'동건',to:'재상',dir:'fwd'},
+]);
+
+// 7. 가중 방향 그래프  (w1: from→to, w2: to→from)
+drawGraph("g-wdirected",[
+  {from:'영희',to:'철수',dir:'both',w1:9,w2:8},  // 영희→철수=9, 철수→영희=8
+  {from:'철수',to:'준호',dir:'both',w1:5,w2:8},  // 철수→준호=5, 준호→철수=8
+  {from:'동건',to:'영희',dir:'both',w1:9,w2:6},  // 동건→영희=9, 영희→동건=6
+  {from:'승우',to:'재상',dir:'both',w1:1,w2:2},  // 승우→재상=1, 재상→승우=2
+  {from:'철수',to:'승우',dir:'fwd',w:6},
+  {from:'철수',to:'동건',dir:'fwd',w:7},
+  {from:'준호',to:'승우',dir:'fwd',w:5},
+  {from:'동건',to:'재상',dir:'fwd',w:5},
+]);
+
+/* ===== 인접 행렬 표 빌더 ===== */
+// M: 6x6 배열. 0이면 빈칸(회색), 그 외엔 값(보라). 대각선은 회색 처리.
+function buildMatrix(elId, M){
+  const wrap=document.getElementById(elId);
+  let html='<table class="mtx"><tr><th class="corner"></th>';
+  for(let j=0;j<6;j++) html+=`<th>${j}</th>`;
+  html+='</tr>';
+  for(let i=0;i<6;i++){
+    html+=`<tr><th>${i}</th>`;
+    for(let j=0;j<6;j++){
+      const v=M[i][j];
+      const cls = (i===j) ? 'diag' : (v!==0 ? 'val' : 'zero');
+      html+=`<td class="${cls}">${v}</td>`;
+    }
+    html+='</tr>';
+  }
+  html+='</table>';
+  wrap.innerHTML=html;
+}
+
+/* ===== 인접 행렬 섹션: 번호 그래프 + 행렬 ===== */
+// 10. 무향
+drawGraph("m-undirected-g",[
+  {from:'철수',to:'영희',dir:'none'},{from:'철수',to:'준호',dir:'none'},
+  {from:'철수',to:'동건',dir:'none'},{from:'철수',to:'승우',dir:'none'},
+  {from:'영희',to:'동건',dir:'none'},{from:'준호',to:'승우',dir:'none'},
+  {from:'승우',to:'재상',dir:'none'},{from:'동건',to:'재상',dir:'none'},
+], true);
+buildMatrix("m-undirected",[
+  [0,1,1,1,0,1],
+  [1,0,1,0,0,0],
+  [1,1,0,0,1,0],
+  [1,0,0,0,0,1],
+  [0,0,1,0,0,1],
+  [1,0,0,1,1,0],
+]);
+
+// 11. 가중 무향
+drawGraph("m-weighted-g",[
+  {from:'철수',to:'영희',dir:'none',w:9},{from:'철수',to:'준호',dir:'none',w:5},
+  {from:'철수',to:'동건',dir:'none',w:7},{from:'철수',to:'승우',dir:'none',w:6},
+  {from:'영희',to:'동건',dir:'none',w:9},{from:'준호',to:'승우',dir:'none',w:5},
+  {from:'승우',to:'재상',dir:'none',w:1},{from:'동건',to:'재상',dir:'none',w:5},
+], true);
+buildMatrix("m-weighted",[
+  [0,9,7,5,0,6],
+  [9,0,9,0,0,0],
+  [7,9,0,0,5,0],
+  [5,0,0,0,0,5],
+  [0,0,5,0,0,1],
+  [6,0,0,5,1,0],
+]);
+
+// 12. 방향
+drawGraph("m-directed-g",[
+  {from:'철수',to:'영희',dir:'both'},{from:'철수',to:'준호',dir:'both'},
+  {from:'영희',to:'동건',dir:'both'},{from:'승우',to:'재상',dir:'both'},
+  {from:'철수',to:'승우',dir:'fwd'},{from:'철수',to:'동건',dir:'fwd'},
+  {from:'준호',to:'승우',dir:'fwd'},{from:'동건',to:'재상',dir:'fwd'},
+], true);
+buildMatrix("m-directed",[
+  [0,1,1,1,0,1],
+  [1,0,1,0,0,0],
+  [0,1,0,0,1,0],
+  [1,0,0,0,0,1],
+  [0,0,0,0,0,1],
+  [0,0,0,0,1,0],
+]);
+
+// 13. 가중 방향
+drawGraph("m-wdirected-g",[
+  {from:'영희',to:'철수',dir:'both',w1:9,w2:8},{from:'철수',to:'준호',dir:'both',w1:5,w2:8},
+  {from:'동건',to:'영희',dir:'both',w1:9,w2:6},{from:'승우',to:'재상',dir:'both',w1:1,w2:2},
+  {from:'철수',to:'승우',dir:'fwd',w:6},{from:'철수',to:'동건',dir:'fwd',w:7},
+  {from:'준호',to:'승우',dir:'fwd',w:5},{from:'동건',to:'재상',dir:'fwd',w:5},
+], true);
+buildMatrix("m-wdirected",[
+  [0,8,7,5,0,6],
+  [9,0,6,0,0,0],
+  [0,9,0,0,5,0],
+  [8,0,0,0,0,5],
+  [0,0,0,0,0,2],
+  [0,0,0,0,1,0],
+]);
+
+/* ===== 인접 리스트 빌더 ===== */
+// lists[i] = 무향/방향: [정점,...]  /  가중: [[정점,가중치],...]
+function buildList(elId, lists, weighted){
+  const wrap=document.getElementById(elId);
+  let html='';
+  lists.forEach((adj,i)=>{
+    html+='<div class="ll-row">';
+    html+=`<div class="ll-head">${i}</div>`;
+    html+='<div class="ll-arrow">→</div>';
+    adj.forEach((item,k)=>{
+      const last=(k===adj.length-1);
+      const v = weighted ? item[0] : item;
+      html+='<div class="ll-node">';
+      html+=`<span class="ll-v">${v}</span>`;
+      if(weighted) html+=`<span class="ll-w">${item[1]}</span>`;
+      html+=`<span class="ll-next ${last?'null':''}"></span>`;
+      html+='</div>';
+      if(!last) html+='<div class="ll-arrow">→</div>';
+    });
+    html+='</div>';
+  });
+  wrap.innerHTML=html;
+}
+
+// 16. 무향
+buildList("l-undirected",[
+  [1,2,3,5],
+  [0,2],
+  [0,1,4],
+  [0,5],
+  [2,5],
+  [0,3,4],
+], false);
+
+// 17. 가중 무향
+buildList("l-weighted",[
+  [[1,9],[2,7],[3,5],[5,6]],
+  [[0,9],[2,9]],
+  [[0,7],[1,9],[4,5]],
+  [[0,5],[5,5]],
+  [[2,5],[5,1]],
+  [[0,6],[3,5],[4,1]],
+], true);
+
+// 18. 방향 (나가는 간선만)
+buildList("l-directed",[
+  [1,2,3,5],
+  [0,2],
+  [1,4],
+  [0,5],
+  [5],
+  [4],
+], false);
+
+// 19. 가중 방향 (정정 버전: 나가는 간선 + 방향 가중치)
+buildList("l-wdirected",[
+  [[1,8],[2,7],[3,5],[5,6]],
+  [[0,9],[2,6]],
+  [[1,9],[4,5]],
+  [[0,8],[5,5]],
+  [[5,2]],
+  [[4,1]],
+], true);
+
+/* ===== 트리 렌더러 (21·22 BFS/DFS 방문 순서) ===== */
+const TREEPOS={
+  A:{x:560,y:60}, B:{x:300,y:225}, C:{x:820,y:225},
+  D:{x:120,y:410}, E:{x:300,y:410}, F:{x:480,y:410}, G:{x:700,y:410}, H:{x:900,y:410},
+  I:{x:120,y:610}, J:{x:400,y:610}, K:{x:560,y:610}, L:{x:820,y:610}, M:{x:980,y:610}
+};
+const TREEEDGES=[['A','B'],['A','C'],['B','D'],['B','E'],['B','F'],
+  ['C','G'],['C','H'],['D','I'],['F','J'],['F','K'],['H','L'],['H','M']];
+const LEVELCOLOR={60:'#5b21b6',225:'#7c3aed',410:'#a78bfa',610:'#c4b5fd'};
+
+function drawTree(svgId, labels, mode){
+  const svg=document.getElementById(svgId);
+  svg.innerHTML="";
+  // DFS 방문순서 경로(점선)
+  if(mode==='dfs'){
+    const order={};
+    for(const k in labels) order[labels[k]]=TREEPOS[k];
+    let d='';
+    for(let n=1;n<=13;n++){const p=order[n]; d+=(n===1?'M':'L')+p.x+','+p.y+' ';}
+    svg.appendChild(el("path",{d:d,fill:'none',stroke:'#1d6f8b',
+      'stroke-width':3,'stroke-dasharray':'2 9','stroke-linecap':'round','opacity':'0.85'}));
+  }
+  // 트리 간선
+  TREEEDGES.forEach(([a,b])=>{
+    const p=TREEPOS[a], q=TREEPOS[b];
+    svg.appendChild(el("line",{x1:p.x,y1:p.y,x2:q.x,y2:q.y,stroke:'#5b5d6b','stroke-width':2.2}));
+  });
+  // BFS 레벨 가로 점선 + 라벨
+  if(mode==='bfs'){
+    [[60,'레벨 0'],[225,'레벨 1'],[410,'레벨 2'],[610,'레벨 3']].forEach(([y,lab])=>{
+      svg.appendChild(el("line",{x1:30,y1:y,x2:1090,y2:y,stroke:LEVELCOLOR[y],
+        'stroke-width':2,'stroke-dasharray':'6 7','opacity':'0.35'}));
+      const t=el("text",{x:1098,y:y,style:`fill:${LEVELCOLOR[y]};font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace;dominant-baseline:central`});
+      t.textContent=lab; svg.appendChild(t);
+    });
+  }
+  // 노드
+  for(const k in TREEPOS){
+    const p=TREEPOS[k];
+    const fill = mode==='bfs' ? LEVELCOLOR[p.y] : '#7c3aed';
+    svg.appendChild(el("circle",{cx:p.x,cy:p.y,r:27,fill:fill,stroke:'#3b1d6b','stroke-width':2.5}));
+    const t=el("text",{x:p.x,y:p.y,class:"tn-txt",style:"fill:#fff"}); t.textContent=labels[k];
+    svg.appendChild(t);
+  }
+}
+// BFS 라벨(레벨 순) / DFS 라벨(깊이 순)
+drawTree("tree-bfs",{A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,I:9,J:10,K:11,L:12,M:13},'bfs');
+drawTree("tree-dfs",{A:1,B:2,C:9,D:3,E:5,F:6,G:10,H:11,I:4,J:7,K:8,L:12,M:13},'dfs');
+
+/* ===== 인터랙티브 BFS 추적 (23) ===== */
+// 친구 그래프(무향) 인접 리스트, 0부터 시작
+const BADJ=[[1,2,3,5],[0,2],[0,1,4],[0,5],[2,5],[0,3,4]];
+// BFS 단계 스냅샷 미리 생성
+function buildBFSsteps(adj, start){
+  const steps=[];
+  const vis=new Array(6).fill(false);
+  const Q=[];
+  const order=[];
+  vis[start]=true; Q.push(start);
+  steps.push({q:[...Q],vis:[...vis],cur:null,hl:null,order:[...order],
+    desc:`시작 정점 ${start}을 방문 표시하고 큐에 넣습니다.`});
+  while(Q.length){
+    const u=Q.shift();
+    order.push(u);
+    steps.push({q:[...Q],vis:[...vis],cur:u,hl:null,order:[...order],
+      desc:`큐 맨 앞 ${u}을 꺼냅니다(dequeue). 이제 ${u}의 이웃을 봅니다.`});
+    for(const v of adj[u]){
+      if(!vis[v]){
+        vis[v]=true; Q.push(v);
+        steps.push({q:[...Q],vis:[...vis],cur:u,hl:v,order:[...order],
+          desc:`${u}의 이웃 ${v}: 미방문 → 방문 표시하고 큐에 넣습니다.`});
+      } else {
+        steps.push({q:[...Q],vis:[...vis],cur:u,hl:v,skip:true,order:[...order],
+          desc:`${u}의 이웃 ${v}: 이미 방문함 → 건너뜁니다.`});
+      }
+    }
+  }
+  steps.push({q:[],vis:[...vis],cur:null,hl:null,order:[...order],done:true,
+    desc:`큐가 비었습니다. BFS 종료. 방문 순서: ${order.join(' → ')}`});
+  return steps;
+}
+const BSTEPS=buildBFSsteps(BADJ,0);
+let bIdx=0;
+
+function renderBFS(){
+  const st=BSTEPS[bIdx];
+  // 그래프 노드 색
+  const svg=document.getElementById("bfs-trace-svg");
+  svg.innerHTML="";
+  const defs=el("defs",{}); svg.appendChild(defs);
+  // 간선
+  const edges=[[0,1],[0,2],[0,3],[0,5],[1,2],[2,4],[3,5],[4,5]];
+  edges.forEach(([a,b])=>{
+    const p=NODES[Object.keys(NODES)[a]], q=NODES[Object.keys(NODES)[b]];
+    svg.appendChild(el("line",{x1:p.x,y1:p.y,x2:q.x,y2:q.y,class:"edge-line"}));
+  });
+  const names=Object.keys(NODES); // 철수..승우 (인덱스 순)
+  names.forEach((nm,i)=>{
+    const p=NODES[nm];
+    let cls="tn-white";
+    if(st.cur===i) cls="tn-current";
+    else if(st.vis[i] && st.q.includes(i)) cls="tn-queued";
+    else if(st.vis[i]) cls="tn-done";
+    svg.appendChild(el("circle",{cx:p.x,cy:p.y,r:R,class:"tn "+cls}));
+    // 현재 보는 이웃이면 테두리 강조
+    if(st.hl===i) svg.appendChild(el("circle",{cx:p.x,cy:p.y,r:R+5,fill:'none',
+      stroke:st.skip?'#ef4444':'#10b981','stroke-width':3,'stroke-dasharray':'4 4'}));
+    const idxT=el("text",{x:p.x,y:p.y-11,class:"tn-txt",style:"font-size:12px;fill:"+(st.cur===i||(st.vis[i]&&!st.q.includes(i))?'#fff':'#7c3aed')}); idxT.textContent=i;
+    svg.appendChild(idxT);
+    const nmT=el("text",{x:p.x,y:p.y+9,class:"node-label",style:"font-size:14px;fill:"+(st.cur===i||(st.vis[i]&&!st.q.includes(i))?'#fff':'#4c1d95')}); nmT.textContent=nm;
+    svg.appendChild(nmT);
+  });
+  // 큐 박스
+  const qbox=document.getElementById("bfs-queue");
+  qbox.innerHTML = st.q.length ? st.q.map(x=>`<div class="q-cell">${x}</div>`).join('') : '<span style="color:#b8b5cc;font-size:13px">(비어 있음)</span>';
+  document.getElementById("bfs-desc").textContent=st.desc;
+  document.getElementById("bfs-order").textContent="방문 순서: "+(st.order.length?st.order.join(' → '):'-');
+  document.getElementById("bfs-prev").disabled = (bIdx===0);
+  document.getElementById("bfs-next").disabled = (bIdx===BSTEPS.length-1);
+}
+document.getElementById("bfs-next").onclick=()=>{ if(bIdx<BSTEPS.length-1){bIdx++;renderBFS();} };
+document.getElementById("bfs-prev").onclick=()=>{ if(bIdx>0){bIdx--;renderBFS();} };
+document.getElementById("bfs-reset").onclick=()=>{ bIdx=0;renderBFS(); };
+renderBFS();
+
+/* ===== 인터랙티브 DFS 추적 (25, 스택 버전) ===== */
+function buildDFSsteps(adj, start){
+  const steps=[];
+  const vis=new Array(6).fill(false);
+  const stack=[], order=[];
+  stack.push(start); vis[start]=true; order.push(start);
+  steps.push({stack:[...stack],vis:[...vis],order:[...order],
+    desc:`시작 정점 ${start}을 스택에 push하고 방문 표시합니다.`});
+  while(stack.length){
+    const top=stack[stack.length-1];
+    let w=-1;
+    for(const x of adj[top]){ if(!vis[x]){w=x;break;} }
+    if(w===-1){
+      stack.pop();
+      const nt=stack.length?stack[stack.length-1]:null;
+      steps.push({stack:[...stack],vis:[...vis],order:[...order],popped:top,
+        desc:`${top}의 미방문 이웃이 없음 → pop(백트래킹). ${nt!==null?'top은 이제 '+nt:'스택이 비었음'}.`});
+    } else {
+      stack.push(w); vis[w]=true; order.push(w);
+      steps.push({stack:[...stack],vis:[...vis],order:[...order],sel:w,
+        desc:`${top}의 미방문 이웃 ${w} 선택 → push하고 방문 표시합니다.`});
+    }
+  }
+  steps.push({stack:[],vis:[...vis],order:[...order],done:true,
+    desc:`스택이 비었습니다. DFS 종료. 방문 순서: ${order.join(' → ')}`});
+  return steps;
+}
+const DSTEPS=buildDFSsteps(BADJ,0);
+let dIdx=0;
+
+function renderDFS(){
+  const st=DSTEPS[dIdx];
+  const svg=document.getElementById("dfs-trace-svg");
+  svg.innerHTML="";
+  const edges=[[0,1],[0,2],[0,3],[0,5],[1,2],[2,4],[3,5],[4,5]];
+  const names=Object.keys(NODES);
+  edges.forEach(([a,b])=>{
+    const p=NODES[names[a]], q=NODES[names[b]];
+    svg.appendChild(el("line",{x1:p.x,y1:p.y,x2:q.x,y2:q.y,class:"edge-line"}));
+  });
+  const top = st.stack.length ? st.stack[st.stack.length-1] : null;
+  names.forEach((nm,i)=>{
+    const p=NODES[nm];
+    let cls="tn-white";
+    if(i===top) cls="tn-current";
+    else if(st.stack.includes(i)) cls="tn-queued";
+    else if(st.vis[i]) cls="tn-done";
+    svg.appendChild(el("circle",{cx:p.x,cy:p.y,r:R,class:"tn "+cls}));
+    if(st.sel===i) svg.appendChild(el("circle",{cx:p.x,cy:p.y,r:R+5,fill:'none',
+      stroke:'#10b981','stroke-width':3,'stroke-dasharray':'4 4'}));
+    if(st.popped===i) svg.appendChild(el("circle",{cx:p.x,cy:p.y,r:R+5,fill:'none',
+      stroke:'#ef4444','stroke-width':3,'stroke-dasharray':'4 4'}));
+    const onDark = (i===top)||(st.vis[i]&&!st.stack.includes(i));
+    const it=el("text",{x:p.x,y:p.y-11,class:"tn-txt",style:"font-size:12px;fill:"+(onDark?'#fff':'#7c3aed')}); it.textContent=i;
+    svg.appendChild(it);
+    const nt=el("text",{x:p.x,y:p.y+9,class:"node-label",style:"font-size:14px;fill:"+(onDark?'#fff':'#4c1d95')}); nt.textContent=nm;
+    svg.appendChild(nt);
+  });
+  // 스택 박스 (아래→위로 쌓임, column-reverse라 배열 순서대로 넣으면 위가 top)
+  const sbox=document.getElementById("dfs-stack");
+  if(st.stack.length){
+    sbox.innerHTML=st.stack.map((x,k)=>{
+      const isTop=(k===st.stack.length-1);
+      return `<div class="stk-cell ${isTop?'top':''}">${x}</div>`;
+    }).join('');
+  } else {
+    sbox.innerHTML='<span style="color:#b8b5cc;font-size:13px">(비어 있음)</span>';
+  }
+  document.getElementById("dfs-desc").textContent=st.desc;
+  document.getElementById("dfs-order").textContent="방문 순서: "+(st.order.length?st.order.join(' → '):'-');
+  document.getElementById("dfs-prev").disabled=(dIdx===0);
+  document.getElementById("dfs-next").disabled=(dIdx===DSTEPS.length-1);
+}
+document.getElementById("dfs-next").onclick=()=>{ if(dIdx<DSTEPS.length-1){dIdx++;renderDFS();} };
+document.getElementById("dfs-prev").onclick=()=>{ if(dIdx>0){dIdx--;renderDFS();} };
+document.getElementById("dfs-reset").onclick=()=>{ dIdx=0;renderDFS(); };
+renderDFS();
+
+/* ===== 26. DFS 예시 a~i (정적, 트리 간선 빨강) ===== */
+(function(){
+  const N={
+    a:{x:180,y:120}, b:{x:400,y:95}, c:{x:600,y:215}, h:{x:740,y:210},
+    e:{x:415,y:290}, d:{x:660,y:365}, g:{x:485,y:405}, f:{x:315,y:465}, i:{x:90,y:235}
+  };
+  // [u,v,트리간선?]
+  const E=[
+    ['a','b',true],['a','i',true],['b','c',true],['c','d',true],
+    ['d','g',true],['d','h',true],['g','e',true],['g','f',true],
+    ['a','f',false],['b','e',false],['c','e',false]
+  ];
+  const ORDER={a:1,b:2,c:3,d:4,g:5,e:6,f:7,h:8,i:9}; // 방문 순서
+  const svg=document.getElementById("dfs-example");
+  if(!svg) return;
+  svg.innerHTML="";
+  E.forEach(([u,v,tree])=>{
+    const p=N[u], q=N[v];
+    svg.appendChild(el("line",{x1:p.x,y1:p.y,x2:q.x,y2:q.y,
+      stroke: tree?'#ef4444':'#cfcdd9', 'stroke-width': tree?4:2.5}));
+  });
+  for(const k in N){
+    const p=N[k];
+    svg.appendChild(el("circle",{cx:p.x,cy:p.y,r:28,fill:'#ede9fe',stroke:'#7c3aed','stroke-width':2.5}));
+    const t=el("text",{x:p.x,y:p.y,class:"node-label",style:"font-size:17px;fill:#4c1d95"}); t.textContent=k;
+    svg.appendChild(t);
+    // 방문 순서 배지
+    svg.appendChild(el("circle",{cx:p.x+20,cy:p.y-20,r:12,fill:'#7c3aed',stroke:'#fff','stroke-width':2}));
+    const o=el("text",{x:p.x+20,y:p.y-20,class:"tn-txt",style:"font-size:12px;fill:#fff"}); o.textContent=ORDER[k];
+    svg.appendChild(o);
+  }
+})();
+
+/* ===== 29. 다익스트라 인터랙티브 추적 ===== */
+// min-heap (decrease-key 지원)
+class MinHeap{
+  constructor(){this.a=[];this.pos={};}
+  isEmpty(){return this.a.length===0;}
+  has(n){return n in this.pos;}
+  _swap(i,j){[this.a[i],this.a[j]]=[this.a[j],this.a[i]];
+    this.pos[this.a[i].node]=i;this.pos[this.a[j].node]=j;}
+  _up(i){while(i>0){const p=(i-1)>>1;
+    if(this.a[p].cost<=this.a[i].cost)break;this._swap(i,p);i=p;}}
+  _down(i){const n=this.a.length;while(true){let s=i,l=2*i+1,r=2*i+2;
+    if(l<n&&this.a[l].cost<this.a[s].cost)s=l;
+    if(r<n&&this.a[r].cost<this.a[s].cost)s=r;
+    if(s===i)break;this._swap(i,s);i=s;}}
+  push(node,cost){this.a.push({node,cost});this.pos[node]=this.a.length-1;this._up(this.a.length-1);}
+  decreaseKey(node,cost){const i=this.pos[node];this.a[i].cost=cost;this._up(i);}
+  popMin(){const top=this.a[0];const last=this.a.pop();delete this.pos[top.node];
+    if(this.a.length){this.a[0]=last;this.pos[last.node]=0;this._down(0);}return top;}
+  snap(){return this.a.map(x=>({node:x.node,cost:x.cost}));}
+}
+// 가중 무향 인접 리스트 (친구 그래프)
+const DWADJ=[
+  [[1,9],[2,7],[3,5],[5,6]],
+  [[0,9],[2,9]],
+  [[0,7],[1,9],[4,5]],
+  [[0,5],[5,5]],
+  [[2,5],[5,1]],
+  [[0,6],[3,5],[4,1]]
+];
+function buildDijkstra(adj,start,n){
+  const steps=[];
+  const dist=Array(n).fill(Infinity);
+  const prev=Array(n).fill(null);
+  const done=Array(n).fill(false);
+  const h=new MinHeap();
+  dist[start]=0; h.push(start,0);
+  steps.push({dist:[...dist],prev:[...prev],done:[...done],heap:h.snap(),u:null,
+    desc:`초기화: dist[${start}]=0, 나머지 ∞. 힙에 (0,${start}) 삽입.`});
+  while(!h.isEmpty()){
+    const {node:u,cost:c}=h.popMin();
+    if(done[u]) continue;
+    done[u]=true;
+    steps.push({dist:[...dist],prev:[...prev],done:[...done],heap:h.snap(),u,
+      desc:`힙에서 최소 (${c},${u}) 꺼냄 → 정점 ${u} 거리 확정(${c}). 이제 ${u}의 이웃을 완화합니다.`});
+    for(const [v,w] of adj[u]){
+      if(done[v]) continue;
+      const nd=dist[u]+w;
+      const oldStr = dist[v]===Infinity?'∞':dist[v];
+      if(nd<dist[v]){
+        dist[v]=nd; prev[v]=u;
+        if(h.has(v)) h.decreaseKey(v,nd); else h.push(v,nd);
+        steps.push({dist:[...dist],prev:[...prev],done:[...done],heap:h.snap(),u,relax:v,
+          desc:`완화 OK: ${u}→${v}, ${dist[u]}+${w}=${nd} < ${oldStr} → dist[${v}]=${nd}, prev[${v}]=${u}. 힙 갱신.`});
+      } else {
+        steps.push({dist:[...dist],prev:[...prev],done:[...done],heap:h.snap(),u,check:v,
+          desc:`확인: ${u}→${v}, ${dist[u]}+${w}=${nd} ≥ ${oldStr} → 더 짧지 않음. 갱신 안 함.`});
+      }
+    }
+  }
+  steps.push({dist:[...dist],prev:[...prev],done:[...done],heap:[],u:null,finished:true,
+    desc:`힙이 비었습니다. 완료! 모든 정점의 최단 거리가 확정되었습니다.`});
+  return steps;
+}
+const DIJ=buildDijkstra(DWADJ,0,6);
+let jIdx=0;
+const DEDGES=[[0,1,9],[0,2,7],[0,3,5],[0,5,6],[1,2,9],[2,4,5],[3,5,5],[4,5,1]];
+
+function renderDij(){
+  const st=DIJ[jIdx];
+  const names=Object.keys(NODES);
+  const heapNodes=new Set(st.heap.map(x=>x.node));
+  // 그래프
+  const svg=document.getElementById("dij-graph"); svg.innerHTML="";
+  DEDGES.forEach(([a,b,w])=>{
+    const p=NODES[names[a]], q=NODES[names[b]];
+    // 최단경로 트리 간선(prev) 강조
+    const treeEdge = (st.prev[a]===b)||(st.prev[b]===a);
+    svg.appendChild(el("line",{x1:p.x,y1:p.y,x2:q.x,y2:q.y,
+      stroke: treeEdge?'#ef4444':'#9498a6','stroke-width':treeEdge?4:2}));
+    const mx=(p.x+q.x)/2,my=(p.y+q.y)/2;
+    svg.appendChild(el("rect",{x:mx-13,y:my-11,width:26,height:22,rx:5,class:"edge-w-bg"}));
+    const wt=el("text",{x:mx,y:my,class:"edge-w-txt"}); wt.textContent=w; svg.appendChild(wt);
+  });
+  names.forEach((nm,i)=>{
+    const p=NODES[nm];
+    let cls="tn-white";
+    if(i===st.u) cls="tn-current";
+    else if(st.done[i]) cls="tn-done";
+    else if(heapNodes.has(i)) cls="tn-queued";
+    svg.appendChild(el("circle",{cx:p.x,cy:p.y,r:R,class:"tn "+cls}));
+    if(st.relax===i) svg.appendChild(el("circle",{cx:p.x,cy:p.y,r:R+5,fill:'none',stroke:'#10b981','stroke-width':3,'stroke-dasharray':'4 4'}));
+    if(st.check===i) svg.appendChild(el("circle",{cx:p.x,cy:p.y,r:R+5,fill:'none',stroke:'#9498a6','stroke-width':3,'stroke-dasharray':'4 4'}));
+    const onDark=(i===st.u)||st.done[i];
+    const it=el("text",{x:p.x,y:p.y-10,class:"tn-txt",style:"font-size:12px;fill:"+(onDark?'#fff':'#7c3aed')}); it.textContent=i;
+    svg.appendChild(it);
+    const nt=el("text",{x:p.x,y:p.y+9,class:"node-label",style:"font-size:13px;fill:"+(onDark?'#fff':'#4c1d95')}); nt.textContent=nm;
+    svg.appendChild(nt);
+    // dist 배지
+    svg.appendChild(el("circle",{cx:p.x+22,cy:p.y-22,r:13,fill:'#1a1b1e',stroke:'#fff','stroke-width':2}));
+    const dt=el("text",{x:p.x+22,y:p.y-22,class:"tn-txt",style:"font-size:11px;fill:#ffd866"});
+    dt.textContent = st.dist[i]===Infinity?'∞':st.dist[i]; svg.appendChild(dt);
+  });
+  // 힙 배열
+  const arr=document.getElementById("dij-heap-arr");
+  if(st.heap.length){
+    arr.innerHTML=st.heap.map((x,k)=>
+      `<div class="heap-cell ${k===0?'root':''}"><span class="hc-cost">${x.cost}</span><span class="hc-node">정점 ${x.node}</span></div>`).join('');
+  } else arr.innerHTML='<span class="heap-empty">(비어 있음)</span>';
+  // 힙 트리
+  const tsvg=document.getElementById("dij-heap-tree"); tsvg.innerHTML="";
+  const hp=st.heap;
+  function hpos(i){
+    const lv=Math.floor(Math.log2(i+1));
+    const pil=i-(2**lv-1), cnt=2**lv;
+    return {x:380*(pil+1)/(cnt+1), y:36+lv*64};
+  }
+  hp.forEach((x,i)=>{ if(i>0){const c=hpos(i),pa=hpos((i-1>>1));
+    tsvg.appendChild(el("line",{x1:pa.x,y1:pa.y,x2:c.x,y2:c.y,stroke:'#b8b5cc','stroke-width':2}));}});
+  hp.forEach((x,i)=>{const c=hpos(i);
+    tsvg.appendChild(el("circle",{cx:c.x,cy:c.y,r:20,fill:i===0?'#fff5f7':'#fff',stroke:i===0?'#e11d48':'#7c3aed','stroke-width':2.5}));
+    const ct=el("text",{x:c.x,y:c.y-2,class:"tn-txt",style:"font-size:14px;fill:#5b21b6"}); ct.textContent=x.cost; tsvg.appendChild(ct);
+    const nt=el("text",{x:c.x,y:c.y+11,style:"font-size:9px;fill:#6c7280;text-anchor:middle;font-family:'JetBrains Mono',monospace"}); nt.textContent='v'+x.node; tsvg.appendChild(nt);
+  });
+  if(!hp.length){const e=el("text",{x:190,y:60,style:"fill:#b8b5cc;font-size:13px;text-anchor:middle;font-family:'JetBrains Mono',monospace"});e.textContent='(빈 힙)';tsvg.appendChild(e);}
+  // 거리 표
+  const tbl=document.getElementById("dij-dist");
+  let h1='<tr><th>정점</th>'+names.map((nm,i)=>`<th>${i}<br>${nm}</th>`).join('')+'</tr>';
+  let h2='<tr><th>dist</th>'+st.dist.map((d,i)=>`<td class="${st.done[i]?'fixed':(d===Infinity?'inf':'')}">${d===Infinity?'∞':d}</td>`).join('')+'</tr>';
+  let h3='<tr><th>prev</th>'+st.prev.map(p=>`<td>${p===null?'-':p}</td>`).join('')+'</tr>';
+  tbl.innerHTML=h1+h2+h3;
+  document.getElementById("dij-desc").textContent=st.desc;
+  document.getElementById("dij-prev").disabled=(jIdx===0);
+  document.getElementById("dij-next").disabled=(jIdx===DIJ.length-1);
+}
+document.getElementById("dij-next").onclick=()=>{ if(jIdx<DIJ.length-1){jIdx++;renderDij();} };
+document.getElementById("dij-prev").onclick=()=>{ if(jIdx>0){jIdx--;renderDij();} };
+document.getElementById("dij-reset").onclick=()=>{ jIdx=0;renderDij(); };
+renderDij();
+
+/* ===== 32. 벨만-포드 인터랙티브 추적 ===== */
+// 방향 그래프 (음수 있지만 음의 사이클 없음, CLRS 예시)
+const BFNODES={
+  0:{x:80,y:210}, 1:{x:280,y:95}, 2:{x:490,y:95}, 3:{x:280,y:330}, 4:{x:490,y:330}
+};
+const BFE=[[0,1,6],[0,3,7],[1,2,5],[1,3,8],[1,4,-4],[2,1,-2],[3,2,-3],[3,4,9],[4,2,7],[4,0,2]];
+function buildBF(edges,n,start){
+  const steps=[];
+  const dist=Array(n).fill(Infinity); dist[start]=0;
+  const prev=Array(n).fill(null);
+  steps.push({dist:[...dist],prev:[...prev],upd:[],round:0,
+    desc:`초기화: dist[${start}]=0, 나머지 ∞.`});
+  for(let i=1;i<=n-1;i++){
+    const upd=[];
+    for(const [u,v,w] of edges){
+      if(dist[u]+w<dist[v]){dist[v]=dist[u]+w;prev[v]=u;if(!upd.includes(v))upd.push(v);}
+    }
+    steps.push({dist:[...dist],prev:[...prev],upd:[...upd],round:i,
+      desc: upd.length? `라운드 i=${i}: 모든 간선 완화 → 정점 ${upd.join(', ')}의 거리 갱신됨.`
+                      : `라운드 i=${i}: 더 줄어드는 간선 없음(수렴 완료).`});
+  }
+  let neg=false;
+  for(const [u,v,w] of edges) if(dist[u]+w<dist[v]){neg=true;break;}
+  steps.push({dist:[...dist],prev:[...prev],upd:[],check:true,neg,
+    desc: neg? `⑥ 검사: 아직 줄어드는 간선 발견 → "해 없음: 음의 사이클"!`
+             : `⑥ 검사: 더 줄어드는 간선 없음 → 최단 거리 확정 완료! 최종: ${dist.join(', ')}`});
+  return steps;
+}
+const BF=buildBF(BFE,5,0);
+let bfIdx=0;
+
+// 곡선 간선 (양방향 1↔2 구분용)
+function bfCurve(svg,a,b,w,side,col){
+  const dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy);
+  const ux=dx/len,uy=dy/len,px=-uy,py=ux,bend=20;
+  const r=30;
+  const sx=a.x+ux*r+px*4*side, sy=a.y+uy*r+py*4*side;
+  const ex=b.x-ux*r+px*4*side, ey=b.y-uy*r+py*4*side;
+  const cx=(a.x+b.x)/2+px*bend*side, cy=(a.y+b.y)/2+py*bend*side;
+  svg.appendChild(el("path",{d:`M${sx},${sy} Q${cx},${cy} ${ex},${ey}`,fill:'none',
+    stroke:col,'stroke-width':2.5,'marker-end':'url(#bfar)'}));
+  const lx=cx+px*9*side, ly=cy+py*9*side;
+  svg.appendChild(el("rect",{x:lx-15,y:ly-11,width:30,height:22,rx:5,class:"edge-w-bg"}));
+  const t=el("text",{x:lx,y:ly,class:"edge-w-txt",style:w<0?'fill:#e11d48':''}); t.textContent=w; svg.appendChild(t);
+}
+function renderBF(){
+  const st=BF[bfIdx];
+  const svg=document.getElementById("bf-graph"); svg.innerHTML="";
+  const defs=el("defs",{});
+  defs.innerHTML='<marker id="bfar" markerWidth="11" markerHeight="11" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,4 L0,8 Z" fill="#5b5d6b"></path></marker>';
+  svg.appendChild(defs);
+  const pairSet=new Set(['1-2','2-1']); // 양방향 곡선 처리
+  BFE.forEach(([u,v,w])=>{
+    const a=BFNODES[u], b=BFNODES[v];
+    if(pairSet.has(u+'-'+v)){
+      bfCurve(svg,a,b,w, (u<v?1:-1), '#5b5d6b');
+    } else {
+      const dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy),ux=dx/len,uy=dy/len,r=30;
+      svg.appendChild(el("line",{x1:a.x+ux*r,y1:a.y+uy*r,x2:b.x-ux*r,y2:b.y-uy*r,
+        stroke:'#5b5d6b','stroke-width':2.5,'marker-end':'url(#bfar)'}));
+      const mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+      svg.appendChild(el("rect",{x:mx-15,y:my-11,width:30,height:22,rx:5,class:"edge-w-bg"}));
+      const t=el("text",{x:mx,y:my,class:"edge-w-txt",style:w<0?'fill:#e11d48':''}); t.textContent=w; svg.appendChild(t);
+    }
+  });
+  for(const k in BFNODES){
+    const p=BFNODES[k], i=+k;
+    const hot = st.upd.includes(i);
+    svg.appendChild(el("circle",{cx:p.x,cy:p.y,r:30,
+      fill: hot?'#fecdd6':'#ede9fe', stroke: hot?'#e11d48':'#7c3aed','stroke-width':hot?3.5:2.5}));
+    const it=el("text",{x:p.x,y:p.y-9,class:"tn-txt",style:"font-size:12px;fill:#7c3aed"}); it.textContent=i; svg.appendChild(it);
+    const dv = st.dist[i]===Infinity?'∞':st.dist[i];
+    const dt=el("text",{x:p.x,y:p.y+10,class:"tn-txt",style:"font-size:15px;fill:"+(hot?'#e11d48':'#4c1d95')}); dt.textContent=dv; svg.appendChild(dt);
+  }
+  // 거리표
+  const tbl=document.getElementById("bf-dist");
+  let h1='<tr><th>정점</th>'+[0,1,2,3,4].map(i=>`<th>${i}</th>`).join('')+'</tr>';
+  let h2='<tr><th>dist</th>'+st.dist.map((d,i)=>`<td class="${st.upd.includes(i)?'':(d===Infinity?'inf':'')}" ${st.upd.includes(i)?'style="background:#fecdd6;font-weight:700"':''}>${d===Infinity?'∞':d}</td>`).join('')+'</tr>';
+  tbl.innerHTML=h1+h2;
+  document.getElementById("bf-desc").textContent=st.desc;
+  document.getElementById("bf-prev").disabled=(bfIdx===0);
+  document.getElementById("bf-next").disabled=(bfIdx===BF.length-1);
+}
+document.getElementById("bf-next").onclick=()=>{ if(bfIdx<BF.length-1){bfIdx++;renderBF();} };
+document.getElementById("bf-prev").onclick=()=>{ if(bfIdx>0){bfIdx--;renderBF();} };
+document.getElementById("bf-reset").onclick=()=>{ bfIdx=0;renderBF(); };
+renderBF();
+</script>
+</body>
+</html>
