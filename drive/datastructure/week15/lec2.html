@@ -1,0 +1,2314 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>자료구조 15주차-2 | 기말 총정리</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  :root {
+    --bg: #faf9f6;
+    --surface: #ffffff;
+    --ink: #18181b;
+    --ink-soft: #3f3f46;
+    --ink-muted: #71717a;
+    --line: #e4e4e7;
+    --line-soft: #f4f4f5;
+    
+    --charcoal: #27272a;
+    --charcoal-deep: #18181b;
+    --charcoal-soft: #52525b;
+    
+    --gold: #a16207;
+    --gold-bright: #ca8a04;
+    --gold-deep: #854d0e;
+    --gold-soft: #fef9c3;
+    --gold-bg: #fefce8;
+    
+    --green: #16a34a;
+    --green-bg: #f0fdf4;
+    
+    --red: #dc2626;
+    --red-bg: #fef2f2;
+    
+    --blue: #2563eb;
+    --blue-bg: #eff6ff;
+    
+    --purple: #7c3aed;
+    --purple-bg: #f5f3ff;
+    
+    --slate: #475569;
+    --slate-bg: #f1f5f9;
+    
+    --code-bg: #1a1b1e;
+    --code-text: #e8e8ec;
+  }
+  
+  body {
+    font-family: -apple-system, "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.7;
+    font-size: 15.5px;
+    letter-spacing: -0.01em;
+  }
+  
+  .wrapper {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+  
+  aside.toc {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    padding: 40px 20px;
+    border-right: 1px solid var(--line);
+    background: var(--surface);
+    overflow-y: auto;
+    font-size: 13.5px;
+  }
+  
+  aside.toc h3 {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 14px;
+    font-weight: 600;
+  }
+  
+  aside.toc ol {
+    list-style: none;
+    counter-reset: toc;
+  }
+  
+  aside.toc li {
+    counter-increment: toc;
+    margin-bottom: 5px;
+  }
+  
+  aside.toc a {
+    color: var(--ink-soft);
+    text-decoration: none;
+    display: block;
+    padding: 5px 10px;
+    border-radius: 6px;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+    line-height: 1.4;
+  }
+  
+  aside.toc a::before {
+    content: counter(toc, decimal-leading-zero) "  ";
+    color: var(--ink-muted);
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+  }
+  
+  aside.toc a:hover {
+    background: var(--gold-bg);
+    color: var(--gold-deep);
+    border-left-color: var(--gold);
+  }
+  
+  aside.toc .group {
+    font-size: 11px;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 16px 0 8px 10px;
+    font-weight: 600;
+  }
+  
+  main {
+    padding: 60px 50px 100px;
+    background: var(--surface);
+    min-width: 0;
+  }
+  
+  .doc-header {
+    margin-bottom: 60px;
+    padding-bottom: 28px;
+    border-bottom: 3px solid var(--charcoal);
+    position: relative;
+  }
+  
+  .doc-header::after {
+    content: "";
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 80px;
+    height: 3px;
+    background: var(--gold);
+  }
+  
+  .doc-meta {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 16px;
+    font-size: 12.5px;
+    color: var(--ink-muted);
+    flex-wrap: wrap;
+  }
+  
+  .doc-meta .badge {
+    background: var(--charcoal);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  
+  .doc-meta .exam-tag {
+    background: var(--gold-bg);
+    color: var(--gold-deep);
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-weight: 700;
+    border: 1px solid var(--gold);
+  }
+  
+  .doc-header h1 {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: 8px;
+  }
+  
+  .doc-header h1 .accent { color: var(--gold-deep); }
+  
+  .doc-header .sub {
+    color: var(--ink-soft);
+    font-size: 16px;
+  }
+  
+  section {
+    margin-bottom: 56px;
+    scroll-margin-top: 20px;
+  }
+  
+  h2 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    letter-spacing: -0.02em;
+  }
+  
+  h2 .num {
+    color: var(--gold-deep);
+    font-size: 16px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  
+  h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 28px 0 12px;
+    color: var(--ink);
+  }
+  
+  h3::before {
+    content: "▸ ";
+    color: var(--gold);
+    margin-right: 4px;
+  }
+  
+  h4 {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 18px 0 10px;
+    color: var(--charcoal);
+  }
+  
+  p { margin-bottom: 12px; color: var(--ink-soft); }
+  
+  .kw { color: var(--gold-deep); font-weight: 600; }
+  
+  .en {
+    font-size: 0.88em;
+    color: var(--ink-muted);
+    font-weight: 400;
+    font-style: italic;
+  }
+  
+  code {
+    font-family: "JetBrains Mono", "D2Coding", "SF Mono", Consolas, monospace;
+    font-size: 0.92em;
+    background: var(--slate-bg);
+    color: var(--ink);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--line-soft);
+  }
+  
+  /* 코드블록 */
+  .code-block {
+    margin: 18px 0;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    border: 1px solid #2a2a2e;
+  }
+  
+  .code-label {
+    display: flex;
+    align-items: center;
+    background: #2a2a2e;
+    color: #e4e4e7;
+    padding: 8px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    font-family: -apple-system, sans-serif;
+    text-transform: uppercase;
+    border-bottom: 1px solid #3f3f46;
+  }
+  
+  .code-label::before {
+    content: "";
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--gold);
+    margin-right: 10px;
+  }
+  
+  .code-label.pseudo::before { background: #b45309; }
+  .code-label.proof::before { background: var(--gold); }
+  
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 18px 22px;
+    margin: 0;
+    overflow-x: auto;
+    font-family: "JetBrains Mono", "D2Coding", "Cascadia Code", "SF Mono", Consolas, monospace;
+    font-size: 13.5px;
+    line-height: 1.7;
+  }
+  
+  pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    border: none;
+    font-size: inherit;
+    font-family: inherit;
+  }
+  
+  .c-key { color: #c4a8ff; font-weight: 600; }
+  .c-fn { color: #ffd866; }
+  .c-cmt { color: #6c7280; font-style: italic; }
+  .c-num { color: #ff9eb5; }
+  .c-str { color: #a3e88c; }
+  
+  .callout {
+    margin: 18px 0;
+    padding: 16px 20px;
+    border-radius: 8px;
+    border-left: 4px solid;
+    font-size: 14.5px;
+  }
+  
+  .callout-title {
+    font-weight: 700;
+    margin-bottom: 6px;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  
+  .callout.tip { background: var(--gold-bg); border-color: var(--gold); }
+  .callout.tip .callout-title { color: var(--gold-deep); }
+  .callout.tip .callout-title::before { content: "💡 "; }
+  
+  .callout.warn { background: var(--red-bg); border-color: var(--red); }
+  .callout.warn .callout-title { color: var(--red); }
+  .callout.warn .callout-title::before { content: "⚠️ "; }
+  
+  .callout.connect { background: var(--blue-bg); border-color: var(--blue); }
+  .callout.connect .callout-title { color: var(--blue); }
+  .callout.connect .callout-title::before { content: "🔗 "; }
+  
+  .callout.star {
+    background: linear-gradient(135deg, var(--gold-bg) 0%, var(--surface) 100%);
+    border-color: var(--gold);
+    border-left-width: 5px;
+  }
+  .callout.star .callout-title { color: var(--gold-deep); }
+  .callout.star .callout-title::before { content: "⭐ "; }
+  
+  .callout.review {
+    background: var(--purple-bg);
+    border-color: var(--purple);
+  }
+  .callout.review .callout-title { color: var(--purple); }
+  .callout.review .callout-title::before { content: "🔁 "; }
+  
+  .def-box {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 14px 0;
+  }
+  .def-box .term {
+    font-weight: 700;
+    color: var(--gold-deep);
+  }
+  
+  .key-result {
+    background: linear-gradient(135deg, var(--gold-bg) 0%, var(--surface) 100%);
+    border: 2px solid var(--gold);
+    border-radius: 12px;
+    padding: 22px 26px;
+    margin: 22px 0;
+    text-align: center;
+  }
+  
+  .key-result .label {
+    color: var(--gold-deep);
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    margin-bottom: 10px;
+  }
+  
+  ul, ol { margin: 10px 0 14px 22px; color: var(--ink-soft); }
+  ul li, ol li { margin-bottom: 6px; }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 18px 0;
+    font-size: 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  th {
+    background: var(--charcoal);
+    color: white;
+    font-weight: 600;
+    padding: 12px 14px;
+    text-align: left;
+    font-size: 13px;
+  }
+  
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line-soft);
+    color: var(--ink-soft);
+    vertical-align: top;
+  }
+  
+  tr:last-child td { border-bottom: none; }
+  
+  .doc-footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    color: var(--ink-muted);
+    font-size: 13px;
+    text-align: center;
+  }
+  
+  .math {
+    font-family: "Cambria Math", "Times New Roman", serif;
+    font-style: italic;
+    font-size: 1.05em;
+  }
+  
+  /* 트리 시각화 */
+  .tree-viz {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    text-align: center;
+  }
+  
+  .tree-viz .caption {
+    font-size: 12.5px;
+    color: var(--ink-muted);
+    margin-top: 8px;
+    font-style: italic;
+  }
+  
+  .t-node {
+    fill: white;
+    stroke: var(--charcoal);
+    stroke-width: 2;
+  }
+  .t-node-label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 14px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+    fill: var(--ink);
+  }
+  .t-edge {
+    stroke: var(--charcoal-soft);
+    stroke-width: 1.8;
+    fill: none;
+  }
+  
+  /* 트리 그리드 (여러 트리 나열) */
+  .tree-grid {
+    display: grid;
+    gap: 18px;
+    margin: 18px 0;
+  }
+  
+  .tree-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .tree-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  
+  .tree-card {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+  
+  .tree-card .card-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--gold-deep);
+    margin-bottom: 8px;
+    letter-spacing: 0.1em;
+  }
+  
+  .tree-card .card-sub {
+    font-size: 12px;
+    color: var(--ink-muted);
+    margin-top: 6px;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+<aside class="toc">
+  <h3>목차</h3>
+  
+  <div class="group">Part 1 · 균형 탐색 트리</div>
+  <ol>
+    <li><a href="#s1">세 종류 균형 트리 개요</a></li>
+    <li><a href="#s2">AVL 트리 복습</a></li>
+    <li><a href="#s3">AVL 높이 증명 — 점화식</a></li>
+    <li><a href="#s4">★ h = O(log n) 증명</a></li>
+    <li><a href="#s5">AVL 삽입과 rebalance</a></li>
+    <li><a href="#s6">Red-Black 트리</a></li>
+    <li><a href="#s7">2-3-4 트리 + RB 대응</a></li>
+  </ol>
+  
+  <div class="group">Part 2 · 그래프 기초</div>
+  <ol start="8">
+    <li><a href="#s8">그래프 표현</a></li>
+    <li><a href="#s9">DFS / BFS</a></li>
+    <li><a href="#s10">DAG와 위상 정렬</a></li>
+  </ol>
+  
+  <div class="group">Part 3 · 최단 경로</div>
+  <ol start="11">
+    <li><a href="#s11">Bellman-Ford</a></li>
+    <li><a href="#s12">Dijkstra</a></li>
+    <li><a href="#s13">Floyd-Warshall</a></li>
+  </ol>
+  
+  <div class="group">Part 4 · 종합</div>
+  <ol start="14">
+    <li><a href="#s14">시간복잡도 종합표</a></li>
+    <li><a href="#s15">★ 시험 체크리스트</a></li>
+  </ol>
+</aside>
+
+<main>
+
+<header class="doc-header">
+  <div class="doc-meta">
+    <span class="badge">자료구조 · 15주차-2</span>
+    <span class="exam-tag">★ 기말 총망라 정리</span>
+    <span>2026-06-12</span>
+  </div>
+  <h1><span class="accent">기말 총망라</span> — 한 학기 전부</h1>
+  <p class="sub">균형 트리 → 그래프 → 최단 경로까지 한 번에</p>
+</header>
+
+<!-- ============================================== -->
+<!-- 1. 세 종류 균형 트리 개요 -->
+<!-- ============================================== -->
+<section id="s1">
+  <h2><span class="num">01</span> 균형 탐색 트리 세 종류</h2>
+  
+  <p>한 학기 동안 배운 균형 탐색 트리는 세 가지.</p>
+  
+  <div class="key-result">
+    <div class="label">균형 탐색 트리 3종</div>
+    <div style="font-size:17px; line-height:2; margin-top:6px;">
+      ① <strong>AVL 트리</strong> &nbsp;·&nbsp; ② <strong>Red-Black 트리</strong> &nbsp;·&nbsp; ③ <strong>2-3-4 트리</strong>
+    </div>
+  </div>
+  
+  <h3>이진 탐색 트리(BST) 여부</h3>
+  
+  <div class="callout star">
+    <div class="callout-title">★ BST에 속하는지</div>
+    <ul style="margin-top:6px;">
+      <li><strong>AVL 트리</strong>: BST에 속함 (자식 최대 2개)</li>
+      <li><strong>Red-Black 트리</strong>: BST에 속함 (자식 최대 2개)</li>
+      <li><strong>2-3-4 트리</strong>: BST <strong>아님</strong> (자식이 2~4개라 이진 트리 X)</li>
+    </ul>
+  </div>
+  
+  <h3>시각적 비교</h3>
+  
+  <div class="tree-grid cols-3">
+    
+    <!-- AVL -->
+    <div class="tree-card">
+      <div class="card-title">AVL 트리 (BST)</div>
+      <svg width="100%" viewBox="0 0 200 200">
+        <line x1="100" y1="40" x2="60" y2="100" class="t-edge"/>
+        <line x1="100" y1="40" x2="140" y2="100" class="t-edge"/>
+        <line x1="60" y1="100" x2="30" y2="160" class="t-edge"/>
+        <line x1="60" y1="100" x2="90" y2="160" class="t-edge"/>
+        <line x1="140" y1="100" x2="170" y2="160" class="t-edge"/>
+        
+        <circle cx="100" cy="40" r="20" class="t-node"/>
+        <text x="100" y="40" class="t-node-label">10</text>
+        <circle cx="60" cy="100" r="18" class="t-node"/>
+        <text x="60" y="100" class="t-node-label">5</text>
+        <circle cx="140" cy="100" r="18" class="t-node"/>
+        <text x="140" y="100" class="t-node-label">15</text>
+        <circle cx="30" cy="160" r="16" class="t-node"/>
+        <text x="30" y="160" class="t-node-label" style="font-size:12px;">3</text>
+        <circle cx="90" cy="160" r="16" class="t-node"/>
+        <text x="90" y="160" class="t-node-label" style="font-size:12px;">7</text>
+        <circle cx="170" cy="160" r="16" class="t-node"/>
+        <text x="170" y="160" class="t-node-label" style="font-size:12px;">20</text>
+      </svg>
+      <div class="card-sub">자식 최대 2개<br>높이 차이 ≤ 1</div>
+    </div>
+    
+    <!-- Red-Black -->
+    <div class="tree-card">
+      <div class="card-title">Red-Black 트리 (BST)</div>
+      <svg width="100%" viewBox="0 0 200 200">
+        <line x1="100" y1="40" x2="60" y2="100" class="t-edge"/>
+        <line x1="100" y1="40" x2="140" y2="100" class="t-edge"/>
+        <line x1="60" y1="100" x2="30" y2="160" class="t-edge"/>
+        <line x1="60" y1="100" x2="90" y2="160" class="t-edge"/>
+        <line x1="140" y1="100" x2="170" y2="160" class="t-edge"/>
+        
+        <!-- 검정/빨강 노드 -->
+        <circle cx="100" cy="40" r="20" fill="#18181b" stroke="#18181b" stroke-width="2"/>
+        <text x="100" y="40" class="t-node-label" style="fill:white;">10</text>
+        <circle cx="60" cy="100" r="18" fill="#dc2626" stroke="#991b1b" stroke-width="2"/>
+        <text x="60" y="100" class="t-node-label" style="fill:white;">5</text>
+        <circle cx="140" cy="100" r="18" fill="#18181b" stroke="#18181b" stroke-width="2"/>
+        <text x="140" y="100" class="t-node-label" style="fill:white;">15</text>
+        <circle cx="30" cy="160" r="16" fill="#18181b" stroke="#18181b" stroke-width="2"/>
+        <text x="30" y="160" class="t-node-label" style="font-size:12px; fill:white;">3</text>
+        <circle cx="90" cy="160" r="16" fill="#18181b" stroke="#18181b" stroke-width="2"/>
+        <text x="90" y="160" class="t-node-label" style="font-size:12px; fill:white;">7</text>
+        <circle cx="170" cy="160" r="16" fill="#dc2626" stroke="#991b1b" stroke-width="2"/>
+        <text x="170" y="160" class="t-node-label" style="font-size:12px; fill:white;">20</text>
+      </svg>
+      <div class="card-sub">자식 최대 2개<br>검정/빨강 색 규칙</div>
+    </div>
+    
+    <!-- 2-3-4 -->
+    <div class="tree-card">
+      <div class="card-title">2-3-4 트리 (BST 아님!)</div>
+      <svg width="100%" viewBox="0 0 200 200">
+        <line x1="100" y1="55" x2="50" y2="115" class="t-edge"/>
+        <line x1="100" y1="55" x2="100" y2="115" class="t-edge"/>
+        <line x1="100" y1="55" x2="150" y2="115" class="t-edge"/>
+        
+        <!-- 3-노드 루트 -->
+        <rect x="70" y="35" width="60" height="30" rx="4" class="t-node"/>
+        <line x1="100" y1="35" x2="100" y2="65" class="t-edge"/>
+        <text x="85" y="50" class="t-node-label" style="font-size:12px;">10</text>
+        <text x="115" y="50" class="t-node-label" style="font-size:12px;">20</text>
+        
+        <!-- 자식들 -->
+        <rect x="35" y="115" width="30" height="24" rx="3" class="t-node"/>
+        <text x="50" y="127" class="t-node-label" style="font-size:11px;">5</text>
+        
+        <rect x="85" y="115" width="30" height="24" rx="3" class="t-node"/>
+        <text x="100" y="127" class="t-node-label" style="font-size:11px;">15</text>
+        
+        <rect x="135" y="115" width="30" height="24" rx="3" class="t-node"/>
+        <text x="150" y="127" class="t-node-label" style="font-size:11px;">25</text>
+      </svg>
+      <div class="card-sub">자식 2~4개<br>한 노드에 키 여러 개</div>
+    </div>
+    
+  </div>
+  
+  <h3>왜 균형이 중요한가</h3>
+  
+  <div class="callout tip">
+    <div class="callout-title">트리 연산은 O(h)</div>
+    <ul style="margin-top:6px;">
+      <li>이진 탐색 트리의 검색·삽입·삭제 모두 <strong>O(h)</strong> (h는 트리 높이)</li>
+      <li>높이가 낮을수록 좋음 — 균형 잡힌 트리일수록 빠름</li>
+      <li>최악(한쪽으로 치우친 트리): h = O(n) → O(n) 연산</li>
+      <li>최선(균형 잡힌 트리): h = O(log n) → O(log n) 연산</li>
+    </ul>
+  </div>
+  
+  <div class="callout connect">
+    <div class="callout-title">"균형 잡혔다"의 정의</div>
+    <p style="margin-top:6px;">노드가 n개일 때 <strong>h = O(log n)</strong>이면 그 트리는 "균형 잡혔다"고 말함. AVL/RB/2-3-4 트리는 모두 이 조건을 만족.</p>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 2. AVL 트리 복습 -->
+<!-- ============================================== -->
+<section id="s2">
+  <h2><span class="num">02</span> AVL 트리 복습</h2>
+  
+  <h3>AVL 트리 조건</h3>
+  
+  <div class="def-box">
+    <div class="term">AVL 트리 = BST 조건 + 균형 조건</div>
+    <p style="margin-top:8px;"><strong>① BST 조건</strong>:</p>
+    <ul style="margin-top:4px;">
+      <li>자식이 최대 2개</li>
+      <li>왼쪽 서브트리의 모든 key &lt; 부모 key &lt; 오른쪽 서브트리의 모든 key</li>
+    </ul>
+    <p style="margin-top:8px;"><strong>② 균형 조건 (★ AVL의 핵심)</strong>:</p>
+    <ul style="margin-top:4px;">
+      <li>모든 노드에 대해 <strong>왼쪽 서브트리와 오른쪽 서브트리의 높이 차이가 1 이하</strong></li>
+      <li>= |h(왼쪽) − h(오른쪽)| ≤ 1</li>
+    </ul>
+  </div>
+  
+  <h3>이게 정말 최적인가?</h3>
+  
+  <p>AVL 트리는 "균형 잡혔다"고 주장하지만, <strong>정말 h = O(log n)을 보장하는지</strong> 따져봐야 함.</p>
+  
+  <div class="callout star">
+    <div class="callout-title">증명할 것</div>
+    <p style="margin-top:6px;">노드가 n개인 AVL 트리의 높이 h가 <strong>항상 O(log n) 이하</strong>임을 보이기.</p>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 3. AVL 트리 높이 증명 -->
+<!-- ============================================== -->
+<section id="s3">
+  <h2><span class="num">03</span> AVL 트리 높이 증명 — 점화식</h2>
+  
+  <h3>증명 전략 — N_h 정의</h3>
+  
+  <div class="def-box">
+    <div class="term">N_h 정의</div>
+    <p style="margin-top:6px;">높이가 h인 AVL 트리 중에서 <strong>최소 노드 개수</strong>.</p>
+  </div>
+  
+  <div class="callout tip">
+    <div class="callout-title">왜 "최소" 노드 개수?</div>
+    <p style="margin-top:6px;">"같은 높이를 만드는 데 노드가 얼마나 적게 필요한가?"를 구하면 — 반대로 "같은 노드 개수로 얼마나 높이 만들 수 있는가?" 도 알 수 있음. 즉 노드 n개일 때 최악의 높이를 알아내는 방법.</p>
+  </div>
+  
+  <h3>작은 h부터 규칙 찾기</h3>
+  
+  <h4>h = 0 → N_0 = 1</h4>
+  
+  <p>높이 0인 AVL 트리는 노드 1개뿐. (높이 = 가장 깊은 노드까지의 간선 수, 노드 1개면 간선 0개)</p>
+  
+  <div class="tree-viz">
+    <svg width="20%" viewBox="0 0 100 80">
+      <circle cx="50" cy="40" r="20" class="t-node"/>
+      <text x="50" y="40" class="t-node-label">●</text>
+    </svg>
+    <div class="caption">h = 0, 노드 1개 → N_0 = 1</div>
+  </div>
+  
+  <h4>h = 1 → N_1 = 2</h4>
+  
+  <p>높이 1인 AVL 트리는 루트 + 자식 1개 또는 2개. 최소는 자식 1개 (총 2개 노드).</p>
+  
+  <div class="tree-grid cols-3">
+    <div class="tree-card">
+      <svg width="100%" viewBox="0 0 120 120">
+        <line x1="60" y1="30" x2="35" y2="80" class="t-edge"/>
+        <circle cx="60" cy="30" r="16" class="t-node"/>
+        <text x="60" y="30" class="t-node-label">●</text>
+        <circle cx="35" cy="80" r="14" class="t-node"/>
+        <text x="35" y="80" class="t-node-label">●</text>
+      </svg>
+      <div class="card-sub" style="color:#16a34a; font-weight:700;">★ N_1 = 2 (최소!)</div>
+    </div>
+    <div class="tree-card">
+      <svg width="100%" viewBox="0 0 120 120">
+        <line x1="60" y1="30" x2="85" y2="80" class="t-edge"/>
+        <circle cx="60" cy="30" r="16" class="t-node"/>
+        <text x="60" y="30" class="t-node-label">●</text>
+        <circle cx="85" cy="80" r="14" class="t-node"/>
+        <text x="85" y="80" class="t-node-label">●</text>
+      </svg>
+      <div class="card-sub">2개 (또 다른 형태)</div>
+    </div>
+    <div class="tree-card">
+      <svg width="100%" viewBox="0 0 120 120">
+        <line x1="60" y1="30" x2="35" y2="80" class="t-edge"/>
+        <line x1="60" y1="30" x2="85" y2="80" class="t-edge"/>
+        <circle cx="60" cy="30" r="16" class="t-node"/>
+        <text x="60" y="30" class="t-node-label">●</text>
+        <circle cx="35" cy="80" r="14" class="t-node"/>
+        <text x="35" y="80" class="t-node-label">●</text>
+        <circle cx="85" cy="80" r="14" class="t-node"/>
+        <text x="85" y="80" class="t-node-label">●</text>
+      </svg>
+      <div class="card-sub">3개 (최소 아님)</div>
+    </div>
+  </div>
+  
+  <h4>h = 2 → N_2 = 4</h4>
+  
+  <p>높이 2인 AVL 트리에서 최소 노드를 만들려면 — 한쪽은 높이 1, 다른 쪽은 높이 0으로 두면 됨 (높이 차 ≤ 1 만족).</p>
+  
+  <div class="tree-viz">
+    <svg width="35%" viewBox="0 0 180 160">
+      <line x1="90" y1="30" x2="50" y2="80" class="t-edge"/>
+      <line x1="90" y1="30" x2="130" y2="80" class="t-edge"/>
+      <line x1="50" y1="80" x2="25" y2="130" class="t-edge"/>
+      
+      <circle cx="90" cy="30" r="18" class="t-node"/>
+      <text x="90" y="30" class="t-node-label">●</text>
+      <circle cx="50" cy="80" r="16" fill="#fef9c3" stroke="#a16207" stroke-width="2"/>
+      <text x="50" y="80" class="t-node-label">●</text>
+      <circle cx="130" cy="80" r="16" fill="#fef9c3" stroke="#a16207" stroke-width="2"/>
+      <text x="130" y="80" class="t-node-label">●</text>
+      <circle cx="25" cy="130" r="14" class="t-node"/>
+      <text x="25" y="130" class="t-node-label">●</text>
+      
+      <text x="50" y="105" text-anchor="middle" style="font-size:10px; fill:#a16207; font-weight:700; font-family:sans-serif;">h=1 (N_1=2)</text>
+      <text x="130" y="105" text-anchor="middle" style="font-size:10px; fill:#a16207; font-weight:700; font-family:sans-serif;">h=0 (N_0=1)</text>
+    </svg>
+    <div class="caption">★ N_2 = 1(루트) + N_1 + N_0 = 1 + 2 + 1 = <strong>4</strong></div>
+  </div>
+  
+  <h4>★ h = 3 → 점화식 발견</h4>
+  
+  <p>같은 원리로 h=3을 만들 때:</p>
+  
+  <div class="callout star">
+    <div class="callout-title">★ 핵심 통찰</div>
+    <p style="margin-top:6px;"><strong>최소 노드 개수</strong>를 만들려면 — 좌우 서브트리의 <strong>높이 차이를 최대한 벌려야 함</strong> (둘 다 높이 h-1로 두면 노드 수가 많아짐).</p>
+    <ul style="margin-top:8px;">
+      <li>한쪽 서브트리: 높이 h-1 (최소 노드 = N_(h-1))</li>
+      <li>다른 쪽 서브트리: 높이 h-2 (최소 노드 = N_(h-2))</li>
+      <li>높이 차이 = 1 → AVL 균형 조건 딱 만족</li>
+    </ul>
+  </div>
+  
+  <div class="tree-viz">
+    <svg width="45%" viewBox="0 0 280 240">
+      <line x1="140" y1="30" x2="80" y2="90" class="t-edge"/>
+      <line x1="140" y1="30" x2="200" y2="90" class="t-edge"/>
+      <line x1="80" y1="90" x2="40" y2="150" class="t-edge"/>
+      <line x1="80" y1="90" x2="120" y2="150" class="t-edge"/>
+      <line x1="40" y1="150" x2="20" y2="210" class="t-edge"/>
+      <line x1="200" y1="90" x2="180" y2="150" class="t-edge"/>
+      
+      <!-- 루트 -->
+      <circle cx="140" cy="30" r="18" class="t-node"/>
+      <text x="140" y="30" class="t-node-label">●</text>
+      
+      <!-- 왼쪽 서브트리 (h=2, N_2=4) -->
+      <circle cx="80" cy="90" r="16" fill="#fef9c3" stroke="#a16207" stroke-width="2"/>
+      <text x="80" y="90" class="t-node-label">●</text>
+      <circle cx="40" cy="150" r="14" fill="#fef9c3" stroke="#a16207" stroke-width="2"/>
+      <text x="40" y="150" class="t-node-label">●</text>
+      <circle cx="120" cy="150" r="14" fill="#fef9c3" stroke="#a16207" stroke-width="2"/>
+      <text x="120" y="150" class="t-node-label">●</text>
+      <circle cx="20" cy="210" r="12" fill="#fef9c3" stroke="#a16207" stroke-width="2"/>
+      <text x="20" y="210" class="t-node-label" style="font-size:11px;">●</text>
+      
+      <text x="60" y="240" text-anchor="middle" style="font-size:11px; fill:#a16207; font-weight:700; font-family:sans-serif;">h=2, N_2=4</text>
+      
+      <!-- 오른쪽 서브트리 (h=1, N_1=2) -->
+      <circle cx="200" cy="90" r="16" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+      <text x="200" y="90" class="t-node-label">●</text>
+      <circle cx="180" cy="150" r="14" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+      <text x="180" y="150" class="t-node-label">●</text>
+      
+      <text x="220" y="180" text-anchor="middle" style="font-size:11px; fill:#2563eb; font-weight:700; font-family:sans-serif;">h=1, N_1=2</text>
+    </svg>
+    <div class="caption">★ N_3 = 1 + N_2 + N_1 = 1 + 4 + 2 = <strong>7</strong></div>
+  </div>
+  
+  <h3>★★ 점화식 도출</h3>
+  
+  <div class="key-result">
+    <div class="label">★★ N_h 점화식</div>
+    <div style="font-size:20px; line-height:1.8; margin-top:10px; font-family:'Cambria Math', serif;">
+      N<sub>h</sub> = N<sub>h−1</sub> + N<sub>h−2</sub> + 1
+    </div>
+    <div style="font-size:13px; color:var(--ink-muted); margin-top:10px; font-family:-apple-system, sans-serif; font-style:italic;">
+      ↑ 왼쪽 서브트리(h-1) &nbsp;&nbsp; ↑ 오른쪽 서브트리(h-2) &nbsp;&nbsp; ↑ 루트 1개
+    </div>
+  </div>
+  
+  <h3>값 확인</h3>
+  
+  <table>
+    <tr>
+      <th>h</th><th>N_h 계산</th><th>N_h</th>
+    </tr>
+    <tr><td>0</td><td>—</td><td><strong>1</strong></td></tr>
+    <tr><td>1</td><td>—</td><td><strong>2</strong></td></tr>
+    <tr><td>2</td><td>N_1 + N_0 + 1 = 2 + 1 + 1</td><td><strong>4</strong></td></tr>
+    <tr><td>3</td><td>N_2 + N_1 + 1 = 4 + 2 + 1</td><td><strong>7</strong></td></tr>
+    <tr><td>4</td><td>N_3 + N_2 + 1 = 7 + 4 + 1</td><td><strong>12</strong></td></tr>
+    <tr><td>5</td><td>N_4 + N_3 + 1 = 12 + 7 + 1</td><td><strong>20</strong></td></tr>
+  </table>
+  
+  <div class="callout connect">
+    <div class="callout-title">★ 피보나치 수열과 닮음</div>
+    <p style="margin-top:6px;">N_h = N_(h-1) + N_(h-2) + 1 — 이건 피보나치 수열 F_h = F_(h-1) + F_(h-2)와 거의 같은 구조 (상수 1만 차이). 그래서 N_h가 <strong>지수적으로 증가</strong>함이 보장됨.</p>
+    <p style="margin-top:6px;">정확히는 N_h ≈ φ^h (φ ≈ 1.618, 황금비). 즉 <strong>N_h ≥ c · φ^h</strong> 같은 형태로 하한이 잡힘.</p>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 4. h = O(log n) 마무리 증명 -->
+<!-- ============================================== -->
+<section id="s4">
+  <h2><span class="num">04</span> ★ h = O(log n) 마무리 증명</h2>
+  
+  <p>점화식 <strong>N_h = N_(h-1) + N_(h-2) + 1</strong>에서 시작해 <strong>h = O(log n)</strong>까지 도달하는 게 목표.</p>
+  
+  <h3>Step 1 — 식 단순화</h3>
+  
+  <p>먼저 N_(h-1)과 N_(h-2)의 크기를 비교해 봅니다.</p>
+  
+  <div class="callout tip">
+    <div class="callout-title">자명한 관찰</div>
+    <p style="margin-top:6px;"><strong>N_(h-1) ≥ N_(h-2)</strong></p>
+    <ul style="margin-top:4px;">
+      <li>높이가 더 큰 트리는 최소 노드 수도 더 많거나 같음 (당연)</li>
+      <li>예: N_3 = 7, N_2 = 4 → 7 ≥ 4 ✓</li>
+    </ul>
+  </div>
+  
+  <p>이 관찰을 점화식에 대입:</p>
+  
+  <div class="code-block">
+    <span class="code-label proof">단순화 과정</span>
+<pre><code>N<sub>h</sub> = N<sub>h-1</sub> + N<sub>h-2</sub> + 1
+   ≥ N<sub>h-2</sub> + N<sub>h-2</sub> + 1     <span class="c-cmt"># N_(h-1)을 더 작은 N_(h-2)로 바꿈</span>
+   = 2 · N<sub>h-2</sub> + 1
+   ≥ 2 · N<sub>h-2</sub>                  <span class="c-cmt"># +1을 떼냄 (★ 아래 설명)</span></code></pre>
+  </div>
+  
+  <h4>★ "+1 어디 갔지?" — 사용자가 의문 단 부분</h4>
+  
+  <div class="callout star">
+    <div class="callout-title">+1을 떼내도 부등호 유지</div>
+    <ul style="margin-top:6px;">
+      <li>우리는 N_h의 <strong>하한(lower bound)</strong>을 구하는 중</li>
+      <li><strong>2 · N_(h-2) + 1 ≥ 2 · N_(h-2)</strong>는 항상 참 (1을 더한 게 더 크니까)</li>
+      <li>그래서 N_h ≥ 2 · N_(h-2) + 1 ≥ <strong>2 · N_(h-2)</strong></li>
+      <li>최종 부등식 N_h ≥ 2 · N_(h-2)에는 +1이 없어 보이지만, 사실 "더 느슨한 하한"으로 떨어뜨린 것</li>
+    </ul>
+  </div>
+  
+  <div class="callout connect">
+    <div class="callout-title">왜 일부러 느슨하게 만드나?</div>
+    <p style="margin-top:6px;">+1을 그대로 두면 식이 복잡해져요. 우리는 "지수 증가" 패턴만 보이면 충분한데, +1은 거기 영향 X. 그래서 깔끔한 형태(2·N_(h-2))로 만든 거예요. <strong>정확한 값이 아니라 증가 속도(증가 차수)</strong>가 중요한 상황이라 OK.</p>
+  </div>
+  
+  <h3>Step 2 — 반복 적용 (재귀 풀어내기)</h3>
+  
+  <p>N_h ≥ 2 · N_(h-2)를 계속 적용:</p>
+  
+  <div class="code-block">
+    <span class="code-label proof">반복 적용</span>
+<pre><code>N<sub>h</sub> ≥ 2 · N<sub>h-2</sub>
+   ≥ 2 · (2 · N<sub>h-4</sub>)         <span class="c-cmt"># N_(h-2) ≥ 2·N_(h-4) 적용</span>
+   = 2² · N<sub>h-4</sub>
+   ≥ 2² · (2 · N<sub>h-6</sub>)
+   = 2³ · N<sub>h-6</sub>
+   ⋮
+   ≥ 2<sup>k</sup> · N<sub>h-2k</sub>           <span class="c-cmt"># k번 적용했을 때 일반항</span></code></pre>
+  </div>
+  
+  <h3>Step 3 — h가 짝수라 가정</h3>
+  
+  <p>h가 짝수면 k = h/2일 때 h − 2k = 0이 됨.</p>
+  
+  <div class="code-block">
+    <span class="code-label proof">k = h/2 대입</span>
+<pre><code>N<sub>h</sub> ≥ 2<sup>h/2</sup> · N<sub>0</sub>
+   = 2<sup>h/2</sup> · 1            <span class="c-cmt"># N_0 = 1</span>
+   = 2<sup>h/2</sup></code></pre>
+  </div>
+  
+  <div class="key-result">
+    <div class="label">★ Step 3 결과</div>
+    <div style="font-size:20px; margin-top:8px; font-family:'Cambria Math', serif;">
+      N<sub>h</sub> ≥ 2<sup>h/2</sup>
+    </div>
+  </div>
+  
+  <div class="callout warn">
+    <div class="callout-title">h가 홀수이면?</div>
+    <p style="margin-top:6px;">k = (h-1)/2일 때 멈춰서 N_1까지 가면 됨 — N_h ≥ 2^((h-1)/2) · N_1 = 2^((h-1)/2) · 2 = 2^((h+1)/2). 어느 경우든 <strong>2의 (h에 비례하는 거듭제곱)</strong> 형태라 결론 같음. 보통 짝수 케이스로 이야기.</p>
+  </div>
+  
+  <h3>Step 4 — h를 n으로 옮기기</h3>
+  
+  <p>지금까지 잡힌 식: <strong>2^(h/2) ≤ N_h</strong>. 그런데 우리가 진짜 알고 싶은 건 <strong>노드 n개일 때 h가 얼마인가</strong>.</p>
+  
+  <div class="callout tip">
+    <div class="callout-title">관계 연결</div>
+    <p style="margin-top:6px;">노드 n개인 AVL 트리의 높이가 h라면 — n은 그 트리의 노드 수니까 <strong>그 높이의 최소 노드 수 이상</strong>이어야 함.</p>
+    <p style="margin-top:6px; text-align:center; font-family:'Cambria Math', serif; font-size:16px;">N_h ≤ n</p>
+  </div>
+  
+  <p>두 부등식을 연결:</p>
+  
+  <div class="code-block">
+    <span class="code-label proof">부등식 연결</span>
+<pre><code>2<sup>h/2</sup> ≤ N<sub>h</sub> ≤ n     <span class="c-cmt"># 양 끝만 보면</span>
+2<sup>h/2</sup> ≤ n</code></pre>
+  </div>
+  
+  <h3>Step 5 — 양변에 log 취하기</h3>
+  
+  <div class="code-block">
+    <span class="code-label proof">로그 적용</span>
+<pre><code>2<sup>h/2</sup> ≤ n
+log<sub>2</sub>(2<sup>h/2</sup>) ≤ log<sub>2</sub>(n)    <span class="c-cmt"># 양변에 log_2</span>
+                              <span class="c-cmt"># 밑 2 > 1이라 부등호 방향 유지</span>
+h/2 ≤ log<sub>2</sub>(n)              <span class="c-cmt"># ★ log_a(a^b) = b 공식</span>
+h ≤ 2 · log<sub>2</sub>(n)</code></pre>
+  </div>
+  
+  <div class="callout warn">
+    <div class="callout-title">★ 표기 주의</div>
+    <p style="margin-top:6px;">사용자가 적은 "h/2 = log_2 n"은 부등호 흐름상 <strong>"h/2 ≤ log_2 n"</strong>이 정확. 등호로 적으면 "정확히 같다"는 의미가 되어 결론이 달라져요.</p>
+  </div>
+  
+  <h3>Step 6 — Big-O 결론</h3>
+  
+  <div class="key-result">
+    <div class="label">★★ 최종 결론</div>
+    <div style="font-size:18px; margin-top:8px; line-height:1.8; font-family:'Cambria Math', serif;">
+      h ≤ 2 log<sub>2</sub>(n)<br>
+      ⇒ <strong style="font-size:22px;">h = O(log n)</strong>
+    </div>
+    <div style="font-size:13px; color:var(--ink-muted); margin-top:10px; font-family:-apple-system, sans-serif; font-style:italic;">
+      Big-O는 상수배 무시 → 2 log_2 n도 그냥 log n
+    </div>
+  </div>
+  
+  <h3>★ 증명의 의미</h3>
+  
+  <div class="callout star">
+    <div class="callout-title">AVL 트리는 정말 균형 잡혀 있다</div>
+    <ul style="margin-top:6px;">
+      <li>노드가 n개인 AVL 트리의 높이 h는 <strong>최대 2 log_2 n</strong></li>
+      <li>= h = O(log n) → "균형 잡혔다"의 정의 만족 ✓</li>
+      <li>이게 AVL 트리의 모든 연산이 <strong>O(log n)</strong>인 이유</li>
+    </ul>
+  </div>
+  
+  <h3>증명 흐름 한눈에</h3>
+  
+  <table>
+    <tr>
+      <th>Step</th><th>내용</th>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>점화식 단순화: N_h ≥ 2 N_(h-2) (N_(h-1) ≥ N_(h-2) 사용, +1 떼냄)</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>반복 적용: N_h ≥ 2^k · N_(h-2k)</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>k = h/2 대입: N_h ≥ 2^(h/2)</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>N_h ≤ n 활용: 2^(h/2) ≤ n</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>양변에 log_2: h ≤ 2 log_2 n</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>Big-O: <strong>h = O(log n)</strong></td>
+    </tr>
+  </table>
+  
+  <h3>왜 이 증명이 중요한가</h3>
+  
+  <div class="callout connect">
+    <div class="callout-title">시험 관점</div>
+    <ul style="margin-top:6px;">
+      <li>"AVL 트리의 높이가 O(log n)임을 증명하라" — 빈출 문제</li>
+      <li>핵심 흐름: <strong>최소 노드 점화식 → 단순화 → 반복 적용 → log 취하기</strong></li>
+      <li>이 6단계 흐름을 한 번 손으로 따라 써보면 시험장에서 재현 가능</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 5. AVL 삽입과 rebalance -->
+<!-- ============================================== -->
+<section id="s5">
+  <h2><span class="num">05</span> AVL 삽입과 rebalance</h2>
+  
+  <p>이제 AVL 트리가 균형 잡혔다는 게 증명됐으니, 그 균형을 어떻게 <strong>유지</strong>하는지 봅니다.</p>
+  
+  <h3>각 연산의 시간복잡도</h3>
+  
+  <table>
+    <tr>
+      <th>트리 종류</th>
+      <th>탐색</th>
+      <th>삽입</th>
+      <th>삭제</th>
+    </tr>
+    <tr>
+      <td><strong>BST (일반)</strong></td>
+      <td>O(h)</td>
+      <td>O(h)</td>
+      <td>O(h)</td>
+    </tr>
+    <tr style="background:var(--gold-bg);">
+      <td><strong>AVL</strong></td>
+      <td><strong>O(log n)</strong></td>
+      <td><strong>O(log n)</strong></td>
+      <td><strong>O(log n)</strong></td>
+    </tr>
+  </table>
+  
+  <div class="callout tip">
+    <div class="callout-title">왜 AVL 삽입·삭제도 O(log n)?</div>
+    <ul style="margin-top:6px;">
+      <li>일반 BST처럼 삽입·삭제하면 <strong>균형이 깨질 수 있음</strong></li>
+      <li>그래서 균형 복구(rebalance) 작업이 추가로 필요</li>
+      <li>★ rebalance도 <strong>O(log n)</strong>이라 전체 복잡도는 그대로 O(log n)</li>
+    </ul>
+  </div>
+  
+  <h3>클래스 구조</h3>
+  
+  <div class="code-block">
+    <span class="code-label pseudo">AVL 클래스 정의 (BST 상속)</span>
+<pre><code><span class="c-cmt"># Node 클래스 — BST의 노드와 거의 동일</span>
+<span class="c-key">class</span> <span class="c-fn">Node</span>:
+    key, left, right, parent     <span class="c-cmt"># BST와 동일</span>
+    height                       <span class="c-cmt"># ★ AVL은 height 추가로 관리</span>
+
+<span class="c-cmt"># BST 클래스 — 기본 연산 정의</span>
+<span class="c-key">class</span> <span class="c-fn">BST</span>:
+    insert, deleteByMerging, deleteByCopying, search
+
+<span class="c-cmt"># AVL은 BST 상속 — 기본 연산은 그대로 가져옴</span>
+<span class="c-key">class</span> <span class="c-fn">AVL</span>(BST):
+    <span class="c-cmt"># BST의 모든 메서드를 그대로 받고, 필요한 것만 override</span>
+    ...</code></pre>
+  </div>
+  
+  <h3>AVL 삽입 의사코드</h3>
+  
+  <div class="code-block">
+    <span class="code-label pseudo">AVL.insert</span>
+<pre><code><span class="c-key">def</span> <span class="c-fn">insert</span>(self, key):
+    <span class="c-cmt"># 1. 일단 BST 방식으로 삽입</span>
+    v = <span class="c-fn">super</span>(AVL, self).<span class="c-fn">insert</span>(key)
+    
+    <span class="c-cmt"># 2. 삽입 노드 v에서 부모로 거슬러 올라가며</span>
+    <span class="c-cmt">#    처음으로 AVL 균형이 깨진 노드를 찾음</span>
+    <span class="c-cmt">#    z (균형 깨진 노드) ← y (z의 자식) ← x (y의 자식)</span>
+    z = <span class="c-cmt"># 균형이 깨진 가장 가까운 조상</span>
+    y = <span class="c-cmt"># z의 자식 (새 노드 쪽 방향)</span>
+    x = <span class="c-cmt"># y의 자식 (새 노드 쪽 방향)</span>
+    
+    <span class="c-cmt"># 3. 회전으로 균형 복구. w는 새로 z 자리를 차지한 노드</span>
+    w = <span class="c-fn">rebalance</span>(x, y, z)
+    
+    <span class="c-cmt"># 4. z가 원래 루트였다면, 회전 후 w가 새 루트</span>
+    <span class="c-key">if</span> w.parent == <span class="c-key">None</span>:
+        self.root = w</code></pre>
+  </div>
+  
+  <h3>★ z, y, x 정의 (헷갈리지 말기)</h3>
+  
+  <div class="def-box">
+    <div class="term">세 노드의 역할</div>
+    <ul style="margin-top:6px;">
+      <li><strong>z</strong>: 새 노드 삽입 후 <strong>균형이 깨진 가장 가까운 조상</strong> (밑에서 위로 올라가며 처음 만나는)</li>
+      <li><strong>y</strong>: z의 자식 중 <strong>새 노드 쪽</strong> (높이가 더 큰 쪽)</li>
+      <li><strong>x</strong>: y의 자식 중 <strong>새 노드 쪽</strong></li>
+    </ul>
+    <p style="margin-top:6px; font-size:13px; color:var(--ink-muted);">z, y, x는 자기 노드 이름이 아니라 "역할 표시"라고 생각하면 편함.</p>
+  </div>
+  
+  <h3>★ rebalance 케이스 — LR (Left-Right)</h3>
+  
+  <p>이번에 다루는 케이스: z에서 봤을 때 <strong>왼쪽이 무겁고(왼쪽으로 y)</strong>, y에서 봤을 때 <strong>오른쪽이 무거운(오른쪽으로 x)</strong> 경우. 지그재그 모양이라 <strong>회전 2번</strong>이 필요.</p>
+  
+  <h4>회전 전 상태</h4>
+  
+  <div class="tree-viz">
+    <svg width="55%" viewBox="0 0 460 340" xmlns="http://www.w3.org/2000/svg">
+      
+      <!-- z 노드 (루트) -->
+      <line x1="230" y1="50" x2="140" y2="110" class="t-edge"/>
+      <line x1="230" y1="50" x2="320" y2="110" class="t-edge"/>
+      <circle cx="230" cy="40" r="22" fill="#fef9c3" stroke="#a16207" stroke-width="2.5"/>
+      <text x="230" y="40" class="t-node-label">z</text>
+      
+      <!-- z의 우 서브트리 (높이 2) -->
+      <polygon points="320,110 280,260 360,260" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+      <text x="320" y="220" text-anchor="middle" style="font-size:10px; fill:#2563eb; font-weight:700; font-family:sans-serif;">T₄</text>
+      <text x="320" y="240" text-anchor="middle" style="font-size:9px; fill:#2563eb; font-family:sans-serif;">h=2</text>
+      
+      <!-- y 노드 -->
+      <line x1="140" y1="120" x2="80" y2="180" class="t-edge"/>
+      <line x1="140" y1="120" x2="200" y2="180" class="t-edge"/>
+      <circle cx="140" cy="110" r="22" fill="#fef9c3" stroke="#a16207" stroke-width="2.5"/>
+      <text x="140" y="110" class="t-node-label">y</text>
+      
+      <!-- y의 좌 서브트리 (높이 2) -->
+      <polygon points="80,180 40,310 120,310" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+      <text x="80" y="265" text-anchor="middle" style="font-size:10px; fill:#16a34a; font-weight:700; font-family:sans-serif;">T₁</text>
+      <text x="80" y="285" text-anchor="middle" style="font-size:9px; fill:#16a34a; font-family:sans-serif;">h=2</text>
+      
+      <!-- x 노드 (y의 오른쪽 자식) -->
+      <line x1="200" y1="190" x2="170" y2="240" class="t-edge"/>
+      <line x1="200" y1="190" x2="230" y2="240" class="t-edge"/>
+      <circle cx="200" cy="180" r="22" fill="#fef9c3" stroke="#a16207" stroke-width="2.5"/>
+      <text x="200" y="180" class="t-node-label">x</text>
+      
+      <!-- x의 두 서브트리 -->
+      <polygon points="170,240 145,310 195,310" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+      <text x="170" y="285" text-anchor="middle" style="font-size:10px; fill:#db2777; font-weight:700; font-family:sans-serif;">T₂</text>
+      
+      <polygon points="230,240 210,310 250,310" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+      <text x="230" y="285" text-anchor="middle" style="font-size:10px; fill:#d97706; font-weight:700; font-family:sans-serif;">T₃</text>
+      
+    </svg>
+    <div class="caption">
+      <strong>LR 케이스 초기 상태</strong>: z의 왼쪽 자식 y, y의 오른쪽 자식 x로 지그재그 — 회전 2번 필요
+    </div>
+  </div>
+  
+  <div class="callout warn">
+    <div class="callout-title">왜 회전 2번 필요?</div>
+    <p style="margin-top:6px;">z 입장에서 새 노드가 "왼쪽 → 오른쪽"으로 꺾인 경로에 있음. 회전 1번으로는 이 꺾임을 못 풀어요. <strong>먼저 y와 x를 단순화(LL 모양으로 변환) → 다시 z 정리</strong>의 2단계가 필요.</p>
+  </div>
+  
+  <h4>Step 1: y에서 좌회전 (x를 y 위로)</h4>
+  
+  <div class="tree-viz">
+    <svg width="55%" viewBox="0 0 460 340" xmlns="http://www.w3.org/2000/svg">
+      
+      <!-- z 노드 -->
+      <line x1="230" y1="50" x2="140" y2="110" class="t-edge"/>
+      <line x1="230" y1="50" x2="320" y2="110" class="t-edge"/>
+      <circle cx="230" cy="40" r="22" fill="#fef9c3" stroke="#a16207" stroke-width="2.5"/>
+      <text x="230" y="40" class="t-node-label">z</text>
+      
+      <!-- z의 우 서브트리 -->
+      <polygon points="320,110 280,260 360,260" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+      <text x="320" y="220" text-anchor="middle" style="font-size:10px; fill:#2563eb; font-weight:700; font-family:sans-serif;">T₄</text>
+      
+      <!-- x가 y 위로 올라옴 -->
+      <line x1="140" y1="120" x2="80" y2="180" class="t-edge"/>
+      <line x1="140" y1="120" x2="200" y2="180" class="t-edge"/>
+      <circle cx="140" cy="110" r="22" fill="#ffd866" stroke="#a16207" stroke-width="3"/>
+      <text x="140" y="110" class="t-node-label">x</text>
+      
+      <!-- y는 x의 왼쪽 자식으로 -->
+      <line x1="80" y1="190" x2="40" y2="260" class="t-edge"/>
+      <line x1="80" y1="190" x2="120" y2="260" class="t-edge"/>
+      <circle cx="80" cy="180" r="22" fill="#fef9c3" stroke="#a16207" stroke-width="2.5"/>
+      <text x="80" y="180" class="t-node-label">y</text>
+      
+      <!-- T₁ (y의 왼쪽 자식 그대로) -->
+      <polygon points="40,260 10,320 70,320" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+      <text x="40" y="300" text-anchor="middle" style="font-size:10px; fill:#16a34a; font-weight:700; font-family:sans-serif;">T₁</text>
+      
+      <!-- T₂ (x의 왼쪽 자식이었던 것이 y의 오른쪽으로) -->
+      <polygon points="120,260 95,320 145,320" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+      <text x="120" y="300" text-anchor="middle" style="font-size:10px; fill:#db2777; font-weight:700; font-family:sans-serif;">T₂</text>
+      
+      <!-- T₃ (x의 오른쪽) -->
+      <polygon points="200,190 175,260 225,260" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+      <text x="200" y="235" text-anchor="middle" style="font-size:10px; fill:#d97706; font-weight:700; font-family:sans-serif;">T₃</text>
+      
+      <!-- 화살표 표시 -->
+      <text x="380" y="180" text-anchor="middle" style="font-size:13px; fill:#a16207; font-weight:700; font-family:sans-serif;">x가 y 위로</text>
+      <text x="380" y="200" text-anchor="middle" style="font-size:11px; fill:#a16207; font-family:sans-serif; font-style:italic;">(좌회전)</text>
+      
+    </svg>
+    <div class="caption">
+      Step 1 후: y가 x의 왼쪽 자식으로 내려오고, T₂는 y의 오른쪽으로 이동
+    </div>
+  </div>
+  
+  <p>이제 z-x-y가 모두 <strong>왼쪽으로만 꺾인</strong> LL 모양이 됐어요. 회전 한 번 더로 끝.</p>
+  
+  <h4>Step 2: z에서 우회전 (x를 z 위로)</h4>
+  
+  <div class="tree-viz">
+    <svg width="55%" viewBox="0 0 460 320" xmlns="http://www.w3.org/2000/svg">
+      
+      <!-- x (새 루트) -->
+      <line x1="230" y1="50" x2="140" y2="110" class="t-edge"/>
+      <line x1="230" y1="50" x2="320" y2="110" class="t-edge"/>
+      <circle cx="230" cy="40" r="24" fill="#ffd866" stroke="#854d0e" stroke-width="3.5"/>
+      <text x="230" y="40" class="t-node-label">x (= w)</text>
+      
+      <!-- y (왼쪽 자식) -->
+      <line x1="140" y1="120" x2="80" y2="190" class="t-edge"/>
+      <line x1="140" y1="120" x2="200" y2="190" class="t-edge"/>
+      <circle cx="140" cy="110" r="22" fill="#fef9c3" stroke="#a16207" stroke-width="2.5"/>
+      <text x="140" y="110" class="t-node-label">y</text>
+      
+      <!-- z (오른쪽 자식) -->
+      <line x1="320" y1="120" x2="260" y2="190" class="t-edge"/>
+      <line x1="320" y1="120" x2="380" y2="190" class="t-edge"/>
+      <circle cx="320" cy="110" r="22" fill="#fef9c3" stroke="#a16207" stroke-width="2.5"/>
+      <text x="320" y="110" class="t-node-label">z</text>
+      
+      <!-- T₁ (y의 왼쪽) -->
+      <polygon points="80,190 50,290 110,290" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+      <text x="80" y="250" text-anchor="middle" style="font-size:10px; fill:#16a34a; font-weight:700; font-family:sans-serif;">T₁</text>
+      
+      <!-- T₂ (y의 오른쪽) -->
+      <polygon points="200,190 170,290 230,290" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+      <text x="200" y="250" text-anchor="middle" style="font-size:10px; fill:#db2777; font-weight:700; font-family:sans-serif;">T₂</text>
+      
+      <!-- T₃ (z의 왼쪽) -->
+      <polygon points="260,190 230,290 290,290" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+      <text x="260" y="250" text-anchor="middle" style="font-size:10px; fill:#d97706; font-weight:700; font-family:sans-serif;">T₃</text>
+      
+      <!-- T₄ (z의 오른쪽) -->
+      <polygon points="380,190 350,290 410,290" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+      <text x="380" y="250" text-anchor="middle" style="font-size:10px; fill:#2563eb; font-weight:700; font-family:sans-serif;">T₄</text>
+      
+    </svg>
+    <div class="caption">
+      <strong>최종 결과</strong>: x가 새 루트 (= w). y와 z가 양쪽 자식으로. 모든 서브트리 높이가 균형 ✓
+    </div>
+  </div>
+  
+  <h3>★ 핵심 — 서브트리들의 재배치</h3>
+  
+  <div class="callout star">
+    <div class="callout-title">색깔로 따라가는 서브트리 이동</div>
+    <table style="margin-top:8px; width:100%;">
+      <tr>
+        <th style="font-size:12px;">서브트리</th>
+        <th style="font-size:12px;">시작 위치</th>
+        <th style="font-size:12px;">최종 위치</th>
+      </tr>
+      <tr>
+        <td style="color:#16a34a; font-weight:700;">T₁ (초록)</td>
+        <td>y의 왼쪽</td>
+        <td>y의 왼쪽 (그대로)</td>
+      </tr>
+      <tr>
+        <td style="color:#db2777; font-weight:700;">T₂ (분홍)</td>
+        <td>x의 왼쪽</td>
+        <td>y의 오른쪽</td>
+      </tr>
+      <tr>
+        <td style="color:#d97706; font-weight:700;">T₃ (주황)</td>
+        <td>x의 오른쪽</td>
+        <td>z의 왼쪽</td>
+      </tr>
+      <tr>
+        <td style="color:#2563eb; font-weight:700;">T₄ (파랑)</td>
+        <td>z의 오른쪽</td>
+        <td>z의 오른쪽 (그대로)</td>
+      </tr>
+    </table>
+  </div>
+  
+  <h3>왜 BST 조건이 깨지지 않나?</h3>
+  
+  <div class="callout connect">
+    <div class="callout-title">키 순서 검증</div>
+    <p style="margin-top:6px;">원래 BST이므로 키 순서는: <strong>T₁ &lt; y &lt; T₂ &lt; x &lt; T₃ &lt; z &lt; T₄</strong></p>
+    <p style="margin-top:6px;">회전 후에도 중위 순회(inorder) 결과는 같은 순서가 유지됨 — 즉 BST 조건은 안 깨짐. 회전은 <strong>모양만 바꾸고 키 순서는 보존</strong>하는 연산.</p>
+  </div>
+  
+  <h3>다른 케이스들 (개요)</h3>
+  
+  <table>
+    <tr>
+      <th>케이스</th>
+      <th>z 기준 새 노드 위치</th>
+      <th>회전 횟수</th>
+    </tr>
+    <tr>
+      <td><strong>LL</strong></td>
+      <td>왼쪽 → 왼쪽</td>
+      <td>1회 (z에서 우회전)</td>
+    </tr>
+    <tr style="background:var(--gold-bg);">
+      <td><strong>LR</strong> ← 오늘 다룬 케이스</td>
+      <td>왼쪽 → 오른쪽 (지그재그)</td>
+      <td><strong>2회</strong></td>
+    </tr>
+    <tr>
+      <td><strong>RR</strong></td>
+      <td>오른쪽 → 오른쪽</td>
+      <td>1회 (z에서 좌회전)</td>
+    </tr>
+    <tr>
+      <td><strong>RL</strong></td>
+      <td>오른쪽 → 왼쪽 (지그재그)</td>
+      <td>2회</td>
+    </tr>
+  </table>
+  
+  <div class="callout star">
+    <div class="callout-title">★ 시험 포인트</div>
+    <ul style="margin-top:6px;">
+      <li>4가지 케이스 (LL/LR/RR/RL) 구분 — z 기준 두 단계 방향 보기</li>
+      <li>일직선(LL, RR) = 회전 1번 / 지그재그(LR, RL) = 회전 2번</li>
+      <li>각 케이스의 회전 결과 트리 모양 그리기</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 6. Red-Black 트리 -->
+<!-- ============================================== -->
+<section id="s6">
+  <h2><span class="num">06</span> Red-Black 트리</h2>
+  
+  <p>BST + 색깔(검정/빨강) 규칙으로 균형을 유지하는 트리. AVL과 함께 표준 라이브러리에서 가장 많이 쓰임.</p>
+  
+  <h3>4가지 규칙</h3>
+  
+  <div class="def-box">
+    <div class="term">Red-Black 트리 조건</div>
+    <ol style="margin-top:6px;">
+      <li><strong>루트는 검정</strong></li>
+      <li><strong>NIL(외부 노드)은 검정</strong></li>
+      <li><strong>레드 연속 불가</strong>: 빨간 노드의 자식은 반드시 검정</li>
+      <li><strong>블랙 높이 일정</strong>: 어떤 노드에서 출발하든 NIL까지의 검은 노드 수가 같음</li>
+    </ol>
+  </div>
+  
+  <h3>각 규칙의 의미 (왜 그렇게 정해졌나)</h3>
+  
+  <table>
+    <tr>
+      <th>규칙</th>
+      <th>의미</th>
+    </tr>
+    <tr>
+      <td>루트 검정</td>
+      <td>2-3-4 트리의 루트 노드를 명확히 구분</td>
+    </tr>
+    <tr>
+      <td>NIL 검정</td>
+      <td>모든 경로의 끝을 통일적으로 표시</td>
+    </tr>
+    <tr>
+      <td><strong>레드 연속 불가</strong></td>
+      <td>2-3-4 트리에서 한 노드 안의 키는 최대 3개 (4-노드까지) → 빨간 노드 연속되면 5-노드 되어 위반</td>
+    </tr>
+    <tr>
+      <td><strong>블랙 높이 일정</strong></td>
+      <td>2-3-4 트리는 완전 균형(모든 리프 같은 깊이) → 검은 노드만 세면 그 깊이 보존</td>
+    </tr>
+  </table>
+  
+  <h3>높이가 O(log n)인 이유</h3>
+  
+  <div class="callout star">
+    <div class="callout-title">★ RB 높이 분석</div>
+    <ul style="margin-top:6px;">
+      <li>검은 노드만 따로 보면 완전 균형 트리 → 검은 높이 = O(log n)</li>
+      <li>빨간 노드는 연속 불가 → 어떤 경로에서도 빨간 노드는 검은 노드 수 이하</li>
+      <li>전체 높이 ≤ 2 × 검은 높이 = <strong>2 log_2(n+1)</strong></li>
+      <li>= h = O(log n) ✓</li>
+    </ul>
+  </div>
+  
+  <h3>AVL과 비교</h3>
+  
+  <table>
+    <tr>
+      <th>구분</th>
+      <th>AVL</th>
+      <th>Red-Black</th>
+    </tr>
+    <tr>
+      <td>균형 조건</td>
+      <td>좌우 높이 차 ≤ 1 (엄격)</td>
+      <td>색 규칙 (느슨)</td>
+    </tr>
+    <tr>
+      <td>높이</td>
+      <td>최대 ≈ 1.44 log n (더 짧음)</td>
+      <td>최대 2 log n</td>
+    </tr>
+    <tr>
+      <td>탐색</td>
+      <td>약간 더 빠름</td>
+      <td>약간 느림</td>
+    </tr>
+    <tr>
+      <td>삽입·삭제 회전</td>
+      <td>최악 O(log n)번</td>
+      <td><strong>최악 상수번</strong> (보통 2~3회)</td>
+    </tr>
+    <tr>
+      <td>적합 상황</td>
+      <td>탐색 위주</td>
+      <td>삽입·삭제 잦음 (실무 표준)</td>
+    </tr>
+  </table>
+  
+  <div class="callout connect">
+    <div class="callout-title">실제 사용처</div>
+    C++ <code>std::map</code>, Java <code>TreeMap</code>, Linux 커널 등 — 대부분 RB. AVL은 학술/특수 용도.
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 7. 2-3-4 트리 + RB 대응 -->
+<!-- ============================================== -->
+<section id="s7">
+  <h2><span class="num">07</span> 2-3-4 트리 + RB 1:1 대응</h2>
+  
+  <h3>2-3-4 트리의 노드 종류</h3>
+  
+  <table>
+    <tr>
+      <th>노드 종류</th>
+      <th>키 개수</th>
+      <th>자식 수</th>
+    </tr>
+    <tr>
+      <td><strong>2-노드</strong></td>
+      <td>1개</td>
+      <td>2개</td>
+    </tr>
+    <tr>
+      <td><strong>3-노드</strong></td>
+      <td>2개</td>
+      <td>3개</td>
+    </tr>
+    <tr>
+      <td><strong>4-노드</strong></td>
+      <td>3개</td>
+      <td>4개</td>
+    </tr>
+  </table>
+  
+  <p>일반 규칙: <strong>n개 키를 가진 노드는 자식 n+1개</strong>. 모든 리프는 같은 깊이 (완전 균형).</p>
+  
+  <h3>★ RB 트리와의 1:1 대응</h3>
+  
+  <div class="callout star">
+    <div class="callout-title">변환 규칙</div>
+    <ul style="margin-top:6px;">
+      <li><strong>2-노드</strong> → 검은 노드 1개</li>
+      <li><strong>3-노드</strong> → 검은 노드 + 빨간 자식 1개</li>
+      <li><strong>4-노드</strong> → 검은 노드 + 빨간 자식 2개</li>
+    </ul>
+    <p style="margin-top:8px;">즉 <strong>한 2-3-4 노드 = "검은 노드 + 그 옆에 붙은 빨간 노드들"</strong>. 빨간 노드는 "원래는 같은 노드의 일부였다"는 신호.</p>
+  </div>
+  
+  <h3>왜 이게 중요한가</h3>
+  
+  <div class="callout connect">
+    <div class="callout-title">RB 규칙이 임의의 약속이 아니다</div>
+    <ul style="margin-top:6px;">
+      <li>레드 연속 불가 ← <strong>2-3-4의 5-노드(키 4개)를 만들지 마</strong></li>
+      <li>블랙 높이 일정 ← <strong>2-3-4가 완전 균형이라는 사실의 보존</strong></li>
+      <li>RB 트리는 "2-3-4 트리를 이진 트리로 흉내내는 방법"</li>
+      <li>구현은 더 쉽고 (균일 노드), 성능은 거의 같음</li>
+    </ul>
+  </div>
+  
+  <div class="callout warn">
+    <div class="callout-title">시험에서 자주 나오는 형태</div>
+    <ul style="margin-top:6px;">
+      <li>2-3-4 트리 그려놓고 RB로 변환하라 (또는 반대)</li>
+      <li>키 개수만 보면 변환 가능: 1개 → 검정만, 2개 → 가운데 큰 거 검정 + 작은 거 빨강, 3개 → 가운데 검정 + 양옆 빨강</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 8. 그래프 표현 -->
+<!-- ============================================== -->
+<section id="s8">
+  <h2><span class="num">08</span> 그래프 표현</h2>
+  
+  <h3>두 가지 방식</h3>
+  
+  <table>
+    <tr>
+      <th>방식</th>
+      <th>구조</th>
+      <th>공간</th>
+    </tr>
+    <tr>
+      <td><strong>인접 행렬</strong></td>
+      <td>n×n 표, G[u][v]가 1이면 간선 있음</td>
+      <td>O(n²)</td>
+    </tr>
+    <tr>
+      <td><strong>인접 리스트</strong></td>
+      <td>각 노드마다 이웃 노드 리스트</td>
+      <td>O(n + m)</td>
+    </tr>
+  </table>
+  
+  <h3>★ 연산별 시간복잡도 비교</h3>
+  
+  <table>
+    <tr>
+      <th>연산</th>
+      <th>인접 행렬</th>
+      <th>인접 리스트</th>
+    </tr>
+    <tr>
+      <td>u, v가 이웃인가?</td>
+      <td><strong>O(1)</strong> (한 칸 확인)</td>
+      <td>O(deg(u))</td>
+    </tr>
+    <tr>
+      <td>u의 모든 이웃 순회</td>
+      <td>O(n) (n칸 다 봐야)</td>
+      <td><strong>O(deg(u))</strong></td>
+    </tr>
+    <tr>
+      <td>전체 간선 순회</td>
+      <td>O(n²)</td>
+      <td>O(n + m)</td>
+    </tr>
+  </table>
+  
+  <div class="callout tip">
+    <div class="callout-title">선택 기준</div>
+    <ul style="margin-top:6px;">
+      <li><strong>밀집 그래프(m ≈ n²)</strong>: 행렬 유리</li>
+      <li><strong>희소 그래프(m ≪ n²)</strong>: 리스트 유리</li>
+      <li>대부분의 실제 그래프(SNS, 도로망 등)는 희소 → 리스트가 표준</li>
+    </ul>
+  </div>
+  
+  <h3>★ 왜 인접 행렬은 이웃 순회에 O(n)인가</h3>
+  
+  <div class="callout warn">
+    <div class="callout-title">자주 헷갈리는 부분</div>
+    <p style="margin-top:6px;">"이웃만 보면 되는데 왜 n번?"</p>
+    <ul style="margin-top:4px;">
+      <li>행렬은 <strong>"있다/없다"를 둘 다 명시적으로 저장</strong> (0 또는 1)</li>
+      <li>어디가 1인지 미리 모름 → n칸을 다 확인해야 1을 찾을 수 있음</li>
+      <li>리스트는 "있는 것만 저장" → 그냥 읽으면 끝</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 9. DFS / BFS -->
+<!-- ============================================== -->
+<section id="s9">
+  <h2><span class="num">09</span> DFS / BFS</h2>
+  
+  <h3>DFS (Depth-First Search)</h3>
+  
+  <div class="def-box">
+    <div class="term">DFS</div>
+    <p style="margin-top:6px;"><strong>한 길로 끝까지 깊이 → 막히면 backtrack</strong>. 스택 또는 재귀로 구현.</p>
+  </div>
+  
+  <h4>핵심 변수</h4>
+  
+  <ul>
+    <li><strong>mark[v]</strong>: visited / unvisited 표시</li>
+    <li><strong>pre[v]</strong>: v에 처음 들어간 시각 (방문 순서)</li>
+    <li><strong>post[v]</strong>: v를 완전히 끝낸 시각 (backtrack 직전)</li>
+    <li><strong>parent[v]</strong>: DFS 트리에서의 부모</li>
+  </ul>
+  
+  <h4>의사코드 (재귀)</h4>
+  
+  <div class="code-block">
+    <span class="code-label pseudo">DFS</span>
+<pre><code><span class="c-key">def</span> <span class="c-fn">DFS</span>(v):
+    mark[v] = <span class="c-str">"visited"</span>
+    pre[v] = curr_time; curr_time += <span class="c-num">1</span>
+    
+    <span class="c-key">for</span> each edge (v, w):
+        <span class="c-key">if</span> mark[w] != <span class="c-str">"visited"</span>:
+            parent[w] = v
+            <span class="c-fn">DFS</span>(w)
+    
+    post[v] = curr_time; curr_time += <span class="c-num">1</span></code></pre>
+  </div>
+  
+  <h4>★ DFS 트리와 Back Edge</h4>
+  
+  <div class="callout star">
+    <div class="callout-title">두 가지 핵심 개념</div>
+    <ul style="margin-top:6px;">
+      <li><strong>DFS 트리</strong>: parent 관계 선들만 모은 트리 (n−1개 엣지)</li>
+      <li><strong>Back Edge</strong>: 원래 그래프엔 있는데 DFS 트리엔 없는 간선 (이미 방문한 조상으로 가는 모양)</li>
+      <li><strong>★ Back edge 존재 ⇔ 사이클(순환) 존재</strong> — 시험 빈출</li>
+    </ul>
+  </div>
+  
+  <h4>pre/post 구간 시각화</h4>
+  
+  <div class="callout connect">
+    <div class="callout-title">[pre, post] 막대의 성질</div>
+    <ul style="margin-top:6px;">
+      <li>u가 v의 조상 ⇔ u의 [pre, post]가 v의 [pre, post]를 완전 포함</li>
+      <li>형제 관계면 막대가 겹치지 않음</li>
+      <li>막대 포함 관계 = DFS 트리의 부모-자식 관계</li>
+    </ul>
+  </div>
+  
+  <h4>DFSALL — 비연결 그래프 대응</h4>
+  
+  <div class="code-block">
+    <span class="code-label pseudo">DFSALL</span>
+<pre><code><span class="c-key">def</span> <span class="c-fn">DFSALL</span>(G):
+    <span class="c-key">for</span> all nodes v: mark[v] = <span class="c-str">"unvisited"</span>
+    <span class="c-key">for</span> all nodes v:
+        <span class="c-key">if</span> mark[v] != <span class="c-str">"visited"</span>:
+            <span class="c-fn">DFS</span>(v)</code></pre>
+  </div>
+  
+  <p>DFS 호출 횟수 = 연결 요소(component) 개수</p>
+  
+  <h3>BFS (Breadth-First Search)</h3>
+  
+  <div class="def-box">
+    <div class="term">BFS</div>
+    <p style="margin-top:6px;">시작점에서 가까운 노드부터 한 겹씩 펼침. <strong>큐(queue)</strong>로 구현.</p>
+  </div>
+  
+  <h3>DFS vs BFS</h3>
+  
+  <table>
+    <tr>
+      <th>구분</th>
+      <th>DFS</th>
+      <th>BFS</th>
+    </tr>
+    <tr>
+      <td>탐색 방향</td>
+      <td>한 길로 깊이</td>
+      <td>가까운 곳부터 넓게</td>
+    </tr>
+    <tr>
+      <td>자료구조</td>
+      <td>스택 / 재귀</td>
+      <td>큐</td>
+    </tr>
+    <tr>
+      <td>특기</td>
+      <td>사이클 탐지, 위상 정렬</td>
+      <td>최단 거리(무가중치)</td>
+    </tr>
+    <tr>
+      <td>시간복잡도</td>
+      <td>O(n + m)</td>
+      <td>O(n + m)</td>
+    </tr>
+  </table>
+</section>
+
+<!-- ============================================== -->
+<!-- 10. DAG와 위상 정렬 -->
+<!-- ============================================== -->
+<section id="s10">
+  <h2><span class="num">10</span> DAG와 위상 정렬</h2>
+  
+  <h3>DAG (Directed Acyclic Graph)</h3>
+  
+  <div class="def-box">
+    <div class="term">DAG</div>
+    <p style="margin-top:6px;"><strong>D</strong>irected (방향 있음) + <strong>A</strong>cyclic (사이클 없음) + <strong>G</strong>raph</p>
+    <ul style="margin-top:6px;">
+      <li>모든 간선에 방향 있음</li>
+      <li>어떤 노드에서도 자기 자신으로 돌아오는 경로 없음</li>
+      <li>"일의 순서" 표현에 적합 (선후 관계)</li>
+    </ul>
+  </div>
+  
+  <h3>위상 정렬 (Topological Sort)</h3>
+  
+  <div class="def-box">
+    <div class="term">위상 정렬</div>
+    <p style="margin-top:6px;">DAG의 정점들을 <strong>한 줄로 나열</strong>하되, 간선 u→v가 있으면 u가 v보다 앞에 오게 정렬.</p>
+  </div>
+  
+  <h3>★ DFS로 위상 정렬 구하는 법</h3>
+  
+  <div class="key-result">
+    <div class="label">★★ 핵심 관계</div>
+    <div style="font-size:16px; line-height:1.9; margin-top:8px;">
+      DAG에 DFS를 돌린 후,<br>
+      <strong>POST 값을 내림차순</strong>으로 나열하면<br>
+      = <strong>위상 정렬</strong>
+    </div>
+  </div>
+  
+  <div class="callout star">
+    <div class="callout-title">★ 시험 빈출 정리</div>
+    <table style="margin-top:6px; width:100%;">
+      <tr>
+        <th>기준</th>
+        <th>결과</th>
+      </tr>
+      <tr>
+        <td>PRE 오름차순</td>
+        <td>DFS 방문 순서</td>
+      </tr>
+      <tr>
+        <td><strong>POST 내림차순</strong></td>
+        <td><strong>위상 정렬</strong></td>
+      </tr>
+    </table>
+  </div>
+  
+  <div class="callout connect">
+    <div class="callout-title">왜 POST 역순인가</div>
+    <p style="margin-top:6px;">u → v 간선이 있으면 DFS에서 v를 먼저 끝낸 다음 u가 끝남 (post[u] &gt; post[v]). 따라서 post 큰 것부터 줄세우면 "선행 작업" 먼저 옴 = 위상 정렬.</p>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 11. Bellman-Ford -->
+<!-- ============================================== -->
+<section id="s11">
+  <h2><span class="num">11</span> Bellman-Ford</h2>
+  
+  <h3>문제 설정 — SSSP</h3>
+  
+  <div class="def-box">
+    <div class="term">SSSP (Single-Source Shortest Path)</div>
+    <p style="margin-top:6px;">한 출발점 s에서 다른 모든 정점까지의 최단 경로.</p>
+  </div>
+  
+  <h3>핵심 개념</h3>
+  
+  <ul>
+    <li><strong>dist[v]</strong>: s에서 v까지의 추정 최단 거리 (점점 작아짐)</li>
+    <li><strong>parent[v]</strong>: 최단 경로상 v 직전 노드 (경로 복원용)</li>
+    <li><strong>relax(u, v)</strong>: 더 짧은 길 발견하면 dist[v] 갱신</li>
+  </ul>
+  
+  <div class="code-block">
+    <span class="code-label pseudo">relax 정의</span>
+<pre><code><span class="c-key">def</span> <span class="c-fn">relax</span>(u, v):
+    <span class="c-key">if</span> dist[v] &gt; dist[u] + w(u, v):
+        dist[v] = dist[u] + w(u, v)
+        parent[v] = u</code></pre>
+  </div>
+  
+  <h3>★ 점화식</h3>
+  
+  <div class="key-result">
+    <div class="label">최단 경로의 점화식</div>
+    <div style="font-size:17px; line-height:1.9; margin-top:8px; font-family:'Cambria Math', serif;">
+      dist[v] = min ( dist[u] + w(u, v) ) for all u → v
+    </div>
+    <div style="font-size:13px; color:var(--ink-muted); margin-top:8px; font-family:-apple-system, sans-serif; font-style:italic;">
+      = v로 들어오는 모든 후보 중 비용 합 최소
+    </div>
+  </div>
+  
+  <h3>Bellman-Ford 의사코드</h3>
+  
+  <div class="code-block">
+    <span class="code-label pseudo">Bellman-Ford</span>
+<pre><code>dist[s] = <span class="c-num">0</span>; <span class="c-key">for</span> v ≠ s: dist[v] = ∞
+
+<span class="c-key">for</span> i <span class="c-key">in</span> <span class="c-fn">range</span>(n − <span class="c-num">1</span>):              <span class="c-cmt"># 최대 n−1 라운드</span>
+    <span class="c-key">for</span> each edge (u, v) in G:        <span class="c-cmt"># 모든 간선 검사</span>
+        <span class="c-key">if</span> dist[v] &gt; dist[u] + w(u, v):
+            <span class="c-fn">relax</span>(u, v)</code></pre>
+  </div>
+  
+  <h3>★ 왜 n−1 라운드?</h3>
+  
+  <div class="callout star">
+    <div class="callout-title">근거</div>
+    <ul style="margin-top:6px;">
+      <li>최단 경로의 간선 최대 수 = n−1 (정점 n개)</li>
+      <li>한 라운드마다 한 간선만큼 정보 전파</li>
+      <li>→ 최대 n−1 라운드면 모든 최단 거리 확정</li>
+    </ul>
+  </div>
+  
+  <h3>시간복잡도</h3>
+  
+  <div class="key-result">
+    <div class="label">Bellman-Ford 시간복잡도</div>
+    <div style="font-size:20px; margin-top:8px;">
+      <strong>O(V · E) = O(n · m)</strong>
+    </div>
+    <div style="font-size:13px; color:var(--ink-muted); margin-top:8px; font-style:italic;">
+      최악 (E = n²): O(n³)
+    </div>
+  </div>
+  
+  <h3>특징</h3>
+  
+  <div class="callout tip">
+    <div class="callout-title">BF의 특기</div>
+    <ul style="margin-top:6px;">
+      <li><strong>음수 가중치 OK</strong> (Dijkstra가 못하는 부분)</li>
+      <li>음수 사이클이 있으면 검출 가능 (n번째 라운드에서도 갱신 일어나면 음수 사이클)</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 12. Dijkstra -->
+<!-- ============================================== -->
+<section id="s12">
+  <h2><span class="num">12</span> Dijkstra</h2>
+  
+  <h3>핵심 아이디어</h3>
+  
+  <div class="def-box">
+    <div class="term">Dijkstra 전략</div>
+    <p style="margin-top:6px;">매번 <strong>"현재 가장 가까운 미확정 노드"</strong>를 골라 확정. 한 번 확정된 노드는 다시 안 봄.</p>
+    <ul style="margin-top:6px;">
+      <li>잉크가 천천히 번지듯 가장자리부터 확장</li>
+      <li>BF는 매 라운드 모든 간선 재검사 → Dijkstra는 똑똑하게 골라서</li>
+    </ul>
+  </div>
+  
+  <h3>의사코드 (min-heap 사용)</h3>
+  
+  <div class="code-block">
+    <span class="code-label pseudo">Dijkstra</span>
+<pre><code>dist[s] = <span class="c-num">0</span>; <span class="c-key">for</span> v ≠ s: dist[v] = ∞
+parent = [<span class="c-key">None</span>, ..., <span class="c-key">None</span>]
+
+Q = min_heap of all nodes with key dist[v]
+
+<span class="c-key">while</span> Q ≠ ∅:
+    u = Q.<span class="c-fn">deleteMin</span>()             <span class="c-cmt"># O(log n)</span>
+    
+    <span class="c-key">for</span> each edge u → v:
+        <span class="c-key">if</span> dist[v] &gt; dist[u] + w(u, v):
+            <span class="c-fn">relax</span>(u, v)
+            parent[v] = u
+            Q.<span class="c-fn">decreaseKey</span>(v, dist[v])  <span class="c-cmt"># O(log n)</span>
+
+<span class="c-key">return</span> dist, parent</code></pre>
+  </div>
+  
+  <h3>시간복잡도</h3>
+  
+  <div class="key-result">
+    <div class="label">Dijkstra (min-heap) 시간복잡도</div>
+    <div style="font-size:17px; line-height:1.9; margin-top:8px;">
+      heap 관리: O(n log n) — n번 insert + n번 deleteMin<br>
+      decreaseKey: O(E log n) — 각 간선마다 한 번<br>
+      <strong>= O((n + E) log n)</strong>
+    </div>
+    <div style="font-size:13px; color:var(--ink-muted); margin-top:8px; font-style:italic;">
+      최악 (E = n²): O(n² log n)
+    </div>
+  </div>
+  
+  <h3>★ 한계 — 음수 가중치 X</h3>
+  
+  <div class="callout warn">
+    <div class="callout-title">★ 시험 빈출</div>
+    <ul style="margin-top:6px;">
+      <li>Dijkstra는 <strong>모든 가중치가 양수일 때만</strong> 정확</li>
+      <li>음수 가중치 있으면 "한 번 확정 후 안 보기" 전략이 깨짐</li>
+      <li>음수 가중치 그래프 → Bellman-Ford 사용</li>
+    </ul>
+  </div>
+  
+  <h3>Fibonacci heap 사용 시</h3>
+  
+  <div class="callout connect">
+    <div class="callout-title">심화</div>
+    Fibonacci heap을 쓰면 decreaseKey가 amortized O(1) → 전체 <strong>O(E + n log n)</strong>으로 개선. 알고리즘은 동일.
+  </div>
+  
+  <h3>parent로 경로 복원</h3>
+  
+  <p>i부터 거꾸로 parent를 따라가면 s까지의 실제 경로 복원 가능:</p>
+  
+  <div class="code-block">
+    <span class="code-label pseudo">경로 복원</span>
+<pre><code>path = []
+cur = target
+<span class="c-key">while</span> cur != <span class="c-key">None</span>:
+    path.<span class="c-fn">append</span>(cur)
+    cur = parent[cur]
+path.<span class="c-fn">reverse</span>()    <span class="c-cmt"># s에서 target 방향</span></code></pre>
+  </div>
+  
+  <p>parent 화살표 전체를 모으면 <strong>최단 경로 트리(SPT)</strong> — s 루트, n−1개 엣지.</p>
+</section>
+
+<!-- ============================================== -->
+<!-- 13. Floyd-Warshall -->
+<!-- ============================================== -->
+<section id="s13">
+  <h2><span class="num">13</span> Floyd-Warshall</h2>
+  
+  <h3>문제 설정 — All-to-All</h3>
+  
+  <div class="def-box">
+    <div class="term">All-to-All Shortest Path</div>
+    <p style="margin-top:6px;"><strong>모든 정점 쌍 (i, j)</strong>에 대해 i → j 최단 경로 (n×n 표).</p>
+  </div>
+  
+  <h3>방법 1 vs Floyd-Warshall</h3>
+  
+  <table>
+    <tr>
+      <th>방법</th>
+      <th>설명</th>
+      <th>시간복잡도</th>
+    </tr>
+    <tr>
+      <td>방법 1</td>
+      <td>모든 출발점에 Dijkstra 반복</td>
+      <td>O(n³ log n)</td>
+    </tr>
+    <tr style="background:var(--gold-bg);">
+      <td><strong>Floyd-Warshall</strong></td>
+      <td>전용 알고리즘 (DP)</td>
+      <td><strong>O(n³)</strong></td>
+    </tr>
+  </table>
+  
+  <h3>★ d_k(i, j) 정의</h3>
+  
+  <div class="def-box">
+    <div class="term">d_k(i, j)</div>
+    <p style="margin-top:6px;">중간 노드를 <strong>{1, 2, ..., k}</strong>에서만 골라 쓸 수 있을 때의 i → j 최단 거리.</p>
+    <ul style="margin-top:6px;">
+      <li>최종 목표: <strong>d_n(i, j)</strong> (모든 노드 거쳐갈 수 있음 = 제한 없음)</li>
+    </ul>
+  </div>
+  
+  <h3>★ 점화식</h3>
+  
+  <div class="key-result">
+    <div class="label">★★ Floyd-Warshall 점화식</div>
+    <div style="font-size:15px; line-height:2; margin-top:8px; font-family:'Cambria Math', serif;">
+      d<sub>k</sub>(i, j) = min ( d<sub>k−1</sub>(i, j),<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d<sub>k−1</sub>(i, k) + d<sub>k−1</sub>(k, j) )
+    </div>
+    <div style="font-size:13px; color:var(--ink-muted); margin-top:8px; font-family:-apple-system, sans-serif; font-style:italic;">
+      ↑ k 안 거치는 경우 &nbsp;&nbsp;&nbsp; ↑ k 거치는 경우
+    </div>
+  </div>
+  
+  <h3>Base case d_0</h3>
+  
+  <table>
+    <tr>
+      <th>경우</th><th>값</th>
+    </tr>
+    <tr>
+      <td>i = j (자기 자신)</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>(i, j) ∈ E (직접 간선)</td>
+      <td>w(i, j)</td>
+    </tr>
+    <tr>
+      <td>그 외</td>
+      <td>∞</td>
+    </tr>
+  </table>
+  
+  <p>d_0 표 = <strong>가중치 인접 행렬</strong>과 동일.</p>
+  
+  <h3>★ 진행 방식</h3>
+  
+  <div class="callout star">
+    <div class="callout-title">표 갱신 흐름</div>
+    <ol style="margin-top:6px;">
+      <li>d_0 (인접 행렬) 만들기</li>
+      <li>k = 1, 2, 3, ..., n까지 차례로 표 갱신</li>
+      <li>각 단계 k에서: <strong>k행과 k열에 ∞ 아닌 값</strong>이 있는 칸만 갱신 후보</li>
+      <li>k행/k열 자체는 변화 없음</li>
+      <li>d_n이 최종 답</li>
+    </ol>
+  </div>
+  
+  <h3>특징</h3>
+  
+  <div class="callout tip">
+    <div class="callout-title">Floyd-Warshall 강점</div>
+    <ul style="margin-top:6px;">
+      <li><strong>음수 가중치 OK</strong> (음수 사이클은 불가)</li>
+      <li>한 번 실행으로 모든 쌍의 답</li>
+      <li>구현이 매우 단순 (삼중 for문 + min)</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 14. 시간복잡도 종합표 -->
+<!-- ============================================== -->
+<section id="s14">
+  <h2><span class="num">14</span> 시간복잡도 종합표</h2>
+  
+  <h3>균형 탐색 트리</h3>
+  
+  <table>
+    <tr>
+      <th>트리</th>
+      <th>탐색</th>
+      <th>삽입</th>
+      <th>삭제</th>
+      <th>높이</th>
+    </tr>
+    <tr>
+      <td>일반 BST (최악)</td>
+      <td>O(n)</td>
+      <td>O(n)</td>
+      <td>O(n)</td>
+      <td>O(n)</td>
+    </tr>
+    <tr style="background:var(--gold-bg);">
+      <td><strong>AVL</strong></td>
+      <td>O(log n)</td>
+      <td>O(log n)</td>
+      <td>O(log n)</td>
+      <td>≈ 1.44 log n</td>
+    </tr>
+    <tr style="background:var(--gold-bg);">
+      <td><strong>Red-Black</strong></td>
+      <td>O(log n)</td>
+      <td>O(log n)</td>
+      <td>O(log n)</td>
+      <td>≤ 2 log(n+1)</td>
+    </tr>
+    <tr style="background:var(--gold-bg);">
+      <td><strong>2-3-4</strong></td>
+      <td>O(log n)</td>
+      <td>O(log n)</td>
+      <td>O(log n)</td>
+      <td>완전 균형</td>
+    </tr>
+  </table>
+  
+  <h3>그래프 순회</h3>
+  
+  <table>
+    <tr>
+      <th>알고리즘</th>
+      <th>시간복잡도</th>
+      <th>주요 용도</th>
+    </tr>
+    <tr>
+      <td>DFS</td>
+      <td>O(n + m)</td>
+      <td>사이클 탐지, 위상 정렬</td>
+    </tr>
+    <tr>
+      <td>BFS</td>
+      <td>O(n + m)</td>
+      <td>최단 거리(무가중치)</td>
+    </tr>
+    <tr>
+      <td>위상 정렬</td>
+      <td>O(n + m)</td>
+      <td>DAG 순서 정렬 (POST 역순)</td>
+    </tr>
+  </table>
+  
+  <h3>★ 최단 경로 (시험 빈출)</h3>
+  
+  <table>
+    <tr>
+      <th>알고리즘</th>
+      <th>문제</th>
+      <th>시간복잡도</th>
+      <th>최악 (E=n²)</th>
+      <th>음수 가중치</th>
+    </tr>
+    <tr style="background:var(--gold-bg);">
+      <td><strong>Bellman-Ford</strong></td>
+      <td>SSSP</td>
+      <td>O(V·E)</td>
+      <td>O(n³)</td>
+      <td><strong>OK</strong> ✓</td>
+    </tr>
+    <tr style="background:var(--gold-bg);">
+      <td><strong>Dijkstra (heap)</strong></td>
+      <td>SSSP</td>
+      <td>O((n+E) log n)</td>
+      <td>O(n² log n)</td>
+      <td>불가 ✗</td>
+    </tr>
+    <tr>
+      <td>Dijkstra (Fibonacci)</td>
+      <td>SSSP</td>
+      <td>O(E + n log n)</td>
+      <td>O(n² + n log n)</td>
+      <td>불가 ✗</td>
+    </tr>
+    <tr>
+      <td>Dijkstra × n</td>
+      <td>All-to-All</td>
+      <td>O(n × D)</td>
+      <td>O(n³ log n)</td>
+      <td>불가 ✗</td>
+    </tr>
+    <tr style="background:var(--gold-bg);">
+      <td><strong>Floyd-Warshall</strong></td>
+      <td>All-to-All</td>
+      <td><strong>O(n³)</strong></td>
+      <td>O(n³)</td>
+      <td><strong>OK</strong> ✓</td>
+    </tr>
+  </table>
+  
+  <div class="callout star">
+    <div class="callout-title">★ 한 줄로 외우기</div>
+    <ul style="margin-top:6px;">
+      <li><strong>BF</strong>: O(VE), 음수 OK</li>
+      <li><strong>Dijkstra</strong>: O((n+E) log n), 음수 X</li>
+      <li><strong>Floyd-Warshall</strong>: O(n³), 음수 OK, All-to-All</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- 15. 시험 체크리스트 -->
+<!-- ============================================== -->
+<section id="s15">
+  <h2><span class="num">15</span> ★ 시험 체크리스트</h2>
+  
+  <div style="background:var(--charcoal-deep); color:white; border-radius:12px; padding:24px 28px; margin:20px 0;">
+    <div style="color:#fde68a; font-weight:700; font-size:12px; letter-spacing:0.15em; margin-bottom:14px;">기말 시험 빈출 포인트</div>
+    
+    <div style="color:#fde68a; font-weight:700; margin-top:14px; margin-bottom:8px;">▸ 균형 탐색 트리</div>
+    <ol style="margin-left:22px; color:white;">
+      <li style="margin-bottom:6px;">AVL 조건: BST + 모든 노드 좌우 높이 차 ≤ 1</li>
+      <li style="margin-bottom:6px;"><strong style="color:#fde68a;">★ AVL 높이 O(log n) 증명</strong>: N_h 점화식 → 2^(h/2) ≤ n → h ≤ 2 log n</li>
+      <li style="margin-bottom:6px;">AVL 회전 4가지: LL/RR (1번), LR/RL (2번)</li>
+      <li style="margin-bottom:6px;">RB 4규칙: 루트 검정, NIL 검정, 레드 연속 X, 블랙 높이 일정</li>
+      <li style="margin-bottom:6px;"><strong style="color:#fde68a;">★ 2-3-4 ↔ RB 변환</strong>: 2-노드→검정, 3-노드→검정+빨강1, 4-노드→검정+빨강2</li>
+    </ol>
+    
+    <div style="color:#fde68a; font-weight:700; margin-top:14px; margin-bottom:8px;">▸ 그래프 표현·순회</div>
+    <ol style="margin-left:22px; color:white;">
+      <li style="margin-bottom:6px;">인접 행렬 O(n²) vs 인접 리스트 O(n+m)</li>
+      <li style="margin-bottom:6px;">DFS 핵심: pre, post, parent — 막대 포함 관계 = DFS 트리</li>
+      <li style="margin-bottom:6px;"><strong style="color:#fde68a;">★ Back edge ⇔ 사이클 존재</strong></li>
+      <li style="margin-bottom:6px;">DFSALL: 비연결 그래프 대응, 호출 횟수 = 컴포넌트 수</li>
+      <li style="margin-bottom:6px;"><strong style="color:#fde68a;">★ 위상 정렬 = POST 내림차순</strong> (DAG에서)</li>
+    </ol>
+    
+    <div style="color:#fde68a; font-weight:700; margin-top:14px; margin-bottom:8px;">▸ 최단 경로</div>
+    <ol style="margin-left:22px; color:white;">
+      <li style="margin-bottom:6px;"><strong style="color:#fde68a;">★ 부분 경로 최단성</strong>: 최단 경로의 부분도 반드시 최단</li>
+      <li style="margin-bottom:6px;"><strong style="color:#fde68a;">★ relax(u, v)</strong>: 더 짧으면 dist[v] 갱신, parent[v] = u</li>
+      <li style="margin-bottom:6px;">BF: n−1 라운드 × 모든 간선, O(VE), 음수 OK</li>
+      <li style="margin-bottom:6px;">Dijkstra: min-heap, deleteMin + decreaseKey, O((n+E) log n), 음수 X</li>
+      <li style="margin-bottom:6px;">왜 가장 가까운 노드부터? 양수 가중치라 그 dist는 더 줄 수 없음</li>
+      <li style="margin-bottom:6px;"><strong style="color:#fde68a;">★ Floyd-Warshall 점화식</strong>: d_k(i,j) = min(d_(k-1)(i,j), d_(k-1)(i,k) + d_(k-1)(k,j))</li>
+      <li style="margin-bottom:6px;">FW 시간복잡도 O(n³), 음수 OK (음수 사이클은 X)</li>
+      <li style="margin-bottom:6px;">FW 갱신 후보 찾기: k행/k열에 ∞ 아닌 값 있는 곳만</li>
+    </ol>
+    
+    <div style="color:#fde68a; font-weight:700; margin-top:14px; margin-bottom:8px;">▸ 자주 헷갈리는 부분</div>
+    <ol style="margin-left:22px; color:white;">
+      <li style="margin-bottom:6px;">"노드 번호 = 인덱스 = ID" (Floyd-Warshall의 k)</li>
+      <li style="margin-bottom:6px;">d_k(i, i) = 0 (모든 k에서 대각선은 0)</li>
+      <li style="margin-bottom:6px;">P(i,j)는 mid[i][j] 한 줄로 기록 — 시간복잡도 변화 없음</li>
+      <li style="margin-bottom:6px;">Dijkstra heap에서 같은 dist 동률이면 어느 쪽 먼저든 결과 동일</li>
+      <li style="margin-bottom:6px;">BF에서 같은 라운드 내 갱신 사용 가능 (구현에 따라)</li>
+    </ol>
+  </div>
+  
+  <h3>증명·도출 핵심 흐름</h3>
+  
+  <div class="callout star">
+    <div class="callout-title">★ AVL 높이 증명 6단계</div>
+    <ol style="margin-top:6px;">
+      <li>N_h = N_(h-1) + N_(h-2) + 1</li>
+      <li>N_(h-1) ≥ N_(h-2) 이용 → N_h ≥ 2 N_(h-2) (+1 떼냄)</li>
+      <li>반복 적용: N_h ≥ 2^k · N_(h-2k)</li>
+      <li>k = h/2 대입: N_h ≥ 2^(h/2)</li>
+      <li>2^(h/2) ≤ N_h ≤ n → log 취해서 h ≤ 2 log n</li>
+      <li>h = O(log n)</li>
+    </ol>
+  </div>
+  
+  <div class="callout star">
+    <div class="callout-title">★ Floyd-Warshall 점화식 도출</div>
+    <ol style="margin-top:6px;">
+      <li>최단 경로의 중간 노드 중 가장 큰 인덱스를 k로 잡음</li>
+      <li>두 경우로 나눔: k 거치지 않는 경우 / k 거치는 경우</li>
+      <li>k 거치는 경우 → i→k 구간, k→j 구간 모두 중간 노드 인덱스 ≤ k−1</li>
+      <li>min으로 두 경우 비교 → 점화식 완성</li>
+    </ol>
+  </div>
+  
+  <h3>마지막 한 마디</h3>
+  
+  <div class="callout connect">
+    <div class="callout-title">한 학기 정말 수고하셨습니다</div>
+    <p style="margin-top:6px;">자료구조 한 학기 동안 — 트리부터 그래프 알고리즘까지 다뤘어요. 시험 잘 보시고, 헷갈리는 부분 있으면 위 체크리스트 다시 보세요.</p>
+  </div>
+</section>
+
+<div class="doc-footer">
+  자료구조 · 15주차-2 강의노트 &nbsp;·&nbsp; 강원대학교 컴퓨터공학과 &nbsp;·&nbsp; 2026.06.12
+</div>
+
+</main>
+</div>
+
+</body>
+</html>
