@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>자료구조 15주차-1 문제은행 | 그래프 복습</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root{--bg:#fafaf7;--surface:#fff;--ink:#1a2332;--ink-soft:#4a5568;--ink-muted:#718096;--line:#e2e8f0;--line-soft:#edf2f7;--teal:#0d9488;--teal-soft:#ccfbf1;--teal-bg:#f0fdfa;--amber:#d97706;--amber-soft:#fef3c7;--rose:#e11d48;--indigo:#4f46e5;--indigo-soft:#e0e7ff;--slate-bg:#f1f5f9;--code-bg:#1e293b;--code-text:#e2e8f0;--shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);}
+  body{font-family:-apple-system,"Pretendard","Apple SD Gothic Neo","Noto Sans KR",sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;font-size:15.5px;letter-spacing:-.01em;}
+  .wrapper{max-width:860px;margin:0 auto;padding:56px 24px 120px;}
+  .doc-header{margin-bottom:36px;padding-bottom:24px;border-bottom:2px solid var(--ink);}
+  .doc-meta{display:flex;gap:10px;align-items:center;margin-bottom:14px;font-size:12.5px;flex-wrap:wrap;}
+  .doc-meta .badge{background:var(--teal);color:#fff;padding:3px 10px;border-radius:4px;font-weight:600;}
+  .doc-meta .range{background:var(--amber-soft);color:var(--amber);padding:3px 10px;border-radius:4px;font-weight:600;border:1px solid var(--amber);}
+  .doc-header h1{font-size:30px;font-weight:700;letter-spacing:-.03em;margin-bottom:8px;}
+  .doc-header .sub{color:var(--ink-soft);font-size:15px;}
+  .back{display:inline-block;margin-bottom:22px;color:var(--ink-muted);text-decoration:none;font-size:13px;}
+  .back:hover{color:var(--teal);}
+  .note{background:var(--teal-bg);border:1px solid var(--teal-soft);border-left:3px solid var(--teal);border-radius:8px;padding:14px 18px;margin-bottom:14px;font-size:14px;color:var(--ink-soft);}
+  .note b{color:var(--teal);}
+  .controls{display:flex;gap:8px;margin:22px 0 32px;}
+  .controls button{font:inherit;font-size:13px;font-weight:600;cursor:pointer;background:var(--surface);border:1px solid var(--line);color:var(--ink-soft);padding:8px 14px;border-radius:7px;transition:all .15s;}
+  .controls button:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-bg);}
+  article.q{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:24px 26px;margin-bottom:18px;box-shadow:var(--shadow);}
+  .q-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .q-num{font-weight:700;font-size:16px;color:var(--teal);font-variant-numeric:tabular-nums;}
+  .q-tag{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;letter-spacing:.02em;}
+  .tag-mc{background:var(--indigo-soft);color:var(--indigo);}
+  .tag-calc{background:var(--teal-soft);color:var(--teal);}
+  .tag-fill{background:var(--amber-soft);color:var(--amber);}
+  .tag-write{background:var(--slate-bg);color:var(--ink-soft);}
+  .tag-code{background:#1e293b;color:#e2e8f0;}
+  .q-body{color:var(--ink);} .q-body p{margin-bottom:10px;}
+  .q-body ol.choices{list-style:none;counter-reset:ch;margin:12px 0 4px;}
+  .q-body ol.choices li{counter-increment:ch;padding:7px 0 7px 34px;position:relative;color:var(--ink-soft);}
+  .q-body ol.choices li::before{content:counter(ch);position:absolute;left:0;top:7px;width:22px;height:22px;border:1px solid var(--line);border-radius:50%;text-align:center;line-height:21px;font-size:12px;font-weight:600;color:var(--ink-muted);}
+  .kw{color:var(--teal);font-weight:600;}
+  code{font-family:"JetBrains Mono","SF Mono",Consolas,monospace;font-size:.9em;background:var(--slate-bg);padding:2px 6px;border-radius:4px;}
+  pre{background:var(--code-bg);color:var(--code-text);padding:16px 20px;border-radius:10px;overflow-x:auto;margin:12px 0;font-size:13.5px;line-height:1.6;}
+  pre code{background:none;padding:0;color:inherit;font-size:1em;}
+  .tree{font-family:"JetBrains Mono",Consolas,monospace;background:var(--slate-bg);padding:14px 18px;border-radius:8px;font-size:13px;line-height:1.7;margin:12px 0;white-space:pre;overflow-x:auto;}
+  table.tbl{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px;}
+  table.tbl th,table.tbl td{border:1px solid var(--line);padding:8px 12px;text-align:center;}
+  table.tbl th{background:var(--slate-bg);font-weight:600;}
+  details.sol{margin-top:16px;border-top:1px dashed var(--line);padding-top:14px;}
+  details.sol>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--teal);background:var(--teal-bg);border:1px solid var(--teal-soft);padding:8px 16px;border-radius:8px;transition:all .15s;user-select:none;}
+  details.sol>summary::-webkit-details-marker{display:none;}
+  details.sol>summary::before{content:"▸";font-size:12px;transition:transform .15s;}
+  details.sol[open]>summary::before{transform:rotate(90deg);}
+  details.sol>summary:hover{background:var(--teal-soft);}
+  .sol-body{margin-top:14px;background:var(--teal-bg);border:1px solid var(--teal-soft);border-radius:8px;padding:16px 18px;font-size:14.5px;color:var(--ink-soft);}
+  .sol-body .ans{color:var(--ink);font-weight:600;margin-bottom:8px;}
+  .sol-body .ans b{color:var(--rose);}
+  .sol-body p{margin-bottom:8px;} .sol-body p:last-child{margin-bottom:0;}
+  footer{margin-top:50px;padding-top:20px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-muted);text-align:center;}
+  sub,sup{font-size:.72em;}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <a href="../index.html" class="back">← 자료구조 목차로</a>
+
+  <header class="doc-header">
+    <div class="doc-meta"><span class="badge">15주차 · 1차시</span><span class="range">기말 범위 · 그래프 종합 복습</span></div>
+    <h1>문제은행 — 그래프 복습</h1>
+    <p class="sub">정의·4종류 · 인접 행렬/리스트 · BFS·DFS · 최단 경로(Dijkstra·BF·Floyd)</p>
+  </header>
+
+  <div class="note">이 문제집은 <b>15주차 1차시 강의노트</b>(그래프 종합 복습) 범위입니다. 11·13·14주차 그래프 내용을 통합 점검합니다.</div>
+  <div class="note">난이도·유형은 <b>중간고사 족보</b> 기준이며, 객관식 보기는 길이를 비슷하게 맞췄습니다.</div>
+
+  <div class="controls">
+    <button onclick="document.querySelectorAll('details.sol').forEach(d=>d.open=true)">전체 풀이 펼치기</button>
+    <button onclick="document.querySelectorAll('details.sol').forEach(d=>d.open=false)">전체 접기</button>
+  </div>
+
+  <!-- Q1 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q1</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>그래프 용어 "인접(adjacent)"과 "부속(incident)"의 구분으로 옳은 것은?</p>
+      <ol class="choices">
+        <li>인접은 정점↔정점 관계, 부속은 정점↔간선 관계이다</li>
+        <li>인접은 정점↔간선 관계, 부속은 정점↔정점 관계이다</li>
+        <li>인접과 부속은 완전히 같은 뜻이다</li>
+        <li>인접은 방향 그래프, 부속은 무향 그래프에서만 쓴다</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>1번</b></p>
+        <p>간선 하나로 직접 이어진 두 정점은 서로 인접(adjacent)하다고 합니다. 정점과 간선 사이의 관계는 부속(incident)이라는 다른 용어를 씁니다("정점 v는 간선 e에 부속한다").</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q2 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q2</span><span class="q-tag tag-write">표 채우기</span></div>
+    <div class="q-body">
+      <p>"방향 유무 × 가중치 유무"로 갈리는 그래프 네 종류의 빈칸을 채우시오.</p>
+      <table class="tbl">
+        <tr><th></th><th>가중치 없음</th><th>가중치 있음</th></tr>
+        <tr><td>방향 없음</td><td>?</td><td>?</td></tr>
+        <tr><td>방향 있음</td><td>?</td><td>?</td></tr>
+      </table>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <table class="tbl">
+          <tr><th></th><th>가중치 없음</th><th>가중치 있음</th></tr>
+          <tr><td>방향 없음</td><td>무향 그래프</td><td>가중 그래프</td></tr>
+          <tr><td>방향 있음</td><td>방향 그래프</td><td>가중 방향 그래프</td></tr>
+        </table>
+        <p>무향=연결되면 양쪽 통함, 가중=간선에 숫자, 방향=화살표 한쪽만, 가중 방향=방향마다 값이 다를 수 있음.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q3 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q3</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>방향 그래프에서 두 정점 A, B가 양방향으로 오갈 수 있을 때, 간선을 세는 방식으로 옳은 것은?</p>
+      <ol class="choices">
+        <li>무향 간선 하나로 본다</li>
+        <li>방향이 반대인 간선 2개(A→B, B→A)로 본다</li>
+        <li>가중치가 있을 때만 2개로 센다</li>
+        <li>A→B 하나만 있으면 B→A는 자동으로 생긴다</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>2번</b></p>
+        <p>방향 그래프에서 A↔B는 A→B와 B→A 두 개의 간선입니다. A→B가 있다고 B→A가 자동 생기지 않습니다(일방통행·팔로우 비유). 무향과 헷갈리지 않게 주의합니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q4 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q4</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>가중 방향 그래프에서 정점 i, j에 대해 옳은 것은?</p>
+      <ol class="choices">
+        <li>A[i][j]와 A[j][i]는 언제나 같은 값이다</li>
+        <li>A[i][j]와 A[j][i]가 서로 다른 값일 수 있다 (방향마다 가중치 다름)</li>
+        <li>가중치는 두 방향이 항상 0이다</li>
+        <li>가중치는 무향 그래프에서만 가질 수 있다</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>2번</b></p>
+        <p>방향마다 가중치가 다를 수 있어 A[i][j](i→j)와 A[j][i](j→i)가 다른 숫자일 수 있습니다(오르막/내리막 비유: 영희→철수 9, 철수→영희 8). "같은 두 정점인데 가중치가 둘"이면 방향 그래프 신호입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q5 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q5</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>인접 행렬의 대칭성으로 그래프를 구분하는 방법은?</p>
+      <ol class="choices">
+        <li>대각선이 모두 0이면 방향, 아니면 무향이다</li>
+        <li>대칭(A[i][j]=A[j][i])이면 무향, 비대칭이면 방향이다</li>
+        <li>비대칭이면 무향, 대칭이면 방향이다</li>
+        <li>대칭성은 가중치 유무로만 결정된다</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>2번</b></p>
+        <p>무향은 i–j 연결이 곧 j–i 연결이라 A[i][j]=A[j][i]로 대각선 대칭입니다. 방향은 한 방향만 1일 수 있어 비대칭입니다. 표가 대칭이면 무향, 비대칭이면 방향으로 한눈에 구분합니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q6 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q6</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>가중치가 "거리·비용"을 뜻할 때, 인접 행렬에서 연결 안 된 칸과 대각선을 적는 규칙으로 옳은 것은?</p>
+      <ol class="choices">
+        <li>연결 안 됨 = 0, 자기 자신 = ∞</li>
+        <li>연결 안 됨 = ∞, 자기 자신 = 0</li>
+        <li>연결 안 됨 = −1, 자기 자신 = 1</li>
+        <li>둘 다 0으로 적는다</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>2번</b></p>
+        <p>거리 맥락에서 0은 "아주 가까움"을 뜻하므로, 못 가는 길을 0으로 적으면 알고리즘이 최단으로 착각합니다. 그래서 "못 감"은 ∞로, 자기 자신까지 거리는 0으로 적습니다. 이 ∞ 행렬이 곧 Floyd-Warshall의 시작 행렬 d₀입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q7 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q7</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>인접 리스트로 그래프를 저장할 때 옳은 것은?</p>
+      <ol class="choices">
+        <li>방향 그래프는 들어오는 간선만 리스트에 넣는다</li>
+        <li>방향 그래프는 나가는 간선만 리스트에 넣는다</li>
+        <li>무향 그래프는 간선 1개가 리스트 노드 1개가 된다</li>
+        <li>가중치는 인접 리스트에 저장할 수 없다</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>2번</b></p>
+        <p>방향 그래프 인접 리스트는 각 정점의 나가는 간선(out-edge)만 담습니다. 무향은 양쪽이 통하므로 간선 1개가 양쪽 리스트에 들어가 노드 2개가 됩니다. 가중치는 정점 번호 옆에 같이 기록합니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q8 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q8</span><span class="q-tag tag-calc">계산</span></div>
+    <div class="q-body">
+      <p>간선이 m개인 <b>무향</b> 그래프를 인접 리스트로 저장하면, 모든 리스트의 노드 총개수는 몇 개인가? 그 이유도 쓰시오.</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>2m 개</b></p>
+        <p>무향 간선 하나(i–j)는 i의 리스트에 j, j의 리스트에 i로 양쪽에 들어갑니다. 그래서 간선 1개당 노드 2개 → 총 2m개. (방향 그래프라면 m개.)</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q9 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q9</span><span class="q-tag tag-write">표 채우기 · 비교</span></div>
+    <div class="q-body">
+      <p>인접 행렬과 인접 리스트의 특성을 채우시오.</p>
+      <table class="tbl">
+        <tr><th>항목</th><th>인접 행렬</th><th>인접 리스트</th></tr>
+        <tr><td>공간</td><td>?</td><td>?</td></tr>
+        <tr><td>"i–j 연결?" 확인</td><td>?</td><td>?</td></tr>
+      </table>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <table class="tbl">
+          <tr><th>항목</th><th>인접 행렬</th><th>인접 리스트</th></tr>
+          <tr><td>공간</td><td>O(n²) (무조건 n×n)</td><td>O(n+m) (실제 간선만)</td></tr>
+          <tr><td>연결 확인</td><td>O(1) (한 칸)</td><td>O(n) (리스트 훑기)</td></tr>
+        </table>
+        <p>희소 그래프(간선 적음)는 리스트가 공간 효율적이고, 연결 여부 즉시 확인은 행렬이 유리합니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q10 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q10</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>BFS에서 정점의 visited 표시를 "큐에서 꺼낼 때"가 아니라 "큐에 넣을 때(enqueue 직전)" 하는 이유는?</p>
+      <ol class="choices">
+        <li>그래야 큐가 항상 정렬된 상태로 유지되기 때문이다</li>
+        <li>한 정점이 여러 이웃에게 발견돼도 큐에 두 번 들어가지 않게 하기 위해서다</li>
+        <li>꺼낼 때 표시하면 시작점을 방문하지 못하기 때문이다</li>
+        <li>DFS와 코드를 똑같이 만들기 위해서다</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>2번</b></p>
+        <p>enqueue 직전에 visited를 찍어야 같은 정점이 여러 이웃에게 동시에 발견돼도 중복으로 큐에 들어가지 않습니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q11 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q11</span><span class="q-tag tag-calc">추적 · BFS/DFS</span></div>
+    <div class="q-body">
+      <p>다음 무향 그래프에서 정점 0부터의 BFS와 DFS 방문 순서를 각각 쓰시오. (이웃은 번호 오름차순)</p>
+      <pre><code>0: 1,2    1: 0,3,4    2: 0,4
+3: 1      4: 1,2,5    5: 4</code></pre>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>BFS = 0 1 2 3 4 5 / DFS = 0 1 3 4 2 5</b></p>
+        <p>BFS(큐): 0 → 이웃 1,2 → 1의 새 이웃 3,4 → 4의 새 이웃 5. DFS(스택/재귀): 0→1→3(막힘)→4→2(막힘)→5. 같은 그래프·시작점이라도 큐는 옆으로, 스택은 아래로 퍼져 순서가 다릅니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q12 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q12</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>DFS의 재귀 구현과 스택 구현의 관계로 옳은 것은?</p>
+      <ol class="choices">
+        <li>재귀는 스택을 전혀 쓰지 않는 완전히 다른 방식이다</li>
+        <li>재귀도 내부적으로 호출 스택(call stack)을 쓰므로 둘은 같은 알고리즘이다</li>
+        <li>스택 구현은 BFS와 같은 결과를 낸다</li>
+        <li>재귀 구현은 큐를 사용한다</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>2번</b></p>
+        <p>재귀 호출은 컴퓨터가 "어디까지 했는지"를 호출 스택에 자동으로 쌓습니다. 스택 버전은 그 숨은 스택을 손으로 드러낸 것일 뿐, 같은 DFS입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q13 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q13</span><span class="q-tag tag-fill">빈칸 채우기</span></div>
+    <div class="q-body">
+      <p>모든 최단 경로 알고리즘의 공통 동작인 완화(relaxation)를 완성하시오. (부등호 포함)</p>
+      <pre><code>if  u.cost + w(u, v)  ___  v.cost :
+    v.cost = u.cost + w(u, v)
+    v.prev = ____</code></pre>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: 부등호 <b>&lt;</b> / <b>v.prev = u</b></p>
+        <p>u를 거쳐 가는 게 지금 아는 v.cost보다 <b>짧을 때만(&lt;)</b> 갱신하고, 그때 직전 정점 prev도 u로 기록해 나중에 경로를 역추적합니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q14 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q14</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>다익스트라(Dijkstra)의 그리디 전략에 대한 설명으로 옳은 것은?</p>
+      <ol class="choices">
+        <li>미확정 정점 중 cost가 가장 큰 것을 골라 확정한다</li>
+        <li>미확정 정점 중 cost가 가장 작은 것을 deleteMin으로 골라 확정한다</li>
+        <li>임의의 정점을 골라 확정한 뒤 나중에 되돌린다</li>
+        <li>모든 간선을 n−1번 반복 완화한 뒤 확정한다</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>2번</b></p>
+        <p>음이 아닌 간선에서는 미확정 중 가장 가까운 정점은 더 짧아질 수 없으므로 안심하고 확정합니다(그리디). 4번은 벨만-포드의 방식입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q15 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q15</span><span class="q-tag tag-calc">추적 · 음수 간선</span></div>
+    <div class="q-body">
+      <p>다음 방향 그래프에 s=A로 다익스트라를 돌린다. (간선: A→B = 8, A→C = 9, C→B = −15)</p>
+      <p>(1) 다익스트라가 내는 dist[B]는? (2) 진짜 최단 dist[B]는? (3) 왜 틀리는가?</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>(1) 8 &nbsp; (2) −6 &nbsp; (3) 확정한 거리를 다시 안 보기 때문</b></p>
+        <p>A 확정 → B=8, C=9. 더 작은 B를 8로 확정(도장). 이후 C 확정 후 C→B 완화: 9+(−15)=−6 &lt; 8이지만 B는 이미 확정이라 다익스트라는 안 고침 → 답 8(진짜는 −6). 음수 간선이 "갈수록 줄어드는" 상황을 만들어 그리디 가정을 깨므로, 이런 경우 벨만-포드를 써야 합니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q16 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q16</span><span class="q-tag tag-mc">객관식</span></div>
+    <div class="q-body">
+      <p>벨만-포드(Bellman-Ford)에 대한 설명으로 옳은 것은? (n = 정점 수)</p>
+      <ol class="choices">
+        <li>모든 간선을 n−1번 완화하고, 한 번 더 돌려 음의 사이클을 검사한다</li>
+        <li>가장 가까운 정점부터 deleteMin으로 하나씩 확정한다</li>
+        <li>음수 가중치가 있으면 동작하지 않는다</li>
+        <li>모든 정점 쌍의 최단 경로를 한 번에 구한다</li>
+      </ol>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>1번</b></p>
+        <p>벨만-포드는 확정 도장 없이 모든 간선을 n−1번 완화하고(최단 경로는 간선 최대 n−1개), 마지막에 한 번 더 돌려 여전히 줄어드는 간선이 있으면 음의 사이클로 판정합니다. 음수 가중치를 허용합니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q17 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q17</span><span class="q-tag tag-calc">계산 · 음의 사이클</span></div>
+    <div class="q-body">
+      <p>방향 그래프에 사이클 1→2→3→1이 있고 가중치가 각각 w(1,2)=−2, w(2,3)=−1, w(3,1)=−1이다. (1) 사이클의 가중치 합을 구하고 (2) 이 그래프에서 최단 경로가 정의되는지 답하시오.</p>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>(1) −4 (음수) &nbsp; (2) 정의되지 않음 (해 없음)</b></p>
+        <p>합 = (−2)+(−1)+(−1) = −4 &lt; 0 → 음의 사이클. 이 사이클을 돌수록 거리가 무한히 작아져(−∞로 발산) "최소"가 존재하지 않으므로 최단 경로가 성립하지 않습니다. 벨만-포드는 이를 "해 없음"으로 알려줍니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q18 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q18</span><span class="q-tag tag-write">표 채우기 · 종합</span></div>
+    <div class="q-body">
+      <p>세 최단 경로 알고리즘을 비교한 표의 빈칸을 채우시오.</p>
+      <table class="tbl">
+        <tr><th>알고리즘</th><th>대상</th><th>음수 간선</th><th>시간복잡도</th></tr>
+        <tr><td>Dijkstra</td><td>단일 출발점</td><td>?</td><td>?</td></tr>
+        <tr><td>Bellman-Ford</td><td>단일 출발점</td><td>?</td><td>?</td></tr>
+        <tr><td>Floyd-Warshall</td><td>모든 쌍</td><td>?</td><td>?</td></tr>
+      </table>
+    </div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <table class="tbl">
+          <tr><th>알고리즘</th><th>음수 간선</th><th>시간복잡도</th></tr>
+          <tr><td>Dijkstra</td><td>불가</td><td>O((V+E) log V)</td></tr>
+          <tr><td>Bellman-Ford</td><td>가능(음의 사이클 X)</td><td>O(VE)</td></tr>
+          <tr><td>Floyd-Warshall</td><td>가능(음의 사이클 X)</td><td>O(n³)</td></tr>
+        </table>
+        <p>Dijkstra·Bellman-Ford는 단일 출발점(single-source), Floyd-Warshall은 모든 쌍(all-pairs)입니다. 음수 간선이 있으면 Dijkstra는 쓸 수 없습니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <footer>자료구조 · 15주차-1 문제은행 · 그래프 복습 · 총 18문제</footer>
+</div>
+</body>
+</html>
