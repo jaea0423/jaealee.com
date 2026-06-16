@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2-3-4 트리 집중 예상문제지</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root{--bg:#fafaf7;--surface:#fff;--ink:#1a2332;--ink-soft:#4a5568;--ink-muted:#718096;--line:#e2e8f0;--teal:#0d9488;--teal-soft:#ccfbf1;--teal-bg:#f0fdfa;--amber:#d97706;--amber-soft:#fef3c7;--rose:#e11d48;--indigo:#4f46e5;--indigo-soft:#e0e7ff;--slate-bg:#f1f5f9;--code-bg:#1e293b;--code-text:#e2e8f0;--shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);}
+  body{font-family:-apple-system,"Pretendard","Apple SD Gothic Neo","Noto Sans KR",sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;font-size:15.5px;letter-spacing:-.01em;}
+  .wrapper{max-width:860px;margin:0 auto;padding:56px 24px 120px;}
+  .back{display:inline-block;margin-bottom:22px;color:var(--ink-muted);text-decoration:none;font-size:13px;}
+  .back:hover{color:var(--teal);}
+  .doc-header{margin-bottom:28px;padding-bottom:24px;border-bottom:2px solid var(--ink);}
+  .doc-meta{display:flex;gap:10px;align-items:center;margin-bottom:14px;font-size:12.5px;flex-wrap:wrap;}
+  .doc-meta .badge{background:var(--rose);color:#fff;padding:3px 10px;border-radius:4px;font-weight:600;}
+  .doc-meta .compose{color:var(--ink-muted);}
+  .doc-header h1{font-size:28px;font-weight:700;letter-spacing:-.03em;margin-bottom:8px;}
+  .doc-header .sub{color:var(--ink-soft);font-size:15px;}
+  .note{background:var(--teal-bg);border:1px solid var(--teal-soft);border-left:3px solid var(--teal);border-radius:8px;padding:14px 18px;margin-bottom:14px;font-size:14px;color:var(--ink-soft);}
+  .note b{color:var(--teal);}
+  .controls{display:flex;gap:8px;margin:22px 0 32px;}
+  .controls button{font:inherit;font-size:13px;font-weight:600;cursor:pointer;background:var(--surface);border:1px solid var(--line);color:var(--ink-soft);padding:8px 14px;border-radius:7px;transition:all .15s;}
+  .controls button:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-bg);}
+  article.q{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:24px 26px;margin-bottom:18px;box-shadow:var(--shadow);}
+  .q-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+  .q-num{font-weight:700;font-size:16px;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .q-topic{font-size:11px;font-weight:700;padding:3px 10px;border-radius:6px;color:#fff;}
+  .t-avl{background:#0d9488;} .t-rb{background:#e11d48;} .t-234{background:#d97706;} .t-graph{background:#4f46e5;}
+  .q-tag{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;letter-spacing:.02em;background:var(--slate-bg);color:var(--ink-soft);}
+  .q-body{color:var(--ink);} .q-body p{margin-bottom:10px;}
+  .q-body ol.choices{list-style:none;counter-reset:ch;margin:12px 0 4px;}
+  .q-body ol.choices li{counter-increment:ch;padding:7px 0 7px 34px;position:relative;color:var(--ink-soft);}
+  .q-body ol.choices li::before{content:counter(ch);position:absolute;left:0;top:7px;width:22px;height:22px;border:1px solid var(--line);border-radius:50%;text-align:center;line-height:21px;font-size:12px;font-weight:600;color:var(--ink-muted);}
+  .kw{color:var(--teal);font-weight:600;}
+  code{font-family:"JetBrains Mono","SF Mono",Consolas,monospace;font-size:.9em;background:var(--slate-bg);padding:2px 6px;border-radius:4px;}
+  pre{background:var(--code-bg);color:var(--code-text);padding:16px 20px;border-radius:10px;overflow-x:auto;margin:12px 0;font-size:13.5px;line-height:1.6;}
+  pre code{background:none;padding:0;color:inherit;font-size:1em;}
+  .tree{font-family:"JetBrains Mono",Consolas,monospace;background:var(--slate-bg);padding:14px 18px;border-radius:8px;font-size:13px;line-height:1.7;margin:12px 0;white-space:pre;overflow-x:auto;}
+  table.tbl{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px;}
+  table.tbl th,table.tbl td{border:1px solid var(--line);padding:8px 12px;text-align:center;}
+  table.tbl th{background:var(--slate-bg);font-weight:600;}
+  details.sol{margin-top:16px;border-top:1px dashed var(--line);padding-top:14px;}
+  details.sol>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--teal);background:var(--teal-bg);border:1px solid var(--teal-soft);padding:8px 16px;border-radius:8px;transition:all .15s;user-select:none;}
+  details.sol>summary::-webkit-details-marker{display:none;}
+  details.sol>summary::before{content:"▸";font-size:12px;transition:transform .15s;}
+  details.sol[open]>summary::before{transform:rotate(90deg);}
+  details.sol>summary:hover{background:var(--teal-soft);}
+  .sol-body{margin-top:14px;background:var(--teal-bg);border:1px solid var(--teal-soft);border-radius:8px;padding:16px 18px;font-size:14.5px;color:var(--ink-soft);}
+  .sol-body .ans{color:var(--ink);font-weight:600;margin-bottom:8px;}
+  .sol-body .ans b{color:var(--rose);}
+  .sol-body p{margin-bottom:8px;} .sol-body p:last-child{margin-bottom:0;}
+  footer{margin-top:50px;padding-top:20px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-muted);text-align:center;}
+  sub,sup{font-size:.72em;}
+  .answer-box{margin-top:14px;}
+  .answer-box .ab-label{display:block;font-size:12px;font-weight:600;color:var(--ink-muted);margin-bottom:6px;letter-spacing:.02em;}
+  .my-answer{width:100%;min-height:46px;resize:vertical;font:inherit;font-size:14px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;line-height:1.5;}
+  .my-answer:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-bg);}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <a href="problems.html" class="back">← 예상문제지 목록</a>
+
+  <header class="doc-header">
+    <div class="doc-meta"><span class="badge">2-3-4 집중 문제지</span><span class="compose">총 20문제 · 족보 유형</span></div>
+    <h1>2-3-4 트리 — 집중 예상문제</h1>
+    <p class="sub">노드 종류 · search · split · fusion · 레드블랙 변환</p>
+  </header>
+
+  <div class="note">기말 대비 <b>2-3-4 트리 전 범위</b> 집중 문제지입니다. 추적·표 채우기 유형이 많으니 직접 풀고 정답/풀이로 대조하세요.</div>
+  <div class="note">아래 여러 문제에서 <b>기준 예시 트리</b>를 사용합니다:</div>
+  <div class="tree">                 [37]
+        /                    \
+    [30,34]               [48,60,82]
+   /   |   \            /    |    |    \
+ [5] [32,33] [35]   [40] [50,53,57] [69] [86,98]</div>
+
+  <div class="controls">
+    <button onclick="document.querySelectorAll('details.sol').forEach(d=>d.open=true)">전체 풀이 펼치기</button>
+    <button onclick="document.querySelectorAll('details.sol').forEach(d=>d.open=false)">전체 접기</button>
+  </div>
+
+  <!-- Q1 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q1</span><span class="q-topic t-234">2-3-4</span><span class="q-tag">표 채우기</span></div>
+    <div class="q-body">
+      <p>2-3-4 트리의 노드 종류별 키 개수와 자식 개수를 채우시오. (리프가 아닌 내부 노드 기준)</p>
+      <table class="tbl">
+        <tr><th>노드 종류</th><th>키 개수</th><th>자식 개수</th></tr>
+        <tr><td>2-노드</td><td>?</td><td>?</td></tr>
+        <tr><td>3-노드</td><td>?</td><td>?</td></tr>
+        <tr><td>4-노드</td><td>?</td><td>?</td></tr>
+      </table>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <table class="tbl">
+          <tr><th>노드</th><th>키</th><th>자식</th></tr>
+          <tr><td>2-노드</td><td>1</td><td>2</td></tr>
+          <tr><td>3-노드</td><td>2</td><td>3</td></tr>
+          <tr><td>4-노드</td><td>3</td><td>4</td></tr>
+        </table>
+        <p>"2-3-4"는 노드가 가질 수 있는 자식 수의 종류입니다. 항상 (자식 수) = (키 개수) + 1.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q2 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q2</span><span class="q-topic t-234">2-3-4</span><span class="q-tag">빈칸</span></div>
+    <div class="q-body">
+      <p>2-3-4 트리에서 키 개수가 k인 내부 노드의 자식 수는 항상 <b>(______)</b> 이다. 이 규칙에 따라 4-노드의 자식 수는 <b>(______)</b> 개이다.</p>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>k + 1 / 4</b></p>
+        <p>키들이 경계 역할을 해 자식 영역을 나누므로 (자식 수) = (키 개수) + 1 입니다. 4-노드는 키 3개 → 자식 3+1 = 4개.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q3 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q3</span><span class="q-topic t-234">2-3-4</span><span class="q-tag">복수선택</span></div>
+    <div class="q-body">
+      <p>2-3-4 트리가 만족해야 하는 조건으로 <b>옳은</b> 것을 모두 고르시오.</p>
+      <ol class="choices">
+        <li>모든 노드의 자식 수는 2, 3, 4 중 하나이다.</li>
+        <li>모든 리프 노드는 같은 레벨(높이)에 위치한다.</li>
+        <li>한 노드는 키를 최대 2개까지만 가질 수 있다.</li>
+        <li>자식이 최대 2개인 이진 트리의 일종이다.</li>
+      </ol>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>1, 2</b></p>
+        <p>3번 틀림 — 키는 최대 3개(4-노드). 4번 틀림 — 한 노드가 자식을 최대 4개 가지므로 이진 트리가 아닙니다. 핵심 조건은 ① 자식 수 2~4, ② 모든 리프가 같은 레벨(균형) 두 가지입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q4 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q4</span><span class="q-topic t-234">2-3-4</span><span class="q-tag">판별</span></div>
+    <div class="q-body">
+      <p>어떤 내부 노드가 키를 3개 가지고 있는데 자식이 3개뿐이다. 이 트리는 2-3-4 트리로 유효한가? 이유를 쓰시오.</p>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>아니다 ((자식 수)=(키+1) 규칙 위반)</b></p>
+        <p>키가 3개면 4-노드이므로 자식은 반드시 4개여야 합니다(키+1). 자식이 3개면 규칙을 어겨 2-3-4 트리가 될 수 없습니다. (리프라면 자식이 0개여서 예외)</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q5 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q5</span><span class="q-topic t-234">2-3-4</span><span class="q-tag">빈칸 · 범위</span></div>
+    <div class="q-body">
+      <p>3-노드 <code>[30, 34]</code>는 자식이 3개이다. 두 키가 자식 영역의 경계가 될 때, 각 자식이 담당하는 값의 범위를 채우시오.</p>
+      <p>1번째 자식: <b>(______)</b> · 2번째 자식: <b>(______)</b> · 3번째 자식: <b>(______)</b></p>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>30보다 작은 값 / 30~34 사이 값 / 34보다 큰 값</b></p>
+        <p>키들이 경계 역할을 해서 자식 영역을 나눕니다. 자식 수(3) = 키 개수(2) + 1.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q6 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q6</span><span class="q-topic t-234">2-3-4</span><span class="q-tag">추적 · search</span></div>
+    <div class="q-body">
+      <p>기준 예시 트리에서 <code>search(53)</code>의 방문 경로(방문하는 노드 순서)를 쓰시오.</p>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>[37] → [48,60,82] → [50,53,57] (53 발견)</b></p>
+        <p>① 루트 [37]: 53 &gt; 37 → 오른쪽. ② [48,60,82]: 48 &lt; 53 &lt; 60 → 2번째 자식. ③ [50,53,57]에서 53 발견. 방문 노드 수 = 트리 높이만큼 → O(h).</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q7 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q7</span><span class="q-topic t-234">2-3-4</span><span class="q-tag">추적 · search</span></div>
+    <div class="q-body">
+      <p>기준 예시 트리에서 <code>search(69)</code>의 방문 경로를 쓰고, 마지막에 69를 어느 노드에서 찾는지 답하시오.</p>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>[37] → [48,60,82] → [69] 에서 발견</b></p>
+        <p>① [37]: 69 &gt; 37 → 오른쪽. ② [48,60,82]: 60 &lt; 69 &lt; 82 → 3번째 자식. ③ 리프 [69]에서 발견. 키들이 자식 영역 경계가 되어 한 번에 한 자식으로만 내려갑니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q8 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q8</span><span class="q-topic t-234">2-3-4</span><span class="q-tag">계산 · 높이</span></div>
+    <div class="q-body">
+      <p>2-3-4 트리의 높이 h의 (1) 최선의 경우(가장 짧을 때)와 (2) 최악의 경우(가장 길 때)를 n에 대한 로그로 나타내고, (3) 점근적 복잡도를 쓰시오.</p>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>(1) log₄ n &nbsp; (2) log₂ n &nbsp; (3) O(log n)</b></p>
+        <p>모든 노드가 4-노드면 한 레벨에 4배씩 늘어 가장 짧음(log₄ n). 모두 2-노드면 이진 트리와 같아 가장 김(log₂ n). 로그 밑은 빅오에서 상수배라 무시 → log₄ n ≤ h ≤ log₂ n = O(log n).</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q9 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q9</span><span class="q-topic t-234">2-3-4</span><span class="q-tag">추적 · insert</span></div>
+    <div class="q-body">
+      <p>기준 예시 트리에 <code>insert(36)</code>을 수행하면 어느 리프에 들어가며, 그 노드는 어떻게 바뀌는가? split이 필요한지도 함께 답하시오.</p>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>[35] 리프 → [35, 36] (split 불필요)</b></p>
+        <p>① 루트 [37]: 36 &lt; 37 → 왼쪽 [30,34]. ② [30,34]: 36 &gt; 34 → 3번째 자식 [35]. ③ [35]는 빈 자리가 있는 2-노드이므로 정렬 상태로 그냥 삽입 → [35, 36]. 가득 차지 않아 split 불필요.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q10 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q10</span><span class="q-topic t-234">2-3-4</span><span class="q-tag">추적 · split</span></div>
+    <div class="q-body">
+      <p>가득 찬 4-노드 <code>[50, 53, 57]</code>에 <code>insert(54)</code>를 하려고 한다. 이 리프는 가득 찼으므로 먼저 split한다. (1) 어떤 키가 부모로 올라가고 (2) 남은 키는 어떻게 두 노드로 나뉘는가?</p>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>가운데 53이 부모로, [50]과 [57]로 분리</b></p>
+        <p>가운데 키 53을 부모 [48,60,82]로 올리면 부모는 [48,53,60,82]가 되고, 남은 50·57은 [50]과 [57] 두 노드로 갈라집니다. 이후 54는 53&lt;54&lt;57이므로 [57] 노드로 들어가 [54,57]이 됩니다. (top-down 방식에서는 내려가는 길에 미리 split.)</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q11 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q11</span><span class="q-topic t-234">2-3-4</span><span class="q-tag">서술 · split</span></div>
+    <div class="q-body">
+      <p>삽입 중 가득 찬 노드(4-노드, 키 3개)를 만났을 때 수행하는 <b>split</b>의 동작을 세 가지로 설명하시오. (키 분배 · 부모로 올림 · 자식 분배)</p>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답 요지</p>
+        <p>① 가운데 키를 부모로 올린다. ② 나머지 두 키를 좌·우 두 노드로 분리한다. ③ 원래 노드의 자식 4개를 새 두 노드가 2개씩 나눠 갖는다. 결과적으로 가지(자식)가 하나 더 생기고, 리프 도달 시 항상 자리가 보장됩니다. split 1회는 O(1).</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q12 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q12</span><span class="q-topic t-234">2-3-4</span><span class="q-tag">서술 · top-down</span></div>
+    <div class="q-body">
+      <p>2-3-4 트리 삽입은 내려가는 길에 가득 찬 노드를 미리 쪼개는 <b>top-down split</b> 방식을 쓴다. 리프에 도착해서 쪼개지 않고 미리 쪼개며 내려가는 이유는 무엇인가?</p>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답 요지</p>
+        <p>리프에서 가득 찼다고 그때 쪼개면 부모도 가득 차 있을 수 있어 위로 연쇄적으로 split이 전파됩니다. 미리 깨고 내려가면 부모가 항상 여유가 있어 안전하게 처리되고, 가운데 키를 올릴 부모 자리가 보장됩니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q13 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q13</span><span class="q-topic t-234">2-3-4</span><span class="q-tag">객관식</span></div>
+    <div class="q-body">
+      <p>2-3-4 트리에서 트리의 <b>높이가 1 증가</b>하는 유일한 경우는?</p>
+      <ol class="choices">
+        <li>리프에 빈 자리가 있어 그냥 끼워 넣을 때</li>
+        <li>중간 노드를 split해 가운데 키를 올릴 때</li>
+        <li>루트가 가득 차 split되며 새 루트가 생길 때</li>
+        <li>내부 노드를 successor와 교체해 삭제할 때</li>
+      </ol>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>3번</b></p>
+        <p>가운데 키를 올릴 부모가 없을 때(루트가 가득 참) 새 루트가 생기며 높이가 1 증가합니다. 이것이 높이가 늘어나는 유일한 경로라서 모든 리프가 같은 레벨을 유지합니다. (반대로 높이 감소는 루트가 2-노드일 때 merge로 셋이 합쳐질 때.)</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q14 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q14</span><span class="q-topic t-234">2-3-4</span><span class="q-tag">추적 · delete</span></div>
+    <div class="q-body">
+      <p>리프 노드 <code>[50, 53, 57]</code>에서 <code>delete(53)</code>을 수행하면 결과는? 또 fusion 없이 리프에서 그냥 지울 수 있는 조건은 무엇인가?</p>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>[50,53,57] → [50,57] (그냥 삭제)</b></p>
+        <p>리프가 3-노드 또는 4-노드(키 2개 이상)이면 키 하나를 빼도 노드가 여전히 유효(2-노드 이상)하므로 fusion 없이 그냥 지웁니다. 키가 1개인 2-노드 리프에서 지우면 빈 노드가 되어 조건이 깨지므로 fusion이 필요합니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q15 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q15</span><span class="q-topic t-234">2-3-4</span><span class="q-tag">서술 · delete</span></div>
+    <div class="q-body">
+      <p>삭제할 키가 내부 노드에 있으면 직접 지울 수 없다. 어떻게 처리하는가? (BST 삭제와 같은 트릭)</p>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답 요지: <b>successor(또는 predecessor)와 교체 후 리프에서 삭제</b></p>
+        <p>BST 삭제처럼, 그 키의 in-order successor(오른쪽 서브트리에서 가장 작은 값)를 찾아 내부 노드 자리에 옮기고, 실제 삭제는 리프에서 수행합니다. 예: 루트 [37]에서 37 삭제 → 오른쪽 서브트리 최소값 successor와 교체 → 리프에서 그 값을 제거.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q16 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q16</span><span class="q-topic t-234">2-3-4</span><span class="q-tag">서술 · fusion</span></div>
+    <div class="q-body">
+      <p>fusion은 split의 반대 개념이다. 삭제 시 내려가는 길에 2-노드를 만나면 미리 fusion한다. fusion의 두 가지 방식(형제가 여유 있을 때 / 형제도 2-노드일 때)을 각각 한 줄로 설명하시오.</p>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답 요지: <b>① Redistribution(재분배) &nbsp; ② Merge(병합)</b></p>
+        <p>① 형제가 3-노드 이상이면, 형제의 키를 부모를 거쳐 빌려옵니다(부모 키가 2-노드로 내려오고 형제의 인접 키가 부모로 올라감 — BST 순서 유지).<br>② 형제도 2-노드라 빌릴 게 없으면, 부모 키 1개를 끌어내려 두 형제를 하나의 4-노드로 합칩니다(merge).</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q17 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q17</span><span class="q-topic t-234">2-3-4</span><span class="q-tag">객관식</span></div>
+    <div class="q-body">
+      <p>처리해야 할 2-노드의 인접 형제도 2-노드여서 키를 빌려올 수 없을 때 수행하는 연산과, 그 부작용으로 옳은 것은?</p>
+      <ol class="choices">
+        <li>Redistribution — 트리 높이가 1 증가한다</li>
+        <li>Merge — 부모가 키 하나와 자식 하나를 잃는다</li>
+        <li>Split — 가운데 키가 올라가 새 루트 생성</li>
+        <li>별도 처리 없이 그대로 삭제하면 된다</li>
+      </ol>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>2번</b></p>
+        <p>Merge는 부모 키 1개를 내려 두 형제를 4-노드로 합치므로, 부모는 키 하나와 자식 하나를 잃습니다. 특히 루트가 2-노드이고 자식들도 2-노드라 셋이 합쳐지면 루트가 사라지고 트리 높이가 1 감소합니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q18 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q18</span><span class="q-topic t-234">2-3-4</span><span class="q-tag">서술 · redistribution</span></div>
+    <div class="q-body">
+      <p>키가 모자란 2-노드의 인접 형제가 <b>3-노드 이상</b>일 때 수행하는 <b>redistribution(재분배)</b>의 동작을 서술하시오. 형제의 키를 왜 직접 옮기지 않고 부모를 거쳐 빌려오는지도 함께 설명하시오.</p>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답 요지: <b>부모 키를 부족 노드로 내리고, 형제의 인접 키를 부모로 올린다</b></p>
+        <p>부족한 2-노드와 형제 사이의 부모 키를 부족 노드 쪽으로 내려 채우고, 그 빈 부모 자리에는 형제의 가장 인접한(부모와 맞닿은) 키를 올립니다. 직접 형제→부족노드로 옮기면 BST 정렬(왼쪽&lt;부모&lt;오른쪽)이 깨지므로, 부모를 거쳐 회전하듯 빌려야 키 순서가 유지됩니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q19 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q19</span><span class="q-topic t-234">2-3-4</span><span class="q-tag">표 채우기 · 변환</span></div>
+    <div class="q-body">
+      <p>2-3-4 트리를 레드블랙 트리로 변환하는 규칙을 채우시오. (B=black 부모, R=red 자식)</p>
+      <table class="tbl">
+        <tr><th>2-3-4 노드</th><th>레드블랙 변환</th></tr>
+        <tr><td>2-노드</td><td>?</td></tr>
+        <tr><td>3-노드</td><td>?</td></tr>
+        <tr><td>4-노드</td><td>?</td></tr>
+      </table>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <table class="tbl">
+          <tr><th>2-3-4 노드</th><th>레드블랙 변환</th></tr>
+          <tr><td>2-노드</td><td>1레벨: 키 1개 = black</td></tr>
+          <tr><td>3-노드</td><td>2레벨: black 1개(부모) + red 1개(자식)</td></tr>
+          <tr><td>4-노드</td><td>2레벨: black 1개(부모) + red 2개(양쪽 자식)</td></tr>
+        </table>
+        <p>2-3-4 트리와 레드블랙 트리는 1:1 변환이 가능한 등가 구조라, 시간복잡도도 동일하게 O(log n)입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q20 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q20</span><span class="q-topic t-234">2-3-4</span><span class="q-tag">객관식</span></div>
+    <div class="q-body">
+      <p>2-3-4 트리의 search, insert, delete 연산의 점근적 시간복잡도로 옳은 것은?</p>
+      <ol class="choices">
+        <li>모두 O(n)</li>
+        <li>search만 O(log n), 나머지는 O(n)</li>
+        <li>모두 O(log n)</li>
+        <li>모두 O(1)</li>
+      </ol>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>3번</b></p>
+        <p>트리가 항상 균형(모든 리프 같은 레벨)이라 높이가 O(log n). search·insert·delete 모두 O(h)=O(log n)입니다 (split·fusion은 각 레벨당 O(1)). 레드블랙 트리와 동일한 성능입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <footer>자료구조 · 2-3-4 트리 집중 예상문제지 · 총 20문제</footer>
+</div>
+</body>
+</html>

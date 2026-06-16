@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>자료구조 기말 · 그래프 집중 예상문제</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root{--bg:#fafaf7;--surface:#fff;--ink:#1a2332;--ink-soft:#4a5568;--ink-muted:#718096;--line:#e2e8f0;--teal:#0d9488;--teal-soft:#ccfbf1;--teal-bg:#f0fdfa;--amber:#d97706;--amber-soft:#fef3c7;--rose:#e11d48;--indigo:#4f46e5;--indigo-soft:#e0e7ff;--slate-bg:#f1f5f9;--code-bg:#1e293b;--code-text:#e2e8f0;--shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);}
+  body{font-family:-apple-system,"Pretendard","Apple SD Gothic Neo","Noto Sans KR",sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;font-size:15.5px;letter-spacing:-.01em;}
+  .wrapper{max-width:860px;margin:0 auto;padding:56px 24px 120px;}
+  .back{display:inline-block;margin-bottom:22px;color:var(--ink-muted);text-decoration:none;font-size:13px;}
+  .back:hover{color:var(--teal);}
+  .doc-header{margin-bottom:28px;padding-bottom:24px;border-bottom:2px solid var(--ink);}
+  .doc-meta{display:flex;gap:10px;align-items:center;margin-bottom:14px;font-size:12.5px;flex-wrap:wrap;}
+  .doc-meta .badge{background:var(--rose);color:#fff;padding:3px 10px;border-radius:4px;font-weight:600;}
+  .doc-meta .compose{color:var(--ink-muted);}
+  .doc-header h1{font-size:28px;font-weight:700;letter-spacing:-.03em;margin-bottom:8px;}
+  .doc-header .sub{color:var(--ink-soft);font-size:15px;}
+  .note{background:var(--teal-bg);border:1px solid var(--teal-soft);border-left:3px solid var(--teal);border-radius:8px;padding:14px 18px;margin-bottom:14px;font-size:14px;color:var(--ink-soft);}
+  .note b{color:var(--teal);}
+  .controls{display:flex;gap:8px;margin:22px 0 32px;}
+  .controls button{font:inherit;font-size:13px;font-weight:600;cursor:pointer;background:var(--surface);border:1px solid var(--line);color:var(--ink-soft);padding:8px 14px;border-radius:7px;transition:all .15s;}
+  .controls button:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-bg);}
+  article.q{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:24px 26px;margin-bottom:18px;box-shadow:var(--shadow);}
+  .q-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+  .q-num{font-weight:700;font-size:16px;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .q-topic{font-size:11px;font-weight:700;padding:3px 10px;border-radius:6px;color:#fff;}
+  .t-avl{background:#0d9488;} .t-rb{background:#e11d48;} .t-234{background:#d97706;} .t-graph{background:#4f46e5;}
+  .q-tag{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;letter-spacing:.02em;background:var(--slate-bg);color:var(--ink-soft);}
+  .q-body{color:var(--ink);} .q-body p{margin-bottom:10px;}
+  .q-body ol.choices{list-style:none;counter-reset:ch;margin:12px 0 4px;}
+  .q-body ol.choices li{counter-increment:ch;padding:7px 0 7px 34px;position:relative;color:var(--ink-soft);}
+  .q-body ol.choices li::before{content:counter(ch);position:absolute;left:0;top:7px;width:22px;height:22px;border:1px solid var(--line);border-radius:50%;text-align:center;line-height:21px;font-size:12px;font-weight:600;color:var(--ink-muted);}
+  .kw{color:var(--teal);font-weight:600;}
+  code{font-family:"JetBrains Mono","SF Mono",Consolas,monospace;font-size:.9em;background:var(--slate-bg);padding:2px 6px;border-radius:4px;}
+  pre{background:var(--code-bg);color:var(--code-text);padding:16px 20px;border-radius:10px;overflow-x:auto;margin:12px 0;font-size:13.5px;line-height:1.6;}
+  pre code{background:none;padding:0;color:inherit;font-size:1em;}
+  .tree{font-family:"JetBrains Mono",Consolas,monospace;background:var(--slate-bg);padding:14px 18px;border-radius:8px;font-size:13px;line-height:1.7;margin:12px 0;white-space:pre;overflow-x:auto;}
+  table.tbl{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px;}
+  table.tbl th,table.tbl td{border:1px solid var(--line);padding:8px 12px;text-align:center;}
+  table.tbl th{background:var(--slate-bg);font-weight:600;}
+  details.sol{margin-top:16px;border-top:1px dashed var(--line);padding-top:14px;}
+  details.sol>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--teal);background:var(--teal-bg);border:1px solid var(--teal-soft);padding:8px 16px;border-radius:8px;transition:all .15s;user-select:none;}
+  details.sol>summary::-webkit-details-marker{display:none;}
+  details.sol>summary::before{content:"▸";font-size:12px;transition:transform .15s;}
+  details.sol[open]>summary::before{transform:rotate(90deg);}
+  details.sol>summary:hover{background:var(--teal-soft);}
+  .sol-body{margin-top:14px;background:var(--teal-bg);border:1px solid var(--teal-soft);border-radius:8px;padding:16px 18px;font-size:14.5px;color:var(--ink-soft);}
+  .sol-body .ans{color:var(--ink);font-weight:600;margin-bottom:8px;}
+  .sol-body .ans b{color:var(--rose);}
+  .sol-body p{margin-bottom:8px;} .sol-body p:last-child{margin-bottom:0;}
+  footer{margin-top:50px;padding-top:20px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-muted);text-align:center;}
+  sub,sup{font-size:.72em;}
+  .answer-box{margin-top:14px;}
+  .answer-box .ab-label{display:block;font-size:12px;font-weight:600;color:var(--ink-muted);margin-bottom:6px;letter-spacing:.02em;}
+  .my-answer{width:100%;min-height:46px;resize:vertical;font:inherit;font-size:14px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;line-height:1.5;}
+  .my-answer:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-bg);}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <a href="problems.html" class="back">← 예상문제지 목록</a>
+
+  <header class="doc-header">
+    <div class="doc-meta"><span class="badge">그래프 집중 문제지</span><span class="compose">총 30문제 · 족보 유형</span></div>
+    <h1>그래프 — 집중 예상문제</h1>
+    <p class="sub">표현 · DFS/BFS · 위상정렬 · 최단경로(BF·Dijkstra·Floyd)</p>
+  </header>
+
+  <div class="note">그래프는 기말 범위에서 비중이 가장 큰 단원입니다. <b>표현(행렬·리스트) · 순회(DFS/BFS) · 위상정렬 · 최단경로(Bellman-Ford·Dijkstra·Floyd-Warshall)</b>를 30문제로 집중 점검합니다.</div>
+  <div class="note">유형은 <b>족보 기준</b>입니다 — 추적·계산·표 채우기·빈칸·코드·서술. 직접 풀어 답을 적은 뒤 풀이로 대조하세요.</div>
+
+  <div class="controls">
+    <button onclick="document.querySelectorAll('details.sol').forEach(d=>d.open=true)">전체 풀이 펼치기</button>
+    <button onclick="document.querySelectorAll('details.sol').forEach(d=>d.open=false)">전체 접기</button>
+  </div>
+
+  <!-- Q1 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q1</span><span class="q-topic t-graph">그래프</span><span class="q-tag">빈칸 · 정의</span></div>
+    <div class="q-body">
+      <p>그래프의 수학적 정의 <code>G = (V, E)</code>에서 V와 E가 각각 무엇인지(영어 용어와 우리말) 채우고, 표기 <code>n</code>과 <code>m</code>이 각각 무엇을 뜻하는지 쓰시오.</p>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>V = Vertex(정점·노드)의 집합, E = Edge(간선·모서리)의 집합 / n = |V|(정점 수), m = |E|(간선 수)</b></p>
+        <p>그래프는 "어떤 노드가 있는지(V)"와 "어떤 노드끼리 연결됐는지(E)" 두 집합으로 정의됩니다. 각 간선은 두 정점의 쌍 (u, v)입니다. 표기로 n = 정점 개수, m = 간선 개수를 씁니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q2 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q2</span><span class="q-topic t-graph">그래프</span><span class="q-tag">표 채우기 · 4종류</span></div>
+    <div class="q-body">
+      <p>"방향 유무 × 가중치 유무"로 갈리는 그래프 네 종류의 빈칸을 채우시오.</p>
+      <table class="tbl">
+        <tr><th></th><th>가중치 없음</th><th>가중치 있음</th></tr>
+        <tr><td>방향 없음</td><td>?</td><td>?</td></tr>
+        <tr><td>방향 있음</td><td>?</td><td>?</td></tr>
+      </table>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <table class="tbl">
+          <tr><th></th><th>가중치 없음</th><th>가중치 있음</th></tr>
+          <tr><td>방향 없음</td><td>무향 그래프</td><td>가중 그래프</td></tr>
+          <tr><td>방향 있음</td><td>방향 그래프</td><td>가중 방향 그래프</td></tr>
+        </table>
+        <p>무향=연결되면 양쪽 통함, 가중=간선에 숫자, 방향=화살표 한쪽만, 가중 방향=방향마다 값이 다를 수 있음.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q3 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q3</span><span class="q-topic t-graph">그래프</span><span class="q-tag">객관식 · 용어</span></div>
+    <div class="q-body">
+      <p>그래프 용어 "인접(adjacent)"과 "부속(incident)"의 구분으로 옳은 것은?</p>
+      <ol class="choices">
+        <li>인접은 정점↔간선 관계, 부속은 정점↔정점 관계이다</li>
+        <li>인접과 부속은 완전히 같은 뜻으로 쓰인다</li>
+        <li>인접은 정점↔정점 관계, 부속은 정점↔간선 관계이다</li>
+        <li>인접은 방향 그래프, 부속은 무향 그래프에서만 쓴다</li>
+      </ol>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>3번</b></p>
+        <p>간선 하나로 직접 이어진 두 정점은 서로 인접(adjacent)하다고 합니다. 정점과 간선 사이의 관계는 부속(incident)이라는 다른 용어를 씁니다("정점 v는 간선 e에 부속한다").</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q4 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q4</span><span class="q-topic t-graph">그래프</span><span class="q-tag">작성 · 인접 행렬</span></div>
+    <div class="q-body">
+      <p>다음 무향 그래프의 인접 행렬(6×6, 주대각 1 약속)에서 <b>노드 4의 행</b>(A[4][1]~A[4][6])을 쓰시오.</p>
+      <pre><code>V = {1,2,3,4,5,6}
+E = {(1,2),(1,5),(2,3),(2,5),(3,4),(4,5),(4,6)}</code></pre>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>0 0 1 1 1 1</b></p>
+        <p>노드 4의 이웃: 3, 5, 6 (간선 (3,4),(4,5),(4,6))에 자기 자신 4를 더함 → A[4][3]=A[4][4]=A[4][5]=A[4][6]=1, 나머지(1,2열)=0. 따라서 행 = [0,0,1,1,1,1].</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q5 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q5</span><span class="q-topic t-graph">그래프</span><span class="q-tag">객관식 · 대칭성</span></div>
+    <div class="q-body">
+      <p>인접 행렬의 대칭성에 대한 설명으로 옳은 것은?</p>
+      <ol class="choices">
+        <li>무방향은 비대칭이고, 방향 그래프가 대각선 대칭이다</li>
+        <li>무방향·방향 그래프 모두 항상 대각선 대칭이다</li>
+        <li>대칭 여부는 노드 개수에 따라서만 결정된다</li>
+        <li>무방향은 대각선 대칭, 방향 그래프는 비대칭일 수 있다</li>
+      </ol>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>4번</b></p>
+        <p>무방향은 (u,v)=(v,u)라 A[u][v]=A[v][u]로 대각선 대칭입니다(위·아래 삼각형만 저장해 메모리 절반 절약 가능). 방향 그래프는 한 방향만 1이라 비대칭이 됩니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q6 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q6</span><span class="q-topic t-graph">그래프</span><span class="q-tag">계산 · 1의 개수</span></div>
+    <div class="q-body">
+      <p>n = 6, m = 7인 무향 그래프를 인접 행렬(주대각 1 약속)로 표현했다. (1) 행렬에서 값이 1인 칸의 총 개수와 (2) 전체 칸 대비 사용률을 구하시오.</p>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>(1) 20개 &nbsp; (2) 20/36 ≈ 55.6%</b></p>
+        <p>1의 개수 = (주대각) n + (무방향 간선 양방향) 2m = 6 + 2×7 = 20. 전체 칸 = n² = 36. 사용률 ≈ 55.6%. 일반식은 <b>1의 개수 = n + 2m</b>입니다(주대각 1 약속·무향 기준).</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q7 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q7</span><span class="q-topic t-graph">그래프</span><span class="q-tag">객관식 · ∞ 규약</span></div>
+    <div class="q-body">
+      <p>가중치가 "거리·비용"을 뜻할 때, 가중치 인접 행렬에서 연결 안 된 칸과 대각선을 적는 규칙으로 옳은 것은?</p>
+      <ol class="choices">
+        <li>연결 안 됨 = ∞, 자기 자신 = 0</li>
+        <li>연결 안 됨 = 0, 자기 자신 = ∞</li>
+        <li>연결 안 됨 = −1, 자기 자신 = 1</li>
+        <li>연결 안 됨도 0, 자기 자신도 0으로 적는다</li>
+      </ol>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>1번</b></p>
+        <p>거리 맥락에서 0은 "아주 가까움"을 뜻하므로 못 가는 길을 0으로 적으면 알고리즘이 최단으로 착각합니다. 그래서 "못 감"은 ∞로, 자기 자신까지 거리는 0으로 적습니다. 이 ∞ 행렬이 곧 Floyd-Warshall의 시작 행렬 d₀입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q8 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q8</span><span class="q-topic t-graph">그래프</span><span class="q-tag">계산 · 리스트 노드 수</span></div>
+    <div class="q-body">
+      <p>간선이 m개인 <b>무향</b> 그래프를 인접 리스트로 저장하면 모든 리스트의 노드 총개수는 몇 개인가? 또 같은 그래프가 <b>방향</b> 그래프라면 몇 개인가? 이유도 쓰시오.</p>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>무향 = 2m 개 / 방향 = m 개</b></p>
+        <p>무향 간선 하나(i–j)는 i의 리스트에 j, j의 리스트에 i로 양쪽에 들어가 간선당 노드 2개 → 총 2m개. 방향 그래프는 각 정점의 나가는 간선(out-edge)만 담으므로 간선당 노드 1개 → m개.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q9 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q9</span><span class="q-topic t-graph">그래프</span><span class="q-tag">객관식 · 인접 리스트</span></div>
+    <div class="q-body">
+      <p>인접 리스트로 그래프를 저장할 때 옳은 것은?</p>
+      <ol class="choices">
+        <li>방향 그래프는 들어오는 간선(in-edge)만 리스트에 넣는다</li>
+        <li>방향 그래프는 나가는 간선(out-edge)만 리스트에 넣는다</li>
+        <li>무향 그래프는 간선 1개가 리스트 노드 1개가 된다</li>
+        <li>가중치는 인접 리스트에 저장할 수 없다</li>
+      </ol>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>2번</b></p>
+        <p>방향 그래프 인접 리스트는 각 정점의 나가는 간선만 담습니다. 무향은 양쪽이 통하므로 간선 1개가 양쪽 리스트에 들어가 노드 2개가 됩니다. 가중치는 정점 번호 옆에 같이 기록합니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q10 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q10</span><span class="q-topic t-graph">그래프</span><span class="q-tag">표 채우기 · 행렬 vs 리스트</span></div>
+    <div class="q-body">
+      <p>인접 행렬과 인접 리스트의 특성을 채우시오. (n=정점, m=간선)</p>
+      <table class="tbl">
+        <tr><th>항목</th><th>인접 행렬</th><th>인접 리스트</th></tr>
+        <tr><td>공간</td><td>?</td><td>?</td></tr>
+        <tr><td>"i–j 연결?" 확인</td><td>?</td><td>?</td></tr>
+      </table>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <table class="tbl">
+          <tr><th>항목</th><th>인접 행렬</th><th>인접 리스트</th></tr>
+          <tr><td>공간</td><td>O(n²) (무조건 n×n)</td><td>O(n+m) (실제 간선만)</td></tr>
+          <tr><td>연결 확인</td><td>O(1) (한 칸)</td><td>O(n) (리스트 훑기)</td></tr>
+        </table>
+        <p>희소(sparse) 그래프는 리스트가 공간 효율적이고, 연결 여부 즉시 확인은 행렬이 유리합니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q11 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q11</span><span class="q-topic t-graph">그래프</span><span class="q-tag">추적 · BFS/DFS</span></div>
+    <div class="q-body">
+      <p>다음 무향 그래프에서 정점 0부터의 BFS와 DFS 방문 순서를 각각 쓰시오. (이웃은 번호 오름차순)</p>
+      <pre><code>0: 1,2    1: 0,3,4    2: 0,4
+3: 1      4: 1,2,5    5: 4</code></pre>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>BFS = 0 1 2 3 4 5 / DFS = 0 1 3 4 2 5</b></p>
+        <p>BFS(큐): 0 → 이웃 1,2 → 1의 새 이웃 3,4 → 4의 새 이웃 5. DFS(스택/재귀): 0→1→3(막힘)→4→2(막힘)→5. 같은 그래프·시작점이라도 큐는 옆으로, 스택은 아래로 퍼져 순서가 다릅니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q12 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q12</span><span class="q-topic t-graph">그래프</span><span class="q-tag">추적 · DFS</span></div>
+    <div class="q-body">
+      <p>다음 무향 그래프에서 <code>a</code>부터 DFS를 수행한 방문 순서를 쓰시오. (안 가본 인접 정점 중 알파벳 빠른 순)</p>
+      <pre><code>인접: a:{b,c}  b:{a,c,e,h}  c:{a,b,d}  d:{c,f}
+      e:{b,g}  f:{d}        g:{e}      h:{b}</code></pre>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>a, b, c, d, f, e, g, h</b></p>
+        <p>a→b(빠른 쪽)→c→d→f(막힘) → backtrack → b의 남은 이웃 e→g(막힘) → backtrack → b의 h. 깊이 우선이라 한 길을 끝까지 판 뒤 되돌아옵니다. (같은 그래프 BFS는 a,b,c,d,e,h,f,g로 다릅니다.)</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q13 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q13</span><span class="q-topic t-graph">그래프</span><span class="q-tag">객관식 · 큐 vs 스택</span></div>
+    <div class="q-body">
+      <p>DFS와 BFS가 쓰는 자료구조와 탐색 방향으로 옳은 것은?</p>
+      <ol class="choices">
+        <li>DFS는 큐로 넓게, BFS는 스택으로 깊게 탐색한다</li>
+        <li>DFS는 스택(재귀)으로 깊게, BFS는 큐로 넓게 탐색한다</li>
+        <li>둘 다 큐를 쓰며 방문 순서가 항상 같다</li>
+        <li>둘 다 스택을 쓰며 방문 순서가 항상 같다</li>
+      </ol>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>2번</b></p>
+        <p>DFS는 스택(또는 재귀의 호출 스택)으로 한 길을 끝까지 깊이 파고 backtrack합니다. BFS는 큐(FIFO)로 가까운 곳부터 한 겹씩 넓게 펼칩니다. 활용: DFS=경로·사이클 탐지, BFS=무가중치 최단 거리.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q14 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q14</span><span class="q-topic t-graph">그래프</span><span class="q-tag">객관식 · visited 시점</span></div>
+    <div class="q-body">
+      <p>BFS에서 정점의 visited 표시를 "큐에서 꺼낼 때"가 아니라 "큐에 넣을 때(enqueue 직전)" 하는 이유는?</p>
+      <ol class="choices">
+        <li>그래야 큐가 항상 정렬된 상태로 유지되기 때문이다</li>
+        <li>꺼낼 때 표시하면 시작점을 방문하지 못하기 때문이다</li>
+        <li>한 정점이 여러 이웃에게 발견돼도 큐에 두 번 들어가지 않게 하기 위해서다</li>
+        <li>DFS와 코드를 똑같이 만들기 위해서다</li>
+      </ol>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>3번</b></p>
+        <p>enqueue 직전에 visited를 찍어야 같은 정점이 여러 이웃에게 동시에 발견돼도 중복으로 큐에 들어가지 않습니다. 꺼낼 때 표시하면 같은 노드가 큐에 여러 번 쌓일 수 있습니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q15 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q15</span><span class="q-topic t-graph">그래프</span><span class="q-tag">코드 빈칸 · pre/post</span></div>
+    <div class="q-body">
+      <p>DFS 재귀 의사코드의 빈칸 ⓐⓑⓒ를 채우시오.</p>
+      <pre><code>def DFS(v):
+    mark[v] = "visited"
+    pre[v] = curr_time;  curr_time += 1   # ⓐ v에 ____한 시각
+    for each edge (v, w):
+        if mark[w] != "visited":
+            parent[w] = ____               # ⓑ w의 부모 기록
+            DFS(w)
+    post[v] = curr_time;  curr_time += 1   # ⓒ v를 ____ 시각</code></pre>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>ⓐ 처음 진입(발견)한 &nbsp; ⓑ parent[w] = v &nbsp; ⓒ 완전히 끝낸(떠나는)</b></p>
+        <p>pre[v]는 진입(발견) 시각, post[v]는 종료 시각. parent[w]=v로 부모를 기록해 나중에 경로(DFS 트리)를 복원합니다. pre 값을 순서대로 늘어놓으면 DFS 방문 순서가 됩니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q16 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q16</span><span class="q-topic t-graph">그래프</span><span class="q-tag">객관식 · 막대 포함</span></div>
+    <div class="q-body">
+      <p>각 노드의 구간 [pre, post]를 막대로 그렸을 때, 두 노드 u, v의 관계 해석으로 옳은 것은?</p>
+      <ol class="choices">
+        <li>u와 v가 형제 관계여도 두 막대는 서로를 포함한다</li>
+        <li>두 노드의 막대가 겹치면 그 그래프엔 사이클이 있다</li>
+        <li>한 노드의 pre 값과 post 값은 언제나 서로 같다</li>
+        <li>u가 v의 조상이면 u의 막대가 v의 막대를 완전히 포함한다</li>
+      </ol>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>4번</b></p>
+        <p>DFS가 u→v로 들어가면 v는 u보다 늦게 진입하고 먼저 끝나므로 [pre(v),post(v)] ⊂ [pre(u),post(u)]. 즉 조상이면 막대 포함, 형제면 겹치지 않습니다. 이 포함 관계가 곧 DFS 트리의 부모-자식 구조이며 콜스택의 push-pop과 같습니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q17 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q17</span><span class="q-topic t-graph">그래프</span><span class="q-tag">서술 · back edge</span></div>
+    <div class="q-body">
+      <p>Back Edge(역방향 간선)란 무엇이며, back edge의 존재가 그래프에 대해 무엇을 의미하는가?</p>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답 요지: <b>back edge 존재 ⇔ 사이클(순환) 존재</b></p>
+        <p>back edge는 원래 그래프엔 있지만 DFS 트리에는 없는 간선으로, 이미 방문한 조상으로 돌아가는 모양입니다. 조상으로 되돌아가는 간선이 있으면 그 경로가 닫혀 사이클이 생깁니다. 따라서 DFS 중 back edge가 하나라도 발견되면 사이클이 있고, 없으면 순환이 없습니다(사이클 검사에 활용).</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q18 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q18</span><span class="q-topic t-graph">그래프</span><span class="q-tag">객관식 · DFS 트리</span></div>
+    <div class="q-body">
+      <p>정점 n개 그래프의 DFS 트리에 대한 설명으로 옳은 것은?</p>
+      <ol class="choices">
+        <li>원래 그래프의 모든 간선을 그대로 포함하는 트리이다</li>
+        <li>parent 관계의 선만 모아 시작 노드를 루트로 한 트리이며 간선은 n−1개이다</li>
+        <li>시작 노드를 어디로 잡든 항상 같은 모양이 된다</li>
+        <li>노드가 n개일 때 트리 간선은 항상 n개가 된다</li>
+      </ol>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>2번</b></p>
+        <p>DFS 트리는 parent[] 관계 선만 추출하고 시작 노드가 루트입니다. 노드 n개 → 트리 간선 n−1개. 원래 그래프 간선 중 트리에 안 들어간 것이 back edge입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q19 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q19</span><span class="q-topic t-graph">그래프</span><span class="q-tag">객관식 · POST 역순</span></div>
+    <div class="q-body">
+      <p>DFS의 pre/post 값으로 그래프를 분석할 때 옳은 것은?</p>
+      <ol class="choices">
+        <li>PRE 오름차순 = 위상 정렬 / POST 오름차순 = DFS 방문 순서</li>
+        <li>POST 오름차순으로 늘어놓으면 위상 정렬이 된다</li>
+        <li>PRE 오름차순 = DFS 방문 순서 / POST 내림차순 = 위상 정렬</li>
+        <li>PRE와 POST 값은 그래프 분석에 쓸 수 없다</li>
+      </ol>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>3번</b></p>
+        <p>PRE 값을 오름차순으로 늘어놓으면 DFS가 노드를 방문한 순서이고, POST 값을 <b>내림차순(역순)</b>으로 늘어놓으면 위상 정렬이 됩니다. 간선 u→v가 있으면 항상 post[u] &gt; post[v]이기 때문입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q20 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q20</span><span class="q-topic t-graph">그래프</span><span class="q-tag">계산 · 위상 정렬</span></div>
+    <div class="q-body">
+      <p>어떤 DAG에 DFS를 돌려 다음 post 값을 얻었다. 위상 정렬 결과를 쓰시오.</p>
+      <table class="tbl">
+        <tr><th>정점</th><td>A</td><td>B</td><td>C</td><td>D</td><td>F</td><td>G</td><td>H</td><td>I</td></tr>
+        <tr><th>post</th><td>16</td><td>13</td><td>15</td><td>9</td><td>12</td><td>6</td><td>11</td><td>8</td></tr>
+      </table>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>A, C, B, F, H, D, I, G</b></p>
+        <p>위상 정렬 = POST 값 내림차순: A(16) → C(15) → B(13) → F(12) → H(11) → D(9) → I(8) → G(6).</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q21 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q21</span><span class="q-topic t-graph">그래프</span><span class="q-tag">객관식 · DFSALL</span></div>
+    <div class="q-body">
+      <p>DFSALL(G)에 대한 설명으로 옳은 것은?</p>
+      <ol class="choices">
+        <li>그래프가 하나로 연결되어 있을 때만 정상 동작한다</li>
+        <li>안 가본 노드마다 DFS를 새로 시작하며, DFS 호출 횟수가 곧 연결 요소(컴포넌트) 수이다</li>
+        <li>그래프와 무관하게 항상 DFS를 정확히 한 번만 호출한다</li>
+        <li>내부적으로 DFS가 아니라 BFS로만 구현된다</li>
+      </ol>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>2번</b></p>
+        <p>DFS(v)는 v가 속한 덩어리만 훑으므로, 비연결 그래프는 안 가본 노드마다 DFS를 다시 시작해야 모든 정점을 읽습니다. DFS가 호출된 횟수가 곧 연결 요소(컴포넌트)의 개수입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q22 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q22</span><span class="q-topic t-graph">그래프</span><span class="q-tag">객관식 · 부분 경로 최단성</span></div>
+    <div class="q-body">
+      <p>"부분 경로 최단성(Optimal Substructure)"의 의미로 옳은 것은?</p>
+      <ol class="choices">
+        <li>최단 경로는 항상 가장 적은 수의 간선을 사용한다</li>
+        <li>최단 경로의 일부 구간도 반드시 그 구간의 최단 경로이다</li>
+        <li>최단 경로는 그래프에서 단 하나만 존재한다</li>
+        <li>부분 경로의 합은 항상 전체 경로보다 크다</li>
+      </ol>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>2번</b></p>
+        <p>a→…→g→i가 a→i 최단이면 그 일부인 a→…→g도 a→g 최단입니다. 아니라면 a→g를 더 짧게 바꿔 전체도 더 짧아져 모순. 이 성질 덕에 큰 문제를 작은 문제로 쪼개 풀 수 있고, 모든 최단 경로 알고리즘(BF·Dijkstra·Floyd)의 근거가 됩니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q23 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q23</span><span class="q-topic t-graph">그래프</span><span class="q-tag">코드 빈칸 · relax</span></div>
+    <div class="q-body">
+      <p>모든 최단 경로 알고리즘의 공통 동작인 완화(relax)를 완성하시오. 또 현재 dist[u]=3, dist[v]=10, w(u,v)=4일 때 relax(u,v) 후 dist[v]를 구하시오.</p>
+      <pre><code>def relax(u, v):
+    if dist[v] > dist[u] + w(u, v):
+        dist[v] = ____________________
+        parent[v] = ____</code></pre>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>dist[v] = dist[u] + w(u, v), parent[v] = u / dist[v] = 10 → 7로 갱신</b></p>
+        <p>dist[u]+w = 3+4 = 7. 10 &gt; 7이므로 dist[v]=7로 줄이고 parent[v]=u 기록. (만약 dist[v]가 처음부터 5였다면 5 &gt; 7이 거짓이라 갱신하지 않습니다.) dist는 줄어들기만 합니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q24 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q24</span><span class="q-topic t-graph">그래프</span><span class="q-tag">객관식 · Bellman-Ford</span></div>
+    <div class="q-body">
+      <p>Bellman-Ford가 최대 <b>n−1</b> 라운드만 돌면 충분한 이유로 옳은 것은? (n = 정점 수)</p>
+      <ol class="choices">
+        <li>한 라운드에 간선 하나만 검사하기 때문이다</li>
+        <li>그래프의 간선 수가 항상 n−1개이기 때문이다</li>
+        <li>최단 경로가 쓰는 간선이 최대 n−1개이고 라운드마다 한 칸씩 전파되기 때문이다</li>
+        <li>n−1번이면 모든 정점을 정확히 한 번씩 방문하기 때문이다</li>
+      </ol>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>3번</b></p>
+        <p>최단 경로는 사이클을 포함하지 않으므로 간선을 최대 n−1개 사용합니다. 한 라운드마다 "한 칸 더 멀리"의 정보가 전파되므로 n−1 라운드면 모든 최단 거리가 확정됩니다. BF는 음수 가중치도 허용합니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q25 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q25</span><span class="q-topic t-graph">그래프</span><span class="q-tag">계산 · 음의 사이클</span></div>
+    <div class="q-body">
+      <p>방향 그래프에 사이클 1→2→3→1이 있고 가중치가 w(1,2)=−2, w(2,3)=−1, w(3,1)=−1이다. (1) 사이클 가중치 합을 구하고 (2) 이 그래프에서 최단 경로가 정의되는지, (3) Bellman-Ford는 이를 어떻게 알려주는지 쓰시오.</p>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>(1) −4 (음수) &nbsp; (2) 정의되지 않음 (해 없음) &nbsp; (3) n−1 라운드 후 한 번 더 돌려 검출</b></p>
+        <p>합 = (−2)+(−1)+(−1) = −4 &lt; 0 → 음의 사이클. 이 사이클을 돌수록 거리가 무한히 작아져(−∞로 발산) "최소"가 존재하지 않습니다. Bellman-Ford는 n−1 라운드를 마친 뒤 한 번 더 모든 간선을 완화해서 <b>여전히 줄어드는 간선이 있으면</b> 음의 사이클(해 없음)로 판정합니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q26 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q26</span><span class="q-topic t-graph">그래프</span><span class="q-tag">계산 · BF 시간복잡도</span></div>
+    <div class="q-body">
+      <p>Bellman-Ford의 시간복잡도를 정점 수 n(=V), 간선 수 E로 나타내고, 가장 조밀한(완전) 그래프에서의 최악 복잡도를 쓰시오.</p>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>O(VE) = O(nE), 최악 O(n³)</b></p>
+        <p>바깥 루프 n−1번 × 안쪽 모든 간선 E번 = O(nE). 완전 그래프는 E ≈ n²이므로 최악 O(n·n²) = O(n³)입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q27 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q27</span><span class="q-topic t-graph">그래프</span><span class="q-tag">객관식 · Dijkstra 그리디</span></div>
+    <div class="q-body">
+      <p>Dijkstra 알고리즘의 핵심 전략으로 옳은 것은?</p>
+      <ol class="choices">
+        <li>매 라운드 그래프의 모든 간선을 빠짐없이 다시 검사한다</li>
+        <li>가장 멀리 있는 노드부터 골라 하나씩 확정해 나간다</li>
+        <li>미확정 노드 중 dist가 가장 작은 노드를 deleteMin으로 골라 확정하고 그 이웃만 relax한다</li>
+        <li>임의의 노드를 무작위로 골라 relax를 반복한다</li>
+      </ol>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>3번</b></p>
+        <p>Dijkstra는 미확정 노드 중 가장 가까운(dist 최소) 노드를 min-heap에서 deleteMin해 확정하고, 그 노드의 이웃만 relax합니다. relax로 dist가 줄면 heap 안 위치를 decreaseKey로 갱신합니다. 한 번 확정된 노드는 다시 보지 않아 BF보다 빠릅니다(양수 가중치 전제).</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q28 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q28</span><span class="q-topic t-graph">그래프</span><span class="q-tag">계산 · Dijkstra 음수 실패</span></div>
+    <div class="q-body">
+      <p>다음 방향 그래프에 s=A로 다익스트라를 돌린다. (간선: A→B = 8, A→C = 9, C→B = −15)</p>
+      <p>(1) 다익스트라가 내는 dist[B]는? (2) 진짜 최단 dist[B]는? (3) 왜 틀리는가?</p>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>(1) 8 &nbsp; (2) −6 &nbsp; (3) 확정한 거리를 다시 안 보기 때문</b></p>
+        <p>A 확정 → B=8, C=9. 더 작은 B를 8로 확정(도장). 이후 C 확정 후 C→B 완화: 9+(−15)=−6 &lt; 8이지만 B는 이미 확정이라 다익스트라는 안 고침 → 답 8(진짜는 −6). 음수 간선이 "갈수록 줄어드는" 상황을 만들어 그리디 가정을 깨므로, 이런 경우 Bellman-Ford를 써야 합니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q29 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q29</span><span class="q-topic t-graph">그래프</span><span class="q-tag">추적 · Dijkstra 확정순서</span></div>
+    <div class="q-body">
+      <p>아래 방향+가중치 그래프(s=a)에 Dijkstra를 돌릴 때, 노드가 <b>확정되는(deleteMin되는) 순서</b>의 처음 다섯 개를 쓰시오. 또 min-heap을 쓴 Dijkstra의 시간복잡도를 n, E로 쓰시오.</p>
+      <pre><code>a→b 5  a→c 1  b→d 4  b→f 1  c→b 3  d→c 2  d→e 9
+d→f 1  e→c 2  e→h 5  f→e 7  f→g 3  g→e 1  g→h 3
+g→i 4  h→g 2  h→i 1</code></pre>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>확정 순서: a, c, b, f, d &nbsp; / &nbsp; O((n+E) log n)</b></p>
+        <p>dist 최소 순으로 확정: a(0) → c(1) → b(4, a→c→b=1+3) → f(5, b→f=4+1) → d(8, b→d=4+4). 이후 g(8) → e(9) → h(11) → i(12). 각 노드 deleteMin(n번)과 각 간선 decreaseKey(E번)가 모두 O(log n)이라 <b>O((n+E) log n)</b>, 최악 O(n² log n)입니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q30 -->
+  <article class="q">
+    <div class="q-head"><span class="q-num">Q30</span><span class="q-topic t-graph">그래프</span><span class="q-tag">빈칸 · Floyd 점화식</span></div>
+    <div class="q-body">
+      <p>(1) Floyd-Warshall의 핵심 점화식과 base case d<sub>0</sub>를 완성하고, (2) 아래 예시 그래프에서 <code>d<sub>1</sub>(2, 3)</code>을 점화식으로 계산하시오.</p>
+      <pre><code>d<sub>k</sub>(i, j) = min ( d<sub>k−1</sub>(i, j),  d<sub>k−1</sub>(i, ____) + d<sub>k−1</sub>(____, j) )
+d₀(i,j) = ____ (i=j) / ____ ((i,j)∈E) / ____ (otherwise)
+예시 간선: 2→1=4, 1→3=−2, 3→4=2, 4→2=−1, 2→3=3</code></pre>
+    </div>
+    <div class="answer-box"><span class="ab-label">✎ 나의 답안</span><textarea class="my-answer" rows="2" placeholder="여기에 답을 적고, 아래 정답/풀이 보기로 대조하세요"></textarea></div>
+    <details class="sol"><summary>정답 / 풀이 보기</summary>
+      <div class="sol-body">
+        <p class="ans">정답: <b>d<sub>k</sub>(i,j) = min( d<sub>k−1</sub>(i,j), d<sub>k−1</sub>(i,k)+d<sub>k−1</sub>(k,j) ) / d₀ = 0, w(i,j), ∞ / d<sub>1</sub>(2,3) = 2</b></p>
+        <p>점화식 빈칸은 둘 다 <b>k</b>: k를 안 거치는 경우와 k를 거치는 경우 중 짧은 쪽. base case는 자기 자신 0, 직접 간선이면 가중치 w(i,j), 없으면 ∞. 계산: d<sub>1</sub>(2,3) = min( d₀(2,3)=3, d₀(2,1)+d₀(1,3)=4+(−2)=2 ) = <b>2</b> (2→1→3 경로가 직접 2→3보다 짧음). Floyd-Warshall은 O(n³)이고 음수 가중치는 허용(음의 사이클은 불가)합니다.</p>
+      </div>
+    </details>
+  </article>
+
+  <footer>자료구조 · 그래프 집중 예상문제지 · 총 30문제</footer>
+</div>
+</body>
+</html>
