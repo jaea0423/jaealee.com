@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>자료구조 기말 정리노트</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --paper:#f5f1e8; --card:#fffdf8; --card2:#fbf7ee;
+    --ink:#27313b; --ink-soft:#51606c; --ink-mute:#8b96a1;
+    --rule:#e7dfd0; --rule-soft:#efe9dd;
+    --accent:#2f6f9f; --accent-soft:#e4eef5;
+    --avl:#0f7b62; --avl-bg:#e7f4ef;
+    --rb:#bf3b2b; --rb-bg:#fbe9e6;
+    --t234:#a9760f; --t234-bg:#f8eed7;
+    --graph:#574a93; --graph-bg:#ece8f5;
+    --sp:#2f6f9f; --sp-bg:#e4eef5;
+    --code-bg:#f0ece1; --shadow:0 1px 2px rgba(60,50,30,.05),0 3px 10px rgba(60,50,30,.04);
+  }
+  html{scroll-behavior:smooth;}
+  body{font-family:-apple-system,"Pretendard","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+        background:var(--paper);color:var(--ink);line-height:1.75;font-size:15.5px;letter-spacing:-.01em;
+        background-image:linear-gradient(var(--rule-soft) 1px,transparent 1px);background-size:100% 32px;background-attachment:fixed;}
+  .wrapper{max-width:880px;margin:0 auto;padding:48px 24px 120px;}
+  .back{display:inline-block;margin-bottom:20px;color:var(--ink-mute);text-decoration:none;font-size:13px;}
+  .back:hover{color:var(--accent);}
+
+  /* 헤더 */
+  .head{background:var(--card);border:1px solid var(--rule);border-radius:16px;padding:30px 32px;margin-bottom:24px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
+  .head::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:linear-gradient(var(--avl),var(--rb),var(--t234),var(--graph));}
+  .head .tag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--accent);background:var(--accent-soft);padding:4px 12px;border-radius:20px;margin-bottom:12px;}
+  .head h1{font-size:32px;font-weight:800;letter-spacing:-.03em;margin-bottom:8px;}
+  .head p{color:var(--ink-soft);font-size:15px;}
+
+  /* 목차 */
+  .toc{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 30px;}
+  .toc a{font-size:13px;font-weight:600;text-decoration:none;color:var(--ink-soft);background:var(--card);border:1px solid var(--rule);padding:7px 14px;border-radius:20px;transition:all .15s;}
+  .toc a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);}
+
+  /* 섹션 */
+  section{margin-bottom:14px;}
+  .sec-h{display:flex;align-items:center;gap:12px;margin:34px 0 16px;}
+  .sec-h .no{font-size:13px;font-weight:800;color:#fff;width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .sec-h h2{font-size:22px;font-weight:800;letter-spacing:-.02em;}
+  .sec-h .en{font-size:12.5px;color:var(--ink-mute);font-weight:500;margin-left:2px;}
+  .s-avl .no{background:var(--avl);} .s-rb .no{background:var(--rb);} .s-234 .no{background:var(--t234);}
+  .s-graph .no{background:var(--graph);} .s-sp .no{background:var(--sp);} .s-base .no{background:var(--ink-soft);}
+
+  .card{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:22px 24px;margin-bottom:14px;box-shadow:var(--shadow);}
+  .card h3{font-size:16px;font-weight:700;margin:2px 0 10px;color:var(--ink);}
+  .card h3:not(:first-child){margin-top:20px;}
+  .card p{margin-bottom:10px;color:var(--ink-soft);}
+  .card ul{margin:6px 0 12px;padding-left:4px;list-style:none;}
+  .card ul li{position:relative;padding:4px 0 4px 20px;color:var(--ink-soft);}
+  .card ul li::before{content:"▪";position:absolute;left:2px;color:var(--accent);font-size:12px;top:6px;}
+  b,strong{color:var(--ink);font-weight:700;}
+  .kw{font-weight:700;}
+  .s-avl .kw{color:var(--avl);} .s-rb .kw{color:var(--rb);} .s-234 .kw{color:var(--t234);}
+  .s-graph .kw{color:var(--graph);} .s-sp .kw{color:var(--sp);}
+
+  code{font-family:"JetBrains Mono","SF Mono",Consolas,monospace;font-size:.9em;background:var(--code-bg);padding:2px 6px;border-radius:4px;color:#3a4a3f;}
+  .formula{background:var(--card2);border:1px dashed var(--rule);border-left:3px solid var(--accent);border-radius:8px;padding:12px 16px;margin:12px 0;font-family:"JetBrains Mono",Consolas,monospace;font-size:14px;color:var(--ink);overflow-x:auto;}
+  .s-avl .formula{border-left-color:var(--avl);} .s-rb .formula{border-left-color:var(--rb);}
+  .s-234 .formula{border-left-color:var(--t234);} .s-graph .formula{border-left-color:var(--graph);} .s-sp .formula{border-left-color:var(--sp);}
+  .tree{font-family:"JetBrains Mono",Consolas,monospace;background:var(--card2);border:1px solid var(--rule);padding:14px 18px;border-radius:8px;font-size:13px;line-height:1.7;margin:12px 0;white-space:pre;overflow-x:auto;}
+
+  .tip,.warn{border-radius:8px;padding:11px 15px;margin:12px 0;font-size:14px;}
+  .tip{background:var(--accent-soft);border:1px solid #cfe0ec;color:#1f4d6e;}
+  .warn{background:#fbf0d9;border:1px solid #f0dcae;color:#8a5a12;}
+  .tip b,.warn b{color:inherit;}
+
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:13.5px;}
+  th,td{border:1px solid var(--rule);padding:8px 11px;text-align:center;}
+  th{background:var(--card2);font-weight:700;color:var(--ink);}
+  td.l,th.l{text-align:left;}
+
+  /* 암기 카드 */
+  .flash{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin:8px 0;}
+  .fc{background:var(--card);border:1px solid var(--rule);border-top:3px solid var(--accent);border-radius:10px;padding:14px 16px;box-shadow:var(--shadow);}
+  .fc .q{font-size:13px;font-weight:700;color:var(--ink-mute);margin-bottom:6px;}
+  .fc .a{font-size:14.5px;color:var(--ink);font-weight:600;}
+
+  .rb-b{display:inline-block;background:#27313b;color:#fff;border-radius:50%;width:20px;height:20px;line-height:20px;text-align:center;font-size:11px;font-weight:700;}
+  .rb-r{display:inline-block;background:var(--rb);color:#fff;border-radius:50%;width:20px;height:20px;line-height:20px;text-align:center;font-size:11px;font-weight:700;}
+
+  footer{margin-top:46px;padding-top:22px;border-top:1px solid var(--rule);font-size:12.5px;color:var(--ink-mute);text-align:center;}
+  sub,sup{font-size:.72em;}
+  @media(max-width:600px){.wrapper{padding:32px 16px 80px;}.head h1{font-size:26px;}}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <a href="../index.html" class="back">← 자료구조 목차로</a>
+
+  <div class="head">
+    <span class="tag">기말고사 · 정리노트</span>
+    <h1>자료구조 기말 정리노트</h1>
+    <p>균형 탐색 트리(AVL · 레드블랙 · 2-3-4) → 그래프 표현·순회 → 최단 경로까지 한눈에</p>
+  </div>
+
+  <nav class="toc">
+    <a href="#s0">0. 균형이란</a>
+    <a href="#s1">1. AVL</a>
+    <a href="#s2">2. 레드블랙</a>
+    <a href="#s3">3. 2-3-4</a>
+    <a href="#s4">4. 그래프 표현</a>
+    <a href="#s5">5. 그래프 순회</a>
+    <a href="#s6">6. 최단 경로</a>
+    <a href="#s7">7. 복잡도 종합</a>
+    <a href="#s8">8. 막판 암기</a>
+  </nav>
+
+  <!-- 0 -->
+  <section class="s-base" id="s0">
+    <div class="sec-h"><span class="no">0</span><h2>균형이 왜 중요한가 <span class="en">Balanced Search Tree</span></h2></div>
+    <div class="card">
+      <p>탐색 트리의 모든 연산(검색·삽입·삭제)은 트리 높이 <code>h</code>에 비례한다 → <b>O(h)</b>. 그래서 h가 작아야 빠르다.</p>
+      <ul>
+        <li>일반 BST는 균형 보장이 없어, 정렬 순서로 삽입하면 한쪽으로 치우쳐 <b>h = O(n)</b>(연결 리스트)이 된다.</li>
+        <li>"균형이 좋다" = <b>노드 수에 비해 높이가 낮다</b>. 노드 n개에서 h = O(log n)이면 균형 잡힌 것.</li>
+      </ul>
+      <h3>균형 검색 트리 분류</h3>
+      <table>
+        <tr><th class="l">분류</th><th>자식 수</th><th>대표</th><th>BST?</th></tr>
+        <tr><td class="l">균형 이진 탐색 트리</td><td>최대 2</td><td>AVL · 레드블랙</td><td>O</td></tr>
+        <tr><td class="l">균형 k진 트리</td><td>2~4(이상)</td><td>2-3-4 · B-트리</td><td>X</td></tr>
+      </table>
+      <p>세 트리(AVL · 레드블랙 · 2-3-4) 모두 검색·삽입·삭제가 <b>O(log n)</b>으로 보장된다.</p>
+    </div>
+  </section>
+
+  <!-- 1 AVL -->
+  <section class="s-avl" id="s1">
+    <div class="sec-h"><span class="no">1</span><h2>AVL 트리 <span class="en">Adelson-Velsky &amp; Landis, 1962</span></h2></div>
+    <div class="card">
+      <h3>정의 · 균형 인수(BF)</h3>
+      <p><span class="kw">AVL 트리</span> = 모든 노드에서 좌우 서브트리 높이 차가 1 이하인 BST.</p>
+      <div class="formula">BF(v) = height(왼쪽 서브트리) − height(오른쪽 서브트리),   조건: |BF(v)| ≤ 1   (즉 −1, 0, +1)</div>
+      <p class="warn">⚠️ 높이 규약: 잎 노드 높이 = 0, 빈 서브트리 높이 = −1. (한 노드라도 위반하면 AVL 아님)</p>
+
+      <h3>높이 = O(log n) 증명 <span style="font-weight:400;color:var(--ink-mute);font-size:13px;">— 빈출</span></h3>
+      <p>높이 h인 AVL 트리의 <b>최소 노드 수</b> N<sub>h</sub>를 본다(최악 = 노드는 적은데 높이는 높은 경우).</p>
+      <div class="formula">N<sub>h</sub> = N<sub>h−1</sub> + N<sub>h−2</sub> + 1     (N₀=1, N₁=2)  → 1,2,4,7,12,20,33,…  (피보나치 트리)</div>
+      <ul>
+        <li>① N<sub>h−1</sub> ≥ N<sub>h−2</sub> 이용 → <b>N<sub>h</sub> ≥ 2·N<sub>h−2</sub></b> (+1 떼냄)</li>
+        <li>② 반복 적용 → N<sub>h</sub> ≥ 2<sup>k</sup>·N<sub>h−2k</sub>, k=h/2 대입 → <b>N<sub>h</sub> ≥ 2<sup>h/2</sup></b></li>
+        <li>③ n ≥ N<sub>h</sub> ≥ 2<sup>h/2</sup> 에 log₂ → <b>h ≤ 2·log₂ n = O(log n)</b></li>
+      </ul>
+      <p class="tip">이산수학의 피보나치 점화식(F<sub>n</sub>=F<sub>n−1</sub>+F<sub>n−2</sub>)과 +1만 다른 꼴.</p>
+
+      <h3>회전 4유형 — 불균형 복구</h3>
+      <p>위반 노드 z 기준, 가장 깊은 손자 위치로 유형 결정. 회전은 <b>중위 순회 순서를 보존</b>하므로 BST 조건이 유지됨(O(1)).</p>
+      <table>
+        <tr><th>유형</th><th class="l">가장 깊은 위치</th><th class="l">처리</th><th>횟수</th></tr>
+        <tr><td><b>LL</b></td><td class="l">z.left.left</td><td class="l">z 우회전</td><td>1</td></tr>
+        <tr><td><b>RR</b></td><td class="l">z.right.right</td><td class="l">z 좌회전</td><td>1</td></tr>
+        <tr><td><b>LR</b></td><td class="l">z.left.right</td><td class="l">z.left 좌회전 → z 우회전</td><td>2</td></tr>
+        <tr><td><b>RL</b></td><td class="l">z.right.left</td><td class="l">z.right 우회전 → z 좌회전</td><td>2</td></tr>
+      </table>
+      <p class="tip">암기: 이름과 회전 방향이 <b>반대</b>(LL→우회전, RR→좌회전). 꺾인 LR·RL은 먼저 펴서 일직선으로 만든 뒤 처리.</p>
+
+      <h3>연산 시간복잡도</h3>
+      <ul>
+        <li><b>삽입</b>: BST 삽입 O(log n) + 회전 최대 <b>2회</b>(O(1)) = O(log n)</li>
+        <li><b>삭제</b>: 회전이 루트까지 <b>연쇄(cascade)</b>로 최대 O(log n)회 일어날 수 있으나 합쳐도 O(log n)</li>
+        <li>탐색·삽입·삭제·높이 모두 <b>O(log n)</b></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 2 RB -->
+  <section class="s-rb" id="s2">
+    <div class="sec-h"><span class="no">2</span><h2>레드-블랙 트리 <span class="en">Red-Black Tree</span></h2></div>
+    <div class="card">
+      <h3>기본 약속 · 4가지 규칙</h3>
+      <p>모든 NULL 자리에 <span class="kw">NIL 노드</span>(항상 검정)를 둔다. RB에서 "리프"=NIL, 실제 값 노드=내부 노드.</p>
+      <ul>
+        <li>① 루트는 <span class="rb-b">B</span> 검정</li>
+        <li>② 모든 리프(NIL)는 <span class="rb-b">B</span> 검정</li>
+        <li>③ <span class="rb-r">R</span> 빨강 노드의 두 자식은 모두 검정 (= <b>레드 연속 금지</b>)</li>
+        <li>④ 어느 노드에서든 리프까지 경로의 <b>검정 노드 수가 일정</b> (= 블랙 높이)</li>
+      </ul>
+      <p class="tip">균형의 비결: ③(레드는 길게 못 이어짐) + ④(한쪽으로 못 쏠림) → <b>h ≤ 2·log₂(n+1)</b>.</p>
+
+      <h3>블랙 높이 세기</h3>
+      <div class="tree">       13(B)
+       /    \
+     8(R)   17(R)        13→8→1→NIL : B,B,B = 3
+     / \     / \         13→17→25→NIL: B,B,B = 3
+  1(B)11(B)15(B)25(B)    빨강은 안 셈 → 모든 경로 3개로 동일 ✓</div>
+
+      <h3>삽입 — 3단계 + 수선</h3>
+      <p>① BST처럼 삽입 → ② 새 노드 x를 <b>빨강</b>으로 → ③ 좌우 NIL 부착.</p>
+      <p class="tip">빨강으로 시작하는 이유: 규칙 ④(블랙 높이)는 그대로 유지되고, 최악이라도 ③(레드 연속)만 점검하면 됨.</p>
+      <table>
+        <tr><th>경우</th><th class="l">상황</th><th class="l">처리</th></tr>
+        <tr><td>a</td><td class="l">x가 루트</td><td class="l">x를 검정으로</td></tr>
+        <tr><td>b</td><td class="l">부모 p가 검정</td><td class="l">아무것도 안 함</td></tr>
+        <tr><td>c-1</td><td class="l">p 빨강, 삼촌 s도 빨강</td><td class="l">색만 변경(p·s→검정, g→빨강), 위로 재귀</td></tr>
+        <tr><td>c-2</td><td class="l">p 빨강, 삼촌 s는 검정</td><td class="l">회전+색 교환 (일직선 1회 / 꺾임 2회)</td></tr>
+      </table>
+
+      <h3>높이 상계 개선 · 비교</h3>
+      <ul>
+        <li>2-3-4 트리와 관계로 worst case(모두 3-노드) 분석 → <b>h ≤ 1.26·log₂ n</b> (기존 2·log₂ n보다 타이트). 핵심: 1 &lt; log₂3 &lt; 2.</li>
+        <li><b>AVL vs 레드블랙</b>: AVL은 더 엄격(h ≤ 1.44 log₂n)·탐색 빠름·회전 많음 / 레드블랙은 느슨·회전 적음 → 삽입·삭제 잦은 실무에서 일반적(C++ std::map, Java TreeMap).</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 3 2-3-4 -->
+  <section class="s-234" id="s3">
+    <div class="sec-h"><span class="no">3</span><h2>2-3-4 트리 <span class="en">B-트리의 사촌</span></h2></div>
+    <div class="card">
+      <h3>정의 · 노드 종류</h3>
+      <p>한 노드가 키 여러 개를 갖는 탐색 트리(이진 X). 조건 2가지: ① 자식 수 2·3·4 중 하나 ② <b>모든 리프가 같은 레벨</b>(균형).</p>
+      <table>
+        <tr><th>노드</th><th>키</th><th>자식</th></tr>
+        <tr><td>2-노드</td><td>1</td><td>2</td></tr>
+        <tr><td>3-노드</td><td>2</td><td>3</td></tr>
+        <tr><td>4-노드</td><td>3</td><td>4</td></tr>
+      </table>
+      <p>항상 (자식 수) = (키 개수) + 1. 높이 범위: <b>log₄ n ≤ h ≤ log₂ n = O(log n)</b>.</p>
+
+      <h3>삽입 — top-down split</h3>
+      <ul>
+        <li>내려가는 길에 <b>가득 찬 4-노드</b>를 만나면 미리 split: 가운데 키를 부모로 올리고, 나머지 둘을 좌·우 노드로 나눔(자식 4개는 2개씩).</li>
+        <li>미리 쪼개면 리프 도달 시 항상 자리가 있음(연쇄 방지).</li>
+        <li><b>루트가 가득 차 split</b>될 때만 트리 높이가 +1 (높이 증가의 유일 경로).</li>
+      </ul>
+
+      <h3>삭제 — fusion</h3>
+      <ul>
+        <li>내부 노드 키는 <b>successor와 교체</b> 후 리프에서 삭제.</li>
+        <li>2-노드를 만나면 미리 처리: <b>Redistribution</b>(형제가 3-노드↑이면 부모 거쳐 빌리기) 또는 <b>Merge</b>(형제도 2-노드면 부모 키 내려 4-노드로 합침).</li>
+        <li>루트가 2-노드인데 자식도 2-노드라 합쳐지면 높이 −1 (감소의 유일 경로).</li>
+      </ul>
+
+      <h3>레드블랙과 1:1 등가</h3>
+      <table>
+        <tr><th>2-3-4 노드</th><th class="l">레드블랙 변환</th></tr>
+        <tr><td>2-노드</td><td class="l"><span class="rb-b">B</span> 1개 (1레벨)</td></tr>
+        <tr><td>3-노드</td><td class="l"><span class="rb-b">B</span> 1개 + <span class="rb-r">R</span> 1개 (2레벨)</td></tr>
+        <tr><td>4-노드</td><td class="l"><span class="rb-b">B</span> 1개 + <span class="rb-r">R</span> 2개 (2레벨)</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- 4 그래프 표현 -->
+  <section class="s-graph" id="s4">
+    <div class="sec-h"><span class="no">4</span><h2>그래프 표현 <span class="en">G = (V, E)</span></h2></div>
+    <div class="card">
+      <h3>정의 · 네 종류</h3>
+      <p>G = (V, E). V = 정점(vertex), E = 간선(edge). 간선으로 직접 이어진 두 정점 = <span class="kw">인접(adjacent)</span>. |V|=n, |E|=m.</p>
+      <table>
+        <tr><th></th><th>가중치 없음</th><th>가중치 있음</th></tr>
+        <tr><td><b>방향 없음</b></td><td>무향 그래프</td><td>가중 그래프</td></tr>
+        <tr><td><b>방향 있음</b></td><td>방향 그래프</td><td>가중 방향 그래프</td></tr>
+      </table>
+      <p class="warn">⚠️ 방향 그래프에서 A↔B는 간선 <b>2개</b>(A→B, B→A). A[i][j]와 A[j][i]가 다를 수 있다.</p>
+
+      <h3>인접 행렬 vs 인접 리스트</h3>
+      <table>
+        <tr><th class="l">항목</th><th>인접 행렬</th><th>인접 리스트</th></tr>
+        <tr><td class="l">공간</td><td>O(n²)</td><td>O(n + m)</td></tr>
+        <tr><td class="l">간선 (u,v) 확인</td><td>O(1)</td><td>O(n)</td></tr>
+        <tr><td class="l">인접 노드 순회</td><td>O(n)</td><td>O(이웃수)</td></tr>
+        <tr><td class="l">간선 삭제</td><td>O(1)</td><td>O(n)</td></tr>
+      </table>
+      <ul>
+        <li>무향 행렬은 <b>대각선 대칭</b>, 방향 행렬은 비대칭. 무향 리스트는 간선 1개가 노드 2개(총 2m).</li>
+        <li>희소(sparse) → 리스트, 조밀(dense) → 행렬. 탐색(BFS/DFS)은 인접 노드 순회가 핵심이라 보통 <b>리스트</b>.</li>
+        <li>거리 맥락에서 "연결 안 됨" = <b>∞</b>, 자기 자신 = 0. (이 ∞ 행렬이 Floyd-Warshall의 d₀)</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 5 그래프 순회 -->
+  <section class="s-graph" id="s5">
+    <div class="sec-h"><span class="no">5</span><h2>그래프 순회 <span class="en">DFS · BFS · 위상 정렬</span></h2></div>
+    <div class="card">
+      <h3>DFS vs BFS</h3>
+      <table>
+        <tr><th class="l">구분</th><th>DFS (깊이)</th><th>BFS (너비)</th></tr>
+        <tr><td class="l">방향</td><td>한 길로 끝까지 → backtrack</td><td>가까운 곳부터 한 겹씩</td></tr>
+        <tr><td class="l">자료구조</td><td>스택/재귀 (LIFO)</td><td>큐 (FIFO)</td></tr>
+        <tr><td class="l">용도</td><td>사이클 탐지·위상 정렬</td><td>최단 거리(무가중치)</td></tr>
+      </table>
+      <p>둘 다 O(n+m). 같은 그래프·시작점이라도 방문 순서가 다름. BFS의 visited는 <b>enqueue할 때</b> 표시(중복 방지).</p>
+
+      <h3>DFS의 pre / post</h3>
+      <ul>
+        <li><code>pre[v]</code> = 진입 시각, <code>post[v]</code> = 종료 시각. <b>pre 오름차순 = 방문 순서</b>.</li>
+        <li>[pre, post] 막대가 <b>포함</b> 관계 ⇔ DFS 트리의 조상-자손. 정점 n개 → DFS 트리 간선 n−1개.</li>
+        <li><span class="kw">Back edge</span>(이미 방문한 조상으로 가는 간선)가 하나라도 있으면 <b>사이클 존재</b>.</li>
+        <li><b>DFSALL</b>: 안 가본 노드마다 DFS 재시작 → DFS 호출 횟수 = <b>연결 요소(component) 개수</b>.</li>
+      </ul>
+
+      <h3>위상 정렬 (Topological Sort)</h3>
+      <p>DAG(방향·사이클 없음)의 정점을 "선행 → 후행" 순으로 줄세움. 간선 u→v면 u가 v보다 앞.</p>
+      <div class="formula">DFS 후 POST 값을 <b>내림차순</b>으로 나열 = 위상 정렬     (간선 u→v면 항상 post[u] &gt; post[v])</div>
+    </div>
+  </section>
+
+  <!-- 6 최단 경로 -->
+  <section class="s-sp" id="s6">
+    <div class="sec-h"><span class="no">6</span><h2>최단 경로 <span class="en">Shortest Path</span></h2></div>
+    <div class="card">
+      <h3>공통 핵심 — relax</h3>
+      <p><b>부분 경로 최단성</b>(Optimal Substructure): 최단 경로의 일부 구간도 반드시 최단. 모든 알고리즘의 기반.</p>
+      <div class="formula">relax(u, v):  if dist[v] &gt; dist[u] + w(u,v):  dist[v] = dist[u] + w(u,v);  parent[v] = u</div>
+      <p>부등호는 <b>&lt;</b>(더 짧을 때만 갱신), 갱신 시 parent도 기록(경로 역추적·최단 경로 트리 SPT).</p>
+
+      <h3>Bellman-Ford <span style="font-weight:400;color:var(--ink-mute);font-size:13px;">— SSSP</span></h3>
+      <ul>
+        <li>모든 간선을 <b>n−1번</b> 반복 완화(최단 경로는 간선 최대 n−1개).</li>
+        <li>한 번 더 돌려 또 줄면 → <b>음의 사이클</b> 검출.</li>
+        <li><b>음수 가중치 OK</b>. 시간복잡도 <b>O(VE)</b>, 최악 O(n³).</li>
+      </ul>
+
+      <h3>Dijkstra <span style="font-weight:400;color:var(--ink-mute);font-size:13px;">— SSSP</span></h3>
+      <ul>
+        <li>min-heap에서 <b>가장 가까운 미확정 노드</b>를 deleteMin으로 확정(그리디) → 이웃 relax → decreaseKey.</li>
+        <li>양수라 그 노드의 dist는 더 줄 수 없음(확정해도 안전). <b>음수 간선 불가</b>.</li>
+        <li>시간복잡도 <b>O((n+E) log n)</b>, 최악 O(n² log n). (Fibonacci heap이면 O(E + n log n))</li>
+      </ul>
+      <p class="warn">⚠️ 다익스트라가 음수에서 틀리는 이유: "한 번 확정한 거리는 다시 안 본다"는 가정이 음수에서 깨짐 → 벨만-포드 사용.</p>
+
+      <h3>Floyd-Warshall <span style="font-weight:400;color:var(--ink-mute);font-size:13px;">— All-to-All</span></h3>
+      <p>모든 정점 쌍 거리표(n×n). 중간 노드를 {1..k}로 제한한 d<sub>k</sub>(i,j)를 k=0→n으로 키워감.</p>
+      <div class="formula">d<sub>k</sub>(i,j) = min( d<sub>k−1</sub>(i,j),  d<sub>k−1</sub>(i,k) + d<sub>k−1</sub>(k,j) )      d₀ = 가중치 인접 행렬, 답 = d<sub>n</sub></div>
+      <ul>
+        <li><b>O(n³)</b>, 음수 가중치 OK(음의 사이클은 X). 갱신 후보: k행·k열에 ∞ 아닌 값 있는 칸만.</li>
+        <li>모든 k에서 대각선 d<sub>k</sub>(i,i)=0.</li>
+      </ul>
+      <p class="warn">⚠️ 음의 사이클이 있으면 거리가 −∞로 발산 → 최단 경로 자체가 정의되지 않음.</p>
+    </div>
+  </section>
+
+  <!-- 7 복잡도 종합 -->
+  <section class="s-base" id="s7">
+    <div class="sec-h"><span class="no">7</span><h2>시간복잡도 종합표</h2></div>
+    <div class="card">
+      <h3>균형 탐색 트리 (검색·삽입·삭제)</h3>
+      <table>
+        <tr><th class="l">트리</th><th>연산</th><th>높이</th></tr>
+        <tr><td class="l">일반 BST (최악)</td><td>O(n)</td><td>O(n)</td></tr>
+        <tr><td class="l">AVL</td><td>O(log n)</td><td>≈1.44 log n</td></tr>
+        <tr><td class="l">레드블랙</td><td>O(log n)</td><td>≤2 log(n+1)</td></tr>
+        <tr><td class="l">2-3-4</td><td>O(log n)</td><td>완전 균형</td></tr>
+      </table>
+      <h3>그래프</h3>
+      <table>
+        <tr><th class="l">알고리즘</th><th>대상</th><th>음수</th><th>시간</th></tr>
+        <tr><td class="l">DFS / BFS</td><td>순회</td><td>—</td><td>O(n+m)</td></tr>
+        <tr><td class="l">Bellman-Ford</td><td>단일 출발(SSSP)</td><td>OK</td><td>O(VE)=O(n³)</td></tr>
+        <tr><td class="l">Dijkstra (heap)</td><td>단일 출발(SSSP)</td><td>불가</td><td>O((n+E)log n)</td></tr>
+        <tr><td class="l">Floyd-Warshall</td><td>모든 쌍(All-pairs)</td><td>OK</td><td>O(n³)</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- 8 막판 암기 -->
+  <section class="s-base" id="s8">
+    <div class="sec-h"><span class="no">8</span><h2>막판 암기 카드</h2></div>
+    <div class="flash">
+      <div class="fc"><div class="q">AVL 조건</div><div class="a">모든 노드 |BF| ≤ 1</div></div>
+      <div class="fc"><div class="q">AVL 높이 증명</div><div class="a">N<sub>h</sub>≥2<sup>h/2</sup> → h ≤ 2 log₂ n</div></div>
+      <div class="fc"><div class="q">회전 횟수</div><div class="a">LL·RR = 1회 / LR·RL = 2회</div></div>
+      <div class="fc"><div class="q">RB 4규칙</div><div class="a">루트·NIL 검정, 레드 연속 X, 블랙 높이 일정</div></div>
+      <div class="fc"><div class="q">RB 삽입 시작</div><div class="a">새 노드는 빨강 (④ 유지, ③만 점검)</div></div>
+      <div class="fc"><div class="q">2-3-4 ↔ RB</div><div class="a">2→B, 3→B+R, 4→B+R+R</div></div>
+      <div class="fc"><div class="q">높이 ±1 경우</div><div class="a">루트 split = +1 / 루트 merge = −1</div></div>
+      <div class="fc"><div class="q">행렬 vs 리스트</div><div class="a">O(n²) vs O(n+m)</div></div>
+      <div class="fc"><div class="q">Back edge</div><div class="a">존재 ⇔ 사이클 있음</div></div>
+      <div class="fc"><div class="q">위상 정렬</div><div class="a">POST 값 내림차순</div></div>
+      <div class="fc"><div class="q">relax 부등호</div><div class="a">&lt; (더 짧을 때만), parent 기록</div></div>
+      <div class="fc"><div class="q">음수 간선</div><div class="a">Dijkstra ✗ / BF·Floyd ✓</div></div>
+      <div class="fc"><div class="q">Floyd 점화식</div><div class="a">min(d(i,j), d(i,k)+d(k,j))</div></div>
+      <div class="fc"><div class="q">음의 사이클</div><div class="a">최단 경로 정의 안 됨(−∞)</div></div>
+    </div>
+    <p class="tip" style="margin-top:14px;">발음·표기 함정: <b>다익스트라</b>(다이스트라 X) · 벨만-포드 · 플로이드-워셜.</p>
+  </section>
+
+  <footer>자료구조 기말 정리노트 · AVL · 레드블랙 · 2-3-4 · 그래프 · 최단 경로 · 강원대학교 컴퓨터공학과</footer>
+</div>
+</body>
+</html>
