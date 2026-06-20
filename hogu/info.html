@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>정보 · 호구는 못말려 🌤️</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌤️</text></svg>">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Black+Han+Sans&family=Jua&family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            min-height: 100vh;
+            max-width: 420px;
+            margin: 0 auto;
+            background: radial-gradient(circle at center top, #FFE066 0%, #F4B942 60%, #E68A20 100%);
+            font-family: 'Jua', sans-serif;
+            color: #1A1A1A;
+            padding: 14px 12px 40px;
+            position: relative;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.4);
+        }
+
+        /* 만화 점박이(도트) 배경 */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            max-width: 420px;
+            margin: 0 auto;
+            background-image: radial-gradient(circle, rgba(0,0,0,0.16) 1.5px, transparent 2px);
+            background-size: 12px 12px;
+            opacity: 0.3;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ===== 상단 바 ===== */
+        .topbar { display: flex; align-items: center; gap: 10px; position: relative; z-index: 2; margin-bottom: 16px; }
+
+        .back-btn {
+            background: #1A1A1A; color: #FFD700; border: 3px solid #1A1A1A;
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.35); text-decoration: none;
+            font-family: 'Black Han Sans', sans-serif; font-size: 15px;
+            padding: 8px 12px; line-height: 1; transition: transform .12s, box-shadow .12s;
+        }
+        .back-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 rgba(0,0,0,0.35); }
+
+        .title-bar {
+            flex: 1;
+            background: linear-gradient(180deg, #E74C3C 0%, #C0392B 100%);
+            color: #FFD700; padding: 9px 12px;
+            border: 3px solid #1A1A1A; box-shadow: 4px 4px 0 #1A1A1A;
+            text-align: center; font-family: 'Black Han Sans', sans-serif;
+            font-size: 18px; letter-spacing: 2px; text-shadow: 2px 2px 0 #1A1A1A;
+        }
+        .title-bar .small {
+            display: block; font-family: 'Bangers', cursive; font-size: 10px;
+            letter-spacing: 3px; color: #fff; text-shadow: 1px 1px 0 #1A1A1A;
+        }
+
+        /* ===== 카드(만화 패널) 공통 ===== */
+        .card {
+            background: #fff; border: 4px solid #1A1A1A; box-shadow: 5px 5px 0 #1A1A1A;
+            position: relative; z-index: 2; margin-bottom: 18px; overflow: hidden;
+        }
+        .card-head {
+            display: flex; align-items: center; gap: 8px; padding: 10px 12px;
+            border-bottom: 4px solid #1A1A1A; font-family: 'Black Han Sans', sans-serif;
+            font-size: 16px; letter-spacing: 1px;
+        }
+        .card-head .ico { font-size: 22px; line-height: 1; }
+        .card-head .en { margin-left: auto; font-family: 'Bangers', cursive; font-size: 12px; letter-spacing: 2px; opacity: 0.6; }
+        .card-body { padding: 12px; }
+
+        .head-weather { background: #5DADE2; }
+        .head-daily   { background: #82E0AA; }
+        .head-fx      { background: #F8B739; }
+        .head-time    { background: #FF8FAB; }
+        .head-holiday { background: #FF6B5B; }
+
+        /* ===== 전반 날씨 ===== */
+        .stat-row { display: flex; gap: 8px; margin-bottom: 10px; }
+        .stat { flex: 1; background: #FFF6D6; border: 3px solid #1A1A1A; text-align: center; padding: 10px 6px; }
+        .stat .label { font-family: 'Gaegu', cursive; font-weight: 700; font-size: 12px; opacity: 0.8; }
+        .stat .val { font-family: 'Black Han Sans', sans-serif; font-size: 22px; line-height: 1.2; }
+        .note {
+            font-family: 'Gaegu', cursive; font-weight: 700; font-size: 14px; line-height: 1.5;
+            background: #FFF6D6; border-left: 6px solid #E74C3C; padding: 8px 10px;
+        }
+
+        /* ===== 날짜별 날씨 ===== */
+        .day-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .day { border: 3px solid #1A1A1A; background: #F4FBF6; padding: 9px; text-align: center; }
+        .day .date { font-family: 'Black Han Sans', sans-serif; font-size: 15px; }
+        .day .wd { font-family:'Gaegu',cursive; font-weight:700; font-size: 12px; opacity:.7; }
+        .day .ico { font-size: 26px; margin: 2px 0; }
+        .day .temp { font-family: 'Black Han Sans', sans-serif; font-size: 15px; }
+        .day .temp .lo { color: #2980B9; }
+        .day .temp .hi { color: #E74C3C; }
+
+        .badge-tbd {
+            display: inline-block; margin-top: 5px; background: #9AA0A6; color: #fff;
+            font-family: 'Gaegu', cursive; font-weight: 700; font-size: 10px;
+            padding: 2px 7px; border-radius: 10px; letter-spacing: .5px;
+        }
+
+        /* ===== 환율 변환기 ===== */
+        .fx-big { text-align: center; font-family: 'Black Han Sans', sans-serif; font-size: 24px; margin-bottom: 4px; }
+        .fx-sub { text-align: center; font-family: 'Gaegu', cursive; font-weight: 700; font-size: 13px; opacity: .75; margin-bottom: 12px; }
+        .conv { display: flex; align-items: center; gap: 6px; justify-content: center; flex-wrap: wrap; }
+        .conv input {
+            width: 92px; border: 3px solid #1A1A1A; background: #FFF6D6; padding: 8px;
+            font-family: 'Black Han Sans', sans-serif; font-size: 16px; text-align: right;
+        }
+        .conv .unit { font-family: 'Black Han Sans', sans-serif; font-size: 15px; }
+        .conv .eq { font-size: 18px; }
+        .conv-out {
+            min-width: 110px; border: 3px solid #1A1A1A; background: #82E0AA; padding: 8px;
+            font-family: 'Black Han Sans', sans-serif; font-size: 16px; text-align: right;
+        }
+
+        /* ===== 시차 ===== */
+        .time-row { display: flex; align-items: center; justify-content: center; gap: 14px; text-align: center; }
+        .time-col .flag { font-size: 30px; }
+        .time-col .ctry { font-family:'Black Han Sans',sans-serif; font-size: 14px; }
+        .time-eq { font-family: 'Bangers', cursive; font-size: 20px; color: #E74C3C; }
+        .time-msg { text-align: center; margin-top: 10px; font-family: 'Black Han Sans', sans-serif; font-size: 17px; }
+
+        /* ===== 공휴일 ===== */
+        .holi { border: 3px solid #1A1A1A; padding: 10px; margin-bottom: 10px; background: #FFF6D6; }
+        .holi:last-child { margin-bottom: 0; }
+        .holi .h-top { display: flex; align-items: center; gap: 6px; font-family: 'Black Han Sans', sans-serif; font-size: 15px; margin-bottom: 4px; }
+        .holi .tag { margin-left: auto; background: #E74C3C; color: #fff; font-family: 'Gaegu', cursive; font-weight: 700; font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+        .holi .h-desc { font-family: 'Gaegu', cursive; font-weight: 700; font-size: 13.5px; line-height: 1.5; }
+
+        .footer { text-align: center; font-family: 'Gaegu', cursive; font-weight: 700; font-size: 12px; opacity: .7; position: relative; z-index: 2; margin-top: 4px; }
+    </style>
+</head>
+<body>
+
+    <!-- 상단 바 -->
+    <div class="topbar">
+        <a href="index.html" class="back-btn">◁</a>
+        <div class="title-bar">
+            <span class="small">DAILY INFO</span>
+            여행 정보
+        </div>
+    </div>
+
+    <!-- ① 전반적 날씨 -->
+    <div class="card">
+        <div class="card-head head-weather">
+            <span class="ico">🌤️</span> 후쿠오카 8월 날씨
+            <span class="en">WEATHER</span>
+        </div>
+        <div class="card-body">
+            <div class="stat-row">
+                <div class="stat"><div class="label">낮 평균</div><div class="val">31.6°</div></div>
+                <div class="stat"><div class="label">밤 평균</div><div class="val">24.5°</div></div>
+                <div class="stat"><div class="label">습도</div><div class="val">74%</div></div>
+            </div>
+            <div class="note">
+                무덥고 습한 한여름! ☀️ 장마는 끝났지만 소나기·태풍(typhoon) 가능성 있음.
+                양산·물·손풍기 필수, 실내는 냉방 강해서 얇은 겉옷 하나 챙기기.
+            </div>
+        </div>
+    </div>
+
+    <!-- ② 날짜별 날씨 -->
+    <div class="card">
+        <div class="card-head head-daily">
+            <span class="ico">📅</span> 날짜별 날씨
+            <span class="en">4 DAYS</span>
+        </div>
+        <div class="card-body">
+            <div class="day-grid">
+                <div class="day">
+                    <div class="date">8/9</div><div class="wd">일 · 1일차</div>
+                    <div class="ico">🌡️</div>
+                    <div class="temp"><span class="hi">32°</span> / <span class="lo">25°</span></div>
+                    <span class="badge-tbd">예보 미정</span>
+                </div>
+                <div class="day">
+                    <div class="date">8/10</div><div class="wd">월 · 2일차</div>
+                    <div class="ico">🌡️</div>
+                    <div class="temp"><span class="hi">32°</span> / <span class="lo">25°</span></div>
+                    <span class="badge-tbd">예보 미정</span>
+                </div>
+                <div class="day">
+                    <div class="date">8/11</div><div class="wd">화 · 3일차</div>
+                    <div class="ico">🌡️</div>
+                    <div class="temp"><span class="hi">32°</span> / <span class="lo">25°</span></div>
+                    <span class="badge-tbd">예보 미정</span>
+                </div>
+                <div class="day">
+                    <div class="date">8/12</div><div class="wd">수 · 4일차</div>
+                    <div class="ico">🌡️</div>
+                    <div class="temp"><span class="hi">32°</span> / <span class="lo">25°</span></div>
+                    <span class="badge-tbd">예보 미정</span>
+                </div>
+            </div>
+            <div class="note" style="margin-top:10px;">
+                위 숫자는 8월 <b>평년값</b>(참고용). 실제 예보는 단기 예보만 정확해서,
+                <b>여행 1주 전</b>에 다시 확인하고 채워야 함!
+            </div>
+        </div>
+    </div>
+
+    <!-- ③ 환율 -->
+    <div class="card">
+        <div class="card-head head-fx">
+            <span class="ico">💴</span> 환율
+            <span class="en">EXCHANGE</span>
+        </div>
+        <div class="card-body">
+            <div class="fx-big">100엔 ≈ 952원</div>
+            <div class="fx-sub">현재 시세(2026-06-11 기준) · 예산은 100엔=950원으로 계산</div>
+            <div class="conv">
+                <input id="yen" type="number" value="1000" inputmode="numeric">
+                <span class="unit">엔</span>
+                <span class="eq">=</span>
+                <span class="conv-out" id="won">9,500원</span>
+            </div>
+            <div class="fx-sub" style="margin:10px 0 0;">엔을 입력하면 원으로 환산(예산 기준 950원)</div>
+        </div>
+    </div>
+
+    <!-- ④ 시차 -->
+    <div class="card">
+        <div class="card-head head-time">
+            <span class="ico">🕘</span> 시차
+            <span class="en">TIME</span>
+        </div>
+        <div class="card-body">
+            <div class="time-row">
+                <div class="time-col"><div class="flag">🇰🇷</div><div class="ctry">한국</div></div>
+                <div class="time-eq">=</div>
+                <div class="time-col"><div class="flag">🇯🇵</div><div class="ctry">일본</div></div>
+            </div>
+            <div class="time-msg">시차 없음 (0시간)</div>
+            <div class="fx-sub" style="margin-top:6px;">한국·일본 모두 같은 시간대(UTC+9). 시계 안 바꿔도 됨!</div>
+        </div>
+    </div>
+
+    <!-- ⑤ 공휴일·행사 -->
+    <div class="card">
+        <div class="card-head head-holiday">
+            <span class="ico">🎌</span> 공휴일 · 행사
+            <span class="en">HOLIDAY</span>
+        </div>
+        <div class="card-body">
+            <div class="holi">
+                <div class="h-top">
+                    🏔️ 산의 날 (山の日 · Mountain Day)
+                    <span class="tag">8/11 화</span>
+                </div>
+                <div class="h-desc">
+                    일본 <b>공휴일</b>! 마침 <b>3일차</b>와 겹침. 관광지·교통 혼잡, 일부 가게는 단축/휴무 가능.
+                    유후인 투어가 화요일로 밀리면 특히 사람 많을 수 있음.
+                </div>
+            </div>
+            <div class="holi">
+                <div class="h-top">
+                    🏮 오봉 (お盆 · Obon)
+                    <span class="tag">8/13~16</span>
+                </div>
+                <div class="h-desc">
+                    일본 최대 귀성 시즌. 공식 여행 기간(~8/12) 직후지만,
+                    <b>귀국일(8/12 수)부터 귀성 러시 시작</b> → 공항·신칸센·도로 혼잡 주의.
+                    환전·기념품은 미리미리!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">호구는 못말려 · 후쿠오카 2026.8.9~8.12</div>
+
+    <script>
+        // 예산 기준 환율: 1엔 = 9.5원 (100엔 = 950원)
+        var RATE = 9.5;
+        var yenInput = document.getElementById('yen');
+        var wonOut = document.getElementById('won');
+
+        function convert() {
+            var yen = parseFloat(yenInput.value) || 0;        // 입력값(숫자 아니면 0)
+            var won = Math.round(yen * RATE);                 // 원 = 엔 × 환율, 반올림
+            wonOut.textContent = won.toLocaleString() + '원'; // 천단위 콤마 + '원'
+        }
+
+        yenInput.addEventListener('input', convert); // 입력할 때마다 갱신
+        convert();                                    // 첫 로딩 시 1회 계산
+    </script>
+
+</body>
+</html>

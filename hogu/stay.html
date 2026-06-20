@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>숙소 · 호구는 못말려 🏨</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏨</text></svg>">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Black+Han+Sans&family=Jua&family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            min-height: 100vh; max-width: 420px; margin: 0 auto;
+            background: #FFC2D1;
+            font-family: 'Jua', sans-serif; color: #1A1A1A;
+            position: relative; box-shadow: 0 0 40px rgba(0,0,0,0.4); padding-bottom: 40px;
+        }
+        body::before {
+            content: ''; position: fixed; inset: 0; max-width: 420px; margin: 0 auto;
+            background-image: radial-gradient(circle, rgba(0,0,0,0.10) 1.5px, transparent 2px);
+            background-size: 13px 13px; opacity: 0.4; pointer-events: none; z-index: 0;
+        }
+
+        .topbar { display: flex; align-items: center; gap: 10px; padding: 12px; position: sticky; top: 0; z-index: 10; background: #FFC2D1; border-bottom: 4px solid #1A1A1A; }
+        .back-btn { background: #1A1A1A; color: #FFD700; border: 3px solid #1A1A1A; box-shadow: 3px 3px 0 rgba(0,0,0,0.35); text-decoration: none; font-family: 'Black Han Sans', sans-serif; font-size: 15px; padding: 8px 12px; line-height: 1; transition: transform .12s, box-shadow .12s; }
+        .back-btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 rgba(0,0,0,0.35); }
+        .title-bar { flex: 1; background: linear-gradient(180deg, #E74C3C 0%, #C0392B 100%); color: #FFD700; padding: 9px 12px; border: 3px solid #1A1A1A; box-shadow: 4px 4px 0 #1A1A1A; text-align: center; font-family: 'Black Han Sans', sans-serif; font-size: 18px; letter-spacing: 2px; text-shadow: 2px 2px 0 #1A1A1A; }
+        .title-bar .small { display: block; font-family: 'Bangers', cursive; font-size: 10px; letter-spacing: 3px; color: #fff; text-shadow: 1px 1px 0 #1A1A1A; }
+
+        .sec-title { font-family: 'Black Han Sans', sans-serif; font-size: 18px; padding: 22px 16px 10px; display: flex; align-items: center; gap: 8px; position: relative; z-index: 2; }
+        .sec-title .bar { width: 7px; height: 20px; background: #E74C3C; border: 2px solid #1A1A1A; }
+
+        /* 숙소 히어로 */
+        .hero { margin: 0 14px; background: #1A1A1A; color: #fff; border: 4px solid #1A1A1A; box-shadow: 5px 5px 0 rgba(0,0,0,0.3); padding: 18px; text-align: center; position: relative; z-index: 2; overflow: hidden; }
+        .hero .tag { font-family: 'Bangers', cursive; font-size: 12px; letter-spacing: 3px; color: #FFD700; }
+        .hero .name-jp { font-family: 'Black Han Sans', sans-serif; font-size: 26px; letter-spacing: 2px; }
+        .hero .name-kr { font-family: 'Jua', sans-serif; font-size: 15px; color: #FFE066; margin-top: 2px; }
+        .hero .meta { font-family: 'Gaegu', cursive; font-weight: 700; font-size: 13px; margin-top: 8px; opacity: .9; }
+        .hero .paid { display: inline-block; margin-top: 10px; background: #82E0AA; color: #1A1A1A; border: 2px solid #fff; font-family: 'Black Han Sans', sans-serif; font-size: 12px; padding: 3px 12px; letter-spacing: 1px; }
+
+        /* 정보 카드 (지도 링크) */
+        .map-card { margin: 12px 14px 0; background: #fff; border: 4px solid #1A1A1A; box-shadow: 5px 5px 0 #1A1A1A; padding: 13px 15px; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #1A1A1A; position: relative; z-index: 2; transition: transform .12s, box-shadow .12s; }
+        .map-card:active { transform: translate(2px,2px); box-shadow: 3px 3px 0 #1A1A1A; }
+        .map-card .m-body { flex: 1; min-width: 0; }
+        .map-card .m-label { font-family: 'Gaegu', cursive; font-weight: 700; font-size: 11px; color: #C0392B; }
+        .map-card .m-value { font-family: 'Jua', sans-serif; font-size: 13px; line-height: 1.4; word-break: keep-all; }
+        .map-card .m-ico { font-size: 26px; }
+
+        /* 일반 박스 */
+        .box { margin: 12px 14px 0; background: #fff; border: 4px solid #1A1A1A; box-shadow: 5px 5px 0 #1A1A1A; overflow: hidden; position: relative; z-index: 2; }
+        .row { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-bottom: 2px dashed #1A1A1A; }
+        .row:last-child { border-bottom: none; }
+        .row .r-ico { font-size: 20px; width: 28px; text-align: center; flex-shrink: 0; }
+        .row .r-body { flex: 1; min-width: 0; }
+        .row .r-title { font-family: 'Black Han Sans', sans-serif; font-size: 14px; }
+        .row .r-detail { font-family: 'Gaegu', cursive; font-weight: 700; font-size: 12px; color: #666; margin-top: 2px; line-height: 1.4; }
+        .row .r-time { font-family: 'Black Han Sans', sans-serif; font-size: 17px; flex-shrink: 0; }
+        .badge { font-family: 'Gaegu', cursive; font-weight: 700; font-size: 11px; padding: 4px 9px; white-space: nowrap; flex-shrink: 0; border: 2px solid #1A1A1A; }
+        .b-tbd { background: #9AA0A6; color: #fff; }
+        .b-pay { background: #FFD93D; }
+
+        /* 규칙 리스트 */
+        .rules { margin: 12px 14px 0; background: #fff; border: 4px solid #1A1A1A; box-shadow: 5px 5px 0 #1A1A1A; padding: 14px 16px; position: relative; z-index: 2; }
+        .rules .r-item { font-family: 'Gaegu', cursive; font-weight: 700; font-size: 13.5px; line-height: 1.6; padding-left: 22px; position: relative; margin-bottom: 4px; }
+        .rules .r-item::before { content: '🚫'; position: absolute; left: 0; font-size: 13px; }
+        .rules .r-item:last-child { margin-bottom: 0; }
+
+        /* 셀프 체크인 스텝 */
+        .steps { margin: 12px 14px 0; background: #FFF6D6; border: 4px solid #1A1A1A; box-shadow: 5px 5px 0 #1A1A1A; padding: 14px 16px; position: relative; z-index: 2; }
+        .steps .s-item { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 8px; }
+        .steps .s-item:last-child { margin-bottom: 0; }
+        .steps .s-num { background: #1A1A1A; color: #FFD700; font-family: 'Black Han Sans', sans-serif; font-size: 12px; min-width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .steps .s-text { font-family: 'Gaegu', cursive; font-weight: 700; font-size: 13.5px; line-height: 1.45; }
+
+        /* 가격 박스 */
+        .price-box { margin: 12px 14px 0; background: linear-gradient(135deg, #E74C3C, #C0392B); color: #fff; border: 4px solid #1A1A1A; box-shadow: 5px 5px 0 #1A1A1A; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 2; }
+        .price-box .lbl { font-family: 'Black Han Sans', sans-serif; font-size: 15px; }
+        .price-box .amt { font-family: 'Black Han Sans', sans-serif; font-size: 22px; text-shadow: 2px 2px 0 #1A1A1A; }
+        .price-box .sub { display: block; font-family: 'Gaegu', cursive; font-weight: 700; font-size: 10px; text-align: right; opacity: .9; }
+
+        /* 캡슐(전날) 작은 카드 */
+        .capsule { margin: 0 14px; background: #fff; border: 4px solid #1A1A1A; box-shadow: 5px 5px 0 #1A1A1A; padding: 14px 16px; position: relative; z-index: 2; }
+        .capsule .c-name { font-family: 'Black Han Sans', sans-serif; font-size: 17px; }
+        .capsule .c-meta { font-family: 'Gaegu', cursive; font-weight: 700; font-size: 12.5px; color: #555; margin-top: 4px; line-height: 1.5; }
+        .capsule .c-self { display: inline-block; margin-top: 8px; background: #9AA0A6; color: #fff; border: 2px solid #1A1A1A; font-family: 'Gaegu', cursive; font-weight: 700; font-size: 11px; padding: 2px 9px; }
+    </style>
+</head>
+<body>
+
+    <div class="topbar">
+        <a href="index.html" class="back-btn">◁</a>
+        <div class="title-bar"><span class="small">BASE CAMP</span>숙소</div>
+    </div>
+
+    <!-- 메인 숙소 -->
+    <h2 class="sec-title"><span class="bar"></span> 본 여행 숙소 (3박 · 4인)</h2>
+
+    <div class="hero">
+        <div class="tag">FUKUOKA · AIRBNB</div>
+        <div class="name-jp">清川雅居</div>
+        <div class="name-kr">키요카와 가쿄</div>
+        <div class="meta">2026.08.09(일) ~ 08.12(수) · 3박</div>
+        <span class="paid">✓ 결제완료</span>
+    </div>
+
+    <!-- 주소 지도 -->
+    <a href="https://map.naver.com/p/search/福岡市中央区清川3丁目13-1" class="map-card" target="_blank">
+        <div class="m-body">
+            <div class="m-label">📍 주소</div>
+            <div class="m-value">(810-0005) 후쿠오카현 후쿠오카시 주오구 키요카와 3초메 13-1</div>
+        </div>
+        <span class="m-ico">🗺️</span>
+    </a>
+
+    <!-- 전화 -->
+    <a href="tel:+818031883570" class="map-card">
+        <div class="m-body">
+            <div class="m-label">📞 전화</div>
+            <div class="m-value">+81-80-3188-3570</div>
+        </div>
+        <span class="m-ico">📱</span>
+    </a>
+
+    <!-- 체크인/아웃 -->
+    <h2 class="sec-title"><span class="bar"></span> 체크인 · 체크아웃</h2>
+    <div class="box">
+        <div class="row">
+            <span class="r-ico">🔑</span>
+            <div class="r-body"><div class="r-title">체크인</div>
+                <div class="r-detail">무인 셀프 체크인</div></div>
+            <span class="r-time">16:00</span>
+        </div>
+        <div class="row">
+            <span class="r-ico">🚪</span>
+            <div class="r-body"><div class="r-title">체크아웃</div>
+                <div class="r-detail">레이트 체크아웃·짐보관 불가</div></div>
+            <span class="r-time">10:00</span>
+        </div>
+        <div class="row">
+            <span class="r-ico">🧳</span>
+            <div class="r-body"><div class="r-title">짐 보관</div>
+                <div class="r-detail">12:00부터 객실 내 짐 보관 가능</div></div>
+        </div>
+    </div>
+
+    <!-- 셀프 체크인 절차 -->
+    <h2 class="sec-title"><span class="bar"></span> 무인 셀프 체크인 절차</h2>
+    <div class="steps">
+        <div class="s-item"><span class="s-num">1</span><span class="s-text">당일 <b>12:00경</b> 6자리 비밀번호 발송</span></div>
+        <div class="s-item"><span class="s-num">2</span><span class="s-text">비밀번호로 키박스 잠금해제</span></div>
+        <div class="s-item"><span class="s-num">3</span><span class="s-text">열쇠 사용 후 다시 키박스에 재보관</span></div>
+    </div>
+
+    <!-- 규칙 -->
+    <h2 class="sec-title"><span class="bar"></span> 숙소 규칙</h2>
+    <div class="rules">
+        <div class="r-item">전 구역 금연</div>
+        <div class="r-item">야간 정숙</div>
+        <div class="r-item">공용부 장시간 체류·짐 적치 금지</div>
+        <div class="r-item">쓰레기는 체크아웃 후 처리</div>
+    </div>
+
+    <!-- 가격 -->
+    <div class="price-box" style="margin-top:18px;">
+        <div class="lbl">💴 Airbnb 3박</div>
+        <div>
+            <div class="amt">550,288원</div>
+            <span class="sub">결제완료</span>
+        </div>
+    </div>
+
+    <!-- 도시세 확인 -->
+    <div class="box">
+        <div class="row">
+            <span class="r-ico">🏛️</span>
+            <div class="r-body"><div class="r-title">후쿠오카 도시세</div>
+                <div class="r-detail">1인 1박 200엔 · Airbnb 결제 포함 여부 확인 필요</div></div>
+            <span class="badge b-tbd">확인필요</span>
+        </div>
+    </div>
+
+    <!-- 전날 캡슐 -->
+    <h2 class="sec-title"><span class="bar"></span> 출발 전날 (이재아 단독)</h2>
+    <div class="capsule">
+        <div class="c-name">🛏️ 다락휴 캡슐호텔</div>
+        <div class="c-meta">
+            인천공항 제1여객터미널 · Single Bed<br>
+            오버나이트 20:00 ~ 08:00
+        </div>
+        <span class="c-self">개인 지불 (공동경비 제외)</span>
+    </div>
+
+</body>
+</html>

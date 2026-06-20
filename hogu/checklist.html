@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>준비물 · 호구는 못말려 🎒</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎒</text></svg>">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Black+Han+Sans&family=Jua&family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            min-height: 100vh; max-width: 420px; margin: 0 auto;
+            background: #F8C96B;
+            font-family: 'Jua', sans-serif; color: #1A1A1A;
+            position: relative; box-shadow: 0 0 40px rgba(0,0,0,0.4); padding-bottom: 80px;
+        }
+        body::before {
+            content: ''; position: fixed; inset: 0; max-width: 420px; margin: 0 auto;
+            background-image: radial-gradient(circle, rgba(0,0,0,0.10) 1.5px, transparent 2px);
+            background-size: 13px 13px; opacity: 0.4; pointer-events: none; z-index: 0;
+        }
+
+        .topbar { display: flex; align-items: center; gap: 10px; padding: 12px; position: sticky; top: 0; z-index: 10; background: #F8C96B; border-bottom: 4px solid #1A1A1A; }
+        .back-btn { background: #1A1A1A; color: #FFD700; border: 3px solid #1A1A1A; box-shadow: 3px 3px 0 rgba(0,0,0,0.35); text-decoration: none; font-family: 'Black Han Sans', sans-serif; font-size: 15px; padding: 8px 12px; line-height: 1; transition: transform .12s, box-shadow .12s; }
+        .back-btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 rgba(0,0,0,0.35); }
+        .title-bar { flex: 1; background: linear-gradient(180deg, #E74C3C 0%, #C0392B 100%); color: #FFD700; padding: 9px 12px; border: 3px solid #1A1A1A; box-shadow: 4px 4px 0 #1A1A1A; text-align: center; font-family: 'Black Han Sans', sans-serif; font-size: 18px; letter-spacing: 2px; text-shadow: 2px 2px 0 #1A1A1A; }
+        .title-bar .small { display: block; font-family: 'Bangers', cursive; font-size: 10px; letter-spacing: 3px; color: #fff; text-shadow: 1px 1px 0 #1A1A1A; }
+
+        .sec-title { font-family: 'Black Han Sans', sans-serif; font-size: 17px; padding: 20px 16px 10px; display: flex; align-items: center; gap: 8px; position: relative; z-index: 2; }
+        .sec-title .bar { width: 7px; height: 19px; background: #E74C3C; border: 2px solid #1A1A1A; }
+        .sec-title .prog { margin-left: auto; font-family: 'Gaegu', cursive; font-weight: 700; font-size: 13px; background: #1A1A1A; color: #FFD700; padding: 2px 10px; }
+
+        /* 날씨 메모 */
+        .weather-note { margin: 14px 14px 0; background: #1A1A1A; color: #fff; border: 4px solid #1A1A1A; box-shadow: 5px 5px 0 rgba(0,0,0,.3); padding: 13px 15px; position: relative; z-index: 2; }
+        .weather-note .wn-t { font-family: 'Black Han Sans', sans-serif; font-size: 14px; color: #FFD700; }
+        .weather-note .wn-d { font-family: 'Gaegu', cursive; font-weight: 700; font-size: 13px; margin-top: 4px; line-height: 1.5; }
+
+        /* 체크 리스트 */
+        .list { margin: 0 14px; background: #fff; border: 4px solid #1A1A1A; box-shadow: 5px 5px 0 #1A1A1A; overflow: hidden; position: relative; z-index: 2; }
+        .check { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 2px dashed #1A1A1A; cursor: pointer; transition: background .12s; }
+        .check:last-child { border-bottom: none; }
+        .check:active { background: #FFF6D6; }
+        .box-ck { width: 24px; height: 24px; border: 3px solid #1A1A1A; background: #fff; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-family: 'Black Han Sans', sans-serif; font-size: 16px; color: transparent; }
+        .check.done .box-ck { background: #82E0AA; color: #1A1A1A; }
+        .check.done .box-ck::after { content: '✓'; }
+        .c-text { font-family: 'Jua', sans-serif; font-size: 15px; flex: 1; }
+        .check.done .c-text { text-decoration: line-through; opacity: .5; }
+        .c-note { display: block; font-family: 'Gaegu', cursive; font-weight: 700; font-size: 11px; color: #C0392B; margin-top: 1px; text-decoration: none; }
+
+        /* 확인필요 (느낌표 마커) */
+        .confirm .box-ck { border-color: #C0392B; }
+        .confirm.done .box-ck { background: #FFD93D; }
+        .confirm .marker { color: #C0392B; }
+        .deadline-tag { display:inline-block; background:#E74C3C; color:#fff; font-family:'Gaegu',cursive; font-weight:700; font-size:10px; padding:1px 7px; margin-left:4px; }
+
+        /* 리셋 버튼 */
+        .reset { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); z-index: 20; background: #1A1A1A; color: #FFD700; border: 3px solid #FFD700; box-shadow: 3px 3px 0 rgba(0,0,0,.4); font-family: 'Black Han Sans', sans-serif; font-size: 13px; letter-spacing: 1px; padding: 10px 22px; cursor: pointer; }
+        .reset:active { transform: translateX(-50%) translateY(2px); }
+    </style>
+</head>
+<body>
+
+    <div class="topbar">
+        <a href="index.html" class="back-btn">◁</a>
+        <div class="title-bar"><span class="small">GEAR</span>준비물</div>
+    </div>
+
+    <!-- ===== 확인 필요 항목 (사용자 데이터) ===== -->
+    <h2 class="sec-title"><span class="bar"></span> 확인 · 미정 항목</h2>
+
+    <h2 class="sec-title" style="font-size:14px; padding-top:8px;">🗓️ 일정</h2>
+    <div class="list">
+        <div class="check confirm" onclick="toggleCheck(this)"><div class="box-ck"></div>
+            <span class="c-text"><span class="marker">!</span> 3일차(8/11) 전체 일정</span></div>
+        <div class="check confirm" onclick="toggleCheck(this)"><div class="box-ck"></div>
+            <span class="c-text"><span class="marker">!</span> 1일차 오후 활동</span></div>
+        <div class="check confirm" onclick="toggleCheck(this)"><div class="box-ck"></div>
+            <span class="c-text"><span class="marker">!</span> 4일차 전체 일정</span></div>
+        <div class="check confirm" onclick="toggleCheck(this)"><div class="box-ck"></div>
+            <span class="c-text"><span class="marker">!</span> 전 일정 식사 메뉴</span></div>
+    </div>
+
+    <h2 class="sec-title" style="font-size:14px; padding-top:14px;">✈️ 항공 · 숙소</h2>
+    <div class="list">
+        <div class="check confirm" onclick="toggleCheck(this)"><div class="box-ck"></div>
+            <span class="c-text"><span class="marker">!</span> 여권정보 등록 완료 여부<span class="deadline-tag">8/6 06:30 마감</span></span></div>
+        <div class="check confirm" onclick="toggleCheck(this)"><div class="box-ck"></div>
+            <span class="c-text"><span class="marker">!</span> 기내 수하물 규정</span></div>
+        <div class="check confirm" onclick="toggleCheck(this)"><div class="box-ck"></div>
+            <span class="c-text"><span class="marker">!</span> 사전 온라인 체크인 여부</span></div>
+        <div class="check confirm" onclick="toggleCheck(this)"><div class="box-ck"></div>
+            <span class="c-text"><span class="marker">!</span> 항공권 환불 규정</span></div>
+        <div class="check confirm" onclick="toggleCheck(this)"><div class="box-ck"></div>
+            <span class="c-text"><span class="marker">!</span> 도시세(1인1박 200엔) Airbnb 포함 여부</span></div>
+    </div>
+
+    <h2 class="sec-title" style="font-size:14px; padding-top:14px;">💴 예산</h2>
+    <div class="list">
+        <div class="check confirm" onclick="toggleCheck(this)"><div class="box-ck"></div>
+            <span class="c-text"><span class="marker">!</span> 식비 7만 → 6만 하향 검토</span></div>
+        <div class="check confirm" onclick="toggleCheck(this)"><div class="box-ck"></div>
+            <span class="c-text"><span class="marker">!</span> 예비비 신설 여부</span></div>
+        <div class="check confirm" onclick="toggleCheck(this)"><div class="box-ck"></div>
+            <span class="c-text"><span class="marker">!</span> 도시세 약 22,800원 추가 여부</span></div>
+    </div>
+
+    <h2 class="sec-title" style="font-size:14px; padding-top:14px;">🔧 기타</h2>
+    <div class="list">
+        <div class="check confirm" onclick="toggleCheck(this)"><div class="box-ck"></div>
+            <span class="c-text"><span class="marker">!</span> 좌석 유료지정 여부</span></div>
+        <div class="check confirm" onclick="toggleCheck(this)"><div class="box-ck"></div>
+            <span class="c-text"><span class="marker">!</span> 기내식 4인 메뉴</span></div>
+        <div class="check confirm" onclick="toggleCheck(this)"><div class="box-ck"></div>
+            <span class="c-text"><span class="marker">!</span> 보험 · eSIM 예약 시점</span></div>
+    </div>
+
+    <!-- ===== 챙길 것 (준비물) ===== -->
+    <h2 class="sec-title"><span class="bar"></span> 챙길 것 <span class="prog" id="prog">0/0</span></h2>
+
+    <div class="weather-note">
+        <div class="wn-t">🌤️ 8월 후쿠오카 = 무덥고 습함</div>
+        <div class="wn-d">낮 31.6° / 밤 24.5° / 습도 74%. 소나기·태풍 가능 →
+            양산·선크림·물·손풍기, 실내 냉방용 얇은 겉옷, 접이식 우산.</div>
+    </div>
+
+    <h2 class="sec-title" style="font-size:14px;">🪪 필수 (없으면 큰일)</h2>
+    <div class="list">
+        <div class="check" onclick="toggleCheck(this)"><div class="box-ck"></div><span class="c-text">여권<span class="c-note">유효기간 6개월 이상 확인</span></span></div>
+        <div class="check" onclick="toggleCheck(this)"><div class="box-ck"></div><span class="c-text">엔화 현금<span class="c-note">현지 ATM 1만엔 출금 예정</span></span></div>
+        <div class="check" onclick="toggleCheck(this)"><div class="box-ck"></div><span class="c-text">신용/체크카드<span class="c-note">해외결제 가능 카드</span></span></div>
+        <div class="check" onclick="toggleCheck(this)"><div class="box-ck"></div><span class="c-text">eSIM 설치<span class="c-note">유심스토어 KDDI 5G</span></span></div>
+        <div class="check" onclick="toggleCheck(this)"><div class="box-ck"></div><span class="c-text">여행자보험 가입<span class="c-note">KB 고급형</span></span></div>
+    </div>
+
+    <h2 class="sec-title" style="font-size:14px; padding-top:14px;">🔌 전자기기</h2>
+    <div class="list">
+        <div class="check" onclick="toggleCheck(this)"><div class="box-ck"></div><span class="c-text">휴대폰 · 충전기</span></div>
+        <div class="check" onclick="toggleCheck(this)"><div class="box-ck"></div><span class="c-text">보조배터리<span class="c-note">기내는 위탁 X, 손에 들고</span></span></div>
+        <div class="check" onclick="toggleCheck(this)"><div class="box-ck"></div><span class="c-text">돼지코(110V 어댑터)<span class="c-note">일본은 110V·납작핀</span></span></div>
+        <div class="check" onclick="toggleCheck(this)"><div class="box-ck"></div><span class="c-text">이어폰</span></div>
+    </div>
+
+    <h2 class="sec-title" style="font-size:14px; padding-top:14px;">👕 의류 · 더위 대비</h2>
+    <div class="list">
+        <div class="check" onclick="toggleCheck(this)"><div class="box-ck"></div><span class="c-text">반팔·반바지<span class="c-note">땀 많이 남, 여벌 넉넉히</span></span></div>
+        <div class="check" onclick="toggleCheck(this)"><div class="box-ck"></div><span class="c-text">속옷·양말</span></div>
+        <div class="check" onclick="toggleCheck(this)"><div class="box-ck"></div><span class="c-text">얇은 겉옷<span class="c-note">실내 냉방 대비</span></span></div>
+        <div class="check" onclick="toggleCheck(this)"><div class="box-ck"></div><span class="c-text">편한 운동화<span class="c-note">많이 걸음</span></span></div>
+        <div class="check" onclick="toggleCheck(this)"><div class="box-ck"></div><span class="c-text">접이식 우산</span></div>
+        <div class="check" onclick="toggleCheck(this)"><div class="box-ck"></div><span class="c-text">모자 · 선글라스</span></div>
+    </div>
+
+    <h2 class="sec-title" style="font-size:14px; padding-top:14px;">🧴 세면 · 기타</h2>
+    <div class="list">
+        <div class="check" onclick="toggleCheck(this)"><div class="box-ck"></div><span class="c-text">칫솔·치약<span class="c-note">에어비앤비 미제공 가능</span></span></div>
+        <div class="check" onclick="toggleCheck(this)"><div class="box-ck"></div><span class="c-text">기초 스킨케어 · 선크림</span></div>
+        <div class="check" onclick="toggleCheck(this)"><div class="box-ck"></div><span class="c-text">상비약<span class="c-note">두통·소화·밴드</span></span></div>
+        <div class="check" onclick="toggleCheck(this)"><div class="box-ck"></div><span class="c-text">손풍기 · 물티슈</span></div>
+        <div class="check" onclick="toggleCheck(this)"><div class="box-ck"></div><span class="c-text">에코백<span class="c-note">돈키호테 쇼핑용</span></span></div>
+    </div>
+
+    <button class="reset" onclick="resetAll()">🗑️ 전체 초기화</button>
+
+    <script>
+        // 브라우저 저장 키
+        var STORAGE_KEY = 'fukuoka-checklist-2026';
+
+        // 한 항목 체크 토글
+        function toggleCheck(el) {
+            el.classList.toggle('done');
+            saveState();
+            updateProgress();
+        }
+
+        // 현재 체크 상태 저장 (체크된 항목의 순번 목록)
+        function saveState() {
+            var all = document.querySelectorAll('.check');
+            var checked = [];
+            all.forEach(function(item, i) { if (item.classList.contains('done')) checked.push(i); });
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(checked)); } catch (e) {}
+        }
+
+        // 저장된 상태 복원
+        function loadState() {
+            var saved = null;
+            try { saved = localStorage.getItem(STORAGE_KEY); } catch (e) {}
+            if (!saved) return;
+            try {
+                var idxs = JSON.parse(saved);
+                var all = document.querySelectorAll('.check');
+                idxs.forEach(function(i) { if (all[i]) all[i].classList.add('done'); });
+            } catch (e) {}
+        }
+
+        // "챙길 것" 진행도 갱신 (확인항목 제외, .confirm 아닌 것만)
+        function updateProgress() {
+            var gear = document.querySelectorAll('.check:not(.confirm)');
+            var done = 0;
+            gear.forEach(function(it) { if (it.classList.contains('done')) done++; });
+            document.getElementById('prog').textContent = done + '/' + gear.length;
+        }
+
+        // 전체 초기화
+        function resetAll() {
+            if (!confirm('전체 체크를 초기화할까요?')) return;
+            document.querySelectorAll('.check').forEach(function(it) { it.classList.remove('done'); });
+            try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+            updateProgress();
+        }
+
+        loadState();      // 로드 시 복원
+        updateProgress(); // 진행도 표시
+    </script>
+
+</body>
+</html>

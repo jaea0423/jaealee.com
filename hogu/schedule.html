@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>일정표 · 호구는 못말려 📅</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Black+Han+Sans&family=Jua&family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            min-height: 100vh; max-width: 420px; margin: 0 auto;
+            background: #FFE9A8;
+            font-family: 'Jua', sans-serif; color: #1A1A1A;
+            position: relative; box-shadow: 0 0 40px rgba(0,0,0,0.4);
+            padding-bottom: 40px;
+        }
+        /* 만화 도트 배경 */
+        body::before {
+            content: ''; position: fixed; inset: 0; max-width: 420px; margin: 0 auto;
+            background-image: radial-gradient(circle, rgba(0,0,0,0.13) 1.5px, transparent 2px);
+            background-size: 12px 12px; opacity: 0.4; pointer-events: none; z-index: 0;
+        }
+
+        /* ===== 상단 바 (sticky) ===== */
+        .topbar {
+            display: flex; align-items: center; gap: 10px; padding: 12px;
+            position: sticky; top: 0; z-index: 10; background: #FFE9A8;
+            border-bottom: 4px solid #1A1A1A;
+        }
+        .back-btn {
+            background: #1A1A1A; color: #FFD700; border: 3px solid #1A1A1A;
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.35); text-decoration: none;
+            font-family: 'Black Han Sans', sans-serif; font-size: 15px;
+            padding: 8px 12px; line-height: 1; transition: transform .12s, box-shadow .12s;
+        }
+        .back-btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 rgba(0,0,0,0.35); }
+        .title-bar {
+            flex: 1; background: linear-gradient(180deg, #E74C3C 0%, #C0392B 100%);
+            color: #FFD700; padding: 9px 12px; border: 3px solid #1A1A1A;
+            box-shadow: 4px 4px 0 #1A1A1A; text-align: center;
+            font-family: 'Black Han Sans', sans-serif; font-size: 18px;
+            letter-spacing: 2px; text-shadow: 2px 2px 0 #1A1A1A;
+        }
+        .title-bar .small { display: block; font-family: 'Bangers', cursive; font-size: 10px; letter-spacing: 3px; color: #fff; text-shadow: 1px 1px 0 #1A1A1A; }
+
+        /* ===== 헤더 ===== */
+        .header { text-align: center; padding: 16px 12px 6px; position: relative; z-index: 2; }
+        .header .en { font-family: 'Bangers', cursive; font-size: 13px; letter-spacing: 3px; color: #C0392B; }
+        .header .big { font-family: 'Black Han Sans', sans-serif; font-size: 26px; letter-spacing: 1px; }
+        .header .period { font-family: 'Gaegu', cursive; font-weight: 700; font-size: 14px; margin-top: 2px; }
+
+        /* ===== 날짜 탭 (sticky) ===== */
+        .date-tabs {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+            padding: 10px 12px; position: sticky; top: 67px; z-index: 9; background: #FFE9A8;
+        }
+        .date-tab {
+            border: 3px solid #1A1A1A; background: #fff; cursor: pointer;
+            padding: 8px 2px; text-align: center; box-shadow: 3px 3px 0 #1A1A1A;
+            transition: transform .12s, box-shadow .12s;
+        }
+        .date-tab:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 #1A1A1A; }
+        .date-tab .num { font-family: 'Black Han Sans', sans-serif; font-size: 19px; display: block; line-height: 1.1; }
+        .date-tab .wd { font-family: 'Gaegu', cursive; font-weight: 700; font-size: 11px; }
+        .date-tab.active { background: #1A1A1A; color: #FFD700; }
+        .date-tab.holiday .num { color: #E74C3C; }
+        .date-tab.holiday.active .num { color: #FF8888; }
+        .date-tab .holi-mark { display: block; font-family: 'Gaegu', cursive; font-weight: 700; font-size: 8px; color: #E74C3C; margin-top: 1px; }
+        .date-tab.active .holi-mark { color: #FFB3B3; }
+
+        /* ===== 일정 ===== */
+        .schedule-content { padding: 6px 14px 0; position: relative; z-index: 2; }
+        .day-panel { display: none; }
+        .day-panel.active { display: block; }
+
+        .day-heading {
+            background: #1A1A1A; color: #fff; border: 3px solid #1A1A1A;
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.35);
+            padding: 12px 16px; margin-bottom: 18px; position: relative;
+        }
+        .day-heading .d-en { font-family: 'Bangers', cursive; font-size: 13px; letter-spacing: 3px; color: #FFD700; }
+        .day-heading .d-date { font-family: 'Black Han Sans', sans-serif; font-size: 22px; letter-spacing: 1px; }
+        .day-heading .d-wd { font-family: 'Gaegu', cursive; font-weight: 700; font-size: 13px; opacity: .85; }
+        .day-heading .d-title { font-family: 'Jua', sans-serif; font-size: 13px; color: #FFE066; margin-top: 4px; }
+        .holiday-badge {
+            display: inline-block; background: #E74C3C; color: #fff;
+            font-family: 'Black Han Sans', sans-serif; font-size: 11px;
+            padding: 3px 10px; margin-top: 8px; letter-spacing: 1px; border: 2px solid #fff;
+        }
+
+        /* 주의 박스 */
+        .warn {
+            border: 3px solid #1A1A1A; background: #FFF0B3; box-shadow: 4px 4px 0 #1A1A1A;
+            padding: 11px 13px; margin-bottom: 18px; display: flex; gap: 10px; align-items: flex-start;
+        }
+        .warn .w-ico { font-size: 20px; flex-shrink: 0; }
+        .warn .w-title { font-family: 'Black Han Sans', sans-serif; font-size: 13px; color: #C0392B; margin-bottom: 4px; letter-spacing: .5px; }
+        .warn .w-text { font-family: 'Gaegu', cursive; font-weight: 700; font-size: 13px; line-height: 1.55; }
+        .warn .w-text b { color: #C0392B; }
+
+        /* 타임라인 */
+        .timeline { position: relative; padding-left: 22px; }
+        .timeline::before {
+            content: ''; position: absolute; left: 6px; top: 6px; bottom: 6px;
+            width: 3px; background: #1A1A1A;
+        }
+        .t-item { position: relative; margin-bottom: 12px; }
+        .t-item::before {
+            content: ''; position: absolute; left: -20px; top: 9px; width: 13px; height: 13px;
+            border-radius: 50%; background: #fff; border: 3px solid #1A1A1A; z-index: 1;
+        }
+        .card {
+            background: #fff; border: 3px solid #1A1A1A; box-shadow: 3px 3px 0 #1A1A1A;
+            padding: 10px 12px; display: flex; gap: 10px; align-items: center; min-width: 0;
+        }
+        .time {
+            font-family: 'Black Han Sans', sans-serif; font-size: 14px; color: #1A1A1A;
+            background: #FFE066; border: 2px solid #1A1A1A; padding: 5px 7px;
+            min-width: 58px; text-align: center; line-height: 1.1; white-space: nowrap; flex-shrink: 0;
+        }
+        .time.range { background: #1A1A1A; color: #FFD700; font-size: 12px; }
+        .txt { font-family: 'Jua', sans-serif; font-size: 14px; flex: 1; line-height: 1.4; min-width: 0; word-break: break-word; }
+        .txt strong { font-weight: 400; font-family: 'Black Han Sans', sans-serif; }
+        .detail {
+            display: block; margin-top: 4px; font-family: 'Gaegu', cursive; font-weight: 700;
+            font-size: 12px; color: #555; line-height: 1.45; word-break: break-word;
+        }
+        .tag {
+            display: inline-block; font-size: 10px; color: #C0392B; background: #FFE0DC;
+            border: 1px solid #E7A9A2; padding: 1px 6px; margin-right: 4px; font-weight: 700; letter-spacing: .3px;
+        }
+        .warn-inline {
+            display: inline-block; margin-top: 3px; font-family: 'Gaegu', cursive; font-weight: 700;
+            font-size: 11px; color: #C0392B; background: #FFE0DC; padding: 1px 6px; border-radius: 4px;
+        }
+        /* 미정 회색 뱃지 */
+        .tbd { display: inline-block; background: #9AA0A6; color: #fff; font-family: 'Gaegu', cursive; font-weight: 700; font-size: 10px; padding: 1px 7px; border-radius: 10px; letter-spacing: .5px; }
+
+        /* 시간없는 흐름 */
+        .t-flow { position: relative; margin-bottom: 12px; }
+        .t-flow::before {
+            content: '◆'; position: absolute; left: -22px; top: 4px; color: #1A1A1A; font-size: 13px;
+            background: #FFE9A8; width: 16px; text-align: center;
+        }
+        .flow-txt { font-family: 'Jua', sans-serif; font-size: 13.5px; color: #444; padding: 4px 4px; display: inline-block; }
+        .flow-txt strong { font-family: 'Black Han Sans', sans-serif; }
+        .flow-place { display: block; font-family: 'Gaegu', cursive; font-weight: 700; font-size: 11px; color: #777; margin-top: 2px; }
+
+        /* 이동 시간 */
+        .travel {
+            position: relative; margin: 2px 0 2px -22px; padding: 3px 0 3px 26px;
+            font-family: 'Gaegu', cursive; font-weight: 700; font-size: 11px; color: #777;
+        }
+
+        /* 강조(출발/도착) */
+        .card.hl { background: linear-gradient(135deg, #E74C3C, #C0392B); border-color: #1A1A1A; }
+        .card.hl .txt { color: #fff; }
+        .card.hl .txt strong { color: #FFD700; }
+        .card.hl .time { background: #1A1A1A; color: #FFD700; }
+        /* 종료 */
+        .card.end { background: #1A1A1A; }
+        .card.end .time { background: #E74C3C; color: #fff; }
+        .card.end .txt { color: #FFD700; font-family: 'Black Han Sans', sans-serif; font-size: 18px; letter-spacing: 2px; }
+
+        /* 미정 전체 안내(빈 날) */
+        .empty {
+            text-align: center; padding: 40px 18px; background: #fff;
+            border: 3px dashed #9AA0A6; box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
+        }
+        .empty .big-emoji { font-size: 46px; display: block; margin-bottom: 10px; opacity: .6; }
+        .empty .e-title { font-family: 'Black Han Sans', sans-serif; font-size: 17px; }
+        .empty .e-sub { font-family: 'Gaegu', cursive; font-weight: 700; font-size: 13px; color: #777; margin-top: 6px; line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+    <!-- 상단 바 -->
+    <div class="topbar">
+        <a href="index.html" class="back-btn">◁</a>
+        <div class="title-bar"><span class="small">SCENARIO</span>일정표</div>
+    </div>
+
+    <!-- 헤더 -->
+    <div class="header">
+        <div class="en">FUKUOKA · 3N 4D</div>
+        <div class="big">후쿠오카 3박 4일</div>
+        <div class="period">2026.08.09(일) ~ 08.12(수) · 4명</div>
+    </div>
+
+    <!-- 날짜 탭 -->
+    <nav class="date-tabs">
+        <button class="date-tab active" onclick="switchDay('day1', this)">
+            <span class="num">9</span><span class="wd">일</span>
+        </button>
+        <button class="date-tab" onclick="switchDay('day2', this)">
+            <span class="num">10</span><span class="wd">월</span>
+        </button>
+        <button class="date-tab holiday" onclick="switchDay('day3', this)">
+            <span class="num">11</span><span class="wd">화</span><span class="holi-mark">산의날</span>
+        </button>
+        <button class="date-tab" onclick="switchDay('day4', this)">
+            <span class="num">12</span><span class="wd">수</span>
+        </button>
+    </nav>
+
+    <main class="schedule-content">
+
+        <!-- ============ DAY 1 · 8/9(일) ============ -->
+        <div class="day-panel active" id="day1">
+            <div class="day-heading">
+                <div class="d-en">DAY 01</div>
+                <div class="d-date">8월 9일 <span class="d-wd">일요일</span></div>
+                <div class="d-title">✈️ 후쿠오카 도착 · 텐진</div>
+            </div>
+
+            <div class="timeline">
+                <div class="t-item"><div class="card hl">
+                    <div class="time">05:00</div>
+                    <div class="txt"><strong>인천 제1터미널 집결</strong>
+                        <span class="detail">셀프수속 04:00부터 가능</span></div>
+                </div></div>
+
+                <div class="t-flow"><span class="flow-txt">🛂 출국수속 · 면세쇼핑
+                    <span class="flow-place">이삭토스트 소스 구매 필수!</span></span></div>
+
+                <div class="t-item"><div class="card hl">
+                    <div class="time range">06:30<br>~08:00</div>
+                    <div class="txt"><strong>인천 → 후쿠오카</strong>
+                        <span class="detail">제주항공 7C1401 · 도착 후 입국수속</span></div>
+                </div></div>
+
+                <div class="t-flow"><span class="flow-txt">🏧 ATM 엔화 출금 (1만엔) → 텐진 이동</span></div>
+
+                <div class="t-item"><div class="card">
+                    <div class="time">09:00</div>
+                    <div class="txt">🚉 <strong>텐진(天神) 도착</strong>
+                        <span class="detail">텐진역 코인로커에 짐 보관 (체크인 전까지)</span></div>
+                </div></div>
+
+                <div class="t-flow"><span class="flow-txt">🗺️ 텐진 활동 <span class="tbd">미정</span></span></div>
+
+                <div class="t-item"><div class="card">
+                    <div class="time">점심</div>
+                    <div class="txt">🍽️ 텐진에서 점심
+                        <span class="detail">장소 <span class="tbd">미정</span></span></div>
+                </div></div>
+
+                <div class="t-flow"><span class="flow-txt">🌤️ 오후 활동 <span class="tbd">미정</span></span></div>
+
+                <div class="t-flow"><span class="flow-txt">🧳 코인로커 짐 회수 → 숙소 이동</span></div>
+
+                <div class="t-item"><div class="card hl">
+                    <div class="time">16:00</div>
+                    <div class="txt"><strong>숙소 체크인</strong>
+                        <span class="detail">키요카와 가쿄 · 무인 셀프 체크인</span></div>
+                </div></div>
+
+                <div class="t-item"><div class="card">
+                    <div class="time">저녁</div>
+                    <div class="txt">🍽️ 저녁 식사
+                        <span class="detail">장소 <span class="tbd">미정</span></span></div>
+                </div></div>
+
+                <div class="t-flow"><span class="flow-txt">🍶 이자카야</span></div>
+            </div>
+        </div>
+
+        <!-- ============ DAY 2 · 8/10(월) ============ -->
+        <div class="day-panel" id="day2">
+            <div class="day-heading">
+                <div class="d-en">DAY 02</div>
+                <div class="d-date">8월 10일 <span class="d-wd">월요일</span></div>
+                <div class="d-title">🚌 유후인 버스투어 + 나카스</div>
+            </div>
+
+            <div class="warn">
+                <span class="w-ico">⚠️</span>
+                <div>
+                    <div class="w-title">투어 아직 미예약</div>
+                    <div class="w-text">라쿠투어 <b>유후인 버스투어 미예약 상태</b>.
+                        <b>우천 시 화요일(8/11)로 변경 또는 취소</b> 검토 중 — 예약·날씨 확인 필요.</div>
+                </div>
+            </div>
+
+            <div class="timeline">
+                <div class="t-item"><div class="card hl">
+                    <div class="time">06:30</div>
+                    <div class="txt"><strong>숙소 출발</strong> → 버스 탑승
+                        <span class="detail">버스 15~20분</span></div>
+                </div></div>
+
+                <div class="t-item"><div class="card">
+                    <div class="time">06:50</div>
+                    <div class="txt">🏪 하카타역 도착 · 아침
+                        <span class="detail">로손 (오리엔탈호텔 후쿠오카점)</span></div>
+                </div></div>
+
+                <div class="t-item"><div class="card">
+                    <div class="time">07:30</div>
+                    <div class="txt">🚩 로손 앞 미팅 <strong>(라쿠투어 깃발)</strong>
+                        <span class="warn-inline">07:50 정시 출발</span></div>
+                </div></div>
+
+                <div class="t-flow"><span class="flow-txt">⛩️ <strong>다자이후 텐만구</strong> (太宰府天満宮) · 1시간</span></div>
+                <div class="travel">🚌 버스 이동</div>
+                <div class="t-flow"><span class="flow-txt">🏞️ <strong>유후인</strong> (由布院) · 자유 중식 · 3시간
+                    <span class="flow-place">긴린코 호수 · 플로랄 빌리지</span></span></div>
+                <div class="travel">🚌 버스 이동</div>
+                <div class="t-flow"><span class="flow-txt">⛰️ 유후타케 (由布岳) · 20~30분</span></div>
+                <div class="travel">🚌 버스 이동</div>
+                <div class="t-flow"><span class="flow-txt">♨️ <strong>벳부 가마도지옥</strong> (別府かまど地獄) · 40분</span></div>
+
+                <div class="t-item"><div class="card hl">
+                    <div class="time range">18:30<br>~19:00</div>
+                    <div class="txt"><strong>하카타역 치쿠시구치 하차</strong></div>
+                </div></div>
+
+                <div class="t-flow"><span class="flow-txt">🚶 나카스카와바타 이동</span></div>
+
+                <div class="t-item"><div class="card">
+                    <div class="time">19:00</div>
+                    <div class="txt">🍽️ <strong>나카스(中洲) 저녁 식사</strong></div>
+                </div></div>
+
+                <div class="t-item"><div class="card">
+                    <div class="time">20:00</div>
+                    <div class="txt">🏮 나카스 거리
+                        <span class="detail">포장마차(야타이) 거리 · 나카스 강</span></div>
+                </div></div>
+
+                <div class="t-item"><div class="card">
+                    <div class="time">22:00</div>
+                    <div class="txt">🛒 <strong>돈키호테 나카스점</strong> 쇼핑
+                        <span class="detail">투어 포함 돈키호테 쿠폰 사용</span></div>
+                </div></div>
+
+                <div class="t-item"><div class="card">
+                    <div class="time">00:00</div>
+                    <div class="txt">🍜 <strong>이치란 본사 총본점</strong> 심야 라멘</div>
+                </div></div>
+
+                <div class="t-item"><div class="card hl">
+                    <div class="time">01:00</div>
+                    <div class="txt"><strong>숙소 복귀</strong></div>
+                </div></div>
+            </div>
+
+            <div class="warn" style="margin-top:18px;">
+                <span class="w-ico">🎫</span>
+                <div>
+                    <div class="w-title">투어 포함 / 불포함</div>
+                    <div class="w-text"><b>포함</b>: 한국인 가이드, 차량 제반비용, 돈키호테 쿠폰, 벳부 입장권<br>
+                        <b>불포함</b>: 개인비용, 개인보험, 중식</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ DAY 3 · 8/11(화) 산의 날 ============ -->
+        <div class="day-panel" id="day3">
+            <div class="day-heading">
+                <div class="d-en">DAY 03</div>
+                <div class="d-date">8월 11일 <span class="d-wd">화요일</span></div>
+                <div class="d-title">🗓️ 일정 미정</div>
+                <span class="holiday-badge">🏔️ 산의 날 (일본 공휴일)</span>
+            </div>
+
+            <div class="warn">
+                <span class="w-ico">🏔️</span>
+                <div>
+                    <div class="w-title">산의 날 · 공휴일 혼잡 주의</div>
+                    <div class="w-text"><b>8/11은 일본 공휴일(산의 날)</b> — 관광지·교통 혼잡 가능.
+                        유후인 투어가 우천으로 <b>화요일로 밀리면 2일차와 교체</b>됨.</div>
+                </div>
+            </div>
+
+            <div class="empty">
+                <span class="big-emoji">📝</span>
+                <div class="e-title">전부 미정</div>
+                <div class="e-sub">투어가 화요일로 밀리면 2일차 일정과 교체.<br>그 외 활동은 추후 결정.</div>
+            </div>
+        </div>
+
+        <!-- ============ DAY 4 · 8/12(수) ============ -->
+        <div class="day-panel" id="day4">
+            <div class="day-heading">
+                <div class="d-en">DAY 04</div>
+                <div class="d-date">8월 12일 <span class="d-wd">수요일</span></div>
+                <div class="d-title">🛫 후쿠오카 → 인천</div>
+            </div>
+
+            <div class="warn">
+                <span class="w-ico">🏮</span>
+                <div>
+                    <div class="w-title">오봉 귀성 러시 시작</div>
+                    <div class="w-text">8/13~16 오봉(お盆) 귀성 러시가 <b>오늘부터 시작</b> —
+                        공항·지하철 혼잡 가능. 여유 있게 움직이기.</div>
+                </div>
+            </div>
+
+            <div class="timeline">
+                <div class="t-item"><div class="card hl">
+                    <div class="time">~10:00</div>
+                    <div class="txt"><strong>체크아웃</strong>
+                        <span class="detail">레이트 체크아웃·짐보관 불가</span></div>
+                </div></div>
+
+                <div class="t-flow"><span class="flow-txt">🧳 하카타역 짐 보관 (코인로커)</span></div>
+
+                <div class="t-flow"><span class="flow-txt">🌅 오전 · 점심 · 오후 <span class="tbd">전부 미정</span></span></div>
+
+                <div class="t-item"><div class="card">
+                    <div class="time range">15:00<br>~15:15</div>
+                    <div class="txt">🧳 짐 회수 → 공항 이동
+                        <span class="detail">지하철 약 5분</span></div>
+                </div></div>
+
+                <div class="t-item"><div class="card">
+                    <div class="time">15:45</div>
+                    <div class="txt">🛂 공항 도착 · 체크인 · 출국수속</div>
+                </div></div>
+
+                <div class="t-item"><div class="card hl">
+                    <div class="time range">17:45<br>~19:15</div>
+                    <div class="txt"><strong>후쿠오카 → 인천</strong>
+                        <span class="detail">제주항공 7C1406</span></div>
+                </div></div>
+
+                <div class="t-item"><div class="card end">
+                    <div class="time">19:15</div>
+                    <div class="txt">여행 끝! 🎉</div>
+                </div></div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // 날짜 탭 전환
+        function switchDay(dayId, btnEl) {
+            document.querySelectorAll('.date-tab').forEach(function(t){ t.classList.remove('active'); });
+            document.querySelectorAll('.day-panel').forEach(function(p){ p.classList.remove('active'); });
+            btnEl.classList.add('active');
+            document.getElementById(dayId).classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' }); // 위로 스크롤
+        }
+    </script>
+
+</body>
+</html>

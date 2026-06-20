@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>예산 · 호구는 못말려 💴</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💴</text></svg>">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Black+Han+Sans&family=Jua&family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            min-height: 100vh; max-width: 420px; margin: 0 auto;
+            background: #A8E6B0;
+            font-family: 'Jua', sans-serif; color: #1A1A1A;
+            position: relative; box-shadow: 0 0 40px rgba(0,0,0,0.4); padding-bottom: 40px;
+        }
+        body::before {
+            content: ''; position: fixed; inset: 0; max-width: 420px; margin: 0 auto;
+            background-image: radial-gradient(circle, rgba(0,0,0,0.10) 1.5px, transparent 2px);
+            background-size: 13px 13px; opacity: 0.4; pointer-events: none; z-index: 0;
+        }
+
+        .topbar { display: flex; align-items: center; gap: 10px; padding: 12px; position: sticky; top: 0; z-index: 10; background: #A8E6B0; border-bottom: 4px solid #1A1A1A; }
+        .back-btn { background: #1A1A1A; color: #FFD700; border: 3px solid #1A1A1A; box-shadow: 3px 3px 0 rgba(0,0,0,0.35); text-decoration: none; font-family: 'Black Han Sans', sans-serif; font-size: 15px; padding: 8px 12px; line-height: 1; transition: transform .12s, box-shadow .12s; }
+        .back-btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 rgba(0,0,0,0.35); }
+        .title-bar { flex: 1; background: linear-gradient(180deg, #E74C3C 0%, #C0392B 100%); color: #FFD700; padding: 9px 12px; border: 3px solid #1A1A1A; box-shadow: 4px 4px 0 #1A1A1A; text-align: center; font-family: 'Black Han Sans', sans-serif; font-size: 18px; letter-spacing: 2px; text-shadow: 2px 2px 0 #1A1A1A; }
+        .title-bar .small { display: block; font-family: 'Bangers', cursive; font-size: 10px; letter-spacing: 3px; color: #fff; text-shadow: 1px 1px 0 #1A1A1A; }
+
+        /* 메인 합계 카드 */
+        .main { margin: 14px 14px 0; background: #1A1A1A; color: #fff; border: 4px solid #1A1A1A; box-shadow: 5px 5px 0 rgba(0,0,0,0.3); padding: 20px; text-align: center; position: relative; z-index: 2; overflow: hidden; }
+        .main .lbl { font-family: 'Bangers', cursive; font-size: 12px; letter-spacing: 3px; color: #FFD700; }
+        .main .t { font-family: 'Jua', sans-serif; font-size: 14px; margin-top: 2px; }
+        .main .amt { font-family: 'Black Han Sans', sans-serif; font-size: 40px; line-height: 1.1; margin-top: 8px; text-shadow: 3px 3px 0 #E74C3C; }
+        .main .amt .won { font-size: 22px; color: #FFD700; }
+        .main .note { font-family: 'Gaegu', cursive; font-weight: 700; font-size: 12px; margin-top: 6px; opacity: .85; }
+        .main .rate { display:inline-block; margin-top:8px; background:#FFE066; color:#1A1A1A; font-family:'Gaegu',cursive; font-weight:700; font-size:11px; padding:2px 10px; }
+
+        /* 섹션 제목 */
+        .sec-title { font-family: 'Black Han Sans', sans-serif; font-size: 17px; padding: 22px 16px 10px; display: flex; align-items: center; gap: 8px; position: relative; z-index: 2; }
+        .sec-title .bar { width: 7px; height: 19px; background: #E74C3C; border: 2px solid #1A1A1A; }
+        .sec-title .en { margin-left: auto; font-family: 'Bangers', cursive; font-size: 11px; letter-spacing: 2px; opacity: .55; }
+
+        /* 항목 리스트 */
+        .list { margin: 0 14px; background: #fff; border: 4px solid #1A1A1A; box-shadow: 5px 5px 0 #1A1A1A; overflow: hidden; position: relative; z-index: 2; }
+        .item { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 2px dashed #1A1A1A; }
+        .item:last-child { border-bottom: none; }
+        .item .i-ico { font-size: 20px; width: 26px; text-align: center; flex-shrink: 0; }
+        .item .i-body { flex: 1; min-width: 0; }
+        .item .i-name { font-family: 'Black Han Sans', sans-serif; font-size: 14px; }
+        .item .i-detail { font-family: 'Gaegu', cursive; font-weight: 700; font-size: 11px; color: #666; margin-top: 1px; }
+        .item .i-amt { font-family: 'Black Han Sans', sans-serif; font-size: 15px; text-align: right; white-space: nowrap; flex-shrink: 0; }
+        .item.sum { background: #FFF6D6; border-top: 3px solid #1A1A1A; }
+        .item.sum .i-name { font-size: 15px; }
+        .item.sum .i-amt { font-size: 17px; color: #C0392B; }
+        .chk { display: inline-block; background: #82E0AA; border: 2px solid #1A1A1A; font-family: 'Gaegu', cursive; font-weight: 700; font-size: 9px; padding: 1px 6px; margin-left: 4px; }
+        .approx { font-family:'Gaegu',cursive; font-weight:700; font-size:11px; color:#777; }
+
+        /* 모임통장 */
+        .bank { margin: 0 14px; background: #fff; border: 4px solid #1A1A1A; box-shadow: 5px 5px 0 #1A1A1A; padding: 16px; position: relative; z-index: 2; }
+        .bank .b-name { font-family: 'Black Han Sans', sans-serif; font-size: 15px; }
+        .bank .b-sub { font-family: 'Gaegu', cursive; font-weight: 700; font-size: 12px; color: #555; margin-top: 2px; }
+        .bank .b-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 2px dashed #1A1A1A; font-family: 'Jua', sans-serif; font-size: 14px; }
+        .bank .b-row:first-of-type { margin-top: 10px; }
+        .bank .b-row .v { font-family: 'Black Han Sans', sans-serif; }
+        .bank .b-row .per { font-family: 'Gaegu', cursive; font-weight: 700; font-size: 11px; color: #777; }
+        .bank .b-row.pending .v { color: #C0392B; }
+
+        /* 잔액 경고 */
+        .balance { margin: 14px 14px 0; background: linear-gradient(135deg, #E74C3C, #C0392B); color: #fff; border: 4px solid #1A1A1A; box-shadow: 5px 5px 0 #1A1A1A; padding: 16px 18px; position: relative; z-index: 2; }
+        .balance .row { display: flex; justify-content: space-between; align-items: center; }
+        .balance .lbl { font-family: 'Black Han Sans', sans-serif; font-size: 15px; }
+        .balance .v { font-family: 'Black Han Sans', sans-serif; font-size: 24px; text-shadow: 2px 2px 0 #1A1A1A; }
+        .balance .warn { font-family: 'Gaegu', cursive; font-weight: 700; font-size: 13px; margin-top: 8px; background: rgba(0,0,0,.25); padding: 7px 10px; line-height: 1.45; }
+    </style>
+</head>
+<body>
+
+    <div class="topbar">
+        <a href="index.html" class="back-btn">◁</a>
+        <div class="title-bar"><span class="small">BUDGET</span>예산</div>
+    </div>
+
+    <!-- 메인 합계 -->
+    <div class="main">
+        <div class="lbl">FUKUOKA · COMMON FUND</div>
+        <div class="t">공동경비 합계 (4인)</div>
+        <div class="amt">3,199,888<span class="won">원</span></div>
+        <div class="note">사전지불 + 여행 중 공동지출</div>
+        <span class="rate">환율 100엔 = 950원</span>
+    </div>
+
+    <!-- 사전(완료) -->
+    <h2 class="sec-title"><span class="bar"></span> 사전 (결제완료) <span class="en">PREPAID</span></h2>
+    <div class="list">
+        <div class="item">
+            <span class="i-ico">✈️</span>
+            <div class="i-body"><div class="i-name">항공권 4인 <span class="chk">✓완료</span></div>
+                <div class="i-detail">제주항공 왕복 · 발권수수료 포함</div></div>
+            <div class="i-amt">1,021,200원</div>
+        </div>
+        <div class="item">
+            <span class="i-ico">🏨</span>
+            <div class="i-body"><div class="i-name">Airbnb 3박 <span class="chk">✓완료</span></div>
+                <div class="i-detail">키요카와 가쿄</div></div>
+            <div class="i-amt">550,288원</div>
+        </div>
+        <div class="item">
+            <span class="i-ico">🔄</span>
+            <div class="i-body"><div class="i-name">제주 항공권 취소 수수료 <span class="chk">✓완료</span></div></div>
+            <div class="i-amt">16,000원</div>
+        </div>
+        <div class="item sum">
+            <span class="i-ico">🧾</span>
+            <div class="i-body"><div class="i-name">소계</div></div>
+            <div class="i-amt">1,587,488원</div>
+        </div>
+    </div>
+
+    <!-- 여행 전 -->
+    <h2 class="sec-title"><span class="bar"></span> 여행 전 (예정) <span class="en">BEFORE</span></h2>
+    <div class="list">
+        <div class="item">
+            <span class="i-ico">🛡️</span>
+            <div class="i-body"><div class="i-name">해외여행보험</div>
+                <div class="i-detail">KB 고급형</div></div>
+            <div class="i-amt"><span class="approx">약</span> 40,000원</div>
+        </div>
+        <div class="item">
+            <span class="i-ico">📶</span>
+            <div class="i-body"><div class="i-name">eSIM 4인</div>
+                <div class="i-detail">유심스토어 KDDI 5G 무제한</div></div>
+            <div class="i-amt"><span class="approx">약</span> 40,000원</div>
+        </div>
+        <div class="item">
+            <span class="i-ico">🚌</span>
+            <div class="i-body"><div class="i-name">유후인 버스투어 4인</div>
+                <div class="i-detail">라쿠투어</div></div>
+            <div class="i-amt">211,600원</div>
+        </div>
+        <div class="item sum">
+            <span class="i-ico">🧾</span>
+            <div class="i-body"><div class="i-name">소계</div></div>
+            <div class="i-amt">약 291,600원</div>
+        </div>
+    </div>
+
+    <!-- 여행 중 -->
+    <h2 class="sec-title"><span class="bar"></span> 여행 중 (예상) <span class="en">DURING</span></h2>
+    <div class="list">
+        <div class="item">
+            <span class="i-ico">🚇</span>
+            <div class="i-body"><div class="i-name">교통비 4인</div></div>
+            <div class="i-amt"><span class="approx">약</span> 140,000원</div>
+        </div>
+        <div class="item">
+            <span class="i-ico">🔐</span>
+            <div class="i-body"><div class="i-name">코인로커</div>
+                <div class="i-detail">대형 4칸 × 2회 = 6,400엔</div></div>
+            <div class="i-amt"><span class="approx">약</span> 60,800원</div>
+        </div>
+        <div class="item">
+            <span class="i-ico">🍜</span>
+            <div class="i-body"><div class="i-name">식비 4인 × 4일</div>
+                <div class="i-detail">1인 1일 7만원</div></div>
+            <div class="i-amt"><span class="approx">약</span> 1,120,000원</div>
+        </div>
+        <div class="item sum">
+            <span class="i-ico">🧾</span>
+            <div class="i-body"><div class="i-name">소계</div></div>
+            <div class="i-amt">약 1,320,800원</div>
+        </div>
+    </div>
+
+    <!-- 모임통장 -->
+    <h2 class="sec-title"><span class="bar"></span> 모임통장 <span class="en">FUND</span></h2>
+    <div class="bank">
+        <div class="b-name">🏦 토스뱅크 모임통장</div>
+        <div class="b-sub">"방구 응가가 한창 좋을 나이"</div>
+        <div class="b-row">
+            <span>🎯 목표</span>
+            <span><span class="v">3,200,000원</span> <span class="per">인당 80만</span></span>
+        </div>
+        <div class="b-row">
+            <span>✅ 1차 입금</span>
+            <span><span class="v">2,000,000원</span> <span class="per">인당 50만</span></span>
+        </div>
+        <div class="b-row pending">
+            <span>⏳ 2차 예정</span>
+            <span><span class="v">1,200,000원</span> <span class="per">인당 30만</span></span>
+        </div>
+    </div>
+
+    <!-- 잔액 -->
+    <div class="balance">
+        <div class="row">
+            <span class="lbl">💰 목표 대비 잔액</span>
+            <span class="v">112원</span>
+        </div>
+        <div class="warn">⚠️ 목표 320만원 − 공동경비 3,199,888원 = <b>약 100원</b>.
+            사실상 0, <b>예비비 없음</b>. 식비를 7만→6만으로 낮추거나 예비비 신설 검토 필요.</div>
+    </div>
+
+</body>
+</html>

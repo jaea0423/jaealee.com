@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>공사중 🚧</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚧</text></svg>">
+    <title>호구는 못말려 🎬</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Black+Han+Sans&family=Jua&family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
         /* ===== 기본 리셋 ===== */
@@ -21,147 +21,344 @@
 
         html, body {
             width: 100%;
-            height: 100vh;       /* 화면 전체 높이 고정 */
-            overflow: hidden;    /* 스크롤 방지 */
-        }
-
-        body {
-            font-family: 'Black Han Sans', sans-serif;
-            background: #FFD93D;    /* 공사장 노랑 */
-            position: relative;
-            max-width: 420px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.2);
+            height: 100vh;
             overflow: hidden;
         }
 
-        /* ===== 위/아래 공사장 줄무늬 (노랑+검정 사선) ===== */
-        body::before,
-        body::after {
+        body {
+            background: #1A1A1A;
+            position: relative;
+            max-width: 420px;
+            margin: 0 auto;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.4);
+            font-family: 'Jua', sans-serif;
+        }
+
+        /* ============================================
+           플립 카드 (3D 뒤집기 컨테이너)
+           ============================================ */
+        .flip-scene {
+            width: 100%;
+            height: 100vh;
+            perspective: 1500px;
+            position: relative;
+            /* 카드를 화면 중앙에 배치 (좌우 여백 자동 생성) */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .flip-card {
+            position: relative;
+            /* 포스터(510x720) 비율 박스 — 좌우 여백을 살짝 둠 */
+            width: 86%;
+            max-width: 360px;
+            aspect-ratio: 510 / 720;
+            max-height: 92vh;
+            transform-style: preserve-3d;
+            transition: transform 0.9s cubic-bezier(0.4, 0.0, 0.2, 1);
+            cursor: pointer;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+        }
+
+        .flip-card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .flip-face {
+            position: absolute;
+            inset: 0;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+
+        .flip-back {
+            transform: rotateY(180deg);
+        }
+
+        /* ============================================
+           앞면: 영화 포스터
+           ============================================ */
+        .poster-img {
+            width: 100%;
+            height: 100%;
+            /* 박스가 포스터 비율과 같아 cover로 빈틈 없이 채움 */
+            object-fit: cover;
+            display: block;
+            background: #1A1A1A;
+        }
+
+        /* ============================================
+           뒷면: 만화 페이지 (메뉴)
+           ============================================ */
+        .flip-back {
+            background:
+                radial-gradient(circle at center, #FFE066 0%, #F4B942 60%, #E68A20 100%);
+            padding: 14px 12px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 액션 라인 (방사선 패턴 - 만화 효과) */
+        .flip-back::before {
             content: '';
             position: absolute;
-            left: 0;
-            right: 0;
-            height: 48px;
-            background: repeating-linear-gradient(
-                45deg,
-                #FFD93D 0px,
-                #FFD93D 22px,
-                #1A1A1A 22px,
-                #1A1A1A 44px
+            inset: 0;
+            background-image: repeating-conic-gradient(
+                from 0deg at 50% 50%,
+                rgba(255, 255, 255, 0.18) 0deg 2deg,
+                transparent 2deg 8deg
             );
-            z-index: 1;
+            pointer-events: none;
+            z-index: 0;
         }
-        body::before { top: 0; }
-        body::after  { bottom: 0; }
 
-        /* ===== 공사중 팻말 (흰 보드) ===== */
-        .sign {
-            background: #fff;
-            border: 4px solid #1A1A1A;
-            padding: 32px 26px 28px;
-            margin: 0 26px;
+        /* 만화 점박이 (도트 패턴) */
+        .flip-back::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(
+                circle,
+                rgba(0, 0, 0, 0.18) 1.5px,
+                transparent 2px);
+            background-size: 12px 12px;
+            pointer-events: none;
+            opacity: 0.35;
+            z-index: 0;
+        }
+
+        /* ===== 영화 제목 띠 (상단) ===== */
+        .movie-title-bar {
+            background: linear-gradient(180deg, #E74C3C 0%, #C0392B 100%);
+            color: #FFD700;
+            padding: 10px 14px;
+            border: 3px solid #1A1A1A;
+            box-shadow:
+                4px 4px 0 #1A1A1A,
+                inset 0 0 20px rgba(0, 0, 0, 0.3);
             text-align: center;
-            box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.35);
-            transform: rotate(-2deg);
-            animation: wobble 4s ease-in-out infinite;
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 19px;
+            letter-spacing: 3px;
+            margin-bottom: 14px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 2px 2px 0 #1A1A1A;
+        }
+
+        .movie-title-bar .small {
+            font-family: 'Bangers', cursive;
+            font-size: 11px;
+            letter-spacing: 3px;
+            display: block;
+            color: #fff;
+            margin-bottom: 2px;
+            text-shadow: 1px 1px 0 #1A1A1A;
+        }
+
+        /* ===== 만화 컷 그리드 (2x3) ===== */
+        .comic-panels {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: repeat(3, 1fr);
+            gap: 10px;
+            flex: 1;
             position: relative;
             z-index: 2;
         }
 
-        /* 팻말 좌우로 살짝 흔들림 */
-        @keyframes wobble {
-            0%, 100% { transform: rotate(-2deg); }
-            50%      { transform: rotate(2deg); }
-        }
-
-        /* 팻말 위 빨간 테이프 */
-        .sign-tape {
-            position: absolute;
-            top: -10px;
-            left: 50%;
-            transform: translateX(-50%) rotate(-2deg);
-            background: #E74C3C;
-            color: #fff;
-            font-family: 'Black Han Sans', sans-serif;
-            font-size: 11px;
-            padding: 4px 16px;
-            letter-spacing: 3px;
-            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
-            white-space: nowrap;
-        }
-
-        /* 공사 이모지 (튀어오르는 애니메이션) */
-        .sign-icon {
-            font-size: 80px;
-            line-height: 1;
-            margin-bottom: 12px;
-            animation: bounce 2s ease-in-out infinite;
-            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50%      { transform: translateY(-10px); }
-        }
-
-        .sign-title {
-            font-family: 'Black Han Sans', sans-serif;
-            font-size: 46px;
+        /* 만화 패널 (각 메뉴 카드) */
+        .panel {
+            background: #fff;
+            border: 4px solid #1A1A1A;
+            box-shadow: 4px 4px 0 #1A1A1A;
+            text-decoration: none;
             color: #1A1A1A;
-            letter-spacing: 6px;
-            line-height: 1;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: transform 0.15s, box-shadow 0.15s;
+            padding: 8px 6px;
+        }
+
+        /* 누를 때 도장 찍히는 느낌 */
+        .panel:active {
+            transform: translate(3px, 3px);
+            box-shadow: 1px 1px 0 #1A1A1A;
+        }
+
+        /* 패널별 컬러 배경 */
+        .panel-1 { background: #FFE066; }
+        .panel-2 { background: #5DADE2; }
+        .panel-3 { background: #FF8FAB; }
+        .panel-4 { background: #FF6B5B; }
+        .panel-5 { background: #82E0AA; }
+        .panel-6 { background: #F8B739; }
+
+        /* 패널 내 액션 라인 (각 패널마다 각도 다르게) */
+        .panel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: repeating-conic-gradient(
+                from var(--angle, 0deg) at 50% 50%,
+                rgba(255, 255, 255, 0.35) 0deg 3deg,
+                transparent 3deg 12deg);
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .panel-1 { --angle: 0deg; }
+        .panel-2 { --angle: 30deg; }
+        .panel-3 { --angle: 60deg; }
+        .panel-4 { --angle: 90deg; }
+        .panel-5 { --angle: 120deg; }
+        .panel-6 { --angle: 150deg; }
+
+        .panel-icon {
+            font-size: 32px;
             margin-bottom: 4px;
+            line-height: 1;
+            position: relative;
+            z-index: 2;
+            filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.3));
         }
 
-        .sign-divider {
-            width: 50px;
-            height: 3px;
-            background: #1A1A1A;
-            margin: 14px auto 12px;
-        }
-
-        .sign-sub {
-            font-family: 'Gaegu', cursive;
-            font-weight: 700;
+        .panel-title {
+            font-family: 'Black Han Sans', sans-serif;
             font-size: 16px;
-            color: #555;
-            line-height: 1.6;
+            color: #1A1A1A;
+            letter-spacing: 1px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.6);
+            line-height: 1;
+            margin-bottom: 3px;
         }
 
-        .sign-sub .small {
+        .panel-en {
+            font-family: 'Bangers', cursive;
             font-size: 12px;
-            color: #888;
-            display: block;
-            margin-top: 8px;
+            color: #1A1A1A;
+            letter-spacing: 2px;
+            position: relative;
+            z-index: 2;
+            opacity: 0.75;
+            line-height: 1;
+        }
+
+        /* 패널 모서리 효과음 (BANG!, POW! 등) */
+        .sfx {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: #1A1A1A;
+            color: #FFD700;
+            font-family: 'Bangers', cursive;
+            font-size: 11px;
+            padding: 2px 7px;
+            border-radius: 4px;
+            letter-spacing: 1px;
+            z-index: 3;
+            box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3);
         }
     </style>
 </head>
 <body>
 
-    <!-- 공사중 팻말 -->
-    <div class="sign">
-        <!-- 위쪽 빨간 테이프 -->
-        <div class="sign-tape">UNDER CONSTRUCTION</div>
+    <!-- ============================================
+         플립 카드 컨테이너
+         ============================================ -->
+    <div class="flip-scene">
+        <div class="flip-card" id="flipCard">
 
-        <!-- 공사 이모지 -->
-        <div class="sign-icon">🚧</div>
+            <!-- ===== 앞면: 영화 포스터 ===== -->
+            <div class="flip-face flip-front">
+                <img src="poster.png" alt="호구는 못말려 - 온천! 부글부글 대작전" class="poster-img">
+            </div>
 
-        <!-- "공사중" 큰 글씨 -->
-        <div class="sign-title">공사중</div>
-        <div class="sign-divider"></div>
+            <!-- ===== 뒷면: 만화 페이지 메뉴 ===== -->
+            <div class="flip-face flip-back">
 
-        <!-- 설명 -->
-        <div class="sign-sub">
-            아직 준비 중이에요<br>
-            조금만 기다려주세요
-            <span class="small">- 작업자 -</span>
+                <!-- 영화 제목 띠 -->
+                <div class="movie-title-bar">
+                    <span class="small">EPISODE MENU</span>
+                    호구는 못말려
+                </div>
+
+                <!-- 만화 컷 6개 (메뉴) -->
+                <div class="comic-panels">
+
+                    <!-- 정보 (노랑) -->
+                    <a href="info.html" class="panel panel-1" onclick="event.stopPropagation()">
+                        <span class="sfx">TODAY!</span>
+                        <span class="panel-icon">🌤️</span>
+                        <div class="panel-title">정보</div>
+                        <div class="panel-en">DAILY INFO</div>
+                    </a>
+
+                    <!-- 일정표 (파랑) -->
+                    <a href="schedule.html" class="panel panel-2" onclick="event.stopPropagation()">
+                        <span class="sfx">BANG!</span>
+                        <span class="panel-icon">📅</span>
+                        <div class="panel-title">일정표</div>
+                        <div class="panel-en">SCENARIO</div>
+                    </a>
+
+                    <!-- 항공 (분홍) -->
+                    <a href="flight.html" class="panel panel-3" onclick="event.stopPropagation()">
+                        <span class="sfx">WHOOSH</span>
+                        <span class="panel-icon">✈️</span>
+                        <div class="panel-title">항공</div>
+                        <div class="panel-en">TAKE OFF</div>
+                    </a>
+
+                    <!-- 숙소 (빨강) -->
+                    <a href="stay.html" class="panel panel-4" onclick="event.stopPropagation()">
+                        <span class="sfx">ZZZ!</span>
+                        <span class="panel-icon">🏨</span>
+                        <div class="panel-title">숙소</div>
+                        <div class="panel-en">BASE CAMP</div>
+                    </a>
+
+                    <!-- 예산 (녹색) -->
+                    <a href="budget.html" class="panel panel-5" onclick="event.stopPropagation()">
+                        <span class="sfx">CASH!</span>
+                        <span class="panel-icon">💴</span>
+                        <div class="panel-title">예산</div>
+                        <div class="panel-en">BUDGET</div>
+                    </a>
+
+                    <!-- 준비물 (주황) -->
+                    <a href="checklist.html" class="panel panel-6" onclick="event.stopPropagation()">
+                        <span class="sfx">POW!</span>
+                        <span class="panel-icon">🎒</span>
+                        <div class="panel-title">준비물</div>
+                        <div class="panel-en">GEAR</div>
+                    </a>
+
+                </div>
+
+            </div>
+
         </div>
     </div>
+
+    <!-- ===== 플립 토글 스크립트 ===== -->
+    <script>
+        // 카드 전체 클릭 시 뒤집기 (메뉴 카드 클릭은 stopPropagation으로 제외됨)
+        document.getElementById('flipCard').addEventListener('click', function() {
+            this.classList.toggle('flipped');
+        });
+    </script>
 
 </body>
 </html>
