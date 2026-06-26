@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reading Archive</title>
+<!-- 폰트: 제목용 Noto Serif KR(문학적 느낌), 본문 Noto Sans KR, 날짜/메타 JetBrains Mono -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   색상 시스템 (CSS 변수)
+   - 오래된 종이 + 도서관 클로스(천)표지 초록 + 금박 포인트
+   ============================================================ */
+:root{
+  --paper:        #efe9dc;   /* 배경: 빛바랜 종이 */
+  --paper-2:      #f7f3ea;   /* 카드/패널 종이 */
+  --ink:          #211e1a;   /* 본문 잉크색 */
+  --ink-soft:     #5c554b;   /* 보조 텍스트 */
+  --line:         #d6cdb8;   /* 얇은 구분선 */
+  --spine:        #2f4a3e;   /* 책등(도서관 초록) - 주요 강조 */
+  --spine-dark:   #233a31;
+  --gold:         #9c7c3c;   /* 금박 포인트 (등록 도장 등) */
+  --danger:       #8a3b32;   /* 삭제 등 위험 동작 */
+  --shadow:       rgba(40,35,25,.18);
+  --radius:       4px;       /* 책처럼 각진 느낌 위해 작게 */
+}
+*{ box-sizing:border-box; margin:0; padding:0; }
+body{
+  font-family:'Noto Sans KR', sans-serif;
+  color:var(--ink);
+  background:var(--paper);
+  /* 종이 질감을 위한 아주 옅은 격자 무늬 */
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(120,105,80,.06) 1px, transparent 0);
+  background-size:22px 22px;
+  line-height:1.65;
+  min-height:100vh;
+}
+/* ---------- 상단 헤더 ---------- */
+header.site{
+  border-bottom:2px solid var(--ink);
+  background:var(--paper-2);
+}
+.site-inner{
+  max-width:1100px; margin:0 auto;
+  padding:28px 24px 22px;
+  display:flex; align-items:flex-end; justify-content:space-between;
+  flex-wrap:wrap; gap:16px;
+}
+.brand h1{
+  font-family:'Noto Serif KR', serif;
+  font-weight:700; font-size:2rem; letter-spacing:-.5px;
+}
+.brand .sub{
+  font-family:'JetBrains Mono', monospace;
+  font-size:.72rem; color:var(--ink-soft);
+  letter-spacing:.18em; text-transform:uppercase; margin-top:4px;
+}
+.brand .sub b{ color:var(--spine); }
+/* ---------- 버튼 공통 ---------- */
+.btn{
+  font-family:'Noto Sans KR', sans-serif;
+  font-weight:700; font-size:.9rem;
+  border:none; cursor:pointer; border-radius:var(--radius);
+  padding:11px 18px; transition:transform .12s ease, background .2s ease;
+}
+.btn:active{ transform:translateY(1px); }
+.btn-primary{ background:var(--spine); color:#f3eee2; }
+.btn-primary:hover{ background:var(--spine-dark); }
+.btn-ghost{
+  background:transparent; color:var(--ink);
+  border:1px solid var(--line);
+}
+.btn-ghost:hover{ background:#00000008; }
+.btn-danger{ background:var(--danger); color:#fff; }
+.btn-sm{ padding:7px 12px; font-size:.8rem; }
+/* ---------- 도구 모음 (검색/정렬) ---------- */
+.toolbar{
+  max-width:1100px; margin:22px auto 0; padding:0 24px;
+  display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+}
+.toolbar input[type=search], .toolbar select{
+  font-family:'Noto Sans KR', sans-serif; font-size:.88rem;
+  padding:9px 12px; border:1px solid var(--line);
+  border-radius:var(--radius); background:var(--paper-2); color:var(--ink);
+}
+.toolbar input[type=search]{ flex:1 1 220px; min-width:160px; }
+/* 정렬 토글 (둥근 알약형 세그먼트) */
+.sort-seg{
+  display:inline-flex; padding:3px; gap:2px;
+  border:1px solid var(--line); border-radius:999px; background:var(--paper-2);
+}
+.seg-btn{
+  font-family:'Noto Sans KR', sans-serif; font-size:.82rem; font-weight:700;
+  border:none; background:transparent; color:var(--ink-soft);
+  padding:7px 15px; border-radius:999px; cursor:pointer;
+  transition:background .15s ease, color .15s ease;
+}
+.seg-btn:hover{ color:var(--ink); }
+.seg-btn.active{ background:var(--spine); color:#f3eee2; }
+.count{
+  font-family:'JetBrains Mono', monospace; font-size:.78rem;
+  color:var(--ink-soft);
+}
+/* ---------- 책 카드 그리드 ---------- */
+main{ max-width:1100px; margin:0 auto; padding:24px; }
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(220px,1fr));
+  gap:22px;
+}
+.card{
+  background:var(--paper-2);
+  border:1px solid var(--line);
+  border-left:6px solid var(--spine);   /* 책등 느낌 */
+  border-radius:var(--radius);
+  overflow:hidden; cursor:pointer;
+  box-shadow:0 1px 0 var(--shadow);
+  transition:transform .15s ease, box-shadow .15s ease;
+  display:flex; flex-direction:column;
+}
+.card:hover{ transform:translateY(-4px); box-shadow:0 10px 22px var(--shadow); }
+.card .cover{
+  aspect-ratio:3/4; background:#e3dccb; overflow:hidden;
+  display:flex; align-items:center; justify-content:center;
+}
+.card .cover img{ width:100%; height:100%; object-fit:cover; display:block; }
+/* 표지가 없을 때 보여줄 대체 표지 */
+.cover-fallback{
+  width:100%; height:100%;
+  background:linear-gradient(160deg,var(--spine),var(--spine-dark));
+  color:#e9e2cf; padding:20px; display:flex; flex-direction:column;
+  justify-content:space-between; text-align:left;
+}
+.cover-fallback .ttl{
+  font-family:'Noto Serif KR', serif; font-weight:600; font-size:1.05rem;
+  line-height:1.4;
+}
+.cover-fallback .ath{ font-size:.78rem; opacity:.8; }
+.card .meta{ padding:13px 15px 15px; }
+.card .meta .t{
+  font-family:'Noto Serif KR', serif; font-weight:600; font-size:1.02rem;
+  line-height:1.35; margin-bottom:3px;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+.card .meta .a{ font-size:.82rem; color:var(--ink-soft); }
+.card .meta .d{
+  font-family:'JetBrains Mono', monospace; font-size:.7rem;
+  color:var(--ink-soft); margin-top:8px;
+}
+/* ---------- 빈 화면 안내 ---------- */
+.empty{
+  text-align:center; padding:70px 20px; color:var(--ink-soft);
+  border:1px dashed var(--line); border-radius:var(--radius);
+  background:var(--paper-2);
+}
+.empty h2{ font-family:'Noto Serif KR', serif; font-weight:600; margin-bottom:8px; color:var(--ink); }
+/* ---------- 모달 공통 ---------- */
+.overlay{
+  position:fixed; inset:0; background:rgba(30,26,20,.55);
+  display:none; align-items:flex-start; justify-content:center;
+  padding:40px 16px; overflow-y:auto; z-index:50;
+}
+.overlay.open{ display:flex; }
+.modal{
+  background:var(--paper-2); width:100%; max-width:640px;
+  border-radius:var(--radius); border:1px solid var(--line);
+  box-shadow:0 20px 50px rgba(0,0,0,.35); animation:rise .2s ease;
+}
+@keyframes rise{ from{ opacity:0; transform:translateY(12px);} to{opacity:1; transform:none;} }
+.modal-head{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:18px 22px; border-bottom:1px solid var(--line);
+}
+.modal-head h2{ font-family:'Noto Serif KR', serif; font-size:1.25rem; font-weight:600; }
+.close-x{
+  background:none; border:none; font-size:1.5rem; cursor:pointer;
+  color:var(--ink-soft); line-height:1; padding:4px 8px;
+}
+.modal-body{ padding:22px; }
+/* ---------- 입력 폼 ---------- */
+.field{ margin-bottom:16px; }
+.field label{
+  display:block; font-weight:700; font-size:.82rem; margin-bottom:6px;
+  letter-spacing:.02em;
+}
+.field label .en{
+  font-family:'JetBrains Mono', monospace; font-weight:400;
+  font-size:.72rem; color:var(--ink-soft); margin-left:6px;
+}
+.field input[type=text], .field input[type=date], .field textarea{
+  width:100%; font-family:'Noto Sans KR', sans-serif; font-size:.92rem;
+  padding:10px 12px; border:1px solid var(--line); border-radius:var(--radius);
+  background:var(--paper); color:var(--ink); resize:vertical;
+}
+.field textarea{ min-height:90px; line-height:1.6; }
+.row2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media(max-width:520px){ .row2{ grid-template-columns:1fr; } }
+/* 표지 업로드 영역 */
+.cover-upload{ display:flex; gap:16px; align-items:flex-start; }
+.cover-preview{
+  width:110px; height:147px; flex-shrink:0;
+  border:1px solid var(--line); border-radius:var(--radius);
+  background:#e3dccb; overflow:hidden; display:flex;
+  align-items:center; justify-content:center;
+  font-size:.72rem; color:var(--ink-soft); text-align:center;
+}
+.cover-preview img{ width:100%; height:100%; object-fit:cover; }
+.cover-upload .ctrl{ flex:1; }
+.hint{ font-size:.74rem; color:var(--ink-soft); margin-top:6px; line-height:1.5; }
+/* ---------- 별점 입력/표시 위젯 ---------- */
+/* 별 두 겹: 회색 바탕(bg) 위에 금색 채움(fill)을 너비로 덮어 0.5단위 표현 */
+.stars{ position:relative; display:inline-block; line-height:1; }
+.stars .layer{
+  display:block; font-family:Arial, sans-serif; letter-spacing:4px;
+  white-space:nowrap; font-size:1.9rem;
+}
+.stars .bg{ color:#d6cdb8; }
+.stars .fill{
+  position:absolute; top:0; left:0; width:0;
+  color:var(--gold); overflow:hidden;
+}
+.stars.sm .layer{ font-size:1.05rem; letter-spacing:2px; }  /* 카드·상세용 작은 별 */
+.star-input{ cursor:pointer; touch-action:none; user-select:none; }
+.star-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.star-row .val{
+  font-family:'JetBrains Mono', monospace; font-size:.9rem; color:var(--ink-soft);
+}
+.star-clear{
+  background:none; border:none; cursor:pointer; color:var(--ink-soft);
+  font-size:.78rem; text-decoration:underline; padding:0;
+}
+.card .meta .stars{ margin-top:6px; }
+.form-actions{
+  display:flex; gap:10px; justify-content:flex-end;
+  margin-top:6px; padding-top:16px; border-top:1px solid var(--line);
+}
+/* ---------- 상세 보기 ---------- */
+.detail-top{ display:flex; gap:22px; flex-wrap:wrap; }
+.detail-cover{
+  width:160px; aspect-ratio:3/4; flex-shrink:0;
+  border-radius:var(--radius); overflow:hidden; border:1px solid var(--line);
+  background:#e3dccb;
+}
+.detail-cover img{ width:100%; height:100%; object-fit:cover; }
+.detail-info{ flex:1; min-width:200px; }
+.detail-info .dt{
+  font-family:'Noto Serif KR', serif; font-size:1.5rem; font-weight:700;
+  line-height:1.3; margin-bottom:6px;
+}
+.detail-info dl{
+  display:grid; grid-template-columns:auto 1fr; gap:6px 14px;
+  margin-top:14px; font-size:.88rem;
+}
+.detail-info dt{ color:var(--ink-soft); font-weight:700; white-space:nowrap; }
+.detail-info dd{ color:var(--ink); }
+.detail-info dd.mono{ font-family:'JetBrains Mono', monospace; font-size:.82rem; }
+/* 등록일 도장 (시그니처 요소: 도서관 대출 도장 느낌) */
+.stamp{
+  display:inline-block; margin-top:14px;
+  font-family:'JetBrains Mono', monospace; font-weight:600;
+  font-size:.74rem; color:var(--gold); letter-spacing:.08em;
+  border:2px solid var(--gold); border-radius:6px;
+  padding:6px 12px; transform:rotate(-4deg); opacity:.9;
+}
+.stamp .lbl{ display:block; font-size:.6rem; letter-spacing:.2em; opacity:.85; }
+.detail-section{ margin-top:24px; }
+.detail-section h3{
+  font-family:'Noto Serif KR', serif; font-size:1.05rem; font-weight:600;
+  color:var(--spine); margin-bottom:8px;
+  padding-bottom:6px; border-bottom:1px solid var(--line);
+}
+.detail-section p{ white-space:pre-wrap; font-size:.92rem; }
+.detail-actions{
+  display:flex; gap:10px; justify-content:flex-end;
+  margin-top:26px; padding-top:16px; border-top:1px solid var(--line);
+}
+/* 화면 낮은 데스크탑/모바일 대응 */
+@media(max-width:600px){
+  .brand h1{ font-size:1.6rem; }
+  .site-inner{ padding:22px 18px; }
+}
+/* 접근성: 키보드 포커스 표시 */
+:focus-visible{ outline:2px solid var(--spine); outline-offset:2px; }
+/* 모션 최소화 설정 존중 */
+@media (prefers-reduced-motion: reduce){
+  *{ animation:none !important; transition:none !important; }
+}
+</style>
+</head>
+<body>
+<!-- 헤더 -->
+<header class="site">
+  <div class="site-inner">
+    <div class="brand">
+      <h1>Reading Archive</h1>
+      <div class="sub">ARCHIVED · <b id="bookCount">0</b>&nbsp;books</div>
+    </div>
+    <button class="btn btn-primary" id="addBtn">＋ 책 추가</button>
+  </div>
+</header>
+<!-- 검색 / 정렬 도구 -->
+<div class="toolbar">
+  <input type="search" id="searchInput" placeholder="제목·저자·출판사 검색">
+  <div class="sort-seg" id="sortSeg" role="group" aria-label="정렬 기준">
+    <button class="seg-btn active" data-sort="reg_desc">등록순</button>
+    <button class="seg-btn" data-sort="rating_desc">별점순</button>
+    <button class="seg-btn" data-sort="title_asc">제목순</button>
+  </div>
+</div>
+<!-- 책 카드 목록 -->
+<main>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="emptyState" style="display:none;">
+    <h2>아직 기록한 책이 없습니다</h2>
+    <p>오른쪽 위 ‘책 추가’ 버튼으로 첫 번째 책을 등록해 보세요.</p>
+  </div>
+</main>
+<!-- ===== 입력/수정 폼 모달 ===== -->
+<div class="overlay" id="formOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="formTitle">책 추가</h2>
+      <button class="close-x" data-close-form aria-label="닫기">×</button>
+    </div>
+    <div class="modal-body">
+      <!-- 표지 업로드 -->
+      <div class="field">
+        <label>책 표지 <span class="en">cover image</span></label>
+        <div class="cover-upload">
+          <div class="cover-preview" id="coverPreview">표지 없음</div>
+          <div class="ctrl">
+            <input type="file" id="coverInput" accept="image/*" hidden>
+            <button type="button" class="btn btn-ghost btn-sm" id="pickCoverBtn">이미지 선택</button>
+            <button type="button" class="btn btn-ghost btn-sm" id="removeCoverBtn" style="display:none;">제거</button>
+            <p class="hint">표지를 넣지 않으면 제목으로 표지가 자동 생성됩니다.<br>이미지는 저장 공간 절약을 위해 자동으로 작게 압축됩니다.</p>
+          </div>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>제목 <span class="en">title</span></label>
+          <input type="text" id="fTitle" placeholder="책 제목">
+        </div>
+        <div class="field">
+          <label>저자 <span class="en">author</span></label>
+          <input type="text" id="fAuthor" placeholder="지은이">
+        </div>
+      </div>
+      <div class="field">
+        <label>출판사 <span class="en">publisher</span></label>
+        <input type="text" id="fPublisher" placeholder="출판사">
+      </div>
+      <div class="field">
+        <label>평점 <span class="en">rating</span></label>
+        <div class="star-row">
+          <div class="stars star-input" id="starInput">
+            <div class="layer bg">★★★★★</div>
+            <div class="layer fill" id="starInputFill">★★★★★</div>
+          </div>
+          <span class="val" id="starInputVal">미평가</span>
+          <button type="button" class="star-clear" id="starClearBtn">지우기</button>
+        </div>
+        <p class="hint">별 위에서 좌우로 드래그하거나 클릭해 0.5점 단위로 선택합니다.</p>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>읽기 시작 <span class="en">start date</span></label>
+          <input type="date" id="fStart">
+        </div>
+        <div class="field">
+          <label>다 읽음 <span class="en">end date</span></label>
+          <input type="date" id="fEnd">
+        </div>
+      </div>
+      <div class="field">
+        <label>이 책을 고른 계기 <span class="en">motivation</span></label>
+        <textarea id="fReason" placeholder="이 책을 읽기로 한 이유나 추천받은 경로 등"></textarea>
+      </div>
+      <div class="field">
+        <label>줄거리 <span class="en">plot / summary</span></label>
+        <textarea id="fPlot" placeholder="책의 내용 요약"></textarea>
+      </div>
+      <div class="field">
+        <label>독후감 <span class="en">review</span></label>
+        <textarea id="fReview" placeholder="읽고 난 생각과 느낌"></textarea>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-ghost" data-close-form>취소</button>
+        <button class="btn btn-primary" id="saveBtn">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ===== 상세 보기 모달 ===== -->
+<div class="overlay" id="detailOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>기록</h2>
+      <button class="close-x" data-close-detail aria-label="닫기">×</button>
+    </div>
+    <div class="modal-body" id="detailBody"><!-- JS로 채움 --></div>
+  </div>
+</div>
+<script>
+/* ============================================================
+   데이터 저장소
+   - localStorage 사용: 브라우저에 책 목록을 JSON으로 보관
+   - 같은 브라우저에서는 새로고침/재방문해도 유지됨
+   - 주의: 브라우저 데이터를 지우면 기록도 함께 사라짐
+   ============================================================ */
+const STORE_KEY = 'reading_journal_books_v1';
+// 저장된 책 목록 불러오기 (없으면 빈 배열)
+function loadBooks(){
+  try{
+    return JSON.parse(localStorage.getItem(STORE_KEY)) || [];
+  }catch(e){
+    return []; // 데이터가 깨졌을 때 안전하게 빈 목록 반환
+  }
+}
+// 책 목록 저장하기
+function saveBooks(list){
+  localStorage.setItem(STORE_KEY, JSON.stringify(list));
+}
+let books = loadBooks();   // 메모리에 올려둔 현재 목록
+let editingId = null;      // 수정 중인 책 id (null이면 새로 추가)
+let pendingCover = '';     // 폼에서 선택한 표지 이미지(base64)
+let currentRating = 0;     // 폼에서 선택한 별점 (0~5, 0.5단위, 0이면 미평가)
+let currentSort = 'reg_desc';   // 현재 정렬 기준 (등록순/별점순/제목순)
+/* ============================================================
+   화면 그리기 (목록)
+   ============================================================ */
+const grid = document.getElementById('grid');
+const emptyState = document.getElementById('emptyState');
+const bookCount = document.getElementById('bookCount');
+function render(){
+  const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+  const sort = currentSort;
+  // 1) 검색어로 거르기
+  let list = books.filter(b=>{
+    if(!keyword) return true;
+    return (b.title + b.author + b.publisher).toLowerCase().includes(keyword);
+  });
+  // 2) 정렬
+  list.sort((a,b)=>{
+    if(sort === 'rating_desc') return (b.rating||0) - (a.rating||0);   // 별점 높은순
+    if(sort === 'title_asc')   return a.title.localeCompare(b.title, 'ko'); // 제목 가나다순
+    return b.registeredAt - a.registeredAt;                            // 기본: 등록 최신순
+  });
+  bookCount.textContent = books.length;
+  // 3) 비어있으면 안내 화면
+  if(list.length === 0){
+    grid.innerHTML = '';
+    emptyState.style.display = 'block';
+    // 검색 결과가 없을 때와 아예 없을 때 문구 구분
+    emptyState.querySelector('h2').textContent =
+      books.length === 0 ? '아직 기록한 책이 없습니다' : '검색 결과가 없습니다';
+    emptyState.querySelector('p').textContent =
+      books.length === 0 ? '오른쪽 위 ‘책 추가’ 버튼으로 첫 번째 책을 등록해 보세요.'
+                         : '다른 검색어로 찾아보세요.';
+    return;
+  }
+  emptyState.style.display = 'none';
+  // 4) 카드 그리기
+  grid.innerHTML = list.map(b=>`
+    <div class="card" data-id="${b.id}">
+      <div class="cover">
+        ${ b.cover
+            ? `<img src="${b.cover}" alt="${escapeHtml(b.title)} 표지">`
+            : `<div class="cover-fallback">
+                 <div class="ttl">${escapeHtml(b.title)}</div>
+                 <div class="ath">${escapeHtml(b.author||'')}</div>
+               </div>` }
+      </div>
+      <div class="meta">
+        <div class="t">${escapeHtml(b.title)}</div>
+        <div class="a">${escapeHtml(b.author||'저자 미상')}</div>
+        ${ b.rating ? `<div class="stars sm">${starMarkup(b.rating)}</div>` : '' }
+        <div class="d">${ b.endDate ? '~ '+b.endDate : '읽는 중' }</div>
+      </div>
+    </div>
+  `).join('');
+  // 카드 클릭 → 상세 보기
+  grid.querySelectorAll('.card').forEach(el=>{
+    el.addEventListener('click', ()=> openDetail(el.dataset.id));
+  });
+}
+// HTML 특수문자 처리 (안전하게 출력)
+function escapeHtml(str){
+  return (str||'').replace(/[&<>"']/g, c=>(
+    {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
+  ));
+}
+// 별점 마크업 생성 (회색 바탕 위에 금색 별을 너비로 덮어 0.5단위 표현)
+function starMarkup(rating){
+  const pct = (Math.max(0, Math.min(5, rating)) / 5) * 100;
+  return `<span class="layer bg">★★★★★</span>`
+       + `<span class="layer fill" style="width:${pct}%">★★★★★</span>`;
+}
+/* ============================================================
+   폼 (추가 / 수정)
+   ============================================================ */
+const formOverlay = document.getElementById('formOverlay');
+const coverPreview = document.getElementById('coverPreview');
+const removeCoverBtn = document.getElementById('removeCoverBtn');
+// 폼 열기
+function openForm(book){
+  editingId = book ? book.id : null;
+  pendingCover = book ? (book.cover||'') : '';
+  currentRating = book ? (book.rating||0) : 0;
+  document.getElementById('formTitle').textContent = book ? '책 수정' : '책 추가';
+  // 값 채우기 (수정이면 기존 값, 추가면 빈 값)
+  document.getElementById('fTitle').value     = book ? book.title : '';
+  document.getElementById('fAuthor').value    = book ? book.author : '';
+  document.getElementById('fPublisher').value = book ? book.publisher : '';
+  document.getElementById('fStart').value     = book ? (book.startDate||'') : '';
+  document.getElementById('fEnd').value       = book ? (book.endDate||'') : '';
+  // 달력 선택 제한 동기화 (종료일은 시작일 이후, 시작일은 종료일 이전만)
+  document.getElementById('fEnd').min   = book ? (book.startDate||'') : '';
+  document.getElementById('fStart').max = book ? (book.endDate||'') : '';
+  document.getElementById('fReason').value    = book ? (book.reason||'') : '';
+  document.getElementById('fPlot').value      = book ? (book.plot||'') : '';
+  document.getElementById('fReview').value    = book ? (book.review||'') : '';
+  updateCoverPreview();
+  updateStarInput();
+  formOverlay.classList.add('open');
+  document.getElementById('fTitle').focus();
+}
+// 표지 미리보기 갱신
+function updateCoverPreview(){
+  if(pendingCover){
+    coverPreview.innerHTML = `<img src="${pendingCover}" alt="표지 미리보기">`;
+    removeCoverBtn.style.display = 'inline-block';
+  }else{
+    coverPreview.textContent = '표지 없음';
+    removeCoverBtn.style.display = 'none';
+  }
+}
+// 폼 닫기
+function closeForm(){ formOverlay.classList.remove('open'); }
+// 저장 버튼
+document.getElementById('saveBtn').addEventListener('click', ()=>{
+  const title = document.getElementById('fTitle').value.trim();
+  // 최소 검증: 제목은 필수
+  if(!title){
+    alert('제목을 입력해 주세요.');
+    document.getElementById('fTitle').focus();
+    return;
+  }
+  // 읽은 기간 검증: 종료일이 시작일보다 앞설 수 없음
+  const startDate = document.getElementById('fStart').value;
+  const endDate   = document.getElementById('fEnd').value;
+  if(startDate && endDate && endDate < startDate){
+    alert('읽은 기간이 올바르지 않습니다.\n종료일이 시작일보다 빠를 수 없습니다.');
+    return;
+  }
+  const data = {
+    title,
+    author:    document.getElementById('fAuthor').value.trim(),
+    publisher: document.getElementById('fPublisher').value.trim(),
+    startDate: startDate,
+    endDate:   endDate,
+    reason:    document.getElementById('fReason').value.trim(),
+    plot:      document.getElementById('fPlot').value.trim(),
+    review:    document.getElementById('fReview').value.trim(),
+    cover:     pendingCover,
+    rating:    currentRating
+  };
+  if(editingId){
+    // 수정: 기존 항목 찾아서 값 갱신 (등록일은 유지)
+    const idx = books.findIndex(b=>b.id === editingId);
+    books[idx] = { ...books[idx], ...data };
+  }else{
+    // 추가: 새 항목 생성 (등록일 = 지금)
+    data.id = 'b_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+    data.registeredAt = Date.now();
+    books.push(data);
+  }
+  saveBooks(books);
+  closeForm();
+  render();
+});
+/* ----- 표지 이미지 선택 + 자동 압축 ----- */
+document.getElementById('pickCoverBtn').addEventListener('click', ()=>{
+  document.getElementById('coverInput').click();
+});
+document.getElementById('removeCoverBtn').addEventListener('click', ()=>{
+  pendingCover = '';
+  document.getElementById('coverInput').value = '';
+  updateCoverPreview();
+});
+document.getElementById('coverInput').addEventListener('change', e=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  resizeImage(file, 500, dataUrl=>{   // 가로 최대 500px로 줄여 저장 용량 절약
+    pendingCover = dataUrl;
+    updateCoverPreview();
+  });
+});
+// 이미지를 캔버스로 다시 그려 작게 압축 (localStorage 용량 한계 대응)
+function resizeImage(file, maxWidth, callback){
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const scale = Math.min(1, maxWidth / img.width); // 원본이 작으면 그대로
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      // JPEG 품질 0.8로 압축
+      callback(canvas.toDataURL('image/jpeg', 0.8));
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+/* ----- 별점 입력 위젯 (드래그/클릭, 0.5단위) ----- */
+const starInput = document.getElementById('starInput');
+const starInputFill = document.getElementById('starInputFill');
+const starInputVal = document.getElementById('starInputVal');
+let starDragging = false;
+// 포인터의 가로 위치 → 0.5단위 별점 값(0.5~5)
+function ratingFromPointer(e){
+  const rect = starInput.getBoundingClientRect();
+  const x = (e.clientX ?? rect.left) - rect.left;
+  let val = Math.ceil((x / rect.width) * 10) / 2;  // 0.5 단위로 올림
+  return Math.min(5, Math.max(0.5, val));
+}
+// 채움 너비만 갱신(미리보기에 사용)
+function paintStarInput(val){ starInputFill.style.width = (val / 5) * 100 + '%'; }
+// 확정값으로 위젯 표시 갱신
+function updateStarInput(){
+  paintStarInput(currentRating);
+  starInputVal.textContent = currentRating ? currentRating.toFixed(1) + ' / 5.0' : '미평가';
+}
+// 포인터 이벤트로 마우스·터치 통합 처리
+starInput.addEventListener('pointerdown', e=>{
+  starDragging = true;
+  starInput.setPointerCapture(e.pointerId);   // 영역 밖으로 나가도 드래그 유지
+  currentRating = ratingFromPointer(e);
+  updateStarInput();
+});
+starInput.addEventListener('pointermove', e=>{
+  if(starDragging){                  // 드래그 중: 값 확정 갱신
+    currentRating = ratingFromPointer(e);
+    updateStarInput();
+  }else{                             // 단순 호버: 미리보기만 표시
+    paintStarInput(ratingFromPointer(e));
+  }
+});
+starInput.addEventListener('pointerup', ()=>{ starDragging = false; });
+// 호버 미리보기 후 영역을 벗어나면 확정값으로 되돌림
+starInput.addEventListener('pointerleave', ()=>{ if(!starDragging) updateStarInput(); });
+// 지우기: 미평가(0)로 초기화
+document.getElementById('starClearBtn').addEventListener('click', ()=>{
+  currentRating = 0;
+  updateStarInput();
+});
+/* ============================================================
+   상세 보기
+   ============================================================ */
+const detailOverlay = document.getElementById('detailOverlay');
+const detailBody = document.getElementById('detailBody');
+function openDetail(id){
+  const b = books.find(x=>x.id === id);
+  if(!b) return;
+  // 읽은 기간 문자열 만들기
+  let period = '기록 없음';
+  if(b.startDate && b.endDate)      period = `${b.startDate} ~ ${b.endDate}`;
+  else if(b.startDate)              period = `${b.startDate} ~ (읽는 중)`;
+  else if(b.endDate)                period = `~ ${b.endDate}`;
+  // 등록일 사람이 읽기 좋은 형식으로
+  const reg = new Date(b.registeredAt);
+  const regStr = `${reg.getFullYear()}.${pad(reg.getMonth()+1)}.${pad(reg.getDate())}`;
+  detailBody.innerHTML = `
+    <div class="detail-top">
+      <div class="detail-cover">
+        ${ b.cover
+            ? `<img src="${b.cover}" alt="표지">`
+            : `<div class="cover-fallback" style="border-radius:0;">
+                 <div class="ttl">${escapeHtml(b.title)}</div>
+                 <div class="ath">${escapeHtml(b.author||'')}</div>
+               </div>` }
+      </div>
+      <div class="detail-info">
+        <div class="dt">${escapeHtml(b.title)}</div>
+        <dl>
+          <dt>저자</dt><dd>${escapeHtml(b.author||'—')}</dd>
+          <dt>출판사</dt><dd>${escapeHtml(b.publisher||'—')}</dd>
+          <dt>평점</dt><dd>${ b.rating
+              ? `<span class="stars sm">${starMarkup(b.rating)}</span> <span style="font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--ink-soft);margin-left:4px;">${b.rating.toFixed(1)} / 5.0</span>`
+              : '—' }</dd>
+          <dt>읽은 기간</dt><dd class="mono">${period}</dd>
+        </dl>
+        <div class="stamp">
+          <span class="lbl">REGISTERED</span>${regStr}
+        </div>
+      </div>
+    </div>
+    ${ section('이 책을 고른 계기', b.reason) }
+    ${ section('줄거리', b.plot) }
+    ${ section('독후감', b.review) }
+    <div class="detail-actions">
+      <button class="btn btn-danger" id="deleteBtn">삭제</button>
+      <button class="btn btn-ghost" id="editBtn">수정</button>
+      <button class="btn btn-primary" data-close-detail>닫기</button>
+    </div>
+  `;
+  // 내용이 있을 때만 섹션 출력
+  function section(title, text){
+    if(!text) return '';
+    return `<div class="detail-section">
+              <h3>${title}</h3><p>${escapeHtml(text)}</p>
+            </div>`;
+  }
+  // 수정 버튼 → 상세 닫고 폼 열기
+  detailBody.querySelector('#editBtn').addEventListener('click', ()=>{
+    closeDetail();
+    openForm(b);
+  });
+  // 삭제 버튼 → 확인 후 삭제
+  detailBody.querySelector('#deleteBtn').addEventListener('click', ()=>{
+    if(confirm(`'${b.title}' 기록을 삭제할까요? 되돌릴 수 없습니다.`)){
+      books = books.filter(x=>x.id !== id);
+      saveBooks(books);
+      closeDetail();
+      render();
+    }
+  });
+  detailOverlay.classList.add('open');
+}
+function closeDetail(){ detailOverlay.classList.remove('open'); }
+function pad(n){ return String(n).padStart(2,'0'); }
+/* ============================================================
+   이벤트 연결
+   ============================================================ */
+document.getElementById('addBtn').addEventListener('click', ()=> openForm(null));
+document.getElementById('searchInput').addEventListener('input', render);
+// 정렬 토글: 클릭한 버튼을 활성화하고 다시 그림
+document.getElementById('sortSeg').addEventListener('click', e=>{
+  const btn = e.target.closest('.seg-btn');
+  if(!btn) return;
+  currentSort = btn.dataset.sort;
+  document.querySelectorAll('#sortSeg .seg-btn').forEach(b=> b.classList.toggle('active', b === btn));
+  render();
+});
+// 읽은 기간: 한쪽을 고르면 다른 쪽 달력 범위를 제한
+document.getElementById('fStart').addEventListener('change', e=>{
+  document.getElementById('fEnd').min = e.target.value;
+});
+document.getElementById('fEnd').addEventListener('change', e=>{
+  document.getElementById('fStart').max = e.target.value;
+});
+// 닫기 버튼들 / 바깥 클릭 / ESC
+document.querySelectorAll('[data-close-form]').forEach(b=> b.addEventListener('click', closeForm));
+document.querySelectorAll('[data-close-detail]').forEach(b=> b.addEventListener('click', closeDetail));
+formOverlay.addEventListener('click', e=>{ if(e.target === formOverlay) closeForm(); });
+detailOverlay.addEventListener('click', e=>{ if(e.target === detailOverlay) closeDetail(); });
+document.addEventListener('keydown', e=>{
+  if(e.key === 'Escape'){ closeForm(); closeDetail(); }
+});
+// 첫 화면 그리기
+render();
+</script>
+</body>
+</html>
