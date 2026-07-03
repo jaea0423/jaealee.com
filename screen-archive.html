@@ -60,7 +60,7 @@ header.site::after{
   opacity:.5;
 }
 .site-inner{
-  max-width:1120px; margin:0 auto; padding:26px 24px 22px;
+  max-width:none; margin:0 auto; padding:26px 24px 22px;
   display:flex; align-items:flex-end; justify-content:space-between;
   flex-wrap:wrap; gap:16px;
 }
@@ -92,7 +92,7 @@ header.site::after{
 
 /* ---------- 도구 모음 (검색/필터/정렬) ---------- */
 .toolbar{
-  max-width:1120px; margin:22px auto 0; padding:0 24px;
+  max-width:none; margin:22px auto 0; padding:0 24px;
   display:flex; gap:10px; align-items:center; flex-wrap:wrap;
 }
 .toolbar input[type=search], .toolbar select{
@@ -119,11 +119,15 @@ header.site::after{
 .count{ font-family:'JetBrains Mono', monospace; font-size:.78rem; color:var(--ink-soft); }
 
 /* ---------- 포스터 카드 그리드 ---------- */
-main{ max-width:1120px; margin:0 auto; padding:24px; }
+main{ max-width:none; margin:0 auto; padding:24px; }
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fill, minmax(200px,1fr));
   gap:22px;
+}
+/* 모바일: 한 줄에 3개 고정 */
+@media(max-width:600px){
+  .grid{ grid-template-columns:repeat(3, 1fr); gap:12px; }
 }
 .card{
   background:var(--panel);
@@ -239,6 +243,19 @@ main{ max-width:1120px; margin:0 auto; padding:24px; }
 }
 .field input::placeholder, .field textarea::placeholder{ color:var(--ink-soft); }
 .field textarea{ min-height:90px; line-height:1.6; overflow:hidden; resize:none; }
+/* '관람 시기 알 수 없음' 체크박스: 다크 테마용 커스텀 (기본은 빈 네모, 체크 시 금색) */
+#fDateUnknown{
+  appearance:none; -webkit-appearance:none;
+  width:16px; height:16px; flex-shrink:0;
+  border:1px solid var(--line); border-radius:3px;
+  background:var(--bg); cursor:pointer; position:relative;
+}
+#fDateUnknown:checked{ background:var(--gold); border-color:var(--gold); }
+#fDateUnknown:checked::after{
+  content:''; position:absolute; left:5px; top:2px;
+  width:3px; height:7px; border:solid #231c0c; border-width:0 2px 2px 0;
+  transform:rotate(45deg);
+}
 .field input[type=date]{ color-scheme:dark; }
 .row2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
 .row3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
@@ -410,6 +427,7 @@ header.site, .toolbar, main{ position:relative; z-index:2; }
     <button class="seg-btn active" data-sort="watch_desc">관람순</button>
     <button class="seg-btn" data-sort="rating_desc">별점순</button>
     <button class="seg-btn" data-sort="title_asc">제목순</button>
+    <button class="seg-btn" data-sort="reg_desc">등록순</button>
   </div>
 </div>
 
@@ -522,7 +540,7 @@ header.site, .toolbar, main{ position:relative; z-index:2; }
       </div>
       <div class="field" style="margin-top:-6px">
         <label style="display:flex;align-items:center;gap:8px;font-weight:500;cursor:pointer">
-          <input type="checkbox" id="fDateUnknown" style="width:auto;accent-color:var(--gold)">
+          <input type="checkbox" id="fDateUnknown">
           관람 시기 알 수 없음 <span class="en" style="margin-left:0">기억 안 날 때</span>
         </label>
       </div>
@@ -659,6 +677,7 @@ function render(){
   list.sort((a,b)=>{
     if(currentSort === 'rating_desc') return (b.rating||0) - (a.rating||0);   // 별점 높은순
     if(currentSort === 'title_asc')   return a.title.localeCompare(b.title, 'ko'); // 제목 가나다순
+    if(currentSort === 'reg_desc')    return new Date(b.registeredAt) - new Date(a.registeredAt); // 등록 최신순
     return watchKey(b).localeCompare(watchKey(a)); // 기본: 관람순(완료일 최신, 미상은 개봉연도 말일)
   });
 
@@ -1051,7 +1070,7 @@ function openDetail(id){
       <h3>${title} <span class="spoiler-badge">스포일러</span></h3>
       <div class="spoiler" data-spoiler>
         <p class="spoiler-text">${escapeHtml(text)}</p>
-        <span class="spoiler-hint">🙈 눌러서 스포일러 보기</span>
+        <span class="spoiler-hint">눌러서 보기</span>
       </div>
     </div>`;
   }
