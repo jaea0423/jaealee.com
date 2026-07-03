@@ -46,6 +46,7 @@ create table if not exists public.screen_items (
   rating        numeric(2,1) default 0,               -- 별점 0.0 ~ 5.0
   start_date    date,                                 -- 관람 시작
   end_date      date,                                 -- 관람 완료
+  date_unknown  boolean not null default false,       -- 관람 시기 모름(기억 안 날 때)
   reason        text,                                 -- 관람 계기
   synopsis      text,                                 -- 시놉시스
   plot          text,                                 -- 줄거리
@@ -78,5 +79,11 @@ create policy "own rows - screen"
 -- ------------------------------------------------------------
 create index if not exists idx_reading_user_reg on public.reading_books (user_id, registered_at desc);
 create index if not exists idx_screen_user_reg  on public.screen_items  (user_id, registered_at desc);
+
+-- ------------------------------------------------------------
+-- (추후 추가된 컬럼) 이미 screen_items 테이블을 만든 상태라면
+-- 아래 한 줄만 SQL Editor에 붙여넣고 Run 하세요:
+-- ------------------------------------------------------------
+alter table public.screen_items add column if not exists date_unknown boolean not null default false;
 
 -- 끝. 실행 후 왼쪽 Table Editor 에서 두 테이블이 보이면 성공.

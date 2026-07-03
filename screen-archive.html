@@ -139,9 +139,9 @@ main{ max-width:1120px; margin:0 auto; padding:24px; }
   box-shadow:0 14px 30px rgba(0,0,0,.6), 0 0 26px rgba(224,180,85,.16);
   border-color:var(--gold-dark);
 }
-/* 포스터: 영화 포스터 표준 비율 2:3 (27x40) */
+/* 포스터: 국내 극장 포스터 표준 비율 1:1.414 (A/B전지 계열, 가로/세로 ≈ 0.70) */
 .card .poster{
-  aspect-ratio:2/3;
+  aspect-ratio:1/1.414;
   background:#0c0a07; overflow:hidden;
   display:flex; align-items:center; justify-content:center;
   position:relative;
@@ -238,7 +238,7 @@ main{ max-width:1120px; margin:0 auto; padding:24px; }
   background:var(--bg); color:var(--ink); resize:vertical;
 }
 .field input::placeholder, .field textarea::placeholder{ color:var(--ink-soft); }
-.field textarea{ min-height:90px; line-height:1.6; }
+.field textarea{ min-height:90px; line-height:1.6; overflow:hidden; resize:none; }
 .field input[type=date]{ color-scheme:dark; }
 .row2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
 .row3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
@@ -258,7 +258,7 @@ main{ max-width:1120px; margin:0 auto; padding:24px; }
 /* 포스터 업로드 영역 */
 .cover-upload{ display:flex; gap:16px; align-items:flex-start; }
 .cover-preview{
-  width:120px; aspect-ratio:2/3; flex-shrink:0;
+  width:120px; aspect-ratio:1/1.414; flex-shrink:0;
   border:1px solid var(--line); border-radius:var(--radius);
   background:#0c0a07; overflow:hidden;
   display:flex; align-items:center; justify-content:center;
@@ -272,7 +272,7 @@ main{ max-width:1120px; margin:0 auto; padding:24px; }
 .stars{ position:relative; display:inline-block; line-height:1; }
 .stars .layer{ display:block; font-family:Arial, sans-serif; letter-spacing:4px; white-space:nowrap; font-size:1.9rem; }
 .stars .bg{ color:#4a4234; }
-.stars .fill{ position:absolute; top:0; left:0; width:0; color:var(--gold); overflow:hidden; text-shadow:0 0 8px rgba(224,180,85,.5); }
+.stars .fill{ position:absolute; top:0; left:0; width:0; color:var(--gold); overflow:hidden; }
 .stars.sm .layer{ font-size:1.05rem; letter-spacing:2px; }
 .star-input{ cursor:pointer; touch-action:none; user-select:none; }
 .star-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
@@ -284,7 +284,7 @@ main{ max-width:1120px; margin:0 auto; padding:24px; }
 /* ---------- 상세 보기 ---------- */
 .detail-top{ display:flex; gap:22px; flex-wrap:wrap; }
 .detail-cover{
-  width:170px; aspect-ratio:2/3; flex-shrink:0;
+  width:170px; aspect-ratio:1/1.414; flex-shrink:0;
   border-radius:var(--radius); overflow:hidden; border:1px solid var(--line); background:#0c0a07;
 }
 .detail-cover img{ width:100%; height:100%; object-fit:cover; }
@@ -314,6 +314,23 @@ main{ max-width:1120px; margin:0 auto; padding:24px; }
   color:var(--gold); margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid var(--line);
 }
 .detail-section p{ white-space:pre-wrap; font-size:.92rem; }
+
+/* 줄거리 스포일러 가리기: 기본은 블러, 클릭하면 해제 */
+.spoiler{ position:relative; cursor:pointer; border:1px dashed var(--line); border-radius:var(--radius); padding:10px 12px; overflow:hidden; }
+.spoiler .spoiler-text{ filter:blur(7px); transition:filter .25s ease; user-select:none; white-space:pre-wrap; font-size:.92rem; }
+.spoiler .spoiler-hint{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:6px;
+  font-size:.85rem; font-weight:700; color:var(--gold); letter-spacing:.02em; pointer-events:none;
+}
+.spoiler.revealed{ cursor:default; border-color:transparent; }
+.spoiler.revealed .spoiler-text{ filter:none; user-select:text; }
+.spoiler.revealed .spoiler-hint{ display:none; }
+.spoiler-badge{
+  font-family:'JetBrains Mono',monospace; font-size:.6rem; font-weight:600; letter-spacing:.1em;
+  color:var(--danger); border:1px solid var(--danger); border-radius:3px; padding:1px 5px;
+  vertical-align:middle; margin-left:6px;
+}
+
 .detail-actions{ display:flex; gap:10px; justify-content:flex-end; margin-top:26px; padding-top:16px; border-top:1px solid var(--line); }
 
 @media(max-width:600px){
@@ -390,7 +407,7 @@ header.site, .toolbar, main{ position:relative; z-index:2; }
     <button class="seg-btn" data-filter="etc">기타</button>
   </div>
   <div class="seg" id="sortSeg" role="group" aria-label="정렬 기준">
-    <button class="seg-btn active" data-sort="reg_desc">등록순</button>
+    <button class="seg-btn active" data-sort="watch_desc">관람순</button>
     <button class="seg-btn" data-sort="rating_desc">별점순</button>
     <button class="seg-btn" data-sort="title_asc">제목순</button>
   </div>
@@ -433,7 +450,7 @@ header.site, .toolbar, main{ position:relative; z-index:2; }
             <input type="file" id="coverInput" accept="image/*" hidden>
             <button type="button" class="btn btn-ghost btn-sm" id="pickCoverBtn">이미지 선택</button>
             <button type="button" class="btn btn-ghost btn-sm" id="removeCoverBtn" style="display:none;">제거</button>
-            <p class="hint">영화 포스터 비율(2:3)에 맞춰 표시됩니다.<br>포스터를 넣지 않으면 제목으로 자동 생성됩니다.<br>이미지는 저장 공간 절약을 위해 자동으로 작게 압축됩니다.</p>
+            <p class="hint">국내 극장 포스터 비율(약 1:1.41)에 맞춰 표시됩니다.<br>포스터를 넣지 않으면 제목으로 자동 생성됩니다.<br>이미지는 저장 공간 절약을 위해 자동으로 작게 압축됩니다.</p>
           </div>
         </div>
       </div>
@@ -460,12 +477,12 @@ header.site, .toolbar, main{ position:relative; z-index:2; }
           <input type="text" id="fGenre" placeholder="예: 스릴러">
         </div>
         <div class="field">
-          <label>제작연도 <span class="en">year</span></label>
+          <label>개봉연도 <span class="en">release</span></label>
           <input type="number" id="fYear" placeholder="예: 2024" min="1888" max="2100">
         </div>
         <div class="field">
           <label>국가 <span class="en">country</span></label>
-          <input type="text" id="fCountry" placeholder="예: 한국">
+          <input type="text" id="fCountry" name="screen_country_free" placeholder="예: 한국" autocomplete="off" lang="ko" inputmode="text">
         </div>
       </div>
 
@@ -502,6 +519,12 @@ header.site, .toolbar, main{ position:relative; z-index:2; }
           <label>관람 완료 <span class="en">end date</span></label>
           <input type="date" id="fEnd">
         </div>
+      </div>
+      <div class="field" style="margin-top:-6px">
+        <label style="display:flex;align-items:center;gap:8px;font-weight:500;cursor:pointer">
+          <input type="checkbox" id="fDateUnknown" style="width:auto;accent-color:var(--gold)">
+          관람 시기 알 수 없음 <span class="en" style="margin-left:0">기억 안 날 때</span>
+        </label>
       </div>
 
       <div class="field">
@@ -585,7 +608,7 @@ function fromRow(r){
     id:r.id, registeredAt:r.registered_at, type:r.type||'movie', title:r.title,
     director:r.director||'', cast:r.cast||'', genre:r.genre||'', year:r.year||'',
     country:r.country||'', runtime:r.runtime||'', platform:r.platform||'',
-    rating:Number(r.rating)||0, startDate:r.start_date||'', endDate:r.end_date||'',
+    rating:Number(r.rating)||0, startDate:r.start_date||'', endDate:r.end_date||'', dateUnknown:!!r.date_unknown,
     reason:r.reason||'', synopsis:r.synopsis||'', plot:r.plot||'', review:r.review||'', cover:r.cover||''
   };
 }
@@ -595,7 +618,7 @@ function toRow(d){
   return {
     type:d.type||'movie', title:d.title, director:n(d.director), cast:n(d.cast),
     genre:n(d.genre), year:n(d.year), country:n(d.country), runtime:n(d.runtime),
-    platform:n(d.platform), rating:d.rating||0, start_date:n(d.startDate), end_date:n(d.endDate),
+    platform:n(d.platform), rating:d.rating||0, start_date:n(d.startDate), end_date:n(d.endDate), date_unknown:!!d.dateUnknown,
     reason:n(d.reason), synopsis:n(d.synopsis), plot:n(d.plot), review:n(d.review), cover:n(d.cover)
   };
 }
@@ -611,7 +634,7 @@ let editingId = null;         // 수정 중인 항목 id (null이면 새로 추�
 let pendingCover = '';        // 폼에서 선택한 포스터 이미지(base64)
 let currentRating = 0;        // 폼에서 선택한 별점 (0~5, 0.5단위, 0이면 미평가)
 let currentType = 'movie';    // 폼에서 선택한 유형 (movie/drama/etc)
-let currentSort = 'reg_desc'; // 현재 정렬 기준
+let currentSort = 'watch_desc'; // 현재 정렬 기준 (관람 완료일 기준)
 let currentFilter = 'all';    // 현재 유형 필터 (all/movie/drama/etc)
 
 /* ============================================================
@@ -636,7 +659,7 @@ function render(){
   list.sort((a,b)=>{
     if(currentSort === 'rating_desc') return (b.rating||0) - (a.rating||0);   // 별점 높은순
     if(currentSort === 'title_asc')   return a.title.localeCompare(b.title, 'ko'); // 제목 가나다순
-    return new Date(b.registeredAt) - new Date(a.registeredAt); // 기본: 등록 최신순
+    return watchKey(b).localeCompare(watchKey(a)); // 기본: 관람순(완료일 최신, 미상은 개봉연도 말일)
   });
 
   itemCount.textContent = items.length;
@@ -674,7 +697,7 @@ function render(){
         <div class="t">${escapeHtml(it.title)}</div>
         <div class="a">${escapeHtml(it.director||'감독 미상')}${ it.year ? ' · '+it.year : '' }</div>
         ${ it.rating ? `<div class="stars sm">${starMarkup(it.rating)}</div>` : '' }
-        <div class="d">${ it.endDate ? '~ '+it.endDate : '보는 중' }</div>
+        <div class="d">${ it.dateUnknown ? '관람 시기 미상' : (it.endDate ? '~ '+it.endDate : '보는 중') }</div>
       </div>
     </div>`;
   }).join('');
@@ -697,6 +720,19 @@ function typeMeta(type){
   if(type === 'drama') return { cls:'drama', label:'Series', ko:'드라마', runtime:'화수·시즌' };
   if(type === 'etc')   return { cls:'etc',   label:'Etc',    ko:'기타',   runtime:'분량' };
   return                      { cls:'movie', label:'Movie',  ko:'영화',   runtime:'러닝타임' };
+}
+
+// 관람순 정렬용 키:
+//  - 시기 미상: 개봉연도 말일(12/31) 기준 (개봉연도 없으면 맨 아래)
+//  - 완료일 있음: 그 완료일 기준
+//  - 완료일 없음(= 보는 중): 맨 위(가장 최신)
+function watchKey(it){
+  if(it.dateUnknown){                                   // 시기 미상 → 개봉연도 말일
+    const m = String(it.year||'').match(/\d{4}/);
+    return m ? m[0] + '-12-31' : '0000-01-01';
+  }
+  if(it.endDate) return it.endDate;                     // 관람 완료일
+  return '9999-12-31';                                  // 보는 중(완료일 없음) → 맨 위
 }
 
 // 별점 마크업 (회색 바탕 위에 금색 별을 너비로 덮어 0.5단위 표현)
@@ -736,6 +772,9 @@ function openForm(item){
   // 달력 선택 제한 동기화 (완료일은 시작일 이후, 시작일은 완료일 이전만)
   document.getElementById('fEnd').min   = item ? (item.startDate||'') : '';
   document.getElementById('fStart').max = item ? (item.endDate||'') : '';
+  // 관람 시기 '알 수 없음' 체크 상태 반영
+  document.getElementById('fDateUnknown').checked = item ? !!item.dateUnknown : false;
+  applyDateUnknown();
   document.getElementById('fReason').value   = item ? (item.reason||'') : '';
   document.getElementById('fSynopsis').value = item ? (item.synopsis||'') : '';
   document.getElementById('fPlot').value      = item ? (item.plot||'') : '';
@@ -746,6 +785,8 @@ function openForm(item){
   updateStarInput();
   formOverlay.classList.add('open');
   document.getElementById('fTitle').focus();
+  // 모달이 보인 뒤 각 텍스트영역을 내용 높이에 맞게 펼침(수정 시 긴 글도 잘리지 않게)
+  document.querySelectorAll('#formOverlay textarea').forEach(autoGrow);
 }
 
 // 유형 토글 표시 + 분량 라벨/힌트 갱신
@@ -767,6 +808,18 @@ function updateTypeToggle(){
     runtimeInput.placeholder = '예: 128분';
   }
 }
+
+// '관람 시기 알 수 없음' 체크 시 날짜 입력칸을 비활성화(회색)
+function applyDateUnknown(){
+  const on = document.getElementById('fDateUnknown').checked;
+  ['fStart','fEnd'].forEach(id=>{
+    const el = document.getElementById(id);
+    el.disabled = on;
+    if(on) el.value = '';          // 모름이면 날짜 비움
+    el.style.opacity = on ? .4 : 1;
+  });
+}
+document.getElementById('fDateUnknown').addEventListener('change', applyDateUnknown);
 
 // 포스터 미리보기 갱신
 function updateCoverPreview(){
@@ -799,9 +852,10 @@ document.getElementById('saveBtn').addEventListener('click', async ()=>{
     document.getElementById('fTitle').focus();
     return;
   }
-  // 관람 기간 검증: 완료일이 시작일보다 앞설 수 없음
-  const startDate = document.getElementById('fStart').value;
-  const endDate   = document.getElementById('fEnd').value;
+  // 관람 시기 모름이면 날짜는 비움, 검증도 생략
+  const dateUnknown = document.getElementById('fDateUnknown').checked;
+  const startDate = dateUnknown ? '' : document.getElementById('fStart').value;
+  const endDate   = dateUnknown ? '' : document.getElementById('fEnd').value;
   if(startDate && endDate && endDate < startDate){
     alert('관람 기간이 올바르지 않습니다.\n완료일이 시작일보다 빠를 수 없습니다.');
     return;
@@ -819,6 +873,7 @@ document.getElementById('saveBtn').addEventListener('click', async ()=>{
     platform:  document.getElementById('fPlatform').value.trim(),
     startDate: startDate,
     endDate:   endDate,
+    dateUnknown: dateUnknown,
     reason:    document.getElementById('fReason').value.trim(),
     synopsis:  document.getElementById('fSynopsis').value.trim(),
     plot:      document.getElementById('fPlot').value.trim(),
@@ -926,7 +981,8 @@ function openDetail(id){
 
   // 관람 기간 문자열 만들기
   let period = '기록 없음';
-  if(it.startDate && it.endDate) period = `${it.startDate} ~ ${it.endDate}`;
+  if(it.dateUnknown)             period = '알 수 없음' + (it.year ? ` (개봉 ${it.year})` : '');
+  else if(it.startDate && it.endDate) period = `${it.startDate} ~ ${it.endDate}`;
   else if(it.startDate)          period = `${it.startDate} ~ (보는 중)`;
   else if(it.endDate)            period = `~ ${it.endDate}`;
 
@@ -953,7 +1009,7 @@ function openDetail(id){
         <dl>
           <dt>감독</dt><dd>${escapeHtml(it.director||'—')}</dd>
           <dt>출연</dt><dd>${escapeHtml(it.cast||'—')}</dd>
-          <dt>제작</dt><dd>${escapeHtml([it.country, it.year].filter(Boolean).join(' · ')||'—')}</dd>
+          <dt>개봉</dt><dd>${escapeHtml([it.country, it.year].filter(Boolean).join(' · ')||'—')}</dd>
           <dt>${runtimeLabel}</dt><dd>${escapeHtml(it.runtime||'—')}</dd>
           <dt>플랫폼</dt><dd>${escapeHtml(it.platform||'—')}</dd>
           <dt>평점</dt><dd>${
@@ -973,7 +1029,7 @@ function openDetail(id){
 
     ${ section('관람 계기', it.reason) }
     ${ section('시놉시스', it.synopsis) }
-    ${ section('줄거리', it.plot) }
+    ${ spoilerSection('줄거리', it.plot) }
     ${ section('감상평', it.review) }
 
     <div class="detail-actions">
@@ -988,6 +1044,17 @@ function openDetail(id){
     if(!text) return '';
     return `<div class="detail-section"><h3>${title}</h3><p>${escapeHtml(text)}</p></div>`;
   }
+  // 스포일러 섹션(줄거리): 기본은 블러로 가리고 클릭하면 해제
+  function spoilerSection(title, text){
+    if(!text) return '';
+    return `<div class="detail-section">
+      <h3>${title} <span class="spoiler-badge">스포일러</span></h3>
+      <div class="spoiler" data-spoiler>
+        <p class="spoiler-text">${escapeHtml(text)}</p>
+        <span class="spoiler-hint">🙈 눌러서 스포일러 보기</span>
+      </div>
+    </div>`;
+  }
 
   // 수정 버튼 → 상세 닫고 폼 열기
   detailBody.querySelector('#editBtn').addEventListener('click', ()=>{ closeDetail(); openForm(it); });
@@ -1000,6 +1067,10 @@ function openDetail(id){
       await loadItems();
     }
   });
+
+  // 줄거리 스포일러: 클릭하면 블러 해제 / 다시 클릭하면 재가림
+  const spoilerEl = detailBody.querySelector('[data-spoiler]');
+  if(spoilerEl) spoilerEl.addEventListener('click', ()=> spoilerEl.classList.toggle('revealed'));
 
   detailOverlay.classList.add('open');
 }
@@ -1031,13 +1102,28 @@ document.getElementById('sortSeg').addEventListener('click', e=>{
 });
 
 // 관람 기간: 한쪽을 고르면 다른 쪽 달력 범위를 제한
-document.getElementById('fStart').addEventListener('change', e=>{ document.getElementById('fEnd').min = e.target.value; });
+document.getElementById('fStart').addEventListener('change', e=>{
+  const start = e.target.value;
+  const endEl = document.getElementById('fEnd');
+  endEl.min = start; // 완료일은 시작일 이후만 선택 가능
+  // 완료일이 비어 있거나 시작일보다 앞서면 시작일과 같게 채워둠
+  // → 완료일 달력이 '시작일이 있는 달'에서 열려, 예전 날짜도 바로 근처에서 고를 수 있음
+  if(start && (!endEl.value || endEl.value < start)) endEl.value = start;
+});
 document.getElementById('fEnd').addEventListener('change', e=>{ document.getElementById('fStart').max = e.target.value; });
 
-// 닫기 버튼들 / 바깥 클릭 / ESC
+/* 텍스트영역 자동 높이: 내용이 많아지면 스크롤 대신 박스가 늘어남
+   (style.height만 조절하고 value는 건드리지 않아 한글 입력(IME)에 안전) */
+function autoGrow(el){ el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
+document.querySelectorAll('#formOverlay textarea').forEach(t=>{
+  t.addEventListener('input', ()=> autoGrow(t));
+});
+
+// 닫기 버튼들 / ESC
 document.querySelectorAll('[data-close-form]').forEach(b=> b.addEventListener('click', closeForm));
 document.querySelectorAll('[data-close-detail]').forEach(b=> b.addEventListener('click', closeDetail));
-formOverlay.addEventListener('click', e=>{ if(e.target === formOverlay) closeForm(); });
+// 입력 폼은 바깥 빈 공간 클릭으로 닫지 않음 — 실수로 작성 내용이 날아가는 것 방지.
+// (취소·× 버튼 또는 ESC로만 닫힘)  상세 보기 모달은 입력이 없으니 바깥 클릭으로 닫아도 무방.
 detailOverlay.addEventListener('click', e=>{ if(e.target === detailOverlay) closeDetail(); });
 document.addEventListener('keydown', e=>{ if(e.key === 'Escape'){ closeForm(); closeDetail(); } });
 
