@@ -232,7 +232,7 @@ main{ max-width:1120px; margin:0 auto; padding:24px; }
 .field{ margin-bottom:16px; }
 .field label{ display:block; font-weight:700; font-size:.82rem; margin-bottom:6px; letter-spacing:.02em; }
 .field label .en{ font-family:'JetBrains Mono', monospace; font-weight:400; font-size:.72rem; color:var(--ink-soft); margin-left:6px; }
-.field input[type=text], .field input[type=number], .field input[type=date], .field textarea{
+.field input[type=text], .field input[type=number], .field input[type=date], .field input[type=email], .field input[type=password], .field textarea{
   width:100%; font-family:'Noto Sans KR', sans-serif; font-size:.92rem;
   padding:10px 12px; border:1px solid var(--line); border-radius:var(--radius);
   background:var(--bg); color:var(--ink); resize:vertical;
@@ -373,7 +373,10 @@ header.site, .toolbar, main{ position:relative; z-index:2; }
       <h1>Screen Archive</h1>
       <div class="sub">NOW SHOWING · <b id="itemCount">0</b>&nbsp;titles</div>
     </div>
-    <button class="btn btn-primary" id="addBtn">＋ 작품 추가</button>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn btn-ghost btn-sm" id="logoutBtn">로그아웃</button>
+      <button class="btn btn-primary" id="addBtn">＋ 작품 추가</button>
+    </div>
   </div>
 </header>
 
@@ -537,6 +540,28 @@ header.site, .toolbar, main{ position:relative; z-index:2; }
   </div>
 </div>
 
+<!-- ===== 로그인 모달 ===== -->
+<div class="overlay" id="authOverlay">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-head"><h2>로그인</h2></div>
+    <div class="modal-body">
+      <p class="hint" style="margin-bottom:16px">Screen Archive는 로그인해야 볼 수 있습니다.</p>
+      <div class="field">
+        <label>이메일 <span class="en">email</span></label>
+        <input type="email" id="authEmail" placeholder="you@example.com" autocomplete="username">
+      </div>
+      <div class="field">
+        <label>비밀번호 <span class="en">password</span></label>
+        <input type="password" id="authPass" placeholder="비밀번호" autocomplete="current-password">
+      </div>
+      <p id="authErr" style="color:var(--danger);font-size:.82rem;display:none;margin-bottom:10px"></p>
+      <button class="btn btn-primary" id="authBtn" style="width:100%">로그인</button>
+    </div>
+  </div>
+</div>
+
+<!-- Supabase 클라이언트 라이브러리 -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ============================================================
    데이터 저장소
@@ -544,17 +569,44 @@ header.site, .toolbar, main{ position:relative; z-index:2; }
    - 같은 브라우저에서는 새로고침/재방문해도 유지됨
    - 주의: 브라우저 데이터를 지우면 기록도 함께 사라짐
    ============================================================ */
-const STORE_KEY = 'screen_archive_items_v1'; // 저장 키
+/* ── Supabase 연결 (관리형 PostgreSQL) ──
+   anon 키는 공개용 키라 노출돼도 안전(실제 보호는 로그인 + RLS가 담당) */
+const SB_URL = 'https://ffptyyuyhgmhhkhqiylv.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZmcHR5eXV5aGdtaGhraHFpeWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwMTAzMzksImV4cCI6MjA5ODU4NjMzOX0.FUJAlHKIPmkNFP6l00_JPEXU4IL64yh_jS7liwxidag';
+const sb = supabase.createClient(SB_URL, SB_KEY);
+const TABLE = 'screen_items';
+const OLD_KEY = 'screen_archive_items_v1'; // 예전 localStorage 키(마이그레이션용)
 
-// 저장된 목록 불러오기 (없으면 빈 배열)
-function loadItems(){
-  try{ return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
-  catch(e){ return []; } // 데이터가 깨졌을 때 안전하게 빈 목록 반환
+let items = [];               // 현재 목록(로그인 후 DB에서 채움)
+
+// DB 행(snake_case) → 앱 객체(camelCase)로 변환
+function fromRow(r){
+  return {
+    id:r.id, registeredAt:r.registered_at, type:r.type||'movie', title:r.title,
+    director:r.director||'', cast:r.cast||'', genre:r.genre||'', year:r.year||'',
+    country:r.country||'', runtime:r.runtime||'', platform:r.platform||'',
+    rating:Number(r.rating)||0, startDate:r.start_date||'', endDate:r.end_date||'',
+    reason:r.reason||'', synopsis:r.synopsis||'', plot:r.plot||'', review:r.review||'', cover:r.cover||''
+  };
 }
-// 목록 저장하기
-function saveItems(list){ localStorage.setItem(STORE_KEY, JSON.stringify(list)); }
+// 앱 객체 → DB 행. 빈 문자열은 null로(특히 날짜 컬럼은 ''를 못 받음)
+function toRow(d){
+  const n = v => (v===''||v===undefined) ? null : v;
+  return {
+    type:d.type||'movie', title:d.title, director:n(d.director), cast:n(d.cast),
+    genre:n(d.genre), year:n(d.year), country:n(d.country), runtime:n(d.runtime),
+    platform:n(d.platform), rating:d.rating||0, start_date:n(d.startDate), end_date:n(d.endDate),
+    reason:n(d.reason), synopsis:n(d.synopsis), plot:n(d.plot), review:n(d.review), cover:n(d.cover)
+  };
+}
 
-let items = loadItems();      // 메모리에 올려둔 현재 목록
+// DB에서 목록 불러와 다시 그리기
+async function loadItems(){
+  const { data, error } = await sb.from(TABLE).select('*').order('registered_at', { ascending:false });
+  if(error){ alert('불러오기 오류: ' + error.message); return; }
+  items = (data||[]).map(fromRow);
+  render();
+}
 let editingId = null;         // 수정 중인 항목 id (null이면 새로 추가)
 let pendingCover = '';        // 폼에서 선택한 포스터 이미지(base64)
 let currentRating = 0;        // 폼에서 선택한 별점 (0~5, 0.5단위, 0이면 미평가)
@@ -584,7 +636,7 @@ function render(){
   list.sort((a,b)=>{
     if(currentSort === 'rating_desc') return (b.rating||0) - (a.rating||0);   // 별점 높은순
     if(currentSort === 'title_asc')   return a.title.localeCompare(b.title, 'ko'); // 제목 가나다순
-    return b.registeredAt - a.registeredAt; // 기본: 등록 최신순
+    return new Date(b.registeredAt) - new Date(a.registeredAt); // 기본: 등록 최신순
   });
 
   itemCount.textContent = items.length;
@@ -739,7 +791,7 @@ document.getElementById('typeToggle').addEventListener('click', e=>{
 });
 
 // 저장 버튼
-document.getElementById('saveBtn').addEventListener('click', ()=>{
+document.getElementById('saveBtn').addEventListener('click', async ()=>{
   const title = document.getElementById('fTitle').value.trim();
   // 최소 검증: 제목은 필수
   if(!title){
@@ -775,19 +827,16 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
     rating:    currentRating
   };
 
+  // DB에 저장 (추가면 insert, 수정이면 update)
   if(editingId){
-    // 수정: 기존 항목 찾아서 값 갱신 (등록일은 유지)
-    const idx = items.findIndex(x=>x.id === editingId);
-    items[idx] = { ...items[idx], ...data };
+    const { error } = await sb.from(TABLE).update(toRow(data)).eq('id', editingId);
+    if(error){ alert('저장 오류: ' + error.message); return; }
   }else{
-    // 추가: 새 항목 생성 (등록일 = 지금)
-    data.id = 'm_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
-    data.registeredAt = Date.now();
-    items.push(data);
+    const { error } = await sb.from(TABLE).insert(toRow(data));
+    if(error){ alert('저장 오류: ' + error.message); return; }
   }
-  saveItems(items);
   closeForm();
-  render();
+  await loadItems();
 });
 
 /* ----- 포스터 이미지 선택 + 자동 압축 ----- */
@@ -943,12 +992,12 @@ function openDetail(id){
   // 수정 버튼 → 상세 닫고 폼 열기
   detailBody.querySelector('#editBtn').addEventListener('click', ()=>{ closeDetail(); openForm(it); });
   // 삭제 버튼 → 확인 후 삭제
-  detailBody.querySelector('#deleteBtn').addEventListener('click', ()=>{
+  detailBody.querySelector('#deleteBtn').addEventListener('click', async ()=>{
     if(confirm(`'${it.title}' 기록을 삭제할까요? 되돌릴 수 없습니다.`)){
-      items = items.filter(x=>x.id !== id);
-      saveItems(items);
+      const { error } = await sb.from(TABLE).delete().eq('id', id);
+      if(error){ alert('삭제 오류: ' + error.message); return; }
       closeDetail();
-      render();
+      await loadItems();
     }
   });
 
@@ -992,8 +1041,57 @@ formOverlay.addEventListener('click', e=>{ if(e.target === formOverlay) closeFor
 detailOverlay.addEventListener('click', e=>{ if(e.target === detailOverlay) closeDetail(); });
 document.addEventListener('keydown', e=>{ if(e.key === 'Escape'){ closeForm(); closeDetail(); } });
 
-// 첫 화면 그리기
-render();
+/* ============================================================
+   로그인 / 인증 (Supabase Auth)
+   ============================================================ */
+const authOverlay = document.getElementById('authOverlay');
+const authErr = document.getElementById('authErr');
+
+// 로그인 상태 확인 → 로그인 화면 또는 앱 표시
+async function initAuth(){
+  const { data:{ session } } = await sb.auth.getSession();
+  if(session) enterApp(); else authOverlay.classList.add('open');
+  // 로그인/로그아웃 변화 감지
+  sb.auth.onAuthStateChange((_evt, s)=>{ if(s) enterApp(); else authOverlay.classList.add('open'); });
+}
+// 앱 진입: 로그인 화면 닫고 DB에서 데이터 로드
+async function enterApp(){
+  authOverlay.classList.remove('open');
+  await loadItems();
+  offerMigration(); // 예전 브라우저 기록 있으면 옮길지 물어봄
+}
+// 로그인 버튼
+document.getElementById('authBtn').addEventListener('click', async ()=>{
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPass').value;
+  authErr.style.display = 'none';
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if(error){ authErr.textContent = '로그인 실패: ' + error.message; authErr.style.display = 'block'; }
+});
+// 비밀번호 칸에서 엔터 → 로그인
+document.getElementById('authPass').addEventListener('keydown', e=>{
+  if(e.key === 'Enter') document.getElementById('authBtn').click();
+});
+// 로그아웃 버튼
+document.getElementById('logoutBtn').addEventListener('click', async ()=>{ await sb.auth.signOut(); });
+
+/* 예전 localStorage 기록을 DB로 한 번 옮기기 */
+async function offerMigration(){
+  const raw = localStorage.getItem(OLD_KEY);
+  if(!raw) return;
+  let arr; try{ arr = JSON.parse(raw); }catch(e){ return; }
+  if(!Array.isArray(arr) || arr.length === 0) return;
+  if(!confirm(`이 브라우저에 저장돼 있던 예전 기록 ${arr.length}개를 DB로 옮길까요?`)) return;
+  const rows = arr.map(toRow);
+  const { error } = await sb.from(TABLE).insert(rows);
+  if(error){ alert('이전 실패: ' + error.message); return; }
+  localStorage.removeItem(OLD_KEY); // 중복 이전 방지
+  alert(`${arr.length}개를 옮겼습니다.`);
+  await loadItems();
+}
+
+// 시작: 로그인 상태 확인부터
+initAuth();
 </script>
 </body>
 </html>
