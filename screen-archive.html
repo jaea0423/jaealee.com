@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Screen Archive</title>
+<!-- 폰트: 마키(marquee)용 Oswald(영화 간판 느낌), 제목 Noto Serif KR, 본문 Noto Sans KR, 메타/티켓 JetBrains Mono -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Noto+Serif+KR:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   색상 시스템 (CSS 변수)
+   - 컨셉: 어두운 극장(cinema) + 박스오피스 마키(marquee) 골드 + 스포트라이트 레드
+   ============================================================ */
+:root{
+  --bg: #14110d;          /* 배경: 불 꺼진 극장 */
+  --bg-2: #0e0c09;        /* 더 어두운 바닥 */
+  --panel: #1e1a15;       /* 카드/패널 */
+  --panel-2: #26211b;     /* 살짝 밝은 패널 */
+  --ink: #f0e9dc;         /* 본문 텍스트(스크린 조명색) */
+  --ink-soft: #a89e8c;    /* 보조 텍스트 */
+  --line: #3a332a;        /* 구분선 */
+  --gold: #e0b455;        /* 마키 골드 - 주요 강조 */
+  --gold-dark: #b98f38;
+  --spot: #c0392b;        /* 스포트라이트 레드(영화 포인트) */
+  --drama: #5b8aa6;       /* 드라마 타입 포인트(블루) */
+  --etc: #86a678;         /* 기타 타입 포인트(세이지 그린) */
+  --danger: #b23b3b;      /* 삭제 등 위험 동작 */
+  --shadow: rgba(0,0,0,.5);
+  --radius: 6px;
+}
+
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+body{
+  font-family:'Noto Sans KR', sans-serif;
+  color:var(--ink);
+  background:var(--bg);
+  /* 극장 조명 느낌의 아주 옅은 상단 스포트라이트 */
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(224,180,85,.08), transparent 60%),
+    radial-gradient(circle at 1px 1px, rgba(255,255,255,.02) 1px, transparent 0);
+  background-size: auto, 24px 24px;
+  line-height:1.65;
+  min-height:100vh;
+}
+
+/* ---------- 상단 헤더 (극장 마키) ---------- */
+header.site{
+  border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg, var(--bg-2), var(--panel));
+  position:relative;
+}
+/* 마키 하단 전구 라인 */
+header.site::after{
+  content:"";
+  position:absolute; left:0; right:0; bottom:-1px; height:2px;
+  background:repeating-linear-gradient(90deg, var(--gold) 0 6px, transparent 6px 16px);
+  opacity:.5;
+}
+.site-inner{
+  max-width:1120px; margin:0 auto; padding:26px 24px 22px;
+  display:flex; align-items:flex-end; justify-content:space-between;
+  flex-wrap:wrap; gap:16px;
+}
+.brand h1{
+  font-family:'Oswald', sans-serif;
+  font-weight:700; font-size:2.3rem; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--gold);
+  text-shadow:0 0 18px rgba(224,180,85,.25);
+}
+.brand .sub{
+  font-family:'JetBrains Mono', monospace; font-size:.72rem; color:var(--ink-soft);
+  letter-spacing:.2em; text-transform:uppercase; margin-top:4px;
+}
+.brand .sub b{ color:var(--gold); }
+
+/* ---------- 버튼 공통 ---------- */
+.btn{
+  font-family:'Noto Sans KR', sans-serif; font-weight:700; font-size:.9rem;
+  border:none; cursor:pointer; border-radius:var(--radius);
+  padding:11px 18px; transition:transform .12s ease, background .2s ease, box-shadow .2s ease;
+}
+.btn:active{ transform:translateY(1px); }
+.btn-primary{ background:var(--gold); color:#231c0c; box-shadow:0 0 0 1px var(--gold-dark) inset; }
+.btn-primary:hover{ background:#eec468; box-shadow:0 4px 16px rgba(224,180,85,.3); }
+.btn-ghost{ background:transparent; color:var(--ink); border:1px solid var(--line); }
+.btn-ghost:hover{ background:#ffffff0a; border-color:var(--ink-soft); }
+.btn-danger{ background:var(--danger); color:#fff; }
+.btn-sm{ padding:7px 12px; font-size:.8rem; }
+
+/* ---------- 도구 모음 (검색/필터/정렬) ---------- */
+.toolbar{
+  max-width:1120px; margin:22px auto 0; padding:0 24px;
+  display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+}
+.toolbar input[type=search], .toolbar select{
+  font-family:'Noto Sans KR', sans-serif; font-size:.88rem;
+  padding:9px 12px; border:1px solid var(--line);
+  border-radius:var(--radius); background:var(--panel); color:var(--ink);
+}
+.toolbar input[type=search]{ flex:1 1 220px; min-width:160px; }
+.toolbar input[type=search]::placeholder{ color:var(--ink-soft); }
+
+/* 세그먼트 토글 공통(타입 필터 / 정렬) */
+.seg{
+  display:inline-flex; padding:3px; gap:2px;
+  border:1px solid var(--line); border-radius:999px; background:var(--panel);
+}
+.seg-btn{
+  font-family:'Noto Sans KR', sans-serif; font-size:.82rem; font-weight:700;
+  border:none; background:transparent; color:var(--ink-soft);
+  padding:7px 15px; border-radius:999px; cursor:pointer;
+  transition:background .15s ease, color .15s ease;
+}
+.seg-btn:hover{ color:var(--ink); }
+.seg-btn.active{ background:var(--gold); color:#231c0c; }
+.count{ font-family:'JetBrains Mono', monospace; font-size:.78rem; color:var(--ink-soft); }
+
+/* ---------- 포스터 카드 그리드 ---------- */
+main{ max-width:1120px; margin:0 auto; padding:24px; }
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(200px,1fr));
+  gap:22px;
+}
+.card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  overflow:hidden; cursor:pointer;
+  box-shadow:0 2px 8px var(--shadow);
+  transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  display:flex; flex-direction:column;
+}
+.card:hover{
+  transform:translateY(-5px);
+  box-shadow:0 14px 30px rgba(0,0,0,.6), 0 0 26px rgba(224,180,85,.16);
+  border-color:var(--gold-dark);
+}
+/* 포스터: 영화 포스터 표준 비율 2:3 (27x40) */
+.card .poster{
+  aspect-ratio:2/3;
+  background:#0c0a07; overflow:hidden;
+  display:flex; align-items:center; justify-content:center;
+  position:relative;
+}
+.card .poster img{ width:100%; height:100%; object-fit:cover; display:block; }
+/* 포스터 아래쪽을 살짝 어둡게(스크린 조명 깊이감) */
+.card .poster::before{
+  content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:linear-gradient(180deg, transparent 60%, rgba(0,0,0,.45));
+}
+/* 마우스를 올리면 빛이 스치는 sheen 효과 */
+.card .poster::after{
+  content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:linear-gradient(115deg, transparent 42%, rgba(255,255,255,.16) 50%, transparent 58%);
+  transform:translateX(-120%); transition:transform .6s ease;
+}
+.card:hover .poster::after{ transform:translateX(120%); }
+/* 포스터가 없을 때 대체 포스터 */
+.poster-fallback{
+  width:100%; height:100%;
+  background:linear-gradient(160deg,#2a2018,#14110d);
+  color:var(--ink); padding:18px;
+  display:flex; flex-direction:column; justify-content:space-between; text-align:left;
+  position:relative;
+}
+.poster-fallback::before{
+  /* 상단 필름 퍼포레이션(구멍) 느낌 */
+  content:""; position:absolute; top:0; left:0; right:0; height:14px;
+  background:repeating-linear-gradient(90deg, transparent 0 6px, #0c0a07 6px 12px);
+  opacity:.6;
+}
+.poster-fallback .ttl{
+  font-family:'Noto Serif KR', serif; font-weight:600; font-size:1.05rem; line-height:1.4;
+  margin-top:10px;
+}
+.poster-fallback .dir{ font-size:.76rem; color:var(--ink-soft); }
+/* 타입 배지 (포스터 위 좌상단) */
+.type-badge{
+  position:absolute; top:9px; left:9px; z-index:2;
+  font-family:'Oswald', sans-serif; font-weight:600; font-size:.66rem;
+  letter-spacing:.1em; text-transform:uppercase;
+  padding:3px 8px; border-radius:3px; color:#141109;
+}
+.type-badge.movie{ background:var(--gold); }
+.type-badge.drama{ background:var(--drama); color:#0d1418; }
+.type-badge.etc{ background:var(--etc); color:#111a0d; }
+
+.card .meta{ padding:12px 14px 14px; }
+.card .meta .t{
+  font-family:'Noto Serif KR', serif; font-weight:600; font-size:1rem; line-height:1.35;
+  margin-bottom:3px;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+.card .meta .a{ font-size:.8rem; color:var(--ink-soft); }
+.card .meta .d{ font-family:'JetBrains Mono', monospace; font-size:.7rem; color:var(--ink-soft); margin-top:8px; }
+.card .meta .stars{ margin-top:6px; }
+
+/* ---------- 빈 화면 안내 ---------- */
+.empty{
+  text-align:center; padding:70px 20px; color:var(--ink-soft);
+  border:1px dashed var(--line); border-radius:var(--radius); background:var(--panel);
+}
+.empty h2{ font-family:'Noto Serif KR', serif; font-weight:600; margin-bottom:8px; color:var(--ink); }
+
+/* ---------- 모달 공통 ---------- */
+.overlay{
+  position:fixed; inset:0; background:rgba(6,5,3,.72);
+  display:none; align-items:flex-start; justify-content:center;
+  padding:40px 16px; overflow-y:auto; z-index:50;
+}
+.overlay.open{ display:flex; }
+.modal{
+  background:var(--panel); width:100%; max-width:660px;
+  border-radius:var(--radius); border:1px solid var(--line);
+  box-shadow:0 24px 60px rgba(0,0,0,.6); animation:rise .2s ease;
+}
+@keyframes rise{ from{ opacity:0; transform:translateY(12px);} to{opacity:1; transform:none;} }
+.modal-head{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:18px 22px; border-bottom:1px solid var(--line);
+}
+.modal-head h2{ font-family:'Oswald', sans-serif; font-size:1.3rem; font-weight:600; letter-spacing:.04em; text-transform:uppercase; color:var(--gold); }
+.close-x{ background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--ink-soft); line-height:1; padding:4px 8px; }
+.close-x:hover{ color:var(--ink); }
+.modal-body{ padding:22px; }
+
+/* ---------- 입력 폼 ---------- */
+.field{ margin-bottom:16px; }
+.field label{ display:block; font-weight:700; font-size:.82rem; margin-bottom:6px; letter-spacing:.02em; }
+.field label .en{ font-family:'JetBrains Mono', monospace; font-weight:400; font-size:.72rem; color:var(--ink-soft); margin-left:6px; }
+.field input[type=text], .field input[type=number], .field input[type=date], .field textarea{
+  width:100%; font-family:'Noto Sans KR', sans-serif; font-size:.92rem;
+  padding:10px 12px; border:1px solid var(--line); border-radius:var(--radius);
+  background:var(--bg); color:var(--ink); resize:vertical;
+}
+.field input::placeholder, .field textarea::placeholder{ color:var(--ink-soft); }
+.field textarea{ min-height:90px; line-height:1.6; }
+.field input[type=date]{ color-scheme:dark; }
+.row2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.row3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+@media(max-width:520px){ .row2, .row3{ grid-template-columns:1fr; } }
+
+/* 유형 토글 (영화 / 드라마 / 기타) */
+.type-toggle{ display:inline-flex; padding:3px; gap:2px; border:1px solid var(--line); border-radius:999px; background:var(--bg); }
+.type-toggle .t-btn{
+  font-family:'Oswald', sans-serif; font-weight:600; font-size:.82rem; letter-spacing:.05em;
+  border:none; background:transparent; color:var(--ink-soft);
+  padding:8px 20px; border-radius:999px; cursor:pointer; transition:all .15s ease;
+}
+.type-toggle .t-btn.active[data-type=movie]{ background:var(--gold); color:#231c0c; }
+.type-toggle .t-btn.active[data-type=drama]{ background:var(--drama); color:#0d1418; }
+.type-toggle .t-btn.active[data-type=etc]{ background:var(--etc); color:#111a0d; }
+
+/* 포스터 업로드 영역 */
+.cover-upload{ display:flex; gap:16px; align-items:flex-start; }
+.cover-preview{
+  width:120px; aspect-ratio:2/3; flex-shrink:0;
+  border:1px solid var(--line); border-radius:var(--radius);
+  background:#0c0a07; overflow:hidden;
+  display:flex; align-items:center; justify-content:center;
+  font-size:.72rem; color:var(--ink-soft); text-align:center; padding:8px;
+}
+.cover-preview img{ width:100%; height:100%; object-fit:cover; }
+.cover-upload .ctrl{ flex:1; }
+.hint{ font-size:.74rem; color:var(--ink-soft); margin-top:6px; line-height:1.5; }
+
+/* ---------- 별점 위젯 ---------- */
+.stars{ position:relative; display:inline-block; line-height:1; }
+.stars .layer{ display:block; font-family:Arial, sans-serif; letter-spacing:4px; white-space:nowrap; font-size:1.9rem; }
+.stars .bg{ color:#4a4234; }
+.stars .fill{ position:absolute; top:0; left:0; width:0; color:var(--gold); overflow:hidden; text-shadow:0 0 8px rgba(224,180,85,.5); }
+.stars.sm .layer{ font-size:1.05rem; letter-spacing:2px; }
+.star-input{ cursor:pointer; touch-action:none; user-select:none; }
+.star-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.star-row .val{ font-family:'JetBrains Mono', monospace; font-size:.9rem; color:var(--ink-soft); }
+.star-clear{ background:none; border:none; cursor:pointer; color:var(--ink-soft); font-size:.78rem; text-decoration:underline; padding:0; }
+
+.form-actions{ display:flex; gap:10px; justify-content:flex-end; margin-top:6px; padding-top:16px; border-top:1px solid var(--line); }
+
+/* ---------- 상세 보기 ---------- */
+.detail-top{ display:flex; gap:22px; flex-wrap:wrap; }
+.detail-cover{
+  width:170px; aspect-ratio:2/3; flex-shrink:0;
+  border-radius:var(--radius); overflow:hidden; border:1px solid var(--line); background:#0c0a07;
+}
+.detail-cover img{ width:100%; height:100%; object-fit:cover; }
+.detail-info{ flex:1; min-width:200px; }
+.detail-info .dt{ font-family:'Noto Serif KR', serif; font-size:1.5rem; font-weight:700; line-height:1.3; margin-bottom:6px; }
+.detail-info .type-line{ font-family:'Oswald',sans-serif; letter-spacing:.08em; text-transform:uppercase; font-size:.8rem; color:var(--gold); margin-bottom:10px; }
+.detail-info dl{ display:grid; grid-template-columns:auto 1fr; gap:6px 14px; margin-top:14px; font-size:.88rem; }
+.detail-info dt{ color:var(--ink-soft); font-weight:700; white-space:nowrap; }
+.detail-info dd{ color:var(--ink); }
+.detail-info dd.mono{ font-family:'JetBrains Mono', monospace; font-size:.82rem; }
+
+/* 등록일 티켓 스텁 (시그니처 요소: ADMIT ONE 입장권) */
+.ticket{
+  display:inline-flex; align-items:center; gap:10px; margin-top:16px;
+  font-family:'JetBrains Mono', monospace;
+  background:repeating-linear-gradient(90deg, var(--panel-2) 0 100%);
+  border:1px dashed var(--gold-dark); border-radius:6px;
+  padding:8px 14px; transform:rotate(-2deg);
+}
+.ticket .admit{ font-family:'Oswald',sans-serif; font-weight:700; letter-spacing:.15em; font-size:.72rem; color:var(--gold); text-transform:uppercase; border-right:1px dashed var(--gold-dark); padding-right:10px; }
+.ticket .date{ font-size:.78rem; color:var(--ink); font-weight:600; }
+.ticket .date small{ display:block; font-size:.58rem; color:var(--ink-soft); letter-spacing:.15em; }
+
+.detail-section{ margin-top:24px; }
+.detail-section h3{
+  font-family:'Oswald', sans-serif; font-size:1rem; font-weight:600; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--gold); margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid var(--line);
+}
+.detail-section p{ white-space:pre-wrap; font-size:.92rem; }
+.detail-actions{ display:flex; gap:10px; justify-content:flex-end; margin-top:26px; padding-top:16px; border-top:1px solid var(--line); }
+
+@media(max-width:600px){
+  .brand h1{ font-size:1.8rem; }
+  .site-inner{ padding:22px 18px; }
+}
+:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+
+/* ============================================================
+   시네마 강화 레이어 (극장 분위기 오버레이)
+   ============================================================ */
+/* 화면 가장자리를 어둡게 하는 비네트(vignette) - 스크린만 밝은 극장 느낌 */
+body::before{
+  content:""; position:fixed; inset:0; z-index:1; pointer-events:none;
+  background:
+    radial-gradient(ellipse 120% 85% at 50% 42%, transparent 52%, rgba(0,0,0,.5) 100%),
+    radial-gradient(ellipse 60% 40% at 50% -8%, rgba(224,180,85,.10), transparent 70%);
+}
+/* 미세하게 움직이는 필름 그레인(film grain) */
+body::after{
+  content:""; position:fixed; inset:-60%; z-index:1; pointer-events:none; opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation:grain 1.1s steps(3) infinite;
+}
+@keyframes grain{
+  0%{transform:translate(0,0)} 25%{transform:translate(-4%,3%)}
+  50%{transform:translate(3%,-4%)} 75%{transform:translate(-3%,-2%)} 100%{transform:translate(2%,4%)}
+}
+/* 콘텐츠는 오버레이 위로(클릭 가능) */
+header.site, .toolbar, main{ position:relative; z-index:2; }
+
+/* 헤더 제목: 극장 간판 조명처럼 은은하게 깜빡임 */
+@keyframes sign-flicker{
+  0%,100%{ text-shadow:0 0 4px rgba(224,180,85,.5), 0 0 18px rgba(224,180,85,.3); }
+  48%{ text-shadow:0 0 6px rgba(224,180,85,.6), 0 0 26px rgba(224,180,85,.5); }
+  50%{ text-shadow:0 0 2px rgba(224,180,85,.35), 0 0 10px rgba(224,180,85,.2); }
+  52%{ text-shadow:0 0 6px rgba(224,180,85,.6), 0 0 26px rgba(224,180,85,.5); }
+}
+.brand h1{ animation:sign-flicker 4s ease-in-out infinite; }
+/* NOW SHOWING 앞 붉은 점 - 상영 중 표시등처럼 점멸 */
+.brand .sub::before{ content:"● "; color:#e0402f; }
+@keyframes onair{ 0%,100%{opacity:1} 50%{opacity:.25} }
+.brand .sub{ animation:onair 1.6s ease-in-out infinite; }
+
+/* 빈 화면: 클래퍼보드(슬레이트) 아이콘 */
+.empty::before{ content:"🎬"; display:block; font-size:2.6rem; margin-bottom:12px; opacity:.7; }
+
+@media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; } }
+</style>
+</head>
+<body>
+
+<!-- 헤더 (극장 마키) -->
+<header class="site">
+  <div class="site-inner">
+    <div class="brand">
+      <h1>Screen Archive</h1>
+      <div class="sub">NOW SHOWING · <b id="itemCount">0</b>&nbsp;titles</div>
+    </div>
+    <button class="btn btn-primary" id="addBtn">＋ 작품 추가</button>
+  </div>
+</header>
+
+<!-- 검색 / 타입 필터 / 정렬 -->
+<div class="toolbar">
+  <input type="search" id="searchInput" placeholder="제목·감독·출연·장르 검색">
+  <div class="seg" id="typeSeg" role="group" aria-label="유형 필터">
+    <button class="seg-btn active" data-filter="all">전체</button>
+    <button class="seg-btn" data-filter="movie">영화</button>
+    <button class="seg-btn" data-filter="drama">드라마</button>
+    <button class="seg-btn" data-filter="etc">기타</button>
+  </div>
+  <div class="seg" id="sortSeg" role="group" aria-label="정렬 기준">
+    <button class="seg-btn active" data-sort="reg_desc">등록순</button>
+    <button class="seg-btn" data-sort="rating_desc">별점순</button>
+    <button class="seg-btn" data-sort="title_asc">제목순</button>
+  </div>
+</div>
+
+<!-- 포스터 카드 목록 -->
+<main>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="emptyState" style="display:none;">
+    <h2>아직 기록한 작품이 없습니다</h2>
+    <p>오른쪽 위 ‘작품 추가’ 버튼으로 첫 번째 영화·드라마를 등록해 보세요.</p>
+  </div>
+</main>
+
+<!-- ===== 입력/수정 폼 모달 ===== -->
+<div class="overlay" id="formOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="formTitle">작품 추가</h2>
+      <button class="close-x" data-close-form aria-label="닫기">×</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- 유형 선택 -->
+      <div class="field">
+        <label>유형 <span class="en">type</span></label>
+        <div class="type-toggle" id="typeToggle">
+          <button type="button" class="t-btn active" data-type="movie">영화</button>
+          <button type="button" class="t-btn" data-type="drama">드라마</button>
+          <button type="button" class="t-btn" data-type="etc">기타</button>
+        </div>
+      </div>
+
+      <!-- 포스터 업로드 -->
+      <div class="field">
+        <label>포스터 <span class="en">poster</span></label>
+        <div class="cover-upload">
+          <div class="cover-preview" id="coverPreview">포스터 없음</div>
+          <div class="ctrl">
+            <input type="file" id="coverInput" accept="image/*" hidden>
+            <button type="button" class="btn btn-ghost btn-sm" id="pickCoverBtn">이미지 선택</button>
+            <button type="button" class="btn btn-ghost btn-sm" id="removeCoverBtn" style="display:none;">제거</button>
+            <p class="hint">영화 포스터 비율(2:3)에 맞춰 표시됩니다.<br>포스터를 넣지 않으면 제목으로 자동 생성됩니다.<br>이미지는 저장 공간 절약을 위해 자동으로 작게 압축됩니다.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label>제목 <span class="en">title</span></label>
+          <input type="text" id="fTitle" placeholder="작품 제목">
+        </div>
+        <div class="field">
+          <label>감독 <span class="en">director</span></label>
+          <input type="text" id="fDirector" placeholder="연출·감독">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>출연 <span class="en">cast</span></label>
+        <input type="text" id="fCast" placeholder="주요 출연진 (쉼표로 구분)">
+      </div>
+
+      <div class="row3">
+        <div class="field">
+          <label>장르 <span class="en">genre</span></label>
+          <input type="text" id="fGenre" placeholder="예: 스릴러">
+        </div>
+        <div class="field">
+          <label>제작연도 <span class="en">year</span></label>
+          <input type="number" id="fYear" placeholder="예: 2024" min="1888" max="2100">
+        </div>
+        <div class="field">
+          <label>국가 <span class="en">country</span></label>
+          <input type="text" id="fCountry" placeholder="예: 한국">
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label id="runtimeLabel">러닝타임 <span class="en">runtime</span></label>
+          <input type="text" id="fRuntime" placeholder="예: 128분">
+        </div>
+        <div class="field">
+          <label>관람 플랫폼 <span class="en">platform</span></label>
+          <input type="text" id="fPlatform" placeholder="예: 넷플릭스 / 극장">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>평점 <span class="en">rating</span></label>
+        <div class="star-row">
+          <div class="stars star-input" id="starInput">
+            <div class="layer bg">★★★★★</div>
+            <div class="layer fill" id="starInputFill">★★★★★</div>
+          </div>
+          <span class="val" id="starInputVal">미평가</span>
+          <button type="button" class="star-clear" id="starClearBtn">지우기</button>
+        </div>
+        <p class="hint">별 위에서 좌우로 드래그하거나 클릭해 0.5점 단위로 선택합니다.</p>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label>관람 시작 <span class="en">start date</span></label>
+          <input type="date" id="fStart">
+        </div>
+        <div class="field">
+          <label>관람 완료 <span class="en">end date</span></label>
+          <input type="date" id="fEnd">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>관람 계기 <span class="en">motivation</span></label>
+        <textarea id="fReason" placeholder="이 작품을 보기로 한 이유나 추천받은 경로 등"></textarea>
+      </div>
+      <div class="field">
+        <label>시놉시스 <span class="en">synopsis</span></label>
+        <textarea id="fSynopsis" placeholder="작품을 한두 문단으로 소개하는 짧은 줄거리 (포스터·소개글의 소개 문구 등)"></textarea>
+      </div>
+      <div class="field">
+        <label>줄거리 <span class="en">plot</span></label>
+        <textarea id="fPlot" placeholder="작품의 상세 내용 요약"></textarea>
+      </div>
+      <div class="field">
+        <label>감상평 <span class="en">review</span></label>
+        <textarea id="fReview" placeholder="보고 난 생각과 느낌"></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-ghost" data-close-form>취소</button>
+        <button class="btn btn-primary" id="saveBtn">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 상세 보기 모달 ===== -->
+<div class="overlay" id="detailOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>기록</h2>
+      <button class="close-x" data-close-detail aria-label="닫기">×</button>
+    </div>
+    <div class="modal-body" id="detailBody"><!-- JS로 채움 --></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   데이터 저장소
+   - localStorage 사용: 브라우저에 작품 목록을 JSON으로 보관
+   - 같은 브라우저에서는 새로고침/재방문해도 유지됨
+   - 주의: 브라우저 데이터를 지우면 기록도 함께 사라짐
+   ============================================================ */
+const STORE_KEY = 'screen_archive_items_v1'; // 저장 키
+
+// 저장된 목록 불러오기 (없으면 빈 배열)
+function loadItems(){
+  try{ return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
+  catch(e){ return []; } // 데이터가 깨졌을 때 안전하게 빈 목록 반환
+}
+// 목록 저장하기
+function saveItems(list){ localStorage.setItem(STORE_KEY, JSON.stringify(list)); }
+
+let items = loadItems();      // 메모리에 올려둔 현재 목록
+let editingId = null;         // 수정 중인 항목 id (null이면 새로 추가)
+let pendingCover = '';        // 폼에서 선택한 포스터 이미지(base64)
+let currentRating = 0;        // 폼에서 선택한 별점 (0~5, 0.5단위, 0이면 미평가)
+let currentType = 'movie';    // 폼에서 선택한 유형 (movie/drama/etc)
+let currentSort = 'reg_desc'; // 현재 정렬 기준
+let currentFilter = 'all';    // 현재 유형 필터 (all/movie/drama/etc)
+
+/* ============================================================
+   화면 그리기 (목록)
+   ============================================================ */
+const grid = document.getElementById('grid');
+const emptyState = document.getElementById('emptyState');
+const itemCount = document.getElementById('itemCount');
+
+function render(){
+  const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+
+  // 1) 유형 필터 + 검색어로 거르기
+  let list = items.filter(it=>{
+    if(currentFilter !== 'all' && it.type !== currentFilter) return false;
+    if(!keyword) return true;
+    const hay = (it.title + it.director + it.cast + it.genre).toLowerCase();
+    return hay.includes(keyword);
+  });
+
+  // 2) 정렬
+  list.sort((a,b)=>{
+    if(currentSort === 'rating_desc') return (b.rating||0) - (a.rating||0);   // 별점 높은순
+    if(currentSort === 'title_asc')   return a.title.localeCompare(b.title, 'ko'); // 제목 가나다순
+    return b.registeredAt - a.registeredAt; // 기본: 등록 최신순
+  });
+
+  itemCount.textContent = items.length;
+
+  // 3) 비어있으면 안내 화면
+  if(list.length === 0){
+    grid.innerHTML = '';
+    emptyState.style.display = 'block';
+    const noneAtAll = items.length === 0;
+    emptyState.querySelector('h2').textContent = noneAtAll ? '아직 기록한 작품이 없습니다' : '검색 결과가 없습니다';
+    emptyState.querySelector('p').textContent  = noneAtAll
+      ? '오른쪽 위 ‘작품 추가’ 버튼으로 첫 번째 영화·드라마를 등록해 보세요.'
+      : '다른 검색어나 필터로 찾아보세요.';
+    return;
+  }
+  emptyState.style.display = 'none';
+
+  // 4) 카드 그리기
+  grid.innerHTML = list.map(it=>{
+    const tm = typeMeta(it.type); // 유형별 배지 정보
+    const badge = `<span class="type-badge ${tm.cls}">${tm.label}</span>`;
+    return `
+    <div class="card" data-id="${it.id}">
+      <div class="poster">
+        ${badge}
+        ${ it.cover
+            ? `<img src="${it.cover}" alt="${escapeHtml(it.title)} 포스터">`
+            : `<div class="poster-fallback">
+                 <div class="dir">${escapeHtml(it.director||'')}</div>
+                 <div class="ttl">${escapeHtml(it.title)}</div>
+               </div>`
+        }
+      </div>
+      <div class="meta">
+        <div class="t">${escapeHtml(it.title)}</div>
+        <div class="a">${escapeHtml(it.director||'감독 미상')}${ it.year ? ' · '+it.year : '' }</div>
+        ${ it.rating ? `<div class="stars sm">${starMarkup(it.rating)}</div>` : '' }
+        <div class="d">${ it.endDate ? '~ '+it.endDate : '보는 중' }</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // 카드 클릭 → 상세 보기
+  grid.querySelectorAll('.card').forEach(el=>{
+    el.addEventListener('click', ()=> openDetail(el.dataset.id));
+  });
+}
+
+// HTML 특수문자 처리 (안전하게 출력)
+function escapeHtml(str){
+  return (str||'').replace(/[&<>"']/g, c=>(
+    {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
+  ));
+}
+
+// 유형별 표시 정보 (배지 색/영문 라벨/한글 라벨/분량 라벨)
+function typeMeta(type){
+  if(type === 'drama') return { cls:'drama', label:'Series', ko:'드라마', runtime:'화수·시즌' };
+  if(type === 'etc')   return { cls:'etc',   label:'Etc',    ko:'기타',   runtime:'분량' };
+  return                      { cls:'movie', label:'Movie',  ko:'영화',   runtime:'러닝타임' };
+}
+
+// 별점 마크업 (회색 바탕 위에 금색 별을 너비로 덮어 0.5단위 표현)
+function starMarkup(rating){
+  const pct = (Math.max(0, Math.min(5, rating)) / 5) * 100;
+  return `<span class="layer bg">★★★★★</span>`
+       + `<span class="layer fill" style="width:${pct}%">★★★★★</span>`;
+}
+
+/* ============================================================
+   폼 (추가 / 수정)
+   ============================================================ */
+const formOverlay = document.getElementById('formOverlay');
+const coverPreview = document.getElementById('coverPreview');
+const removeCoverBtn = document.getElementById('removeCoverBtn');
+
+// 폼 열기
+function openForm(item){
+  editingId = item ? item.id : null;
+  pendingCover  = item ? (item.cover||'') : '';
+  currentRating = item ? (item.rating||0) : 0;
+  currentType   = item ? (item.type||'movie') : 'movie';
+
+  document.getElementById('formTitle').textContent = item ? '작품 수정' : '작품 추가';
+
+  // 값 채우기 (수정이면 기존 값, 추가면 빈 값)
+  document.getElementById('fTitle').value     = item ? item.title : '';
+  document.getElementById('fDirector').value  = item ? (item.director||'') : '';
+  document.getElementById('fCast').value      = item ? (item.cast||'') : '';
+  document.getElementById('fGenre').value     = item ? (item.genre||'') : '';
+  document.getElementById('fYear').value      = item ? (item.year||'') : '';
+  document.getElementById('fCountry').value   = item ? (item.country||'') : '';
+  document.getElementById('fRuntime').value   = item ? (item.runtime||'') : '';
+  document.getElementById('fPlatform').value  = item ? (item.platform||'') : '';
+  document.getElementById('fStart').value     = item ? (item.startDate||'') : '';
+  document.getElementById('fEnd').value       = item ? (item.endDate||'') : '';
+  // 달력 선택 제한 동기화 (완료일은 시작일 이후, 시작일은 완료일 이전만)
+  document.getElementById('fEnd').min   = item ? (item.startDate||'') : '';
+  document.getElementById('fStart').max = item ? (item.endDate||'') : '';
+  document.getElementById('fReason').value   = item ? (item.reason||'') : '';
+  document.getElementById('fSynopsis').value = item ? (item.synopsis||'') : '';
+  document.getElementById('fPlot').value      = item ? (item.plot||'') : '';
+  document.getElementById('fReview').value = item ? (item.review||'') : '';
+
+  updateTypeToggle();
+  updateCoverPreview();
+  updateStarInput();
+  formOverlay.classList.add('open');
+  document.getElementById('fTitle').focus();
+}
+
+// 유형 토글 표시 + 분량 라벨/힌트 갱신
+function updateTypeToggle(){
+  document.querySelectorAll('#typeToggle .t-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.type === currentType);
+  });
+  // 유형에 따라 분량 라벨과 예시를 바꿈 (영화=러닝타임, 드라마=화수·시즌, 기타=분량)
+  const label = document.getElementById('runtimeLabel');
+  const runtimeInput = document.getElementById('fRuntime');
+  if(currentType === 'drama'){
+    label.innerHTML = '화수 · 시즌 <span class="en">episodes</span>';
+    runtimeInput.placeholder = '예: 시즌 2 · 16부작';
+  }else if(currentType === 'etc'){
+    label.innerHTML = '분량 <span class="en">length</span>';
+    runtimeInput.placeholder = '예: 45분 · 10편';
+  }else{
+    label.innerHTML = '러닝타임 <span class="en">runtime</span>';
+    runtimeInput.placeholder = '예: 128분';
+  }
+}
+
+// 포스터 미리보기 갱신
+function updateCoverPreview(){
+  if(pendingCover){
+    coverPreview.innerHTML = `<img src="${pendingCover}" alt="포스터 미리보기">`;
+    removeCoverBtn.style.display = 'inline-block';
+  }else{
+    coverPreview.textContent = '포스터 없음';
+    removeCoverBtn.style.display = 'none';
+  }
+}
+
+// 폼 닫기
+function closeForm(){ formOverlay.classList.remove('open'); }
+
+// 유형 토글 클릭
+document.getElementById('typeToggle').addEventListener('click', e=>{
+  const btn = e.target.closest('.t-btn');
+  if(!btn) return;
+  currentType = btn.dataset.type;
+  updateTypeToggle();
+});
+
+// 저장 버튼
+document.getElementById('saveBtn').addEventListener('click', ()=>{
+  const title = document.getElementById('fTitle').value.trim();
+  // 최소 검증: 제목은 필수
+  if(!title){
+    alert('제목을 입력해 주세요.');
+    document.getElementById('fTitle').focus();
+    return;
+  }
+  // 관람 기간 검증: 완료일이 시작일보다 앞설 수 없음
+  const startDate = document.getElementById('fStart').value;
+  const endDate   = document.getElementById('fEnd').value;
+  if(startDate && endDate && endDate < startDate){
+    alert('관람 기간이 올바르지 않습니다.\n완료일이 시작일보다 빠를 수 없습니다.');
+    return;
+  }
+
+  const data = {
+    type:      currentType,
+    title,
+    director:  document.getElementById('fDirector').value.trim(),
+    cast:      document.getElementById('fCast').value.trim(),
+    genre:     document.getElementById('fGenre').value.trim(),
+    year:      document.getElementById('fYear').value.trim(),
+    country:   document.getElementById('fCountry').value.trim(),
+    runtime:   document.getElementById('fRuntime').value.trim(),
+    platform:  document.getElementById('fPlatform').value.trim(),
+    startDate: startDate,
+    endDate:   endDate,
+    reason:    document.getElementById('fReason').value.trim(),
+    synopsis:  document.getElementById('fSynopsis').value.trim(),
+    plot:      document.getElementById('fPlot').value.trim(),
+    review:    document.getElementById('fReview').value.trim(),
+    cover:     pendingCover,
+    rating:    currentRating
+  };
+
+  if(editingId){
+    // 수정: 기존 항목 찾아서 값 갱신 (등록일은 유지)
+    const idx = items.findIndex(x=>x.id === editingId);
+    items[idx] = { ...items[idx], ...data };
+  }else{
+    // 추가: 새 항목 생성 (등록일 = 지금)
+    data.id = 'm_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+    data.registeredAt = Date.now();
+    items.push(data);
+  }
+  saveItems(items);
+  closeForm();
+  render();
+});
+
+/* ----- 포스터 이미지 선택 + 자동 압축 ----- */
+document.getElementById('pickCoverBtn').addEventListener('click', ()=>{
+  document.getElementById('coverInput').click();
+});
+document.getElementById('removeCoverBtn').addEventListener('click', ()=>{
+  pendingCover = '';
+  document.getElementById('coverInput').value = '';
+  updateCoverPreview();
+});
+document.getElementById('coverInput').addEventListener('change', e=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  resizeImage(file, 500, dataUrl=>{ // 가로 최대 500px로 줄여 저장 용량 절약
+    pendingCover = dataUrl;
+    updateCoverPreview();
+  });
+});
+
+// 이미지를 캔버스로 다시 그려 작게 압축 (localStorage 용량 한계 대응)
+function resizeImage(file, maxWidth, callback){
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const scale = Math.min(1, maxWidth / img.width); // 원본이 작으면 그대로
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      callback(canvas.toDataURL('image/jpeg', 0.8)); // JPEG 품질 0.8로 압축
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ----- 별점 입력 위젯 (드래그/클릭, 0.5단위) ----- */
+const starInput = document.getElementById('starInput');
+const starInputFill = document.getElementById('starInputFill');
+const starInputVal = document.getElementById('starInputVal');
+let starDragging = false;
+
+// 포인터의 가로 위치 → 0.5단위 별점 값(0.5~5)
+function ratingFromPointer(e){
+  const rect = starInput.getBoundingClientRect();
+  const x = (e.clientX ?? rect.left) - rect.left;
+  let val = Math.ceil((x / rect.width) * 10) / 2; // 0.5 단위로 올림
+  return Math.min(5, Math.max(0.5, val));
+}
+// 채움 너비만 갱신(미리보기용)
+function paintStarInput(val){ starInputFill.style.width = (val / 5) * 100 + '%'; }
+// 확정값으로 위젯 표시 갱신
+function updateStarInput(){
+  paintStarInput(currentRating);
+  starInputVal.textContent = currentRating ? currentRating.toFixed(1) + ' / 5.0' : '미평가';
+}
+// 포인터 이벤트로 마우스·터치 통합 처리
+starInput.addEventListener('pointerdown', e=>{
+  starDragging = true;
+  starInput.setPointerCapture(e.pointerId); // 영역 밖으로 나가도 드래그 유지
+  currentRating = ratingFromPointer(e);
+  updateStarInput();
+});
+starInput.addEventListener('pointermove', e=>{
+  if(starDragging){ currentRating = ratingFromPointer(e); updateStarInput(); }
+  else{ paintStarInput(ratingFromPointer(e)); } // 단순 호버: 미리보기만
+});
+starInput.addEventListener('pointerup', ()=>{ starDragging = false; });
+starInput.addEventListener('pointerleave', ()=>{ if(!starDragging) updateStarInput(); });
+document.getElementById('starClearBtn').addEventListener('click', ()=>{
+  currentRating = 0; updateStarInput();
+});
+
+/* ============================================================
+   상세 보기
+   ============================================================ */
+const detailOverlay = document.getElementById('detailOverlay');
+const detailBody = document.getElementById('detailBody');
+
+function openDetail(id){
+  const it = items.find(x=>x.id === id);
+  if(!it) return;
+  const tm = typeMeta(it.type); // 유형별 표시 정보
+
+  // 관람 기간 문자열 만들기
+  let period = '기록 없음';
+  if(it.startDate && it.endDate) period = `${it.startDate} ~ ${it.endDate}`;
+  else if(it.startDate)          period = `${it.startDate} ~ (보는 중)`;
+  else if(it.endDate)            period = `~ ${it.endDate}`;
+
+  // 등록일 사람이 읽기 좋은 형식으로
+  const reg = new Date(it.registeredAt);
+  const regStr = `${reg.getFullYear()}.${pad(reg.getMonth()+1)}.${pad(reg.getDate())}`;
+
+  const runtimeLabel = tm.runtime;
+
+  detailBody.innerHTML = `
+    <div class="detail-top">
+      <div class="detail-cover">
+        ${ it.cover
+            ? `<img src="${it.cover}" alt="포스터">`
+            : `<div class="poster-fallback" style="border-radius:0;">
+                 <div class="dir">${escapeHtml(it.director||'')}</div>
+                 <div class="ttl">${escapeHtml(it.title)}</div>
+               </div>`
+        }
+      </div>
+      <div class="detail-info">
+        <div class="type-line">● ${tm.label}${ it.genre ? ' · '+escapeHtml(it.genre) : '' }</div>
+        <div class="dt">${escapeHtml(it.title)}</div>
+        <dl>
+          <dt>감독</dt><dd>${escapeHtml(it.director||'—')}</dd>
+          <dt>출연</dt><dd>${escapeHtml(it.cast||'—')}</dd>
+          <dt>제작</dt><dd>${escapeHtml([it.country, it.year].filter(Boolean).join(' · ')||'—')}</dd>
+          <dt>${runtimeLabel}</dt><dd>${escapeHtml(it.runtime||'—')}</dd>
+          <dt>플랫폼</dt><dd>${escapeHtml(it.platform||'—')}</dd>
+          <dt>평점</dt><dd>${
+            it.rating
+              ? `<span class="stars sm">${starMarkup(it.rating)}</span>
+                 <span style="font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--ink-soft);margin-left:4px;">${it.rating.toFixed(1)} / 5.0</span>`
+              : '—'
+          }</dd>
+          <dt>관람 기간</dt><dd class="mono">${period}</dd>
+        </dl>
+        <div class="ticket">
+          <span class="admit">Admit One</span>
+          <span class="date">${regStr}<small>REGISTERED</small></span>
+        </div>
+      </div>
+    </div>
+
+    ${ section('관람 계기', it.reason) }
+    ${ section('시놉시스', it.synopsis) }
+    ${ section('줄거리', it.plot) }
+    ${ section('감상평', it.review) }
+
+    <div class="detail-actions">
+      <button class="btn btn-danger" id="deleteBtn">삭제</button>
+      <button class="btn btn-ghost" id="editBtn">수정</button>
+      <button class="btn btn-primary" data-close-detail>닫기</button>
+    </div>
+  `;
+
+  // 내용이 있을 때만 섹션 출력
+  function section(title, text){
+    if(!text) return '';
+    return `<div class="detail-section"><h3>${title}</h3><p>${escapeHtml(text)}</p></div>`;
+  }
+
+  // 수정 버튼 → 상세 닫고 폼 열기
+  detailBody.querySelector('#editBtn').addEventListener('click', ()=>{ closeDetail(); openForm(it); });
+  // 삭제 버튼 → 확인 후 삭제
+  detailBody.querySelector('#deleteBtn').addEventListener('click', ()=>{
+    if(confirm(`'${it.title}' 기록을 삭제할까요? 되돌릴 수 없습니다.`)){
+      items = items.filter(x=>x.id !== id);
+      saveItems(items);
+      closeDetail();
+      render();
+    }
+  });
+
+  detailOverlay.classList.add('open');
+}
+function closeDetail(){ detailOverlay.classList.remove('open'); }
+function pad(n){ return String(n).padStart(2,'0'); }
+
+/* ============================================================
+   이벤트 연결
+   ============================================================ */
+document.getElementById('addBtn').addEventListener('click', ()=> openForm(null));
+document.getElementById('searchInput').addEventListener('input', render);
+
+// 유형 필터 토글
+document.getElementById('typeSeg').addEventListener('click', e=>{
+  const btn = e.target.closest('.seg-btn');
+  if(!btn) return;
+  currentFilter = btn.dataset.filter;
+  document.querySelectorAll('#typeSeg .seg-btn').forEach(b=> b.classList.toggle('active', b === btn));
+  render();
+});
+
+// 정렬 토글
+document.getElementById('sortSeg').addEventListener('click', e=>{
+  const btn = e.target.closest('.seg-btn');
+  if(!btn) return;
+  currentSort = btn.dataset.sort;
+  document.querySelectorAll('#sortSeg .seg-btn').forEach(b=> b.classList.toggle('active', b === btn));
+  render();
+});
+
+// 관람 기간: 한쪽을 고르면 다른 쪽 달력 범위를 제한
+document.getElementById('fStart').addEventListener('change', e=>{ document.getElementById('fEnd').min = e.target.value; });
+document.getElementById('fEnd').addEventListener('change', e=>{ document.getElementById('fStart').max = e.target.value; });
+
+// 닫기 버튼들 / 바깥 클릭 / ESC
+document.querySelectorAll('[data-close-form]').forEach(b=> b.addEventListener('click', closeForm));
+document.querySelectorAll('[data-close-detail]').forEach(b=> b.addEventListener('click', closeDetail));
+formOverlay.addEventListener('click', e=>{ if(e.target === formOverlay) closeForm(); });
+detailOverlay.addEventListener('click', e=>{ if(e.target === detailOverlay) closeDetail(); });
+document.addEventListener('keydown', e=>{ if(e.key === 'Escape'){ closeForm(); closeDetail(); } });
+
+// 첫 화면 그리기
+render();
+</script>
+</body>
+</html>

@@ -146,6 +146,9 @@ a{text-decoration:none;color:inherit}
 /* Reading: 도서관 초록 - 책/아카이브 표현 */
 .q-circle.q-read{color:#5a8c6f}
 .q-circle.q-read:hover{background:#2f4a3e;color:#fff;border-color:#2f4a3e}
+/* Screen: 시네마 골드 - 영화/드라마 아카이브(극장) 표현 */
+.q-circle.q-screen{color:#e0b455}
+.q-circle.q-screen:hover{background:#14110d;color:#e0b455;border-color:#e0b455}
 
 /* 빈칸 원 (placeholder) */
 .q-empty{
@@ -258,6 +261,7 @@ body.dark .q-empty{
 .c-claude{--accent:#cc785c}
 .c-gpt{--accent:#10a37f}
 .c-gem{--accent:#4285f4}
+.c-nblm{--accent:#4a6ff3}
 
 /* 미디어 */
 .c-yt{--accent:#ff0000}
@@ -294,6 +298,7 @@ body.dark .q-empty{
 .s2.fill.c-col{background:#F9AB00;border-color:#F9AB00;color:#1a1a1a}
 .s2.fill.c-col .t-name{color:#1a1a1a}
 .s2.fill.c-gpt{background:#10a37f;border-color:#10a37f}
+.s2.fill.c-nblm{background:#1f2a52;border-color:#1f2a52}
 .s2.fill.c-gem{background:linear-gradient(135deg,#4285f4,#9b59b6);border-color:#4285f4}
 .s2.fill.c-ntf{background:#141414;border-color:#141414}
 .s2.fill.c-spt{background:#1db954;border-color:#1db954}
@@ -520,8 +525,8 @@ body.dark .wx-thunder {background:linear-gradient(135deg,#1a0a2e,#0f0820);color:
     <a href="https://jaealee.com/drive" class="q-circle q-drive" title="Drive">D</a>
     <!-- 4. Reading Archive (R) -->
     <a href="https://jaealee.com/reading" class="q-circle q-read" title="Reading Archive">R</a>
-    <!-- 5. 빈칸 (추후 채울 예정) -->
-    <div class="q-empty">+</div>
+    <!-- 5. Screen Archive (S) - 영화/드라마 아카이브 -->
+    <a href="https://jaealee.com/screen-archive.html" class="q-circle q-screen" title="Screen Archive">S</a>
   </div>
 </div>
 
@@ -611,6 +616,9 @@ body.dark .wx-thunder {background:linear-gradient(135deg,#1a0a2e,#0f0820);color:
       </a>
       <a href="https://chat.openai.com" class="tile s2 fill c-gpt">
         <span class="t-name">ChatGPT</span>
+      </a>
+      <a href="https://notebooklm.google.com" class="tile s2 fill c-nblm">
+        <span class="t-name">NotebookLM</span>
       </a>
       <a href="https://www.deepl.com" class="tile s2 fill c-deepl">
         <span class="t-name">DeepL</span>
@@ -761,9 +769,6 @@ async function fetchWeather(){
     const tmax = Math.round(d.daily.temperature_2m_max[0]);
     const tmin = Math.round(d.daily.temperature_2m_min[0]);
 
-    /* 헤더 작은 텍스트 */
-    document.getElementById('weather').textContent = `${w.icon} ${temp}°C`;
-
     /* 배너 */
     const banner = document.getElementById('wxBanner');
     banner.className = 'wx-banner ' + w.cls;
@@ -807,8 +812,8 @@ async function fetchWeather(){
     }
 
   } catch(e){
-    document.getElementById('weather').textContent = '';
-    document.querySelector('.weather-sep').textContent = '';
+    /* 네트워크/API 실패 시 배너에 안내만 표시 (없는 요소 참조 금지) */
+    document.getElementById('wxDesc').textContent = '날씨 정보를 불러오지 못했습니다';
   }
 }
 fetchWeather();
