@@ -129,6 +129,14 @@ main{ max-width:none; margin:0 auto; padding:24px clamp(16px,4vw,48px); }
 @media(max-width:600px){
   .grid{ grid-template-columns:repeat(3, 1fr); gap:12px; }
 }
+/* 관람순: '보는 중' 그룹과 '관람 완료' 그룹 사이 구분선 (가로 전체 폭 차지) */
+.grid-divider{
+  grid-column:1 / -1;
+  display:flex; align-items:center; gap:12px; margin:6px 2px;
+  font-family:'JetBrains Mono', monospace; font-size:.72rem;
+  letter-spacing:.15em; text-transform:uppercase; color:var(--ink-soft);
+}
+.grid-divider::before, .grid-divider::after{ content:''; flex:1; height:1px; background:var(--line); }
 .card{
   background:var(--panel);
   border:1px solid var(--line);
@@ -696,8 +704,8 @@ function render(){
   }
   emptyState.style.display = 'none';
 
-  // 4) 카드 그리기
-  grid.innerHTML = list.map(it=>{
+  // 카드 한 장 HTML 만들기
+  const cardHtml = it => {
     const tm = typeMeta(it.type); // 유형별 배지 정보
     const badge = `<span class="type-badge ${tm.cls}">${tm.label}</span>`;
     return `
@@ -719,7 +727,22 @@ function render(){
         <div class="d">${ it.dateUnknown ? '관람 시기 미상' : (it.endDate ? '~ '+it.endDate : '보는 중') }</div>
       </div>
     </div>`;
-  }).join('');
+  };
+
+  // 4) 카드 그리기
+  // 관람순일 때만: '보는 중'(아직 안 끝난 것)을 위에 모으고, 그 아래에 구분선 + 나머지
+  if(currentSort === 'watch_desc'){
+    const watching = list.filter(it => !it.dateUnknown && !it.endDate); // 보는 중
+    const watched  = list.filter(it =>  it.dateUnknown ||  it.endDate); // 이미 본 것
+    let html = watching.map(cardHtml).join('');
+    if(watching.length && watched.length){
+      html += `<div class="grid-divider"><span>관람 완료</span></div>`; // 전체 폭 구분선
+    }
+    html += watched.map(cardHtml).join('');
+    grid.innerHTML = html;
+  } else {
+    grid.innerHTML = list.map(cardHtml).join('');
+  }
 
   // 카드 클릭 → 상세 보기
   grid.querySelectorAll('.card').forEach(el=>{
