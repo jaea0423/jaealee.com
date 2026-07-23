@@ -450,9 +450,69 @@ body.dark .wx-thunder {background:linear-gradient(135deg,#1a0a2e,#0f0820);color:
   width:220px;height:220px;border-radius:50%;
   background:rgba(255,255,255,0.04);pointer-events:none;
 }
+
+/* ── 상단 시세 스트립 ── */
+.ticker-strip{
+  margin:-40px -36px 24px;          /* body 좌우/상단 패딩 상쇄 → 화면 끝까지 */
+  background:var(--card);
+  border-bottom:1px solid var(--brd);
+  overflow-x:auto;overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;             /* 파이어폭스 스크롤바 숨김 */
+}
+.ticker-strip::-webkit-scrollbar{display:none} /* 크롬 스크롤바 숨김 */
+.tk-inner{
+  display:flex;align-items:center;
+  padding:0 8px;height:34px;
+  width:max-content;min-width:100%; /* 내용만큼 늘어나 넘치면 스크롤 */
+}
+.tk-loading{font-size:12px;color:var(--txt-l);padding:0 12px}
+
+.tk{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:0 14px;height:100%;
+  white-space:nowrap;position:relative;font-size:12px;
+}
+.tk + .tk::before{                  /* 항목 사이 얇은 구분선 */
+  content:'';position:absolute;left:0;top:9px;bottom:9px;
+  width:1px;background:var(--brd);
+}
+.tk-name{font-weight:700;letter-spacing:0.02em;color:var(--txt)}
+.tk-price{font-weight:500;color:var(--txt);font-variant-numeric:tabular-nums}
+.tk-chg{font-weight:600;font-size:11px;font-variant-numeric:tabular-nums}
+
+/* 한국식 등락색: 상승=빨강, 하락=파랑, 보합=회색 */
+.tk-chg.up{color:#e5484d}
+.tk-chg.down{color:#2b76e0}
+.tk-chg.flat{color:var(--txt-l)}
+body.dark .tk-chg.up{color:#ff6b6b}
+body.dark .tk-chg.down{color:#5b9bff}
+
+/* 실시간(장중) 표시 점 — 미국 주식 전용 */
+.tk-dot{
+  width:6px;height:6px;border-radius:50%;background:#e5484d;
+  animation:tkpulse 1.6s infinite;
+}
+@keyframes tkpulse{
+  0%{box-shadow:0 0 0 0 rgba(229,72,77,0.45)}
+  70%{box-shadow:0 0 0 5px rgba(229,72,77,0)}
+  100%{box-shadow:0 0 0 0 rgba(229,72,77,0)}
+}
+/* 장 마감(종가) 상태 */
+.tk.closed{opacity:0.5}
+.tk-tag{
+  font-size:9px;font-weight:600;color:var(--txt-l);
+  border:1px solid var(--brd);border-radius:4px;
+  padding:1px 4px;letter-spacing:0.03em;
+}
 </style>
 </head>
 <body>
+
+<!-- 상단 실시간 시세 스트립 -->
+<div class="ticker-strip" id="tickerStrip">
+  <div class="tk-inner" id="tkInner"><span class="tk-loading">시세 불러오는 중…</span></div>
+</div>
 
 <!-- 헤더 -->
 <header class="header">
@@ -858,6 +918,187 @@ function toggleQuick(){
   grid.classList.toggle('open');
   btn.classList.toggle('open');
 }
+
+/* ══════════════ 상단 실시간 시세 스트립 ══════════════ */
+(function(){
+  /* ▼▼▼ 여기에 Finnhub 무료 API 키를 붙여넣으세요 ▼▼▼
+     (비워두면 미국 주식은 '키 필요'로만 표시됩니다. BTC·환율은 키 없이 동작)
+     발급: finnhub.io 무료 가입 → Dashboard의 API key 복사 */
+  const FINNHUB_KEY = "d9h30ohr01qhv00ki5dgd9h30ohr01qhv00ki5e0";
+  /* ▲▲▲ 키 교체 시 이 따옴표 안 값만 바꾸면 됩니다 ▲▲▲ */
+
+  // 표시 항목 (왼→오 순서). type: fx=환율 / btc=비트코인 / stock=미국주식
+  const ITEMS = [
+    {type:'fx',    id:'USDKRW', label:'USD/KRW'},
+    {type:'btc',   id:'KRW-BTC',label:'BTC'},
+    {type:'stock', id:'SOXL',   label:'SOXL'},
+    {type:'stock', id:'QQQ',    label:'QQQ'},
+    {type:'stock', id:'TQQQ',   label:'TQQQ'},
+    {type:'stock', id:'SPY',    label:'SPY'},
+    {type:'stock', id:'TSLA',   label:'TSLA'},
+    {type:'stock', id:'NVDA',   label:'NVDA'},
+    {type:'stock', id:'PLTR',   label:'PLTR'},
+    {type:'stock', id:'AAPL',   label:'AAPL'},
+    {type:'stock', id:'SPCX',   label:'SPCX'},
+  ];
+
+  const store = {};        // id -> 시세 데이터 저장소
+  let marketLive = false;  // 미국장 실시간 여부
+  let frozenRounds = 0;    // (보조) 전 종목 가격 고정 연속 횟수
+  let lastStockSig = null; // 직전 주가 스냅샷 비교용
+
+  /* ── 미국 정규장(9:30~16:00 ET) 개장 여부. 서머타임 자동 반영 ── */
+  function marketClockOpen(){
+    const now = new Date();
+    const wd = new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',weekday:'short'}).format(now);
+    if(wd==='Sat'||wd==='Sun') return false;                 // 주말 휴장
+    const hm = new Intl.DateTimeFormat('en-US',
+      {timeZone:'America/New_York',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(now);
+    const [h,m] = hm.split(':').map(Number);
+    const mins = h*60 + m;
+    return mins >= 570 && mins < 960;                         // 570=09:30, 960=16:00
+  }
+
+  /* ── 숫자 포맷 ── */
+  const fmtKRW = n => '₩' + Math.round(n).toLocaleString('ko-KR');
+  const fmtUSD = n => '$' + n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const fmtFX  = n => n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const fmtPct = p => (p>0?'+':'') + p.toFixed(2) + '%';
+  const arrow  = d => d==='up' ? '▲' : d==='down' ? '▼' : '·';   // 방향 화살표
+  const dirOf  = v => v>0 ? 'up' : v<0 ? 'down' : 'flat';        // 등락 방향
+
+  /* ── 환율 USD→KRW (키 없는 무료 API, 실패 시 대체 API) ── */
+  async function updateFX(){
+    let rate = null;
+    try{                                   // 1순위: open.er-api.com
+      const d = await (await fetch('https://open.er-api.com/v6/latest/USD')).json();
+      if(d && d.rates && d.rates.KRW) rate = d.rates.KRW;
+    }catch(e){}
+    if(rate === null){                     // 2순위: frankfurter.app
+      try{
+        const d = await (await fetch('https://api.frankfurter.app/latest?from=USD&to=KRW')).json();
+        if(d && d.rates && d.rates.KRW) rate = d.rates.KRW;
+      }catch(e){}
+    }
+    if(rate !== null){
+      const prev = store['USDKRW'] ? store['USDKRW'].price : rate;   // 직전 값과 비교해 등락 방향
+      store['USDKRW'] = {price:rate, chg:rate-prev, ok:true};
+    }else if(!store['USDKRW']){
+      store['USDKRW'] = {ok:false};
+    }
+  }
+
+  /* ── 비트코인 KRW (업비트, 24시간) ── */
+  async function updateBTC(){
+    try{
+      const d = await (await fetch('https://api.upbit.com/v1/ticker?markets=KRW-BTC')).json();
+      const t = d[0];
+      // signed_change_rate: 전일 대비 등락률(소수). ×100 해서 % 로
+      store['KRW-BTC'] = {price:t.trade_price, pct:t.signed_change_rate*100, ok:true};
+    }catch(e){
+      if(!store['KRW-BTC']) store['KRW-BTC'] = {ok:false};
+    }
+  }
+
+  /* ── 미국 주식 (Finnhub) ── */
+  async function updateStocks(){
+    const syms = ITEMS.filter(i=>i.type==='stock').map(i=>i.id);
+    if(!FINNHUB_KEY){                       // 키 없으면 '키 필요' 상태만 세팅
+      syms.forEach(s => store[s] = {nokey:true});
+      return;
+    }
+    await Promise.all(syms.map(async sym => {
+      try{
+        const d = await (await fetch(`https://finnhub.io/api/v1/quote?symbol=${sym}&token=${FINNHUB_KEY}`)).json();
+        // c=현재가, dp=등락률(%), t=마지막 체결 시각(unix 초)
+        if(d && typeof d.c === 'number' && d.c > 0){
+          store[sym] = {price:d.c, pct:(typeof d.dp==='number'?d.dp:0), t:d.t||0, ok:true};
+        }else if(!store[sym]){
+          store[sym] = {ok:false};
+        }
+      }catch(e){
+        if(!store[sym]) store[sym] = {ok:false};
+      }
+    }));
+    computeMarketLive();
+  }
+
+  /* ── 장중 / 휴장 판정 ──
+     주 방법: 마지막 체결 시각(t)이 최근인지 → 최근 체결이 있으면 살아있음
+     보조 방법: t가 없을 때, 전 종목 가격이 3번 연속 완전히 고정이면 휴장 간주 */
+  function computeMarketLive(){
+    if(!marketClockOpen()){ marketLive = false; frozenRounds = 0; return; }  // 시계상 장 밖
+    const stocks = ITEMS.filter(i=>i.type==='stock').map(i=>store[i.id]).filter(s=>s && s.ok);
+    if(stocks.length === 0){ marketLive = true; return; }
+    const haveT = stocks.every(s => s.t && s.t > 0);
+    if(haveT){
+      const nowSec = Date.now()/1000;
+      marketLive = stocks.some(s => (nowSec - s.t) < 600);   // 10분 내 체결 있으면 장중
+      frozenRounds = 0;
+    }else{
+      const sig = stocks.map(s => s.price).join(',');        // 가격 스냅샷
+      if(sig === lastStockSig) frozenRounds++; else frozenRounds = 0;
+      lastStockSig = sig;
+      marketLive = frozenRounds < 3;                         // 3번 연속 고정이면 휴장
+    }
+  }
+
+  /* ── 화면 그리기 ── */
+  function render(){
+    const inner = document.getElementById('tkInner');
+    if(!inner) return;
+    inner.innerHTML = '';
+    ITEMS.forEach(it => {
+      const s  = store[it.id];
+      const el = document.createElement('span');
+      el.className = 'tk';
+      let priceHtml = '<span class="tk-price">—</span>', chgHtml = '', extra = '';
+
+      if(it.type === 'fx'){
+        if(s && s.ok){
+          const d = dirOf(s.chg);
+          priceHtml = `<span class="tk-price">${fmtFX(s.price)}</span>`;
+          chgHtml   = `<span class="tk-chg ${d}">${arrow(d)}</span>`;   // 환율은 화살표만
+        }
+      }else if(it.type === 'btc'){
+        if(s && s.ok){
+          const d = dirOf(s.pct);
+          priceHtml = `<span class="tk-price">${fmtKRW(s.price)}</span>`;
+          chgHtml   = `<span class="tk-chg ${d}">${arrow(d)} ${fmtPct(s.pct)}</span>`;
+        }
+      }else{ // stock
+        if(s && s.nokey){
+          priceHtml = `<span class="tk-price" style="color:var(--txt-l)">—</span>`;
+          extra = `<span class="tk-tag">키 필요</span>`;
+        }else if(s && s.ok){
+          const d = dirOf(s.pct);
+          priceHtml = `<span class="tk-price">${fmtUSD(s.price)}</span>`;
+          chgHtml   = `<span class="tk-chg ${d}">${arrow(d)} ${fmtPct(s.pct)}</span>`;
+          if(marketLive){ extra = `<span class="tk-dot" title="실시간"></span>`; }  // 장중: 빨간 점
+          else{ el.className = 'tk closed'; extra = `<span class="tk-tag">종가</span>`; } // 마감: 흐림+종가
+        }
+      }
+      el.innerHTML = `<span class="tk-name">${it.label}</span>${priceHtml}${chgHtml}${extra}`;
+      inner.appendChild(el);
+    });
+  }
+
+  /* ── 갱신 루프 (1분 주기) ── */
+  let tick = 0;
+  async function refresh(){
+    tick++;
+    const clockOpen = marketClockOpen();
+    const jobs = [updateFX(), updateBTC()];
+    // 주식: 장중이면 매분 / 장 밖이면 5분마다 심박(재개·휴장복구 감지용)
+    const doStocks = (tick === 1) || clockOpen || (tick % 5 === 0);
+    if(doStocks) jobs.push(updateStocks());
+    await Promise.all(jobs);
+    if(!doStocks) computeMarketLive();   // 미갱신 틱에도 상태는 최신화
+    render();
+  }
+  refresh();
+  setInterval(refresh, 60000);
+})();
 </script>
 </body>
 </html>
