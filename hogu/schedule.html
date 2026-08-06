@@ -101,6 +101,15 @@
         .warn-inline{display:inline-block;margin-top:3px;font-family:'Pretendard';font-weight:700;font-size:11px;color:var(--red-deep);background:#FBEDE9;padding:2px 7px;border-radius:6px;}
         .tbd{display:inline-block;background:#B7B1A3;color:#fff;font-family:'Pretendard';font-weight:700;font-size:10px;padding:1px 8px;border-radius:10px;letter-spacing:.3px;}
         .new{display:inline-block;background:var(--ink);color:#fff;font-family:'Pretendard';font-weight:700;font-size:9px;padding:2px 7px;border-radius:6px;margin-left:3px;}
+        .opt{display:inline-block;background:#EFE7D6;color:#8B7A4E;border:1px dashed #C9B98E;font-family:'Pretendard',sans-serif;font-weight:700;font-size:9px;padding:1px 7px;border-radius:6px;margin-left:3px;vertical-align:middle;}
+        /* 선택(러닝) 일정은 약간 반투명 */
+        .card:has(.opt){opacity:.6;}
+        /* 유후인 투어 펼치기 */
+        .foldtour{margin-bottom:11px;}
+        .foldtour summary{list-style:none;cursor:pointer;}
+        .foldtour summary::-webkit-details-marker{display:none;}
+        .foldtour[open] .fold-more{display:none;}
+        .foldtour .foldbody{margin-top:11px;}
 
         /* 흐름(이동) 표시 */
         .t-flow{position:relative;margin-bottom:11px;}
@@ -127,11 +136,10 @@
         .empty .e-title{font-family:'Black Han Sans',sans-serif;font-size:16px;}
         .empty .e-sub{font-family:'Pretendard';font-weight:500;font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.5;}
 
-        /* 실내/실외 아이콘 (시간 배지 아래) */
-        /* 실내/실외 아이콘 (카드 우측 상단 통일) */
-        .io{position:absolute;top:7px;right:9px;font-size:12px;line-height:1;z-index:2;}
-        .io-out::after{content:'☀️';}
-        .io-in::after{content:'🏠';}
+        /* 실외 표시 (실내는 표시 안 함) — 제목 옆 작은 태그 */
+        .outdoor{display:inline-block;font-family:'Pretendard',sans-serif;font-weight:700;font-size:10px;
+            color:#B4630F;background:#FBEEDD;border:1px solid #E9C48A;border-radius:20px;
+            padding:2px 8px;margin-left:4px;white-space:nowrap;vertical-align:middle;}
         /* 공항 도착 방법(멤버별) */
         .arrive{margin-bottom:16px;background:var(--card);border:1.5px solid var(--ink);border-radius:12px;box-shadow:2px 2px 0 var(--ink);overflow:hidden;}
         .arrive-h{background:var(--paper2);padding:9px 13px;font-family:'Black Han Sans',sans-serif;font-size:13.5px;border-bottom:1.5px solid #E0D8C6;}
@@ -165,8 +173,19 @@
             border:1.5px solid var(--ink);box-shadow:2px 2px 0 var(--ink);transition:transform .12s,box-shadow .12s;}
         .coupon-btn:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--ink);}
         /* 지도·링크 (본문 인라인) */
-        .maplink{color:#3E7CB1;font-weight:700;text-decoration:none;white-space:nowrap;}
-        .card.night .maplink{color:#9CCDEA;}
+        /* 지도/링크 버튼 (모바일 탭 쉽게) */
+        .mapbtn{display:inline-flex;align-items:center;gap:3px;margin-top:6px;
+            background:#EAF1F7;color:#2C6797;border:1px solid #A9C6DE;border-radius:6px;
+            padding:3px 10px;font-family:'Pretendard',sans-serif;font-weight:700;font-size:11px;
+            text-decoration:none;box-shadow:1px 1px 0 #A9C6DE;white-space:nowrap;}
+        .mapbtn:active{transform:translate(1px,1px);box-shadow:0 0 0 #A9C6DE;}
+        .card.night .mapbtn{background:rgba(156,205,234,.14);color:#9CCDEA;border-color:#5E8299;box-shadow:1px 1px 0 #3a5a6b;}
+        /* 지도 버튼은 숨기고, 카드/세부일정 영역 전체를 탭하면 지도로 연결 */
+        a.mapbtn[href*="maps.app.goo.gl"], a.mapbtn[href*="naver.me"]{display:none;}
+        .mappable{cursor:pointer;}
+        /* 세부일정(흐름) 지도 연결 — 블록 없이 자연스럽게, 탭만 되게 */
+        /* 점심~오후: 약간 주황빛 카드 */
+        .card.noon{background:#FBF0DE;}
         /* 폐업 표시 */
         .card.closed{opacity:.7;}
         .card.closed .txt strong{text-decoration:line-through;}
@@ -209,7 +228,7 @@
             <div class="day-heading">
                 <div class="d-en">DAY 01</div>
                 <div class="d-date">8월 9일 <span class="d-wd">일요일</span></div>
-                <div class="d-title">✈️ 도착 · 다이묘 · 텐진</div>
+                <div class="d-title">✈️ 도착 · 요시노야 · 다이묘 · 함바그 · 텐진 · 몬자야끼 · 이자카야</div>
             </div>
 
             <div class="arrive">
@@ -229,13 +248,14 @@
                 <div class="t-item"><div class="card hl">
                     <div class="time">04:30</div>
                     <div class="txt"><strong>인천국제공항 제1여객터미널 집결</strong>
-                        <span class="detail">체크인 카운터 04:00 오픈</span></div>
+                        <span class="detail">12번 출입구 · 체크인 카운터 04:00 오픈</span>
+                        <a class="mapbtn" href="https://naver.me/xxYQXk91" target="_blank" rel="noopener">📍 지도</a></div>
                 </div></div>
 
                 <div class="t-flow"><span class="flow-txt">🛂 출국수속 · 면세쇼핑
                     <span class="flow-place">제주항공 L카운터 이용 · 이삭토스트 소스 구매!</span></span></div>
 
-                <div class="t-item"><div class="card hl">
+                <div class="t-item"><div class="card hl" onclick="location.href='flight.html'" style="cursor:pointer">
                     <div class="time range">06:30<br>~08:00</div>
                     <div class="txt"><strong>인천 → 후쿠오카</strong>
                         <span class="detail">제주항공 7C1401</span></div>
@@ -244,71 +264,82 @@
                 <div class="t-flow"><span class="flow-txt">🛃 도착 후 입국수속</span></div>
 
                 <div class="t-item"><div class="card">
-                    <div class="time">아침</div><span class="io io-in"></span>
+                    <div class="time">아침</div>
                     <div class="txt">🍚 <strong>요시노야</strong> (吉野家 후쿠오카공항 국제터미널점)
-                        <span class="detail">공항 역전 · 규동 아침 · <a class="maplink" href="https://maps.app.goo.gl/bqVAvs54DNts63hd8" target="_blank" rel="noopener">📍 지도</a></span></div>
+                        <span class="detail">공항 역전 · 규동 아침<br><a class="mapbtn" href="https://maps.app.goo.gl/bqVAvs54DNts63hd8" target="_blank" rel="noopener">📍 지도</a></span></div>
                 </div></div>
 
                 <div class="t-flow"><span class="flow-txt">🏧 ATM 엔화 출금 <strong>(20,000 JPY)</strong></span></div>
                 <div class="t-flow"><span class="flow-txt">💳 교통카드 충전 <strong>(인당 2,000 JPY)</strong></span></div>
-                <div class="t-flow"><span class="flow-txt">🚉 텐진 이동 <span class="flow-place">공항선 · 약 15분</span></span></div>
-
                 <div class="t-item"><div class="card">
-                    <div class="time">09:30</div>
-                    <div class="txt">🚉 <strong>텐진(天神) 도착</strong>
-                        <span class="detail">텐진역 코인로커에 짐 보관 (체크인 전까지)</span></div>
+                    <div class="time">09:35</div>
+                    <div class="txt">🚌 <strong>텐진 직행버스</strong>
+                        <span class="detail">후쿠오카공항 국제선 <b>8번 승강장</b> 승차<br>→ 텐진 고속버스터미널 하차 · 약 30분<br>배차: 09:22(첫차) / 09:35 / 10:25 / 10:57 …</span>
+                        <a class="mapbtn" href="https://maps.app.goo.gl/ngExkgoKP4ELPrk1A" target="_blank" rel="noopener">📍 지도</a></div>
                 </div></div>
 
-                <div class="t-flow"><span class="flow-txt">🚶 다이묘 이동 <span class="flow-place">도보 · 약 10분</span></span></div>
+                <div class="t-item"><div class="card">
+                    <div class="time">10:05</div>
+                    <div class="txt">🚉 <strong>텐진(天神) 도착</strong>
+                        <span class="detail">텐진 미나미(혹은 텐진)역 물품보관함에 짐 보관<br>(체크인 전까지)<br>버스 하차 후 가장 가까운 보관함 이용<br>🟢 초록=최신(IC 가능) / ⬜ 하양=구식(현금만)</span></div>
+                </div></div>
+
+                <div class="t-flow"><span class="flow-txt">🚶 다이묘 이동 <span class="flow-place">도보 · 약 10분</span> <a class="mapbtn" href="https://maps.app.goo.gl/sCPLLt1QvF6uxpdJA" target="_blank" rel="noopener">📍 지도</a></span></div>
 
                 <div class="t-item"><div class="card">
-                    <div class="time">오전</div><span class="io io-out"></span>
-                    <div class="txt">🌳 <strong>다이묘 가든 시티 파크</strong>
-                        <span class="detail">잔디 광장에서 쉬기 · 다이묘 산책</span></div>
+                    <div class="time">오전</div>
+                    <div class="txt">🌳 <strong>다이묘 가든 시티 파크</strong> <span class="outdoor">☀️ 실외</span>
+                        <span class="detail">잔디 광장에서 쉬기 · 다이묘 산책<br><a class="mapbtn" href="https://maps.app.goo.gl/BwK56Hk1wPaaYSF39" target="_blank" rel="noopener">📍 지도</a></span></div>
                 </div></div>
 
                 <div class="t-item"><div class="card">
                     <div class="time">오전</div>
-                    <div class="txt">🛍️ <strong>다이묘 편집숍 · 빈티지 거리</strong>
-                        <span class="detail">그릇 시장 · 아이폰 중고 매장 · 스투시(Stüssy) · 수프림(Supreme) · 베이프(BAPE)</span></div>
+                    <div class="txt">☕ <strong>코메다 커피</strong><br>(コメダ珈琲店 후쿠오카 아카사카점)
+                        <span class="detail">다이묘<br><a class="mapbtn" href="https://maps.app.goo.gl/5VYMeEDk3cpSe8V29" target="_blank" rel="noopener">📍 지도</a></span></div>
                 </div></div>
+
+                <div class="t-item"><div class="card">
+                    <div class="time">오전</div>
+                    <div class="txt">🛍️ <strong>다이묘 편집숍 · 빈티지 거리</strong> <span class="outdoor">☀️ 실외</span>
+                        <span class="detail">패션·편집숍·빈티지 골목</span></div>
+                </div></div>
+
+                <div class="t-flow"><span class="flow-txt">🧥 휴먼메이드(HUMAN MADE) <a class="mapbtn" href="https://maps.app.goo.gl/C6fTrQPgBZjc2cfDA" target="_blank" rel="noopener">📍</a></span></div>
+                <div class="t-flow"><span class="flow-txt">🧢 슈프림(Supreme) <a class="mapbtn" href="https://maps.app.goo.gl/jyhediozj5MSaLUUA" target="_blank" rel="noopener">📍</a></span></div>
+                <div class="t-flow"><span class="flow-txt">🦍 베이프(BAPE) <a class="mapbtn" href="https://maps.app.goo.gl/2NEVAzQqjiR56L3R9" target="_blank" rel="noopener">📍</a></span></div>
+                <div class="t-flow"><span class="flow-txt">👕 스투시(Stüssy) <a class="mapbtn" href="https://maps.app.goo.gl/UzXMW75UMZiG7qEC9" target="_blank" rel="noopener">📍</a></span></div>
+                <div class="t-flow"><span class="flow-txt">🍽️ 그릇가게 Madu <a class="mapbtn" href="https://maps.app.goo.gl/XReESQfGZ53YgmAG7" target="_blank" rel="noopener">📍</a></span></div>
+                <div class="t-flow"><span class="flow-txt">📱 아이폰 중고매장 이오시스(IOSYS) <a class="mapbtn" href="https://maps.app.goo.gl/LWtdcisTc67QwMvE9" target="_blank" rel="noopener">📍</a></span></div>
 
                 <div class="t-item"><div class="card closed">
                     <div class="time">오전</div>
                     <div class="txt">🍰 <strong>Liquid Liquid</strong> 디저트 카페 <span class="closed-tag">폐업</span>
-                        <span class="detail">다이묘 · 한국풍 디저트 카페 (위시리스트) — 그 사이 폐업 😅</span></div>
+                        <span class="detail">다이묘 · 한국풍 디저트 카페 (위시리스트)</span></div>
                 </div></div>
 
-                <div class="t-item"><div class="card">
-                    <div class="time">오전</div><span class="io io-in"></span>
-                    <div class="txt">☕ <strong>코메다 커피</strong> (コメダ珈琲店 후쿠오카 아카사카점)
-                        <span class="detail">다이묘 · <a class="maplink" href="https://maps.app.goo.gl/5VYMeEDk3cpSe8V29" target="_blank" rel="noopener">📍 지도</a></span></div>
-                </div></div>
-
-                <div class="t-item"><div class="card">
-                    <div class="time">점심</div><span class="io io-in"></span>
+                <div class="t-item"><div class="card noon">
+                    <div class="time">점심</div>
                     <div class="txt">🍔 <strong>키와미야 함바그</strong> (極味や 파르코 후쿠오카점)
-                        <span class="detail">함바그 · 파르코 백화점 · <a class="maplink" href="https://maps.app.goo.gl/uoTX9pG6NUcQ2zfAA" target="_blank" rel="noopener">📍 지도</a></span></div>
+                        <span class="detail">함바그 · 파르코 백화점<br><a class="mapbtn" href="https://maps.app.goo.gl/uoTX9pG6NUcQ2zfAA" target="_blank" rel="noopener">📍 지도</a></span></div>
                 </div></div>
 
-                <div class="t-item"><div class="card">
-                    <div class="time">오후</div><span class="io io-in"></span>
+                <div class="t-item"><div class="card noon">
+                    <div class="time">오후</div>
                     <div class="txt">🛍️ <strong>텐진 지하상가 · 백화점 쇼핑</strong>
                         <span class="detail">
                         · <b>파르코 백화점</b> — LUSH · 애니메이트<br>
                         · <b>이와타야 백화점</b> — SHIRO · 꼼데가르송<br>
                         · <b>미나 텐진</b> — UNIQLO<br>
-                        · <b>텐진 지하상가</b> — LUSH<br>
-                        · 유니클로 · 꼼데</span></div>
+                        · <b>텐진 지하상가</b> — LUSH</span></div>
                 </div></div>
 
-                <div class="t-item"><div class="card">
-                    <div class="time">오후</div><span class="io io-in"></span>
+                <div class="t-item"><div class="card noon">
+                    <div class="time">오후</div>
                     <div class="txt">🥐 <strong>풀풀베이커리 텐진</strong> (フルフル パンとワイン)
-                        <span class="detail">빵 · 와인 · <a class="maplink" href="https://maps.app.goo.gl/rgATLyYgvzvUWWHt5" target="_blank" rel="noopener">📍 지도</a></span></div>
+                        <span class="detail">빵 · 와인<br><a class="mapbtn" href="https://maps.app.goo.gl/rgATLyYgvzvUWWHt5" target="_blank" rel="noopener">📍 지도</a></span></div>
                 </div></div>
 
-                <div class="t-flow"><span class="flow-txt">🧳 코인로커 짐 회수 → 숙소 이동</span></div>
+                <div class="t-flow"><span class="flow-txt">🧳 코인로커 짐 회수 → 숙소 이동 <span class="outdoor">☀️ 실외</span><span class="flow-place">20분 (도보 10분) · 버스 61/55/W1/W3/151/152/161</span> <a class="mapbtn" href="https://maps.app.goo.gl/rr4vz3LsbXxnTMMF8" target="_blank" rel="noopener">📍</a></span></div>
 
                 <div class="t-item"><div class="card hl">
                     <div class="time">16:00</div>
@@ -318,28 +349,50 @@
 
                 <div class="t-flow"><span class="flow-txt">😌 휴식</span></div>
 
+                <div class="t-item"><div class="card noon">
+                    <div class="time">17:00</div>
+                    <div class="txt">🚶 <strong>식당 이동</strong> <span class="outdoor">☀️ 실외</span>
+                        <span class="detail">30분 (도보 15분) · 버스 61/55/62/W1/W3</span></div>
+                </div></div>
+
                 <div class="t-item"><div class="card night">
-                    <div class="time">17:00</div><span class="io io-in"></span>
+                    <div class="time">17:30</div>
                     <div class="txt">🍽️ <strong>저녁 · 돈돈테이 텐진 다이묘점</strong> (どんどん亭)
-                        <span class="detail">몬자야끼 · 오후 5시 오픈 · <a class="maplink" href="https://maps.app.goo.gl/6Ug7CE46JeK12cHD8" target="_blank" rel="noopener">📍 지도</a></span></div>
+                        <span class="detail">몬자야끼 · 오후 5시 오픈<br><a class="mapbtn" href="https://maps.app.goo.gl/6Ug7CE46JeK12cHD8" target="_blank" rel="noopener">📍 지도</a></span></div>
+                </div></div>
+
+                <div class="t-flow"><span class="flow-txt">🚶 GiGO 이동 <span class="outdoor">☀️ 실외</span><span class="flow-place">도보 5분</span> <a class="mapbtn" href="https://maps.app.goo.gl/XcVxxFRCQPGdMXwQ6" target="_blank" rel="noopener">📍</a></span></div>
+
+                <div class="t-item"><div class="card night">
+                    <div class="txt">🕹️ <strong>GiGO 후쿠오카 텐진</strong>
+                        <span class="detail">게임센터 · 가챠 <a class="mapbtn" href="https://maps.app.goo.gl/3Fse52ZYrQrjbBVb7" target="_blank" rel="noopener">📍 지도</a></span></div>
                 </div></div>
 
                 <div class="t-item"><div class="card night">
-                    <span class="io io-in"></span>
-                    <div class="txt">🕹️ <strong>게임센터 · 가챠</strong>
-                        <span class="detail">GiGO 후쿠오카 텐진 <a class="maplink" href="https://maps.app.goo.gl/3Fse52ZYrQrjbBVb7" target="_blank" rel="noopener">📍</a> · 타이토 스테이션 후쿠오카텐진점 <a class="maplink" href="https://maps.app.goo.gl/8tLnp7pnCXZp5Wga9" target="_blank" rel="noopener">📍</a></span></div>
+                    <div class="txt">🕹️ <strong>타이토 스테이션 후쿠오카텐진점</strong>
+                        <span class="detail">게임센터 · 가챠 <a class="mapbtn" href="https://maps.app.goo.gl/8tLnp7pnCXZp5Wga9" target="_blank" rel="noopener">📍 지도</a></span></div>
                 </div></div>
 
-                <div class="t-item"><div class="card night">
-                    <span class="io io-in"></span>
-                    <div class="txt">🍶 <strong>이자카야 혁명 욧테바 텐진 다이묘점</strong> <span class="new">예약</span>
-                        <span class="detail">居酒屋革命 酔っ手羽 · 테바사키(닭날개) · <a class="maplink" href="https://maps.app.goo.gl/kgStukS5R4qMQPJ89" target="_blank" rel="noopener">📍 지도</a></span></div>
-                </div></div>
+                <div class="t-flow"><span class="flow-txt">🚶 이자카야 이동 <span class="outdoor">☀️ 실외</span><span class="flow-place">도보 5분</span> <a class="mapbtn" href="https://maps.app.goo.gl/3WtpDphD2h8p894m7" target="_blank" rel="noopener">📍</a></span></div>
 
                 <div class="t-item"><div class="card night">
-                    <span class="io io-in"></span>
-                    <div class="txt">🛒 <strong>마트털이 · 써니 나노카와점</strong>
-                        <span class="detail">那の川2-6-1 · 24시간 · 반액은 보통 저녁 이후~심야</span></div>
+                    <div class="txt">🍶 <strong>이자카야 혁명 욧테바 텐진 다이묘점</strong>
+                        <span class="detail">居酒屋革命 酔っ手羽 · 테바사키(닭날개)<br><a class="mapbtn" href="https://maps.app.goo.gl/kgStukS5R4qMQPJ89" target="_blank" rel="noopener">📍 지도</a></span></div>
+                </div></div>
+
+                <div class="t-flow"><span class="flow-txt">🚇 마트 이동 <span class="outdoor">☀️ 실외</span><span class="flow-place">전철 20분 (도보 15분) · 막차 23:27 이후 택시</span> <a class="mapbtn" href="https://maps.app.goo.gl/Btnpn46sJLXXGVmDA" target="_blank" rel="noopener">📍</a></span></div>
+
+                <div class="t-item"><div class="card night">
+                    <div class="txt">🛒 <strong>마트털이 · 써니 나노카와점</strong> (サニー那の川店)
+                        <span class="detail">那の川2-6-1 · 24시간 · 반액은 보통 저녁 이후~심야<br><a class="mapbtn" href="https://maps.app.goo.gl/oXwZ2XgivmxcMSni7" target="_blank" rel="noopener">📍 지도</a></span></div>
+                </div></div>
+
+                <div class="t-flow"><span class="flow-txt">🌙 숙소 이동 <span class="outdoor">☀️ 실외</span><span class="flow-place">도보 10분</span> <a class="mapbtn" href="https://maps.app.goo.gl/ra7i6RCBGAQE7Any5" target="_blank" rel="noopener">📍</a></span></div>
+
+                <div class="t-item"><div class="card night">
+                    <div class="time">선택</div>
+                    <div class="txt">🏃 <strong>나카스 강 밤 러닝</strong> <span class="opt">선택</span> <span class="outdoor">☀️ 실외</span>
+                        <span class="detail">숙소 근처 나카스 강변 러닝</span></div>
                 </div></div>
             </div>
         </div>
@@ -349,120 +402,141 @@
             <div class="day-heading">
                 <div class="d-en">DAY 02</div>
                 <div class="d-date">8월 10일 <span class="d-wd">월요일</span></div>
-                <div class="d-title">🚌 유후인 투어 · 나카스 · 클럽</div>
+                <div class="d-title">🚌 유후인 투어 · 스시 · 나카스 포장마차 거리 · 클럽 · 이치란</div>
             </div>
 
             <div class="warn" style="background:#E4F2E8;border-color:#4FA873;">
                 <span class="w-ico">✅</span>
                 <div>
                     <div class="w-title" style="color:#2E7D4F;">투어 예약 완료 (Klook)</div>
-                    <div class="w-text" style="color:#3f6b50;">유후인·다자이후·벳푸 버스투어 예약 완료.
-                        <span style="color:#2E7D4F;font-weight:800;">8/9(일) 00시까지 무료 취소</span> 가능. 포함 내역은 예약 페이지 확인.<br>
-                        <a class="maplink" href="https://s.klook.com/c/l1NrJakkyr" target="_blank" rel="noopener" style="color:#2E7D4F;">🔗 투어 예약 페이지 열기</a></div>
+                    <div class="w-text" style="color:#3f6b50;">
+                        <a class="mapbtn" href="https://s.klook.com/c/l1NrJakkyr" target="_blank" rel="noopener" style="background:#DCEFE3;color:#2E7D4F;border-color:#8FC7A8;box-shadow:1px 1px 0 #8FC7A8;">🔗 투어 예약 페이지 열기</a></div>
                 </div>
             </div>
 
             <div class="timeline">
+                <div class="t-item"><div class="card">
+                    <div class="time">선택</div>
+                    <div class="txt">🏃 <strong>나카스 강 아침 러닝</strong> <span class="opt">선택</span> <span class="outdoor">☀️ 실외</span>
+                        <span class="detail">숙소 출발 전 · 강변 러닝</span></div>
+                </div></div>
+
                 <div class="t-item"><div class="card hl">
                     <div class="time">07:00</div>
-                    <div class="txt"><strong>숙소 출발</strong> → 하카타역
-                        <span class="detail">버스 15~20분</span></div>
+                    <div class="txt"><strong>숙소 출발 → 하카타역 (로손)</strong> <span class="outdoor">☀️ 실외</span>
+                        <span class="detail">버스 64/66/67/69/69-1 · 20분 (도보 5분)<br><a class="mapbtn" href="https://maps.app.goo.gl/baRwrt3eQ5MxKk9u5" target="_blank" rel="noopener">📍 지도</a></span></div>
                 </div></div>
 
                 <div class="t-item"><div class="card">
                     <div class="time">07:20</div>
                     <div class="txt">🏪 <strong>하카타역 도착 · 로손 아침 식사</strong>
-                        <span class="detail">오리엔탈 호텔 후쿠오카 하카타스테이션 로손 편의점</span></div>
+                        <span class="detail">오리엔탈 호텔 후쿠오카 하카타스테이션 로손 편의점<br><a class="mapbtn" href="https://maps.app.goo.gl/Pe1naJurNNFTxngM9" target="_blank" rel="noopener">📍 지도</a></span></div>
                 </div></div>
 
                 <div class="t-item"><div class="card hl">
                     <div class="time">08:00</div>
                     <div class="txt">🚩 <strong>투어 만남</strong>
-                        <span class="detail">오리엔탈 호텔 후쿠오카 하카타스테이션 로손 편의점</span>
-                        <span class="warn-inline">08:20 출발</span></div>
+                        <span class="detail">오리엔탈 호텔 후쿠오카 하카타스테이션 로손 편의점<br><a class="mapbtn" href="https://maps.app.goo.gl/Pe1naJurNNFTxngM9" target="_blank" rel="noopener">📍 지도</a></span></div>
                 </div></div>
-
-                <div class="t-item"><div class="card">
-                    <div class="time">08:50</div><span class="io io-out"></span>
-                    <div class="txt">⛩️ <strong>다자이후</strong> (太宰府)
-                        <span class="detail">다자이후 텐만구 · 텐만구의 소 동상 · 스타벅스(오모테산도점)<br>승하차: 다자이후 대형 버스 주차장</span></div>
-                </div></div>
-                <div class="travel">🚌 버스 이동</div>
-
-                <div class="t-item"><div class="card">
-                    <div class="time">11:50</div><span class="io io-out"></span>
-                    <div class="txt">🏞️ <strong>유후인 온천마을</strong> (由布院)
-                        <span class="detail">플로랄 빌리지 · 긴린 호수 · 점심 식사(자유)<br>승하차: Yuryo Parking Lot</span></div>
-                </div></div>
-                <div class="travel">🚌 버스 이동</div>
-
-                <div class="t-item"><div class="card">
-                    <div class="time">15:35</div>
-                    <div class="txt">⛰️ <strong>유후다케</strong> (由布岳)
-                        <span class="detail">차창 관광</span></div>
-                </div></div>
-                <div class="travel">🚌 버스 이동</div>
-
-                <div class="t-item"><div class="card">
-                    <div class="time">16:05</div><span class="io io-out"></span>
-                    <div class="txt">♨️ <strong>벳푸 가마도 지옥</strong> (別府かまど地獄)
-                        <span class="detail">승하차: 벳푸 가마도 지옥</span></div>
-                </div></div>
-
-                <div class="t-flow"><span class="flow-txt">🚌 복귀 버스 출발 <span class="flow-place">16:55</span></span></div>
 
                 <div class="t-item"><div class="card hl">
-                    <div class="time">19:00</div>
-                    <div class="txt"><strong>하카타 도착 · 하차</strong>
-                        <span class="detail">오리엔탈 호텔 후쿠오카 하카타스테이션</span></div>
+                    <div class="time">08:20</div>
+                    <div class="txt">🚌 <strong>투어 버스 출발</strong></div>
                 </div></div>
 
-                <div class="t-flow"><span class="flow-txt">🚶 스시무라사키(寿司紫) 이동 · 도보 5분 <a class="maplink" href="https://maps.app.goo.gl/M31K6SyYmK9QUVVU9" target="_blank" rel="noopener">📍 경로</a></span></div>
+                <div class="t-item"><details class="foldtour">
+                    <summary><div class="card noon">
+                        <div class="time">투어</div>
+                        <div class="txt">🚌 <strong>유후인 버스투어</strong> <span class="outdoor">☀️ 실외</span>
+                            <span class="detail">다자이후 · 유후인 · 유후다케 · 벳푸 → 19:00 하카타 복귀<br><b class="fold-more">탭하면 상세 펼치기 ▾</b></span></div>
+                    </div></summary>
+                    <div class="foldbody">
+                        <div class="travel">🚌 버스 이동 (30분)</div>
+
+                        <div class="t-item"><div class="card">
+                            <div class="time">08:50</div>
+                            <div class="txt">⛩️ <strong>다자이후</strong> (太宰府) <span class="outdoor">☀️ 실외</span>
+                                <span class="detail">다자이후 텐만구 · 텐만구의 소 동상 · 스타벅스(오모테산도점)<br>승하차: 다자이후 대형 버스 주차장<br><a class="mapbtn" href="https://maps.app.goo.gl/QupXFe6c4j5QCtMh7" target="_blank" rel="noopener">📍 지도</a></span></div>
+                        </div></div>
+                        <div class="travel">🚌 버스 이동 (1시간 30분)</div>
+
+                        <div class="t-item"><div class="card noon">
+                            <div class="time">11:50</div>
+                            <div class="txt">🏞️ <strong>유후인 온천마을</strong> (由布院) <span class="outdoor">☀️ 실외</span>
+                                <span class="detail">플로랄 빌리지 · 긴린 호수 · 점심 식사(자유)<br>승하차: Yuryo Parking Lot<br><a class="mapbtn" href="https://maps.app.goo.gl/T6u3VTB9QtviPQox6" target="_blank" rel="noopener">📍 지도</a></span></div>
+                        </div></div>
+                        <div class="travel">🚌 버스 이동 (10분)</div>
+
+                        <div class="t-item"><div class="card noon">
+                            <div class="time">15:35</div>
+                            <div class="txt">⛰️ <strong>유후다케</strong> (由布岳)
+                                <span class="detail">차창 관광<br><a class="mapbtn" href="https://maps.app.goo.gl/cVvM9DQPEK3Lcsod7" target="_blank" rel="noopener">📍 지도</a></span></div>
+                        </div></div>
+                        <div class="travel">🚌 버스 이동 (40분)</div>
+
+                        <div class="t-item"><div class="card noon">
+                            <div class="time">16:05</div>
+                            <div class="txt">♨️ <strong>벳푸 가마도 지옥</strong> (別府かまど地獄) <span class="outdoor">☀️ 실외</span>
+                                <span class="detail">승하차: 벳푸 가마도 지옥<br><a class="mapbtn" href="https://maps.app.goo.gl/xCucwdaL6KK753JL9" target="_blank" rel="noopener">📍 지도</a></span></div>
+                        </div></div>
+                        <div class="travel">🚌 버스 이동 (2시간)</div>
+
+                        <div class="t-item"><div class="card noon">
+                            <div class="time">19:00</div>
+                            <div class="txt"><strong>하카타 도착 · 하차</strong>
+                                <span class="detail">오리엔탈 호텔 후쿠오카 하카타스테이션<br><a class="mapbtn" href="https://maps.app.goo.gl/P5cgF1vM2aqBU3jHA" target="_blank" rel="noopener">📍 지도</a></span></div>
+                        </div></div>
+                    </div>
+                </details></div>
+
+                <div class="t-flow"><span class="flow-txt">🚶 식당 이동 <span class="outdoor">☀️ 실외</span><span class="flow-place">도보 5분</span> <a class="mapbtn" href="https://maps.app.goo.gl/M31K6SyYmK9QUVVU9" target="_blank" rel="noopener">📍</a></span></div>
 
                 <div class="t-item"><div class="card night">
-                    <div class="time">저녁</div><span class="io io-in"></span>
+                    <div class="time">저녁</div>
                     <div class="txt">🍣 <strong>스시무라사키</strong> (寿司紫)
-                        <span class="detail">스시 · <a class="maplink" href="https://maps.app.goo.gl/KnbUjFrYdnHsM6Hx5" target="_blank" rel="noopener">📍 지도</a></span></div>
+                        <span class="detail">스시<br><a class="mapbtn" href="https://maps.app.goo.gl/KnbUjFrYdnHsM6Hx5" target="_blank" rel="noopener">📍 지도</a></span></div>
                 </div></div>
+
+                <div class="t-flow"><span class="flow-txt">🚶 스탠다드 프로덕트 이동 <span class="outdoor">☀️ 실외</span><span class="flow-place">도보 10분</span></span></div>
 
                 <div class="t-item"><div class="card night">
-                    <div class="time">밤</div><span class="io io-in"></span>
+                    <div class="time">밤</div>
                     <div class="txt">🛍️ <strong>스탠다드 프로덕트</strong> (하카타 버스터미널점)
-                        <span class="detail">하카타 · 잡화 쇼핑 · <a class="maplink" href="https://maps.app.goo.gl/rDuKJi5fJY7qCowG9" target="_blank" rel="noopener">📍 지도</a></span></div>
+                        <span class="detail">하카타 · 잡화 쇼핑<br><a class="mapbtn" href="https://maps.app.goo.gl/rDuKJi5fJY7qCowG9" target="_blank" rel="noopener">📍 지도</a></span></div>
                 </div></div>
 
-                <div class="t-flow"><span class="flow-txt">🏠 <strong>숙소 들러</strong> 짐 정리 · 재정비</span></div>
+                <div class="t-flow"><span class="flow-txt">🚌 숙소 이동 <span class="outdoor">☀️ 실외</span><span class="flow-place">버스 64/66 · 20분 (도보 10분)</span> <a class="mapbtn" href="https://maps.app.goo.gl/Lduv3KRbtcpPzEep9" target="_blank" rel="noopener">📍</a></span></div>
+
+                <div class="t-flow"><span class="flow-txt">🏠 짐 정리 · 재정비</span></div>
+
+                <div class="t-flow"><span class="flow-txt">🚕 나카스 포장마차 거리 이동 <span class="flow-place">택시 10분</span> <a class="mapbtn" href="https://maps.app.goo.gl/ts7SZXRSEVFySN5v7" target="_blank" rel="noopener">📍</a></span></div>
 
                 <div class="t-item"><div class="card night">
                     <div class="time">22:00</div>
-                    <div class="txt">🏮 <strong>나카스 포장마차 거리</strong>
-                        <span class="detail">야타이 거리 · 나카스 강</span></div>
+                    <div class="txt">🏮 <strong>나카스 포장마차 거리</strong> <span class="outdoor">☀️ 실외</span>
+                        <span class="detail">야타이 거리 · 나카스 강<br><a class="mapbtn" href="https://maps.app.goo.gl/PaypBXXFQQyTgwKc7" target="_blank" rel="noopener">📍 지도</a></span></div>
                 </div></div>
 
+                <div class="t-flow"><span class="flow-txt">🚶 클럽 이동 <span class="outdoor">☀️ 실외</span><span class="flow-place">도보 20분</span> <a class="mapbtn" href="https://maps.app.goo.gl/y34BLkbJjBKUU9iaA" target="_blank" rel="noopener">📍</a></span></div>
+
                 <div class="t-item"><div class="card night">
-                    <div class="time">23:00</div><span class="io io-in"></span>
+                    <div class="time">23:00</div>
                     <div class="txt">🕺 <strong>클럽 · 이비자(Ibiza)</strong> <span class="warn-inline">여권 준비</span>
-                        <span class="detail">大名1-12-56 THE SHOPS 5F · 21:00~05:00 · 공휴일 전야 · 20세 미만 불가</span></div>
+                        <span class="detail">大名1-12-56 THE SHOPS 5F · 21:00~05:00 · 공휴일 전야 · 20세 미만 불가<br><a class="mapbtn" href="https://maps.app.goo.gl/g9dj1WzwsLaH4gnv8" target="_blank" rel="noopener">📍 지도</a></span></div>
                 </div></div>
 
-                <div class="t-flow"><span class="flow-txt">🕺 클럽 캣츠(CATS) <span class="flow-place">자유롭게 이동 가능 (확인 필요)</span></span></div>
-                <div class="t-flow"><span class="flow-txt">🕺 클럽 블랙 밤비(BLACK BAMBI)</span></div>
+                <div class="t-flow"><span class="flow-txt">🕺 클럽 블랙 밤비(BLACK BAMBI) <a class="mapbtn" href="https://maps.app.goo.gl/MFXe8EJewCQ9mNGZ8" target="_blank" rel="noopener">📍</a></span></div>
+                <div class="t-flow"><span class="flow-txt">🕺 클럽 캣츠(CATS) <span class="flow-place">자유롭게 이동 가능 (확인 필요)</span> <a class="mapbtn" href="https://maps.app.goo.gl/xMUACMV1WEouSJmT6" target="_blank" rel="noopener">📍</a></span></div>
+
+                <div class="t-flow"><span class="flow-txt">🚕 이치란 이동 <span class="flow-place">택시 15분</span> <a class="mapbtn" href="https://maps.app.goo.gl/FsDEcR8E7LRBE2jf8" target="_blank" rel="noopener">📍</a></span></div>
 
                 <div class="t-item"><div class="card night">
-                    <div class="time">새벽</div><span class="io io-in"></span>
+                    <div class="time">새벽</div>
                     <div class="txt">🍜 <strong>이치란 나노카와점</strong> (一蘭 那の川店)
-                        <span class="detail">심야 라멘</span></div>
+                        <span class="detail">24시간 영업<br><a class="mapbtn" href="https://maps.app.goo.gl/2RV3bupwHvmW23CM9" target="_blank" rel="noopener">📍 지도</a></span></div>
                 </div></div>
 
-                <div class="t-flow"><span class="flow-txt">🌙 숙소 복귀 (새벽)</span></div>
-            </div>
-
-            <div class="warn" style="margin-top:18px;">
-                <span class="w-ico">🔁</span>
-                <div>
-                    <div class="w-title">동선 메모</div>
-                    <div class="w-text">하차(하카타) → <b>스시무라사키(도보 5분)</b> 저녁 → 숙소 재정비 → 나카스 포장마차 → 클럽(이비자/캣츠) → 이치란 나노카와점 → 복귀.</div>
-                </div>
+                <div class="t-flow"><span class="flow-txt">🌙 숙소 이동 <span class="outdoor">☀️ 실외</span><span class="flow-place">도보 10분</span> <a class="mapbtn" href="https://maps.app.goo.gl/Y9hY1kxMAxXk7HqdA" target="_blank" rel="noopener">📍</a></span></div>
             </div>
         </div>
 
@@ -471,64 +545,67 @@
             <div class="day-heading">
                 <div class="d-en">DAY 03</div>
                 <div class="d-date">8월 11일 <span class="d-wd">화요일</span></div>
-                <div class="d-title">🎡 자유일 · 캐널시티 · 텐진</div>
+                <div class="d-title">🎡 카레 · 캐널시티 · 돈키호테 · 야키니쿠 · 이자카야 · 텐진 · 신신라멘</div>
                 <span class="holiday-badge">🏔️ 산의 날 (일본 공휴일)</span>
             </div>
 
-            <div class="warn">
-                <span class="w-ico">🏔️</span>
-                <div>
-                    <div class="w-title">산의 날 · 공휴일 혼잡 주의</div>
-                    <div class="w-text"><b>8/11은 일본 공휴일</b> — 관광지·식당 붐빔(예약 권장).
-                        유후인 투어가 우천으로 밀리면 <b>2일차와 교체</b>될 수 있음.</div>
-                </div>
-            </div>
-
             <div class="timeline">
-                <div class="t-flow"><span class="flow-txt">😴 낮잠 쿨쿨</span></div>
-
                 <div class="t-item"><div class="card">
-                    <div class="time">점심</div><span class="io io-in"></span>
+                    <div class="time">선택</div>
+                    <div class="txt">🏃 <strong>나카스 강 점심 러닝</strong> <span class="opt">선택</span> <span class="outdoor">☀️ 실외</span>
+                        <span class="detail">가람 카레 전 · 강변 러닝</span></div>
+                </div></div>
+
+                <div class="t-item"><div class="card noon">
+                    <div class="time">12:00</div>
                     <div class="txt">🍛 <strong>가람 카레</strong> (GARAM)
-                        <span class="detail">오후 12시 영업 시작 · <a class="maplink" href="https://maps.app.goo.gl/7deGaRjmeKPLVwKs6" target="_blank" rel="noopener">📍 지도</a></span></div>
+                        <span class="detail">12시 영업 시작<br><a class="mapbtn" href="https://maps.app.goo.gl/7deGaRjmeKPLVwKs6" target="_blank" rel="noopener">📍 지도</a></span></div>
                 </div></div>
 
-                <div class="t-item"><div class="card">
-                    <div class="time">오후</div><span class="io io-in"></span>
+                <div class="t-flow"><span class="flow-txt">🚕 캐널시티 이동 <span class="flow-place">택시 10분</span> <a class="mapbtn" href="https://maps.app.goo.gl/bgM78JKuVzgsPVRy9" target="_blank" rel="noopener">📍</a></span></div>
+
+                <div class="t-item"><div class="card noon">
+                    <div class="time">오후</div>
                     <div class="txt">🛍️ <strong>캐널시티 하카타</strong>
-                        <span class="detail">분수쇼 '댄싱워터' · 점프샵(JUMP SHOP) · 라멘 스타디움 · 쇼핑</span></div>
+                        <span class="detail">분수쇼 '댄싱워터'<br>점프샵(JUMP SHOP)<br>라멘 스타디움<br>지브리 도토리 공화국<br>무인양품(MUJI)<br>UNIQLO<br><a class="mapbtn" href="https://maps.app.goo.gl/2GamSWRQJZ8WpMTF8" target="_blank" rel="noopener">📍 지도</a></span></div>
                 </div></div>
 
-                <div class="t-item"><div class="card" onclick="openDonki()" style="cursor:pointer">
-                    <div class="time">오후</div><span class="io io-in"></span>
+                <div class="t-flow"><span class="flow-txt">🚶 돈키호테 이동 <span class="outdoor">☀️ 실외</span><span class="flow-place">도보 10분</span> <a class="mapbtn" href="https://maps.app.goo.gl/tvzJhVDopG2ed4pt9" target="_blank" rel="noopener">📍</a></span></div>
+
+                <div class="t-item"><div class="card noon">
+                    <div class="time">오후</div>
                     <div class="txt">🛒 <strong>돈키호테 나카스점</strong>
-                        <span class="detail">기념품·집에 가져갈 것 위주</span>
-                        <span class="tap-hint">🎫 면세·쿠폰 정보 보기 ›</span></div>
+                        <span class="detail">기념품 쇼핑<br><a class="mapbtn" href="https://maps.app.goo.gl/ijEVBrCdXJZogD5K6" target="_blank" rel="noopener">📍 지도</a></span>
+                        <span class="tap-hint" onclick="event.stopPropagation(); openDonki()">🎫 면세·쿠폰 정보 보기 ›</span></div>
                 </div></div>
 
                 <div class="t-item"><div class="card night">
-                    <div class="time">17:00</div><span class="io io-in"></span>
+                    <div class="time">17:00</div>
                     <div class="txt">🥩 <strong>저녁 · 규카쿠 나카스점</strong> (牛角 福岡中洲店)
-                        <span class="detail">야키니쿠 타베호다이(무한리필) · <a class="maplink" href="https://maps.app.goo.gl/Vu992vQZR8d1Tirs5" target="_blank" rel="noopener">📍 지도</a></span></div>
+                        <span class="detail">야키니쿠 타베호다이(무한리필)<br><a class="mapbtn" href="https://maps.app.goo.gl/Vu992vQZR8d1Tirs5" target="_blank" rel="noopener">📍 지도</a></span></div>
                 </div></div>
 
-                <div class="t-flow"><span class="flow-txt">🏠 숙소 이동 <span class="flow-place">짐 보관 · 정비 · 휴식</span></span></div>
+                <div class="t-flow"><span class="flow-txt">🚕 숙소 이동 <span class="flow-place">택시 15분 · 짐 보관 · 정비 · 휴식</span> <a class="mapbtn" href="https://maps.app.goo.gl/qXQ87NpemGnDJpm86" target="_blank" rel="noopener">📍</a></span></div>
+
+                <div class="t-flow"><span class="flow-txt">🚌 이자카야 이동 <span class="outdoor">☀️ 실외</span><span class="flow-place">버스 W1/61/62/152 · 25분 (도보 10분)</span> <a class="mapbtn" href="https://maps.app.goo.gl/qXQ87NpemGnDJpm86" target="_blank" rel="noopener">📍</a></span></div>
 
                 <div class="t-item"><div class="card night">
-                    <div class="time">밤</div><span class="io io-in"></span>
+                    <div class="time">밤</div>
                     <div class="txt">🍢 <strong>꼬치 카츠 다나카 텐진점</strong> (串カツ田中 福岡天神店)
-                        <span class="detail">쿠시카츠 · <a class="maplink" href="https://maps.app.goo.gl/4mBQAZSNgwXifhJv7" target="_blank" rel="noopener">📍 지도</a></span></div>
+                        <span class="detail">쿠시카츠 이자카야<br><a class="mapbtn" href="https://maps.app.goo.gl/4mBQAZSNgwXifhJv7" target="_blank" rel="noopener">📍 지도</a></span></div>
                 </div></div>
 
                 <div class="t-flow"><span class="flow-txt">🚶 텐진 구경 (산책)</span></div>
 
+                <div class="t-flow"><span class="flow-txt">🚶 신신라멘 이동 <span class="outdoor">☀️ 실외</span><span class="flow-place">도보 15분</span> <a class="mapbtn" href="https://maps.app.goo.gl/pPqkyaWsypYk1PFf8" target="_blank" rel="noopener">📍</a></span></div>
+
                 <div class="t-item"><div class="card night">
-                    <div class="time">새벽</div><span class="io io-in"></span>
+                    <div class="time">새벽</div>
                     <div class="txt">🍜 <strong>신신라멘 텐진본점</strong> (博多らーめん ShinShin)
-                        <span class="detail">새벽 3시 영업 종료 · <a class="maplink" href="https://maps.app.goo.gl/JtyG8xJRNibj5pBq7" target="_blank" rel="noopener">📍 지도</a></span></div>
+                        <span class="detail">새벽 3시 영업 종료<br><a class="mapbtn" href="https://maps.app.goo.gl/JtyG8xJRNibj5pBq7" target="_blank" rel="noopener">📍 지도</a></span></div>
                 </div></div>
 
-                <div class="t-flow"><span class="flow-txt">🌙 숙소 이동 · 꿀잠</span></div>
+                <div class="t-flow"><span class="flow-txt">🌙 숙소 이동 <span class="flow-place">버스 W3/55/61/152/161 · 막차 23:30 이후 택시(15분)</span></span></div>
             </div>
         </div>
 
@@ -537,23 +614,20 @@
             <div class="day-heading">
                 <div class="d-en">DAY 04</div>
                 <div class="d-date">8월 12일 <span class="d-wd">수요일</span></div>
-                <div class="d-title">🍜 아침 이치란 · 호빵맨 · 귀국</div>
-            </div>
-
-            <div class="warn">
-                <span class="w-ico">🏮</span>
-                <div>
-                    <div class="w-title">오봉 귀성 러시 시작</div>
-                    <div class="w-text">8/13~16 오봉(お盆) 귀성 러시가 <b>오늘부터 시작</b> —
-                        공항·지하철 혼잡 가능. 여유 있게 움직이기.</div>
-                </div>
+                <div class="d-title">🍜 이치란 · 호빵맨 · 샤브샤브 · 텐진 · 귀국</div>
             </div>
 
             <div class="timeline">
                 <div class="t-item"><div class="card">
-                    <div class="time">아침</div><span class="io io-in"></span>
+                    <div class="time">선택</div>
+                    <div class="txt">🏃 <strong>나카스 강 아침 러닝</strong> <span class="opt">선택</span> <span class="outdoor">☀️ 실외</span>
+                        <span class="detail">이치란 전 · 강변 러닝</span></div>
+                </div></div>
+
+                <div class="t-item"><div class="card">
+                    <div class="time">아침</div>
                     <div class="txt">🍜 <strong>이치란 나노카와점</strong> (一蘭 那の川店)
-                        <span class="detail">24시간 영업 · <a class="maplink" href="https://maps.app.goo.gl/LVxcR8BqsUuBwUXQ9" target="_blank" rel="noopener">📍 지도</a></span></div>
+                        <span class="detail">24시간 영업<br><a class="mapbtn" href="https://maps.app.goo.gl/JQqCGNCye7vNoioo9" target="_blank" rel="noopener">📍 지도</a></span></div>
                 </div></div>
 
                 <div class="t-flow"><span class="flow-txt">🏠 짐 정리 · 체크아웃 준비</span></div>
@@ -561,55 +635,61 @@
                 <div class="t-item"><div class="card hl">
                     <div class="time">10:00</div>
                     <div class="txt"><strong>체크아웃</strong>
-                        <span class="detail">레이트 체크아웃·짐보관 불가</span></div>
+                        <span class="detail">레이트 체크아웃 · 짐보관 불가</span></div>
                 </div></div>
 
-                <div class="t-flow"><span class="flow-txt">🚶 캐널시티 이동</span></div>
+                <div class="t-flow"><span class="flow-txt">🚌 텐진역 이동 <span class="outdoor">☀️ 실외</span><span class="flow-place">버스 W1/55/61/62/68-1 · 25분 (도보 10분)</span></span></div>
+
                 <div class="t-flow"><span class="flow-txt">🧳 짐 보관 <span class="flow-place">코인로커</span></span></div>
-                <div class="t-flow"><span class="flow-txt">🚶 나카스 이동</span></div>
+
+                <div class="t-flow"><span class="flow-txt">🚇 호빵맨 뮤지엄 이동 <span class="flow-place">전철 5분 (도보 2분)</span> <a class="mapbtn" href="https://maps.app.goo.gl/fJ5PnHzCvJfXKLYt5" target="_blank" rel="noopener">📍</a></span></div>
 
                 <div class="t-item"><div class="card">
-                    <div class="time">오전</div><span class="io io-in"></span>
+                    <div class="time">오전</div>
                     <div class="txt">🍞 <strong>후쿠오카 호빵맨 어린이 뮤지엄</strong> (in 쇼핑몰)
                         <span class="detail">오전 10시 영업 시작 · 하카타 리버레인몰 (나카스카와바타역 직결)</span></div>
                 </div></div>
 
-                <div class="t-item"><div class="card">
-                    <div class="time">점심</div><span class="io io-in"></span>
-                    <div class="txt">🥬 <strong>샤브요 캐널시티 하카타점</strong> (しゃぶ葉)
-                        <span class="detail">샤브샤브 · <a class="maplink" href="https://maps.app.goo.gl/XAf4qLRgT6DD4pPk6" target="_blank" rel="noopener">📍 지도</a></span></div>
+                <div class="t-flow"><span class="flow-txt">🚇 식당 이동 <span class="flow-place">전철 15분 (도보 10분)</span> <a class="mapbtn" href="https://maps.app.goo.gl/i8NQn4gUfcEfd9kWA" target="_blank" rel="noopener">📍</a></span></div>
+
+                <div class="t-item"><div class="card noon">
+                    <div class="time">점심</div>
+                    <div class="txt">🥬 <strong>타지마야 텐진 솔라리아점</strong> (但馬屋ソラリアプラザ店)
+                        <span class="detail">샤브샤브<br><a class="mapbtn" href="https://maps.app.goo.gl/ZLpFUaT9anfLf7CFA" target="_blank" rel="noopener">📍 지도</a></span></div>
                 </div></div>
 
-                <div class="t-item"><div class="card">
-                    <div class="time">오후</div><span class="io io-in"></span>
+                <div class="t-item"><div class="card noon">
+                    <div class="time">오후</div>
+                    <div class="txt">🛍️ <strong>마지막 쇼핑</strong>
+                        <span class="detail">텐진</span></div>
+                </div></div>
+
+                <div class="t-item"><div class="card noon">
+                    <div class="time">오후</div>
                     <div class="txt">☕ <strong>카페 · 디저트</strong>
                         <span class="detail">메뉴 <span class="tbd">미정</span></span></div>
                 </div></div>
 
-                <div class="t-item"><div class="card">
-                    <div class="time">오후</div><span class="io io-in"></span>
-                    <div class="txt">🛍️ <strong>마지막 쇼핑</strong>
-                        <span class="detail">캐널시티·나카스 근처</span></div>
-                </div></div>
-
-                <div class="t-flow"><span class="flow-txt">🧳 짐 찾기</span></div>
-                <div class="t-flow"><span class="flow-txt">🚇 공항 이동 <span class="flow-place">지하철 약 5분</span></span></div>
+                <div class="t-flow"><span class="flow-txt">🧳 코인로커 짐 찾기</span></div>
 
                 <div class="t-item"><div class="card">
-                    <div class="time">15:45</div>
-                    <div class="txt">🛂 공항 도착 · 체크인 · 출국수속</div>
+                    <div class="time">14:49</div>
+                    <div class="txt">🚌 <strong>후쿠오카 공항 직행버스</strong>
+                        <span class="detail">텐진 고속버스터미널 <b>6번 승강장</b> 승차<br>→ 후쿠오카 공항 국제선 3F 하차장 하차 · 약 30분<br>배차: 14:04 / 14:29 / 14:49 / 15:34 …<br><a class="mapbtn" href="https://maps.app.goo.gl/fg9Nx23XHiqwT1xj9" target="_blank" rel="noopener">📍 지도</a></span></div>
                 </div></div>
 
-                <div class="t-item"><div class="card hl">
+                <div class="t-flow"><span class="flow-txt">🛂 공항 도착 · 체크인 · 출국수속</span></div>
+
+                <div class="t-item"><div class="card hl" onclick="location.href='flight.html'" style="cursor:pointer">
                     <div class="time range">17:45<br>~19:15</div>
                     <div class="txt"><strong>후쿠오카 → 인천</strong>
                         <span class="detail">제주항공 7C1406</span></div>
                 </div></div>
 
                 <div class="t-item"><div class="card night">
-                    <div class="time">도착<br>후</div><span class="io io-in"></span>
+                    <div class="time">도착<br>후</div>
                     <div class="txt">🍽️ <strong>저녁 · 청운미가</strong> (인천공항 T1점)
-                        <span class="detail">여행 마무리 · <a class="maplink" href="https://naver.me/xU4TImHM" target="_blank" rel="noopener">📍 지도</a></span></div>
+                        <span class="detail">여행 마무리<br><a class="mapbtn" href="https://naver.me/xU4TImHM" target="_blank" rel="noopener">📍 지도</a></span></div>
                 </div></div>
 
                 <div class="t-item"><div class="card end">
@@ -667,6 +747,21 @@
             if (diff === 3) return 'day4';
             return 'day1'; // 여행 전 + 1일차
         }
+
+        // 지도 링크가 있는 카드/세부일정 → 영역 전체 탭 시 지도 열기 (버튼 없이)
+        (function wireMaps() {
+            document.querySelectorAll('a.mapbtn').forEach(function(a) {
+                var url = a.getAttribute('href') || '';
+                if (url.indexOf('maps.app.goo.gl') < 0 && url.indexOf('naver.me') < 0) return; // 지도 링크만
+                var block = a.closest('.card') || a.closest('.t-flow');
+                if (!block) return;
+                block.classList.add('mappable');
+                block.addEventListener('click', function(e) {
+                    if (e.target.closest('a')) return; // 카드 안의 다른 링크는 그대로
+                    window.open(url, '_blank', 'noopener');
+                });
+            });
+        })();
 
         // 페이지 로드 시 기본 날짜 활성화
         (function initDefaultDay() {
