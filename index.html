@@ -295,17 +295,29 @@
         }
     });
 
-    // ── 비밀 코드: 'home' 입력 시 /home 으로 이동 (엔터 없이) ──
-    const SECRET = 'home';   // 감지할 비밀 단어
-    let buffer = '';         // 최근 입력한 글자를 모아두는 버퍼
+    // ── 비밀 코드: 단어 입력 시 해당 페이지로 이동 (엔터 없이) ──
+    // 단어:목적지 짝. 여기에 추가하면 새 비밀코드가 늘어난다.
+    const SECRETS = {
+        home:  '/home/index.html',   // 'home'  입력 → 홈
+        drive: '/drive/index.html',  // 'drive' 입력 → 드라이브
+    };
+    let buffer = '';  // 최근 눌린 키를 모아두는 버퍼
+
     document.addEventListener('keydown', (e) => {
-        // 한 글자짜리 일반 키만 누적 (Shift, Arrow 등 특수키 무시)
-        if (e.key.length !== 1) return;
-        // 버퍼에 소문자로 이어 붙이고, 비밀 단어 길이만큼만 뒤에서 유지
-        buffer = (buffer + e.key.toLowerCase()).slice(-SECRET.length);
-        // 버퍼 끝이 비밀 단어와 일치하면 이동
-        if (buffer === SECRET) {
-            window.location.href = '/home/index.html';  // 현재 탭에서 이동
+        // e.code(물리적 키 위치)를 쓴다 → 한영키/캡스락/Shift와 무관하게 항상 동일.
+        // 예: 'd' 자리를 누르면 한글 모드여도 항상 "KeyD".
+        const m = e.code.match(/^Key([A-Z])$/);  // 알파벳 키만 골라냄
+        if (!m) return;                          // 그 외(특수키 등)는 무시
+
+        // 물리적 키의 글자를 소문자로 이어 붙이고, 최근 10글자만 유지
+        buffer = (buffer + m[1].toLowerCase()).slice(-10);
+
+        // 등록된 비밀 단어 중 버퍼 끝과 일치하는 게 있으면 이동
+        for (const word in SECRETS) {
+            if (buffer.endsWith(word)) {
+                window.location.href = SECRETS[word];  // 현재 탭에서 이동
+                break;
+            }
         }
     });
 </script>
