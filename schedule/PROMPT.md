@@ -38,7 +38,13 @@
 
 ### 캘린더 규칙
 
-- **Google Calendar MCP를 쓴다.** `list_calendars`로 `#데일리` 캘린더 ID를 먼저 찾는다.
+- **Google Calendar MCP를 쓴다.** `#데일리` 캘린더 ID는 아래 값이다. 매번 `list_calendars`로 찾지 않아도 된다.
+
+  ```
+  95e76d3a18f6b6828f28da76a6b75657db7a951c74ed23181c99fd2638d60f5e@group.calendar.google.com
+  ```
+
+- **알림 없음은 `overrideReminders: []`로 넣는다.** 2026-08-17 검증 완료. 이렇게 넣으면 응답에 reminders 필드가 아예 안 생긴다.
 - **`#데일리` 캘린더에만 등록한다.** 다른 캘린더는 절대 건드리지 않는다.
   `#데일리`가 없으면 **멈추고 사용자에게 만들라고 알린다.** 다른 캘린더로 대체하지 않는다.
 - **알림(alert) 없음, 반복(repeat) 없음.**

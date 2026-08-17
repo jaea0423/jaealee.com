@@ -311,7 +311,26 @@ function hideMessage(){
 
 /* ───────────────────────────────────────────────────
    4) 뉴스 보기 버튼: 파일 존재 확인 후 이동
+
+   [2026-08 개편] 데이터(JSON)와 화면(view.html)을 분리했습니다.
+   확인 순서:
+     ① data/YYYY-MM-DD.json  → 있으면 view.html?date=... (새 디자인)
+     ② News Source/DailyNews_YYYYMMDD.html → 있으면 구버전 그대로 (과거 기록)
+     ③ 둘 다 없으면 에러 메시지
    ─────────────────────────────────────────────────── */
+
+/* 파일 존재 여부만 확인하는 헬퍼
+   method:'HEAD' = 본문은 안 받고 헤더만 → 빠름
+   cache:'no-store' = 캐시 무시하고 항상 서버에 직접 확인 */
+async function exists(url){
+  try{
+    const res = await fetch(url, { method: 'HEAD', cache: 'no-store' });
+    return res.ok; // 200~299면 true
+  }catch(e){
+    return false; // 네트워크 오류·file:// 실행 등
+  }
+}
+
 async function openNews(){
   const dateStr = document.getElementById('dateInput').value;
   if(!dateStr){
@@ -319,37 +338,26 @@ async function openNews(){
     return;
   }
 
-  // 파일명 생성: "News Source/DailyNews_YYYYMMDD.html"
-  const fileDate = toFileDateString(dateStr);
-  // 폴더명 "News Source"에 공백이 있어 encodeURI로 안전하게 처리
-  const url = `News Source/DailyNews_${fileDate}.html`;
-  const encodedUrl = encodeURI(url);
-
-  // 버튼 비활성화 + 로딩 메시지
   const btn = document.getElementById('goBtn');
   btn.disabled = true;
   showMessage('확인 중...', 'loading');
 
-  try{
-    /* fetch로 파일 존재 확인
-       method: 'HEAD' = 본문은 안 받고 헤더만 확인 (빠름)
-       cache: 'no-store' = 캐시 무시하고 항상 서버에 직접 확인 */
-    const res = await fetch(encodedUrl, { method: 'HEAD', cache: 'no-store' });
-
-    if(res.ok){
-      // 200~299 응답: 파일 존재 → 페이지 이동
-      window.location.href = encodedUrl;
-    } else {
-      // 404 등: 파일 없음 → 한글 메시지 표시
-      showMessage('⚠ 존재하지 않는 뉴스입니다.', 'error');
-      btn.disabled = false;
-    }
-  } catch(e){
-    /* fetch 자체가 실패한 경우 (네트워크 문제 또는 file:// 프로토콜에서 실행 시)
-       이 경우 일단 이동을 시도해볼 수도 있지만, 사용자 경험상 메시지를 띄우는 게 안전함 */
-    showMessage('⚠ 파일을 확인할 수 없습니다. 로컬 파일로 직접 실행 시 동작하지 않습니다.', 'error');
-    btn.disabled = false;
+  // ① 새 방식: JSON 데이터
+  if(await exists(`data/${dateStr}.json`)){
+    window.location.href = `view.html?date=${dateStr}`;
+    return;
   }
+
+  // ② 구 방식: 통째로 만들어둔 HTML (폴더명 "News Source"에 공백 → encodeURI)
+  const legacy = encodeURI(`News Source/DailyNews_${toFileDateString(dateStr)}.html`);
+  if(await exists(legacy)){
+    window.location.href = legacy;
+    return;
+  }
+
+  // ③ 둘 다 없음
+  showMessage('⚠ 존재하지 않는 뉴스입니다.', 'error');
+  btn.disabled = false;
 }
 
 /* ───────────────────────────────────────────────────
