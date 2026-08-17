@@ -2,345 +2,372 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Drive · jaealee</title>
-<!-- 폰트: 본문은 Noto Sans KR(한글 가독성), 라벨/개수는 JetBrains Mono(사무적 느낌) -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Drive · jaealee.com</title>
+
+<!-- 본문용 Pretendard -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<!-- 제목용 Black Han Sans + 데이터/라벨용 JetBrains Mono -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
 <style>
-  /* ===== 색상/간격 토큰 (light theme) ===== */
-  :root{
-    --bg:        #F4F6F9;   /* 페이지 배경 (밝은 쿨 그레이) */
-    --surface:   #FFFFFF;   /* 카드 표면 */
-    --surface-2: #FBFCFD;   /* 빈 영역 표면 */
-    --border:    #E2E7ED;   /* 기본 테두리 */
-    --border-2:  #D3DAE3;   /* 진한 테두리(호버 등) */
-    --text:      #1B2430;   /* 본문 글자 (거의 검정) */
-    --text-2:    #5C6675;   /* 보조 글자 */
-    --text-3:    #8A93A1;   /* 흐린 글자(메타) */
-    --accent:    #2F6FED;   /* 포인트 파랑 */
-    --accent-bg: #EAF1FE;   /* 포인트 연한 배경 */
-    --radius:    12px;
-    --gap:       14px;
-    --maxw:      980px;
-  }
-  *{ box-sizing:border-box; margin:0; padding:0; }
-  body{
-    font-family:'Noto Sans KR', sans-serif;
-    background:var(--bg);
-    color:var(--text);
-    line-height:1.55;
-    -webkit-font-smoothing:antialiased;
-    padding:0 20px 80px;
-  }
-  /* 고정폭 글꼴을 쓰는 라벨/숫자 공통 클래스 */
-  .mono{ font-family:'JetBrains Mono', monospace; }
-  .wrap{ max-width:var(--maxw); margin:0 auto; }
-  /* ===== 상단 헤더 ===== */
-  .page-head{
-    padding:48px 0 28px;
-    border-bottom:1px solid var(--border);
-    margin-bottom:32px;
-  }
-  .page-head .eyebrow{
-    font-family:'JetBrains Mono', monospace;
-    font-size:12px;
-    letter-spacing:0.12em;
-    text-transform:uppercase;
-    color:var(--accent);
-    margin-bottom:8px;
-  }
-  .page-head h1{
-    font-size:30px;
-    font-weight:700;
-    letter-spacing:-0.01em;
-  }
-  .page-head p{
-    margin-top:6px;
-    color:var(--text-2);
-    font-size:14px;
-  }
-  /* ===== 섹션 ===== */
-  .section{ margin-bottom:24px; }
-  /* 섹션별 폴더 색상 테마 (--c-body=폴더 면, --c-tab=탭, --c-accent=글자, --c-dot=점) */
-  .section.summer{ --c-body:#FCEFC9; --c-tab:#F7D277; --c-accent:#8F6300; --c-dot:#F2B12A; }
-  .section.fall  { --c-body:#DEE9FD; --c-tab:#B2CDFA; --c-accent:#1E4FD6; --c-dot:#3B82F6; }
-  .section.drive { --c-body:#D6F0E1; --c-tab:#A4DCBE; --c-accent:#0F7A40; --c-dot:#1FA563; }
-  .section.past  { --c-body:#E6E9EF; --c-tab:#CCD3DD; --c-accent:#566273; --c-dot:#96A0AE; }
-  /* 섹션 제목 앞 색상 점(폴더 색과 매칭) */
-  .sec-dot{
-    flex:0 0 auto;
-    width:11px; height:11px;
-    border-radius:3px;
-    background:var(--c-dot, var(--border-2));
-  }
-  /* 섹션 헤더 = 펼침/접힘 버튼 */
-  .sec-head{
-    width:100%;
-    display:flex;
-    align-items:center;
-    gap:12px;
-    background:none;
-    border:none;
-    border-bottom:1px solid var(--border);
-    padding:12px 4px;
-    cursor:pointer;
-    text-align:left;
-    color:var(--text);
-    transition:border-color .15s ease;
-  }
-  .sec-head:hover{ border-color:var(--border-2); }
-  .sec-head:focus-visible{
-    outline:2px solid var(--accent);
-    outline-offset:2px;
-    border-radius:6px;
-  }
-  /* 펼침/접힘 화살표 */
-  .chevron{
-    flex:0 0 auto;
-    width:16px; height:16px;
-    color:var(--text-3);
-    transition:transform .2s ease;
-  }
-  .sec-head[aria-expanded="true"] .chevron{ transform:rotate(90deg); }
-  .sec-title{
-    font-size:17px;
-    font-weight:700;
-    letter-spacing:-0.01em;
-  }
-  /* 항목 개수 배지 */
-  .sec-count{
-    font-family:'JetBrains Mono', monospace;
-    font-size:12px;
-    color:var(--text-3);
-    background:var(--surface);
-    border:1px solid var(--border);
-    border-radius:999px;
-    padding:2px 9px;
-    margin-left:auto;
-  }
-  /* 섹션 본문: grid-rows 트릭으로 부드럽게 펼침/접힘 */
-  .sec-body{
-    display:grid;
-    grid-template-rows:1fr;
-    transition:grid-template-rows .25s ease;
-  }
-  .sec-body[hidden]{ display:grid; }          /* hidden이어도 grid 유지 */
-  .sec-head[aria-expanded="false"] + .sec-body{ grid-template-rows:0fr; }
-  .sec-body > .sec-inner{
-    overflow:hidden;
-    min-height:0;
-    padding-top:16px;
-  }
-  /* ===== 카드 그리드 ===== */
-  .grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill, minmax(158px, 1fr)); /* 한 줄에 더 많이 → 폴더 좁게 */
-    gap:var(--gap);
-  }
-  /* ===== 폴더 모양 카드(링크) ===== */
-  /* 색은 섹션별 변수(--c-body / --c-tab / --c-accent)에서 받아온다 */
-  .card{
-    position:relative;
-    display:flex;
-    flex-direction:column;
-    gap:6px;
-    margin-top:12px;                  /* 위쪽 탭(돌출부) 자리 확보 */
-    background:var(--c-body, var(--surface));
-    border:1px solid rgba(27,36,48,.10);
-    border-radius:3px 12px 12px 12px; /* 왼쪽 위만 각지게 → 탭과 연결되는 폴더 모양 */
-    padding:16px 16px 14px;
-    text-decoration:none;
-    color:var(--text);
-    min-height:92px;
-    transition:box-shadow .15s ease, transform .15s ease, border-color .15s ease;
-  }
-  /* 폴더 탭: 카드 왼쪽 위의 돌출부 */
-  .card::before{
-    content:'';
-    position:absolute;
-    top:-11px; left:0;
-    width:44%; height:13px;
-    background:var(--c-tab, var(--border));
-    border-radius:6px 6px 0 0;
-    clip-path:polygon(0 0, 76% 0, 100% 100%, 0 100%); /* 오른쪽을 비스듬히 깎아 폴더 느낌 */
-  }
-  .card:hover{
-    border-color:rgba(27,36,48,.20);
-    box-shadow:0 6px 16px rgba(27,36,48,.13);
-    transform:translateY(-2px);
-  }
-  .card:focus-visible{
-    outline:2px solid var(--c-accent, var(--accent));
-    outline-offset:2px;
-  }
-  .card-kicker{
-    font-family:'JetBrains Mono', monospace;
-    font-size:11px;
-    letter-spacing:0.08em;
-    text-transform:uppercase;
-    color:var(--c-accent, var(--accent));
-  }
-  .card-title{
-    font-size:15px;
-    font-weight:700;
-    margin-top:auto;                  /* 제목을 카드 하단으로 정렬 */
-  }
-  .card-meta{
-    font-family:'JetBrains Mono', monospace;
-    font-size:11px;
-    color:rgba(27,36,48,.50);
-  }
-  /* ===== 빈 영역 안내(폴더 모양 유지) ===== */
-  .empty{
-    position:relative;
-    margin-top:12px;
-    border:1px dashed rgba(27,36,48,.22);
-    border-radius:3px 12px 12px 12px;
-    background:var(--c-body, var(--surface-2));
-    padding:30px 20px;
-    text-align:center;
-    color:var(--text-2);
-    font-size:14px;
-  }
-  .empty::before{
-    content:'';
-    position:absolute;
-    top:-11px; left:0;
-    width:30%; height:13px;
-    background:var(--c-tab, var(--border));
-    border-radius:6px 6px 0 0;
-    clip-path:polygon(0 0, 76% 0, 100% 100%, 0 100%);
-  }
-  .empty .mono{ color:rgba(27,36,48,.48); font-size:12px; display:block; margin-top:4px; }
-  /* 지난 도큐멘트 안에서 학기별 소제목 */
-  .sub-label{
-    font-family:'JetBrains Mono', monospace;
-    font-size:12px;
-    letter-spacing:0.08em;
-    text-transform:uppercase;
-    color:var(--text-3);
-    margin:22px 0 2px;
-  }
-  .sub-label:first-child{ margin-top:0; }
-  /* ===== 모바일 ===== */
-  @media (max-width:520px){
-    .page-head{ padding:36px 0 22px; }
-    .page-head h1{ font-size:25px; }
-    .grid{ grid-template-columns:repeat(2, 1fr); } /* 모바일은 2칸 유지 */
-  }
-  /* 모션 최소화 설정 존중 */
-  @media (prefers-reduced-motion:reduce){
-    *{ transition:none !important; }
-  }
+/* ══════════════════════════════════════════════════════════════
+   드라이브 허브 — 화이트 버전
+   과목 페이지와 같은 문법(금속판 + 폴더 탭 + 모노 라벨)을 쓰되
+   명암만 뒤집었습니다. 바탕이 회백색, 판이 흰색입니다.
+   ══════════════════════════════════════════════════════════════ */
+:root{
+  --bg:#E8EBF1;             /* 페이지 바탕 (판보다 어두워야 판이 뜬다) */
+  --panel:#F2F4F8;          /* 큰 박스 */
+  --line:#D3D9E2;           /* 경계선 */
+  --line-2:#C0C8D4;
+
+  --plate:linear-gradient(168deg,#FFFFFF 0%,#FBFCFE 45%,#EFF2F7 100%);
+  --plate-up:linear-gradient(168deg,#FFFFFF 0%,#FFFFFF 45%,#F6F8FB 100%);
+
+  --ink:#141821;            /* 본문 */
+  --ink-2:#4B5564;          /* 보조 */
+  --ink-3:#828C9C;          /* 가장 흐림 */
+
+  --mono:'JetBrains Mono', ui-monospace, monospace;
+  /* 흰 판은 그림자가 약하면 배경에 묻힌다 — 아래 그림자를 확실히 준다 */
+  --lift:inset 0 1px 0 #FFFFFF, 0 2px 4px rgba(20,24,33,.05), 0 10px 24px rgba(20,24,33,.09);
+  --lift-up:inset 0 1px 0 #FFFFFF, 0 4px 8px rgba(20,24,33,.07), 0 20px 38px rgba(20,24,33,.16);
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0; padding:0;}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:'Pretendard','Apple SD Gothic Neo',system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  position:relative; overflow-x:hidden;
+}
+/* 바탕 제도용지 격자 (다크 버전과 같은 규격, 색만 반전) */
+body::before{
+  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image:
+    linear-gradient(rgba(20,24,33,.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20,24,33,.045) 1px, transparent 1px);
+  background-size:64px 64px;
+  mask-image:radial-gradient(ellipse 100% 55% at 50% 0%, #000 15%, transparent 80%);
+}
+a{color:inherit; text-decoration:none;}
+:focus-visible{outline:2px solid var(--ink); outline-offset:3px;}
+
+.wrap{position:relative; z-index:1; max-width:1040px; margin:0 auto; padding:0 24px 100px;}
+
+/* 금속판 공통 재질 — 헤어라인 결까지 동일 */
+.plate{
+  background-image:
+    repeating-linear-gradient(180deg, rgba(20,24,33,.012) 0 1px, transparent 1px 3px),
+    var(--plate);
+  border:1px solid var(--line);
+  box-shadow:var(--lift);
+}
+
+/* ── 상단 바 ───────────────────────────────────────────────── */
+.topbar{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:20px 0; margin-bottom:70px; border-bottom:1px solid var(--line-2);
+}
+.back{
+  display:inline-flex; align-items:center; gap:10px;
+  padding:9px 16px 9px 13px; border-radius:8px;
+  font-family:var(--mono); font-size:11.5px; font-weight:700;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--ink);
+  transition:transform .2s ease, box-shadow .2s ease;
+}
+.back:hover{transform:translateX(-3px); box-shadow:var(--lift-up);}
+.back svg{width:13px; height:13px;}
+.stamp{
+  font-family:var(--mono); font-size:11px; letter-spacing:.16em;
+  color:var(--ink-3); display:flex; align-items:center; gap:10px;
+}
+.stamp i{
+  width:6px; height:6px; border-radius:50%; background:#FF5A3C; font-style:normal;
+  box-shadow:0 0 8px rgba(255,90,60,.7); animation:blink 2.6s ease-in-out infinite;
+}
+@keyframes blink{0%,100%{opacity:1;} 50%{opacity:.4;}}
+
+/* ── 히어로 ────────────────────────────────────────────────── */
+.hero{margin-bottom:60px;}
+.eyebrow{
+  font-family:var(--mono); font-size:11px; font-weight:500;
+  letter-spacing:.24em; text-transform:uppercase; color:var(--ink-3); margin:0 0 18px;
+}
+/* 제목: 다크 버전의 스틸을 그대로 뒤집은 '흑연' 그라디언트 */
+.title{
+  font-family:'Black Han Sans','Pretendard',sans-serif; font-weight:400;
+  font-size:clamp(52px,11vw,108px); line-height:.98; letter-spacing:-.02em; margin:0;
+  color:var(--ink);                    /* 그라디언트 미지원 시 대비 */
+  background:linear-gradient(176deg,#3A4351 0%,#12161D 40%,#4A5462 54%,#161B23 78%,#39424F 100%);
+  -webkit-background-clip:text; background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.rule{
+  height:2px; background:var(--ink); margin:26px 0 18px;
+  transform:scaleX(0); transform-origin:left center;
+  animation:draw .9s cubic-bezier(.22,1,.36,1) .2s forwards;
+}
+@keyframes draw{to{transform:scaleX(1);}}
+.subtitle{
+  font-family:var(--mono); font-size:clamp(12px,1.6vw,15px);
+  letter-spacing:.42em; text-transform:uppercase; color:var(--ink-3); margin:0;
+}
+
+/* ── 과목 박스 영역 ────────────────────────────────────────── */
+.panel{
+  border:1px solid var(--line); border-radius:16px;
+  background:var(--panel); padding:0 24px 32px;
+  box-shadow:inset 0 1px 0 #FFFFFF;
+}
+.panel + .panel{margin-top:34px;}   /* 학기를 여러 개 둘 때 간격 */
+.panel-head{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:18px 0; margin-bottom:32px; border-bottom:1px solid var(--line);
+  font-family:var(--mono); font-size:11px; letter-spacing:.2em;
+  text-transform:uppercase; color:var(--ink-3);
+}
+.panel-head b{color:var(--ink); font-weight:700;}
+
+.courses{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:28px 20px;}
+
+/* 과목 카드 — 색은 카드마다 style="--c:..." 로 지정 */
+.course{
+  position:relative; padding:22px 20px 18px; border-radius:12px;
+  transition:transform .22s cubic-bezier(.22,1,.36,1), box-shadow .22s ease,
+             border-color .22s ease, background-image .22s ease;
+}
+/* 카드 위로 삐져나온 폴더 탭 — 과목 색이 여기에 들어간다 */
+.course::before{
+  content:''; position:absolute; top:-9px; left:20px;
+  width:56px; height:14px; border-radius:7px 7px 0 0;
+  background:var(--c); border:1px solid var(--c); border-bottom:0;
+  transition:height .22s ease, top .22s ease, width .22s ease;
+}
+.course:hover{
+  transform:translateY(-7px); border-color:var(--c); box-shadow:var(--lift-up);
+  background-image:
+    repeating-linear-gradient(180deg, rgba(20,24,33,.012) 0 1px, transparent 1px 3px),
+    var(--plate-up);
+}
+.course:hover::before{height:20px; top:-15px; width:70px;}
+
+.course .term{
+  display:inline-block; margin-bottom:14px; padding:3px 8px; border-radius:5px;
+  font-family:var(--mono); font-size:10px; font-weight:700; letter-spacing:.12em;
+  color:var(--c); background:color-mix(in srgb, var(--c) 12%, transparent);
+}
+.course h3{margin:0 0 8px; font-size:18px; font-weight:800; letter-spacing:-.03em; color:var(--ink); line-height:1.3;}
+.course .slug{
+  display:block; font-family:var(--mono); font-size:11.5px;
+  letter-spacing:.04em; color:var(--ink-3);
+}
+.course .foot{
+  display:flex; align-items:center; justify-content:flex-end;
+  margin-top:22px; padding-top:12px; border-top:1px solid var(--line);
+}
+.course .arrow{font-size:15px; color:var(--ink-3); transition:transform .22s ease, color .22s ease;}
+.course:hover .arrow{transform:translateX(5px); color:var(--c);}
+
+
+/* ── 접이식 섹션(<details>) ──────────────────────────────────
+   현재 학기만 펼쳐두고 지난 학기는 접어서 페이지 길이를 관리한다 */
+.panel > summary{list-style:none; cursor:pointer;}
+.panel > summary::-webkit-details-marker{display:none;}
+.panel > summary .chev{
+  display:inline-block; margin-left:10px; font-size:12px; color:var(--ink-3);
+  transition:transform .22s ease;
+}
+.panel[open] > summary .chev{transform:rotate(90deg);}
+.panel > summary:hover{color:var(--ink);}
+
+/* 지난 학기: 채도를 낮춰 현재 학기와 위계를 만든다 */
+.panel.past{background:#EDEFF4;}
+.panel.past .course{filter:saturate(.35); opacity:.86;}
+.panel.past .course:hover{filter:none; opacity:1;}
+
+/* 과목이 아닌 일반 폴더(자료실 등) — 학기 배지 없이 */
+.folder-note{
+  font-family:var(--mono); font-size:11.5px; letter-spacing:.06em;
+  color:var(--ink-3); margin:0 0 22px;
+}
+/* 아직 비어 있는 섹션 */
+.empty{
+  border:1.5px dashed var(--line-2); border-radius:12px;
+  padding:30px 20px; text-align:center;
+  font-family:var(--mono); font-size:11.5px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--ink-3);
+}
+
+/* ── 반응형 ───────────────────────────────────────────────── */
+@media (max-width:540px){
+  .wrap{padding:0 16px 70px;}
+  .topbar{margin-bottom:46px;}
+  .hero{margin-bottom:46px;}
+  .panel{padding:0 16px 26px; border-radius:14px;}
+  .courses{grid-template-columns:1fr;}
+  .subtitle{letter-spacing:.28em;}
+}
+
+/* 모션 최소화 설정 존중 */
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important; transition:none !important;}
+  .rule{transform:scaleX(1);}
+}
 </style>
 </head>
+
 <body>
 <div class="wrap">
-  <!-- ===== 상단 헤더 ===== -->
-  <header class="page-head">
-    <div class="eyebrow">jaealee.com / drive</div>
-    <h1>Drive</h1>
-    <p>학기 자료와 문서를 모아두는 공간입니다.</p>
+
+  <!-- ────────── 상단 바 ────────── -->
+  <div class="topbar">
+    <!-- /drive/ 기준 ../ = 사이트 최상단. 절대경로로는 href="/" -->
+    <a class="back plate" href="../">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      jaealee.com
+    </a>
+    <span class="stamp"><i></i>2026-2 / DRIVE</span>
+  </div>
+
+  <!-- ────────── 히어로 ────────── -->
+  <header class="hero">
+    <p class="eyebrow">Kangwon National University</p>
+    <h1 class="title">드라이브</h1>
+    <div class="rule"></div>
+    <p class="subtitle">Course Archive</p>
   </header>
-  <!-- ===========================================================
-       섹션 1 · 2026 2학기  (기본 펼침, 현재 학기 / 새로 채울 예정)
-       과목이 정해지면 아래 .empty 블록을 <div class="grid"> + 카드들로 교체하세요.
-       =========================================================== -->
-  <section class="section fall">
-    <button class="sec-head" aria-expanded="true" aria-controls="sec-fall">
-      <!-- 화살표 아이콘 -->
-      <svg class="chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-        <path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <span class="sec-dot"></span>
-      <span class="sec-title">2026 2학기</span>
-      <span class="sec-count">7개</span>
-    </button>
-    <div class="sec-body" id="sec-fall">
-      <div class="sec-inner">
-        <div class="grid">
-          <a class="card" href="/drive/data-programming/"><span class="card-kicker">2학기</span><span class="card-title">데이터분석프로그래밍</span><span class="card-meta">data-programming</span></a>
-          <a class="card" href="/drive/english/"><span class="card-kicker">2학기</span><span class="card-title">전공영어</span><span class="card-meta">english</span></a>
-          <a class="card" href="/drive/ai/"><span class="card-kicker">2학기</span><span class="card-title">인공지능</span><span class="card-meta">ai</span></a>
-          <a class="card" href="/drive/algorithm/"><span class="card-kicker">2학기</span><span class="card-title">알고리즘</span><span class="card-meta">algorithm</span></a>
-          <a class="card" href="/drive/secure-coding/"><span class="card-kicker">2학기</span><span class="card-title">시큐어코딩</span><span class="card-meta">secure-coding</span></a>
-          <a class="card" href="/drive/privacy-law/"><span class="card-kicker">2학기</span><span class="card-title">개인정보보호법률이해</span><span class="card-meta">privacy-law</span></a>
-          <a class="card" href="/drive/privacy-crypto/"><span class="card-kicker">2학기</span><span class="card-title">개인정보보호암호기술</span><span class="card-meta">privacy-crypto</span></a>
-        </div>
-      </div>
-    </div>
-  </section>
-  <!-- ===========================================================
-       섹션 2 · 드라이브  (기본 펼침, 개수 제한 없음 / 현재 비어있음)
-       항목이 생기면 아래 .empty 블록을 <div class="grid"> + 카드들로 교체하세요.
-       =========================================================== -->
-  <section class="section drive">
-    <button class="sec-head" aria-expanded="true" aria-controls="sec-drive">
-      <svg class="chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-        <path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <span class="sec-dot"></span>
-      <span class="sec-title">드라이브</span>
-      <span class="sec-count">0개</span>
-    </button>
-    <div class="sec-body" id="sec-drive">
-      <div class="sec-inner">
-        <div class="empty">
-          아직 항목이 없습니다.
-          <span class="mono">// 카드를 추가하면 여기에 쌓입니다</span>
-        </div>
-      </div>
-    </div>
-  </section>
-  <!-- ===========================================================
-       섹션 3 · 지난 도큐멘트  (기본 펼침, 끝난 학기 보관)
-       여름학기 + 1학기 자료를 학기별로 묶어 보관.
-       =========================================================== -->
-  <section class="section past">
-    <button class="sec-head" aria-expanded="false" aria-controls="sec-past">
-      <svg class="chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-        <path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <span class="sec-dot"></span>
-      <span class="sec-title">지난 도큐멘트</span>
-      <span class="sec-count">8개</span>
-    </button>
-    <div class="sec-body" id="sec-past">
-      <div class="sec-inner">
 
-        <!-- 2026 여름학기 -->
-        <div class="sub-label">2026 여름학기</div>
-        <div class="grid">
-          <a class="card" href="/drive/data-intro/"><span class="card-kicker">여름학기</span><span class="card-title">데이터활용개론</span><span class="card-meta">data-intro</span></a>
-        </div>
+  <!-- ────────── 2026-2학기 ────────── -->
+  <!-- 학기를 추가할 때는 이 <section> 통째로 복사해서 아래에 붙이면 됩니다 -->
+  <details class="panel" open>
+    <summary class="panel-head">
+      <span>2026 · 2학기 <span class="chev">›</span></span>
+      <span><b>07</b> Courses</span>
+    </summary>
 
-        <!-- 2026 1학기 -->
-        <div class="sub-label">2026 1학기</div>
-        <div class="grid">
-          <a class="card" href="/drive/datastructure/"><span class="card-kicker">1학기</span><span class="card-title">자료구조</span><span class="card-meta">datastructure</span></a>
-          <a class="card" href="/drive/web/"><span class="card-kicker">1학기</span><span class="card-title">웹프로그래밍</span><span class="card-meta">web</span></a>
-          <a class="card" href="/drive/linux/"><span class="card-kicker">1학기</span><span class="card-title">리눅스프로그래밍</span><span class="card-meta">linux</span></a>
-          <a class="card" href="/drive/discrete/"><span class="card-kicker">1학기</span><span class="card-title">AI이산구조</span><span class="card-meta">discrete</span></a>
-          <a class="card" href="/drive/ai-intro/"><span class="card-kicker">1학기</span><span class="card-title">모두의인공지능</span><span class="card-meta">ai-intro</span></a>
-          <a class="card" href="/drive/ai-ethics/"><span class="card-kicker">1학기</span><span class="card-title">인공지능시대의윤리</span><span class="card-meta">ai-ethics</span></a>
-          <a class="card" href="/drive/disease-history/"><span class="card-kicker">1학기</span><span class="card-title">전염병과인류의역사</span><span class="card-meta">disease-history</span></a>
-        </div>
+    <div class="courses">
+      <!-- style="--c:..." 값이 각 과목 페이지의 --acc-deep 과 같은 색입니다 -->
+      <a class="course plate" href="./data-programming/" style="--c:#1B6FD1">
+        <span class="term">2학기</span>
+        <h3>데이터분석프로그래밍</h3>
+        <span class="slug">data-programming</span>
+        <div class="foot"><span class="arrow">→</span></div>
+      </a>
 
-      </div>
+      <a class="course plate" href="./english/" style="--c:#C0522A">
+        <span class="term">2학기</span>
+        <h3>전공영어</h3>
+        <span class="slug">english</span>
+        <div class="foot"><span class="arrow">→</span></div>
+      </a>
+
+      <a class="course plate" href="./ai/" style="--c:#6B3FD6">
+        <span class="term">2학기</span>
+        <h3>인공지능</h3>
+        <span class="slug">ai</span>
+        <div class="foot"><span class="arrow">→</span></div>
+      </a>
+
+      <a class="course plate" href="./algorithm/" style="--c:#0F8067">
+        <span class="term">2학기</span>
+        <h3>알고리즘</h3>
+        <span class="slug">algorithm</span>
+        <div class="foot"><span class="arrow">→</span></div>
+      </a>
+
+      <a class="course plate" href="./secure-coding/" style="--c:#9A7726">
+        <span class="term">2학기</span>
+        <h3>시큐어코딩</h3>
+        <span class="slug">secure-coding</span>
+        <div class="foot"><span class="arrow">→</span></div>
+      </a>
+
+      <a class="course plate" href="./privacy-law/" style="--c:#C43356">
+        <span class="term">2학기</span>
+        <h3>개인정보보호법률이해</h3>
+        <span class="slug">privacy-law</span>
+        <div class="foot"><span class="arrow">→</span></div>
+      </a>
+
+      <a class="course plate" href="./privacy-crypto/" style="--c:#0E7F8C">
+        <span class="term">2학기</span>
+        <h3>개인정보보호암호기술</h3>
+        <span class="slug">privacy-crypto</span>
+        <div class="foot"><span class="arrow">→</span></div>
+      </a>
     </div>
-  </section>
+  </details>
+
+  <!-- ────────── 2026 여름학기 ────────── -->
+  <details class="panel past">
+    <summary class="panel-head">
+      <span>2026 · 여름학기 <span class="chev">›</span></span>
+      <span><b>00</b> Courses</span>
+    </summary>
+    <div class="courses">
+      <!-- ✏️ 과목 카드를 여기에 넣으세요. 위 2학기 카드 블록을 복사하면 됩니다.
+      <a class="course plate" href="./슬러그/" style="--c:#색상">
+        <span class="term">여름</span>
+        <h3>과목명</h3>
+        <span class="slug">슬러그</span>
+        <div class="foot"><span class="arrow">→</span></div>
+      </a>
+      -->
+    </div>
+    <div class="empty">등록된 과목 없음</div>
+  </details>
+
+  <!-- ────────── 2026 1학기 ────────── -->
+  <details class="panel past">
+    <summary class="panel-head">
+      <span>2026 · 1학기 <span class="chev">›</span></span>
+      <span><b>00</b> Courses</span>
+    </summary>
+    <div class="courses">
+      <!-- ✏️ 1학기 과목 카드 자리 -->
+    </div>
+    <div class="empty">등록된 과목 없음</div>
+  </details>
+
+  <!-- ────────── 드라이브 (과목이 아닌 일반 폴더) ────────── -->
+  <details class="panel" open>
+    <summary class="panel-head">
+      <span>드라이브 <span class="chev">›</span></span>
+      <span><b>00</b> Folders</span>
+    </summary>
+    <p class="folder-note">// 과목과 무관한 폴더 (자료실, 개인 문서 등)</p>
+    <div class="courses">
+      <!-- ✏️ 일반 폴더는 학기 배지 없이 이 형태로:
+      <a class="course plate" href="./폴더명/" style="--c:#5F6978">
+        <h3>폴더 이름</h3>
+        <span class="slug">folder-name</span>
+        <div class="foot"><span class="arrow">→</span></div>
+      </a>
+      -->
+    </div>
+    <div class="empty">등록된 폴더 없음</div>
+  </details>
+
+  <!-- ────────── 지난 폴더 ────────── -->
+  <details class="panel past">
+    <summary class="panel-head">
+      <span>지난 폴더 <span class="chev">›</span></span>
+      <span><b>00</b> Archived</span>
+    </summary>
+    <div class="courses">
+      <!-- ✏️ 보관용 폴더 자리 -->
+    </div>
+    <div class="empty">보관된 폴더 없음</div>
+  </details>
+
 </div>
-<script>
-  // 섹션 헤더 클릭 시 펼침/접힘 토글
-  document.querySelectorAll('.sec-head').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      // 현재 상태 반전 (aria-expanded 값으로 CSS가 알아서 애니메이션 처리)
-      var open = btn.getAttribute('aria-expanded') === 'true';
-      btn.setAttribute('aria-expanded', String(!open));
-    });
-  });
-</script>
 </body>
 </html>

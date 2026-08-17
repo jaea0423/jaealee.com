@@ -2,33 +2,466 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>데이터분석프로그래밍 · Drive</title>
+
+<!-- 본문용 Pretendard -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<!-- 제목용 Black Han Sans + 데이터/라벨용 JetBrains Mono -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
 <style>
-  :root{ --bg:#F4F6F9; --surface:#FFFFFF; --border:#E2E7ED; --text:#1B2430; --text-2:#5C6675; --accent:#2F6FED; }
-  *{ box-sizing:border-box; margin:0; padding:0; }
-  body{ font-family:'Noto Sans KR',sans-serif; background:var(--bg); color:var(--text); line-height:1.6;
-        display:flex; align-items:center; justify-content:center; min-height:100vh; padding:24px; }
-  .box{ max-width:440px; text-align:center; }
-  .eyebrow{ font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.12em; text-transform:uppercase;
-            color:var(--accent); margin-bottom:10px; }
-  h1{ font-size:26px; font-weight:700; letter-spacing:-.01em; }
-  p{ margin-top:10px; color:var(--text-2); font-size:14px; }
-  a.back{ display:inline-block; margin-top:24px; font-family:'JetBrains Mono',monospace; font-size:13px;
-          color:var(--accent); text-decoration:none; border:1px solid var(--border); background:var(--surface);
-          border-radius:8px; padding:8px 16px; }
-  a.back:hover{ border-color:var(--accent); }
+/* ══════════════════════════════════════════════════════════════
+   과목 페이지 공통 스타일
+   컨셉: 어두운 바탕 + 밝은 금속판(plate)
+   ── 과목별로 다른 값은 아래 두 줄(--acc, --acc-deep)뿐입니다.
+   ══════════════════════════════════════════════════════════════ */
+:root{
+  /* ▼▼ 과목 포인트 컬러 ▼▼ */
+  --acc:#6FB4FF;            /* 어두운 배경 위에서 쓰는 밝은 톤 */
+  --acc-deep:#1B6FD1;  /* 밝은 금속판 위에서 쓰는 진한 톤 */
+  /* ▲▲ 여기만 바꾸면 과목 색이 전부 바뀝니다 ▲▲ */
+
+  /* 어두운 쪽 */
+  --bg:#0F1217;
+  --bg-2:#161B22;
+  --line-dark:#2A313C;
+  --on-dark:#E9ECF1;
+  --on-dark-dim:#9BA5B4;
+
+  /* 밝은 금속판 쪽 */
+  --plate:linear-gradient(168deg,#FCFDFE 0%,#EBEFF4 42%,#D3DAE3 100%);
+  --plate-up:linear-gradient(168deg,#FFFFFF 0%,#F4F7FA 42%,#E2E8F0 100%);
+  --plate-sunk:#E6EBF1;
+  --plate-line:#C3CBD6;
+  --ink:#161A21;
+  --ink-dim:#5F6978;
+
+  --mono:'JetBrains Mono', ui-monospace, monospace;
+  --lift:inset 0 1px 0 #FFFFFF, inset 0 -1px 0 rgba(0,0,0,.10), 0 10px 26px rgba(0,0,0,.5);
+  --lift-up:inset 0 1px 0 #FFFFFF, inset 0 -1px 0 rgba(0,0,0,.10), 0 20px 40px rgba(0,0,0,.6);
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0; padding:0;}
+body{
+  background:var(--bg);
+  color:var(--on-dark);
+  font-family:'Pretendard','Apple SD Gothic Neo',system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  position:relative; overflow-x:hidden;
+}
+/* 바탕 격자 — 과목 색으로 아주 옅게 물들인다 */
+body::before{
+  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size:64px 64px;
+  mask-image:radial-gradient(ellipse 100% 55% at 50% 0%, #000 15%, transparent 80%);
+}
+/* 화면 위쪽에 과목 색 광원 */
+body::after{
+  content:''; position:fixed; top:-32vh; left:50%; transform:translateX(-50%);
+  width:120vw; height:64vh; z-index:0; pointer-events:none;
+  background:radial-gradient(ellipse at center, color-mix(in srgb, var(--acc) 12%, transparent), transparent 62%);
+}
+a{color:inherit; text-decoration:none;}
+:focus-visible{outline:2px solid var(--acc); outline-offset:3px;}
+
+.wrap{position:relative; z-index:1; max-width:1000px; margin:0 auto; padding:0 24px 100px;}
+
+/* 금속판 공통 재질 (헤어라인 결 + 두께감) */
+.plate{
+  background-image:
+    repeating-linear-gradient(180deg, rgba(0,0,0,.018) 0 1px, transparent 1px 3px),
+    var(--plate);
+  border:1px solid var(--plate-line);
+  box-shadow:var(--lift);
+  color:var(--ink);
+}
+
+/* ── 상단 바 ───────────────────────────────────────────────── */
+.topbar{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:20px 0; margin-bottom:70px; border-bottom:1px solid var(--line-dark);
+}
+.back{
+  display:inline-flex; align-items:center; gap:10px;
+  padding:9px 16px 9px 13px; border-radius:8px;
+  font-family:var(--mono); font-size:11.5px; font-weight:700;
+  letter-spacing:.18em; text-transform:uppercase;
+  transition:transform .2s ease, filter .2s ease;
+}
+.back:hover{transform:translateX(-3px); filter:brightness(1.06);}
+.back svg{width:13px; height:13px;}
+.stamp{
+  font-family:var(--mono); font-size:11px; letter-spacing:.16em;
+  color:var(--on-dark-dim); display:flex; align-items:center; gap:10px;
+}
+.stamp i{width:6px; height:6px; border-radius:50%; background:var(--acc); font-style:normal;
+  box-shadow:0 0 10px var(--acc); animation:blink 2.6s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1;} 50%{opacity:.4;}}
+
+/* ── 히어로 ────────────────────────────────────────────────── */
+.hero{margin-bottom:60px;}
+.eyebrow{
+  font-family:var(--mono); font-size:11px; font-weight:500;
+  letter-spacing:.24em; text-transform:uppercase; color:var(--acc); margin:0 0 18px;
+}
+.title{
+  font-family:'Black Han Sans','Pretendard',sans-serif; font-weight:400;
+  font-size:clamp(44px,10vw,104px); line-height:.98; letter-spacing:-.02em; margin:0;
+  color:#FFFFFF;                       /* 그라디언트 미지원 시 대비 */
+  background:linear-gradient(176deg,#FFFFFF 0%,#DFE4EB 38%,#98A0AD 52%,#FFFFFF 78%,#C6CCD6 100%);
+  -webkit-background-clip:text; background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.rule{
+  height:2px; background:var(--acc); margin:26px 0 18px;
+  transform:scaleX(0); transform-origin:left center;
+  animation:draw .9s cubic-bezier(.22,1,.36,1) .2s forwards;
+  box-shadow:0 0 16px color-mix(in srgb, var(--acc) 55%, transparent);
+}
+@keyframes draw{to{transform:scaleX(1);}}
+.subtitle{
+  font-family:var(--mono); font-size:clamp(12px,1.6vw,15px);
+  letter-spacing:.42em; text-transform:uppercase; color:var(--on-dark-dim); margin:0;
+}
+
+/* ── 정보 버튼 3개 (밝은 금속판) ────────────────────────────── */
+.actions{display:flex; flex-wrap:wrap; gap:14px; margin-top:38px;}
+.btn{
+  position:relative; display:flex; align-items:center; gap:12px;
+  padding:15px 24px 15px 22px; border-radius:10px; overflow:hidden;
+  font-family:'Pretendard',sans-serif; font-size:15px; font-weight:700;
+  cursor:pointer;
+  transition:transform .2s ease, box-shadow .2s ease, background-image .2s ease;
+}
+.btn::before{content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--acc-deep);}
+.btn .en{
+  font-family:var(--mono); font-size:10px; font-weight:500; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--ink-dim);
+}
+.btn:hover{
+  transform:translateY(-3px); box-shadow:var(--lift-up);
+  background-image:
+    repeating-linear-gradient(180deg, rgba(0,0,0,.018) 0 1px, transparent 1px 3px),
+    var(--plate-up);
+}
+
+/* ── 폴더 영역 ─────────────────────────────────────────────── */
+.panel{
+  border:1px solid var(--line-dark); border-radius:16px;
+  background:var(--bg-2); padding:0 24px 30px;
+}
+.panel-head{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:18px 0; margin-bottom:30px; border-bottom:1px solid var(--line-dark);
+  font-family:var(--mono); font-size:11px; letter-spacing:.2em;
+  text-transform:uppercase; color:var(--on-dark-dim);
+}
+.panel-head b{color:var(--acc); font-weight:700;}
+
+.folders{display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:26px 20px;}
+
+.folder{
+  position:relative; padding:22px 20px 18px; border-radius:12px;
+  transition:transform .22s cubic-bezier(.22,1,.36,1), box-shadow .22s ease, background-image .22s ease;
+}
+/* 카드 위로 삐져나온 폴더 탭 */
+.folder::before{
+  content:''; position:absolute; top:-9px; left:20px;
+  width:54px; height:14px; border-radius:7px 7px 0 0;
+  background:#C3CBD6; border:1px solid var(--plate-line); border-bottom:0;
+  transition:height .22s ease, top .22s ease, width .22s ease, background .22s ease, border-color .22s ease;
+}
+.folder:hover{
+  transform:translateY(-7px); box-shadow:var(--lift-up);
+  background-image:
+    repeating-linear-gradient(180deg, rgba(0,0,0,.018) 0 1px, transparent 1px 3px),
+    var(--plate-up);
+}
+.folder:hover::before{
+  height:20px; top:-15px; width:68px;
+  background:var(--acc-deep); border-color:var(--acc-deep);
+}
+
+.folder .idx{
+  display:block; margin-bottom:16px;
+  font-family:var(--mono); font-size:12px; font-weight:700;
+  letter-spacing:.1em; color:var(--acc-deep);
+}
+.folder h3{margin:0 0 6px; font-size:18px; font-weight:800; letter-spacing:-.02em; color:var(--ink);}
+.folder p{margin:0; font-size:13px; color:var(--ink-dim); line-height:1.55;}
+.folder .foot{
+  display:flex; align-items:center; justify-content:space-between;
+  margin-top:24px; padding-top:13px; border-top:1px solid var(--plate-line);
+  font-family:var(--mono); font-size:11px; letter-spacing:.1em; color:var(--ink-dim);
+}
+.folder .arrow{font-size:15px; transition:transform .22s ease, color .22s ease;}
+.folder:hover .arrow{transform:translateX(5px); color:var(--acc-deep);}
+
+/* ── 팝업 ─────────────────────────────────────────────────── */
+.overlay{
+  position:fixed; inset:0; z-index:50; display:none;
+  align-items:center; justify-content:center; padding:22px;
+  background:rgba(6,8,11,.74); backdrop-filter:blur(8px);
+}
+.overlay.open{display:flex; animation:fade .18s ease;}
+@keyframes fade{from{opacity:0;}}
+
+.modal{
+  width:100%; max-width:560px; max-height:84vh; overflow:hidden auto;
+  border-radius:16px; animation:rise .3s cubic-bezier(.22,1,.36,1);
+}
+@keyframes rise{from{opacity:0; transform:translateY(16px);}}
+.modal::before{content:''; display:block; height:4px; background:var(--acc-deep);}
+
+.modal-head{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:22px 26px; border-bottom:1px solid var(--plate-line);
+}
+.modal-head h3{margin:0; font-size:19px; font-weight:800; letter-spacing:-.02em; color:var(--ink);}
+.modal-head .en{
+  display:block; margin-top:6px; font-family:var(--mono); font-size:10.5px;
+  letter-spacing:.24em; text-transform:uppercase; color:var(--acc-deep);
+}
+.close{
+  width:34px; height:34px; flex-shrink:0; cursor:pointer; border-radius:8px;
+  background:var(--plate-sunk); border:1px solid var(--plate-line); color:var(--ink-dim);
+  font-size:15px; line-height:1;
+  transition:background .18s ease, color .18s ease, border-color .18s ease;
+}
+.close:hover{background:var(--ink); border-color:var(--ink); color:#FFFFFF;}
+
+.rows{margin:0; padding:8px 26px 26px;}
+.row{display:grid; grid-template-columns:112px 1fr; gap:18px; padding:15px 0; border-bottom:1px solid var(--plate-line);}
+.row:last-child{border-bottom:0;}
+.row dt{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--ink-dim); padding-top:3px;
+}
+.row dd{margin:0; font-size:15px; line-height:1.65; color:var(--ink);}
+.row.stack{grid-template-columns:1fr; gap:9px;}
+.row.stack dd{font-size:14.5px; color:#2B313C;}
+.row .num{font-family:var(--mono); letter-spacing:.04em;}
+.row .todo{color:#A2ABB8;}   /* 아직 안 채운 값 */
+
+/* 수업 시간 팝업 */
+.time-card{
+  margin:20px 26px 26px; border-radius:12px; padding:28px; text-align:center;
+  background:var(--plate-sunk); border:1px solid var(--plate-line);
+  box-shadow:inset 0 2px 5px rgba(0,0,0,.09);
+}
+.days{display:flex; justify-content:center; gap:6px; margin-bottom:22px;}
+.day{
+  width:42px; height:42px; display:grid; place-items:center; border-radius:8px;
+  font-size:14px; font-weight:700; color:#9AA3B0;
+  border:1px solid var(--plate-line); background:rgba(255,255,255,.6);
+}
+.day.on{background:var(--acc-deep); border-color:var(--acc-deep); color:#FFFFFF;}
+.time-range{font-family:var(--mono); font-size:30px; font-weight:700; letter-spacing:-.01em; color:var(--ink);}
+.time-note{
+  margin:12px 0 0; font-family:var(--mono); font-size:11px;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--ink-dim);
+}
+
+/* ── 반응형 ───────────────────────────────────────────────── */
+@media (max-width:540px){
+  .wrap{padding:0 16px 70px;}
+  .topbar{margin-bottom:46px;}
+  .hero{margin-bottom:46px;}
+  .panel{padding:0 16px 24px; border-radius:14px;}
+  .folders{grid-template-columns:1fr;}
+  .actions .btn{flex:1 1 100%; justify-content:space-between;}
+  .row{grid-template-columns:1fr; gap:6px;}
+  .subtitle{letter-spacing:.28em;}
+}
+
+/* 모션 최소화 설정 존중 */
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important; transition:none !important;}
+  .rule{transform:scaleX(1);}
+}
 </style>
 </head>
+
 <body>
-  <div class="box">
-    <div class="eyebrow">2026 2학기</div>
-    <h1>데이터분석프로그래밍</h1>
-    <p>준비 중입니다. 자료가 정리되면 이곳에 올라옵니다.</p>
-    <a class="back" href="/drive/">← Drive</a>
+<div class="wrap">
+
+  <!-- ────────── 상단 바 ────────── -->
+  <div class="topbar">
+    <!-- ../ = /drive/ 로 한 단계 위. 절대경로로 쓰려면 href="/drive/" -->
+    <a class="back plate" href="../">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      Drive
+    </a>
+    <span class="stamp"><i></i>2026-2 / DATA-PROGRAMMING</span>
   </div>
+
+  <!-- ────────── 히어로 ────────── -->
+  <header class="hero">
+    <p class="eyebrow">Computer Engineering</p>
+    <h1 class="title">데이터분석프로그래밍</h1>
+    <div class="rule"></div>
+    <p class="subtitle">Data Programming</p>
+
+    <div class="actions">
+      <button class="btn plate" data-modal="m-course">수업 정보 <span class="en">Course</span></button>
+      <button class="btn plate" data-modal="m-prof">교수 정보 <span class="en">Instructor</span></button>
+      <button class="btn plate" data-modal="m-time">수업 시간 <span class="en">Schedule</span></button>
+    </div>
+  </header>
+
+  <!-- ────────── 폴더 박스 영역 ────────── -->
+  <section class="panel">
+    <div class="panel-head">
+      <span>Directory</span>
+      <span><b>04</b> Folders</span> <!-- ✏️ 폴더 개수 -->
+    </div>
+
+    <div class="folders">
+      <!-- 폴더 추가: 아래 <a> 블록 복사 후 번호·이름·링크만 변경 -->
+      <a class="folder plate" href="./lecture/">
+        <span class="idx">01</span>
+        <h3>강의 정리</h3>
+        <p>주차별 수업 필기</p>
+        <div class="foot"><span>0 FILES</span><span class="arrow">→</span></div>
+      </a>
+
+      <a class="folder plate" href="./exam/">
+        <span class="idx">02</span>
+        <h3>시험 정리</h3>
+        <p>중간·기말 대비 요약</p>
+        <div class="foot"><span>0 FILES</span><span class="arrow">→</span></div>
+      </a>
+
+      <a class="folder plate" href="./assignment/">
+        <span class="idx">03</span>
+        <h3>과제</h3>
+        <p>제출한 과제와 보고서</p>
+        <div class="foot"><span>0 FILES</span><span class="arrow">→</span></div>
+      </a>
+
+      <a class="folder plate" href="./reference/">
+        <span class="idx">04</span>
+        <h3>참고 자료</h3>
+        <p>교재·자료·링크 모음</p>
+        <div class="foot"><span>0 FILES</span><span class="arrow">→</span></div>
+      </a>
+    </div>
+  </section>
+</div>
+
+
+<!-- ══════════ 팝업 1: 수업 정보 ══════════
+     ✏️ 아래 "—" 부분을 강의계획서 보고 채우세요 -->
+<div class="overlay" id="m-course">
+  <div class="modal plate" role="dialog" aria-modal="true" aria-label="수업 정보">
+    <div class="modal-head">
+      <div><h3>수업 정보</h3><span class="en">Course</span></div>
+      <button class="close" aria-label="닫기">✕</button>
+    </div>
+    <dl class="rows">
+      <div class="row"><dt>교과목명</dt><dd>데이터분석프로그래밍</dd></div>
+      <div class="row"><dt>교과목번호</dt><dd class="num todo">—</dd></div>
+      <div class="row"><dt>세부영역</dt><dd class="todo">—</dd></div>
+      <div class="row"><dt>전공</dt><dd class="todo">—</dd></div>
+      <div class="row stack">
+        <dt>교과목 개요</dt>
+        <dd class="todo">—</dd>
+      </div>
+      <div class="row"><dt>선수 과목</dt><dd class="todo">—</dd></div>
+      <div class="row stack">
+        <dt>평가 방법</dt>
+        <dd class="num todo">—</dd>
+      </div>
+    </dl>
+  </div>
+</div>
+
+<!-- ══════════ 팝업 2: 교수 정보 ══════════ -->
+<div class="overlay" id="m-prof">
+  <div class="modal plate" role="dialog" aria-modal="true" aria-label="교수 정보">
+    <div class="modal-head">
+      <div><h3>교수 정보</h3><span class="en">Instructor</span></div>
+      <button class="close" aria-label="닫기">✕</button>
+    </div>
+    <dl class="rows">
+      <div class="row"><dt>성명</dt><dd class="todo">—</dd></div>
+      <div class="row"><dt>소속</dt><dd class="todo">—</dd></div>
+      <div class="row"><dt>전화번호</dt><dd class="num todo">—</dd></div>
+      <div class="row"><dt>전자우편</dt><dd class="num todo">—</dd></div>
+      <div class="row"><dt>연구실</dt><dd class="todo">—</dd></div>
+    </dl>
+  </div>
+</div>
+
+<!-- ══════════ 팝업 3: 수업 시간 ══════════ -->
+<div class="overlay" id="m-time">
+  <div class="modal plate" role="dialog" aria-modal="true" aria-label="수업 시간">
+    <div class="modal-head">
+      <div><h3>수업 시간</h3><span class="en">Schedule</span></div>
+      <button class="close" aria-label="닫기">✕</button>
+    </div>
+    <div class="time-card">
+      <!-- ✏️ 수업 있는 요일에만 class="day on" 을 붙이세요 -->
+      <div class="days">
+        <span class="day">월</span>
+        <span class="day">화</span>
+        <span class="day">수</span>
+        <span class="day">목</span>
+        <span class="day">금</span>
+      </div>
+      <div class="time-range">—</div>
+      <p class="time-note">강의실 미입력</p>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* ── 팝업 열고 닫기 ───────────────────────────────────────── */
+let lastFocused = null; // 팝업을 닫은 뒤 원래 버튼으로 초점을 되돌리기 위해 저장
+
+// 1) 버튼을 누르면 data-modal 값과 같은 id의 팝업을 연다
+document.querySelectorAll('[data-modal]').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    lastFocused = btn;
+    var overlay = document.getElementById(btn.dataset.modal);
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';   // 뒤 배경 스크롤 잠금
+    overlay.querySelector('.close').focus();   // 키보드 초점을 팝업 안으로
+  });
+});
+
+// 2) 닫기: X 버튼 또는 어두운 배경 클릭
+document.querySelectorAll('.overlay').forEach(function (overlay) {
+  overlay.querySelector('.close').addEventListener('click', function () {
+    closeModal(overlay);
+  });
+  overlay.addEventListener('click', function (e) {
+    if (e.target === overlay) closeModal(overlay); // 배경 자체를 눌렀을 때만
+  });
+});
+
+// 3) 닫기: ESC 키
+document.addEventListener('keydown', function (e) {
+  if (e.key !== 'Escape') return;
+  var open = document.querySelector('.overlay.open');
+  if (open) closeModal(open);
+});
+
+function closeModal(overlay) {
+  overlay.classList.remove('open');
+  document.body.style.overflow = '';  // 스크롤 잠금 해제
+  if (lastFocused) lastFocused.focus();
+}
+</script>
 </body>
 </html>
