@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  RED — Routine Every Day
+  맥이 켜지면 봇을 자동으로 띄우고, 꺼지면 다시 살리는 설정 파일이다.
+
+  쓰는 법
+    1. 아래 __USERNAME__ 네 군데를 실제 맥 사용자 이름으로 바꾼다
+       (터미널에 whoami 를 치면 나온다)
+    2. 이 파일을 ~/Library/LaunchAgents/ 에 복사한다
+    3. launchctl load 로 등록한다 — README 4단계 참고
+
+  KeepAlive를 켜뒀기 때문에 봇이 어떤 이유로 죽어도 launchd가 다시 띄운다.
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.jaealee.red</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/python3</string>
+        <string>/Users/__USERNAME__/red/red.py</string>
+    </array>
+
+    <!-- 설정 파일 위치를 환경변수로 알려준다 -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>RED_CONFIG</key>
+        <string>/Users/__USERNAME__/.config/red/config.env</string>
+        <key>PYTHONUNBUFFERED</key>
+        <string>1</string>
+    </dict>
+
+    <!-- 로그인하면 바로 실행 -->
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!-- 죽으면 다시 살린다 -->
+    <key>KeepAlive</key>
+    <true/>
+
+    <!-- 너무 빨리 재시작하며 CPU를 태우지 않게 최소 간격을 둔다 -->
+    <key>ThrottleInterval</key>
+    <integer>30</integer>
+
+    <!-- 로그. 문제가 생기면 여기부터 본다 -->
+    <key>StandardOutPath</key>
+    <string>/Users/__USERNAME__/Library/Logs/red.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/__USERNAME__/Library/Logs/red.error.log</string>
+</dict>
+</plist>
