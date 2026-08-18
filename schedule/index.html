@@ -394,11 +394,33 @@ aside{display:flex;flex-direction:column;gap:18px}
 }
 .meal span{font-size:14.5px;font-weight:500;line-height:1.4;word-break:keep-all}
 
-.empty{font-size:14.5px;color:var(--ink-3);padding:10px 2px}
+/* 데이터가 없는 날 */
+.empty{
+  display:flex;flex-direction:column;align-items:center;gap:7px;
+  border:1px dashed var(--line-2);border-radius:var(--r);
+  padding:46px 20px;text-align:center;
+}
+.empty b{font-size:16px;font-weight:700;color:var(--ink-2);letter-spacing:-.01em}
+.empty span{font-size:13.5px;color:var(--ink-3);line-height:1.6;word-break:keep-all}
 .side-empty{
   background:var(--surface);border:1px dashed var(--line-2);
   border-radius:var(--r);padding:20px;text-align:center;
   font-size:14px;color:var(--ink-3);
+}
+
+/* 하단 저장 시각 */
+.stamp{
+  display:flex;align-items:center;justify-content:flex-end;gap:9px;
+  margin-top:22px;padding-top:14px;border-top:1px solid var(--line);
+}
+.stamp[hidden]{display:none}
+.stamp-k{
+  font-family:var(--mono);font-size:10.5px;font-weight:600;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);
+}
+.stamp-v{
+  font-family:var(--mono);font-size:13px;font-weight:500;
+  letter-spacing:.02em;color:var(--ink-2);
 }
 
 /* ══════════════════════════════════════════════
@@ -512,6 +534,8 @@ aside{display:flex;flex-direction:column;gap:18px}
     <aside id="side"></aside>
   </div>
 
+  <footer class="stamp" id="stamp" hidden></footer>
+
 </div>
 
 <script>
@@ -526,35 +550,6 @@ const CONFIG = {
   frameStart: 7*60,               // 표 기본 시작 07:00
   frameEnd  : 24*60,              // 표 기본 끝 24:00
   dayResetHour: 6                 // 하루 경계 06:00
-};
-
-const SAMPLE = {
-  slots:[
-    {t:"07:00",i:["기상","약 복용"]},
-    {t:"07:30",i:["헬스장"]},{t:"08:00",i:["헬스장"]},{t:"08:30",i:["헬스장"]},
-    {t:"09:00",i:["헬스장"]},{t:"09:30",i:["헬스장"]},
-    {t:"10:00",i:["프로틴","샤워"]},
-    {t:"11:00",i:["이동"]},
-    {t:"11:30",i:["자료구조 수업"]},{t:"12:00",i:["자료구조 수업"]},
-    {t:"12:30",i:["점심"]},
-    {t:"13:00",i:["이산수학 수업"]},{t:"13:30",i:["이산수학 수업"]},
-    {t:"14:00",i:["도서관 과제"]},{t:"14:30",i:["도서관 과제"]},
-    {t:"15:00",i:["도서관 과제"]},{t:"15:30",i:["도서관 과제"]},
-    {t:"16:00",i:["도서관 과제"]},{t:"16:30",i:["도서관 과제"]},
-    {t:"17:30",i:["저녁"]},
-    {t:"18:00",i:["러닝"]},
-    {t:"19:00",i:["샤워"]},
-    {t:"19:30",i:["공부"]},{t:"20:00",i:["공부"]},{t:"20:30",i:["공부"]},
-    {t:"21:00",i:["공부 (예습)"]},{t:"21:30",i:["공부 (예습)"]},
-    {t:"22:00",i:["공부 (예습)"]},{t:"22:30",i:["공부 (예습)"]},
-    {t:"23:00",i:["정리","독서"]},{t:"23:30",i:["정리","독서"]},
-    {t:"24:00",i:["취침 준비"]}
-  ],
-  reminders:["도서관 책 반납","교수님 메일 답장 (오후까지)"],
-  study:["자료구조 3장 정리","이산수학 과제"],
-  meals:{"아침":"프로틴","점심":"학식","저녁":"닭가슴살, 밥"},
-  workout:["등 / 이두"],
-  memo:["러닝은 우천시 생략"]
 };
 
 /* ══════════════════════════════════════════════
@@ -674,10 +669,14 @@ function renderTimeline(data){
   const meta=document.getElementById("tlMeta");
   el.innerHTML="";
   if(!data.slots||!data.slots.length){
-    el.innerHTML='<p class="empty">이 날짜의 시간표가 없습니다.</p>';
-    meta.textContent="No data";
+    el.style.gridTemplateRows="";
+    el.style.gridTemplateColumns="1fr";
+    el.innerHTML='<div class="empty"><b>기록이 없습니다</b>'
+      +'<span>이 날짜의 시간표는 아직 작성되지 않았습니다.</span></div>';
+    meta.textContent="No record";
     return;
   }
+  el.style.gridTemplateColumns="";
 
   const mins=data.slots.map(s=>toMin(s.t));
   const startMin=Math.min(CONFIG.frameStart,...mins);
@@ -802,6 +801,26 @@ function renderSide(d){
 }
 
 /* ══════════════════════════════════════════════
+   렌더 — 하단 저장 시각
+   ══════════════════════════════════════════════ */
+function renderStamp(d){
+  const el=document.getElementById("stamp");
+  if(!d.savedAt){el.hidden=true;el.innerHTML="";return;}
+  el.hidden=false;
+  let txt=d.savedAt;
+  const t=new Date(d.savedAt);
+  if(!isNaN(t)){
+    const p=n=>String(n).padStart(2,"0");
+    const f=new Intl.DateTimeFormat("en-CA",{timeZone:CONFIG.tz,
+      year:"numeric",month:"2-digit",day:"2-digit",
+      hour:"2-digit",minute:"2-digit",hour12:false}).formatToParts(t);
+    const g=k=>f.find(x=>x.type===k).value;
+    txt=`${g("year")}.${g("month")}.${g("day")} ${p(g("hour"))}:${g("minute")}`;
+  }
+  el.innerHTML=`<span class="stamp-k">기록 저장</span><span class="stamp-v">${txt}</span>`;
+}
+
+/* ══════════════════════════════════════════════
    날씨
    ══════════════════════════════════════════════ */
 const WMO={0:"맑음",1:"대체로 맑음",2:"구름 조금",3:"흐림",45:"안개",48:"짙은 안개",
@@ -881,17 +900,19 @@ async function load(date){
 
   loadWeather(date);
 
+  // JSON이 없으면 빈 화면을 보여준다. 예시 데이터로 채우지 않는다.
   let data;
   try{
     const r=await fetch(CONFIG.dataPath(date));
     if(!r.ok)throw new Error();
     data=await r.json();
   }catch(e){
-    data=JSON.parse(JSON.stringify(SAMPLE));
+    data={missing:true};
   }
   data.date=date;
   renderTimeline(data);
   renderSide(data);
+  renderStamp(data);
 }
 
 let current=new URLSearchParams(location.search).get("date")||todayStr();
