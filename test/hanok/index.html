@@ -2095,6 +2095,31 @@ button.blk.tent.warned{background:var(--rust); border:1px dashed #FFE2DA}
   .tv.zoomed .tv-exit{position:fixed; top:12px; right:12px; bottom:auto; transform:none}
 }
 
+
+/* ============================================================
+   디스플레이 모드 — 화면이 작으면 아예 표시하지 않습니다
+   축소해서 보여줘 봐야 읽히지 않고, 잘못된 인상만 줍니다.
+   ============================================================ */
+.tv-small{display:none}
+@media (max-width:900px), (max-height:480px){
+  .tv{display:grid; place-items:center; background:#0C0E12; padding:24px}
+  .tv-stage,.tv-hot,.tv-tap,.tv-exit{display:none}
+  .tv::after{display:none}
+  .tv-small{
+    display:grid; place-items:center; position:relative; z-index:2;
+    width:100%; max-width:340px;
+  }
+  .ts-box{
+    text-align:center; padding:34px 26px;
+    border:1px solid rgba(244,242,238,.16); border-radius:4px;
+    background:rgba(244,242,238,.04);
+  }
+  .ts-box svg{width:38px; height:38px; stroke:#6F6A62; fill:none; stroke-width:1.4; margin-bottom:16px}
+  .ts-t{color:#E4DFD5; font-size:15.5px; font-weight:700; margin-bottom:9px; letter-spacing:-.01em}
+  .ts-s{color:#8A857C; font-size:12.5px; line-height:1.65; margin-bottom:20px}
+  .ts-box .btn{width:100%; background:#F4F2EE; border-color:#F4F2EE; color:#1B1A18}
+}
+
 </style>
 </head>
 <body>
@@ -6124,13 +6149,6 @@ function closeDisplay(){
 function escDisplay(e){ if(e.key==="Escape") closeDisplay(); }
 /* 종료 버튼을 잠깐 보여줍니다 (터치 기기에는 호버가 없으므로) */
 let exitTimer = null;
-/* 세로 화면에서 미리보기 ↔ 실제 크기 보기 */
-function toggleTvZoom(){
-  view.tvZoom = !view.tvZoom;
-  render();
-  const st = document.querySelector(".tv-stage");
-  if(st && view.tvZoom){ st.scrollLeft = 0; st.scrollTop = 0; }
-}
 function pokeExit(ms){
   const el = document.querySelector(".tv-exit");
   if(!el) return;
@@ -6211,7 +6229,7 @@ function renderDisplay(){
   /* tv-stage 안에 실제 화면(tv-inner)을 넣습니다.
      세로로 든 휴대폰에서는 stage 가 16:9 로 고정되고 inner 가 통째로 축소됩니다. */
   return `
-  <div class="tv ${view.tvZoom?'zoomed':''}">
+  <div class="tv">
     <div class="tv-stage">
       <div class="tv-bgs" aria-hidden="true">
         ${[1,2,3,4,5,6,7].map(i=>`<div class="tv-bg b${i} ${i===(view.bgIndex||1)?'on':''}"></div>`).join("")}
@@ -6229,10 +6247,13 @@ function renderDisplay(){
     <div class="tv-hot" aria-hidden="true"></div>
     <div class="tv-tap" aria-hidden="true" onclick="pokeExit(5000)" ontouchstart="pokeExit(5000)"></div>
     <button class="tv-exit" onclick="closeDisplay()" title="Esc 로도 나갈 수 있습니다">디스플레이 종료</button>
-    <div class="tv-note">
-      <b>TV 화면 미리보기</b>
-      <span>실제 TV·모니터에서 보이는 그대로입니다. 손가락으로 밀어 크게 볼 수 있습니다.</span>
-      <button class="tv-zoom" onclick="toggleTvZoom()">${view.tvZoom?"미리보기로 돌아가기":"크게 보기"}</button>
+    <div class="tv-small">
+      <div class="ts-box">
+        ${ICON.tv}
+        <div class="ts-t">지원하지 않는 화면 크기입니다</div>
+        <div class="ts-s">디스플레이 모드는 TV·모니터처럼<br>넓은 화면에서만 표시됩니다.</div>
+        <button class="btn primary" onclick="closeDisplay()">돌아가기</button>
+      </div>
     </div>
   </div>`;
 }
