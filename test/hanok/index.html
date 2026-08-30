@@ -672,7 +672,7 @@ button.bday.sel .d{color:#fff} button.bday.sel .b{background:rgba(255,255,255,.2
 .tl-legend i{width:14px; height:10px; border-radius:3px; display:inline-block; background:var(--pine)}
 .tl-legend i.tent{background:repeating-linear-gradient(45deg,#C9BBA0 0 3px,#E2D9C6 3px 6px); border:1px dashed #A8977A}
 .tl{display:flex; flex-direction:column; gap:4px}
-.tl-row{display:flex; align-items:stretch; gap:8px}
+.tl-row{display:flex; align-items:center; gap:8px}
 .tl-name{width:94px; flex:none; font-size:12.5px; font-weight:700; display:flex; flex-direction:column; justify-content:center; line-height:1.25}
 .tl-name small{font-size:10.5px; font-weight:500; color:var(--text-3)}
 .tl-rate{width:46px; flex:none; display:flex; flex-direction:column; align-items:flex-end; justify-content:center;
@@ -1318,7 +1318,7 @@ button.blk:hover{filter:brightness(1.15)}
   height:100%; width:100%; gap:3px}
 .tl-rate .rb i{flex:1; width:1px; background:var(--border-strong); min-height:5px}
 .tl-rate .rb b{font-size:12.5px; font-weight:700; color:var(--text-2); line-height:1}
-.tl-row{align-items:stretch}
+.tl-row{align-items:center}
 .tl-row.axis .tl-rate .rt{font-size:10.5px; color:var(--text-3); font-weight:600}
 
 /* 타임라인 블록 글자 */
@@ -1391,8 +1391,12 @@ button.blk b{font-weight:800; font-size:10.5px}
 .srccell.warned .s-l,.srccell.warned .s-d{color:#fff}
 .srcgrid.menu2{grid-template-columns:1fr 1fr}
 @media (min-width:768px){ .srcgrid.menu2{grid-template-columns:1fr 1fr; max-width:640px; margin:0 auto} }
-button.blk.warned{background:var(--rust)}
+/* 확정 / 잠정 / 경고를 구분해서 보여줍니다
+   잠정 = 빗금 테두리, 경고 = 붉은색, 둘 다면 붉은색 + 빗금 테두리 */
+button.blk.warned{background:var(--rust); border-color:rgba(255,255,255,.45)}
 button.blk.warned.past{background:#C08476}
+button.blk.tent.warned{background:var(--rust); border:1px dashed #FFE2DA}
+button.blk.tent{background:#8C8067; border:1px dashed #EFE7D5}
 .tl-legend i.blk.warned{background:var(--rust)}
 .rrow.s-방문{opacity:.42}
 .rrow.s-취소{opacity:.38}
@@ -1494,6 +1498,384 @@ button.blk.warned.past{background:#C08476}
 .lk-back:hover{color:var(--text-2)}
 @media (max-width:380px){ .pdot{width:46px; height:46px; font-size:21px} .pdots{gap:9px} }
 
+
+/* 예약 목록 — 지난 예약 표시 */
+.rr-bang{width:12px; flex:none; font-weight:900; color:var(--rust); font-size:15px; text-align:center}
+.rrow.late{opacity:.55}
+.rrow.late .rr-bang{opacity:1}
+.rrow.s-방문,.rrow.s-취소,.rrow.s-노쇼{opacity:.4}
+.rrow.s-노쇼{opacity:.55}
+.rr-seat{max-width:150px; overflow:hidden; text-overflow:ellipsis}
+
+/* PIN 자리 — 작은 빈 원, 채우면 글자만 색이 들어옴 */
+.pdots{gap:16px}
+.pdot{width:38px; height:38px; border-radius:50%; border:1.5px solid var(--border-strong);
+  background:transparent; display:grid; place-items:center;
+  font-size:21px; font-weight:700; color:transparent; transition:all .2s ease; box-shadow:none}
+.pdot.on{background:transparent; border-color:transparent; color:var(--pine); transform:none; box-shadow:none}
+body.theme-hanok .pdot.on{color:var(--pine)}
+
+
+/* 지표 5개 배치 */
+@media (min-width:768px){ .metrics{grid-template-columns:repeat(5,1fr)} }
+@media (max-width:767px){
+  .metrics{grid-template-columns:1fr 1fr}
+  .metric:nth-child(5){grid-column:1 / -1}
+}
+.metric.amber .v{color:var(--amber)}
+.metric.amber{background:var(--amber-soft)}
+.metric.warn{background:var(--rust-soft)}
+
+
+.checkbox-scroll{max-height:58vh; overflow-y:auto; padding-right:2px}
+.pkey.sub{font-size:20px; font-weight:400}
+
+
+/* ---------- 타임라인 정렬 바로잡기 ----------
+   좌석 이름이 두 줄이라 행 높이보다 커지면서 그래프와 어긋났습니다.
+   이름을 한 줄로 두고, 행 높이는 그래프 높이가 정하도록 합니다. */
+.tl-row{align-items:center; min-height:30px}
+.tl-name{
+  width:104px; flex:none; height:auto;
+  display:flex; align-items:baseline; gap:5px;
+  font-size:12.5px; line-height:1.2; white-space:nowrap; overflow:hidden;
+}
+.tl-name b{font-weight:700; color:var(--text)}
+.tl-name small{font-size:10.5px; font-weight:500; color:var(--text-3)}
+/* flex-direction 을 명시하지 않으면 앞선 규칙의 column 이 남아
+   justify-content:flex-end 가 '아래쪽 정렬'로 작동합니다 */
+.tl-rate{display:flex; flex-direction:row; align-items:center; justify-content:flex-end}
+.tl-rate .rb{flex-direction:column}
+.tl-rate .rb{height:100%}
+@media (max-width:900px){
+  .tl-name{width:92px; font-size:11.5px}
+  .tl-name small{font-size:9.5px}
+}
+
+/* 상단 매장명 세로 정렬 */
+.topbar-in{align-items:center}
+.storename{display:inline-flex; align-items:center; line-height:1.15; height:36px}
+.topbar .home{height:36px}
+.bdate{display:inline-flex; align-items:center; height:38px; line-height:1}
+.bnav{display:inline-flex; align-items:center; justify-content:center; line-height:1}
+.topbar .tvbtn{display:inline-flex; align-items:center; height:36px; line-height:1}
+.bar-title{display:inline-flex; align-items:center; height:36px; line-height:1}
+
+
+/* ============================================================
+   디스플레이 모드 — 여백 정리
+   바깥 여백을 넓히고, 카드 안쪽도 숨 쉴 공간을 줍니다.
+   ============================================================ */
+.tv{
+  padding:clamp(20px,3.4vh,46px) clamp(26px,3.6vw,72px) clamp(18px,2.6vh,38px);
+}
+.tv-h{padding-bottom:clamp(14px,2.6vh,32px)}
+.tv-h h1{margin-top:clamp(8px,1.4vh,16px)}
+.tv-line{margin-top:clamp(12px,2.2vh,26px)}
+
+.tv-grid{gap:clamp(10px,1.7vh,22px)}
+.tv-row{gap:clamp(10px,1.5vw,26px)}
+
+.dsec{
+  border-radius:16px;
+  padding:clamp(14px,2vh,26px) clamp(14px,1.5vw,26px) clamp(12px,1.8vh,22px);
+  background:linear-gradient(180deg, rgba(10,13,18,.74), rgba(6,9,13,.84));
+  border:1px solid rgba(214,190,138,.22);
+  box-shadow:0 6px 26px rgba(0,0,0,.30);
+}
+.dsec.hall{background:linear-gradient(180deg, rgba(32,27,17,.72), rgba(18,15,10,.84));
+  border-color:rgba(200,168,110,.30)}
+
+.dsec h3{
+  margin:0 0 clamp(10px,1.6vh,20px);
+  padding-bottom:clamp(9px,1.3vh,16px);
+  gap:10px;
+}
+.dsec ul{gap:clamp(4px,.75vh,11px)}
+.dsec ul.two-col{gap:clamp(4px,.75vh,11px) clamp(16px,2vw,38px)}
+.dsec li{padding:clamp(1px,.2vh,3px) 0}
+.dsec li.none{padding-top:clamp(4px,.8vh,10px)}
+
+.tv-f{
+  padding-top:clamp(14px,2.4vh,28px);
+  margin-top:clamp(12px,2vh,24px);
+  letter-spacing:.26em; text-indent:.26em;
+}
+
+/* 좁은 화면에서는 여백을 줄여 잘리지 않게 */
+@media (max-width:900px){
+  .tv{padding:18px 16px 14px}
+  .tv-grid{gap:10px}
+  .tv-row{gap:10px}
+  .dsec{padding:12px 12px 10px; border-radius:12px}
+}
+
+
+/* 설정 소제목 */
+.subhead{font-size:13px; font-weight:800; color:var(--text-2); margin:18px 0 10px;
+  padding-bottom:6px; border-bottom:1px solid var(--border); display:flex; align-items:baseline; gap:8px}
+.subhead:first-child{margin-top:0}
+.subhead span{font-size:11.5px; font-weight:500; color:var(--text-3)}
+
+/* 디스플레이 배치 */
+.disprow{border:1px solid var(--border); border-radius:10px; padding:11px 12px; margin-bottom:9px; background:var(--surface)}
+.disprow.over{border-color:var(--rust); background:var(--rust-soft)}
+.dr-title{font-size:12.5px; font-weight:700; color:var(--text-2); margin-bottom:8px}
+.dr-title span{font-weight:500; color:var(--text-3); margin-left:5px}
+.disprow.over .dr-title span{color:var(--rust); font-weight:700}
+.dr-cells{display:flex; flex-wrap:wrap; gap:6px}
+.dcell{display:inline-flex; align-items:center; gap:3px; background:var(--surface-2);
+  border:1px solid var(--border); border-radius:8px; padding:6px 6px 6px 10px; font-size:13px; font-weight:600}
+.dcell button{width:22px; height:22px; border:1px solid var(--border); background:var(--surface);
+  border-radius:5px; font-size:9px; color:var(--text-3); padding:0}
+.dcell button:disabled{opacity:.3}
+
+
+/* 범례 색 견본 — 타임라인 블록(.blk)은 absolute 라 그대로 쓰면 글자와 겹칩니다 */
+.lgsw{display:inline-block; position:static; width:15px; height:11px; border-radius:3px;
+  vertical-align:-1px; flex:none}
+.lgsw.ok{background:var(--pine)}
+.lgsw.tent{background:#8C8067; border:1px dashed #EFE7D5}
+.lgsw.warn{background:var(--rust)}
+.tl-legend{display:inline-flex; align-items:center; gap:6px}
+
+/* 예약률 칸 — 기준선이 있는 행과 없는 행의 좌우 위치를 맞춥니다 */
+.tl-rate{justify-content:center}
+.tl-rate .rb{width:auto; min-width:34px}
+.tl-rate .rt{width:100%; text-align:center}
+
+/* 모바일: 좌석 이름·예약률도 같이 스크롤 */
+@media (max-width:899px){
+  .tl-name,.tl-rate{position:static; box-shadow:none}
+  .tl-row.axis .tl-name,.tl-row.axis .tl-rate{background:transparent}
+}
+
+
+/* ============================================================
+   디자인 정리 — 오래 봐도 편한 톤으로
+   1) 배경은 따뜻한 종이색, 카드는 흰색으로 대비를 준다
+   2) 색은 세 가지만 쓴다: 청록(주요) · 금(강조선) · 벽돌(경고)
+   3) 그림자는 얇게, 테두리는 한 겹만
+   ============================================================ */
+body.theme-hanok{
+  --bg:#F7F4ED;            /* 한지 — 이전보다 밝고 노란기 절제 */
+  --surface:#FFFFFF;       /* 카드는 흰색 (대비를 만들어 정보가 또렷해짐) */
+  --surface-2:#F5F2EA;
+  --border:#E7E1D5;
+  --border-strong:#D2C9B8;
+  --text:#1F1B15;
+  --text-2:#5A5245;
+  --text-3:#8D8577;
+  --pine:#2F5D4E;          /* 청록 — 주요 동작 */
+  --pine-soft:#E9F0EC;
+  --gold:#B08D57;          /* 금 — 얇은 강조선에만 */
+  --amber:#8A6114;
+  --amber-soft:#FAF2E1;
+  --rust:#A8442E;          /* 벽돌 — 경고 */
+  --rust-soft:#FBEAE5;
+  --shadow:0 1px 2px rgba(60,48,30,.06);
+  --topbar-bg:linear-gradient(180deg,#5F4B33,#4A3826);
+  --topbar-fg:#F6EEDF;
+  --topbar-line:#3A2B1C;
+  --topbar-btn-line:rgba(246,238,223,.34);
+  --topbar-hover:rgba(246,238,223,.14);
+  background-image:none;   /* 세로 결 무늬 제거 — 카드 대비로 충분 */
+}
+
+/* 상단바 아래 금색 실선 한 겹 */
+body.theme-hanok .topbar{box-shadow:0 1px 0 var(--gold), 0 3px 14px rgba(60,48,30,.16)}
+
+/* 구역 제목 앞에 짧은 금색 표식 */
+.sect-title{display:flex; align-items:center; gap:7px}
+.sect-title::before{content:""; width:3px; height:12px; background:var(--gold); border-radius:2px; flex:none}
+
+/* 카드 — 테두리 한 겹 + 얇은 그림자 */
+.card{border-radius:12px; border-color:var(--border)}
+.metrics{gap:1px; background:var(--border)}
+.metric{padding:15px 16px}
+.metric .v{letter-spacing:-.03em}
+.metric .k{color:var(--text-3); letter-spacing:.01em}
+
+/* 접이식 카드 머리 */
+.fold-h{padding:15px 16px}
+.fh-t{font-size:15px; letter-spacing:.01em}
+
+/* 버튼 — 모서리와 두께를 통일 */
+.btn{border-radius:9px; padding:10px 15px}
+.btn.primary{box-shadow:0 1px 2px rgba(47,93,78,.22)}
+.btn.sm{border-radius:8px}
+.topbar .tvbtn{border-radius:9px}
+.topbar .tvbtn.accent{background:#F6EEDF; color:#4A3826; font-weight:700}
+
+/* 타임라인 — 선은 얇게, 블록은 부드럽게 */
+.tl-track{border-radius:8px; background:#FAF8F3}
+.blk{border-radius:5px}
+.tl-kpi{font-size:13.5px; color:var(--text-2)}
+.tl-kpi b{font-size:17px; color:var(--pine)}
+.tl-kpi.sub b{font-size:14.5px; color:var(--text-2); font-weight:700}
+.tl-note{font-size:11.5px; color:var(--text-3)}
+.tl-kpis{gap:14px}
+
+/* 목록 행 */
+.rrow{padding:12px 8px}
+.rr-t{color:var(--text)}
+.tag{border-radius:7px}
+.pill{border-radius:7px}
+
+/* 시트·팝업 */
+.sheet{border-radius:16px 16px 0 0}
+@media (min-width:768px){ .sheet{border-radius:14px} }
+.modal{border-radius:14px}
+.sheet-h h2{letter-spacing:-.01em}
+
+/* 입력 요소 */
+input,select,textarea{border-radius:9px; border-color:var(--border-strong)}
+input:focus,select:focus{outline-color:var(--pine)}
+
+
+/* ============================================================
+   디자인 개편 — 먹색 + 아이보리, 각진 모서리
+   앱 화면은 고딕만 씁니다. 명조는 디스플레이 모드에만 남깁니다.
+   ============================================================ */
+body.theme-hanok{
+  --bg:#F2F0EB;            /* 아이보리 */
+  --surface:#FFFFFF;
+  --surface-2:#F6F4F0;
+  --border:#E3E0D9;
+  --border-strong:#C7C3BA;
+  --text:#171614;          /* 먹 */
+  --text-2:#57544D;
+  --text-3:#8E8A82;
+  --pine:#1F1E1B;          /* 주요 동작 = 먹색 */
+  --pine-soft:#EFEDE8;
+  --gold:#1F1E1B;
+  --amber:#8A6A12;
+  --amber-soft:#F8F1DE;
+  --rust:#A63B26;
+  --rust-soft:#FAE9E4;
+  --shadow:0 1px 0 rgba(23,22,20,.04);
+  --topbar-bg:#1B1A18;
+  --topbar-fg:#F4F2EE;
+  --topbar-line:#000;
+  --topbar-btn-line:rgba(244,242,238,.26);
+  --topbar-hover:rgba(244,242,238,.12);
+  background-image:none;
+}
+/* 앱 화면에서는 명조를 쓰지 않습니다 (디스플레이 모드만 예외) */
+body.theme-hanok .topbar .title,
+body.theme-hanok .storename,
+body.theme-hanok .bar-title,
+body.theme-hanok .sect-title,
+body.theme-hanok .card-h h2,
+body.theme-hanok .rh-d,
+body.theme-hanok .metric .v,
+body.theme-hanok .lk-title,
+body.theme-hanok .fh-t,
+.serif, h1, h2{font-family:var(--sans)}
+.storename,.bar-title{letter-spacing:-.01em; font-weight:800}
+
+/* 각진 모서리 */
+.card,.sheet,.modal,.calbox,.zone,.disprow,.dayrow{border-radius:4px}
+.btn,.tvbtn,.numbtn,.togglebtn,.nav,.bnav,.bdate,input,select,textarea,
+.seg button,.filters button,.markbtn,.spick,.citem,.ptile,.scell,.srccell,
+.hcell,.pkey,.roomcell,.sb-cell,.alert,.tl-track,.blk,.tag,.pill,.tset,
+.mtrack,.mfill,.numgrid button,.wbtn,.dcell,.applybar,.pmore,.nonebtn{border-radius:3px}
+.tl-track{border-radius:2px}
+.blk{border-radius:2px}
+.pdot{border-radius:3px}
+.mknob{border-radius:3px}
+.bigstep button,.numbig button{border-radius:4px}
+.sheet{border-radius:4px 4px 0 0}
+@media (min-width:768px){ .sheet{border-radius:4px} }
+.fab{border-radius:4px}
+.tag,.pill{border-radius:2px}
+
+/* 상단바 — 먹색 바탕 */
+body.theme-hanok .topbar{box-shadow:none; border-bottom:1px solid #000}
+.topbar .tvbtn.accent{background:#F4F2EE; color:#1B1A18; font-weight:700}
+.topbar .tvbtn.accent:hover{background:#fff}
+
+/* 구역 제목 표식도 각지게 */
+.sect-title::before{width:3px; height:11px; border-radius:0; background:var(--text)}
+
+/* 강조색 정리 */
+.btn.primary{background:var(--text); border-color:var(--text); box-shadow:none}
+.btn.primary:hover{background:#2B2926}
+.metric .v{color:var(--text)}
+.tl-kpi b{color:var(--text)}
+.rs-v{color:var(--text)}
+.blk{background:#3A3833}
+.blk.past{background:#B9B5AC}
+button.blk.tent{background:#8E8A80; border:1px dashed #E7E3DA}
+button.blk.warned{background:var(--rust)}
+button.blk.tent.warned{background:var(--rust); border:1px dashed #FFE2DA}
+.lgsw.ok{background:#3A3833}
+.lgsw.tent{background:#8E8A80; border:1px dashed #E7E3DA}
+.lgsw.warn{background:var(--rust)}
+.chart .rb-room{fill:#3A3833}
+.chart .rb-hall{fill:#B3AA93}
+.chart .line-total{stroke:#A63B26} .chart .line-total-d{fill:#A63B26}
+.legend .sw.rb-room{background:#3A3833}
+.legend .sw.rb-hall{background:#B3AA93}
+.legend .sw.ln.total{background:#A63B26}
+.sp-bars rect{fill:#C9C5BC}
+.sp-line{stroke:#3A3833}
+.tag.pine{background:var(--pine-soft); color:var(--text); border-color:var(--border-strong)}
+.pill.pine{background:var(--pine-soft); color:var(--text); border-color:var(--border-strong)}
+.pdot.on{color:var(--text)}
+.roomcell.used{background:#3A3833; border-color:#3A3833}
+
+
+/* ============================================================
+   모바일 상단바 — 3줄로 나눕니다
+   1줄: 매장명 (가운데)
+   2줄: 최초화면 · 차트 · 설정 · 디스플레이 · 예약검색 · 예약등록
+   3줄: 날짜 이동
+   ============================================================ */
+@media (max-width:900px){
+  .topbar-in{flex-wrap:wrap; row-gap:8px; padding:10px 12px 12px}
+
+  .storename{order:1; flex:1 1 100%; justify-content:center; text-align:center;
+    font-size:17px; height:auto; padding:2px 0}
+  .home{order:2; flex:none}
+  .bar-right{order:3; flex:1 1 auto; justify-content:flex-end; gap:5px; margin-left:0}
+  .bar-mid{order:4; flex:1 1 100%; justify-content:space-between; gap:4px}
+
+  /* 2줄 버튼 순서 — 차트 · 설정 · 디스플레이 · 검색 · 등록 */
+  .bar-right{display:flex}
+  .b-chart{order:1} .b-set{order:2} .b-tv{order:3} .b-search{order:4} .b-add{order:5}
+  .b-search{flex:0 1 auto}
+  .b-add{flex:0 1 auto}
+  .topbar .tvbtn:not(.icon){padding:8px 11px; font-size:12.5px}
+  .topbar .tvbtn.icon{padding:8px 9px}
+  .bdate{flex:1; justify-content:center}
+}
+@media (max-width:420px){
+  .bar-right{gap:4px}
+  .topbar .tvbtn:not(.icon){padding:8px 9px; font-size:12px}
+  .topbar .tvbtn.icon svg{width:17px; height:17px}
+  .storename{font-size:16px}
+}
+
+
+/* 날짜 버튼 — 다른 버튼과 크기를 맞춥니다 */
+.bdate{height:34px; padding:0 12px; font-size:13.5px; font-weight:700; letter-spacing:-.01em}
+.bnav{width:28px; height:34px; font-size:14px}
+.bnav.mo{width:26px; font-size:13px}
+.bar-mid{gap:2px}
+@media (max-width:900px){
+  .bdate{height:34px; font-size:13.5px; padding:0 10px}
+  .bar-mid{gap:3px}
+}
+@media (max-width:420px){
+  .bdate{font-size:13px; padding:0 8px}
+}
+
+/* 디스플레이 모드 — 곡률을 줄여 각지게 */
+.dsec{border-radius:5px}
+.tv-exit{border-radius:3px}
+@media (max-width:900px){ .dsec{border-radius:4px} }
+
 </style>
 </head>
 <body>
@@ -1527,7 +1909,8 @@ const DEFAULT_DATA = {
         holiday:{open:"11:00", close:"22:00", lo:"20:40", bs:"", be:""}
       }],
       overrides:[],        /* 임시 휴무·단축 영업 등 특정 날짜만 다른 경우 */
-      breakMode:"leave",   /* leave = 매장을 비움, order = 주문만 중단 */
+      breakMode:"leave",       /* leave = 매장을 비움, order = 음식 주문만 중단 */
+      breakEntryBuffer:60,     /* 주문만 중단일 때, 브레이크 몇 분 전까지 받을지 */
       stayHours:3,          /* 룸 저녁 체류 시간 */
       lunchStayHours:2.5,   /* 룸 점심 체류 시간 */
       hallStayHours:2.5,    /* 홀 저녁 체류 시간 — 테이블 단위라 룸보다 짧게 */
@@ -1536,6 +1919,7 @@ const DEFAULT_DATA = {
       lastBookingBuffer:60, /* 영업 종료 몇 분 전까지 예약을 받을지 */
       minCountAdultsOnly:true,  /* 룸 최소 인원을 성인 기준으로 볼지 */
       groupSize:8,              /* 이 인원부터 단체로 봅니다 */
+      displayRows:null,         /* 디스플레이 모드 좌석 배치 (null이면 자동) */
       holidayMode:true,         /* 공휴일 별도 운영시간 사용 */
       holidays:[],              /* 사장이 직접 등록하는 공휴일 목록 */
       holidayAsWeekend:true,    /* 코스 시간대에서 공휴일을 주말로 봄 */
@@ -2006,6 +2390,7 @@ const ICON = {
   set:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-2.7 1.1V21a2 2 0 11-4 0v-.1A1.6 1.6 0 006.5 19.4l-.1.1a2 2 0 11-2.8-2.8l.1-.1A1.6 1.6 0 003 15a2 2 0 010-4 1.6 1.6 0 001.1-2.7l-.1-.1a2 2 0 112.8-2.8l.1.1A1.6 1.6 0 009 4.6V4a2 2 0 014 0v.1A1.6 1.6 0 0017.5 4.6l.1-.1a2 2 0 112.8 2.8l-.1.1A1.6 1.6 0 0021 11a2 2 0 010 4z"/></svg>',
   plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
   store:'<svg viewBox="0 0 24 24"><path d="M4 10v9a1 1 0 001 1h14a1 1 0 001-1v-9"/><path d="M3 6l1.5-3h15L21 6"/><path d="M3 6c0 1.7 1.3 3 3 3s3-1.3 3-3c0 1.7 1.3 3 3 3s3-1.3 3-3c0 1.7 1.3 3 3 3s3-1.3 3-3"/><path d="M10 20v-6h4v6"/></svg>',
+  chart:'<svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16"/><rect x="7.5" y="12" width="3" height="7" rx="1"/><rect x="13" y="8" width="3" height="11" rx="1"/><path d="M6 10l4-4 4 3 5-5"/></svg>',
   tv:'<svg viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="19" height="13" rx="2"/><path d="M8 21h8M12 17.5V21"/></svg>',
   cal:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="8.5" cy="14.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="12" cy="14.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="15.5" cy="14.5" r="1.2" fill="currentColor" stroke="none"/></svg>'
 };
@@ -2033,6 +2418,9 @@ function toggleTheme(){
 }
 function render(){
   applyTheme();
+  /* 팝업이 떠 있으면 뒤 화면이 스크롤되지 않게 */
+  document.body.style.overflow =
+    (MODAL || (view.form && !view.display) || view.calOpen || WZ) ? "hidden" : "";
   const app = document.getElementById("app");
   if(!DATA){ app.innerHTML="<p class='empty'>불러오는 중…</p>"; return; }
   /* 매장을 고른 뒤에 PIN 을 입력합니다 */
@@ -2056,7 +2444,7 @@ function renderLock(){
   const dots = [0,1,2,3].map(i=>
     `<span class="pdot f${i+1} ${i<PIN_BUF.length?'on':''}">${i<PIN_BUF.length?marks[i]:""}</span>`).join("");
   const keys = [1,2,3,4,5,6,7,8,9,"clear",0,"back"].map(k=>{
-    if(k==="clear") return `<button class="pkey sub" onclick="pinClear()">전체 지움</button>`;
+    if(k==="clear") return `<button class="pkey sub" onclick="pinClear()" title="다시 입력">↻</button>`;
     if(k==="back")  return `<button class="pkey sub" onclick="pinBack()">←</button>`;
     return `<button class="pkey" onclick="pinPush('${k}')">${k}</button>`;
   }).join("");
@@ -2240,24 +2628,24 @@ function renderStore(){
           title="${view.tab==="settings"?"대시보드로":"매장 선택"}">${view.tab==="settings"?"←":ICON.store}</button>
         <button class="storename" onclick="setTab('dash')" title="대시보드로 이동">${esc(s.name)}</button>
 
-        ${view.tab==="settings" ? `<div class="bar-mid"><span class="bar-title">설정</span></div>` : `
+        ${view.tab==="settings" ? `<div class="bar-mid"></div>` : `
         <div class="bar-mid">
           <button class="bnav mo" onclick="moveMonthDate(-1)" title="이전 달">&laquo;</button>
           <button class="bnav" onclick="moveDate(-1)" title="어제">&lsaquo;</button>
-          <button class="bdate" onclick="openCal()" title="달력 열기">
-            ${dateLabel(view.date)}${dayBadge(view.date)}
-          </button>
+          <button class="bdate" onclick="openCal()" title="달력 열기">${dateLabel(view.date)}</button>
           <button class="bnav" onclick="moveDate(1)" title="내일">&rsaquo;</button>
           <button class="bnav mo" onclick="moveMonthDate(1)" title="다음 달">&raquo;</button>
         </div>`}
 
         <div class="bar-right">
           ${view.tab==="settings" ? "" : `
-          <button class="tvbtn" onclick="openSearch()">예약 검색</button>
-          <button class="tvbtn accent" onclick="openWizard('${view.date}')">＋ 예약 등록</button>`}
-          <button class="tvbtn icon ${view.tab==="settings"?'on':''}"
+          <button class="tvbtn icon b-chart" onclick="openRate()" title="예약률 추이">${ICON.chart}</button>`}
+          <button class="tvbtn icon b-set ${view.tab==="settings"?'on':''}"
             onclick="setTab('${view.tab==="settings"?"dash":"settings"}')" title="설정">${ICON.set}</button>
-          <button class="tvbtn icon" onclick="openDisplay()" title="디스플레이 모드">${ICON.tv}</button>
+          <button class="tvbtn icon b-tv" onclick="openDisplay()" title="디스플레이 모드">${ICON.tv}</button>
+          ${view.tab==="settings" ? "" : `
+          <button class="tvbtn b-search" onclick="openSearch()">예약 검색</button>
+          <button class="tvbtn accent b-add" onclick="openWizard('${view.date}')">＋ 예약 등록</button>`}
         </div>
       </div></header>
       <div class="layout">
@@ -2288,41 +2676,30 @@ function renderDash(){
     return a + (seat && seat.type==="hall" ? tablesFor(pplOf(r)) : 1);
   },0);
   const warnCnt = active.filter(r=>resWarn(r).length).length;
+  const checkCnt = checkItems(d).length;
 
   return `
-    ${d!==todayStr()?`<div class="backtoday">
-      <button class="btn today-btn" onclick="pickCalDate('${todayStr()}')">오늘로 돌아가기</button>
-    </div>`:""}
-
     <section class="card">
       <div class="metrics">
         <div class="metric"><div class="v">${active.length}<span class="u">건</span></div>
           <div class="k">확정 예약</div><div class="s">${people}명 · 좌석 ${seatUse}개</div></div>
         <div class="metric"><div class="v">${stat.rate}<span class="u">%</span></div>
-          <div class="k">예약률</div><div class="s">룸 ${stat.roomRate}% · 홀 ${stat.hallRate}%</div></div>
+          <div class="k">예약률</div><div class="s">좌석 ${seatUse}/${stat.seatAll} 사용</div></div>
         <button class="metric tapm ${unassigned?'warn':''}" onclick="openUnassigned()">
           <div class="v">${unassigned}<span class="u">건</span></div>
           <div class="k">룸 미배정</div><div class="s">${unassigned?"눌러서 배정":"모두 배정됨"}</div></button>
         <button class="metric tapm ${warnCnt?'warn':''}" onclick="openPick('warn')">
           <div class="v">${warnCnt}<span class="u">건</span></div>
           <div class="k">경고 예약</div><div class="s">${warnCnt?"눌러서 확인":"이상 없음"}</div></button>
+        <button class="metric tapm ${checkCnt?'amber':''}" onclick="openCheck()">
+          <div class="v">${checkCnt}<span class="u">건</span></div>
+          <div class="k">확인 필요</div><div class="s">${checkCnt?"눌러서 확인":"모두 확인됨"}</div></button>
       </div>
     </section>
 
     <div class="card"><div class="card-b">${renderTimeline(d)}</div></div>
 
-    <section class="card alertcard">
-      <div class="card-h"><h2>확인 필요</h2>
-        <span class="muted" style="margin-left:auto; font-size:12.5px">${dateLabel(d)} 기준</span></div>
-      <div class="card-b">${dashAlerts(d)}</div>
-    </section>
 
-    <button class="ratestrip" onclick="openRate()">
-      <span class="rs-t">예약률 추이</span>
-      <span class="rs-v">${stat.rate}%</span>
-      <span class="rs-g">${ratePreview(d, 14)}</span>
-      <span class="rs-m">최근 2주 · 눌러서 크게 보기</span>
-    </button>
 
     <div style="height:20px"></div>
     ${foldCard("list", "예약 목록", `${dayRes.length}건`, renderResList(d))}
@@ -2364,14 +2741,15 @@ function ratePreview(endDate, days){
 }
 
 /* ---------- 예약률 추이 ----------
-   한 칸 안에 겹쳐 그립니다: 전체 좌석(배경) > 전체 예약률 > 룸 > 홀
-   꺾은선은 룸·홀 막대 끝만 잇습니다. */
+   막대는 아래가 룸, 위가 홀입니다. 둘을 더한 높이가 그날 전체 예약률입니다.
+   꺾은선은 전체 예약률의 흐름입니다. */
 function rateChart(endDate, days){
   const list = [];
   for(let i=days-1;i>=0;i--){
     const d = shiftDate(endDate, -i);
     const st = dayStat(d);
-    list.push({date:d, rate:st.rate, room:st.roomRate, hall:st.hallRate, count:st.count});
+    list.push({date:d, rate:st.rate, room:st.roomShare, hall:st.hallShare,
+               roomRate:st.roomRate, hallRate:st.hallRate, count:st.count});
   }
   const W=720, H=250, L=36, R=10, T=14, B=34;
   const iw=W-L-R, ih=H-T-B, bw=iw/list.length;
@@ -2384,25 +2762,17 @@ function rateChart(endDate, days){
     <text class="tx ax" x="${L-8}" y="${y(v)+3.5}" text-anchor="end">${v}%</text>`).join("");
 
   const bars = list.map((x,i)=>{
-    const c = cx(i);
-    const w0 = bw*0.70, w1 = bw*0.56, w2 = bw*0.34, w3 = bw*0.16;
-    const bar = (v,w,cls,label) => {
-      const h = Math.max(v>0?1.5:0,(v/100)*ih);
-      return `<rect class="${cls}" x="${c-w/2}" y="${T+ih-h}" width="${w}" height="${h}" rx="1.5">
-        <title>${x.date} ${label} ${v}%</title></rect>`;
-    };
+    const c = cx(i), w = Math.max(2, bw*0.56);
+    const hr = (x.room/100)*ih, hh = (x.hall/100)*ih;
     return `
-      <rect class="rb-base" x="${c-w0/2}" y="${T}" width="${w0}" height="${ih}" rx="2"/>
-      ${bar(x.rate,w1,"rb-all","전체")}
-      ${bar(x.room,w2,"rb-room","룸")}
-      ${bar(x.hall,w3,"rb-hall","홀")}`;
+      <rect class="rb-room" x="${c-w/2}" y="${T+ih-hr}" width="${w}" height="${Math.max(0,hr)}" rx="1.5">
+        <title>${x.date} 룸 ${Math.round(x.room)}%p (룸만 보면 ${x.roomRate}%)</title></rect>
+      <rect class="rb-hall" x="${c-w/2}" y="${T+ih-hr-hh}" width="${w}" height="${Math.max(0,hh)}" rx="1.5">
+        <title>${x.date} 홀 ${Math.round(x.hall)}%p (홀만 보면 ${x.hallRate}%)</title></rect>`;
   }).join("");
 
-  const path = (key, cls) => {
-    const pts = list.map((x,i)=>`${cx(i)},${y(x[key])}`).join(" ");
-    const dots = list.map((x,i)=>`<circle class="${cls}-d" cx="${cx(i)}" cy="${y(x[key])}" r="2.2"/>`).join("");
-    return `<polyline class="${cls}" points="${pts}"/>${dots}`;
-  };
+  const pts = list.map((x,i)=>`${cx(i)},${y(x.rate)}`).join(" ");
+  const dots = list.map((x,i)=>`<circle class="line-total-d" cx="${cx(i)}" cy="${y(x.rate)}" r="2.4"/>`).join("");
 
   const labels = list.map((x,i)=>{
     const dt = new Date(x.date+"T00:00:00");
@@ -2414,21 +2784,23 @@ function rateChart(endDate, days){
 
   const avg = Math.round(list.reduce((a,x)=>a+x.rate,0)/list.length);
   const peak = list.reduce((a,x)=>x.rate>a.rate?x:a, list[0]);
+  const st0 = dayStat(endDate);
 
   return `
     <div class="legend">
-      <span><i class="sw rb-base"></i>전체 좌석</span>
-      <span><i class="sw rb-all"></i>전체 예약률</span>
-      <span><i class="sw rb-room"></i>룸</span>
-      <span><i class="sw rb-hall"></i>홀</span>
+      <span><i class="sw rb-room"></i>룸 ${st0.roomSeats}개</span>
+      <span><i class="sw rb-hall"></i>홀 ${st0.hallSeats}테이블</span>
+      <span><i class="sw ln total"></i>전체 예약률</span>
     </div>
     <svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="예약률 추이">
-      ${grid}${bars}${path("room","line-total")}${path("hall","line-res")}${labels}
+      ${grid}${bars}
+      <polyline class="line-total" points="${pts}"/>${dots}
+      ${labels}
     </svg>
     <div class="chart-sum">
       <span>평균 <b>${avg}%</b></span>
       <span>최고 <b>${peak.rate}%</b> (${+peak.date.slice(5,7)}/${+peak.date.slice(8)})</span>
-      <span class="muted">전체는 룸·홀을 좌석 수로 가중 평균한 값입니다</span>
+      <span class="muted">막대를 쌓은 높이가 전체 예약률입니다 (아래 룸 + 위 홀)</span>
     </div>`;
 }
 
@@ -2449,7 +2821,10 @@ function renderResList(date){
 function resRow(r){
   const room = store().settings.rooms.find(x=>x.id===r.roomId);
   const seat = room ? seatLabel(r.roomId)
-             : (r.tentativeRoomId ? `잠정 ${seatLabel(r.tentativeRoomId)}` : "미배정");
+             : (r.tentativeRoomId ? `${seatLabel(r.tentativeRoomId)}(잠정)` : "미배정");
+  /* 시간이 지났는데 아직 처리하지 않은 예약 */
+  const late = r.status==="확정" && r.date<=todayStr() &&
+    (r.date<todayStr() || toMin(r.time)+60 < toMin(nowHM()));
   const pills = [
     r.assignedLater ? `<span class="pill" title="접수 때는 좌석 미정이었습니다">배정 완료</span>` : "",
     r.menuType==="코스" ? (r.courseUndecided
@@ -2462,13 +2837,14 @@ function resRow(r){
     r.request ? `<span class="pill" title="${esc(r.request)}">요청</span>` : ""
   ].join("");
   return `
-    <button class="rrow s-${r.status}" onclick="openMark('${r.id}')">
+    <button class="rrow s-${r.status} ${late?'late':''}" onclick="openMark('${r.id}')">
+      <span class="rr-bang">${late?"!":""}</span>
       <span class="rr-t">${esc(r.time)}</span>
       <span class="rr-n">${esc(r.name)}</span>
       <span class="rr-p">${pplOf(r)}명${r.infants?`(유아${r.infants})`:""}</span>
+      <span class="rr-seat tag ${room?'pine':(r.tentativeRoomId?'amber':'rust')}">${esc(seat)}</span>
       <span class="rr-ph">${esc(r.phone||"-")}</span>
       <span class="rr-pills">${pills}</span>
-      <span class="rr-seat tag ${room?'pine':(r.tentativeRoomId?'amber':'rust')}">${esc(seat)}</span>
       ${r.status!=="확정"?`<span class="rr-st tag ${r.status==="노쇼"?"rust":""}">${r.status}</span>`:""}
     </button>`;
 }
@@ -2503,16 +2879,11 @@ function resWarn(r){
 }
 
 /* 손이 가야 할 것만 모읍니다. 각 줄은 눌러서 바로 처리할 수 있습니다. */
-function dashAlerts(date){
+function checkItems(date){
   const s = store(), today = todayStr();
   const d = date || today;
   const list = s.reservations.filter(r=>r.date===d && r.status==="확정");
   const items = [];
-
-  /* 사장 판단으로 접수된 예약 — 가장 먼저 확인해야 합니다 */
-  const warned = list.filter(r=>resWarn(r).length);
-  if(warned.length) items.push(["rust", `경고 예약 ${warned.length}건`,
-    warned.slice(0,2).map(r=>`${r.time} ${r.name} · ${resWarn(r)[0]}`).join(" / "), `openPick('warn')`]);
 
   const un = list.filter(r=>!r.roomId);
   if(un.length) items.push(["amber", `좌석 미배정 ${un.length}건`,
@@ -2548,13 +2919,23 @@ function dashAlerts(date){
       "노쇼·취소가 있었다면 눌러서 수정하세요", `openPick('auto')`]);
   }
 
-  if(!items.length) return `<div class="empty">지금 확인할 항목이 없습니다.</div>`;
-  return `<div class="alerts">${items.map(([c,t,sub,act])=>`
-    <button class="alert ${c}" onclick="${act}">
-      <span class="a-t">${esc(t)}</span>
-      ${sub?`<span class="a-s">${esc(sub)}</span>`:""}
-      <span class="a-go">&rsaquo;</span>
-    </button>`).join("")}</div>`;
+  return items;
+}
+function openCheck(){ view.form={type:"check"}; render(); }
+function sheetCheck(){
+  const items = checkItems(view.date);
+  const body = items.length
+    ? `<div class="alerts">${items.map(([c,t,sub,act])=>`
+        <button class="alert ${c}" onclick="${act}">
+          <span class="a-t">${esc(t)}</span>
+          ${sub?`<span class="a-s">${esc(sub)}</span>`:""}
+          <span class="a-go">&rsaquo;</span>
+        </button>`).join("")}</div>`
+    : `<div class="empty">지금 확인할 항목이 없습니다.</div>`;
+  return `
+    ${sheetHead(`확인 필요 · ${dateLabel(view.date)}`)}
+    <div class="checkbox-scroll">${body}</div>
+    <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">닫기</button></div>`;
 }
 
 /* 확인 필요 항목을 눌렀을 때 뜨는 목록 */
@@ -2772,13 +3153,13 @@ function renderTimeline(date){
     const rate = total ? Math.min(100, Math.round(tblMin/(total*span)*100)) : 0;
     const over = placed.filter(x=>x.lane===null).length;
     return `<div class="tl-row hall" style="--lanes:${total}">
-      <div class="tl-name">${esc(hall.name)}<small>${total}테이블 · ${hallSeatTotal(hall)}석</small></div>
+      <div class="tl-name"><b>${esc(hall.name)}</b><small>${total}테이블 · ${hallSeatTotal(hall)}석</small></div>
       <div class="tl-track" style="height:${total*LANE}px">
         ${layers}
         ${Array.from({length:total},(_,i)=>`<span class="lane" style="bottom:${i*LANE}px; height:${LANE}px"></span>`).join("")}
         ${blocks}${nowLine}
       </div>
-      <div class="tl-rate">${total>1
+      <div class="tl-rate" style="height:${total*LANE}px">${total>1
         ? `<span class="rb"><i></i><b>${rate}%</b><i></i></span>`
         : `<span class="rt">${rate}%</span>`}${over?`<small class="over">초과 ${over}</small>`:""}</div>
     </div>`;
@@ -2808,11 +3189,11 @@ function renderTimeline(date){
     const used = items.reduce((a,x)=>a+(x.e0-x.s0),0);
     const rate = Math.min(100, Math.round(used/span*100));
     return `<div class="tl-row">
-      <div class="tl-name">${esc(room.name)}<small>${roomMin(room)}인~${room.capacity}인</small></div>
+      <div class="tl-name"><b>${esc(room.name)}</b><small>${roomMin(room)}~${room.capacity}인</small></div>
       <div class="tl-track" style="height:${lanes*LANE}px">
         ${layers}${blocks}${nowLine}
       </div>
-      <div class="tl-rate">${lanes>1
+      <div class="tl-rate" style="height:${lanes*LANE}px">${lanes>1
         ? `<span class="rb"><i></i><b>${rate}%</b><i></i></span>`
         : `<span class="rt">${rate}%</span>`}</div>
     </div>`;
@@ -2829,16 +3210,19 @@ function renderTimeline(date){
   return `
     <div class="tl-top">
       <div class="tl-kpis">
-        <span class="tl-kpi">룸 예약률 <b>${roomRate}%</b></span>
-        <span class="tl-kpi">홀 예약률 <b>${hallRate}%</b></span>
+        <span class="tl-kpi">예약률 <b>${st2.rate}%</b></span>
+        <span class="tl-kpi sub">룸 <b>${roomRate}%</b></span>
+        <span class="tl-kpi sub">홀 <b>${hallRate}%</b></span>
+        <span class="tl-note">룸 ${st2.roomSeats}개 + 홀 ${st2.hallSeats}테이블 = ${st2.seatAll}자리 기준</span>
         ${tentCount?`<span class="tag amber">좌석 미정 ${tentCount}건</span>`:""}
       </div>
-      <span class="tl-hours">${dh.closed?`휴무 · ${esc(dh.note||"")}`:`${esc(dh.open)}–${esc(dh.close)}${dh.bs?` · 브레이크 ${esc(dh.bs)}–${esc(dh.be)}`:""}${dh.lo?` · LO ${esc(dh.lo)}`:""}`}</span>
+      <span class="tl-hours">${dh.closed
+        ? `휴무 · ${esc(dh.note||"")}`
+        : `영업시간 ${esc(dh.open)} ~ ${esc(dh.close)}${dh.bs?` · 브레이크 ${esc(dh.bs)} ~ ${esc(dh.be)}`:""}${dh.lo?` · 라스트오더 ${esc(dh.lo)}`:""}`}</span>
       <div class="tl-legends">
-        <span class="tl-legend"><i class="blk"></i>확정</span>
-        <span class="tl-legend"><i class="blk tent"></i>잠정</span>
-      <span class="tl-legend"><i class="blk warned"></i>경고</span>
-        <span class="tl-legend dim">체류 · 룸 ${st.lunchStayHours||2.5}/${st.stayHours||3}h, 홀 ${st.hallLunchStayHours||2}/${st.hallStayHours||2.5}h</span>
+        <span class="tl-legend"><i class="lgsw ok"></i>확정</span>
+        <span class="tl-legend"><i class="lgsw tent"></i>잠정</span>
+        <span class="tl-legend"><i class="lgsw warn"></i>경고</span>
       </div>
     </div>
     <div class="tl-scroll" id="tl-scroll">
@@ -2886,10 +3270,17 @@ function dayStat(date){
   const hallUsed = list.filter(r=>halls.some(x=>x.id===effSeat(r)))
     .reduce((a,r)=>a+tablesFor(pplOf(r))*spanOf(r),0);
   const clamp = v => Math.max(0, Math.min(100, Math.round(v)));
+  const seatAll = rooms.length + hallT;        /* 룸 1개 = 좌석 1, 홀은 테이블 1개 = 좌석 1 */
+  /* 룸만·홀만 놓고 본 비율 */
   const roomRate = rooms.length ? clamp(roomUsed/(rooms.length*span)*100) : 0;
   const hallRate = hallT ? clamp(hallUsed/(hallT*span)*100) : 0;
-  const total = (rooms.length+hallT) ? clamp((roomUsed+hallUsed)/((rooms.length+hallT)*span)*100) : 0;
+  /* 전체 예약률에서 각자가 차지하는 몫 — 둘을 더하면 전체가 됩니다 */
+  const roomShare = seatAll ? roomUsed/(seatAll*span)*100 : 0;
+  const hallShare = seatAll ? hallUsed/(seatAll*span)*100 : 0;
+  const total = clamp(roomShare + hallShare);
   return {count:list.length, people, roomRate, hallRate, rate:total,
+          roomShare:Math.max(0,roomShare), hallShare:Math.max(0,hallShare),
+          seatAll, roomSeats:rooms.length, hallSeats:hallT,
           unassigned:list.filter(r=>!r.roomId).length};
 }
 
@@ -3312,242 +3703,241 @@ async function setStatus(id,status){
 /* ============================================================
    설정
    ============================================================ */
+/* 설정 화면의 접이식 구역 */
+function sec(key, title, extra, inner){
+  const open = !!view.open["s_"+key];
+  return `
+    <section class="card fold ${open?'on':''}" style="margin-top:12px">
+      <button class="fold-h" onclick="toggleFold('s_${key}')">
+        <span class="fh-t">${title}</span>
+        <span class="fh-x">${extra||""}</span>
+        <span class="fh-i">${open?"▲":"▼"}</span>
+      </button>
+      ${open?`<div class="fold-b">${inner}</div>`:""}
+    </section>`;
+}
 function renderSettings(){
-  const st = draft();               /* 임시본 — 적용 전까지는 실제 설정에 반영되지 않습니다 */
+  const st = draft();               /* 임시본 — '적용하기'를 눌러야 반영됩니다 */
   const dirty = settingsDirty();
-  const rooms = st.rooms.map((r,i)=>`
-    <div class="rowitem">
-      <span class="ordbtns">
-        <button ${i===0?"disabled":""} onclick="moveRoom(${i},-1)" title="위로">▲</button>
-        <button ${i===st.rooms.length-1?"disabled":""} onclick="moveRoom(${i},1)" title="아래로">▼</button>
-      </span>
-      <span class="ordnum">${i+1}</span>
-      <span class="grow"><span class="t">${esc(r.name)}</span>
-        <span class="s">${r.type==="hall"
-          ? `${hallTables(r).length}테이블 · ${hallSeatTotal(r)}석`
-          : `${roomMin(r)}인~${r.capacity}인`}${r.floor?` · ${esc(r.floor)}`:""}</span></span>
-      ${r.type==="hall"
-      ? `<button class="btn sm" onclick="openTables('${r.id}')">테이블 구성</button>`
-      : `<button class="numbtn sm" onclick="openNum('minCapacity','${esc(r.name)} 최소 인원',1,30,{room:'${r.id}'})">최소 ${roomMin(r)}</button>
-         <button class="numbtn sm" onclick="openNum('capacity','${esc(r.name)} 최대 인원',1,40,{room:'${r.id}'})">최대 ${r.capacity}</button>`}
-      <label class="tbl-in">층
-        <input value="${esc(r.floor||"")}" placeholder="1층" style="width:64px"
-               onchange="setRoomText('${r.id}','floor',this.value)"></label>
-      <button class="btn sm danger" onclick="delRoom('${r.id}')">삭제</button>
-    </div>`).join("");
-  const srcs = st.sources.map(x=>`
-    <span class="tag" style="padding:6px 10px">${esc(x)}
-      ${x!=="기타"?`<button onclick="delSource('${esc(x)}')" style="background:none;border:none;color:var(--rust);padding:0 0 0 5px">×</button>`:""}
-    </span>`).join(" ");
+  const DOWN = ["일","월","화","수","목","금","토"];
+
+  /* ---------- 운영시간 ---------- */
+  const schedBody = `
+    ${(st.schedules||[]).slice().sort((a,b)=>b.from.localeCompare(a.from)).map(sc=>{
+      const cur = sc === scheduleFor(todayStr());
+      return `<div class="schrow ${cur?'cur':''}">
+        <div class="sch-h">
+          <b>${sc.from==="2000-01-01"?"기본":`${sc.from.slice(0,4)}. ${+sc.from.slice(5,7)}. ${+sc.from.slice(8)}. 부터`}</b>
+          ${cur?`<span class="tag pine">현재 적용</span>`:""}
+          <button class="btn sm" style="margin-left:auto" onclick="openSchedule('${sc.from}')">수정</button>
+        </div>
+        <div class="sch-days">
+          ${(sc.days||[]).map((d,i)=>`<span class="sch-d"><b>${DOWN[i]}</b>
+            ${esc(d.open)}–${esc(d.close)}${d.bs?` · 브레이크 ${esc(d.bs)}–${esc(d.be)}`:""}${d.lo?` · LO ${esc(d.lo)}`:""}</span>`).join("")}
+          ${sc.holiday?`<span class="sch-d"><b>공휴</b>
+            ${esc(sc.holiday.open)}–${esc(sc.holiday.close)}${sc.holiday.bs?` · 브레이크 ${esc(sc.holiday.bs)}–${esc(sc.holiday.be)}`:""}${sc.holiday.lo?` · LO ${esc(sc.holiday.lo)}`:""}</span>`:""}
+        </div>
+      </div>`;
+    }).join("")}
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn primary" onclick="openSchedule(null)">운영시간 수정</button>
+      <button class="btn" onclick="openOverride()">임시 영업·휴무</button>
+    </div>
+    <p class="f-note">운영시간을 바꿀 때는 적용 시작일을 정합니다.
+      과거 기록은 그때의 시간으로 계산되므로 지난 예약률이 틀어지지 않습니다.</p>
+
+    <div class="subhead">공휴일</div>
+    <button class="togglebtn ${st.holidayMode!==false?'on':''}" onclick="toggleHoliday()">
+      ${st.holidayMode!==false?"공휴일 운영시간 사용":"공휴일 구분 안 함"}
+    </button>
+    ${st.holidayMode!==false?`
+      <label class="chk" style="margin-top:10px">
+        <input type="checkbox" ${st.holidayAsWeekend!==false?"checked":""} onchange="toggleHolidayWeekend()">
+        <span>코스 시간대에서 공휴일을 주말로 봅니다</span></label>
+      <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:4px">
+        ${(st.holidays||[]).slice().sort().map(h=>`
+          <span class="tag" style="padding:6px 10px">${h.slice(5).replace("-","/")}
+            <button onclick="delHoliday('${h}')" style="background:none;border:none;color:var(--rust);padding:0 0 0 5px">×</button>
+          </span>`).join("") || `<span class="muted" style="font-size:13px">등록된 공휴일이 없습니다.</span>`}
+      </div>
+      <div class="btn-row" style="margin-top:10px">
+        <input id="hol-date" type="date" style="flex:1 1 160px">
+        <button class="btn primary" onclick="addHoliday()">공휴일 추가</button>
+      </div>
+      <p class="f-note">공휴일은 자동으로 알 수 없어 직접 등록합니다.</p>`:""}`;
+
+  /* ---------- 예약 규칙 ---------- */
+  const ruleBody = `
+    <div class="subhead">체류 시간 <span>예약 한 건이 자리를 잡아 두는 시간</span></div>
+    <div class="grid2">
+      <label class="f"><div class="lb">룸 · 점심</div>
+        <button class="numbtn" onclick="openNum('lunchStayHours','룸 점심 체류',1,6,{step:0.5})">${st.lunchStayHours||2.5}<small>시간</small></button></label>
+      <label class="f"><div class="lb">룸 · 저녁</div>
+        <button class="numbtn" onclick="openNum('stayHours','룸 저녁 체류',1,6,{step:0.5})">${st.stayHours||3}<small>시간</small></button></label>
+      <label class="f"><div class="lb">홀 · 점심</div>
+        <button class="numbtn" onclick="openNum('hallLunchStayHours','홀 점심 체류',1,6,{step:0.5})">${st.hallLunchStayHours||2}<small>시간</small></button></label>
+      <label class="f"><div class="lb">홀 · 저녁</div>
+        <button class="numbtn" onclick="openNum('hallStayHours','홀 저녁 체류',1,6,{step:0.5})">${st.hallStayHours||2.5}<small>시간</small></button></label>
+    </div>
+    <label class="f"><div class="lb">점심·저녁 경계</div>
+      <input type="time" value="${st.lunchUntil||"16:00"}" onchange="setSetting('lunchUntil',this.value)">
+      <div class="f-note">이 시각 이전 예약은 점심 체류 시간으로 계산됩니다.</div></label>
+
+    <div class="subhead">인원</div>
+    <label class="f"><div class="lb">룸 최소 인원 기준</div>
+      <button class="togglebtn ${st.minCountAdultsOnly!==false?'on':''}" onclick="toggleAdultOnly()">
+        ${st.minCountAdultsOnly!==false?"성인 기준 (유아 제외)":"총 인원 기준 (유아 포함)"}</button>
+      <div class="f-note">성인 기준이면 성인 1명·유아 3명은 4인 룸 최소 인원에 못 미치는 것으로 봅니다.</div></label>
+    <label class="f"><div class="lb">단체 기준 인원</div>
+      <button class="numbtn" onclick="openNum('groupSize','단체 기준 인원',2,40)">${st.groupSize||8}<small>명</small></button>
+      <div class="f-note">이 인원부터 확인 필요에 ‘단체 손님’으로 뜹니다.</div></label>
+
+    <div class="subhead">마감·브레이크</div>
+    <label class="f"><div class="lb">마지막 예약 (종료 전)</div>
+      <button class="numbtn" onclick="openNum('lastBookingBuffer','영업 종료 몇 분 전까지 받나요?',0,180,{step:10})">${st.lastBookingBuffer ?? 60}<small>분 전</small></button>
+      <div class="f-note">라스트오더가 정해진 요일은 그 시각을 우선합니다.</div></label>
+    <label class="f"><div class="lb">브레이크타임 방식</div>
+      <div class="seg">
+        <button class="${(st.breakMode||"leave")==="leave"?"on":""}" onclick="setSetting('breakMode','leave')">매장을 비움</button>
+        <button class="${st.breakMode==="order"?"on":""}" onclick="setSetting('breakMode','order')">음식 주문만 중단</button>
+      </div>
+      <div class="f-note">‘매장을 비움’이면 브레이크 시작 전에 식사가 끝나야 합니다.</div></label>
+    ${st.breakMode==="order"?`
+      <label class="f"><div class="lb">브레이크 전 마지막 입장</div>
+        <button class="numbtn" onclick="openNum('breakEntryBuffer','브레이크 몇 분 전까지 받나요?',0,180,{step:10})">${st.breakEntryBuffer ?? 60}<small>분 전</small></button>
+      </label>`:""}`;
+
+  /* ---------- 좌석 ---------- */
+  const seatBody = `
+    <p class="f-note" style="margin:0 0 12px">
+      <b>배정 순서</b>는 좌석을 정하지 않은 손님에게 자리를 미리 잡아 둘 때 씁니다.
+      인원이 맞는 방 중 <b>남는 자리가 가장 적은 방</b>을 먼저 고르고,
+      조건이 같으면 아래 순서대로 고릅니다.</p>
+    ${st.rooms.map((r,i)=>`
+      <div class="rowitem">
+        <span class="ordbtns">
+          <button ${i===0?"disabled":""} onclick="moveRoom(${i},-1)" title="위로">▲</button>
+          <button ${i===st.rooms.length-1?"disabled":""} onclick="moveRoom(${i},1)" title="아래로">▼</button>
+        </span>
+        <span class="ordnum">${i+1}</span>
+        <span class="grow"><span class="t">${esc(r.name)}</span>
+          <span class="s">${r.type==="hall"
+            ? `${hallTables(r).length}테이블 · ${hallSeatTotal(r)}석`
+            : `${roomMin(r)}인~${r.capacity}인`}${r.floor?` · ${esc(r.floor)}`:""}</span></span>
+        ${r.type==="hall"
+          ? `<button class="btn sm" onclick="openTables('${r.id}')">테이블 구성</button>`
+          : `<button class="numbtn sm" onclick="openNum('minCapacity','${esc(r.name)} 최소 인원',1,30,{room:'${r.id}'})">최소 ${roomMin(r)}</button>
+             <button class="numbtn sm" onclick="openNum('capacity','${esc(r.name)} 최대 인원',1,40,{room:'${r.id}'})">최대 ${r.capacity}</button>`}
+        <label class="tbl-in">층
+          <input value="${esc(r.floor||"")}" placeholder="1층" style="width:60px"
+                 onchange="setRoomText('${r.id}','floor',this.value)"></label>
+        <button class="btn sm danger" onclick="delRoom('${r.id}')">삭제</button>
+      </div>`).join("")}
+    <div class="btn-row" style="margin-top:12px">
+      <input id="nr-name" placeholder="이름 (예: 여포)" style="flex:2 1 120px">
+      <input id="nr-min" type="number" min="1" value="2" title="최소 인원" style="flex:1 1 62px">
+      <input id="nr-cap" type="number" min="1" value="4" title="최대 인원" style="flex:1 1 62px">
+      <select id="nr-type" style="flex:1 1 80px"><option value="room">룸</option><option value="hall">홀</option></select>
+      <button class="btn primary" onclick="addRoom()">추가</button>
+    </div>`;
+
+  /* ---------- 코스 ---------- */
+  const courseBody = `
+    ${(st.courseGroups||DEFAULT_COURSE_GROUPS).map((g,i)=>`
+      <div class="cgedit">
+        <div class="row">
+          <label class="f" style="flex:1 1 150px"><div class="lb">${i+1}행 이름</div>
+            <input value="${esc(g.label)}" onchange="setCourseField(${i},'label',this.value)"></label>
+          <label class="f" style="flex:2 1 220px"><div class="lb">항목 (쉼표로 구분)</div>
+            <input value="${esc((g.items||[]).join(", "))}" onchange="setCourseItems(${i},this.value)"></label>
+        </div>
+        <div class="whenrow">
+          <span class="lbl">적용 시간대</span>
+          ${WHEN_OPTS.map(w=>`<button class="wbtn ${(g.when||[]).includes(w)?'on':''}" onclick="toggleWhen(${i},'${w}')">${w}</button>`).join("")}
+          <button class="btn sm danger" style="margin-left:auto" onclick="delCourseRow(${i})">행 삭제</button>
+        </div>
+      </div>`).join("")}
+    <div class="btn-row" style="margin-top:10px">
+      <button class="btn primary" onclick="addCourseRow()">＋ 행 추가</button>
+    </div>
+    <p class="f-note">메뉴판 구성에 맞춰 행을 나누세요. 예약 시각에 맞는 행이 코스 선택 팝업에서 강조됩니다.</p>`;
+
+  /* ---------- 예약경로 ---------- */
+  const srcBody = `
+    <div style="display:flex; flex-wrap:wrap; gap:6px">
+      ${(st.sources||[]).map(x=>`<span class="tag" style="padding:6px 10px">${esc(x)}
+        ${x!=="기타"?`<button onclick="delSource('${esc(x)}')" style="background:none;border:none;color:var(--rust);padding:0 0 0 5px">×</button>`:""}
+      </span>`).join(" ")}
+    </div>
+    <div class="btn-row" style="margin-top:12px">
+      <input id="ns" placeholder="예: 캐치테이블" style="flex:1 1 140px">
+      <button class="btn primary" onclick="addSource()">추가</button>
+    </div>`;
+
+  /* ---------- 디스플레이 ---------- */
+  const rows = displayRows();
+  const dispBody = `
+    <p class="f-note" style="margin:0 0 12px">
+      TV에 띄우는 화면의 좌석 배치입니다. 3줄로 고정되며 한 줄에 최대 ${DISP_MAX}칸까지 놓을 수 있습니다.</p>
+    ${rows.map((ids,ri)=>`
+      <div class="disprow ${ids.length>DISP_MAX?'over':''}">
+        <div class="dr-title">${ri+1}번째 줄 <span>${ids.length}칸${ids.length>DISP_MAX?" · 너무 많습니다":""}</span></div>
+        <div class="dr-cells">
+          ${ids.map(id=>{
+            const r = st.rooms.find(x=>x.id===id);
+            if(!r) return "";
+            return `<span class="dcell">${esc(r.name)}
+              <button ${ri===0?"disabled":""} onclick="moveDisp('${id}',-1)" title="윗줄로">▲</button>
+              <button ${ri===2?"disabled":""} onclick="moveDisp('${id}',1)" title="아랫줄로">▼</button>
+            </span>`;
+          }).join("")}
+          ${ids.length?"":`<span class="muted" style="font-size:13px">비어 있음</span>`}
+        </div>
+      </div>`).join("")}`;
+
+  /* ---------- 보안 / 기타 ---------- */
+  const secBody = `
+    <div class="btn-row">
+      <button class="btn" onclick="openPin()">PIN 번호 변경</button>
+      <button class="btn danger" onclick="lockNow()">로그아웃</button>
+    </div>
+    <p class="f-note">PIN 변경에는 관리자 비밀번호가 필요합니다.</p>`;
+
+  const etcBody = `
+    <div class="btn-row">
+      <button class="btn" onclick="openNoshow()">노쇼 관리</button>
+      <button class="btn danger" onclick="clearDemo()">예시 데이터 지우기</button>
+    </div>
+    <p class="f-note">처음 실행 시 화면 확인용 예시 예약이 들어 있습니다. 실제로 쓰기 전에 지우세요.</p>`;
 
   return `
-    <div class="sect-title">운영시간</div>
-    <div class="card"><div class="card-b">
-      ${(st.schedules||[]).slice().sort((a,b)=>b.from.localeCompare(a.from)).map(sc=>{
-        const cur = sc === scheduleFor(todayStr());
-        return `<div class="schrow ${cur?'cur':''}">
-          <div class="sch-h">
-            <b>${sc.from==="2000-01-01"?"기본":`${sc.from.slice(0,4)}. ${+sc.from.slice(5,7)}. ${+sc.from.slice(8)}. 부터`}</b>
-            ${cur?`<span class="tag pine">현재 적용</span>`:""}
-            <button class="btn sm" style="margin-left:auto" onclick="openSchedule('${sc.from}')">수정</button>
-          </div>
-          <div class="sch-days">
-            ${(sc.days||[]).map((d,i)=>`<span class="sch-d">
-              <b>${["일","월","화","수","목","금","토"][i]}</b>
-              ${esc(d.open)}–${esc(d.close)}${d.bs?` · 브레이크 ${esc(d.bs)}–${esc(d.be)}`:""}${d.lo?` · LO ${esc(d.lo)}`:""}
-            </span>`).join("")}
-          </div>
-        </div>`;
-      }).join("")}
-      <div class="btn-row" style="margin-top:12px">
-        <button class="btn primary" onclick="openSchedule(null)">운영시간 수정하기</button>
-        <button class="btn" onclick="openOverride()">임시 영업시간 · 휴무</button>
-      </div>
-      <p class="f-note">운영시간을 바꿀 때는 적용 시작일을 정합니다.
-        과거 기록은 그때의 시간으로 계산되므로 지난 예약률이 틀어지지 않습니다.</p>
-    </div></div>
-
-    <div class="card"><div class="card-b">
-      <div class="grid2">
-        <label class="f"><div class="lb">룸 · 점심 체류</div>
-          <input type="number" min="1" max="6" step="0.5" value="${st.lunchStayHours||2.5}" onchange="setSettingNum('lunchStayHours',this.value)">
-        </label>
-        <label class="f"><div class="lb">룸 · 저녁 체류</div>
-          <input type="number" min="1" max="6" step="0.5" value="${st.stayHours||3}" onchange="setSettingNum('stayHours',this.value)">
-        </label>
-        <label class="f"><div class="lb">홀 · 점심 체류</div>
-          <input type="number" min="1" max="6" step="0.5" value="${st.hallLunchStayHours||2}" onchange="setSettingNum('hallLunchStayHours',this.value)">
-        </label>
-        <label class="f"><div class="lb">홀 · 저녁 체류</div>
-          <input type="number" min="1" max="6" step="0.5" value="${st.hallStayHours||2.5}" onchange="setSettingNum('hallStayHours',this.value)">
-        </label>
-        <label class="f"><div class="lb">점심·저녁 경계</div>
-          <input type="time" value="${st.lunchUntil||"16:00"}" onchange="setSetting('lunchUntil',this.value)">
-        </label>
-        <label class="f"><div class="lb">홀 테이블 1개 기준 인원</div>
-          <input type="number" min="2" max="8" value="${st.tableSeats||4}" onchange="setSettingNum('tableSeats',this.value)">
-        </label>
-      </div>
-      <label class="f">
-        <div class="lb">룸 최소 인원 기준</div>
-        <button class="togglebtn ${st.minCountAdultsOnly!==false?'on':''}" onclick="toggleAdultOnly()">
-          ${st.minCountAdultsOnly!==false?"성인 기준 (유아 제외)":"총 인원 기준 (유아 포함)"}
-        </button>
-        <div class="f-note">성인 기준이면 성인 1명·유아 3명은 4인 룸 최소 인원에 못 미치는 것으로 봅니다.</div>
-      </label>
-      <label class="f">
-        <div class="lb">브레이크타임 방식</div>
-        <div class="seg">
-          <button class="${(st.breakMode||"leave")==="leave"?"on":""}" onclick="setSetting('breakMode','leave')">매장을 비움</button>
-          <button class="${st.breakMode==="order"?"on":""}" onclick="setSetting('breakMode','order')">주문만 중단</button>
-        </div>
-        <div class="f-note">‘매장을 비움’이면 브레이크 시작 전에 식사가 끝나야 하므로,
-          체류 시간이 브레이크에 걸치는 예약에 경고가 뜹니다.<br>
-          ‘주문만 중단’이면 식사는 이어가도 되므로 시작 시각만 확인합니다.</div>
-      </label>
-    </div></div>
-
-    <div class="sect-title">좌석 (${st.rooms.length})</div>
-    <div class="card"><div class="card-b" style="padding-bottom:2px">
-      <p class="f-note" style="margin:0">
-        <b>배정 순서</b>는 좌석을 정하지 않은 손님에게 자리를 미리 잡아 둘 때 씁니다.
-        인원이 맞는 방 중 <b>남는 자리가 가장 적은 방</b>을 먼저 고르고,
-        조건이 같으면 아래 순서대로 고릅니다. 위로 올릴수록 먼저 쓰입니다.</p>
-    </div>${rooms || `<div class="empty">등록된 좌석이 없습니다.</div>`}
-      <div class="card-b" style="border-top:1px solid var(--border)">
-        <div class="btn-row">
-          <input id="nr-name" placeholder="이름" style="flex:2 1 110px">
-          <input id="nr-min" type="number" min="1" value="2" title="최소 인원" style="flex:1 1 60px">
-          <input id="nr-cap" type="number" min="1" value="4" title="최대 인원" style="flex:1 1 60px">
-          <select id="nr-type" style="flex:1 1 80px"><option value="room">룸</option><option value="hall">홀</option></select>
-          <button class="btn primary" onclick="addRoom()">추가</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="sect-title">예약경로</div>
-    <div class="card"><div class="card-b">
-      <div style="display:flex; flex-wrap:wrap; gap:6px">${srcs}</div>
-      <div class="btn-row" style="margin-top:12px">
-        <input id="ns" placeholder="예: 캐치테이블" style="flex:1 1 140px">
-        <button class="btn primary" onclick="addSource()">추가</button>
-      </div>
-    </div></div>
-
-<!-- 직원 기능 비활성화: 직급 설정 숨김
-    <div class="sect-title">직급</div>
-    <div class="card"><div class="card-b">
-      <div style="display:flex; flex-wrap:wrap; gap:6px">
-        ${st.roles.map(r=>`<span class="tag" style="padding:6px 10px">${esc(r)}<button onclick="delRole('${esc(r)}')" style="background:none;border:none;color:var(--rust);padding:0 0 0 5px">×</button></span>`).join(" ")}
-      </div>
-      <div class="btn-row" style="margin-top:12px">
-        <input id="nrole" placeholder="예: 부점장" style="flex:1 1 140px">
-        <button class="btn primary" onclick="addRole()">추가</button>
-      </div>
-    </div></div>
-
--->
-
-    <div class="sect-title">코스 구성</div>
-    <div class="card"><div class="card-b">
-      ${(st.courseGroups||DEFAULT_COURSE_GROUPS).map((g,i)=>`
-        <div class="cgedit">
-          <div class="row">
-            <label class="f" style="flex:1 1 150px"><div class="lb">${i+1}행 이름</div>
-              <input value="${esc(g.label)}" onchange="setCourseField(${i},'label',this.value)"></label>
-            <label class="f" style="flex:2 1 220px"><div class="lb">항목 (쉼표로 구분)</div>
-              <input value="${esc((g.items||[]).join(", "))}" onchange="setCourseItems(${i},this.value)"></label>
-          </div>
-          <div class="whenrow">
-            <span class="lbl">적용 시간대</span>
-            ${WHEN_OPTS.map(w=>`
-              <button class="wbtn ${(g.when||[]).includes(w)?'on':''}" onclick="toggleWhen(${i},'${w}')">${w}</button>`).join("")}
-            <button class="btn sm danger" style="margin-left:auto" onclick="delCourseRow(${i})">행 삭제</button>
-          </div>
-        </div>`).join("")}
-      <div class="btn-row" style="margin-top:10px">
-        <button class="btn primary" onclick="addCourseRow()">＋ 행 추가</button>
-      </div>
-      <p class="f-note">메뉴판 구성에 맞춰 행을 나누세요. 적용 시간대는 여러 개 고를 수 있고,
-        예약 시각에 맞는 행이 코스 선택 팝업에서 강조됩니다.</p>
-    </div></div>
-
-    <div class="sect-title">예약 규칙</div>
-    <div class="card"><div class="card-b">
-      <div class="grid2">
-        <label class="f"><div class="lb">단체 기준 인원</div>
-          <button class="numbtn" onclick="openNum('groupSize','단체 기준 인원',2,40)">${st.groupSize||8}<small>명</small></button>
-          <div class="f-note">이 인원부터 확인 필요에 ‘단체 손님’으로 뜹니다.</div>
-        </label>
-        <label class="f"><div class="lb">홀 테이블 1개 기준 인원</div>
-          <button class="numbtn" onclick="openNum('tableSeats','테이블 기준 인원',2,10)">${st.tableSeats||4}<small>명</small></button>
-        </label>
-      </div>
-    </div></div>
-
-    <div class="sect-title">공휴일</div>
-    <div class="card"><div class="card-b">
-      <button class="togglebtn ${st.holidayMode!==false?'on':''}" onclick="toggleHoliday()">
-        ${st.holidayMode!==false?"공휴일 운영시간 사용":"공휴일 구분 안 함"}
-      </button>
-      <div class="f-note" style="margin-top:8px">공휴일은 자동으로 알 수 없어 직접 등록합니다.
-        등록한 날은 아래 ‘운영시간 → 공휴일’ 시간이 적용됩니다.</div>
-      ${st.holidayMode!==false?`
-        <label class="chk" style="margin-top:12px">
-          <input type="checkbox" ${st.holidayAsWeekend!==false?"checked":""} onchange="toggleHolidayWeekend()">
-          <span>코스 시간대에서 공휴일을 주말로 봅니다</span></label>
-        <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px">
-          ${(st.holidays||[]).slice().sort().map(h=>`
-            <span class="tag" style="padding:6px 10px">${h.slice(5).replace("-","/")}
-              <button onclick="delHoliday('${h}')" style="background:none;border:none;color:var(--rust);padding:0 0 0 5px">×</button>
-            </span>`).join("") || `<span class="muted" style="font-size:13px">등록된 공휴일이 없습니다.</span>`}
-        </div>
-        <div class="btn-row" style="margin-top:10px">
-          <input id="hol-date" type="date" style="flex:1 1 160px">
-          <button class="btn primary" onclick="addHoliday()">추가</button>
-        </div>`:""}
-    </div></div>
-
-    <div class="sect-title">화면</div>
-    <div class="card"><div class="card-b">
-      <div class="lbl" style="margin-bottom:8px">테마</div>
-      <div class="seg">
-        <button class="${(DATA._ui&&DATA._ui.theme)==="basic"?"":"on"}" onclick="setTheme('hanok')">한옥</button>
-        <button class="${(DATA._ui&&DATA._ui.theme)==="basic"?"on":""}" onclick="setTheme('basic')">기본</button>
-      </div>
-      <p class="f-note">한옥 테마는 한지색 배경과 목재 상단바를 씁니다. 언제든 기본으로 되돌릴 수 있습니다.</p>
-    </div></div>
-
-    <div class="sect-title">보안</div>
-    <div class="card"><div class="card-b">
-      <div class="btn-row">
-        <button class="btn" onclick="openPin()">PIN 번호 변경</button>
-        <button class="btn" onclick="openLogs()">접속 기록 보기</button>
-        <button class="btn danger" onclick="lockNow()">지금 잠그기</button>
-      </div>
-      <p class="f-note">PIN 변경에는 관리자 비밀번호가 필요합니다.
-        접속 기록에는 IP·시각·동작이 그대로 쌓입니다 (최근 ${LOG_MAX}건).</p>
-    </div></div>
-
-    <div class="sect-title">기타</div>
-    <div class="card"><div class="card-b">
-      <div class="btn-row">
-        <button class="btn" onclick="openNoshow()">노쇼 관리</button>
-        <button class="btn" onclick="openDisplay()">디스플레이 모드 열기</button>
-        <button class="btn danger" onclick="clearDemo()">예시 데이터 지우기</button>
-      </div>
-      <p class="f-note">처음 실행 시 화면 확인용 예시 예약·직원 데이터가 들어 있습니다. 실제로 쓰기 전에 지우세요.</p>
-    </div></div>
+    ${sec("hours","운영시간",`${hoursFor(todayStr()).open}–${hoursFor(todayStr()).close}`, schedBody)}
+    ${sec("rules","예약 규칙",`체류 ${st.stayHours||3}h · 단체 ${st.groupSize||8}명`, ruleBody)}
+    ${sec("seats","좌석",`${st.rooms.length}개`, seatBody)}
+    ${sec("course","코스 구성",`${(st.courseGroups||[]).length}행`, courseBody)}
+    ${sec("source","예약경로",`${(st.sources||[]).length}개`, srcBody)}
+    ${sec("disp","디스플레이 배치",`${rows.map(r=>r.length).join(" · ")}`, dispBody)}
+    ${sec("security","보안","PIN", secBody)}
+    ${sec("etc","기타","", etcBody)}
 
     <div class="applybar ${dirty?'on':''}">
       <span class="ab-t">${dirty?"저장하지 않은 변경이 있습니다":"모든 변경이 적용되었습니다"}</span>
       <button class="btn" onclick="revertSettings()" ${dirty?"":"disabled"}>되돌리기</button>
       <button class="btn primary" onclick="applySettings()" ${dirty?"":"disabled"}>적용하기</button>
-    </div>
-
-    <p class="f-note" style="margin-top:18px">
-      이 화면의 값은 코드가 아니라 데이터로 저장됩니다. 영업시간·룸·직급이 바뀌어도 코드를 고칠 필요가 없습니다.
-    </p>`;
+    </div>`;
+}
+/* 디스플레이 배치에서 좌석을 다른 줄로 옮깁니다 */
+function moveDisp(id, dir){
+  const st = draft();
+  const rows = (st.displayRows && st.displayRows.length===3)
+    ? st.displayRows.map(r=>[...r]) : displayRows().map(r=>[...r]);
+  const from = rows.findIndex(r=>r.includes(id));
+  const to = from + dir;
+  if(from<0 || to<0 || to>2) return;
+  rows[from] = rows[from].filter(x=>x!==id);
+  rows[to].push(id);
+  st.displayRows = rows;
+  render();
 }
 function setSetting(k,v){ draft()[k]=v; render(); }
 function setSettingNum(k,v){ draft()[k]=parseFloat(v)||1; render(); }
@@ -3618,24 +4008,35 @@ function setRoomField(id,field,v){
   render();
 }
 async function addRoom(){
-  const name=document.getElementById("nr-name").value.trim();
-  if(!name) return await uiAlert2("룸 이름을 입력하세요.");
-  const cap=parseInt(document.getElementById("nr-cap").value)||1;
-  const type=document.getElementById("nr-type").value;
+  const el = document.getElementById("nr-name");
+  const name = (el?el.value:"").trim();
+  if(!name) return uiAlert("좌석 이름을 입력하세요","","warn");
+  const cap = parseInt(document.getElementById("nr-cap").value)||4;
+  const type = document.getElementById("nr-type").value;
   const min = parseInt(document.getElementById("nr-min").value)||1;
-  store().settings.rooms.push({id:"r_"+Date.now(),name,capacity:cap,minCapacity:Math.min(min,cap),type,tables:type==="hall"?Math.floor(cap/4):undefined});
-  saveData(); render();
+  const st = draft();
+  const rec = {id:"r_"+Date.now(), name, type, floor:""};
+  if(type==="hall") rec.zones = [{name:"홀", sets:[{seats:4,count:Math.max(1,Math.floor(cap/4))}], maxJoin:2}];
+  else { rec.capacity = cap; rec.minCapacity = Math.min(min,cap); }
+  st.rooms.push(rec);
+  render();
 }
 async function delRoom(id){
-  if(!await uiConfirm2("이 룸을 삭제할까요? 기존 예약은 '미배정'으로 표시됩니다.")) return;
-  const st=store().settings; st.rooms=st.rooms.filter(r=>r.id!==id); saveData(); render();
+  const st = draft();
+  const r = st.rooms.find(x=>x.id===id);
+  if(!await uiConfirm("이 좌석을 삭제할까요?", `${r?r.name:""} — 기존 예약은 ‘미배정’으로 표시됩니다.`, {ok:"삭제"})) return;
+  st.rooms = st.rooms.filter(x=>x.id!==id);
+  render();
 }
 async function addSource(){
-  const v=document.getElementById("ns").value.trim(); const st=store().settings;
-  if(!v||st.sources.includes(v)) return;
-  st.sources.push(v); saveData(); render();
+  const el = document.getElementById("ns");
+  const v = (el?el.value:"").trim();
+  const st = draft();
+  if(!v || (st.sources||[]).includes(v)) return;
+  st.sources = [...(st.sources||[]), v];
+  render();
 }
-function delSource(x){ const st=store().settings; st.sources=st.sources.filter(s=>s!==x); saveData(); render(); }
+function delSource(x){ const st=draft(); st.sources=(st.sources||[]).filter(s=>s!==x); render(); }
 async function addRole(){
   const v=document.getElementById("nrole").value.trim(); const st=store().settings;
   if(!v||st.roles.includes(v)) return;
@@ -3669,10 +4070,10 @@ function openOverride(){ view.form={type:"ovr"}; render(); }
 // function openStaff(id){ view.form={type:"staff", id}; render(); }
 // function openAtt(id){ view.form={type:"att", id}; render(); }
 // function openSale(date){ view.form={type:"sale", id:date}; render(); }
-function closeSheet(){ view.form=null; render(); }
+function closeSheet(){ view.form=null; tmpRes=null; render(); }
 
 function renderSheet(){
-  const inner = { res:sheetRes, mark:sheetMark, unassigned:sheetUnassigned, pick:sheetPick, search:sheetSearch, tables:sheetTables, num:sheetNum, noshow:sheetNoshow, pin:sheetPin, logs:sheetLogs, rate:sheetRate, sched:sheetSchedule, ovr:sheetOverride /*, staff:sheetStaff, att:sheetAtt, sale:sheetSale */ }[view.form.type]();
+  const inner = { res:sheetRes, mark:sheetMark, unassigned:sheetUnassigned, pick:sheetPick, check:sheetCheck, search:sheetSearch, tables:sheetTables, num:sheetNum, noshow:sheetNoshow, pin:sheetPin, logs:sheetLogs, rate:sheetRate, sched:sheetSchedule, ovr:sheetOverride /*, staff:sheetStaff, att:sheetAtt, sale:sheetSale */ }[view.form.type]();
   const wide = view.form.type==="rate" ? " sheet-wide" : "";
   return `<div class="overlay" onclick="closeSheet()"><div class="sheet${wide}" onclick="event.stopPropagation()">${inner}</div></div>`;
 }
@@ -3686,45 +4087,49 @@ function sheetRes(){
   const s=store(), st=s.settings;
   const editing = view.form.id ? s.reservations.find(r=>r.id===view.form.id) : null;
   if(!tmpRes || tmpRes.__id !== (view.form.id||"new")){
-    tmpRes = editing ? {...editing, __id:editing.id}
-      : {__id:"new", date:view.date, time:"18:00", name:"", phone:"", adults:2, infants:0,
-         roomId:"", source:st.sources[0]||"전화", sourceDetail:"", request:"", status:"확정"};
+    tmpRes = editing
+      ? {...editing, __id:editing.id}
+      : {__id:"new", date:view.date, time:"18:00", name:"", phone:"", people:2, infants:0,
+         chairs:0, roomId:"", source:"전화", sourceDetail:"", request:"", allergy:"", status:"확정"};
   }
   const f = tmpRes;
-  const roomOpts = st.rooms.map(r=>`<option value="${r.id}" ${f.roomId===r.id?'selected':''}>${r.type==="hall"?"[홀] ":""}${esc(r.name)} · ${r.capacity}인</option>`).join("");
-  const srcSeg = st.sources.map(x=>`<button class="${f.source===x?'on':''}" onclick="pickSource('${esc(x)}')">${esc(x)}</button>`).join("");
+  const roomOpts = st.rooms.map(r=>`<option value="${r.id}" ${f.roomId===r.id?'selected':''}>${
+    r.type==="hall"?"[홀] ":""}${esc(r.name)}${r.type==="room"?` · ${roomMin(r)}~${r.capacity}인`:""}</option>`).join("");
+  const srcs = [...new Set([...(st.sources||["전화","네이버예약","기타"]), f.source||"전화"])];
+  const srcSeg = srcs.map(x=>`<button class="${f.source===x?'on':''}" onclick="pickSource('${esc(x)}')">${esc(x)}</button>`).join("");
   const stSeg = STATUS.map(x=>`<button class="${f.status===x?'on':''}" onclick="pickStatus('${x}')">${x}</button>`).join("");
 
   return `
-    ${sheetHead(editing?"예약 수정":"새 예약")}
+    ${sheetHead(editing?"예약 내용 수정":"새 예약")}
     <div class="grid2">
       <label class="f"><div class="lb">날짜</div><input id="f-date" type="date" value="${f.date}"></label>
       <label class="f"><div class="lb">시간</div><input id="f-time" type="time" value="${f.time}"></label>
     </div>
-    <label class="f"><div class="lb">예약자명</div><input id="f-name" value="${esc(f.name)}" placeholder="홍길동" autocomplete="off"></label>
-    <label class="f"><div class="lb">전화번호</div><input id="f-phone" type="tel" inputmode="numeric" value="${esc(f.phone)}" placeholder="010-0000-0000"></label>
     <div class="grid2">
-      <div class="f"><div class="lb">성인</div>
-        <div class="stepper"><button onclick="step('f-adults',-1)">−</button><input id="f-adults" type="number" min="0" value="${f.adults}"><button onclick="step('f-adults',1)">＋</button></div>
-      </div>
-      <div class="f"><div class="lb">유아</div>
-        <div class="stepper"><button onclick="step('f-infants',-1)">−</button><input id="f-infants" type="number" min="0" value="${f.infants}"><button onclick="step('f-infants',1)">＋</button></div>
-      </div>
+      <label class="f"><div class="lb">예약자명</div><input id="f-name" value="${esc(f.name)}" placeholder="홍길동" autocomplete="off"></label>
+      <label class="f"><div class="lb">전화번호</div><input id="f-phone" type="tel" inputmode="numeric" value="${esc(f.phone)}" placeholder="010-0000-0000"></label>
     </div>
-    <label class="f"><div class="lb">룸 · 홀</div>
-      <select id="f-room"><option value="">미배정 — 인원만 접수</option>${roomOpts}</select>
-      <div class="f-note">지금 정하지 못하면 미배정으로 두고 나중에 배정하세요.</div>
-    </label>
+    <div class="grid2">
+      <label class="f"><div class="lb">총 인원 (유아 포함)</div>
+        <input id="f-people" type="number" min="1" value="${pplOf(f)}"></label>
+      <label class="f"><div class="lb">유아</div>
+        <input id="f-infants" type="number" min="0" value="${f.infants||0}"></label>
+    </div>
+    <label class="f"><div class="lb">유아용 의자</div>
+      <input id="f-chairs" type="number" min="0" value="${f.chairs||0}"></label>
+    <label class="f"><div class="lb">좌석</div>
+      <select id="f-room"><option value="">미배정</option>${roomOpts}</select></label>
     <div class="f"><div class="lb">예약경로</div><div class="seg">${srcSeg}</div>
       <div id="src-detail" style="margin-top:8px; display:${f.source==="기타"?"block":"none"}">
-        <input id="f-src-detail" value="${esc(f.sourceDetail)}" placeholder="예: 지인 소개">
+        <input id="f-src-detail" value="${esc(f.sourceDetail||"")}" placeholder="예: 지인 소개">
       </div>
     </div>
     <label class="f"><div class="lb">알러지</div><input id="f-allergy" value="${esc(f.allergy||'')}" placeholder="예: 갑각류 알러지 1명"></label>
-    <label class="f"><div class="lb">요청사항</div><input id="f-request" value="${esc(f.request)}" placeholder="예: 아기의자 1개, 창가 자리"></label>
+    <label class="f"><div class="lb">요청사항</div><input id="f-request" value="${esc(f.request||'')}" placeholder="예: 창가 자리"></label>
     <div class="f"><div class="lb">상태</div><div class="seg">${stSeg}</div></div>
     <div class="sheet-actions">
       ${editing?`<button class="btn danger" onclick="delRes('${editing.id}')">삭제</button>`:""}
+      <button class="btn ghost" onclick="closeSheet()">닫기</button>
       <button class="btn primary" onclick="saveRes()">저장</button>
     </div>`;
 }
@@ -3732,32 +4137,43 @@ function step(id,d){
   const el=document.getElementById(id);
   el.value = Math.max(0,(parseInt(el.value)||0)+d);
 }
-function pickSource(x){ syncRes(); tmpRes.source=x; render(); }
-function pickStatus(x){ syncRes(); tmpRes.status=x; render(); }
+function pickSource(x){ syncRes(); tmpRes = {...tmpRes, source:x}; render(); }
+function pickStatus(x){ syncRes(); tmpRes = {...tmpRes, status:x}; render(); }
 /* 버튼을 눌러 화면을 다시 그리기 전에, 입력창에 친 값을 임시 객체에 옮겨 담음 */
 function syncRes(){
-  const g=id=>{const el=document.getElementById(id); return el?el.value:"";};
-  tmpRes = {...tmpRes,
-    date:g("f-date"), time:g("f-time"), name:g("f-name"), phone:g("f-phone"),
-    adults:parseInt(g("f-adults"))||0, infants:parseInt(g("f-infants"))||0,
-    roomId:g("f-room"), sourceDetail:g("f-src-detail"), request:g("f-request"), allergy:g("f-allergy")};
+  const g=id=>{const el=document.getElementById(id); return el?el.value:undefined;};
+  const v = {};
+  [["date","f-date"],["time","f-time"],["name","f-name"],["phone","f-phone"],
+   ["roomId","f-room"],["sourceDetail","f-src-detail"],["request","f-request"],["allergy","f-allergy"]]
+    .forEach(([k,id])=>{ const x=g(id); if(x!==undefined) v[k]=x; });
+  [["people","f-people"],["infants","f-infants"],["chairs","f-chairs"]]
+    .forEach(([k,id])=>{ const x=g(id); if(x!==undefined) v[k]=Math.max(0,parseInt(x)||0); });
+  tmpRes = {...tmpRes, ...v};
 }
 async function saveRes(){
   syncRes();
   const s=store(), f=tmpRes;
-  if(!f.name.trim()) return await uiAlert2("예약자명을 입력하세요.");
-  if(!f.time) return await uiAlert2("시간을 입력하세요.");
+  if(!(f.name||"").trim()) return uiAlert("예약자명을 입력하세요","","warn");
+  if(!f.time) return uiAlert("시간을 입력하세요","","warn");
+  const old = view.form.id ? s.reservations.find(r=>r.id===view.form.id) : null;
   const rec = {
+    ...(old||{}),
     id: view.form.id || "res_"+Date.now(),
-    date:f.date, time:f.time, name:f.name.trim(), phone:f.phone.trim(),
-    adults:f.adults, infants:f.infants, roomId:f.roomId||null,
+    date:f.date, time:f.time, name:(f.name||"").trim(), phone:(f.phone||"").trim(),
+    people: Math.max(1, f.people||1), infants: f.infants||0, chairs: f.chairs||0,
+    roomId: f.roomId || null,
+    seatPref: f.roomId ? null : (old ? old.seatPref : "any"),
+    tentativeRoomId: f.roomId ? null : (old ? old.tentativeRoomId : null),
     source:f.source, sourceDetail:f.source==="기타"?(f.sourceDetail||"").trim():"",
-    request:(f.request||"").trim(), allergy:(f.allergy||"").trim(), seatPref:f.seatPref||null, status:f.status
+    request:(f.request||"").trim(), allergy:(f.allergy||"").trim(),
+    status:f.status,
+    createdAt: old ? old.createdAt : new Date().toISOString()
   };
+  delete rec.__id; delete rec.adults;
   s.reservations = view.form.id ? s.reservations.map(r=>r.id===rec.id?rec:r) : [...s.reservations, rec];
   logEvent(view.form.id?"예약 수정":"예약 등록", `${rec.date} ${rec.time} ${rec.name} ${pplOf(rec)}명`);
   reflowTentatives(rec.date);
-  view.date = rec.date; view.tab = "res"; view.form=null; tmpRes=null;
+  view.date = rec.date; view.form=null; tmpRes=null;
   saveData(); render();
 }
 async function delRes(id){
@@ -3930,8 +4346,9 @@ function numValue(){
 function sheetNum(){
   const f = view.form;
   const v = numValue();
+  const step = (f.ctx && f.ctx.step) || 1;
   const quick = [];
-  for(let i=f.min; i<=Math.min(f.max, f.min+11); i++) quick.push(i);
+  for(let i=f.min; i<=f.max && quick.length<12; i+=step) quick.push(+i.toFixed(1));
   return `
     ${sheetHead(f.title)}
     <div class="numbig">
@@ -3942,7 +4359,7 @@ function sheetNum(){
     <div class="numgrid">
       ${quick.map(n=>`<button class="${v===n?'on':''}" onclick="numSet(${n})">${n}</button>`).join("")}
     </div>
-    <p class="f-note">${f.min} ~ ${f.max} 사이로 정할 수 있습니다.</p>
+    <p class="f-note">${f.min} ~ ${f.max} 사이로 정할 수 있습니다.${step!==1?` (${step} 단위)`:""}</p>
     <div class="sheet-actions">
       <button class="btn ghost" onclick="closeSheet()">취소</button>
       <button class="btn primary" onclick="numSave()">확인</button>
@@ -3950,7 +4367,8 @@ function sheetNum(){
 }
 function numAdj(d){
   const f = view.form;
-  f.val = Math.max(f.min, Math.min(f.max, numValue()+d));
+  const step = (f.ctx && f.ctx.step) || 1;
+  f.val = +Math.max(f.min, Math.min(f.max, numValue()+d*step)).toFixed(1);
   render();
 }
 function numSet(n){ view.form.val = n; render(); }
@@ -4627,10 +5045,18 @@ function timeWarn(date, time){
   if(inBreak(date, time)) return `브레이크타임(${dh.bs}–${dh.be})입니다`;
   if(toMin(time) < toMin(dh.open) || toMin(time) >= toMin(dh.close)) return "영업시간이 아닙니다";
   if(toMin(time) > lastBookMin(date)) return `라스트오더(${dh.lo||minToHM(lastBookMin(date))})를 넘겼습니다`;
+  const stx = store().settings;
   const end = toMin(time) + stayMinAt(time);
-  if((store().settings.breakMode||"leave")==="leave" &&
-     dh.bs && toMin(time) < toMin(dh.bs) && end > toMin(dh.bs))
-    return "식사 중 브레이크타임이 시작됩니다";
+  if(dh.bs && toMin(time) < toMin(dh.bs)){
+    if((stx.breakMode||"leave")==="leave"){
+      if(end > toMin(dh.bs)) return "식사 중 브레이크타임이 시작됩니다";
+    }else{
+      /* 음식 주문만 중단 — 브레이크 직전 입장은 주문 시간이 모자랍니다 */
+      const buf = stx.breakEntryBuffer ?? 60;
+      if(toMin(time) > toMin(dh.bs) - buf)
+        return `브레이크 ${buf}분 전 이후 입장입니다`;
+    }
+  }
   if(end > toMin(dh.close)) return "식사 시간이 마감을 넘깁니다";
   return "";
 }
@@ -5365,11 +5791,33 @@ function pokeExit(ms){
 }
 
 /* 이름 가운데 글자를 * 로 가림 — 손님 이름이 TV에 그대로 노출되지 않도록 */
+/* 디스플레이 모드에 쓸 좌석 배치 — 3행, 각 행 최대 6칸 */
+const DISP_MAX = 6;
+function displayRows(){
+  const st = store().settings;
+  const ids = st.rooms.map(r=>r.id);
+  const saved = st.displayRows;
+  if(saved && saved.length===3){
+    /* 없어진 좌석은 빼고, 새로 생긴 좌석은 빈 칸이 있는 행에 넣습니다 */
+    const rows = saved.map(row=>row.filter(id=>ids.includes(id)));
+    const placed = new Set(rows.flat());
+    ids.filter(id=>!placed.has(id)).forEach(id=>{
+      const row = rows.find(r=>r.length<DISP_MAX) || rows[2];
+      row.push(id);
+    });
+    return rows;
+  }
+  /* 기본: 1행 홀, 2·3행 룸을 반씩 */
+  const halls = st.rooms.filter(r=>r.type==="hall").map(r=>r.id);
+  const rooms = st.rooms.filter(r=>r.type==="room").map(r=>r.id);
+  const half = Math.ceil(rooms.length/2);
+  return [halls, rooms.slice(0,half), rooms.slice(half)];
+}
 function maskName(n){
   const s = String(n||"").trim();
   if(s.length<=1) return s;
-  if(s.length===2) return s[0]+"*";
-  return s[0] + "*".repeat(s.length-2) + s[s.length-1];
+  if(s.length===2) return s[0]+"○";
+  return s[0] + "○".repeat(s.length-2) + s[s.length-1];
 }
 
 function renderDisplay(){
@@ -5379,10 +5827,9 @@ function renderDisplay(){
   /* 좌석이 배정된 예약만 표시 — 당일에는 미배정이 없도록 운영한다는 전제 */
   const list = s.reservations.filter(r=>r.date===today && (r.status==="확정"||r.status==="방문") && r.roomId);
 
-  /* 홀은 첫 줄에 따로, 룸은 두 줄로 나눠 배치 */
-  const halls = st.rooms.filter(r=>r.type==="hall");
-  const rooms = st.rooms.filter(r=>r.type==="room");
-  const order = [...halls, ...rooms];
+  /* 설정에 정한 3행 배치대로 그립니다 */
+  const rowIds = displayRows();
+  const order = rowIds.flat().map(id=>st.rooms.find(r=>r.id===id)).filter(Boolean);
   const sec = order.map(room=>{
     const rows = list.filter(r=>r.roomId===room.id).sort((a,b)=>a.time.localeCompare(b.time));
     const items = rows.length ? rows.map(r=>{
@@ -5404,12 +5851,11 @@ function renderDisplay(){
     </section>`;
   });
 
-  /* 1행: 홀 전체 / 2·3행: 룸을 반씩 (앞줄에 하나 더 — 9개면 5·4) */
-  const hallSec = sec.slice(0, halls.length);
-  const roomSec = sec.slice(halls.length);
-  const half = Math.ceil(roomSec.length/2);
-  const row1 = roomSec.slice(0, half), row2 = roomSec.slice(half);
-  const rowHtml = (arr, cls) => arr.length ? `<div class="tv-row ${cls||""}">${arr.join("")}</div>` : "";
+  let idx = 0;
+  const rowsHtml = rowIds.map((ids,i)=>{
+    const cells = ids.map(()=>sec[idx++]).filter(Boolean);
+    return cells.length ? `<div class="tv-row ${i===0?"halls":""}">${cells.join("")}</div>` : "";
+  });
 
   const d = new Date();
   const dateTxt = `${d.getMonth()+1}월 ${d.getDate()}일 ${["일","월","화","수","목","금","토"][d.getDay()]}요일`;
@@ -5427,7 +5873,7 @@ function renderDisplay(){
       <h1>오늘의 예약 안내</h1>
       <div class="tv-line"></div>
     </header>
-    <div class="tv-grid">${rowHtml(hallSec,"halls")}${rowHtml(row1)}${rowHtml(row2)}</div>
+    <div class="tv-grid">${rowsHtml.join("")}</div>
     <footer class="tv-f">찾아주셔서 감사합니다</footer>
   </div>`;
 }
