@@ -2120,12 +2120,51 @@ button.blk.tent.warned{background:var(--rust); border:1px dashed #FFE2DA}
   .ts-box .btn{width:100%; background:#F4F2EE; border-color:#F4F2EE; color:#1B1A18}
 }
 
+
+.urlbox{border:1px solid var(--border); border-radius:4px; padding:13px 14px; margin-bottom:14px; background:var(--surface-2)}
+.ub-t{font-size:12px; font-weight:800; color:var(--text-3); margin-bottom:6px}
+.ub-u{font-family:ui-monospace,Menlo,monospace; font-size:13px; color:var(--text);
+  background:var(--surface); border:1px solid var(--border); border-radius:3px;
+  padding:9px 11px; word-break:break-all; margin-bottom:8px}
+.ub-s{font-size:12px; color:var(--text-3); line-height:1.55; margin-bottom:10px}
+
+
+/* ============================================================
+   구형 스마트TV 브라우저 대비
+   flex 의 gap 을 지원하지 않는 브라우저에서 요소가 붙어 보이는 것을 막습니다.
+   ============================================================ */
+@supports not (gap: 1px){
+  .metrics > *{margin:1px}
+  .btn-row > *,.seg > *,.bar-right > *,.tl-legends > *,.dr-cells > *{margin:3px}
+  .tl-row > * + *{margin-left:8px}
+  .tv-row > * + *{margin-left:14px}
+}
+/* clamp 를 못 읽는 브라우저를 위한 기본값 (뒤에 오는 clamp 가 우선) */
+.tv-inner{padding:34px 44px 28px}
+.dsec{padding:20px 18px 16px}
+.dsec h3{font-size:22px}
+.dsec li{font-size:19px}
+.tv-h h1{font-size:44px}
+
 </style>
 </head>
 <body>
 <div id="app"></div>
 
 <script>
+/* 오래된 브라우저에서 스크립트가 멈추면 흰 화면 대신 안내를 띄웁니다 */
+window.onerror = function(msg){
+  var app = document.getElementById("app");
+  if(app && !app.getAttribute("data-ok")){
+    app.innerHTML = '<div style="max-width:420px;margin:14vh auto;padding:28px;text-align:center;'+
+      'font-family:sans-serif;color:#333;border:1px solid #ddd;border-radius:4px">'+
+      '<div style="font-size:17px;font-weight:700;margin-bottom:10px">화면을 열 수 없습니다</div>'+
+      '<div style="font-size:13.5px;line-height:1.7;color:#666">브라우저가 오래되어 이 화면을 표시할 수 없습니다.<br>'+
+      'TV 브라우저를 최신으로 업데이트하거나,<br>크롬캐스트·미니PC·스틱PC를 연결해 사용해 주세요.</div>'+
+      '<div style="font-size:11px;color:#aaa;margin-top:16px;word-break:break-all">'+String(msg)+'</div></div>';
+  }
+  return false;
+};
 /* ============================================================
    데이터 정의
    ============================================================ */
@@ -2221,24 +2260,30 @@ let view = { storeKey:null, tab:"dash", date:todayStr(), filter:"전체", form:n
 async function loadData(){
   try{
     const r = await window.storage.get(STORAGE_KEY);
-    DATA = r ? migrate(JSON.parse(r.value)) : seedDemo(structuredClone(DEFAULT_DATA));
-  }catch(e){ DATA = seedDemo(structuredClone(DEFAULT_DATA)); }
+    DATA = r ? migrate(JSON.parse(r.value)) : seedDemo(deepClone(DEFAULT_DATA));
+  }catch(e){ DATA = seedDemo(deepClone(DEFAULT_DATA)); }
   if(!DATA._auth) DATA._auth = {...DEFAULT_AUTH};
   if(!DATA._ui) DATA._ui = {theme:"hanok"};
   if(!DATA._logs) DATA._logs = [];
   /* 새로고침해도 잠기지 않도록 인증 상태를 저장해 둡니다.
      자동 로그아웃은 없고, '지금 잠그기'를 눌러야 풀립니다. */
   if(DATA._session && DATA._session.authed) AUTHED = true;
+  document.getElementById("app").setAttribute("data-ok","1");
   fetchIP();
   autoCloseDays();
+  if(applyRoute()){
+    document.addEventListener("keydown", escDisplay);
+  }
   render();
+  /* 뒤로 가기·주소 변경에도 반응 */
+  window.addEventListener("hashchange", ()=>{ if(applyRoute()) render(); });
 }
 /* 저장된 옛 데이터에 새 항목이 없을 때 채워 넣기 */
 function migrate(d){
   d._auth = d._auth || {...DEFAULT_AUTH};
   d._logs = d._logs || [];
   for(const k of Object.keys(DEFAULT_DATA)){
-    d[k] = { ...structuredClone(DEFAULT_DATA[k]), ...(d[k]||{}) };
+    d[k] = { ...deepClone(DEFAULT_DATA[k]), ...(d[k]||{}) };
     d[k].settings = { ...DEFAULT_DATA[k].settings, ...(d[k].settings||{}) };
     for(const arr of ["reservations","staff","attendance","sales"]) d[k][arr] = d[k][arr] || [];
     /* 옛 기록 정리: 인원을 유아 포함 총원으로, 상태 이름 변경 */
@@ -2271,9 +2316,11 @@ function nowHM(){ const d=new Date(); return pad(d.getHours())+":"+pad(d.getMinu
 function won(n){ return (n||0).toLocaleString("ko-KR"); }
 /* 입력값을 화면에 넣기 전 반드시 통과 — 스크립트 주입(XSS) 방지 */
 function esc(s){
-  return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;")
+  return String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;")
     .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 }
+/* 구형 스마트TV 브라우저에는 structuredClone 이 없어 직접 복사합니다 */
+function deepClone(o){ return JSON.parse(JSON.stringify(o)); }
 function store(){ return DATA[view.storeKey]; }
 
 /* ---------- 지난 예약 자동 정리 ----------
@@ -2470,7 +2517,7 @@ function lastBookMin(date){
   const st = store().settings;
   const h = hoursFor(date || view.date || todayStr());
   /* 라스트오더가 지정돼 있으면 그 시각, 없으면 마감 기준 */
-  return h.lo ? toMin(h.lo) : toMin(h.close) - (st.lastBookingBuffer ?? 60);
+  return h.lo ? toMin(h.lo) : toMin(h.close) - (st.lastBookingBuffer != null ? st.lastBookingBuffer : 60);
 }
 /* 확정 배정이 없으면 잠정 배정을 좌석으로 간주 */
 function effSeat(r){ return r.roomId || r.tentativeRoomId || null; }
@@ -2670,6 +2717,8 @@ function render(){
     (MODAL || (view.form && !view.display) || view.calOpen || WZ) ? "hidden" : "";
   const app = document.getElementById("app");
   if(!DATA){ app.innerHTML="<p class='empty'>불러오는 중…</p>"; return; }
+  /* 디스플레이 모드는 주소로 바로 열 수 있습니다 (TV 전용 화면) */
+  if(view.display && view.storeKey){ app.innerHTML = renderDisplay() + renderModal(); afterRender(); return; }
   /* 매장을 고른 뒤에 PIN 을 입력합니다 */
   if(view.storeKey && !AUTHED){ app.innerHTML = renderLock() + renderModal(); afterRender(); return; }
   app.innerHTML = (view.display ? renderDisplay()
@@ -2718,7 +2767,7 @@ function pinBack(){ PIN_BUF = PIN_BUF.slice(0,-1); render(); }
 function pinClear(){ PIN_BUF=""; PIN_ERR=""; render(); }
 function backToStores(){ view.storeKey=null; PIN_BUF=""; PIN_ERR=""; render(); }
 function pinCheck(){
-  const ok = PIN_BUF === (DATA._auth?.pin || DEFAULT_AUTH.pin);
+  const ok = PIN_BUF === ((DATA._auth && DATA._auth.pin) || DEFAULT_AUTH.pin);
   logEvent(ok ? "로그인 성공" : "로그인 실패", ok ? "" : `입력값 ${PIN_BUF}`);
   if(ok){
     AUTHED = true; PIN_BUF=""; PIN_ERR="";
@@ -2838,12 +2887,12 @@ async function setTab(t){
     if(!ok) return;
     view.draft = null;
   }
-  if(t==="settings" && !view.draft) view.draft = structuredClone(store().settings);
+  if(t==="settings" && !view.draft) view.draft = deepClone(store().settings);
   view.tab=t; render(); window.scrollTo(0,0);
 }
 /* 설정 화면에서는 임시본을 씁니다 — '적용하기'를 눌러야 반영됩니다 */
 function draft(){
-  if(!view.draft) view.draft = structuredClone(store().settings);
+  if(!view.draft) view.draft = deepClone(store().settings);
   return view.draft;
 }
 function settingsDirty(){
@@ -2851,13 +2900,13 @@ function settingsDirty(){
 }
 function applySettings(){
   if(!view.draft) return;
-  store().settings = structuredClone(view.draft);
+  store().settings = deepClone(view.draft);
   logEvent("설정 변경", "적용");
   saveData(); render();
 }
 async function revertSettings(){
   if(!await uiConfirm("변경을 되돌릴까요?", "마지막으로 적용한 상태로 돌아갑니다.", {ok:"되돌리기"})) return;
-  view.draft = structuredClone(store().settings);
+  view.draft = deepClone(store().settings);
   render();
 }
 
@@ -4042,7 +4091,7 @@ function renderSettings(){
 
     <div class="subhead">마감·브레이크</div>
     <label class="f"><div class="lb">마지막 예약 (종료 전)</div>
-      <button class="numbtn" onclick="openNum('lastBookingBuffer','영업 종료 몇 분 전까지 받나요?',0,180,{step:10})">${st.lastBookingBuffer ?? 60}<small>분 전</small></button>
+      <button class="numbtn" onclick="openNum('lastBookingBuffer','영업 종료 몇 분 전까지 받나요?',0,180,{step:10})">${st.lastBookingBuffer != null ? st.lastBookingBuffer : 60}<small>분 전</small></button>
       <div class="f-note">라스트오더가 정해진 요일은 그 시각을 우선합니다.</div></label>
     <label class="f"><div class="lb">브레이크타임 방식</div>
       <div class="seg">
@@ -4052,7 +4101,7 @@ function renderSettings(){
       <div class="f-note">‘매장을 비움’이면 브레이크 시작 전에 식사가 끝나야 합니다.</div></label>
     ${st.breakMode==="order"?`
       <label class="f"><div class="lb">브레이크 전 마지막 입장</div>
-        <button class="numbtn" onclick="openNum('breakEntryBuffer','브레이크 몇 분 전까지 받나요?',0,180,{step:10})">${st.breakEntryBuffer ?? 60}<small>분 전</small></button>
+        <button class="numbtn" onclick="openNum('breakEntryBuffer','브레이크 몇 분 전까지 받나요?',0,180,{step:10})">${st.breakEntryBuffer != null ? st.breakEntryBuffer : 60}<small>분 전</small></button>
       </label>`:""}`;
 
   /* ---------- 좌석 ---------- */
@@ -4130,6 +4179,12 @@ function renderSettings(){
   const dispBody = `
     <p class="f-note" style="margin:0 0 12px">
       TV에 띄우는 화면의 좌석 배치입니다. 3줄로 고정되며 한 줄에 최대 ${DISP_MAX}칸까지 놓을 수 있습니다.</p>
+    <div class="urlbox">
+      <div class="ub-t">TV 전용 주소</div>
+      <div class="ub-u" id="screen-url">${esc(screenUrl())}</div>
+      <div class="ub-s">TV 브라우저 주소창에 이 주소를 넣으면 PIN 없이 바로 이 화면이 열립니다.</div>
+      <button class="btn sm" onclick="copyScreenUrl()">주소 복사</button>
+    </div>
     ${rows.map((ids,ri)=>`
       <div class="disprow ${ids.length>DISP_MAX?'over':''}">
         <div class="dr-title">${ri+1}번째 줄 <span>${ids.length}칸${ids.length>DISP_MAX?" · 너무 많습니다":""}</span></div>
@@ -4178,6 +4233,19 @@ function renderSettings(){
     </div>`;
 }
 /* 디스플레이 배치에서 좌석을 다른 줄로 옮깁니다 */
+function screenUrl(){
+  try{
+    const base = location.origin + location.pathname.replace(/\/screen(\/[a-z]+)?$/i,"").replace(/\/+$/,"");
+    if(location.protocol === "file:") return location.href.split("#")[0] + `#/screen/${view.storeKey}`;
+    return `${base}/screen/${view.storeKey}`;
+  }catch(e){ return `/screen/${view.storeKey}`; }
+}
+function copyScreenUrl(){
+  if(!navigator.clipboard) return uiAlert("복사 실패","주소를 직접 입력해 주세요.","warn");
+  navigator.clipboard.writeText(screenUrl()).then(
+    ()=>uiAlert("복사 완료","TV 브라우저 주소창에 붙여넣으세요.","ok"),
+    ()=>uiAlert("복사 실패","주소를 직접 입력해 주세요.","warn"));
+}
 function moveDisp(id, dir){
   const st = draft();
   const rows = (st.displayRows && st.displayRows.length===3)
@@ -4224,7 +4292,7 @@ function toggleHolidayWeekend(){
   st.holidayAsWeekend = st.holidayAsWeekend===false;
   render();
 }
-function courseSet(){ const st=draft(); if(!st.courseGroups) st.courseGroups=structuredClone(DEFAULT_COURSE_GROUPS); return st.courseGroups; }
+function courseSet(){ const st=draft(); if(!st.courseGroups) st.courseGroups=deepClone(DEFAULT_COURSE_GROUPS); return st.courseGroups; }
 function setCourseField(i,f,v){ courseSet()[i][f]=v; render(); }
 function setCourseItems(i,v){
   courseSet()[i].items = v.split(",").map(x=>x.trim()).filter(Boolean); render();
@@ -4329,7 +4397,7 @@ function openSchedule(from){
   view.schedDraft = {
     from: from || todayStr(),
     isNew: !from,
-    days: structuredClone(base ? base.days : DEFAULT_DATA.hanok.settings.schedules[0].days)
+    days: deepClone(base ? base.days : DEFAULT_DATA.hanok.settings.schedules[0].days)
   };
   view.form={type:"sched"}; render();
 }
@@ -4660,7 +4728,7 @@ function sheetTables(){
   const st = draft();
   const hall = st.rooms.find(r=>r.id===view.form.id);
   if(!hall) return `${sheetHead("테이블 구성")}<div class="empty">홀을 찾을 수 없습니다.</div>`;
-  if(!hall.zones) hall.zones = hallZones(hall).map(z=>structuredClone(z));
+  if(!hall.zones) hall.zones = hallZones(hall).map(z=>deepClone(z));
   const zones = hall.zones;
 
   const rows = zones.map((z,zi)=>{
@@ -4773,7 +4841,7 @@ function zoneMap(hall){
 }
 function zonesOf(){
   const hall = draft().rooms.find(r=>r.id===view.form.id);
-  if(!hall.zones) hall.zones = hallZones(hall).map(z=>structuredClone(z));
+  if(!hall.zones) hall.zones = hallZones(hall).map(z=>deepClone(z));
   return hall.zones;
 }
 function setZone(zi,k,v){ zonesOf()[zi][k]=v; render(); }
@@ -4949,7 +5017,7 @@ async function saveSchedule(){
   const st = store().settings, d = view.schedDraft;
   if(!d.from) return uiAlert("적용 시작일을 정해주세요","","warn");
   st.schedules = (st.schedules||[]).filter(s=>s.from!==d.from);
-  st.schedules.push({from:d.from, days:structuredClone(d.days)});
+  st.schedules.push({from:d.from, days:deepClone(d.days)});
   st.schedules.sort((a,b)=>a.from.localeCompare(b.from));
   logEvent("설정 변경", `운영시간 ${d.from}부터`);
   view.form=null; view.schedDraft=null; saveData(); render();
@@ -5057,7 +5125,7 @@ function sheetPin(){
 }
 async function savePin(){
   const g = id => document.getElementById(id).value;
-  if(g("pin-admin") !== (DATA._auth?.admin || DEFAULT_AUTH.admin)){
+  if(g("pin-admin") !== ((DATA._auth && DATA._auth.admin) || DEFAULT_AUTH.admin)){
     logEvent("PIN 변경 실패", "관리자 비밀번호 불일치");
     await uiAlert2("관리자 비밀번호가 맞지 않습니다."); return;
   }
@@ -5104,7 +5172,8 @@ function setLogQuery(v){
 }
 async function copyLogs(){
   const txt = (DATA._logs||[]).map(l=>`${l.ts}\t${l.ip}\t${l.store}\t${l.action}\t${l.detail}\t${l.ua}`).join("\n");
-  navigator.clipboard?.writeText(txt).then(
+  if(!navigator.clipboard) return uiAlert("복사 실패","클립보드를 쓸 수 없습니다.","warn");
+  navigator.clipboard.writeText(txt).then(
     ()=>uiAlert("복사 완료","접속 기록을 클립보드에 복사했습니다.","ok"),
     ()=>uiAlert("복사 실패","클립보드에 접근할 수 없습니다.","warn"));
 }
@@ -5329,8 +5398,8 @@ function wzCanNext(){
 }
 /* 화면을 다시 그리기 전에 입력창 값을 상태로 옮김 */
 function wzSyncInputs(){
-  const g=id=>document.getElementById(id)?.value;
-  if(g("wz-name")!==undefined && g("wz-name")!==null) WZ.name = g("wz-name") ?? WZ.name;
+  const g=function(id){ const el=document.getElementById(id); return el?el.value:""; };
+  if(g("wz-name")!==undefined && g("wz-name")!==null) WZ.name = g("wz-name");
   if(g("wz-phone")!=null) WZ.phone = g("wz-phone");
   if(g("wz-allergy")!=null) WZ.allergy = g("wz-allergy");
   if(g("wz-request")!=null) WZ.request = g("wz-request");
@@ -5384,7 +5453,7 @@ function timeWarn(date, time){
       if(end > toMin(dh.bs)) return "식사 중 브레이크타임이 시작됩니다";
     }else{
       /* 음식 주문만 중단 — 브레이크 직전 입장은 주문 시간이 모자랍니다 */
-      const buf = stx.breakEntryBuffer ?? 60;
+      const buf = stx.breakEntryBuffer != null ? stx.breakEntryBuffer : 60;
       if(toMin(time) > toMin(dh.bs) - buf)
         return `브레이크 ${buf}분 전 이후 입장입니다`;
     }
@@ -6115,33 +6184,74 @@ function closeWizardDone(){ WZ=null; render(); }
    ============================================================ */
 let dispTimer = null;
 let bgTimer = null;
-function openDisplay(){
-  logEvent("디스플레이 모드", "");
-  view.display = true;
+/* ============================================================
+   주소로 화면 구분
+     /            → 관리 화면 (PIN 필요)
+     /screen      → 디스플레이 모드 (TV용, 바로 진입)
+     /screen/hanok → 매장을 지정해서 진입
+   서버 설정 없이도 되도록 #/screen 도 함께 지원합니다.
+   ============================================================ */
+function readRoute(){
+  const path = (location.pathname || "").replace(/\/+$/,"");
+  const hash = (location.hash || "").replace(/^#/,"").replace(/\/+$/,"");
+  const raw = /screen/.test(hash) ? hash : path;
+  const m = raw.match(/\/?screen(?:\/([a-z]+))?$/i);
+  if(!m) return null;
+  return {screen:true, store:(m[1]||"hanok").toLowerCase()};
+}
+function applyRoute(){
+  const r = readRoute();
+  if(r && DATA && DATA[r.store]){
+    view.storeKey = r.store;
+    view.display = true;
+    view.fromRoute = true;      /* 주소로 바로 들어온 경우 */
+    startDisplayTimers();
+    return true;
+  }
+  return false;
+}
+/* 주소를 바꿔 둡니다 (파일로 열었을 때는 조용히 실패해도 괜찮습니다) */
+function setRoute(toScreen){
+  try{
+    if(location.protocol === "file:"){
+      location.hash = toScreen ? `/screen/${view.storeKey}` : "";
+      return;
+    }
+    const base = location.pathname.replace(/\/screen(\/[a-z]+)?$/i, "").replace(/\/+$/,"");
+    history.replaceState(null, "", toScreen ? `${base}/screen/${view.storeKey}` : (base || "/"));
+  }catch(e){ /* 주소를 바꿀 수 없으면 그냥 둡니다 */ }
+}
+/* 배경 순환·자동 갱신 타이머 */
+function startDisplayTimers(){
   view.bgIndex = view.bgIndex || 1;
-  render();
-  /* 배경 사진 순환 */
-  clearInterval(bgTimer);
-  /* 처음 3초 동안 종료 버튼을 보여줘 위치를 알려줍니다 */
-  setTimeout(()=>{ pokeExit(4000); }, 120);
+  clearInterval(bgTimer); clearInterval(dispTimer);
   bgTimer = setInterval(()=>{
     if(!view.display) return;
     view.bgIndex = (view.bgIndex % 7) + 1;
-    const els = document.querySelectorAll(".tv-bg");
-    els.forEach((el,i)=> el.classList.toggle("on", i+1===view.bgIndex));
+    document.querySelectorAll(".tv-bg").forEach((el,i)=> el.classList.toggle("on", i+1===view.bgIndex));
   }, 12000);
-  /* 1분마다 시계와 지난 예약 표시를 갱신 */
-  clearInterval(dispTimer);
   dispTimer = setInterval(()=>{
     if(!view.display) return;
     render();
-    /* 다시 그린 뒤 현재 배경을 유지 */
     document.querySelectorAll(".tv-bg").forEach((el,i)=> el.classList.toggle("on", i+1===(view.bgIndex||1)));
   }, 60000);
+}
+function openDisplay(){
+  logEvent("디스플레이 모드", "");
+  view.display = true;
+  view.fromRoute = false;
+  setRoute(true);
+  render();
+  startDisplayTimers();
+  setTimeout(()=>{ pokeExit(4000); }, 120);
   document.addEventListener("keydown", escDisplay);
 }
 function closeDisplay(){
-  view.display = false;
+  const wasRoute = view.fromRoute;
+  view.display = false; view.fromRoute = false;
+  setRoute(false);
+  /* 주소로 바로 들어온 경우에는 관리 화면 대신 잠금 화면으로 */
+  if(wasRoute && !AUTHED){ view.storeKey = null; }
   clearInterval(dispTimer); clearInterval(bgTimer);
   document.removeEventListener("keydown", escDisplay);
   render();
@@ -6167,7 +6277,7 @@ function displayRows(){
   if(saved && saved.length===3){
     /* 없어진 좌석은 빼고, 새로 생긴 좌석은 빈 칸이 있는 행에 넣습니다 */
     const rows = saved.map(row=>row.filter(id=>ids.includes(id)));
-    const placed = new Set(rows.flat());
+    const placed = new Set([].concat.apply([], rows));
     ids.filter(id=>!placed.has(id)).forEach(id=>{
       const row = rows.find(r=>r.length<DISP_MAX) || rows[2];
       row.push(id);
@@ -6196,7 +6306,7 @@ function renderDisplay(){
 
   /* 설정에 정한 3행 배치대로 그립니다 */
   const rowIds = displayRows();
-  const order = rowIds.flat().map(id=>st.rooms.find(r=>r.id===id)).filter(Boolean);
+  const order = [].concat.apply([], rowIds).map(function(id){ return st.rooms.find(function(r){return r.id===id;}); }).filter(Boolean);
   const sec = order.map(room=>{
     const rows = list.filter(r=>r.roomId===room.id).sort((a,b)=>a.time.localeCompare(b.time));
     const items = rows.length ? rows.map(r=>{
@@ -6264,7 +6374,7 @@ function renderDisplay(){
 function seedDemo(d){
   const today = todayStr();
   const rooms = d.hanok.settings.rooms;
-  const pick = n => rooms.find(r=>r.name===n)?.id || null;
+  const pick = function(n){ const r=rooms.find(function(x){return x.name===n;}); return r?r.id:null; };
   /* ---------- 예약 예시 ----------
      운영시간·룸 정원·코스 규칙을 지켜서 만듭니다 (경고 없는 정상 예약).
      요일별로 쓸 수 있는 시각만 골라 씁니다. */
