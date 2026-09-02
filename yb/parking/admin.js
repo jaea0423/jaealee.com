@@ -22,6 +22,11 @@
     $("today").innerHTML = fmt(d) + "<br>" + days[d.getDay()] + "요일";
   })();
 
+  // 상단바를 누르면 첫 화면으로 돌아갑니다 (로그인은 그대로 유지됩니다)
+  $("btn-home").addEventListener("click", function () {
+    location.href = "index.html";
+  });
+
   var VIEWS = ["login", "menu", "reg", "manage", "edit", "qr", "logs", "pin"];
   function show(name) {
     VIEWS.forEach(function (v) { $("view-" + v).classList.toggle("hidden", v !== name); });
