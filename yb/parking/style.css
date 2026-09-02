@@ -1,10 +1,11 @@
 /* ============================================================
-   대경빌 주차 관리 시스템 - 공용 스타일
-   화려함보다 "오래 봐도 편한" 것을 목표로 한 차분한 톤입니다.
+   대경빌 주차 관리 시스템 - 공용 스타일 (라이트 모드 고정)
    ============================================================ */
 
-/* CSS 변수(custom property): 색을 한 곳에서 관리하기 위한 이름표 */
 :root {
+  /* 기기가 다크모드여도 이 페이지는 항상 밝게 나오도록 고정합니다 */
+  color-scheme: light;
+
   --bg:        #f5f4f0;   /* 페이지 배경 (따뜻한 오프화이트) */
   --surface:   #ffffff;   /* 카드 배경 */
   --surface-2: #faf9f6;   /* 살짝 눌린 영역 */
@@ -21,28 +22,9 @@
   --shadow:    0 1px 2px rgba(0,0,0,.04), 0 6px 18px rgba(0,0,0,.05);
 }
 
-/* 사용자의 기기가 다크모드일 때 색만 바꿔 끼웁니다 */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg:        #16181a;
-    --surface:   #1e2124;
-    --surface-2: #24282c;
-    --line:      #32373c;
-    --text:      #e8e9ea;
-    --text-2:    #a0a6ac;
-    --accent:    #7ea8d0;
-    --accent-fg: #12161a;
-    --ok:        #79c3a0;
-    --soon:      #d8b45c;
-    --off:       #8a9198;
-    --danger:    #e08a7a;
-    --shadow:    0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.35);
-  }
-}
-
 * { box-sizing: border-box; }
 
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; background: var(--bg); }
 
 body {
   margin: 0;
@@ -69,6 +51,7 @@ body {
   font-weight: 700;
   letter-spacing: -0.02em;
   text-align: center;
+  text-wrap: balance;
   /* 5번 클릭 기능 때문에 글자가 드래그 선택되지 않도록 막습니다 */
   user-select: none;
   -webkit-user-select: none;
@@ -150,6 +133,7 @@ body {
 }
 .btn:hover  { background: var(--surface-2); }
 .btn:active { transform: translateY(1px); }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .btn-primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
 .btn-primary:hover { filter: brightness(1.08); background: var(--accent); }
 .btn-danger  { color: var(--danger); border-color: var(--danger); }
@@ -159,6 +143,7 @@ body {
 
 .btn-row { display: flex; gap: 10px; }
 .btn-row .btn { flex: 1; }
+.stack { display: grid; gap: 10px; }
 
 /* ---------- 폼 ---------- */
 .field { margin-bottom: 18px; }
@@ -170,7 +155,7 @@ body {
   color: var(--text-2);
 }
 .field .req { color: var(--danger); }
-input[type=text], input[type=date], input[type=password], input[type=number], textarea, select {
+input[type=text], input[type=date], input[type=password], input[type=email], textarea, select {
   width: 100%;
   padding: 13px 14px;
   border: 1px solid var(--line);
@@ -186,6 +171,29 @@ input:focus, textarea:focus, select:focus {
 }
 textarea { min-height: 92px; resize: vertical; }
 .hint { margin-top: 6px; font-size: 13px; color: var(--text-2); }
+.dates { display: grid; gap: 10px; }
+
+/* 비밀번호 입력칸 + 보기 버튼 */
+.pw {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.pw input { padding-right: 68px; }        /* 버튼 자리를 비워 둡니다 */
+.pw button {
+  position: absolute;
+  right: 6px;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.pw button:hover { background: var(--surface-2); color: var(--text); }
+.pw button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 
 /* 기간 빠른 선택 버튼들 */
 .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
@@ -200,6 +208,7 @@ textarea { min-height: 92px; resize: vertical; }
   cursor: pointer;
 }
 .chip:hover { background: var(--surface-2); }
+.chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .chip.on { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
 
 /* ---------- 탭 ---------- */
@@ -223,6 +232,7 @@ textarea { min-height: 92px; resize: vertical; }
   white-space: nowrap;
   cursor: pointer;
 }
+.tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .tab.on { background: var(--text); color: var(--bg); border-color: var(--text); }
 
 /* ---------- 관리 목록 ---------- */
@@ -242,6 +252,7 @@ textarea { min-height: 92px; resize: vertical; }
   cursor: pointer;
 }
 .row:hover { background: var(--surface-2); }
+.row:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .row-main { flex: 1; min-width: 0; }
 .row-plate { font-size: 19px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .row-sub { font-size: 13px; color: var(--text-2); margin-top: 2px; }
@@ -253,6 +264,7 @@ textarea { min-height: 92px; resize: vertical; }
   font-size: 12px;
   font-weight: 700;
   border: 1px solid currentColor;
+  white-space: nowrap;
 }
 .badge.active   { color: var(--ok); }
 .badge.upcoming { color: var(--soon); }
@@ -261,9 +273,10 @@ textarea { min-height: 92px; resize: vertical; }
 
 /* ---------- 기타 ---------- */
 .empty { padding: 40px 12px; text-align: center; color: var(--text-2); }
-.msg { margin-top: 14px; padding: 12px 14px; border-radius: 10px; font-size: 14px; }
-.msg.err { background: rgba(163,64,47,.1); color: var(--danger); }
+.msg { margin-top: 14px; padding: 12px 14px; border-radius: 10px; font-size: 14px; white-space: pre-line; }
+.msg.err { background: rgba(163,64,47,.10); color: var(--danger); }
 .msg.ok  { background: rgba(47,107,79,.12); color: var(--ok); }
+.msg code { font-size: 12px; opacity: .8; word-break: break-all; }
 .hidden { display: none !important; }
 
 .section-head {
@@ -274,18 +287,21 @@ textarea { min-height: 92px; resize: vertical; }
 }
 .section-head h2 { margin: 0; font-size: 21px; flex: 1; }
 
+.center { text-align: center; }
 .back-link {
   display: inline-block;
   margin-top: 26px;
+  padding: 0;
+  border: 0;
+  background: none;
   color: var(--text-2);
+  font-family: inherit;
   font-size: 15px;
   text-decoration: none;
+  cursor: pointer;
 }
 .back-link:hover { text-decoration: underline; }
 
-.footer-note {
-  margin-top: 34px;
-  text-align: center;
-  font-size: 13px;
-  color: var(--text-2);
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
 }

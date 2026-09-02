@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
 <title>대경빌 주차 관리자</title>
 <meta name="robots" content="noindex">
 <link rel="stylesheet" href="style.css">
@@ -11,26 +12,34 @@
 <div class="wrap">
 
 <!-- ============================================================
-     화면 1. PIN 입력
+     화면 1. 로그인
      ============================================================ -->
 <section id="view-login">
   <h1 class="title">관리자 모드</h1>
-  <p class="subtitle">PIN 6자리를 입력하세요.</p>
+  <p class="subtitle">비밀번호를 입력하세요.</p>
 
   <div class="card">
     <div class="field">
-      <label for="pin">PIN / 비밀번호</label>
-      <input type="password" id="pin" inputmode="numeric" autocomplete="current-password"
-             placeholder="● ● ● ● ● ●">
+      <label for="pw">비밀번호</label>
+      <!-- .pw 안에 입력칸 + '보기' 버튼이 겹쳐 있습니다 -->
+      <div class="pw">
+        <input type="password" id="pw" autocomplete="current-password"
+               placeholder="비밀번호 입력" spellcheck="false">
+        <button type="button" id="pw-toggle" aria-label="비밀번호 보기">보기</button>
+      </div>
+      <div class="hint">Supabase 관리자 계정의 비밀번호입니다.</div>
     </div>
-    <button class="btn btn-primary" id="btn-login">확인</button>
+
+    <button class="btn btn-primary" id="btn-login">로그인</button>
     <div id="login-msg"></div>
   </div>
 
-  <!-- 잘못 누르고 들어온 사람을 위한 탈출구 -->
-  <p style="text-align:center">
+  <p class="center">
     <a class="back-link" href="index.html">← 돌아가기</a>
+    &nbsp;·&nbsp;
+    <button class="back-link" id="btn-diag">연결 확인</button>
   </p>
+  <div id="diag-msg"></div>
 </section>
 
 <!-- ============================================================
@@ -40,16 +49,16 @@
   <h1 class="title">관리자 모드</h1>
   <p class="subtitle">무엇을 하시겠습니까?</p>
 
-  <div class="card">
-    <button class="btn btn-primary" id="btn-go-register" style="margin-bottom:10px">등록</button>
-    <button class="btn" id="btn-go-manage" style="margin-bottom:10px">관리</button>
-    <button class="btn" id="btn-go-pin">PIN 변경</button>
+  <div class="card stack">
+    <button class="btn btn-primary" id="btn-go-register">등록</button>
+    <button class="btn" id="btn-go-manage">관리</button>
+    <button class="btn" id="btn-go-pin">비밀번호 변경</button>
   </div>
 
-  <p style="text-align:center">
+  <p class="center">
     <a class="back-link" href="index.html">← 첫 화면으로</a>
     &nbsp;·&nbsp;
-    <a class="back-link" href="#" id="btn-logout">로그아웃</a>
+    <button class="back-link" id="btn-logout">로그아웃</button>
   </p>
 </section>
 
@@ -70,10 +79,10 @@
 
     <div class="field">
       <label for="r-start">등록 기간 <span class="req">*</span></label>
-      <input type="date" id="r-start">
-      <div class="hint">시작일</div>
-      <input type="date" id="r-end" style="margin-top:10px">
-      <div class="hint">종료일 (아래 버튼으로 빠르게 채울 수 있습니다)</div>
+      <div class="dates">
+        <div><input type="date" id="r-start"><div class="hint">시작일</div></div>
+        <div><input type="date" id="r-end"><div class="hint">종료일</div></div>
+      </div>
       <div class="chips" id="r-chips">
         <button type="button" class="chip" data-m="1">1개월</button>
         <button type="button" class="chip" data-m="3">3개월</button>
@@ -159,10 +168,10 @@
 
     <div class="field">
       <label for="e-start">등록 기간 <span class="req">*</span></label>
-      <input type="date" id="e-start">
-      <div class="hint">시작일</div>
-      <input type="date" id="e-end" style="margin-top:10px">
-      <div class="hint">종료일</div>
+      <div class="dates">
+        <div><input type="date" id="e-start"><div class="hint">시작일</div></div>
+        <div><input type="date" id="e-end"><div class="hint">종료일</div></div>
+      </div>
       <div class="chips" id="e-chips">
         <button type="button" class="chip" data-ext="1">+1개월</button>
         <button type="button" class="chip" data-ext="3">+3개월</button>
@@ -182,15 +191,13 @@
       <textarea id="e-memo"></textarea>
     </div>
 
-    <button class="btn btn-primary" id="btn-edit-save" style="margin-bottom:10px">저장</button>
-
-    <!-- 삭제되지 않은 차량일 때 -->
-    <button class="btn btn-danger hidden" id="btn-edit-delete">삭제 (삭제된 차량으로 이동)</button>
-
-    <!-- 이미 삭제된 차량일 때 -->
-    <div class="btn-row hidden" id="deleted-actions">
-      <button class="btn" id="btn-edit-restore">복구</button>
-      <button class="btn btn-danger" id="btn-edit-purge">영구 삭제</button>
+    <div class="stack">
+      <button class="btn btn-primary" id="btn-edit-save">저장</button>
+      <button class="btn btn-danger hidden" id="btn-edit-delete">삭제 (삭제된 차량으로 이동)</button>
+      <div class="btn-row hidden" id="deleted-actions">
+        <button class="btn" id="btn-edit-restore">복구</button>
+        <button class="btn btn-danger" id="btn-edit-purge">영구 삭제</button>
+      </div>
     </div>
 
     <div id="edit-msg"></div>
@@ -198,18 +205,21 @@
 </section>
 
 <!-- ============================================================
-     화면 6. PIN 변경
+     화면 6. 비밀번호 변경
      ============================================================ -->
 <section id="view-pin" class="hidden">
   <div class="section-head">
     <button class="btn btn-sm btn-ghost" data-back="menu">← 뒤로</button>
-    <h2>PIN 변경</h2>
+    <h2>비밀번호 변경</h2>
   </div>
 
   <div class="card">
     <div class="field">
       <label for="p-new">새 PIN 또는 비밀번호</label>
-      <input type="password" id="p-new" autocomplete="new-password">
+      <div class="pw">
+        <input type="password" id="p-new" autocomplete="new-password" spellcheck="false">
+        <button type="button" class="pw-toggle-2" data-for="p-new" aria-label="비밀번호 보기">보기</button>
+      </div>
       <div class="hint">
         · PIN: 숫자 6자리<br>
         · 비밀번호: 8자 이상, 대문자·숫자·특수문자를 모두 포함
@@ -218,7 +228,10 @@
 
     <div class="field">
       <label for="p-new2">한 번 더 입력</label>
-      <input type="password" id="p-new2" autocomplete="new-password">
+      <div class="pw">
+        <input type="password" id="p-new2" autocomplete="new-password" spellcheck="false">
+        <button type="button" class="pw-toggle-2" data-for="p-new2" aria-label="비밀번호 보기">보기</button>
+      </div>
     </div>
 
     <button class="btn btn-primary" id="btn-pin-save">변경하기</button>
@@ -237,15 +250,14 @@
   /* =========================================================
      0. 공통 도구
      ========================================================= */
-  var db = null;          // Supabase 클라이언트
-  var cache = [];         // 서버에서 받아온 차량 전체 목록
-  var curTab = "active";  // 관리 화면에서 지금 보고 있는 탭
-  var editId = null;      // 수정 중인 차량 id
-  var draft = {};         // 등록 1단계에서 입력한 값을 잠시 담아 두는 곳
+  var db = null;
+  var cache = [];
+  var curTab = "active";
+  var editId = null;
+  var draft = {};
 
   var $ = function (id) { return document.getElementById(id); };
 
-  // 화면 전환: 이름 하나만 보이게 하고 나머지는 숨깁니다
   var VIEWS = ["login", "menu", "reg1", "reg2", "manage", "edit", "pin"];
   function show(name) {
     VIEWS.forEach(function (v) {
@@ -254,22 +266,35 @@
     window.scrollTo(0, 0);
   }
 
-  // 메시지 박스 출력
   function say(boxId, text, kind) {
     var box = $(boxId);
-    if (!text) { box.innerHTML = ""; return; }
     box.innerHTML = "";
+    if (!text) { return; }
     var d = document.createElement("div");
     d.className = "msg " + (kind === "ok" ? "ok" : "err");
     d.textContent = text;
     box.appendChild(d);
   }
 
-  // 뒤로 버튼들 (data-back 속성에 적힌 화면으로 이동)
+  // 비밀번호 '보기' 버튼 (입력 타입을 password <-> text 로 바꿉니다)
+  function bindToggle(btn, input) {
+    btn.addEventListener("click", function () {
+      var showing = input.type === "text";
+      input.type = showing ? "password" : "text";
+      btn.textContent = showing ? "보기" : "숨김";
+      input.focus();
+    });
+  }
+  bindToggle($("pw-toggle"), $("pw"));
+  document.querySelectorAll(".pw-toggle-2").forEach(function (b) {
+    bindToggle(b, $(b.getAttribute("data-for")));
+  });
+
+  // 뒤로 버튼들
   document.querySelectorAll("[data-back]").forEach(function (b) {
     b.addEventListener("click", function () {
       var to = b.getAttribute("data-back");
-      if (to === "manage") { loadAll().then(function(){ show("manage"); }); }
+      if (to === "manage") { loadAll().then(function () { show("manage"); }); }
       else { show(to); }
     });
   });
@@ -277,21 +302,44 @@
   /* =========================================================
      1. 로그인
      ========================================================= */
+
+  // Supabase 가 돌려주는 오류 코드를 사람이 읽을 수 있는 안내로 바꿉니다
+  var HINTS = {
+    invalid_credentials:
+      "이메일 또는 비밀번호가 맞지 않습니다.\n" +
+      "Supabase > Authentication > Users 에서 해당 계정을 열고 비밀번호를 다시 설정해 보세요.",
+    email_not_confirmed:
+      "계정이 아직 '인증 대기' 상태라 로그인이 막혀 있습니다.\n" +
+      "Supabase > Authentication > Users 에서 그 사용자를 지우고,\n" +
+      "Add user 할 때 'Auto Confirm User' 를 켜고 다시 만들어 주세요.",
+    email_provider_disabled:
+      "Supabase 에서 이메일 로그인이 꺼져 있습니다.\n" +
+      "Authentication > Sign In / Providers > Email 을 켜 주세요.",
+    over_request_rate_limit:
+      "시도가 너무 잦습니다. 잠시 후 다시 해 주세요.",
+    validation_failed:
+      "입력 형식이 올바르지 않습니다."
+  };
+
+  function authError(err) {
+    var code = err.code || err.name || "";
+    var base = HINTS[code] || "로그인하지 못했습니다.";
+    return base + "\n\n[원문] " + (err.message || "") + (code ? " (" + code + ")" : "");
+  }
+
   if (!configReady()) {
-    say("login-msg", "설정이 아직 되지 않았습니다. config.js 를 먼저 채워 주세요.");
+    say("login-msg", "config.js 의 SUPABASE_URL / SUPABASE_ANON_KEY 가 비어 있습니다.");
     $("btn-login").disabled = true;
   } else {
     db = makeClient();
-
-    // 이미 로그인되어 있으면 바로 메뉴로 (새로고침해도 풀리지 않게)
     db.auth.getSession().then(function (res) {
       if (res.data.session) { show("menu"); }
     });
   }
 
   function doLogin() {
-    var pw = $("pin").value.trim();
-    if (pw.length < 6) { say("login-msg", "6자리 이상 입력해 주세요."); return; }
+    var pw = $("pw").value;
+    if (!pw) { say("login-msg", "비밀번호를 입력해 주세요."); return; }
 
     $("btn-login").disabled = true;
     say("login-msg", "");
@@ -300,31 +348,67 @@
       .then(function (res) {
         $("btn-login").disabled = false;
         if (res.error) {
-          say("login-msg", "PIN이 올바르지 않습니다.");
-          $("pin").value = "";
-          $("pin").focus();
+          console.error("[login]", res.error);
+          say("login-msg", authError(res.error));
           return;
         }
-        $("pin").value = "";
+        $("pw").value = "";
         show("menu");
+      })
+      .catch(function (e) {
+        $("btn-login").disabled = false;
+        say("login-msg", "서버에 연결하지 못했습니다.\n\n[원문] " + e.message);
       });
   }
 
   $("btn-login").addEventListener("click", doLogin);
-  $("pin").addEventListener("keydown", function (e) {
+  $("pw").addEventListener("keydown", function (e) {
     if (e.key === "Enter") { doLogin(); }
   });
 
-  $("btn-logout").addEventListener("click", function (e) {
-    e.preventDefault();
+  $("btn-logout").addEventListener("click", function () {
     db.auth.signOut().then(function () { location.href = "index.html"; });
+  });
+
+  /* ---------- 연결 확인 (문제가 생겼을 때 원인을 좁히는 용도) ---------- */
+  $("btn-diag").addEventListener("click", function () {
+    if (!configReady()) { say("diag-msg", "config.js 가 비어 있습니다."); return; }
+
+    var lines = [];
+    lines.push("주소: " + CONFIG.SUPABASE_URL);
+    lines.push("관리자 이메일: " + CONFIG.ADMIN_EMAIL);
+    say("diag-msg", "확인 중…", "ok");
+
+    var head = { apikey: CONFIG.SUPABASE_ANON_KEY };
+
+    fetch(CONFIG.SUPABASE_URL + "/auth/v1/settings", { headers: head })
+      .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
+      .then(function (a) {
+        lines.push("");
+        lines.push("· 인증 설정 응답: " + a.s);
+        if (a.j && a.j.external) {
+          lines.push("· 이메일 로그인 켜짐: " + (a.j.external.email ? "예" : "아니오 ← 이게 원인일 수 있습니다"));
+        }
+        if (a.j && typeof a.j.mailer_autoconfirm !== "undefined") {
+          lines.push("· 이메일 확인 없이 가입 허용: " + (a.j.mailer_autoconfirm ? "예" : "아니오"));
+        }
+        return fetch(CONFIG.SUPABASE_URL + "/rest/v1/vehicles_public?select=plate", { headers: head });
+      })
+      .then(function (r) {
+        lines.push("· 차량 목록(뷰) 응답: " + r.status + (r.status === 200 ? " (정상)" : " ← setup.sql 을 실행했는지 확인하세요"));
+        say("diag-msg", lines.join("\n"), r.status === 200 ? "ok" : "err");
+      })
+      .catch(function (e) {
+        lines.push("");
+        lines.push("연결 실패: " + e.message);
+        say("diag-msg", lines.join("\n"));
+      });
   });
 
   /* =========================================================
      2. 메뉴 버튼
      ========================================================= */
   $("btn-go-register").addEventListener("click", function () {
-    // 폼 비우고 시작일을 오늘로 채워 둡니다
     ["r-room", "r-plate", "r-type", "r-memo", "r-end"].forEach(function (id) { $(id).value = ""; });
     $("r-start").value = todayStr();
     document.querySelectorAll("#r-chips .chip").forEach(function (c) { c.classList.remove("on"); });
@@ -345,7 +429,6 @@
   /* =========================================================
      3. 등록
      ========================================================= */
-  // 기간 빠른 선택 버튼
   document.querySelectorAll("#r-chips .chip").forEach(function (c) {
     c.addEventListener("click", function () {
       var start = $("r-start").value || todayStr();
@@ -362,10 +445,10 @@
     var s     = $("r-start").value;
     var e     = $("r-end").value;
 
-    if (!room)  { say("reg1-msg", "호실을 입력해 주세요."); return; }
+    if (!room)    { say("reg1-msg", "호실을 입력해 주세요."); return; }
     if (!s || !e) { say("reg1-msg", "등록 기간(시작일·종료일)을 정해 주세요."); return; }
-    if (e < s)  { say("reg1-msg", "종료일이 시작일보다 빠릅니다."); return; }
-    if (!plate) { say("reg1-msg", "차량 번호를 입력해 주세요."); return; }
+    if (e < s)    { say("reg1-msg", "종료일이 시작일보다 빠릅니다."); return; }
+    if (!plate)   { say("reg1-msg", "차량 번호를 입력해 주세요."); return; }
 
     draft = { room: room, plate: plate, start_date: s, end_date: e };
     say("reg1-msg", "");
@@ -382,11 +465,10 @@
     db.from("vehicles").insert(draft).then(function (res) {
       $("btn-reg-save").disabled = false;
       if (res.error) {
-        console.error(res.error);
-        say("reg2-msg", "저장하지 못했습니다: " + res.error.message);
+        console.error("[insert]", res.error);
+        say("reg2-msg", "저장하지 못했습니다.\n\n[원문] " + res.error.message);
         return;
       }
-      // 등록이 끝나면 첫 화면으로 돌아갑니다
       location.href = "index.html";
     });
   });
@@ -399,7 +481,7 @@
       .select("*")
       .order("room", { ascending: true })
       .then(function (res) {
-        if (res.error) { console.error(res.error); cache = []; }
+        if (res.error) { console.error("[select]", res.error); cache = []; }
         else { cache = res.data; }
         renderRows();
       });
@@ -475,21 +557,18 @@
     $("e-memo").value  = v.memo || "";
     say("edit-msg", "");
 
-    // 삭제 상태에 따라 아래 버튼들을 바꿔 보여 줍니다
     $("btn-edit-delete").classList.toggle("hidden", v.deleted === true);
     $("deleted-actions").classList.toggle("hidden", v.deleted !== true);
 
     show("edit");
   }
 
-  // 종료일 연장 버튼
   document.querySelectorAll("#e-chips .chip").forEach(function (c) {
     c.addEventListener("click", function () {
       var base = $("e-end").value || todayStr();
       var m = Number(c.getAttribute("data-ext"));
-      // 종료일 다음 날부터 m개월 => 결과적으로 m개월 연장
-      var [y, mo, d] = base.split("-").map(Number);
-      var dt = new Date(y, mo - 1, d);
+      var a = base.split("-").map(Number);
+      var dt = new Date(a[0], a[1] - 1, a[2]);
       dt.setMonth(dt.getMonth() + m);
       $("e-end").value = fmt(dt);
     });
@@ -508,52 +587,41 @@
       room: room, plate: plate, start_date: s, end_date: e,
       car_type: $("e-type").value.trim() || null,
       memo:     $("e-memo").value.trim() || null
-    }, "저장했습니다.");
+    });
   });
 
-  $("btn-edit-delete").addEventListener("click", function () {
-    update({ deleted: true }, "삭제된 차량으로 옮겼습니다.");
-  });
-
-  $("btn-edit-restore").addEventListener("click", function () {
-    update({ deleted: false }, "복구했습니다.");
-  });
+  $("btn-edit-delete").addEventListener("click",  function () { update({ deleted: true }); });
+  $("btn-edit-restore").addEventListener("click", function () { update({ deleted: false }); });
 
   $("btn-edit-purge").addEventListener("click", function () {
-    // confirm 은 브라우저 기본 확인창입니다. 되돌릴 수 없는 작업이라 한 번 묻습니다.
     if (!confirm("이 차량 정보를 완전히 지웁니다. 되돌릴 수 없습니다. 계속할까요?")) { return; }
 
     db.from("vehicles").delete().eq("id", editId).then(function (res) {
-      if (res.error) { say("edit-msg", "삭제 실패: " + res.error.message); return; }
+      if (res.error) { say("edit-msg", "삭제 실패\n\n[원문] " + res.error.message); return; }
       loadAll().then(function () { show("manage"); });
     });
   });
 
-  // 공통 수정 함수
-  function update(patch, okText) {
+  function update(patch) {
     db.from("vehicles").update(patch).eq("id", editId).then(function (res) {
       if (res.error) {
-        console.error(res.error);
-        say("edit-msg", "실패: " + res.error.message);
+        console.error("[update]", res.error);
+        say("edit-msg", "실패\n\n[원문] " + res.error.message);
         return;
       }
-      loadAll().then(function () {
-        say("edit-msg", okText, "ok");
-        show("manage");
-      });
+      loadAll().then(function () { show("manage"); });
     });
   }
 
   /* =========================================================
-     6. PIN 변경
+     6. 비밀번호 변경
      ========================================================= */
-  // 규칙에 맞는지 검사. 문제가 없으면 null 을 돌려줍니다.
   function checkSecret(s) {
-    if (/^[0-9]{6}$/.test(s)) { return null; }               // 숫자 6자리 PIN
+    if (/^[0-9]{6}$/.test(s)) { return null; }
     var strong = s.length >= 8
-              && /[A-Z]/.test(s)                              // 대문자
-              && /[0-9]/.test(s)                              // 숫자
-              && /[^A-Za-z0-9]/.test(s);                      // 특수문자
+              && /[A-Z]/.test(s)
+              && /[0-9]/.test(s)
+              && /[^A-Za-z0-9]/.test(s);
     if (strong) { return null; }
     return "숫자 6자리 PIN 이거나, 8자 이상이면서 대문자·숫자·특수문자를 모두 포함해야 합니다.";
   }
@@ -571,11 +639,11 @@
     db.auth.updateUser({ password: a }).then(function (res) {
       $("btn-pin-save").disabled = false;
       if (res.error) {
-        say("pin-msg", "변경 실패: " + res.error.message);
+        say("pin-msg", "변경 실패\n\n[원문] " + res.error.message);
         return;
       }
       $("p-new").value = ""; $("p-new2").value = "";
-      say("pin-msg", "변경했습니다. 다음부터 새 PIN으로 들어오세요.", "ok");
+      say("pin-msg", "변경했습니다. 다음부터 새 비밀번호로 들어오세요.", "ok");
     });
   });
 

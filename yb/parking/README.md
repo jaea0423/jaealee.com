@@ -80,3 +80,27 @@ F12(개발자 도구)로 소스를 열어 보는 순간 PIN 이 그대로 보입
 
 로그인 상태는 브라우저에 유지되므로 매번 PIN 을 넣지 않아도 됩니다.
 공용 PC 에서 썼다면 메뉴 아래 **로그아웃** 을 눌러 주세요.
+
+---
+
+## 로그인이 안 될 때
+
+관리자 화면 아래 **"연결 확인"** 을 누르면 어디가 막혔는지 보여 줍니다.
+로그인 실패 시에는 화면에 Supabase 가 돌려준 **원문 오류**가 그대로 표시됩니다.
+
+흔한 원인 세 가지입니다.
+
+### 1. 계정이 "인증 대기(Waiting for verification)" 상태
+가장 흔합니다. Supabase 는 기본적으로 이메일 확인을 요구해서,
+`Auto Confirm User` 를 켜지 않고 만든 계정은 로그인이 막힙니다.
+
+- Authentication → Users 에서 그 계정의 **Confirmed At** 칸이 비어 있으면 이 경우입니다
+- 해당 사용자를 지우고 → **Add user → Create new user** →
+  **Auto Confirm User 를 켜고** 다시 만드세요
+
+### 2. 이메일 로그인 provider 가 꺼짐
+Authentication → **Sign In / Providers → Email** 이 켜져 있어야 합니다.
+
+### 3. 비밀번호가 실제로 다름
+Authentication → Users → 해당 계정 → **Reset password** 로 다시 지정해 보세요.
+Supabase 기본 최소 길이는 6자입니다.
