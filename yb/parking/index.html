@@ -144,6 +144,34 @@
     return max;
   }
 
+  /* 넓은 화면에서는 칸이 너무 두꺼워집니다.
+     실제 번호판처럼 옆으로 긴 비율이 되도록 높이에 상한을 둡니다.
+     남는 높이는 안내판이 아래로 내려가면서 자연스럽게 흡수합니다.
+     (휴대폰은 세로가 빠듯하므로 그대로 꽉 채웁니다) */
+  function capRowHeight(rows) {
+    var first = platesEl.firstElementChild;
+    if (!first) { return; }
+
+    // 휴대폰은 손대지 않습니다
+    if (window.innerWidth < 768) {
+      platesEl.style.flex = "";
+      platesEl.style.marginBottom = "";
+      return;
+    }
+
+    var box = first.getBoundingClientRect();
+    var cap = box.width / 3.7;          // 가로:세로 = 약 3.7 : 1
+
+    if (box.height > cap) {
+      platesEl.style.gridTemplateRows = "repeat(" + rows + ", " + cap.toFixed(1) + "px)";
+      platesEl.style.flex = "0 1 auto";
+      platesEl.style.marginBottom = "auto";   // 남는 높이를 아래로 몰아 줍니다
+    } else {
+      platesEl.style.flex = "";
+      platesEl.style.marginBottom = "";
+    }
+  }
+
   function fitFont() {
     var first = platesEl.firstElementChild;
     if (!first) { return; }
@@ -154,7 +182,7 @@
              + parseFloat(cs.borderLeftWidth) + parseFloat(cs.borderRightWidth);
 
     var byWidth  = (box.width - padX - 4) / widestRatio();
-    var byHeight = box.height * 0.42;
+    var byHeight = box.height * 0.46;
 
     var size = Math.max(13, Math.min(byWidth, byHeight, 48));
     platesEl.style.fontSize = size.toFixed(1) + "px";
@@ -186,7 +214,10 @@
 
     countEl.textContent = list.length ? "총 " + list.length + "대" : "등록된 차량 없음";
 
-    requestAnimationFrame(fitFont);
+    requestAnimationFrame(function () {
+      capRowHeight(plan.rows);
+      requestAnimationFrame(fitFont);
+    });
   }
 
   // 창 크기가 바뀌면 다시 계산합니다
