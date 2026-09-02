@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>대경빌 등록 차량</title>
+<meta name="description" content="대경빌 주차 등록 차량 목록">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- 제목: 5번 연속으로 누르면 관리자모드로 넘어갑니다 -->
+  <h1 class="title" id="title">대경빌 등록 차량</h1>
+  <p class="subtitle" id="updated">불러오는 중…</p>
+
+  <!-- 차량번호 목록이 여기에 채워집니다 -->
+  <ul class="plates" id="plates"></ul>
+
+  <!-- 목록이 비었거나 오류일 때 -->
+  <div class="empty hidden" id="empty"></div>
+
+  <!-- 안내 문구 -->
+  <div class="notice-strong">대경빌 등록 차량 외 주차 불가</div>
+  <p class="notice-sub">
+    위에 등록된 차량 외 외부차량은 이동주차 요청하시면 됩니다.
+  </p>
+
+</div>
+
+<!-- Supabase 자바스크립트 라이브러리 -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var platesEl  = document.getElementById("plates");
+  var emptyEl   = document.getElementById("empty");
+  var updatedEl = document.getElementById("updated");
+
+  /* ---------------- 1. 제목 5번 클릭 -> 관리자모드 ---------------- */
+  var clicks = 0;
+  var timer  = null;
+
+  document.getElementById("title").addEventListener("click", function () {
+    clicks += 1;
+
+    // 1.5초 안에 다음 클릭이 없으면 처음부터 다시 셉니다
+    clearTimeout(timer);
+    timer = setTimeout(function () { clicks = 0; }, 1500);
+
+    if (clicks >= 5) {
+      clicks = 0;
+      clearTimeout(timer);
+      location.href = "admin.html";
+    }
+  });
+
+  /* ---------------- 2. 화면에 메시지 띄우기 ---------------- */
+  function showEmpty(text) {
+    emptyEl.textContent = text;
+    emptyEl.classList.remove("hidden");
+  }
+
+  /* ---------------- 3. 차량번호 목록 불러오기 ---------------- */
+  function render(list) {
+    platesEl.innerHTML = "";
+
+    if (list.length === 0) {
+      updatedEl.textContent = "";
+      showEmpty("현재 등록된 차량이 없습니다.");
+      return;
+    }
+
+    list.forEach(function (row) {
+      var li = document.createElement("li");
+      li.textContent = row.plate;   // textContent 를 쓰면 HTML 주입 걱정이 없습니다
+      platesEl.appendChild(li);
+    });
+
+    updatedEl.textContent = "총 " + list.length + "대";
+  }
+
+  function load() {
+    // 설정 파일이 아직 비어 있으면 안내만 띄웁니다
+    if (!configReady()) {
+      updatedEl.textContent = "";
+      showEmpty("설정이 아직 되지 않았습니다. config.js 를 채워 주세요.");
+      return;
+    }
+
+    var db = makeClient();
+
+    // vehicles_public 뷰에는 "지금 등록 기간 중인 차량의 번호"만 들어 있습니다
+    db.from("vehicles_public")
+      .select("plate")
+      .then(function (res) {
+        if (res.error) {
+          console.error(res.error);
+          updatedEl.textContent = "";
+          showEmpty("목록을 불러오지 못했습니다. 잠시 후 새로고침해 주세요.");
+          return;
+        }
+
+        // 차량번호를 보기 좋게 정렬 (한글/숫자 섞여 있어 localeCompare 사용)
+        var list = res.data.slice().sort(function (a, b) {
+          return a.plate.localeCompare(b.plate, "ko");
+        });
+
+        render(list);
+      });
+  }
+
+  load();
+
+  // 게시용 화면으로 켜 둘 수도 있으니 5분마다 자동으로 새로 불러옵니다
+  setInterval(load, 5 * 60 * 1000);
+})();
+</script>
+
+</body>
+</html>
