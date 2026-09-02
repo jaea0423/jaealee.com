@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>강의 정리 · 알고리즘</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* 알고리즘 강의 정리 — 어두운 배경 + 금속판 문법 */
+:root{
+  --acc:#4FE0B5; --acc-deep:#0F8067;
+  --bg:#0F1217; --bg-2:#161B22; --line-dark:#2A313C;
+  --on-dark:#E9ECF1; --on-dark-dim:#9BA5B4;
+  --plate:linear-gradient(168deg,#FCFDFE 0%,#EBEFF4 42%,#D3DAE3 100%);
+  --plate-up:linear-gradient(168deg,#FFFFFF 0%,#F4F7FA 42%,#E2E8F0 100%);
+  --plate-line:#C3CBD6; --ink:#161A21; --ink-dim:#5F6978;
+  --mono:'Space Grotesk', ui-monospace, monospace;
+  --lift:inset 0 1px 0 #FFFFFF, inset 0 -1px 0 rgba(0,0,0,.10), 0 8px 20px rgba(0,0,0,.45);
+  --lift-up:inset 0 1px 0 #FFFFFF, inset 0 -1px 0 rgba(0,0,0,.10), 0 16px 32px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box;} html,body{margin:0;padding:0;}
+body{background:var(--bg); color:var(--on-dark);
+  font-family:'Pretendard','Apple SD Gothic Neo',system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased; position:relative; overflow-x:hidden;}
+body::before{content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image:linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size:64px 64px; mask-image:radial-gradient(ellipse 100% 55% at 50% 0%, #000 15%, transparent 80%);}
+body::after{content:''; position:fixed; top:-32vh; left:50%; transform:translateX(-50%);
+  width:120vw; height:64vh; z-index:0; pointer-events:none;
+  background:radial-gradient(ellipse at center, color-mix(in srgb, var(--acc) 12%, transparent), transparent 62%);}
+a{color:inherit; text-decoration:none;}
+:focus-visible{outline:2px solid var(--acc); outline-offset:3px;}
+.wrap{position:relative; z-index:1; max-width:1040px; margin:0 auto; padding:0 24px 100px;}
+
+.plate{background-image:repeating-linear-gradient(180deg, rgba(0,0,0,.018) 0 1px, transparent 1px 3px), var(--plate);
+  border:1px solid var(--plate-line); box-shadow:var(--lift); color:var(--ink);}
+
+/* 상단 바 */
+.topbar{display:flex; align-items:center; justify-content:space-between;
+  padding:20px 0; margin-bottom:60px; border-bottom:1px solid var(--line-dark);}
+.back{display:inline-flex; align-items:center; gap:10px; padding:9px 16px 9px 13px; border-radius:8px;
+  font-family:var(--mono); font-size:11.5px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+  transition:transform .2s ease, filter .2s ease;}
+.back:hover{transform:translateX(-3px); filter:brightness(1.06);}
+.back svg{width:13px; height:13px;}
+.stamp{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--on-dark-dim);
+  display:flex; align-items:center; gap:10px;}
+.stamp i{width:6px; height:6px; border-radius:50%; background:var(--acc);
+  box-shadow:0 0 10px var(--acc); animation:blink 2.6s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1;} 50%{opacity:.4;}}
+
+/* 히어로 */
+.hero{margin-bottom:48px;}
+.eyebrow{font-family:var(--mono); font-size:11px; font-weight:500; letter-spacing:.24em;
+  text-transform:uppercase; color:var(--acc); margin:0 0 18px;}
+.title{font-family:'Black Han Sans','Pretendard',sans-serif; font-weight:400;
+  font-size:clamp(40px,9vw,84px); line-height:.98; letter-spacing:-.02em; margin:0; color:#FFFFFF;
+  background:linear-gradient(176deg,#FFFFFF 0%,#DFE4EB 38%,#98A0AD 52%,#FFFFFF 78%,#C6CCD6 100%);
+  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;}
+.rule{height:2px; background:var(--acc); margin:24px 0 16px; width:100%;
+  transform:scaleX(0); transform-origin:left center; animation:draw .9s cubic-bezier(.22,1,.36,1) .2s forwards;
+  box-shadow:0 0 16px color-mix(in srgb, var(--acc) 55%, transparent);}
+@keyframes draw{to{transform:scaleX(1);}}
+.subtitle{font-family:var(--mono); font-size:clamp(12px,1.6vw,14px);
+  letter-spacing:.34em; text-transform:uppercase; color:var(--on-dark-dim); margin:0;}
+.note{margin:22px 0 0; font-family:var(--mono); font-size:12px; color:var(--on-dark-dim); line-height:1.7;}
+.note b{color:var(--acc);}
+
+/* 주차 박스 그리드 (한 줄 5개) */
+.weeks{display:grid; grid-template-columns:repeat(5,1fr); gap:16px; margin-top:44px;}
+.week{background:var(--bg-2); border:1px solid var(--line-dark); border-radius:14px; padding:16px 14px 14px;
+  transition:border-color .2s ease;}
+.week:hover{border-color:color-mix(in srgb, var(--acc) 40%, var(--line-dark));}
+.wk-label{display:flex; align-items:baseline; gap:6px; margin-bottom:14px; padding-bottom:12px;
+  border-bottom:1px solid var(--line-dark);}
+.wk-label b{font-family:var(--mono); font-size:22px; font-weight:700; color:var(--acc); font-variant-numeric:tabular-nums;}
+.wk-label span{font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--on-dark-dim);}
+.wk-sessions{display:flex; flex-direction:column; gap:9px;}
+
+/* 차시 버튼 (밝은 금속판) */
+.sess{position:relative; display:flex; flex-direction:column; align-items:flex-start; gap:2px;
+  padding:11px 13px 10px; border-radius:9px; overflow:hidden;
+  transition:transform .18s ease, box-shadow .18s ease, background-image .18s ease;}
+.sess::before{content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--acc-deep);}
+.sess-no{font-size:14px; font-weight:800; letter-spacing:-.01em; color:var(--ink);}
+.sess-file{font-family:var(--mono); font-size:10.5px; font-weight:500; color:var(--ink-dim);}
+.sess-arrow{position:absolute; top:10px; right:12px; font-size:13px; color:var(--ink-dim);
+  transition:transform .18s ease, color .18s ease;}
+.sess:hover{transform:translateY(-2px); box-shadow:var(--lift-up);
+  background-image:repeating-linear-gradient(180deg, rgba(0,0,0,.018) 0 1px, transparent 1px 3px), var(--plate-up);}
+.sess:hover .sess-arrow{transform:translateX(3px); color:var(--acc-deep);}
+
+/* 반응형: 5 → 3 → 2 */
+@media (max-width:860px){ .weeks{grid-template-columns:repeat(3,1fr);} }
+@media (max-width:560px){
+  .wrap{padding:0 16px 70px;} .topbar{margin-bottom:40px;} .hero{margin-bottom:40px;}
+  .weeks{grid-template-columns:repeat(2,1fr); gap:12px;}
+}
+@media (prefers-reduced-motion:reduce){ *{animation:none !important; transition:none !important;} .rule{transform:scaleX(1);} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a class="back plate" href="../">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      알고리즘
+    </a>
+    <span class="stamp"><i></i>2026-2 / LECTURE</span>
+  </div>
+
+  <header class="hero">
+    <p class="eyebrow">Algorithms</p>
+    <h1 class="title">강의 정리</h1>
+    <div class="rule"></div>
+    <p class="subtitle">Lecture Notes · 15 Weeks</p>
+    <p class="note">// 주차별 폴더에 <b>week주차/주차-차시.html</b> 파일을 올리면 버튼이 자동 연결됩니다.<br>
+    &nbsp;&nbsp;&nbsp;예: <b>week01/01-1.html</b> = 1주차 1차시 · 아직 안 올린 파일은 눌러도 열리지 않습니다.</p>
+  </header>
+
+  <div class="weeks">
+      <div class="week">
+        <div class="wk-label"><b>01</b><span>주차</span></div>
+        <div class="wk-sessions">
+          <a class="sess plate" href="./week01/01-1.html">
+            <span class="sess-no">1차시</span>
+            <span class="sess-file">01-1.html</span>
+            <span class="sess-arrow">→</span>
+          </a>
+          <a class="sess plate" href="./week01/01-2.html">
+            <span class="sess-no">2차시</span>
+            <span class="sess-file">01-2.html</span>
+            <span class="sess-arrow">→</span>
+          </a>
+        </div>
+      </div>
+      <div class="week">
+        <div class="wk-label"><b>02</b><span>주차</span></div>
+        <div class="wk-sessions">
+          <a class="sess plate" href="./week02/02-1.html">
+            <span class="sess-no">1차시</span>
+            <span class="sess-file">02-1.html</span>
+            <span class="sess-arrow">→</span>
+          </a>
+          <a class="sess plate" href="./week02/02-2.html">
+            <span class="sess-no">2차시</span>
+            <span class="sess-file">02-2.html</span>
+            <span class="sess-arrow">→</span>
+          </a>
+        </div>
+      </div>
+      <div class="week">
+        <div class="wk-label"><b>03</b><span>주차</span></div>
+        <div class="wk-sessions">
+          <a class="sess plate" href="./week03/03-1.html">
+            <span class="sess-no">1차시</span>
+            <span class="sess-file">03-1.html</span>
+            <span class="sess-arrow">→</span>
+          </a>
+          <a class="sess plate" href="./week03/03-2.html">
+            <span class="sess-no">2차시</span>
+            <span class="sess-file">03-2.html</span>
+            <span class="sess-arrow">→</span>
+          </a>
+        </div>
+      </div>
+      <div class="week">
+        <div class="wk-label"><b>04</b><span>주차</span></div>
+        <div class="wk-sessions">
+          <a class="sess plate" href="./week04/04-1.html">
+            <span class="sess-no">1차시</span>
+            <span class="sess-file">04-1.html</span>
+            <span class="sess-arrow">→</span>
+          </a>
+          <a class="sess plate" href="./week04/04-2.html">
+            <span class="sess-no">2차시</span>
+            <span class="sess-file">04-2.html</span>
+            <span class="sess-arrow">→</span>
+          </a>
+        </div>
+      </div>
+      <div class="week">
+        <div class="wk-label"><b>05</b><span>주차</span></div>
+        <div class="wk-sessions">
+          <a class="sess plate" href="./week05/05-1.html">
+            <span class="sess-no">1차시</span>
+            <span class="sess-file">05-1.html</span>
+            <span class="sess-arrow">→</span>
+          </a>
+          <a class="sess plate" href="./week05/05-2.html">
+            <span class="sess-no">2차시</span>
+            <span class="sess-file">05-2.html</span>
+            <span class="sess-arrow">→</span>
+          </a>
+        </div>
+      </div>
+      <div class="week">
+        <div class="wk-label"><b>06</b><span>주차</span></div>
+        <div class="wk-sessions">
+          <a class="sess plate" href="./week06/06-1.html">
+            <span class="sess-no">1차시</span>
+            <span class="sess-file">06-1.html</span>
+            <span class="sess-arrow">→</span>
+          </a>
+          <a class="sess plate" href="./week06/06-2.html">
+            <span class="sess-no">2차시</span>
+            <span class="sess-file">06-2.html</span>
+            <span class="sess-arrow">→</span>
+          </a>
+        </div>
+      </div>
+      <div class="week">
+        <div class="wk-label"><b>07</b><span>주차</span></div>
+        <div class="wk-sessions">
+          <a class="sess plate" href="./week07/07-1.html">
+            <span class="sess-no">1차시</span>
+            <span class="sess-file">07-1.html</span>
+            <span class="sess-arrow">→</span>
+          </a>
+          <a class="sess plate" href="./week07/07-2.html">
+            <span class="sess-no">2차시</span>
+            <span class="sess-file">07-2.html</span>
+            <span class="sess-arrow">→</span>
+          </a>
+        </div>
+      </div>
+      <div class="week">
+        <div class="wk-label"><b>08</b><span>주차</span></div>
+        <div class="wk-sessions">
+          <a class="sess plate" href="./week08/08-1.html">
+            <span class="sess-no">1차시</span>
+            <span class="sess-file">08-1.html</span>
+            <span class="sess-arrow">→</span>
+          </a>
+          <a class="sess plate" href="./week08/08-2.html">
+            <span class="sess-no">2차시</span>
+            <span class="sess-file">08-2.html</span>
+            <span class="sess-arrow">→</span>
+          </a>
+        </div>
+      </div>
+      <div class="week">
+        <div class="wk-label"><b>09</b><span>주차</span></div>
+        <div class="wk-sessions">
+          <a class="sess plate" href="./week09/09-1.html">
+            <span class="sess-no">1차시</span>
+            <span class="sess-file">09-1.html</span>
+            <span class="sess-arrow">→</span>
+          </a>
+          <a class="sess plate" href="./week09/09-2.html">
+            <span class="sess-no">2차시</span>
+            <span class="sess-file">09-2.html</span>
+            <span class="sess-arrow">→</span>
+          </a>
+        </div>
+      </div>
+      <div class="week">
+        <div class="wk-label"><b>10</b><span>주차</span></div>
+        <div class="wk-sessions">
+          <a class="sess plate" href="./week10/10-1.html">
+            <span class="sess-no">1차시</span>
+            <span class="sess-file">10-1.html</span>
+            <span class="sess-arrow">→</span>
+          </a>
+          <a class="sess plate" href="./week10/10-2.html">
+            <span class="sess-no">2차시</span>
+            <span class="sess-file">10-2.html</span>
+            <span class="sess-arrow">→</span>
+          </a>
+        </div>
+      </div>
+      <div class="week">
+        <div class="wk-label"><b>11</b><span>주차</span></div>
+        <div class="wk-sessions">
+          <a class="sess plate" href="./week11/11-1.html">
+            <span class="sess-no">1차시</span>
+            <span class="sess-file">11-1.html</span>
+            <span class="sess-arrow">→</span>
+          </a>
+          <a class="sess plate" href="./week11/11-2.html">
+            <span class="sess-no">2차시</span>
+            <span class="sess-file">11-2.html</span>
+            <span class="sess-arrow">→</span>
+          </a>
+        </div>
+      </div>
+      <div class="week">
+        <div class="wk-label"><b>12</b><span>주차</span></div>
+        <div class="wk-sessions">
+          <a class="sess plate" href="./week12/12-1.html">
+            <span class="sess-no">1차시</span>
+            <span class="sess-file">12-1.html</span>
+            <span class="sess-arrow">→</span>
+          </a>
+          <a class="sess plate" href="./week12/12-2.html">
+            <span class="sess-no">2차시</span>
+            <span class="sess-file">12-2.html</span>
+            <span class="sess-arrow">→</span>
+          </a>
+        </div>
+      </div>
+      <div class="week">
+        <div class="wk-label"><b>13</b><span>주차</span></div>
+        <div class="wk-sessions">
+          <a class="sess plate" href="./week13/13-1.html">
+            <span class="sess-no">1차시</span>
+            <span class="sess-file">13-1.html</span>
+            <span class="sess-arrow">→</span>
+          </a>
+          <a class="sess plate" href="./week13/13-2.html">
+            <span class="sess-no">2차시</span>
+            <span class="sess-file">13-2.html</span>
+            <span class="sess-arrow">→</span>
+          </a>
+        </div>
+      </div>
+      <div class="week">
+        <div class="wk-label"><b>14</b><span>주차</span></div>
+        <div class="wk-sessions">
+          <a class="sess plate" href="./week14/14-1.html">
+            <span class="sess-no">1차시</span>
+            <span class="sess-file">14-1.html</span>
+            <span class="sess-arrow">→</span>
+          </a>
+          <a class="sess plate" href="./week14/14-2.html">
+            <span class="sess-no">2차시</span>
+            <span class="sess-file">14-2.html</span>
+            <span class="sess-arrow">→</span>
+          </a>
+        </div>
+      </div>
+      <div class="week">
+        <div class="wk-label"><b>15</b><span>주차</span></div>
+        <div class="wk-sessions">
+          <a class="sess plate" href="./week15/15-1.html">
+            <span class="sess-no">1차시</span>
+            <span class="sess-file">15-1.html</span>
+            <span class="sess-arrow">→</span>
+          </a>
+          <a class="sess plate" href="./week15/15-2.html">
+            <span class="sess-no">2차시</span>
+            <span class="sess-file">15-2.html</span>
+            <span class="sess-arrow">→</span>
+          </a>
+        </div>
+      </div>
+  </div>
+
+</div>
+</body>
+</html>
