@@ -10,12 +10,13 @@
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
 <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="board">
 
 <header class="topbar">
   <div class="topbar-in">
-    <div class="pmark" aria-hidden="true">P</div>
-    <div class="topbar-title">
+    <!-- 이 영역(P 마크 / 건물 이름)을 5번 연속 누르면 관리자 모드로 갑니다 -->
+    <div class="pmark tap" aria-hidden="true">P</div>
+    <div class="topbar-title tap">
       <span id="bldg">대경빌</span> 주차
       <small>PARKING</small>
     </div>
@@ -26,8 +27,7 @@
 <div class="wrap">
 
   <div class="summary">
-    <!-- 이 제목을 5번 연속 누르면 관리자 모드로 넘어갑니다 -->
-    <h1 id="title">등록 차량</h1>
+    <h1 class="tap" id="title">등록 차량</h1>
     <span class="count" id="count">불러오는 중…</span>
   </div>
 
@@ -43,8 +43,6 @@
     </div>
   </div>
 
-  <p class="foot-note">목록은 5분마다 자동으로 새로고침됩니다.</p>
-
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -56,6 +54,7 @@
   var platesEl = document.getElementById("plates");
   var emptyEl  = document.getElementById("empty");
   var countEl  = document.getElementById("count");
+  var current  = [];        // 마지막으로 불러온 목록
 
   /* ---------------- 0. 건물 이름 / 오늘 날짜 ---------------- */
   var B = CONFIG.BUILDING || "대경빌";
@@ -70,7 +69,6 @@
       fmt(d) + "<br>" + days[d.getDay()] + "요일";
   })();
 
-  // 연락처가 설정되어 있으면 버튼처럼 보여 줍니다
   if (CONFIG.CONTACT) {
     var a = document.createElement("a");
     a.className = "sign-contact";
@@ -79,20 +77,27 @@
     document.getElementById("contact-wrap").appendChild(a);
   }
 
-  /* ---------------- 1. 제목 5번 클릭 -> 관리자모드 ---------------- */
+  /* ---------------- 1. 5번 클릭 -> 관리자모드 ----------------
+     제목뿐 아니라 위쪽 로고/건물 이름을 눌러도 됩니다.
+     3초 안에 5번 누르면 넘어갑니다.
+  ------------------------------------------------------------ */
   var clicks = 0;
   var timer  = null;
 
-  document.getElementById("title").addEventListener("click", function () {
+  function tap() {
     clicks += 1;
     clearTimeout(timer);
-    timer = setTimeout(function () { clicks = 0; }, 1500);   // 1.5초 안에 5번
+    timer = setTimeout(function () { clicks = 0; }, 3000);
 
     if (clicks >= 5) {
       clicks = 0;
       clearTimeout(timer);
       location.href = "admin.html";
     }
+  }
+
+  document.querySelectorAll(".tap").forEach(function (el) {
+    el.addEventListener("click", tap);
   });
 
   /* ---------------- 2. 목록 ---------------- */
@@ -101,25 +106,50 @@
     emptyEl.classList.remove("hidden");
   }
 
+  // 지금 그리드가 몇 열인지 읽어 옵니다 (화면 폭에 따라 달라집니다)
+  function columnCount() {
+    var t = getComputedStyle(platesEl).gridTemplateColumns;
+    if (!t || t === "none") { return 1; }
+    return t.split(" ").filter(function (x) { return x.trim() !== ""; }).length;
+  }
+
+  // 실제 차량 뒤에 빈 칸을 붙여 마지막 줄까지 꽉 차 보이게 합니다
+  function padSlots(n) {
+    var cols = columnCount();
+    var target = Math.max(CONFIG.SLOTS || 0, n);
+    target = Math.ceil(target / cols) * cols;     // 줄 단위로 올림
+
+    for (var i = n; i < target; i++) {
+      var li = document.createElement("li");
+      li.className = "plate empty-slot";
+      li.setAttribute("aria-hidden", "true");
+      platesEl.appendChild(li);
+    }
+  }
+
   function render(list) {
+    current = list;
     platesEl.innerHTML = "";
     emptyEl.classList.add("hidden");
-
-    if (list.length === 0) {
-      countEl.textContent = "";
-      showEmpty("현재 등록된 차량이 없습니다.");
-      return;
-    }
 
     list.forEach(function (row) {
       var li = document.createElement("li");
       li.className = "plate";
-      li.textContent = formatPlate(row.plate);  // textContent 라서 HTML 주입 걱정 없음
+      li.textContent = formatPlate(row.plate);   // textContent 라서 HTML 주입 걱정 없음
       platesEl.appendChild(li);
     });
 
-    countEl.textContent = "총 " + list.length + "대";
+    padSlots(list.length);
+
+    countEl.textContent = list.length ? "총 " + list.length + "대" : "등록된 차량 없음";
   }
+
+  // 창 크기가 바뀌면 열 수가 달라지므로 빈 칸을 다시 계산합니다
+  var resizeTimer = null;
+  window.addEventListener("resize", function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function () { render(current); }, 200);
+  });
 
   function load() {
     if (!configReady()) {
