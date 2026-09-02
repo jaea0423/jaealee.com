@@ -122,15 +122,41 @@
   }
 
   /* 칸 크기에 맞춰 번호판 글자 크기를 정합니다.
-     높이와 가로폭 중 더 빡빡한 쪽에 맞춥니다. */
+     글자 폭을 눈대중으로 계산하면 한글 폭 때문에 어긋나 두 줄로 접힙니다.
+     그래서 화면 밖에 똑같은 모양의 글자를 하나 그려 놓고 실제 폭을 잽니다. */
+  var ruler = document.createElement("span");
+  ruler.setAttribute("aria-hidden", "true");
+  ruler.style.cssText =
+    "position:absolute;left:-9999px;top:0;white-space:nowrap;" +
+    "font-size:100px;font-weight:800;letter-spacing:.03em;" +
+    "font-variant-numeric:tabular-nums;visibility:hidden";
+  document.body.appendChild(ruler);
+
+  // 가장 긴 번호판이 글자 크기 100px 일 때 몇 px 인지 -> 배율
+  function widestRatio() {
+    ruler.style.fontFamily = getComputedStyle(platesEl).fontFamily;
+    var max = 5.5;                       // 최소한 이 정도는 잡아 둡니다
+    current.forEach(function (row) {
+      ruler.textContent = formatPlate(row.plate);
+      var r = ruler.getBoundingClientRect().width / 100;
+      if (r > max) { max = r; }
+    });
+    return max;
+  }
+
   function fitFont() {
     var first = platesEl.firstElementChild;
     if (!first) { return; }
 
-    var box = first.getBoundingClientRect();
+    var cs   = getComputedStyle(first);
+    var box  = first.getBoundingClientRect();
+    var padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight)
+             + parseFloat(cs.borderLeftWidth) + parseFloat(cs.borderRightWidth);
+
+    var byWidth  = (box.width - padX - 4) / widestRatio();
     var byHeight = box.height * 0.42;
-    var byWidth  = (box.width - 16) / 5.4;   // "123가 6456" 이 대략 5.4배 폭
-    var size = Math.max(14, Math.min(byHeight, byWidth, 52));
+
+    var size = Math.max(13, Math.min(byWidth, byHeight, 48));
     platesEl.style.fontSize = size.toFixed(1) + "px";
   }
 
