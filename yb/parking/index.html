@@ -106,29 +106,40 @@
     emptyEl.classList.remove("hidden");
   }
 
-  // 지금 그리드가 몇 열인지 읽어 옵니다 (화면 폭에 따라 달라집니다)
-  function columnCount() {
-    var t = getComputedStyle(platesEl).gridTemplateColumns;
-    if (!t || t === "none") { return 1; }
-    return t.split(" ").filter(function (x) { return x.trim() !== ""; }).length;
+  /* ---- 화면 크기에 맞춰 격자 모양을 정합니다 ----
+     스크롤이 생기지 않도록, 남는 높이를 행 수로 나눠 씁니다. */
+  function gridPlan(carCount) {
+    var w = window.innerWidth;
+    var cols, slots;
+
+    if (w < 768)       { cols = 2; slots = CONFIG.SLOTS_MOBILE || 16; }  // 휴대폰
+    else if (w < 1200) { cols = 4; slots = CONFIG.SLOTS || 20; }         // 태블릿
+    else               { cols = 5; slots = CONFIG.SLOTS || 20; }         // PC / 모니터
+
+    var total = Math.max(slots, carCount);
+    var rows  = Math.max(1, Math.ceil(total / cols));
+    return { cols: cols, rows: rows, total: rows * cols };
   }
 
-  // 실제 차량 뒤에 빈 칸을 붙여 마지막 줄까지 꽉 차 보이게 합니다
-  function padSlots(n) {
-    var cols = columnCount();
-    var target = Math.max(CONFIG.SLOTS || 0, n);
-    target = Math.ceil(target / cols) * cols;     // 줄 단위로 올림
+  /* 칸 크기에 맞춰 번호판 글자 크기를 정합니다.
+     높이와 가로폭 중 더 빡빡한 쪽에 맞춥니다. */
+  function fitFont() {
+    var first = platesEl.firstElementChild;
+    if (!first) { return; }
 
-    for (var i = n; i < target; i++) {
-      var li = document.createElement("li");
-      li.className = "plate empty-slot";
-      li.setAttribute("aria-hidden", "true");
-      platesEl.appendChild(li);
-    }
+    var box = first.getBoundingClientRect();
+    var byHeight = box.height * 0.42;
+    var byWidth  = (box.width - 16) / 5.4;   // "123가 6456" 이 대략 5.4배 폭
+    var size = Math.max(14, Math.min(byHeight, byWidth, 52));
+    platesEl.style.fontSize = size.toFixed(1) + "px";
   }
 
   function render(list) {
     current = list;
+    var plan = gridPlan(list.length);
+
+    platesEl.style.gridTemplateColumns = "repeat(" + plan.cols + ", minmax(0, 1fr))";
+    platesEl.style.gridTemplateRows    = "repeat(" + plan.rows + ", minmax(0, 1fr))";
     platesEl.innerHTML = "";
     emptyEl.classList.add("hidden");
 
@@ -139,16 +150,24 @@
       platesEl.appendChild(li);
     });
 
-    padSlots(list.length);
+    // 남는 자리는 빈 칸으로 채웁니다
+    for (var i = list.length; i < plan.total; i++) {
+      var e = document.createElement("li");
+      e.className = "plate empty-slot";
+      e.setAttribute("aria-hidden", "true");
+      platesEl.appendChild(e);
+    }
 
     countEl.textContent = list.length ? "총 " + list.length + "대" : "등록된 차량 없음";
+
+    requestAnimationFrame(fitFont);
   }
 
-  // 창 크기가 바뀌면 열 수가 달라지므로 빈 칸을 다시 계산합니다
+  // 창 크기가 바뀌면 다시 계산합니다
   var resizeTimer = null;
   window.addEventListener("resize", function () {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(function () { render(current); }, 200);
+    resizeTimer = setTimeout(function () { render(current); }, 150);
   });
 
   function load() {

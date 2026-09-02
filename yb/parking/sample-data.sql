@@ -7,6 +7,10 @@
 -- ※ 다 보고 나서 지우는 방법은 이 파일 맨 아래에 있습니다.
 -- ============================================================
 
+-- 0) 안전장치: 종료일(end_date)을 비워 둘 수 있어야 합니다.
+--    setup.sql 을 아직 다시 실행하지 않았다면 여기서 함께 풀어 줍니다.
+alter table public.vehicles alter column end_date drop not null;
+
 -- 무작위 한국식 차량번호를 만드는 함수 (예: 123가 4567)
 create or replace function public.rand_plate()
 returns text language sql volatile as $$

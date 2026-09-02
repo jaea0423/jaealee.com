@@ -823,49 +823,6 @@ details.fold > summary:focus-visible { outline: 2px solid var(--accent); outline
 }
 
 /* ============================================================
-   게시용 큰 화면 (첫 화면 전용: body.board)
-   모니터나 태블릿에 띄워 둘 때 멀리서도 읽히도록 키웁니다.
-   ============================================================ */
-@media (min-width: 900px) {
-  body.board .topbar-in { max-width: 1120px; padding: 20px 28px; gap: 16px; }
-  body.board .pmark { width: 44px; height: 44px; font-size: 27px; border-radius: 10px; }
-  body.board .topbar-title { font-size: 23px; }
-  body.board .topbar-title small { font-size: 13px; }
-  body.board .topbar-meta { font-size: 15px; }
-
-  body.board .wrap { max-width: 1120px; padding: 34px 28px 72px; }
-  body.board .summary { margin-bottom: 20px; padding-bottom: 16px; }
-  body.board .summary h1 { font-size: 30px; }
-  body.board .summary .count { font-size: 17px; }
-
-  body.board .plates { grid-template-columns: repeat(auto-fill, minmax(208px, 1fr)); gap: 14px; }
-  body.board .plate { min-height: 84px; font-size: 30px; border-radius: 10px; }
-
-  body.board .sign { margin-top: 40px; }
-  body.board .sign-head { font-size: 28px; padding: 20px 18px; }
-  body.board .sign-body { font-size: 19px; padding: 22px 18px; }
-}
-
-@media (min-width: 1400px) {
-  body.board .topbar-in { max-width: 1480px; padding: 26px 40px; }
-  body.board .pmark { width: 56px; height: 56px; font-size: 34px; border-radius: 12px; }
-  body.board .topbar-title { font-size: 30px; }
-  body.board .topbar-title small { font-size: 15px; letter-spacing: .12em; }
-  body.board .topbar-meta { font-size: 18px; }
-
-  body.board .wrap { max-width: 1480px; padding: 44px 40px 90px; }
-  body.board .summary h1 { font-size: 38px; }
-  body.board .summary .count { font-size: 20px; }
-
-  body.board .plates { grid-template-columns: repeat(auto-fill, minmax(252px, 1fr)); gap: 18px; }
-  body.board .plate { min-height: 104px; font-size: 38px; border-width: 4px; }
-
-  body.board .sign-head { font-size: 34px; padding: 24px 20px; }
-  body.board .sign-body { font-size: 22px; padding: 26px 20px; }
-  body.board .sign-contact { font-size: 20px; padding: 12px 24px; }
-}
-
-/* ============================================================
    PC 에서 로그인 화면
    화면 위에 딱 붙어 작게 보이지 않도록 여백과 크기를 키웁니다.
    ============================================================ */
@@ -888,3 +845,91 @@ details.fold > summary:focus-visible { outline: 2px solid var(--accent); outline
 
 /* 링크 사이 가운뎃점 구분자 (숨겨질 때 점도 같이 사라지게) */
 .dot-sep::before { content: "\00a0·\00a0"; color: var(--text-2); }
+
+/* ============================================================
+   첫 화면(게시용 보드) — body.board
+   화면 높이에 딱 맞춰서 스크롤이 생기지 않게 합니다.
+   위에서부터 [상단바] [제목줄] [번호판 격자(남는 높이 전부)] [안내판]
+   격자의 칸 수와 글자 크기는 index.html 의 자바스크립트가
+   화면 크기에 맞춰 직접 정합니다.
+   ============================================================ */
+body.board {
+  height: 100vh;
+  height: 100dvh;          /* 모바일 주소창을 뺀 실제 높이 */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+body.board .topbar { flex: 0 0 auto; }
+
+body.board .wrap {
+  flex: 1 1 auto;
+  min-height: 0;           /* 이게 없으면 격자가 화면 밖으로 넘칩니다 */
+  display: flex;
+  flex-direction: column;
+  /* flex 자식에 margin:0 auto 만 주면 내용 폭으로 줄어들기 때문에
+     width:100% 를 같이 줘야 화면 폭을 다 씁니다 */
+  width: 100%;
+  max-width: 1500px;
+  padding: 16px 18px 18px;
+}
+
+body.board .summary {
+  flex: 0 0 auto;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+}
+
+body.board .plates {
+  flex: 1 1 auto;
+  min-height: 0;
+  gap: 8px;
+  /* 열/행 수는 자바스크립트가 넣습니다 */
+}
+
+body.board .plate {
+  min-height: 0;
+  font-size: inherit;      /* .plates 에 지정된 크기를 그대로 씁니다 */
+  padding: 6px 8px;
+  border-width: 3px;
+  border-radius: 9px;
+  overflow: hidden;
+}
+
+/* 빈 칸은 눈에 띄지 않게 — 등록된 번호판이 도드라져 보이도록 */
+body.board .plate.empty-slot {
+  border: 2px solid rgba(23, 32, 42, .07);
+  background: rgba(23, 32, 42, .025);
+  box-shadow: none;
+}
+
+body.board .sign { flex: 0 0 auto; margin-top: 16px; }
+body.board .sign-head { padding: 12px 14px; }
+body.board .sign-body { padding: 12px 14px; font-size: 15px; line-height: 1.6; }
+
+/* 넓은 화면에서는 제목과 안내판을 키웁니다 */
+@media (min-width: 768px) {
+  body.board .topbar-in { max-width: 1500px; padding: 16px 24px; }
+  body.board .wrap { padding: 20px 24px 24px; }
+  body.board .summary h1 { font-size: 26px; }
+  body.board .summary .count { font-size: 16px; }
+  body.board .plates { gap: 12px; }
+  body.board .sign-head { font-size: 24px; padding: 14px 16px; }
+  body.board .sign-body { font-size: 17px; padding: 14px 16px; }
+}
+
+@media (min-width: 1200px) {
+  body.board .topbar-in { padding: 18px 32px; gap: 14px; }
+  body.board .pmark { width: 42px; height: 42px; font-size: 26px; }
+  body.board .topbar-title { font-size: 22px; }
+  body.board .topbar-meta { font-size: 15px; }
+  body.board .wrap { padding: 24px 32px 28px; }
+  body.board .summary h1 { font-size: 32px; }
+  body.board .summary .count { font-size: 18px; }
+  body.board .plates { gap: 14px; }
+  body.board .plate { border-width: 4px; border-radius: 11px; }
+  body.board .sign { margin-top: 22px; }
+  body.board .sign-head { font-size: 30px; padding: 16px 18px; }
+  body.board .sign-body { font-size: 19px; padding: 16px 18px; }
+}
