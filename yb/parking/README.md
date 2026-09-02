@@ -29,7 +29,7 @@ setup.sql    Supabase 최초 설정 SQL (한 번만 실행)
 ### 3. 관리자 계정 만들기
 왼쪽 메뉴 **Authentication → Users → Add user → Create new user**
 
-- Email: `jaea0423@gmail.com` (config.js 의 `ADMIN_EMAIL` 과 같아야 합니다)
+- Email: `iamyongbum@naver.com` (config.js 의 `ADMIN_EMAIL` 과 같아야 합니다)
 - Password: **처음 쓸 PIN 6자리** (예: `482913`)
 - **Auto Confirm User 를 반드시 켜세요** (안 켜면 로그인이 안 됩니다)
 

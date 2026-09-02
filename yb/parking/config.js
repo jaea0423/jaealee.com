@@ -12,7 +12,7 @@ const CONFIG = {
 
   // 3) 관리자 계정 이메일 (Supabase Authentication 에 만들어 둔 계정)
   //    화면에서 입력하는 PIN/비밀번호가 이 계정의 비밀번호가 됩니다.
-  ADMIN_EMAIL: "jaea0423@gmail.com",
+  ADMIN_EMAIL: "iamyongbum@naver.com",
 };
 
 /* ---------- 아래는 두 페이지가 함께 쓰는 공용 함수들 ---------- */
