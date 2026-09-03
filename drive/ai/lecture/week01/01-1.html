@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>인공지능 1주차 1차시 — 오리엔테이션</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<style>
+:root{
+  --accent:#9333EA;
+  --accent-deep:#6B21A8;
+  --accent-soft:#F3E8FF;
+
+  --bg:#F7F8FA;
+  --surface:#FFFFFF;
+  --ink:#15161B;
+  --ink-2:#565C66;
+  --ink-3:#8B9098;
+  --line:#E5E7EC;
+  --line-2:#F0F1F4;
+  --code-bg:#1B1D24;
+  --code-ink:#E4E6ED;
+  --mark:#FFE27A;
+  --font:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,system-ui,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  --mono:'JetBrains Mono','SFMono-Regular',Consolas,'D2Coding',monospace;
+}
+html[data-theme="dark"]{
+  --accent:#B085EF;
+  --accent-deep:#C9A6F5;
+  --accent-soft:#2A2135;
+  --bg:#101116;
+  --surface:#181A20;
+  --ink:#E8E9ED;
+  --ink-2:#A6AAB4;
+  --ink-3:#73777F;
+  --line:#2A2C34;
+  --line-2:#202229;
+  --code-bg:#0C0D11;
+  --mark:#6E5C16;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15.5px;line-height:1.72;letter-spacing:-.012em;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-deep)}
+::selection{background:var(--accent);color:#fff}
+
+#scrollbar{position:fixed;top:0;left:0;height:3px;width:0;background:var(--accent);z-index:99}
+
+.topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:10px;padding:10px 22px;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.back{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink-2);font-size:14px;font-weight:700;white-space:nowrap}
+.back:hover{color:var(--accent-deep)}
+.back i{width:10px;height:10px;border-radius:3px;background:var(--accent);display:block}
+.search{flex:1;max-width:300px;margin-left:auto;position:relative}
+.search input{width:100%;padding:7px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14px}
+.search input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.hit{position:absolute;right:10px;top:8px;font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums;pointer-events:none}
+.tools{display:flex;gap:6px}
+.tbtn{border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:9px;padding:7px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);white-space:nowrap}
+.tbtn:hover{border-color:var(--accent);color:var(--accent-deep)}
+.tbtn.solid{background:var(--accent);border-color:var(--accent);color:#fff}
+.tbtn:disabled{opacity:.4;cursor:default}
+
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);gap:38px;max-width:1200px;margin:0 auto;padding:26px 24px 120px}
+main{min-width:0}
+
+.side{position:sticky;top:80px;align-self:start;max-height:calc(100vh - 100px);overflow-y:auto;scrollbar-width:thin}
+.panel{background:var(--accent);border-radius:16px;padding:18px 16px;color:#fff;box-shadow:0 8px 24px -12px color-mix(in srgb,var(--accent) 70%,transparent)}
+.panel .cap{font-size:11.5px;font-weight:700;opacity:.72;margin-bottom:9px}
+.panel .subject{font-size:19px;font-weight:800;letter-spacing:-.03em;line-height:1.3;margin-bottom:2px}
+.panel .when{font-size:12.5px;opacity:.8;margin-bottom:16px}
+.toc{list-style:none;margin:0;padding:0}
+.toc a{display:block;padding:6px 10px;border-radius:8px;color:#fff;opacity:.82;text-decoration:none;font-size:13.5px;font-weight:600;line-height:1.45}
+.toc a:hover{background:rgba(255,255,255,.16);opacity:1}
+.toc a.on{background:#fff;color:var(--accent-deep);opacity:1;font-weight:800}
+.toc .num{display:inline-block;width:17px;font-variant-numeric:tabular-nums;opacity:.7}
+.toc a.on .num{opacity:1}
+.panel hr{border:0;border-top:1px solid rgba(255,255,255,.22);margin:14px 0}
+.chk label{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;padding:3px 0;cursor:pointer;line-height:1.5;opacity:.9}
+.chk input{margin-top:4px;accent-color:#fff;flex-shrink:0}
+.chk input:checked + span{opacity:.5;text-decoration:line-through}
+.pbar{height:4px;border-radius:99px;background:rgba(255,255,255,.28);margin-top:11px;overflow:hidden}
+.pbar i{display:block;height:100%;width:0;background:#fff;transition:width .25s}
+
+.hero{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px 28px 22px;overflow:hidden;margin-bottom:16px}
+.hero::after{content:attr(data-w);position:absolute;right:14px;bottom:-26px;font-size:112px;font-weight:800;color:var(--accent);opacity:.09;letter-spacing:-.06em;line-height:1;pointer-events:none}
+.chip{display:inline-flex;align-items:center;gap:7px;background:var(--accent-soft);color:var(--accent-deep);font-size:12.5px;font-weight:800;padding:4px 11px;border-radius:99px}
+h1{font-size:clamp(26px,3.6vw,34px);font-weight:800;letter-spacing:-.04em;line-height:1.24;margin:12px 0 6px;position:relative}
+.hero .sub{color:var(--ink-2);font-size:15px;margin:0 0 14px;position:relative}
+[hidden]{display:none!important}
+.metaline{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-3);position:relative}
+.metaline b{color:var(--ink-2);font-weight:600}
+
+.files{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;position:relative}
+.file{display:inline-flex;align-items:center;gap:9px;padding:8px 13px 8px 9px;border:1px solid var(--line);border-radius:10px;background:var(--surface);text-decoration:none;color:var(--ink);font-size:13.5px;font-weight:700}
+.file:hover{border-color:var(--accent);background:var(--accent-soft)}
+.file .ic{background:var(--accent);color:#fff;font-size:10px;font-weight:800;padding:3px 6px;border-radius:6px;letter-spacing:.02em}
+.file em{font-style:normal;color:var(--ink-3);font-weight:600;font-size:12.5px}
+.files .none{font-size:12.5px;color:var(--ink-3);font-weight:600;padding:8px 0}
+.extra-chip:disabled{cursor:default;opacity:.6}
+
+.flow{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:26px}
+.flow a{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--line);border-radius:99px;background:var(--surface);text-decoration:none;color:var(--ink-2);font-size:13px;font-weight:600}
+.flow a:hover{border-color:var(--accent);color:var(--accent-deep);background:var(--accent-soft)}
+.flow a b{color:var(--accent);font-variant-numeric:tabular-nums}
+
+.keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:34px}
+.key{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:14px;padding:16px 17px}
+.key .n{font-size:12px;font-weight:800;color:var(--accent);margin-bottom:5px}
+.key p{margin:0;font-size:14.5px;line-height:1.6}
+.key b{font-weight:800}
+
+section{margin-bottom:46px;scroll-margin-top:82px}
+h2.st{display:flex;align-items:center;gap:11px;font-size:22px;font-weight:800;letter-spacing:-.035em;margin:0 0 14px}
+h2.st .sq{flex-shrink:0;width:30px;height:30px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+h3{font-size:16.5px;font-weight:800;margin:26px 0 8px;letter-spacing:-.025em;padding-left:11px;border-left:3px solid var(--accent)}
+h4{font-size:14.5px;font-weight:700;margin:18px 0 6px;color:var(--ink-2)}
+p{margin:9px 0}
+ul,ol{margin:9px 0;padding-left:21px}
+li{margin:3px 0}
+li::marker{color:var(--accent)}
+.en{color:var(--ink-3);font-weight:500;font-size:.9em}
+mark{background:linear-gradient(transparent 54%,var(--mark) 54%);color:inherit;padding:0 2px}
+.hit-mark{background:var(--accent);color:#fff;border-radius:3px}
+
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin:-6px 0 12px}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:6px;letter-spacing:0}
+.badge.exam{color:#92580B;background:#FDF0D5}
+.badge.prof{color:var(--accent-deep);background:var(--accent-soft)}
+.badge.ask{color:#B02020;background:#FCE4E4}
+html[data-theme="dark"] .badge.exam{background:#3B2D0E;color:#EFC470}
+html[data-theme="dark"] .badge.ask{background:#3A1919;color:#F0A0A0}
+
+.call{border-radius:13px;padding:14px 17px;margin:15px 0;background:var(--surface);border:1px solid var(--line)}
+.call .t{font-size:12.5px;font-weight:800;margin-bottom:5px}
+.call p:first-of-type{margin-top:0}
+.call p:last-child,.call ul:last-child{margin-bottom:0}
+.call.quote{background:var(--accent-soft);border-color:transparent}
+.call.quote .t{color:var(--accent-deep)}
+.call.quote p{font-size:14.8px}
+.call.warn{border-left:4px solid #E5A50A}
+.call.warn .t{color:#A16207}
+.call.ask{border-left:4px solid #DC2626}
+.call.ask .t{color:#B02020}
+.call.link{border-left:4px solid var(--accent)}
+.call.link .t{color:var(--accent-deep)}
+
+.call.extra{background:repeating-linear-gradient(135deg,var(--line-2),var(--line-2) 9px,transparent 9px,transparent 18px);border:1.5px dashed var(--ink-3);border-left-width:1.5px}
+.call.extra .t{color:var(--ink-2);display:flex;align-items:center;gap:6px}
+.call.extra .t::before{content:"보충";background:var(--ink-3);color:var(--surface);font-size:10.5px;padding:1px 6px;border-radius:5px}
+.call.extra p{color:var(--ink-2)}
+.badge.extra{color:var(--ink-2);background:var(--line-2);border:1px dashed var(--ink-3)}
+.ext{border-bottom:2px dotted var(--ink-3);color:var(--ink-2)}
+.ext::after{content:"보충";font-size:9.5px;font-weight:800;vertical-align:super;color:var(--ink-3);margin-left:2px;letter-spacing:0}
+.extra-chip{border:1.5px dashed var(--ink-3);background:transparent;color:var(--ink-2);cursor:pointer;font-family:var(--font)}
+body.no-extra .call.extra,body.no-extra .badge.extra{display:none}
+body.no-extra .ext{border-bottom:0}
+body.no-extra .ext::after{display:none}
+html[data-theme="dark"] .call.warn .t{color:#E5B547}
+html[data-theme="dark"] .call.ask .t{color:#F0A0A0}
+
+details.raw{margin:12px 0;border:1px dashed var(--line);border-radius:10px;background:var(--line-2)}
+details.raw summary{cursor:pointer;padding:8px 14px;font-size:12.5px;color:var(--ink-3);font-weight:700;list-style:none}
+details.raw summary::-webkit-details-marker{display:none}
+details.raw summary::before{content:"▸ ";color:var(--accent)}
+details.raw[open] summary::before{content:"▾ "}
+details.raw .txt{padding:0 14px 12px;font-size:13px;color:var(--ink-2);white-space:pre-wrap;line-height:1.7}
+
+.rawnote{border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+.rawitem{display:grid;grid-template-columns:78px 1fr;gap:16px;padding:15px 18px;border-bottom:1px solid var(--line-2)}
+.rawitem:last-child{border-bottom:0}
+.rawitem .seq{font-size:12px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+.rawitem .seq span{display:block;color:var(--ink-3);font-weight:600;font-size:11px;margin-top:2px}
+.rawitem .body{white-space:pre-wrap;font-size:14px;line-height:1.75;color:var(--ink)}
+.rawitem .where{margin-top:7px;font-size:12px}
+.rawitem .where a{color:var(--accent-deep);text-decoration:none;font-weight:700;background:var(--accent-soft);padding:2px 8px;border-radius:6px}
+.rawitem .where a:hover{background:var(--accent);color:#fff}
+.rawnote .empty{padding:24px 18px;color:var(--ink-3);font-size:13.5px}
+
+.tablewrap{overflow-x:auto;margin:15px 0;border:1px solid var(--line);border-radius:13px}
+table{border-collapse:collapse;width:100%;font-size:14px;background:var(--surface)}
+th,td{padding:10px 13px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line-2)}
+th{background:var(--accent);color:#fff;font-weight:700;font-size:13px;white-space:nowrap;border-bottom:0}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--line-2)}
+
+.codebox{margin:15px 0;border-radius:13px;overflow:hidden;background:var(--code-bg);border:1px solid var(--code-bg)}
+.codebox .head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 14px;font-size:12px;color:#9AA0AC;font-weight:700;background:rgba(255,255,255,.04)}
+.codebox .head .tag{color:#fff;background:var(--accent);border-radius:5px;padding:1px 7px;font-size:11px;margin-right:7px}
+.codebox pre{margin:0;padding:15px 17px;overflow-x:auto;font-family:var(--mono);font-size:13.2px;line-height:1.7;color:var(--code-ink)}
+.codebox .cm{color:#7C8494}
+.codebox .kw{color:#C4A6FF}
+.codebox .st2{color:#8BD5A0}
+.copy{border:0;background:transparent;color:#9AA0AC;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font)}
+.copy:hover{color:#fff}
+.codebox.pseudo{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent)}
+.codebox.pseudo .head{background:var(--accent-soft);color:var(--accent-deep)}
+.codebox.pseudo .head .tag{background:var(--accent-deep)}
+.codebox.pseudo pre{color:var(--ink);font-size:13.6px}
+.codebox.pseudo .cm{color:var(--ink-3)}
+.codebox.pseudo .kw{color:var(--accent-deep);font-weight:700}
+.codebox.pseudo .copy{color:var(--ink-3)}
+.codebox.pseudo .copy:hover{color:var(--accent-deep)}
+code:not(pre code){background:var(--accent-soft);color:var(--accent-deep);padding:1px 6px;border-radius:6px;font-family:var(--mono);font-size:.88em;font-weight:600}
+
+figure{margin:18px 0;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 14px 12px}
+figure svg{max-width:100%;height:auto}
+figcaption{font-size:12.5px;color:var(--ink-3);margin-top:10px}
+
+.terms{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:11px}
+.term{border:1px solid var(--line);border-radius:13px;padding:13px 15px;background:var(--surface)}
+.term b{display:block;font-size:15px}
+.term .e{display:block;font-size:12px;color:var(--accent-deep);font-family:var(--mono);margin-bottom:6px}
+.term p{margin:0;font-size:13.3px;color:var(--ink-2);line-height:1.6}
+
+.q{border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:12px 0;background:var(--surface)}
+.q .qh{display:flex;gap:10px;align-items:flex-start;font-weight:700;font-size:15px}
+.q .qn{color:#fff;background:var(--accent);border-radius:7px;padding:1px 8px;font-size:12.5px;font-weight:800;flex-shrink:0;margin-top:3px}
+.q .type{font-size:11px;font-weight:800;color:var(--ink-3);border:1px solid var(--line);border-radius:6px;padding:1px 7px;margin-left:auto;flex-shrink:0;margin-top:3px}
+.q ol.ch{list-style:none;padding-left:0;margin:11px 0 0;counter-reset:c}
+.q ol.ch li{padding:3px 0 3px 26px;position:relative;font-size:14.3px}
+.q ol.ch li::before{content:counter(c);counter-increment:c;position:absolute;left:0;top:4px;width:19px;height:19px;border:1px solid var(--line);border-radius:50%;font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--ink-3)}
+.ans{margin-top:12px;padding:11px 13px;border-radius:10px;background:var(--accent-soft);font-size:14.2px;cursor:pointer}
+.ans .lab{font-weight:800;color:var(--accent-deep);font-size:12.5px;margin-right:7px}
+body.hide-ans .ans:not(.on){background:var(--line-2);color:transparent;user-select:none;cursor:pointer;position:relative}
+body.hide-ans .ans:not(.on) *{color:transparent!important}
+body.hide-ans .ans:not(.on)::after{content:"눌러서 정답 확인";position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-3);font-size:12.5px;font-weight:700}
+
+.vhead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px}
+.vhead input[type=search]{flex:1;min-width:170px;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14px}
+.vhead input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.vlist{margin:0;padding:0;list-style:none;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
+.vword{display:grid;grid-template-columns:190px 1fr;gap:16px;padding:14px 18px;border-bottom:1px solid var(--line-2)}
+.vword:last-child{border-bottom:0}
+.vword:hover{background:var(--line-2)}
+.vword .w{font-weight:800;font-size:16px;letter-spacing:-.02em}
+.vword .ipa{display:block;font-family:var(--mono);font-size:12px;color:var(--ink-3);font-weight:400;margin-top:1px}
+.vword .pos{display:inline-block;font-size:10.5px;font-weight:800;color:#fff;background:var(--accent);border-radius:5px;padding:1px 6px;margin-top:5px}
+.vword .mean{font-size:14.5px;margin:0;font-weight:600}
+.vword .ex{font-size:13px;color:var(--ink-2);margin:5px 0 0}
+.vword .ex b{color:var(--accent-deep);font-weight:700}
+.vword .ex .ko{display:block;color:var(--ink-3);font-size:12.5px}
+.masked .mean,.masked .ex{background:var(--line-2);border-radius:6px;color:transparent;cursor:pointer}
+.masked .mean *,.masked .ex *{color:transparent!important}
+.masked .mean.show,.masked .ex.show{background:transparent;color:inherit}
+.masked .mean.show *,.masked .ex.show *{color:revert!important}
+.masked .ex.show b{color:var(--accent-deep)!important}
+.quizbox{margin-top:18px;padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--surface);display:none}
+.quizbox.on{display:block}
+.quizbox .qq{font-size:22px;font-weight:800;margin-bottom:14px;letter-spacing:-.02em}
+.quizbox .opts{display:grid;gap:8px}
+.quizbox .opt{text-align:left;padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14.5px;cursor:pointer}
+.quizbox .opt:hover{border-color:var(--accent)}
+.quizbox .opt.ok{border-color:#16A34A;background:color-mix(in srgb,#16A34A 12%,var(--surface))}
+.quizbox .opt.no{border-color:#DC2626;background:color-mix(in srgb,#DC2626 12%,var(--surface))}
+.quizbox .score{margin-top:13px;font-size:13px;color:var(--ink-3);font-weight:600}
+.vlist .empty{padding:24px 18px;color:var(--ink-3);font-size:13.5px}
+
+footer{margin-top:54px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-3);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+@media(max-width:900px){
+  .wrap{grid-template-columns:1fr;gap:18px;padding:16px 16px 80px}
+  .side{position:static;max-height:none;order:-1}
+  .vword{grid-template-columns:1fr;gap:5px}
+  .search{max-width:none;order:3;flex-basis:100%;max-width:100%}
+  .topbar{flex-wrap:wrap}
+  .hero::after{font-size:78px}
+}
+@media print{
+  .topbar,.side,#scrollbar,.quizbox,.vhead,.flow,.files,.extra-chip{display:none!important}
+  .wrap{display:block;max-width:none;padding:0}
+  body{font-size:10.5pt;background:#fff}
+  section{page-break-inside:avoid;margin-bottom:22px}
+  body.hide-ans .ans:not(.on){background:var(--accent-soft)!important;color:inherit!important}
+  body.hide-ans .ans:not(.on) *{color:inherit!important}
+  body.hide-ans .ans:not(.on)::after{display:none}
+  details.raw{display:none}
+  #viewVocab,#viewRaw{display:block!important;page-break-before:always}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body class="hide-ans">
+<div id="scrollbar"></div>
+
+<div class="topbar">
+  <a class="back" href="../"><i></i>인공지능</a>
+  <div class="search"><input id="q" type="search" placeholder="찾기 (Enter로 다음)" aria-label="문서 내 검색"><span class="hit" id="hit"></span></div>
+  <div class="tools">
+    <button class="tbtn" id="ansBtn">정답 가리기</button>
+    <button class="tbtn" id="vocabBtn">단어장</button>
+    <button class="tbtn" id="rawBtn">필기 원문</button>
+    <button class="tbtn" id="themeBtn">다크</button>
+    <button class="tbtn" id="printBtn">🖨</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<aside class="side">
+  <div class="panel">
+    <div class="subject">인공지능</div>
+    <div class="when">1주차 1차시 · 2026.09.03 (목)</div>
+
+    <div id="tocWrap">
+      <div class="cap">목차</div>
+      <ul class="toc" id="toc">
+        <li><a href="#s1"><span class="num">01</span>담당 교수 소개</a></li>
+        <li><a href="#s2"><span class="num">02</span>교재 및 참고 자료</a></li>
+        <li><a href="#s3"><span class="num">03</span>강의 구성</a></li>
+        <li><a href="#s4"><span class="num">04</span>성적 평가</a></li>
+        <li><a href="#s5"><span class="num">05</span>휴강일</a></li>
+        <li><a href="#sg"><span class="num">06</span>용어 정리</a></li>
+        <li><a href="#sq"><span class="num">07</span>확인 필요</a></li>
+        <li><a href="#sx"><span class="num">08</span>예상 문제</a></li>
+      </ul>
+      <hr>
+      <div class="cap">복습 체크</div>
+      <div class="chk">
+        <label><input type="checkbox"><span>교재(처음 만나는 인공지능 개정3판) 준비</span></label>
+        <label><input type="checkbox"><span>출석·과제·시험 반영 비율 확인</span></label>
+        <label><input type="checkbox"><span>공결 처리 절차(14일 이내 메일) 숙지</span></label>
+        <label><input type="checkbox"><span>휴강일 캘린더에 표시</span></label>
+        <label><input type="checkbox"><span>선형대수 영상 자필 정리 과제 방식 이해</span></label>
+        <label><input type="checkbox"><span>팀플 없음 · 개인 과제 위주 확인</span></label>
+      </div>
+      <div class="pbar"><i id="barFill"></i></div>
+    </div>
+
+    <div id="rawNav" hidden>
+      <div class="cap">필기 원문</div>
+      <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">내가 수업 중에 보낸 내용 <b id="rawTotal">0</b>개를 손대지 않고 그대로 모아둔 페이지입니다.</p>
+      <hr>
+      <div class="cap">확인 방법</div>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">여기 있는 내용이 본문에 다 반영됐는지 대조하세요. 각 항목의 파란 링크를 누르면 정리된 위치로 이동합니다.</p>
+    </div>
+
+    <div id="vocabNav" hidden>
+      <div class="cap">단어장</div>
+      <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">이번 차시에 나온 전공 필수 단어 <b id="vTotal">0</b>개입니다.</p>
+      <hr>
+      <div class="cap">사용법</div>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">뜻 가리기를 켜면 회색 칸을 눌러 하나씩 확인할 수 있습니다. 퀴즈는 아래 목록에서 문제를 자동으로 만듭니다.</p>
+    </div>
+  </div>
+</aside>
+
+<main>
+<div id="viewNote">
+
+  <div class="hero" data-w="01">
+    <span class="chip">1주차 · 1차시</span>
+    <button class="chip extra-chip" id="extraChip"></button>
+    <h1>오리엔테이션</h1>
+    <p class="sub">담당 교수 소개, 교재, 강의 구성, 성적 평가 기준, 휴강일 안내</p>
+    <div class="metaline">
+      <span>2026.09.03 (목)</span>
+      <span><b>강은송</b> 교수님</span>
+      <span>교재: 처음 만나는 인공지능(개정3판)</span>
+      <span>과제: 선형대수 영상 자필 정리·요약 (중간고사 전까지)</span>
+    </div>
+
+    <div class="files">
+      <a class="file" href="01-1-교안.pdf" target="_blank"><span class="ic">PDF</span>오리엔테이션 교안<em>6p</em></a>
+      <a class="file" href="01-1-수업계획서.pdf" target="_blank"><span class="ic">PDF</span>수업계획서</a>
+    </div>
+  </div>
+
+  <nav class="flow">
+    <a href="#s1"><b>01</b> 담당 교수</a>
+    <a href="#s2"><b>02</b> 교재·자료</a>
+    <a href="#s3"><b>03</b> 강의 구성</a>
+    <a href="#s4"><b>04</b> 성적 평가</a>
+    <a href="#s5"><b>05</b> 휴강일</a>
+    <a href="#sx"><b>08</b> 예상 문제</a>
+  </nav>
+
+  <div class="keys">
+    <div class="key"><div class="n">핵심 1</div><p>성적은 <b>중간 30% · 기말 30% · 과제 30% · 출석 10%</b>로 구성된다.</p></div>
+    <div class="key"><div class="n">핵심 2</div><p>결석·공결 시간의 합이 <b>전체 수업 시간의 1/3</b>을 넘으면 F학점이다.</p></div>
+    <div class="key"><div class="n">핵심 3</div><p>과제는 <b>선형대수 영상을 보고 자필로 정리·요약</b>하는 방식이며, <b>팀플은 없다.</b></p></div>
+  </div>
+
+  <!-- 01 -->
+  <section id="s1">
+    <h2 class="st"><span class="sq">01</span>담당 교수 소개</h2>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>항목</th><th>내용</th></tr></thead>
+        <tbody>
+          <tr><td><b>이름</b></td><td>강은송</td></tr>
+          <tr><td><b>소속</b></td><td>강원대학교 데이터사이언스학과 (아산관 309-1호)</td></tr>
+          <tr><td><b>이메일</b></td><td>eskang@kangwon.ac.kr</td></tr>
+          <tr><td><b>연구실</b></td><td>Data Analytics &amp; Intelligent System<span class="en">(DAISY LAB)</span></td></tr>
+          <tr><td><b>연구 분야</b></td><td>의료 인공지능<span class="en">(Medical AI)</span>, 뇌인지공학<span class="en">(Brain Cognitive Engineering)</span>, 설명 가능 인공지능<span class="en">(Explainable AI)</span>, 데이터 분석<span class="en">(Data Analytics)</span></td></tr>
+          <tr><td><b>경력</b></td><td>LG전자 CSO부문 DX센터 AI빅데이터담당 AX기술팀 데이터사이언티스트</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="call quote">
+      <div class="t">교수님 말씀</div>
+      <p>연구 분야 중에서도 <mark>의료 인공지능(Medical AI)</mark> 쪽을 중심으로 연구하신다고 강조하셨습니다.</p>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 슬라이드 1–2쪽 기반)
+의료 AI쪽을 연구하심</div></details>
+  </section>
+
+  <!-- 02 -->
+  <section id="s2">
+    <h2 class="st"><span class="sq">02</span>교재 및 참고 자료</h2>
+
+    <ul>
+      <li><b>주교재</b> — 생능출판, 《처음 만나는 인공지능》(개정3판), 김대수·김경동 지음</li>
+      <li><b>심화 학습 자료</b> — YouTube, 3Blue1Brown 채널의 Linear Algebra 시리즈</li>
+      <li><b>심화 학습 자료</b> — YouTube, 3Blue1Brown 채널의 Calculus 시리즈</li>
+    </ul>
+
+    <div class="call warn">
+      <div class="t">확인해 둘 점</div>
+      <p>3Blue1Brown 자료는 <b>선형대수(Linear Algebra)</b>·<b>미적분(Calculus)</b> 개념을 시각적으로 설명하는 채널입니다. 중간고사 이전 매주 나가는 선형대수 과제와 연결되므로, 과제 전에 관련 영상을 먼저 보는 편이 유리합니다.</p>
+    </div>
+
+    <div class="call quote">
+      <div class="t">교수님 말씀</div>
+      <p>교재는 <b>전체 분반 공통</b>으로 사용하며, 난이도는 <b>쉬운 편</b>이라고 하셨습니다. 심화 학습 자료는 학기 내내 <b>계속 제공</b>될 예정입니다.</p>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 슬라이드 2쪽 기반)
+교재는 전 분반 통일(그치만 교재가 정말 쉬운 편임)(심화 자료 계속 제공 예정)</div></details>
+  </section>
+
+  <!-- 03 -->
+  <section id="s3">
+    <h2 class="st"><span class="sq">03</span>강의 구성</h2>
+    <p>한 학기 동안 다룰 12개 주제입니다. 순서는 교안에 제시된 순서 그대로입니다.</p>
+
+    <ol>
+      <li>인공지능 개요와 발달사</li>
+      <li>인공지능 기술과 최근 응용 동향</li>
+      <li>인공지능 연구와 구현</li>
+      <li>인공지능의 미래와 윤리</li>
+      <li>인공지능과 4차 산업혁명</li>
+      <li>규칙기반 인공지능</li>
+      <li>신경망 개념과 응용</li>
+      <li>머신러닝의 학습과 분류</li>
+      <li>딥러닝 기반의 심층신경망과 활용</li>
+      <li>인공지능의 패턴인식</li>
+      <li>인공지능을 위한 기초 수학과 프로그래밍</li>
+      <li>인공지능과 데이터사이언스</li>
+    </ol>
+
+    <div class="call link">
+      <div class="t">이산수학·자료구조와 연결</div>
+      <p>11번 항목(기초 수학과 프로그래밍)에서 1학기에 배운 <b>이산수학</b>의 집합·확률 개념, <b>자료구조</b>의 트리·그래프 표현이 신경망·패턴인식 단원의 전제로 다시 쓰일 가능성이 높습니다.</p>
+    </div>
+
+    <div class="call quote">
+      <div class="t">교수님 말씀 — 진행 속도</div>
+      <p>1~6번 항목(개요·발달사·응용동향·연구와구현·미래와윤리·4차산업혁명·규칙기반)은 <b>2주 정도</b>로 빠르게 진행하고, <mark>7~9번 항목(신경망·머신러닝·딥러닝)</mark>은 심화 자료를 활용해 깊게 다룰 예정입니다.</p>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 슬라이드 3쪽 기반)
+수업구성 상 신경망, 머신러닝, 딥러닝 부분을 심화자료 가지고 깊게 할 예정(이전 수업 구성은 2주 정도 만에 빠르게 나갈 예정)</div></details>
+  </section>
+
+  <!-- 04 -->
+  <section id="s4">
+    <h2 class="st"><span class="sq">04</span>성적 평가</h2>
+    <div class="badges"><span class="badge prof">교수님 강조</span></div>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>항목</th><th>비율</th><th>비고</th></tr></thead>
+        <tbody>
+          <tr><td><b>중간고사</b></td><td>30%</td><td>지필평가</td></tr>
+          <tr><td><b>기말고사</b></td><td>30%</td><td>지필평가</td></tr>
+          <tr><td><b>과제물</b></td><td>30%</td><td>지각 제출 시 감점 · 중간고사 이전엔 매주 선형대수 관련 과제</td></tr>
+          <tr><td><b>출석</b></td><td>10%</td><td>수업 시작 시 개별 호명으로 확인</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="call warn">
+      <div class="t">출석 — F학점 기준</div>
+      <ul>
+        <li>총 수업 시간의 <b>1/3을 초과해 결석</b>하면 F학점</li>
+        <li><b>공결 + 결석 시간의 합</b>이 수업 시간의 1/3을 초과해도 F학점</li>
+      </ul>
+    </div>
+
+    <div class="call ask">
+      <div class="t">공결 처리 절차</div>
+      <ul>
+        <li>공결 사유 발생 후 <b>14일(2주) 이내</b>에 메일로 제출</li>
+        <li>제출 기간이 지났거나 종강 후 제출하면 <b>미인정</b></li>
+        <li>학과사무실에서 공결신청서를 작성하고 <b>공결확인서</b>를 받아 제출 — <b>진료기록만 제출하면 미인정</b></li>
+      </ul>
+    </div>
+
+    <div class="call quote">
+      <div class="t">교수님 말씀 — 과제 방식</div>
+      <p>중간고사 이전 과제는 <b>3Blue1Brown 선형대수 영상을 보고 자필로 정리·요약</b>하는 방식입니다. 중간고사 이후에는 <b>새로운 방식의 과제</b>로 바뀔 예정입니다. <b>팀플은 없고</b>, 대신 개인 과제가 많이 나갈 예정입니다.</p>
+    </div>
+
+    <div class="call warn">
+      <div class="t">실질적인 변별 요소</div>
+      <p>중간·기말고사 전에 교수님이 시험 범위를 미리 짚어주시기 때문에, 실제 성적 차이는 <b>시험보다 과제와 출석</b>에서 주로 갈릴 것으로 안내하셨습니다.</p>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 슬라이드 4쪽 기반)
+팀플 없을 예정(과제 많이 나갈 예정)
+과제 : 선형대수 영상(교안에 있는 유튜브) 보고 자필 정리 및 요약 - 중간고사 이전까지 과제(이후는 새로운 과제 예정)
+중간기말고사 전에 시험 내용 짚어주시기 때문에 과제나 출석에서 주로 갈림</div></details>
+  </section>
+
+  <!-- 05 -->
+  <section id="s5">
+    <h2 class="st"><span class="sq">05</span>휴강일</h2>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>주차</th><th>날짜</th><th>사유</th></tr></thead>
+        <tbody>
+          <tr><td>2주차</td><td>9월 10일</td><td>-</td></tr>
+          <tr><td>4주차</td><td>9월 24일</td><td>추석 연휴</td></tr>
+          <tr><td>5주차</td><td>10월 5일</td><td>개천절 대체 공휴일</td></tr>
+          <tr><td>미정</td><td>11월 또는 12월 예정</td><td>교수님 학회 참석</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="call quote">
+      <div class="t">교수님 말씀 — 보강 계획</div>
+      <ul>
+        <li>교안에 나온 휴강일은 <b>확정</b>이며, 추가 휴강은 <b>추후 별도 공지</b> 예정</li>
+        <li><b>중간고사·기말고사 기간</b>에 보충 수업(휴강 보강)을 진행할 예정</li>
+        <li>휴강이 많아 <b>15주차 이후에도 수업 보충</b>이 있을 예정</li>
+      </ul>
+    </div>
+
+    <div class="call ask">
+      <div class="t">1. 학회 휴강 정확한 날짜 — 미해결</div>
+      <p>11월 또는 12월 중 언제인지 아직 확정되지 않았습니다. 공지되면 여기에 반영이 필요합니다.</p>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 슬라이드 5쪽 기반)
+휴강은 나중에 공지도 또 할 예정이고 교안에 나온건 정해진 휴강들
+중간고사나 기말고사 기간에 보충 수업(휴강 보강수업) 할 예정
+휴강이 많아서 15주차 이후 수업 보충 예정</div></details>
+  </section>
+
+  <!-- 06 -->
+  <section id="sg">
+    <h2 class="st"><span class="sq">06</span>용어 정리</h2>
+    <div class="terms">
+      <div class="term"><b>의료 인공지능</b><span class="e">Medical AI</span><p>의료 데이터를 분석·진단에 활용하는 인공지능 분야. 교수님의 주 연구 분야.</p></div>
+      <div class="term"><b>설명 가능 인공지능</b><span class="e">Explainable AI</span><p>모델이 왜 그런 판단을 했는지 사람이 이해할 수 있게 설명하는 인공지능 연구 분야.</p></div>
+      <div class="term"><b>선형대수</b><span class="e">Linear Algebra</span><p>벡터·행렬을 다루는 수학 분야. 신경망 연산의 기초가 된다.</p></div>
+      <div class="term"><b>미적분</b><span class="e">Calculus</span><p>변화율과 누적량을 다루는 수학 분야. 경사하강법 등 학습 알고리즘의 기초가 된다.</p></div>
+      <div class="term"><b>공결</b><span class="e">excused absence</span><p>정당한 사유로 인정되는 결석. 별도 서류 제출이 필요하다.</p></div>
+    </div>
+  </section>
+
+  <!-- 07 -->
+  <section id="sq">
+    <h2 class="st"><span class="sq">07</span>확인 필요</h2>
+    <div class="call ask"><div class="t">1. 학회 휴강 정확한 날짜 — 미해결</div><p>11월 또는 12월 중 언제인지 아직 확정되지 않았습니다. 공지되는 대로 반영이 필요합니다.</p></div>
+  </section>
+
+  <!-- 08 -->
+  <section id="sx">
+    <h2 class="st"><span class="sq">08</span>예상 문제</h2>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q1</span><span>이 수업의 성적 평가 비율로 옳은 것은?</span><span class="type">객관식</span></div>
+      <ol class="ch"><li>중간 40% · 기말 40% · 과제 10% · 출석 10%</li><li>중간 30% · 기말 30% · 과제 30% · 출석 10%</li><li>중간 20% · 기말 20% · 과제 50% · 출석 10%</li><li>중간 35% · 기말 35% · 과제 20% · 출석 10%</li></ol>
+      <div class="ans"><span class="lab">정답 ②</span>중간고사 30% · 기말고사 30% · 과제물 30% · 출석 10%로 구성된다.</div>
+    </div>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q2</span><span>이 수업에서 F학점을 받게 되는 출석 관련 조건을 설명하시오.</span><span class="type">서술형</span></div>
+      <div class="ans"><span class="lab">모범답안</span>총 수업 시간의 1/3을 초과해 결석하면 F학점이며, 공결과 결석 시간의 합이 수업 시간의 1/3을 초과해도 동일하게 F학점 처리된다.</div>
+    </div>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q3</span><span>중간고사 이전까지 나가는 과제의 형식과, 팀플 여부를 설명하시오.</span><span class="type">서술형</span></div>
+      <div class="ans"><span class="lab">모범답안</span>3Blue1Brown의 선형대수 영상을 시청한 뒤 자필로 정리·요약하는 방식이며, 팀플 없이 개인 과제로 진행된다. 중간고사 이후에는 새로운 방식의 과제로 전환될 예정이다.</div>
+    </div>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q4</span><span>공결 사유가 발생했을 때, 며칠 이내에 어떤 방식으로 제출해야 하는가?</span><span class="type">객관식</span></div>
+      <ol class="ch"><li>7일 이내, 학과 홈페이지 업로드</li><li>14일 이내, 메일 제출</li><li>30일 이내, 직접 방문 제출</li><li>기한 없이 학기 중 아무 때나</li></ol>
+      <div class="ans"><span class="lab">정답 ②</span>공결 사유 발생 후 14일(2주) 이내에 메일로 제출해야 하며, 기간이 지나거나 종강 후 제출하면 미인정된다.</div>
+    </div>
+  </section>
+
+  <footer><span>인공지능 · 1주차 1차시 · 2026.09.03</span><span>jaealee.com</span></footer>
+</div>
+
+<!-- ═══════════ 단어장 뷰 ═══════════ -->
+<div id="viewVocab" hidden>
+  <div class="hero" data-w="A–Z">
+    <span class="chip">1주차 1차시 단어장</span>
+    <h1>인공지능 필수 용어</h1>
+    <p class="sub">오리엔테이션에서 나온 단어 중 전공생이 원서·논문에서 다시 만날 것들만 골랐습니다.</p>
+  </div>
+
+  <div class="vhead">
+    <input type="search" id="vq" placeholder="단어 · 뜻으로 찾기">
+    <button class="tbtn" id="maskBtn">뜻 가리기</button>
+    <button class="tbtn" id="quizBtn">퀴즈 풀기</button>
+    <span style="font-size:13px;color:var(--ink-3);font-weight:600" id="vcount"></span>
+  </div>
+
+  <ul class="vlist" id="vlist">
+    <li class="vword">
+      <div><span class="w">explainable</span><span class="ipa">/ɪkˈspleɪnəbl/</span><span class="pos">adj.</span></div>
+      <div><p class="mean">설명 가능한 — 모델의 판단 근거를 사람이 이해할 수 있는</p>
+      <p class="ex">Our professor studies <b>explainable</b> AI models.<span class="ko">우리 교수님은 설명 가능한 AI 모델을 연구하신다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">cognitive</span><span class="ipa">/ˈkɒɡnətɪv/</span><span class="pos">adj.</span></div>
+      <div><p class="mean">인지의 — 지각·기억·판단 등 사고 과정과 관련된</p>
+      <p class="ex">She researches brain <b>cognitive</b> engineering.<span class="ko">그녀는 뇌인지공학을 연구한다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">linear</span><span class="ipa">/ˈlɪniər/</span><span class="pos">adj.</span></div>
+      <div><p class="mean">선형의 — 직선적인 관계로 표현되는</p>
+      <p class="ex">We need <b>linear</b> algebra for neural networks.<span class="ko">신경망을 위해서는 선형대수가 필요하다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">algebra</span><span class="ipa">/ˈældʒɪbrə/</span><span class="pos">n.</span></div>
+      <div><p class="mean">대수학 — 수와 문자로 식을 다루는 수학 분야</p>
+      <p class="ex">The assignment is based on linear <b>algebra</b> videos.<span class="ko">이 과제는 선형대수 영상을 기반으로 한다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">prerequisite</span><span class="ipa">/priːˈrekwəzɪt/</span><span class="pos">n.</span></div>
+      <div><p class="mean">선수 조건 — 먼저 갖춰야 하는 지식이나 조건</p>
+      <p class="ex">Basic math is a <b>prerequisite</b> for this course.<span class="ko">기초 수학은 이 수업의 선수 조건이다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">syllabus</span><span class="ipa">/ˈsɪləbəs/</span><span class="pos">n.</span></div>
+      <div><p class="mean">수업계획서 — 강의 목표·일정·평가 기준을 담은 문서</p>
+      <p class="ex">Check the <b>syllabus</b> for the grading breakdown.<span class="ko">성적 평가 비율은 수업계획서를 확인하세요.</span></p></div>
+    </li>
+  </ul>
+
+  <div class="quizbox" id="quiz">
+    <div class="qq" id="quizQ"></div>
+    <div class="opts" id="quizOpts"></div>
+    <div class="score" id="quizScore"></div>
+  </div>
+</div>
+
+<!-- ═══════════ 필기 원문 뷰 ═══════════ -->
+<div id="viewRaw" hidden>
+  <div class="hero" data-w="RAW">
+    <span class="chip">1주차 1차시 필기 원문</span>
+    <h1>내가 보낸 그대로</h1>
+    <p class="sub">한 글자도 고치지 않았습니다. 본문에 빠진 게 없는지 여기서 대조하세요.</p>
+  </div>
+
+  <div class="rawnote" id="rawlist">
+    <div class="rawitem">
+      <div class="seq">01</div>
+      <div>
+        <div class="body">오늘은 첫수업이라 오리엔테이션 수업임(퀴즈 세션은 필요 없어)</div>
+        <div class="where"><a href="#s1">01. 담당 교수 소개</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">02</div>
+      <div>
+        <div class="body">의료 AI쪽을 연구하심</div>
+        <div class="where"><a href="#s1">01. 담당 교수 소개</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">03</div>
+      <div>
+        <div class="body">교재는 전 분반 통일(그치만 교재가 정말 쉬운 편임)(심화 자료 계속 제공 예정)</div>
+        <div class="where"><a href="#s2">02. 교재 및 참고 자료</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">04</div>
+      <div>
+        <div class="body">팀플 없을 예정(과제 많이 나갈 예정)</div>
+        <div class="where"><a href="#s4">04. 성적 평가</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">05</div>
+      <div>
+        <div class="body">과제 : 선형대수 영상(교안에 있는 유튜브) 보고 자필 정리 및 요약 - 중간고사 이전까지 과제(이후는 새로운 과제 예정)</div>
+        <div class="where"><a href="#s4">04. 성적 평가</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">06</div>
+      <div>
+        <div class="body">수업구성 상 신경망, 머신러닝, 딥러닝 부분을 심화자료 가지고 깊게 할 예정(이전 수업 구성은 2주 정도 만에 빠르게 나갈 예정)</div>
+        <div class="where"><a href="#s3">03. 강의 구성</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">07</div>
+      <div>
+        <div class="body">중간기말고사 전에 시험 내용 짚어주시기 때문에 과제나 출석에서 주로 갈림</div>
+        <div class="where"><a href="#s4">04. 성적 평가</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">08</div>
+      <div>
+        <div class="body">휴강은 나중에 공지도 또 할 예정이고 교안에 나온건 정해진 휴강들</div>
+        <div class="where"><a href="#s5">05. 휴강일</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">09</div>
+      <div>
+        <div class="body">중간고사나 기말고사 기간에 보충 수업(휴강 보강수업) 할 예정</div>
+        <div class="where"><a href="#s5">05. 휴강일</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">10</div>
+      <div>
+        <div class="body">휴강이 많아서 15주차 이후 수업 보충 예정</div>
+        <div class="where"><a href="#s5">05. 휴강일</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+const sb = document.getElementById('scrollbar');
+addEventListener('scroll', () => {
+  const h = document.documentElement.scrollHeight - innerHeight;
+  sb.style.width = (h > 0 ? scrollY / h * 100 : 0) + '%';
+}, { passive: true });
+
+const html = document.documentElement, themeBtn = document.getElementById('themeBtn');
+themeBtn.onclick = () => {
+  const dark = html.dataset.theme === 'dark';
+  html.dataset.theme = dark ? 'light' : 'dark';
+  themeBtn.textContent = dark ? '다크' : '라이트';
+};
+
+const ansBtn = document.getElementById('ansBtn');
+const answers = [...document.querySelectorAll('.ans')];
+function syncAnsBtn() {
+  const opened = answers.filter(a => a.classList.contains('on')).length;
+  ansBtn.disabled = opened === 0;
+  ansBtn.textContent = opened ? `정답 가리기 (${opened})` : '정답 가리기';
+}
+answers.forEach(a => a.addEventListener('click', () => { a.classList.toggle('on'); syncAnsBtn(); }));
+ansBtn.onclick = () => { answers.forEach(a => a.classList.remove('on')); syncAnsBtn(); };
+syncAnsBtn();
+
+const extraChip = document.getElementById('extraChip');
+const extraCount = document.querySelectorAll('#viewNote .call.extra, #viewNote .ext').length;
+if (extraCount) {
+  extraChip.textContent = `보충 ${extraCount}곳`;
+  extraChip.onclick = () => {
+    const off = document.body.classList.toggle('no-extra');
+    extraChip.classList.toggle('solid', !off);
+  };
+} else {
+  extraChip.remove();
+}
+
+const printBtn = document.getElementById('printBtn');
+printBtn.onclick = () => window.print();
+
+document.querySelectorAll('.copy').forEach(btn => {
+  btn.onclick = async () => {
+    const pre = btn.closest('.codebox').querySelector('pre');
+    try {
+      await navigator.clipboard.writeText(pre.innerText);
+      btn.textContent = '복사됨';
+    }
+    catch { btn.textContent = '실패'; }
+    setTimeout(() => btn.textContent = '복사', 1200);
+  };
+});
+
+const boxes = document.querySelectorAll('.chk input'), fill = document.getElementById('barFill');
+boxes.forEach(b => b.addEventListener('change', () => {
+  fill.style.width = [...boxes].filter(x => x.checked).length / boxes.length * 100 + '%';
+}));
+
+const views = {
+  note:  { el: document.getElementById('viewNote'),  nav: document.getElementById('tocWrap') },
+  vocab: { el: document.getElementById('viewVocab'), nav: document.getElementById('vocabNav'), btn: document.getElementById('vocabBtn'), on: '본문으로', off: '단어장' },
+  raw:   { el: document.getElementById('viewRaw'),   nav: document.getElementById('rawNav'),   btn: document.getElementById('rawBtn'),  on: '본문으로', off: '필기 원문' }
+};
+let current = 'note';
+function setView(name) {
+  current = name;
+  Object.entries(views).forEach(([k, v]) => {
+    v.el.hidden = k !== name;
+    v.nav.hidden = k !== name;
+    if (v.btn) { v.btn.classList.toggle('solid', k === name); v.btn.textContent = k === name ? v.on : v.off; }
+  });
+  clearMarks();
+  document.getElementById('q').value = '';
+  document.getElementById('hit').textContent = '';
+  scrollTo({ top: 0, behavior: 'smooth' });
+}
+views.vocab.btn.onclick = () => setView(current === 'vocab' ? 'note' : 'vocab');
+views.raw.btn.onclick   = () => setView(current === 'raw'   ? 'note' : 'raw');
+document.getElementById('rawTotal').textContent = document.querySelectorAll('#rawlist .rawitem').length;
+if (!document.querySelectorAll('#rawlist .rawitem').length) {
+  document.getElementById('rawlist').innerHTML = '<div class="empty">아직 저장된 필기 원문이 없습니다. 다음 수업부터 실시간으로 쌓입니다.</div>';
+}
+document.querySelectorAll('#rawlist .where a').forEach(a => {
+  a.onclick = e => { e.preventDefault(); setView('note'); setTimeout(() => document.querySelector(a.getAttribute('href')).scrollIntoView(), 60); };
+});
+
+const links = [...document.querySelectorAll('#toc a')];
+const spy = new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) return;
+  links.forEach(l => l.classList.toggle('on', l.getAttribute('href') === '#' + e.target.id));
+}), { rootMargin: '-80px 0px -68% 0px' });
+document.querySelectorAll('#viewNote section').forEach(s => spy.observe(s));
+
+const qInput = document.getElementById('q'), hitEl = document.getElementById('hit');
+let marks = [], cursor = -1;
+function clearMarks() {
+  marks.forEach(m => { const p = m.parentNode; if (!p) return; p.replaceChild(document.createTextNode(m.textContent), m); p.normalize(); });
+  marks = []; cursor = -1;
+}
+function runSearch(word) {
+  clearMarks();
+  if (word.length < 2) { hitEl.textContent = ''; return; }
+  const root = views[current].el;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const targets = [];
+  while (walker.nextNode()) {
+    const n = walker.currentNode;
+    if (n.parentElement.closest('script,style')) continue;
+    if (n.nodeValue.toLowerCase().includes(word)) targets.push(n);
+  }
+  targets.forEach(n => {
+    const re = new RegExp('(' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    const frag = document.createDocumentFragment();
+    n.nodeValue.split(re).forEach(p => {
+      if (p.toLowerCase() === word) { const m = document.createElement('span'); m.className = 'hit-mark'; m.textContent = p; frag.appendChild(m); marks.push(m); }
+      else frag.appendChild(document.createTextNode(p));
+    });
+    n.parentNode.replaceChild(frag, n);
+  });
+  hitEl.textContent = marks.length ? '0/' + marks.length : '없음';
+}
+qInput.addEventListener('input', e => runSearch(e.target.value.trim().toLowerCase()));
+qInput.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || !marks.length) return;
+  e.preventDefault();
+  cursor = (cursor + 1) % marks.length;
+  marks[cursor].scrollIntoView({ block: 'center', behavior: 'smooth' });
+  hitEl.textContent = (cursor + 1) + '/' + marks.length;
+});
+addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); qInput.focus(); qInput.select(); }
+});
+
+const vlist = document.getElementById('vlist');
+const words = [...vlist.querySelectorAll('.vword')];
+document.getElementById('vcount').textContent = words.length + '개';
+document.getElementById('vTotal').textContent = words.length;
+if (!words.length) { vlist.innerHTML = '<li class="empty">등록된 단어가 없습니다.</li>'; }
+
+document.getElementById('vq').addEventListener('input', e => {
+  const k = e.target.value.trim().toLowerCase();
+  let shown = 0;
+  words.forEach(w => { const ok = w.innerText.toLowerCase().includes(k); w.style.display = ok ? '' : 'none'; if (ok) shown++; });
+  document.getElementById('vcount').textContent = shown + '개';
+});
+
+const maskBtn = document.getElementById('maskBtn');
+maskBtn.onclick = () => {
+  const on = vlist.classList.toggle('masked');
+  maskBtn.classList.toggle('solid', on);
+  maskBtn.textContent = on ? '뜻 보이기' : '뜻 가리기';
+  if (!on) vlist.querySelectorAll('.show').forEach(el => el.classList.remove('show'));
+};
+vlist.querySelectorAll('.mean, .ex').forEach(el => {
+  el.onclick = () => { if (vlist.classList.contains('masked')) el.classList.toggle('show'); };
+});
+
+const quiz = document.getElementById('quiz'), quizBtn = document.getElementById('quizBtn');
+const qQ = document.getElementById('quizQ'), qO = document.getElementById('quizOpts'), qS = document.getElementById('quizScore');
+let pool = [], solved = 0, correct = 0;
+const data = () => words.map(w => ({
+  word: w.querySelector('.w').textContent,
+  mean: (w.querySelector('.mean').textContent.split('—')[1] || w.querySelector('.mean').textContent).trim()
+}));
+function nextQuiz() {
+  if (!pool.length) { qQ.textContent = words.length ? '한 바퀴 끝' : '단어가 없습니다'; qO.innerHTML = ''; qS.textContent = words.length ? `${solved}문제 중 ${correct}개 정답` : ''; return; }
+  const all = data(), cur = pool.pop();
+  qQ.textContent = cur.word;
+  const opts = [cur, ...all.filter(d => d.word !== cur.word).sort(() => Math.random() - .5).slice(0, 3)].sort(() => Math.random() - .5);
+  qO.innerHTML = '';
+  opts.forEach(o => {
+    const b = document.createElement('button');
+    b.className = 'opt'; b.textContent = o.mean;
+    b.onclick = () => {
+      solved++;
+      if (o.word === cur.word) { b.classList.add('ok'); correct++; }
+      else { b.classList.add('no'); [...qO.children].find(x => x.textContent === cur.mean)?.classList.add('ok'); }
+      [...qO.children].forEach(x => x.disabled = true);
+      qS.textContent = `${solved}문제 중 ${correct}개 정답`;
+      setTimeout(nextQuiz, 1000);
+    };
+    qO.appendChild(b);
+  });
+  qS.textContent = `${solved}문제 중 ${correct}개 정답 · 남은 ${pool.length}개`;
+}
+quizBtn.onclick = () => {
+  if (!words.length) return;
+  const on = quiz.classList.toggle('on');
+  quizBtn.classList.toggle('solid', on);
+  quizBtn.textContent = on ? '퀴즈 닫기' : '퀴즈 풀기';
+  if (on) { pool = data().sort(() => Math.random() - .5); solved = 0; correct = 0; nextQuiz(); }
+};
+</script>
+</body>
+</html>
