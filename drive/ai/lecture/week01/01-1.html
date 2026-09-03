@@ -244,15 +244,6 @@ body.hide-ans .ans:not(.on)::after{content:"눌러서 정답 확인";position:ab
 .masked .mean.show,.masked .ex.show{background:transparent;color:inherit}
 .masked .mean.show *,.masked .ex.show *{color:revert!important}
 .masked .ex.show b{color:var(--accent-deep)!important}
-.quizbox{margin-top:18px;padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--surface);display:none}
-.quizbox.on{display:block}
-.quizbox .qq{font-size:22px;font-weight:800;margin-bottom:14px;letter-spacing:-.02em}
-.quizbox .opts{display:grid;gap:8px}
-.quizbox .opt{text-align:left;padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14.5px;cursor:pointer}
-.quizbox .opt:hover{border-color:var(--accent)}
-.quizbox .opt.ok{border-color:#16A34A;background:color-mix(in srgb,#16A34A 12%,var(--surface))}
-.quizbox .opt.no{border-color:#DC2626;background:color-mix(in srgb,#DC2626 12%,var(--surface))}
-.quizbox .score{margin-top:13px;font-size:13px;color:var(--ink-3);font-weight:600}
 .vlist .empty{padding:24px 18px;color:var(--ink-3);font-size:13.5px}
 
 footer{margin-top:54px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-3);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
@@ -266,7 +257,7 @@ footer{margin-top:54px;padding-top:18px;border-top:1px solid var(--line);font-si
   .hero::after{font-size:78px}
 }
 @media print{
-  .topbar,.side,#scrollbar,.quizbox,.vhead,.flow,.files,.extra-chip{display:none!important}
+  .topbar,.side,#scrollbar,.vhead,.flow,.files,.extra-chip{display:none!important}
   .wrap{display:block;max-width:none;padding:0}
   body{font-size:10.5pt;background:#fff}
   section{page-break-inside:avoid;margin-bottom:22px}
@@ -339,7 +330,7 @@ footer{margin-top:54px;padding-top:18px;border-top:1px solid var(--line);font-si
       <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">이번 차시에 나온 전공 필수 단어 <b id="vTotal">0</b>개입니다.</p>
       <hr>
       <div class="cap">사용법</div>
-      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">뜻 가리기를 켜면 회색 칸을 눌러 하나씩 확인할 수 있습니다. 퀴즈는 아래 목록에서 문제를 자동으로 만듭니다.</p>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">뜻 가리기를 켜면 회색 칸을 눌러 하나씩 확인할 수 있습니다.</p>
     </div>
   </div>
 </aside>
@@ -610,7 +601,6 @@ footer{margin-top:54px;padding-top:18px;border-top:1px solid var(--line);font-si
   <div class="vhead">
     <input type="search" id="vq" placeholder="단어 · 뜻으로 찾기">
     <button class="tbtn" id="maskBtn">뜻 가리기</button>
-    <button class="tbtn" id="quizBtn">퀴즈 풀기</button>
     <span style="font-size:13px;color:var(--ink-3);font-weight:600" id="vcount"></span>
   </div>
 
@@ -646,12 +636,6 @@ footer{margin-top:54px;padding-top:18px;border-top:1px solid var(--line);font-si
       <p class="ex">Check the <b>syllabus</b> for the grading breakdown.<span class="ko">성적 평가 비율은 수업계획서를 확인하세요.</span></p></div>
     </li>
   </ul>
-
-  <div class="quizbox" id="quiz">
-    <div class="qq" id="quizQ"></div>
-    <div class="opts" id="quizOpts"></div>
-    <div class="score" id="quizScore"></div>
-  </div>
 </div>
 
 <!-- ═══════════ 필기 원문 뷰 ═══════════ -->
@@ -894,42 +878,6 @@ maskBtn.onclick = () => {
 vlist.querySelectorAll('.mean, .ex').forEach(el => {
   el.onclick = () => { if (vlist.classList.contains('masked')) el.classList.toggle('show'); };
 });
-
-const quiz = document.getElementById('quiz'), quizBtn = document.getElementById('quizBtn');
-const qQ = document.getElementById('quizQ'), qO = document.getElementById('quizOpts'), qS = document.getElementById('quizScore');
-let pool = [], solved = 0, correct = 0;
-const data = () => words.map(w => ({
-  word: w.querySelector('.w').textContent,
-  mean: (w.querySelector('.mean').textContent.split('—')[1] || w.querySelector('.mean').textContent).trim()
-}));
-function nextQuiz() {
-  if (!pool.length) { qQ.textContent = words.length ? '한 바퀴 끝' : '단어가 없습니다'; qO.innerHTML = ''; qS.textContent = words.length ? `${solved}문제 중 ${correct}개 정답` : ''; return; }
-  const all = data(), cur = pool.pop();
-  qQ.textContent = cur.word;
-  const opts = [cur, ...all.filter(d => d.word !== cur.word).sort(() => Math.random() - .5).slice(0, 3)].sort(() => Math.random() - .5);
-  qO.innerHTML = '';
-  opts.forEach(o => {
-    const b = document.createElement('button');
-    b.className = 'opt'; b.textContent = o.mean;
-    b.onclick = () => {
-      solved++;
-      if (o.word === cur.word) { b.classList.add('ok'); correct++; }
-      else { b.classList.add('no'); [...qO.children].find(x => x.textContent === cur.mean)?.classList.add('ok'); }
-      [...qO.children].forEach(x => x.disabled = true);
-      qS.textContent = `${solved}문제 중 ${correct}개 정답`;
-      setTimeout(nextQuiz, 1000);
-    };
-    qO.appendChild(b);
-  });
-  qS.textContent = `${solved}문제 중 ${correct}개 정답 · 남은 ${pool.length}개`;
-}
-quizBtn.onclick = () => {
-  if (!words.length) return;
-  const on = quiz.classList.toggle('on');
-  quizBtn.classList.toggle('solid', on);
-  quizBtn.textContent = on ? '퀴즈 닫기' : '퀴즈 풀기';
-  if (on) { pool = data().sort(() => Math.random() - .5); solved = 0; correct = 0; nextQuiz(); }
-};
 </script>
 </body>
 </html>
