@@ -1,0 +1,358 @@
+
+/* 블록 순서는 원본의 앞뒤 그대로입니다. 같은 조건이 여러 번 나오는 것은 그래서입니다.
+   (예: (max-width:900px) 상단바 블록은 (max-width:767px) 블록보다 뒤에 있어야 모바일 상단바가 3줄로 나옵니다)
+   ---- 매장 선택 화면: 마우스가 있는 큰 화면에서만 올리면 넓어지고 사진이 커집니다 ---- */
+@media (hover:hover) and (min-width:900px){
+  .panel:not(.locked):hover{flex-grow:1.22}
+  .panel:not(.locked):hover .bg{transform:scale(1.08); filter:saturate(1) brightness(.76)}
+  .panel:not(.locked):hover .veil{opacity:.6}
+  .panel:not(.locked):hover .name{letter-spacing:.32em; text-indent:.32em}
+  .panel:not(.locked):hover .rule{width:92px; background:#fff}
+  .panel:not(.locked):hover .meta{opacity:1; transform:none}
+}
+
+/* 터치 기기(hover 없음)와 태블릿 폭에서는 설명 글(.meta)을 항상 보입니다 — 올려 볼 수 없으니까 */
+@media (hover:none){
+  .panel .meta{opacity:1; transform:none}
+}
+
+/* 폰에서는 두 매장을 위아래로 */
+@media (max-width:767px){
+  .split{flex-direction:column}
+  .split .panel + .panel{box-shadow:0 -1px 0 rgba(255,255,255,.22)}
+  .panel .name{font-size:clamp(28px,9vw,42px)}
+}
+
+@media (min-width:768px) and (max-width:899px){
+  .panel .meta{opacity:1; transform:none}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .panel{transition:none !important}
+  .panel *{transition:none !important}
+}
+
+/* ---- 본문 폭·여백: 태블릿(768) → 노트북(1024, 본문 최대 1720px) ---- */
+@media (min-width:768px){
+  .content{padding:var(--s24) var(--s24) 80px}
+  .dash{display:grid; grid-template-columns:1fr 1fr; gap:var(--s12); align-items:start}
+  .dash .card{margin-top:0}
+  .sheet{max-width:600px}
+  .overlay{align-items:center}
+}
+
+@media (min-width:1024px){
+  .content{padding:var(--s24) var(--s24) 60px; max-width:1720px; margin:0 auto}
+  .dash{grid-template-columns:repeat(3,1fr)}
+}
+
+/* .cal / .res-list 는 옛 예약 화면 부품 — 6구역 '옛 예약 카드' 참고 */
+@media (min-width:900px){
+  .cal{margin-bottom:0; position:sticky; top:74px}
+  .res-list{grid-template-columns:1fr}
+}
+
+@media (min-width:1280px){
+  .res-list{grid-template-columns:repeat(2,1fr)}
+}
+
+/* ---- 예약 등록 마법사: 태블릿부터 단계 이름을 글자로, 인원 타일 6칸, 달력 칸을 키움 ---- */
+@media (min-width:768px){
+  .wz-dot .l{display:inline}
+  .wz-q h2{font-size:var(--fs-num)}
+  .pgrid{grid-template-columns:repeat(6,1fr)}
+  .ptile{padding:var(--s24) 0 var(--s24)}
+  .ptile .pn{font-size:var(--fs-big)}
+  .bday{min-height:68px}
+  button.bday{min-height:68px}
+  button.bday .d{font-size:var(--fs-head)}
+  .hgrid{grid-template-columns:repeat(auto-fit,minmax(92px,1fr))}
+  .wz-body{padding:var(--s16) var(--s24) var(--s24)}
+  .wz-foot{padding:var(--s16) var(--s24) calc(var(--s16) + env(safe-area-inset-bottom))}
+}
+
+@media (min-width:1024px){
+  .wz-cal{display:grid; grid-template-columns:1fr; gap:0}
+  .bday{min-height:76px}
+  button.bday{min-height:76px}
+}
+
+/* 1단계를 한 화면에 담기 — 달력과 시간을 좌우로 나눠 스크롤을 없앰. 달력 칸은 그만큼 조금 낮게(58px) */
+@media (min-width:900px){
+  .wz-step1{display:grid; grid-template-columns:minmax(360px,1.05fr) 1fr; gap:var(--s16); align-items:start}
+  .wz-time{margin-top:0}
+  .wz-body{max-width:1120px}
+  .bday{min-height:58px}
+  button.bday{min-height:58px}
+  button.bday .d{font-size:var(--fs-title)}
+  .hgrid{grid-template-columns:repeat(3,1fr)}
+  .hcell{padding:var(--s12) var(--s4) var(--s8)}
+  .hcell .hh{font-size:var(--fs-title)}
+}
+
+@media (min-width:1280px){
+  .hgrid{grid-template-columns:repeat(4,1fr)}
+  .bday{min-height:64px}
+  button.bday{min-height:64px}
+}
+
+/* 세로 공간이 좁은 태블릿 가로 모드 — 질문·달력·시간 칸을 낮춰 한 화면에 들어가게 */
+@media (max-height:820px) and (min-width:900px){
+  .wz-q h2{font-size:var(--fs-head)}
+  .bday{min-height:48px}
+  button.bday{min-height:48px}
+  button.bday .d{font-size:var(--fs-body)}
+  .hcell{padding:var(--s8) var(--s4) var(--s8)}
+  .mrail{height:60px}
+}
+
+/* 디스플레이 나가기 버튼 — 마우스가 있으면 우측 상단에 올렸을 때만 보임 */
+@media (hover:hover) and (pointer:fine){
+  .tv-hot:hover ~ .tv-exit{opacity:1; pointer-events:auto}
+  .tv-exit:hover{opacity:1; pointer-events:auto}
+}
+
+/* ---- 타임라인: 좁은 폰에서 블록 글자를 줄임 ---- */
+@media (max-width:600px){
+  .tl-rate{font-size:var(--fs-label)}
+  .blk{font-size:var(--fs-label); padding:0 var(--s4)}
+}
+
+@media (min-width:768px){
+  .calbox{max-width:560px}
+  .cday{min-height:70px}
+  .srcgrid{grid-template-columns:repeat(3,1fr)}
+  .srccell{padding:var(--s32) var(--s16)}
+}
+
+/* 예약 목록 한 줄이 안 들어가면 두 줄로 접음 */
+@media (max-width:780px){
+  .rrow{flex-wrap:wrap; gap:var(--s8) var(--s8); white-space:normal}
+  .rr-n{width:auto}
+  .rr-p{width:auto}
+  .rr-ph{width:auto}
+  .rr-pills{flex-basis:100%; flex:none}
+}
+
+@media (max-width:700px){
+  .logrow{flex-wrap:wrap; white-space:normal}
+  .lg-ip{width:auto}
+  .lg-a{width:auto}
+  .lg-d{flex-basis:100%}
+}
+
+@media (min-width:768px){
+  .srcgrid.menu4{grid-template-columns:repeat(4,1fr)}
+}
+
+@media (min-width:700px){
+  .sch-days{grid-template-columns:1fr 1fr}
+}
+
+@media (max-width:820px){
+  .res-head{gap:var(--s8)}
+  .datenav{flex:1 1 100%}
+}
+
+@media (max-height:760px){
+  .wz-mid{justify-content:flex-start}
+}
+
+/* ---- 타임라인 가로 스크롤은 900px 미만에서만. 그 이상은 카드 안에 다 들어가므로 스크롤·고정 열을 풉니다 ---- */
+@media (min-width:900px){
+  .tl-scroll{margin:0; padding:0; overflow:visible}
+  .tl{min-width:0}
+}
+
+@media (max-width:900px){
+  button.blk{font-size:var(--fs-label)}
+  button.blk b{font-size:var(--fs-label)}
+}
+
+@media (max-width:1023px){
+  .topbar-in{padding:var(--s12) var(--s24)}
+}
+
+/* ---- 폰(767 이하) 정리: 글자·여백을 한 단계씩 줄임 ---- */
+@media (max-width:767px){
+  .topbar-in{padding:var(--s12) var(--s16)}
+  body{font-size:var(--fs-body)}
+  .content{padding:var(--s16) var(--s12) 80px}
+  .res-head{gap:var(--s8); margin-bottom:var(--s16)}
+  .datenav{order:1; flex:1 1 100%; gap:var(--s4)}
+  .datenav .nav{width:36px; height:40px; font-size:var(--fs-body)}
+  .datenav .rh-mid{min-width:0; flex:1; padding:var(--s4) var(--s4)}
+  .rh-d{font-size:var(--fs-title)}
+  .metric .v{font-size:var(--fs-num)}
+  .metric .k{font-size:var(--fs-sub)}
+  .metric .s{font-size:var(--fs-label)}
+  .card-b{padding:var(--s12) var(--s12) var(--s16)}
+  .alert .a-t{font-size:var(--fs-sub)}
+  .alert .a-s{font-size:var(--fs-sub)}
+  .tl-top{gap:var(--s8); margin-bottom:var(--s12)}
+  .tl-hours{font-size:var(--fs-label)}
+  .tl-legend{font-size:var(--fs-label)}
+  .tl-legends{gap:var(--s12); padding-top:var(--s8)}
+  .sect-title{margin:var(--s16) var(--s4) var(--s8)}
+  .topbar .title{font-size:var(--fs-title)}
+  .topbar .state{padding:var(--s4) var(--s8); font-size:var(--fs-sub)}
+  .topbar .tvbtn.icon{padding:var(--s8) var(--s8)}
+  .sheet{padding:var(--s16) var(--s16) calc(var(--s24) + env(safe-area-inset-bottom))}
+  .markgrid{grid-template-columns:1fr 1fr}
+  .seatpick{grid-template-columns:repeat(auto-fill,minmax(88px,1fr))}
+}
+
+@media (max-width:400px){
+  .topbar .title{font-size:var(--fs-body)}
+  .metric .v{font-size:var(--fs-head)}
+}
+
+@media (min-width:768px){
+  .srcgrid.menu2{grid-template-columns:1fr 1fr; max-width:640px; margin:0 auto}
+  .sheet-wide{max-width:1040px}
+}
+
+@media (max-width:1100px){
+  .storename{font-size:var(--fs-body); padding:var(--s8)}
+  .topbar .tvbtn{padding:var(--s8) var(--s12); font-size:var(--fs-sub)}
+}
+
+@media (max-width:900px){
+  .bdate{text-align:center}
+}
+
+@media (max-width:520px){
+  .topbar .tvbtn:not(.icon){padding:var(--s8) var(--s8); font-size:var(--fs-sub)}
+  .storename{font-size:var(--fs-body)}
+  .bnav.mo{display:none}
+}
+
+/* 지표 5개 배치 — 태블릿부터 한 줄, 폰에서는 2×2 + 다섯째 칸은 한 줄 통째로 */
+@media (min-width:768px){
+  .metrics{grid-template-columns:repeat(5,1fr)}
+}
+
+@media (max-width:767px){
+  .metrics{grid-template-columns:1fr 1fr}
+  .metric:nth-child(5){grid-column:1 / -1}
+}
+
+@media (max-width:899px){
+  .tl-row.axis .tl-rate{background:transparent}
+}
+
+@media (min-width:768px){
+  .sheet{border-radius:var(--r-lg)}
+}
+
+/* ---- 모바일 상단바 — 3줄로 나눕니다 (900 이하) ----
+   1줄: 매장명 (가운데)  2줄: 최초화면 · 차트 · 설정 · 디스플레이 · 예약검색 · 예약등록  3줄: 날짜 이동
+   order 로 줄을 바꾸고 .b-* 로 2줄 버튼 순서를 정합니다 */
+@media (max-width:900px){
+  .topbar-in{flex-wrap:wrap; row-gap:var(--s8); padding:var(--s12) var(--s12) var(--s12)}
+  .storename{order:1; flex:1 1 100%; justify-content:center; text-align:center; font-size:var(--fs-title); height:auto; padding:var(--s4) 0}
+  .home{order:2; flex:none}
+  .bar-right{display:flex; order:3; flex:1 1 auto; justify-content:flex-end; gap:var(--s4); margin-left:0}
+  .bar-mid{order:4; flex:1 1 100%; justify-content:space-between}
+  .b-chart{order:1}
+  .b-set{order:2}
+  .b-tv{order:3}
+  .b-search{order:4; flex:0 1 auto}
+  .b-add{order:5; flex:0 1 auto}
+  .topbar .tvbtn:not(.icon){padding:var(--s8) var(--s12); font-size:var(--fs-sub)}
+  .topbar .tvbtn.icon{padding:var(--s8) var(--s8)}
+  .bdate{flex:1; justify-content:center}
+}
+
+@media (max-width:420px){
+  .bar-right{gap:var(--s4)}
+  .topbar .tvbtn:not(.icon){padding:var(--s8) var(--s8); font-size:var(--fs-sub)}
+  .topbar .tvbtn.icon svg{width:17px; height:17px}
+  .storename{font-size:var(--fs-title)}
+}
+
+/* 날짜 버튼 — 다른 버튼과 크기를 맞춤 */
+@media (max-width:900px){
+  .bdate{height:34px; font-size:var(--fs-sub); padding:0 var(--s12)}
+  .bar-mid{gap:var(--s4)}
+}
+
+@media (max-width:420px){
+  .bdate{font-size:var(--fs-sub); padding:0 var(--s8)}
+}
+
+/* ---- 타임라인 좌석 이름 열: 900 미만은 좁고 고정(sticky), 900 이상은 오른쪽 정렬로 그래프에 붙임 ---- */
+@media (max-width:900px){
+  .tl-name{width:80px; font-size:var(--fs-label)}
+  .tl-name small{font-size:var(--fs-label)}
+}
+
+@media (min-width:900px){
+  .tl-name{position:static; padding-right:var(--s8); justify-content:flex-end; text-align:right; width:104px}
+}
+
+/* 모바일: 이름 열을 카드 왼쪽 끝에 붙입니다 (.tl-scroll 의 왼쪽 padding 을 없앰 — 5구역 .tl-name 주석 2) */
+@media (max-width:899px){
+  .tl-scroll{padding-left:0}
+}
+
+@media (min-width:900px){
+  .tl-name{align-self:auto; background:transparent; box-shadow:none}
+}
+
+/* ---- 디스플레이 모드 ----
+   세로로 든 휴대폰: 1280×720 판을 통째로 축소해 가운데에 가로 미리보기로 띄웁니다 (16:9) */
+@media (orientation:portrait) and (max-width:820px){
+  .tv{display:grid; place-items:center; background:#07090C}
+  .tv-stage{position:relative; inset:auto; width:100vw; height:56.25vw; max-height:80vh; box-shadow:0 12px 44px rgba(0,0,0,.55); border:1px solid rgba(214,190,138,.18)}
+  .tv-inner{inset:auto; top:0; left:0; width:1280px; height:720px; transform:scale(calc(100vw / 1280)); transform-origin:top left}
+  .tv::after{inset:0}
+  .tv-exit{top:auto; bottom:18px; right:50%; transform:translateX(50%)}
+}
+
+/* 화면이 작으면 아예 표시하지 않고 '화면이 작습니다' 안내만 — 축소해서 보여줘 봐야 읽히지 않고 잘못된 인상만 줍니다.
+   (세로 폰은 위 블록이 먼저 걸리지만 이 블록이 뒤라서 이깁니다 → 안내 화면) */
+@media (max-width:900px), (max-height:480px){
+  .tv{display:grid; place-items:center; background:#0C0E12; padding:24px}
+  .tv-stage{display:none}
+  .tv-hot{display:none}
+  .tv-tap{display:none}
+  .tv-exit{display:none}
+  .tv::after{display:none}
+  .tv-small{display:grid; place-items:center; position:relative; z-index:2; width:100%; max-width:340px}
+  .ts-box{text-align:center; padding:34px 26px; border:1px solid rgba(244,242,238,.16); border-radius:4px; background:rgba(244,242,238,.04)}
+  .ts-box svg{width:38px; height:38px; stroke:#6F6A62; fill:none; stroke-width:1.4; margin-bottom:16px}
+  .ts-t{color:#E4DFD5; font-size:15.5px; font-weight:700; margin-bottom:9px; letter-spacing:-.01em}
+  .ts-s{color:#8A857C; font-size:12.5px; line-height:1.65; margin-bottom:20px}
+  .ts-box .btn{width:100%; background:#F4F2EE; border-color:#F4F2EE; color:#1B1A18}
+}
+
+/* 화면이 4:3보다 세로로 길면(세로 모니터 등) 높이 기준으로는 너무 커집니다.
+   그때는 가로 기준으로 바꿉니다. 4:3에서 1vh = 0.75vw 라 경계에서 튀지 않습니다. */
+@media (max-aspect-ratio:4/3){
+  .tv{--tvu:.75vw}
+}
+
+/* 세로 폰 미리보기는 1280×720 판을 통째로 축소하는 구조라, 그 안에서 vh 를 쓰면 실제 화면 높이를 따라가 크기가 어긋납니다. 720의 1% 로 고정 */
+@media (orientation:portrait) and (max-width:820px){
+  .tv{--tvu:7.2px}
+}
+
+/* ---- Phase 5: 폰에서는 마법사 요약 칩(전화 · 9/5 오후 6시 · 4명 · 관우 룸)을 둘째 줄로 — 한 줄에 두면 단계 점이 찌그러집니다 ---- */
+@media (max-width:767px){
+  .wz-sum{flex-basis:100%; margin-left:0; flex-wrap:wrap}
+}
+
+/* ---- Phase 4-1 대시보드: 태블릿 이상에서는 카드 안쪽을 24px 로 넓힙니다 ('여백이 정보'). 폰은 16px 그대로 ---- */
+@media (min-width:768px){
+  .card-b{padding:var(--s24)}
+  .metric{padding:var(--s24) var(--s24)}
+  .fold-h{padding:var(--s16) var(--s24)}
+  .fold-b{padding:0 var(--s24) var(--s24)}
+  .dash{gap:var(--s16)}
+}
+
+/* 움직임 줄이기(접근성 설정)면 시트·확인창 애니메이션을 끕니다 */
+@media (prefers-reduced-motion:reduce){
+  .sheet, .calbox, .modal, .overlay, .fold-b{animation:none}
+}

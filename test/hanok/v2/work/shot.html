@@ -1,0 +1,47 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>shot</title>
+<style>html,body{margin:0;height:100%;overflow:hidden}iframe{border:0;width:100vw;height:100vh;display:block}</style>
+<iframe id="f"></iframe>
+<script>
+/* 스크린샷용 감싸개.
+   ?src=/v2/index.html&state=dash  → 앱을 iframe 에 띄우고 원하는 화면 상태로 바꿉니다.
+   ?src=...&mode=combos&name=X     → 모든 상태를 돌며 요소의 (태그, 클래스) 조합을 모아 /save?name=X 로 보냅니다.
+   상태를 바꾸는 코드는 states.js 에 있고, iframe 문서 안에 <script> 로 넣어 앱과 같은 스코프에서 돌립니다.
+   헤드리스 크롬은 --virtual-time-budget 으로 타이머를 빨리 감으므로 숨긴 탭 문제가 없습니다. */
+var q = {}; location.search.slice(1).split("&").forEach(function(kv){ var p = kv.split("="); q[p[0]] = decodeURIComponent(p[1] || ""); });
+var f = document.getElementById("f");
+/* 헤드리스 크롬은 창 폭을 500px 아래로 못 줄이므로, 폰 폭(430)은 iframe 크기로 만듭니다 (?w=430&h=932).
+   그러면 앱의 뷰포트 = iframe 이 되고, shots.py 가 스크린샷을 그 크기로 잘라 냅니다 */
+if (q.w) { f.style.width = q.w + "px"; f.style.height = (q.h || 932) + "px"; }
+f.src = q.src;
+f.addEventListener("load", function(){
+  var w = f.contentWindow, d = f.contentDocument;
+  var s = d.createElement("script"); s.src = "/v2/work/states.js?v=" + Date.now();
+  s.onload = function(){
+    var tries = 0;
+    (function wait(){
+      if (!w.__ready()) { if (tries++ < 400) return setTimeout(wait, 25); document.title = "no-data"; return; }
+      if (q.mode === "combos") {
+        var all = {};
+        w.__states.forEach(function(n){
+          try { w.__apply(n); } catch (e) { all["ERR:" + n + ":" + String(e)] = 1; return; }
+          var c = w.__combos(); Object.keys(c).forEach(function(k){ all[k] = 1; });
+        });
+        fetch("/save?name=" + encodeURIComponent(q.name || "combos"), {method:"POST", body:JSON.stringify(Object.keys(all))})
+          .then(function(){ document.title = "combos-done"; });
+        return;
+      }
+      w.__apply(q.state || "dash");
+      document.title = "ready:" + (q.state || "dash");
+      if (q.measure) {   /* 헤드리스에서 --dump-dom 으로 폭을 읽을 때 (viewport 대비 실제 레이아웃 폭 확인용) */
+        var d = w.document, sh = d.querySelector(".shell, .lock, .wz, .split");
+        document.title = "measure inner=" + w.innerWidth + " outer=" + window.innerWidth + " scrollW=" + d.documentElement.scrollWidth +
+          " shellRight=" + (sh ? sh.getBoundingClientRect().right : "-") + " dpr=" + w.devicePixelRatio;
+      }
+    })();
+  };
+  d.head.appendChild(s);
+});
+</script>

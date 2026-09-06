@@ -1,0 +1,82 @@
+/* ---------- 매장 선택 (사진 분할) ----------
+   화면을 좌우로 갈라 두 매장 사진을 놓습니다. 배율(zoom)은 걸지 않습니다 — 사진이 화면을 꽉 채우는 구성이라서.
+   마우스를 올리면 그쪽이 조금 넓어지고 사진이 커집니다(hover 미디어, 11구역) */
+.split{display:flex; width:100%; height:100vh; height:100dvh; overflow:hidden; background:#15130F}
+.split .panel + .panel{box-shadow:-1px 0 0 rgba(255,255,255,.22)}
+.panel{
+  position:relative; flex:1 1 50%; border:none; padding:0; margin:0;
+  background:none; overflow:hidden; color:#fff;
+  transition:flex-grow .6s cubic-bezier(.22,1,.36,1);
+}
+.panel .bg{
+  position:absolute; inset:0; background-size:cover; background-position:center;
+  transform:scale(1.02); filter:saturate(.9) brightness(.6);
+  transition:transform 1.1s cubic-bezier(.22,1,.36,1), filter .6s ease;
+}
+.panel[data-store="anjip"] .bg{background-image:var(--img-anjip)}
+.panel[data-store="hanok"] .bg{background-image:var(--img-hanok)}
+/* 사진 위 어두운 막 — 글자가 읽히게 */
+.panel .veil{
+  position:absolute; inset:0;
+  background:linear-gradient(180deg,rgba(15,19,16,.28) 0%,rgba(15,19,16,.12) 42%,rgba(15,19,16,.7) 100%);
+  transition:opacity .6s ease;
+}
+.panel .label{position:absolute; inset:0; z-index:2; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:var(--s16); padding:var(--s24); text-align:center}
+/* 매장 이름은 명조 — 관리 화면에서 명조를 쓰는 유일한 곳(간판 역할) */
+.panel .name{
+  font-family:var(--serif); font-weight:700; font-size:clamp(30px,5.2vw,60px);
+  letter-spacing:.22em; text-indent:.22em; text-shadow:0 2px 20px rgba(0,0,0,.55);
+  transition:letter-spacing .6s cubic-bezier(.22,1,.36,1);
+}
+.panel .rule{width:24px; height:1px; background:rgba(255,255,255,.75);
+  transition:width .6s cubic-bezier(.22,1,.36,1), background .4s}
+.panel .meta{font-size:var(--fs-sub); letter-spacing:.06em; color:rgba(255,255,255,.8);
+  opacity:0; transform:translateY(6px); transition:opacity .5s, transform .5s}
+.panel .badge{
+  display:inline-block; margin-top:var(--s4); padding:var(--s4) var(--s12); border-radius:999px;
+  border:1px solid rgba(255,255,255,.4); color:rgba(255,255,255,.82);
+  font-size:var(--fs-sub); letter-spacing:.1em;
+}
+/* 잠긴 매장(.locked) — 흑백 처리 + 잠금 표시. 지금은 안 쓰이고 아래 .soon 을 씁니다 */
+.panel.locked{cursor:not-allowed}
+.panel.locked .bg{filter:grayscale(1) brightness(.34)}
+.panel.locked .name{color:rgba(255,255,255,.62)}
+.panel.locked .rule{background:rgba(255,255,255,.35)}
+/* 준비 중인 매장(.soon, 안집) — 눌리는 것처럼 보이지만 아무 일도 하지 않습니다.
+   ※ .panel.soon:hover .bg 는 hover 미디어(1.08)와 우선순위가 같아서 11구역 끝에 한 번 더 있습니다 (그래야 1.03 이 이김) */
+.panel.soon{filter:none; opacity:1; cursor:default}
+.panel.soon .veil{background:rgba(15,14,12,.52)}
+.panel.soon:hover .veil{background:rgba(15,14,12,.44)}
+.panel.soon:hover .bg{transform:scale(1.03)}
+.panel.soon .badge{background:rgba(244,242,238,.16); border-color:rgba(244,242,238,.34); color:#F4F2EE}
+
+/* ---------- PIN 잠금 ----------
+   .lock 자체(배율 포함)는 4구역에 있습니다. 새로 열 때마다 입력합니다 (자동 로그인 없음) */
+.lockbox{width:100%; max-width:340px; text-align:center}
+.lk-title{font-weight:700; font-family:var(--serif); font-size:var(--fs-head); letter-spacing:.06em}
+.lk-sub{font-size:var(--fs-body); color:var(--text-2); margin-top:var(--s8)}
+/* PIN 자리 — 작은 빈 원. 채울 때마다 매장 이름이 한 글자씩(f1~f4 는 글자마다 다른 글꼴) 색이 들어옵니다.
+   처음엔 네모 칸이 튀어오르는 방식이었는데 산만해서 원 + 글자색만 바뀌게 줄였습니다 */
+.pdots{display:flex; justify-content:center; margin:var(--s24) 0 var(--s8); gap:var(--s16)}
+.pdot{width:38px; height:38px; border:1.5px solid var(--border-strong); background:transparent; display:grid; place-items:center; font-size:var(--fs-head); font-weight:700; color:transparent; transition:all .2s ease; box-shadow:none; border-radius:var(--r-sm)}
+.pdot.on{background:transparent; border-color:transparent; transform:none; box-shadow:none; color:var(--text)}
+.pdot.f1{font-family:'Nanum Myeongjo',serif}
+.pdot.f2{font-family:'Noto Serif KR',serif; font-weight:700}
+.pdot.f3{font-family:'Pretendard','Noto Sans KR',sans-serif; font-weight:700}
+.pdot.f4{font-family:'Nanum Myeongjo',serif; font-weight:700; font-style:italic}
+.lk-err{height:20px; font-size:var(--fs-sub); color:var(--rust); font-weight:600; margin-bottom:var(--s16)}
+/* 숫자 키패드 — 64px 높이, 카운터에서 손가락으로 */
+.pkeys{display:grid; grid-template-columns:repeat(3,1fr); gap:var(--s12)}
+.pkey{height:64px; border:1px solid var(--border-strong); background:var(--surface); font-size:var(--fs-num); font-weight:700; color:var(--text); border-radius:var(--r-sm)}
+.pkey:hover{background:var(--surface-2)}
+.pkey.sub{color:var(--text-2); font-size:var(--fs-head); font-weight:400}
+.lk-note{font-size:var(--fs-sub); color:var(--text-3); margin-top:var(--s24); line-height:1.6}
+/* PIN_ANY 가 켜져 있을 때만 뜹니다. 잠금이 풀려 있다는 사실이 눈에 보여야
+   "잠긴 줄 알았는데 아니었다" 는 오해가 안 생깁니다. 지우지 마세요 */
+.lk-open{font-size:var(--fs-sub); color:#7A5C22; margin-top:var(--s12); line-height:1.6;
+  background:#FBF1DC; border:1px dashed #D9BF87; border-radius:var(--r-sm); padding:var(--s8) var(--s12)}
+.lk-open b{font-weight:700; color:#6A4E18}
+.lk-back{margin-top:var(--s16); background:none; border:none; color:var(--text-3);
+  font-size:var(--fs-sub); font-weight:600; text-decoration:underline}
+.lk-back:hover{color:var(--text-2)}

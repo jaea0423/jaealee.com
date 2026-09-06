@@ -1,0 +1,79 @@
+/* ---------- 화면 배율 ----------
+   앱 화면(.shell)과 PIN 화면(.lock)에만 걸고, 손님용 디스플레이 모드(.tv)에는 걸지 않습니다.
+   zoom 은 브라우저 확대와 같아서 레이아웃이 그대로 커집니다.
+   (transform:scale 은 원래 자리를 그대로 차지해 화면이 잘립니다)
+   확인창(.modal-ov)은 .shell 밖에 그려지므로 6구역에서 따로 겁니다.
+   매장 선택 화면은 배경 사진이 화면을 꽉 채우는 구성이라 배율을 걸지 않습니다. */
+.shell{min-height:100vh; zoom:var(--ui-zoom, 1.1)}
+.lock{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:var(--s24); background:var(--bg); zoom:var(--ui-zoom, 1.1)}
+.zoomseg button{min-width:64px; justify-content:center}
+.layout{display:block}
+.content{padding:var(--s16) var(--s16) 90px; max-width:none; margin:0}
+
+/* ---------- 상단바 ----------
+   .topbar 는 화면 폭 전체, .topbar-in 이 본문(.content 의 max-width 1720px)과 폭을 맞춥니다.
+   색은 테마 변수(--topbar-*)로 받습니다. 한옥 테마에서는 먹색 바탕 + 아이보리 글자입니다. */
+.topbar{position:sticky; top:0; z-index:30; background:var(--topbar-bg); border-bottom:1px solid var(--topbar-line); display:flex; align-items:center; gap:var(--s12); color:var(--topbar-fg); padding:0}
+.topbar-in{display:flex; width:100%; max-width:1720px; margin:0 auto; padding:var(--s12) var(--s24); gap:var(--s8); align-items:center}
+/* 맨 왼쪽 매장 선택 버튼 (설정 화면에서는 ← 로 바뀝니다) */
+.topbar .home{border:1px solid var(--topbar-btn-line); background:transparent; color:var(--topbar-fg); border-radius:var(--r-sm); padding:var(--s8) var(--s12); font-size:var(--fs-body); line-height:1; flex:none; opacity:.85; display:inline-flex; align-items:center; height:36px}
+.topbar .home svg{width:19px; height:19px; stroke:currentColor; fill:none; stroke-width:1.7}
+.topbar .home:hover{opacity:1}
+/* 매장 이름 — 누르면 대시보드로. 세로 가운데를 다른 버튼(36px)과 맞춥니다 */
+.storename{background:none; border:none; color:var(--topbar-fg); font-family:var(--serif); font-size:var(--fs-title); padding:var(--s8) var(--s8); border-radius:var(--r-sm); white-space:nowrap; flex:none; opacity:.95; display:inline-flex; align-items:center; line-height:1.15; height:36px; letter-spacing:-.01em; font-weight:700}
+.storename:hover{background:var(--topbar-hover); opacity:1}
+/* 가운데 날짜 이동: « ‹ [날짜] › » */
+.bar-mid{flex:1; display:flex; align-items:center; justify-content:center; min-width:0; gap:var(--s4)}
+.bnav{background:none; border:1px solid transparent; color:var(--topbar-fg); opacity:.7; font-weight:700; flex:none; display:inline-flex; align-items:center; justify-content:center; line-height:1; border-radius:var(--r-sm); width:28px; height:34px; font-size:var(--fs-body)}
+.bnav.mo{opacity:.55; width:26px; font-size:var(--fs-sub)}
+.bnav:hover{background:var(--topbar-hover); opacity:1}
+/* 날짜 버튼 — 다른 버튼과 높이(34px)를 맞춥니다 */
+.bdate{background:none; border:1px solid var(--topbar-btn-line); color:var(--topbar-fg); white-space:nowrap; min-width:0; overflow:hidden; text-overflow:ellipsis; display:inline-flex; align-items:center; line-height:1; border-radius:var(--r-sm); height:34px; padding:0 var(--s12); font-size:var(--fs-sub); font-weight:700; letter-spacing:-.01em}
+.bdate:hover{background:var(--topbar-hover)}
+.bdate .tag{vertical-align:1px; margin-left:var(--s4)}
+/* 상단바 안에서는 날짜 버튼의 네모를 없앱니다.
+   ※ .topbar .bdate 는 .bdate:hover 와 우선순위가 같아 반드시 그 뒤에 와야 합니다 — 원본이 그랬고,
+     그래서 마우스를 올려도 배경이 안 생깁니다. 앞으로 옮기면 hover 배경이 살아나 화면이 바뀝니다 */
+.topbar .bdate{border-color:transparent; background:transparent}
+.topbar .bdate:hover{border-color:rgba(243,234,218,.28)}
+/* 오른쪽 버튼 묶음: 차트 · 설정 · 디스플레이 · 예약 검색 · 예약 등록 */
+.bar-right{display:flex; align-items:center; gap:var(--s8); flex:none}
+.topbar .tvbtn{flex:none; border:1px solid var(--topbar-btn-line); background:transparent; color:var(--topbar-fg); padding:var(--s8) var(--s12); font-size:var(--fs-sub); font-weight:600; white-space:nowrap; opacity:.9; display:inline-flex; align-items:center; height:36px; line-height:1; border-radius:var(--r-sm)}
+.topbar .tvbtn:hover{background:var(--topbar-hover); opacity:1}
+.topbar .tvbtn.icon{padding:var(--s8) var(--s12); display:inline-flex; align-items:center}
+.topbar .tvbtn.icon svg{width:19px; height:19px; stroke:currentColor; fill:none; stroke-width:1.7}
+.topbar .tvbtn.icon.on{background:var(--pine); border-color:var(--pine); color:#fff}
+/* '예약 등록'만 밝은 바탕으로 튀게 — 이 화면의 주요 동작입니다 */
+.topbar .tvbtn.accent{border-color:transparent; opacity:1; background:#F4F2EE; color:#1B1A18; font-weight:700}
+.topbar .tvbtn.accent:hover{background:#fff}
+/* .tvbtn 단독 규칙은 '각진 모서리' 개편 때 붙은 것인데 .topbar .tvbtn(9px)이 더 세서 효력이 없습니다.
+   화면을 안 바꾸려고 남겨 둡니다 — Phase 3 에서 반경 계단을 정할 때 같이 정리 */
+.tvbtn{border-radius:var(--r-sm)}
+/* 예전 상단바 부품 — 지금 HTML 에는 없거나 거의 안 쓰입니다. Phase 3 에서 확인 후 정리 */
+.topbar .title{color:var(--topbar-fg); font-family:var(--serif); font-size:var(--fs-head); font-weight:700; letter-spacing:.08em; white-space:nowrap}
+.topbar .right{margin-left:auto; display:flex; align-items:center; gap:var(--s8)}
+.topbar .center{flex:1; min-width:0; display:flex; align-items:center; justify-content:center; gap:var(--s12);
+  background:none; border:none; padding:var(--s4) var(--s8); border-radius:var(--r-sm)}
+.topbar .center:hover{background:var(--topbar-hover)}
+
+/* ---------- 본문 안의 날짜 이동 줄 (.res-head / .datenav) ----------
+   상단바에 날짜 이동이 들어가기 전에 쓰던 줄입니다. 예약 목록 카드 머리 등에 아직 쓰입니다 */
+.res-head{display:flex; align-items:center; gap:var(--s12); margin-bottom:var(--s16); flex-wrap:wrap}
+.res-head .nav{width:42px; height:42px; flex:none; border:1px solid var(--border-strong);
+  background:var(--surface); border-radius:var(--r-sm); color:var(--text-2); font-size:var(--fs-body)}
+.res-head .nav.cal{font-size:var(--fs-title); display:inline-flex; align-items:center; justify-content:center}
+.res-head .nav.cal svg{width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:1.7}
+.res-head .add{flex:none}
+.datenav{display:flex; align-items:center; gap:var(--s8); flex:0 1 auto; justify-content:center; min-width:auto}
+.datenav .nav{width:40px; height:44px; flex:none; border:1px solid var(--border-strong);
+  background:var(--surface); border-radius:var(--r-sm); color:var(--text-2); font-size:var(--fs-title); font-weight:700}
+.datenav .nav.mo{font-size:var(--fs-body); color:var(--text-3)}
+.datenav .nav:hover{background:var(--surface-2); color:var(--text)}
+.datenav .nav.cal{margin-left:var(--s4)}
+.datenav .rh-mid{flex:1; background:none; border:none; padding:var(--s4) var(--s12); border-radius:var(--r-md); text-align:center; font:inherit; color:inherit; cursor:pointer; min-width:210px}
+.datenav .rh-mid:hover{background:var(--surface-2)}
+.rh-mid{flex:1; min-width:180px; text-align:center}
+.rh-d{font-size:var(--fs-title); font-weight:700}
+.rh-s{font-size:var(--fs-sub); color:var(--text-2); margin-top:var(--s4)}
+/* .nav 단독 규칙 — 위의 .res-head .nav / .datenav .nav 등이 더 세서 효력이 없습니다. .tvbtn 과 같은 이유로 남겨 둠 */
+.nav{border-radius:var(--r-sm)}

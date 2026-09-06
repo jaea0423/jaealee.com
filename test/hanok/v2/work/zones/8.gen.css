@@ -1,0 +1,75 @@
+/* ============================================================
+   1. 매장 선택 (사진 분할)
+   ============================================================ */
+.split{display:flex; width:100%; height:100vh; height:100dvh; overflow:hidden; background:#15130F}
+.split .panel + .panel{box-shadow:-1px 0 0 rgba(255,255,255,.22)}
+.panel{
+  position:relative; flex:1 1 50%; border:none; padding:0; margin:0;
+  background:none; overflow:hidden; color:#fff;
+  transition:flex-grow .6s cubic-bezier(.22,1,.36,1);
+}
+.panel .bg{
+  position:absolute; inset:0; background-size:cover; background-position:center;
+  transform:scale(1.02); filter:saturate(.9) brightness(.6);
+  transition:transform 1.1s cubic-bezier(.22,1,.36,1), filter .6s ease;
+}
+.panel[data-store="anjip"] .bg{background-image:var(--img-anjip)}
+.panel[data-store="hanok"] .bg{background-image:var(--img-hanok)}
+.panel .veil{
+  position:absolute; inset:0;
+  background:linear-gradient(180deg,rgba(15,19,16,.28) 0%,rgba(15,19,16,.12) 42%,rgba(15,19,16,.7) 100%);
+  transition:opacity .6s ease;
+}
+.panel .label{position:absolute; inset:0; z-index:2; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:14px; padding:24px; text-align:center}
+.panel .name{
+  font-family:var(--serif); font-weight:700; font-size:clamp(30px,5.2vw,60px);
+  letter-spacing:.22em; text-indent:.22em; text-shadow:0 2px 20px rgba(0,0,0,.55);
+  transition:letter-spacing .6s cubic-bezier(.22,1,.36,1);
+}
+.panel .rule{width:24px; height:1px; background:rgba(255,255,255,.75);
+  transition:width .6s cubic-bezier(.22,1,.36,1), background .4s}
+.panel .meta{font-size:13px; letter-spacing:.06em; color:rgba(255,255,255,.8);
+  opacity:0; transform:translateY(6px); transition:opacity .5s, transform .5s}
+/* 준비 중인 매장 — 흑백 처리 + 잠금 표시 */
+.panel.locked{cursor:not-allowed}
+.panel.locked .bg{filter:grayscale(1) brightness(.34)}
+.panel.locked .name{color:rgba(255,255,255,.62)}
+.panel.locked .rule{background:rgba(255,255,255,.35)}
+.panel .badge{
+  display:inline-block; margin-top:2px; padding:5px 13px; border-radius:999px;
+  border:1px solid rgba(255,255,255,.4); color:rgba(255,255,255,.82);
+  font-size:12px; letter-spacing:.1em;
+}
+/* 준비 중인 매장 — 눌리는 것처럼 보이지만 아무 일도 하지 않습니다 */
+.panel.soon{filter:none; opacity:1; cursor:default}
+.panel.soon .veil{background:rgba(15,14,12,.52)}
+.panel.soon:hover .veil{background:rgba(15,14,12,.44)}
+.panel.soon:hover .bg{transform:scale(1.03)}
+.panel.soon .badge{background:rgba(244,242,238,.16); border-color:rgba(244,242,238,.34); color:#F4F2EE}
+.lockbox{width:100%; max-width:340px; text-align:center}
+.lk-title{font-weight:700; font-family:var(--serif); font-size:23px; letter-spacing:.06em}
+.lk-sub{font-size:14px; color:var(--text-2); margin-top:8px}
+/* PIN 자리 — 채울 때마다 매장 이름이 한 글자씩 */
+/* PIN 자리 — 작은 빈 원, 채우면 글자만 색이 들어옴 */
+.pdots{display:flex; justify-content:center; margin:26px 0 6px; gap:16px}
+.pdot{width:38px; height:38px; border:1.5px solid var(--border-strong); background:transparent; display:grid; place-items:center; font-size:21px; font-weight:700; color:transparent; transition:all .2s ease; box-shadow:none; border-radius:3px}
+.pdot.on{background:transparent; border-color:transparent; transform:none; box-shadow:none; color:var(--text)}
+.pdot.f1{font-family:'Nanum Myeongjo',serif}
+.pdot.f2{font-family:'Noto Serif KR',serif; font-weight:800}
+.pdot.f3{font-family:'Pretendard','Noto Sans KR',sans-serif; font-weight:800}
+.pdot.f4{font-family:'Nanum Myeongjo',serif; font-weight:800; font-style:italic}
+.lk-err{height:20px; font-size:13px; color:var(--rust); font-weight:600; margin-bottom:14px}
+.pkeys{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
+.pkey{height:64px; border:1px solid var(--border-strong); background:var(--surface); font-size:24px; font-weight:700; color:var(--text); border-radius:3px}
+.pkey:hover{background:var(--surface-2)}
+.pkey.sub{color:var(--text-2); font-size:20px; font-weight:400}
+.lk-note{font-size:12px; color:var(--text-3); margin-top:20px; line-height:1.6}
+/* PIN_ANY 가 켜져 있을 때만 뜹니다. 잠금이 풀려 있다는 사실이 눈에 보여야
+   "잠긴 줄 알았는데 아니었다" 는 오해가 안 생깁니다. */
+.lk-open{font-size:12.5px; color:#7A5C22; margin-top:10px; line-height:1.6;
+  background:#FBF1DC; border:1px dashed #D9BF87; border-radius:4px; padding:9px 11px}
+.lk-open b{font-weight:800; color:#6A4E18}
+.lk-back{margin-top:14px; background:none; border:none; color:var(--text-3);
+  font-size:13px; font-weight:600; text-decoration:underline}
+.lk-back:hover{color:var(--text-2)}

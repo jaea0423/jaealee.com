@@ -1,0 +1,193 @@
+/* 큰 숫자 지표 */
+.metrics{display:grid; grid-template-columns:repeat(2,1fr); gap:1px; background:var(--border)}
+.metric{background:var(--surface); padding:15px 16px}
+.metric .v{font-weight:700; line-height:1.15; font-size:28px; letter-spacing:-.03em; color:var(--text)}
+.metric .k{margin-top:2px; font-weight:600; font-size:13px; color:var(--text-3); letter-spacing:.01em}
+.metric .s{font-size:12px; color:var(--text-2); margin-top:3px}
+.metric.warn .v{color:var(--rust)}
+/* 지표 클릭 */
+button.metric{border:none; text-align:left; font:inherit; color:inherit; cursor:pointer}
+button.metric:hover{background:var(--surface-2)}
+/* 지표 단위 */
+.metric .u{font-size:15px; font-weight:600; margin-left:2px}
+.metric.tapm .s{color:var(--text-2)}
+.metric.amber .v{color:var(--amber)}
+.metric.amber{background:var(--amber-soft)}
+.metric.warn{background:var(--rust-soft)}
+/* 타임라인 상단 */
+.tl-top{display:flex; flex-direction:column; gap:8px; margin-bottom:14px}
+.tl-kpis{display:flex; align-items:center; flex-wrap:wrap; row-gap:6px; gap:14px}
+.tl-kpi{font-size:13.5px; color:var(--text-2)}
+.tl-kpi b{font-size:17px; color:var(--text)}
+.tl-kpi.sub b{font-size:14.5px; color:var(--text-2); font-weight:700}
+.tl-hours{font-size:12.5px; color:var(--text-2); font-weight:600}
+.tl-legends{display:flex; gap:14px; align-items:center; flex-wrap:wrap; row-gap:6px;
+  padding-top:8px; border-top:1px dashed var(--border)}
+.tl-legend{font-size:12.5px; color:var(--text-2); display:inline-flex; align-items:center; gap:6px}
+.tl-legend i{width:14px; height:10px; border-radius:3px; display:inline-block; background:var(--pine)}
+.tl-legend i.tent{background:repeating-linear-gradient(45deg,#C9BBA0 0 3px,#E2D9C6 3px 6px); border:1px dashed #A8977A}
+.tl-legend i.blk.warned{background:var(--rust)}
+/* 범례 색 견본 — 타임라인 블록(.blk)은 absolute 라 그대로 쓰면 글자와 겹칩니다 */
+.lgsw{display:inline-block; position:static; width:15px; height:11px; border-radius:3px;
+  vertical-align:-1px; flex:none}
+.lgsw.ok{background:#3A3833}
+.lgsw.tent{background:#8E8A80; border:1px dashed #E7E3DA}
+.lgsw.warn{background:var(--rust)}
+.hours-line{font-size:13px; color:var(--text-2); background:var(--surface-2);
+  border:1px solid var(--border); border-radius:8px; padding:9px 12px; margin-bottom:10px}
+/* ---------- 타임라인 가로 스크롤 (모바일) ---------- */
+/* ============================================================
+   타임라인 고정 열 — 가운데 정렬 + 스크롤될 때 그래프가 비치지 않게
+   ============================================================ */
+.tl-scroll{overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; margin:0 -14px; padding:0 14px; position:relative}
+.tl{display:flex; flex-direction:column; gap:4px; min-width:660px}
+/* ---------- 타임라인 정렬 바로잡기 ----------
+   좌석 이름이 두 줄이라 행 높이보다 커지면서 그래프와 어긋났습니다.
+   이름을 한 줄로 두고, 행 높이는 그래프 높이가 정하도록 합니다. */
+.tl-row{display:flex; gap:8px; align-items:center; min-height:30px}
+.tl-row.axis .tl-track{height:18px; background:none; border:none}
+/* 이전에 쓰던 가상요소 방식은 끕니다 */
+.tl-row.axis .tl-name{font-size:10.5px; color:var(--text-3); font-weight:600; background:var(--surface); box-shadow:-26px 0 0 var(--surface)}
+.tl-row.axis .tl-rate{font-size:10.5px; color:var(--text-3); font-weight:600; align-items:center; background:var(--surface)}
+.tl-row.axis .tk b{display:block}
+.tl-row.axis .tl-rate .rt{font-size:10.5px; color:var(--text-3); font-weight:600}
+.tl-row.axis .tl-name::before{background:var(--surface)}
+/* 사용 중지 좌석 — 행 전체가 아니라 그래프만 흐리게 합니다.
+   행 전체에 opacity 를 주면 왼쪽에 고정된 이름 열까지 반투명해져서
+   모바일에서 가로 스크롤할 때 그 줄만 흰 열이 끊겨 보입니다. */
+.tl-row.off-seat .tl-track{opacity:.42; background:repeating-linear-gradient(45deg, rgba(23,22,20,.06) 0 5px, transparent 5px 10px)}
+.tl-row.off-seat .tl-rate{opacity:.42}
+.tl-row.off-seat .tl-name{color:var(--text-3)}
+.tl-row.off-seat .tl-name b{color:var(--text-3)}
+/* ============================================================
+   타임라인 — 좌석 이름만 왼쪽에 고정하고 나머지를 스크롤
+   모바일에서 아래로 내려갈수록 어느 좌석인지 놓치지 않게 합니다.
+   ============================================================ */
+/* ------------------------------------------------------------
+   고정된 좌석 이름 칸 — 가로 스크롤해도 '흰 열'로 보이게
+
+   문제였던 것 두 가지입니다.
+   1) 이름 칸 높이가 글자 높이만큼밖에 안 돼서, 테이블이 여러 개인 홀처럼
+      줄이 높은 좌석에서는 흰 배경이 글자 주변에만 생기고 위아래로 그래프가
+      비쳤습니다. 글씨가 떠다니는 것처럼 보이던 원인입니다.
+      → align-self:stretch 로 행 높이 전체를 채웁니다.
+   2) .tl-scroll 이 좌우로 14px 삐져나와 있어서(margin:-14px + padding:14px)
+      고정된 이름 칸 왼쪽에 14px 틈이 남고 그리로 그래프가 보였습니다.
+      → 모바일에서는 왼쪽 padding 을 없애 카드 끝에 딱 붙이고,
+        혹시 남는 틈은 box-shadow 로 왼쪽을 한 번 더 칠합니다.
+        (가상요소 대신 box-shadow 를 쓰는 이유: 그림자는 위치 계산 없이
+         무조건 요소 배경색 그대로 왼쪽으로 복사돼서 어긋날 일이 없습니다)
+   ------------------------------------------------------------ */
+.tl-name{font-weight:700; flex-direction:column; height:auto; gap:5px; font-size:12.5px; line-height:1.2; white-space:nowrap; overflow:hidden; padding-right:9px; position:sticky; left:0; z-index:5; width:88px; flex:none; display:flex; align-items:center; justify-content:center; text-align:center; padding:0 8px 0 0; align-self:stretch; background:var(--surface); box-shadow:-26px 0 0 var(--surface), 1px 0 0 var(--border), 8px 0 8px -6px rgba(23,22,20,.16)}
+/* 오른쪽 정렬 — 그래프와 붙어 읽기 쉽게 */
+/* 가운데 정렬 */
+/* 1) 행 높이 전체 */
+/* 왼쪽 여백까지 흰색으로 이어 붙이기 */
+/* 그래프와 나누는 세로선 */
+/* 스크롤됐음을 알리는 옅은 그림자 */
+.tl-name small{font-size:10.5px; font-weight:500; color:var(--text-3); margin-left:4px}
+/* 좌석 이름 옆 사용 중지 표시 — 예약 블록에 가려도 여기서는 항상 읽힙니다 */
+.tl-name .bk{display:block; font-size:9.5px; font-weight:700; color:var(--rust);
+  margin-top:2px; line-height:1.25; white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis; max-width:100%}
+.tl-name b{color:var(--text); font-weight:700}
+/* 고정 열이 스크롤 영역 전체 높이를 덮도록 */
+.tl-name::before{content:""; position:absolute; top:-3px; bottom:-3px; left:-14px; right:0; background:var(--surface); z-index:-1; display:none}
+/* 타임라인 예약률 칸 — 행의 범위를 선으로 표시 */
+/* 예약률 칸 정렬 */
+/* flex-direction 을 명시하지 않으면 앞선 규칙의 column 이 남아
+   justify-content:flex-end 가 '아래쪽 정렬'로 작동합니다 */
+/* 예약률 칸 — 기준선이 있는 행과 없는 행의 좌우 위치를 맞춥니다 */
+/* 예약률은 함께 스크롤됩니다 */
+.tl-rate{font-size:12.5px; font-weight:700; color:var(--text-2); right:0; z-index:3; width:58px; flex:none; gap:2px; display:flex; flex-direction:row; align-items:center; justify-content:center; position:static; box-shadow:none; background:transparent}
+.tl-rate .over{font-size:10px; color:var(--rust); font-weight:700}
+.tl-rate .rb{display:flex; align-items:center; justify-content:center; gap:3px; flex-direction:column; height:100%; width:auto; min-width:34px}
+.tl-rate .rb i{flex:1; width:1px; background:var(--border-strong); min-height:5px}
+.tl-rate .rb b{font-size:12.5px; font-weight:700; color:var(--text-2); line-height:1}
+.tl-rate .rt{font-size:12.5px; font-weight:700; color:var(--text-2); line-height:1; width:100%; text-align:center}
+/* 타임라인 — 선은 얇게, 블록은 부드럽게 */
+.tl-track{position:relative; flex:1; min-width:0; height:30px; border:1px solid var(--border); overflow:hidden; background:#FAF8F3; border-radius:2px}
+.tk{position:absolute; top:0; bottom:0; width:0}
+.tk i{position:absolute; top:0; bottom:0; width:1px; background:var(--border)}
+.tk b{display:none; position:absolute; top:2px; left:2px; font-size:10px; color:var(--text-3); font-weight:600}
+.lane{position:absolute; left:0; right:0; border-top:1px solid var(--border)}
+.blk{position:absolute; color:#fff; font-size:10.5px; padding:0 5px; display:flex; align-items:center; gap:3px; overflow:hidden; white-space:nowrap; border:1px solid rgba(255,255,255,.3); line-height:1; border-radius:2px; background:#3A3833}
+.blk b{font-weight:800}
+.blk .tt{font-style:normal; background:rgba(255,255,255,.28); border-radius:3px; padding:1px 3px; font-size:9px}
+.blk.tent{background:#8C8067; border:1px dashed #EFE7D5}
+.blk.past{background:#B9B5AC}
+.blk.past.tent{background:#BDB6A6}
+/* 타임라인 블록 글자 */
+button.blk{border:1px solid rgba(255,255,255,.3); cursor:pointer; font:inherit; font-family:inherit; font-size:10.5px; line-height:1; padding:0 5px; letter-spacing:-.01em; text-align:left; overflow:hidden; text-overflow:clip}
+button.blk:hover{filter:brightness(1.15)}
+button.blk b{font-weight:800; font-size:10.5px}
+/* 확정 / 잠정 / 경고를 구분해서 보여줍니다
+   잠정 = 빗금 테두리, 경고 = 붉은색, 둘 다면 붉은색 + 빗금 테두리 */
+button.blk.warned{border-color:rgba(255,255,255,.45); background:var(--rust)}
+button.blk.warned.past{background:#C08476}
+button.blk.tent.warned{background:var(--rust); border:1px dashed #FFE2DA}
+button.blk.tent{background:#8E8A80; border:1px dashed #E7E3DA}
+/* 변동 예약 — 왼쪽 띠만으로는 눈에 안 들어와 글씨까지 하늘색으로.
+   어두운 블록 위라서 옅은 파랑은 회색으로 보입니다. 채도를 확실히 올립니다.
+   띠에 글자가 물리지 않도록 왼쪽 여백도 띠 두께만큼 밉니다. */
+.blk.changed{box-shadow:inset 4px 0 0 #4FA8F0; padding-left:11px; color:#6EC2FF}
+.blk.changed b{color:#9FD8FF}
+.blk.changed .tt{background:rgba(110,194,255,.25)}
+.nowline{position:absolute; top:0; bottom:0; width:2px; background:var(--rust); z-index:3}
+/* 그래프 범위를 벗어난 시각 — 끝에 붙여 두되 '실제 위치가 아님'을 점선으로 알립니다 */
+.nowline.edge{background:repeating-linear-gradient(180deg,
+  var(--rust) 0 4px, transparent 4px 8px)}
+.nowline.edge.before{margin-left:1px}
+.nowline.edge.after{margin-left:-3px}
+/* 운영시간 음영 */
+/* 영업 외 시간 음영 — 더 진하게 */
+.offband{position:absolute; top:0; bottom:0; z-index:1; pointer-events:none; background:repeating-linear-gradient(45deg, rgba(27,27,25,.24) 0 5px, rgba(27,27,25,.13) 5px 10px)}
+.breakband{position:absolute; top:0; bottom:0; border-left:1px dashed rgba(156,59,39,.45); border-right:1px dashed rgba(156,59,39,.45); z-index:1; pointer-events:none; background:rgba(156,59,39,.20)}
+.closed-band{position:absolute; inset:0; z-index:1; pointer-events:none; background:repeating-linear-gradient(45deg, rgba(27,27,25,.30) 0 6px, rgba(27,27,25,.17) 6px 12px)}
+/* 좌석 사용 중지 구간 — 영업시간 밖과 같은 빗금이되, 사람이 일부러 잠근 것이라
+   더 진하고 벽돌색 테두리를 둡니다. 사유는 구간이 넓을 때만 적습니다. */
+.blockband{position:absolute; top:0; bottom:0; z-index:1; pointer-events:none;
+  display:flex; align-items:center; justify-content:flex-start; padding-left:4px; overflow:hidden;
+  background:repeating-linear-gradient(45deg,
+    rgba(166,59,38,.26) 0 6px, rgba(166,59,38,.11) 6px 12px);
+  border-left:1px dashed rgba(166,59,38,.65); border-right:1px dashed rgba(166,59,38,.65)}
+.blockband i{font-style:normal; font-size:10.5px; font-weight:700; color:var(--rust);
+  background:rgba(255,253,250,.9); border:1px solid rgba(166,59,38,.3); border-radius:2px;
+  padding:1px 5px; line-height:1.4;
+  white-space:nowrap; max-width:96%; overflow:hidden; text-overflow:ellipsis}
+/* 예약 목록 — 한 줄 */
+.rlist{display:flex; flex-direction:column}
+/* 목록 행 */
+.rrow{display:flex; align-items:center; gap:10px; width:100%; text-align:left; background:none; border:none; border-top:1px solid var(--border); font:inherit; color:inherit; white-space:nowrap; overflow:hidden; padding:12px 8px}
+.rrow:first-child{border-top:none}
+.rrow:hover{background:var(--surface-2)}
+.rrow.s-취소{opacity:.4}
+.rrow.s-방문{opacity:.4}
+.rrow.late{opacity:.55}
+.rrow.late .rr-bang{opacity:1}
+.rrow.s-노쇼{opacity:.55}
+/* 예약 목록 — 지난 예약 표시 */
+.rr-bang{width:12px; flex:none; font-weight:900; color:var(--rust); font-size:15px; text-align:center}
+.rr-t{font-size:15.5px; font-weight:800; width:52px; flex:none; color:var(--text)}
+.rr-n{font-size:15px; font-weight:600; width:84px; flex:none; overflow:hidden; text-overflow:ellipsis}
+.rr-p{font-size:13.5px; color:var(--text-2); width:100px; flex:none}
+.rr-ph{font-size:13.5px; color:var(--text-3); width:126px; flex:none; overflow:hidden; text-overflow:ellipsis}
+.rr-pills{display:flex; gap:4px; flex:1; min-width:0; overflow:hidden}
+.rr-seat{flex:none; max-width:150px; overflow:hidden; text-overflow:ellipsis}
+.rr-st{flex:none}
+/* ---------- 좌석 현황 보드 ---------- */
+.sb-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(148px,1fr)); gap:8px}
+.sb-grid.hall{grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); margin-bottom:10px}
+.sb-cell{border:1px solid var(--border); padding:10px 11px; background:var(--surface-2); border-radius:3px}
+.sb-cell.used{border-color:#BFD3CA; background:var(--pine-soft)}
+.sb-cell.tent{border-color:#DCCBA8; background:#FAF4E7}
+.sb-cell.hall{background:var(--surface); border-color:var(--border-strong)}
+.sb-cell.full{border-color:var(--rust)}
+.sb-h{display:flex; align-items:baseline; gap:6px}
+.sb-n{font-size:14.5px; font-weight:700}
+.sb-r{margin-left:auto; font-size:13px; font-weight:700; color:var(--text-2)}
+.sb-bar{height:6px; background:var(--border); border-radius:3px; margin:7px 0 6px; overflow:hidden; display:flex}
+.sb-bar i{background:var(--pine); height:100%}
+.sb-bar u{background:repeating-linear-gradient(45deg,#C9AE79 0 3px,#E4D3AE 3px 6px); height:100%}
+.sb-s{font-size:11.5px; color:var(--text-3); line-height:1.5; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.sb-note{font-size:11.5px; color:var(--text-3); margin-top:7px}

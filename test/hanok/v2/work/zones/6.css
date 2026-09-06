@@ -1,0 +1,427 @@
+/* ---------- 시트(팝업) 공통 ----------
+   .overlay 가 화면을 덮고, 그 안에 .sheet(아래에서 올라오는 판) 또는 .modal(가운데 확인창)이 놓입니다.
+   폰에서는 시트가 화면 아래에 붙고(align-items:flex-end), 768px 이상에서는 가운데로 옵니다(11구역). */
+.overlay{position:fixed; inset:0; z-index:50; background:rgba(20,20,18,.45);
+  display:flex; align-items:flex-end; justify-content:center}
+/* 확인창은 .shell 밖(app 바로 아래)에 그려지므로 배율(zoom)을 따로 걸어 줍니다.
+   시트·마법사·달력은 .shell 안에 있어 여기서 또 걸면 배율이 두 번 곱해집니다.
+   ※ .overlay 와 같은 요소에 같이 붙으므로(class="overlay modal-ov") 반드시 .overlay 뒤에 있어야 합니다 */
+.modal-ov{align-items:center; z-index:70; zoom:var(--ui-zoom, 1.1)}
+.sheet{width:100%; max-width:560px; max-height:90vh; overflow-y:auto; background:var(--bg); padding:var(--s16) var(--s16) calc(var(--s24) + env(safe-area-inset-bottom)); border-radius:var(--r-lg) var(--r-lg) 0 0}
+.sheet-h{display:flex; align-items:center; margin-bottom:var(--s24)}
+.sheet-h h2{margin:0; font-size:var(--fs-head); font-weight:700; letter-spacing:-.01em}
+.sheet-h .x{margin-left:auto; background:none; border:none; font-size:var(--fs-head); color:var(--text-3); line-height:1; padding:0 var(--s4)}
+.sheet-actions{display:flex; gap:var(--s8); margin-top:var(--s8); padding-top:var(--s16); border-top:1px solid var(--border)}
+.sheet-actions .btn.primary{flex:1}
+/* 예약률 추이 시트는 넓게. 768px 이상에서 .sheet 가 max-width:600px 로 좁아지므로
+   11구역에 .sheet-wide{max-width:1040px} 를 그 뒤에 한 번 더 둡니다 — 지우면 넓은 시트가 600px 로 줄어듭니다 */
+.sheet-wide{max-width:1040px}
+.sheet-wide .chart{max-height:none}
+/* ---------- 달력 팝업 ---------- */
+.calbox{width:100%; max-width:520px; max-height:92vh; overflow-y:auto; background:var(--bg); padding:var(--s16) var(--s16) calc(var(--s24) + env(safe-area-inset-bottom)); border-radius:var(--r-md)}
+.cal-nav{display:flex; align-items:center; gap:var(--s12); margin-bottom:var(--s12)}
+.cal-nav .nav{width:40px; height:40px; border:1px solid var(--border-strong); background:var(--surface);
+  border-radius:var(--r-sm); color:var(--text-2)}
+.cal-m{flex:1; text-align:center; font-size:var(--fs-title); font-weight:700}
+.cgrid{display:grid; grid-template-columns:repeat(7,1fr); gap:var(--s4)}
+.chead{margin-bottom:var(--s4)}
+.chd{text-align:center; font-size:var(--fs-label); font-weight:700; color:var(--text-3); padding:var(--s4) 0}
+.chd.sun{color:#B0553F}
+.chd.sat{color:#3E6291}
+.cday.sun .dn{color:#B0553F}
+.cday.sat .dn{color:#3E6291}
+.cday{min-height:62px; border:1px solid var(--border); background:var(--surface); border-radius:var(--r-md); padding:var(--s4) var(--s4); display:flex; flex-direction:column; align-items:center; gap:var(--s4)}
+.cday .dn{color:var(--text); line-height:1; font-size:var(--fs-sub); font-weight:700}
+.cday .dots{display:flex; gap:var(--s4)}
+.cday .dots i{width:4px; height:4px; border-radius:50%; background:var(--pine); display:block}
+.cday .cnt{font-size:var(--fs-label); font-weight:700; color:var(--pine); background:var(--pine-soft);
+  border-radius:var(--r-sm); padding:1px var(--s4); line-height:1.4}
+.cday .pp{font-size:var(--fs-label); color:var(--text-3); line-height:1}
+.cday.today{border-color:var(--text); border-width:1.5px}
+.cday.sel{background:var(--pine); border-color:var(--pine)}
+.cday.sel .dn{background:transparent; color:#fff}
+.cday.sel .pp{color:#fff; background:transparent}
+.cday.sel .cnt{color:#fff; background:transparent}
+.cday.sel .dots i{background:rgba(255,255,255,.9)}
+.cday.blank{border:none; background:none; min-height:0}
+.cday .cn{font-size:var(--fs-label); font-weight:700; color:var(--pine)}
+.cday .cn.none{color:var(--text-3); font-weight:400}
+.cday .cbar{width:76%; height:4px; background:var(--border); border-radius:var(--r-sm); overflow:hidden}
+.cday .cbar i{display:block; height:100%; background:var(--pine)}
+.cday .cr{font-size:var(--fs-label); color:var(--text-3)}
+.cday.sel .cn{color:#fff}
+.cday.sel .cr{color:#fff}
+.cday.sel .cbar{background:rgba(255,255,255,.35)}
+.cday.sel .cbar i{background:#fff}
+/* ---------- 예약 등록 마법사 — 카운터 태블릿 기준 (큰 터치 영역) ----------
+   7단계: 경로(.srccell) → 날짜·시간(.bday .hcell .mrail) → 인원(.ptile) → 좌석(.scell) → 메뉴/코스(.srccell .citem)
+          → 예약자(.f.big) → 요청사항. 완료 화면은 .wz.done + .done-box.
+   골격: .wz-top(단계 점) / .wz-mid(질문 + 본문, 세로 가운데) / .wz-foot(이전·다음) */
+.wz{position:fixed; inset:0; z-index:60; background:var(--bg); display:flex; flex-direction:column}
+.wz.done{align-items:center; justify-content:center; padding:var(--s24)}
+.wz-top{background:var(--surface); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:var(--s12); padding:var(--s12) var(--s16); flex-wrap:wrap}
+.wz-back{border:1px solid var(--border-strong); background:var(--surface); color:var(--text-2);
+  border-radius:var(--r-sm); padding:var(--s8) var(--s16); font-size:var(--fs-body); font-weight:600; flex:none}
+.wz-steps{display:flex; gap:var(--s4); flex:1; min-width:0; overflow-x:auto}
+.wz-dot{display:flex; align-items:center; gap:var(--s8); border:none; background:none; padding:var(--s8) var(--s8);
+  border-radius:var(--r-sm); color:var(--text-3); font-size:var(--fs-sub); font-weight:600; white-space:nowrap}
+.wz-dot .n{width:21px; height:21px; border-radius:50%; background:var(--border);
+  color:var(--surface); font-size:var(--fs-sub); display:grid; place-items:center; flex:none}
+.wz-dot.past .n{background:var(--pine); color:#fff}
+.wz-dot.on{color:var(--text)}
+.wz-dot.on .n{background:var(--text); color:#fff}
+.wz-dot .l{display:none}
+.wz-sum{display:flex; gap:var(--s8); margin-left:auto}
+.wz-sum span{font-size:var(--fs-sub); font-weight:600; color:var(--pine); background:var(--pine-soft);
+  border:1px solid #CDDFD8; border-radius:var(--r-sm); padding:var(--s4) var(--s8)}
+/* 질문과 본문을 세로 가운데에 — 태블릿에서 눈높이에 오게. 세로가 760px 이하이면 위부터 채웁니다(11구역) */
+.wz-mid{flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; justify-content:center}
+.wz-q{text-align:center; padding:var(--s8) var(--s16) var(--s4)}
+.wz-q h2{margin:0; font-size:var(--fs-head); font-weight:700; letter-spacing:-.01em; line-height:1.4}
+.wz-warn{margin-top:var(--s12); font-size:var(--fs-sub); font-weight:700; color:var(--rust)}
+.wz-body{overflow-y:auto; padding:var(--s16) var(--s16) var(--s24); max-width:940px; width:100%; margin:0 auto; flex:0 1 auto; overflow:visible}
+.wz-foot{background:var(--surface); border-top:1px solid var(--border); display:flex; gap:var(--s12);
+  padding:var(--s12) var(--s16) calc(var(--s16) + env(safe-area-inset-bottom))}
+.wz-note{font-size:var(--fs-sub); color:var(--text-3); margin-top:var(--s16); line-height:1.6}
+/* 1단계 날짜·시간 — 900px 이상에서는 달력과 시간을 좌우로 나눠 스크롤 없이 한 화면에 담습니다(11구역) */
+.wz-step1{display:block}
+.wz-cal{background:var(--surface); border:1px solid var(--border); border-radius:var(--r-md); padding:var(--s12) var(--s12) var(--s16)}
+.mo-h{display:flex; align-items:center; gap:var(--s12); margin-bottom:var(--s12)}
+.mo-h .mo{flex:1; text-align:center; font-size:var(--fs-title); font-weight:700}
+.mo-h .nav{width:42px; height:42px; border:1px solid var(--border-strong); background:var(--surface);
+  border-radius:var(--r-sm); color:var(--text-2)}
+.bgrid{display:grid; grid-template-columns:repeat(7,1fr); gap:var(--s4)}
+.bhead span{text-align:center; font-size:var(--fs-sub); font-weight:700; color:var(--text-3); padding-bottom:var(--s4)}
+.bhead .sun{color:#B0553F}
+.bhead .sat{color:#3E6291}
+.bday{min-height:56px}
+button.bday{border:1px solid var(--border); background:var(--surface); border-radius:var(--r-md);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:var(--s4); padding:var(--s4)}
+button.bday .d{font-size:var(--fs-title); font-weight:600}
+button.bday .b{font-size:var(--fs-label); font-weight:700; color:var(--pine); background:var(--pine-soft); border-radius:var(--r-sm); padding:1px var(--s4)}
+button.bday.sun .d{color:#B0553F}
+button.bday.sat .d{color:#3E6291}
+button.bday.today{border-color:var(--text); border-width:1.5px}
+button.bday.past{opacity:.5}
+button.bday.sel{background:var(--pine); border-color:var(--pine)}
+button.bday.sel .d{color:#fff}
+button.bday.sel .b{background:rgba(255,255,255,.22); color:#fff}
+/* 시간 칸 — 고른 칸은 초록, 라스트오더·마감이 걸리면 벽돌색(.warned) */
+.wz-time{background:var(--surface); border:1px solid var(--border); border-radius:var(--r-md); padding:var(--s16); margin-top:var(--s16)}
+.hgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(80px,1fr)); gap:var(--s8)}
+.hcell{border:1px solid var(--border-strong); background:var(--surface); padding:var(--s12) var(--s4) var(--s8); display:flex; flex-direction:column; align-items:center; gap:1px; border-radius:var(--r-md)}
+.hcell .ap{font-size:var(--fs-label); color:var(--text-3); font-weight:600}
+.hcell .hh{font-size:var(--fs-head); font-weight:700; letter-spacing:-.02em}
+.hcell .hn{font-size:var(--fs-label); color:var(--amber); font-weight:700}
+.hcell.on{background:var(--pine); border-color:var(--pine)}
+.hcell.on .ap,.hcell.on .hh,.hcell.on .hn{color:#fff}
+/* 지난 시간 / 지난 날짜 */
+.hcell.gone{opacity:.45; background:var(--surface-2)}
+.hcell.gone .hn.muted2{color:var(--text-3)}
+.hcell.gone.on{opacity:1}
+.hcell.on.warned{background:var(--rust); border-color:var(--rust)}
+.hcell.late .hn.rust{color:var(--rust)}
+/* 시간·분 경고를 글자 색으로 */
+.hcell .ap.rust,.hcell .hh.rust{color:var(--rust)}
+/* 분 조절 레일 — 손가락으로 끌어서 정합니다 (touch-action:none 으로 화면 스크롤과 안 겹치게).
+   손잡이(.mknob)는 44px, 눈금(.mnotch) 은 10분마다 큰 눈금 */
+.mwrap{margin-top:var(--s16); padding-top:var(--s16)}
+.mhead{display:flex; align-items:baseline; margin-bottom:var(--s16)}
+.mhead .mnow{margin-left:auto; font-size:var(--fs-head); font-weight:700; color:var(--pine)}
+.mnow.rust{color:var(--rust)}
+.mrail{position:relative; height:70px; touch-action:none; user-select:none; margin:0 var(--s24)}
+.mtrack{position:absolute; left:0; right:0; top:15px; height:12px; background:var(--surface-2); border:1px solid var(--border); border-radius:var(--r-sm)}
+.mfill{position:absolute; left:0; top:15px; height:12px; background:var(--pine); opacity:.28; border-radius:var(--r-sm)}
+.mnotch{position:absolute; top:18px; width:1px; height:6px; background:var(--border-strong); margin-left:-0.5px}
+.mnotch.big{top:16px; height:10px; background:var(--text-3)}
+.mknob{position:absolute; top:0; width:44px; height:44px; margin-left:-22px; background:var(--pine); color:#fff; font-size:var(--fs-body); font-weight:700; display:grid; place-items:center; box-shadow:0 2px 8px rgba(30,74,60,.35); pointer-events:none; border-radius:var(--r-sm)}
+.mknob.warned{background:var(--rust); border-color:var(--rust)}
+.mtick{position:absolute; bottom:0; transform:translateX(-50%); width:34px;
+  background:none; border:none; font-size:var(--fs-sub); font-weight:600; color:var(--text-3); padding:var(--s4) 0}
+.mtick.on{color:var(--pine); font-weight:700}
+.mtick.warned{border-color:var(--rust); color:var(--rust)}
+.mfine{display:flex; gap:var(--s8); margin-top:var(--s12)}
+.mfine button{flex:1; border:1px solid var(--border-strong); background:var(--surface);
+  border-radius:var(--r-md); padding:var(--s12) 0; font-size:var(--fs-body); font-weight:600; color:var(--text-2)}
+.mfine button:disabled{opacity:.35}
+/* 2단계 인원 — 큰 숫자 타일. 6명 넘으면 .pmore 로 직접 입력, 유아·의자는 .infant 안의 작은 스테퍼 */
+.pgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:var(--s12)}
+.ptile{border:1px solid var(--border-strong); background:var(--surface); padding:var(--s24) 0 var(--s16); display:flex; flex-direction:column; align-items:center; gap:1px; border-radius:var(--r-md)}
+.ptile .pn{font-size:var(--fs-num); font-weight:700; letter-spacing:-.03em; line-height:1}
+.ptile .pu{font-size:var(--fs-sub); color:var(--text-3); font-weight:600}
+.ptile.on{background:var(--pine); border-color:var(--pine)}
+.ptile.on .pn,.ptile.on .pu{color:#fff}
+.pmore{width:100%; margin-top:var(--s12); border:1px dashed var(--border-strong); background:var(--surface-2); padding:var(--s16); font-size:var(--fs-body); font-weight:600; color:var(--text-2); border-radius:var(--r-sm)}
+.pmore.on{border-style:solid; border-color:var(--pine); color:var(--pine); background:var(--pine-soft)}
+.bigstep{display:flex; align-items:center; gap:var(--s12); margin-top:var(--s12); justify-content:center}
+.bigstep button{width:62px; height:62px; border:1px solid var(--border-strong); background:var(--surface); font-size:var(--fs-num); color:var(--text-2); border-radius:var(--r-sm)}
+.bigstep .v{min-width:96px; text-align:center; font-size:var(--fs-num); font-weight:700}
+.bigstep .v small{font-size:var(--fs-body); color:var(--text-3); font-weight:600; margin-left:var(--s4)}
+.bigstep.sm button{width:50px; height:50px; font-size:var(--fs-head); border-radius:var(--r-md)}
+.bigstep.sm .v{min-width:74px; font-size:var(--fs-num)}
+.bigstep.bad .v{color:var(--rust)}
+.bigstep.bad button{border-color:var(--rust); color:var(--rust)}
+.infant{display:flex; align-items:center; gap:var(--s12); margin-top:var(--s24); padding:var(--s16);
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--r-md); flex-wrap:wrap}
+.infant .t{font-weight:700}
+.infant .s{font-size:var(--fs-sub); color:var(--text-3)}
+.infant .bigstep{margin-top:0; margin-left:auto}
+.infant.bad{border-color:var(--rust); background:var(--rust-soft)}
+.infant.bad .t{color:var(--rust)}
+/* 3단계 좌석 — 룸/홀 칸(.scell). 남은 자리는 .avail 배지와 .gauge 막대로, 겹치면 .warned(벽돌색)로 알리되 막지 않습니다 */
+.seat-note{font-size:var(--fs-sub); color:var(--text-2); background:var(--surface-2); border:none;
+  border-radius:var(--r-md); padding:var(--s8) var(--s12); margin-bottom:var(--s16)}
+.sgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(108px,1fr)); gap:var(--s8); margin-top:var(--s8)}
+.sgrid.hall{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.sgrid.any{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.scell{position:relative; border:1px solid var(--border-strong); background:var(--surface); padding:var(--s16) var(--s8); display:flex; flex-direction:column; align-items:center; gap:var(--s4); border-radius:var(--r-md)}
+.scell .sn{font-size:var(--fs-title); font-weight:700}
+.scell .sc{font-size:var(--fs-sub); color:var(--text-3)}
+.scell .sb{position:absolute; top:6px; right:6px; font-size:var(--fs-label); font-weight:700;
+  color:var(--amber); background:var(--amber-soft); border-radius:var(--r-sm); padding:var(--s4) var(--s4)}
+.scell.busy{background:var(--surface-2); border-style:dashed}
+.scell.on{background:var(--pine); border-color:var(--pine)}
+.scell.on .sn,.scell.on .sc{color:#fff}
+.scell.on .sb{background:rgba(255,255,255,.25); color:#fff}
+.scell.any{padding:var(--s16) var(--s8)}
+.scell .avail{margin-top:var(--s4); font-size:var(--fs-label); font-weight:700; padding:var(--s4) var(--s8); border-radius:var(--r-sm)}
+.scell .avail.free{background:var(--pine-soft); color:var(--pine)}
+.scell .avail.warn{background:var(--amber-soft); color:var(--amber)}
+.scell .avail.blocked{background:var(--rust-soft); color:var(--rust)}
+.scell.on .avail{background:rgba(255,255,255,.22); color:#fff}
+.scell .sc2{font-size:var(--fs-label); color:var(--text-3)}
+.scell .gauge{width:100%; height:7px; background:var(--border); border-radius:var(--r-sm); margin:var(--s8) 0 var(--s4); overflow:hidden}
+.scell .gauge i{display:block; height:100%; background:var(--pine); border-radius:var(--r-sm)}
+.scell.full .gauge i{background:var(--rust)}
+.scell .sb.rust{color:var(--rust); background:var(--rust-soft)}
+.scell.on .gauge{background:rgba(255,255,255,.3)}
+.scell.on .gauge i{background:#fff}
+/* 좌석 셀 이동 가능 안내 */
+.scell .movable{margin-top:var(--s4); font-size:var(--fs-label); font-weight:700; color:var(--amber)}
+.scell.on .movable{color:rgba(255,255,255,.85)}
+.scell.on.warned{background:var(--rust); border-color:var(--rust)}
+.scell.on.warned .avail{background:rgba(255,255,255,.24); color:#fff}
+/* 0단계 예약 경로 · 4단계 메뉴 — 같은 큰 카드(.srccell)를 씁니다. 메뉴는 .menu4/.menu2 로 칸 수만 다름 */
+.srcgrid{display:grid; grid-template-columns:1fr; gap:var(--s12)}
+.srcgrid.menu4{grid-template-columns:1fr 1fr}
+.srcgrid.menu2{grid-template-columns:1fr 1fr}
+.srccell{border:1px solid var(--border-strong); background:var(--surface); padding:var(--s24) var(--s16); display:flex; flex-direction:column; gap:var(--s4); text-align:left; position:relative; border-radius:var(--r-md)}
+.srccell .s-l{font-size:var(--fs-head); font-weight:700}
+.srccell .s-d{font-size:var(--fs-sub); color:var(--text-3)}
+.srccell.on{background:var(--pine); border-color:var(--pine)}
+.srccell.on .s-l,.srccell.on .s-d{color:#fff}
+.srccell .s-n{position:absolute; top:10px; right:12px; min-width:24px; height:24px; border-radius:var(--r-md);
+  background:var(--pine); color:#fff; font-size:var(--fs-sub); font-weight:700; display:grid; place-items:center; padding:0 var(--s8)}
+.srccell.on .s-n{background:#fff; color:var(--pine)}
+.srccell.warned{background:var(--rust); border-color:var(--rust)}
+.srccell.warned .s-l,.srccell.warned .s-d{color:#fff}
+.course-sum{display:flex; align-items:center; gap:var(--s12); margin-top:var(--s16); padding:var(--s12) var(--s16);
+  background:var(--surface-2); border:none; border-radius:var(--r-md); font-size:var(--fs-body)}
+/* 코스 고르기 팝업 — 그룹(.cgroup)마다 코스 칸(.citem), 인원은 오른쪽 위 붉은 숫자(.cnum) */
+.cgroup{margin-bottom:var(--s16)}
+.cgroup.off{opacity:.5}
+.cg-label{font-size:var(--fs-sub); font-weight:700; color:var(--text-3); margin-bottom:var(--s8)}
+.cg-items{display:grid; grid-template-columns:repeat(auto-fit,minmax(78px,1fr)); gap:var(--s8)}
+.citem{position:relative; border:1px solid var(--border-strong); background:var(--surface); padding:var(--s16) var(--s8); font-size:var(--fs-title); font-weight:700; color:var(--text); border-radius:var(--r-md)}
+.citem.on{background:var(--pine); border-color:var(--pine); color:#fff}
+.citem.warned{background:var(--rust); border-color:var(--rust); color:#fff}
+.cnum{position:absolute; top:-8px; right:-6px; min-width:22px; height:22px; border-radius:var(--r-md);
+  background:var(--rust); color:#fff; font-size:var(--fs-sub); font-weight:700; font-style:normal;
+  display:grid; place-items:center; padding:0 var(--s4); border:2px solid var(--bg)}
+.course-total{text-align:center; font-size:var(--fs-body); color:var(--text-2); padding:var(--s12) 0 var(--s4)}
+.course-total b{font-size:var(--fs-title); color:var(--text)}
+/* 코스 인원 경고 */
+.course-total.bad{color:var(--rust)}
+.course-total.bad b{color:var(--rust)}
+.ct-warn{font-size:var(--fs-sub); font-weight:700; color:var(--rust); margin-top:var(--s4)}
+.undecided{width:100%; margin:var(--s8) 0 var(--s4); border:1px dashed var(--border-strong);
+  background:var(--surface-2); border-radius:var(--r-md); padding:var(--s16); font-size:var(--fs-body);
+  font-weight:600; color:var(--text-2)}
+.undecided.on{border-style:solid; border-color:var(--pine); background:var(--pine-soft); color:var(--pine)}
+/* 마지막 단계의 입력 요약(.rv) 과 등록 완료 상자 */
+.wz-review{margin-top:var(--s24); background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--r-md); padding:var(--s16) var(--s16)}
+.rv{display:flex; gap:var(--s12); padding:var(--s8) 0; font-size:var(--fs-body)}
+.rv span{color:var(--text-3); width:56px; flex:none; font-weight:600}
+.rv b{font-weight:700}
+.done-box{background:var(--surface); border:1px solid var(--border); border-radius:var(--r-lg);
+  padding:var(--s32) var(--s24) var(--s24); max-width:520px; width:100%; text-align:center; box-shadow:0 8px 30px rgba(20,20,18,.1)}
+.done-box .check{width:60px; height:60px; margin:0 auto var(--s16); border-radius:50%;
+  background:var(--pine-soft); color:var(--pine); font-size:var(--fs-num); display:grid; place-items:center}
+.done-msg{font-size:var(--fs-head); line-height:1.7; margin:0 0 var(--s12); font-weight:500}
+.done-msg b{font-weight:700}
+.done-sub{font-size:var(--fs-body); color:var(--text-2); line-height:1.7}
+.done-btns{display:flex; gap:var(--s12); margin-top:var(--s24)}
+.done-btns .btn{flex:1}
+/* ---------- 예약 처리(방문·노쇼·취소) 시트 · 예약 상세 시트 ----------
+   .markbtn 은 눌러서 상태를 바꾸는 큰 버튼, .spick 은 상세에서 좌석을 다시 고르는 칸 */
+.mark-info{background:var(--surface-2); border:none; border-radius:var(--r-md); padding:var(--s16) var(--s16); margin-bottom:var(--s16)}
+.mark-info .mi-t{font-size:var(--fs-title); font-weight:700}
+.mark-info .mi-s{font-size:var(--fs-sub); color:var(--text-2); margin-top:var(--s4)}
+/* 예약 상세의 경고 줄 — .mi-s 가 회색이라 덮이고 있었습니다 */
+.mark-info .mi-s.warn-txt{color:var(--rust); font-weight:700}
+.mi-meta{display:flex; flex-wrap:wrap; gap:var(--s8) var(--s16); margin-top:var(--s12); padding-top:var(--s8);
+  border-top:1px solid var(--border); font-size:var(--fs-sub); color:var(--text-3)}
+.markgrid{display:grid; gap:var(--s8); grid-template-columns:repeat(2,1fr)}
+.markbtn{border:1px solid var(--border-strong); background:var(--surface); padding:var(--s16) var(--s12); font-size:var(--fs-body); font-weight:700; color:var(--text); border-radius:var(--r-sm)}
+.markbtn.ok.on,.markbtn.ok:hover{background:var(--pine); border-color:var(--pine); color:#fff}
+.markbtn.no.on,.markbtn.no:hover{background:var(--rust); border-color:var(--rust); color:#fff}
+.markbtn.cancel.on,.markbtn.cancel:hover{background:var(--text-2); border-color:var(--text-2); color:#fff}
+.markbtn.back{color:var(--text-2); grid-column:auto; font-size:var(--fs-body); font-weight:700; padding:var(--s16) var(--s12)}
+.markbtn.back.on{background:var(--pine-soft); border-color:var(--pine); color:var(--pine)}
+.ptotal{margin-top:var(--s24); text-align:center; font-size:var(--fs-title); color:var(--text-2)}
+.ptotal b{font-size:var(--fs-head); color:var(--text)}
+.seatpick{display:grid; grid-template-columns:repeat(auto-fill,minmax(104px,1fr)); gap:var(--s8)}
+.spick{position:relative; border:1px solid var(--border-strong); background:var(--surface); padding:var(--s12) var(--s8); font-size:var(--fs-body); font-weight:700; color:var(--text); border-radius:var(--r-sm)}
+.spick small{font-weight:500; color:var(--text-3); font-size:var(--fs-label)}
+.spick.busy{opacity:.48; background:var(--surface-2)}
+.spick.first{border-color:var(--pine); background:var(--pine-soft); color:var(--pine)}
+.spick i{position:absolute; top:-7px; right:6px; font-style:normal; font-size:var(--fs-label); font-weight:700;
+  background:var(--pine); color:#fff; border-radius:var(--r-sm); padding:var(--s4) var(--s4)}
+/* 좌석 확정 */
+.spick.picked{border-color:var(--text); background:var(--text); color:#fff}
+.seatconfirm{display:flex; align-items:center; gap:var(--s8); flex-wrap:wrap;
+  margin-top:var(--s12); padding:var(--s12) var(--s12); border:1px solid var(--border-strong);
+  border-radius:var(--r-sm); background:var(--surface-2); font-size:var(--fs-sub)}
+.seatconfirm span{margin-right:auto}
+/* ---------- 문자 안내 (예약 상세의 문자 칸 · 보낸 문자 목록) ----------
+   지금은 흉내만 냅니다. .sb-mock 표시는 지우지 마세요 — 3구역 .mockbar 주석 참고 */
+.sms-box{border:1px solid var(--border); border-radius:var(--r-md); padding:var(--s12) var(--s12); margin-top:var(--s16);
+  background:var(--surface)}
+.sb-t{font-size:var(--fs-sub); font-weight:700; color:var(--text-2); margin-bottom:var(--s8);
+  display:flex; align-items:baseline; gap:var(--s8); flex-wrap:wrap}
+.sb-mock{font-size:var(--fs-label); font-weight:600; color:#8A6A2A; background:#FBF1DC;
+  border:1px dashed #D9BF87; border-radius:var(--r-sm); padding:var(--s4) var(--s8)}
+.sms-row{display:flex; justify-content:space-between; gap:var(--s12); padding:var(--s4) 0; font-size:var(--fs-sub)}
+.sms-row .sm-l{color:var(--text-3); font-weight:600; flex:none}
+.sms-row .sm-r{color:var(--text); text-align:right}
+.sms-row .sm-r i{font-style:normal; color:var(--text-3)}
+.sms-row.bad .sm-r i{color:var(--rust); font-weight:700}
+.sb-why{font-size:var(--fs-sub); color:var(--rust); font-weight:600; margin-top:var(--s8); line-height:1.5}
+.sb-btns{display:flex; flex-wrap:wrap; gap:var(--s8); margin-top:var(--s12)}
+/* 재안내 시각 고르기 */
+.hourpick{display:flex; flex-wrap:wrap; gap:var(--s8); margin-top:var(--s8)}
+.hourpick button{
+  border:1px solid var(--border-strong); background:var(--surface); border-radius:var(--r-sm);
+  padding:var(--s8) var(--s12); font-size:var(--fs-sub); font-weight:600; color:var(--text-2);
+}
+.hourpick button.on{background:var(--pine); border-color:var(--pine); color:#fff}
+/* 문안 미리보기 — 실제 문자처럼 보이게 */
+.smsprev{border:1px solid var(--border); border-radius:var(--r-md); margin-top:var(--s12); overflow:hidden}
+.smsprev .smsmsg{margin:0 var(--s12); padding:var(--s12) 0}
+.sp-h{background:var(--surface-2); padding:var(--s8) var(--s12); font-size:var(--fs-sub); font-weight:700; color:var(--text-2);
+  display:flex; justify-content:space-between; gap:var(--s8)}
+.sp-h span{font-weight:500; color:var(--text-3)}
+/* 문자 내용 — 위아래 점선으로 '여기부터 여기까지가 손님께 가는 글'임을 끊어 줍니다.
+   점선은 화면에만 그려집니다. 실제 문자에는 들어가지 않습니다. */
+.smsmsg{
+  display:block; white-space:pre-wrap;
+  border-top:1px dashed var(--border-strong);
+  border-bottom:1px dashed var(--border-strong);
+  padding:var(--s12) 0; margin:var(--s4) 0;
+  font-size:var(--fs-sub); line-height:1.75; color:var(--text);
+}
+/* 보낸 문자 목록 */
+.smsbox{max-height:52vh; overflow-y:auto; border:1px solid var(--border); border-radius:var(--r-sm)}
+.smsrow{display:block; width:100%; text-align:left; background:var(--surface);
+  border:none; border-bottom:1px solid var(--border); padding:var(--s12) var(--s12)}
+.smsrow:last-child{border-bottom:none}
+.smsrow .smsmsg{font-size:var(--fs-sub); line-height:1.65; color:var(--text-2); padding:var(--s8) 0}
+.sr-top{display:flex; align-items:center; gap:var(--s8); flex-wrap:wrap; margin-bottom:var(--s4)}
+.sr-t{font-size:var(--fs-label); color:var(--text-3); font-variant-numeric:tabular-nums}
+.sr-k{font-size:var(--fs-label); font-weight:700; border-radius:var(--r-sm); padding:1px var(--s8)}
+.sr-k.new{background:var(--pine-soft); color:var(--pine)}
+.sr-k.rem{background:var(--blue-soft); color:var(--blue)}
+.sr-n{font-size:var(--fs-sub); font-weight:700; color:var(--text)}
+.sr-p{font-size:var(--fs-label); color:var(--text-3)}
+/* 당일 변동 상자 — 파란 펜 (3구역 .chg-tag 참고) */
+.chg-box{border:1px solid var(--blue-line); background:var(--blue-soft);
+  border-radius:var(--r-md); padding:var(--s12) var(--s12); margin-top:var(--s12)}
+.cb-t{font-size:var(--fs-sub); font-weight:700; color:var(--blue); margin-bottom:var(--s8)}
+.cb-l{font-size:var(--fs-sub); color:var(--text); line-height:1.7}
+.cb-tm{display:inline-block; min-width:52px; font-weight:700; color:var(--text-3)}
+.cb-s{font-size:var(--fs-label); color:var(--text-2); margin-top:var(--s8)}
+/* 메모 — 요청사항과 구분되게 */
+.memo-line{color:var(--blue)}
+/* 노쇼 이력 안내 */
+.ns-hint{margin-top:var(--s8); font-size:var(--fs-sub); font-weight:700; color:var(--rust);
+  background:var(--rust-soft); border:1px solid #EFD3CC; border-radius:var(--r-sm); padding:var(--s8) var(--s12)}
+/* 사용 중지 기간에 걸리는 예약 목록 — 누르면 그 예약으로 바로 갑니다 */
+.blk-hits{border:1px solid #EFD3CC; background:var(--rust-soft); border-radius:var(--r-md);
+  padding:var(--s12) var(--s12); margin:var(--s4) 0 var(--s16)}
+.bh-t{font-size:var(--fs-sub); font-weight:700; color:var(--rust); margin-bottom:var(--s8)}
+.bh-row{display:flex; align-items:center; gap:var(--s8); width:100%; text-align:left;
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--r-sm);
+  padding:var(--s8) var(--s12); margin-bottom:var(--s8); font-size:var(--fs-sub); color:var(--text)}
+.bh-row b{font-weight:700; white-space:nowrap}
+.bh-row i{margin-left:auto; font-style:normal; font-size:var(--fs-sub); color:var(--text-3); white-space:nowrap}
+.bh-row:hover{border-color:var(--border-strong); background:var(--surface-2)}
+.bh-more{font-size:var(--fs-sub); color:var(--text-3); margin:var(--s4) 0 var(--s8)}
+.bh-s{font-size:var(--fs-sub); line-height:1.6; color:var(--text-2)}
+.bh-s b{color:var(--rust)}
+/* 디스플레이 주소 안내 상자 (설정 → 디스플레이) */
+.urlbox{border:1px solid var(--border); border-radius:var(--r-md); padding:var(--s12) var(--s16); margin-bottom:var(--s16); background:var(--surface-2)}
+.ub-t{font-size:var(--fs-sub); font-weight:700; color:var(--text-3); margin-bottom:var(--s8)}
+.ub-u{font-family:ui-monospace,Menlo,monospace; font-size:var(--fs-sub); color:var(--text);
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--r-sm);
+  padding:var(--s8) var(--s12); word-break:break-all; margin-bottom:var(--s8)}
+.ub-s{font-size:var(--fs-sub); color:var(--text-3); line-height:1.55; margin-bottom:var(--s12)}
+.tbl-in{display:inline-flex; align-items:center; gap:var(--s8); font-size:var(--fs-sub); color:var(--text-3); font-weight:600}
+.tbl-in input{width:62px; padding:var(--s8) var(--s8); font-size:var(--fs-body); text-align:center}
+/* ---------- 옛 예약 카드 (.res) 와 그 부품 ----------
+   카드형 목록(renderRes)은 지금 호출되지 않지만 .filters 등 일부 부품은 다른 화면에서 씁니다.
+   화면을 안 바꾸는 원칙대로 두고, Phase 3 에서 실제로 쓰이는 것만 남길 것 */
+.filters{display:flex; gap:var(--s8); overflow-x:auto; padding-bottom:var(--s4); margin-bottom:var(--s12); -webkit-overflow-scrolling:touch}
+.filters button{white-space:nowrap; border:1px solid var(--border-strong); background:var(--surface); color:var(--text-2); padding:var(--s8) var(--s12); font-size:var(--fs-sub); font-weight:600; border-radius:var(--r-sm)}
+.filters button.on{background:var(--text); border-color:var(--text); color:#fff}
+.res-list{display:grid; gap:var(--s12); grid-template-columns:1fr !important}
+.res{background:var(--surface); border:1px solid var(--border); border-radius:var(--r);
+  box-shadow:var(--shadow); overflow:hidden; display:flex}
+.res .stripe{width:4px; flex:none; background:var(--pine)}
+.res.s-방문 .stripe{background:var(--border-strong)}
+.res.s-취소 .stripe{background:var(--border-strong)}
+.res.s-노쇼 .stripe{background:var(--rust)}
+.res.s-방문,.res.s-취소{opacity:.62}
+.res .body{flex:1; min-width:0; padding:var(--s12) var(--s16)}
+.res .l1{display:flex; align-items:baseline; gap:var(--s8); flex-wrap:wrap}
+.res .tm{font-weight:700; letter-spacing:-.01em; font-size:var(--fs-title)}
+.res .nm{font-weight:600; font-size:var(--fs-title)}
+.res .pp{font-size:var(--fs-sub); color:var(--text-2)}
+.res .rm{margin-left:auto}
+.res .l2{color:var(--text-2); margin-top:var(--s4); word-break:break-word; font-size:var(--fs-body)}
+.res .l3{display:flex; gap:var(--s8); margin-top:var(--s12); align-items:center; flex-wrap:wrap}
+.res .l3 select{width:auto; padding:var(--s8) var(--s8); font-size:var(--fs-sub); border-radius:var(--r-sm)}
+.res .l3 .btn{margin-left:auto}
+.sbtns{display:flex; gap:var(--s4); flex-wrap:wrap}
+.sbtn{border:1px solid var(--border-strong); background:var(--surface); color:var(--text-2);
+  border-radius:var(--r-sm); padding:var(--s8) var(--s12); font-size:var(--fs-sub); font-weight:700}
+.sbtn:hover{background:var(--surface-2); color:var(--text)}
+.sbtn.on.ok{background:var(--pine); border-color:var(--pine); color:#fff}
+.sbtn.on.done{background:var(--text-2); border-color:var(--text-2); color:#fff}
+.sbtn.on.no{background:var(--rust); border-color:var(--rust); color:#fff}
+.sbtn.on.cancel{background:#9C9482; border-color:#9C9482; color:#fff}
+.l3-r{display:flex; gap:var(--s8); margin-left:auto}
+.warn-txt{color:var(--rust); font-weight:700}
+/* ---------- 확인창 (renderModal) — 경고는 제목이 벽돌색, 안내는 초록 ---------- */
+.modal{width:100%; max-width:420px; background:var(--bg); overflow:hidden; box-shadow:0 12px 40px rgba(20,20,18,.28); margin:0 var(--s16); border-radius:var(--r-lg)}
+.modal.warn .md-h{color:var(--rust); font-size:var(--fs-head)}
+.modal.ok .md-h{color:var(--pine)}
+.md-h{padding:var(--s24) var(--s24) 0; font-size:var(--fs-head); font-weight:700; line-height:1.4}
+.md-b{padding:var(--s12) var(--s24) var(--s16); font-size:var(--fs-body); color:var(--text-2); line-height:1.65}
+.md-l{white-space:pre-wrap}
+.md-gap{height:9px}
+/* 확인창 안의 가로선 (renderModal 의 '---' 줄) */
+.md-rule{border-top:1px dashed var(--border-strong); margin:var(--s8) 0}
+.md-f{display:flex; gap:var(--s8); padding:0 var(--s16) var(--s16); justify-content:flex-end}
+.md-f .btn{min-width:96px; padding:var(--s12) var(--s16); font-size:var(--fs-body)}
+
+/* ---------- 움직임 (Phase 6-1) — 딱 세 곳만 ----------
+   시트는 아래에서 200ms 올라오고, 확인창은 150ms 떠오릅니다. '반응하는 도구' 느낌은 이 정도로 충분하고,
+   전화 받으며 쓰는 화면이라 그 이상은 기다리게 만듭니다. transform 은 translate 만 (scale 은 배율 zoom 과 부딪혀 잘림) */
+@keyframes sheet-in{from{transform:translateY(24px); opacity:0} to{transform:none; opacity:1}}
+@keyframes modal-in{from{transform:translateY(8px); opacity:0} to{transform:none; opacity:1}}
+@keyframes fade-in{from{opacity:0} to{opacity:1}}
+.sheet, .calbox{animation:sheet-in .2s ease-out}
+.modal{animation:modal-in .15s ease-out}
+.overlay{animation:fade-in .15s ease-out}
