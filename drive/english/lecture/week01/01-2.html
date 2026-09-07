@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>전공영어 2주차 1차시 — LaTeX</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<style>
+:root{
+  --accent:#E08700;
+  --accent-deep:#A55A00;
+  --accent-soft:#FEF3DC;
+
+  --bg:#F7F8FA;
+  --surface:#FFFFFF;
+  --ink:#15161B;
+  --ink-2:#565C66;
+  --ink-3:#8B9098;
+  --line:#E5E7EC;
+  --line-2:#F0F1F4;
+  --code-bg:#1B1D24;
+  --code-ink:#E4E6ED;
+  --mark:#FFE27A;
+  --font:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,system-ui,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  --mono:'JetBrains Mono','SFMono-Regular',Consolas,'D2Coding',monospace;
+}
+html[data-theme="dark"]{
+  --accent:#F5A93B;
+  --accent-deep:#F7C177;
+  --accent-soft:#2E2413;
+  --bg:#101116;
+  --surface:#181A20;
+  --ink:#E8E9ED;
+  --ink-2:#A6AAB4;
+  --ink-3:#73777F;
+  --line:#2A2C34;
+  --line-2:#202229;
+  --code-bg:#0C0D11;
+  --mark:#6E5C16;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15.5px;line-height:1.72;letter-spacing:-.012em;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-deep)}
+::selection{background:var(--accent);color:#fff}
+
+#scrollbar{position:fixed;top:0;left:0;height:3px;width:0;background:var(--accent);z-index:99}
+
+.topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:10px;padding:10px 22px;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.back{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink-2);font-size:14px;font-weight:700;white-space:nowrap}
+.back:hover{color:var(--accent-deep)}
+.back i{width:10px;height:10px;border-radius:3px;background:var(--accent);display:block}
+.search{flex:1;max-width:300px;margin-left:auto;position:relative}
+.search input{width:100%;padding:7px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14px}
+.search input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.hit{position:absolute;right:10px;top:8px;font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums;pointer-events:none}
+.tools{display:flex;gap:6px}
+.tbtn{border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:9px;padding:7px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);white-space:nowrap}
+.tbtn:hover{border-color:var(--accent);color:var(--accent-deep)}
+.tbtn.solid{background:var(--accent);border-color:var(--accent);color:#fff}
+.tbtn:disabled{opacity:.4;cursor:default}
+
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);gap:38px;max-width:1200px;margin:0 auto;padding:26px 24px 120px}
+main{min-width:0}
+
+.side{position:sticky;top:80px;align-self:start;max-height:calc(100vh - 100px);overflow-y:auto;scrollbar-width:thin}
+.panel{background:var(--accent);border-radius:16px;padding:18px 16px;color:#fff;box-shadow:0 8px 24px -12px color-mix(in srgb,var(--accent) 70%,transparent)}
+.panel .cap{font-size:11.5px;font-weight:700;opacity:.72;margin-bottom:9px}
+.panel .subject{font-size:19px;font-weight:800;letter-spacing:-.03em;line-height:1.3;margin-bottom:2px}
+.panel .when{font-size:12.5px;opacity:.8;margin-bottom:16px}
+.toc{list-style:none;margin:0;padding:0}
+.toc a{display:block;padding:6px 10px;border-radius:8px;color:#fff;opacity:.82;text-decoration:none;font-size:13.5px;font-weight:600;line-height:1.45}
+.toc a:hover{background:rgba(255,255,255,.16);opacity:1}
+.toc a.on{background:#fff;color:var(--accent-deep);opacity:1;font-weight:800}
+.toc .num{display:inline-block;width:17px;font-variant-numeric:tabular-nums;opacity:.7}
+.toc a.on .num{opacity:1}
+.panel hr{border:0;border-top:1px solid rgba(255,255,255,.22);margin:14px 0}
+.chk label{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;padding:3px 0;cursor:pointer;line-height:1.5;opacity:.9}
+.chk input{margin-top:4px;accent-color:#fff;flex-shrink:0}
+.chk input:checked + span{opacity:.5;text-decoration:line-through}
+.pbar{height:4px;border-radius:99px;background:rgba(255,255,255,.28);margin-top:11px;overflow:hidden}
+.pbar i{display:block;height:100%;width:0;background:#fff;transition:width .25s}
+
+.hero{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px 28px 22px;overflow:hidden;margin-bottom:16px}
+.hero::after{content:attr(data-w);position:absolute;right:14px;bottom:-26px;font-size:112px;font-weight:800;color:var(--accent);opacity:.09;letter-spacing:-.06em;line-height:1;pointer-events:none}
+.chip{display:inline-flex;align-items:center;gap:7px;background:var(--accent-soft);color:var(--accent-deep);font-size:12.5px;font-weight:800;padding:4px 11px;border-radius:99px}
+h1{font-size:clamp(26px,3.6vw,34px);font-weight:800;letter-spacing:-.04em;line-height:1.24;margin:12px 0 6px;position:relative}
+.hero .sub{color:var(--ink-2);font-size:15px;margin:0 0 14px;position:relative}
+[hidden]{display:none!important}
+.metaline{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-3);position:relative}
+.metaline b{color:var(--ink-2);font-weight:600}
+
+.files{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;position:relative}
+.file{display:inline-flex;align-items:center;gap:9px;padding:8px 13px 8px 9px;border:1px solid var(--line);border-radius:10px;background:var(--surface);text-decoration:none;color:var(--ink);font-size:13.5px;font-weight:700}
+.file:hover{border-color:var(--accent);background:var(--accent-soft)}
+.file .ic{background:var(--accent);color:#fff;font-size:10px;font-weight:800;padding:3px 6px;border-radius:6px;letter-spacing:.02em}
+.file em{font-style:normal;color:var(--ink-3);font-weight:600;font-size:12.5px}
+.files .none{font-size:12.5px;color:var(--ink-3);font-weight:600;padding:8px 0}
+.extra-chip:disabled{cursor:default;opacity:.6}
+
+.flow{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:26px}
+.flow a{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--line);border-radius:99px;background:var(--surface);text-decoration:none;color:var(--ink-2);font-size:13px;font-weight:600}
+.flow a:hover{border-color:var(--accent);color:var(--accent-deep);background:var(--accent-soft)}
+.flow a b{color:var(--accent);font-variant-numeric:tabular-nums}
+
+.keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:34px}
+.key{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:14px;padding:16px 17px}
+.key .n{font-size:12px;font-weight:800;color:var(--accent);margin-bottom:5px}
+.key p{margin:0;font-size:14.5px;line-height:1.6}
+.key b{font-weight:800}
+
+section{margin-bottom:46px;scroll-margin-top:82px}
+h2.st{display:flex;align-items:center;gap:11px;font-size:22px;font-weight:800;letter-spacing:-.035em;margin:0 0 14px}
+h2.st .sq{flex-shrink:0;width:30px;height:30px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+h3{font-size:16.5px;font-weight:800;margin:26px 0 8px;letter-spacing:-.025em;padding-left:11px;border-left:3px solid var(--accent)}
+h4{font-size:14.5px;font-weight:700;margin:18px 0 6px;color:var(--ink-2)}
+p{margin:9px 0}
+ul,ol{margin:9px 0;padding-left:21px}
+li{margin:3px 0}
+li::marker{color:var(--accent)}
+.en{color:var(--ink-3);font-weight:500;font-size:.9em}
+mark{background:linear-gradient(transparent 54%,var(--mark) 54%);color:inherit;padding:0 2px}
+.hit-mark{background:var(--accent);color:#fff;border-radius:3px}
+
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin:-6px 0 12px}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:6px;letter-spacing:0}
+.badge.exam{color:#92580B;background:#FDF0D5}
+.badge.prof{color:var(--accent-deep);background:var(--accent-soft)}
+.badge.ask{color:#B02020;background:#FCE4E4}
+html[data-theme="dark"] .badge.exam{background:#3B2D0E;color:#EFC470}
+html[data-theme="dark"] .badge.ask{background:#3A1919;color:#F0A0A0}
+
+.call{border-radius:13px;padding:14px 17px;margin:15px 0;background:var(--surface);border:1px solid var(--line)}
+.call .t{font-size:12.5px;font-weight:800;margin-bottom:5px}
+.call p:first-of-type{margin-top:0}
+.call p:last-child,.call ul:last-child{margin-bottom:0}
+.call.quote{background:var(--accent-soft);border-color:transparent}
+.call.quote .t{color:var(--accent-deep)}
+.call.quote p{font-size:14.8px}
+.call.warn{border-left:4px solid #E5A50A}
+.call.warn .t{color:#A16207}
+.call.ask{border-left:4px solid #DC2626}
+.call.ask .t{color:#B02020}
+.call.link{border-left:4px solid var(--accent)}
+.call.link .t{color:var(--accent-deep)}
+
+.call.extra{background:repeating-linear-gradient(135deg,var(--line-2),var(--line-2) 9px,transparent 9px,transparent 18px);border:1.5px dashed var(--ink-3);border-left-width:1.5px}
+.call.extra .t{color:var(--ink-2);display:flex;align-items:center;gap:6px}
+.call.extra .t::before{content:"보충";background:var(--ink-3);color:var(--surface);font-size:10.5px;padding:1px 6px;border-radius:5px}
+.call.extra p{color:var(--ink-2)}
+.badge.extra{color:var(--ink-2);background:var(--line-2);border:1px dashed var(--ink-3)}
+.ext{border-bottom:2px dotted var(--ink-3);color:var(--ink-2)}
+.ext::after{content:"보충";font-size:9.5px;font-weight:800;vertical-align:super;color:var(--ink-3);margin-left:2px;letter-spacing:0}
+.extra-chip{border:1.5px dashed var(--ink-3);background:transparent;color:var(--ink-2);cursor:pointer;font-family:var(--font)}
+body.no-extra .call.extra,body.no-extra .badge.extra{display:none}
+body.no-extra .ext{border-bottom:0}
+body.no-extra .ext::after{display:none}
+html[data-theme="dark"] .call.warn .t{color:#E5B547}
+html[data-theme="dark"] .call.ask .t{color:#F0A0A0}
+
+details.raw{margin:12px 0;border:1px dashed var(--line);border-radius:10px;background:var(--line-2)}
+details.raw summary{cursor:pointer;padding:8px 14px;font-size:12.5px;color:var(--ink-3);font-weight:700;list-style:none}
+details.raw summary::-webkit-details-marker{display:none}
+details.raw summary::before{content:"▸ ";color:var(--accent)}
+details.raw[open] summary::before{content:"▾ "}
+details.raw .txt{padding:0 14px 12px;font-size:13px;color:var(--ink-2);white-space:pre-wrap;line-height:1.7}
+
+.rawnote{border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+.rawitem{display:grid;grid-template-columns:78px 1fr;gap:16px;padding:15px 18px;border-bottom:1px solid var(--line-2)}
+.rawitem:last-child{border-bottom:0}
+.rawitem .seq{font-size:12px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+.rawitem .seq span{display:block;color:var(--ink-3);font-weight:600;font-size:11px;margin-top:2px}
+.rawitem .body{white-space:pre-wrap;font-size:14px;line-height:1.75;color:var(--ink)}
+.rawitem .where{margin-top:7px;font-size:12px}
+.rawitem .where a{color:var(--accent-deep);text-decoration:none;font-weight:700;background:var(--accent-soft);padding:2px 8px;border-radius:6px}
+.rawitem .where a:hover{background:var(--accent);color:#fff}
+
+.tablewrap{overflow-x:auto;margin:15px 0;border:1px solid var(--line);border-radius:13px}
+table{border-collapse:collapse;width:100%;font-size:14px;background:var(--surface)}
+th,td{padding:10px 13px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line-2)}
+th{background:var(--accent);color:#fff;font-weight:700;font-size:13px;white-space:nowrap;border-bottom:0}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--line-2)}
+
+.codebox{margin:15px 0;border-radius:13px;overflow:hidden;background:var(--code-bg);border:1px solid var(--code-bg)}
+.codebox .head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 14px;font-size:12px;color:#9AA0AC;font-weight:700;background:rgba(255,255,255,.04)}
+.codebox .head .tag{color:#fff;background:var(--accent);border-radius:5px;padding:1px 7px;font-size:11px;margin-right:7px}
+.codebox pre{margin:0;padding:15px 17px;overflow-x:auto;font-family:var(--mono);font-size:13.2px;line-height:1.7;color:var(--code-ink)}
+.codebox .cm{color:#7C8494}
+.codebox .kw{color:#C4A6FF}
+.codebox .st2{color:#8BD5A0}
+.copy{border:0;background:transparent;color:#9AA0AC;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font)}
+.copy:hover{color:#fff}
+.codebox.pseudo{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent)}
+.codebox.pseudo .head{background:var(--accent-soft);color:var(--accent-deep)}
+.codebox.pseudo .head .tag{background:var(--accent-deep)}
+.codebox.pseudo pre{color:var(--ink);font-size:13.6px}
+.codebox.pseudo .cm{color:var(--ink-3)}
+.codebox.pseudo .kw{color:var(--accent-deep);font-weight:700}
+.codebox.pseudo .copy{color:var(--ink-3)}
+.codebox.pseudo .copy:hover{color:var(--accent-deep)}
+code:not(pre code){background:var(--accent-soft);color:var(--accent-deep);padding:1px 6px;border-radius:6px;font-family:var(--mono);font-size:.88em;font-weight:600}
+
+figure{margin:18px 0;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 14px 12px}
+figure svg{max-width:100%;height:auto}
+figcaption{font-size:12.5px;color:var(--ink-3);margin-top:10px}
+
+.terms{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:11px}
+.term{border:1px solid var(--line);border-radius:13px;padding:13px 15px;background:var(--surface)}
+.term b{display:block;font-size:15px}
+.term .e{display:block;font-size:12px;color:var(--accent-deep);font-family:var(--mono);margin-bottom:6px}
+.term p{margin:0;font-size:13.3px;color:var(--ink-2);line-height:1.6}
+
+.q{border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:12px 0;background:var(--surface)}
+.q .qh{display:flex;gap:10px;align-items:flex-start;font-weight:700;font-size:15px}
+.q .qn{color:#fff;background:var(--accent);border-radius:7px;padding:1px 8px;font-size:12.5px;font-weight:800;flex-shrink:0;margin-top:3px}
+.q .type{font-size:11px;font-weight:800;color:var(--ink-3);border:1px solid var(--line);border-radius:6px;padding:1px 7px;margin-left:auto;flex-shrink:0;margin-top:3px}
+.q ol.ch{list-style:none;padding-left:0;margin:11px 0 0;counter-reset:c}
+.q ol.ch li{padding:3px 0 3px 26px;position:relative;font-size:14.3px}
+.q ol.ch li::before{content:counter(c);counter-increment:c;position:absolute;left:0;top:4px;width:19px;height:19px;border:1px solid var(--line);border-radius:50%;font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--ink-3)}
+.ans{margin-top:12px;padding:11px 13px;border-radius:10px;background:var(--accent-soft);font-size:14.2px;cursor:pointer}
+.ans .lab{font-weight:800;color:var(--accent-deep);font-size:12.5px;margin-right:7px}
+body.hide-ans .ans:not(.on){background:var(--line-2);color:transparent;user-select:none;cursor:pointer;position:relative}
+body.hide-ans .ans:not(.on) *{color:transparent!important}
+body.hide-ans .ans:not(.on)::after{content:"눌러서 정답 확인";position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-3);font-size:12.5px;font-weight:700}
+
+.vhead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px}
+.vhead input[type=search]{flex:1;min-width:170px;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14px}
+.vhead input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.vlist{margin:0;padding:0;list-style:none;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
+.vword{display:grid;grid-template-columns:190px 1fr;gap:16px;padding:14px 18px;border-bottom:1px solid var(--line-2)}
+.vword:last-child{border-bottom:0}
+.vword:hover{background:var(--line-2)}
+.vword .w{font-weight:800;font-size:16px;letter-spacing:-.02em}
+.vword .ipa{display:block;font-family:var(--mono);font-size:12px;color:var(--ink-3);font-weight:400;margin-top:1px}
+.vword .pos{display:inline-block;font-size:10.5px;font-weight:800;color:#fff;background:var(--accent);border-radius:5px;padding:1px 6px;margin-top:5px}
+.vword .mean{font-size:14.5px;margin:0;font-weight:600}
+.vword .ex{font-size:13px;color:var(--ink-2);margin:5px 0 0}
+.vword .ex b{color:var(--accent-deep);font-weight:700}
+.vword .ex .ko{display:block;color:var(--ink-3);font-size:12.5px}
+.masked .mean,.masked .ex{background:var(--line-2);border-radius:6px;color:transparent;cursor:pointer}
+.masked .mean *,.masked .ex *{color:transparent!important}
+.masked .mean.show,.masked .ex.show{background:transparent;color:inherit}
+.masked .mean.show *,.masked .ex.show *{color:revert!important}
+.masked .ex.show b{color:var(--accent-deep)!important}
+.quizbox{margin-top:18px;padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--surface);display:none}
+.quizbox.on{display:block}
+.quizbox .qq{font-size:22px;font-weight:800;margin-bottom:14px;letter-spacing:-.02em}
+.quizbox .opts{display:grid;gap:8px}
+.quizbox .opt{text-align:left;padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14.5px;cursor:pointer}
+.quizbox .opt:hover{border-color:var(--accent)}
+.quizbox .opt.ok{border-color:#16A34A;background:color-mix(in srgb,#16A34A 12%,var(--surface))}
+.quizbox .opt.no{border-color:#DC2626;background:color-mix(in srgb,#DC2626 12%,var(--surface))}
+.quizbox .score{margin-top:13px;font-size:13px;color:var(--ink-3);font-weight:600}
+
+footer{margin-top:54px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-3);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+@media(max-width:900px){
+  .wrap{grid-template-columns:1fr;gap:18px;padding:16px 16px 80px}
+  .side{position:static;max-height:none;order:-1}
+  .vword{grid-template-columns:1fr;gap:5px}
+  .search{max-width:none;order:3;flex-basis:100%;max-width:100%}
+  .topbar{flex-wrap:wrap}
+  .hero::after{font-size:78px}
+}
+@media print{
+  .topbar,.side,#scrollbar,.quizbox,.vhead,.flow,.files,.extra-chip{display:none!important}
+  .wrap{display:block;max-width:none;padding:0}
+  body{font-size:10.5pt;background:#fff}
+  section{page-break-inside:avoid;margin-bottom:22px}
+  body.hide-ans .ans:not(.on){background:var(--accent-soft)!important;color:inherit!important}
+  body.hide-ans .ans:not(.on) *{color:inherit!important}
+  body.hide-ans .ans:not(.on)::after{display:none}
+  details.raw{display:none}
+  #viewVocab,#viewRaw{display:block!important;page-break-before:always}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body class="hide-ans">
+<div id="scrollbar"></div>
+
+<div class="topbar">
+  <a class="back" href="../"><i></i>전공영어</a>
+  <div class="search"><input id="q" type="search" placeholder="찾기 (Enter로 다음)" aria-label="문서 내 검색"><span class="hit" id="hit"></span></div>
+  <div class="tools">
+    <button class="tbtn" id="ansBtn">정답 가리기</button>
+    <button class="tbtn" id="vocabBtn">단어장</button>
+    <button class="tbtn" id="rawBtn">필기 원문</button>
+    <button class="tbtn" id="themeBtn">다크</button>
+    <button class="tbtn" id="printBtn">🖨</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<aside class="side">
+  <div class="panel">
+    <div class="subject">전공영어</div>
+    <div class="when">2주차 1차시 · 2026.09.07 (월) · <span style="opacity:.85">초안(필기 반영 전)</span></div>
+
+    <div id="tocWrap">
+      <div class="cap">목차</div>
+      <ul class="toc" id="toc">
+        <li><a href="#s1"><span class="num">01</span>LaTeX 소개</a></li>
+        <li><a href="#s2"><span class="num">02</span>문서 구조·명령어 문법</a></li>
+        <li><a href="#s3"><span class="num">03</span>텍스트 서식</a></li>
+        <li><a href="#s4"><span class="num">04</span>리스트</a></li>
+        <li><a href="#s5"><span class="num">05</span>이미지</a></li>
+        <li><a href="#s6"><span class="num">06</span>표</a></li>
+        <li><a href="#s7"><span class="num">07</span>레이아웃</a></li>
+        <li><a href="#s8"><span class="num">08</span>수학</a></li>
+        <li><a href="#s9"><span class="num">09</span>사용자 정의 명령어</a></li>
+        <li><a href="#s10"><span class="num">10</span>소스코드·참고문헌</a></li>
+        <li><a href="#s11"><span class="num">11</span>템플릿·요약·실습</a></li>
+        <li><a href="#sg"><span class="num">12</span>용어 정리</a></li>
+        <li><a href="#sq"><span class="num">13</span>확인 필요</a></li>
+        <li><a href="#sx"><span class="num">14</span>예상 문제</a></li>
+      </ul>
+      <hr>
+      <div class="cap">복습 체크</div>
+      <div class="chk">
+        <label><input type="checkbox"><span>LaTeX 문서 기본 구조(전문·명령·본문) 외우기</span></label>
+        <label><input type="checkbox"><span>표 만들기(tabular, booktabs) 연습</span></label>
+        <label><input type="checkbox"><span>인라인/디스플레이 수학 모드 구분</span></label>
+        <label><input type="checkbox"><span>실습 과제(Practices) 요구사항 확인</span></label>
+      </div>
+      <div class="pbar"><i id="barFill"></i></div>
+    </div>
+
+    <div id="rawNav" hidden>
+      <div class="cap">필기 원문</div>
+      <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">내가 수업 중에 보낸 내용 <b id="rawTotal">0</b>개를 손대지 않고 그대로 모아둔 페이지입니다.</p>
+      <hr>
+      <div class="cap">확인 방법</div>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">여기 있는 내용이 본문에 다 반영됐는지 대조하세요. 각 항목의 파란 링크를 누르면 정리된 위치로 이동합니다.</p>
+    </div>
+
+    <div id="vocabNav" hidden>
+      <div class="cap">단어장</div>
+      <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">이번 차시에 나온 필수 단어 <b id="vTotal">12</b>개입니다.</p>
+      <hr>
+      <div class="cap">사용법</div>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">뜻 가리기를 켜면 회색 칸을 눌러 하나씩 확인할 수 있습니다. 퀴즈는 아래 목록에서 문제를 자동으로 만듭니다.</p>
+    </div>
+  </div>
+</aside>
+
+<main>
+<div id="viewNote">
+
+  <div class="hero" data-w="02">
+    <span class="chip">2주차 · 1차시</span>
+    <button class="chip extra-chip" id="extraChip"></button>
+    <h1>Writing tool, LaTeX — 강의 슬라이드 기반 초안</h1>
+    <p class="sub">아직 수업 중 필기·교수님 구두 설명이 반영되지 않은 <b>초안</b>입니다. 강의 슬라이드(127p) 내용만으로 먼저 구조를 잡았고, 필기를 받으면 재배치·보강하겠습니다.</p>
+    <div class="metaline">
+      <span>2026.09.07 (월)</span>
+      <span><b>이재권</b> 교수님</span>
+      <span>교재 범위 — Writing tool, LaTeX (Lecture #2)</span>
+      <span>과제 — 실습(Practices) 안내 있음, 확정은 필기 확인 후</span>
+    </div>
+
+    <div class="files">
+      <a class="file" href="02-1-lecture-slides.pdf" target="_blank"><span class="ic">PDF</span>강의 슬라이드<em>127p</em></a>
+    </div>
+  </div>
+
+  <nav class="flow">
+    <a href="#s1"><b>01</b> LaTeX 소개</a>
+    <a href="#s2"><b>02</b> 문서 구조</a>
+    <a href="#s3"><b>03</b> 텍스트 서식</a>
+    <a href="#s4"><b>04</b> 리스트</a>
+    <a href="#s5"><b>05</b> 이미지</a>
+    <a href="#s6"><b>06</b> 표</a>
+    <a href="#s7"><b>07</b> 레이아웃</a>
+    <a href="#s8"><b>08</b> 수학</a>
+    <a href="#s9"><b>09</b> 사용자 정의 명령어</a>
+    <a href="#s10"><b>10</b> 소스코드·참고문헌</a>
+    <a href="#s11"><b>11</b> 템플릿·요약·실습</a>
+  </nav>
+
+  <div class="keys">
+    <div class="key"><div class="n">핵심 1</div><p>LaTeX는 <b>워드프로세서가 아니라 문서 마크업 언어(document markup language)</b>이며, 전문(preamble)·명령(command)·본문(body) 구조로 이루어집니다.</p></div>
+    <div class="key"><div class="n">핵심 2</div><p>표는 <code>tabular</code>, 수식은 <code>$...$</code>(인라인)·<code>\[...\]</code>(디스플레이), 참고문헌은 <b>BibTeX</b>로 관리합니다.</p></div>
+    <div class="key"><div class="n">핵심 3</div><p>실습 과제는 <b>위키백과 문서를 LaTeX로 재현</b>하는 것과 <b>팀 소개 포스터 제작</b>입니다.</p></div>
+  </div>
+
+  <!-- 01 -->
+  <section id="s1">
+    <h2 class="st"><span class="sq">01</span>LaTeX 소개</h2>
+
+    <h3>LaTeX란</h3>
+    <ul>
+      <li>문서 조판 소프트웨어<span class="en">(software for typesetting documents)</span>이자 문서 준비 시스템<span class="en">(document preparation system)</span>.</li>
+      <li><b>워드프로세서가 아니라 문서 마크업 언어</b><span class="en">(document markup language)</span>로 사용됨.</li>
+      <li>무료·오픈소스 소프트웨어이며, Leslie Lamport가 만들었고 Donald Knuth의 TeX 조판 엔진을 기반으로 함.</li>
+      <li>발음은 "Lah-tech" 또는 "Lay-tech" 둘 다 쓰임.</li>
+    </ul>
+
+    <h3>LaTeX vs Word</h3>
+    <p>Word는 화면에 보이는 대로 결과가 나오는 방식<span class="en">(WYSIWYG)</span>인 반면, LaTeX는 <code>\section{Introduction}</code>처럼 <b>명령어로 구조를 표시</b>하고 이를 컴파일해서 결과물을 만듭니다.</p>
+
+    <h3>장점 <span class="en">(Benefits)</span></h3>
+    <ul>
+      <li>과학·기술 문서, 특히 <b>수학 수식 조판</b>에 강함.</li>
+      <li>문서가 아무리 커도 고품질·안정적인 출력을 유지.</li>
+      <li>상호 참조·번호 매기기·목차/그림 목록/참고문헌 목록 등을 <b>자동 생성</b>.</li>
+      <li>다국어 지원, PostScript·PDF·DVI·HTML 등 다양한 출력 형식 지원.</li>
+      <li>편지·발표자료·악보·체스 기보 등 다양한 템플릿에 유연하게 대응.</li>
+      <li>Windows·Linux·Mac 등에서 <b>동일한 출력</b>을 보장(플랫폼 간 일관성).</li>
+      <li>일반 텍스트로 작업하므로 읽기·편집이 쉬움.</li>
+    </ul>
+
+    <h3>단점 <span class="en">(Disadvantages)</span></h3>
+    <ul>
+      <li>학습 곡선이 김.</li>
+      <li>큰 문서일수록 구조 파악이 어려움.</li>
+      <li>표를 만들고 디자인하기 까다로움.</li>
+      <li>디버깅(오류 수정) 비용이 큼.</li>
+    </ul>
+
+    <h3>배포판 <span class="en">(Distributions)</span></h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>구분</th><th>목록</th></tr></thead>
+        <tbody>
+          <tr><td>TeX 배포판</td><td>TeX Live, MikTeX</td></tr>
+          <tr><td>제공 엔진</td><td>pdfLaTeX(전통적·호환성 좋음), XeLaTeX(유니코드·시스템 폰트 지원), LuaLaTeX(유니코드+Lua 프로그래밍)</td></tr>
+          <tr><td>기타 제공물</td><td>LaTeX 패키지, 폰트, 지원 도구</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>에디터 <span class="en">(Editors)</span></h3>
+    <ul>
+      <li>독립 에디터: TeXstudio, TeXworks, TexMaker, TeXnicCenter, Gummi, Lyx</li>
+      <li>VS Code 플러그인: LaTeX Workshop</li>
+      <li>IntelliJ 계열(오프라인) 플러그인: TeXiFy IDEA, PDF Viewer</li>
+      <li>온라인 에디터: Overleaf, Papeeria, CoCalc, Authorea</li>
+    </ul>
+  </section>
+
+  <!-- 02 -->
+  <section id="s2">
+    <h2 class="st"><span class="sq">02</span>문서 구조 · 명령어 문법</h2>
+
+    <h3>기본 문서 구조</h3>
+    <div class="codebox">
+      <div class="head"><span><span class="tag">tex</span>기본 구조</span><button class="copy">복사</button></div>
+      <pre><span class="cm">% Preamble(전문)</span>
+\documentclass[a4paper, 12pt]{article}
+<span class="cm">% Packages(패키지)</span>
+\usepackage{amsmath}
+\usepackage{graphicx} <span class="cm">% Required for inserting images</span>
+<span class="cm">% Variables(변수)</span>
+\title{Introduction to LaTeX}
+\author{Author Name}
+\date{\today}
+<span class="cm">% Document Body(본문)</span>
+\begin{document}
+\maketitle
+Hello, world!
+\end{document}</pre>
+    </div>
+    <p>문서는 크게 <b>전문<span class="en">(preamble)</span></b> — 문서 종류·패키지·변수 선언, <b>명령<span class="en">(command)</span></b>, <b>본문<span class="en">(body)</span></b> — <code>\begin{document}</code>~<code>\end{document}</code> 세 부분으로 이루어집니다.</p>
+
+    <h3>명령어 문법</h3>
+    <ul>
+      <li>명령은 백슬래시<span class="en">(\)</span>로 시작하고 대소문자로 이어집니다.</li>
+      <li>인자는 중괄호<span class="en">{}</span>(필수) 또는 대괄호<span class="en">[]</span>(선택)로 전달합니다: <code>\command[선택인자]{필수인자}</code></li>
+      <li>여러 인자를 가질 수도 있습니다: <code>\command[opt1][opt2]{arg1}{arg2}{arg3}</code></li>
+    </ul>
+
+    <h3>공백·줄바꿈·문단</h3>
+    <ul>
+      <li>여러 칸 띄어쓰기는 <b>한 칸과 동일</b>하게 처리됨.</li>
+      <li>줄바꿈 한 번은 공백 한 칸과 같은 효과.</li>
+      <li>에디터에서 어떻게 줄을 배치하든 출력 결과는 같음.</li>
+      <li><b>빈 줄 하나</b>가 문단 구분을 만들며, 여러 개의 빈 줄도 하나로 처리됨.</li>
+    </ul>
+
+    <h3>주석 <span class="en">(Comments)</span></h3>
+    <p>퍼센트 기호<span class="en">(%)</span> 뒤부터 그 줄 끝까지는 주석으로 처리되어 컴파일 시 무시됩니다.</p>
+  </section>
+
+  <!-- 03 -->
+  <section id="s3">
+    <h2 class="st"><span class="sq">03</span>텍스트 서식</h2>
+
+    <h3>특수문자 <span class="en">(Special Characters)</span></h3>
+    <p><code>#</code>, <code>%</code>, <code>$</code>, <code>&amp;</code>, <code>_</code>, <code>{</code>, <code>}</code> 같은 기호는 LaTeX에서 특별한 의미를 가지므로, 그대로 쓰려면 앞에 백슬래시<span class="en">(\)</span>를 붙입니다. 예: <code>\#</code>, <code>\%</code>, <code>\$</code>, <code>\&amp;</code>. 백슬래시 자체는 <code>\textbackslash</code>로 씁니다.</p>
+
+    <h3>굵게 · 기울임 · 밑줄</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>명령어</th><th>효과</th></tr></thead>
+        <tbody>
+          <tr><td><code>\emph{}</code></td><td>강조(문맥에 따라 기울임으로 표시)</td></tr>
+          <tr><td><code>\textit{}</code></td><td>기울임<span class="en">(italic)</span></td></tr>
+          <tr><td><code>\textbf{}</code></td><td>굵게<span class="en">(bold)</span></td></tr>
+          <tr><td><code>\textsl{}</code></td><td>슬랜트체<span class="en">(slanted)</span></td></tr>
+          <tr><td><code>\textsc{}</code></td><td>소형 대문자<span class="en">(Small Caps)</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>명령은 <code>\textit{\textbf{nested}}</code>처럼 <b>중첩</b>해서 쓸 수 있습니다.</p>
+
+    <h3>글꼴 크기 · 글꼴 · 색상</h3>
+    <ul>
+      <li>글꼴 크기 명령은 <b>스위치 명령<span class="en">(switch command)</span></b>이라, 명령이 속한 블록 끝까지 뒤 텍스트에 적용됩니다. 예: <code>{\tiny 이 글자는 작습니다.}</code></li>
+      <li>글꼴 종류: <code>\texttt{}</code>(고정폭, 코드 표기용) 등.</li>
+      <li>색상: <code>\usepackage{xcolor}</code> 후 <code>\color{colorname}</code>(스위치 명령, 이후 전체 적용) 또는 <code>\textcolor{colorname}{text}</code>(괄호 안 텍스트만 적용).</li>
+      <li>색상 팔레트: 기본 19색, <code>dvipsnames</code>(68색), <code>svgnames</code>(151색), <code>x11names</code>(317색). 여러 옵션을 동시에 불러올 수도 있음.</li>
+      <li>직접 색 정의: <code>\definecolor{이름}{모델}{값}</code> — 모델은 <code>rgb</code>(0~1), <code>RGB</code>(0~255), <code>cmyk</code>(0~1), <code>gray</code>(0~1).</li>
+    </ul>
+
+    <h3>정렬 <span class="en">(Text Alignment)</span></h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>환경(environment)</th><th>스위치 명령</th><th>효과</th></tr></thead>
+        <tbody>
+          <tr><td><code>flushleft</code></td><td><code>\raggedright</code></td><td>왼쪽 정렬</td></tr>
+          <tr><td><code>flushright</code></td><td><code>\raggedleft</code></td><td>오른쪽 정렬</td></tr>
+          <tr><td><code>center</code></td><td><code>\centering</code></td><td>가운데 정렬</td></tr>
+          <tr><td>—</td><td><code>\justifying</code><span class="en">(ragged2e 패키지)</span></td><td>양쪽 정렬</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section id="s4">
+    <h2 class="st"><span class="sq">04</span>리스트</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>환경</th><th>용도</th></tr></thead>
+        <tbody>
+          <tr><td><code>itemize</code></td><td>글머리표(순서 없는) 목록</td></tr>
+          <tr><td><code>enumerate</code></td><td>번호(순서 있는) 목록 — 각 <code>enumerate</code>는 1부터 자동으로 번호가 매겨짐</td></tr>
+          <tr><td><code>description</code></td><td>용어 설명 목록 — <code>\item[표제어]</code> 형태로 씀</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="codebox">
+      <div class="head"><span><span class="tag">tex</span>itemize 예시</span><button class="copy">복사</button></div>
+      <pre>\begin{itemize}
+\item start with the \verb|\item| command.
+\item Entries start with bullets.
+\end{itemize}</pre>
+    </div>
+  </section>
+
+  <!-- 05 -->
+  <section id="s5">
+    <h2 class="st"><span class="sq">05</span>이미지</h2>
+
+    <h3>이미지 삽입</h3>
+    <ul>
+      <li><code>graphicx</code> 패키지가 필요하며, <code>\graphicspath{{./images/}}</code>로 기본 경로를 지정할 수 있음.</li>
+      <li><code>\includegraphics{[경로/]이름}</code> — 확장자는 생략 가능.</li>
+      <li>크기·회전: <code>\includegraphics[width=0.8\linewidth]{galaxy}</code>, <code>\includegraphics[scale=0.5, angle=45]{galaxy}</code></li>
+    </ul>
+
+    <h3>figure 환경</h3>
+    <p>이미지·차트·의사코드 등 시각 자료는 <code>figure</code> 환경으로 감싸고, <code>\caption{}</code>(캡션)과 <code>\label{}</code>(참조용 이름표)을 함께 씁니다. 본문에서는 <code>\ref{label}</code>로 번호를 참조합니다.</p>
+    <div class="codebox">
+      <div class="head"><span><span class="tag">tex</span>figure 예시</span><button class="copy">복사</button></div>
+      <pre>\begin{figure}[h]
+\centering
+\includegraphics[width=0.3\linewidth]{galaxy}
+\caption{A nice plot.}
+\label{fig:mesh1}
+\end{figure}
+The following Figure~\ref{fig:mesh1} is a nice photo.</pre>
+    </div>
+
+    <h3>배치 · 여러 이미지</h3>
+    <ul>
+      <li>두 단(<code>\twocolumn</code>) 레이아웃에서는 <code>figure*</code>로 <b>모든 단에 걸치는</b> 그림을 만들 수 있음(*는 다단 환경의 확장 버전을 뜻함).</li>
+      <li>여러 장을 나란히 배치할 때는 <code>subcaption</code> 패키지의 <code>subfigure</code> 환경을 사용.</li>
+      <li>간격 조정: <code>\hspace{}</code>/<code>\vspace{}</code>(수평/수직 여백 추가), <code>\hfill</code>/<code>\vfill</code>(남는 공간 채우기).</li>
+    </ul>
+  </section>
+
+  <!-- 06 -->
+  <section id="s6">
+    <h2 class="st"><span class="sq">06</span>표</h2>
+
+    <h3>tabular 환경 — 기본</h3>
+    <ul>
+      <li>열 정렬 지정: <code>l</code>(왼쪽), <code>c</code>(가운데), <code>r</code>(오른쪽). <code>|</code>는 세로선.</li>
+      <li>셀 구분은 <code>&amp;</code>, 줄 구분은 <code>\\</code>, 가로선은 <code>\hline</code>.</li>
+    </ul>
+    <div class="codebox">
+      <div class="head"><span><span class="tag">tex</span>tabular 예시</span><button class="copy">복사</button></div>
+      <pre>\begin{tabular}{|c|c|c|}
+\hline
+title1 & title2 & title3 \\
+\hline
+cell1 & cell2 & cell3 \\
+cell4 & cell5 & cell6 \\
+\hline
+\end{tabular}</pre>
+    </div>
+
+    <h3>booktabs — 고급 표</h3>
+    <p>ACM/IEEE 논문 형식의 표에 쓰이는 <code>booktabs</code> 패키지는 <b>세로선 대신</b> 깔끔한 가로선을 권장합니다.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>명령어</th><th>역할</th></tr></thead>
+        <tbody>
+          <tr><td><code>\toprule</code></td><td>표의 맨 위 선</td></tr>
+          <tr><td><code>\midrule</code></td><td>제목과 본문 구분선</td></tr>
+          <tr><td><code>\bottomrule</code></td><td>표의 맨 아래 선</td></tr>
+          <tr><td><code>\cmidrule{a-b}</code></td><td>a~b 열에 걸친 부분 선</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>열 · 행 합치기</h3>
+    <ul>
+      <li><code>\multicolumn{개수}{정렬}{내용}</code> — 열 합치기.</li>
+      <li><code>\multirow{개수}{너비}{내용}</code>(<code>multirow</code> 패키지) — 행 합치기. 합쳐진 칸은 비워 둬야 함.</li>
+    </ul>
+
+    <h3>table 환경</h3>
+    <p><code>table</code> 환경으로 <code>tabular</code>를 감싸면 <code>\caption{}</code>(제목)과 <code>\label{}</code>(참조)을 붙일 수 있고, <b>표 번호는 그림·수식 번호와 독립적으로</b> 매겨집니다.</p>
+  </section>
+
+  <!-- 07 -->
+  <section id="s7">
+    <h2 class="st"><span class="sq">07</span>레이아웃</h2>
+
+    <h3>여백 <span class="en">(Margins)</span></h3>
+    <p><code>geometry</code> 패키지로 <code>\geometry{left=20mm, right=20mm, top=20mm, bottom=20mm}</code>처럼 여백을 직접 지정합니다.</p>
+
+    <h3>챕터 · 섹션</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>명령어</th><th>수준</th></tr></thead>
+        <tbody>
+          <tr><td><code>\chapter{}</code></td><td>book 문서 종류에서만 사용</td></tr>
+          <tr><td><code>\section{}</code></td><td>1단계 섹션</td></tr>
+          <tr><td><code>\subsection{}</code></td><td>2단계 섹션</td></tr>
+          <tr><td><code>\subsubsection{}</code></td><td>3단계 섹션</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>뒤에 <code>*</code>를 붙이면(<code>\section*{}</code>) 번호가 매겨지지 않는 섹션이 됩니다.</p>
+
+    <h3>목차 <span class="en">(Table of Contents)</span></h3>
+    <p><code>\tableofcontents</code> 명령이 위치한 곳에 목차가 생성됩니다. 번호 없는 섹션도 <code>\addcontentsline{toc}{section}{이름}</code>으로 목차에 추가할 수 있습니다.</p>
+
+    <h3>다단 레이아웃</h3>
+    <ul>
+      <li><code>\twocolumn</code> / <code>\onecolumn</code> — <b>페이지 단위</b>로 단을 나눔(새 페이지 시작).</li>
+      <li><code>multicols</code> 환경(<code>multicol</code> 패키지) — <b>문단 단위</b>로 여러 단을 나눔.</li>
+    </ul>
+
+    <h3>여러 파일 합치기</h3>
+    <ul>
+      <li><code>\input{파일명}</code> — 다른 .tex 파일의 내용을 그대로 불러옴.</li>
+      <li><code>\include{파일명}</code> — <code>\input</code>과 비슷하지만 앞뒤로 페이지 나눔(<code>\clearpage</code>)이 자동으로 들어감.</li>
+    </ul>
+
+    <h3>인용문 <span class="en">(Quote Environment)</span></h3>
+    <p><code>quote</code> 환경으로 긴 인용문을 들여쓰기해서 표시할 수 있습니다.</p>
+  </section>
+
+  <!-- 08 -->
+  <section id="s8">
+    <h2 class="st"><span class="sq">08</span>수학</h2>
+    <div class="badges"><span class="badge exam">시험 ★★☆</span></div>
+
+    <h3>수학 모드 — 인라인 vs 디스플레이</h3>
+    <ul>
+      <li><b>인라인<span class="en">(inline)</span></b> — 문단 속에 섞여 들어가는 수식. <code>\(...\)</code>, <code>$...$</code>, <code>\begin{math}...\end{math}</code> 세 가지 표기는 결과가 같으며, <code>\( \)</code>와 <code>$ $</code>가 가장 널리 쓰임.</li>
+      <li><b>디스플레이<span class="en">(display)</span></b> — 별도 줄에 놓이는 수식. 번호 없는 형태는 <code>\[...\]</code>, <code>$$...$$</code>, <code>displaymath</code> 환경, 번호 있는 형태는 <code>equation</code> 환경.</li>
+    </ul>
+
+    <h3>첨자 · 합·적분</h3>
+    <ul>
+      <li>아래첨자<span class="en">(subscript)</span> <code>_</code>: 합·적분의 시작점, 로그의 밑 등을 표시.</li>
+      <li>위첨자<span class="en">(superscript)</span> <code>^</code>: 합·적분의 끝점, 지수를 표시.</li>
+      <li><code>{}</code>로 여러 문자를 하나로 묶음. <code>\sum</code>(합), <code>\int</code>(적분), <code>\prod</code>(곱), <code>\infty</code>(무한대).</li>
+      <li>분수: <code>\frac{분자}{분모}</code>.</li>
+    </ul>
+
+    <h3>괄호 크기 조절</h3>
+    <p><code>\left(</code> ... <code>\right)</code>처럼 <code>\left</code>/<code>\right</code>를 붙이면 내용 크기에 맞춰 괄호 크기가 자동으로 커집니다.</p>
+
+    <h3>여러 줄 수식 정렬 — amsmath</h3>
+    <ul>
+      <li><code>align</code> 환경: <code>&amp;</code> 기준으로 여러 줄 수식을 세로로 정렬. <code>&amp;</code> 왼쪽은 오른쪽 정렬, 오른쪽은 왼쪽 정렬되며 각 줄마다 번호가 매겨짐.</li>
+      <li><code>align*</code> 환경: 번호 없이 정렬. <code>&amp;</code>를 여러 번 써서 다열 정렬도 가능.</li>
+      <li>보이지 않는 괄호 <code>\left.</code> / <code>\right.</code> — 여러 줄에 걸친 괄호 쌍을 맞출 때, 실제로는 표시되지 않는 괄호로 짝을 맞춰줌.</li>
+    </ul>
+
+    <h3>행렬 <span class="en">(matrix)</span></h3>
+    <p><code>amsmath</code>의 행렬 환경(<code>pmatrix</code> 등)은 반드시 <code>equation</code>류 수식 환경 안에 있어야 합니다.</p>
+    <div class="codebox">
+      <div class="head"><span><span class="tag">tex</span>행렬 예시</span><button class="copy">복사</button></div>
+      <pre>\usepackage{amsmath}
+\[
+A=
+\begin{pmatrix}
+1 & 2 & 3 \\
+a & b & c
+\end{pmatrix}
+\]</pre>
+    </div>
+  </section>
+
+  <!-- 09 -->
+  <section id="s9">
+    <h2 class="st"><span class="sq">09</span>사용자 정의 명령어</h2>
+    <ul>
+      <li><code>\newcommand{\이름}{내용}</code> — 새 명령 정의. <b>선택 인자는 하나만</b> 허용됨.</li>
+      <li>선택 인자가 있는 경우 <code>\newcommand{\note}[2][TODO]{...}</code>처럼 <b>대괄호 안에 기본값</b>을 지정.</li>
+      <li><code>\ </code>(백슬래시+공백): 줄바꿈이 가능한 공백. <code>~</code>: 줄바꿈이 되지 않는 공백.</li>
+    </ul>
+    <div class="codebox">
+      <div class="head"><span><span class="tag">tex</span>매크로 예시</span><button class="copy">복사</button></div>
+      <pre>\newcommand{\keyword}[1]{\textbf{#1}}
+\begin{document}
+\keyword{Grouping} by curly braces limits the
+\keyword{scope} of \keyword{declarations}.
+\end{document}</pre>
+    </div>
+  </section>
+
+  <!-- 10 -->
+  <section id="s10">
+    <h2 class="st"><span class="sq">10</span>소스코드 · 참고문헌</h2>
+
+    <h3>소스코드 — listings 패키지</h3>
+    <p><code>listings</code>는 소스코드를 조판하기 위한 내장 패키지로, 구문 강조(키워드/주석/문자열)·줄번호·테두리·파일 불러오기를 지원하며 스타일을 커스터마이즈할 수 있습니다.</p>
+    <div class="codebox">
+      <div class="head"><span><span class="tag">tex</span>lstlisting 예시</span><button class="copy">복사</button></div>
+      <pre>\usepackage{listing}
+\begin{lstlisting}[
+  language=C,
+  caption={Simple sum},
+  label={lst:sum}
+]
+#include &lt;stdio.h&gt;
+int main(void){
+  int a=10, b=20;
+  printf("%d\n", a+b);
+  return 0;
+}
+\end{lstlisting}</pre>
+    </div>
+    <p><code>\lstinputlisting[firstline=1, lastline=10]{code/main.c}</code>처럼 외부 파일의 특정 줄 범위만 불러올 수도 있습니다.</p>
+
+    <h3>참고문헌 — BibTeX</h3>
+    <ul>
+      <li>LaTeX는 <b>BibTeX</b> 도구로 참고문헌을 관리합니다.</li>
+      <li>작동 방식: <code>main.tex</code>의 <code>\cite{key1}</code>이 <code>ref.bib</code>의 항목과 연결되고, BibTeX 컴파일러가 이를 조합해 최종 참고문헌 목록을 만듭니다.</li>
+      <li>bib 파일은 유형별 블록으로 구성: <code>@book</code>(단행본), <code>@article</code>(저널 논문), <code>@inproceedings</code>(학회 논문), <code>@phdthesis</code>(학위논문), <code>@misc</code>(기타).</li>
+      <li>인용: <code>\cite{key}</code>. 여러 문헌은 <code>\cite{key1, key2, ...}</code>처럼 <b>한 번에</b> 쓰고, 여러 개의 <code>\cite</code>를 나열하지 않습니다.</li>
+      <li>문서 끝에서 <code>\bibliographystyle{plain}</code>(인용 스타일 선택)과 <code>\bibliography{references}</code>(references.bib 불러오기)로 목록을 출력합니다.</li>
+    </ul>
+  </section>
+
+  <!-- 11 -->
+  <section id="s11">
+    <h2 class="st"><span class="sq">11</span>템플릿 · 요약 · 실습</h2>
+    <div class="badges"><span class="badge prof">교수님 강조</span></div>
+
+    <h3>템플릿 선택</h3>
+    <p>클래스<span class="en">(class, 문서 종류)</span>는 문서의 정해진 디자인을 제공합니다(예: <code>article</code>, <code>book</code>).</p>
+
+    <h3>요약 <span class="en">(Summary)</span></h3>
+    <ul>
+      <li>LaTeX로 표·그림을 조판할 수 있음.</li>
+      <li>사용자 정의 명령·파일 불러오기로 작업을 간소화할 수 있음.</li>
+      <li>LaTeX는 수학 수식 조판에 특히 강함.</li>
+      <li>BibTeX로 인용을 관리함.</li>
+    </ul>
+
+    <h3>실습 과제 <span class="en">(Practices)</span></h3>
+    <div class="call warn">
+      <div class="t">슬라이드에 제시된 실습 안내</div>
+      <ul>
+        <li><b>1페이지 팀 소개 포스터</b> 제작.</li>
+        <li><b>개념을 설명하는 문서</b> 제작 — 수식·표·그림이 포함된 위키백과 문서를 하나 골라(예: <a href="https://en.wikipedia.org/wiki/Factorial" target="_blank">Factorial</a> 문서) LaTeX로 재현.
+          <ul>
+            <li>참고문헌 <b>3개 이상</b> 포함</li>
+            <li>섹션 <b>4개 이상</b> 포함</li>
+            <li>표·그림을 언급하는 문장을 추가하고 색으로 강조</li>
+            <li>문서의 모든 섹션을 다 재현할 필요는 없음</li>
+          </ul>
+        </li>
+        <li>각 결과물은 eRuri의 해당 제출란에 제출.</li>
+      </ul>
+    </div>
+    <div class="call ask">
+      <div class="t">확인 필요 — 실습 과제 확정 여부</div>
+      <p>위 실습 내용은 <b>슬라이드에 적힌 안내</b>이며, 이번 시간에 실제로 부여된 과제인지·마감일이 언제인지는 아직 교수님 구두 설명으로 확인되지 않았습니다.</p>
+    </div>
+  </section>
+
+  <!-- 12 -->
+  <section id="sg">
+    <h2 class="st"><span class="sq">12</span>용어 정리</h2>
+    <div class="terms">
+      <div class="term"><b>마크업 언어</b><span class="e">markup language</span><p>텍스트에 명령어로 구조·서식을 표시하는 언어.</p></div>
+      <div class="term"><b>전문</b><span class="e">preamble</span><p>문서 종류·패키지·변수 등을 선언하는 문서 앞부분.</p></div>
+      <div class="term"><b>환경</b><span class="e">environment</span><p><code>\begin{}</code>~<code>\end{}</code>으로 감싸 특정 서식을 적용하는 블록.</p></div>
+      <div class="term"><b>패키지</b><span class="e">package</span><p>추가 기능을 제공하는 LaTeX 확장 모듈.</p></div>
+      <div class="term"><b>매크로</b><span class="e">macro</span><p>자주 쓰는 명령을 하나로 묶어 재사용하는 사용자 정의 명령.</p></div>
+    </div>
+  </section>
+
+  <!-- 13 -->
+  <section id="sq">
+    <h2 class="st"><span class="sq">13</span>확인 필요</h2>
+    <div class="call ask">
+      <div class="t">1. 실습 과제(Practices) 확정 여부 — 미해결</div>
+      <p>슬라이드 마지막에 있는 포스터·위키백과 재현 과제가 이번 주 실제 과제로 부여됐는지, 마감일과 제출 방식(개인/팀)이 정확히 어떻게 되는지 확인이 필요합니다.</p>
+    </div>
+    <div class="call ask">
+      <div class="t">2. LaTeX·기술문서작성 수업 진행 언어 — 확인 필요</div>
+      <p>1주차에 "LaTeX·Technical Writing은 한국어로 진행"한다고 들었는데, 이번 시간 슬라이드가 전부 영어로 되어 있어 <b>실습 설명 자체도 한국어로 진행되는지</b> 실제 수업에서 확인이 필요합니다.</p>
+    </div>
+  </section>
+
+  <!-- 14 -->
+  <section id="sx">
+    <h2 class="st"><span class="sq">14</span>예상 문제</h2>
+    <p style="color:var(--ink-2);font-size:13.5px;margin-top:-4px">※ 슬라이드만으로 만든 예비 문제입니다. 필기 반영 후 실제 수업 범위에 맞게 다시 조정합니다.</p>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q1</span><span>LaTeX는 워드프로세서가 아니라 무엇으로 분류되는가?</span><span class="type">객관식</span></div>
+      <ol class="ch"><li>이미지 편집기</li><li>문서 마크업 언어</li><li>스프레드시트 프로그램</li><li>웹 브라우저</li></ol>
+      <div class="ans"><span class="lab">정답 ②</span>LaTeX는 문서 마크업 언어(document markup language)로 사용되는 문서 조판 소프트웨어입니다.</div>
+    </div>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q2</span><span>다음 코드를 실행하면 "Grouping", "scope", "declarations"에 공통으로 적용되는 서식은?</span><span class="type">코드</span></div>
+      <div class="codebox"><div class="head"><span><span class="tag">tex</span></span></div><pre>\newcommand{\keyword}[1]{\textbf{#1}}
+\keyword{Grouping} by curly braces limits the \keyword{scope}.</pre></div>
+      <div class="ans"><span class="lab">정답</span><b>굵게(bold)</b> — <code>\keyword</code>는 <code>\textbf{#1}</code>로 정의된 매크로이기 때문입니다.</div>
+    </div>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q3</span><span>인라인 수학 모드와 디스플레이 수학 모드의 차이를 설명하시오.</span><span class="type">서술형</span></div>
+      <div class="ans"><span class="lab">모범답안</span>인라인 모드는 문단 속에 수식이 섞여 들어가며 <code>$...$</code> 등으로 표시하고, 디스플레이 모드는 수식이 별도의 줄에 놓이며 <code>\[...\]</code>나 <code>equation</code> 환경 등으로 표시한다.</div>
+    </div>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q4</span><span>실습 과제에서 위키백과 문서를 LaTeX로 재현할 때 최소로 포함해야 하는 참고문헌 수와 섹션 수는?</span><span class="type">계산</span></div>
+      <div class="ans"><span class="lab">정답</span>참고문헌 <b>3개 이상</b>, 섹션 <b>4개 이상</b>.</div>
+    </div>
+  </section>
+
+  <footer><span>전공영어 · 2주차 1차시 · 2026.09.07 (초안)</span><span>jaealee.com</span></footer>
+</div>
+
+<div id="viewVocab" hidden>
+  <div class="hero" data-w="A–Z">
+    <span class="chip">2주차 1차시 단어장</span>
+    <h1>전공영어 필수 단어 — LaTeX</h1>
+    <p class="sub">강의 슬라이드에 나온 단어 중 전공생이 문서 작업·논문 작성에서 다시 만날 것들만 골랐습니다.</p>
+  </div>
+
+  <div class="vhead">
+    <input type="search" id="vq" placeholder="단어 · 뜻으로 찾기">
+    <button class="tbtn" id="maskBtn">뜻 가리기</button>
+    <button class="tbtn" id="quizBtn">퀴즈 풀기</button>
+    <span style="font-size:13px;color:var(--ink-3);font-weight:600" id="vcount"></span>
+  </div>
+
+  <ul class="vlist" id="vlist">
+    <li class="vword">
+      <div><span class="w">typeset</span><span class="ipa">/ˈtaɪpset/</span><span class="pos">v.</span></div>
+      <div><p class="mean">조판하다 — 인쇄·출판을 위해 문서의 글자와 배치를 짜는 것</p>
+      <p class="ex">LaTeX is a software for typesetting documents.<span class="ko">LaTeX는 문서를 조판하는 소프트웨어이다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">markup language</span><span class="ipa">/ˈmɑːrkʌp ˈlæŋɡwɪdʒ/</span><span class="pos">n.</span></div>
+      <div><p class="mean">마크업 언어 — 문서의 구조와 서식을 명령어로 표시하는 언어</p>
+      <p class="ex">LaTeX is used as a document markup language.<span class="ko">LaTeX는 문서 마크업 언어로 쓰인다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">preamble</span><span class="ipa">/ˈpriːæmbl/</span><span class="pos">n.</span></div>
+      <div><p class="mean">전문 — 문서 앞부분에서 종류·패키지 등을 선언하는 부분</p>
+      <p class="ex">Packages are loaded in the preamble.<span class="ko">패키지는 전문에서 불러온다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">compile</span><span class="ipa">/kəmˈpaɪl/</span><span class="pos">v.</span></div>
+      <div><p class="mean">컴파일하다 — 작성한 코드를 실행 가능한 결과물로 변환하는 것</p>
+      <p class="ex">You need to compile the .tex file to get a PDF.<span class="ko">.tex 파일을 컴파일해야 PDF가 나온다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">cross-reference</span><span class="ipa">/ˌkrɔːs ˈrefrəns/</span><span class="pos">n./v.</span></div>
+      <div><p class="mean">상호 참조 — 문서 안의 다른 위치(그림, 표 등)를 번호로 가리키는 것</p>
+      <p class="ex">LaTeX has built-in automation for cross-referencing.<span class="ko">LaTeX는 상호 참조 자동화 기능이 내장되어 있다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">caption</span><span class="ipa">/ˈkæpʃn/</span><span class="pos">n.</span></div>
+      <div><p class="mean">캡션 — 그림이나 표 아래에 붙는 설명 문구</p>
+      <p class="ex">Add a caption below the figure.<span class="ko">그림 아래에 캡션을 추가하라.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">syntax</span><span class="ipa">/ˈsɪntæks/</span><span class="pos">n.</span></div>
+      <div><p class="mean">문법 — 명령어를 쓰는 규칙</p>
+      <p class="ex">Learn the syntax of LaTeX commands first.<span class="ko">LaTeX 명령어 문법부터 배워라.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">argument</span><span class="ipa">/ˈɑːrɡjumənt/</span><span class="pos">n.</span></div>
+      <div><p class="mean">인자 — 명령어에 전달하는 값</p>
+      <p class="ex">Mandatory arguments are given in curly braces.<span class="ko">필수 인자는 중괄호 안에 쓴다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">bibliography</span><span class="ipa">/ˌbɪbliˈɒɡrəfi/</span><span class="pos">n.</span></div>
+      <div><p class="mean">참고문헌 목록</p>
+      <p class="ex">BibTeX is used to manage the bibliography.<span class="ko">참고문헌 관리에는 BibTeX가 쓰인다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">citation</span><span class="ipa">/saɪˈteɪʃn/</span><span class="pos">n.</span></div>
+      <div><p class="mean">인용 — 다른 문헌을 참조하여 표시하는 것</p>
+      <p class="ex">Use \cite{key} to add a citation.<span class="ko">인용을 넣으려면 \cite{key}를 쓴다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">template</span><span class="ipa">/ˈtemplət/</span><span class="pos">n.</span></div>
+      <div><p class="mean">템플릿 — 미리 정해진 문서 디자인 양식</p>
+      <p class="ex">A class provides a predefined template.<span class="ko">클래스는 미리 정의된 템플릿을 제공한다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">syntax highlighting</span><span class="ipa">/ˈsɪntæks ˈhaɪlaɪtɪŋ/</span><span class="pos">n.</span></div>
+      <div><p class="mean">구문 강조 — 코드에서 키워드·주석 등을 색으로 구분해 보여주는 기능</p>
+      <p class="ex">The listings package provides basic syntax highlighting.<span class="ko">listings 패키지는 기본적인 구문 강조를 제공한다.</span></p></div>
+    </li>
+  </ul>
+
+  <div class="quizbox" id="quiz">
+    <div class="qq" id="quizQ"></div>
+    <div class="opts" id="quizOpts"></div>
+    <div class="score" id="quizScore"></div>
+  </div>
+</div>
+
+<div id="viewRaw" hidden>
+  <div class="hero" data-w="RAW">
+    <span class="chip">2주차 1차시 필기 원문</span>
+    <h1>내가 보낸 그대로</h1>
+    <p class="sub">한 글자도 고치지 않았습니다. 본문에 빠진 게 없는지 여기서 대조하세요.</p>
+  </div>
+
+  <div class="rawnote" id="rawlist">
+    <div class="rawitem">
+      <div class="seq">01<span>-</span></div>
+      <div>
+        <div class="body">9월 7일 월요일 전공영어 수업이야. 수업 자료이거 이거 먼저 보내줄게. 수업내용은 곧 보내줄거고 수업파일 먼저 보내주는거야. 수업 파일은 내가 너가 지정해주는 파일명(pdf)으로 동일폴더에 저장할거야. 내가 보내는 마크다운 파일은 pdf를 변환한거야. 용량문제 때문에. 그래서 마찬가지로 마크다운 보고 수업 정리하고 누락 없애면 돼. 근데 오늘 파일은 내가 보니까 내용이 방대하던데 중요한 내용인지 모르겠어. 확인해봐줘</div>
+        <div class="where"><a href="#s1">01. LaTeX 소개</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">02<span>-</span></div>
+      <div>
+        <div class="body">[첨부: 2026-02-Latex.md — Fall 2026 Technical and Academic English for Computer Science, Writing tool LaTeX, Lecture #2, Jaekwon Lee, 총 127슬라이드를 마크다운으로 변환한 자료]</div>
+        <div class="where"><a href="#s1">01. LaTeX 소개</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">03<span>-</span></div>
+      <div>
+        <div class="body">필기는 곧 보내줄게. 우선 html 초안부터 만들자</div>
+        <div class="where"><a href="#s1">01. LaTeX 소개</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+const sb = document.getElementById('scrollbar');
+addEventListener('scroll', () => {
+  const h = document.documentElement.scrollHeight - innerHeight;
+  sb.style.width = (h > 0 ? scrollY / h * 100 : 0) + '%';
+}, { passive: true });
+
+const html = document.documentElement, themeBtn = document.getElementById('themeBtn');
+themeBtn.onclick = () => {
+  const dark = html.dataset.theme === 'dark';
+  html.dataset.theme = dark ? 'light' : 'dark';
+  themeBtn.textContent = dark ? '다크' : '라이트';
+};
+
+const ansBtn = document.getElementById('ansBtn');
+const answers = [...document.querySelectorAll('.ans')];
+function syncAnsBtn() {
+  const opened = answers.filter(a => a.classList.contains('on')).length;
+  ansBtn.disabled = opened === 0;
+  ansBtn.textContent = opened ? `정답 가리기 (${opened})` : '정답 가리기';
+}
+answers.forEach(a => a.addEventListener('click', () => { a.classList.toggle('on'); syncAnsBtn(); }));
+ansBtn.onclick = () => { answers.forEach(a => a.classList.remove('on')); syncAnsBtn(); };
+syncAnsBtn();
+
+const extraChip = document.getElementById('extraChip');
+const extraCount = document.querySelectorAll('#viewNote .call.extra, #viewNote .ext').length;
+if (extraCount) {
+  extraChip.textContent = `보충 ${extraCount}곳 — 교수님 설명 아님`;
+  extraChip.onclick = () => {
+    const off = document.body.classList.toggle('no-extra');
+    extraChip.textContent = off ? `보충 ${extraCount}곳 숨김 — 눌러서 보기` : `보충 ${extraCount}곳 — 교수님 설명 아님`;
+  };
+} else {
+  extraChip.textContent = '보충 0곳 — 전부 교안 내용';
+  extraChip.disabled = true;
+}
+
+document.getElementById('printBtn').onclick = () => window.print();
+
+document.querySelectorAll('.copy').forEach(btn => {
+  btn.onclick = async () => {
+    try { await navigator.clipboard.writeText(btn.closest('.codebox').querySelector('pre').innerText); btn.textContent = '복사됨'; }
+    catch { btn.textContent = '실패'; }
+    setTimeout(() => btn.textContent = '복사', 1200);
+  };
+});
+
+const boxes = document.querySelectorAll('.chk input'), fill = document.getElementById('barFill');
+boxes.forEach(b => b.addEventListener('change', () => {
+  fill.style.width = [...boxes].filter(x => x.checked).length / boxes.length * 100 + '%';
+}));
+
+const views = {
+  note:  { el: document.getElementById('viewNote'),  nav: document.getElementById('tocWrap') },
+  vocab: { el: document.getElementById('viewVocab'), nav: document.getElementById('vocabNav'), btn: document.getElementById('vocabBtn'), on: '본문으로', off: '단어장' },
+  raw:   { el: document.getElementById('viewRaw'),   nav: document.getElementById('rawNav'),   btn: document.getElementById('rawBtn'),  on: '본문으로', off: '필기 원문' }
+};
+let current = 'note';
+function setView(name) {
+  current = name;
+  Object.entries(views).forEach(([k, v]) => {
+    v.el.hidden = k !== name;
+    v.nav.hidden = k !== name;
+    if (v.btn) { v.btn.classList.toggle('solid', k === name); v.btn.textContent = k === name ? v.on : v.off; }
+  });
+  clearMarks();
+  document.getElementById('q').value = '';
+  document.getElementById('hit').textContent = '';
+  scrollTo({ top: 0, behavior: 'smooth' });
+}
+views.vocab.btn.onclick = () => setView(current === 'vocab' ? 'note' : 'vocab');
+views.raw.btn.onclick   = () => setView(current === 'raw'   ? 'note' : 'raw');
+document.getElementById('rawTotal').textContent = document.querySelectorAll('#rawlist .rawitem').length;
+document.querySelectorAll('#rawlist .where a').forEach(a => {
+  a.onclick = e => { e.preventDefault(); setView('note'); setTimeout(() => document.querySelector(a.getAttribute('href')).scrollIntoView(), 60); };
+});
+
+const links = [...document.querySelectorAll('#toc a')];
+const spy = new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) return;
+  links.forEach(l => l.classList.toggle('on', l.getAttribute('href') === '#' + e.target.id));
+}), { rootMargin: '-80px 0px -68% 0px' });
+document.querySelectorAll('#viewNote section').forEach(s => spy.observe(s));
+
+const qInput = document.getElementById('q'), hitEl = document.getElementById('hit');
+let marks = [], cursor = -1;
+function clearMarks() {
+  marks.forEach(m => { const p = m.parentNode; if (!p) return; p.replaceChild(document.createTextNode(m.textContent), m); p.normalize(); });
+  marks = []; cursor = -1;
+}
+function runSearch(word) {
+  clearMarks();
+  if (word.length < 2) { hitEl.textContent = ''; return; }
+  const root = views[current].el;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const targets = [];
+  while (walker.nextNode()) {
+    const n = walker.currentNode;
+    if (n.parentElement.closest('script,style')) continue;
+    if (n.nodeValue.toLowerCase().includes(word)) targets.push(n);
+  }
+  targets.forEach(n => {
+    const re = new RegExp('(' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    const frag = document.createDocumentFragment();
+    n.nodeValue.split(re).forEach(p => {
+      if (p.toLowerCase() === word) { const m = document.createElement('span'); m.className = 'hit-mark'; m.textContent = p; frag.appendChild(m); marks.push(m); }
+      else frag.appendChild(document.createTextNode(p));
+    });
+    n.parentNode.replaceChild(frag, n);
+  });
+  hitEl.textContent = marks.length ? '0/' + marks.length : '없음';
+}
+qInput.addEventListener('input', e => runSearch(e.target.value.trim().toLowerCase()));
+qInput.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || !marks.length) return;
+  e.preventDefault();
+  cursor = (cursor + 1) % marks.length;
+  marks[cursor].scrollIntoView({ block: 'center', behavior: 'smooth' });
+  hitEl.textContent = (cursor + 1) + '/' + marks.length;
+});
+addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); qInput.focus(); qInput.select(); }
+});
+
+const vlist = document.getElementById('vlist');
+const words = [...vlist.querySelectorAll('.vword')];
+document.getElementById('vcount').textContent = words.length + '개';
+document.getElementById('vTotal').textContent = words.length;
+
+document.getElementById('vq').addEventListener('input', e => {
+  const k = e.target.value.trim().toLowerCase();
+  let shown = 0;
+  words.forEach(w => { const ok = w.innerText.toLowerCase().includes(k); w.style.display = ok ? '' : 'none'; if (ok) shown++; });
+  document.getElementById('vcount').textContent = shown + '개';
+});
+
+const maskBtn = document.getElementById('maskBtn');
+maskBtn.onclick = () => {
+  const on = vlist.classList.toggle('masked');
+  maskBtn.classList.toggle('solid', on);
+  maskBtn.textContent = on ? '뜻 보이기' : '뜻 가리기';
+  if (!on) vlist.querySelectorAll('.show').forEach(el => el.classList.remove('show'));
+};
+vlist.querySelectorAll('.mean, .ex').forEach(el => {
+  el.onclick = () => { if (vlist.classList.contains('masked')) el.classList.toggle('show'); };
+});
+
+const quiz = document.getElementById('quiz'), quizBtn = document.getElementById('quizBtn');
+const qQ = document.getElementById('quizQ'), qO = document.getElementById('quizOpts'), qS = document.getElementById('quizScore');
+let pool = [], solved = 0, correct = 0;
+const data = () => words.map(w => ({
+  word: w.querySelector('.w').textContent,
+  mean: (w.querySelector('.mean').textContent.split('—')[1] || w.querySelector('.mean').textContent).trim()
+}));
+function nextQuiz() {
+  if (!pool.length) { qQ.textContent = '한 바퀴 끝'; qO.innerHTML = ''; qS.textContent = `${solved}문제 중 ${correct}개 정답`; return; }
+  const all = data(), cur = pool.pop();
+  qQ.textContent = cur.word;
+  const opts = [cur, ...all.filter(d => d.word !== cur.word).sort(() => Math.random() - .5).slice(0, 3)].sort(() => Math.random() - .5);
+  qO.innerHTML = '';
+  opts.forEach(o => {
+    const b = document.createElement('button');
+    b.className = 'opt'; b.textContent = o.mean;
+    b.onclick = () => {
+      solved++;
+      if (o.word === cur.word) { b.classList.add('ok'); correct++; }
+      else { b.classList.add('no'); [...qO.children].find(x => x.textContent === cur.mean)?.classList.add('ok'); }
+      [...qO.children].forEach(x => x.disabled = true);
+      qS.textContent = `${solved}문제 중 ${correct}개 정답`;
+      setTimeout(nextQuiz, 1000);
+    };
+    qO.appendChild(b);
+  });
+  qS.textContent = `${solved}문제 중 ${correct}개 정답 · 남은 ${pool.length}개`;
+}
+quizBtn.onclick = () => {
+  const on = quiz.classList.toggle('on');
+  quizBtn.classList.toggle('solid', on);
+  quizBtn.textContent = on ? '퀴즈 닫기' : '퀴즈 풀기';
+  if (on) { pool = data().sort(() => Math.random() - .5); solved = 0; correct = 0; nextQuiz(); }
+};
+</script>
+</body>
+</html>
