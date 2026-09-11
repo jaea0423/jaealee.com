@@ -63,10 +63,26 @@
     document.getElementById('paper-date').textContent = date;
     status.textContent = '브리핑을 불러오는 중…'; content.replaceChildren();
     lastNewsDate = date;
+    if(date > EditionDay.date()){status.textContent = '이 발행분은 해당 날짜 오전 7시부터 볼 수 있습니다.'; return;}
     try {
       const data = await get(`/news/data/${date}.json`);
       if (current !== requestId) return;
       if (!data) {
+        // 기본 화면만 최근 발행분으로 대체하며 실제 날짜를 명시합니다.
+        if(location.hash === '#news') {
+          const index = await get('/news/index.json');
+          if(current !== requestId) return;
+          const previous = (index?.editions || []).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d) && d < date).sort().at(-1);
+          if(previous) {
+            const recent = await get('/news/data/'+previous+'.json');
+            if(current !== requestId) return;
+            if(recent) {
+              dateInput.value = previous; document.getElementById('paper-date').textContent = previous;
+              status.textContent = date+'호 준비 중 · 최근 발행분('+previous+')을 보여드립니다.';
+              renderNews(recent, content); return;
+            }
+          }
+        }
         const legacy = `/news/News%20Source/DailyNews_${date.replaceAll('-','')}.html`;
         const exists = await get(legacy, true);
         if (current !== requestId) return;

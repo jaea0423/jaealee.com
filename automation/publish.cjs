@@ -9,9 +9,9 @@ process.chdir(root);
 const lock = path.resolve(git('rev-parse','--git-common-dir'),'daily-publish.lock');
 const statePath = path.join(lock,'state.json');
 const read = file => JSON.parse(fs.readFileSync(file,'utf8'));
-const seoulDate = require('../home/edition-day.js').date;
+const seoulDate = require('../home/edition-day.js').preparationDate;
 const validDate = value => /^\d{4}-\d{2}-\d{2}$/.test(value) && new Date(value+'T12:00:00Z').toISOString().slice(0,10)===value;
-const filesFor = date => [`news/data/${date}.json`,`knowledge/data/${date}.json`,'knowledge/index.json',`opportunities/${date}.json`,'opportunities/index.json'];
+const filesFor = date => [`news/data/${date}.json`,'news/index.json',`knowledge/data/${date}.json`,'knowledge/index.json',`opportunities/${date}.json`,'opportunities/index.json'];
 const lines = text => text.split('\n').filter(Boolean);
 const nul = text => text.split('\0').filter(Boolean);
 const clean = () => !git('status','--porcelain');
@@ -21,6 +21,9 @@ function url(value) { assert(['https:','http:'].includes(new URL(value).protocol
 function text(value) { assert(typeof value==='string' && value.trim(),'필수 텍스트 누락'); }
 function check() {
   // 공개 목록과 본문을 함께 검사합니다. 사실성·의미 중복은 편집자가 별도 확인합니다.
+  const ni=read('news/index.json');assert.equal(ni.schemaVersion,1);assert(Array.isArray(ni.editions));
+  assert.equal(new Set(ni.editions).size,ni.editions.length,'뉴스 날짜 중복');
+  for(const date of ni.editions){assert(validDate(date));assert.equal(read(`news/data/${date}.json`).date,date,'뉴스 목록·본문 불일치');}
   const ki=read('knowledge/index.json');assert(Array.isArray(ki.editions));
   assert.equal(new Set(ki.editions.map(e=>e.date)).size,ki.editions.length,'지식 날짜 중복');
   for(const edition of ki.editions){
@@ -48,7 +51,7 @@ function check() {
   console.log('PASS: 콘텐츠 형식·날짜·출처 URL·목록 연결');
 }
 function preserveIndexes(state) {
-  for(const [file,key] of [['knowledge/index.json','date'],['opportunities/index.json',null]]){
+  for(const [file,key] of [['news/index.json',null],['knowledge/index.json','date'],['opportunities/index.json',null]]){
     const before=JSON.parse(git('show',`${state.base}:${file}`)).editions;
     const after=read(file).editions;
     for(const entry of before){
@@ -76,7 +79,7 @@ function publish(){
   for(const file of files){assert(allowed.includes(file),`허용하지 않은 파일: ${file}`);assert(!state.existing.includes(file),`기존 발행본 변경 금지: ${file}`);assert(fs.existsSync(file),`파일 삭제 금지: ${file}`);}
   assert(!lines(git('diff','--name-only','--diff-filter=D','HEAD')).length,'삭제 금지');
   check();preserveIndexes(state);
-  for(const [file,index] of [[`knowledge/data/${state.date}.json`,'knowledge/index.json'],[`opportunities/${state.date}.json`,'opportunities/index.json']]){
+  for(const [file,index] of [[`news/data/${state.date}.json`,'news/index.json'],[`knowledge/data/${state.date}.json`,'knowledge/index.json'],[`opportunities/${state.date}.json`,'opportunities/index.json']]){
     if(files.includes(file))assert(files.includes(index),'날짜 파일과 목록을 함께 발행하세요.');
   }
   if(!files.length){fs.unlinkSync(statePath);fs.rmdirSync(lock);console.log('변경 없음');return;}
