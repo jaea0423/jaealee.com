@@ -67,17 +67,58 @@ function wxInfo(code){
   return WX[WX.length-1];
 }
 
+// 뉴스 발행일과 무관하게 현재 한국 날짜의 예보를 홈과 같은 응답에서 표시합니다.
+function renderPaperWeather(data) {
+  const now = new Date();
+  const today = new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(now);
+  const hour = Number(new Intl.DateTimeFormat('en-GB', {timeZone:'Asia/Seoul',hour:'2-digit',hourCycle:'h23'}).format(now));
+  const dailyIndex = data.daily.time.indexOf(today);
+  const value = (number, digits=0) => typeof number === 'number' && Number.isFinite(number) ? number.toFixed(digits) : '—';
+  const status = document.getElementById('paper-weather-status');
+  document.getElementById('paper-weather-date').textContent = today + ' · 한국 시간';
+  if (dailyIndex < 0) {
+    status.textContent = '오늘 예보가 아직 제공되지 않았습니다.';
+    document.getElementById('paper-weather-body').hidden = true;
+    return;
+  }
+  const summary = document.getElementById('paper-weather-summary');
+  const current = Number.isFinite(data.current?.weathercode) ? wxInfo(data.current.weathercode) : null;
+  summary.replaceChildren();
+  for (const text of [
+    `현재 ${value(data.current?.temperature_2m)}° ${current?.desc || ''}`,
+    `최고 ${value(data.daily.temperature_2m_max[dailyIndex])}°`,
+    `최저 ${value(data.daily.temperature_2m_min[dailyIndex])}°`,
+    `오늘 예상 강수량 ${value(data.daily.precipitation_sum?.[dailyIndex],1)} mm`
+  ]) { const item = document.createElement('span'); item.textContent = text; summary.append(item); }
+  const hours = document.getElementById('paper-weather-hours');
+  hours.replaceChildren();
+  data.hourly.time.forEach((time,index) => {
+    if (!time.startsWith(today+'T')) return;
+    const h = Number(time.slice(11,13));
+    const item = document.createElement('div');
+    item.className = 'paper-weather-hour';
+    if (h === hour) item.setAttribute('aria-current','time');
+    const info = Number.isFinite(data.hourly.weathercode[index]) ? wxInfo(data.hourly.weathercode[index]) : null;
+    const parts = [`${String(h).padStart(2,'0')}시${h === hour ? ' · 지금' : ''}`,info ? `${info.icon} ${info.desc}` : '정보 없음',`${value(data.hourly.temperature_2m[index])}°`,`${value(data.hourly.precipitation?.[index],1)} mm`];
+    parts.forEach((text,i) => { const span=document.createElement('span'); span.className='weather-part-'+i; span.textContent=text; item.append(span); });
+    hours.append(item);
+  });
+  status.textContent = '';
+  document.getElementById('paper-weather-body').hidden = false;
+}
+
 async function fetchWeather(){
   try{
     const res = await fetchWithTimeout(
       'https://api.open-meteo.com/v1/forecast' +
       '?latitude=37.8813&longitude=127.7298' +
       '&current=temperature_2m,weathercode' +
-      '&hourly=temperature_2m,weathercode' +
-      '&daily=temperature_2m_max,temperature_2m_min' +
+      '&hourly=temperature_2m,weathercode,precipitation' +
+      '&daily=temperature_2m_max,temperature_2m_min,precipitation_sum' +
       '&timezone=Asia%2FSeoul&forecast_days=2'
     );
     const d = await res.json();
+    renderPaperWeather(d);
 
     /* 현재 날씨 */
     const temp = Math.round(d.current.temperature_2m);
@@ -134,6 +175,7 @@ async function fetchWeather(){
   } catch(e){
     /* 네트워크/API 실패 시 배너에 안내만 표시 (없는 요소 참조 금지) */
     document.getElementById('wxDesc').textContent = '날씨 정보를 불러오지 못했습니다';
+    document.getElementById('paper-weather-status').textContent = '최신 날씨를 불러오지 못했습니다. 표시된 정보가 있다면 이전 갱신 내용입니다.';
   }
 }
 fetchWeather();
