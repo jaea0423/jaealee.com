@@ -8,7 +8,7 @@ import bots
 
 def action(intent='create', **values):
     return dict(dict(intent=intent, reply='시간은 언제인가요?', event_id=None,
-                     title='가족 식사', date='2026-09-12', time=None, place=None, evidence='식사', memory=None), **values)
+                     title='가족 식사', date='2026-09-12', time=None, place=None, evidence='식사', memory=None, remind_at=None), **values)
 
 
 class Tests(unittest.TestCase):
@@ -37,9 +37,8 @@ class Tests(unittest.TestCase):
         self.assertEqual(self.store.events()[0]['status'], 'tentative')
         self.white.handle(self.message('맞아'))
         self.assertEqual(self.store.events()[0]['status'], 'confirmed')
-        telegram = Mock()
-        bots.reminders(self.store, telegram, datetime(2026, 9, 11, 20, tzinfo=bots.KST))
-        telegram.send.assert_not_called()
+        jobs = bots.sync_reminders(self.store, datetime(2026, 9, 11, 20, tzinfo=bots.KST))
+        self.assertEqual({j['label'] for j in jobs}, {'1주 전', '전날'})
         self.assertEqual(self.ai.parse.call_count, 1)
 
     def test_update_cancel_requires_confirmation(self):
@@ -71,7 +70,7 @@ class Tests(unittest.TestCase):
             for _ in range(2):
                 bots.reminders(self.store, telegram, datetime(2026, 9, 11, 20, tzinfo=bots.KST))
             bots.reminders(self.store, telegram, datetime(2026, 9, 12, 9, tzinfo=bots.KST))
-        self.assertEqual(telegram.send.call_count, 2)
+        self.assertEqual(telegram.send.call_count, 3)
 
     def test_unknown_delivery_not_repeated(self):
         telegram = Mock()
@@ -175,10 +174,10 @@ class Tests(unittest.TestCase):
         telegram = Mock()
         data = {'date': '2026-09-11', 'sections': [{'labelKr': '기술', 'cards': [{'title': '제목', 'summary': '내용'}]}]}
         with patch('bots.request_json', return_value=data), patch('bots.time.sleep'):
-            bots.black_tick(self.store, telegram, datetime(2026, 9, 11, 22, 59, tzinfo=bots.KST))
+            bots.black_tick(self.store, telegram, datetime(2026, 9, 11, 10, 59, tzinfo=bots.KST))
         self.assertEqual(telegram.send.call_count, 2)
         with patch('bots.request_json') as fetch:
-            bots.black_tick(self.store, telegram, datetime(2026, 9, 11, 23, tzinfo=bots.KST))
+            bots.black_tick(self.store, telegram, datetime(2026, 9, 11, 11, tzinfo=bots.KST))
             bots.black_tick(self.store, telegram, datetime(2026, 9, 12, 6, tzinfo=bots.KST))
             fetch.assert_not_called()
 
@@ -225,6 +224,33 @@ class Tests(unittest.TestCase):
             fetch.assert_called_once()
         self.assertTrue(self.store.get('black:2026-09-11:news'))
         self.assertEqual(telegram.send.call_count, 3)
+
+    def test_reminders_week_custom_and_restart_recovery(self):
+        self.store.insert(dict(title='결혼식', date='2026-09-21', time='18:00', status='confirmed',
+                               confirmed_at='2026-09-11T09:00:00+09:00', remind_at=['2026-09-20T17:00']))
+        telegram = Mock()
+        with patch('bots.time.sleep'):
+            bots.reminders(self.store, telegram, datetime(2026, 9, 14, 9, tzinfo=bots.KST))
+            self.assertIn('다음 주 월요일', telegram.send.call_args.args[0])
+            bots.reminders(self.store, telegram, datetime(2026, 9, 20, 23, tzinfo=bots.KST))
+            # 전날 알림을 3시간 놓쳐도 복구하며 요청 시각 알림도 따로 보냅니다.
+            self.assertEqual(telegram.send.call_count, 3)
+            bots.reminders(self.store, telegram, datetime(2026, 9, 20, 23, 1, tzinfo=bots.KST))
+            self.assertEqual(telegram.send.call_count, 3)
+        jobs = bots.sync_reminders(self.store, datetime(2026, 9, 21, 19, tzinfo=bots.KST))
+        self.assertIn('expired', [j['status'] for j in jobs])
+
+    def test_reminder_failure_does_not_block_other_events(self):
+        for title in ('식사', '방문'):
+            self.store.insert(dict(title=title, date='2026-09-21', time=None, status='confirmed',
+                                   confirmed_at='2026-09-11T09:00:00+09:00'))
+        telegram = Mock()
+        telegram.send.side_effect = [bots.ServiceError(429), None, None]
+        with patch('bots.time.sleep'):
+            bots.reminders(self.store, telegram, datetime(2026, 9, 14, 9, tzinfo=bots.KST))
+            self.assertEqual(telegram.send.call_count, 2)
+            bots.reminders(self.store, telegram, datetime(2026, 9, 14, 9, 5, tzinfo=bots.KST))
+            self.assertEqual(telegram.send.call_count, 3)
 
 
 if __name__ == '__main__':
