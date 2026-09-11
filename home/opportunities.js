@@ -33,7 +33,7 @@
       const index = await get('/opportunities/index.json');
       if(index.schemaVersion !== 1 || !Array.isArray(index.editions)) throw new Error('Invalid index');
       if(id !== request) return;
-      const today = new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+      const today = EditionDay.date();
       editions = [...new Set(index.editions.filter(date=>validDate(date)&&date<=today))].sort().reverse();
       const chosen = location.hash.split('/')[1];
       datePicker.replaceChildren(...editions.map(date=>new Option(date.replaceAll('-','.'),date)));
@@ -66,5 +66,8 @@
   datePicker.addEventListener('change',()=>{location.hash='opportunities/'+datePicker.value;});
   // 다른 탭을 읽는 동안에는 추가 요청을 만들지 않습니다.
   const route = () => { if(location.hash.split('/')[0]==='#opportunities') load(); };
+  addEventListener('editionrefresh',()=>{
+    if(location.hash==='#opportunities' && (!data || data.date < EditionDay.date())) load();
+  });
   addEventListener('hashchange',route); route();
 })();

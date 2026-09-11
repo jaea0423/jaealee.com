@@ -13,7 +13,7 @@ async function fetchWithTimeout(url, options = {}) {
 function tickClock() {
   const now = new Date();
   document.getElementById('clock').textContent = new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).format(now);
-  document.getElementById('todayLabel').textContent = new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'long',day:'numeric',weekday:'long'}).format(now);
+  document.getElementById('todayLabel').textContent = new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'long',day:'numeric',weekday:'long'}).format(new Date(EditionDay.date(now)+'T12:00:00+09:00')) + ' · 기준일';
 }
 tickClock(); setInterval(tickClock, 1000);
 const engines = {g:['Google','https://www.google.com/search?q='],n:['NAVER','https://search.naver.com/search.naver?query='],y:['YouTube','https://www.youtube.com/results?search_query=']};

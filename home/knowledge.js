@@ -2,7 +2,7 @@
 (() => {
   const $ = id => document.getElementById(id);
   const content=$('knowledge-content'), status=$('knowledge-status'), date=$('knowledge-date');
-  const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  const today=()=>EditionDay.date();
   let editions=[], loaded=false, loading=null, request=0, current='';
   const node=(tag,text,cls)=>{const e=document.createElement(tag);if(text!=null)e.textContent=text;if(cls)e.className=cls;return e;};
   const validDate=s=>/^\d{4}-\d{2}-\d{2}$/.test(s)&&!Number.isNaN(Date.parse(s+'T12:00:00Z'))&&new Date(s+'T12:00:00Z').toISOString().slice(0,10)===s;
@@ -56,7 +56,7 @@
   async function init(){
     if(loaded)return;if(loading)return loading;
     loading=(async()=>{const data=await get('/knowledge/index.json');if(!Array.isArray(data.editions))throw Error('Invalid index');
-      editions=data.editions.filter(e=>validDate(e.date)&&e.date<=today&&Array.isArray(e.articles)).sort((a,b)=>b.date.localeCompare(a.date));
+      editions=data.editions.filter(e=>validDate(e.date)&&e.date<=today()&&Array.isArray(e.articles)).sort((a,b)=>b.date.localeCompare(a.date));
       const categories=[...new Set(editions.flatMap(e=>e.articles.map(a=>a.category)))];
       $('knowledge-category').replaceChildren(new Option('모든 분야',''),...categories.map(c=>new Option(c,c)));loaded=true;archive();})();
     try{await loading;}finally{loading=null;}
@@ -70,7 +70,7 @@
     const id=++request;status.textContent='읽을거리를 불러오는 중입니다.';$('knowledge-retry').hidden=true;
     try{
       await init();if(id!==request)return;
-      date.value=validDate(chosen||'')?chosen:(editions[0]?.date||today);navigation();
+      date.value=validDate(chosen||'')?chosen:(editions[0]?.date||today());navigation();
       if(current!==date.value||force){
         content.replaceChildren();$('knowledge-jumps').hidden=true;$('knowledge-edition').textContent=date.value.replaceAll('-','.');
         if(!editions.some(e=>e.date===date.value)){status.textContent='이 날짜에는 발행된 지식이 없습니다. 아래 보관함에서 다른 글을 선택해주세요.';current='';return;}
@@ -89,5 +89,9 @@
   $('knowledge-latest').addEventListener('click',()=>{if(location.hash==='#knowledge')route(true);else location.hash='knowledge';});
   $('knowledge-search').addEventListener('input',archive);$('knowledge-category').addEventListener('change',archive);
   $('knowledge-jumps').addEventListener('click',e=>{const b=e.target.closest('[data-reading]');if(b){const a=$('knowledge-'+b.dataset.reading);a?.focus({preventScroll:true});a?.scrollIntoView({block:'start'});}});
-  window.addEventListener('hashchange',()=>route());route();
+  window.addEventListener('editionrefresh',()=>{
+    if(location.hash !== '#knowledge' || current === today()) return;
+    loaded=false; route(true);
+  });
+  window.addEventListener('hashchange',()=>{loaded=false;route();});route();
 })();

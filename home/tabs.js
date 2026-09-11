@@ -4,9 +4,8 @@
   const allowed = buttons.map(button => button.dataset.homeTab);
   const dateInput = document.getElementById('news-date');
   let lastNewsDate = '', requestId = 0;
-  const seoul = new Date(new Date().toLocaleString('en-US', {timeZone:'Asia/Seoul'}));
   const format = date => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
-  dateInput.value = format(seoul);
+  dateInput.value = EditionDay.date();
   function activate(key) {
     if (!allowed.includes(key)) key = 'start';
     buttons.forEach(button => {
@@ -20,7 +19,7 @@
   }
   function readRoute() {
     const [key, date] = location.hash.slice(1).split('/');
-    if (key === 'news' && /^\d{4}-\d{2}-\d{2}$/.test(date || '')) dateInput.value = date;
+    if (key === 'news') dateInput.value = /^\d{4}-\d{2}-\d{2}$/.test(date || '') ? date : EditionDay.date();
     activate(key);
   }
   buttons.forEach((button,index) => {
@@ -126,5 +125,11 @@
   }
   document.getElementById('news-prev').addEventListener('click', () => shiftDate(-1));
   document.getElementById('news-next').addEventListener('click', () => shiftDate(1));
+  addEventListener('editionrefresh', () => {
+    if(location.hash !== '#news') return;
+    if(dateInput.value !== EditionDay.date() || !document.getElementById('news-content').childElementCount) {
+      dateInput.value = EditionDay.date(); loadNews();
+    }
+  });
   readRoute();
 })();

@@ -9,7 +9,7 @@ process.chdir(root);
 const lock = path.resolve(git('rev-parse','--git-common-dir'),'daily-publish.lock');
 const statePath = path.join(lock,'state.json');
 const read = file => JSON.parse(fs.readFileSync(file,'utf8'));
-const seoulDate = () => new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+const seoulDate = require('../home/edition-day.js').date;
 const validDate = value => /^\d{4}-\d{2}-\d{2}$/.test(value) && new Date(value+'T12:00:00Z').toISOString().slice(0,10)===value;
 const filesFor = date => [`news/data/${date}.json`,`knowledge/data/${date}.json`,'knowledge/index.json',`opportunities/${date}.json`,'opportunities/index.json'];
 const lines = text => text.split('\n').filter(Boolean);
