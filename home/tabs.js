@@ -93,11 +93,22 @@
     document.getElementById('paper-title').textContent = data.title || 'The Jaea Times';
     document.getElementById('paper-tagline').textContent = data.tagline || 'All the News Jaea Needs to Know';
     const tiles = (data.market?.tiles || []).map(tile => `<div class="news-tile"><span>${esc(tile.name)}</span><strong>${esc(tile.value)}</strong><span>${esc(tile.change)}</span>${tile.fx || tile.asof ? `<details><summary>기준 정보</summary><small>${esc(tile.fx)}</small><small>${esc(tile.asof)}</small></details>` : ''}</div>`).join('');
-    content.innerHTML = `<section class="news-summary"><h3>오늘의 시장</h3>${data.market?.oneliner ? `<p class="paper-deck">${esc(data.market.oneliner)}</p>` : ''}<div class="news-market">${tiles}</div><p class="news-meta">${esc(data.market?.note)}</p></section>` + (data.sections || []).map((section,index) => `<section class="news-section"><div class="paper-section-heading"><span>${String(index+1).padStart(2,'0')}</span><h3>${esc(section.labelKr || section.label)}</h3><span>${esc(section.label)}</span></div><p class="section-description">${esc(section.desc)}</p><div class="news-cards">${(section.cards || []).map((card, cardIndex) => {
+    content.innerHTML = `<section class="news-summary"><h3>오늘의 시장</h3>${data.market?.oneliner ? `<p class="paper-deck">${esc(data.market.oneliner)}</p>` : ''}<div class="news-market">${tiles}</div><p class="news-meta">${esc(data.market?.note)}</p></section>` + (data.sections || []).map((section,index) => `<section class="news-section"><div class="paper-section-heading"><span>${String(index+1).padStart(2,'0')}</span><h3>${esc(section.labelKr || section.label)}</h3><span>${esc(section.label)}</span></div><p class="section-description">${esc(section.desc)}</p><div class="news-cards">${(section.cards || []).map(card => {
       const url = safeURL(card.url);
-      return `<article class="news-article${cardIndex === 0 ? ' paper-lead' : ''}"><div class="news-meta">${esc(card.tag)} · ${esc(card.date)} · ${esc(card.source)}</div><h4>${url ? `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(card.title)}</a>` : esc(card.title)}</h4><p>${esc(card.summary)}</p>${url ? `<a class="paper-source" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(card.source || '기사')} 원문 읽기 ↗</a>` : ''}</article>`;
-    }).join('')}</div><div class="news-keywords">${(section.keywords || []).map(keyword => `<details><summary>${esc(keyword.word)}</summary><p>${esc(keyword.desc)}</p></details>`).join('')}</div>${section.forYou ? `<aside class="news-extra"><span class="paper-note-label">읽고 생각하기</span><strong>${esc(section.forYou.sub)}</strong><p>${esc(section.forYou.body)}</p></aside>` : ''}</section>`).join('');
+      return `<article class="news-article"><div class="news-meta">${esc(card.tag)} · ${esc(card.date)} · ${esc(card.source)}</div><h4>${url ? `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(card.title)}</a>` : esc(card.title)}</h4><p>${esc(card.summary)}</p>${url ? `<a class="paper-source" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(card.source || '기사')} 원문 읽기 ↗</a>` : ''}</article>`;
+    }).join('')}</div><div class="news-keywords"><div class="news-keyword-list">${(section.keywords || []).map((keyword, keywordIndex) => `<button type="button" id="keyword-${index}-${keywordIndex}" aria-expanded="false" aria-controls="keyword-desc-${index}-${keywordIndex}">${esc(keyword.word)}</button>`).join('')}</div>${(section.keywords || []).map((keyword, keywordIndex) => `<p class="news-keyword-description" id="keyword-desc-${index}-${keywordIndex}" role="region" aria-labelledby="keyword-${index}-${keywordIndex}" hidden>${esc(keyword.desc)}</p>`).join('')}</div>${section.forYou ? `<aside class="news-extra"><span class="paper-note-label">읽고 생각하기</span><strong>${esc(section.forYou.sub)}</strong><p>${esc(section.forYou.body)}</p></aside>` : ''}</section>`).join('');
   }
+  // 각 섹션에서 선택한 용어 하나의 설명을 버튼 목록 아래에 표시합니다.
+  document.getElementById('news-content').addEventListener('click', event => {
+    const button = event.target.closest('.news-keyword-list button');
+    if (!button) return;
+    const open = button.getAttribute('aria-expanded') !== 'true';
+    const group = button.closest('.news-keywords');
+    group.querySelectorAll('button').forEach(item => item.setAttribute('aria-expanded', 'false'));
+    group.querySelectorAll('.news-keyword-description').forEach(item => { item.hidden = true; });
+    button.setAttribute('aria-expanded', String(open));
+    document.getElementById(button.getAttribute('aria-controls')).hidden = !open;
+  });
   // 날짜 선택 즉시 갱신하며 Enter 제출도 같은 동작을 유지합니다.
   dateInput.addEventListener('change', () => {
     if (!dateInput.value || !dateInput.validity.valid) return;
