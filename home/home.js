@@ -24,7 +24,22 @@ const searchInput = document.getElementById('search-query');
 function updateSearchLabel() {
   searchInput.placeholder = engines[searchEngine.value][0] + ' 검색';
 }
-searchEngine.addEventListener('change', updateSearchLabel);
+try {
+  const savedEngine = localStorage.getItem('home.searchEngine');
+  if (Object.hasOwn(engines, savedEngine)) searchEngine.value = savedEngine;
+} catch { /* 저장소 사용 불가 시 Google 기본값을 유지합니다. */ }
+updateSearchLabel();
+searchEngine.addEventListener('change', () => {
+  updateSearchLabel();
+  try { localStorage.setItem('home.searchEngine', searchEngine.value); } catch {}
+});
+document.addEventListener('keydown', event => {
+  const target = event.target;
+  if (event.key !== '/' || event.ctrlKey || event.metaKey || event.altKey || event.isComposing) return;
+  if (target instanceof Element && target.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])')) return;
+  event.preventDefault();
+  searchInput.focus();
+});
 searchForm.addEventListener('submit', event => {
   event.preventDefault();
   const query = searchInput.value.trim();
