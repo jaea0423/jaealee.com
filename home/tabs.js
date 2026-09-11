@@ -16,7 +16,6 @@
       document.getElementById(button.getAttribute('aria-controls')).hidden = !active;
     });
     document.title = `${buttons.find(button => button.dataset.homeTab === key).textContent} · Jaea Lee`;
-    if (key === 'news') loadArchive();
     if (key === 'news' && lastNewsDate !== dateInput.value) loadNews();
   }
   function readRoute() {
@@ -62,6 +61,7 @@
     const current = ++requestId;
     const status = document.getElementById('news-status');
     const content = document.getElementById('news-content');
+    document.getElementById('paper-date').textContent = date;
     status.textContent = '브리핑을 불러오는 중…'; content.replaceChildren();
     lastNewsDate = date;
     try {
@@ -88,53 +88,15 @@
       status.textContent = '뉴스를 불러오지 못했습니다. 연결을 확인한 뒤 뉴스 보기를 다시 눌러주세요.';
     }
   }
-  let archiveLoaded = false;
-  function displayArchive(dates) {
-    const valid = [...new Set(dates.filter(date => /^\d{4}-\d{2}-\d{2}$/.test(date)))].sort().reverse();
-    const list = document.getElementById('archive-list');
-    list.replaceChildren();
-    document.getElementById('archive-count').textContent = `· ${valid.length}일`;
-    valid.forEach(date => {
-      const button = document.createElement('button');
-      button.type = 'button'; button.textContent = date;
-      button.addEventListener('click', () => { dateInput.value = date; if (location.hash === '#news/'+date) loadNews(); else location.hash = 'news/'+date; });
-      list.append(button);
-    });
-  }
-  async function loadArchive() {
-    if (archiveLoaded) return;
-    archiveLoaded = true;
-    const status = document.getElementById('archive-status');
-    // 배포된 목록을 먼저 표시하고 공개 저장소의 등록 파일로 갱신합니다.
-    let hasSnapshot = false;
-    try {
-      const snapshot = await get('/news/archive.json');
-      if (Array.isArray(snapshot?.dates)) {
-        displayArchive(snapshot.dates); hasSnapshot = true;
-        status.textContent = '최신순으로 표시합니다.';
-      }
-    } catch {}
-    try {
-      const base = 'https://api.github.com/repos/jaea0423/jaealee.com/contents/news/';
-      const results = await Promise.all([get(base+'data?ref=main'),get(base+'News%20Source?ref=main')]);
-      if (!results.every(Array.isArray)) throw new Error('Invalid listing');
-      const dates = results.flat().filter(file => file.type === 'file').map(file => {
-        const modern = /^(\d{4}-\d{2}-\d{2})\.json$/.exec(file.name);
-        const legacy = /^DailyNews_(\d{4})(\d{2})(\d{2})\.html$/.exec(file.name);
-        return modern ? modern[1] : legacy ? `${legacy[1]}-${legacy[2]}-${legacy[3]}` : '';
-      }).filter(Boolean);
-      displayArchive(dates);
-      status.textContent = '최신순으로 표시합니다. 날짜를 누르면 아래에서 읽을 수 있습니다.';
-    } catch {
-      status.textContent = hasSnapshot ? '최근 갱신은 확인하지 못했습니다. 저장된 목록을 표시합니다.' : '목록을 불러오지 못했습니다. 아래에서 날짜를 직접 선택할 수 있습니다.';
-    }
-  }
   function renderNews(data, content) {
-    const tiles = (data.market?.tiles || []).map(tile => `<div class="news-tile"><span>${esc(tile.name)}</span><strong>${esc(tile.value)}</strong><span>${esc(tile.change)}</span><small>${esc(tile.fx)}</small><small>${esc(tile.asof)}</small></div>`).join('');
-    content.innerHTML = `<div class="news-summary"><h3>${esc(data.title || '뉴스 브리핑')}</h3><p>${esc(data.tagline)}</p><p>${esc(data.market?.oneliner)}</p><div class="news-market">${tiles}</div><p class="news-meta">${esc(data.market?.note)}</p></div>` + (data.sections || []).map(section => `<section class="news-section"><h3>${esc(section.labelKr || section.label)}</h3><p>${esc(section.desc)}</p><div class="news-cards">${(section.cards || []).map(card => {
+    // 제호·요약·분야·기사의 위계를 분리하며 원문의 모든 기사와 보조 정보를 보존합니다.
+    document.getElementById('paper-title').textContent = data.title || 'The Jaea Times';
+    document.getElementById('paper-tagline').textContent = data.tagline || 'All the News Jaea Needs to Know';
+    const tiles = (data.market?.tiles || []).map(tile => `<div class="news-tile"><span>${esc(tile.name)}</span><strong>${esc(tile.value)}</strong><span>${esc(tile.change)}</span>${tile.fx || tile.asof ? `<details><summary>기준 정보</summary><small>${esc(tile.fx)}</small><small>${esc(tile.asof)}</small></details>` : ''}</div>`).join('');
+    content.innerHTML = `<section class="news-summary"><h3>오늘의 시장</h3>${data.market?.oneliner ? `<p class="paper-deck">${esc(data.market.oneliner)}</p>` : ''}<div class="news-market">${tiles}</div><p class="news-meta">${esc(data.market?.note)}</p></section>` + (data.sections || []).map((section,index) => `<section class="news-section"><div class="paper-section-heading"><span>${String(index+1).padStart(2,'0')}</span><h3>${esc(section.labelKr || section.label)}</h3><span>${esc(section.label)}</span></div><p class="section-description">${esc(section.desc)}</p><div class="news-cards">${(section.cards || []).map((card, cardIndex) => {
       const url = safeURL(card.url);
-      return `<article class="news-article"><div class="news-meta">${esc(card.tag)} · ${esc(card.date)} · ${esc(card.source)}</div><h4>${url ? `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(card.title)}</a>` : esc(card.title)}</h4><p>${esc(card.summary)}</p></article>`;
-    }).join('')}</div><div class="news-keywords">${(section.keywords || []).map(keyword => `<details><summary>${esc(keyword.word)}</summary><p>${esc(keyword.desc)}</p></details>`).join('')}</div>${section.forYou ? `<aside class="news-extra"><strong>${esc(section.forYou.sub)}</strong><p>${esc(section.forYou.body)}</p></aside>` : ''}</section>`).join('');
+      return `<article class="news-article${cardIndex === 0 ? ' paper-lead' : ''}"><div class="news-meta">${esc(card.tag)} · ${esc(card.date)} · ${esc(card.source)}</div><h4>${url ? `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(card.title)}</a>` : esc(card.title)}</h4><p>${esc(card.summary)}</p>${url ? `<a class="paper-source" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(card.source || '기사')} 원문 읽기 ↗</a>` : ''}</article>`;
+    }).join('')}</div><div class="news-keywords">${(section.keywords || []).map(keyword => `<details><summary>${esc(keyword.word)}</summary><p>${esc(keyword.desc)}</p></details>`).join('')}</div>${section.forYou ? `<aside class="news-extra"><span class="paper-note-label">읽고 생각하기</span><strong>${esc(section.forYou.sub)}</strong><p>${esc(section.forYou.body)}</p></aside>` : ''}</section>`).join('');
   }
   document.getElementById('news-form').addEventListener('submit', event => {
     event.preventDefault();
