@@ -9,19 +9,6 @@ async function fetchWithTimeout(url, options = {}) {
     return response;
   } finally { clearTimeout(timeout); }
 }
-function readTheme() { try { return localStorage.getItem('dark'); } catch { return null; } }
-function applyTheme(dark) {
-  document.body.classList.toggle('light', !dark);
-  document.getElementById('darkBtn').setAttribute('aria-pressed', String(dark));
-  document.getElementById('darkBtn').setAttribute('aria-label', dark ? '밝은 테마로 변경' : '어두운 테마로 변경');
-}
-function toggleDark() {
-  const dark = document.body.classList.contains('light');
-  applyTheme(dark);
-  // 다른 개인 페이지와 사용하던 테마 키를 유지합니다.
-  try { localStorage.setItem('dark', String(dark)); } catch {}
-}
-applyTheme(readTheme() !== 'false');
 function tickClock() {
   const now = new Date();
   document.getElementById('clock').textContent = new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(now);
@@ -29,36 +16,17 @@ function tickClock() {
 }
 tickClock(); setInterval(tickClock, 30000);
 const engines = {g:['Google','https://www.google.com/search?q='],n:['Naver','https://search.naver.com/search.naver?query='],y:['YouTube','https://www.youtube.com/results?search_query=']};
-let selectedEngine = 'g';
-const engineButtons = [...document.querySelectorAll('[data-engine]')];
-function selectEngine(button) {
-  selectedEngine = button.dataset.engine;
-  engineButtons.forEach(el => { const active = el === button; el.classList.toggle('selected',active); el.setAttribute('aria-selected',String(active)); el.tabIndex = active ? 0 : -1; });
-  document.getElementById('searchForm').setAttribute('aria-labelledby', button.id);
-  document.querySelector('label[for="searchInput"]').textContent = engines[selectedEngine][0] + ' 검색어';
-}
-engineButtons.forEach((button,index) => {
-  button.addEventListener('click',() => selectEngine(button));
-  button.addEventListener('keydown',event => {
-    if (!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return;
+// 엔진마다 입력창을 두어 전환 없이 바로 검색합니다.
+document.querySelectorAll('.search-form').forEach(form => {
+  form.addEventListener('submit', event => {
     event.preventDefault();
-    const next = event.key === 'Home' ? 0 : event.key === 'End' ? 2 : (index + (event.key === 'ArrowRight' ? 1 : 2)) % 3;
-    selectEngine(engineButtons[next]); engineButtons[next].focus();
+    const query = form.querySelector('input').value.trim();
+    if (query) window.location.href = engines[form.dataset.engine][1] + encodeURIComponent(query);
   });
 });
-document.getElementById('searchForm').addEventListener('submit',event => {
-  event.preventDefault();
-  const input = document.getElementById('searchInput'); const query = input.value.trim();
-  if (!query) return;
-  input.value = ''; input.blur();
-  window.location.href = engines[selectedEngine][1] + encodeURIComponent(query);
+window.addEventListener('pageshow', () => {
+  document.querySelectorAll('.search-form input').forEach(input => { input.value = ''; });
 });
-window.addEventListener('pageshow',() => { document.getElementById('searchInput').value = ''; });
-function toggleQuick() {
-  const grid = document.getElementById('quickGrid'); grid.hidden = !grid.hidden;
-  const button = document.getElementById('quickBtn'); button.setAttribute('aria-expanded',String(!grid.hidden));
-  button.innerHTML = grid.hidden ? '펼치기 <span aria-hidden="true">+</span>' : '접기 <span aria-hidden="true">−</span>';
-}
 
 /* ── 날씨 (Open-Meteo, 춘천) ── */
 const WX = [
