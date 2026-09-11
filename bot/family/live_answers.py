@@ -3,24 +3,31 @@ import json
 import re
 
 from bots import now, request_json
+from personas import instruction
 
 
 def needs_live(text, history=None):
-    pattern = r'날씨|기온|강수|미세먼지|환율|주가|시세|속보|최신|실시간|현재|요즘|최근|오늘|내일|이번 주|지금|대통령|총리'
+    if re.search(r'(실시간|최신|검색).{0,25}(모르|몰라|가능|할 수|못하|못해|아는|알 수)', text):
+        return False
+    if re.search(r'몇\s*살|나이|재롱|애교|언제\s*자|잠[은을이도 ]|졸려|졸리|너.*(강아지|봇|AI)', text):
+        return False
+    pattern = r'날씨|기온|강수|미세먼지|환율|주가|시세|속보|최신|실시간|현재|요즘|최근|대통령|총리'
     if re.search(pattern, text):
         return True
     # Short follow-ups such as a city name inherit the preceding live question.
     previous = (history or [])[-1:]
-    return len(text) <= 40 and any(re.search(pattern, item.get('user', '')) for item in previous)
+    return bool(re.fullmatch(r'(?:그럼\s*)?[가-힣A-Za-z]+[?？.! ]*', text)) and any(
+        re.search(pattern, item.get('user', '')) for item in previous)
 
 
 def answer(config, text, history=None, context='', role='black'):
     clock = now()
     history = history or []
-    prompt = ('당신은 ' + ('검둥이' if role == 'black' else '흰둥이') + '예요. '
+    prompt = (instruction(role) +
               '짧고 친근한 해요체로 질문에 바로 답하세요. 반말하지 마세요. 보통 2~4문장, 본문 400자 이내예요. '
               '멘션·호출 규칙, 작동 방식, 자기소개를 반복하지 마세요. 질문하지 않은 기능 안내를 붙이지 마세요. '
               'Google 검색 도구를 사용할 수 있어요. 날씨·현재 인물·최근 정치 이슈 등 변하는 사실은 반드시 검색하고 '
+              '검색 가능 여부를 물으면 검색해서 확인할 수 있다고 바로 답하고 직접 알지 못하지만 같은 부정 설명을 붙이지 마세요. '
               '질문한 날짜와 지역에 맞는 최신 출처를 확인하세요. 옛날 자료를 오늘 자료로 말하지 마세요. '
               '검색은 공개 정보에만 사용하세요. 가족 이름·사용자 ID·사적인 대화 내용은 검색어에 넣지 마세요. '
               '날씨 지역이 질문이나 대화에 없으면 어느 지역인지 한 번 물어보세요. 현재 위치나 거주지를 추측하지 마세요. '

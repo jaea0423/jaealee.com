@@ -99,7 +99,7 @@ def member_config(config, speaker):
     return dict(config, owner_id=speaker, owner_address=address)
 
 
-def routed_text(message, me):
+def routed_text(message, me, role=None):
     """Telegram entity offsets are UTF-16 units, not Python character offsets."""
     text = message.get('text', '')
     encoded = text.encode('utf-16-le')
@@ -123,6 +123,14 @@ def routed_text(message, me):
         elif entity['type'] in ('mention', 'text_mention'):
             other_target = True
     mentioned = direct
+    names = {'white': r'흰둥(?:이|아)?', 'black': r'검둥(?:이|아)?'}
+    if role:
+        called = {name for name, pattern in names.items()
+                  if re.search(r'(?<![가-힣A-Za-z])' + pattern + r'(?=[\s,.!?~]|$)', text)}
+        if role in called:
+            direct = True
+        elif called and not direct:
+            return None, False, False
     reply_author = message.get('reply_to_message', {}).get('from', {})
     reply_to = reply_author.get('id') == me['id']
     if not direct and (other_target or (reply_author.get('is_bot') and not reply_to)):
@@ -132,16 +140,19 @@ def routed_text(message, me):
     return encoded.decode('utf-16-le').strip(), direct or reply_to, mentioned
 
 
-def should_answer(text, direct, store, clock):
+def should_answer(text, direct, store, clock, speaker=None):
     if text is None:
         return False
     if direct or text.startswith('/') or text.startswith('흰둥'):
         return True
-    if clock.timestamp() - store.get('last-ambient-reply', 0) < 60:
+    if not text or re.fullmatch(r'[ㅋㅎㅠㅜ\s.!]+|(?:응|네|넵|ㅇㅇ|오케이|고마워)[.! ]*', text):
         return False
+    if speaker and clock.timestamp() - store.get('conversation-active:' + str(speaker), 0) < 900:
+        return True
     # Do not call AI for acknowledgements or every line of ordinary conversation.
     return bool(re.search(r'[?？]|알려줘|알려주|뭐야|뭘까|어때|어떻게|왜 |언제|어디|'
-                          r'일정|예약|알림|기억해|적어줘|등록해|취소해|변경해|해줄래|줄까요', text))
+                          r'일정|예약|알림|기억해|적어줘|등록해|취소해|변경해|해줄래|줄까요|'
+                          r'재롱|애교|해\s*줘|보여\s*줘|몇\s*살|나이|자냐|안녕|모르는건가', text))
 
 
 def black_answer(config, store, speaker, text, context=''):
@@ -172,7 +183,7 @@ def group_reply(role, config, store, message, me):
             or type(sender.get('id')) is not int or sender['id'] <= 0
             or sender.get('is_bot') or message.get('sender_chat')):
         return None
-    text, direct, mentioned = routed_text(message, me)
+    text, direct, mentioned = routed_text(message, me, role)
     if text is None:
         return None
     if role == 'black':
@@ -186,7 +197,7 @@ def group_reply(role, config, store, message, me):
     continuation = bool(pending and now().timestamp() - pending.get('proposed_at', 0) < 180
                         and re.fullmatch(r'(응|네|넵|맞아|맞아요|확정해|확정해줘|그래)[.! ]*|'
                                          r'(오전|오후|아침|저녁)?\s*\d{1,2}(시.*|:\d{2})', text))
-    if not continuation and not should_answer(text, direct, store, now()):
+    if not continuation and not should_answer(text, direct, store, now(), sender['id']):
         return None
     white = GroupWhite(sender['id'], scoped, AI(local), local)
     try:
@@ -194,7 +205,7 @@ def group_reply(role, config, store, message, me):
     except Exception:
         reply = '처리 결과를 확인하지 못했어요. /events에서 확인해 주세요.'
     if reply:
-        store.put('last-ambient-reply', now().timestamp())
+        store.put('conversation-active:' + str(sender['id']), now().timestamp())
     return reply
 
 

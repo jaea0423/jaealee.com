@@ -38,6 +38,21 @@ class LiveTests(unittest.TestCase):
     def test_weather_followup_inherits_live_requirement(self):
         self.assertTrue(live_answers.needs_live('서울', [{'user': '오늘 날씨 알려줘'}]))
 
+    def test_capability_and_character_questions_do_not_require_sources(self):
+        for text in ('실시간 정보는 모르는건가?', '너 몇 살이야?', '언제 자냐?', '아빠한테 재롱부려줘'):
+            self.assertFalse(live_answers.needs_live(text, [{'user': '오늘 날씨 알려줘'}]))
+        with patch('live_answers.request_json', return_value=self.response('검색해서 알아볼 수 있어요.', False)):
+            self.assertEqual(live_answers.answer(self.config, '실시간 정보는 모르는건가?'), '검색해서 알아볼 수 있어요.')
+
+    def test_fixed_character_facts_in_both_prompts(self):
+        from personas import CHARACTERS
+        self.assertEqual(CHARACTERS['white']['age'], 3)
+        self.assertIn('방석', CHARACTERS['white']['sleep'])
+        self.assertIn('고구마', bots.PERSONA)
+        with patch('live_answers.request_json', return_value=self.response('네 살이에요.', False)) as request:
+            live_answers.answer(self.config, '몇 살이야?')
+            self.assertIn('"age": 4', request.call_args.args[1]['systemInstruction']['parts'][0]['text'])
+
     def test_incomplete_native_output_is_rejected(self):
         result = self.response('중간 답변')
         result['candidates'][0]['finishReason'] = 'MAX_TOKENS'

@@ -63,13 +63,29 @@ class FamilyTests(unittest.TestCase):
         message['entities'] = [{'type': 'bot_command', 'offset': 0, 'length': len(message['text'])}]
         self.assertEqual(family.routed_text(message, self.me), ('/events', True, True))
 
-    def test_white_ambient_cooldown_and_direct_override(self):
+    def test_white_has_no_ambient_cooldown(self):
         clock = bots.now()
         self.assertFalse(family.should_answer('ㅋㅋㅋ', False, self.store, clock))
         self.assertTrue(family.should_answer('이게 뭐야?', False, self.store, clock))
         self.store.put('last-ambient-reply', clock.timestamp())
-        self.assertFalse(family.should_answer('이게 뭐야?', False, self.store, clock))
+        self.assertTrue(family.should_answer('이게 뭐야?', False, self.store, clock))
         self.assertTrue(family.should_answer('이게 뭐야?', True, self.store, clock))
+
+    def test_white_continues_without_name_and_handles_tricks(self):
+        clock = bots.now()
+        self.store.put('conversation-active:123', clock.timestamp())
+        self.assertTrue(family.should_answer('그건 좀 별론데', False, self.store, clock, 123))
+        self.assertFalse(family.should_answer('그건 좀 별론데', False, self.store, clock, 456))
+        self.assertTrue(family.should_answer('아빠한테 재롱부려줘', False, self.store, clock, 456))
+        self.assertFalse(family.should_answer('ㅋㅋㅋ', False, self.store, clock, 123))
+
+    def test_black_name_calls_do_not_wake_white(self):
+        for name in ('검둥아', '검둥이', '검둥'):
+            message = self.message(name + ' 몇 살이야?')
+            with patch.object(family, 'black_answer', return_value='네 살이에요.') as answer:
+                self.assertEqual(family.group_reply('black', self.config, self.store, message, self.me), '네 살이에요.')
+                self.assertIsNone(family.group_reply('white', self.config, self.store, message, self.me))
+                answer.assert_called_once()
 
     def test_pending_confirmation_is_speaker_scoped(self):
         first, second = self.white(123), self.white(456)
