@@ -107,16 +107,37 @@ class FamilyTests(unittest.TestCase):
         self.config['addresses'] = {'456': '엄마'}
         self.assertEqual(family.member_config(self.config, 456)['owner_address'], '엄마')
 
-    def test_black_mentions_only_and_quoted_context(self):
+    def test_black_mentions_and_replies_with_quoted_context(self):
         message = self.message('질문')
         message['reply_to_message'] = {'from': {'id': 999}, 'text': '정치 설명'}
         with patch.object(family, 'black_answer', return_value='답변') as answer:
-            self.assertIsNone(family.group_reply('black', self.config, self.store, message, self.me))
-            answer.assert_not_called()
+            self.assertEqual(family.group_reply('black', self.config, self.store, message, self.me), '답변')
+            self.assertEqual(answer.call_args.args[-1], '정치 설명')
             message['text'] = '@white_bot 질문'
             message['entities'] = [{'type': 'mention', 'offset': 0, 'length': 10}]
             self.assertEqual(family.group_reply('black', self.config, self.store, message, self.me), '답변')
             self.assertEqual(answer.call_args.args[-1], '정치 설명')
+
+    def test_other_mentions_and_bot_replies_are_not_intercepted(self):
+        mention = self.message('@black_bot 오늘 날씨?')
+        mention['entities'] = [{'type': 'mention', 'offset': 0, 'length': 10}]
+        reply = self.message('그럼 내일은?')
+        reply['reply_to_message'] = {'from': {'id': 888, 'is_bot': True}, 'text': '날씨 설명'}
+        with patch.object(family.AI, 'parse') as ai:
+            for message in (mention, reply):
+                self.assertIsNone(family.group_reply('white', self.config, self.store, message, self.me))
+            ai.assert_not_called()
+
+    def test_black_ignores_unaddressed_questions(self):
+        with patch.object(family, 'black_answer') as answer:
+            self.assertIsNone(family.group_reply('black', self.config, self.store, self.message('오늘 날씨?'), self.me))
+            answer.assert_not_called()
+
+    def test_explicit_mention_can_switch_bot_on_reply(self):
+        message = self.message('@white_bot 설명해줘')
+        message['entities'] = [{'type': 'mention', 'offset': 0, 'length': 10}]
+        message['reply_to_message'] = {'from': {'id': 888, 'is_bot': True}}
+        self.assertEqual(family.routed_text(message, self.me), ('설명해줘', True, True))
 
     def test_owner_only_address_assignment_and_atomic_permissions(self):
         with tempfile.TemporaryDirectory() as folder:

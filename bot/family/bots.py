@@ -340,6 +340,14 @@ class White:
         try:
             action = self.ai.parse(text, history, events[-50:], self.store.get('memories', []))
             self.validate_action(action, text, events)
+            if action['intent'] == 'chat' and self.config.get('ai_provider', 'gemini') == 'gemini' and self.config.get('gemini_api_key'):
+                from live_answers import answer, needs_live
+                if needs_live(text, history):
+                    if used + 1 >= 100:
+                        action['reply'] = '오늘의 AI 조회 한도에 도달했어요. /events와 /confirm은 계속 사용할 수 있어요.'
+                    else:
+                        self.store.put(key, used + 2)
+                        action['reply'] = answer(self.config, text, history, role='white')
         except Exception as exc:
             # 무한 재호출 없이 잠시 쉬고 다음 사용자 메시지에서만 재시도합니다.
             self.store.put('ai-pause-until', now().timestamp() + 60)
