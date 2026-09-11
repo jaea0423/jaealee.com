@@ -17,14 +17,13 @@ class LiveTests(unittest.TestCase):
                 {'web': {'title': 'Weather source', 'uri': 'https://example.org/weather'}}]}
         return result
 
-    def test_search_tool_and_timestamp_are_sent_and_source_is_shown(self):
+    def test_search_tool_and_timestamp_are_internal_without_footer(self):
         with patch('live_answers.request_json', return_value=self.response('서울은 맑아요.')) as request:
             text = live_answers.answer(self.config, '오늘 서울 날씨')
             payload = request.call_args.args[1]
             self.assertEqual(payload['tools'], [{'google_search': {}}])
             self.assertIn('now', payload['systemInstruction']['parts'][0]['text'])
-            self.assertIn('Weather source', text)
-            self.assertIn('KST', text)
+            self.assertEqual(text, '서울은 맑아요.')
 
     def test_ungrounded_current_facts_are_not_presented_as_verified(self):
         with patch('live_answers.request_json', return_value=self.response('서울은 99도예요.', False)):
