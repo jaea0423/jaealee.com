@@ -5,7 +5,6 @@
   const dateInput = document.getElementById('news-date');
   let lastNewsDate = '', requestId = 0;
   const seoul = new Date(new Date().toLocaleString('en-US', {timeZone:'Asia/Seoul'}));
-  if (seoul.getHours() < 7) seoul.setDate(seoul.getDate()-1);
   const format = date => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
   dateInput.value = format(seoul);
   function activate(key) {
@@ -17,6 +16,7 @@
       document.getElementById(button.getAttribute('aria-controls')).hidden = !active;
     });
     document.title = `${buttons.find(button => button.dataset.homeTab === key).textContent} · Jaea Lee`;
+    if (key === 'news') loadArchive();
     if (key === 'news' && lastNewsDate !== dateInput.value) loadNews();
   }
   function readRoute() {
@@ -86,6 +86,47 @@
       if (current !== requestId) return;
       lastNewsDate = '';
       status.textContent = '뉴스를 불러오지 못했습니다. 연결을 확인한 뒤 뉴스 보기를 다시 눌러주세요.';
+    }
+  }
+  let archiveLoaded = false;
+  function displayArchive(dates) {
+    const valid = [...new Set(dates.filter(date => /^\d{4}-\d{2}-\d{2}$/.test(date)))].sort().reverse();
+    const list = document.getElementById('archive-list');
+    list.replaceChildren();
+    document.getElementById('archive-count').textContent = `· ${valid.length}일`;
+    valid.forEach(date => {
+      const button = document.createElement('button');
+      button.type = 'button'; button.textContent = date;
+      button.addEventListener('click', () => { dateInput.value = date; if (location.hash === '#news/'+date) loadNews(); else location.hash = 'news/'+date; });
+      list.append(button);
+    });
+  }
+  async function loadArchive() {
+    if (archiveLoaded) return;
+    archiveLoaded = true;
+    const status = document.getElementById('archive-status');
+    // 배포된 목록을 먼저 표시하고 공개 저장소의 등록 파일로 갱신합니다.
+    let hasSnapshot = false;
+    try {
+      const snapshot = await get('/news/archive.json');
+      if (Array.isArray(snapshot?.dates)) {
+        displayArchive(snapshot.dates); hasSnapshot = true;
+        status.textContent = '최신순으로 표시합니다.';
+      }
+    } catch {}
+    try {
+      const base = 'https://api.github.com/repos/jaea0423/jaealee.com/contents/news/';
+      const results = await Promise.all([get(base+'data?ref=main'),get(base+'News%20Source?ref=main')]);
+      if (!results.every(Array.isArray)) throw new Error('Invalid listing');
+      const dates = results.flat().filter(file => file.type === 'file').map(file => {
+        const modern = /^(\d{4}-\d{2}-\d{2})\.json$/.exec(file.name);
+        const legacy = /^DailyNews_(\d{4})(\d{2})(\d{2})\.html$/.exec(file.name);
+        return modern ? modern[1] : legacy ? `${legacy[1]}-${legacy[2]}-${legacy[3]}` : '';
+      }).filter(Boolean);
+      displayArchive(dates);
+      status.textContent = '최신순으로 표시합니다. 날짜를 누르면 아래에서 읽을 수 있습니다.';
+    } catch {
+      status.textContent = hasSnapshot ? '최근 갱신은 확인하지 못했습니다. 저장된 목록을 표시합니다.' : '목록을 불러오지 못했습니다. 아래에서 날짜를 직접 선택할 수 있습니다.';
     }
   }
   function renderNews(data, content) {
