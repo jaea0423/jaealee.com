@@ -7,6 +7,9 @@ from personas import instruction
 
 
 def needs_live(text, history=None):
+    if not re.search(r'[?？]|알려|검색|확인해|예보|몇 도|얼마', text) and re.search(
+            r'춥|추워|덥|더워|신기|그렇구나|다행|그러게|맞네|놀랍', text):
+        return False
     if re.search(r'(실시간|최신|검색).{0,25}(모르|몰라|가능|할 수|못하|못해|아는|알 수)', text):
         return False
     if re.search(r'몇\s*살|나이|재롱|애교|언제\s*자|잠[은을이도 ]|졸려|졸리|너.*(강아지|봇|AI)', text):
@@ -17,7 +20,9 @@ def needs_live(text, history=None):
     # Short follow-ups such as a city name inherit the preceding live question.
     previous = (history or [])[-1:]
     return bool(re.fullmatch(r'(?:그럼\s*)?[가-힣A-Za-z]+[?？.! ]*', text)) and any(
-        re.search(pattern, item.get('user', '')) for item in previous)
+        re.search(pattern, item.get('user', '')) and
+        (re.search(r'지역|도시|어디', item.get('assistant', '')) or re.search(r'내일|모레|주말', text))
+        for item in previous)
 
 
 def answer(config, text, history=None, context='', role='black'):

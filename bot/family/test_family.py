@@ -155,6 +155,47 @@ class FamilyTests(unittest.TestCase):
         message['reply_to_message'] = {'from': {'id': 888, 'is_bot': True}}
         self.assertEqual(family.routed_text(message, self.me), ('설명해줘', True, True))
 
+    def test_reply_target_beats_other_name_in_body(self):
+        white = {'id': 999, 'username': 'white_bot'}
+        black = {'id': 888, 'username': 'black_bot'}
+        for target, other, target_role, other_role, text in (
+                (black, white, 'black', 'white', '흰둥이 너도 그렇게 생각해?'),
+                (white, black, 'white', 'black', '검둥이 얘기는 어때?')):
+            message = self.message(text)
+            message['reply_to_message'] = {'from': target}
+            self.assertIsNotNone(family.routed_text(message, target, target_role)[0])
+            self.assertIsNone(family.routed_text(message, other, other_role)[0])
+
+    def test_reply_to_human_is_not_a_bot_conversation(self):
+        message = self.message('오늘 날씨 춥지?')
+        message['reply_to_message'] = {'from': {'id': 456}}
+        self.assertIsNone(family.routed_text(message, self.me, 'white')[0])
+
+    def test_external_reply_target_and_name_calls_are_exclusive(self):
+        message = self.message('그렇구나')
+        message['external_reply'] = {'origin': {'sender_user': {'id': 888}}}
+        self.assertIsNone(family.routed_text(message, self.me, 'white')[0])
+        for name in ('검둥', '검둥이', '검둥아'):
+            self.assertIsNone(family.routed_text(self.message(name + ' 어때?'), self.me, 'white')[0])
+
+    def test_participation_failure_stays_silent(self):
+        self.config.update(gemini_api_key='test', gemini_model='test')
+        with patch('family_runtime.request_json', side_effect=RuntimeError('offline')):
+            self.assertFalse(family.join_conversation(self.config, self.store, 123, '아빠 밥 먹었어?', [], []))
+
+    def test_context_decision_controls_unaddressed_reply(self):
+        self.store.put('conversation-active:123', bots.now().timestamp())
+        with patch('family_runtime.join_conversation', return_value=False), patch.object(family.AI, 'parse') as ai:
+            self.assertIsNone(family.group_reply('white', self.config, self.store, self.message('아빠 밥 먹었어?'), self.me))
+            ai.assert_not_called()
+        with patch('family_runtime.join_conversation', return_value=True), patch.object(family.AI, 'parse', return_value=action('chat', reply='따뜻하게 입어요.')):
+            self.assertEqual(family.group_reply('white', self.config, self.store, self.message('와 진짜 춥다'), self.me), '따뜻하게 입어요.')
+
+    def test_explicit_trick_request_does_not_depend_on_participation_model(self):
+        with patch('family_runtime.join_conversation', return_value=False) as judge, patch.object(family.AI, 'parse', return_value=action('chat', reply='앞발 척!')):
+            self.assertEqual(family.group_reply('white', self.config, self.store, self.message('아빠한테 재롱부려줘'), self.me), '앞발 척!')
+            judge.assert_not_called()
+
     def test_owner_only_address_assignment_and_atomic_permissions(self):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / 'config.json'

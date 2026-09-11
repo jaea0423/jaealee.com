@@ -36,7 +36,12 @@ class LiveTests(unittest.TestCase):
             self.assertIn('어느 지역', live_answers.answer(self.config, '날씨 알려줘'))
 
     def test_weather_followup_inherits_live_requirement(self):
-        self.assertTrue(live_answers.needs_live('서울', [{'user': '오늘 날씨 알려줘'}]))
+        self.assertTrue(live_answers.needs_live('서울', [{'user': '오늘 날씨 알려줘', 'assistant': '어느 지역인가요?'}]))
+
+    def test_weather_reaction_and_topic_change_do_not_search(self):
+        history = [{'user': '서울 날씨', 'assistant': '쌀쌀해요.'}]
+        for text in ('와 진짜 춥다', '추워', '아빠', '그러게'):
+            self.assertFalse(live_answers.needs_live(text, history))
 
     def test_capability_and_character_questions_do_not_require_sources(self):
         for text in ('실시간 정보는 모르는건가?', '너 몇 살이야?', '언제 자냐?', '아빠한테 재롱부려줘'):
