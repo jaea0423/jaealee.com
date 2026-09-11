@@ -1,4 +1,4 @@
-"""개인채팅 시험용 흰둥이·검둥이. 가족방 송수신은 이 버전에서 허용하지 않습니다."""
+"""흰둥이·검둥이. 개인방과 명시적으로 연결한 가족방만 허용합니다."""
 import argparse
 import json
 import os
@@ -14,6 +14,7 @@ from zoneinfo import ZoneInfo
 KST = ZoneInfo('Asia/Seoul')
 PERSONA = ('흰둥이는 가족의 대화와 일정을 돕는 장난기 있는 소식통입니다. '
            '대화는 ~해요·~예요·~할까요 같은 해요체로 합니다. ~합니다·~입니다체는 피합니다. '
+           '사용자가 반말해도 반말로 따라 하지 않습니다. 인사도 안녕 대신 안녕하세요라고 합니다. '
            '짧고 친근한 존댓말을 쓰고, 상황에만 가볍게 농담합니다. 가족을 조롱하지 않습니다. '
            '대답을 독촉하거나 혼자 대화를 이어가지 않습니다. 진지한 상황에서는 담백하게 답합니다. '
            '실제로 겪지 않은 경험, 나이, 출신, 취향을 자기 이야기로 만들지 않습니다. '
@@ -255,9 +256,14 @@ class White:
         notice = '\n이번 내용으로 일정을 새로 적거나 바꾸지는 않았어요.' if re.search('일정|예약|취소|변경|등록|기록|적어|알림', original) else ''
         return (self.addressed(text) if index % 3 == 0 else text) + notice
 
+    def accepts(self, message):
+        return (message.get('chat', {}).get('type') == 'private'
+                and message.get('chat', {}).get('id') == self.owner
+                and message.get('from', {}).get('id') == self.owner
+                and not message.get('from', {}).get('is_bot'))
+
     def handle(self, message):
-        # 이름이나 사용자명 대신 실제 숫자 ID와 private 유형을 함께 검사합니다.
-        if message.get('chat', {}).get('type') != 'private' or message.get('chat', {}).get('id') != self.owner or message.get('from', {}).get('id') != self.owner or message.get('from', {}).get('is_bot'):
+        if not self.accepts(message):
             return None
         text = message.get('text', '').strip()
         if not text:
@@ -597,6 +603,9 @@ def main():
     parser.add_argument('--send-test', action='store_true')
     args = parser.parse_args()
     config = json.loads(Path(args.config).expanduser().read_text(encoding='utf-8'))
+    if config.get('family_chat_id'):
+        from family_runtime import run
+        return run(args, config)
     owner = config['owner_id']
     telegram = Telegram(config[args.role + '_token'], owner)
     telegram.probe()
