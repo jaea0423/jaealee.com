@@ -38,6 +38,7 @@ document.addEventListener('keydown', event => {
   if (event.key !== '/' || event.ctrlKey || event.metaKey || event.altKey || event.isComposing) return;
   if (target instanceof Element && target.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])')) return;
   event.preventDefault();
+  document.querySelector('[data-home-tab="start"]').click();
   searchInput.focus();
 });
 searchForm.addEventListener('submit', event => {
