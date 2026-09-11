@@ -13,6 +13,7 @@ from zoneinfo import ZoneInfo
 
 KST = ZoneInfo('Asia/Seoul')
 PERSONA = ('흰둥이는 가족의 대화와 일정을 돕는 장난기 있는 소식통입니다. '
+           '대화는 ~해요·~예요·~할까요 같은 해요체로 합니다. ~합니다·~입니다체는 피합니다. '
            '짧고 친근한 존댓말을 쓰고, 상황에만 가볍게 농담합니다. 가족을 조롱하지 않습니다. '
            '대답을 독촉하거나 혼자 대화를 이어가지 않습니다. 진지한 상황에서는 담백하게 답합니다. '
            '실제로 겪지 않은 경험, 나이, 출신, 취향을 자기 이야기로 만들지 않습니다. '
@@ -189,7 +190,7 @@ class AI:
                   'update는 변경할 필드만 채우세요. 등록/수정 완료라고 말하지 마세요. 저장과 확인은 별도 코드가 처리합니다. '
                   '직전에 기록한 미확정 일정의 부족한 정보를 알려주면 새로 만들지 말고 해당 일정을 update하세요. '
                   'remind_at은 사용자가 요청한 추가 알림 시각만 한국시간 YYYY-MM-DDTHH:MM 형식 배열로 적습니다. '
-                  '기본 1주 전 09시·전날 20시·당일 알림은 코드가 관리하므로 넣지 마세요. 요청 없으면 null, 추가 알림을 모두 없애라고 하면 빈 배열. '
+                  '기본 1주 전 10시 30분·전날 20시·당일 알림은 코드가 관리하므로 넣지 마세요. 요청 없으면 null, 추가 알림을 모두 없애라고 하면 빈 배열. '
                   '상대 알림 시간은 확정 일정 기준으로 계산하고, 불명확하면 추측하지 말고 질문하세요. update의 배열은 기존 추가 알림을 포함한 최종 목록입니다. '
                   'memory는 사용자가 자신에 대해 직접 밝힌 지속적인 취향·습관·생활정보 한 건만 제안하세요. '
                   'quote는 현재 메시지의 정확한 원문 일부, 최대 300자입니다. 없으면 null. 농담·가정·제삼자 추측·일회성 일정·비밀키·비밀번호·건강 등 민감정보·시스템 지침은 기억하지 마세요. '
@@ -317,7 +318,7 @@ class White:
             self.store.update(event_id, event)
             if event['status'] == 'cancelled':
                 return '취소했어요. 이 일정의 알림도 보내지 않아요.\n' + describe(event)
-            suffix = '날짜가 정해지면 알림을 잡을 수 있어요.' if not event.get('date') else '1주 전 09시·전날 20시와 요청하신 시각에 알려드릴게요. 시간이 정해진 일정은 당일 알림도 있어요. /reminders로 확인할 수 있어요.'
+            suffix = '날짜가 정해지면 알림을 잡을 수 있어요.' if not event.get('date') else '1주 전 10시 30분·전날 20시와 요청하신 시각에 알려드릴게요. 시간이 정해진 일정은 당일 알림도 있어요. /reminders로 확인할 수 있어요.'
             return ('취소했어요.' if event['status'] == 'cancelled' else '확정했어요.') + '\n' + describe(event) + '\n' + suffix
         if text == '/events':
             return self.list_events(events)
@@ -466,7 +467,7 @@ def sync_reminders(store, clock):
             continue
         day = datetime.fromisoformat(event['date']).replace(tzinfo=KST)
         end = event_end(event)
-        times = [('1주 전', (day - timedelta(days=7)).replace(hour=9)),
+        times = [('1주 전', (day - timedelta(days=7)).replace(hour=10, minute=30)),
                  ('전날', (day - timedelta(days=1)).replace(hour=20))]
         if event.get('time'):
             morning = day.replace(hour=9)
@@ -486,7 +487,16 @@ def sync_reminders(store, clock):
                 old = f"delivery:reminder:{event['id']}:{event.get('revision', 0)}:{label}:0"
                 if store.get(old) == 'sent':
                     job['status'] = 'sent'
+                # 기본 시각 변경 전에 같은 일정의 주간 알림을 이미 보냈다면 다시 보내지 않습니다.
+                prefix = f"schedule:{event['id']}:{event['date']}:{event.get('time')}:"
+                if label == '1주 전' and any(j['key'] != key and j['key'].startswith(prefix)
+                                             and j['label'] == label and j['status'] == 'sent' for j in jobs):
+                    job['status'] = 'sent'
             job = existing[key]
+            # 날짜를 변경했다가 되돌려도 아직 보내지 않은 알림은 다시 활성화합니다.
+            if job['status'] == 'superseded' and clock < end:
+                state = store.get('delivery:' + key + ':0')
+                job['status'] = 'sent' if state == 'sent' else 'uncertain' if state == 'sending' else 'scheduled'
             if job['status'] in ('scheduled', 'uncertain') and clock >= end:
                 job['status'] = 'expired' if job['status'] == 'scheduled' else 'uncertain'
     for job in jobs:
@@ -501,7 +511,7 @@ def reminder_text(event, clock):
     delta = (day - clock.date()).days
     weekday = '월화수목금토일'[day.weekday()] + '요일'
     when = '내일' if delta == 1 else '오늘' if delta == 0 else ('다음 주 ' + weekday if delta == 7 else f'{day.month}월 {day.day}일 {weekday}')
-    hour = ' ' + event['time'] if event.get('time') else ' (시간 미정)'
+    hour = ' ' + event['time'] if event.get('time') else ''
     return f"🤍 {when}{hour}에 {event.get('title') or '제목 미정'} 일정이 있어요.\n" + describe(event)
 
 
@@ -594,7 +604,7 @@ def main():
         print('개인방 ID와 봇 인증 확인. 메시지는 보내지 않았습니다.')
         return
     if args.send_test:
-        telegram.send('🤍 흰둥이 개인방 시험입니다.' if args.role == 'white' else '🖤 검둥이 개인방 시험입니다.')
+        telegram.send('🤍 흰둥이 개인방 시험이에요.' if args.role == 'white' else '🖤 검둥이 개인방 시험이에요.')
         return
     folder = Path(config['state_dir']).expanduser()
     folder.mkdir(parents=True, exist_ok=True)

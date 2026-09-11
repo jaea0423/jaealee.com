@@ -1,6 +1,8 @@
 """외부 발송이나 유료 호출 없이 개인방 경계와 일정·발송 상태를 검증합니다."""
 import json
 import unittest
+import tempfile
+from pathlib import Path
 from unittest.mock import Mock, patch
 from datetime import datetime
 import bots
@@ -230,7 +232,7 @@ class Tests(unittest.TestCase):
                                confirmed_at='2026-09-11T09:00:00+09:00', remind_at=['2026-09-20T17:00']))
         telegram = Mock()
         with patch('bots.time.sleep'):
-            bots.reminders(self.store, telegram, datetime(2026, 9, 14, 9, tzinfo=bots.KST))
+            bots.reminders(self.store, telegram, datetime(2026, 9, 14, 10, 30, tzinfo=bots.KST))
             self.assertIn('다음 주 월요일', telegram.send.call_args.args[0])
             bots.reminders(self.store, telegram, datetime(2026, 9, 20, 23, tzinfo=bots.KST))
             # 전날 알림을 3시간 놓쳐도 복구하며 요청 시각 알림도 따로 보냅니다.
@@ -247,10 +249,63 @@ class Tests(unittest.TestCase):
         telegram = Mock()
         telegram.send.side_effect = [bots.ServiceError(429), None, None]
         with patch('bots.time.sleep'):
-            bots.reminders(self.store, telegram, datetime(2026, 9, 14, 9, tzinfo=bots.KST))
+            bots.reminders(self.store, telegram, datetime(2026, 9, 14, 10, 30, tzinfo=bots.KST))
             self.assertEqual(telegram.send.call_count, 2)
-            bots.reminders(self.store, telegram, datetime(2026, 9, 14, 9, 5, tzinfo=bots.KST))
+            bots.reminders(self.store, telegram, datetime(2026, 9, 14, 10, 35, tzinfo=bots.KST))
             self.assertEqual(telegram.send.call_count, 3)
+
+    def test_weekly_not_at_nine_and_cancel_suppresses(self):
+        number = self.store.insert(dict(title='결혼식', date='2026-09-21', time='18:00', status='confirmed'))
+        telegram = Mock()
+        bots.reminders(self.store, telegram, datetime(2026, 9, 14, 9, tzinfo=bots.KST))
+        telegram.send.assert_not_called()
+        self.assertIn('T10:30', self.store.get('reminder-jobs')[0]['due'])
+        event = self.store.events()[0]
+        event['status'] = 'cancelled'
+        self.store.update(number, event)
+        bots.reminders(self.store, telegram, datetime(2026, 9, 14, 11, tzinfo=bots.KST))
+        telegram.send.assert_not_called()
+
+    def test_changed_date_restored_and_no_duplicate_on_restart(self):
+        with tempfile.TemporaryDirectory() as folder:
+            filename = Path(folder) / 'white.sqlite3'
+            saved = bots.Store(filename)
+            number = saved.insert(dict(title='결혼식', date='2026-09-21', time='18:00', status='confirmed'))
+            clock = datetime(2026, 9, 11, 9, tzinfo=bots.KST)
+            bots.sync_reminders(saved, clock)
+            event = saved.events()[0]
+            event['date'] = '2026-09-22'
+            saved.update(number, event)
+            bots.sync_reminders(saved, clock)
+            event['date'] = '2026-09-21'
+            saved.update(number, event)
+            bots.sync_reminders(saved, clock)
+            telegram = Mock()
+            with patch('bots.time.sleep'):
+                bots.reminders(saved, telegram, datetime(2026, 9, 14, 10, 30, tzinfo=bots.KST))
+                saved.db.close()
+                saved = bots.Store(filename)
+                bots.reminders(saved, telegram, datetime(2026, 9, 14, 10, 31, tzinfo=bots.KST))
+            self.assertEqual(telegram.send.call_count, 1)
+            saved.db.close()
+
+    def test_old_weekly_sent_not_repeated_after_time_change(self):
+        self.store.insert(dict(title='결혼식', date='2026-09-21', time='18:00', status='confirmed'))
+        self.store.put('reminder-jobs', [dict(key='schedule:1:2026-09-21:18:00:2026-09-14T09:00:00+09:00',
+                                             event_id=1, label='1주 전', due='2026-09-14T09:00:00+09:00', status='sent')])
+        telegram = Mock()
+        bots.reminders(self.store, telegram, datetime(2026, 9, 14, 10, 30, tzinfo=bots.KST))
+        telegram.send.assert_not_called()
+
+    def test_macos_service_has_private_config_only(self):
+        import install_macos
+        import plistlib
+        config = Path('/private/config.json')
+        value = install_macos.make_plist('white', config, '/python', '/bots.py', Path('/logs'))
+        result = plistlib.loads(plistlib.dumps(value))
+        self.assertEqual(result['ProgramArguments'][-2:], ['--config', str(config)])
+        self.assertNotIn('token', str(result))
+        self.assertTrue(result['KeepAlive'])
 
 
 if __name__ == '__main__':
