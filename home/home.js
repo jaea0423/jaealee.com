@@ -16,16 +16,22 @@ function tickClock() {
 }
 tickClock(); setInterval(tickClock, 30000);
 const engines = {g:['Google','https://www.google.com/search?q='],n:['Naver','https://search.naver.com/search.naver?query='],y:['YouTube','https://www.youtube.com/results?search_query=']};
-// 엔진마다 입력창을 두어 전환 없이 바로 검색합니다.
-document.querySelectorAll('.search-form').forEach(form => {
-  form.addEventListener('submit', event => {
-    event.preventDefault();
-    const query = form.querySelector('input').value.trim();
-    if (query) window.location.href = engines[form.dataset.engine][1] + encodeURIComponent(query);
-  });
+// 입력창은 하나만 사용하고 선택한 엔진으로 검색합니다. 전환해도 검색어를 보존합니다.
+const searchForm = document.querySelector('.search-form');
+const searchEngine = document.getElementById('search-engine');
+const searchInput = document.getElementById('search-query');
+function updateSearchLabel() {
+  searchInput.placeholder = engines[searchEngine.value][0] + ' 검색';
+}
+searchEngine.addEventListener('change', updateSearchLabel);
+searchForm.addEventListener('submit', event => {
+  event.preventDefault();
+  const query = searchInput.value.trim();
+  if (query) window.location.href = engines[searchEngine.value][1] + encodeURIComponent(query);
 });
 window.addEventListener('pageshow', () => {
-  document.querySelectorAll('.search-form input').forEach(input => { input.value = ''; });
+  searchInput.value = '';
+  updateSearchLabel();
 });
 
 /* ── 날씨 (Open-Meteo, 춘천) ── */
