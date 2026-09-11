@@ -80,12 +80,12 @@
         } else status.textContent = `${date}에 등록된 뉴스가 없습니다. 다른 날짜를 선택해주세요.`;
         return;
       }
-      status.textContent = `${date} 브리핑`;
+      status.textContent = '';
       renderNews(data, content);
     } catch {
       if (current !== requestId) return;
       lastNewsDate = '';
-      status.textContent = '뉴스를 불러오지 못했습니다. 연결을 확인한 뒤 뉴스 보기를 다시 눌러주세요.';
+      status.textContent = '뉴스를 불러오지 못했습니다. 연결을 확인한 뒤 날짜를 다시 선택해주세요.';
     }
   }
   function renderNews(data, content) {
@@ -98,6 +98,11 @@
       return `<article class="news-article${cardIndex === 0 ? ' paper-lead' : ''}"><div class="news-meta">${esc(card.tag)} · ${esc(card.date)} · ${esc(card.source)}</div><h4>${url ? `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(card.title)}</a>` : esc(card.title)}</h4><p>${esc(card.summary)}</p>${url ? `<a class="paper-source" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(card.source || '기사')} 원문 읽기 ↗</a>` : ''}</article>`;
     }).join('')}</div><div class="news-keywords">${(section.keywords || []).map(keyword => `<details><summary>${esc(keyword.word)}</summary><p>${esc(keyword.desc)}</p></details>`).join('')}</div>${section.forYou ? `<aside class="news-extra"><span class="paper-note-label">읽고 생각하기</span><strong>${esc(section.forYou.sub)}</strong><p>${esc(section.forYou.body)}</p></aside>` : ''}</section>`).join('');
   }
+  // 날짜 선택 즉시 갱신하며 Enter 제출도 같은 동작을 유지합니다.
+  dateInput.addEventListener('change', () => {
+    if (!dateInput.value || !dateInput.validity.valid) return;
+    history.replaceState(null, '', '#news/'+dateInput.value); loadNews();
+  });
   document.getElementById('news-form').addEventListener('submit', event => {
     event.preventDefault();
     history.replaceState(null, '', '#news/'+dateInput.value); loadNews();
