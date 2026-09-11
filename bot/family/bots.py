@@ -78,9 +78,8 @@ def without_urls(text):
 
 def digest(kind, data):
     """저장된 원고만 변환합니다. 시장 표·출처·링크를 보내지 않습니다."""
-    day = data['date']
     if kind == 'news':
-        parts = [f'🖤 검둥이의 아침 뉴스\n{day}']
+        parts = ['🖤 오늘의 뉴스']
         for section in data['sections']:
             cards = section.get('cards', [])
             if not cards:
@@ -91,7 +90,7 @@ def digest(kind, data):
             parts.extend(chunks(without_urls('\n\n'.join(body))))
         return parts if len(parts) > 1 else []
     assert kind == 'knowledge'
-    parts = [f'🖤 검둥이의 지식 더하기\n{day}']
+    parts = ['🖤 오늘의 지식 더하기']
     for article in data['articles']:
         body = [article['label'] + '\n' + article['title']]
         if article.get('quote'):
