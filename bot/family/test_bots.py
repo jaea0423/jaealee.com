@@ -162,6 +162,36 @@ class Tests(unittest.TestCase):
                 bots.black_tick(self.store, telegram, datetime(2026, 9, 11, 9, tzinfo=bots.KST))
         telegram.send.assert_not_called()
 
+    def test_addresses_and_omission(self):
+        for address in ('형', '누나', '엄마', '오빠', ''):
+            self.store.put('fallback-index', 0)
+            white = bots.White(123, self.store, self.ai, {'addresses': {'123': address}})
+            reply = white.unavailable()
+            self.assertTrue(reply.startswith(address + ', ' if address else '지금'))
+            self.assertNotIn('일정', reply)
+            self.assertIn('일정', white.unavailable('일정 적어줘'))
+
+    def test_late_delivery_until_next_seven(self):
+        telegram = Mock()
+        data = {'date': '2026-09-11', 'sections': [{'labelKr': '기술', 'cards': [{'title': '제목', 'summary': '내용'}]}]}
+        with patch('bots.request_json', return_value=data), patch('bots.time.sleep'):
+            bots.black_tick(self.store, telegram, datetime(2026, 9, 12, 6, tzinfo=bots.KST))
+        self.assertEqual(telegram.send.call_count, 2)
+        with patch('bots.request_json') as fetch:
+            bots.black_tick(self.store, telegram, datetime(2026, 9, 12, 7, tzinfo=bots.KST))
+            fetch.assert_not_called()
+
+    def test_rejected_send_recovers_from_cached_copy(self):
+        telegram = Mock()
+        telegram.send.side_effect = [bots.ServiceError(429), None, None]
+        data = {'date': '2026-09-11', 'sections': [{'labelKr': '기술', 'cards': [{'title': '제목', 'summary': '내용'}]}]}
+        with patch('bots.request_json', return_value=data) as fetch, patch('bots.time.sleep'):
+            bots.black_tick(self.store, telegram, datetime(2026, 9, 11, 9, tzinfo=bots.KST))
+            bots.black_tick(self.store, telegram, datetime(2026, 9, 11, 9, 5, tzinfo=bots.KST))
+            fetch.assert_called_once()
+        self.assertTrue(self.store.get('black:2026-09-11:news'))
+        self.assertEqual(telegram.send.call_count, 3)
+
 
 if __name__ == '__main__':
     unittest.main()

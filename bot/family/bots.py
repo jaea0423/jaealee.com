@@ -25,6 +25,11 @@ def now():
     return datetime.now(KST)
 
 
+def address_for(config, user_id):
+    # 이름으로 추측하지 않고 실제 발신자 ID의 설정만 사용합니다. 빈 문자열은 호칭 생략입니다.
+    return str(config.get('addresses', {}).get(str(user_id), config.get('owner_address', ''))).strip()
+
+
 def request_json(url, payload=None, headers=None, timeout=45):
     """실패 메시지에 토큰이 들어간 URL이나 응답 본문을 남기지 않습니다."""
     data = None if payload is None else json.dumps(payload).encode()
@@ -138,7 +143,7 @@ class Telegram:
     def api(self, method, payload):
         result = request_json(f'https://api.telegram.org/bot{self.token}/{method}', payload)
         if not result.get('ok'):
-            raise RuntimeError('텔레그램 요청 거절. 비공개 설정과 권한을 확인하세요.')
+            raise ServiceError(result.get('error_code'))
         return result['result']
 
     def send(self, text):
@@ -165,7 +170,8 @@ class AI:
         self.config = config
 
     def parse(self, message, history, events):
-        prompt = ('당신은 흰둥이입니다. 개인 시험 대화 상대는 형입니다. 짧고 친근한 존댓말, 가벼운 상황 농담만 하세요. '
+        address = address_for(self.config, self.config.get('owner_id'))
+        prompt = ('당신은 흰둥이입니다. 상대 호칭은 ' + (address or '생략') + '입니다. 호칭을 매번 반복하지 마세요. 짧고 친근한 존댓말, 가벼운 상황 농담만 하세요. '
                   '보통 1~3문장, 최대 500자. 진지하면 농담을 멈추세요. 질문을 억지로 덧붙이거나 답장을 재촉하지 마세요. '
                   '일정을 등록·변경·취소하려는 명확한 요청만 해당 intent로 분류하세요. 농담이나 가정은 chat입니다. '
                   '부족한 정보는 null로 두고 질문은 한 번만 하세요. 날짜나 시간, 장소, 가족 관계를 지어내지 마세요. '
@@ -204,19 +210,30 @@ def describe(event):
 
 
 class White:
-    def __init__(self, owner, store, ai):
+    def __init__(self, owner, store, ai, config=None):
         self.owner, self.store, self.ai = owner, store, ai
+        self.config = config or {}
 
-    def unavailable(self):
+    def addressed(self, text):
+        address = address_for(self.config, self.owner)
+        return (address + ', ' if address else '') + text
+
+    def unavailable(self, original=''):
         # 연결 실패를 농담으로 숨기거나, 저장·재시도 성공을 약속하지 않습니다.
         replies = (
-            '형, 지금은 답을 제대로 드리기 어렵네요. 이번 말씀은 처리하지 못했어요. 잠시 뒤 다시 말씀해 주세요.',
-            '형, 잠깐 연결이 끊겼어요. 이번 내용은 기록하지 못했으니 조금 뒤 다시 부탁드려요.',
-            '형, 지금 답변 연결이 매끄럽지 않네요. 이번 요청은 처리하지 못했어요. 잠시 뒤 다시 불러주세요.',
+            '지금 연결이 좀 이상해요. 조금만 이따 다시 보내주실래요?',
+            '답을 받아오다가 잠깐 막혔어요. 조금 뒤에 다시 말씀해 주실래요?',
+            '지금은 연결이 잘 안 되네요. 잠시만 있다가 다시 불러주세요.',
+            '잠깐 버벅이고 있어요. 조금만 이따 다시 얘기해 주실래요?',
+            '지금 답을 가져오지 못했어요. 잠시 뒤 다시 보내주시면 좋겠어요.',
+            '연결이 매끄럽지 않네요. 조금 뒤에 다시 부탁드려도 될까요?',
         )
         index = self.store.get('fallback-index', 0)
         self.store.put('fallback-index', index + 1)
-        return replies[index % len(replies)]
+        # 매번 부르지 않고 일부 답변에만 설정한 호칭을 붙입니다.
+        text = replies[index % len(replies)]
+        notice = '\n이번 내용으로 일정을 새로 적거나 바꾸지는 않았어요.' if re.search('일정|예약|취소|변경|등록|기록|적어|알림', original) else ''
+        return (self.addressed(text) if index % 3 == 0 else text) + notice
 
     def handle(self, message):
         # 이름이나 사용자명 대신 실제 숫자 ID와 private 유형을 함께 검사합니다.
@@ -224,11 +241,11 @@ class White:
             return None
         text = message.get('text', '').strip()
         if not text:
-            return '형, 지금 시험판은 글로 보내주신 내용만 읽을 수 있어요.'
+            return self.addressed('지금 시험판은 글로 보내주신 내용만 읽을 수 있어요.')
         if len(text) > 6000:
-            return '형, 한 번에 조금만 나눠 보내주세요. 6,000자 이내로 부탁드려요.'
+            return self.addressed('한 번에 조금만 나눠 보내주세요. 6,000자 이내로 부탁드려요.')
         if text in ('/start', '/help'):
-            return '형, 흰둥이 왔어요 🤍 지금은 형 개인방에서만 시험 중이에요. 편하게 말 걸거나 일정을 알려주세요. /events 일정 보기 · /confirm 번호 일정 확정 · /no 제안 취소'
+            return self.addressed('흰둥이 왔어요 🤍 지금은 이 개인방에서만 시험 중이에요. 편하게 말 걸거나 일정을 알려주세요. /events 일정 보기 · /confirm 번호 일정 확정 · /no 제안 취소')
         events = self.store.events()
         pending = self.store.get('pending')
         # 명확한 짧은 동의만 직전 제안에 연결합니다. 다른 문장은 AI가 내용을 해석합니다.
@@ -265,7 +282,7 @@ class White:
         if text == '/events':
             return self.list_events(events)
         if now().timestamp() < self.store.get('ai-pause-until', 0):
-            return self.unavailable()
+            return self.unavailable(text)
         # 하루 호출 수를 제한하여 오작동·과도한 대화가 무제한 비용으로 이어지지 않게 합니다.
         key = 'ai-calls:' + now().date().isoformat()
         used = self.store.get(key, 0)
@@ -281,7 +298,7 @@ class White:
             self.store.put('ai-pause-until', now().timestamp() + 60)
             self.store.put('pending', None)
             print('AI 응답 실패: ' + type(exc).__name__ + ' status=' + str(getattr(exc, 'status', None)), flush=True)
-            return self.unavailable()
+            return self.unavailable(text)
         reply = self.apply(action, text, events)
         self.store.put('history', (history + [{'user': text, 'assistant': reply}])[-10:])
         return reply
@@ -353,7 +370,13 @@ def send_once(store, telegram, key, messages):
         if state == 'sending':
             raise RuntimeError('전송 결과 미확정: 개인방을 확인하기 전 중복 재전송하지 않습니다.')
         store.put(part_key, 'sending')
-        telegram.send(text)
+        try:
+            telegram.send(text)
+        except ServiceError as exc:
+            # 명확한 요청 거절은 미발송이므로 재시도합니다. 결과 불명의 시간 초과와 구분합니다.
+            if exc.status in (400, 401, 403, 404, 429):
+                store.put(part_key, 'retry')
+            raise
         store.put(part_key, 'sent')
         time.sleep(0.1)
 
@@ -378,9 +401,11 @@ def reminders(store, telegram, clock):
 def black_tick(store, telegram, clock):
     # 그룹 목적지는 없고, 두 종류 모두 개인방으로만 시험합니다.
     for kind, hour in [('news', 9), ('knowledge', 12)]:
-        if not hour <= clock.hour < hour + 3:
+        clock = clock.astimezone(KST)
+        day = (clock - timedelta(hours=7)).date().isoformat()
+        due = datetime.fromisoformat(day).replace(hour=hour, tzinfo=KST)
+        if clock < due:
             continue
-        day = clock.date().isoformat()
         key = f'black:{day}:{kind}'
         if store.get(key):
             continue
@@ -389,15 +414,22 @@ def black_tick(store, telegram, clock):
         # 미등록·빈·손상된 원고에는 안내도 보내지 않고 종류별로 따로 기다립니다.
         store.put(key + ':check-after', clock.timestamp() + 300)
         try:
-            data = request_json(f'https://jaealee.com/{kind}/data/{day}.json')
-            if not isinstance(data, dict) or data.get('date') != day:
-                continue
-            messages = digest(kind, data)
+            messages = store.get(key + ':messages')
+            if messages is None:
+                data = request_json(f'https://jaealee.com/{kind}/data/{day}.json')
+                if not isinstance(data, dict) or data.get('date') != day:
+                    continue
+                messages = digest(kind, data)
         except Exception:
             continue
         if not messages:
             continue
-        send_once(store, telegram, key, messages)
+        store.put(key + ':messages', messages)
+        try:
+            send_once(store, telegram, key, messages)
+        except Exception:
+            # 뉴스 발송 장애가 지식 발송까지 막지 않도록 분리합니다.
+            continue
         store.put(key, True)
 
 
@@ -440,7 +472,7 @@ def main():
         folder.chmod(0o700)
     lock = process_lock(folder, args.role)
     store = Store(folder / (args.role + '.sqlite3'))
-    white = White(owner, store, AI(config))
+    white = White(owner, store, AI(config), config)
     if args.role == 'white':
         provider = config.get('ai_provider', 'gemini')
         assert provider in ('gemini', 'openai'), 'AI 제공자 설정을 확인하세요.'
