@@ -9,13 +9,14 @@ async function fetchWithTimeout(url, options = {}) {
     return response;
   } finally { clearTimeout(timeout); }
 }
+// 초 단위 시계를 매초 갱신하며 숫자 폭은 CSS에서 고정합니다.
 function tickClock() {
   const now = new Date();
-  document.getElementById('clock').textContent = new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(now);
+  document.getElementById('clock').textContent = new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).format(now);
   document.getElementById('todayLabel').textContent = new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'long',day:'numeric',weekday:'long'}).format(now);
 }
-tickClock(); setInterval(tickClock, 30000);
-const engines = {g:['Google','https://www.google.com/search?q='],n:['Naver','https://search.naver.com/search.naver?query='],y:['YouTube','https://www.youtube.com/results?search_query=']};
+tickClock(); setInterval(tickClock, 1000);
+const engines = {g:['Google','https://www.google.com/search?q='],n:['NAVER','https://search.naver.com/search.naver?query='],y:['YouTube','https://www.youtube.com/results?search_query=']};
 // 입력창은 하나만 사용하고 선택한 엔진으로 검색합니다. 전환해도 검색어를 보존합니다.
 const searchForm = document.querySelector('.search-form');
 const searchEngine = document.getElementById('search-engine');
@@ -158,7 +159,7 @@ setInterval(() => { if (!document.hidden) fetchWeather(); }, 600000);
     const wd = new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',weekday:'short'}).format(now);
     if(wd==='Sat'||wd==='Sun') return false;                 // 주말 휴장
     const hm = new Intl.DateTimeFormat('en-US',
-      {timeZone:'America/New_York',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(now);
+      {timeZone:'America/New_York',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).format(now);
     const [h,m] = hm.split(':').map(Number);
     const mins = h*60 + m;
     return mins >= 570 && mins < 960;                         // 570=09:30, 960=16:00
