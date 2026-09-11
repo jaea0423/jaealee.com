@@ -3,9 +3,10 @@ import json
 import os
 import re
 import time
+from datetime import date
 from pathlib import Path
 
-from bots import (AI, Store, Telegram, White, chunks,
+from bots import (AI, KST, Store, Telegram, White, black_tick, chunks,
                   now, process_lock, reminders, request_json, send_once)
 
 
@@ -296,6 +297,12 @@ def save_config(path, config):
     os.replace(temporary, path)
 
 
+def scheduled_black_tick(config, store, telegram, clock):
+    start = config.get('black_schedule_start')
+    if start and clock.astimezone(KST).date() >= date.fromisoformat(start):
+        black_tick(store, telegram, clock)
+
+
 def run(args, config):
     owner, role = config['owner_id'], args.role
     group = GroupTelegram(config[role + '_token'], owner, config['family_chat_id'])
@@ -319,12 +326,14 @@ def run(args, config):
     group_path.chmod(0o600)
     private_transport = Telegram(config[role + '_token'], owner)
     white = White(owner, private, AI(config), config)
-    print(role + ' family runtime started; scheduled black broadcasts disabled.', flush=True)
+    print(role + ' family runtime started.', flush=True)
     while True:
         try:
             if role == 'white':
                 reminders(private, private_transport, now())
                 reminders(shared, group, now())
+            else:
+                scheduled_black_tick(config, shared, group, now())
             updates = group.api('getUpdates', {'offset': private.get('offset', 0),
                                                'timeout': 20, 'allowed_updates': ['message']})
             for update in updates:

@@ -11,6 +11,17 @@ from test_bots import action
 
 
 class FamilyTests(unittest.TestCase):
+    def test_scheduled_black_is_opt_in_and_starts_on_configured_day(self):
+        from datetime import datetime
+        clock = datetime(2026, 9, 12, 9, tzinfo=bots.KST)
+        telegram = Mock()
+        with patch('family_runtime.black_tick') as tick:
+            family.scheduled_black_tick({}, self.store, telegram, clock)
+            family.scheduled_black_tick({'black_schedule_start': '2026-09-13'}, self.store, telegram, clock)
+            tick.assert_not_called()
+            family.scheduled_black_tick({'black_schedule_start': '2026-09-12'}, self.store, telegram, clock)
+            tick.assert_called_once_with(self.store, telegram, clock)
+
     def setUp(self):
         self.store = bots.Store(':memory:')
         self.config = {'owner_id': 123, 'owner_address': '형', 'family_chat_id': -99}
