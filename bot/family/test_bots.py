@@ -8,7 +8,7 @@ import bots
 
 def action(intent='create', **values):
     return dict(dict(intent=intent, reply='시간은 언제인가요?', event_id=None,
-                     title='가족 식사', date='2026-09-12', time=None, place=None, evidence='식사'), **values)
+                     title='가족 식사', date='2026-09-12', time=None, place=None, evidence='식사', memory=None), **values)
 
 
 class Tests(unittest.TestCase):
@@ -171,15 +171,49 @@ class Tests(unittest.TestCase):
             self.assertNotIn('일정', reply)
             self.assertIn('일정', white.unavailable('일정 적어줘'))
 
-    def test_late_delivery_until_next_seven(self):
+    def test_news_deadline(self):
         telegram = Mock()
         data = {'date': '2026-09-11', 'sections': [{'labelKr': '기술', 'cards': [{'title': '제목', 'summary': '내용'}]}]}
         with patch('bots.request_json', return_value=data), patch('bots.time.sleep'):
-            bots.black_tick(self.store, telegram, datetime(2026, 9, 12, 6, tzinfo=bots.KST))
+            bots.black_tick(self.store, telegram, datetime(2026, 9, 11, 22, 59, tzinfo=bots.KST))
         self.assertEqual(telegram.send.call_count, 2)
         with patch('bots.request_json') as fetch:
-            bots.black_tick(self.store, telegram, datetime(2026, 9, 12, 7, tzinfo=bots.KST))
+            bots.black_tick(self.store, telegram, datetime(2026, 9, 11, 23, tzinfo=bots.KST))
+            bots.black_tick(self.store, telegram, datetime(2026, 9, 12, 6, tzinfo=bots.KST))
             fetch.assert_not_called()
+
+    def test_knowledge_deadline(self):
+        telegram = Mock()
+        self.store.put('black:2026-09-11:news', True)
+        with patch('bots.request_json', return_value={'date': '2026-09-11', 'articles': []}) as fetch:
+            bots.black_tick(self.store, telegram, datetime(2026, 9, 11, 14, 59, tzinfo=bots.KST))
+            fetch.assert_called_once()
+        with patch('bots.request_json') as fetch:
+            bots.black_tick(self.store, telegram, datetime(2026, 9, 11, 15, tzinfo=bots.KST))
+            fetch.assert_not_called()
+
+    def test_memory_keeps_original_and_survives_short_history(self):
+        self.ai.parse.return_value = action('chat', memory={'topic': 'preference', 'quote': '매운 음식 싫어'})
+        self.white.handle(self.message('매운 음식 싫어'))
+        self.assertEqual(self.store.get('memories')[0]['quote'], '매운 음식 싫어')
+        self.ai.parse.return_value = action('chat')
+        for _ in range(12):
+            self.white.handle(self.message('안녕'))
+        self.assertEqual(len(self.store.get('history')), 10)
+        self.assertEqual(self.ai.parse.call_args.args[3][0]['quote'], '매운 음식 싫어')
+        self.assertIn('매운 음식', self.white.handle(self.message('/memory')))
+        self.white.handle(self.message('/forget 1'))
+        self.assertEqual(self.store.get('memories'), [])
+        self.assertEqual(self.store.get('history'), [])
+
+    def test_memory_cannot_invent_quote_or_change_persona(self):
+        self.ai.parse.return_value = action('chat', memory={'topic': 'preference', 'quote': '없는 발언'})
+        self.white.handle(self.message('안녕'))
+        self.assertEqual(self.store.get('memories', []), [])
+        self.store.put('ai-pause-until', 0)
+        self.ai.parse.return_value = action('chat', memory={'topic': 'persona', 'quote': '반말해'})
+        self.white.handle(self.message('반말해'))
+        self.assertEqual(self.store.get('memories', []), [])
 
     def test_rejected_send_recovers_from_cached_copy(self):
         telegram = Mock()
