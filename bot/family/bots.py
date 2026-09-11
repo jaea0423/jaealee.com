@@ -6,11 +6,19 @@ import re
 import sqlite3
 import time
 import urllib.request
+import urllib.error
 from datetime import datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
 KST = ZoneInfo('Asia/Seoul')
+
+
+class ServiceError(RuntimeError):
+    """상태 코드만 보존하고 민감한 URL·응답은 버립니다."""
+    def __init__(self, status=None):
+        self.status = status
+        super().__init__('외부 연결 실패')
 
 
 def now():
@@ -24,8 +32,10 @@ def request_json(url, payload=None, headers=None, timeout=45):
     try:
         with urllib.request.urlopen(req, timeout=timeout) as response:
             return json.load(response)
+    except urllib.error.HTTPError as exc:
+        raise ServiceError(exc.code) from None
     except Exception:
-        raise RuntimeError('외부 서비스 요청 실패. 비공개 설정과 연결을 확인하세요.') from None
+        raise ServiceError() from None
 
 
 def chunks(text, limit=1800):
@@ -197,6 +207,17 @@ class White:
     def __init__(self, owner, store, ai):
         self.owner, self.store, self.ai = owner, store, ai
 
+    def unavailable(self):
+        # 연결 실패를 농담으로 숨기거나, 저장·재시도 성공을 약속하지 않습니다.
+        replies = (
+            '형, 지금은 답을 제대로 드리기 어렵네요. 이번 말씀은 처리하지 못했어요. 잠시 뒤 다시 말씀해 주세요.',
+            '형, 잠깐 연결이 끊겼어요. 이번 내용은 기록하지 못했으니 조금 뒤 다시 부탁드려요.',
+            '형, 지금 답변 연결이 매끄럽지 않네요. 이번 요청은 처리하지 못했어요. 잠시 뒤 다시 불러주세요.',
+        )
+        index = self.store.get('fallback-index', 0)
+        self.store.put('fallback-index', index + 1)
+        return replies[index % len(replies)]
+
     def handle(self, message):
         # 이름이나 사용자명 대신 실제 숫자 ID와 private 유형을 함께 검사합니다.
         if message.get('chat', {}).get('type') != 'private' or message.get('chat', {}).get('id') != self.owner or message.get('from', {}).get('id') != self.owner or message.get('from', {}).get('is_bot'):
@@ -243,6 +264,8 @@ class White:
             return ('취소했어요.' if event['status'] == 'cancelled' else '확정했어요.') + '\n' + describe(event) + '\n' + suffix
         if text == '/events':
             return self.list_events(events)
+        if now().timestamp() < self.store.get('ai-pause-until', 0):
+            return self.unavailable()
         # 하루 호출 수를 제한하여 오작동·과도한 대화가 무제한 비용으로 이어지지 않게 합니다.
         key = 'ai-calls:' + now().date().isoformat()
         used = self.store.get(key, 0)
@@ -250,10 +273,40 @@ class White:
             return '오늘의 AI 대화 한도에 도달했어요. /events와 /confirm은 계속 사용할 수 있어요.'
         self.store.put(key, used + 1)
         history = self.store.get('history', [])
-        action = self.ai.parse(text, history, events[-50:])
+        try:
+            action = self.ai.parse(text, history, events[-50:])
+            self.validate_action(action, text, events)
+        except Exception as exc:
+            # 무한 재호출 없이 잠시 쉬고 다음 사용자 메시지에서만 재시도합니다.
+            self.store.put('ai-pause-until', now().timestamp() + 60)
+            self.store.put('pending', None)
+            print('AI 응답 실패: ' + type(exc).__name__ + ' status=' + str(getattr(exc, 'status', None)), flush=True)
+            return self.unavailable()
         reply = self.apply(action, text, events)
         self.store.put('history', (history + [{'user': text, 'assistant': reply}])[-10:])
         return reply
+
+    @staticmethod
+    def validate_action(action, original, events):
+        # 구조가 깨진 응답은 일정 저장과 사용자 출력 전에 거릅니다.
+        assert isinstance(action, dict) and set(action) == set(SCHEMA['required'])
+        assert action['intent'] in SCHEMA['properties']['intent']['enum']
+        assert isinstance(action['reply'], str) and action['reply'].strip()
+        assert isinstance(action['evidence'], str)
+        assert action['event_id'] is None or type(action['event_id']) is int
+        for key in ('title', 'date', 'time', 'place'):
+            assert action[key] is None or isinstance(action[key], str)
+        if action['intent'] in ('chat', 'list'):
+            return
+        assert action['evidence'] and action['evidence'] in original
+        if action['date']:
+            assert datetime.strptime(action['date'], '%Y-%m-%d').strftime('%Y-%m-%d') == action['date']
+        if action['time']:
+            assert re.fullmatch(r'(?:[01]\d|2[0-3]):[0-5]\d', action['time'])
+        for key in ('title', 'place'):
+            assert action[key] is None or len(action[key]) <= 200
+        if action['intent'] in ('update', 'cancel'):
+            assert any(e['id'] == action['event_id'] and e.get('status') != 'cancelled' for e in events)
 
     @staticmethod
     def list_events(events):
@@ -331,10 +384,17 @@ def black_tick(store, telegram, clock):
         key = f'black:{day}:{kind}'
         if store.get(key):
             continue
-        data = request_json(f'https://jaealee.com/{kind}/data/{day}.json')
-        if data.get('date') != day:
+        if clock.timestamp() < store.get(key + ':check-after', 0):
             continue
-        messages = digest(kind, data)
+        # 미등록·빈·손상된 원고에는 안내도 보내지 않고 종류별로 따로 기다립니다.
+        store.put(key + ':check-after', clock.timestamp() + 300)
+        try:
+            data = request_json(f'https://jaealee.com/{kind}/data/{day}.json')
+            if not isinstance(data, dict) or data.get('date') != day:
+                continue
+            messages = digest(kind, data)
+        except Exception:
+            continue
         if not messages:
             continue
         send_once(store, telegram, key, messages)

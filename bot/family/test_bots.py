@@ -121,6 +121,47 @@ class Tests(unittest.TestCase):
         for part in bots.chunks('🤍' * 8000):
             self.assertLessEqual(len(part.encode('utf-16-le')) // 2, 4096)
 
+    def test_ai_failure_cooldown_no_false_save(self):
+        self.ai.parse.side_effect = bots.ServiceError(429)
+        first = self.white.handle(self.message('식사'))
+        second = self.white.handle(self.message('다시 식사'))
+        self.assertNotEqual(first, second)
+        self.assertNotIn('429', first)
+        self.assertEqual(self.ai.parse.call_count, 1)
+        self.assertEqual(self.store.events(), [])
+        self.assertIn('아직 기록된', self.white.handle(self.message('/events')))
+        self.store.put('ai-pause-until', 0)
+        self.ai.parse.side_effect = None
+        self.ai.parse.return_value = action()
+        self.white.handle(self.message('식사'))
+        self.assertEqual(len(self.store.events()), 1)
+
+    def test_malformed_ai_never_reaches_chat_or_schedule(self):
+        for response in ['요청량 초과', {'error': 'secret response'}, action(date='2026-02-30')]:
+            self.store.put('ai-pause-until', 0)
+            self.ai.parse.return_value = response
+            reply = self.white.handle(self.message('식사'))
+            self.assertNotIn('secret', reply)
+            self.assertEqual(self.store.events(), [])
+
+    def test_black_missing_news_does_not_block_knowledge(self):
+        telegram = Mock()
+        with patch('bots.request_json', side_effect=bots.ServiceError(404)):
+            bots.black_tick(self.store, telegram, datetime(2026, 9, 11, 9, tzinfo=bots.KST))
+        telegram.send.assert_not_called()
+        data = {'date': '2026-09-11', 'articles': [{'label': '문장', 'title': '오늘', 'quote': '문장', 'author': '작가'}]}
+        with patch('bots.request_json', return_value=data), patch('bots.time.sleep'):
+            bots.black_tick(self.store, telegram, datetime(2026, 9, 11, 12, tzinfo=bots.KST))
+        self.assertEqual(telegram.send.call_count, 2)
+
+    def test_black_empty_stale_and_invalid_are_silent(self):
+        telegram = Mock()
+        for data in [{'date': '2026-09-11', 'sections': []}, {'date': '2026-09-10'}, [], {'date': '2026-09-11'}]:
+            self.store.put('black:2026-09-11:news:check-after', 0)
+            with patch('bots.request_json', return_value=data):
+                bots.black_tick(self.store, telegram, datetime(2026, 9, 11, 9, tzinfo=bots.KST))
+        telegram.send.assert_not_called()
+
 
 if __name__ == '__main__':
     unittest.main()
