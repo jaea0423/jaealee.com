@@ -9,7 +9,7 @@
   const STATE_URL='/home/stock-state.json';
   const designPreview=root.dataset.designPreview==='true';
 
-  let period="1m";
+  let period="1m",assetPeriod="1m";
   let selectedAsset=null,assetChart=null,assetCandle=false;
   let demo=designPreview,market='KR',chartKind='equity',candle=false,percent=false,logKind='decisions',chart=null,state=null,busy=false,manualMarket=false;
   const names=[['원 / 달러','KRW',1372.45,.24],['코스피','INDEX',2684.32,-.38],['비트코인','업비트 · KRW',92345000,1.42],['나스닥100','QQQ · ETF',482.36,.85],['S&P 500','SPY · ETF',563.12,.46],['다우존스','DIA · ETF',414.26,-.13],['반도체','SOXX · ETF',231.78,1.26],['금','GLD · ETF',237.15,.32],['원유','USO · ETF',72.64,-.78],['달러','UUP · ETF',28.45,.18]];
@@ -40,33 +40,58 @@
     const logs=(logKind==='decisions'?d.decisions:d.logs)||[];
     $('logs').innerHTML=logs.length?logs.slice(0,logKind==='decisions'?12:80).map(l=>`<div class="stock-log-line"><time>${esc(l[0])}</time><span><b>${esc(l[1])}</b> · ${esc(l[2])}</span></div>`).join(''):'<div class="stock-log-line">관찰 기록이 아직 연결되지 않았습니다.</div>';
     const at=state?.updated_at,age=at?Date.now()-Date.parse(at):NaN;
-    $('updated').textContent=demo?'미리보기 · 자동 데이터 연결 전':at?`자료 시각 ${new Date(at).toLocaleString('ko-KR')}${!Number.isFinite(age)||age>86400000?' · 지난 관찰 기록':''}`:'연결 대기 · 마지막 관찰 시각 없음';
+    $('updated').textContent=demo?'':at?`자료 시각 ${new Date(at).toLocaleString('ko-KR')}${!Number.isFinite(age)||age>86400000?' · 지난 관찰 기록':''}`:'연결 대기 · 마지막 관찰 시각 없음';
     draw();renderAssets();
   }
+
+  // 선택 기간의 극값을 차트 안에 배치합니다. 캔들은 실제 표시한 고가·저가를 사용합니다.
+  const extremaLabels={id:'stockExtrema',afterDatasetsDraw(c,args,opts){
+    const values=c.data.datasets[0].data;
+    const highs=opts.highs||values,lows=opts.lows||values;
+    const finite=xs=>xs.map((v,i)=>({v,i})).filter(p=>Number.isFinite(p.v));
+    const hi=finite(highs).reduce((a,b)=>!a||b.v>a.v?b:a,null);
+    const lo=finite(lows).reduce((a,b)=>!a||b.v<a.v?b:a,null);
+    if(!hi||!lo)return;
+    const {ctx,chartArea:a,scales:{x,y}}=c;
+    ctx.save();ctx.font='11px "Segoe UI", "Malgun Gothic", sans-serif';ctx.textBaseline='middle';
+    for(const [p,color,above] of [[hi,'#d93b48',true],[lo,'#2866cf',false]]){
+      const label=fmt(p.v,opts.decimals||0)+'원',width=ctx.measureText(label).width;
+      const px=x.getPixelForValue(p.i),py=y.getPixelForValue(p.v);
+      const tx=Math.max(a.left+width/2+4,Math.min(a.right-width/2-4,px));
+      const ty=Math.max(a.top+9,Math.min(a.bottom-9,py+(above?-16:16)));
+      ctx.fillStyle='rgba(255,255,255,.92)';ctx.fillRect(tx-width/2-3,ty-8,width+6,16);
+      ctx.fillStyle=color;ctx.textAlign='center';ctx.fillText(label,tx,ty);
+      ctx.beginPath();ctx.arc(px,py,2.5,0,Math.PI*2);ctx.fill();
+    }
+    ctx.restore();
+  }};
+
   const candles={id:'stockCandles',afterDatasetsDraw(c){if(!candle||chartKind!=='price')return;const {ctx,scales:{x,y},chartArea:a}=c;const values=c.data.datasets[0].data;ctx.save();ctx.beginPath();ctx.rect(a.left,a.top,a.right-a.left,a.bottom-a.top);ctx.clip();values.forEach((close,i)=>{const open=values[Math.max(0,i-1)],xx=x.getPixelForValue(i),w=Math.max(2,(a.right-a.left)/values.length*.55);ctx.strokeStyle=ctx.fillStyle=close>=open?'#d93b48':'#2866cf';ctx.beginPath();ctx.moveTo(xx,y.getPixelForValue(Math.max(open,close)+8));ctx.lineTo(xx,y.getPixelForValue(Math.min(open,close)-8));ctx.stroke();ctx.fillRect(xx-w/2,y.getPixelForValue(Math.max(open,close)),w,Math.max(1,Math.abs(y.getPixelForValue(open)-y.getPixelForValue(close))));});ctx.restore();}};
-  function draw(){if(root.hidden||$('dashboard').hidden)return;if(chart){chart.destroy();chart=null;}const d=data();let values=demo?(chartKind==='price'?d.series:d.equity_series):null; if(demo)values=demoHistory(9800).values; if(demo&&chartKind==='equity'&&percent)values=values.map(v=>v/d.initial_equity*100); if(!Array.isArray(values)||!values.length||!window.Chart){$('chart-empty').hidden=false;$('chart-empty').textContent=!window.Chart?'차트 모듈을 불러오는 중입니다.':'차트 자료가 아직 없습니다.';return;}$('chart-empty').hidden=true;const color=(d.change||0)>=0?'#d93b48':'#2866cf';chart=new Chart($('chart'),{type:'line',data:{labels:demoHistory(9800).labels,datasets:[{data:values,borderColor:color,backgroundColor:color+'09',segment:{borderColor:ctx=>ctx.p1.parsed.y>ctx.p0.parsed.y?'#d93b48':ctx.p1.parsed.y<ctx.p0.parsed.y?'#2866cf':'#8b94a3'},borderWidth:candle&&chartKind==='price'?0:1.7,pointRadius:0,fill:false,tension:0}]},plugins:[candles],options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},tooltip:{enabled:!(candle&&chartKind==='price')}},scales:{x:{grid:{display:false},ticks:{maxTicksLimit:7,color:'#9099a7',font:{size:10}},border:{display:false}},y:{position:'right',grid:{color:'#f0f2f6'},border:{display:false},ticks:{maxTicksLimit:5,color:'#9099a7',font:{size:10}}}}}});}
+  function draw(){if(root.hidden||$('dashboard').hidden)return;if(chart){chart.destroy();chart=null;}const d=data();let values=demo?(chartKind==='price'?d.series:d.equity_series):null; if(demo)values=demoHistory(9800).values; if(demo&&chartKind==='equity'&&percent)values=values.map(v=>v/d.initial_equity*100); if(!Array.isArray(values)||!values.length||!window.Chart){$('chart-empty').hidden=false;$('chart-empty').textContent=!window.Chart?'차트 모듈을 불러오는 중입니다.':'차트 자료가 아직 없습니다.';return;}$('chart-empty').hidden=true;const color=(d.change||0)>=0?'#d93b48':'#2866cf';chart=new Chart($('chart'),{type:'line',data:{labels:demoHistory(9800).labels,datasets:[{data:values,borderColor:color,backgroundColor:color+'09',segment:{borderColor:ctx=>ctx.p1.parsed.y>ctx.p0.parsed.y?'#d93b48':ctx.p1.parsed.y<ctx.p0.parsed.y?'#2866cf':'#8b94a3'},borderWidth:candle&&chartKind==='price'?0:1.7,pointRadius:0,fill:false,tension:0}]},plugins:[candles,extremaLabels],options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},tooltip:{enabled:!(candle&&chartKind==='price')}},scales:{x:{grid:{display:false},ticks:{maxTicksLimit:7,color:'#9099a7',font:{size:10}},border:{display:false}},y:{position:'right',grid:{color:'#f0f2f6'},border:{display:false},ticks:{maxTicksLimit:5,color:'#9099a7',font:{size:10}}}}}});}
 
   // 이분할로 평가금액 면적 비율을 유지합니다. 표시 반올림은 원본 금액을 바꾸지 않습니다.
   function splitTiles(items,x=0,y=0,w=100,h=100){if(!items.length)return [];if(items.length===1)return [{...items[0],x,y,w,h}];const total=items.reduce((s,a)=>s+a.value,0);let sum=0,cut=1;for(let i=0;i<items.length-1;i++){sum+=items[i].value;cut=i+1;if(sum>=total/2)break;}const ratio=sum/total;return w>=h?[...splitTiles(items.slice(0,cut),x,y,w*ratio,h),...splitTiles(items.slice(cut),x+w*ratio,y,w*(1-ratio),h)]:[...splitTiles(items.slice(0,cut),x,y,w,h*ratio),...splitTiles(items.slice(cut),x,y+h*ratio,w,h*(1-ratio))];}
   function renderAssets(){const d=data(),assets=(d.assets||[]).map(a=>({...a,return_pct:a.id==='cash'?0:(Number.isFinite(a.price)&&Number.isFinite(a.average_price)&&a.average_price>0?(a.price/a.average_price-1)*100:null)})).filter(a=>typeof a.value==='number'&&Number.isFinite(a.value)&&a.value>0);const total=assets.reduce((s,a)=>s+a.value,0);$('assets-note').textContent=demo?'편집용 더미 · 실제 보유/배정이 아닙니다. 주식·달러를 눌러 아래 가격 차트를 확인하세요.':'실제 보유 자산 연결 대기 · 관찰 종목과 보유 종목은 다릅니다.';
-    $('buckets').innerHTML=(d.buckets||[]).map(b=>`<div><span>${esc(b.name)} 자산</span><strong>${fmt(b.value)}원 <em class="${cls(b.value-b.allocated)}">${b.allocated>0?sign(b.value-b.allocated)+fmt((b.value/b.allocated-1)*100,2)+'%':'—'}</em></strong><small>배정 ${fmt(b.allocated)}원 · 손익 ${sign(b.value-b.allocated)}${fmt(b.value-b.allocated)}원</small></div>`).join('');
+    $('buckets').innerHTML=(d.buckets||[]).map(b=>`<div><span>${esc(b.name)} 자산</span><strong>${fmt(b.value)}원 <em class="${cls(b.value-b.allocated)}">${b.allocated>0?sign(b.value-b.allocated)+fmt((b.value/b.allocated-1)*100,2)+'%('+sign(b.value-b.allocated)+fmt(b.value-b.allocated)+'원)':'—'}</em></strong><small>배정 ${fmt(b.allocated)}원</small></div>`).join('');
     $('treemap').innerHTML=assets.length?splitTiles([...assets].sort((a,b)=>b.value-a.value)).map(a=>`<button class="stock-tile ${a.return_pct>0?'tile-up':a.return_pct<0?'tile-down':'tile-neutral'}" data-asset-id="${esc(a.id)}" aria-pressed="${a.id===selectedAsset}" ${a.id==='cash'?'disabled':''} style="left:${a.x}%;top:${a.y}%;width:${a.w}%;height:${a.h}%" aria-label="${esc(a.name)} 비중 ${fmt(a.value/total*100,1)}%, 평단 대비 ${sign(a.return_pct)}${fmt(a.return_pct,2)}%"><b>${esc(a.name)}</b><strong>${sign(a.return_pct)}${fmt(a.return_pct,2)}%</strong><small>${fmt(a.value)}원 · 비중 ${fmt(a.value/total*100,1)}%</small></button>`).join(''):'<p class="stock-assets-empty">보유 자산이 연결되면 비중별로 표시합니다.<br>예시 보기에서 여러 자산의 구성을 확인할 수 있습니다.</p>';
     $('treemap').querySelectorAll('[data-asset-id]').forEach(b=>b.onclick=()=>{selectedAsset=b.dataset.assetId;renderAssets();});
     const a=assets.find(a=>a.id===selectedAsset);$('asset-detail').hidden=!a;if(assetChart){assetChart.destroy();assetChart=null;}if(!a)return;
     $('asset-name').textContent=a.name+(demo?' · 더미 가격':'');$('asset-price').textContent=fmt(a.price,a.id==='usd'?2:0)+' '+a.unit;$('asset-return').textContent='평단 대비 '+sign(a.return_pct)+fmt(a.return_pct,2)+'%';$('asset-return').className=cls(a.return_pct);
-    $('asset-meta').textContent=`평단 ${fmt(a.average_price,a.id==='usd'?2:0)}원 · 보유 ${fmt(a.quantity,a.id==='usd'?4:0)}${a.id==='usd'?' USD':'주'} · 평가 ${fmt(a.value)}원 · ${demo?periodSpec().label+' / '+periodSpec().interval+' 가상 자료':'원본 시각 확인 필요'}`;
+    $('asset-meta').textContent=`평단 ${fmt(a.average_price,a.id==='usd'?2:0)}원 · 보유 ${fmt(a.quantity,a.id==='usd'?4:0)}${a.id==='usd'?' USD':'주'} · 평가 ${fmt(a.value)}원 · ${demo?periodSpec(assetPeriod).label+' / '+periodSpec(assetPeriod).interval+' 가상 자료':'원본 시각 확인 필요'}`;
     $('asset-line').setAttribute('aria-pressed',!assetCandle);$('asset-candle').setAttribute('aria-pressed',assetCandle);
     if(!demo||!window.Chart){$('asset-empty').hidden=false;return;}$('asset-empty').hidden=true;
-    const prices=demoHistory(a.price,true).values,bars=prices.map((close,i)=>{const open=prices[Math.max(0,i-1)],pad=a.price*.001;return {open,close,high:Math.max(open,close)+pad,low:Math.min(open,close)-pad};});
+    const prices=demoHistory(a.price,true,assetPeriod).values,bars=prices.map((close,i)=>{const open=prices[Math.max(0,i-1)],pad=a.price*.001;return {open,close,high:Math.max(open,close)+pad,low:Math.min(open,close)-pad};});
     const plugin={id:'holdingCandles',afterDatasetsDraw(c){if(!assetCandle)return;const {ctx,scales:{x,y}}=c;ctx.save();bars.forEach((b,i)=>{const px=x.getPixelForValue(i);ctx.fillStyle=ctx.strokeStyle=b.close>=b.open?'#d93b48':'#2866cf';ctx.beginPath();ctx.moveTo(px,y.getPixelForValue(b.high));ctx.lineTo(px,y.getPixelForValue(b.low));ctx.stroke();ctx.fillRect(px-2,y.getPixelForValue(Math.max(b.open,b.close)),4,Math.max(1,Math.abs(y.getPixelForValue(b.open)-y.getPixelForValue(b.close))));});ctx.restore();}};
-    assetChart=new Chart($('asset-chart'),{type:'line',data:{labels:demoHistory(a.price,true).labels,datasets:[{data:prices,pointRadius:0,borderWidth:assetCandle?0:1.7,tension:0,segment:{borderColor:c=>c.p1.parsed.y>=c.p0.parsed.y?'#d93b48':'#2866cf'}}]},plugins:[plugin],options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false}},scales:{x:{ticks:{maxTicksLimit:6}},y:{position:'right',suggestedMin:Math.min(...bars.map(b=>b.low)),suggestedMax:Math.max(...bars.map(b=>b.high))}}}});
+    assetChart=new Chart($('asset-chart'),{type:'line',data:{labels:demoHistory(a.price,true,assetPeriod).labels,datasets:[{data:prices,pointRadius:0,borderWidth:assetCandle?0:1.7,tension:0,segment:{borderColor:c=>c.p1.parsed.y>=c.p0.parsed.y?'#d93b48':'#2866cf'}}]},plugins:[plugin,extremaLabels],options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},stockExtrema:{decimals:a.id==='usd'?2:0,...(assetCandle?{highs:bars.map(b=>b.high),lows:bars.map(b=>b.low)}:{})}},scales:{x:{ticks:{maxTicksLimit:6}},y:{position:'right',suggestedMin:Math.min(...bars.map(b=>b.low)),suggestedMax:Math.max(...bars.map(b=>b.high))}}}});
   }
   $('asset-line').onclick=()=>{assetCandle=false;renderAssets();};$('asset-candle').onclick=()=>{assetCandle=true;renderAssets();};
 
 
-  function periodSpec(){return {"1d":{label:'1일',n:49,days:0,interval:'5분 간격'},"1m":{label:'1개월',n:31,days:30,interval:'일별'},"3m":{label:'3개월',n:91,days:90,interval:'일별'},"1y":{label:'1년',n:53,days:365,interval:'주별'},"3y":{label:'3년',n:157,days:1095,interval:'주별'}}[period];}
-  function demoHistory(last,price=false){const s=periodSpec(),end=Date.UTC(2026,8,12),values=[],labels=[];for(let i=0;i<s.n;i++){const t=i/(s.n-1);values.push(price?last*(.93+.07*t+.008*Math.sin(i*.8)*(1-t)):Math.round(last*t+Math.sin(i*.9)*1100*(1-t)));const date=new Date(end-(s.days*(1-t))*86400000);labels.push(period==='1d'?`${String(9+Math.floor(i*5/60)).padStart(2,'0')}:${String(i*5%60).padStart(2,'0')}`:(s.days>90?date.getUTCFullYear()+'/'+(date.getUTCMonth()+1):date.getUTCMonth()+1+'/'+date.getUTCDate()));}values[values.length-1]=last;return {values,labels};}
+  function periodSpec(selected=period){return {"1d":{label:'1일',n:49,days:0,interval:'5분 간격'},"1m":{label:'1개월',n:31,days:30,interval:'일별'},"3m":{label:'3개월',n:91,days:90,interval:'일별'},"1y":{label:'1년',n:53,days:365,interval:'주별'},"3y":{label:'3년',n:157,days:1095,interval:'주별'}}[selected];}
+  function demoHistory(last,price=false,selected=period){const s=periodSpec(selected),end=Date.UTC(2026,8,12),values=[],labels=[];for(let i=0;i<s.n;i++){const t=i/(s.n-1);values.push(price?last*(.93+.07*t+.008*Math.sin(i*.8)*(1-t)):Math.round(last*t+Math.sin(i*.9)*1100*(1-t)));const date=new Date(end-(s.days*(1-t))*86400000);labels.push(selected==='1d'?`${String(9+Math.floor(i*5/60)).padStart(2,'0')}:${String(i*5%60).padStart(2,'0')}`:(s.days>90?date.getUTCFullYear()+'/'+(date.getUTCMonth()+1):date.getUTCMonth()+1+'/'+date.getUTCDate()));}values[values.length-1]=last;return {values,labels};}
   root.querySelectorAll('[data-stock-period]').forEach(b=>b.onclick=()=>{period=b.dataset.stockPeriod;root.querySelectorAll('[data-stock-period]').forEach(x=>x.setAttribute('aria-pressed',x===b));render();});
+
+  root.querySelectorAll('[data-stock-asset-period]').forEach(b=>b.onclick=()=>{assetPeriod=b.dataset.stockAssetPeriod;root.querySelectorAll('[data-stock-asset-period]').forEach(x=>x.setAttribute('aria-pressed',x===b));renderAssets();});
 
   async function refresh(){if(demo||root.hidden||document.hidden||busy)return;busy=true;const c=new AbortController(),timer=setTimeout(()=>c.abort(),8000);try{const r=await fetch(STATE_URL,{cache:'no-store',credentials:'omit',signal:c.signal});if(!r.ok)throw new Error('공개 관찰 기록을 불러오지 못했습니다.');const next=await r.json();if(next.mode!=='observation_only'||!next.markets)throw new Error('관찰 자료 형식을 확인할 수 없습니다.');state=next;$('error').hidden=true;render();}catch(e){state=null;$('error').textContent=e.message+' 연결을 확인하세요.';$('error').hidden=false;render();}finally{clearTimeout(timer);busy=false;}}
   $('demo-toggle').onclick=()=>{selectedAsset=null;demo=!demo;render();refresh();};
