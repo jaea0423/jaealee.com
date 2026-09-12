@@ -45,6 +45,19 @@
   }
 
   // 선택 기간의 극값을 차트 안에 배치합니다. 캔들은 실제 표시한 고가·저가를 사용합니다.
+
+  const averageLine={id:'stockAverage',afterDatasetsDraw(c,args,opts){
+    if(!Number.isFinite(opts.value)||opts.value<=0)return;
+    const {ctx,chartArea:a,scales:{y}}=c,py=y.getPixelForValue(opts.value);
+    ctx.save();ctx.strokeStyle='#7256a8';ctx.lineWidth=1.2;ctx.setLineDash([5,4]);
+    ctx.beginPath();ctx.moveTo(a.left,py);ctx.lineTo(a.right,py);ctx.stroke();ctx.setLineDash([]);
+    const text='평균단가 '+fmt(opts.value,opts.decimals||0)+'원';
+    ctx.font='11px "Segoe UI", "Malgun Gothic", sans-serif';ctx.textBaseline='middle';ctx.textAlign='left';
+    const ty=Math.max(a.top+9,Math.min(a.bottom-9,py-10));
+    ctx.fillStyle='rgba(255,255,255,.95)';ctx.fillRect(a.left+2,ty-8,ctx.measureText(text).width+8,16);
+    ctx.fillStyle='#7256a8';ctx.fillText(text,a.left+6,ty);ctx.restore();
+  }};
+
   const extremaLabels={id:'stockExtrema',afterDatasetsDraw(c,args,opts){
     const values=c.data.datasets[0].data;
     const highs=opts.highs||values,lows=opts.lows||values;
@@ -82,7 +95,7 @@
     if(!demo||!window.Chart){$('asset-empty').hidden=false;return;}$('asset-empty').hidden=true;
     const prices=demoHistory(a.price,true,assetPeriod).values,bars=prices.map((close,i)=>{const open=prices[Math.max(0,i-1)],pad=a.price*.001;return {open,close,high:Math.max(open,close)+pad,low:Math.min(open,close)-pad};});
     const plugin={id:'holdingCandles',afterDatasetsDraw(c){if(!assetCandle)return;const {ctx,scales:{x,y}}=c;ctx.save();bars.forEach((b,i)=>{const px=x.getPixelForValue(i);ctx.fillStyle=ctx.strokeStyle=b.close>=b.open?'#d93b48':'#2866cf';ctx.beginPath();ctx.moveTo(px,y.getPixelForValue(b.high));ctx.lineTo(px,y.getPixelForValue(b.low));ctx.stroke();ctx.fillRect(px-2,y.getPixelForValue(Math.max(b.open,b.close)),4,Math.max(1,Math.abs(y.getPixelForValue(b.open)-y.getPixelForValue(b.close))));});ctx.restore();}};
-    assetChart=new Chart($('asset-chart'),{type:'line',data:{labels:demoHistory(a.price,true,assetPeriod).labels,datasets:[{data:prices,pointRadius:0,borderWidth:assetCandle?0:1.7,tension:0,segment:{borderColor:c=>c.p1.parsed.y>=c.p0.parsed.y?'#d93b48':'#2866cf'}}]},plugins:[plugin,extremaLabels],options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},stockExtrema:{decimals:a.id==='usd'?2:0,...(assetCandle?{highs:bars.map(b=>b.high),lows:bars.map(b=>b.low)}:{})}},scales:{x:{ticks:{maxTicksLimit:6}},y:{position:'right',suggestedMin:Math.min(...bars.map(b=>b.low)),suggestedMax:Math.max(...bars.map(b=>b.high))}}}});
+    assetChart=new Chart($('asset-chart'),{type:'line',data:{labels:demoHistory(a.price,true,assetPeriod).labels,datasets:[{data:prices,pointRadius:0,borderWidth:assetCandle?0:1.7,tension:0,segment:{borderColor:c=>c.p1.parsed.y>=c.p0.parsed.y?'#d93b48':'#2866cf'}}]},plugins:[plugin,averageLine,extremaLabels],options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},stockAverage:{value:a.average_price,decimals:a.id==='usd'?2:0},stockExtrema:{decimals:a.id==='usd'?2:0,...(assetCandle?{highs:bars.map(b=>b.high),lows:bars.map(b=>b.low)}:{})}},scales:{x:{ticks:{maxTicksLimit:6}},y:{position:'right',suggestedMin:Math.min(...bars.map(b=>b.low),...(a.average_price>0?[a.average_price]:[])),suggestedMax:Math.max(...bars.map(b=>b.high),...(a.average_price>0?[a.average_price]:[]))}}}});
   }
   $('asset-line').onclick=()=>{assetCandle=false;renderAssets();};$('asset-candle').onclick=()=>{assetCandle=true;renderAssets();};
 
