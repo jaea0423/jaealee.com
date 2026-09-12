@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>인공지능 1주차 2차시 — 연구 분야 · AI 시대의 개발자 진로 설계</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<style>
+:root{
+  --accent:#9333EA;
+  --accent-deep:#6B21A8;
+  --accent-soft:#F3E8FF;
+
+  --bg:#F7F8FA;
+  --surface:#FFFFFF;
+  --ink:#15161B;
+  --ink-2:#565C66;
+  --ink-3:#8B9098;
+  --line:#E5E7EC;
+  --line-2:#F0F1F4;
+  --code-bg:#1B1D24;
+  --code-ink:#E4E6ED;
+  --mark:#FFE27A;
+  --font:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,system-ui,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  --mono:'JetBrains Mono','SFMono-Regular',Consolas,'D2Coding',monospace;
+}
+html[data-theme="dark"]{
+  --accent:#B085EF;
+  --accent-deep:#C9A6F5;
+  --accent-soft:#2A2135;
+  --bg:#101116;
+  --surface:#181A20;
+  --ink:#E8E9ED;
+  --ink-2:#A6AAB4;
+  --ink-3:#73777F;
+  --line:#2A2C34;
+  --line-2:#202229;
+  --code-bg:#0C0D11;
+  --mark:#6E5C16;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15.5px;line-height:1.72;letter-spacing:-.012em;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-deep)}
+::selection{background:var(--accent);color:#fff}
+
+#scrollbar{position:fixed;top:0;left:0;height:3px;width:0;background:var(--accent);z-index:99}
+
+.topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:10px;padding:10px 22px;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.back{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink-2);font-size:14px;font-weight:700;white-space:nowrap}
+.back:hover{color:var(--accent-deep)}
+.back i{width:10px;height:10px;border-radius:3px;background:var(--accent);display:block}
+.search{flex:1;max-width:300px;margin-left:auto;position:relative}
+.search input{width:100%;padding:7px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14px}
+.search input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.hit{position:absolute;right:10px;top:8px;font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums;pointer-events:none}
+.tools{display:flex;gap:6px}
+.tbtn{border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:9px;padding:7px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);white-space:nowrap}
+.tbtn:hover{border-color:var(--accent);color:var(--accent-deep)}
+.tbtn.solid{background:var(--accent);border-color:var(--accent);color:#fff}
+.tbtn:disabled{opacity:.4;cursor:default}
+
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);gap:38px;max-width:1200px;margin:0 auto;padding:26px 24px 120px}
+main{min-width:0}
+
+.side{position:sticky;top:80px;align-self:start;max-height:calc(100vh - 100px);overflow-y:auto;scrollbar-width:thin}
+.panel{background:var(--accent);border-radius:16px;padding:18px 16px;color:#fff;box-shadow:0 8px 24px -12px color-mix(in srgb,var(--accent) 70%,transparent)}
+.panel .cap{font-size:11.5px;font-weight:700;opacity:.72;margin-bottom:9px}
+.panel .subject{font-size:19px;font-weight:800;letter-spacing:-.03em;line-height:1.3;margin-bottom:2px}
+.panel .when{font-size:12.5px;opacity:.8;margin-bottom:16px}
+.toc{list-style:none;margin:0;padding:0}
+.toc a{display:block;padding:6px 10px;border-radius:8px;color:#fff;opacity:.82;text-decoration:none;font-size:13.5px;font-weight:600;line-height:1.45}
+.toc a:hover{background:rgba(255,255,255,.16);opacity:1}
+.toc a.on{background:#fff;color:var(--accent-deep);opacity:1;font-weight:800}
+.toc .num{display:inline-block;width:17px;font-variant-numeric:tabular-nums;opacity:.7}
+.toc a.on .num{opacity:1}
+.panel hr{border:0;border-top:1px solid rgba(255,255,255,.22);margin:14px 0}
+.chk label{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;padding:3px 0;cursor:pointer;line-height:1.5;opacity:.9}
+.chk input{margin-top:4px;accent-color:#fff;flex-shrink:0}
+.chk input:checked + span{opacity:.5;text-decoration:line-through}
+.pbar{height:4px;border-radius:99px;background:rgba(255,255,255,.28);margin-top:11px;overflow:hidden}
+.pbar i{display:block;height:100%;width:0;background:#fff;transition:width .25s}
+
+.hero{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px 28px 22px;overflow:hidden;margin-bottom:16px}
+.hero::after{content:attr(data-w);position:absolute;right:14px;bottom:-26px;font-size:112px;font-weight:800;color:var(--accent);opacity:.09;letter-spacing:-.06em;line-height:1;pointer-events:none}
+.chip{display:inline-flex;align-items:center;gap:7px;background:var(--accent-soft);color:var(--accent-deep);font-size:12.5px;font-weight:800;padding:4px 11px;border-radius:99px}
+h1{font-size:clamp(26px,3.6vw,34px);font-weight:800;letter-spacing:-.04em;line-height:1.24;margin:12px 0 6px;position:relative}
+.hero .sub{color:var(--ink-2);font-size:15px;margin:0 0 14px;position:relative}
+[hidden]{display:none!important}
+.metaline{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-3);position:relative}
+.metaline b{color:var(--ink-2);font-weight:600}
+
+.files{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;position:relative}
+.file{display:inline-flex;align-items:center;gap:9px;padding:8px 13px 8px 9px;border:1px solid var(--line);border-radius:10px;background:var(--surface);text-decoration:none;color:var(--ink);font-size:13.5px;font-weight:700}
+.file:hover{border-color:var(--accent);background:var(--accent-soft)}
+.file .ic{background:var(--accent);color:#fff;font-size:10px;font-weight:800;padding:3px 6px;border-radius:6px;letter-spacing:.02em}
+.file em{font-style:normal;color:var(--ink-3);font-weight:600;font-size:12.5px}
+.files .none{font-size:12.5px;color:var(--ink-3);font-weight:600;padding:8px 0}
+.extra-chip:disabled{cursor:default;opacity:.6}
+
+.flow{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:26px}
+.flow a{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--line);border-radius:99px;background:var(--surface);text-decoration:none;color:var(--ink-2);font-size:13px;font-weight:600}
+.flow a:hover{border-color:var(--accent);color:var(--accent-deep);background:var(--accent-soft)}
+.flow a b{color:var(--accent);font-variant-numeric:tabular-nums}
+
+.keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:34px}
+.key{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:14px;padding:16px 17px}
+.key .n{font-size:12px;font-weight:800;color:var(--accent);margin-bottom:5px}
+.key p{margin:0;font-size:14.5px;line-height:1.6}
+.key b{font-weight:800}
+
+section{margin-bottom:46px;scroll-margin-top:82px}
+h2.st{display:flex;align-items:center;gap:11px;font-size:22px;font-weight:800;letter-spacing:-.035em;margin:0 0 14px}
+h2.st .sq{flex-shrink:0;width:30px;height:30px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+h3{font-size:16.5px;font-weight:800;margin:26px 0 8px;letter-spacing:-.025em;padding-left:11px;border-left:3px solid var(--accent)}
+h4{font-size:14.5px;font-weight:700;margin:18px 0 6px;color:var(--ink-2)}
+p{margin:9px 0}
+ul,ol{margin:9px 0;padding-left:21px}
+li{margin:3px 0}
+li::marker{color:var(--accent)}
+.en{color:var(--ink-3);font-weight:500;font-size:.9em}
+mark{background:linear-gradient(transparent 54%,var(--mark) 54%);color:inherit;padding:0 2px}
+.hit-mark{background:var(--accent);color:#fff;border-radius:3px}
+
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin:-6px 0 12px}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:6px;letter-spacing:0}
+.badge.exam{color:#92580B;background:#FDF0D5}
+.badge.prof{color:var(--accent-deep);background:var(--accent-soft)}
+.badge.ask{color:#B02020;background:#FCE4E4}
+html[data-theme="dark"] .badge.exam{background:#3B2D0E;color:#EFC470}
+html[data-theme="dark"] .badge.ask{background:#3A1919;color:#F0A0A0}
+
+.call{border-radius:13px;padding:14px 17px;margin:15px 0;background:var(--surface);border:1px solid var(--line)}
+.call .t{font-size:12.5px;font-weight:800;margin-bottom:5px}
+.call p:first-of-type{margin-top:0}
+.call p:last-child,.call ul:last-child{margin-bottom:0}
+.call.quote{background:var(--accent-soft);border-color:transparent}
+.call.quote .t{color:var(--accent-deep)}
+.call.quote p{font-size:14.8px}
+.call.warn{border-left:4px solid #E5A50A}
+.call.warn .t{color:#A16207}
+.call.ask{border-left:4px solid #DC2626}
+.call.ask .t{color:#B02020}
+.call.link{border-left:4px solid var(--accent)}
+.call.link .t{color:var(--accent-deep)}
+
+.call.extra{background:repeating-linear-gradient(135deg,var(--line-2),var(--line-2) 9px,transparent 9px,transparent 18px);border:1.5px dashed var(--ink-3);border-left-width:1.5px}
+.call.extra .t{color:var(--ink-2);display:flex;align-items:center;gap:6px}
+.call.extra .t::before{content:"보충";background:var(--ink-3);color:var(--surface);font-size:10.5px;padding:1px 6px;border-radius:5px}
+.call.extra p{color:var(--ink-2)}
+.badge.extra{color:var(--ink-2);background:var(--line-2);border:1px dashed var(--ink-3)}
+.ext{border-bottom:2px dotted var(--ink-3);color:var(--ink-2)}
+.ext::after{content:"보충";font-size:9.5px;font-weight:800;vertical-align:super;color:var(--ink-3);margin-left:2px;letter-spacing:0}
+.extra-chip{border:1.5px dashed var(--ink-3);background:transparent;color:var(--ink-2);cursor:pointer;font-family:var(--font)}
+body.no-extra .call.extra,body.no-extra .badge.extra{display:none}
+body.no-extra .ext{border-bottom:0}
+body.no-extra .ext::after{display:none}
+html[data-theme="dark"] .call.warn .t{color:#E5B547}
+html[data-theme="dark"] .call.ask .t{color:#F0A0A0}
+
+details.raw{margin:12px 0;border:1px dashed var(--line);border-radius:10px;background:var(--line-2)}
+details.raw summary{cursor:pointer;padding:8px 14px;font-size:12.5px;color:var(--ink-3);font-weight:700;list-style:none}
+details.raw summary::-webkit-details-marker{display:none}
+details.raw summary::before{content:"▸ ";color:var(--accent)}
+details.raw[open] summary::before{content:"▾ "}
+details.raw .txt{padding:0 14px 12px;font-size:13px;color:var(--ink-2);white-space:pre-wrap;line-height:1.7}
+
+.rawnote{border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+.rawitem{display:grid;grid-template-columns:78px 1fr;gap:16px;padding:15px 18px;border-bottom:1px solid var(--line-2)}
+.rawitem:last-child{border-bottom:0}
+.rawitem .seq{font-size:12px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+.rawitem .seq span{display:block;color:var(--ink-3);font-weight:600;font-size:11px;margin-top:2px}
+.rawitem .body{white-space:pre-wrap;font-size:14px;line-height:1.75;color:var(--ink)}
+.rawitem .where{margin-top:7px;font-size:12px}
+.rawitem .where a{color:var(--accent-deep);text-decoration:none;font-weight:700;background:var(--accent-soft);padding:2px 8px;border-radius:6px}
+.rawitem .where a:hover{background:var(--accent);color:#fff}
+.rawnote .empty{padding:24px 18px;color:var(--ink-3);font-size:13.5px}
+
+.tablewrap{overflow-x:auto;margin:15px 0;border:1px solid var(--line);border-radius:13px}
+table{border-collapse:collapse;width:100%;font-size:14px;background:var(--surface)}
+th,td{padding:10px 13px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line-2)}
+th{background:var(--accent);color:#fff;font-weight:700;font-size:13px;white-space:nowrap;border-bottom:0}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--line-2)}
+
+.codebox{margin:15px 0;border-radius:13px;overflow:hidden;background:var(--code-bg);border:1px solid var(--code-bg)}
+.codebox .head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 14px;font-size:12px;color:#9AA0AC;font-weight:700;background:rgba(255,255,255,.04)}
+.codebox .head .tag{color:#fff;background:var(--accent);border-radius:5px;padding:1px 7px;font-size:11px;margin-right:7px}
+.codebox pre{margin:0;padding:15px 17px;overflow-x:auto;font-family:var(--mono);font-size:13.2px;line-height:1.7;color:var(--code-ink)}
+.codebox .cm{color:#7C8494}
+.codebox .kw{color:#C4A6FF}
+.codebox .st2{color:#8BD5A0}
+.copy{border:0;background:transparent;color:#9AA0AC;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font)}
+.copy:hover{color:#fff}
+.codebox.pseudo{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent)}
+.codebox.pseudo .head{background:var(--accent-soft);color:var(--accent-deep)}
+.codebox.pseudo .head .tag{background:var(--accent-deep)}
+.codebox.pseudo pre{color:var(--ink);font-size:13.6px}
+.codebox.pseudo .cm{color:var(--ink-3)}
+.codebox.pseudo .kw{color:var(--accent-deep);font-weight:700}
+.codebox.pseudo .copy{color:var(--ink-3)}
+.codebox.pseudo .copy:hover{color:var(--accent-deep)}
+code:not(pre code){background:var(--accent-soft);color:var(--accent-deep);padding:1px 6px;border-radius:6px;font-family:var(--mono);font-size:.88em;font-weight:600}
+
+figure{margin:18px 0;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 14px 12px}
+figure svg{max-width:100%;height:auto}
+figcaption{font-size:12.5px;color:var(--ink-3);margin-top:10px}
+
+.terms{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:11px}
+.term{border:1px solid var(--line);border-radius:13px;padding:13px 15px;background:var(--surface)}
+.term b{display:block;font-size:15px}
+.term .e{display:block;font-size:12px;color:var(--accent-deep);font-family:var(--mono);margin-bottom:6px}
+.term p{margin:0;font-size:13.3px;color:var(--ink-2);line-height:1.6}
+
+.q{border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:12px 0;background:var(--surface)}
+.q .qh{display:flex;gap:10px;align-items:flex-start;font-weight:700;font-size:15px}
+.q .qn{color:#fff;background:var(--accent);border-radius:7px;padding:1px 8px;font-size:12.5px;font-weight:800;flex-shrink:0;margin-top:3px}
+.q .type{font-size:11px;font-weight:800;color:var(--ink-3);border:1px solid var(--line);border-radius:6px;padding:1px 7px;margin-left:auto;flex-shrink:0;margin-top:3px}
+.q ol.ch{list-style:none;padding-left:0;margin:11px 0 0;counter-reset:c}
+.q ol.ch li{padding:3px 0 3px 26px;position:relative;font-size:14.3px}
+.q ol.ch li::before{content:counter(c);counter-increment:c;position:absolute;left:0;top:4px;width:19px;height:19px;border:1px solid var(--line);border-radius:50%;font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--ink-3)}
+.ans{margin-top:12px;padding:11px 13px;border-radius:10px;background:var(--accent-soft);font-size:14.2px;cursor:pointer}
+.ans .lab{font-weight:800;color:var(--accent-deep);font-size:12.5px;margin-right:7px}
+body.hide-ans .ans:not(.on){background:var(--line-2);color:transparent;user-select:none;cursor:pointer;position:relative}
+body.hide-ans .ans:not(.on) *{color:transparent!important}
+body.hide-ans .ans:not(.on)::after{content:"눌러서 정답 확인";position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-3);font-size:12.5px;font-weight:700}
+
+.vhead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px}
+.vhead input[type=search]{flex:1;min-width:170px;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14px}
+.vhead input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.vlist{margin:0;padding:0;list-style:none;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
+.vword{display:grid;grid-template-columns:190px 1fr;gap:16px;padding:14px 18px;border-bottom:1px solid var(--line-2)}
+.vword:last-child{border-bottom:0}
+.vword:hover{background:var(--line-2)}
+.vword .w{font-weight:800;font-size:16px;letter-spacing:-.02em}
+.vword .ipa{display:block;font-family:var(--mono);font-size:12px;color:var(--ink-3);font-weight:400;margin-top:1px}
+.vword .pos{display:inline-block;font-size:10.5px;font-weight:800;color:#fff;background:var(--accent);border-radius:5px;padding:1px 6px;margin-top:5px}
+.vword .mean{font-size:14.5px;margin:0;font-weight:600}
+.vword .ex{font-size:13px;color:var(--ink-2);margin:5px 0 0}
+.vword .ex b{color:var(--accent-deep);font-weight:700}
+.vword .ex .ko{display:block;color:var(--ink-3);font-size:12.5px}
+.masked .mean,.masked .ex{background:var(--line-2);border-radius:6px;color:transparent;cursor:pointer}
+.masked .mean *,.masked .ex *{color:transparent!important}
+.masked .mean.show,.masked .ex.show{background:transparent;color:inherit}
+.masked .mean.show *,.masked .ex.show *{color:revert!important}
+.masked .ex.show b{color:var(--accent-deep)!important}
+.quizbox{margin-top:18px;padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--surface);display:none}
+.quizbox.on{display:block}
+.quizbox .qq{font-size:22px;font-weight:800;margin-bottom:14px;letter-spacing:-.02em}
+.quizbox .opts{display:grid;gap:8px}
+.quizbox .opt{text-align:left;padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14.5px;cursor:pointer}
+.quizbox .opt:hover{border-color:var(--accent)}
+.quizbox .opt.ok{border-color:#16A34A;background:color-mix(in srgb,#16A34A 12%,var(--surface))}
+.quizbox .opt.no{border-color:#DC2626;background:color-mix(in srgb,#DC2626 12%,var(--surface))}
+.quizbox .score{margin-top:13px;font-size:13px;color:var(--ink-3);font-weight:600}
+.vlist .empty{padding:24px 18px;color:var(--ink-3);font-size:13.5px}
+
+footer{margin-top:54px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-3);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+@media(max-width:900px){
+  .wrap{grid-template-columns:1fr;gap:18px;padding:16px 16px 80px}
+  .side{position:static;max-height:none;order:-1}
+  .vword{grid-template-columns:1fr;gap:5px}
+  .search{max-width:none;order:3;flex-basis:100%;max-width:100%}
+  .topbar{flex-wrap:wrap}
+  .hero::after{font-size:78px}
+}
+@media print{
+  .topbar,.side,#scrollbar,.quizbox,.vhead,.flow,.files,.extra-chip{display:none!important}
+  .wrap{display:block;max-width:none;padding:0}
+  body{font-size:10.5pt;background:#fff}
+  section{page-break-inside:avoid;margin-bottom:22px}
+  body.hide-ans .ans:not(.on){background:var(--accent-soft)!important;color:inherit!important}
+  body.hide-ans .ans:not(.on) *{color:inherit!important}
+  body.hide-ans .ans:not(.on)::after{display:none}
+  details.raw{display:none}
+  #viewVocab,#viewRaw{display:block!important;page-break-before:always}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body class="hide-ans">
+<div id="scrollbar"></div>
+
+<div class="topbar">
+  <a class="back" href="../"><i></i>인공지능</a>
+  <div class="search"><input id="q" type="search" placeholder="찾기 (Enter로 다음)" aria-label="문서 내 검색"><span class="hit" id="hit"></span></div>
+  <div class="tools">
+    <button class="tbtn" id="ansBtn">정답 가리기</button>
+    <button class="tbtn" id="vocabBtn">단어장</button>
+    <button class="tbtn" id="rawBtn">필기 원문</button>
+    <button class="tbtn" id="themeBtn">다크</button>
+    <button class="tbtn" id="printBtn">🖨</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<aside class="side">
+  <div class="panel">
+    <div class="subject">인공지능</div>
+    <div class="when">1주차 2차시 · 2026.09.07 (월)</div>
+
+    <div id="tocWrap">
+      <div class="cap">목차</div>
+      <ul class="toc" id="toc">
+        <li><a href="#s1"><span class="num">01</span>연구 분야 개관</a></li>
+        <li><a href="#s2"><span class="num">02</span>연구 데이터</a></li>
+        <li><a href="#s3"><span class="num">03</span>진단·설명 모델 연구</a></li>
+        <li><a href="#s4"><span class="num">04</span>영상 생성·연합학습</a></li>
+        <li><a href="#s5"><span class="num">05</span>뇌 디코딩</a></li>
+        <li><a href="#s6"><span class="num">06</span>AI로 달라지는 세상</a></li>
+        <li><a href="#s7"><span class="num">07</span>개발 생태계 지표</a></li>
+        <li><a href="#s8"><span class="num">08</span>영상1 · AI시대에도 배워야 하는 이유</a></li>
+        <li><a href="#s9"><span class="num">09</span>영상2 · AI가 가장 먼저 대체하는 것</a></li>
+        <li><a href="#s10"><span class="num">10</span>영상3 · AI 네이티브 개발자 생존법</a></li>
+        <li><a href="#s11"><span class="num">11</span>새로운 개발 직군</a></li>
+        <li><a href="#s12"><span class="num">12</span>기타</a></li>
+        <li><a href="#s13"><span class="num">13</span>용어 정리</a></li>
+        <li><a href="#s14"><span class="num">14</span>예상 문제</a></li>
+      </ul>
+      <hr>
+      <div class="cap">복습 체크</div>
+      <div class="chk">
+        <label><input type="checkbox"><span>교수님 연구 분야 4가지 구분해 말할 수 있다</span></label>
+        <label><input type="checkbox"><span>뇌영상·뇌파·EHR 데이터 종류 구분</span></label>
+        <label><input type="checkbox"><span>빌더·FDE 개념 차이 설명 가능</span></label>
+        <label><input type="checkbox"><span>영상 3편의 핵심 주장 한 줄씩 요약 가능</span></label>
+      </div>
+      <div class="pbar"><i id="barFill"></i></div>
+    </div>
+
+    <div id="rawNav" hidden>
+      <div class="cap">필기 원문</div>
+      <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">내가 수업 중에 보낸 내용 <b id="rawTotal">0</b>개를 손대지 않고 그대로 모아둔 페이지입니다.</p>
+      <hr>
+      <div class="cap">확인 방법</div>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">여기 있는 내용이 본문에 다 반영됐는지 대조하세요. 각 항목의 파란 링크를 누르면 정리된 위치로 이동합니다.</p>
+    </div>
+
+    <div id="vocabNav" hidden>
+      <div class="cap">단어장</div>
+      <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">이번 차시에 나온 전공 필수 단어 <b id="vTotal">0</b>개입니다.</p>
+      <hr>
+      <div class="cap">사용법</div>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">뜻 가리기를 켜면 회색 칸을 눌러 하나씩 확인할 수 있습니다. 퀴즈는 아래 목록에서 문제를 자동으로 만듭니다.</p>
+    </div>
+  </div>
+</aside>
+
+<main>
+<div id="viewNote">
+
+  <div class="hero" data-w="02">
+    <span class="chip">1주차 · 2차시</span>
+    <button class="chip extra-chip" id="extraChip"></button>
+    <h1>연구 분야 · AI 시대의 개발자 진로 설계</h1>
+    <p class="sub">교안과 예습 영상 3편을 바탕으로 정리했습니다. 실제 수업 중 교수님 설명은 반영되지 않았습니다.</p>
+    <div class="metaline">
+      <span>2026.09.07 (월)</span>
+      <span><b>강은송</b> 교수님</span>
+      <span>교안 23쪽 · 예습 영상 3편</span>
+    </div>
+
+    <div class="files">
+      <a class="file" href="01-2-slides.pdf" target="_blank"><span class="ic">PDF</span>연구 분야 · 진로 설계 교안<em>23p</em></a>
+      <a class="file" href="https://youtu.be/_qYUwrJ_XHo" target="_blank"><span class="ic">YT</span>영상1 · AI시대에도 배워야합니다<em>17분</em></a>
+      <a class="file" href="https://youtu.be/Mxt73V9sBRA" target="_blank"><span class="ic">YT</span>영상2 · 정답 잘 찾는 천재들<em>27분</em></a>
+      <a class="file" href="https://youtu.be/qEF-eUaTq0Y" target="_blank"><span class="ic">YT</span>영상3 · 개발자 생존법<em>14분</em></a>
+    </div>
+  </div>
+
+  <nav class="flow">
+    <a href="#s1"><b>01</b> 연구 분야 개관</a>
+    <a href="#s2"><b>02</b> 연구 데이터</a>
+    <a href="#s3"><b>03</b> 진단·설명 모델</a>
+    <a href="#s4"><b>04</b> 영상 생성·연합학습</a>
+    <a href="#s5"><b>05</b> 뇌 디코딩</a>
+    <a href="#s6"><b>06</b> AI로 달라지는 세상</a>
+    <a href="#s7"><b>07</b> 개발 생태계 지표</a>
+    <a href="#s8"><b>08</b> 영상1</a>
+    <a href="#s9"><b>09</b> 영상2</a>
+    <a href="#s10"><b>10</b> 영상3</a>
+    <a href="#s11"><b>11</b> 새로운 개발 직군</a>
+    <a href="#s14"><b>14</b> 예상 문제</a>
+  </nav>
+
+  <div class="keys">
+    <div class="key"><div class="n">핵심 1</div><p>교수님 연구는 크게 <b>의료 데이터 분석·진단</b>과 <b>뇌 신호 해석</b> 두 축으로 나뉜다.</p></div>
+    <div class="key"><div class="n">핵심 2</div><p>Octoverse 2025에 따르면 생성형 AI가 개발의 표준이 되었고, <b>TypeScript</b>가 GitHub 최다 사용 언어가 되었다.</p></div>
+    <div class="key"><div class="n">핵심 3</div><p>개발자의 역할은 코드 생산에서 <b>설계·통합·검증</b> 중심으로 이동 중이며, 그 결과로 <b>빌더</b>·<b>전방 배치 엔지니어</b> 같은 새 직군이 등장했다.</p></div>
+  </div>
+
+  <!-- 01 -->
+  <section id="s1">
+    <h2 class="st"><span class="sq">01</span>연구 분야 개관</h2>
+    <p>교수님의 연구는 <b>의료 인공지능</b><span class="en">(Medical AI)</span> 아래, 뇌를 분석하는 쪽과 뇌를 본떠 만드는 쪽이 함께 있다.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>축</th><th>내용</th></tr></thead>
+        <tbody>
+          <tr><td><b>Medical AI</b></td><td>MRI·EEG·전자의무기록 등 의료 데이터를 분석해 진단·예측에 활용</td></tr>
+          <tr><td><b>Brain Cognitive Engineering</b></td><td>기억·판단·학습 같은 인지 과정을 공학적으로 모델링</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 슬라이드 1–2쪽 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 02 -->
+  <section id="s2">
+    <h2 class="st"><span class="sq">02</span>연구 데이터</h2>
+    <p>연구실에서 다루는 데이터는 크게 세 종류다.</p>
+
+    <h3>뇌영상 <span class="en">(Brain Imaging)</span></h3>
+    <ul>
+      <li><b>구조 MRI</b><span class="en">(Structural MRI, sMRI)</span></li>
+      <li><b>기능 MRI</b><span class="en">(Functional MRI, fMRI)</span></li>
+      <li><b>확산텐서영상</b><span class="en">(Diffusion Tensor Imaging, DTI)</span></li>
+    </ul>
+    <div class="call extra">
+      <div class="t">용어 보충</div>
+      <p>sMRI는 뇌의 <span class="ext">형태·구조</span>를, fMRI는 혈류 변화로 <span class="ext">활동 중인 부위</span>를, DTI는 물 분자의 확산 방향으로 <span class="ext">신경 섬유의 연결 경로</span>를 보여준다.</p>
+    </div>
+
+    <h3>뇌파 <span class="en">(Electroencephalogram, EEG)</span></h3>
+    <p>뇌파는 <b>뇌-컴퓨터 인터페이스</b><span class="en">(Brain-Computer Interface, BCI)</span> 연구와 연결된다. 슬라이드에서는 BCI가 신호 습득 → 특징 추출<span class="en">(Feature Extraction)</span> → 분류<span class="en">(Classification)</span> 과정을 거쳐 신경보철·P300 스펠러·뉴로게임 제어로 이어지는 구조와, 이 과정에서 악의적인 특징 추출로 사생활 정보가 유출될 수 있는 위험 구조를 함께 보여주었다.</p>
+    <div class="call link">
+      <div class="t">시큐어코딩과 연결</div>
+      <p>BCI 신호 처리 파이프라인에 악의적인 분류기가 끼어들어 정보를 빼가는 구조는, 시큐어코딩에서 다루는 <b>입력 검증·권한 분리</b> 개념과 같은 맥락이다.</p>
+    </div>
+
+    <h3>전자의무기록 <span class="en">(Electronic Health Record, EHR)</span></h3>
+    <p>환자의 방문(Visit)마다 측정값·진단·처방 코드가 쌓이는 시계열 데이터다. 슬라이드는 방문 순서대로 진단 코드가 누적되는 타임라인과, 이를 약물 코드<span class="en">(Medication code)</span>·시술 코드<span class="en">(Procedure code)</span>·진단 코드<span class="en">(Diagnosis code)</span> 세 층으로 나눠 시간에 따라 배열한 표현 방식을 함께 제시했다.</p>
+    <div class="call link">
+      <div class="t">자료구조와 연결</div>
+      <p>EHR을 방문 시점 순서로 쌓는 방식은 <b>시퀀스(순차 자료구조)</b>로 표현할 수 있어, 1학기 자료구조에서 배운 리스트·큐 개념과 이어진다.</p>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 슬라이드 3–5쪽 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 03 -->
+  <section id="s3">
+    <h2 class="st"><span class="sq">03</span>진단·설명 모델 연구</h2>
+
+    <h3>질환 진단 및 근거 설명 모델</h3>
+    <p>환자 영상을 정상처럼 보이게, 또는 정상 영상을 환자처럼 보이게 바꾸는 <b>반사실적 변화 지도 생성기</b><span class="en">(Counterfactual Map Generator)</span>를 이용해, 어느 부위가 질환 판단의 근거인지 시각적으로 짚어내는 모델이다. 생성된 변화 지도는 추론 평가기<span class="en">(Reasoning Evaluator)</span>와 판별기<span class="en">(Discriminator)</span>를 통해 실제 병변처럼 그럴듯한지 검증받는다.</p>
+
+    <div class="call quote">
+      <div class="t">슬라이드 예시 — 알츠하이머 진단</div>
+      <p>슬라이드 앞부분(연구 분야 소개)에 나온 예시에서는, AI가 알츠하이머병<span class="en">(Alzheimer's Disease)</span>을 88% 확률로 판정하면서 그 근거로 해마 위축<span class="en">(Hippocampal Atrophy)</span> 70%, 베타 아밀로이드 축적<span class="en">(Beta-Amyloid Accumulation)</span> 55%, 인지 저하 패턴<span class="en">(Cognitive Decline Patterns)</span> 18% 순으로 기여도를 함께 제시했다.</p>
+    </div>
+
+    <h3>진단 레포트 생성 에이전트</h3>
+    <p>흉부 X선 영상을 입력받아 소견을 문장으로 작성하는 에이전트다. 이미지 인코더로 영상을 인코딩하고, 과거 레포트 데이터베이스에서 비슷한 사례를 검색해 특징을 보강한 뒤<span class="en">(Cross-Modal Feature Enhancement)</span>, 질환별 학습 정도에 따라 손실 함수를 조정하는 <b>자가적응형 질환균형학습</b><span class="en">(Self-Adaptive Disease-Balanced Learning)</span>을 거쳐 텍스트 디코더가 최종 레포트를 생성한다.</p>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 슬라이드 6–7쪽 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 04 -->
+  <section id="s4">
+    <h2 class="st"><span class="sq">04</span>영상 생성 · 병원 간 연합학습</h2>
+
+    <h3>3T–7T 생성 모델</h3>
+    <p>일반 병원에 흔한 <b>3T MRI</b>(3테슬라) 영상을 고자기장 <b>7T MRI</b> 수준의 화질로 변환하는 생성 모델이다. 슬라이드의 확대 이미지에서 화살표로 표시된 것처럼, 3T에서는 흐릿하던 뇌 구조 경계가 7T-like 영상에서는 7T 실측 영상과 비슷하게 뚜렷해진다.</p>
+
+    <h3>병원 간 연합학습 <span class="en">(Federated Learning)</span></h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>방식</th><th>특징</th></tr></thead>
+        <tbody>
+          <tr><td><b>개별 학습</b><span class="en">(Local Learning)</span></td><td>각 병원이 자기 데이터로만 따로 모델을 학습</td></tr>
+          <tr><td><b>중앙집중 학습</b><span class="en">(Centralised Learning)</span></td><td>모든 병원 데이터를 한 곳에 모아 하나의 전역 모델 학습</td></tr>
+          <tr><td><b>연합학습</b><span class="en">(Federated Learning)</span></td><td>데이터는 각 병원에 그대로 두고, 모델 업데이트만 주고받아 전역 모델을 함께 학습</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="call extra">
+      <div class="t">보충 설명</div>
+      <p>연합학습을 쓰는 이유는 <span class="ext">환자 개인정보가 담긴 원본 데이터를 병원 밖으로 내보내지 않고도</span> 여러 병원의 데이터 규모 효과를 누릴 수 있기 때문이다.</p>
+    </div>
+    <div class="call link">
+      <div class="t">개인정보보호법률이해와 연결</div>
+      <p>연합학습은 의료 데이터를 원 기관 밖으로 유출하지 않는다는 점에서, 개인정보보호법률이해 수업에서 다루는 <b>데이터 최소 이전 원칙</b>과 직접 맞닿아 있다.</p>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 슬라이드 8–9쪽 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 05 -->
+  <section id="s5">
+    <h2 class="st"><span class="sq">05</span>뇌 디코딩</h2>
+    <p>뇌 신호를 이미지로 재구성<span class="en">(reconstruction)</span>하거나 분류<span class="en">(categorization)</span>하는 연구다. 뇌가 시각 정보를 처리하는 경로(LGN → V1 → V2/3 → V4 → IT)를 본떠 만든 <b>뇌 모사 신경망</b><span class="en">(Brain-inspired neural network)</span>이 뇌 영상 신호로부터 원래 보고 있던 이미지를 복원하거나, "곰인형" · "새" 같은 범주로 분류해낸다. 슬라이드는 관련 사례로 Brain2Qwerty(뇌 신호로 타이핑 복원)와 이미징 디코딩을 언급했다.</p>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 슬라이드 10쪽 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 06 -->
+  <section id="s6">
+    <h2 class="st"><span class="sq">06</span>AI로 달라지는 세상</h2>
+    <p>슬라이드는 AI가 노동시장에 미치는 변화를 뉴스 자료로 제시했다. 2026년 1월 기준 정보통신업 취업자 수 증감폭이 전년 동월 대비 <b>-2.1만 명</b>으로, 5년여 만에 최대폭으로 감소했다는 국내 보도와, 미국 노동시장에서 AI가 곧 문과·전문직을 완전히 대체할 것이라는 전망이 함께 소개됐다.</p>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 슬라이드 12쪽 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 07 -->
+  <section id="s7">
+    <h2 class="st"><span class="sq">07</span>개발 생태계 지표로 보는 흐름</h2>
+
+    <h3>Octoverse 2025</h3>
+    <p>GitHub가 매년 발표하는 개발 생태계 동향 보고서다. 2025년 데이터가 보여주는 세 가지 변화는 다음과 같다.</p>
+    <ol>
+      <li><b>생성형 AI가 개발의 표준이 됨</b> — 110만 개 이상의 공개 저장소가 LLM SDK를 사용하며, 이 중 69만 3,867개가 최근 12개월 안에 만들어졌다(전년 대비 +178%). 신규 개발자의 80%가 가입 첫 주에 Copilot을 사용한다.</li>
+      <li><b>TypeScript가 GitHub 최다 사용 언어로 등극</b> — 2025년 8월 기준 Python·JavaScript를 모두 앞질렀다. 다만 AI·데이터 분석 분야는 여전히 Python이 우세하다.</li>
+      <li><b>AI가 코드뿐 아니라 선택 자체를 바꾸는 중</b> — AI 도구 채택 속도와 언어 선호 변화 사이에 상관관계가 나타나고 있다.</li>
+    </ol>
+
+    <h3>다보스포럼 미래 직종 보고서</h3>
+    <p>세계경제포럼<span class="en">(World Economic Forum)</span>의 《Future of Jobs Report 2025》 내용이다.</p>
+    <ul>
+      <li>가장 빠르게 성장할 상위 3대 기술: <b>AI·빅데이터</b>, <b>네트워크·사이버보안</b>, <b>기술 문해력</b></li>
+      <li>비율 기준 가장 빠르게 성장하는 직업군: 빅데이터 전문가, 핀테크 엔지니어, AI·머신러닝 전문가, 소프트웨어·애플리케이션 개발자</li>
+      <li>녹색·에너지 전환 관련 직무(자율주행·전기차 전문가, 환경 엔지니어, 재생에너지 엔지니어)도 상위권</li>
+      <li>기업이 가장 많이 요구하는 핵심 역량: <b>분석적 사고</b>(기업 10곳 중 7곳이 필수 역량으로 간주) → 회복탄력성·유연성·민첩성 → 리더십과 사회적 영향력 순</li>
+      <li>전 세계 일자리 수는 2030년까지 늘어날 전망이지만, 성장 직무와 쇠퇴 직무 사이의 기술 격차는 더 벌어질 것으로 전망</li>
+    </ul>
+
+    <h4>가장 빠르게 성장하는 직업 (Top fastest growing jobs)</h4>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>순위</th><th>직종</th><th>순증가율(%)</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>빅데이터 전문가<span class="en">(Big Data Specialists)</span></td><td>약 112</td></tr>
+          <tr><td>2</td><td>핀테크 엔지니어<span class="en">(FinTech Engineers)</span></td><td>약 92</td></tr>
+          <tr><td>3</td><td>AI·머신러닝 전문가</td><td>약 82</td></tr>
+          <tr><td>4</td><td>소프트웨어·애플리케이션 개발자</td><td>약 57</td></tr>
+          <tr><td>5</td><td>보안 관리 전문가<span class="en">(Security Management Specialists)</span></td><td>약 53</td></tr>
+          <tr><td>6</td><td>데이터 웨어하우징 전문가</td><td>약 48</td></tr>
+          <tr><td>7</td><td>자율주행·전기차 전문가</td><td>약 48</td></tr>
+          <tr><td>8</td><td>UI·UX 디자이너</td><td>약 47</td></tr>
+          <tr><td>9</td><td>소형 화물·배송 기사</td><td>약 45</td></tr>
+          <tr><td>10</td><td>사물인터넷<span class="en">(IoT)</span> 전문가</td><td>약 43</td></tr>
+          <tr><td>11</td><td>데이터 분석가·과학자</td><td>약 41</td></tr>
+          <tr><td>12</td><td>환경 엔지니어</td><td>약 40</td></tr>
+          <tr><td>13</td><td>정보보안 분석가</td><td>약 39</td></tr>
+          <tr><td>14</td><td>데브옵스 엔지니어<span class="en">(DevOps Engineer)</span></td><td>약 38</td></tr>
+          <tr><td>15</td><td>재생에너지 엔지니어</td><td>약 38</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink-3)">※ 그래프에서 읽은 근사값이며, 원자료는 위 링크의 보고서 참고.</p>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 슬라이드 13–17쪽 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 08 -->
+  <section id="s8">
+    <h2 class="st"><span class="sq">08</span>영상1 · AI시대에도 배워야 하는 이유</h2>
+    <p style="font-size:13px;color:var(--ink-3)">스탠퍼드 교수가 6년간 실험하고 내린 결론: AI시대에도 배워야합니다 · 크리스 피에크(Chris Piech) · 17분</p>
+
+    <h3>AI 학습과 동기부여의 관계</h3>
+    <p>피에크 교수가 6년째 운영 중인 무료 코딩 교육 <b>Code in Place</b>는 학생 17,000명에 교사 1,000명 이상, 학생 10명당 교사 1명 비율로 운영된다. 챗봇만 던져주면 학생들은 오히려 학습 의욕을 잃고 이탈하는 반면, "온라인에 교사가 있으니 10분 대화해보겠냐"는 제안을 수락한 학생은 수료 확률이 <b>10%p</b> 올라갔다. AI가 틀린 말을 한 게 아니라, 사람과의 접촉 자체가 동기를 만든다는 것이다.</p>
+
+    <h3>코딩을 배워야 하는 이유</h3>
+    <p>프로그래밍 학습은 크게 <b>문법</b><span class="en">(syntax)</span>과 <b>문제 해결</b><span class="en">(problem-solving)</span> 두 축으로 나뉘는데, AI가 문법은 점점 잘 다루게 되므로 앞으로 사람에게 중요한 것은 문제를 잘게 쪼개고 데이터와 알고리즘을 연결하는 문제 해결 능력이라고 짚었다. 코딩은 로직이 틀리면 바로 작동하지 않는 형태로 <b>즉각적이고 검증 가능한 피드백</b>을 주기 때문에, 문제 해결 능력을 훈련하기에 특히 좋은 도구라고 설명했다.</p>
+
+    <h3>다음 세대는 우리보다 똑똑할 것이다</h3>
+    <p>계산기가 있어도 구구단은 배워야 하듯, AI가 있어도 기초는 건너뛸 수 없다고 말한다. 뛰어난 엔지니어가 되는 길은 결국 <b>직접 만들어보는 데 쓴 시간</b><span class="en">(time on task)</span>이며, AI로 프로토타입을 많이 만들어보고 그 과정에서 핵심 개념을 스스로 뽑아내라고 조언했다.</p>
+
+    <h3>Ending — 왜 배워야 할까요</h3>
+    <p>AI는 도구이며 사람을 <b>배가시키는</b><span class="en">(multiply)</span> 존재다. 최고의 엔지니어는 모든 코드를 외우는 사람이 아니라, 현실의 사람 문제를 앱·데이터과학·연구의 세계와 연결할 줄 아는 사람이라는 말로 마무리했다.</p>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(예습 영상 1 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 09 -->
+  <section id="s9">
+    <h2 class="st"><span class="sq">09</span>영상2 · AI가 가장 먼저 대체하는 것</h2>
+    <p style="font-size:13px;color:var(--ink-3)">정답 잘 찾는 천재들이 제일 먼저 대체되고 있습니다 · 포쉔 로(Po-Shen Loh, 카네기멜론대) · 27분</p>
+
+    <h3>인간보다 뛰어난 존재가 등장했다</h3>
+    <p>국제수학올림피아드<span class="en">(IMO)</span>는 매년 완전히 새로운 6문제를 내는 것으로 유명한데, 최근 구글 AI가 그중 4문제를 풀어냈다. 사람보다 잘 풀어낸 셈이다.</p>
+
+    <h3>AI가 위험한 이유 — 직업 대체 관점이 아니다</h3>
+    <p>로 교수는 AI의 진짜 위험은 일자리를 뺏는 것이 아니라 <b>생각하는 능력을 뺏는 것</b>이라고 말한다. 특히 글쓰기 숙제를 AI에 맡기면 논리적으로 사고하는 힘 자체를 잃는다. "1마일을 뛰는 대신 차로 이동하면 운동 효과가 없는 것"과 같은 논리로, 배움을 목적으로 하는 과제를 AI로 대신하면 배움 자체가 사라진다고 비유했다.</p>
+
+    <h3>다음 단계의 교육</h3>
+    <p>LLM의 힘은 결국 <b>언어</b><span class="en">(Language)</span> 능력에서 나오므로, 읽기·쓰기·의사소통·논리는 오히려 다음 세대에게 더 중요해진다. 예전 교육이 "숙제와 시험을 잘 푸는 법"을 가르쳤다면, 이제는 <b>"숙제를 어떻게 채점(평가)할지 아는 것"</b>이 핵심이 되는 시대라고 말한다. 로 교수는 학생을 가르칠 때 한 번도 본 적 없는 문제를 던지고, 그 자리에서 어떻게 사고하는지를 지켜본다고 밝혔다.</p>
+
+    <h3>AI가 훔쳐가는 2가지</h3>
+    <p>정답을 빨리 찾는 능력보다 <b>한 번도 본 적 없는 문제를 스스로 사고해서 풀어내는 창의성</b>이 더 중요해진다. 앞으로 필요한 역량은 (1) 타인에게 진심으로 가치를 만들어주려는 공감·협업 능력, (2) 세상이 어떻게 돌아가는지 머릿속에서 시뮬레이션하는 전략적 사고라고 정리했다.</p>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(예습 영상 2 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 10 -->
+  <section id="s10">
+    <h2 class="st"><span class="sq">10</span>영상3 · AI 네이티브 개발자 생존법</h2>
+    <p style="font-size:13px;color:var(--ink-3)">스탠포드에서 빅테크로 조용히 퍼지는 개발자 생존법 · 미하일 에릭(Mihail Eric) · 14분</p>
+
+    <h3>주니어 개발자들에게 벌어지고 있는 일</h3>
+    <p>주니어 채용난의 원인을 세 가지로 짚었다. ① 2021년 코로나 이후 과다 채용 뒤 이어진 대량 정리해고, ② 최근 10~15년간 컴퓨터공학 전공 졸업생이 2~3배로 급증, ③ AI 등장으로 기업이 사람 대신 <b>AI 네이티브</b> 소수 인력으로 부족한 자리를 메우려는 경향. 이 세 가지가 동시에 겹치면서 지금 사회에 진입하는 세대가 새로운 기준을 요구받는 첫 세대가 됐다고 설명한다.</p>
+
+    <h3>상위 1% AI 네이티브가 에이전트를 다루는 법</h3>
+    <p>에이전트를 한 번에 여러 개(예: 10개) 동시에 굴리는 것이 아니라, <b>한 개씩 점진적으로 늘려가며</b> 각 에이전트가 맡을 작업의 경계를 명확히 나누는 방식을 강조했다. 핵심 역량은 <b>컨텍스트 스위칭</b> — 여러 에이전트가 각각 어떤 작업을 하고 있는지 파악하고 오가며 관리하는 능력이며, 이는 사람 팀을 관리하는 좋은 매니저의 역량과 본질적으로 같다고 말한다.</p>
+
+    <h3>단순한 소프트웨어와 좋은 소프트웨어의 차이</h3>
+    <p>차이는 결국 <b>감각</b><span class="en">(taste)</span>이다. 요구사항을 100% 채운 뒤에도 마지막까지 더 파고들어 다듬는 사람과 거기서 멈추는 사람의 차이가 실력 차이로 이어진다고 설명했다. 좋은 소프트웨어를 만드는 습관은 결국 실험을 workflow에 넣는 것 — 앤트로픽 팀도 매주 자신들의 코드(Claude Code)로 스스로의 코드를 다시 짜며 계속 실험한다고 소개했다.</p>
+
+    <h3>여전히 세상에 주니어 개발자가 필요한 이유</h3>
+    <p>시니어 개발자는 오래된 자기 방식에 익숙해 새 AI 도구에 오히려 저항적인 경우가 많은 반면, 주니어는 백지 상태라 빠르게 흡수한다. 소프트웨어를 배운다는 것은 결국 <b>복잡한 시스템을 어떻게 쪼개고, 왜 안 되는지 확인하고, 고치고, 확장하는지</b>를 배우는 것이라 수학적 사고 훈련에 가깝다고 정리했다.</p>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(예습 영상 3 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 11 -->
+  <section id="s11">
+    <h2 class="st"><span class="sq">11</span>새로운 개발 직군</h2>
+
+    <h3>개발 직군의 변화</h3>
+    <p>기존에는 기획(요구사항 정리)·개발(코딩)·디자인이 나뉘어 있었지만, AI가 코딩·디자인·분석을 대신하면서 그 경계가 무너지고 있다. 개발자라는 직업 자체가 사라지는 게 아니라, <b>코드를 직접 생산하는 비중은 줄고 설계·통합·검증·자동화 운영의 비중이 커지는</b> 방향으로 역할이 바뀌는 중이다.</p>
+
+    <div class="call quote">
+      <div class="t">슬라이드 인용 — Andrej Karpathy(전 OpenAI, Tesla AI 총괄)</div>
+      <p>11월엔 수동 코딩 80%·에이전트 20%였는데, 12월엔 에이전트 코딩 80%·수정 20%로 바뀌었다고 언급하며, 지난 20년 코딩 인생에서 가장 큰 작업방식 변화가 몇 주 만에 일어났다고 밝혔다.</p>
+    </div>
+
+    <h3>빌더 <span class="en">(Builder)</span></h3>
+    <p><b>Build</b>에 행위자 접미사 <b>-er</b>가 붙은 말로, 코딩·디자인·프로덕트 매니지먼트를 한 사람이 통합해서 수행하며 AI 도구로 아이디어부터 출시까지 전 과정을 독립적으로 주도하는 직군이다.</p>
+    <div class="call quote">
+      <div class="t">슬라이드 인용 — 기사 소개</div>
+      <p>슬라이드는 "소프트웨어 엔지니어라는 직함이 사라질 것"이라는 앤트로픽 클로드 코드 개발자 보리스 체르니의 경고와, 클로드 코드 해커톤에서 변호사·의사 등 비개발자가 상위권을 휩쓸었다는 기사를 함께 소개했다.</p>
+    </div>
+
+    <h3>전방 배치 엔지니어 <span class="en">(Forward Deployment Engineer, FDE)</span></h3>
+    <p>전방<span class="en">(Forward)</span>, 즉 고객사 현장에 배치<span class="en">(Deploy)</span>되어 AI가 실제 업무 흐름 속에서 작동하도록 끝까지 책임지는 역할이다. 단순히 코드를 전달하는 게 아니라, 현장에서 비즈니스 맥락을 이해하고 그 자리에서 기술적 해결책을 설계·구현한다. 슬라이드는 FDE를 소프트웨어 엔지니어<span class="en">(Software engineer)</span>·플랫폼 엔지니어<span class="en">(Platform engineer)</span>·솔루션 아키텍트<span class="en">(Solutions Architect)</span> 세 역할이 겹치는 지점으로 표현했다.</p>
+
+    <div class="call quote">
+      <div class="t">슬라이드 인용</div>
+      <p>슬라이드는 국내 기사를 인용해 "AI 시대 새 주인공, '현장 배치 엔지니어'···올해 채용 800% 급증"이라는 제목과, OpenAI 채용 페이지에서 FDE 공고가 다수 올라온 화면을 함께 제시했다.</p>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 슬라이드 18–23쪽 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 12 -->
+  <section id="s12">
+    <h2 class="st"><span class="sq">12</span>기타</h2>
+    <p>수업 끝에 안내된 일정 관련 내용은 이번 차시 주제와 직접 관련이 없어, <b>강의계획서 파일(01-1.html)의 휴강일 항목</b>에 반영했습니다.</p>
+    <div class="call link">
+      <div class="t">01-1.html로 이동</div>
+      <p>2주차 1차시(9월 10일 목) 휴강 확정, 보충수업은 중간고사 즈음(미정), 보강수업은 출석 체크를 하지 않는다는 안내 — 자세한 내용은 오리엔테이션 파일의 휴강일 섹션을 확인하세요.</p>
+    </div>
+    <details class="raw"><summary>필기 원문</summary><div class="txt">다음 시간(9월 10일 목요일 2주차 1차시 수업) 휴강
+보충수업 - 중간고사 즈음(미정)(중간고사 시험 준비 시기)
+보충(보강)수업은 출석 체크 안하심 원래</div></details>
+  </section>
+
+  <!-- 13 -->
+  <section id="s13">
+    <h2 class="st"><span class="sq">13</span>용어 정리</h2>
+    <div class="terms">
+      <div class="term"><b>반사실적인</b><span class="e">counterfactual</span><p>실제로 일어나지 않은 상황을 가정한. 질환 진단 모델에서 "이 환자가 정상이었다면"을 가정하는 변화 지도에 쓰인다.</p></div>
+      <div class="term"><b>연합된</b><span class="e">federated</span><p>중앙에 모으지 않고 각자 위치에서 협력하는. 병원 간 연합학습에서 데이터는 그대로 두고 모델만 주고받는 방식을 가리킨다.</p></div>
+      <div class="term"><b>재구성</b><span class="e">reconstruction</span><p>흩어진 신호나 데이터로부터 원래 형태를 복원하는 것. 뇌 디코딩에서 뇌 신호로 원래 이미지를 복원할 때 쓰인다.</p></div>
+      <div class="term"><b>종합하다</b><span class="e">synthesize</span><p>여러 정보를 모아 하나의 결론이나 해법으로 만들어내는 것. 영상1에서 "본 적 없는 문제를 스스로 종합해 푸는 능력"을 가리킬 때 쓰였다.</p></div>
+      <div class="term"><b>자율적인</b><span class="e">autonomous</span><p>스스로 판단하고 움직이는. 자율주행·전기차 전문가처럼 사람 개입 없이 작동하는 시스템을 설명할 때 쓰인다.</p></div>
+      <div class="term"><b>배치하다</b><span class="e">deploy</span><p>실제 현장에 투입해 작동시키는 것. 전방 배치 엔지니어(FDE)의 '배치'가 바로 이 단어다.</p></div>
+    </div>
+  </section>
+
+  <!-- 14 -->
+  <section id="s14">
+    <h2 class="st"><span class="sq">14</span>예상 문제</h2>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q1</span><span>병원 간 연합학습(Federated Learning)이 중앙집중 학습(Centralised Learning)과 다른 핵심 차이는?</span><span class="type">서술형</span></div>
+      <div class="ans"><span class="lab">모범답안</span>중앙집중 학습은 모든 병원의 데이터를 한 곳에 모아 학습하지만, 연합학습은 원본 데이터를 각 병원에 그대로 둔 채 모델 업데이트(파라미터)만 주고받아 전역 모델을 함께 학습한다.</div>
+    </div>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q2</span><span>Octoverse 2025에서 2025년 8월 기준 GitHub 최다 사용 언어로 Python·JavaScript를 앞지른 언어는?</span><span class="type">객관식</span></div>
+      <ol class="ch"><li>Python</li><li>TypeScript</li><li>Go</li><li>Rust</li></ol>
+      <div class="ans"><span class="lab">정답 ②</span>TypeScript가 2025년 8월 Python과 JavaScript를 모두 앞질러 GitHub 최다 사용 언어가 되었다. 다만 AI·데이터과학 분야는 여전히 Python이 우세하다.</div>
+    </div>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q3</span><span>빌더(Builder)와 전방 배치 엔지니어(FDE)의 차이를 한 문장으로 설명하시오.</span><span class="type">서술형</span></div>
+      <div class="ans"><span class="lab">모범답안</span>빌더는 코딩·디자인·프로덕트 매니지먼트를 한 사람이 통합해 아이디어부터 출시까지 독립적으로 주도하는 직군이고, FDE는 고객사 현장에 직접 배치되어 AI가 실제 업무에서 작동하도록 끝까지 책임지는 직군이다.</div>
+    </div>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q4</span><span>영상2(포쉔 로 교수)에 따르면, AI가 학생에게 진짜로 위험한 이유는 무엇인가?</span><span class="type">객관식</span></div>
+      <ol class="ch"><li>일자리를 대신 차지해서</li><li>생각하는 능력 자체를 뺏어가서</li><li>학비가 비싸져서</li><li>선생님이 부족해져서</li></ol>
+      <div class="ans"><span class="lab">정답 ②</span>포쉔 로 교수는 AI의 위험이 직업 대체보다 학생이 스스로 사고하는 능력을 잃게 만드는 데 있다고 강조했다. 글쓰기를 AI에 맡기면 논리적 사고력 자체가 자라지 않는다는 것이다.</div>
+    </div>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q5</span><span>영상3(미하일 에릭)에서 말하는 "에이전트 친화적 코드베이스"의 조건을 두 가지 이상 서술하시오.</span><span class="type">서술형</span></div>
+      <div class="ans"><span class="lab">모범답안</span>테스트 커버리지로 소프트웨어의 정확성을 명확히 정의하고(계약), README와 실제 코드 내용이 일치해야 하며, 코드 스타일과 설계 패턴이 일관돼야 한다. 이런 조건이 없으면 에이전트가 오류를 반복해서 증폭시킬 수 있다.</div>
+    </div>
+  </section>
+
+  <footer><span>인공지능 · 1주차 2차시 · 2026.09.07</span><span>jaealee.com</span></footer>
+</div>
+
+<!-- ═══════════ 단어장 뷰 ═══════════ -->
+<div id="viewVocab" hidden>
+  <div class="hero" data-w="A–Z">
+    <span class="chip">1주차 2차시 단어장</span>
+    <h1>인공지능 필수 용어</h1>
+    <p class="sub">교안과 예습 영상 3편에서 다시 만날 만한 단어만 골랐습니다.</p>
+  </div>
+
+  <div class="vhead">
+    <input type="search" id="vq" placeholder="단어 · 뜻으로 찾기">
+    <button class="tbtn" id="maskBtn">뜻 가리기</button>
+    <button class="tbtn" id="quizBtn">퀴즈 풀기</button>
+    <span style="font-size:13px;color:var(--ink-3);font-weight:600" id="vcount"></span>
+  </div>
+
+  <ul class="vlist" id="vlist">
+    <li class="vword">
+      <div><span class="w">counterfactual</span><span class="ipa">/ˌkaʊntərˈfæktʃuəl/</span><span class="pos">adj.</span></div>
+      <div><p class="mean">반사실적인 — 실제로 일어나지 않은 상황을 가정한</p>
+      <p class="ex">The model generates a <b>counterfactual</b> brain image.<span class="ko">이 모델은 반사실적인 뇌 영상을 생성한다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">federated</span><span class="ipa">/ˈfedəreɪtɪd/</span><span class="pos">adj.</span></div>
+      <div><p class="mean">연합된 — 데이터를 모으지 않고 각자 위치에서 협력하는</p>
+      <p class="ex">Hospitals use <b>federated</b> learning to protect patient data.<span class="ko">병원들은 환자 데이터를 보호하기 위해 연합학습을 사용한다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">reconstruction</span><span class="ipa">/ˌriːkənˈstrʌkʃən/</span><span class="pos">n.</span></div>
+      <div><p class="mean">재구성 — 흩어진 신호로부터 원래 형태를 복원하는 것</p>
+      <p class="ex">Brain decoding enables image <b>reconstruction</b> from EEG signals.<span class="ko">뇌 디코딩은 뇌파 신호로부터 이미지 재구성을 가능하게 한다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">synthesize</span><span class="ipa">/ˈsɪnθəsaɪz/</span><span class="pos">v.</span></div>
+      <div><p class="mean">종합하다 — 여러 정보를 모아 하나의 해법으로 만들다</p>
+      <p class="ex">Students must <b>synthesize</b> hints into a solution.<span class="ko">학생들은 힌트들을 종합해서 해법을 만들어야 한다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">autonomous</span><span class="ipa">/ɔːˈtɒnəməs/</span><span class="pos">adj.</span></div>
+      <div><p class="mean">자율적인 — 사람 개입 없이 스스로 판단하고 움직이는</p>
+      <p class="ex">Autonomous and electric vehicle specialists are among the fastest-growing jobs.<span class="ko">자율주행·전기차 전문가는 가장 빠르게 성장하는 직업군에 속한다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">deploy</span><span class="ipa">/dɪˈplɔɪ/</span><span class="pos">v.</span></div>
+      <div><p class="mean">배치하다 — 실제 현장에 투입해 작동시키다</p>
+      <p class="ex">A Forward <b>Deploy</b>ed Engineer is deployed at the client's site.<span class="ko">전방 배치 엔지니어는 고객사 현장에 배치된다.</span></p></div>
+    </li>
+  </ul>
+
+  <div class="quizbox" id="quiz">
+    <div class="qq" id="quizQ"></div>
+    <div class="opts" id="quizOpts"></div>
+    <div class="score" id="quizScore"></div>
+  </div>
+</div>
+
+<!-- ═══════════ 필기 원문 뷰 ═══════════ -->
+<div id="viewRaw" hidden>
+  <div class="hero" data-w="RAW">
+    <span class="chip">1주차 2차시 필기 원문</span>
+    <h1>내가 보낸 그대로</h1>
+    <p class="sub">이번 차시는 교안 PDF만 전달되어, 실시간으로 입력한 필기 원문은 아직 없습니다.</p>
+  </div>
+
+  <div class="rawnote" id="rawlist"></div>
+</div>
+
+</main>
+</div>
+
+<script>
+const sb = document.getElementById('scrollbar');
+addEventListener('scroll', () => {
+  const h = document.documentElement.scrollHeight - innerHeight;
+  sb.style.width = (h > 0 ? scrollY / h * 100 : 0) + '%';
+}, { passive: true });
+
+const html = document.documentElement, themeBtn = document.getElementById('themeBtn');
+themeBtn.onclick = () => {
+  const dark = html.dataset.theme === 'dark';
+  html.dataset.theme = dark ? 'light' : 'dark';
+  themeBtn.textContent = dark ? '다크' : '라이트';
+};
+
+const ansBtn = document.getElementById('ansBtn');
+const answers = [...document.querySelectorAll('.ans')];
+function syncAnsBtn() {
+  const opened = answers.filter(a => a.classList.contains('on')).length;
+  ansBtn.disabled = opened === 0;
+  ansBtn.textContent = opened ? `정답 가리기 (${opened})` : '정답 가리기';
+}
+answers.forEach(a => a.addEventListener('click', () => { a.classList.toggle('on'); syncAnsBtn(); }));
+ansBtn.onclick = () => { answers.forEach(a => a.classList.remove('on')); syncAnsBtn(); };
+syncAnsBtn();
+
+const extraChip = document.getElementById('extraChip');
+const extraCount = document.querySelectorAll('#viewNote .call.extra, #viewNote .ext').length;
+if (extraCount) {
+  extraChip.textContent = `보충 ${extraCount}곳`;
+  extraChip.onclick = () => {
+    const off = document.body.classList.toggle('no-extra');
+    extraChip.classList.toggle('solid', !off);
+  };
+} else {
+  extraChip.remove();
+}
+
+const printBtn = document.getElementById('printBtn');
+printBtn.onclick = () => window.print();
+
+document.querySelectorAll('.copy').forEach(btn => {
+  btn.onclick = async () => {
+    const pre = btn.closest('.codebox').querySelector('pre');
+    try {
+      await navigator.clipboard.writeText(pre.innerText);
+      btn.textContent = '복사됨';
+    }
+    catch { btn.textContent = '실패'; }
+    setTimeout(() => btn.textContent = '복사', 1200);
+  };
+});
+
+const boxes = document.querySelectorAll('.chk input'), fill = document.getElementById('barFill');
+boxes.forEach(b => b.addEventListener('change', () => {
+  fill.style.width = [...boxes].filter(x => x.checked).length / boxes.length * 100 + '%';
+}));
+
+const views = {
+  note:  { el: document.getElementById('viewNote'),  nav: document.getElementById('tocWrap') },
+  vocab: { el: document.getElementById('viewVocab'), nav: document.getElementById('vocabNav'), btn: document.getElementById('vocabBtn'), on: '본문으로', off: '단어장' },
+  raw:   { el: document.getElementById('viewRaw'),   nav: document.getElementById('rawNav'),   btn: document.getElementById('rawBtn'),  on: '본문으로', off: '필기 원문' }
+};
+let current = 'note';
+function setView(name) {
+  current = name;
+  Object.entries(views).forEach(([k, v]) => {
+    v.el.hidden = k !== name;
+    v.nav.hidden = k !== name;
+    if (v.btn) { v.btn.classList.toggle('solid', k === name); v.btn.textContent = k === name ? v.on : v.off; }
+  });
+  clearMarks();
+  document.getElementById('q').value = '';
+  document.getElementById('hit').textContent = '';
+  scrollTo({ top: 0, behavior: 'smooth' });
+}
+views.vocab.btn.onclick = () => setView(current === 'vocab' ? 'note' : 'vocab');
+views.raw.btn.onclick   = () => setView(current === 'raw'   ? 'note' : 'raw');
+document.getElementById('rawTotal').textContent = document.querySelectorAll('#rawlist .rawitem').length;
+if (!document.querySelectorAll('#rawlist .rawitem').length) {
+  document.getElementById('rawlist').innerHTML = '<div class="empty">아직 저장된 필기 원문이 없습니다. 수업 중 보내주시는 내용부터 실시간으로 쌓입니다.</div>';
+}
+document.querySelectorAll('#rawlist .where a').forEach(a => {
+  a.onclick = e => { e.preventDefault(); setView('note'); setTimeout(() => document.querySelector(a.getAttribute('href')).scrollIntoView(), 60); };
+});
+
+const links = [...document.querySelectorAll('#toc a')];
+const spy = new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) return;
+  links.forEach(l => l.classList.toggle('on', l.getAttribute('href') === '#' + e.target.id));
+}), { rootMargin: '-80px 0px -68% 0px' });
+document.querySelectorAll('#viewNote section').forEach(s => spy.observe(s));
+
+const qInput = document.getElementById('q'), hitEl = document.getElementById('hit');
+let marks = [], cursor = -1;
+function clearMarks() {
+  marks.forEach(m => { const p = m.parentNode; if (!p) return; p.replaceChild(document.createTextNode(m.textContent), m); p.normalize(); });
+  marks = []; cursor = -1;
+}
+function runSearch(word) {
+  clearMarks();
+  if (word.length < 2) { hitEl.textContent = ''; return; }
+  const root = views[current].el;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const targets = [];
+  while (walker.nextNode()) {
+    const n = walker.currentNode;
+    if (n.parentElement.closest('script,style')) continue;
+    if (n.nodeValue.toLowerCase().includes(word)) targets.push(n);
+  }
+  targets.forEach(n => {
+    const re = new RegExp('(' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    const frag = document.createDocumentFragment();
+    n.nodeValue.split(re).forEach(p => {
+      if (p.toLowerCase() === word) { const m = document.createElement('span'); m.className = 'hit-mark'; m.textContent = p; frag.appendChild(m); marks.push(m); }
+      else frag.appendChild(document.createTextNode(p));
+    });
+    n.parentNode.replaceChild(frag, n);
+  });
+  hitEl.textContent = marks.length ? '0/' + marks.length : '없음';
+}
+qInput.addEventListener('input', e => runSearch(e.target.value.trim().toLowerCase()));
+qInput.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || !marks.length) return;
+  e.preventDefault();
+  cursor = (cursor + 1) % marks.length;
+  marks[cursor].scrollIntoView({ block: 'center', behavior: 'smooth' });
+  hitEl.textContent = (cursor + 1) + '/' + marks.length;
+});
+addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); qInput.focus(); qInput.select(); }
+});
+
+const vlist = document.getElementById('vlist');
+const words = [...vlist.querySelectorAll('.vword')];
+document.getElementById('vcount').textContent = words.length + '개';
+document.getElementById('vTotal').textContent = words.length;
+if (!words.length) { vlist.innerHTML = '<li class="empty">등록된 단어가 없습니다.</li>'; }
+
+document.getElementById('vq').addEventListener('input', e => {
+  const k = e.target.value.trim().toLowerCase();
+  let shown = 0;
+  words.forEach(w => { const ok = w.innerText.toLowerCase().includes(k); w.style.display = ok ? '' : 'none'; if (ok) shown++; });
+  document.getElementById('vcount').textContent = shown + '개';
+});
+
+const maskBtn = document.getElementById('maskBtn');
+maskBtn.onclick = () => {
+  const on = vlist.classList.toggle('masked');
+  maskBtn.classList.toggle('solid', on);
+  maskBtn.textContent = on ? '뜻 보이기' : '뜻 가리기';
+  if (!on) vlist.querySelectorAll('.show').forEach(el => el.classList.remove('show'));
+};
+vlist.querySelectorAll('.mean, .ex').forEach(el => {
+  el.onclick = () => { if (vlist.classList.contains('masked')) el.classList.toggle('show'); };
+});
+
+const quiz = document.getElementById('quiz'), quizBtn = document.getElementById('quizBtn');
+const qQ = document.getElementById('quizQ'), qO = document.getElementById('quizOpts'), qS = document.getElementById('quizScore');
+let pool = [], solved = 0, correct = 0;
+const data = () => words.map(w => ({
+  word: w.querySelector('.w').textContent,
+  mean: (w.querySelector('.mean').textContent.split('—')[1] || w.querySelector('.mean').textContent).trim()
+}));
+function nextQuiz() {
+  if (!pool.length) { qQ.textContent = words.length ? '한 바퀴 끝' : '단어가 없습니다'; qO.innerHTML = ''; qS.textContent = words.length ? `${solved}문제 중 ${correct}개 정답` : ''; return; }
+  const all = data(), cur = pool.pop();
+  qQ.textContent = cur.word;
+  const opts = [cur, ...all.filter(d => d.word !== cur.word).sort(() => Math.random() - .5).slice(0, 3)].sort(() => Math.random() - .5);
+  qO.innerHTML = '';
+  opts.forEach(o => {
+    const b = document.createElement('button');
+    b.className = 'opt'; b.textContent = o.mean;
+    b.onclick = () => {
+      solved++;
+      if (o.word === cur.word) { b.classList.add('ok'); correct++; }
+      else { b.classList.add('no'); [...qO.children].find(x => x.textContent === cur.mean)?.classList.add('ok'); }
+      [...qO.children].forEach(x => x.disabled = true);
+      qS.textContent = `${solved}문제 중 ${correct}개 정답`;
+      setTimeout(nextQuiz, 1000);
+    };
+    qO.appendChild(b);
+  });
+  qS.textContent = `${solved}문제 중 ${correct}개 정답 · 남은 ${pool.length}개`;
+}
+quizBtn.onclick = () => {
+  if (!words.length) return;
+  const on = quiz.classList.toggle('on');
+  quizBtn.classList.toggle('solid', on);
+  quizBtn.textContent = on ? '퀴즈 닫기' : '퀴즈 풀기';
+  if (on) { pool = data().sort(() => Math.random() - .5); solved = 0; correct = 0; nextQuiz(); }
+};
+</script>
+</body>
+</html>
