@@ -300,7 +300,7 @@ def save_config(path, config):
 def scheduled_black_tick(config, store, telegram, clock):
     start = config.get('black_schedule_start')
     if start and clock.astimezone(KST).date() >= date.fromisoformat(start):
-        black_tick(store, telegram, clock)
+        black_tick(store, telegram, clock, config)
 
 
 def run(args, config):

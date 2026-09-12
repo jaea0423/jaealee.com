@@ -554,8 +554,11 @@ def reminders(store, telegram, clock):
         store.put('reminder-jobs', jobs)
 
 
-def black_tick(store, telegram, clock):
-    # 그룹 목적지는 없고, 두 종류 모두 개인방으로만 시험합니다.
+def black_tick(store, telegram, clock, config=None):
+    photos = config is not None and config.get('black_delivery_format') == 'photo'
+    if photos:
+        from image_delivery import cleanup_images, deliver
+        cleanup_images(config)
     for kind, hour, deadline in [('news', 9, 11), ('knowledge', 12, 15)]:
         clock = clock.astimezone(KST)
         day = clock.date().isoformat()
@@ -569,6 +572,14 @@ def black_tick(store, telegram, clock):
             continue
         # 미등록·빈·손상된 원고에는 안내도 보내지 않고 종류별로 따로 기다립니다.
         store.put(key + ':check-after', clock.timestamp() + 300)
+        if photos:
+            try:
+                if deliver(config, store, telegram, kind, day, key):
+                    store.put(key, True)
+            except Exception:
+                # Image failures never fall back to the old text delivery.
+                pass
+            continue
         try:
             messages = store.get(key + ':messages')
             if messages is None:
@@ -641,7 +652,7 @@ def main():
     while True:
         try:
             if args.role == 'black':
-                black_tick(store, telegram, now())
+                black_tick(store, telegram, now(), config)
                 time.sleep(60)
                 continue
             offset = store.get('offset', 0)

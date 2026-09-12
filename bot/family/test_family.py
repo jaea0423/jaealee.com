@@ -20,7 +20,7 @@ class FamilyTests(unittest.TestCase):
             family.scheduled_black_tick({'black_schedule_start': '2026-09-13'}, self.store, telegram, clock)
             tick.assert_not_called()
             family.scheduled_black_tick({'black_schedule_start': '2026-09-12'}, self.store, telegram, clock)
-            tick.assert_called_once_with(self.store, telegram, clock)
+            tick.assert_called_once_with(self.store, telegram, clock, {'black_schedule_start': '2026-09-12'})
 
     def setUp(self):
         self.store = bots.Store(':memory:')
