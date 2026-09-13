@@ -1975,8 +1975,9 @@ body.theme-hanok .pdot.on{color:var(--pine)}
   .b-chart{order:1}
   .b-set{order:2}
   .b-tv{order:3}
-  .b-search{order:4; flex:0 1 auto}
-  .b-add{order:5; flex:0 1 auto}
+  .b-today{order:4; flex:0 1 auto}
+  .b-search{order:5; flex:0 1 auto}
+  .b-add{order:6; flex:0 1 auto}
   .topbar .tvbtn:not(.icon){padding:var(--s8) var(--s12); font-size:var(--fs-sub)}
   .topbar .tvbtn.icon{padding:var(--s8) var(--s8)}
   .bdate{flex:1; justify-content:center}
@@ -2122,10 +2123,7 @@ body.same-pop .sheet, body.same-pop .calbox, body.same-pop .modal, body.same-pop
 /* 합계 칸은 경고 한 줄만큼 자리를 미리 — 경고가 생길 때 시트가 커지지 않게 */
 .course-total{min-height:64px}
 
-/* ---- 상단바: 맨 왼쪽 버튼을 없애고 매장 이름이 그 일을 합니다 ---- */
-.storename{gap:var(--s8)}
-.storename svg{width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:1.7; flex:none; opacity:.8}
-.storename .sn-ic{font-size:var(--fs-body); opacity:.8}
+/* ---- 상단바: 맨 왼쪽 버튼을 없애고 매장 이름이 그 일을 합니다 (6차-K 부터 아이콘 없이 HANOK 글자만) ---- */
 /* 날짜 화살표는 마우스가 그 줄에 갔을 때만 — 손가락 기기(hover 없음)에서는 늘 보입니다. 안 보이면 못 누르니까 */
 @media (hover:hover) and (pointer:fine){
   .bnav, .bnav.mo{opacity:0; transition:opacity .15s}   /* .bnav.mo 가 더 세므로 같이 적어야 월 화살표도 숨습니다 */
@@ -2177,7 +2175,6 @@ body.same-pop .sheet, body.same-pop .calbox, body.same-pop .modal, body.same-pop
 .btn.primary{box-shadow:0 1px 2px rgba(0,0,0,.12)}
 /* ---- 상단바: 44px 내비 느낌으로 얇게. 버튼은 36px 그대로(손가락) ---- */
 .topbar-in{padding:var(--s8) var(--s24)}
-.storename svg{opacity:1}
 .more-menu{border:none; box-shadow:0 12px 40px rgba(0,0,0,.16); border-radius:var(--r-md); padding:var(--s8)}
 /* ---- 카드: 테두리·그림자 없이 흰 면 하나 ---- */
 .card{border:none; box-shadow:none; border-radius:var(--r-lg)}
@@ -2427,10 +2424,12 @@ async function loadData(){
   setInterval(function(){ if(smsTick()) render(); }, 60000);
   if(applyRoute()){
     document.addEventListener("keydown", escDisplay);
+  }else{
+    applyAdminRoute();   /* #/hanok/settings 처럼 관리 화면 주소로 들어온 경우 */
   }
   render();
   /* 뒤로 가기·주소 변경에도 반응 */
-  window.addEventListener("hashchange", ()=>{ if(applyRoute()) render(); });
+  window.addEventListener("hashchange", ()=>{ if(applyRoute() || applyAdminRoute()) render(); });
 }
 /* 저장된 옛 데이터에 새 항목이 없을 때 채워 넣기 */
 function migrate(d){
@@ -3035,10 +3034,10 @@ const ICON = {
   sales:'<svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-6M22 19H2"/></svg>',
   set:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-2.7 1.1V21a2 2 0 11-4 0v-.1A1.6 1.6 0 006.5 19.4l-.1.1a2 2 0 11-2.8-2.8l.1-.1A1.6 1.6 0 003 15a2 2 0 010-4 1.6 1.6 0 001.1-2.7l-.1-.1a2 2 0 112.8-2.8l.1.1A1.6 1.6 0 009 4.6V4a2 2 0 014 0v.1A1.6 1.6 0 0017.5 4.6l.1-.1a2 2 0 112.8 2.8l-.1.1A1.6 1.6 0 0021 11a2 2 0 010 4z"/></svg>',
   plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
-  store:'<svg viewBox="0 0 24 24"><path d="M4 10v9a1 1 0 001 1h14a1 1 0 001-1v-9"/><path d="M3 6l1.5-3h15L21 6"/><path d="M3 6c0 1.7 1.3 3 3 3s3-1.3 3-3c0 1.7 1.3 3 3 3s3-1.3 3-3c0 1.7 1.3 3 3 3s3-1.3 3-3"/><path d="M10 20v-6h4v6"/></svg>',
   chart:'<svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16"/><rect x="7.5" y="12" width="3" height="7" rx="1"/><rect x="13" y="8" width="3" height="11" rx="1"/><path d="M6 10l4-4 4 3 5-5"/></svg>',
   tv:'<svg viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="19" height="13" rx="2"/><path d="M8 21h8M12 17.5V21"/></svg>',
   refresh:'<svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg>',
+  exit:'<svg viewBox="0 0 24 24"><path d="M14 4h5a1 1 0 011 1v14a1 1 0 01-1 1h-5"/><path d="M10 17l5-5-5-5M15 12H3"/></svg>',
   more:'<svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.6" fill="currentColor" stroke="none"/></svg>',
   cal:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="8.5" cy="14.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="12" cy="14.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="15.5" cy="14.5" r="1.2" fill="currentColor" stroke="none"/></svg>'
 };
@@ -3180,10 +3179,11 @@ function renderApp(){
   /* 디스플레이 모드는 주소로 바로 열 수 있습니다 (TV 전용 화면) */
   if(view.display && view.storeKey){ app.innerHTML = renderDisplay() + renderModal(); afterRender(); return; }
   /* 매장을 고른 뒤에 PIN 을 입력합니다 */
-  if(view.storeKey && !AUTHED){ app.innerHTML = renderLock() + renderModal(); afterRender(); return; }
+  if(view.storeKey && !AUTHED){ app.innerHTML = renderLock() + renderModal(); syncHash(); afterRender(); return; }
   if(INTRO){ app.innerHTML = renderIntro(); return; }
   app.innerHTML = (view.display ? renderDisplay()
                   : (view.storeKey ? renderStore() : renderSelect())) + renderModal() + renderLoadError();
+  syncHash();      /* 주소를 지금 화면에 맞춥니다 — 새로고침해도 그 자리로 */
   afterRender();   /* 화면을 그린 뒤 필요한 이벤트 연결 (분 조절 레일 등) */
 }
 
@@ -3503,9 +3503,9 @@ function renderStore(){
   return `
     <div class="shell">
       <header class="topbar ${notodayView()?'notoday':''}"><div class="topbar-in">
-        <!-- 매장 이름 = 예전 맨 왼쪽 버튼의 역할. 대시보드에서는 매장 선택으로, 설정에서는 대시보드로 -->
+        <!-- 매장 이름 = 예전 맨 왼쪽 버튼의 역할. 대시보드에서는 매장 선택으로, 설정에서는 대시보드로. 아이콘·화살표 없이 글자만(6차-K) -->
         <button class="storename" onclick="${view.tab==="settings"?"setTab('dash')":"goHome()"}"
-          title="${view.tab==="settings"?"대시보드로":"매장 선택"}">${view.tab==="settings"?'<span class="sn-ic">←</span>':ICON.store}<span class="sn-brand">HANOK</span></button>
+          title="${view.tab==="settings"?"대시보드로":"매장 선택"}"><span class="sn-brand">HANOK</span></button>
 
         ${view.tab==="settings" ? `` : `
         <div class="bar-mid">
@@ -3517,20 +3517,23 @@ function renderStore(){
         </div>`}
 
         <div class="bar-right">
-          ${view.tab==="settings" ? "" : `
+          ${view.tab==="settings" ? `
+          <!-- 설정에서는 점 3개 대신 나가기 하나 (좌측 HANOK 과 같은 역할). 디스플레이 모드는 대시보드 메뉴에 있습니다 (6차-K) -->
+          <button class="tvbtn icon b-exit" onclick="setTab('dash')" title="설정 나가기" aria-label="설정 나가기">${ICON.exit}</button>` : `
           <button class="tvbtn icon b-refresh" onclick="manualRefresh()" title="새로고침" aria-label="새로고침">${ICON.refresh}<span class="rf-at" id="rf-at">${refreshedAgo()}</span></button>
+          ${view.date===todayStr() ? "" : `<button class="tvbtn b-today" onclick="goToday()">오늘로</button>`}
           <button class="tvbtn b-search" onclick="openSearch()">예약 검색</button>
-          <button class="tvbtn accent b-add" onclick="openWizard('${view.date}')">＋ 예약 등록</button>`}
+          <button class="tvbtn accent b-add" onclick="openWizard('${view.date}')">＋ 예약 등록</button>
           <!-- 더보기(⋮): 자주 안 쓰는 것들을 여기로 모았습니다 — 예약률 추이 · 설정 · 디스플레이 모드 -->
           <div class="more-wrap">
             <button class="tvbtn icon b-more ${view.moreOpen?'on':''}" onclick="toggleMore()" title="더보기" aria-label="더보기">${ICON.more}</button>
             ${view.moreOpen ? `
             <div class="more-menu">
-              ${view.tab==="settings" ? "" : `<button onclick="closeMore(); openRate()">${ICON.chart}<span>예약률 추이</span></button>`}
-              <button onclick="closeMore(); setTab('${view.tab==="settings"?"dash":"settings"}')">${ICON.set}<span>${view.tab==="settings"?"설정 닫기":"설정"}</span></button>
+              <button onclick="closeMore(); openRate()">${ICON.chart}<span>예약률 추이</span></button>
+              <button onclick="closeMore(); setTab('settings')">${ICON.set}<span>설정</span></button>
               <button onclick="closeMore(); openDisplay()">${ICON.tv}<span>디스플레이 모드</span></button>
             </div>` : ""}
-          </div>
+          </div>`}
         </div>
         ${view.moreOpen ? `<div class="more-veil" onclick="closeMore()"></div>` : ""}
       </div></header>
@@ -4759,9 +4762,10 @@ function resCard(r){
 function setFilter(f){ view.filter=f; render(); }
 function moveDate(d){ view.date=shiftDate(view.date,d); render(); }
 /* 다른 날을 보다가 오늘로 한 번에 — 화살표를 여러 번 누르거나 달력을 열 필요가 없게 */
+/* '오늘로' 버튼 — 오늘이 아닐 때만 상단바 오른쪽(새로고침과 예약 검색 사이)에. 6차-F 에서 뺐다가 6차-K 에서 되살림 */
+function goToday(){ view.date = todayStr(); view.calMonth = monthStr(); render(); }
 /* '오늘이 아닌 날짜를 보는 중' — 상단바(.topbar.notoday)와 body.notoday 가 같은 조건을 써야 하므로 한 곳에.
-   설정 탭은 날짜 개념이 없어 제외. 디스플레이·잠금·인트로는 renderApp 이 renderStore 전에 갈라져 나가므로 여기서도 빼 둡니다.
-   ('오늘' 버튼과 goToday 는 6차-F 에서 삭제 — 오늘로 돌아올 때도 날짜를 눌러 달력에서 고릅니다) */
+   설정 탭은 날짜 개념이 없어 제외. 디스플레이·잠금·인트로는 renderApp 이 renderStore 전에 갈라져 나가므로 여기서도 빼 둡니다 */
 function notodayView(){
   return !!view.storeKey && AUTHED && !view.display && !INTRO && view.tab!=="settings" && view.date!==todayStr();
 }
@@ -8085,6 +8089,42 @@ function applyRoute(){
     return true;
   }
   return false;
+}
+/* ---------- 관리 화면 주소 (6차-K) ----------
+   #/hanok  #/hanok/settings  #/hanok/2026-09-20  — 새로고침해도 보던 자리로 돌아옵니다.
+   폴더로 나누지 않고 해시로만 나눕니다: 파일 하나 원칙이 지켜지고, 화면 사이 이동이 페이지 이동이 되지 않으며,
+   로그인 상태를 페이지 사이에 넘길 필요가 없습니다.
+   방향은 '상태 → 주소' 한쪽뿐입니다(syncHash, 그릴 때마다). 주소를 사람이 고치거나 새로 열 때만 '주소 → 상태'(applyAdminRoute).
+   history 항목은 늘리지 않습니다(replaceState) — 뒤로가기는 마법사 보호(popstate)만 씁니다 */
+function adminHash(){
+  if(!view.storeKey || view.display) return "";
+  var h = "/" + view.storeKey;
+  if(view.tab === "settings") h += "/settings";
+  else if(view.date && view.date !== todayStr()) h += "/" + view.date;   /* 오늘이면 날짜를 안 적어 내일 열어도 '오늘' */
+  return h;
+}
+function syncHash(){
+  var want = adminHash();
+  var cur = (location.hash || "").replace(/^#/, "");
+  if(want === cur) return;
+  try{
+    if(location.protocol === "file:"){ location.hash = want; return; }   /* file: 에서는 replaceState 가 막힐 수 있음 */
+    /* history.state 를 그대로 넘겨야 마법사 보호용 {wz:1} 이 지워지지 않습니다 */
+    history.replaceState(history.state, "", location.pathname + location.search + (want ? "#" + want : ""));
+  }catch(e){}
+}
+function applyAdminRoute(){
+  var hash = (location.hash || "").replace(/^#/, "").replace(/\/+$/, "");
+  var m = hash.match(/^\/([a-z]+)(?:\/(settings|\d{4}-\d{2}-\d{2}))?$/i);
+  if(!m || !DATA || !DATA[m[1].toLowerCase()] || !DATA[m[1].toLowerCase()].enabled) return false;
+  var key = m[1].toLowerCase(), sub = m[2] || "";
+  var tab = sub === "settings" ? "settings" : "dash";
+  var date = /^\d{4}-\d{2}-\d{2}$/.test(sub) ? sub : todayStr();
+  if(view.storeKey === key && view.tab === tab && view.date === date && !view.display) return false;   /* 이미 그 자리 — hashchange 되풀이 방지 */
+  view.storeKey = key; view.tab = tab; view.date = date; view.calMonth = date.slice(0,7);
+  view.display = false; view.form = null; tmpRes = null;
+  if(tab === "settings") view.draft = deepClone(DATA[key].settings);   /* 설정은 임시본 위에서 편집합니다(setTab 과 같게) */
+  return true;
 }
 /* 주소를 바꿔 둡니다 (파일로 열었을 때는 조용히 실패해도 괜찮습니다) */
 function setRoute(toScreen){

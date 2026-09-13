@@ -11,7 +11,7 @@
 | `../src/` `../index.html` `../v2/` `../v3/` | **읽기만** |
 | `../assets/*.b64` | **읽기만.** 빌드가 여기서 이미지를 가져옵니다 |
 | `v4/src/index.html` | ★ 여기만 고칩니다 |
-| `v4/screen/ad.mp4` | 손님 화면 광고 영상 — 반드시 screen/ 안에 (adUrl 이 screen/ 을 붙임). ※ 134MB 라 GitHub 100MB 한도 초과, 재인코딩 필요 |
+| `v4/screen/ad.mp4` | 손님 화면 광고 영상(29MB, 재인코딩 완료) — 반드시 screen/ 안에 (adUrl 이 screen/ 을 붙임) |
 | `v4/work/` | 패치 스크립트 · 스크린샷 · 진행 기록 |
 
 ```bash

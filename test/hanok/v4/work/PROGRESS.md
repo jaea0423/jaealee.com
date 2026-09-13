@@ -76,3 +76,7 @@
 - 2026-09-14 v4 6차-H 보강 — 변동 칩 높이 15→12px·글자 10px (블록을 거의 채워 어색하다는 평)
 - 2026-09-14 v4 6차-I — 수정 시트 저장 전 확인(saveIssues)에 resWarn 의 '성인 없음·유아의자 초과·룸·코스 아님·코스 미확정·코스 인원 부족' 추가 (`work/p7_i.py`). 유아=총 인원으로 저장 시 확인창 없이 경고 예약이 되던 것
 - 2026-09-14 v4 6차-J — 예약률 시트 제목 기간 14일 → 21일(그래프와 일치) (`work/p7_j.py`)
+- 2026-09-14 v4 6차-K — 7차(Supabase) 전 정리 (`work/p7_k.py`, 스크린샷 `work/shots/6k/`).
+  · 관리 화면 해시 주소: `#/hanok` `#/hanok/settings` `#/hanok/YYYY-MM-DD`(오늘이면 날짜 생략). 상태→주소는 renderApp 끝 syncHash(replaceState, history.state 보존), 주소→상태는 로드·hashchange 때 applyAdminRoute. 폴더 분리는 안 함(파일 하나·로그인 전달·Supabase 세 곳 문제). 미인증으로 열면 잠금 → PIN 뒤 그 자리
+  · 설정: 점 3개 → 나가기 아이콘(.b-exit, ICON.exit). HANOK 왼쪽 매장 아이콘·설정 ← 삭제(ICON.store 제거). '오늘로'(.b-today) 오늘 아닐 때 새로고침·예약 검색 사이, goToday 복구
+  · 확인(브라우저 JS 10단계): 미인증 #/hanok/settings → 잠금 → PIN → 설정 / 나가기 → #/hanok / 날짜 이동 → #/hanok/날짜 + 오늘로 / 주소 직접 변경 → 화면 따라옴 / #/anjip(비활성) 무시 / 마법사 {wz:1} 보존 / 매장 선택 → 주소 비움
