@@ -101,8 +101,12 @@ def supa_cfg(mode):
     """Supabase 접속 설정을 JSON 문자열로. 파일이 없으면 'null'.
        키 검사: anon 키(JWT 의 role 이 anon)만 허용 — service_role 이 실수로 들어오면 빌드를 멈춥니다."""
     path = os.path.join(BASE, "supabase.%s.json" % mode)
+    if not os.path.exists(path) and mode == "prod" and os.path.exists(os.path.join(BASE, "supabase.dev.json")):
+        # 실서비스 프로젝트가 아직 없으면 사이트(index.html)도 dev DB 에 붙입니다 — 설정 없는 빌드는 아무 PIN 이나 통과해서 사이트에 올리면 안 됩니다
+        print("supabase.prod.json 없음 → 사이트 빌드에 supabase.dev.json 을 씁니다 (실서비스 프로젝트를 만들면 prod 로 바뀝니다)")
+        path = os.path.join(BASE, "supabase.dev.json"); mode = "dev"
     if not os.path.exists(path):
-        print("Supabase 설정 없음: %s → 브라우저 안에서만 도는(예시 데이터) 빌드" % os.path.relpath(path, BASE))
+        print("Supabase 설정 없음: %s → 브라우저 안에서만 도는(예시 데이터) 빌드. 잠금 화면에서 들어갈 수 없습니다 — 사이트에 올리지 마세요" % os.path.relpath(path, BASE))
         return "null"
     cfg = json.load(open(path, encoding="utf-8"))
     for k in ("url", "anonKey", "staffEmail", "adminEmail"):

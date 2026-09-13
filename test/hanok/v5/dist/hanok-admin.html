@@ -1416,7 +1416,7 @@ label.chk span{width:auto}
 .pkey:hover{background:var(--surface-2)}
 .pkey.sub{color:var(--text-2); font-size:var(--fs-head); font-weight:400}
 .lk-note{font-size:var(--fs-sub); color:var(--text-3); margin-top:var(--s24); line-height:1.6}
-/* 서버 미연결 빌드에서만 뜹니다. 잠금이 풀려 있다는 사실이 눈에 보여야
+/* 서버 설정이 없는 빌드에서만 뜹니다. 들어갈 수 없다는 사실이 눈에 보여야
    "잠긴 줄 알았는데 아니었다" 는 오해가 안 생깁니다. 지우지 마세요 */
 .lk-open{font-size:var(--fs-sub); color:#7A5C22; margin-top:var(--s12); line-height:1.6;
   background:#FBF1DC; border:1px dashed #D9BF87; border-radius:var(--r-sm); padding:var(--s8) var(--s12)}
@@ -1590,6 +1590,11 @@ body.theme-hanok .pdot.on{color:var(--pine)}
 .tvl-cnt{color:#FFD98A; font-weight:700; font-variant-numeric:tabular-nums; min-width:calc(var(--tvu)*4.2); text-align:right}
 .tvl-cnt small{font-size:.78em; font-weight:600; color:#C8B795; margin-left:.12em}
 .tvl-off{display:block; font-family:var(--sans); font-size:.7em; letter-spacing:.04em; text-indent:0; color:#8C7B62; margin-top:calc(var(--tvu)*.6)}
+/* 영상 로딩 표시 — 영상(z-index 2) 위, 가운데 빙글이. 회전은 transform 이지만 배율(zoom 규칙)과 무관합니다 */
+.tv-loading{position:absolute; top:0; right:0; bottom:0; left:0; z-index:3; display:flex; align-items:center; justify-content:center; pointer-events:none}
+.tv-loading i{display:block; width:calc(var(--tvu)*5); height:calc(var(--tvu)*5); border-radius:50%;
+  border:calc(var(--tvu)*.45) solid rgba(246,238,221,.25); border-top-color:rgba(246,238,221,.9); animation:tvspin .9s linear infinite}
+@keyframes tvspin{to{transform:rotate(360deg)}}
 /* 예약이 없을 때 광고만 — 날개 없이 영상이 화면 전체. 사진 위 어둡게 하는 막(veil)도 없음 */
 .tvl-idle .tvl-ad{flex:1 1 100%}
 .tv-idle .tv-swap{display:none}
@@ -1988,7 +1993,7 @@ body.theme-hanok .pdot.on{color:var(--pine)}
   .b-chart{order:1}
   .b-set{order:2}
   .b-tv{order:3}
-  .b-today{order:4; flex:0 1 auto}
+  .b-today{order:0; flex:0 1 auto}
   .b-search{order:5; flex:0 1 auto}
   .b-add{order:6; flex:0 1 auto}
   .topbar .tvbtn:not(.icon){padding:var(--s8) var(--s12); font-size:var(--fs-sub)}
@@ -2404,7 +2409,7 @@ let view = { storeKey:null, tab:"dash", date:todayStr(), filter:"전체", form:n
    SUPA_CFG 는 build.py 가 supabase.{dev|prod}.json 으로 채웁니다. null 이면 지금처럼 브라우저 안에서만(예시 데이터).
    결정 사항은 work/7차_작업지시.md — 여기 주석은 '왜' 만 짧게.
    ============================================================ */
-var SUPA_CFG = null;
+var SUPA_CFG = {"url": "https://tequnppstugefkhilaqs.supabase.co", "anonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlcXVucHBzdHVnZWZraGlsYXFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkzMTM3MTIsImV4cCI6MjEwNDg4OTcxMn0.OTzk47tHUYmavOysPJ_vKsTjKkcX3gt7UiAC0kjntqE", "staffEmail": "staff@jaealee.com", "adminEmail": "admin@jaealee.com", "demo": true, "mode": "dev"};
 var SESSION = null;          /* {access_token, refresh_token, expires_at(초), who:"staff"|"admin"} — 메모리 + sessionStorage 에만 */
 var OFFLINE = null;          /* 서버를 못 읽어 캐시로 보는 중: {at:마지막 갱신, pin:재접속용 PIN} */
 var READONLY_WHY = "";       /* 읽기 전용인 이유 (안내문에 씀) */
@@ -3732,7 +3737,7 @@ function renderLock(){
         <div class="pdots">${dots}</div>
         <div class="lk-err ${LOCK_BUSY?'busy':''}">${LOCK_BUSY ? "서버 확인 중…" : (pinLockLeft() > 0 ? `${pinLockLeft()}초 뒤에 다시 입력할 수 있습니다` : esc(PIN_ERR))}</div>
         <div class="pkeys">${keys}</div>
-        ${supaOn() ? "" : `<div class="lk-open"><b>서버 미연결 빌드</b> — 확인용이라 아무 번호나 통과합니다</div>`}
+        ${supaOn() ? "" : `<div class="lk-open"><b>서버 설정이 없는 빌드</b> — supabase.dev.json 또는 supabase.prod.json 을 넣고 다시 빌드하세요</div>`}
         <button class="lk-back" onclick="backToStores()">← 매장 다시 고르기</button>
       </div>
     </div>`;
@@ -3749,20 +3754,16 @@ function backToStores(){ view.storeKey=null; PIN_BUF=""; PIN_ERR=""; render(); }
 /* ============================================================
    PIN 확인
    서버 모드(SUPA_CFG 있음): PIN 4자리 + "00" 으로 staff 계정 로그인 — 진짜 검증. 틀림 5회 → 60초 잠금.
-   서버 미연결(설정 파일 없는 빌드): 개발·확인용이라 아무 번호나 통과시키고, 잠금 화면에 그렇다고 표시합니다.
-   ★ 실서비스는 반드시 supabase.prod.json 을 넣고 빌드합니다 — 그러면 이 통과 경로는 코드상 닿지 않습니다. ★
+   서버 설정이 없는 빌드: 들어갈 수 없습니다(7차-H). build.py 가 prod 설정이 없으면 dev 설정을 쓰므로 사이트에 설정 없는 빌드가 올라갈 일은 없습니다.
    ============================================================ */
 var PIN_FAILS = 0, PIN_LOCK_UNTIL = 0;   /* 틀린 횟수 · 잠금 해제 시각(ms) */
 function pinLockLeft(){ return Math.max(0, Math.ceil((PIN_LOCK_UNTIL - Date.now()) / 1000)); }
 var LOCK_BUSY = false;   /* 서버에 PIN 을 확인하는 중 — 잠금 화면에 '확인 중' 표시 */
 async function pinCheck(){
   if(supaOn()) return pinCheckServer();
-  /* 서버 미연결 — 개발용. 아무 번호나 통과 */
-  logEvent("로그인 성공", "서버 미연결 · PIN 확인 안 함");
-  AUTHED = true; PIN_BUF=""; PIN_ERR="";
-  DATA._session = {authed:true, since:new Date().toISOString()};
-  saveData();
-  startIntro();
+  /* 서버 설정이 없는 빌드 — PIN 을 확인할 곳이 없으므로 들어갈 수 없습니다 (재아 결정: 정해진 비밀번호로만).
+     화면 확인용 스크린샷은 AUTHED 를 직접 켜서 찍습니다(work/shot.py) */
+  PIN_BUF = ""; PIN_ERR = "서버 설정이 없는 빌드입니다. 들어갈 수 없습니다.";
   render();
 }
 /* 틀린 PIN 을 세고 5회면 60초 잠급니다. Supabase 에도 로그인 제한이 있지만 화면에서 먼저 막아 둡니다 */
@@ -4009,8 +4010,8 @@ function renderStore(){
           ${view.tab==="settings" ? `
           <!-- 설정에서는 점 3개 대신 나가기 하나 (좌측 HANOK 과 같은 역할). 디스플레이 모드는 대시보드 메뉴에 있습니다 (6차-K) -->
           <button class="tvbtn icon b-exit" onclick="setTab('dash')" title="설정 나가기" aria-label="설정 나가기">${ICON.exit}</button>` : `
+          ${view.date===todayStr() ? "" : `<button class="tvbtn b-today" onclick="goToday()">오늘</button>`}
           <button class="tvbtn icon b-refresh" onclick="manualRefresh()" title="새로고침" aria-label="새로고침">${ICON.refresh}</button>
-          ${view.date===todayStr() ? "" : `<button class="tvbtn b-today" onclick="goToday()">오늘로</button>`}
           <button class="tvbtn b-search" onclick="openSearch()">예약 검색</button>
           <button class="tvbtn accent b-add" onclick="openWizard('${view.date}')">＋ 예약 등록</button>
           <!-- 더보기(⋮): 자주 안 쓰는 것들을 여기로 모았습니다 — 예약률 추이 · 설정 · 디스플레이 모드 -->
@@ -5253,7 +5254,7 @@ function resCard(r){
 function setFilter(f){ view.filter=f; render(); }
 function moveDate(d){ view.date=shiftDate(view.date,d); render(); }
 /* 다른 날을 보다가 오늘로 한 번에 — 화살표를 여러 번 누르거나 달력을 열 필요가 없게 */
-/* '오늘로' 버튼 — 오늘이 아닐 때만 상단바 오른쪽(새로고침과 예약 검색 사이)에. 6차-F 에서 뺐다가 6차-K 에서 되살림 */
+/* '오늘' 버튼 — 오늘이 아닐 때만 상단바 오른쪽(새로고침 왼쪽)에. 6차-F 에서 뺐다가 6차-K 에서 되살림, 7차-H 에서 자리·글자 조정 */
 function goToday(){ view.date = todayStr(); view.calMonth = monthStr(); render(); }
 /* '오늘이 아닌 날짜를 보는 중' — 상단바(.topbar.notoday)와 body.notoday 가 같은 조건을 써야 하므로 한 곳에.
    설정 탭은 날짜 개념이 없어 제외. 디스플레이·잠금·인트로는 renderApp 이 renderStore 전에 갈라져 나가므로 여기서도 빼 둡니다 */
@@ -8946,6 +8947,18 @@ function swapTvType(){
   setTimeout(function(){ pokeExit(4000); }, 60);
 }
 
+/* 광고 영상이 뜨기 전 빙글이 — 파일이 커서(29MB) 첫 프레임까지 몇 초 걸립니다. 재생이 시작되면(playing) 지웁니다.
+   오류로 영상이 빠지면 사진이 드러나므로 그때도 지우고, 혹시 이벤트가 안 오면 15초 뒤에 지웁니다 */
+function tvVideoReady(v){
+  var box = v && v.parentNode, sp = box && box.querySelector(".tv-loading");
+  if(sp && sp.parentNode) sp.parentNode.removeChild(sp);
+}
+setInterval(function(){
+  document.querySelectorAll(".tv-loading").forEach(function(sp){
+    var t = Number(sp.getAttribute("data-t") || 0) + 1; sp.setAttribute("data-t", t);
+    if(t >= 15 && sp.parentNode) sp.parentNode.removeChild(sp);
+  });
+}, 1000);
 /* 오늘 남은 예약이 없고 설정(tvIdleFull, 기본 켬)이 켜져 있으면 목록/좌석표 대신 광고만 전체 화면 */
 function tvIdle(){
   var s = store() || DATA.hanok; if(!s) return false;
@@ -8962,7 +8975,8 @@ function renderTvIdle(){
           ${[1,2,3,4,5,6,7].map(i => `<div class="tv-bg b${i} ${i===(view.bgIndex||1)?'on':''}"></div>`).join("")}
         </div>
         ${ad ? `<video src="${esc(adUrl(ad))}" autoplay muted loop playsinline
-                  onerror="this.parentNode.removeChild(this)"></video>` : ""}
+                  onplaying="tvVideoReady(this)" onerror="tvVideoReady(this); this.parentNode.removeChild(this)"></video>
+        <div class="tv-loading" aria-hidden="true"><i></i></div>` : ""}
       </div>
     </div>`;
 }
@@ -9008,7 +9022,8 @@ function renderTvList(){
         </div>
         <div class="tvl-veil"></div>
         ${ad ? `<video src="${esc(adUrl(ad))}" autoplay muted loop playsinline
-                  onerror="this.parentNode.removeChild(this)"></video>` : ""}
+                  onplaying="tvVideoReady(this)" onerror="tvVideoReady(this); this.parentNode.removeChild(this)"></video>
+        <div class="tv-loading" aria-hidden="true"><i></i></div>` : ""}
       </div>
       <aside class="tvl-side">${tvSideHtml()}</aside>
     </div>`;

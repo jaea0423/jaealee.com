@@ -48,3 +48,8 @@
   ② 잠정 배정 재계산 reflowFuture(): 서버 읽은 뒤(첫 로드·델타 변경 시) 오늘 이후 날짜의 룸 미정 예약을 겹침 기준으로 다시 배정(view.storeKey 없어도 동작). suggestSeat 는 '아무것도 없는 방' 을 1순위로(잠정 둘이 같은 방 잡던 것). 9/14 토스 결제팀 r7→r8 ✓ 서버 반영 ✓. 시드는 tentative 를 비워 앱이 계산
   ③ TV '오늘 예약이 없습니다'/'예약 없음' 문구 삭제 ④ TV 예약 없으면 광고만 전체 화면(settings.tvIdleFull 기본 켬, 설정 → 디스플레이 배치 '예약이 없을 때'). 목록/좌석표 무관. 바뀌는 순간에만 통째로 다시 그림(TV_IDLE_SHOWN). **schema.sql public_screen 뷰에 tvIdleFull 추가 → 재아가 뷰 재실행 필요**
   ⑤ 영업시간 세 칸 가운데 ⑥ 상단 날짜 페이지 기준 가운데(901px↑ grid 1fr auto 1fr) ⑦ 날짜 선택 달력 항상 42칸 ⑧ 새로고침 'N분 전' 삭제(refreshedAgo 제거), 1분 자동 갱신은 바뀐 것 있을 때만 다시 그림(입력 중엔 원래 안 그림) ⑨ 범례 '변동'
+- 2026-09-14 v5 7차-H — (`work/p8_h.py`, build.py)
+  ① 정해진 비밀번호로만: 설정 없는 빌드는 잠금에서 '서버 설정이 없는 빌드입니다. 들어갈 수 없습니다.' build.py 는 prod 설정이 없으면 사이트 빌드(index.html·screen/)에 dev 설정을 씀 → 사이트가 옛 예시 데이터·아무 PIN 로 뜨던 원인 해소. **커밋·푸시하면 jaealee.com/test/hanok/v5 가 dev DB(762건)로 붙음**
+  ② TV 광고 영상 로딩 빙글(.tv-loading) — playing 이벤트로 제거, onerror·15초 안전장치. 실제 영상으로 확인(즉시 재생 시 곧 사라짐, 오류 시 제거)
+  ③ '오늘로' → '오늘', 새로고침 왼쪽(폰 순서도)
+  · 재아: public_screen 뷰에 tvIdleFull 반영 실행 ✓
