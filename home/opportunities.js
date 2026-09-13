@@ -34,12 +34,14 @@
       if(index.schemaVersion !== 1 || !Array.isArray(index.editions)) throw new Error('Invalid index');
       if(id !== request) return;
       const today = EditionDay.date();
-      editions = [...new Set(index.editions.filter(date=>validDate(date)&&date<=today))].sort().reverse();
+      editions = [...new Set(index.editions.filter(date=>validDate(date)))].sort().reverse();
       const chosen = location.hash.split('/')[1];
       datePicker.replaceChildren(...editions.map(date=>new Option(date.replaceAll('-','.'),date)));
       if(!editions.length){status.textContent='아직 발행된 기회가 없습니다.';return;}
       if(chosen && !editions.includes(chosen)){status.textContent='이 날짜에 발행된 기회가 없습니다. 발행일을 선택해 주세요.';datePicker.selectedIndex=-1;return;}
-      const date = chosen || editions[0];
+      // 07시는 기본 선택에만 적용하며 날짜 목록에는 모든 발행분을 표시합니다.
+      const date = chosen || editions.find(date=>date<=today) || today;
+      if(!editions.includes(date)){status.textContent='이 날짜에 발행된 기회가 없습니다. 발행일을 선택해 주세요.';datePicker.selectedIndex=-1;return;}
       datePicker.value = date;
       const result = await get('/opportunities/'+date+'.json');
       if(id !== request) return;

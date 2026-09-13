@@ -56,7 +56,7 @@
   async function init(){
     if(loaded)return;if(loading)return loading;
     loading=(async()=>{const data=await get('/knowledge/index.json');if(!Array.isArray(data.editions))throw Error('Invalid index');
-      editions=data.editions.filter(e=>validDate(e.date)&&e.date<=today()&&Array.isArray(e.articles)).sort((a,b)=>b.date.localeCompare(a.date));
+      editions=data.editions.filter(e=>validDate(e.date)&&Array.isArray(e.articles)).sort((a,b)=>b.date.localeCompare(a.date));
       const categories=[...new Set(editions.flatMap(e=>e.articles.map(a=>a.category)))];
       $('knowledge-category').replaceChildren(new Option('모든 분야',''),...categories.map(c=>new Option(c,c)));loaded=true;archive();})();
     try{await loading;}finally{loading=null;}
@@ -70,7 +70,8 @@
     const id=++request;status.textContent='읽을거리를 불러오는 중입니다.';$('knowledge-retry').hidden=true;
     try{
       await init();if(id!==request)return;
-      date.value=validDate(chosen||'')?chosen:(editions[0]?.date||today());navigation();
+      // 07시는 기본 선택에만 적용하며 보관함·직접 선택은 모든 발행분을 허용합니다.
+      date.value=validDate(chosen||'')?chosen:(editions.find(e=>e.date<=today())?.date||today());navigation();
       if(current!==date.value||force){
         content.replaceChildren();$('knowledge-jumps').hidden=true;$('knowledge-edition').textContent=date.value.replaceAll('-','.');
         if(!editions.some(e=>e.date===date.value)){status.textContent='이 날짜에는 발행된 지식이 없습니다. 아래 보관함에서 다른 글을 선택해주세요.';current='';return;}
