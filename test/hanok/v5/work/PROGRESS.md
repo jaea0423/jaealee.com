@@ -53,3 +53,10 @@
   ② TV 광고 영상 로딩 빙글(.tv-loading) — playing 이벤트로 제거, onerror·15초 안전장치. 실제 영상으로 확인(즉시 재생 시 곧 사라짐, 오류 시 제거)
   ③ '오늘로' → '오늘', 새로고침 왼쪽(폰 순서도)
   · 재아: public_screen 뷰에 tvIdleFull 반영 실행 ✓
+- 2026-09-14 v5 7차-M — 모바일(640px 이하) 개편 (`work/p8_m.py`, 스크린샷 `work/shots/7m/`, PC 비교 `pc_before`/`pc_after`).
+  · 상단 한 줄: HANOK | [오늘] 📅 ↻ 🔍 ⋮ (.topbar.mobile). 날짜 층·상단 ＋ 없음 → 오른쪽 아래 둥근 ＋(.fab, ICON.plus). isMobile()=innerWidth≤640, 경계 넘을 때만 다시 그림
+  · 대시보드 폰판 renderDashMobile: 지표 칩 한 줄(.mkpi: 확정·예약률·미배정·경고·확인, 0 아닌 것만 색) → 안건표|그래프 토글(view.mView) → 안건표(renderAgenda, 두 줄 행 .mrow, 필터 포함 — 예약 목록 카드 흡수) / 압축 그래프(renderTimeline(d,true): 홀은 쓰는 층+1, 층 26px, .tl 960px 가로 스크롤, 그린 뒤 현재 시각 1시간 앞으로 scrollTlToNow, 지표줄 숨김·범례 유지). 영업시간 카드 없음
+  · 더보기에 '영업시간' 항목(양쪽) → sheetHours 세 줄. PC 카드는 유지
+  · 검정 모드 그래프 깨짐 근본 수정: .tl-scroll 의 margin:0 -14px(카드 밖 2px 삐져나감) 삭제, 이름 열 -26px 그림자 트릭 삭제. 태블릿(820)은 그래프가 28px 좁아진 것 외 동일
+  · 예시 데이터 넣기/지우기 버튼·addDemo/clearDemo 삭제(전부)
+  · 확인: PC 1280 대시보드·검정·설정 픽셀 차이 0 / 폰 375 실브라우저: 한 줄 상단바·칩·안건표(이름 전체·전화·꼬리표)·그래프 스크롤(19:00 흉내 482px)·검정 모드 토글 대비·더보기 4항목·영업시간 시트·달력·마법사 오류 0
