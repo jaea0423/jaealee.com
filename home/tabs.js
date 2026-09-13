@@ -63,7 +63,7 @@
     document.getElementById('paper-date').textContent = date;
     status.textContent = '브리핑을 불러오는 중…'; content.replaceChildren();
     lastNewsDate = date;
-    if(date > EditionDay.date()){status.textContent = '이 발행분은 해당 날짜 오전 7시부터 볼 수 있습니다.'; return;}
+    // 07시는 기본 날짜의 전환 기준입니다. 직접 고른 날짜는 발행 파일이 있으면 표시합니다.
     try {
       const data = await get(`/news/data/${date}.json`);
       if (current !== requestId) return;
