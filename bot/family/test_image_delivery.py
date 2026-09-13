@@ -3,6 +3,8 @@ import io
 import json
 import tempfile
 import time
+import socket
+import urllib.error
 import unittest
 from datetime import datetime
 from pathlib import Path
@@ -14,6 +16,27 @@ from family_runtime import GroupTelegram
 
 
 class ImageDeliveryTests(unittest.TestCase):
+    def test_dns_failure_is_retryable_but_timeout_is_uncertain(self):
+        for reason, retryable in [(socket.gaierror(-2, 'secret'), True), (TimeoutError('secret'), False)]:
+            with patch('urllib.request.urlopen', side_effect=urllib.error.URLError(reason)):
+                with self.assertRaises(images.AlbumError) as caught:
+                    images.send_album(bots.Telegram('secret-token', 123), [self.folder / self.files[0]['name']], 'caption')
+                self.assertEqual(caught.exception.retryable, retryable)
+                self.assertNotIn('secret', str(caught.exception))
+
+    def test_local_file_failure_does_not_become_uncertain(self):
+        with self.assertRaises(images.AlbumError) as caught:
+            images.send_album(bots.Telegram('test', 123), [self.folder / 'missing.png'], 'caption')
+        self.assertTrue(caught.exception.retryable)
+        self.assertEqual(caught.exception.stage, 'prepare')
+
+    def test_malformed_success_receipt_is_uncertain(self):
+        with patch('urllib.request.urlopen', return_value=io.BytesIO(b'{"ok":true,"result":[]}')):
+            with self.assertRaises(images.AlbumError) as caught:
+                images.send_album(bots.Telegram('test', 123), [self.folder / self.files[0]['name']], 'caption')
+            self.assertFalse(caught.exception.retryable)
+            self.assertEqual(caught.exception.stage, 'response')
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.config = {'state_dir': self.temp.name, 'black_delivery_format': 'photo'}

@@ -576,9 +576,9 @@ def black_tick(store, telegram, clock, config=None):
             try:
                 if deliver(config, store, telegram, kind, day, key):
                     store.put(key, True)
-            except Exception:
+            except Exception as exc:
                 # Image failures never fall back to the old text delivery.
-                pass
+                store.put(key + ':last-error', {'at': time.time(), 'type': type(exc).__name__})
             continue
         try:
             messages = store.get(key + ':messages')
