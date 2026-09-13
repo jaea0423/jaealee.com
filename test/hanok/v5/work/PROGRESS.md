@@ -43,3 +43,8 @@
 - 2026-09-14 v5 7차-F — 백업. `backup/hanok-backup.yml`(비공개 저장소 hanok-backup 의 .github/workflows/ 로) + `backup/fetch.py`(표준 라이브러리, Range 헤더로 1,000행씩 이어받기, 예약 전체(삭제 포함)·stores·로그 30일 → data/*.json 정렬·들여쓰기, 바뀐 것만 커밋). 매일 19:30 UTC(04:30 KST) + 수동 실행. service_role 은 GitHub Secrets 에만. 복구 단락은 checklist.md 끝(A 에서 작성)
   · 확인: anon 키로는 401(테이블 막힘) ✓ / staff 토큰·페이지 200 으로 dev 762+7 행 이어받기, 중복 0, 삭제 행 포함 ✓. 실제 Actions 실행은 재아가 저장소·Secrets 만든 뒤 workflow_dispatch 로
 - 2026-09-14 v5 7차 마무리 — 재아 확인: PIN 변경(관리자 비밀번호 경로) 실제 동작 ✓ / hanok-backup 비공개 저장소 + Secrets + Actions 수동 실행 → data/*.json 생성 ✓ (checkout@v5 로 올려 경고 제거). 남은 것: 실서비스 프로젝트 `hanok` 셋업(checklist 2~5) → supabase.prod.json → `python build.py` → 배포, 백업 Secrets 를 prod 값으로. 결정(재아): 설정 변경에 관리자 확인 **안 걸음**(PIN 으로 들어온 사람이 설정 변경 가능). 커밋은 재아가 직접. 실서비스 전환은 수정 더 한 뒤 별도 논의.
+- 2026-09-14 v5 7차-G — 재아 검토 (`work/p8_g.py`).
+  ① 충돌은 선택지 없이 알림 '작성 도중 다른 기기에서 수정된 내용입니다' + 화면을 서버 내용으로(내 변경 버림). 다시 하면 충돌 없음 ✓(dev 확인)
+  ② 잠정 배정 재계산 reflowFuture(): 서버 읽은 뒤(첫 로드·델타 변경 시) 오늘 이후 날짜의 룸 미정 예약을 겹침 기준으로 다시 배정(view.storeKey 없어도 동작). suggestSeat 는 '아무것도 없는 방' 을 1순위로(잠정 둘이 같은 방 잡던 것). 9/14 토스 결제팀 r7→r8 ✓ 서버 반영 ✓. 시드는 tentative 를 비워 앱이 계산
+  ③ TV '오늘 예약이 없습니다'/'예약 없음' 문구 삭제 ④ TV 예약 없으면 광고만 전체 화면(settings.tvIdleFull 기본 켬, 설정 → 디스플레이 배치 '예약이 없을 때'). 목록/좌석표 무관. 바뀌는 순간에만 통째로 다시 그림(TV_IDLE_SHOWN). **schema.sql public_screen 뷰에 tvIdleFull 추가 → 재아가 뷰 재실행 필요**
+  ⑤ 영업시간 세 칸 가운데 ⑥ 상단 날짜 페이지 기준 가운데(901px↑ grid 1fr auto 1fr) ⑦ 날짜 선택 달력 항상 42칸 ⑧ 새로고침 'N분 전' 삭제(refreshedAgo 제거), 1분 자동 갱신은 바뀐 것 있을 때만 다시 그림(입력 중엔 원래 안 그림) ⑨ 범례 '변동'

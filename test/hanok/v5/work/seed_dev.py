@@ -118,7 +118,7 @@ def make(date, dow, today):
     elif seat_r < 0.85: room_id = random.choice(HALLS)["id"]
     else:
         seat_pref = random.choice(["any", "room-any", "hall-any"])
-        if fit and random.random() < 0.7: tent = random.choice(fit)["id"]
+        # tentativeRoomId 는 앱이 로드 때 겹침을 보고 계산합니다(reflowFuture). 여기서 아무 방이나 넣으면 같은 방에 둘이 들어갑니다
     if random.random() < 0.02 and ROOMS: room_id = "r1"   # 정원 초과 경고 (4인 방에 큰 팀)
     is_room = room_id is not None and room_id.startswith("r")
     # 식사
