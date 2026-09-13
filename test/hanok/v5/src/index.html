@@ -460,6 +460,14 @@ button.rowitem:hover{background:var(--surface-2)}
    색은 테마 변수(--topbar-*)로 받습니다. 한옥 테마에서는 먹색 바탕 + 아이보리 글자입니다. */
 .topbar{position:sticky; top:0; z-index:30; background:var(--topbar-bg); border-bottom:1px solid var(--topbar-line); display:flex; align-items:center; gap:var(--s12); color:var(--topbar-fg); padding:0}
 .topbar-in{display:flex; width:100%; max-width:1720px; margin:0 auto; padding:var(--s12) var(--s24); gap:var(--s8); align-items:center}
+/* 넓은 화면: 날짜를 '페이지' 기준 가운데에 — 양옆(로고 / 버튼 묶음)이 폭이 달라도 가운데 칸이 정중앙에 옵니다.
+   좁은 화면(900px 이하)은 날짜가 둘째 줄로 내려가므로 flex 그대로 */
+@media (min-width:901px){
+  .topbar-in{display:grid; grid-template-columns:1fr auto 1fr; align-items:center}
+  .topbar-in .storename{justify-self:start}
+  .topbar-in .bar-right{justify-self:end}
+  .topbar-in .more-veil{grid-column:1 / -1}
+}
 /* 맨 왼쪽 매장 선택 버튼 (설정 화면에서는 ← 로 바뀝니다) */
 .topbar .home{border:1px solid var(--topbar-btn-line); background:transparent; color:var(--topbar-fg); border-radius:var(--r-sm); padding:var(--s8) var(--s12); font-size:var(--fs-body); line-height:1; flex:none; opacity:.85; display:inline-flex; align-items:center; height:36px}
 .topbar .home svg{width:19px; height:19px; stroke:currentColor; fill:none; stroke-width:1.7}
@@ -495,7 +503,6 @@ button.rowitem:hover{background:var(--surface-2)}
 .topbar.notoday{--topbar-bg:var(--text); --topbar-fg:#fff; --topbar-line:var(--text);
   --topbar-btn-line:rgba(255,255,255,.55); --topbar-hover:rgba(255,255,255,.12)}
 .topbar.notoday .bdate{font-weight:800; color:#fff}
-.topbar.notoday .rf-at{color:rgba(255,255,255,.7)}
 /* 검정 바 위에서 검정 '예약 등록' 버튼은 사라지므로 흰 바탕·검정 글자로 뒤집습니다 */
 .topbar.notoday .tvbtn.accent{background:#fff; color:var(--text)}
 .topbar.notoday .tvbtn.accent:hover{background:#E5E5EA}
@@ -505,8 +512,6 @@ body.notoday{background:var(--text)}
 body.notoday .card{box-shadow:none}
 
 /* 새로고침 버튼 — 아이콘 옆에 "N분 전" */
-.b-refresh{gap:6px !important}
-.b-refresh .rf-at{font-size:11.5px; font-weight:600; color:var(--text-3); letter-spacing:0}
 .b-refresh.spin svg{animation:rfspin .6s linear}
 @keyframes rfspin{to{transform:rotate(360deg)}}
 
@@ -585,8 +590,7 @@ button.metric:hover{background:var(--surface-2)}
 .hours-line{font-size:var(--fs-sub); color:var(--text); background:var(--surface-2);
   border:none; border-radius:var(--r-md); padding:var(--s8) var(--s12); margin-bottom:var(--s12);
   display:grid; grid-template-columns:repeat(3,1fr)}
-.hours-line .hl-c{min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 var(--s8); font-weight:600}
-.hours-line .hl-c:first-child{padding-left:0}
+.hours-line .hl-c{min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 var(--s8); font-weight:600; text-align:center}
 .hours-line .hl-c + .hl-c{border-left:1px solid var(--border-strong)}
 .hours-line .hl-c i{font-style:normal; color:var(--text-3); font-weight:600; margin-right:6px}
 .hours-line.closed{grid-template-columns:1fr}
@@ -810,7 +814,7 @@ button.blk.tent{background-image:repeating-linear-gradient(-45deg, rgba(255,255,
 .chd.sat{color:#3E6291}
 .cday.sun .dn{color:#B0553F}
 .cday.sat .dn{color:#3E6291}
-.cday{min-height:62px; border:1px solid var(--border); background:var(--surface); border-radius:var(--r-md); padding:var(--s4) var(--s4); display:flex; flex-direction:column; align-items:center; gap:var(--s4)}
+.cday{min-height:74px; border:1px solid var(--border); background:var(--surface); border-radius:var(--r-md); padding:var(--s4) var(--s4); display:flex; flex-direction:column; align-items:center; gap:var(--s4)}
 .cday .dn{color:var(--text); line-height:1; font-size:var(--fs-sub); font-weight:700}
 .cday .dots{display:flex; gap:var(--s4)}
 .cday .dots i{width:4px; height:4px; border-radius:50%; background:var(--pine); display:block}
@@ -823,7 +827,7 @@ button.blk.tent{background-image:repeating-linear-gradient(-45deg, rgba(255,255,
 .cday.sel .pp{color:#fff; background:transparent}
 .cday.sel .cnt{color:#fff; background:transparent}
 .cday.sel .dots i{background:rgba(255,255,255,.9)}
-.cday.blank{border:none; background:none; min-height:0}
+.cday.blank{border:none; background:none}   /* min-height 를 0 으로 두면 마지막 빈 줄이 접혀 5줄·6줄 높이가 달라집니다(7차-G) */
 .cday .cn{font-size:var(--fs-label); font-weight:700; color:var(--pine)}
 .cday .cn.none{color:var(--text-3); font-weight:400}
 .cday .cbar{width:76%; height:4px; background:var(--border); border-radius:var(--r-sm); overflow:hidden}
@@ -1586,6 +1590,9 @@ body.theme-hanok .pdot.on{color:var(--pine)}
 .tvl-cnt{color:#FFD98A; font-weight:700; font-variant-numeric:tabular-nums; min-width:calc(var(--tvu)*4.2); text-align:right}
 .tvl-cnt small{font-size:.78em; font-weight:600; color:#C8B795; margin-left:.12em}
 .tvl-off{display:block; font-family:var(--sans); font-size:.7em; letter-spacing:.04em; text-indent:0; color:#8C7B62; margin-top:calc(var(--tvu)*.6)}
+/* 예약이 없을 때 광고만 — 날개 없이 영상이 화면 전체. 사진 위 어둡게 하는 막(veil)도 없음 */
+.tvl-idle .tvl-ad{flex:1 1 100%}
+.tv-idle .tv-swap{display:none}
 .tvl-none{color:#9C8D76; font-size:calc(var(--tvu)*2.2); text-align:center;
   padding-top:calc(var(--tvu)*4)}
 /* 자리가 모자라 접은 줄 수 */
@@ -2529,6 +2536,28 @@ async function enterStore(){
   cacheSave();
   autoCloseDays();   /* 지난 날짜의 '확정' → '방문' (이 기기가 처음 켠 것이면 여기서 올라갑니다) */
   takeSnapshot();
+  reflowFuture();    /* 잠정 배정은 겹침을 봐야 하므로 다른 곳에서 들어온 예약까지 포함해 다시 계산 */
+}
+/* 오늘 이후 날짜의 잠정 배정(룸 미정 예약의 tentativeRoomId)을 다시 계산합니다.
+   잠정 배정은 그 날 다른 예약과의 겹침으로 정해지는 값이라, 다른 기기·시드·복구로 들어온 예약이 있으면 틀어집니다.
+   바뀐 것은 saveData → flush 로 올라가고, 두 기기가 같은 답을 내면 충돌로 치지 않습니다(pushChanged 의 같은 내용 처리) */
+function reflowFuture(){
+  /* 세션 복구 때는 아직 view.storeKey 가 없을 수 있어(주소 적용 전) 매장을 직접 돌며 잠시 storeKey 를 바꿉니다 — reflowTentatives 가 store() 를 쓰므로 */
+  var prev = view.storeKey, today = todayStr(), changed = false;
+  Object.keys(DEFAULT_DATA).forEach(function(k){
+    if(!DEFAULT_DATA[k].enabled || !DATA || !DATA[k]) return;
+    view.storeKey = k;
+    var s = DATA[k], dates = {};
+    s.reservations.forEach(function(r){ if(r.date >= today && !r.roomId && holdsSeat(r)) dates[r.date] = 1; });
+    Object.keys(dates).forEach(function(d){
+      var before = s.reservations.filter(function(r){ return r.date === d && !r.roomId; }).map(function(r){ return r.id + ":" + (r.tentativeRoomId || ""); }).join(",");
+      reflowTentatives(d);
+      var after = s.reservations.filter(function(r){ return r.date === d && !r.roomId; }).map(function(r){ return r.id + ":" + (r.tentativeRoomId || ""); }).join(",");
+      if(before !== after) changed = true;
+    });
+  });
+  view.storeKey = prev;
+  if(changed) saveData();
 }
 /* 1분 갱신 — 전체가 아니라 바뀐 행만 (updated_at=gt.마지막으로 본 최대값).
    이 기기에서 고쳐 놓고 아직 못 보낸(dirty) 예약은 덮지 않습니다 — 다음 flush 의 조건부 PATCH 가 0행이 되어 충돌 절차로 갑니다 */
@@ -2568,7 +2597,8 @@ async function reloadFromStore(){
     });
     if(changed) st.reservations.sort(function(a, b){ return (a.date + a.time).localeCompare(b.date + b.time); });
   }
-  if(changed) cacheSave();
+  if(changed){ cacheSave(); reflowFuture(); }
+  return changed;
 }
 
 /* ---------- 캐시 · 오프라인 ---------- */
@@ -2866,20 +2896,15 @@ async function pushChanged(rec, k, cur){
     if(t.updated_at > (SYNC.lastUpd[k] || "")) SYNC.lastUpd[k] = t.updated_at;
     return;
   }
-  var title = t.deleted_at ? "다른 기기에서 이미 삭제된 예약입니다" : "다른 기기에서 먼저 수정됐습니다";
-  var takeTheirs = await uiConfirm(title, conflictSummary(rec, trec) + "\n\n상대 내용으로 보면 내 변경은 버려집니다.",
-                                   { ok:"상대 내용으로 보기", cancel:"내 변경으로 덮어쓰기" });
-  if(takeTheirs){
-    var li = st.reservations.indexOf(rec), ti = st.trash.indexOf(rec);
-    if(li >= 0) st.reservations.splice(li, 1); if(ti >= 0) st.trash.splice(ti, 1);
-    if(t.deleted_at) st.trash.push(trec); else st.reservations.push(trec);
-    st.reservations.sort(function(a, b){ return (a.date + a.time).localeCompare(b.date + b.time); });
-    SYNC.res[rec.id] = JSON.stringify(trec); if(t.updated_at > (SYNC.lastUpd[k] || "")) SYNC.lastUpd[k] = t.updated_at;
-    render();
-  }else{
-    var rows2 = await sb("/rest/v1/reservations?id=eq." + rec.id, { method:"PATCH", body:row, prefer:"return=representation" });
-    markSynced(rec, rows2 && rows2[0], cur);
-  }
+  /* 선택지를 주지 않습니다(재아 결정) — 서버 내용으로 화면을 바꾸고 다시 하라고 알립니다. 다시 하면 그때는 충돌이 아닙니다 */
+  var title = t.deleted_at ? "다른 기기에서 이미 삭제된 예약입니다" : "작성 도중 다른 기기에서 수정된 내용입니다";
+  var li = st.reservations.indexOf(rec), ti = st.trash.indexOf(rec);
+  if(li >= 0) st.reservations.splice(li, 1); if(ti >= 0) st.trash.splice(ti, 1);
+  if(t.deleted_at) st.trash.push(trec); else st.reservations.push(trec);
+  st.reservations.sort(function(a, b){ return (a.date + a.time).localeCompare(b.date + b.time); });
+  SYNC.res[rec.id] = JSON.stringify(trec); if(t.updated_at > (SYNC.lastUpd[k] || "")) SYNC.lastUpd[k] = t.updated_at;
+  render();
+  await uiAlert(title, conflictSummary(rec, trec) + "\n\n내 변경은 저장되지 않았고 화면을 최신 내용으로 바꿨습니다. 다시 수정해 주세요.", "warn");
 }
 /* 키 순서에 상관없는 JSON — 같은 내용인지 비교할 때 */
 function canon(o){
@@ -2897,7 +2922,7 @@ function conflictSummary(mine, theirs){
     if(String(a == null ? "" : a) !== String(b == null ? "" : b)) out.push(f[i][1] + ": " + (a == null ? "-" : a) + " → " + (b == null ? "-" : b));
   }
   if(theirs.deletedAt) out.push("상대 기기에서 삭제됨");
-  return out.length ? "상대 기기의 내용:\n" + out.join("\n") : "상대 기기의 내용은 화면과 같지만 나중에 저장됐습니다.";
+  return out.length ? "내가 입력한 것 → 지금 저장된 것:\n" + out.join("\n") : "다른 기기가 나중에 저장했습니다.";
 }
 /* 저장 실패 띠 — body 에 직접 붙입니다(입력 중 시트를 다시 그리지 않으려고). 다시 시도는 flush */
 function saveFailBand(){
@@ -3414,6 +3439,12 @@ function suggestSeat(date, time, people, kind, excludeId){
     .filter(r=>!blockedAt(r, date, time))
     .filter(r=>people<=r.capacity && people>=roomMin(r))   /* 잠정 배정은 총 인원 기준으로 넉넉히 */
     .sort((a,b)=>a.capacity-b.capacity);
+  /* 1순위: 확정도 잠정도 아무것도 없는 방. 2순위: 잠정만 있고 그 잠정이 다른 데로 옮길 수 있는 방(옛 규칙).
+     2순위만 있으면 잠정 두 건이 같은 방을 잡아 화면에 겹쳐 보였습니다 (7차-G) */
+  for(const r of rooms){
+    const rs = roomStatus(date,time,r.id,excludeId);
+    if(rs.state==="free" && !rs.movable.length && !rs.tentative.length) return r.id;
+  }
   for(const r of rooms){
     if(roomStatus(date,time,r.id,excludeId).state==="free") return r.id;
   }
@@ -3925,17 +3956,11 @@ async function revertSettings(){
    Supabase 가 붙으면 여기서 loadData() 를 다시 불러 서버 값을 가져옵니다.
    갱신 시각은 "N분 전" 으로 보여 줍니다 — 시각보다 '얼마나 오래됐나' 가 판단에 쓸모 있습니다. */
 var LAST_REFRESH = Date.now();
-function refreshedAgo(){
-  var sec = Math.max(0, Math.round((Date.now() - LAST_REFRESH) / 1000));
-  if(sec < 60) return "방금";
-  var m = Math.round(sec / 60);
-  if(m < 60) return m + "분 전";
-  return Math.floor(m / 60) + "시간 전";
-}
 async function refreshData(){
   try{
-    await reloadFromStore();
+    var changed = await reloadFromStore();
     LAST_REFRESH = Date.now();
+    return changed !== false;   /* 서버 모드는 바뀐 것이 있는지 돌려줍니다. 그 밖(undefined)은 '모름' = 다시 그림 */
   }catch(e){
     console.error("갱신 실패", e.message);
     if(view.display) throw e;                                  /* TV 는 3번 연속 실패를 세어 '연결 확인 중' 을 띄웁니다 */
@@ -3948,19 +3973,16 @@ async function manualRefresh(){
   await refreshData();
   render();
 }
-/* 대시보드는 1분마다 스스로 갱신합니다. 갱신 시각 글자만은 30초마다 따로 고쳐 씁니다(전체를 다시 그리지 않게) */
+/* 대시보드는 1분마다 스스로 갱신합니다 — 서버에서 바뀐 행만 받아 오고, 실제로 바뀐 것이 있을 때만 다시 그립니다.
+   마법사·시트·확인창이 떠 있으면 건너뜁니다(입력 중에 화면이 바뀌면 안 되니까). '새로고침' 버튼은 즉시 + 무조건 다시 그림 */
 setInterval(function(){
   /* 자정을 넘겼으면 새 날짜의 좌석 수를 남깁니다 (밤새 켜 둔 태블릿·TV). 6차 전에는 자정 처리가 따로 없었습니다 */
   if(SNAP_DAY && todayStr() !== SNAP_DAY) takeSnapshot();
   sessionTick();   /* 토큰 만료 5분 전 갱신 */
   if(SAVE_FAIL && !OFFLINE) flush();   /* 저장 못 한 것이 있으면 다시 */
   if(!AUTHED || view.display || WZ || view.form || MODAL) return;
-  refreshData().then(function(){ render(); });
+  refreshData().then(function(changed){ if(changed) render(); });
 }, 60000);
-setInterval(function(){
-  var el = document.getElementById("rf-at");
-  if(el) el.textContent = refreshedAgo();
-}, 30000);
 
 function renderStore(){
   const s = store();
@@ -3987,7 +4009,7 @@ function renderStore(){
           ${view.tab==="settings" ? `
           <!-- 설정에서는 점 3개 대신 나가기 하나 (좌측 HANOK 과 같은 역할). 디스플레이 모드는 대시보드 메뉴에 있습니다 (6차-K) -->
           <button class="tvbtn icon b-exit" onclick="setTab('dash')" title="설정 나가기" aria-label="설정 나가기">${ICON.exit}</button>` : `
-          <button class="tvbtn icon b-refresh" onclick="manualRefresh()" title="새로고침" aria-label="새로고침">${ICON.refresh}<span class="rf-at" id="rf-at">${refreshedAgo()}</span></button>
+          <button class="tvbtn icon b-refresh" onclick="manualRefresh()" title="새로고침" aria-label="새로고침">${ICON.refresh}</button>
           ${view.date===todayStr() ? "" : `<button class="tvbtn b-today" onclick="goToday()">오늘로</button>`}
           <button class="tvbtn b-search" onclick="openSearch()">예약 검색</button>
           <button class="tvbtn accent b-add" onclick="openWizard('${view.date}')">＋ 예약 등록</button>
@@ -4960,7 +4982,7 @@ function renderTimeline(date){
         <span class="tl-legend"><i class="lgsw ok"></i>확정</span>
         <span class="tl-legend"><i class="lgsw tent"></i>잠정</span>
         <span class="tl-legend"><i class="lgsw warn"></i>경고</span>
-        <span class="tl-legend"><i class="lgsw chg"></i>오늘 변동</span>
+        <span class="tl-legend"><i class="lgsw chg"></i>변동</span>
       </div>
     </div>
     <div class="tl-scroll" id="tl-scroll">
@@ -5164,6 +5186,8 @@ function renderCal(){
         <span class="cr">${st.rate}%</span>`:`<span class="cn none">-</span>`}
     </button>`;
   }
+  /* 항상 6줄(42칸) — 5줄짜리 달과 6줄짜리 달을 오갈 때 높이가 바뀌어 손이 헛나갔습니다 */
+  for(let i=lead+lastDay; i<42; i++) cells += `<span class="cday blank"></span>`;
   return `
     <div class="overlay" onclick="closeCal()">
       <div class="calbox" onclick="event.stopPropagation()">
@@ -5656,6 +5680,13 @@ function renderSettings(){
       손님은 지나가면서 3~5초 보기 때문에, 좌석표보다 시각 순으로 늘어놓는 편이 자기 예약을 빨리 찾습니다.<br>
       TV 화면에서도 우측 상단에 마우스를 올리거나 화면을 한 번 누르면 바꿀 수 있습니다.
       여기서 고른 값이 새로 켤 때의 기본입니다.</p>
+
+    <div class="subhead">예약이 없을 때</div>
+    <div class="seg">
+      <button class="${st.tvIdleFull!==false?'on':''}" onclick="setPolicy('tvIdleFull', true)">광고만 전체 화면</button>
+      <button class="${st.tvIdleFull===false?'on':''}" onclick="setPolicy('tvIdleFull', false)">빈 목록 그대로</button>
+    </div>
+    <p class="f-note">오늘 남은 예약이 하나도 없으면(30분 넘게 지난 것은 빼고) 목록·좌석표 대신 광고 영상만 화면 가득 틉니다. 예약이 생기면 다음 갱신(1분) 때 목록으로 돌아옵니다.</p>
 
     <div class="subhead">광고 영상 <span>목록 화면 왼쪽에 나옵니다</span></div>
     <input id="tv-ad" value="${esc(st.tvAd||"")}" placeholder="ad.mp4"
@@ -8692,8 +8723,13 @@ async function displayTick(){
   catch(e){ DISP_FAIL++; console.warn("디스플레이 갱신 실패", DISP_FAIL, e); }   /* 마지막 데이터로 계속 보여 줍니다 */
   updateDisplayInPlace();
 }
+var TV_IDLE_SHOWN = null;
 function updateDisplayInPlace(){
   if(!view.display) return;
+  /* 광고만 ↔ 목록 이 바뀌는 순간에만 통째로 다시 그립니다 (영상이 처음부터 다시 시작되는 건 이때뿐) */
+  var idle = tvIdle();
+  if(idle !== TV_IDLE_SHOWN){ render(); return; }
+  if(idle) return;
   var side = document.querySelector(".tvl-side");
   if(tvType() !== "grid" && side){
     side.innerHTML = tvSideHtml();
@@ -8910,10 +8946,31 @@ function swapTvType(){
   setTimeout(function(){ pokeExit(4000); }, 60);
 }
 
-function renderDisplay(){
-  var inner = tvType() === "grid" ? renderTvGrid() : renderTvList();
+/* 오늘 남은 예약이 없고 설정(tvIdleFull, 기본 켬)이 켜져 있으면 목록/좌석표 대신 광고만 전체 화면 */
+function tvIdle(){
+  var s = store() || DATA.hanok; if(!s) return false;
+  if(s.settings.tvIdleFull === false) return false;
+  var today = todayStr(), now = toMin(nowHM());
+  return !s.reservations.some(function(r){ return r.date === today && (r.status === "확정" || r.status === "방문") && toMin(r.time) + 30 >= now; });
+}
+function renderTvIdle(){
+  var st = (store() || DATA.hanok).settings, ad = (st.tvAd || "").trim();
   return `
-  <div class="tv tv-mode-${tvType()}">
+    <div class="tvl tvl-idle">
+      <div class="tvl-ad">
+        <div class="tvl-bgs" aria-hidden="true">
+          ${[1,2,3,4,5,6,7].map(i => `<div class="tv-bg b${i} ${i===(view.bgIndex||1)?'on':''}"></div>`).join("")}
+        </div>
+        ${ad ? `<video src="${esc(adUrl(ad))}" autoplay muted loop playsinline
+                  onerror="this.parentNode.removeChild(this)"></video>` : ""}
+      </div>
+    </div>`;
+}
+function renderDisplay(){
+  var idle = tvIdle(); TV_IDLE_SHOWN = idle;   /* 지금 그린 상태를 기억 — 1분 갱신이 이것과 비교해 바뀔 때만 통째로 다시 그립니다 */
+  var inner = idle ? renderTvIdle() : (tvType() === "grid" ? renderTvGrid() : renderTvList());
+  return `
+  <div class="tv tv-mode-${idle ? "list" : tvType()} ${idle ? "tv-idle" : ""}">
     <div class="tv-stage">${inner}</div>
     <div class="tv-hot" aria-hidden="true"></div>
     <div class="tv-tap" aria-hidden="true" onclick="pokeExit(5000)" ontouchstart="pokeExit(5000)"></div>
@@ -8991,7 +9048,7 @@ function tvSideHtml(){
           <div class="tvl-date">${dateTxt}</div>
           <h1>오늘의 예약</h1>
         </div>
-        <ul class="tvl-rows">${rows || `<li class="tvl-none">오늘 예약이 없습니다</li>`}</ul>
+        <ul class="tvl-rows">${rows}</ul>
         <div class="tvl-more"></div>
         <div class="tvl-foot">찾아주셔서 감사합니다${DISP_FAIL >= 3 ? '<span class="tvl-off">연결 확인 중</span>' : ""}</div>`;
 }
@@ -9018,7 +9075,7 @@ function renderTvGrid(){
         <span class="n">${esc(maskName(r.name))} 님</span>
         <span class="p">${pplOf(r)}명</span>
       </li>`;
-    }).join("") : `<li class="none">예약 없음</li>`;
+    }).join("") : ``;
     /* 손님이 보는 화면이라 룸 정원만 안내하고 홀 테이블 수는 적지 않습니다 */
     const capTxt = room.type==="hall" ? "" : `${roomMin(room)}~${room.capacity}인`;
     /* 홀은 2열이라 필요한 줄 수가 절반입니다 (아래에서 grid-template-rows 를 그 수로 맞춥니다) */

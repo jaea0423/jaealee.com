@@ -96,14 +96,15 @@ create or replace view public_today as
     and date = to_char(now() at time zone 'Asia/Seoul', 'YYYY-MM-DD');
 
 -- TV 코드(renderTvList / renderTvGrid / tvSideHtml / displayRows)가 실제로 읽는 설정 키만:
---   rooms(좌석 이름·종류·정원), displayRows(좌석표 3행 배치), tvAd(광고 영상 파일명), tvType(목록형/좌석표)
+--   rooms(좌석 이름·종류·정원), displayRows(좌석표 3행 배치), tvAd(광고 영상 파일명), tvType(목록형/좌석표), tvIdleFull(예약 없으면 광고만)
 --   ※ tvType 은 지금 DATA._ui.tvType 에 있습니다 — 7차 묶음 B 에서 settings.tvType 으로 옮깁니다(보고 참고)
 create or replace view public_screen as
   select key as store, name,
          jsonb_build_object('rooms',       settings->'rooms',
                             'displayRows', settings->'displayRows',
                             'tvAd',        settings->'tvAd',
-                            'tvType',      settings->'tvType') as settings
+                            'tvType',      settings->'tvType',
+                            'tvIdleFull',  settings->'tvIdleFull') as settings
   from stores;
 
 grant select on public_today, public_screen to anon;
