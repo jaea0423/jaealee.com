@@ -614,8 +614,8 @@ button.metric:hover{background:var(--surface-2)}
 .lgsw.ok{background:#3A3833}
 .lgsw.tent{background-color:#2C2C2E; background-image:repeating-linear-gradient(-45deg, rgba(255,255,255,.34) 0 4px, transparent 4px 10px); border:1px dashed rgba(255,255,255,.75)}   /* 먹색 + 빗금 = 잠정 */
 .lgsw.warn{background:var(--rust)}
-/* 오늘 변동 — 블록 글자 위의 파란 칩과 같은 색 (타임라인 .chg-chip 참고) */
-.lgsw.chg{background:var(--blue)}
+/* 오늘 변동 — 블록 앞부분 파랑과 같은 색 (타임라인 .chg-chip 참고) */
+.lgsw.chg{background:#3D8BD9}
 
 /* ---------- 좌석 가동 타임라인 ----------
    행(.tl-row) = 좌석 이름(.tl-name) + 그래프(.tl-track) + 예약률(.tl-rate).
@@ -708,12 +708,19 @@ button.blk.tent{background-image:repeating-linear-gradient(-45deg, rgba(255,255,
    6차 A 의 '블록 전체 파랑 + 상태색 테두리' 는 상태(잠정 점선·경고 벽돌)와 변동이 서로 덮어 조합이 어지러웠습니다(재아 검토).
    블록 바탕·테두리는 원래 상태 그대로 두고 그 위에 파란 칩만 얹으므로, 잠정+경고+변동이 한 블록에서 다 읽힙니다.
    내일이 되면 changeTag 가 비어 저절로 풀립니다. '잠정' 꼬리표(.tt)는 지웠습니다(툴팁의 ' · 잠정'은 남김) */
-.blk .chg-chip{display:inline-block; line-height:12px; height:12px; padding:0 4px; margin-left:-2px; border-radius:3px; font-size:10px;   /* inline-flex 는 시각·이름 사이 공백을 버립니다. 15px 는 블록(19px)을 거의 채워 어색 → 12px·글자 10px */
-  background:var(--blue); color:#fff; box-shadow:0 0 0 1px rgba(255,255,255,.4)}   /* 먹색·벽돌 바탕 위에서 칩 가장자리가 보이게 흰 선 */
-.blk .chg-chip b{color:#fff; font-size:10px}
-/* 지난 것은 블록처럼 흐리게 */
-.blk.past .chg-chip{opacity:.55}
-.nowline{position:absolute; top:0; bottom:0; width:2px; background:var(--rust); z-index:3}
+/* 8차-J(재아): 글자 영역까지 막대 앞부분을 통째로 파랑으로 — 알약처럼 투톤. 꼬리(체류 시간)는 원래 상태색 그대로.
+   파랑도 확정(먹색)과 구분되게 한 단계 밝게(--blue-mark 계열) */
+.blk.changed{padding-left:0}
+.blk .chg-chip{display:inline-flex; align-items:center; align-self:stretch; height:auto; padding:0 6px 0 var(--s4); margin:0 2px 0 0; border-radius:var(--r-sm) 0 0 var(--r-sm); font-size:10px;
+  background:#3D8BD9; color:#fff; box-shadow:none}
+.blk .chg-chip b{color:#fff; font-size:10px; margin-right:3px}
+.blk.past .chg-chip{opacity:.7}
+.blk .chg-chip-old{display:inline-block; line-height:12px; height:12px; padding:0 4px; margin-left:-2px; border-radius:3px; font-size:10px;   /* inline-flex 는 시각·이름 사이 공백을 버립니다. 15px 는 블록(19px)을 거의 채워 어색 → 12px·글자 10px */
+  background:var(--blue); color:#fff; box-shadow:0 0 0 1px rgba(255,255,255,.4)}   /* (옛 칩 규칙 — 참고용, 안 씀) */
+/* 8차-J: 현재 시각 선은 줄마다가 아니라 축 줄에 하나만 두고 표 전체를 가로지릅니다(높이는 afterRender 가 맞춤) */
+.nowline{position:absolute; top:0; bottom:0; width:2px; background:var(--rust); z-index:6; pointer-events:none}
+.tl-row.axis{position:relative; z-index:5; overflow:visible}
+.tl-row.axis .tl-track{overflow:visible}
 /* 그래프 범위를 벗어난 시각 — 끝에 붙여 두되 '실제 위치가 아님'을 점선으로 알립니다 */
 .nowline.edge{background:repeating-linear-gradient(180deg,
   var(--rust) 0 4px, transparent 4px 8px)}
@@ -1297,6 +1304,15 @@ button.bday.sel .b{background:rgba(255,255,255,.22); color:#fff}
   .rowitem.seat .tbl-in{order:2}
   .rowitem.seat > .btn, .rowitem.seat > .numbtn{order:2}
 }
+/* 임시 일정 일괄 등록 */
+.bulk-guide{margin:0 0 var(--s8); padding:var(--s8) var(--s12); background:var(--surface-2); border-radius:var(--r-sm); font-size:var(--fs-label); line-height:1.6; white-space:pre-wrap; color:var(--text-2); font-family:var(--sans)}
+#ovr-bulk{width:100%; font:inherit; font-size:var(--fs-sub); padding:var(--s8) var(--s12); border:1px solid var(--border-strong); border-radius:var(--r-sm); resize:vertical}
+.bulk-res{margin-top:var(--s12); border:1px solid var(--border); border-radius:var(--r-sm); overflow:hidden}
+.bulk-row{display:flex; gap:var(--s8); align-items:flex-start; padding:var(--s8) var(--s12); font-size:var(--fs-sub); border-top:1px solid var(--border)}
+.bulk-row:first-child{border-top:none}
+.bulk-row.ok{background:#F1F7F2} .bulk-row.bad{background:#FBEFEC}
+.bulk-ln{flex:none; width:20px; color:var(--text-3)} .bulk-row .grow{flex:1; min-width:0; word-break:break-all}
+.bulk-msg{flex:none; max-width:46%; color:var(--text-2)} .bulk-row.bad .bulk-msg{color:var(--rust)}
 .offline-card{padding:var(--s24); text-align:center}
 .offline-card .oc-t{font-size:var(--fs-title); font-weight:700; margin-bottom:var(--s8)}
 .offline-card .oc-s{font-size:var(--fs-sub); color:var(--text-2); max-width:560px; margin:0 auto var(--s16); line-height:1.6}
@@ -1676,34 +1692,54 @@ body.theme-hanok .pdot.on{color:var(--pine)}
 /* 칸 배치 — 칸 크기와 글자 크기를 고정합니다.
    예전에는 내용에 맞춰 늘였는데, 예약이 하나 늘고 줄 때마다 칸과 글자가 들썩여 화면이 산만했습니다.
    넘치는 만큼은 '외 N건' 으로 접습니다(capLists). --tv-li·--tv-h3 은 fitDisplay() 가 다시 정하며, 여기 값은 자바스크립트가 못 돌았을 때의 기본값입니다 */
-.tv-grid{flex:1 1 auto; min-height:0; display:flex; flex-direction:column; overflow:hidden; --tv-li:calc(var(--tvu, 1vh) * 2.2); --tv-h3:calc(var(--tvu, 1vh) * 2.09); position:relative; z-index:1; gap:calc(var(--tvu)*1.7)}
-.tv-row{flex:1 1 0; min-height:0; display:flex; gap:calc(var(--tvu)*2.4)}
-/* 좌석 카드 — 거의 불투명하게 둡니다.
-   반투명이면 뒤 사진 밝기에 따라 글자 대비가 매 12초 달라져, 싸구려 TV에서 글자가 묻힙니다.
-   사진은 카드 바깥 여백·머리글·바닥글에서 계속 보이므로 분위기는 유지됩니다. 홀 카드(.hall)는 조금 갈색. */
-.dsec{flex:1 1 0; min-width:0; min-height:0; display:flex; flex-direction:column; background:linear-gradient(180deg, rgba(9,12,17,.93), rgba(5,8,12,.95)); border:1px solid rgba(214,190,138,.42); box-shadow:0 6px 26px rgba(0,0,0,.45); padding:calc(var(--tvu)*1.3) calc(var(--tvu)*2.4) calc(var(--tvu)*1.1); border-radius:calc(var(--tvu)*1.5)}
-.dsec.hall{background:linear-gradient(180deg, rgba(30,25,15,.94), rgba(18,15,9,.95)); border-color:rgba(214,182,120,.52)}
-.dsec li .tn{font-size:.72em; color:#C8B795; margin-left:.4em; font-weight:500}   /* 테이블 칸에서 테이블 이름 */
-/* 카드 머리 — [층] 룸 이름 [정원]. 룸 이름만 명조로 남겨 한옥 분위기를 지킵니다. 숫자·보조 정보는 고딕이 훨씬 잘 읽힙니다 */
-.dsec h3{flex:none; display:grid; grid-template-columns:1fr auto 1fr; align-items:baseline; font-size:var(--tv-h3); font-weight:700; letter-spacing:.06em; border-bottom:1px solid rgba(214,190,138,.55); white-space:nowrap; color:#FFFFFF; margin:0 0 calc(var(--tvu)*.9); padding-bottom:calc(var(--tvu)*.8); gap:calc(var(--tvu)*1)}
-.dsec h3 .nm{font-family:var(--serif-tv); text-align:center}
-/* 좌석 이름 좌우의 보조 글씨(지하 / 4~6인) — 너무 작아서 키웠습니다. em 이라 좌석 이름 크기와 같이 커지고 작아집니다 */
-.dsec h3 .fl{font-family:var(--sans); letter-spacing:.04em; text-align:left; font-size:.74em; font-weight:700; color:#E8DECA}
-.dsec h3 .cap{font-family:var(--sans); text-align:right; font-size:.74em; font-weight:700; color:#E8DECA}
-/* 예약 줄 — 시각(금색) · 이름 · 인원. 홀은 두 열(.two-col) */
-.dsec ul{flex:1 1 auto; min-height:0; list-style:none; margin:0; padding:0; display:flex; flex-direction:column; overflow:hidden; gap:calc(var(--tvu)*.75)}
-.dsec ul.two-col{display:grid; grid-template-columns:1fr 1fr; grid-auto-flow:column; grid-template-rows:repeat(6,auto); align-content:start; gap:calc(var(--tvu)*.75) calc(var(--tvu)*3.5)}
-.dsec li{flex:none; display:flex; align-items:baseline; font-family:var(--sans); font-weight:600; font-size:var(--tv-li); line-height:1.45; white-space:nowrap; gap:calc(var(--tvu)*1.05); padding:calc(var(--tvu)*.2) 0}
-.dsec li .t{font-weight:800; color:#FFD98A; flex:none; letter-spacing:.02em;
-  font-variant-numeric:tabular-nums}
+.tv-grid{flex:1 1 auto; min-height:0; display:flex; flex-direction:column; overflow:hidden; --tv-li:calc(var(--tvu, 1vh) * 2.2); --tv-h3:calc(var(--tvu, 1vh) * 2.09); position:relative; z-index:1; gap:calc(var(--tvu)*1.6)}
+.tv-row{flex:1 1 0; min-height:0; display:flex; gap:calc(var(--tvu)*1.8)}
+/* ---------- 좌석표 카드 (8차-J 개편) ----------
+   재아: 더 눈에 들어오고 고급스럽게. 형식(3행·룸 칸·층 테이블 칸)은 그대로.
+   · 카드: 옻칠 검정 + 금 선. 위쪽에 은은한 빛, 모서리는 둥글게. 거의 불투명(뒤 사진 밝기에 글자가 묻히지 않게)
+   · 머리: [층 배지] 룸 이름(명조 900, 크게) · 정원(오른쪽, 흐리게)
+   · 줄: 시각은 금색 알약, 이름은 흰 고딕 굵게, 인원은 오른쪽 흐리게. 줄 사이 머리카락 선
+   · 다음 손님(.next): 왼쪽 금 띠 + 살짝 밝은 바탕 — 홀 직원이 멀리서도 '다음이 누구' 를 봅니다
+   · 지난 손님: 흐리게 */
+.dsec{flex:1 1 0; min-width:0; min-height:0; display:flex; flex-direction:column;
+  background:
+    radial-gradient(ellipse at 18% 0%, rgba(255,214,140,.14) 0%, rgba(255,214,140,0) 46%),
+    linear-gradient(180deg, rgba(14,17,22,.96) 0%, rgba(7,9,13,.97) 100%);
+  border:1px solid rgba(214,190,138,.38); border-top-color:rgba(255,226,170,.6);
+  border-radius:calc(var(--tvu)*1.4);
+  box-shadow:0 10px 34px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,235,200,.14);
+  padding:calc(var(--tvu)*1.3) calc(var(--tvu)*1.8) calc(var(--tvu)*1.2)}
+.dsec.hall{background:
+    radial-gradient(ellipse at 18% 0%, rgba(255,200,120,.16) 0%, rgba(255,200,120,0) 46%),
+    linear-gradient(180deg, rgba(28,22,13,.96), rgba(16,12,7,.97)); border-color:rgba(214,182,120,.5)}
+.dsec li .tn{font-size:.72em; color:#C8B795; margin-left:.4em; font-weight:500}
+/* 카드 머리 */
+.dsec h3{flex:none; display:flex; align-items:center; gap:calc(var(--tvu)*1); font-size:var(--tv-h3); font-weight:700; letter-spacing:.04em;
+  border-bottom:1px solid rgba(214,190,138,.35); white-space:nowrap; color:#FFFFFF; margin:0 0 calc(var(--tvu)*.9); padding:0 0 calc(var(--tvu)*.8)}
+.dsec h3 .nm{font-family:var(--serif-tv); font-weight:900; font-size:1.25em; letter-spacing:.08em; color:#FFF6E4; text-shadow:0 2px 12px rgba(0,0,0,.6), 0 0 1px rgba(255,220,160,.4); flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; text-align:left}
+.dsec h3 .fl{font-family:var(--sans); font-size:.62em; font-weight:700; letter-spacing:.12em; color:#E9D6A8; flex:none;
+  border:1px solid rgba(233,214,168,.55); border-radius:999px; padding:calc(var(--tvu)*.18) calc(var(--tvu)*.8); line-height:1.4}
+.dsec h3 .fl:empty{display:none}
+.dsec h3 .cap{font-family:var(--sans); font-size:.68em; font-weight:600; color:#B9A985; flex:none; letter-spacing:.04em}
+/* 예약 줄 */
+.dsec ul{flex:1 1 auto; min-height:0; list-style:none; margin:0; padding:0; display:flex; flex-direction:column; overflow:hidden; gap:0}
+.dsec ul.two-col{display:grid; grid-template-columns:1fr 1fr; grid-auto-flow:column; grid-template-rows:repeat(6,auto); align-content:start; gap:0 calc(var(--tvu)*2.6)}
+.dsec li{flex:none; display:flex; align-items:center; font-family:var(--sans); font-weight:600; font-size:var(--tv-li); line-height:1.35; white-space:nowrap;
+  gap:calc(var(--tvu)*1); padding:calc(var(--tvu)*.42) calc(var(--tvu)*.5); border-bottom:1px solid rgba(255,255,255,.06); border-radius:calc(var(--tvu)*.5)}
+.dsec li:last-child{border-bottom:none}
+.dsec li .t{font-weight:800; color:#FFD98A; flex:none; letter-spacing:.02em; font-variant-numeric:tabular-nums;
+  background:rgba(255,217,138,.13); border:1px solid rgba(255,217,138,.28); border-radius:999px; padding:calc(var(--tvu)*.1) calc(var(--tvu)*.7); font-size:.88em; line-height:1.3}
 .dsec li .n{flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; color:#FFFFFF}
-.dsec li .p{flex:none; color:#DCCDB2; font-size:.9em; font-weight:500}
+.dsec li .p{flex:none; color:#C9BB9C; font-size:.86em; font-weight:500}
+/* 다음 손님 — 금 띠 */
+.dsec li.next{background:linear-gradient(90deg, rgba(255,217,138,.16), rgba(255,217,138,.03)); box-shadow:inset 3px 0 0 #FFD98A}
+.dsec li.next .n{color:#FFF9EC}
 /* 지난 예약은 흐리게 하되, TV에서 아예 사라지지 않을 만큼만 */
-.dsec li.past{opacity:.58}
-.dsec li.past .t{color:#C9B68F}
-.dsec li.none{color:#A2947C; font-weight:500; font-size:calc(var(--tv-li) * .8); padding-top:calc(var(--tvu)*.8)}
+.dsec li.past{opacity:.42}
+.dsec li.past .t{color:#C9B68F; background:transparent; border-color:rgba(201,182,143,.3)}
+.dsec li.none{color:#A2947C; font-weight:500; font-size:calc(var(--tv-li) * .8); padding-top:calc(var(--tvu)*.8); border:none}
 /* 자리가 모자라 접은 줄 수 (fitDisplay → trimOverflow) */
-.dsec li.more{color:#C3B49A; font-weight:600; font-size:calc(var(--tv-li) * .8)}
+.dsec li.more{color:#C3B49A; font-weight:600; font-size:calc(var(--tv-li) * .8); border:none; justify-content:flex-end}
 /* 바닥글 */
 .tv-f{flex:none; text-align:center; border-top:1px solid rgba(243,234,218,.24); font-family:var(--serif-tv); color:#D3C2A2; text-shadow:0 2px 10px rgba(0,0,0,.7); letter-spacing:.26em; text-indent:.26em; position:relative; z-index:1; padding-top:calc(var(--tvu)*1.4); margin-top:calc(var(--tvu)*1.2); font-size:calc(var(--tvu)*2.5)}
 /* 화면이 작으면(900px 이하 또는 높이 480 이하) 디스플레이 대신 '화면이 작습니다' 안내(.tv-small)를 띄웁니다 — 11구역 @media */
@@ -1720,62 +1756,68 @@ body.theme-hanok .pdot.on{color:var(--pine)}
    · 6차에서 마지막 낙관(韓屋)·소제(한옥반점)는 조잡해서 뺐습니다. 마지막 장면은 어서오세요 + 창호만.
    ※ 한 번 그린 뒤 클래스만 바꿉니다. innerHTML 을 다시 쓰면 전환이 전혀 재생되지 않습니다.
    ------------------------------------------------------------ */
+/* ---------- 인트로 (8차-J: 사이버펑크 타이포) ----------
+   재아 요청: 한지·먹의 부드러운 느낌 대신 22세기 타이포그래피 느낌. 구조(歡迎光臨 → 어서오세요, 글자 단위 전환, 바탕 세 겹, 창호 두 짝)는
+   그대로 두고 옷만 갈아입힙니다 — startIntro/introStep 은 클래스만 바꾸므로 여기 CSS 만 고치면 됩니다.
+   · 바탕: 검은 바탕 + 시안 격자(원근) + 주사선. 첫 장면은 붉은 네온(중식당), 마지막은 시안 네온(한옥)
+   · 한자: 마젠타/황금 네온 + 색수차. 한글: 시안-백색 네온, 글리치로 나타남
+   · 창호(.intro-sash)는 얇은 네온 기둥으로 */
 .intro{position:fixed; top:0; right:0; bottom:0; left:0; z-index:200;
   display:flex; align-items:center; justify-content:center; overflow:hidden;
-  background:#6E1A10; color:#F6E7C8; cursor:pointer}
-/* 바탕 전환은 글자 간격(200ms)보다 조금 길게 — 너무 길면 마지막 글자 뒤 600ms 에 끝나는 인트로보다 늦게 끝납니다 */
+  background:#06070C; color:#E8F6FF; cursor:pointer}
 .intro-bg{position:absolute; top:0; right:0; bottom:0; left:0; transition:opacity .55s ease}
-/* 중식당 — 칠기 붉은색. 가운데는 살짝 밝고 가장자리는 어둡게(조명 아래 칠기) */
+/* 첫 장면 — 붉은 네온 안개 + 격자 */
 .intro-cn{
   background:
-    radial-gradient(ellipse at 50% 46%, rgba(255,190,120,.10) 0%, rgba(0,0,0,0) 40%),
-    radial-gradient(circle at 50% 50%, rgba(0,0,0,.02) 0%, rgba(0,0,0,.26) 56%, rgba(0,0,0,.62) 100%),
-    repeating-linear-gradient(45deg,  rgba(255,213,150,.085) 0 2px, transparent 2px 30px),
-    repeating-linear-gradient(-45deg, rgba(255,213,150,.085) 0 2px, transparent 2px 30px),
-    linear-gradient(160deg, #8E2314 0%, #6E1A10 55%, #4E1109 100%);
-}
-/* 중간 — 어두운 나무색(대들보). 빨강에서 한지로 곧장 가면 두 장면이라, 사이에 한 장면을 더 둡니다.
-   사라지는 한자를 나무색(#9A6A3A)으로 누르는 규칙과도 어울립니다 */
+    radial-gradient(ellipse at 50% 60%, rgba(255,40,90,.28) 0%, rgba(255,40,90,0) 55%),
+    repeating-linear-gradient(0deg, rgba(255,80,120,.10) 0 1px, transparent 1px 48px),
+    repeating-linear-gradient(90deg, rgba(255,80,120,.10) 0 1px, transparent 1px 48px),
+    linear-gradient(180deg, #14040B 0%, #0B0409 60%, #06070C 100%)}
+/* 중간 — 남색으로 식으며 격자가 시안으로 */
 .intro-mid{opacity:0; background:
-    radial-gradient(ellipse at 50% 46%, rgba(120,90,60,.22) 0%, rgba(0,0,0,0) 45%),
-    linear-gradient(165deg, #46332A 0%, #3A2A1E 55%, #2C1F16 100%)}
-/* 한옥 — 한지. 미색 바탕에 종이 결(SVG feTurbulence 를 아주 옅게 겹침) + 가운데 은은한 빛 */
-.intro-ko{
-  opacity:0;
-  background:
-    radial-gradient(ellipse at 50% 42%, rgba(255,255,255,.55) 0%, rgba(255,255,255,0) 58%),
-    radial-gradient(circle at 50% 50%, rgba(80,56,30,0) 52%, rgba(80,56,30,.16) 100%),
-    url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .36 0 0 0 0 .24 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E"),
-    linear-gradient(170deg, #F5EEE0 0%, #EFE5D2 60%, #E9DEC8 100%);
-}
-/* 띠살 창호 — 양옆에 한 짝씩. 세로살은 끝까지, 가로살은 위·가운데·아래 세 무리만(띠살의 특징).
-   위→아래 순서: 세로살 / 가로살을 가리는 한지 띠 / 가로살 / 한지 바탕 */
-.intro-sash{position:absolute; top:6vh; bottom:6vh; width:17vw; opacity:0; pointer-events:none;
-  border:3px solid rgba(96,66,38,.78); box-shadow:0 0 0 1px rgba(96,66,38,.25), 0 18px 60px rgba(60,40,20,.18);
-  background:
-    repeating-linear-gradient(90deg, rgba(96,66,38,.72) 0 3px, transparent 3px 44px),
-    linear-gradient(to bottom, transparent 0, transparent 21%, #F0E6D3 21%, #F0E6D3 44%, transparent 44%, transparent 56%, #F0E6D3 56%, #F0E6D3 79%, transparent 79%),
-    repeating-linear-gradient(0deg, rgba(96,66,38,.72) 0 3px, transparent 3px 44px),
-    #F0E6D3;
-  transition:opacity 1.1s ease, transform 1.3s cubic-bezier(.2,.7,.2,1)}
-.intro-sash.l{left:3vw;  transform:translateX(-6vw)}
-.intro-sash.r{right:3vw; transform:translateX(6vw)}
+    radial-gradient(ellipse at 50% 60%, rgba(60,120,255,.22) 0%, rgba(60,120,255,0) 55%),
+    repeating-linear-gradient(0deg, rgba(90,160,255,.10) 0 1px, transparent 1px 48px),
+    repeating-linear-gradient(90deg, rgba(90,160,255,.10) 0 1px, transparent 1px 48px),
+    linear-gradient(180deg, #070B18 0%, #05070F 100%)}
+/* 마지막 — 시안 격자 바닥(원근) + 지평선 빛 */
+.intro-ko{opacity:0; background:
+    radial-gradient(ellipse at 50% 100%, rgba(0,229,255,.30) 0%, rgba(0,229,255,0) 60%),
+    linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 58%, rgba(0,229,255,.55) 58.2%, rgba(0,229,255,0) 59.5%),
+    repeating-linear-gradient(0deg, rgba(0,229,255,.16) 0 1px, transparent 1px 40px),
+    repeating-linear-gradient(90deg, rgba(0,229,255,.12) 0 1px, transparent 1px 40px),
+    linear-gradient(180deg, #04060C 0%, #060A14 100%)}
+/* 주사선 + 깜빡임 — 화면 전체에 얇은 가로줄. 구형 TV 가 아니라 관리 화면(태블릿)이라 애니메이션을 씁니다 */
+.intro:after{content:""; position:absolute; top:0; right:0; bottom:0; left:0; pointer-events:none;
+  background:repeating-linear-gradient(0deg, rgba(0,0,0,.28) 0 2px, transparent 2px 4px);
+  animation:intro-flicker 2.4s steps(24) infinite}
+@keyframes intro-flicker{ 0%,100%{opacity:.85} 50%{opacity:.95} 52%{opacity:.6} 54%{opacity:.9} }
+/* 네온 기둥 두 개(옛 창호 자리) — 마지막 장면에서 양옆에서 들어옵니다 */
+.intro-sash{position:absolute; top:12vh; bottom:12vh; width:2px; opacity:0; pointer-events:none;
+  background:linear-gradient(180deg, rgba(0,229,255,0) 0%, #7DF9FF 30%, #7DF9FF 70%, rgba(0,229,255,0) 100%);
+  box-shadow:0 0 12px #00E5FF, 0 0 40px rgba(0,229,255,.45);
+  transition:opacity .9s ease, transform 1.2s cubic-bezier(.2,.7,.2,1)}
+.intro-sash.l{left:18vw;  transform:translateX(-6vw)}
+.intro-sash.r{right:18vw; transform:translateX(6vw)}
 .intro.turning .intro-sash{transform:translateX(0)}
 /* 글자 — 두 낱말을 한 자리에 겹쳐 놓고 글자 단위로 바꿉니다 */
-.intro-w{position:relative; font-family:var(--serif-tv); font-weight:900; line-height:1.1;
-  font-size:clamp(36px,6.4vw,72px); letter-spacing:.16em; text-indent:.16em; width:100%; text-align:center}   /* 6차: 104px 는 너무 컸음 */
+.intro-w{position:relative; font-family:var(--sans); font-weight:700; line-height:1.1;
+  font-size:clamp(38px,6.8vw,84px); letter-spacing:.34em; text-indent:.34em; width:100%; text-align:center}
 .intro-word{display:block}
 .intro-word.ko{position:absolute; top:0; left:0; width:100%}
-.intro .ic{display:inline-block; transition:opacity .55s ease, filter .55s ease, transform .55s ease, color .6s ease}   /* 글자 간격 200ms 에 맞춰 */
-/* 한자: 금박. 바탕이 한지로 바뀌면 남은 한자는 나무색으로 눌러 두었다가 흐려지며 사라집니다 */
-.intro-word.cn .ic{color:#F1C77C; text-shadow:0 2px 18px rgba(0,0,0,.5), 0 0 2px rgba(255,236,190,.35)}
-.intro.turning .intro-word.cn .ic{color:#9A6A3A; text-shadow:none}
-.intro-word.cn .ic.off{opacity:0; filter:blur(8px); transform:scale(1.08)}
-/* 한글: 먹. 흐림에서 선명하게 — 먹이 종이에 스미는 느낌 */
-.intro-word.ko .ic{color:#241E1A; opacity:0; filter:blur(10px); transform:translateY(.06em) scale(1.06);
-  text-shadow:0 0 1px rgba(36,30,26,.5)}
-.intro-word.ko .ic.on{opacity:1; filter:blur(0); transform:none}
-/* 좁은 화면(폰): 창호는 접어 둡니다 */
+.intro .ic{display:inline-block; transition:opacity .45s ease, filter .45s ease, transform .45s ease, color .5s ease}
+/* 한자: 마젠타-황금 네온 + 색수차(좌우로 갈라진 그림자) */
+.intro-word.cn .ic{color:#FFD27A;
+  text-shadow:-2px 0 rgba(255,0,140,.85), 2px 0 rgba(0,229,255,.85), 0 0 10px rgba(255,210,122,.8), 0 0 28px rgba(255,60,120,.55)}
+.intro.turning .intro-word.cn .ic{color:#6A3A5A; text-shadow:-1px 0 rgba(255,0,140,.4), 1px 0 rgba(0,229,255,.4)}
+.intro-word.cn .ic.off{opacity:0; filter:blur(6px); transform:translateY(-.12em) skewX(-12deg)}
+/* 한글: 시안-백색 네온. 글리치(클립이 튀며) 나타남 */
+.intro-word.ko .ic{color:#F2FCFF; opacity:0; filter:blur(8px); transform:translateY(.1em) skewX(8deg);
+  text-shadow:0 0 6px #7DF9FF, 0 0 18px rgba(0,229,255,.9), 0 0 40px rgba(0,229,255,.5), -2px 0 rgba(255,0,140,.5), 2px 0 rgba(0,229,255,.6)}
+.intro-word.ko .ic.on{opacity:1; filter:blur(0); transform:none; animation:intro-glitch .5s steps(2) 1}
+@keyframes intro-glitch{
+  0%{clip-path:inset(0 0 60% 0); transform:translateX(-3px)} 25%{clip-path:inset(40% 0 20% 0); transform:translateX(3px)}
+  50%{clip-path:inset(70% 0 0 0); transform:translateX(-2px)} 75%{clip-path:inset(10% 0 50% 0); transform:translateX(2px)} 100%{clip-path:inset(0); transform:none} }
+/* 좁은 화면(폰): 기둥은 화면 밖으로 */
 @media (max-width:640px){ .intro-sash{display:none} }
 
 
@@ -4493,7 +4535,6 @@ function renderDash(){
   if(isMobile()) return renderDashMobile(d, {active, unassigned, warnCnt, checkCnt, stat});
   return `
     <div class="card"><div class="card-b">${renderTimeline(d)}</div></div>
-    <section class="card hours-card">${hoursLineHtml(hoursFor(d))}</section>
     ${metrics}
     ${foldCard("list", "예약 목록", `${dayRes.length}건`, renderResList(d))}
     ${view.calOpen ? renderCal() : ""}`;
@@ -5053,7 +5094,8 @@ function resWarn(r){
   if((r.infants||0) >= pplOf(r) && pplOf(r)>0) out.push("성인 없음");
   /* 테이블 예약(층): 숨은 배정 결과로 — 자리가 아예 없으면, 붙일 수 없어 나눠 앉으면 */
   if(!seat && isTablePref(r.seatPref) && r.status!=="취소"){
-    if(!r.tentativeRoomId) out.push("테이블 자리 없음");
+    /* 지난 날짜는 잠정 배정을 다시 계산하지 않으므로(reflowFuture 는 오늘 이후만) '자리 없음' 을 말할 수 없습니다 — 이미 다녀간 손님 */
+    if(!r.tentativeRoomId){ if(r.date >= todayStr()) out.push("테이블 자리 없음"); }
     else if(r.tentativeSplit) out.push("나눠 앉음");
   }
   if(seat && seat.type==="room"){
@@ -5402,7 +5444,7 @@ function renderTimeline(date, compact){
     return `<div class="tl-row ${isTable(room)?'tbl':''} ${blockedAllDay(room,date)?'off-seat':''}">
       <div class="tl-name"><b>${esc(room.name)}</b><small>${sub}</small>${blockTag(room)}</div>
       <div class="tl-track" style="height:${lanes*LANE}px">
-        ${layers}${blockBands(room)}${blocks}${nowLine}
+        ${layers}${blockBands(room)}${blocks}
       </div>
       <div class="tl-rate" style="height:${lanes*LANE}px">${lanes>1
         ? `<span class="rb"><i></i><b>${rate}%</b><i></i></span>`
@@ -5423,20 +5465,28 @@ function renderTimeline(date, compact){
       .sort((a,b)=>a.time.localeCompare(b.time))
       .map(r=>({ r, need:needOf(r), s0:toMin(r.time), e0:Math.min(c, toMin(r.time)+stayOf(r)) }));
     const lanes = Math.max(1, tbls.length);
-    const placed = laneLayout(items.map(it=>Object.assign({}, it, {need:Math.min(it.need, lanes)})), lanes);
+    let placed = laneLayout(items.map(it=>Object.assign({}, it, {need:Math.min(it.need, lanes)})), lanes);
+    /* 여러 칸이 필요한 팀이 '이어진 빈 칸' 이 없어 못 들어가면(칸이 띄엄띄엄 비어 있을 때) 한 칸짜리 조각으로 나눠 다시 놓습니다 —
+       실제로도 나눠 앉는 것이니 그림도 그렇게. 그래도 못 들어가면 '초과' */
+    if(placed.some(x=>x.lane===null && x.need>1)){
+      const again = [];
+      placed.forEach(x=>{ if(x.lane===null && x.need>1){ for(let k=0;k<x.need;k++) again.push(Object.assign({}, x, {need:1, part:k+1, parts:x.need, lane:undefined})); } else again.push(Object.assign({}, x, {lane:undefined})); });
+      again.sort((a,b)=>a.s0-b.s0);
+      placed = laneLayout(again, lanes);
+    }
     const over = placed.filter(x=>x.lane===null).length;
     const seats = fl==null ? 0 : floorSeats(fl);
     const blocks = placed.map(it=>{
       const w = ((it.e0-it.s0)/span)*100, lane = it.lane===null?0:it.lane;
       const past = isBlockPast(it.r, it.s0, date, nowM);
       const bad = resWarn(it.r).length>0, chg = changeTag(it.r);
-      const tn = it.r.roomId ? seatLabelIds(seatsOf(it.r)).replace(/ 테이블$/,"") : "";
+      const tn = it.r.roomId ? seatLabelIds(seatsOf(it.r)).replace(/ 테이블$/,"") : tableHint(it.r).replace(/^ \(|\)$/g,"");
       const h = (it.lane===null ? 1 : it.need) * LANE - 2;   /* 테이블 n개 → n칸 높이로 병합 */
       const split = !it.r.roomId && it.r.tentativeSplit, none = !it.r.roomId && !it.r.tentativeRoomId;
       return `<button class="blk ${bad?'warned':''} ${past?'past':''} ${chg?'changed':''} ${it.need>1?'multi':''} ${split?'split':''}" onclick="openMark('${it.r.id}')"
         style="left:${pos(it.s0)}%; width:${w}%; bottom:${lane*LANE+1}px; height:${h}px"
         title="${esc(it.r.time)} ${esc(it.r.name)} ${pplText(it.r)}${tn?` · ${esc(tn)} 테이블 지정`:""}${split?" · 나눠 앉음":""}${none?" · 자리 없음":""}${chg?` · 오늘 ${esc(chg.label)}`:""}">
-        ${split?'<i class="jn">↔</i>':''}${chg?`<span class="chg-chip">${blockLabel(it.r)}</span>`:blockLabel(it.r)}${tn?` <small class="tn">${esc(tn)}</small>`:""}</button>`;
+        ${split?'<i class="jn">↔</i>':''}${chg?`<span class="chg-chip">${blockLabel(it.r)}</span>`:blockLabel(it.r)}${tn?` <small class="tn">${esc(tn)}</small>`:""}${it.part?` <small class="tn">${it.part}/${it.parts}</small>`:""}</button>`;
     }).join("");
     /* 예약률 = 손님·분 / 자리·분 (영업시간 안으로 자른 것) */
     const used = items.reduce((a,x)=>a+x.need*(x.e0-x.s0),0);
@@ -5444,7 +5494,7 @@ function renderTimeline(date, compact){
     const bands = fl==null ? "" : floorTables(fl).map(blockBands).join("");
     return `<div class="tl-row tbl floor">
       <div class="tl-name"><b>${fl==null?"층 미정":esc(floorLabel(fl))}</b><small>${fl==null?"":`테이블 ${tbls.length} · ${seats}석`}</small></div>
-      <div class="tl-track" style="height:${lanes*LANE}px; background-image:repeating-linear-gradient(to top, transparent 0, transparent ${LANE-1}px, var(--border) ${LANE-1}px, var(--border) ${LANE}px)">${layers}${bands}${blocks}${nowLine}</div>
+      <div class="tl-track" style="height:${lanes*LANE}px; background-image:repeating-linear-gradient(to top, transparent 0, transparent ${LANE-1}px, var(--border) ${LANE-1}px, var(--border) ${LANE}px)">${layers}${bands}${blocks}</div>
       <div class="tl-rate" style="height:${lanes*LANE}px">${lanes>1
         ? `<span class="rb"><i></i><b>${rate}%</b><i></i></span>` : `<span class="rt">${rate}%</span>`}${over?`<small class="over">초과 ${over}</small>`:""}</div>
     </div>`;
@@ -5494,7 +5544,7 @@ function renderTimeline(date, compact){
       <div class="tl">
         <div class="tl-row axis">
           <div class="tl-name"></div>
-          <div class="tl-track">${ticks.join("")}</div>
+          <div class="tl-track">${ticks.join("")}${nowLine}</div>
           <div class="tl-rate"><span class="rt">예약률</span></div>
         </div>
         ${groupRow("룸")}
@@ -6701,7 +6751,7 @@ function sheetRes(){
      테이블은 보통 메뉴를 정하지 않고 받으므로 선택지를 줄입니다. */
   const seatObj = st.rooms.find(x=>x.id===f.roomId);
   const isHall = seatObj ? isTable(seatObj) : isTablePref(f.seatPref);
-  const isRoom = seatObj ? seatObj.type==="room" : false;
+  const seatIsRoom = seatObj ? seatObj.type==="room" : false;   /* 전역 isRoom(x) 헬퍼와 이름이 겹쳐 시트가 통째로 죽었습니다 — 이름을 바꿈 */
   const baseMenuOpts = isHall ? ["코스","해당 없음"] : ["코스","코스 상당","확인 필요","해당 없음"];
   /* 테이블로 옮긴 예약에 '확인 필요' 같은 값이 남아 있으면 버튼이 사라져 보이지 않게 되므로 살려 둡니다 */
   const menuOpts = f.menuType && baseMenuOpts.indexOf(f.menuType)<0
@@ -6709,7 +6759,7 @@ function sheetRes(){
   const cN = courseCount();
   const cAd = adultCount(pplOf(f), f.infants||0);
   /* 룸은 코스 주문을 전제로 받는 자리입니다 — 막지 않고 알리기만 합니다 */
-  const menuWarn = isRoom && (
+  const menuWarn = seatIsRoom && (
     f.menuType==="해당 없음" ? "룸 예약에 코스 이용 예정 손님이 아닙니다" :
     f.menuType==="확인 필요" ? "" :
     (f.menuType==="코스" && !f.courseUndecided && cN>0 && cN<cAd)
@@ -7516,8 +7566,79 @@ function sheetOverride(){
     <div class="sheet-actions">
       <button class="btn ghost" onclick="closeSheet()">닫기</button>
       <button class="btn primary" onclick="saveOverride()">추가</button>
-    </div>`;
+    </div>
+    ${bulkOvrHtml()}`;
 }
+/* ---------- 임시 일정 일괄 등록 (8차-J, 재아 요청) ----------
+   한 줄에 하나. `날짜 | 메모 | 내용`. 메모는 비워도 됩니다. 날짜는 2026-12-31 또는 2026-12-24~2026-12-26.
+   내용은 `휴무` 또는 `영업 11:00-23:00` 에 `라스트오더 22:00`(또는 `라스트오더 없음`)·`브레이크 15:00-17:00`(또는 `브레이크 없음`) 을 덧붙임.
+   영업 시간이 없는데 휴무도 아니면 오류. 미리보기에서 줄마다 결과를 보고 '적용' 하면 맞는 줄만 들어갑니다(같은 날짜는 덮어씀). */
+const BULK_OVR_GUIDE = "날짜 | 메모 | 내용   (한 줄에 하나, 메모는 비워도 됨)\n2026-09-16 | 임시공휴일 | 휴무\n2026-12-31 | 연말 | 영업 11:00-23:00 라스트오더 22:00 브레이크 없음\n2026-12-24~2026-12-26 | 크리스마스 | 영업 11:00-22:00 브레이크 15:00-17:00";
+function bulkOvrHtml(){
+  const b = view.ovrBulk || {text:"", result:null};
+  const res = b.result ? `<div class="bulk-res">${b.result.map(x=>`<div class="bulk-row ${x.ok?'ok':'bad'}"><span class="bulk-ln">${x.n}</span><span class="grow">${esc(x.text)}</span><span class="bulk-msg">${x.ok?`✓ ${esc(x.msg)}`:`✗ ${esc(x.msg)}`}</span></div>`).join("")}</div>` : "";
+  const okN = b.result ? b.result.filter(x=>x.ok).length : 0, badN = b.result ? b.result.length - okN : 0;
+  return `
+    <div class="sect-title" style="margin-top:20px">일괄 등록 <span class="lbl-note">여러 날을 한 번에</span></div>
+    <pre class="bulk-guide">${esc(BULK_OVR_GUIDE)}</pre>
+    <textarea id="ovr-bulk" rows="6" placeholder="여기에 붙여 넣으세요" oninput="setOvrBulk(this.value)">${esc(b.text)}</textarea>
+    <div class="btn-row" style="margin-top:8px">
+      <button class="btn" onclick="copyBulkPrompt()">AI 에게 시킬 프롬프트 복사</button>
+      <button class="btn" onclick="bulkPreview()">미리보기</button>
+      ${b.result ? `<button class="btn primary" onclick="bulkApply()" ${okN?"":"disabled"}>맞는 ${okN}줄 적용${badN?` (오류 ${badN}줄 제외)`:""}</button>` : ""}
+    </div>
+    ${res}`;
+}
+function setOvrBulk(v){ view.ovrBulk = {text:v, result:null}; }   /* 글자마다 render 하지 않습니다(입력 유실) */
+function parseOvrLine(line){
+  const parts = line.split("|").map(x=>x.trim());
+  if(parts.length < 2) return {ok:false, msg:"‘|’ 로 나눈 칸이 두 개 이상이어야 합니다 (날짜 | 메모 | 내용)"};
+  const dateRaw = parts[0].replace(/\./g,"-").replace(/\s/g,""), note = parts.length >= 3 ? parts[1] : "", spec = (parts.length >= 3 ? parts.slice(2).join(" ") : parts[1]).trim();
+  const dm = dateRaw.match(/^(\d{4}-\d{2}-\d{2})(?:~(\d{4}-\d{2}-\d{2}))?$/);
+  if(!dm) return {ok:false, msg:"날짜는 2026-12-31 또는 2026-12-24~2026-12-26 형식"};
+  const from = dm[1], to = dm[2] || dm[1];
+  if(isNaN(new Date(from+"T00:00:00")) || isNaN(new Date(to+"T00:00:00")) || to < from) return {ok:false, msg:"날짜가 이상합니다"};
+  const dates = []; for(let d = from; d <= to && dates.length < 62; d = shiftDate(d, 1)) dates.push(d);
+  if(/^(휴무|휴업|쉼|닫음)$/.test(spec.replace(/\s/g,""))) return {ok:true, dates, rec:{closed:true, note:note||"휴무"}, msg:`${dates.length}일 휴무`};
+  const t = spec.replace(/\s+/g," ");
+  const open = t.match(/영업\s*(\d{1,2}:\d{2})\s*[-~]\s*(\d{1,2}:\d{2})/);
+  if(!open) return {ok:false, msg:"‘휴무’ 이거나 ‘영업 11:00-22:00’ 처럼 영업 시간이 있어야 합니다"};
+  const pad2 = x => x.length === 4 ? "0" + x : x;
+  const base = hoursFor(from);
+  const rec = {closed:false, open:pad2(open[1]), close:pad2(open[2]), bs:"", be:"", lo:"", note:note||"임시 운영시간"};
+  const lo = t.match(/(?:라스트오더|LO|lo)\s*(\d{1,2}:\d{2})/);
+  const loNone = /(?:라스트오더|LO|lo)\s*(?:없음|없|x|X)/.test(t);
+  if(lo) rec.lo = pad2(lo[1]); else if(!loNone) rec.lo = base.lo || "";
+  const br = t.match(/브레이크\s*(\d{1,2}:\d{2})\s*[-~]\s*(\d{1,2}:\d{2})/);
+  const brNone = /브레이크\s*(?:없음|없|x|X)/.test(t);
+  if(br){ rec.bs = pad2(br[1]); rec.be = pad2(br[2]); } else if(!brNone){ rec.bs = base.bs || ""; rec.be = base.be || ""; }
+  if(toMin(rec.close) <= toMin(rec.open)) return {ok:false, msg:"종료가 시작보다 빠릅니다"};
+  return {ok:true, dates, rec, msg:`${dates.length}일 · ${rec.open}~${rec.close}${rec.bs?` 브레이크 ${rec.bs}~${rec.be}`:" 브레이크 없음"}${rec.lo?` 라스트오더 ${rec.lo}`:" 라스트오더 없음"}`};
+}
+function bulkPreview(){
+  const ta = document.getElementById("ovr-bulk"); const text = ta ? ta.value : (view.ovrBulk ? view.ovrBulk.text : "");
+  const lines = text.split(/\r?\n/).map(x=>x.trim()).filter(x=>x && !/^날짜\s*\|/.test(x));
+  const result = lines.map((ln, i)=>Object.assign({n:i+1, text:ln}, parseOvrLine(ln)));
+  view.ovrBulk = {text, result}; render();
+}
+async function bulkApply(){
+  const b = view.ovrBulk; if(!b || !b.result) return;
+  if(readonlyBlock()) return;
+  const st = store().settings; let n = 0;
+  b.result.filter(x=>x.ok).forEach(x=>{ x.dates.forEach(d=>{
+    st.overrides = (st.overrides||[]).filter(o=>o.date!==d).concat([Object.assign({date:d}, x.rec)]); n++;
+  }); });
+  mirrorDraft("overrides");
+  logEvent("설정 변경", `임시 일정 일괄 ${n}일`);
+  view.ovrBulk = null; saveData(); render();
+  uiAlert("일괄 등록 완료", `${n}일이 들어갔습니다. 위 목록에서 확인하세요.`, "ok");
+}
+async function copyBulkPrompt(){
+  const txt = "아래 형식으로 한 줄에 하루씩 써 줘. 다른 말은 붙이지 말고 줄만.\n형식: 날짜 | 메모 | 내용\n- 날짜: 2026-12-31 처럼. 연속이면 2026-12-24~2026-12-26\n- 내용: \"휴무\" 또는 \"영업 11:00-22:00\" 뒤에 \"라스트오더 21:00\"(없으면 \"라스트오더 없음\"), \"브레이크 15:00-17:00\"(없으면 \"브레이크 없음\")\n예)\n2026-09-16 | 임시공휴일 | 휴무\n2026-12-31 | 연말 | 영업 11:00-23:00 라스트오더 22:00 브레이크 없음\n\n내가 원하는 것: ";
+  try{ await navigator.clipboard.writeText(txt); uiAlert("복사했습니다", "AI 채팅에 붙여 넣고 뒤에 원하는 날짜·조건을 말하면 됩니다.", "ok"); }
+  catch(e){ uiAlert("복사가 막혔습니다 — 아래를 직접 복사하세요", txt, "warn"); }
+}
+
 /* ---------- 좌석 사용 중지 기간 ---------- */
 function blkDraft(){
   if(!view.blkDraft) view.blkDraft = {
@@ -8361,8 +8482,15 @@ function seatLabelIds(ids){
 /* 예약의 확정 좌석 라벨 / 잠정 좌석 라벨 */
 function resSeatLabel(r){
   if(r.roomId) return seatLabelIds([r.roomId].concat(r.extraIds||[]));
-  if(isTablePref(r.seatPref)) return seatLabel(r.seatPref);   /* 테이블 예약은 층까지만 — 미배정이 아닙니다 */
+  if(isTablePref(r.seatPref)) return seatLabel(r.seatPref) + tableHint(r);   /* 테이블 예약은 층까지만 — 미배정이 아닙니다 */
   return "미배정";
+}
+/* 4명을 넘는 테이블 예약만 숨은 배정(붙일 테이블)을 작게 덧붙입니다(재아) — 큰 팀은 어느 테이블을 붙일지 미리 알아야 준비가 됩니다.
+   4명 이하는 그날 남는 자리에 앉히므로 안 보여 줍니다 */
+function tableHint(r){
+  if(!isTablePref(r.seatPref) || pplOf(r) <= 4 || !r.tentativeRoomId) return "";
+  const names = seatsOf(r).map(id=>{ const x = seatById(id); return x ? x.name : ""; }).filter(Boolean);
+  return names.length ? ` (${names.join("+")}${r.tentativeSplit ? " 나눠" : ""})` : "";
 }
 /* 룸 미배정(잠정 포함) 여부 — 테이블 예약은 층이 자리이므로 미배정으로 세지 않습니다 */
 function isUnassigned(r){ return !r.roomId && !isTablePref(r.seatPref); }
@@ -8586,7 +8714,15 @@ function scrollTlToNow(){
   var x = line.offsetLeft - track.clientWidth / 11;   /* 한 시간 폭만큼 앞에 */
   sc.scrollLeft = Math.max(0, track.offsetLeft + x - 88);
 }
+/* 현재 시각 선을 표 전체 높이로 늘립니다 — 축 줄 안에 있으므로 표 높이에서 축 줄 위치를 뺀 만큼 */
+function fitNowLine(){
+  var tl = document.querySelector(".tl"), ln = tl && tl.querySelector(".tl-row.axis .nowline");
+  if(!ln) return;
+  var track = ln.parentNode, sc = tl.parentNode;   /* .tl-scroll 이 position:relative 라 offsetTop 은 그 기준 */
+  ln.style.height = Math.max(0, sc.scrollHeight - track.offsetTop) + "px"; ln.style.bottom = "auto";
+}
 function afterRender(){
+  fitNowLine();
   scrollTlToNow();
   restoreScroll();   /* 다시 그리기 전 스크롤 위치로 되돌립니다 */
   fitDisplay();   /* 디스플레이 모드 글자 크기를 화면에 맞게 키움 */
@@ -8931,9 +9067,9 @@ function wzStepMenu(){
        ["해당 없음","해당 없음",""]];
   const n = courseCount();
   const adults = adultCount(WZ.people, WZ.infants);
-  const isRoom = seat && seat.type==="room";
+  const seatIsRoom = seat && seat.type==="room";
   /* 룸은 코스 주문을 전제로 받는 자리입니다 */
-  const roomWarn = isRoom && (
+  const roomWarn = seatIsRoom && (
     WZ.menuType==="해당 없음" ? "룸 예약에 코스 이용 예정 손님이 아닙니다" :
     WZ.menuType==="확인 필요" ? "" :
     (WZ.menuType==="코스" && !WZ.courseUndecided && n>0 && n<adults)
@@ -9410,7 +9546,7 @@ function dispCell(id){
 /* vh 단위, 큰 것부터. 첫 값이 상한, 마지막이 하한입니다.
    **글자가 크거나 작다는 말이 나오면 첫 값만 바꾸면 됩니다.**
    하한보다 더 줄이면 TV에서 못 읽으므로, 그래도 안 들어가면 목록을 접습니다. */
-var TV_SIZES = [2.2, 2.1, 2.0];
+var TV_SIZES = [3.0, 2.8, 2.6, 2.4, 2.2];   /* 8차-J: 칸이 비어 있으면 글자를 키웁니다 — 안 넘치는 가장 큰 값을 고릅니다 */
 /* 목록형 — 날개에 들어가는 줄 수는 TV 높이에 따라 달라집니다.
    넘치는 줄은 숨기고 '외 N건' 으로 알립니다.
    글자를 줄이지 않는 이유: 입구 TV 는 멀리서 봅니다. 작아지면 있으나 마나입니다. */
@@ -9441,8 +9577,14 @@ function fitDisplay(){
   if(!grid || !grid.querySelectorAll(".dsec").length) return;
   /* 글자 크기는 고정입니다. 칸 크기도 CSS 에서 고정입니다.
      넘치는 만큼만 목록을 접습니다 — 칸마다 몇 줄까지 보일지를 줄여 나갑니다. */
-  setGridSize(grid, TV_SIZES[0]);
-  var cap = 12;
+  /* 큰 글자부터 시도해서 안 넘치는 첫 크기로. 다 넘치면 가장 작은 크기에서 줄을 접습니다 */
+  var si, cap;
+  for(si = 0; si < TV_SIZES.length; si++){
+    setGridSize(grid, TV_SIZES[si]); cap = 12; capLists(grid, cap);
+    while(cap > 2 && overflowing(grid)){ cap--; capLists(grid, cap); }   /* 칸마다 최소 2줄(테이블 칸은 4건)은 보이게 접고, 그래도 넘치면 다음(작은) 크기 */
+    if(!overflowing(grid)) break;
+  }
+  if(cap == null) cap = 12;
   capLists(grid, cap);
   while(cap > 1 && overflowing(grid)){
     cap--;
@@ -9494,9 +9636,14 @@ function setMore(ul, n){
    (줄 수를 그대로 두면 뒤에서 지워도 열만 비고 높이는 그대로입니다) */
 function reflowTwoCol(ul){
   if(ul.className.indexOf("two-col") < 0) return;
-  var items = ul.children, vis = 0;
-  for(var i=0; i<items.length; i++) if(items[i].style.display !== "none") vis++;
-  ul.style.gridTemplateRows = "repeat(" + Math.max(1, Math.ceil(vis/2)) + ",auto)";
+  var items = ul.children, vis = 0, more = null;
+  for(var i=0; i<items.length; i++){
+    if(items[i].className.indexOf("more") >= 0){ more = items[i]; continue; }   /* '외 N건' 은 줄 수에 안 넣고 맨 아래 한 줄에 가로로 */
+    if(items[i].style.display !== "none") vis++;
+  }
+  var rows = Math.max(1, Math.ceil(vis/2));
+  ul.style.gridTemplateRows = "repeat(" + rows + ",auto)" + (more ? " auto" : "");
+  if(more){ more.style.gridColumn = "1 / -1"; more.style.gridRow = String(rows + 1); }
 }
 
 /* 가운데 글자를 가립니다. 이재아 → 이 * 아
@@ -9679,11 +9826,13 @@ function renderTvGrid(){
     const isT = room.type === "tables";
     /* 대표 좌석이 이 칸에 속하는 예약 (합친 예약은 한 번만) */
     const rows = list.filter(r=>isT ? (resFloor(r) !== undefined && (resFloor(r)||"") === (room.floorKey||"")) : room.ids.indexOf(r.roomId)>=0).sort((a,b)=>a.time.localeCompare(b.time));
+    let nextMarked = false;
     const items = rows.length ? rows.map(r=>{
       /* 흐림 기준은 타임라인 블록과 같은 함수(isBlockPast). 자리를 접어야 할 때 이런 건이 먼저 밀립니다 */
       const past = isBlockPast(r, toMin(r.time), today, toMin(now));
+      const next = !past && !nextMarked && r.status !== "방문"; if(next) nextMarked = true;   /* 아직 안 온 손님 중 첫 번째 = 다음 손님 */
       const tn = "";   /* 손님에게 테이블 번호는 알리지 않습니다 — 층까지만(8차-H) */
-      return `<li class="${past?'past':''}">
+      return `<li class="${past?'past':''} ${next?'next':''}">
         <span class="t">${esc(r.time)}</span>
         <span class="n">${esc(maskName(r.name))} 님${tn?` <small class="tn">${esc(tn)}</small>`:""}</span>
         <span class="p">${pplOf(r)}명</span>

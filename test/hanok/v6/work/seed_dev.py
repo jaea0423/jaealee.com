@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """dev DB 에 더미 예약을 넣습니다 (2026-08-01 ~ 2026-10-31). 실서비스(prod)에는 절대 쓰지 않습니다.
+   8차 좌석 모형(룸 8·합침·층 테이블·특정 테이블·나눠 앉기) 기준. 날짜마다 없음/한산/보통/붐빔/포화 프로필을 섞습니다.
 
   python work/seed_dev.py            넣기 (이미 demo 행이 있으면 먼저 지우고 다시)
   python work/seed_dev.py clear      demo 행만 지우기 (data.demo = true 인 행 — 앱의 '예시 데이터 지우기' 와 같은 기준)
@@ -32,24 +33,6 @@ JOINS = st.get("joins", [])
 FLOORS = []
 for _t in TABLES:
     if (_t.get("floor") or "") not in FLOORS: FLOORS.append(_t.get("floor") or "")
-USED = {}   # date → [(seat_id, start, end)] — 같은 자리에 겹치는 예약을 안 만들려고 (경고 시연용 2% 는 일부러 겹침)
-def busy(date, sid, t, stay=150):
-    return any(s == sid and a < t + stay and t < b for s, a, b in USED.get(date, []))
-def mark(date, ids, t, stay=150):
-    USED.setdefault(date, []).extend((sid, t, t + stay) for sid in ids)
-def table_combo(date, t, ppl):
-    """인원에 맞는 빈 테이블 하나 또는 같은 층 붙임 조합(대표 id, 나머지 id 목록)"""
-    one = [x for x in TABLES if (x.get("capacity") or x.get("seats") or 4) >= ppl and (x.get("minCapacity") or 0) <= ppl and not busy(date, x["id"], t)]
-    if one: return random.choice(one)["id"], []
-    pool = [x for x in TABLES if x.get("joinWith") and not busy(date, x["id"], t)]
-    random.shuffle(pool)
-    for a in pool:
-        combo, total = [a], a.get("seats") or 4
-        for b in pool:
-            if b is a or b["id"] not in a["joinWith"]: continue
-            combo.append(b); total += b.get("seats") or 4
-            if total >= ppl: return combo[0]["id"], [c["id"] for c in combo[1:]]
-    return None, []
 CG = {g["id"]: g for g in st["courseGroups"]}
 
 def clear():
@@ -99,102 +82,223 @@ def phone():
 
 REPEAT = [(pick_name(), phone()) for _ in range(12)]   # 단골·노쇼 이력용 — 같은 번호가 여러 날 나옵니다
 
+
+# ---------- 운영시간·세션 ----------
+HOLIDAYS = set(["2026-08-15","2026-08-17","2026-09-24","2026-09-25","2026-09-26","2026-09-28","2026-10-03","2026-10-05","2026-10-09"])   # 앱의 KR_HOLIDAYS 2026 중 8~10월
 def hours(dow):
-    d = st["schedules"][0]["days"][dow]
-    return d
-
+    return st["schedules"][0]["days"][dow]
 def tm(s): return int(s[:2]) * 60 + int(s[3:])
-def slots(dow):
-    """8차: 세션마다 시작~접수 마감 사이 30분 간격 (평일 점심 11:00~14:00, 저녁 17:00~19:30 식)"""
-    h = hours(dow); out = []
-    bs = tm(h["bs"]) if h.get("bs") else None
-    be = tm(h["be"]) if h.get("be") else None
-    for se in h.get("sessions", []):
-        t = tm(se["from"]); last = tm(se["lastBook"])
-        if bs and be and t < bs < last: t = max(t, be) if t >= bs else t   # 저녁 세션이 15:30 부터면 브레이크 뒤부터
-        while t <= last:
-            if not (bs and be and bs <= t < be): out.append(t)
-            t += 30
-    return out or [12 * 60]
-
 def hm(m): return "%02d:%02d" % (m // 60, m % 60)
+def sessions(dow): return hours(dow).get("sessions", [])
+def sess_at(dow, t):
+    ss = sessions(dow); cur = ss[0] if ss else None
+    for se in ss:
+        if tm(se["from"]) <= t: cur = se
+    return cur
+def stay_of(dow, t):
+    """앱의 stayMinAt 와 같은 규칙 — 세션 '끝까지' 면 세션 끝까지, 아니면 분"""
+    se = sess_at(dow, t)
+    if not se: return 150
+    if se.get("stay") == "end": return max(30, tm(se["until"]) - t)
+    return max(30, int(se.get("stay") or 110))
+def slots_of(dow, se):
+    """세션 시작~접수 마감, 30분 간격. 브레이크 안은 뺌"""
+    h = hours(dow); bs = tm(h["bs"]) if h.get("bs") else None; be = tm(h["be"]) if h.get("be") else None
+    t = tm(se["from"]); last = tm(se["lastBook"]); out = []
+    while t <= last:
+        if not (bs and be and bs <= t < be): out.append(t)
+        t += 30
+    return out
+POPULAR = {11*60+30, 12*60, 12*60+30, 13*60, 18*60, 18*60+30, 19*60}
 
-def make(date, dow, today):
-    r = {}
+# ---------- 자리 점유 추적(같은 자리 겹침을 안 만들려고) ----------
+USED = {}   # date → [(seat_id, start, end)]
+def busy(date, sid, t, stay):
+    return any(s == sid and a < t + stay and t < b for s, a, b in USED.get(date, []))
+def mark(date, ids, t, stay):
+    USED.setdefault(date, []).extend((sid, t, t + stay) for sid in ids)
+def free_tables(date, fl, t, stay):
+    return [x for x in TABLES if (x.get("floor") or "") == fl and not busy(date, x["id"], t, stay)]
+def seats_of(x): return x.get("seats") or 4
+def table_fit(date, fl, t, stay, ppl):
+    """앱의 findSeat(테이블·층) 흉내 — 하나 / 붙임 조합 / 나눠 앉기 / 없으면 None. 순서는 설정 순서, 2명은 4인석 우선"""
+    ft = free_tables(date, fl, t, stay)
+    one = [x for x in ft if seats_of(x) >= ppl and (x.get("minCapacity") or 0) <= ppl and (x.get("capacity") or seats_of(x)) >= ppl]
+    one.sort(key=lambda x: (0 if (ppl <= 2 and seats_of(x) >= 4) else 1, TABLES.index(x)))
+    if one: return [one[0]["id"]], False
+    pool = [x for x in ft if x.get("joinWith")]
+    best = [None]
+    def rec(combo, total):
+        if total >= ppl:
+            if best[0] is None or len(combo) < len(best[0]): best[0] = list(combo)
+            return
+        if len(combo) >= 5: return
+        for x in pool:
+            if x in combo or pool.index(x) < pool.index(combo[-1]): continue
+            if not all(x["id"] in c.get("joinWith", []) for c in combo): continue
+            combo.append(x); rec(combo, total + seats_of(x)); combo.pop()
+    for x in pool: rec([x], seats_of(x))
+    if best[0]: return [x["id"] for x in best[0]], False
+    ft2 = sorted(ft, key=lambda x: -seats_of(x)); pick = []; s = 0   # 나눠 앉기: 붙임 무관, 큰 테이블부터
+    for x in ft2:
+        if s >= ppl: break
+        pick.append(x); s += seats_of(x)
+    if s >= ppl and len(pick) > 1: return [x["id"] for x in pick], True
+    return None, False
+
+# ---------- 코스 ----------
+def course_gid(dow, t): return "cg_dinner" if t >= 17 * 60 else ("cg_welunch" if dow in (0, 6) else "cg_wdlunch")
+def make_courses(dow, t, adults, mode):
+    """mode: ok / short(인원 부족) / mixed(두 종류)"""
+    gid = course_gid(dow, t); g = CG[gid]; c = {}
+    item = random.choice(g["items"])
+    if mode == "short": c["%s|%s" % (gid, item)] = max(1, adults - random.randint(1, 2))
+    elif mode == "mixed":
+        c["%s|%s" % (gid, item)] = max(1, adults - 1)
+        c["%s|%s" % (gid, random.choice([i for i in g["items"] if i != item]))] = 1
+    else: c["%s|%s" % (gid, item)] = adults
+    return c
+
+# ---------- 예약 한 건 ----------
+def base_rec(date, dow, t, ppl, today, **kw):
     is_past = date < today
-    ppl = random.choice([2, 2, 2, 3, 4, 4, 4, 5, 6, 6, 8, 10, 12])
-    infants = random.choice([0, 0, 0, 0, 0, 1, 1, 2]) if ppl >= 3 else 0
-    sl = slots(dow)
-    t = random.choice(sl)
-    # 점심/저녁 몰림
-    if random.random() < 0.6: t = random.choice([m for m in sl if m in (11*60+30, 12*60, 12*60+30, 13*60, 18*60, 18*60+30, 19*60)] or sl)
-    # 경고 케이스 몇 개: 라스트오더 이후 · 브레이크 안
-    warn = random.random()
-    if warn < 0.02: t = 20 * 60 + 50
-    elif warn < 0.035 and hours(dow).get("bs"): t = 16 * 60
-    name = pick_name()
-    ph = phone()
-    if random.random() < 0.18:
-        name, ph = random.choice(REPEAT)
-    if random.random() < 0.06: ph = ""
-    # 좌석: 인원에 맞는 룸 / 홀 / 미배정
-    fit = [x for x in ROOMS if x["capacity"] >= ppl and (x.get("minCapacity") or 2) <= max(1, ppl - infants) and not busy(date, x["id"], t)]
-    seat_r = random.random()
-    room_id = None; seat_pref = None; tent = None; extra = []
-    if fit and seat_r < 0.55: room_id = random.choice(fit)["id"]
-    elif seat_r < 0.62 and ppl >= 12:
-        js = [j for j in JOINS if j["min"] <= ppl <= j["max"] and not any(busy(date, i, t) for i in j["ids"])]   # 룸 합침
-        if js: j = random.choice(js); room_id, extra = j["ids"][0], j["ids"][1:]
-    elif seat_r < 0.66: room_id, extra = table_combo(date, t, ppl)      # 특정 테이블을 잡은 경우(파셜룸 등) — 드물게
-    elif seat_r < 0.88: seat_pref = "table:" + random.choice(FLOORS)      # 8차-H: 보통은 층까지만
-    if room_id is None and seat_pref is None:
-        seat_pref = random.choice(["room-any", "table:" + random.choice(FLOORS)]) if ppl >= 4 else "table:" + random.choice(FLOORS)
-        # tentativeRoomId 는 앱이 로드 때 겹침을 보고 계산합니다(reflowFuture). 여기서 아무 방이나 넣으면 같은 방에 둘이 들어갑니다
-    if random.random() < 0.02 and ROOMS: room_id = "r1"; extra = []   # 정원 초과·겹침 경고 시연 (4인 방에 큰 팀)
-    if room_id: mark(date, [room_id] + extra, t)
-    is_room = room_id is not None and room_id.startswith("r")
-    # 식사
-    menu = "해당 없음"; courses = {}; undecided = False
-    if is_room:
-        menu = random.choice(["코스", "코스", "코스", "코스 상당", "확인 필요", "해당 없음"])
-        if menu == "코스":
-            gid = "cg_dinner" if t >= 17 * 60 else ("cg_welunch" if dow in (0, 6) else "cg_wdlunch")
-            g = CG[gid]; adults = max(1, ppl - infants)
-            if random.random() < 0.12: undecided = True
-            else:
-                item = random.choice(g["items"]); courses["%s|%s" % (gid, item)] = adults if random.random() < 0.85 else max(1, adults - 1)
-                if random.random() < 0.1:
-                    item2 = random.choice([i for i in g["items"] if i != item]); courses["%s|%s" % (gid, item2)] = 1
-    elif random.random() < 0.15:
-        menu = "코스"; gid = "cg_dinner" if t >= 17 * 60 else ("cg_welunch" if dow in (0, 6) else "cg_wdlunch")
-        courses["%s|%s" % (gid, random.choice(CG[gid]["items"]))] = max(1, ppl - infants)
-    # 상태
-    if is_past: status = random.choices(["방문", "노쇼", "취소"], [86, 5, 9])[0]
-    else: status = random.choices(["확정", "취소"], [94, 6])[0]
-    created = (datetime.datetime.strptime(date, "%Y-%m-%d") - datetime.timedelta(days=random.choice([0, 1, 2, 3, 5, 7, 10, 14, 21]), hours=random.randint(1, 12))).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+    name = pick_name(); ph = phone()
+    if random.random() < 0.15: name, ph = random.choice(REPEAT)
+    if random.random() < 0.05: ph = ""                     # 번호 없음 케이스
+    infants = kw["infants"] if "infants" in kw else (random.choice([1, 1, 2]) if (ppl >= 3 and random.random() < 0.18) else 0)
+    status = kw.get("status")
+    if not status:
+        if is_past: status = random.choices(["방문", "노쇼", "취소"], [86, 5, 9])[0]
+        elif date == today: status = random.choices(["확정", "방문", "취소"], [70, 22, 8])[0]
+        else: status = random.choices(["확정", "취소"], [94, 6])[0]
+    created_days = random.choice([0, 0, 1, 2, 3, 5, 7, 10, 14, 21, 30])
+    created = (datetime.datetime.strptime(date, "%Y-%m-%d") - datetime.timedelta(days=created_days, hours=random.randint(1, 12))).strftime("%Y-%m-%dT%H:%M:%S.000Z")
     changes = [{"on": created[:10], "at": created, "kind": "등록", "items": []}]
     if status in ("취소", "노쇼"):
-        at = (datetime.datetime.strptime(date, "%Y-%m-%d") + datetime.timedelta(hours=random.randint(8, 20))).strftime("%Y-%m-%dT%H:%M:%S.000Z")
-        changes.append({"on": at[:10], "at": at, "kind": status, "items": []})
+        when = date if random.random() < 0.6 else (datetime.datetime.strptime(date, "%Y-%m-%d") - datetime.timedelta(days=random.randint(1, 3))).strftime("%Y-%m-%d")
+        changes.append({"on": when, "at": when + "T%02d:00:00.000Z" % random.randint(1, 12), "kind": status, "items": []})
     elif random.random() < 0.15:
-        at = created[:10] + "T13:00:00.000Z"
-        changes.append({"on": at[:10], "at": at, "kind": "변경", "items": [{"n": random.choice(["인원", "시각", "좌석"])}]})
-    src = random.choices(st["sources"], ([60, 28, 8, 4] + [2] * 10)[:len(st["sources"])])[0]
+        when = max(created[:10], (datetime.datetime.strptime(date, "%Y-%m-%d") - datetime.timedelta(days=random.choice([0, 0, 1]))).strftime("%Y-%m-%d"))
+        changes.append({"on": when, "at": when + "T04:00:00.000Z", "kind": "변경", "items": [{"n": random.choice(["인원", "시각", "좌석"])}]})
+    src = random.choices(st["sources"], ([55, 30, 10, 5] + [2] * 10)[:len(st["sources"])])[0]
     rec = {
         "id": "res_" + str(uuid.uuid4()), "date": date, "time": hm(t), "name": name, "phone": ph,
-        "people": ppl, "infants": infants, "chairs": infants if random.random() < 0.7 else 0,
-        "roomId": room_id, "extraIds": extra, "seatPref": seat_pref if room_id is None else None, "tentativeRoomId": tent if room_id is None else None, "tentativeExtra": [],
+        "people": ppl, "infants": infants, "chairs": (infants if random.random() < 0.7 else max(0, infants - 1)) if infants else 0,
+        "roomId": kw.get("roomId"), "extraIds": kw.get("extraIds", []),
+        "seatPref": kw.get("seatPref") if not kw.get("roomId") else None,
+        "tentativeRoomId": None, "tentativeExtra": [], "tentativeSplit": False,
         "source": src, "sourceDetail": random.choice(SRC_DETAIL) if src == "기타" else "",
-        "createdAt": created, "menuType": menu, "courses": courses, "courseUndecided": undecided,
+        "createdAt": created, "menuType": kw.get("menuType", "해당 없음"), "courses": kw.get("courses", {}), "courseUndecided": kw.get("courseUndecided", False),
         "allergy": random.choice(ALLERGY) if random.random() < 0.12 else "", "allergyChecked": True,
-        "request": random.choice(REQUEST) if random.random() < 0.22 else "",
-        "memo": random.choice(MEMO) if random.random() < 0.15 else "",
+        "request": kw.get("request", random.choice(REQUEST) if random.random() < 0.22 else ""),
+        "memo": kw.get("memo", random.choice(MEMO) if random.random() < 0.15 else ""),
         "status": status, "changes": changes, "sms": [], "demo": True,
     }
-    if random.random() < 0.05 and ppl >= 3: rec["infants"] = ppl - 1; rec["chairs"] = 2   # 성인 1명 + 유아 다수 (경고 케이스)
+    if is_past and status == "방문" and random.random() < 0.5: rec["auto"] = True
     return rec
 
+def room_menu(dow, t, ppl, infants):
+    """룸 예약의 식사 — 대부분 코스, 가끔 경고 케이스"""
+    adults = max(1, ppl - infants); r = random.random()
+    if r < 0.70: return {"menuType": "코스", "courses": make_courses(dow, t, adults, "ok")}
+    if r < 0.78: return {"menuType": "코스", "courses": make_courses(dow, t, adults, "mixed")}
+    if r < 0.84: return {"menuType": "코스", "courses": make_courses(dow, t, adults, "short")}   # 코스 인원 부족
+    if r < 0.90: return {"menuType": "코스", "courses": {}, "courseUndecided": True}
+    if r < 0.94: return {"menuType": "코스 상당", "courses": {}}
+    if r < 0.97: return {"menuType": "확인 필요", "courses": {}}                                  # 코스 미확정
+    return {"menuType": "해당 없음", "courses": {}}                                              # 룸·코스 아님
+
+# ---------- 하루 ----------
+def day_profile(d, dow):
+    if dow in (0, 6):  weights = [3, 12, 35, 32, 18]     # 주말은 붐빔·포화가 많음
+    elif dow == 1:     weights = [10, 35, 35, 15, 5]     # 월요일 한산
+    else:              weights = [6, 22, 42, 22, 8]
+    if d > datetime.date(2026, 10, 12): weights = [25, 45, 25, 5, 0]   # 먼 미래는 드문드문
+    return random.choices(["none", "quiet", "normal", "busy", "full"], weights)[0]
+
+def gen_day(date, dow, today, prof):
+    rows = []
+    if prof == "none": return rows
+    frac = {"quiet": 0.25, "normal": 0.5, "busy": 0.75, "full": 0.95}[prof]
+    for se in sessions(dow):
+        sl = slots_of(dow, se)
+        if not sl: continue
+        f = frac * (1.0 if se["name"] == "저녁" else 0.85)
+        # ----- 룸: 방마다 f 확률로 한 팀(주말 점심은 110분이라 두 팀까지) -----
+        for room in ROOMS:
+            teams = 1 if se.get("stay") == "end" else (2 if random.random() < f * 0.6 else 1)
+            for k in range(teams):
+                if random.random() > f: continue
+                pool = [t for t in sl if not busy(date, room["id"], t, stay_of(dow, t))]
+                if not pool: break
+                t = random.choice([x for x in pool if x in POPULAR] or pool) if random.random() < 0.65 else random.choice(pool)
+                lo, hi = (room.get("minCapacity") or 2), room["capacity"]
+                ppl = random.randint(lo, hi)
+                kw = {"roomId": room["id"]}
+                r = random.random()
+                if r < 0.03: ppl = hi + random.randint(1, 2)                  # 정원 초과 경고
+                elif r < 0.06: ppl = max(1, lo - random.randint(1, 2))       # 최소 인원 미달 경고
+                infants = random.choice([1, 2]) if (ppl >= 3 and random.random() < 0.2) else 0
+                if ppl - infants < lo and r >= 0.06:                             # 유아를 빼도 최소 인원은 맞게 (일부러 만든 미달 케이스 제외)
+                    if lo + infants <= hi: ppl = lo + infants
+                    else: infants = 0
+                kw.update(room_menu(dow, t, ppl, infants)); kw["infants"] = infants
+                rec = base_rec(date, dow, t, ppl, today, **kw)
+                if rec["status"] in ("확정", "방문"): mark(date, [room["id"]], t, stay_of(dow, t))
+                rows.append(rec)
+        # ----- 룸 합침: 붐빌 때 가끔 -----
+        if JOINS and random.random() < f * 0.35:
+            j = random.choice(JOINS)
+            for t in random.sample(sl, len(sl)):
+                if all(not busy(date, i, t, stay_of(dow, t)) for i in j["ids"]):
+                    ppl = random.randint(j["min"], j["max"]); infants = random.choice([0, 0, 1, 2])
+                    kw = {"roomId": j["ids"][0], "extraIds": j["ids"][1:], "infants": infants, "request": random.choice(["단체 계산서 필요", "회식 — 술 많이", "송별회", "동문회 — 현수막 걸어도 되나요"])}
+                    kw.update(room_menu(dow, t, ppl, infants))
+                    rec = base_rec(date, dow, t, ppl, today, **kw)
+                    if rec["status"] in ("확정", "방문"): mark(date, j["ids"], t, stay_of(dow, t))
+                    rows.append(rec); break
+        # ----- 테이블: 층마다 자리 수의 f 만큼 채움 -----
+        for fl in FLOORS:
+            cap = sum(seats_of(x) for x in TABLES if (x.get("floor") or "") == fl)
+            target = int(cap * f * (1.6 if se.get("stay") != "end" else 1.0))   # 점심 110분은 회전이 있어 더 많이
+            filled = 0; tries = 0
+            while filled < target and tries < 40:
+                tries += 1
+                t = random.choice([x for x in sl if x in POPULAR] or sl) if random.random() < 0.6 else random.choice(sl)
+                ppl = random.choices([1, 2, 3, 4, 5, 6, 7, 8, 10, 12], [4, 32, 14, 28, 6, 9, 2, 2, 1, 1])[0]
+                stay = stay_of(dow, t)
+                ids, split = table_fit(date, fl, t, stay, ppl)
+                if split and random.random() < 0.6: continue                    # 나눠 앉기는 가끔만
+                if random.random() < 0.10 and ids:
+                    kw = {"roomId": ids[0], "extraIds": ids[1:], "memo": "테이블 지정" if len(ids) == 1 else "붙여서 앉힘"}   # 특정 테이블 지정(파셜룸 등)
+                elif not ids:
+                    if random.random() < 0.04 and not any(r.get("_none") for r in rows): kw = {"seatPref": "table:" + fl, "_none": True}; ids = []   # 자리 없음 경고 케이스(하루 1건)
+                    else: continue
+                else: kw = {"seatPref": "table:" + fl}
+                if random.random() < 0.12 and ppl >= 2: kw.update({"menuType": "코스", "courses": make_courses(dow, t, max(1, ppl), "ok")})
+                none_case = kw.pop("_none", False)
+                rec = base_rec(date, dow, t, ppl, today, **kw)
+                if ids and not rec["roomId"]: rec["tentativeRoomId"] = ids[0]; rec["tentativeExtra"] = ids[1:]; rec["tentativeSplit"] = bool(split)
+                if none_case: rec["_none"] = True
+                if rec["status"] in ("확정", "방문") and ids: mark(date, ids, t, stay)
+                rows.append(rec); filled += ppl
+        # ----- 룸 미정(room-any) — 가끔 -----
+        if random.random() < f * 0.3:
+            t = random.choice(sl); ppl = random.choice([4, 5, 6, 6, 7, 8, 12, 2])
+            rows.append(base_rec(date, dow, t, ppl, today, seatPref="room-any", request="방으로 부탁드려요 — 어느 방이든"))
+    # ----- 시간 경고 케이스: 라스트오더 이후 / 브레이크 안 -----
+    h = hours(dow)
+    if random.random() < 0.06 and h.get("lo"):
+        rows.append(base_rec(date, dow, tm(h["lo"]) + 10, 2, today, seatPref="table:" + FLOORS[0], memo="라스트오더 지나서 받음 — 사장님 확인"))
+    if random.random() < 0.04 and h.get("bs"):
+        rows.append(base_rec(date, dow, tm(h["bs"]) + 30, 4, today, seatPref="table:" + FLOORS[-1], memo="브레이크타임 중 — 단골"))
+    # ----- 유아만 / 유아의자 초과 -----
+    if random.random() < 0.04:
+        rec = base_rec(date, dow, random.choice(sorted(POPULAR)), 3, today, seatPref="table:" + FLOORS[0], infants=3); rec["chairs"] = 4; rows.append(rec)
+    return rows
+
 def to_row(rec):
+    rec.pop("_none", None)
     top = {"id", "date", "time", "status", "name", "phone", "people", "roomId", "updatedAt", "deletedAt"}
     data = {k: v for k, v in rec.items() if k not in top}
     return {"id": rec["id"], "store": "hanok", "date": rec["date"], "time": rec["time"], "status": rec["status"], "name": rec["name"],
@@ -203,23 +307,25 @@ def to_row(rec):
 
 def main():
     clear()
-    today = datetime.date(2026, 9, 14).strftime("%Y-%m-%d")
+    today = datetime.date.today().strftime("%Y-%m-%d")
     d = datetime.date(2026, 8, 1); end = datetime.date(2026, 10, 31)
-    rows = []
+    rows = []; profs = {}
     while d <= end:
         ds = d.strftime("%Y-%m-%d"); dow = (d.weekday() + 1) % 7   # JS getDay: 일=0
-        n = random.choice([4, 6, 7, 8, 9, 10, 11, 12]) + (4 if dow in (5, 6) else 0)
-        if d > datetime.date(2026, 10, 10): n = max(1, n // 3)   # 먼 미래는 드문드문
-        for _ in range(n): rows.append(to_row(make(ds, dow, today)))
+        if ds in HOLIDAYS: dow = 0                                  # 공휴일 = 일요일 운영시간(앱과 같음)
+        prof = "busy" if ds == today else day_profile(d, dow)      # 오늘은 볼 것이 있게
+        profs[prof] = profs.get(prof, 0) + 1
+        for rec in gen_day(ds, dow, today, prof): rows.append(to_row(rec))
         d += datetime.timedelta(days=1)
-    # 같은 날 같은 번호 두 건 (중복 확인 케이스)
-    dup = [r for r in rows if r["date"] == "2026-09-20"][:1]
+    # 같은 날 같은 번호 두 건 (중복 확인 케이스) — 내일
+    tomorrow = (datetime.date.today() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+    dup = [r for r in rows if r["date"] == tomorrow and r["status"] == "확정" and r["phone"]][:1]
     if dup:
         c = json.loads(json.dumps(dup[0])); c["id"] = "res_" + str(uuid.uuid4()); c["time"] = "19:30"; c["data"]["memo"] = "같은 번호로 두 번 예약 — 같은 팀인지 확인"; rows.append(c)
     for i in range(0, len(rows), 200):
         call("/rest/v1/reservations", "POST", rows[i:i+200], token=tok, prefer="return=minimal")
         print("넣음", i + len(rows[i:i+200]), "/", len(rows))
-    print("완료:", len(rows), "건. 2026-08-01 ~ 2026-10-31")
+    print("완료: %d 건. 2026-08-01 ~ 2026-10-31 · 날짜 프로필 %s" % (len(rows), profs))
 
 if __name__ == "__main__":
     main()
