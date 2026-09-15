@@ -235,6 +235,7 @@ def gen_day(date, dow, today, prof):
                 lo, hi = (room.get("minCapacity") or 2), room["capacity"]
                 ppl = random.randint(lo, hi)
                 kw = {"roomId": room["id"]}
+                if random.random() < 0.30: kw = {"seatPref": "room-any"}          # 룸 미정(잠정) — 실제로는 이런 접수가 많음(재아)
                 r = random.random()
                 if r < 0.03: ppl = hi + random.randint(1, 2)                  # 정원 초과 경고
                 elif r < 0.06: ppl = max(1, lo - random.randint(1, 2))       # 최소 인원 미달 경고
@@ -244,7 +245,7 @@ def gen_day(date, dow, today, prof):
                     else: infants = 0
                 kw.update(room_menu(dow, t, ppl, infants)); kw["infants"] = infants
                 rec = base_rec(date, dow, t, ppl, today, **kw)
-                if rec["status"] in ("확정", "방문"): mark(date, [room["id"]], t, stay_of(dow, t))
+                if rec["status"] in ("확정", "방문") and rec["roomId"]: mark(date, [room["id"]], t, stay_of(dow, t))
                 rows.append(rec)
         # ----- 룸 합침: 붐빌 때 가끔 -----
         if JOINS and random.random() < f * 0.35:
@@ -283,7 +284,7 @@ def gen_day(date, dow, today, prof):
                 if rec["status"] in ("확정", "방문") and ids: mark(date, ids, t, stay)
                 rows.append(rec); filled += ppl
         # ----- 룸 미정(room-any) — 가끔 -----
-        if random.random() < f * 0.3:
+        if random.random() < f * 0.1:
             t = random.choice(sl); ppl = random.choice([4, 5, 6, 6, 7, 8, 12, 2])
             rows.append(base_rec(date, dow, t, ppl, today, seatPref="room-any", request="방으로 부탁드려요 — 어느 방이든"))
     # ----- 시간 경고 케이스: 라스트오더 이후 / 브레이크 안 -----
