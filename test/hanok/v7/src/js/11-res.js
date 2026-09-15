@@ -126,7 +126,8 @@ function goToday(){ view.date = todayStr(); view.calMonth = monthStr(); render()
 /* '오늘이 아닌 날짜를 보는 중' — 상단바(.topbar.notoday)와 body.notoday 가 같은 조건을 써야 하므로 한 곳에.
    설정 탭은 날짜 개념이 없어 제외. 디스플레이·잠금·인트로는 renderApp 이 renderStore 전에 갈라져 나가므로 여기서도 빼 둡니다 */
 function notodayView(){
-  return !!view.storeKey && AUTHED && !view.display && !INTRO && view.tab!=="settings" && view.date!==todayStr();
+  /* 마법사가 열려 있으면 검정을 풀어 둡니다 — 다른 날짜를 보다가 등록을 눌러도 입력 화면은 평소 색(재아) */
+  return !!view.storeKey && AUTHED && !view.display && !INTRO && !WZ && view.tab!=="settings" && view.date!==todayStr();
 }
 /* 오늘 기준 가까운 날짜에 이름표 */
 function moveMonthDate(n){

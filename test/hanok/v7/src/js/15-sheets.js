@@ -725,7 +725,7 @@ function sheetMark(){
     </div>
     ${(()=>{
       /* 8차-R(재아): 오늘 것만이 아니라 처음부터의 이력 전부. 오늘 바뀐 게 있을 때만 파란 상자, 아니면 회색 */
-      const lines = changeLinesAll(r), todayN = todayChanges(r).length;
+      const lines = changeLinesAll(r), todayN = r.date === todayStr() ? todayChanges(r).length : 0;   /* 파란 상자도 오늘 예약만 */
       if(!lines.length) return "";
       return `<div class="chg-box ${todayN?"":"quiet"}">
         <div class="cb-t">바뀐 내용${todayN?` <span class="tag blue">오늘 ${todayN}건</span>`:""}</div>

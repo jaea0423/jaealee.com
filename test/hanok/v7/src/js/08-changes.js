@@ -68,6 +68,8 @@ function todayChanges(r){
 }
 /* 목록·타임라인에 붙일 짧은 표시. 없으면 null */
 function changeTag(r){
+  /* 파란 표시는 '오늘' 예약에만 — 오늘 바뀐 것을 놓치지 않으려는 표시라서. 다른 날짜는 상세의 '바뀐 내용' 에만 남깁니다(재아) */
+  if(r.date !== todayStr()) return null;
   var cs = todayChanges(r);
   if(!cs.length) return null;
   var kinds = {}, items = {}, i, j;

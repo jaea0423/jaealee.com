@@ -4481,7 +4481,7 @@ function renderStore(){
             <div class="more-menu">
               ${isMobile() && view.date!==todayStr() ? `<button onclick="closeMore(); goToday()">${ICON.cal}<span>오늘로</span></button>` : ``}
               <button onclick="closeMore(); openHours()">${ICON.clock}<span>영업시간</span></button>
-              <button onclick="closeMore(); openDisplay()">${ICON.tv}<span>디스플레이 모드</span></button>
+              ${isMobile() ? `` : `<button onclick="closeMore(); openDisplay()">${ICON.tv}<span>디스플레이 모드</span></button>`}
               ${document.fullscreenEnabled ? `<button onclick="closeMore(); toggleFullscreen()">${document.fullscreenElement?ICON.shrink:ICON.expand}<span>${document.fullscreenElement?"전체화면 해제":"전체화면"}</span></button>` : ""}
               <button onclick="closeMore(); openZoomAdj()">${ICON.search}<span>화면 보정</span></button>
               <button onclick="closeMore(); setTab('settings')">${ICON.set}<span>설정</span></button>
@@ -4863,6 +4863,8 @@ function todayChanges(r){
 }
 /* 목록·타임라인에 붙일 짧은 표시. 없으면 null */
 function changeTag(r){
+  /* 파란 표시는 '오늘' 예약에만 — 오늘 바뀐 것을 놓치지 않으려는 표시라서. 다른 날짜는 상세의 '바뀐 내용' 에만 남깁니다(재아) */
+  if(r.date !== todayStr()) return null;
   var cs = todayChanges(r);
   if(!cs.length) return null;
   var kinds = {}, items = {}, i, j;
@@ -5607,7 +5609,8 @@ function goToday(){ view.date = todayStr(); view.calMonth = monthStr(); render()
 /* '오늘이 아닌 날짜를 보는 중' — 상단바(.topbar.notoday)와 body.notoday 가 같은 조건을 써야 하므로 한 곳에.
    설정 탭은 날짜 개념이 없어 제외. 디스플레이·잠금·인트로는 renderApp 이 renderStore 전에 갈라져 나가므로 여기서도 빼 둡니다 */
 function notodayView(){
-  return !!view.storeKey && AUTHED && !view.display && !INTRO && view.tab!=="settings" && view.date!==todayStr();
+  /* 마법사가 열려 있으면 검정을 풀어 둡니다 — 다른 날짜를 보다가 등록을 눌러도 입력 화면은 평소 색(재아) */
+  return !!view.storeKey && AUTHED && !view.display && !INTRO && !WZ && view.tab!=="settings" && view.date!==todayStr();
 }
 /* 오늘 기준 가까운 날짜에 이름표 */
 function moveMonthDate(n){
@@ -7046,7 +7049,7 @@ function sheetMark(){
     </div>
     ${(()=>{
       /* 8차-R(재아): 오늘 것만이 아니라 처음부터의 이력 전부. 오늘 바뀐 게 있을 때만 파란 상자, 아니면 회색 */
-      const lines = changeLinesAll(r), todayN = todayChanges(r).length;
+      const lines = changeLinesAll(r), todayN = r.date === todayStr() ? todayChanges(r).length : 0;   /* 파란 상자도 오늘 예약만 */
       if(!lines.length) return "";
       return `<div class="chg-box ${todayN?"":"quiet"}">
         <div class="cb-t">바뀐 내용${todayN?` <span class="tag blue">오늘 ${todayN}건</span>`:""}</div>
