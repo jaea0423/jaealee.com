@@ -305,7 +305,8 @@ input:focus, select:focus{outline:2px solid var(--pine); outline-offset:-1px; bo
 .fh-t{font-weight:700; font-size:var(--fs-body); letter-spacing:.01em; line-height:24px}
 .fh-x{margin-left:auto; font-size:var(--fs-sub); color:var(--text-2)}
 .fh-i{font-size:var(--fs-label); color:var(--text-3)}
-.fold-b{padding:0 var(--s16) var(--s16); padding-top:0; animation:fade-in .15s ease-out}
+.fold-b{padding:0 var(--s16) var(--s16); padding-top:0}
+.fold-b.just{animation:fade-in .15s ease-out}   /* 방금 연 폴드만 — 매 render 마다 재생되면 '새로고침' 느낌이 납니다(8차-K) */
 
 /* ---------- 목록 행 · 확인 필요 ---------- */
 .rowitem{display:flex; align-items:center; gap:var(--s12); border-top:1px solid var(--border); padding:var(--s16) var(--s16)}
@@ -708,13 +709,14 @@ button.blk.tent{background-image:repeating-linear-gradient(-45deg, rgba(255,255,
    6차 A 의 '블록 전체 파랑 + 상태색 테두리' 는 상태(잠정 점선·경고 벽돌)와 변동이 서로 덮어 조합이 어지러웠습니다(재아 검토).
    블록 바탕·테두리는 원래 상태 그대로 두고 그 위에 파란 칩만 얹으므로, 잠정+경고+변동이 한 블록에서 다 읽힙니다.
    내일이 되면 changeTag 가 비어 저절로 풀립니다. '잠정' 꼬리표(.tt)는 지웠습니다(툴팁의 ' · 잠정'은 남김) */
-/* 8차-J(재아): 글자 영역까지 막대 앞부분을 통째로 파랑으로 — 알약처럼 투톤. 꼬리(체류 시간)는 원래 상태색 그대로.
-   파랑도 확정(먹색)과 구분되게 한 단계 밝게(--blue-mark 계열) */
-.blk.changed{padding-left:0}
-.blk .chg-chip{display:inline-flex; align-items:center; align-self:stretch; height:auto; padding:0 6px 0 var(--s4); margin:0 2px 0 0; border-radius:var(--r-sm) 0 0 var(--r-sm); font-size:10px;
-  background:#3D8BD9; color:#fff; box-shadow:none}
-.blk .chg-chip b{color:#fff; font-size:10px; margin-right:3px}
-.blk.past .chg-chip{opacity:.7}
+/* 8차-K(재아): 변동 블록은 '도형을 겹치는' 게 아니라 블록 자체가 반반 — 앞 절반은 밝은 파랑, 뒤 절반은 원래 상태색.
+   경계는 짧게 섞어 깨져 보이지 않게. 잠정(빗금)은 빗금을 그 위에 겹칩니다 */
+.blk.changed{background-image:linear-gradient(90deg, #3D8BD9 0, #3D8BD9 48%, rgba(61,139,217,0) 56%)}
+button.blk.tent.changed{background-image:repeating-linear-gradient(-45deg, rgba(255,255,255,.34) 0 4px, transparent 4px 10px), linear-gradient(90deg, #3D8BD9 0, #3D8BD9 48%, rgba(61,139,217,0) 56%)}
+button.blk.tent.warned.changed{background-image:repeating-linear-gradient(-45deg, rgba(255,255,255,.34) 0 4px, transparent 4px 10px), linear-gradient(90deg, #3D8BD9 0, #3D8BD9 48%, rgba(61,139,217,0) 56%)}
+.blk .chg-chip{display:inline; background:none; padding:0; margin:0; border-radius:0; box-shadow:none; font-size:inherit; color:#fff}
+.blk .chg-chip b{color:#fff; font-size:inherit; margin-right:0}
+.blk.past.changed{background-image:linear-gradient(90deg, #7FB0DF 0, #7FB0DF 48%, rgba(127,176,223,0) 56%)}
 .blk .chg-chip-old{display:inline-block; line-height:12px; height:12px; padding:0 4px; margin-left:-2px; border-radius:3px; font-size:10px;   /* inline-flex 는 시각·이름 사이 공백을 버립니다. 15px 는 블록(19px)을 거의 채워 어색 → 12px·글자 10px */
   background:var(--blue); color:#fff; box-shadow:0 0 0 1px rgba(255,255,255,.4)}   /* (옛 칩 규칙 — 참고용, 안 씀) */
 /* 8차-J: 현재 시각 선은 줄마다가 아니라 축 줄에 하나만 두고 표 전체를 가로지릅니다(높이는 afterRender 가 맞춤) */
@@ -1306,6 +1308,7 @@ button.bday.sel .b{background:rgba(255,255,255,.22); color:#fff}
 }
 /* 임시 일정 일괄 등록 */
 .bulk-guide{margin:0 0 var(--s8); padding:var(--s8) var(--s12); background:var(--surface-2); border-radius:var(--r-sm); font-size:var(--fs-label); line-height:1.6; white-space:pre-wrap; color:var(--text-2); font-family:var(--sans)}
+#naver-paste{width:100%; font:inherit; font-size:var(--fs-sub); padding:var(--s8) var(--s12); border:1px solid var(--border-strong); border-radius:var(--r-sm); resize:vertical; white-space:pre}
 #ovr-bulk{width:100%; font:inherit; font-size:var(--fs-sub); padding:var(--s8) var(--s12); border:1px solid var(--border-strong); border-radius:var(--r-sm); resize:vertical}
 .bulk-res{margin-top:var(--s12); border:1px solid var(--border); border-radius:var(--r-sm); overflow:hidden}
 .bulk-row{display:flex; gap:var(--s8); align-items:flex-start; padding:var(--s8) var(--s12); font-size:var(--fs-sub); border-top:1px solid var(--border)}
@@ -1313,6 +1316,22 @@ button.bday.sel .b{background:rgba(255,255,255,.22); color:#fff}
 .bulk-row.ok{background:#F1F7F2} .bulk-row.bad{background:#FBEFEC}
 .bulk-ln{flex:none; width:20px; color:var(--text-3)} .bulk-row .grow{flex:1; min-width:0; word-break:break-all}
 .bulk-msg{flex:none; max-width:46%; color:var(--text-2)} .bulk-row.bad .bulk-msg{color:var(--rust)}
+.wz-adv{display:block; width:100%; margin-top:var(--s12); padding:var(--s8) var(--s12); text-align:left; background:none; border:1px dashed var(--border-strong); border-radius:var(--r-sm); font:inherit; font-size:var(--fs-sub); color:var(--text-2); cursor:pointer}
+.wz-adv.on{border-style:solid; color:var(--text)}
+/* 노쇼율 세 칸 */
+.ns-stats{display:grid; grid-template-columns:repeat(3,1fr); gap:var(--s8); margin-bottom:var(--s12)}
+.ns-stat{background:var(--surface-2); border-radius:var(--r-sm); padding:var(--s12); text-align:center}
+.ns-stat .v{font-size:var(--fs-num); font-weight:700; line-height:1.1} .ns-stat .v .u{font-size:var(--fs-sub); margin-left:2px; color:var(--text-2)}
+.ns-stat .k{font-size:var(--fs-sub); color:var(--text-2); margin-top:2px} .ns-stat .s{font-size:var(--fs-label); color:var(--text-3)}
+/* 좌석 폴드 탭·테이블 붙임 표 */
+.seg.seattabs{margin:0 0 var(--s12)}
+.pairwrap{overflow-x:auto}
+.pairs{border-collapse:collapse; font-size:var(--fs-sub)}
+.pairs th{font-weight:600; color:var(--text-2); padding:var(--s4) var(--s8); text-align:center; white-space:nowrap}
+.pairs td{text-align:center; padding:2px}
+.pairs td.self{background:var(--surface-2)}
+.pairs .pair{width:36px; height:36px; border:1px solid var(--border-strong); background:var(--surface); border-radius:var(--r-sm); font-size:12px; color:var(--pine); cursor:pointer}
+.pairs .pair.on{background:var(--pine); color:#fff; border-color:var(--pine)}
 .offline-card{padding:var(--s24); text-align:center}
 .offline-card .oc-t{font-size:var(--fs-title); font-weight:700; margin-bottom:var(--s8)}
 .offline-card .oc-s{font-size:var(--fs-sub); color:var(--text-2); max-width:560px; margin:0 auto var(--s16); line-height:1.6}
@@ -2522,14 +2541,14 @@ const DEFAULT_DATA = {
          테이블: 개별 이름. seats = 기본 인원, capacity 가 있으면 그것이 최대(여포 4~5). joinWith = 붙일 수 있는 테이블.
                  '홀' 이라는 묶음은 없습니다 — 층(floor)으로만 묶어 보여 줍니다. 가게에서 '테이블 예약 / 룸 예약' 이라고 부릅니다 */
       rooms:[
-        {id:"r1",name:"조조",type:"room",floor:"1층",minCapacity:4,capacity:6},
-        {id:"r2",name:"유비",type:"room",floor:"1층",minCapacity:8,capacity:9},
-        {id:"r3",name:"장비",type:"room",floor:"1층",minCapacity:6,capacity:7},
-        {id:"r4",name:"관우",type:"room",floor:"1층",minCapacity:6,capacity:7},
-        {id:"r5",name:"공명",type:"room",floor:"지하",minCapacity:6,capacity:7},
-        {id:"r6",name:"주유",type:"room",floor:"지하",minCapacity:6,capacity:7},
-        {id:"r7",name:"초선",type:"room",floor:"지하",minCapacity:6,capacity:7},
-        {id:"r8",name:"동탁",type:"room",floor:"지하",minCapacity:12,capacity:14},
+        {id:"r1",name:"조조",type:"room",floor:"1층",minCapacity:2,minWeekend:4,optCapacity:4,capacity:6},
+        {id:"r2",name:"유비",type:"room",floor:"1층",minCapacity:6,minWeekend:8,optCapacity:8,capacity:9},
+        {id:"r3",name:"장비",type:"room",floor:"1층",minCapacity:4,minWeekend:6,optCapacity:6,capacity:7},
+        {id:"r4",name:"관우",type:"room",floor:"1층",minCapacity:4,minWeekend:6,optCapacity:6,capacity:7},
+        {id:"r5",name:"공명",type:"room",floor:"지하",minCapacity:4,minWeekend:6,optCapacity:6,capacity:7},
+        {id:"r6",name:"주유",type:"room",floor:"지하",minCapacity:4,minWeekend:6,optCapacity:6,capacity:7},
+        {id:"r7",name:"초선",type:"room",floor:"지하",minCapacity:4,minWeekend:6,optCapacity:6,capacity:7},
+        {id:"r8",name:"동탁",type:"room",floor:"지하",minCapacity:10,minWeekend:12,optCapacity:12,capacity:14},
         {id:"t21", name:"21",  type:"table",floor:"1층",seats:4,joinWith:[]},
         {id:"t22", name:"22",  type:"table",floor:"1층",seats:4,joinWith:[]},
         {id:"t23a",name:"23-4",type:"table",floor:"1층",seats:4,joinWith:["t23b"]},
@@ -2546,9 +2565,9 @@ const DEFAULT_DATA = {
       /* 룸 합침(중문 탈거). 자동(잠정) 배정에는 쓰지 않고 사람이 고를 때만. 원탁은 공간만 합쳐지고 테이블은 나뉘어 손님 확인이 필요 */
       joins:[
         {id:"j1",ids:["r3","r4"],     min:12,max:14,note:"중문 탈거"},
-        {id:"j2",ids:["r5","r6"],     min:12,max:14,note:"중문 탈거 · 원탁이라 테이블은 나뉨 — 손님 확인"},
-        {id:"j3",ids:["r6","r7"],     min:12,max:14,note:"중문 탈거 · 원탁이라 테이블은 나뉨 — 손님 확인"},
-        {id:"j4",ids:["r5","r6","r7"],min:18,max:21,note:"중문 탈거 · 원탁이라 테이블은 나뉨 — 손님 확인"}
+        {id:"j2",ids:["r5","r6"],     min:12,max:14,split:true,note:"중문 탈거 · 원탁이라 테이블은 나뉨 — 손님 확인"},
+        {id:"j3",ids:["r6","r7"],     min:12,max:14,split:true,note:"중문 탈거 · 원탁이라 테이블은 나뉨 — 손님 확인"},
+        {id:"j4",ids:["r5","r6","r7"],min:18,max:21,split:true,note:"중문 탈거 · 원탁이라 테이블은 나뉨 — 손님 확인"}
       ],
       sources:["네이버 예약","전화 예약","방문","기타"],
       roles:["점장","매니저","주방장","주방","서빙","발렛"]
@@ -3030,7 +3049,14 @@ function migrateSeats(d){
       var dr = (def.rooms||[]).find(function(y){ return y.type === "room" && y.name === x.name; });
       if(dr && !x.tuned){ x.minCapacity = dr.minCapacity; x.capacity = dr.capacity; x.floor = dr.floor; }
     });
+    /* 8차-L: 룸 최소를 평일/주말로 나눔. 옛 저장본은 '최소=최적' 하나뿐이라 임의로 나눕니다(누님 질문 목록) */
+    (st.rooms || []).forEach(function(r){
+      if(!isRoom(r) || r.optCapacity != null) return;
+      var opt = r.minCapacity != null ? r.minCapacity : Math.max(2, (r.capacity||2) - 2);
+      r.optCapacity = opt; r.minWeekend = opt; r.minCapacity = Math.max(2, opt - 2);
+    });
     if(!st.joins) st.joins = deepClone(def.joins || []);
+    st.joins.forEach(function(j){ if(j.split == null && /원탁|나뉨/.test(j.note || "")) j.split = true; });
     if(!st.holidaysOff) st.holidaysOff = [];
     /* 1년 넘게 지난 임시 일정·추가/제외 공휴일·사용 중지는 정리 — 무한히 쌓여 설정 JSON 이 커지는 것을 막습니다(점검 C5) */
     var cut = shiftDate(todayStr(), -366);
@@ -3537,7 +3563,17 @@ function stayMin(){ return stayMinAt(view.date || todayStr(), "19:00"); }
 function isRoom(x){ return !!x && x.type === "room"; }
 function isTable(x){ return !!x && (x.type === "table" || x.type === "hall"); }
 function seatById(id){ const st = store().settings; return (st.rooms||[]).find(x=>x.id===id) || null; }
-function roomMin(r){ if(!r) return 0; if(r.minCapacity != null) return r.minCapacity; return isTable(r) ? 0 : Math.max(2,(r.capacity||2)-2); }
+/* 주말·공휴일이면 true (공휴일을 주말로 볼지는 설정) */
+function isWeekendDay(date){ if(!date) return false; const dow = new Date(date+"T00:00:00").getDay(); return dow===0 || dow===6 || (store().settings.holidayAsWeekend!==false && isHoliday(date)); }
+/* 룸 최소 인원 — 날짜를 주면 주말·공휴일은 minWeekend(있으면). 테이블은 minCapacity 없으면 0 */
+function roomMin(r, date){
+  if(!r) return 0;
+  if(isRoom(r) && date && isWeekendDay(date) && r.minWeekend != null) return r.minWeekend;
+  if(r.minCapacity != null) return r.minCapacity;
+  return isTable(r) ? 0 : Math.max(2,(r.capacity||2)-2);
+}
+/* 룸 최적 인원(안내용) — 없으면 주말 최소 */
+function roomOpt(r){ if(!r || !isRoom(r)) return 0; return r.optCapacity != null ? r.optCapacity : (r.minWeekend != null ? r.minWeekend : roomMin(r)); }
 function seatMax(r){ if(!r) return 0; return isTable(r) ? (r.capacity || r.seats || 4) : (r.capacity || 4); }
 /* 예약이 쓰는 좌석 전부(대표 + 합친 것). 확정이면 roomId 계열, 아니면 잠정 계열 */
 function seatsOf(r){
@@ -3553,11 +3589,11 @@ function seatsMax(ids){
   if(j) return j.max;
   return ids.reduce((a,id)=>a+seatMax(seatById(id)), 0);
 }
-function seatsMin(ids){
+function seatsMin(ids, date){
   const st = store().settings;
   const j = (st.joins||[]).find(g=>sameIds(g.ids, ids));
   if(j) return j.min;
-  if(ids.length === 1) return roomMin(seatById(ids[0]));
+  if(ids.length === 1) return roomMin(seatById(ids[0]), date);
   return 0;
 }
 function sameIds(a, b){ if(!a || !b || a.length !== b.length) return false; const x = a.slice().sort(), y = b.slice().sort(); return x.every((v,i)=>v===y[i]); }
@@ -3784,7 +3820,7 @@ function findSeat(o){
   const freeLoose = id => !o.strict && o.excludeSeat !== id && roomStatus(date, time, id, o.excludeId).state === "free";
   const seats = (st.rooms||[]).filter(x=>!blockedAt(x, date, time));
   if(wantRoom){
-    const rooms = seats.filter(x=>isRoom(x) && people >= roomMin(x) && people <= seatMax(x));
+    const rooms = seats.filter(x=>isRoom(x) && people >= roomMin(x, date) && people <= seatMax(x));
     for(const r of rooms) if(free(r.id)) return {id:r.id, extra:[]};
     if(!o.confirmedOnly) for(const r of rooms) if(freeLoose(r.id)) return {id:r.id, extra:[]};
   }
@@ -4345,6 +4381,7 @@ async function setTab(t){
     view.draft = null;
   }
   if(t==="settings" && !view.draft) view.draft = deepClone(store().settings);
+  if(view.tab==="settings" && t!=="settings") Object.keys(view.open).forEach(function(x){ if(x.indexOf("s_") === 0) view.open[x] = false; });   /* 나갔다 오면 접힌 상태로(재아) */
   view.tab=t; render(); window.scrollTo(0,0);
 }
 /* 설정 화면에서는 임시본을 씁니다 — '적용하기'를 눌러야 반영됩니다 */
@@ -4463,6 +4500,7 @@ function renderStore(){
               ${isMobile() && view.date!==todayStr() ? `<button onclick="closeMore(); goToday()">${ICON.cal}<span>오늘로</span></button>` : ``}
               <button onclick="closeMore(); openRate()">${ICON.chart}<span>예약률 추이</span></button>
               <button onclick="closeMore(); openHours()">${ICON.clock}<span>영업시간</span></button>
+              <button onclick="closeMore(); openNaver()">${ICON.res}<span>네이버 예약 가져오기</span></button>
               <button onclick="closeMore(); setTab('settings')">${ICON.set}<span>설정</span></button>
               <button onclick="closeMore(); openDisplay()">${ICON.tv}<span>디스플레이 모드</span></button>
             </div>` : ""}
@@ -4621,7 +4659,7 @@ function foldCard(key, title, extra, inner){
         <span class="fh-x">${extra||""}</span>
         <span class="fh-i">${view.open[key]?"▲":"▼"}</span>
       </button>
-      ${view.open[key]?`<div class="fold-b">${inner}</div>`:""}
+      ${view.open[key]?`<div class="fold-b ${view.foldJust===key?'just':''}">${inner}</div>`:""}
     </section>`;
 }
 /* 설정 섹션은 한 번에 하나만 펼칩니다.
@@ -4632,6 +4670,7 @@ function toggleFold(k){
     Object.keys(view.open).forEach(function(x){ if(x.indexOf("s_") === 0) view.open[x] = false; });
   }
   view.open[k] = !was;
+  view.foldJust = was ? null : k;   /* 이번 render 에만 열림 애니메이션 */
   render();
 }
 
@@ -5085,11 +5124,14 @@ function resWarn(r){
   const seat = st.rooms.find(x=>x.id===r.roomId);
   const ids = r.roomId ? [r.roomId].concat(r.extraIds||[]) : [];
   if(seat && resBlocked(r)) out.push("사용 중지 좌석");
+  /* 2명이 2인석에 앉게 되면 알립니다(2인석은 좁아 손님이 싫어함 — 규칙은 누님 답 대기, 그때까지 경고만) */
+  const tSeats = seat ? [seat] : (isTablePref(r.seatPref) && r.tentativeRoomId ? seatsOf(r).map(seatById).filter(Boolean) : []);
+  if(pplOf(r) <= 2 && tSeats.length === 1 && isTable(tSeats[0]) && (tSeats[0].seats||4) <= 2 && r.status !== "취소") out.push("2인석 배정");
   if(seat){
     /* 룸·테이블 모두: 묶음(합침 포함)의 최대·최소로 판단. 테이블은 최소가 없고(여포만 4), 정원 초과만 봅니다 */
     if(pplOf(r) > seatsMax(ids)) out.push("정원 초과");
-    else if(adultCount(pplOf(r), r.infants) < seatsMin(ids)) out.push("최소 인원 미달");
-    if(ids.length > 1 && joinOf(ids) && /원탁/.test(joinOf(ids).note||"")) out.push("원탁 합침 · 손님 확인");
+    else if(adultCount(pplOf(r), r.infants) < seatsMin(ids, r.date)) out.push("최소 인원 미달");
+    if(ids.length > 1 && joinOf(ids) && (joinOf(ids).split || /원탁/.test(joinOf(ids).note||""))) out.push("원탁 합침 · 손님 확인");
   }
   if((r.infants||0) >= pplOf(r) && pplOf(r)>0) out.push("성인 없음");
   /* 테이블 예약(층): 숨은 배정 결과로 — 자리가 아예 없으면, 붙일 수 없어 나눠 앉으면 */
@@ -6041,7 +6083,7 @@ function sec(key, title, extra, inner){
         <span class="fh-t">${title}</span>
         <span class="fh-x">${extra||""}</span>
       </button>
-      ${open?`<div class="fold-b">${inner}</div>`:""}
+      ${open?`<div class="fold-b ${view.foldJust==="s_"+key?'just':''}">${inner}</div>`:""}
     </section>`;
 }
 function renderSettings(){
@@ -6137,8 +6179,10 @@ function renderSettings(){
       <div class="rowitem seat">
         ${ord(rooms, r)}
         <span class="grow"><span class="t">${esc(r.name)}</span>
-          <span class="s">최적 ${roomMin(r)}명 · 최대 ${r.capacity}명${r.floor?` · ${esc(r.floor)}`:""}${blockSummary(r)}</span></span>
-        <button class="numbtn sm" onclick="openNum('minCapacity','${esc(r.name)} 최적(최소) 인원',1,30,{room:'${r.id}'})">최적 ${roomMin(r)}</button>
+          <span class="s">평일 ${roomMin(r)}명부터 · 주말 ${r.minWeekend != null ? r.minWeekend : roomMin(r)}명부터 · 최적 ${roomOpt(r)} · 최대 ${r.capacity}${r.floor?` · ${esc(r.floor)}`:""}${blockSummary(r)}</span></span>
+        <button class="numbtn sm" onclick="openNum('minCapacity','${esc(r.name)} 평일 최소 인원',1,30,{room:'${r.id}'})">평일 ${roomMin(r)}</button>
+        <button class="numbtn sm" onclick="openNum('minWeekend','${esc(r.name)} 주말·공휴일 최소 인원',1,30,{room:'${r.id}'})">주말 ${r.minWeekend != null ? r.minWeekend : roomMin(r)}</button>
+        <button class="numbtn sm" onclick="openNum('optCapacity','${esc(r.name)} 최적 인원 (안내용)',1,30,{room:'${r.id}'})">최적 ${roomOpt(r)}</button>
         <button class="numbtn sm" onclick="openNum('capacity','${esc(r.name)} 최대 인원',1,40,{room:'${r.id}'})">최대 ${r.capacity}</button>
         <label class="tbl-in">층
           <input value="${esc(r.floor||"")}" placeholder="1층" style="width:60px" onchange="setRoomText('${r.id}','floor',this.value)"></label>
@@ -6162,16 +6206,28 @@ function renderSettings(){
   const joinRowHtml = j => `
       <div class="rowitem seat">
         <span class="grow"><span class="t">${esc(jLabel(j))}</span>
-          <span class="s">${j.min}~${j.max}명${j.note?` · ${esc(j.note)}`:""}</span></span>
+          <span class="s">${j.min}~${j.max}명${j.note?` · ${esc(j.note)}`:""}</span>
+          <label class="chk" style="margin:4px 0 0"><input type="checkbox" ${j.split?"checked":""} onchange="setJoinFlag('${j.id}','split',this.checked)"><span>공간이 나뉨(원탁 등) — 배정할 때 손님 확인 창</span></label></span>
         <button class="numbtn sm" onclick="openNum('min','${esc(jLabel(j))} 최소',1,60,{join:'${j.id}'})">최소 ${j.min}</button>
         <button class="numbtn sm" onclick="openNum('max','${esc(jLabel(j))} 최대',1,80,{join:'${j.id}'})">최대 ${j.max}</button>
         <button class="btn sm danger" onclick="delJoin('${j.id}')">삭제</button>
       </div>`;
+  /* 8차-K: 세 탭(룸 / 테이블 / 합침) — 한 폴드에 다 펼치면 너무 길었습니다 */
+  const seatTab = view.seatTab || "room";
+  const tabBtn = (k, label) => `<button class="${seatTab===k?'on':''}" onclick="view.seatTab='${k}'; render()">${label}</button>`;
+  /* 테이블 붙임 짝 — 같은 층 안에서 서로 붙일 수 있는 테이블을 표로. 칸을 누르면 양쪽 다 바뀝니다 */
+  const pairTable = fl => { const list = tables.filter(t=>(t.floor||"")===fl); if(list.length < 2) return "";
+    return `<div class="lbl" style="margin:10px 0 4px">${esc(fl||"층 없음")} — 서로 붙일 수 있는 테이블</div>
+    <div class="pairwrap"><table class="pairs"><tr><th></th>${list.map(t=>`<th>${esc(t.name)}</th>`).join("")}</tr>
+      ${list.map(a=>`<tr><th>${esc(a.name)}</th>${list.map(b=>a.id===b.id?`<td class="self"></td>`:`<td><button class="pair ${(a.joinWith||[]).indexOf(b.id)>=0?'on':''}" onclick="toggleJoinWith('${a.id}','${b.id}')" title="${esc(a.name)} + ${esc(b.name)}">${(a.joinWith||[]).indexOf(b.id)>=0?"●":""}</button></td>`).join("")}</tr>`).join("")}
+    </table></div>`; };
   const seatBody = `
     <p class="f-note" style="margin:0 0 12px">
       <b>배정 순서</b>는 좌석을 정하지 않은 손님에게 자리를 미리 잡아 둘 때 씁니다.
       인원이 맞는 좌석 중 <b>위에서부터</b> 고릅니다(▲▼로 순서를 바꾸세요). 룸과 테이블은 손님이 고른 쪽만 봅니다.</p>
-    <div class="subhead">룸 <span>최적 인원 = 최소 인원. 그보다 적으면 경고가 뜹니다</span></div>
+    <div class="seg seattabs">${tabBtn("room","룸")}${tabBtn("table","테이블")}${tabBtn("join","합침")}</div>
+    ${seatTab==="room" ? `
+    <div class="subhead">룸 <span>최소(평일 / 주말·공휴일)보다 적으면 경고. 최적은 안내용(마법사에 표시)</span></div>
     ${rooms.map(roomRowHtml).join("")}
     <div class="btn-row" style="margin-top:8px">
       <input id="nr-name" placeholder="룸 이름" style="flex:2 1 120px">
@@ -6181,7 +6237,9 @@ function renderSettings(){
       <button class="btn primary" onclick="addRoom('room')">룸 추가</button>
     </div>
 
-    <div class="subhead" style="margin-top:20px">테이블 <span>예약은 층까지만 받습니다. 여기 목록은 층의 '자리 수' 를 세는 근거 — 테이블 인원을 더한 값이 그 층 자리 수</span></div>
+` : ""}
+    ${seatTab==="table" ? `
+    <div class="subhead">테이블 <span>예약은 층까지만 받습니다. 여기 목록은 층의 '자리 수' 를 세는 근거 — 테이블 인원을 더한 값이 그 층 자리 수</span></div>
     ${floorsT.map(fl=>{ const list = tables.filter(t=>(t.floor||"")===fl); return `<div class="lbl" style="margin:10px 0 4px">${esc(fl||"층 없음")}</div>${list.map(t=>tableRowHtml(list, t)).join("")}`; }).join("")}
     <div class="btn-row" style="margin-top:8px">
       <input id="nt-name" placeholder="테이블 이름 (예: 26)" style="flex:2 1 120px">
@@ -6190,7 +6248,9 @@ function renderSettings(){
       <button class="btn primary" onclick="addRoom('table')">테이블 추가</button>
     </div>
 
-    <div class="subhead" style="margin-top:20px">룸 합침 <span>중문을 떼어 두세 방을 한 팀이 쓰는 경우. 자동 배정에는 안 쓰고, 예약 받을 때 사람이 고릅니다</span></div>
+` : ""}
+    ${seatTab==="join" ? `
+    <div class="subhead">룸 합침 <span>중문을 떼어 두세 방을 한 팀이 쓰는 경우. 자동 배정에는 안 쓰고, 예약 받을 때 사람이 고릅니다</span></div>
     ${(st.joins||[]).map(joinRowHtml).join("") || `<div class="empty">합침 그룹이 없습니다.</div>`}
     <div class="btn-row" style="margin-top:8px; flex-wrap:wrap">
       ${rooms.map(r=>`<label class="chk" style="margin:0"><input type="checkbox" class="nj-room" value="${r.id}"><span>${esc(r.name)}</span></label>`).join("")}
@@ -6200,7 +6260,9 @@ function renderSettings(){
       <input id="nj-max" type="number" min="1" value="14" title="최대" style="flex:1 1 62px">
       <input id="nj-note" placeholder="메모 (예: 원탁 — 손님 확인)" style="flex:3 1 160px">
       <button class="btn primary" onclick="addJoin()">합침 추가</button>
-    </div>`;
+    </div>
+    <div class="subhead" style="margin-top:20px">테이블 붙임 <span>같은 층에서 붙여 앉힐 수 있는 짝. 큰 팀이 오면 이 짝으로만 붙입니다(아니면 나눠 앉음)</span></div>
+    ${floorsT.map(pairTable).join("")}` : ""}`;
 
   /* ---------- 코스 ---------- */
   const courseBody = `
@@ -6621,6 +6683,7 @@ async function addJoin(){
   st.joins = (st.joins||[]).concat([{id:"j_"+newId("j").slice(2,10), ids, min, max, note:(document.getElementById("nj-note").value||"").trim()}]);
   render();
 }
+function setJoinFlag(id, k, v){ const st = draft(); st.joins = (st.joins||[]).map(j=>j.id===id?Object.assign({}, j, {[k]:v}):j); render(); }
 async function delJoin(id){
   const st = draft(); const j = (st.joins||[]).find(x=>x.id===id);
   if(!await uiConfirm("합침을 삭제할까요?", j ? j.ids.map(id=>{ const x = st.rooms.find(r=>r.id===id); return x ? x.name : "?"; }).join("+")+" 룸" : "", {ok:"삭제"})) return;
@@ -6660,6 +6723,129 @@ function openMark(id){ view.form={type:"mark", id}; view.pickSeat=null; render()
    태블릿에서 손이 스쳐 엉뚱한 방에 배정되는 사고를 막습니다. */
 function pickSeatCand(resId, seatId){ view.pickSeat = seatId || null; render(); }
 function openUnassigned(){ view.form={type:"unassigned"}; render(); }
+
+/* ---------- 네이버 예약 가져오기 (8차-M) ----------
+   네이버 파트너센터 '예약자 관리' 엑셀을 열어 표 전체를 복사(Ctrl+A, Ctrl+C)해 붙여 넣습니다. 탭으로 나뉜 줄이 들어옵니다.
+   머리글 줄(예약번호 · 상태 · 예약자 · 이용일시 · 상품 · 인원 · 옵션 · 요청사항 …)을 찾아 열 이름으로 읽으므로 열 순서가 바뀌어도 됩니다.
+   · 예약번호(naverNo)로 같은 예약을 찾아 있으면 고치고(상태·시각·인원·요청) 없으면 새로 넣습니다
+   · 전화번호는 뒷자리 4개만 오므로 phone 은 비우고 메모에 '네이버 ****1234' 를 남깁니다 — 노쇼 이력은 못 잇습니다
+   · 상품에 '룸' 이 있으면 룸 미정(room-any), '테이블' 이면 테이블(층 미정, table-any). 자리는 잠정 배정이 잡습니다
+   · 옵션 열(주말 A 세트·주말 B 세트·한코스 …)은 수량이 있으면 코스 구성으로. 이름이 코스 항목과 안 맞으면 요청사항에 적어 둡니다 */
+function openNaver(){ view.form = {type:"naver"}; view.naver = view.naver || {text:"", result:null}; render(); }
+function sheetNaver(){
+  const n = view.naver || {text:"", result:null};
+  const res = n.result ? `<div class="bulk-res">${n.result.map(x=>`<div class="bulk-row ${x.ok?(x.kind==="skip"?"":"ok"):"bad"}"><span class="bulk-ln">${x.n}</span><span class="grow">${esc(x.text)}</span><span class="bulk-msg">${x.ok?`${x.kind==="new"?"＋ 새로":x.kind==="update"?"↻ 고침":"＝ 같음"} · ${esc(x.msg)}`:`✗ ${esc(x.msg)}`}</span></div>`).join("")}</div>` : "";
+  const cnt = k => n.result ? n.result.filter(x=>x.ok && x.kind===k).length : 0;
+  return `
+    ${sheetHead("네이버 예약 가져오기")}
+    <p class="f-note" style="margin:-6px 0 10px">네이버 파트너센터 → 예약자 관리 → 엑셀 다운로드 → 파일을 열어 <b>표 전체 복사(Ctrl+A, Ctrl+C)</b> → 아래에 붙여 넣기(Ctrl+V).
+      예약번호로 같은 예약을 찾아 고치고, 없으면 새로 넣습니다. 전화번호는 네이버가 뒷자리만 주어 메모에만 남습니다.</p>
+    <textarea id="naver-paste" rows="7" placeholder="여기에 붙여 넣으세요 (머리글 줄 포함, 안내 문장이 섞여 있어도 됩니다)" oninput="view.naver={text:this.value, result:null}">${esc(n.text)}</textarea>
+    <div class="btn-row" style="margin-top:8px">
+      <button class="btn" onclick="naverPreview()">미리보기</button>
+      ${n.result ? `<button class="btn primary" onclick="naverApply()" ${cnt("new")+cnt("update")?"":"disabled"}>새로 ${cnt("new")} · 고침 ${cnt("update")} 적용</button>` : ""}
+    </div>
+    ${res}
+    <div class="sheet-actions"><button class="btn ghost" onclick="closeSheet()">닫기</button></div>`;
+}
+/* '26. 8. 17.(월) 오후 12:00' → {date:"2026-08-17", time:"12:00"} */
+function naverWhen(s){
+  const m = String(s||"").match(/(\d{2,4})\.\s*(\d{1,2})\.\s*(\d{1,2})\.?[^0-9]*?(오전|오후)?\s*(\d{1,2}):(\d{2})/);
+  if(!m) return null;
+  let y = Number(m[1]); if(y < 100) y += 2000;
+  let h = Number(m[5]); const ap = m[4];
+  if(ap === "오후" && h < 12) h += 12; if(ap === "오전" && h === 12) h = 0;
+  return { date: `${y}-${pad(Number(m[2]))}-${pad(Number(m[3]))}`, time: `${pad(h)}:${m[6]}` };
+}
+/* '4명/성인(3),어린이(1)' → {people:4, infants:1} */
+function naverPeople(s){
+  const t = String(s||""); const tot = t.match(/(\d+)\s*명/); const kid = t.match(/(?:어린이|유아|아동)\((\d+)\)/);
+  return { people: tot ? Number(tot[1]) : 0, infants: kid ? Number(kid[1]) : 0 };
+}
+function naverParse(text){
+  const lines = text.split(/\r?\n/).map(l=>l.replace(/\r/g,"")).filter(l=>l.trim());
+  const hi = lines.findIndex(l=>/예약번호/.test(l) && /\t/.test(l));
+  if(hi < 0) return {err:"머리글 줄(예약번호 … 이용일시 … 인원)을 못 찾았습니다. 엑셀에서 표 전체를 복사해 붙여 넣으세요."};
+  const head = lines[hi].split("\t").map(x=>x.trim());
+  const col = name => head.findIndex(h=>h === name);
+  const idx = { no:col("예약번호"), status:col("상태"), name:col("예약자"), phone:col("전화번호"), when:col("이용일시"), prod:col("상품"), ppl:col("인원"), req:col("요청사항"), memo:col("직원메모"), cancelWhy:col("취소사유"), route:col("유입경로") };
+  if(idx.no < 0 || idx.when < 0) return {err:"예약번호·이용일시 열이 필요합니다"};
+  /* 옵션 열: '옵션1-주말 A 세트' 처럼 이름이 붙은 것 중 '결제금액' 이 아닌 것 */
+  const opts = head.map((h,i)=>({h,i})).filter(x=>/^옵션\d+-/.test(x.h) && !/결제금액$/.test(x.h)).map(x=>({i:x.i, name:x.h.replace(/^옵션\d+-/,"").replace(/^한옥반점\s*/,"").trim()}));
+  const st = store().settings, groups = st.courseGroups || DEFAULT_COURSE_GROUPS;
+  const rows = [];
+  for(let k = hi + 1; k < lines.length; k++){
+    const c = lines[k].split("\t"); if(c.length < head.length - 5) continue;
+    const g = i => i >= 0 && i < c.length ? String(c[i]||"").trim() : "";
+    const no = g(idx.no); if(!/^\d{5,}$/.test(no)) continue;
+    const when = naverWhen(g(idx.when)); const pp = naverPeople(g(idx.ppl));
+    const stRaw = g(idx.status), prod = g(idx.prod);
+    const status = /취소|거절/.test(stRaw) ? "취소" : /이용완료|완료/.test(stRaw) ? "방문" : /노쇼|미방문/.test(stRaw) ? "노쇼" : "확정";
+    const isRoomProd = /룸/.test(prod);
+    /* 옵션 수량 → 코스. 이름이 코스 항목(A·B·한 등)과 맞는 것만 */
+    const courses = {}; const unmatched = [];
+    opts.forEach(o=>{ const q = Number(g(o.i)) || 0; if(!q) return;
+      if(/테이블 예약|룸 예약/.test(o.name)) return;   /* 자리 옵션은 코스가 아님 */
+      const gid = when && when.time >= "17:00" ? "cg_dinner" : (when && isWeekendDay(when.date) ? "cg_welunch" : "cg_wdlunch");
+      const grp = groups.find(x=>x.id===gid) || groups[0];
+      const item = (grp.items||[]).find(it=>o.name.replace(/\s|세트|코스/g,"").indexOf(it) >= 0 || it.indexOf(o.name.replace(/\s|세트|코스/g,"")) >= 0);
+      if(item) courses[grp.id + "|" + item] = (courses[grp.id + "|" + item] || 0) + q; else unmatched.push(`${o.name} ${q}`);
+    });
+    rows.push({ n: rows.length + 1, text: `${no} · ${g(idx.name)} · ${g(idx.when)} · ${g(idx.ppl)} · ${prod} · ${stRaw}`,
+      no, when, name: g(idx.name) || "네이버 손님", phoneTail: (g(idx.phone).match(/(\d{4})\s*$/) || [,""])[1],
+      status, isRoomProd, people: pp.people, infants: pp.infants, courses, unmatched, request: g(idx.req), cancelWhy: g(idx.cancelWhy) });
+  }
+  return { rows, headFound: true };
+}
+function naverPreview(){
+  const ta = document.getElementById("naver-paste"); const text = ta ? ta.value : (view.naver ? view.naver.text : "");
+  const p = naverParse(text);
+  if(p.err){ view.naver = {text, result:[{n:1, text:"", ok:false, msg:p.err}]}; render(); return; }
+  const s = store();
+  const result = p.rows.map(r=>{
+    if(!r.when) return {n:r.n, text:r.text, ok:false, msg:"이용일시를 못 읽었습니다"};
+    if(!r.people) return {n:r.n, text:r.text, ok:false, msg:"인원을 못 읽었습니다"};
+    const ex = s.reservations.concat(s.trash||[]).find(x=>x.naverNo === r.no);
+    if(!ex) return Object.assign({ok:true, kind:"new", msg:`${r.when.date} ${r.when.time} ${r.people}명 ${r.isRoomProd?"룸":"테이블"}${r.status!=="확정"?" · "+r.status:""}`}, r);
+    const diff = [];
+    if(ex.date !== r.when.date || ex.time !== r.when.time) diff.push("시각");
+    if(pplOf(ex) !== r.people) diff.push("인원");
+    if(ex.status !== r.status) diff.push("상태 " + ex.status + "→" + r.status);
+    if((ex.request||"") !== (r.request||"") && r.request) diff.push("요청");
+    if(!diff.length) return Object.assign({ok:true, kind:"skip", msg:"바뀐 것 없음"}, r);
+    return Object.assign({ok:true, kind:"update", msg:diff.join(" · "), exId:ex.id}, r);
+  });
+  view.naver = {text, result}; render();
+}
+async function naverApply(){
+  const n = view.naver; if(!n || !n.result) return;
+  if(readonlyBlock()) return;
+  const s = store(); let added = 0, updated = 0;
+  n.result.filter(x=>x.ok && x.kind !== "skip").forEach(r=>{
+    const memoTail = `네이버 예약번호 ${r.no}${r.phoneTail?` · 전화 ****${r.phoneTail}`:""}${r.unmatched.length?` · 옵션 ${r.unmatched.join(", ")}`:""}${r.cancelWhy?` · 취소사유: ${r.cancelWhy}`:""}`;
+    if(r.kind === "new"){
+      const rec = { id:newId("res"), naverNo:r.no, date:r.when.date, time:r.when.time, name:r.name, phone:"", people:r.people, infants:r.infants, chairs:0,
+        roomId:null, extraIds:[], seatPref: r.isRoomProd ? "room-any" : "table-any", tentativeRoomId:null, tentativeExtra:[], tentativeSplit:false,
+        source:"네이버 예약", sourceDetail:"", createdAt:new Date().toISOString(),
+        menuType: Object.keys(r.courses).length ? "코스" : (r.isRoomProd ? "확인 필요" : "해당 없음"), courses:r.courses, courseUndecided:false,
+        allergy:"", allergyChecked:false, request:r.request||"", memo:memoTail, status:r.status, changes:[], sms:[] };
+      createReservation(rec); added++;
+    }else{
+      const ex = s.reservations.find(x=>x.id===r.exId) || (s.trash||[]).find(x=>x.id===r.exId); if(!ex) return;
+      const d = [];
+      if(ex.date !== r.when.date || ex.time !== r.when.time){ d.push({n:"시각", a:ex.date+" "+ex.time, b:r.when.date+" "+r.when.time}); ex.date = r.when.date; ex.time = r.when.time; }
+      if(pplOf(ex) !== r.people){ d.push({n:"인원", a:pplOf(ex), b:r.people}); ex.people = r.people; ex.infants = r.infants; }
+      if(r.request && ex.request !== r.request){ d.push({n:"요청"}); ex.request = r.request; }
+      if(ex.status !== r.status){ if(r.status==="취소"||r.status==="노쇼") addChange(ex, r.status, []); else d.push({n:"상태", a:ex.status, b:r.status}); ex.status = r.status; }
+      if(d.length) addChange(ex, "변경", d); else touch(ex);
+      reflowTentatives(ex.date); updated++;
+    }
+  });
+  logEvent("네이버 가져오기", `새로 ${added} · 고침 ${updated}`);
+  view.naver = null; view.form = null; saveData(); render();
+  uiAlert("네이버 예약 가져오기 완료", `새로 ${added}건, 고침 ${updated}건. 룸 예약은 '룸 미정' 으로 들어와 잠정 배정이 잡습니다 — 좌석 미정 목록에서 확정하세요.`, "ok");
+}
+
 function openNoshow(){ view.form={type:"noshow"}; render(); }
 function openSearch(){ view.form={type:"search"}; render(); }
 function openPin(){ view.form={type:"pin"}; render(); }
@@ -6685,7 +6871,7 @@ function openOverride(){ view.form={type:"ovr"}; render(); }
 // function openStaff(id){ view.form={type:"staff", id}; render(); }
 // function openAtt(id){ view.form={type:"att", id}; render(); }
 // function openSale(date){ view.form={type:"sale", id:date}; render(); }
-function closeSheet(){ var was = view.form && view.form.type === "res"; view.form=null; tmpRes=null; render(); if(was) histPop(); }
+function closeSheet(){ var was = view.form && view.form.type === "res"; view.form=null; tmpRes=null; view.pickAll=false; view.pickSeat=null; render(); if(was) histPop(); }
 /* ---------- 토스트 ----------
    showToast(text, actionLabel, fn) — 같은 자리 하나뿐. 새로 부르면 앞 것을 교체합니다.
    구형 TV 브라우저에서도 죽지 않게 setTimeout 만 씁니다 */
@@ -6713,7 +6899,7 @@ function toastSaved(rec){
 }
 
 function renderSheet(){
-  const inner = { res:sheetRes, mark:sheetMark, unassigned:sheetUnassigned, pick:sheetPick, check:sheetCheck, search:sheetSearch, num:sheetNum, noshow:sheetNoshow, pin:sheetPin, apw:sheetAdminPw, hours:sheetHours, tedit:sheetTableEdit, logs:sheetLogs, smslog:sheetSmsLog, rate:sheetRate, sched:sheetSchedule, ovr:sheetOverride, blocks:sheetBlocks /*, staff:sheetStaff, att:sheetAtt, sale:sheetSale */ }[view.form.type]();
+  const inner = { res:sheetRes, mark:sheetMark, unassigned:sheetUnassigned, pick:sheetPick, check:sheetCheck, search:sheetSearch, num:sheetNum, noshow:sheetNoshow, pin:sheetPin, apw:sheetAdminPw, hours:sheetHours, tedit:sheetTableEdit, naver:sheetNaver, logs:sheetLogs, smslog:sheetSmsLog, rate:sheetRate, sched:sheetSchedule, ovr:sheetOverride, blocks:sheetBlocks /*, staff:sheetStaff, att:sheetAtt, sale:sheetSale */ }[view.form.type]();
   const wide = view.form.type==="rate" ? " sheet-wide" : "";
   return `<div class="overlay" onclick="closeSheet()"><div class="sheet${wide}" onclick="event.stopPropagation()">${inner}</div></div>`;
 }
@@ -6870,7 +7056,7 @@ function saveIssues(rec, excludeId){
         out.push(`${seat.name}에 겹치는 예약이 있습니다 — ` + rs.hits.map(x=>`${hm(x.time)} ${x.name} 손님`).join(", "));
     });
     if(ppl > seatsMax(ids)) out.push(`${label} 정원 ${seatsMax(ids)}명을 넘습니다 (지금 ${ppl}명)`);
-    else if(ad < seatsMin(ids)) out.push(`${label} 최소 인원 ${seatsMin(ids)}명에 못 미칩니다 (지금 ${ad}명)`);
+    else if(ad < seatsMin(ids, rec.date)) out.push(`${label} 최소 인원 ${seatsMin(ids, rec.date)}명에 못 미칩니다 (지금 ${ad}명)`);
     const j = ids.length > 1 ? joinOf(ids) : null;
     if(j && j.note) out.push(`${label}: ${j.note}`);
   }
@@ -6883,6 +7069,7 @@ function saveIssues(rec, excludeId){
     "룸·코스 아님": `룸 예약인데 식사가 '해당 없음' 입니다`,
     "코스 미확정": `코스가 '확인 필요' 상태입니다`,
     "코스 인원 부족": `코스 인원이 성인 수보다 적습니다`,
+    "2인석 배정": `4인석이 없어 2인석에 앉게 됩니다 (2인석은 좁습니다)`,
     "테이블 자리 없음": `${seatLabel(rec.seatPref)}에 그 시간 ${pplOf(rec)}명이 앉을 자리가 없습니다 (한 자리 최대 ${floorMaxParty(prefFloor(rec.seatPref), rec.date, rec.time, excludeId)}명)`,
     "나눠 앉음": `${seatLabel(rec.seatPref)}에 붙일 수 있는 테이블이 없어 나눠 앉게 됩니다 (한 자리 최대 ${floorMaxParty(prefFloor(rec.seatPref), rec.date, rec.time, excludeId)}명)`
   };
@@ -7104,14 +7291,18 @@ function sheetMark(){
       return {...c, rank: 0};
     });
     const pickedIds = view.pickSeat ? (view.pickSeat==="__tent" ? [r.tentativeRoomId].concat(r.tentativeExtra||[]) : ((st.joins||[]).find(j=>j.id===view.pickSeat)||{ids:[view.pickSeat]}).ids) : null;
+    /* 8차-K: 순위 붙은 세 개(와 이미 고른 것)만 먼저, 나머지는 '다른 자리 보기' 로 접습니다 — 후보가 스무 개면 시트가 너무 길었습니다 */
+    const showAll = !!view.pickAll;
+    const shown = ranked.filter(c=>showAll || c.rank || c.x.id===view.pickSeat), hiddenN = ranked.length - shown.length;
     seatPick = `
       <div class="lbl" style="margin:16px 0 8px">좌석 배정 ${r.tentativeRoomId?`<span class="tag amber">${esc(resTentLabel(r))} 잠정</span>`:""}</div>
-      <div class="seatpick">${ranked.map(({x,ok,rank,ids})=>`
+      <div class="seatpick">${shown.map(({x,ok,rank,ids})=>`
         <button class="spick ${ok?'':'busy'} ${rank===1?'first':''} ${view.pickSeat===x.id?'picked':''} ${x.type==="join"?'join':''}"
           onclick="pickSeatCand('${r.id}','${x.id}')" ${x.note?`title="${esc(x.note)}"`:""}>
           ${esc(x.name)} <small>${seatsMin(ids)?seatsMin(ids)+"~":""}${seatsMax(ids)}</small>
           ${rank?`<i>${rank}순위</i>`:""}
         </button>`).join("")}</div>
+      ${hiddenN > 0 ? `<button class="linkbtn" style="margin-top:6px" onclick="view.pickAll=true; render()">다른 자리 ${hiddenN}개 보기</button>` : (showAll && ranked.length > 3 ? `<button class="linkbtn" style="margin-top:6px" onclick="view.pickAll=false; render()">접기</button>` : "")}
       ${view.pickSeat?`
         <div class="seatconfirm">
           <span><b>${esc(seatLabelIds(pickedIds))}</b> 으로 배정합니다</span>
@@ -7212,8 +7403,8 @@ async function assignSeat(id, seatId){
     }else if(rs.state==="warn" && !await uiConfirm2(`${seat.name}에 겹치는 예약이 있습니다. 그래도 배정할까요?`)) return;
   }
   if(ppl > seatsMax(ids) && !await uiConfirm2(`${label} 정원(${seatsMax(ids)}명)을 넘습니다. 배정할까요?`)) return;
-  if(adultCount(ppl, r.infants||0) < seatsMin(ids) && !await uiConfirm2(`${label}은 최소 ${seatsMin(ids)}명부터입니다. 지금 ${adultCount(ppl, r.infants||0)}명입니다. 배정할까요?`)) return;
-  if(j && j.note && !await uiConfirm(`${label} — ${j.note}`, "손님께 확인하셨나요?", {ok:"확인했음 · 배정", cancel:"다시 고르기"})) return;
+  if(adultCount(ppl, r.infants||0) < seatsMin(ids, r.date) && !await uiConfirm2(`${label}은 최소 ${seatsMin(ids, r.date)}명부터입니다. 지금 ${adultCount(ppl, r.infants||0)}명입니다. 배정할까요?`)) return;
+  if(j && (j.split || j.note) && !await uiConfirm(`${label} — ${j.note || "공간이 나뉩니다"}`, j.split ? "테이블이 나뉘어 앉게 됩니다. 손님께 확인하셨나요?" : "손님께 확인하셨나요?", {ok:"확인했음 · 배정", cancel:"다시 고르기"})) return;
   logEvent("좌석 배정", `${r.date} ${r.time} ${r.name} → ${label}`);
   if(!r.roomId) r.assignedLater = {from:r.seatPref||"any", at:new Date().toISOString()};
   addChange(r, "변경", [{n:"좌석", a:resSeatLabel(r), b:label}]);
@@ -7250,7 +7441,7 @@ function numValue(){
   const st = draft();
   if(f.ctx && f.ctx.room){
     const r = st.rooms.find(x=>x.id===f.ctx.room);
-    return r ? (f.key==="minCapacity" ? roomMin(r) : (r[f.key] != null ? r[f.key] : (f.key==="capacity" ? seatMax(r) : f.min))) : f.min;
+    return r ? (f.key==="minCapacity" ? roomMin(r) : f.key==="minWeekend" ? (r.minWeekend != null ? r.minWeekend : roomMin(r)) : f.key==="optCapacity" ? roomOpt(r) : (r[f.key] != null ? r[f.key] : (f.key==="capacity" ? seatMax(r) : f.min))) : f.min;
   }
   if(f.ctx && f.ctx.join){
     const j = (st.joins||[]).find(x=>x.id===f.ctx.join);
@@ -7295,8 +7486,8 @@ function numSave(){
       if(r.id!==f.ctx.room) return r;
       const n = Object.assign({}, r, {[f.key]:v, tuned:true});
       /* 최소가 최대보다 크면 그 좌석은 어떤 인원에도 안 맞아 배정 후보에서 영영 빠집니다(점검 C4) — 맞춰 줍니다 */
-      if(f.key==="minCapacity" && n.capacity != null && v > seatMax(n)) n.capacity = v;
-      if(f.key==="capacity" && n.minCapacity != null && n.minCapacity > v) n.minCapacity = v;
+      if((f.key==="minCapacity" || f.key==="minWeekend" || f.key==="optCapacity") && n.capacity != null && v > seatMax(n)) n.capacity = v;
+      if(f.key==="capacity"){ if(n.minCapacity != null && n.minCapacity > v) n.minCapacity = v; if(n.minWeekend != null && n.minWeekend > v) n.minWeekend = v; if(n.optCapacity != null && n.optCapacity > v) n.optCapacity = v; }
       return n;
     });
   }else if(f.ctx && f.ctx.join){
@@ -7318,22 +7509,18 @@ function numSave(){
 function sheetSearch(){
   const q = (view.searchQ||"").trim();
   const s = store();
-  /* 한글은 2자 이상, 숫자는 4자 이상부터 찾습니다.
-     앞자리 010 은 빼고 비교해서 엉뚱한 결과가 나오지 않게 합니다. */
-  const digits = q.replace(/\D/g,"").replace(/^010/,"");
-  const text = q.replace(/[0-9\-\s]/g,"").trim();
-  const okNum = digits.length >= 4;
-  const okTxt = text.length >= 2;
-  let rows = `<div class="empty">이름은 2자, 전화번호는 4자리부터 찾습니다.</div>`;
+  /* 8차-K(재아): 구분 없이 한 글자부터 전부 찾습니다 — 이름·전화·메모·요청·알러지·경로·좌석. 많이 뜨면 더 치면 줄어듭니다 */
+  const digits = q.replace(/\D/g,"");
+  const lower = q.toLowerCase();
+  const okNum = digits.length >= 1 && /^[\d\-\s]+$/.test(q);
+  const okTxt = q.length >= 1 && !okNum;
+  let rows = `<div class="empty">이름·전화·메모·요청사항 무엇이든 한 글자부터 찾습니다.</div>`;
   if(okNum || okTxt){
     const hits = s.reservations.filter(r=>{
-      if(okNum && (r.phone||"").replace(/\D/g,"").replace(/^010/,"").includes(digits)) return true;
-      if(okTxt){
-        const bag = `${r.name} ${r.request||""} ${r.allergy||""} ${r.sourceDetail||""}`;
-        if(bag.includes(text)) return true;
-      }
-      return false;
-    }).sort((a,b)=> b.date.localeCompare(a.date) || b.time.localeCompare(a.time)).slice(0,60);
+      if(okNum) return (r.phone||"").replace(/\D/g,"").includes(digits);
+      const bag = `${r.name} ${r.request||""} ${r.memo||""} ${r.allergy||""} ${r.sourceDetail||""} ${r.source||""} ${resSeatLabel(r)} ${r.phone||""}`.toLowerCase();
+      return bag.includes(lower);
+    }).sort((a,b)=> b.date.localeCompare(a.date) || b.time.localeCompare(a.time)).slice(0,80);
     rows = hits.length ? hits.map(r=>`
       <button class="rowitem tap" onclick="goRes('${r.id}','${r.date}')">
         <span class="grow"><span class="t">${esc(r.name)}
@@ -7344,11 +7531,10 @@ function sheetSearch(){
       </button>`).join("")
       : `<div class="empty">찾은 예약이 없습니다.</div>`;
   }
-  const hintTxt = okNum||okTxt ? "" :
-    (q ? `<p class="f-note" style="margin:-6px 0 10px">더 입력하세요 — 한글 2자 이상, 숫자 4자리 이상</p>` : "");
+  const hintTxt = "";
   return `
     ${sheetHead("예약 검색")}
-    <input id="search-q" value="${esc(q)}" placeholder="이름 또는 전화번호 (예: 재아 / 1188 / 010-1234-5678)"
+    <input id="search-q" value="${esc(q)}" placeholder="이름·전화·메모·요청 (한 글자부터)"
            oninput="setSearchQ(this.value)" autocomplete="off" style="margin-bottom:10px">
     ${hintTxt}
     <div class="card searchbox">${rows}</div>
@@ -7395,8 +7581,18 @@ function sheetNoshow(){
         <span class="s">${esc(x.phone)} · ${x.dates.slice(0,4).map(d=>d.slice(5).replace("-","/")).join(", ")}${x.dates.length>4?" 외":""}</span></span>
       <button class="btn sm" onclick="clearNoshow('${x.key}')">기록 제외</button>
     </div>`).join("") : `<div class="empty">노쇼 기록이 없습니다.</div>`;
+  /* 노쇼율 — 이번 달·지난 달·최근 90일. 분모는 '올 손님'(방문+노쇼), 취소는 뺍니다 */
+  const rate = (from, to) => { const all = store().reservations.filter(r=>r.date >= from && r.date <= to && r.date < todayStr() && (r.status==="방문"||r.status==="노쇼")); const ns = all.filter(r=>r.status==="노쇼").length; return {n:all.length, ns, pct: all.length ? Math.round(ns/all.length*1000)/10 : 0}; };
+  const t = todayStr(), ym = t.slice(0,7), pm = shiftDate(ym + "-01", -1).slice(0,7);
+  const rThis = rate(ym + "-01", t), rPrev = rate(pm + "-01", pm + "-31"), r90 = rate(shiftDate(t, -90), t);
+  const stat = `<div class="ns-stats">
+      <div class="ns-stat"><div class="v">${rThis.pct}<span class="u">%</span></div><div class="k">이번 달 노쇼율</div><div class="s">${rThis.ns}건 / ${rThis.n}팀</div></div>
+      <div class="ns-stat"><div class="v">${rPrev.pct}<span class="u">%</span></div><div class="k">지난 달</div><div class="s">${rPrev.ns}건 / ${rPrev.n}팀</div></div>
+      <div class="ns-stat"><div class="v">${r90.pct}<span class="u">%</span></div><div class="k">최근 90일</div><div class="s">${r90.ns}건 / ${r90.n}팀</div></div>
+    </div>`;
   return `
     ${sheetHead("노쇼 관리")}
+    ${stat}
     <div class="card" style="margin-bottom:12px">${rows}</div>
     <p class="f-note">예약 상태를 ‘노쇼’로 바꾸면 자동으로 여기에 쌓입니다.
       새 예약을 등록할 때 같은 번호가 있으면 확정 전에 알려드립니다.
@@ -8298,9 +8494,7 @@ function renderWizard(){
   return `
   <div class="wz">
     <header class="wz-top">
-      <button class="wz-back" onclick="${WZ.step===0?'closeWizard()':`wzGo(${WZ.step-1})`}">
-        ${WZ.step===0?"✕ 닫기":"← 이전"}
-      </button>
+      <button class="wz-back" onclick="closeWizard()">✕ 닫기</button>   <!-- '이전' 은 단계 점으로(재아). 입력이 있으면 닫을 때 확인창 -->
       <div class="wz-steps">${dots}</div>
       <div class="wz-sum">${wzSummary()}</div>
     </header>
@@ -8402,7 +8596,7 @@ function wzWarnReason(){
       else if(rs.state==="warn") out.push(`식사 시간이 겹침${who?` - ${who}`:""}`);
       const cnt = seatCountsInfants() ? WZ.people : adultCount(WZ.people, WZ.infants);
       if(cnt > room.capacity) out.push(`정원 초과 - ${seatLabel(room.id)} 최대 ${room.capacity}명`);
-      if(cnt < roomMin(room)) out.push(`최소 인원 미달 - ${seatLabel(room.id)} ${roomMin(room)}명부터`);
+      if(cnt < roomMin(room, WZ.date)) out.push(`최소 인원 미달 - ${seatLabel(room.id)} ${roomMin(room, WZ.date)}명부터`);
       const bk = blockedAt(room, WZ.date, WZ.time);
       if(bk) out.push(`사용 중지 - ${seatLabel(room.id)}${bk.note?` · ${bk.note}`:""}`);
     }
@@ -8722,6 +8916,7 @@ function fitNowLine(){
   ln.style.height = Math.max(0, sc.scrollHeight - track.offsetTop) + "px"; ln.style.bottom = "auto";
 }
 function afterRender(){
+  view.foldJust = null;   /* 다음 render 부터는 애니메이션 없이 */
   fitNowLine();
   scrollTlToNow();
   restoreScroll();   /* 다시 그리기 전 스크롤 위치로 되돌립니다 */
@@ -8833,13 +9028,13 @@ function wzStepSeat(){
     let statuses = ids.map(id=>roomStatus(WZ.date, WZ.time, id));
     const state = statuses.some(r=>r.state==="blocked") ? "blocked" : statuses.some(r=>r.state==="warn") ? "warn" : "free";
     const blocked = ids.some(id=>blockedAt(seatById(id), WZ.date, WZ.time));
-    const over = total > seatsMax(ids), under = adults < seatsMin(ids);
+    const over = total > seatsMax(ids), under = adults < seatsMin(ids, WZ.date);
     const txt = blocked ? "사용 중지" : state==="free" ? (over?"인원 초과":under?"인원 부족":"이용 가능") : "이용 불가";
     const cls = blocked ? "blocked" : state!=="free" ? state : (over||under ? "warn" : "free");
     const bad = blocked || state!=="free" || over || under;
     const mv = statuses.reduce((a,r)=>a+(r.movable?r.movable.length:0),0);
     const key = ids.length > 1 ? x.id : ids[0];
-    const sub = isTable(x) ? `${roomMin(x)?roomMin(x)+"~":""}${seatMax(x)}인${x.note?` · ${esc(x.note)}`:""}` : `${seatsMin(ids)}~${seatsMax(ids)}인`;
+    const sub = isTable(x) ? `${roomMin(x)?roomMin(x)+"~":""}${seatMax(x)}인${x.note?` · ${esc(x.note)}`:""}` : `${seatsMin(ids, WZ.date)}~${seatsMax(ids)}인${ids.length===1 && roomOpt(x) ? ` · 최적 ${roomOpt(x)}` : ""}`;
     return `<button class="scell ${WZ.seat===key?'on':''} ${bad?'warned busy':''} ${extraCls||''}" onclick="wzSeat('${key}')" ${x.note&&ids.length>1?`title="${esc(x.note)}"`:""}>
       <span class="sn">${label}</span>
       <span class="sc">${sub}</span>
@@ -8869,7 +9064,10 @@ function wzStepSeat(){
         <span class="sn">${esc(floorLabel(fl))}</span>
         <span class="sc">테이블 ${tb.length} · ${tb.reduce((a,t)=>a+(t.seats||4),0)}석</span>
         <span class="avail ${bad?'warn':'free'}">${txt}</span>
-      </button>`; }).join("")}</div>`;
+      </button>`; }).join("")}</div>
+      <button class="wz-adv ${WZ.tableAdv?'on':''}" onclick="WZ.tableAdv=!WZ.tableAdv; render()">${WZ.tableAdv?"▲":"▼"} 특정 테이블 지정 <span class="lbl-note">창가석·여포 같은 요청이 있을 때만. 보통은 층만 고르면 됩니다</span></button>
+      ${WZ.tableAdv ? floors.map(fl=>`<div class="lbl" style="margin-top:10px">${esc(floorLabel(fl))}</div>
+        <div class="sgrid tables">${floorTables(fl).map(t=>cell([t.id], t)).join("")}</div>`).join("") : ""}`;
   }
   const sess = WZ.time ? sessionAt(WZ.date, WZ.time) : null;
   const stayTxt = WZ.time ? (sess && sess.stay==="end" ? `${sess.name} 세션 끝(${hm(minToHM(sessionEnd(WZ.date, sess)))})까지 한 팀` : `${hmDur(stayMinAt(WZ.date, WZ.time))} 머무는 기준`) : "";
@@ -8935,9 +9133,9 @@ async function wzSeat(v){
       if(!await uiConfirm2(`${label}은 최대 ${seatsMax(ids)}명입니다. 지금 ${people}명입니다.\n간이 의자 등으로 감당 가능한 경우에만 배정하세요.`)) return;
     }else{
       const adults = adultCount(people, WZ.infants);
-      if(adults < seatsMin(ids)){
+      if(adults < seatsMin(ids, WZ.date)){
         const basis = store().settings.minCountAdultsOnly===false ? "총 인원" : "성인";
-        if(!await uiConfirm(`${label} 최소 인원 미달`, `최소 ${seatsMin(ids)}명부터 받습니다.\n지금 ${basis} ${adults}명입니다${WZ.infants?` (유아 ${WZ.infants}명 제외)`:""}.`, {ok:"그래도 배정", cancel:"다시 고르기"})) return;
+        if(!await uiConfirm(`${label} 최소 인원 미달`, `최소 ${seatsMin(ids, WZ.date)}명부터 받습니다.\n지금 ${basis} ${adults}명입니다${WZ.infants?` (유아 ${WZ.infants}명 제외)`:""}.`, {ok:"그래도 배정", cancel:"다시 고르기"})) return;
       }
     }
     /* 한 테이블에 안 들어가는 인원이 테이블 하나를 고르면 붙일 테이블을 함께 제안 */
@@ -8949,7 +9147,7 @@ async function wzSeat(v){
         WZ.seatExtra = f.extra;
       }
     }
-    if(j && j.note && !await uiConfirm(`${label} — ${j.note}`, "손님께 확인하셨나요?", {ok:"확인했음", cancel:"다시 고르기"})) return;
+    if(j && (j.split || j.note) && !await uiConfirm(`${label} — ${j.note || "공간이 나뉩니다"}`, j.split ? "테이블이 나뉘어 앉게 됩니다. 손님께 확인하셨나요?" : "손님께 확인하셨나요?", {ok:"확인했음", cancel:"다시 고르기"})) return;
     if(j) WZ.seatExtra = ids.slice(1);
     WZ.seat = j ? ids[0] : v; WZ.seatJoin = j ? j.id : null; wzAutoNext();
     return;
