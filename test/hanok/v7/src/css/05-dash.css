@@ -1,0 +1,226 @@
+/* ============================================================
+   5. 대시보드
+   ============================================================ */
+/* ---------- 지표줄 (확정 예약 / 예약률 / 룸 미배정 / 경고 / 확인 필요) ----------
+   칸 사이 1px 틈에 --border 색이 비쳐 구분선이 됩니다. 눌러서 여는 칸은 button 입니다 */
+.metrics{display:grid; grid-template-columns:repeat(2,1fr); gap:1px; background:var(--border)}
+.metric{background:var(--surface); padding:var(--s16) var(--s16)}
+.metric .v{font-weight:700; line-height:32px; font-size:var(--fs-num); letter-spacing:-.03em; color:var(--text)}
+.metric .u{font-size:var(--fs-body); font-weight:600; margin-left:var(--s4)}
+.metric .k{margin-top:var(--s4); font-weight:700; font-size:var(--fs-sub); color:var(--text-2); letter-spacing:.01em; line-height:20px}
+.metric .s{font-size:var(--fs-sub); color:var(--text-3); margin-top:0; line-height:20px}
+.metric.tapm .s{color:var(--text-2)}
+/* 경고는 벽돌색, 확인 필요는 호박색 — 색뿐 아니라 칸 바탕까지 칠해 멀리서도 보이게 */
+.metric.warn{background:var(--rust-soft)}
+.metric.warn .v{color:var(--rust)}
+.metric.amber{background:var(--amber-soft)}
+.metric.amber .v{color:var(--amber)}
+button.metric{border:none; text-align:left; font:inherit; color:inherit; cursor:pointer}
+button.metric:hover{background:var(--surface-2)}
+
+/* ---------- 타임라인 상단 (예약률 · 영업시간 · 범례) ---------- */
+.tl-top{display:flex; flex-direction:column; gap:var(--s12); margin-bottom:var(--s16)}
+.tl-kpis{display:flex; align-items:baseline; flex-wrap:wrap; row-gap:var(--s8); gap:var(--s16)}
+.tl-kpi{font-size:var(--fs-sub); color:var(--text-3)}
+.tl-kpi b{font-size:var(--fs-head); color:var(--text); line-height:28px}
+.tl-kpi.sub b{font-size:var(--fs-body); color:var(--text-2); font-weight:600}
+/* 영업시간 세 칸 (hoursLineHtml). 라벨은 옅게, 값은 본문색.
+   칸 사이 세로선은 --border 가 surface-2 위에서 거의 안 보여 --border-strong 을 씁니다 */
+.hours-line{font-size:var(--fs-sub); color:var(--text); background:var(--surface-2);
+  border:none; border-radius:var(--r-md); padding:var(--s8) var(--s12); margin-bottom:var(--s12);
+  display:grid; grid-template-columns:repeat(3,1fr)}
+.hours-line .hl-c{min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 var(--s8); font-weight:600; text-align:center}
+.hours-line .hl-c + .hl-c{border-left:1px solid var(--border-strong)}
+.hours-line .hl-c i{font-style:normal; color:var(--text-3); font-weight:600; margin-right:6px}
+.hours-line.closed{grid-template-columns:1fr}
+/* 마법사 날짜 화면의 오른쪽 열은 1280 에서도 530px 정도라 세 칸이 빠듯합니다 — 한 단계 작게 */
+.wz-time .hours-line{font-size:12px}
+.tl-legends{display:flex; gap:var(--s16); align-items:center; flex-wrap:wrap; row-gap:var(--s8);
+  padding-top:var(--s4)}
+.tl-legend{font-size:var(--fs-sub); color:var(--text-2); display:inline-flex; align-items:center; gap:var(--s8)}
+.tl-legend i{width:14px; height:10px; border-radius:var(--r-sm); display:inline-block; background:var(--pine)}
+.tl-legend i.tent{background-color:#2C2C2E; background-image:repeating-linear-gradient(-45deg, rgba(255,255,255,.34) 0 4px, transparent 4px 10px); border:1px dashed rgba(255,255,255,.75)}   /* (0,2,1) 이라 .lgsw.tent 를 이깁니다 — 같은 모양으로 */
+.tl-legend i.blk.warned{background:var(--rust)}
+/* 범례 색 견본 — 타임라인 블록(.blk)은 absolute 라 그대로 쓰면 글자와 겹칩니다 */
+.lgsw{display:inline-block; position:static; width:15px; height:11px; border-radius:var(--r-sm);
+  vertical-align:-1px; flex:none}
+.lgsw.ok{background:#3A3833}
+.lgsw.tent{background-color:#2C2C2E; background-image:repeating-linear-gradient(-45deg, rgba(255,255,255,.34) 0 4px, transparent 4px 10px); border:1px dashed rgba(255,255,255,.75)}   /* 먹색 + 빗금 = 잠정 */
+.lgsw.warn{background:var(--rust)}
+/* 오늘 변동 — 블록 앞부분 파랑과 같은 색 (타임라인 .chg-chip 참고) */
+.lgsw.chg{background:#3D8BD9}
+
+/* ---------- 좌석 가동 타임라인 ----------
+   행(.tl-row) = 좌석 이름(.tl-name) + 그래프(.tl-track) + 예약률(.tl-rate).
+   좁은 화면에서는 .tl-scroll 이 가로로 스크롤되고, 이름 열만 왼쪽에 고정됩니다 (900px 이상에서는 고정 해제 — 11구역).
+   .tl-scroll 은 카드 안쪽 여백 14px 만큼 좌우로 삐져나가 그래프가 카드 끝까지 닿습니다. */
+/* 예전엔 margin:0 -14px 로 카드 여백까지 그래프를 끌어냈는데(-14 가 카드 여백 12~16px 과 안 맞아 카드 밖으로 2px 삐져나감),
+   바탕이 검정이면 줄 사이 틈으로 검정이 비쳐 깨져 보였습니다. 카드 안에서만 스크롤합니다 (7차-M) */
+.tl-scroll{overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; margin:0; padding:0; position:relative}
+.tl{display:flex; flex-direction:column; gap:var(--s4); min-width:660px}
+/* 좌석 이름이 두 줄이면 행이 그래프보다 커져 어긋납니다. 이름은 한 줄(nowrap)로, 행 높이는 그래프(30px)가 정합니다 */
+.tl-row{display:flex; gap:var(--s8); align-items:center; min-height:30px}
+/* 고정된 좌석 이름 칸 — 가로 스크롤해도 '흰 열'로 보이게
+   1) 이름 칸 높이가 글자 높이만큼밖에 안 되면, 테이블이 여러 개인 홀처럼 줄이 높은 좌석에서
+      흰 배경이 글자 주변에만 생기고 위아래로 그래프가 비쳤습니다. → align-self:stretch 로 행 높이 전체를 채웁니다.
+   2) (7차-M 에서 정리) .tl-scroll 이 카드 밖으로 삐져나가던 음수 margin 을 없애 이름 칸이 스크롤 상자 왼쪽 끝에 딱 붙습니다.
+      왼쪽을 덧칠하던 -26px 그림자도 필요 없어졌습니다.
+   box-shadow 두 겹 = 그래프와 나누는 세로선 / 스크롤됐음을 알리는 옅은 그림자 */
+.tl-name{
+  position:sticky; left:0; z-index:5; align-self:stretch;
+  width:88px; flex:none; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:var(--s4); padding:0 var(--s8) 0 0; text-align:center; white-space:nowrap; overflow:hidden;
+  font-size:var(--fs-sub); font-weight:700; line-height:1.2; height:auto;
+  background:var(--surface);
+  box-shadow:1px 0 0 var(--border), 8px 0 8px -6px rgba(23,22,20,.16);
+}
+.tl-name b{color:var(--text); font-weight:700}
+.tl-name small{font-size:var(--fs-label); font-weight:500; color:var(--text-3); margin-left:var(--s4)}
+/* 좌석 이름 옆 사용 중지 표시 — 예약 블록에 가려도 여기서는 항상 읽힙니다 */
+.tl-name .bk{display:block; font-size:var(--fs-label); font-weight:700; color:var(--rust);
+  margin-top:var(--s4); line-height:1.25; white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis; max-width:100%}
+/* 예전에 흰 열을 만들던 가상요소 방식 — 좌표가 계속 어긋나 box-shadow 로 바꾸고 껐습니다 */
+.tl-name::before{display:none}
+/* 시각 눈금 행(.axis) — 이름·예약률 칸은 작은 회색 글씨 */
+.tl-row.axis .tl-name{font-size:var(--fs-label); color:var(--text-3); font-weight:600; background:var(--surface); box-shadow:none}
+.tl-row.axis .tl-rate{font-size:var(--fs-label); color:var(--text-3); font-weight:600; align-items:center; background:var(--surface)}
+.tl-row.axis .tl-rate .rt{font-size:var(--fs-label); color:var(--text-3); font-weight:600}
+.tl-row.axis .tl-track{height:18px; background:none; border:none}
+.tl-row.axis .tk b{display:block}
+/* 사용 중지 좌석 — 행 전체가 아니라 그래프만 흐리게 합니다.
+   행 전체에 opacity 를 주면 왼쪽에 고정된 이름 열까지 반투명해져서
+   모바일에서 가로 스크롤할 때 그 줄만 흰 열이 끊겨 보입니다. */
+.tl-row.off-seat .tl-track{opacity:.42; background:repeating-linear-gradient(45deg, rgba(23,22,20,.06) 0 5px, transparent 5px 10px)}
+.tl-row.off-seat .tl-rate{opacity:.42}
+.tl-row.off-seat .tl-name{color:var(--text-3)}
+.tl-row.off-seat .tl-name b{color:var(--text-3)}
+/* 예약률 칸 — 오른쪽 끝. 기준선(.rb)이 있는 행과 없는 행의 좌우 위치를 맞추려고 가운데 정렬.
+   flex-direction 을 row 로 명시하는 이유: 예전 규칙의 column 이 남으면 justify-content 가 위아래 정렬로 작동합니다.
+   z-index 는 flex 항목이라 position:static 이어도 먹습니다 (그래프 위로) */
+.tl-rate{position:static; z-index:3; width:58px; flex:none; display:flex; flex-direction:row; align-items:center; justify-content:center; gap:var(--s4);
+  font-size:var(--fs-sub); font-weight:700; color:var(--text-2); box-shadow:none; background:transparent}
+.tl-rate .over{font-size:var(--fs-label); color:var(--rust); font-weight:700}
+.tl-rate .rb{display:flex; align-items:center; justify-content:center; gap:var(--s4); flex-direction:column; height:100%; width:auto; min-width:34px}
+.tl-rate .rb i{flex:1; width:1px; background:var(--border-strong); min-height:5px}
+.tl-rate .rb b{font-size:var(--fs-sub); font-weight:700; color:var(--text-2); line-height:1}
+.tl-rate .rt{font-size:var(--fs-sub); font-weight:700; color:var(--text-2); line-height:1; width:100%; text-align:center}
+/* 그래프 — 시각 눈금(.tk), 테이블 줄(.lane), 예약 블록(.blk), 현재 시각 선(.nowline), 음영 띠 */
+.tl-track{position:relative; flex:1; min-width:0; height:30px; border:1px solid var(--border); overflow:hidden; background:#FAF8F3; border-radius:var(--r-sm)}
+.tk{position:absolute; top:0; bottom:0; width:0}
+.tk i{position:absolute; top:0; bottom:0; width:1px; background:var(--border)}
+.tk b{display:none; position:absolute; top:2px; left:2px; font-size:var(--fs-label); color:var(--text-3); font-weight:600}
+.lane{position:absolute; left:0; right:0; border-top:1px solid var(--border)}
+/* 예약 블록 — 확정은 먹색(#3A3833), 지난 것은 회색, 경고는 벽돌색.
+   잠정은 색이 아니라 **빗금 무늬 + 점선 테두리** (6차-H). 바탕색은 상태 그대로라 '먹색+빗금 = 잠정 확정', '벽돌+빗금 = 잠정 경고'.
+   그래서 background 는 반드시 background-color 로 씁니다 — 단축 속성은 빗금(background-image)을 지웁니다 */
+.blk{position:absolute; color:#fff; font-size:var(--fs-label); padding:0 var(--s4); display:flex; align-items:center; gap:var(--s4); overflow:hidden; white-space:nowrap; border:1px solid rgba(255,255,255,.3); line-height:1; border-radius:var(--r-sm); background:#3A3833}
+.blk b{font-weight:700}
+.blk.tent{background-image:repeating-linear-gradient(-45deg, rgba(255,255,255,.34) 0 4px, transparent 4px 10px); border:1px dashed rgba(255,255,255,.75)}
+.blk.past{background-color:#B9B5AC}
+.blk.past.tent{background-color:#B9B5AC; background-image:repeating-linear-gradient(-45deg, rgba(0,0,0,.13) 0 4px, transparent 4px 10px)}
+/* 층 머리글 줄('룸', '1층 테이블') — 얇고 회색. 좌석 줄이 20개라 묶음이 없으면 눈이 길을 잃습니다 (8차) */
+.tl-row.floor .blk.multi{align-items:flex-start; padding-top:3px}
+.tl-row.group{min-height:18px; margin-top:var(--s4)}
+.tl-row.group .tl-name{font-size:var(--fs-label); color:var(--text-3); font-weight:700; letter-spacing:.04em; box-shadow:none; background:transparent}
+.tl-row.group .tl-track, .tl-row.group .tl-rate{border:none; background:none; height:14px}
+/* 합쳐 쓰는 예약 — 관련된 줄마다 같은 블록이 그려지고 ⊕ 표시 */
+.blk.joined .jn, .blk.split .jn{font-style:normal; font-size:11px; margin-right:2px; opacity:.9}
+/* 누를 수 있는 블록은 button 입니다 — 글자 크기·여백을 .blk 과 같게 다시 적어 button 기본 스타일을 지웁니다 */
+button.blk{border:1px solid rgba(255,255,255,.3); cursor:pointer; font:inherit; font-family:inherit; font-size:var(--fs-label); line-height:1; padding:0 var(--s4); letter-spacing:-.01em; text-align:left; overflow:hidden; text-overflow:clip}
+button.blk:hover{filter:brightness(1.15)}
+button.blk b{font-weight:700; font-size:var(--fs-label)}
+/* 확정 / 잠정 / 경고를 구분해서 보여줍니다
+   잠정 = 빗금 무늬 + 점선 테두리, 경고 = 붉은색, 둘 다면 붉은색 위에 빗금 */
+button.blk.warned{border-color:rgba(255,255,255,.45); background-color:var(--rust)}
+button.blk.warned.past{background-color:#C08476}
+button.blk.tent.warned{background-color:var(--rust); background-image:repeating-linear-gradient(-45deg, rgba(255,255,255,.34) 0 4px, transparent 4px 10px); border:1px dashed #FFE2DA}
+button.blk.tent{background-image:repeating-linear-gradient(-45deg, rgba(255,255,255,.34) 0 4px, transparent 4px 10px); border:1px dashed rgba(255,255,255,.75)}
+/* 오늘 등록·변경·취소·노쇼가 일어난 예약(changeTag 가 있는 것) — 글자 부분만 파란 칩(.chg-chip)으로.
+   6차 전의 '왼쪽 4px 띠 + 하늘색 글자'는 회색 잠정 블록 위에서 거의 안 보였고,
+   6차 A 의 '블록 전체 파랑 + 상태색 테두리' 는 상태(잠정 점선·경고 벽돌)와 변동이 서로 덮어 조합이 어지러웠습니다(재아 검토).
+   블록 바탕·테두리는 원래 상태 그대로 두고 그 위에 파란 칩만 얹으므로, 잠정+경고+변동이 한 블록에서 다 읽힙니다.
+   내일이 되면 changeTag 가 비어 저절로 풀립니다. '잠정' 꼬리표(.tt)는 지웠습니다(툴팁의 ' · 잠정'은 남김) */
+/* 8차-K(재아): 변동 블록은 '도형을 겹치는' 게 아니라 블록 자체가 반반 — 앞 절반은 밝은 파랑, 뒤 절반은 원래 상태색.
+   경계는 짧게 섞어 깨져 보이지 않게. 잠정(빗금)은 빗금을 그 위에 겹칩니다 */
+.blk.changed{background-image:linear-gradient(90deg, #3D8BD9 0, #3D8BD9 48%, rgba(61,139,217,0) 56%)}
+/* 8차-Y(재아): 파란 변동 띠를 위에 — 앞부분엔 빗금이 안 보이고, 파랑이 빠지는 뒤쪽에만 빗금 */
+button.blk.tent.changed{background-image:linear-gradient(90deg, #3D8BD9 0, #3D8BD9 48%, rgba(61,139,217,0) 56%), repeating-linear-gradient(-45deg, rgba(255,255,255,.34) 0 4px, transparent 4px 10px)}
+button.blk.tent.warned.changed{background-image:linear-gradient(90deg, #3D8BD9 0, #3D8BD9 48%, rgba(61,139,217,0) 56%), repeating-linear-gradient(-45deg, rgba(255,255,255,.34) 0 4px, transparent 4px 10px)}
+.blk .chg-chip{display:inline; background:none; padding:0; margin:0; border-radius:0; box-shadow:none; font-size:inherit; color:#fff}
+.blk .chg-chip b{color:#fff; font-size:inherit; margin-right:0}
+.blk.past.changed{background-image:linear-gradient(90deg, #7FB0DF 0, #7FB0DF 48%, rgba(127,176,223,0) 56%)}
+.blk .chg-chip-old{display:inline-block; line-height:12px; height:12px; padding:0 4px; margin-left:-2px; border-radius:3px; font-size:10px;   /* inline-flex 는 시각·이름 사이 공백을 버립니다. 15px 는 블록(19px)을 거의 채워 어색 → 12px·글자 10px */
+  background:var(--blue); color:#fff; box-shadow:0 0 0 1px rgba(255,255,255,.4)}   /* (옛 칩 규칙 — 참고용, 안 씀) */
+/* 8차-J: 현재 시각 선은 줄마다가 아니라 축 줄에 하나만 두고 표 전체를 가로지릅니다(높이는 afterRender 가 맞춤) */
+.nowline{position:absolute; top:0; bottom:0; width:2px; background:var(--rust); z-index:6; pointer-events:none}
+.tl-row.axis{position:relative; z-index:5; overflow:visible}
+.tl-row.axis .tl-track{overflow:visible} .tl-row.axis .tl-rate{background:transparent}
+/* 그래프 범위를 벗어난 시각 — 끝에 붙여 두되 '실제 위치가 아님'을 점선으로 알립니다 */
+.nowline.edge{background:repeating-linear-gradient(180deg,
+  var(--rust) 0 4px, transparent 4px 8px)}
+.nowline.edge.before{margin-left:1px}
+.nowline.edge.after{margin-left:-3px}
+/* 영업 외 시간(.offband) · 휴무(.closed-band) 는 회색 빗금, 브레이크타임(.breakband) 은 옅은 벽돌색 */
+.offband{position:absolute; top:0; bottom:0; z-index:1; pointer-events:none; background:repeating-linear-gradient(45deg, rgba(27,27,25,.24) 0 5px, rgba(27,27,25,.13) 5px 10px)}
+.breakband{position:absolute; top:0; bottom:0; border-left:1px dashed rgba(156,59,39,.45); border-right:1px dashed rgba(156,59,39,.45); z-index:1; pointer-events:none; background:rgba(156,59,39,.20)}
+.offband.overlane{z-index:0; background:repeating-linear-gradient(45deg, rgba(27,27,25,.30) 0 6px, rgba(27,27,25,.17) 6px 12px)}   /* 테이블 수를 넘은 팀의 칸 — 영업 종료와 같은 빗금 */
+.closed-band{position:absolute; top:0; right:0; bottom:0; left:0; z-index:1; pointer-events:none; background:repeating-linear-gradient(45deg, rgba(27,27,25,.30) 0 6px, rgba(27,27,25,.17) 6px 12px)}
+/* 좌석 사용 중지 구간 — 영업시간 밖과 같은 빗금이되, 사람이 일부러 잠근 것이라
+   더 진하고 벽돌색 테두리를 둡니다. 사유는 구간이 넓을 때만 적습니다. */
+.blockband{position:absolute; top:0; bottom:0; z-index:1; pointer-events:none;
+  display:flex; align-items:center; justify-content:flex-start; padding-left:var(--s4); overflow:hidden;
+  background:repeating-linear-gradient(45deg,
+    rgba(166,59,38,.26) 0 6px, rgba(166,59,38,.11) 6px 12px);
+  border-left:1px dashed rgba(166,59,38,.65); border-right:1px dashed rgba(166,59,38,.65)}
+.blockband i{font-style:normal; font-size:var(--fs-label); font-weight:700; color:var(--rust);
+  background:rgba(255,253,250,.9); border:1px solid rgba(166,59,38,.3); border-radius:var(--r-sm);
+  padding:1px var(--s4); line-height:1.4;
+  white-space:nowrap; max-width:96%; overflow:hidden; text-overflow:ellipsis}
+
+/* ---------- 예약 목록 — 한 줄에 시각 · 이름 · 인원 · 전화 · 좌석/상태 알약 ---------- */
+.rlist{display:flex; flex-direction:column}
+/* 한 줄 = grid. 느낌표 | 시각 | 이름 | 인원 | 룸 | 전화 | 나머지(꼬리표).
+   6차 전에는 flex 로 흘러서 룸 이름 길이('동탁 룸' vs '지하 홀')에 따라 전화번호 자리가 밀렸습니다.
+   앞 여섯 칸을 고정 폭으로 두면 전화 열이 세로로 맞습니다. 인원은 '4명(유아1)' 까지 들어가게 72px */
+.rrow{display:grid; grid-template-columns:12px 52px 92px 72px 88px 118px minmax(0,1fr); column-gap:var(--s8); align-items:center; width:100%; text-align:left; background:none; border:none; border-top:1px solid var(--border); font:inherit; color:inherit; white-space:nowrap; overflow:hidden; padding:var(--s12) var(--s8); padding-top:var(--s8); padding-bottom:var(--s8)}
+.rrow:first-child{border-top:none}
+.rrow:hover{background:var(--surface-2)}
+/* 끝난 예약은 흐리게 — 노쇼는 확인할 일이 남아 조금 덜 흐리게 */
+/* 8차-P(재아): 흐림만으로는 안 보여서 — 방문은 초록 체크 + 회색 바탕, 취소는 회색 + 가운데 줄, 노쇼는 벽돌색 표시 + 가운데 줄 */
+.rrow.s-방문, .rrow.s-취소, .rrow.s-노쇼{background:var(--surface-2); color:var(--text-3)}
+.rrow.s-방문 .rr-n{color:var(--text-2)}
+/* 취소는 줄 전체에 굵은 삭선 + 흐리게(방문과 구분) */
+.rrow.s-취소{opacity:.55; position:relative}
+.rrow.s-취소:after{content:""; position:absolute; left:var(--s8); right:var(--s8); top:50%; height:2px; background:var(--text-3); pointer-events:none}
+.rrow.s-노쇼 .rr-n{text-decoration:line-through} .rrow.s-노쇼 .rr-t{color:var(--rust)}
+.rrow .pill, .rrow .tag, .rrow .chg-tag{padding:1px 6px; font-size:var(--fs-label); line-height:1.4; font-weight:600; min-height:0}
+.mrow.s-방문, .mrow.s-취소, .mrow.s-노쇼{background:var(--surface-2); color:var(--text-3)}
+.mrow.s-취소{opacity:.55; position:relative} .mrow.s-취소:after{content:""; position:absolute; left:var(--s12); right:var(--s12); top:50%; height:2px; background:var(--text-3); pointer-events:none}
+.mrow.s-노쇼 .mr-n{text-decoration:line-through}
+/* 예약 시각이 지났는데 아직 확정인 것 — 느낌표(.rr-bang)만 또렷하게 */
+.rrow.late{opacity:.45; filter:grayscale(1)}
+.rrow.s-방문, .rrow.s-취소, .rrow.s-노쇼{filter:grayscale(1)}
+.now-sep{display:flex; align-items:center; gap:var(--s8); color:var(--rust); font-size:var(--fs-label); font-weight:700; padding:2px var(--s8)}
+.now-sep:before, .now-sep:after{content:""; flex:1; height:2px; background:var(--rust)}
+.rrow.late .rr-bang{opacity:1}
+.rr-bang{width:12px; flex:none; font-weight:700; color:var(--rust); font-size:var(--fs-body); text-align:center}
+.rr-t{font-size:var(--fs-body); font-weight:400; color:var(--text)}
+.rr-n{font-size:var(--fs-body); font-weight:400; min-width:0; overflow:hidden; text-overflow:ellipsis}
+/* 8차-T(재아): 아직 안 온 확정 예약만 굵게(시간·이름). 왼쪽 띠는 타임라인 블록과 같은 색 규칙 — 먹=확정, 벽돌=경고, 파랑=오늘 변동, 빗금=룸 미정(잠정) */
+.rrow.s-확정 .rr-t, .rrow.s-확정 .rr-n{font-weight:700}
+/* 행 자체를 타임라인 블록처럼: 경고=옅은 벽돌 바탕, 오늘 변동=앞 절반 옅은 파랑, 룸 미정=빗금. 지난·방문·취소는 흐림 */
+.rrow.k-warn{background:var(--rust-soft)}
+.rrow.k-chg{background-image:linear-gradient(90deg, #DCEBF9 0, #DCEBF9 42%, rgba(220,235,249,0) 52%)}
+.rrow.k-warn.k-chg{background-color:var(--rust-soft)}
+.rrow.k-tent{background-image:repeating-linear-gradient(-45deg, rgba(58,56,51,.07) 0 4px, transparent 4px 10px)}
+.rrow.k-tent.k-chg{background-image:linear-gradient(90deg, #DCEBF9 0, #DCEBF9 42%, rgba(220,235,249,0) 52%), repeating-linear-gradient(-45deg, rgba(58,56,51,.07) 0 4px, transparent 4px 10px)}
+.rrow.s-방문, .rrow.s-노쇼{opacity:.6}
+/* 인원·룸·전화는 같은 무게(--text-2, 500). 룸만 색 있는 tag 였던 것을 내렸습니다 — 셋 다 '읽는 값'이지 강조가 아닙니다 */
+.rr-p, .rr-seat, .rr-ph{font-size:var(--fs-sub); color:var(--text-2); font-weight:500; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.rr-seat.none{color:var(--rust)}   /* 미배정만 벽돌색 글자 — 자리를 잡아 줘야 하는 건이라 눈에 띄어야 합니다 */
+/* 꼬리표 묶음(코스·메모·상태·변동) — 전화 뒤에서 지금처럼 흐릅니다 */
+.rr-rest{display:flex; gap:var(--s4); min-width:0; overflow:hidden; align-items:center}
+
+/* ※ .sb-note 는 좌석 보드와 예약 상세의 문자 칸(.sb-t .sb-mock …)이 같은 접두사를 써서 두 곳에서 정의돼 있었습니다.
+   최종값은 같으니 여기 한 번만 둡니다 */

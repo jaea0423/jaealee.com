@@ -204,6 +204,7 @@ input:focus, select:focus{outline:2px solid var(--pine); outline-offset:-1px; bo
 /* ---------- 버튼 ----------
    기본은 흰 바탕 + 회색 테두리, primary 는 먹색. 모서리는 버튼류 전부 --r-sm(6px) 으로 통일했습니다 (Phase 3-1).
    높이는 위 '누르는 것 공통' 의 min-height 44px 이 정하고, .sm 은 글자만 작습니다 */
+a.btn{text-decoration:none; display:inline-flex; align-items:center}   /* 링크로 만든 버튼(비상 예약지 인쇄)도 버튼처럼 */
 .btn{border:1px solid var(--border-strong); background:var(--surface); color:var(--text); font-size:var(--fs-body); font-weight:600; padding:var(--s12) var(--s16); border-radius:var(--r-sm); line-height:20px}
 .btn.primary{color:#fff; background:var(--text); border-color:var(--text); box-shadow:none}
 .btn.ghost{border-color:transparent; background:var(--surface-2); color:var(--text-2)}
@@ -223,6 +224,13 @@ input:focus, select:focus{outline:2px solid var(--pine); outline-offset:-1px; bo
 .btn.off{opacity:.4}
 .btn-row{display:flex; gap:var(--s8); flex-wrap:wrap}
 .linkbtn{background:none; border:none; color:var(--pine); font-weight:700; padding:0; text-decoration:underline}
+/* 설정 ⓘ — 설명은 팝업에. 제목 옆에 작게, 누르기엔 충분히(터치 영역은 여백으로) */
+.ibtn{display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:50%; border:1px solid var(--text-3); color:var(--text-3);
+  background:none; font:italic 700 11px Georgia,serif; margin-left:6px; padding:0; vertical-align:middle; cursor:pointer; flex:none; box-shadow:0 0 0 6px transparent}
+.ibtn:hover{color:var(--text); border-color:var(--text)}
+.f-info{display:flex; justify-content:flex-end; margin:-4px 0 var(--s8)}
+.md-html{white-space:normal; line-height:1.55}
+.md-html b{font-weight:700}
 
 /* 선택형 버튼 그룹 (예약경로·상태) — 고른 것은 먹색으로 뒤집힘 */
 .seg{display:flex; gap:var(--s8); flex-wrap:wrap}
@@ -716,8 +724,9 @@ button.blk.tent{background-image:repeating-linear-gradient(-45deg, rgba(255,255,
 /* 8차-K(재아): 변동 블록은 '도형을 겹치는' 게 아니라 블록 자체가 반반 — 앞 절반은 밝은 파랑, 뒤 절반은 원래 상태색.
    경계는 짧게 섞어 깨져 보이지 않게. 잠정(빗금)은 빗금을 그 위에 겹칩니다 */
 .blk.changed{background-image:linear-gradient(90deg, #3D8BD9 0, #3D8BD9 48%, rgba(61,139,217,0) 56%)}
-button.blk.tent.changed{background-image:repeating-linear-gradient(-45deg, rgba(255,255,255,.34) 0 4px, transparent 4px 10px), linear-gradient(90deg, #3D8BD9 0, #3D8BD9 48%, rgba(61,139,217,0) 56%)}
-button.blk.tent.warned.changed{background-image:repeating-linear-gradient(-45deg, rgba(255,255,255,.34) 0 4px, transparent 4px 10px), linear-gradient(90deg, #3D8BD9 0, #3D8BD9 48%, rgba(61,139,217,0) 56%)}
+/* 8차-Y(재아): 파란 변동 띠를 위에 — 앞부분엔 빗금이 안 보이고, 파랑이 빠지는 뒤쪽에만 빗금 */
+button.blk.tent.changed{background-image:linear-gradient(90deg, #3D8BD9 0, #3D8BD9 48%, rgba(61,139,217,0) 56%), repeating-linear-gradient(-45deg, rgba(255,255,255,.34) 0 4px, transparent 4px 10px)}
+button.blk.tent.warned.changed{background-image:linear-gradient(90deg, #3D8BD9 0, #3D8BD9 48%, rgba(61,139,217,0) 56%), repeating-linear-gradient(-45deg, rgba(255,255,255,.34) 0 4px, transparent 4px 10px)}
 .blk .chg-chip{display:inline; background:none; padding:0; margin:0; border-radius:0; box-shadow:none; font-size:inherit; color:#fff}
 .blk .chg-chip b{color:#fff; font-size:inherit; margin-right:0}
 .blk.past.changed{background-image:linear-gradient(90deg, #7FB0DF 0, #7FB0DF 48%, rgba(127,176,223,0) 56%)}
@@ -735,6 +744,7 @@ button.blk.tent.warned.changed{background-image:repeating-linear-gradient(-45deg
 /* 영업 외 시간(.offband) · 휴무(.closed-band) 는 회색 빗금, 브레이크타임(.breakband) 은 옅은 벽돌색 */
 .offband{position:absolute; top:0; bottom:0; z-index:1; pointer-events:none; background:repeating-linear-gradient(45deg, rgba(27,27,25,.24) 0 5px, rgba(27,27,25,.13) 5px 10px)}
 .breakband{position:absolute; top:0; bottom:0; border-left:1px dashed rgba(156,59,39,.45); border-right:1px dashed rgba(156,59,39,.45); z-index:1; pointer-events:none; background:rgba(156,59,39,.20)}
+.offband.overlane{z-index:0; background:repeating-linear-gradient(45deg, rgba(27,27,25,.30) 0 6px, rgba(27,27,25,.17) 6px 12px)}   /* 테이블 수를 넘은 팀의 칸 — 영업 종료와 같은 빗금 */
 .closed-band{position:absolute; top:0; right:0; bottom:0; left:0; z-index:1; pointer-events:none; background:repeating-linear-gradient(45deg, rgba(27,27,25,.30) 0 6px, rgba(27,27,25,.17) 6px 12px)}
 /* 좌석 사용 중지 구간 — 영업시간 밖과 같은 빗금이되, 사람이 일부러 잠근 것이라
    더 진하고 벽돌색 테두리를 둡니다. 사유는 구간이 넓을 때만 적습니다. */
@@ -906,7 +916,14 @@ button.blk.tent.warned.changed{background-image:repeating-linear-gradient(-45deg
   border:1px solid #CDDFD8; border-radius:var(--r-sm); padding:var(--s4) var(--s8)}
 /* 질문과 본문을 세로 가운데에 — 태블릿에서 눈높이에 오게. 세로가 760px 이하이면 위부터 채웁니다(11구역) */
 .wz-mid{flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; justify-content:center}
-.wz-q{text-align:center; padding:var(--s8) var(--s16) var(--s4)}
+.wz-q{text-align:center; padding:var(--s8) var(--s16) var(--s4); display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:var(--s12); max-width:940px; width:100%; margin:0 auto}   /* 폭은 .wz-body 와 같게 — 이전/다음이 입력부 끝선에 옵니다(재아) */
+.wz-q h2{grid-column:2}
+.wz-q .wz-warn{grid-column:1 / -1}
+/* 제목 양옆 이전/다음(8차-Z 재아) — 못 가는 쪽은 연하게. 아래 큰 '다음' 은 그대로 */
+.wz-side{background:var(--surface); border:1px solid var(--border-strong); border-radius:999px; padding:var(--s8) var(--s16); font-size:var(--fs-body); font-weight:700; color:var(--text); cursor:pointer; white-space:nowrap}
+.wz-side.prev{justify-self:start} .wz-side.next{justify-self:end}
+.wz-side.off{opacity:.3; cursor:default}
+@media (max-width:767px){ .wz-side{display:none} }
 .wz-q h2{margin:0; font-size:var(--fs-head); font-weight:700; letter-spacing:-.01em; line-height:1.4}
 .wz-warn{margin-top:var(--s12); font-size:var(--fs-sub); font-weight:700; color:var(--rust)}
 .wz-body{overflow-y:auto; padding:var(--s16) var(--s16) var(--s24); max-width:940px; width:100%; margin:0 auto; flex:0 1 auto; overflow:visible}
@@ -977,6 +994,7 @@ button.bday.sel .b{background:rgba(255,255,255,.22); color:#fff}
 /* 2단계 인원 — 큰 숫자 타일. 6명 넘으면 .pmore 로 직접 입력, 유아·의자는 .infant 안의 작은 스테퍼 */
 .pgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:var(--s12)}
 .ptile{border:1px solid var(--border-strong); background:var(--surface); padding:var(--s24) 0 var(--s16); display:flex; flex-direction:column; align-items:center; gap:1px; border-radius:var(--r-md)}
+.ptile.off{opacity:.4}
 .ptile .pn{font-size:var(--fs-num); font-weight:700; letter-spacing:-.03em; line-height:1}
 .ptile .pu{font-size:var(--fs-sub); color:var(--text-3); font-weight:600}
 .ptile.on{background:var(--pine); border-color:var(--pine)}
@@ -1032,7 +1050,9 @@ button.bday.sel .b{background:rgba(255,255,255,.22); color:#fff}
 .scell.on.warned{background:var(--rust); border-color:var(--rust)}
 .scell.on.warned .avail{background:rgba(255,255,255,.24); color:#fff}
 /* 0단계 예약 경로 · 4단계 메뉴 — 같은 큰 카드(.srccell)를 씁니다. 메뉴는 .menu4/.menu2 로 칸 수만 다름 */
-.srcgrid{display:grid; grid-template-columns:1fr 1fr; gap:var(--s12)}
+.srcgrid{display:grid; grid-template-columns:1fr 1fr; gap:var(--s12); width:100%; min-width:0}
+.srcgrid > .srccell{min-width:0; width:100%; box-sizing:border-box}   /* 글자가 길어도 칸이 폭을 밀어내지 않게 */
+.srccell .s-l{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .sgrid.any.two{grid-template-columns:1fr 1fr}
 /* 1단계 타일 아래 '한 화면으로 입력' — 타일과 경쟁하지 않게 작은 회색 글자 링크 */
 .wz-quick{display:block; margin:var(--s24) auto 0; color:var(--text-3); font-size:var(--fs-sub); font-weight:600}
@@ -1161,7 +1181,10 @@ button.bday.sel .b{background:rgba(255,255,255,.22); color:#fff}
   border:none; border-bottom:1px solid var(--border); padding:var(--s12) var(--s12)}
 .smsrow:last-child{border-bottom:none}
 .smsrow .smsmsg{font-size:var(--fs-sub); line-height:1.65; color:var(--text-2); padding:var(--s8) 0}
-.sr-top{display:flex; align-items:center; gap:var(--s8); flex-wrap:wrap; margin-bottom:var(--s4)}
+.sr-top{display:flex; align-items:center; gap:var(--s8); flex-wrap:wrap; margin-bottom:0; width:100%; background:none; border:0; padding:0; text-align:left; font:inherit; color:inherit; cursor:pointer}
+.smsrow.on .sr-top{margin-bottom:var(--s4)}
+.sr-top .fh-i{margin-left:auto}
+.sr-k.free{background:var(--surface-2); color:var(--text-2)}
 .sr-t{font-size:var(--fs-label); color:var(--text-3); font-variant-numeric:tabular-nums}
 .sr-k{font-size:var(--fs-label); font-weight:700; border-radius:var(--r-sm); padding:1px var(--s8)}
 .sr-k.new{background:var(--pine-soft); color:var(--pine)}
@@ -1309,7 +1332,11 @@ button.bday.sel .b{background:rgba(255,255,255,.22); color:#fff}
 .dayrow{border:1px solid var(--border); padding:var(--s12) var(--s12); margin-bottom:var(--s8); background:var(--surface); border-radius:var(--r-md)}
 .dayrow.sun .dr-h b{color:#B0553F}
 .dayrow.sat .dr-h b{color:#3E6291}
-.dr-h{display:flex; align-items:center; gap:var(--s12); margin-bottom:var(--s8)}
+.dr-h{display:flex; align-items:center; gap:var(--s12); margin-bottom:0; width:100%; background:none; border:0; padding:0; text-align:left; font:inherit; color:inherit; cursor:pointer}
+.dayrow.on .dr-h{margin-bottom:var(--s8)}
+.dr-sum{margin-left:auto; font-size:var(--fs-label); color:var(--text-3); text-align:right}
+.dr-h .fh-i{flex:none}
+.lo-ref{font-style:normal; font-size:var(--fs-label); color:var(--text-3)}
 .dr-h b{font-size:var(--fs-body)}
 .dr-h .btn{margin-left:auto}
 .dr-in label{display:flex; align-items:center; gap:var(--s8); margin-bottom:var(--s8); flex-wrap:wrap}
@@ -1384,6 +1411,10 @@ button.bday.sel .b{background:rgba(255,255,255,.22); color:#fff}
 .hmore{margin-top:var(--s8)} .hmore summary{cursor:pointer; font-size:var(--fs-sub); color:var(--text-2); padding:var(--s8) 0; list-style:none}
 .hmore summary::-webkit-details-marker{display:none} .hmore summary:before{content:"▸ "} .hmore[open] summary:before{content:"▾ "}
 .cday.closed{background-image:repeating-linear-gradient(-45deg, rgba(58,56,51,.08) 0 4px, transparent 4px 10px)}
+/* 마법사·수정 달력의 휴무일 — 흐리고 빗금. 누를 수는 있습니다(휴무에도 받을 사정이 있을 수 있어 사장에게 맡김, 8차-Y 재아) */
+.btn-day.closed{background-image:repeating-linear-gradient(-45deg, rgba(58,56,51,.10) 0 4px, transparent 4px 10px)}
+.btn-day.closed .d{opacity:.4; text-decoration:line-through}
+.btn-day.closed.sel .d{opacity:1}
 .cday .cn small{font-weight:500; color:var(--text-3)}
 .tag.tapchip{cursor:pointer; font:inherit; font-size:var(--fs-sub); font-weight:600} .tag.tapchip.right{margin-left:auto}
 .tl-kpis{display:flex; align-items:center; flex-wrap:wrap; gap:var(--s8)}
@@ -1400,7 +1431,15 @@ button.bday.sel .b{background:rgba(255,255,255,.22); color:#fff}
 .sm-done{color:var(--pine); font-weight:600} .sm-plan{color:var(--text); font-weight:600} .sm-skip{color:#8A6D1F; font-weight:600} .sm-fail{color:var(--rust); font-weight:600}
 /* 8차-P(재아): 설정 한 줄이 한 행을 다 먹지 않게 — 제목은 왼쪽, 버튼·토글은 오른쪽, 설명은 아래 한 줄 */
 .fold-b label.f, .fold-b .f{display:grid; grid-template-columns:1fr auto; column-gap:var(--s16); align-items:center; margin-bottom:var(--s8)}
-.fold-b .f > .lb{margin:0}
+.fold-b .f > .lb{margin:0; display:flex; align-items:center; min-width:0}
+/* 제목과 조작부가 멀어 눈이 헤맵니다 — 사이를 점선으로 이어 줍니다(8차-AA 재아) */
+.fold-b .f > .lb:after{content:""; flex:1; min-width:16px; margin:0 var(--s12); border-bottom:1px dotted var(--border-strong); transform:translateY(1px)}
+/* 조작부는 제목 글씨(fs-sub)에 맞춰 작게 — 설정은 '읽는 화면' 이라 큰 버튼이 어울리지 않습니다 */
+.fold-b .togglebtn, .fold-b .numbtn{font-size:var(--fs-sub); padding:var(--s8) var(--s12); min-height:0}
+.fold-b .numbtn{font-size:var(--fs-body)}
+.fold-b .seg button{font-size:var(--fs-sub); padding:var(--s4) var(--s12); min-height:0}
+.fold-b .f > input[type=time], .fold-b .f > input[type=text], .fold-b .f > input:not([type]){padding:var(--s8) var(--s12); font-size:var(--fs-sub)}
+.fold-b .btn:not(.lg){font-size:var(--fs-sub); padding:var(--s8) var(--s12); min-height:0}
 .fold-b .f > .f-note{grid-column:1 / -1; margin-top:2px}
 .fold-b .f > .togglebtn, .fold-b .f > .numbtn{width:auto; min-width:0; justify-self:end}
 .fold-b .f > input[type=time], .fold-b .f > input[type=text], .fold-b .f > input:not([type]){justify-self:end; width:auto; min-width:140px}
@@ -1426,6 +1465,11 @@ button.bday.sel .b{background:rgba(255,255,255,.22); color:#fff}
 .sess-stay{display:flex; align-items:center; gap:var(--s4); min-width:0; height:38px}
 .sess-stay .chk{margin:0; white-space:nowrap}
 .dr-in .sess-r .sess-stay input[type=number]{width:64px; flex:0 0 auto}
+/* 8차-X 세션 표: 점심/저녁 한 덩어리 = 제목 줄 + 접수 마감 · 점유(룸) · 점유(테이블) */
+.sess-r.two{grid-template-columns:1fr 1fr 1fr}
+.sess-r.two > .sf{grid-column:auto; grid-row:auto}
+.sess-r.two > .sf.full{grid-column:1 / -1; flex-direction:row; align-items:baseline; gap:var(--s8)}
+.sess-r.two > .sf.full b{font-size:var(--fs-body)}
 /* 폰: 두 칸으로 — 세션|시작 / 접수 마감|끝 / 점유|삭제 */
 @media (max-width:640px){
   .sess-r{grid-template-columns:1fr 1fr}
@@ -1893,7 +1937,7 @@ body.theme-hanok .pdot.on{color:var(--pine)}
 /* 가로지르는 선 — 8단계로 끊겨 지나감 */
 .intro:after{content:""; position:absolute; left:0; right:0; top:50%; height:2px; margin-top:.9em; z-index:1; pointer-events:none;
   background:linear-gradient(90deg, transparent 0 20%, rgba(232,191,110,.7) 20% 80%, transparent 80%);
-  transform:translateX(-100%); animation:intro-scan 1.6s steps(8,end) .2s 1 forwards}
+  transform:translateX(-100%); animation:intro-scan .9s steps(6,end) .15s 1 forwards}
 .intro.turning:after{background:linear-gradient(90deg, transparent 0 20%, rgba(36,30,26,.7) 20% 80%, transparent 80%)}
 @keyframes intro-scan{ from{transform:translateX(-100%)} to{transform:translateX(100%)} }
 /* 창호 두 짝 — 다섯 단계로 끊겨 들어옴 */
@@ -1904,7 +1948,7 @@ body.theme-hanok .pdot.on{color:var(--pine)}
     linear-gradient(to bottom, transparent 0, transparent 21%, #F0E6D3 21%, #F0E6D3 44%, transparent 44%, transparent 56%, #F0E6D3 56%, #F0E6D3 79%, transparent 79%),
     repeating-linear-gradient(0deg, rgba(96,66,38,.75) 0 3px, transparent 3px 44px),
     #F0E6D3;
-  transition:opacity .01s steps(1,end), transform .9s steps(5,end)}
+  transition:opacity .01s steps(1,end), transform .45s steps(3,end)}
 .intro-sash.l{left:3vw;  transform:translateX(-10vw)}
 .intro-sash.r{right:3vw; transform:translateX(10vw)}
 .intro.turning .intro-sash{transform:translateX(0)}
@@ -1913,7 +1957,7 @@ body.theme-hanok .pdot.on{color:var(--pine)}
   font-size:clamp(38px,6.8vw,80px); letter-spacing:.22em; text-indent:.22em; width:100%; text-align:center; z-index:3}
 .intro-word{display:block}
 .intro-word.ko{position:absolute; top:0; left:0; width:100%}
-.intro .ic{display:inline-block; transition:clip-path .36s steps(4,end), color .01s steps(1,end)}
+.intro .ic{display:inline-block; transition:none}   /* 8차-Y(재아): 글자는 한 번에 바뀝니다 — 왼쪽부터 드러나는 것도 '부드러움' */
 /* 한자: 금박. 인쇄물처럼 딱 떨어지는 검은 오프셋 그림자. 사라질 때는 오른쪽에서 네 칸으로 잘려 나감 */
 .intro-word.cn .ic{color:#F1C77C; text-shadow:3px 3px 0 rgba(0,0,0,.55); clip-path:inset(0 0 0 0)}
 .intro.turning .intro-word.cn .ic{color:#B9915A}
@@ -1922,7 +1966,7 @@ body.theme-hanok .pdot.on{color:var(--pine)}
 .intro-word.ko .ic{color:#241E1A; clip-path:inset(0 100% 0 0); text-shadow:2px 2px 0 rgba(150,40,30,.35)}
 .intro-word.ko .ic.on{clip-path:inset(0 0 0 0)}
 /* 글자 아래 먹선 — 한지 장면에서 다섯 단계로 그어짐 */
-.intro-w:after{content:""; display:block; width:0; height:3px; margin:.3em auto 0; background:#241E1A; transition:width .8s steps(5,end) .2s}
+.intro-w:after{content:""; display:block; width:0; height:3px; margin:.3em auto 0; background:#241E1A; transition:width .45s steps(3,end) .15s}
 .intro.turning .intro-w:after{width:60%}
 /* 좁은 화면(폰): 창호는 접어 둡니다 */
 @media (max-width:640px){ .intro-sash{display:none} }
@@ -1968,7 +2012,7 @@ body.theme-hanok .pdot.on{color:var(--pine)}
 
 /* ---- 본문 폭·여백: 태블릿(768) → 노트북(1024, 본문 최대 1720px) ---- */
 @media (min-width:768px){
-  .content{padding:var(--s24) var(--s24) 80px}
+  .content{padding:var(--s24) var(--s24) var(--s24)}   /* 아래 80px 은 폰의 FAB 자리였습니다 — 태블릿·PC 에서는 접힌 목록 밑에 빈 띠만 남겼습니다(재아) */
   .dash{display:grid; grid-template-columns:1fr 1fr; gap:var(--s12); align-items:start}
   .dash .card{margin-top:0}
   .sheet{max-width:600px}
@@ -1976,7 +2020,7 @@ body.theme-hanok .pdot.on{color:var(--pine)}
 }
 
 @media (min-width:1024px){
-  .content{padding:var(--s24) var(--s24) 60px; max-width:1720px; margin:0 auto}
+  .content{padding:var(--s24) var(--s24) var(--s24); max-width:1720px; margin:0 auto}
   .dash{grid-template-columns:repeat(3,1fr)}
 }
 
@@ -2002,6 +2046,7 @@ body.theme-hanok .pdot.on{color:var(--pine)}
   button.bday .d{font-size:var(--fs-head)}
   .hgrid{grid-template-columns:repeat(auto-fit,minmax(92px,1fr))}
   .wz-body{padding:var(--s16) var(--s24) var(--s24)}
+  .wz-q{padding-left:var(--s24); padding-right:var(--s24)}
   .wz-foot{padding:var(--s16) var(--s24) calc(var(--s16) + env(safe-area-inset-bottom))}
 }
 
@@ -2015,6 +2060,7 @@ body.theme-hanok .pdot.on{color:var(--pine)}
   .wz-step1{display:grid; grid-template-columns:minmax(360px,1.05fr) 1fr; gap:var(--s16); align-items:start}
   .wz-time{margin-top:0}
   .wz-body{max-width:1120px}
+  .wz-q{max-width:1120px}
   .bday{min-height:58px}
   button.bday{min-height:58px}
   button.bday .d{font-size:var(--fs-title)}
@@ -2078,7 +2124,8 @@ body.theme-hanok .pdot.on{color:var(--pine)}
 }
 
 @media (min-width:700px){
-  .sch-days{grid-template-columns:1fr 1fr}
+  /* 8차-X(재아): 월·금 / 화·토 / 수·일 / 목·공휴 — 한 열에 네 칸씩 세로로 채웁니다(8칸 고정) */
+  .sch-days{grid-template-columns:1fr 1fr; grid-auto-flow:column; grid-template-rows:repeat(4,auto)}
 }
 
 @media (max-width:820px){
@@ -2566,7 +2613,10 @@ var SMS_DEFAULT = {
   storePhone:"",          /* 발신번호 — 문자에 찍히는 번호. 실제 발송을 붙일 때 필요합니다 */
   remindOffset:0,         /* 재안내를 며칠 전에 — 2 | 1 | 0(당일) */
   remindHour:9,           /* 그날 몇 시에 */
-  parkingNote:"※ 주차 안내\n주차장 이용 가능합니다. 주차비 1,000원이며 발렛은 무료입니다."
+  parkingNote:"※ 주차 안내\n주차장 이용 가능합니다. 주차비 1,000원이며 발렛은 무료입니다.",
+  /* 문안(8차-X, 재아): 설정에서 고칠 수 있습니다. {매장} {이름} {일시} {인원} {주차} {오늘내일} 자리에 값이 들어갑니다 */
+  tplNew:"[ 예약 완료 안내 ]\n\n안녕하세요, {매장}입니다.\n예약확인 문자 드립니다.\n\n{이름} 님\n{일시}\n{인원}\n\n예약해주셔서 감사합니다.",
+  tplRemind:"[ 예약 방문 안내 ]\n\n{오늘내일} 예약 방문 안내드립니다.\n\n{이름} 님\n{일시}\n{인원}\n\n{주차}\n\n시간 변경이 필요하시면 미리 연락 주시기 바랍니다.\n\n감사합니다."
 };
 const DEFAULT_DATA = {
   hanok: {
@@ -2577,27 +2627,28 @@ const DEFAULT_DATA = {
          나중에 시간이 바뀌어도 과거 기록의 계산이 틀어지지 않습니다. */
       schedules:[{
         from:"2000-01-01",
-        /* 세션(8차): 접수 가능 시각(from~lastBook)과 점유(stay). stay:"end" 는 until(세션 끝)까지 한 팀만 — 평일 점심은 브레이크까지, 저녁은 영업 종료까지.
-           토·일·공휴일 점심은 1시간 50분(브레이크 없음, 15:30 경계). 15:30 이후 접수분은 저녁 세션 규칙 */
+        /* 세션(8차-X): 하루를 '점심 경계'(edge) 하나로 점심/저녁으로 나눕니다. 브레이크가 있는 날은 경계 = 브레이크 시작(자동, 잠김).
+           점심·저녁마다 접수 마감(lastBook)과 점유(room/table: "end" = 세션 끝까지 한 팀, 숫자 = 분). 경계가 비면 하루가 한 세션(저녁 규칙).
+           토·일·공휴일 점심은 1시간 50분(브레이크 없음, 15:30 경계). 경계 시각(15:30) 자체는 저녁으로 칩니다. 실제 세션 목록은 sessionsOfDay() 가 만듭니다 */
         days:[
           {open:"11:00", close:"20:30", lo:"19:40", bs:"",      be:"",
-           sessions:[{name:"점심",from:"11:00",lastBook:"15:30",stay:110,   until:"15:30"},{name:"저녁",from:"15:30",lastBook:"18:30",stay:"end",until:"20:30"}]},   /* 일 */
+           sess:{edge:"15:30", lunch:{lastBook:"15:30", room:110, table:110}, dinner:{lastBook:"18:30", room:"end", table:"end"}}},   /* 일 */
           {open:"11:00", close:"22:00", lo:"20:40", bs:"15:30", be:"17:00",
-           sessions:[{name:"점심",from:"11:00",lastBook:"14:00",stay:"end", until:"15:30"},{name:"저녁",from:"17:00",lastBook:"19:30",stay:"end",until:"22:00"}]},   /* 월 */
+           sess:{edge:"15:30", lunch:{lastBook:"14:00", room:"end", table:"end"}, dinner:{lastBook:"19:30", room:"end", table:"end"}}},   /* 월 */
           {open:"11:00", close:"22:00", lo:"20:40", bs:"15:30", be:"17:00",
-           sessions:[{name:"점심",from:"11:00",lastBook:"14:00",stay:"end", until:"15:30"},{name:"저녁",from:"17:00",lastBook:"19:30",stay:"end",until:"22:00"}]},   /* 화 */
+           sess:{edge:"15:30", lunch:{lastBook:"14:00", room:"end", table:"end"}, dinner:{lastBook:"19:30", room:"end", table:"end"}}},   /* 화 */
           {open:"11:00", close:"22:00", lo:"20:40", bs:"15:30", be:"17:00",
-           sessions:[{name:"점심",from:"11:00",lastBook:"14:00",stay:"end", until:"15:30"},{name:"저녁",from:"17:00",lastBook:"19:30",stay:"end",until:"22:00"}]},   /* 수 */
+           sess:{edge:"15:30", lunch:{lastBook:"14:00", room:"end", table:"end"}, dinner:{lastBook:"19:30", room:"end", table:"end"}}},   /* 수 */
           {open:"11:00", close:"22:00", lo:"20:40", bs:"15:30", be:"17:00",
-           sessions:[{name:"점심",from:"11:00",lastBook:"14:00",stay:"end", until:"15:30"},{name:"저녁",from:"17:00",lastBook:"19:30",stay:"end",until:"22:00"}]},   /* 목 */
+           sess:{edge:"15:30", lunch:{lastBook:"14:00", room:"end", table:"end"}, dinner:{lastBook:"19:30", room:"end", table:"end"}}},   /* 목 */
           {open:"11:00", close:"22:00", lo:"20:40", bs:"15:30", be:"17:00",
-           sessions:[{name:"점심",from:"11:00",lastBook:"14:00",stay:"end", until:"15:30"},{name:"저녁",from:"17:00",lastBook:"19:30",stay:"end",until:"22:00"}]},   /* 금 */
+           sess:{edge:"15:30", lunch:{lastBook:"14:00", room:"end", table:"end"}, dinner:{lastBook:"19:30", room:"end", table:"end"}}},   /* 금 */
           {open:"11:00", close:"22:00", lo:"20:40", bs:"",      be:"",
-           sessions:[{name:"점심",from:"11:00",lastBook:"15:30",stay:110,   until:"15:30"},{name:"저녁",from:"15:30",lastBook:"19:30",stay:"end",until:"22:00"}]}    /* 토 */
+           sess:{edge:"15:30", lunch:{lastBook:"15:30", room:110, table:110}, dinner:{lastBook:"19:30", room:"end", table:"end"}}}    /* 토 */
         ],
         /* 공휴일은 일요일과 같습니다 (설정에서 변경) */
         holiday:{open:"11:00", close:"20:30", lo:"19:40", bs:"", be:"",
-           sessions:[{name:"점심",from:"11:00",lastBook:"15:30",stay:110,   until:"15:30"},{name:"저녁",from:"15:30",lastBook:"18:30",stay:"end",until:"20:30"}]}
+           sess:{edge:"15:30", lunch:{lastBook:"15:30", room:110, table:110}, dinner:{lastBook:"18:30", room:"end", table:"end"}}}
       }],
       overrides:[],        /* 임시 휴무·단축 영업 등 특정 날짜만 다른 경우 */
       /* 손님용 목록 화면 왼쪽에 트는 광고 영상.
@@ -2677,7 +2728,7 @@ let DATA = null;
 /* 인증 기본값 — 설정에서 변경 가능 (변경 시 관리자 비밀번호 필요) */
 const LOG_MAX = 3000;      /* 로그는 최근 3000건까지 보관 */
 let CLIENT_IP = "";  /* 접속 IP 는 더 이상 조회하지 않습니다(외부 요청 0 원칙 — 점검 S6). 서버 로그에는 계정(who)만 남습니다 */
-let view = { storeKey:null, tab:"dash", date:todayStr(), filter:"전체", form:null, salesMonth:monthStr(), payMonth:monthStr(), calMonth:monthStr(), calOpen:false, display:false, open:{list:false, rate:false} };
+let view = { storeKey:null, tab:"dash", date:todayStr(), filter:"예정", form:null, salesMonth:monthStr(), payMonth:monthStr(), calMonth:monthStr(), calOpen:false, display:false, open:{list:false, rate:false} };
 
 /* ============================================================
    Supabase (7차) — supabase-js 없이 fetch 로 REST·Auth 를 직접 부릅니다
@@ -2957,6 +3008,14 @@ function tryFullscreen(){
     el.requestFullscreen().catch(function(){});
   }catch(e){}
 }
+/* 비상 예약지를 새 탭에 — 새 탭이 열리면 전체화면이 풀리므로, 전체화면이었다면 돌아와서 다시 켤 버튼을 띄웁니다(재아).
+   전체화면은 손짓이 있어야 켜져서 팝업 버튼을 누르는 순간에 요청합니다 */
+async function openSlip(){
+  var wasFs = !!document.fullscreenElement;
+  window.open((location.pathname.indexOf('/dev/') >= 0 ? '../' : '') + '비상예약지.html', '_blank', 'noopener');
+  if(!wasFs) return;
+  if(await uiConfirm("비상 예약지를 새 탭에 열었습니다", "새 탭이 열리면서 전체화면이 풀립니다.\n인쇄하고 돌아오면 아래 버튼으로 다시 켜세요.", {ok:"다시 전체화면", cancel:"그냥 두기", tone:"ok"})) tryFullscreenForce();
+}
 function toggleFullscreen(){
   try{
     if(document.fullscreenElement){ if(document.exitFullscreen) document.exitFullscreen().catch(function(){}); }
@@ -3177,8 +3236,10 @@ function migrateSeats(d){
     (st.schedules||[]).forEach(function(sch){
       /* 세션이 없는 옛 운영시간표는 8차 기본표(누님 확인본: 일 라스트오더 19:40, 공휴일=일요일, 토요일 브레이크 없음)로 통째 바꿉니다.
          아직 실서비스 전이라 사장님이 직접 고친 시간표는 없습니다 */
-      (sch.days||[]).forEach(function(day, i){ if(!day.sessions && def.schedules[0].days[i]) sch.days[i] = deepClone(def.schedules[0].days[i]); });
-      if(!sch.holiday || !sch.holiday.sessions) sch.holiday = deepClone(def.schedules[0].holiday);
+      (sch.days||[]).forEach(function(day, i){ if(!day.sess && !day.sessions && def.schedules[0].days[i]) sch.days[i] = deepClone(def.schedules[0].days[i]); });
+      if(!sch.holiday || (!sch.holiday.sess && !sch.holiday.sessions)) sch.holiday = deepClone(def.schedules[0].holiday);
+      /* 8차-X: 자유 세션 목록(sessions[]) → 점심 경계 + 점심/저녁(sess{}) */
+      (sch.days||[]).concat([sch.holiday]).forEach(function(day){ if(day) ensureSess(day); });
     });
   });
 }
@@ -3619,16 +3680,40 @@ function inBreak(date, time){
   const t = toMin(time);
   return t >= toMin(h.bs) && t < toMin(h.be);
 }
-/* ---------- 세션 (8차) ----------
-   그 날의 세션 목록. 운영시간(요일/공휴일/임시)에 sessions 가 있으면 그것, 없으면 옛 필드(lunchUntil·stayHours)로 만든 두 세션 */
+/* ---------- 세션 (8차-X) ----------
+   하루 운영시간(day)에는 sess{edge, lunch{lastBook,room,table}, dinner{...}} 만 저장하고, 실제 세션 목록은 여기서 만듭니다.
+   · 브레이크가 있으면 경계 = 브레이크 시작, 저녁 시작 = 브레이크 끝 (설정에서 잠김 — 임시 영업시간이 브레이크를 바꾸면 경계도 따라감)
+   · 브레이크가 없으면 경계 = sess.edge. 경계 시각 자체는 저녁 (15:30 예약 = 저녁 규칙)
+   · 브레이크도 경계도 없으면 하루가 한 세션 — 저녁 쪽 접수 마감·점유를 씁니다 (재아 질문: 그런 날이 실제로 있는지) */
+function sessFromDay(day){
+  if(day.sess) return day.sess;
+  /* 옛 저장본(자유 세션 목록) — 첫 세션을 점심, 둘째를 저녁으로 */
+  var ss = day.sessions || [], a = ss[0], b = ss[1] || ss[0];
+  var stay = function(se, k){ return !se ? "end" : k === "table" && se.stayTable != null ? se.stayTable : (se.stay != null ? se.stay : "end"); };
+  if(!a) return { edge:"15:30", lunch:{lastBook:"14:00", room:"end", table:"end"}, dinner:{lastBook:"19:30", room:"end", table:"end"} };
+  return { edge: a.until || (ss[1] && ss[1].from) || "15:30",
+           lunch:{ lastBook:a.lastBook || "14:00", room:stay(a,"room"), table:stay(a,"table") },
+           dinner:{ lastBook:b.lastBook || "19:30", room:stay(b,"room"), table:stay(b,"table") } };
+}
+/* 저장본을 새 모양으로 고정합니다(설정 편집·마이그레이션) */
+function ensureSess(day){ if(!day.sess) day.sess = sessFromDay(day); delete day.sessions; return day.sess; }
+function sessionsOfDay(dh){
+  var x = sessFromDay(dh);
+  var edge = dh.bs ? dh.bs : (x.edge || "");
+  var mk = function(name, from, seg, until){ return { name:name, from:from, lastBook:seg.lastBook, stay:seg.room, stayTable:seg.table != null ? seg.table : seg.room, until:until }; };
+  if(!edge) return [ mk("종일", dh.open, x.dinner, dh.close) ];
+  return [ mk("점심", dh.open, x.lunch, edge), mk("저녁", dh.be || edge, x.dinner, dh.close) ];
+}
 function sessionsFor(date){
-  const st = store().settings, dh = hoursFor(date);
+  const dh = hoursFor(date);
   if(dh.closed) return [];
-  if(dh.sessions && dh.sessions.length) return dh.sessions;
-  /* 옛 저장본 — 점심/저녁 두 세션으로 흉내 */
-  const lu = st.lunchUntil || "16:00";
-  return [{name:"점심", from:dh.open, lastBook:lu, stay:Math.round((st.lunchStayHours||2.5)*60), until:dh.bs||lu},
-          {name:"저녁", from:dh.be||lu, lastBook:dh.lo||dh.close, stay:Math.round((st.stayHours||3)*60), until:dh.close}];
+  return sessionsOfDay(dh);
+}
+/* 세션 점유 글자 — 룸/테이블이 같으면 하나로, 다르면 둘 다 */
+function stayLabel(se){
+  var f = function(v){ return v === "end" ? "끝까지" : (v || 110) + "분"; };
+  var t = se.stayTable != null ? se.stayTable : se.stay;
+  return t === se.stay ? (se.stay === "end" ? "세션 끝까지 한 팀" : f(se.stay)) : "룸 " + f(se.stay) + " · 테이블 " + f(t);
 }
 /* 그 시각이 속한 세션. 첫 세션 전이면 첫 세션 */
 function sessionAt(date, time){
@@ -3647,16 +3732,19 @@ function sessionEnd(date, sess){
 }
 /* 그 시각에 앉은 팀이 자리를 쓰는 시간(분).
    stay:"end" = 세션 끝까지(평일 점심은 브레이크까지, 저녁은 영업 종료까지 — 한 자리에 한 팀). 숫자면 그 분만큼.
-   좌석 종류(룸/테이블)로는 이제 나누지 않습니다 — 누님 답에 그런 구분이 없었습니다 */
+   8차-X: 룸/테이블 점유를 따로 둡니다(재아) — seatId 가 테이블(또는 테이블 희망 'table:1층')이면 stayTable */
 function stayMinAt(date, time, seatId){
   if(!time) return 150;
   const sess = sessionAt(date, time);
   if(!sess){ const st = store().settings; return Math.round((st.stayHours||3)*60); }
-  if(sess.stay === "end") return Math.max(30, sessionEnd(date, sess) - toMin(time));
-  return Math.max(30, Number(sess.stay) || 150);
+  const x = seatId ? seatById(seatId) : null;
+  const isT = !!seatId && (isTablePref(seatId) || (x && isTable(x)));
+  const stv = isT && sess.stayTable != null ? sess.stayTable : sess.stay;
+  if(stv === "end") return Math.max(30, sessionEnd(date, sess) - toMin(time));
+  return Math.max(30, Number(stv) || 150);
 }
-/* 예약 한 건의 체류 시간 — 배정된(또는 잠정) 좌석 종류에 따라 달라집니다 */
-function stayOf(r){ return stayMinAt(r.date, r.time, effSeat(r)); }
+/* 예약 한 건의 체류 시간 — 배정된(또는 잠정) 좌석, 없으면 희망 종류(테이블 예약이면 테이블 점유) */
+function stayOf(r){ return stayMinAt(r.date, r.time, effSeat(r) || r.seatPref); }
 function stayMin(){ return stayMinAt(view.date || todayStr(), "19:00"); }
 /* ---------- 홀 테이블 ----------
    홀마다 2인석·4인석·6인석 등을 섞어 둘 수 있고, 붙일 수 있는지도 따로 정합니다. */
@@ -3729,7 +3817,7 @@ function floorLoad(date, time, fl, excludeId){
     if(r.date !== date || !holdsSeat(r) || r.id === excludeId) return;
     const f = resFloor(r); if(f === undefined || (f || "") !== (fl || "")) return;
     const rt = toMin(r.time);
-    const overlap = rt <= t ? rt + stayOf(r) > t : t + stayMinAt(date, time) > rt;
+    const overlap = rt <= t ? rt + stayOf(r) > t : t + stayMinAt(date, time, "table-any") > rt;
     if(overlap) sum += pplOf(r);
   });
   return sum;
@@ -3892,6 +3980,8 @@ function reflowTentatives(date){
   const s = store();
   const targets = s.reservations.filter(r=>r.date===date && holdsSeat(r) && !r.roomId);
   targets.forEach(r=>{ r.tentativeRoomId = null; r.tentativeExtra = []; r.tentativeSplit = false; });
+  /* 취소·노쇼는 자리를 안 잡으니 옛 잠정도 지웁니다 — 남겨 두면 상세에 '추천 좌석' 이 그대로 보였습니다(11월 시나리오 점검) */
+  s.reservations.forEach(r=>{ if(r.date===date && !holdsSeat(r) && !r.roomId && r.tentativeRoomId){ r.tentativeRoomId = null; r.tentativeExtra = []; r.tentativeSplit = false; } });
   /* 테이블 예약(층)도 계산은 테이블 단위로 합니다 — 화면에는 층까지만 보이고, 겹침·붙임·나눠 앉기 판단에 씁니다 */
   targets.sort((a,b)=>a.time.localeCompare(b.time)).forEach(r=>{
     const fl = prefFloor(r.seatPref);
@@ -4203,11 +4293,11 @@ function startIntro(){
   render();                                   /* 한 번만 그립니다 */
   /* 글자 5개가 200ms 간격(1초) — 135ms 는 거의 동시라 단계가 안 느껴졌고, 260ms 는 붉은 첫 장면이 길었습니다(6차-F).
      첫 글자는 360ms, 마지막 글자 뒤 600ms 에 끝. 총 약 1.8초, 아무 데나 누르면 건너뜀 */
-  var steps = INTRO_TO.length, t0 = 160, gap = 200;
+  var steps = INTRO_TO.length, t0 = 120, gap = 150;   /* 8차-AA(재아): 조금 더 빠르게 — 글자 150ms 간격, 총 1.3초쯤 */
   for(var i=1;i<=steps;i++){
     introTimers.push(setTimeout((function(k){ return function(){ introStep(k); }; })(i), t0 + i*gap));
   }
-  introTimers.push(setTimeout(endIntro, t0 + steps*gap + 600));
+  introTimers.push(setTimeout(endIntro, t0 + steps*gap + 450));
 }
 /* 글자 진행 p(0~1)에 따른 바탕 두 겹의 불투명도 — 나무색은 앞 절반에서, 한지(와 창호)는 뒤 절반에서 올라옵니다 */
 function introBg(n){
@@ -4441,7 +4531,7 @@ function renderModal(){
   /* '---' 만 있는 줄은 가로선으로 그립니다.
      문자 미리보기에서 '어디부터 어디까지가 문자인지' 눈으로 끊어 주려고 만들었습니다.
      선은 화면에만 그려지고 실제 문자 내용에는 들어가지 않습니다. */
-  const lines = String(m.msg||"").split("\n").map(l=>
+  const lines = m.html ? `<div class="md-l md-html">${m.html}</div>` : String(m.msg||"").split("\n").map(l=>
     l.trim()==="---" ? `<div class="md-rule"></div>`
     : l.trim()==="" ? `<div class="md-gap"></div>`
     : `<div class="md-l">${esc(l)}</div>`).join("");
@@ -4648,7 +4738,7 @@ function renderStore(){
           ${view.date===todayStr() ? "" : `<button class="tvbtn b-today" onclick="goToday()">오늘</button>`}
           <button class="tvbtn icon b-refresh" onclick="manualRefresh()" title="새로고침" aria-label="새로고침">${ICON.refresh}</button>
           <button class="tvbtn b-search" onclick="openSearch()">예약 검색</button>
-          <button class="tvbtn accent b-add" onclick="openWizard('${view.date}')">＋ 예약 등록</button>`}
+          <button class="tvbtn accent b-add" onclick="openWizard()">＋ 예약 등록</button>`}
           ${view.tab==="settings" ? "" : `
           <!-- 더보기(⋮): 자주 안 쓰는 것들을 여기로 모았습니다 — 예약률 추이 · 영업시간 · 설정 · 디스플레이 모드 -->
           <div class="more-wrap">
@@ -4725,7 +4815,7 @@ function renderDash(){
           <div class="k">경고 예약</div></button>
         <button class="metric tapm ${checkCnt?'amber':''}" onclick="openCheck()">
           <div class="v">${checkCnt}<span class="u">건</span></div>
-          <div class="k">확인 필요</div></button>
+          <div class="k">확인</div></button>
       </div>
     </section>`;
 
@@ -4753,7 +4843,7 @@ function renderDashMobile(d, m){
     ? `<section class="card mgraph"><div class="card-b">${renderTimeline(d, true)}</div></section>`
     : `<section class="card"><div class="card-b">${renderAgenda(d)}</div></section>`;
   return `${kpi}${toggle}${body}
-    <button class="fab" onclick="openWizard('${d}')" aria-label="예약 등록">${ICON.plus}</button>
+    <button class="fab" onclick="openWizard()" aria-label="예약 등록">${ICON.plus}</button>
     ${view.calOpen ? renderCal() : ""}`;
 }
 /* 리스트 — 두 줄 행. 1줄 시각·이름·상태, 2줄 인원·좌석·전화·꼬리표. 한 줄 전체가 탭 영역 */
@@ -4933,13 +5023,16 @@ function renderResList(date){
   /* 8차-W(재아): 전체 / 예정(아직 안 온 확정) / 지난·방문(1시간 지난 확정 + 방문) / 취소·노쇼 */
   const nowM0 = toMin(nowHM()), isToday0 = date === todayStr();
   const isPastRes = r => r.date < todayStr() || (isToday0 && toMin(r.time) + 60 < nowM0);
-  const GROUPS = { "전체": r=>true, "예정": r=>r.status==="확정" && !isPastRes(r), "지난·방문": r=>r.status==="방문" || (r.status==="확정" && isPastRes(r)), "취소·노쇼": r=>r.status==="취소" || r.status==="노쇼" };
-  if(!GROUPS[view.filter]) view.filter = "전체";
+  /* '예정' 에는 아직 시각이 안 지난 '방문' 도 흐리게 넣습니다 — 잘못 누른 방문 처리를 눈치채게(8차-Z 재아) */
+  const GROUPS = { "전체": r=>true, "예정": r=>(r.status==="확정" || r.status==="방문") && !isPastRes(r), "지난·방문": r=>r.status==="방문" || (r.status==="확정" && isPastRes(r)), "취소·노쇼": r=>r.status==="취소" || r.status==="노쇼" };
+  if(!GROUPS[view.filter]) view.filter = "예정";
+  /* 기본은 '예정'. 지난 날짜에서는 예정이 늘 비므로 그때만 '전체' 로 보여 줍니다(버튼도 전체가 켜짐) */
+  const eff = (view.filter === "예정" && date < todayStr()) ? "전체" : view.filter;
   const filters = Object.keys(GROUPS).map(f=>{
     const n = s.reservations.filter(r=>r.date===date && GROUPS[f](r)).length;
-    return `<button class="${view.filter===f?'on':''}" onclick="setFilter('${f}')">${f} ${n}</button>`;
+    return `<button class="${eff===f?'on':''}" onclick="setFilter('${f}')">${f} ${n}</button>`;
   }).join("");
-  if(view.filter!=="전체") day = day.filter(GROUPS[view.filter]);
+  if(eff!=="전체") day = day.filter(GROUPS[eff]);
   /* 8차-V(재아): 오늘 목록에는 '지금' 선을 넣어 위(지난)·아래(앞으로) 가 갈리게 */
   const nowM = toMin(nowHM()), isToday = date === todayStr();
   let marked = false;
@@ -5010,6 +5103,7 @@ var CHANGE_FIELDS = [
   {k:"infants",  n:"유아",   f:function(v){ return (v||0)+"명"; }},
   {k:"chairs",   n:"유아의자", f:function(v){ return (v||0)+"개"; }},
   {k:"roomId",   n:"좌석",   f:function(v){ return v ? seatLabel(v) : "미배정"; }},
+  {k:"seatPref", n:"좌석 희망", f:function(v){ return v ? seatLabel(v) : "-"; }},   /* 지하 → 1층 처럼 층만 바꾼 것도 변동입니다(11월 점검) */
   {k:"menuType", n:"식사",   f:function(v){ return v || "-"; }},
   {k:"request",  n:"요청",   f:function(v){ return v || "없음"; }},
   {k:"allergy",  n:"알러지", f:function(v){ return v || "없음"; }},
@@ -5220,29 +5314,18 @@ function smsSeat(r, st){
 /* kind: "접수" | "재안내". 재안내는 offset 을 넘겨 문구를 바꿉니다 */
 function smsText(r, kind, offset, st){
   var c = smsCfg(st), s = st || store();
-  var who = [ (r.name || "") + " 님", smsWhen(r), smsPpl(r) ];
-  var lines;
-  if(kind === "접수"){
-    lines = [
-      "[ 예약 완료 안내 ]", "",
-      "안녕하세요, " + s.name + "입니다.",
-      "예약확인 문자 드립니다.", ""
-    ].concat(who).concat([ "", "예약해주셔서 감사합니다." ]);
-  }else{
-    /* '오늘 / 내일 / 모레' 는 설정값이 아니라 보내는 날과 예약일의 실제 차이로 정합니다 */
-    var word = smsGapWord(r);
-    lines = [
-      "[ 예약 방문 안내 ]", "",
-      (word ? word + " " : "") + "예약 방문 안내드립니다.", ""
-    ].concat(who);
-    var park = (c.parkingNote || "").trim();
-    if(park) lines = lines.concat([ "", park ]);
-    lines = lines.concat([
-      "", "시간 변경이 필요하시면 미리 연락 주시기 바랍니다.",
-      "", "감사합니다."
-    ]);
-  }
-  return lines.join("\n");
+  var map = { "매장": s.name || "", "이름": r.name || "", "일시": smsWhen(r), "인원": smsPpl(r),
+              "주차": (c.parkingNote || "").trim(),
+              /* '오늘 / 내일 / 모레' 는 설정값이 아니라 보내는 날과 예약일의 실제 차이로 정합니다 */
+              "오늘내일": kind === "접수" ? "" : (smsGapWord(r) || "") };
+  var tpl = kind === "접수" ? (c.tplNew || SMS_DEFAULT.tplNew) : (c.tplRemind || SMS_DEFAULT.tplRemind);
+  return smsFill(tpl, map);
+}
+/* 문안의 {자리} 를 채우고, 빈 값 때문에 생긴 앞 공백·겹친 빈 줄을 정리합니다 */
+function smsFill(tpl, map){
+  var out = String(tpl || "").replace(/\{(매장|이름|일시|인원|주차|오늘내일)\}/g, function(_, k){ return map[k] != null ? map[k] : ""; });
+  out = out.replace(/^[ \t]+/mg, "").replace(/\n{3,}/g, "\n\n");
+  return out.trim();
 }
 
 /* ---------- 발송 (흉내) ----------
@@ -5295,6 +5378,9 @@ function smsLog(){
     var r = s.reservations[i], log = r.sms || [];
     for(j = 0; j < log.length; j++) out.push({ r:r, m:log[j] });
   }
+  /* 관리자가 직접 보낸 문자(예약 없음) */
+  var free = (s.settings && s.settings.smsFreeLog) || [];
+  for(i = 0; i < free.length; i++) out.push({ r:{ id:null, name:free[i].name || "직접 입력" }, m:{ at:free[i].at, kind:"직접", to:free[i].to, text:free[i].text } });
   out.sort(function(a, b){ return a.m.at < b.m.at ? 1 : a.m.at > b.m.at ? -1 : 0; });
   return out;
 }
@@ -5374,7 +5460,7 @@ function checkItems(date){
     group.slice(0,3).map(r=>`${r.time} ${r.name} ${pplOf(r)}명`).join(", "), `openPick('group')`]);
 
   const menuChk = list.filter(r=>r.menuType==="확인 필요");
-  if(menuChk.length) items.push(["amber", `메뉴 확인 필요 ${menuChk.length}건`,
+  if(menuChk.length) items.push(["amber", `메뉴 확인 ${menuChk.length}건`,
     menuChk.slice(0,3).map(r=>`${r.time} ${r.name}`).join(", "), `openPick('menu')`]);
 
   /* 취소·노쇼도 '자리를 비워야 하는 변동'이라 확정 목록이 아닌 그날 전체에서 셉니다 */
@@ -5416,7 +5502,7 @@ function sheetCheck(){
         </button>`).join("")}</div>`
     : `<div class="empty">지금 확인할 항목이 없습니다.</div>`;
   return `
-    ${sheetHead(`확인 필요 · ${dateLabel(view.date)}`)}
+    ${sheetHead(`확인 · ${dateLabel(view.date)}`)}
     <div class="checkbox-scroll">${body}</div>
     <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">닫기</button></div>`;
 }
@@ -5429,7 +5515,7 @@ function sheetPick(){
   const conf = {
     allergy:{title:"알러지 확인", pick:r=>r.allergy, note:"주방에 전달됐는지 확인하세요."},
     chairs:{title:"유아용 의자", pick:r=>r.chairs>0, note:"의자 개수를 미리 준비하세요."},
-    menu:{title:"메뉴 확인 필요", pick:r=>r.menuType==="확인 필요", note:"방문 전 연락해 코스를 확정하세요."},
+    menu:{title:"메뉴 확인", pick:r=>r.menuType==="확인 필요", note:"방문 전 연락해 코스를 확정하세요."},
     noshow:{title:"노쇼 이력 손님", pick:r=>!!noshowOf(r.phone), note:"확인 전화를 돌리면 노쇼가 줄어듭니다."},
     warn:{title:"경고 예약", pick:r=>resWarn(r).length>0, note:"사장 판단으로 접수된 예약입니다. 문제가 없는지 확인하세요."},
     confirmed:{title:"확정 예약", pick:r=>true, note:""},
@@ -5456,7 +5542,7 @@ function sheetPick(){
           kind==="noshow"&&noshowOf(r.phone)?` · 노쇼 ${noshowOf(r.phone).count}회`:""}${
           kind==="warn"?` · ${resWarn(r).join(", ")}`:""}${
           kind==="group"&&r.menuType==="코스"?` · 코스`:""}</span></span>
-      <span class="tag ${r.roomId?'pine':'rust'}">${r.roomId?esc(resSeatLabel(r)):"미배정"}</span>
+      ${seatTag(r)}
     </button>`).join("") : `<div class="empty">해당 예약이 없습니다.</div>`;
   return `
     ${sheetHead(`${conf.title} · ${kind==="auto"?dateLabel(shiftDate(today,-1)):dateLabel(d)}`)}
@@ -5693,7 +5779,7 @@ function renderTimeline(date, compact){
       </div>
       <div class="tl-rate" style="height:${lanes*LANE}px">${lanes>1
         ? `<span class="rb"><i></i><b>${rate}%</b><i></i></span>`
-        : `<span class="rt">${rate}%</span>`}${over?`<small class="over">초과 ${over}</small>`:""}</div>
+        : `<span class="rt">${rate}%</span>`}${over?`<small class="over" title="같은 시간에 테이블 수보다 팀이 많습니다 — 자리 없는 팀(경고 예약)">자리 없음 ${over}</small>`:""}</div>
     </div>`;
   };
 
@@ -5720,9 +5806,13 @@ function renderTimeline(date, compact){
       placed = laneLayout(again, lanes);
     }
     const over = placed.filter(x=>x.lane===null).length;
+    /* 자리를 못 받은 팀(테이블 수보다 팀이 많음)은 다른 블록 위에 겹쳐 그리지 않고 **맨 위에 칸을 하나 더** 만들어 넣습니다.
+       그 칸은 블록 자리 말고는 영업 종료 빗금으로 채워 '정상 칸이 아니다' 가 보이게 (재아) */
+    const extraLane = over ? lanes : -1;
+    const totalLanes = lanes + (over ? 1 : 0);
     const seats = fl==null ? 0 : floorSeats(fl);
     const blocks = placed.map(it=>{
-      const w = ((it.e0-it.s0)/span)*100, lane = it.lane===null?0:it.lane;
+      const w = ((it.e0-it.s0)/span)*100, lane = it.lane===null?extraLane:it.lane;
       const past = isBlockPast(it.r, it.s0, date, nowM);
       const bad = resWarn(it.r).length>0, chg = changeTag(it.r);
       const tn = it.r.roomId ? seatLabelIds(seatsOf(it.r)).replace(/ 테이블$/,"") : tableHint(it.r).replace(/^ \(|\)$/g,"").replace(/ 나눠$/,"");
@@ -5736,12 +5826,13 @@ function renderTimeline(date, compact){
     /* 예약률 = 손님·분 / 자리·분 (영업시간 안으로 자른 것) */
     const used = items.reduce((a,x)=>a+x.need*(x.e0-x.s0),0);
     const rate = tbls.length ? Math.min(100, Math.round(used/(tbls.length*span)*100)) : 0;
-    const bands = fl==null ? "" : floorTables(fl).map(blockBands).join("");
+    const bands = (fl==null ? "" : floorTables(fl).map(blockBands).join(""))
+      + (over ? `<div class="offband overlane" style="left:0; right:0; top:0; height:${LANE}px" title="테이블 수를 넘은 팀이 놓이는 칸"></div>` : "");
     return `<div class="tl-row tbl floor">
       <div class="tl-name"><b>${fl==null?"층 미정":esc(floorLabel(fl))}</b><small>${fl==null?"":`테이블 ${tbls.length} · ${seats}석`}</small></div>
-      <div class="tl-track" style="height:${lanes*LANE}px; background-image:repeating-linear-gradient(to top, transparent 0, transparent ${LANE-1}px, var(--border) ${LANE-1}px, var(--border) ${LANE}px)">${layers}${bands}${blocks}</div>
-      <div class="tl-rate" style="height:${lanes*LANE}px">${lanes>1
-        ? `<span class="rb"><i></i><b>${rate}%</b><i></i></span>` : `<span class="rt">${rate}%</span>`}${over?`<small class="over">초과 ${over}</small>`:""}</div>
+      <div class="tl-track" style="height:${totalLanes*LANE}px; background-image:repeating-linear-gradient(to top, transparent 0, transparent ${LANE-1}px, var(--border) ${LANE-1}px, var(--border) ${LANE}px)">${layers}${bands}${blocks}</div>
+      <div class="tl-rate" style="height:${totalLanes*LANE}px">${lanes>1
+        ? `<span class="rb"><i></i><b>${rate}%</b><i></i></span>` : `<span class="rt">${rate}%</span>`}${over?`<small class="over" title="같은 시간에 테이블 수보다 팀이 많습니다 — 자리 없는 팀(경고 예약)">자리 없음 ${over}</small>`:""}</div>
     </div>`;
   };
   const unknownFloor = list.some(r=>resFloor(r) === null);
@@ -5776,7 +5867,7 @@ function renderTimeline(date, compact){
           const chk = checkItems(date).length;
           return Object.keys(cnt).filter(k=>cnt[k])
             .map(k=>`<button class="tag tapchip ${cls[k]}" onclick="${act[k]}">${nm[k]||k} ${cnt[k]}건</button>`).join("")
-            + `<button class="tag tapchip ${chk?'amber':''} right" onclick="openCheck()">확인 필요 ${chk}건</button>`;
+            + `<button class="tag tapchip ${chk?'amber':''} right" onclick="openCheck()">확인 ${chk}건</button>`;
         })()}
       </div>
       <div class="tl-legends">
@@ -5785,7 +5876,7 @@ function renderTimeline(date, compact){
         <span class="tl-legend"><i class="lgsw warn"></i>경고</span>
         <span class="tl-legend"><i class="lgsw chg"></i>변동</span>
         <span class="tl-legend sym" title="룸 합침(중문 탈거) — 한 방처럼">⊞ 합침</span>
-        <span class="tl-legend sym" title="룸 합침인데 공간이 나뉨(원탁) — 손님 확인">⊕ 나뉨</span>
+        <span class="tl-legend sym" title="룸 합침인데 공간이 나뉨(원탁) — 손님 확인. '나눠 앉음'(테이블을 못 붙여 따로 앉음)과는 다릅니다">⊕ 공간 나뉨</span>
         <span class="tl-legend sym" title="붙일 테이블이 없어 옆 테이블에 나눠 앉음">↔ 나눠 앉음</span>
       </div>
     </div>
@@ -5921,7 +6012,7 @@ function renderRes(){
         <button class="nav mo" onclick="moveMonthDate(1)" title="다음 달">»</button>
         <button class="nav cal" onclick="openCal()" aria-label="달력 열기">${ICON.cal}</button>
       </div>
-      <button class="btn primary add" onclick="openWizard('${view.date}')">＋ 예약 등록</button>
+      <button class="btn primary add" onclick="openWizard()">＋ 예약 등록</button>
     </div>
 
     <div class="sect-title">가동 현황</div>
@@ -6009,9 +6100,7 @@ function resCard(r){
           <span class="tm">${esc(r.time)}</span>
           <span class="nm">${esc(r.name)}</span>
           <span class="pp">${pplText(r)}</span>
-          <span class="rm tag ${room?'pine':(r.tentativeRoomId?'amber':'rust')}">${
-            room ? esc(resSeatLabel(r))
-                 : (r.tentativeRoomId ? `미배정 · ${esc(resTentLabel(r))}(잠정)` : "미배정")}</span>
+          ${seatTag(r).replace('class="tag', 'class="rm tag')}
         </div>
         <div class="l2">
           ${esc(r.phone||"연락처 없음")}
@@ -6302,6 +6391,32 @@ async function setStatus(id,status){
 /* ============================================================
    설정
    ============================================================ */
+/* 설정 설명문 → ⓘ 버튼(8차-X, 재아): 항목마다 붙던 설명(.f-note)을 떼어 오른쪽 ⓘ 로 옮기고, 누르면 팝업으로 보여 줍니다.
+   · <label class="f"> 안의 설명 → 그 항목 제목(.lb) 오른쪽
+   · 홀로 있는 <p class="f-note"> → 바로 앞의 소제목(.subhead)·버튼 줄(.btn-row)·라벨(.lbl) 끝, 없으면 작은 ⓘ 줄
+   설명 안의 버튼(linkbtn)·굵은 글씨는 그대로 팝업에 들어갑니다 */
+var INFO_NOTES = [];
+function infoBtn(html){ INFO_NOTES.push(html); return `<button class="ibtn" type="button" onclick="event.stopPropagation(); showInfo(${INFO_NOTES.length-1})" aria-label="설명">i</button>`; }
+function showInfo(i){ const h = INFO_NOTES[i]; if(h == null) return; modalReplace({mode:"alert", title:"설명", html:h, tone:"ok", res:function(){}}); }
+function infoize(html){
+  html = html.replace(/<label class="f"([^>]*)>([\s\S]*?)<\/label>/g, function(m, attrs, body){
+    var notes = [];
+    body = body.replace(/<div class="f-note"[^>]*>([\s\S]*?)<\/div>/g, function(_, n){ notes.push(n); return ""; });
+    if(!notes.length) return m;
+    body = body.replace(/(<div class="lb">)([\s\S]*?)(<\/div>)/, function(_, a, t, b){ return a + t + infoBtn(notes.join("<br><br>")) + b; });
+    return '<label class="f"' + attrs + '>' + body + '</label>';
+  });
+  html = html.replace(/<\/p>\s*<p class="f-note"[^>]*>/g, "<br><br>");   /* 붙어 있는 설명 둘은 한 팝업으로 */
+  var out = "", re = /<p class="f-note"[^>]*>([\s\S]*?)<\/p>/g, last = 0, m;
+  while((m = re.exec(html))){
+    var seg = html.slice(last, m.index), btn = infoBtn(m[1]);
+    var a = Math.max(seg.lastIndexOf('<div class="subhead"'), seg.lastIndexOf('<div class="btn-row"'), seg.lastIndexOf('<div class="lbl"'));
+    var e = a >= 0 ? seg.indexOf("</div>", a) : -1;
+    seg = e >= 0 ? seg.slice(0, e) + btn + seg.slice(e) : seg + '<div class="f-info">' + btn + '</div>';
+    out += seg; last = re.lastIndex;
+  }
+  return out + html.slice(last);
+}
 /* 설정 화면의 접이식 구역 */
 function sec(key, title, extra, inner){
   const open = !!view.open["s_"+key];
@@ -6311,10 +6426,11 @@ function sec(key, title, extra, inner){
         <span class="fh-t">${title}</span>
         <span class="fh-x">${extra||""}</span>
       </button>
-      ${open?`<div class="fold-b ${view.foldJust==="s_"+key?'just':''}">${inner}</div>`:""}
+      ${open?`<div class="fold-b ${view.foldJust==="s_"+key?'just':''}">${infoize(inner)}</div>`:""}
     </section>`;
 }
 function renderSettings(){
+  INFO_NOTES = [];                  /* ⓘ 설명은 그릴 때마다 새로 모읍니다 */
   const st = draft();               /* 임시본 — '적용하기'를 눌러야 반영됩니다 */
   const dirty = settingsDirty();
   const DOWN = ["일","월","화","수","목","금","토"];
@@ -6330,7 +6446,7 @@ function renderSettings(){
           <button class="btn sm" style="margin-left:auto" onclick="openSchedule('${sc.from}')">수정</button>
         </div>
         <div class="sch-days">
-          ${(sc.days||[]).map((d,i)=>`<span class="sch-d"><b>${DOWN[i]}</b>
+          ${[1,2,3,4,5,6,0].map(i=>({d:(sc.days||[])[i], i})).filter(x=>x.d).map(({d,i})=>`<span class="sch-d"><b>${DOWN[i]}</b>
             ${esc(d.open)} ~ ${esc(d.close)}${d.bs?` · 브레이크 ${esc(d.bs)} ~ ${esc(d.be)}`:""}${d.lo?` · 라스트오더 ${esc(d.lo)}`:""}${sessSummary(d)}</span>`).join("")}
           ${sc.holiday?`<span class="sch-d"><b>공휴</b>
             ${esc(sc.holiday.open)} ~ ${esc(sc.holiday.close)}${sc.holiday.bs?` · 브레이크 ${esc(sc.holiday.bs)} ~ ${esc(sc.holiday.be)}`:""}${sc.holiday.lo?` · 라스트오더 ${esc(sc.holiday.lo)}`:""}${sessSummary(sc.holiday)}</span>`:""}
@@ -6338,7 +6454,7 @@ function renderSettings(){
       </div>`;
     }).join("")}
     <div class="btn-row" style="margin-top:12px">
-      <button class="btn primary" onclick="openSchedule(null)">운영시간 수정</button>
+      <button class="btn" onclick="openSchedule(null)">운영시간 수정</button>
       <button class="btn" onclick="openOverride()">임시 영업·휴무</button>
     </div>
     <p class="f-note">운영시간을 바꿀 때는 적용 시작일을 정합니다.
@@ -6368,7 +6484,7 @@ function renderSettings(){
       </div>
       <div class="btn-row" style="margin-top:10px">
         <input id="hol-date" type="date" style="flex:1 1 160px">
-        <button class="btn primary" onclick="addHoliday()">공휴일 추가</button>
+        <button class="btn" onclick="addHoliday()">공휴일 추가</button>
       </div>
       <p class="f-note">2026~2027년 공휴일(대체공휴일 포함)은 들어 있습니다. 임시공휴일·선거일은 미리 알 수 없으니 정해지면 추가하세요. × 는 그날을 공휴일에서 뺍니다.</p>`; })()}`:""}`;
 
@@ -6383,7 +6499,7 @@ function renderSettings(){
       <div class="f-note">성인 기준이면 성인 1명·유아 3명은 4인 룸 최소 인원에 못 미치는 것으로 봅니다.</div></label>
     <label class="f"><div class="lb">단체 기준 인원</div>
       <button class="numbtn" onclick="openNum('groupSize','단체 기준 인원',2,40)">${st.groupSize||8}<small>명</small></button>
-      <div class="f-note">이 인원부터 확인 필요에 ‘단체 손님’으로 뜹니다.</div></label>
+      <div class="f-note">이 인원부터 확인에 ‘단체 손님’으로 뜹니다.</div></label>
 
     <div class="subhead">경고 기준</div>
     <label class="f"><div class="lb">겹침 강한 경고</div>
@@ -6476,7 +6592,7 @@ function renderSettings(){
       <input id="nr-min" type="number" min="1" value="6" title="최적(최소) 인원" style="flex:1 1 62px">
       <input id="nr-cap" type="number" min="1" value="7" title="최대 인원" style="flex:1 1 62px">
       <input id="nr-floor" placeholder="층" style="flex:1 1 60px">
-      <button class="btn primary" onclick="addRoom('room')">룸 추가</button>
+      <button class="btn" onclick="addRoom('room')">룸 추가</button>
     </div>
 
 ` : ""}
@@ -6488,7 +6604,7 @@ function renderSettings(){
       <input id="nt-name" placeholder="테이블 이름 (예: 26)" style="flex:2 1 120px">
       <input id="nt-seats" type="number" min="1" value="4" title="기본 인원" style="flex:1 1 62px">
       <input id="nt-floor" placeholder="층" value="${esc(floorsT[0]||"1층")}" style="flex:1 1 60px">
-      <button class="btn primary" onclick="addRoom('table')">테이블 추가</button>
+      <button class="btn" onclick="addRoom('table')">테이블 추가</button>
     </div>
 
 ` : ""}
@@ -6502,7 +6618,7 @@ function renderSettings(){
       <input id="nj-min" type="number" min="1" value="12" title="최소" style="flex:1 1 62px">
       <input id="nj-max" type="number" min="1" value="14" title="최대" style="flex:1 1 62px">
       <input id="nj-note" placeholder="메모 (예: 원탁 — 손님 확인)" style="flex:3 1 160px">
-      <button class="btn primary" onclick="addJoin()">합침 추가</button>
+      <button class="btn" onclick="addJoin()">합침 추가</button>
     </div>
     <div class="subhead" style="margin-top:20px">테이블 붙임 <span>같은 층에서 붙여 앉힐 수 있는 짝. 큰 팀이 오면 이 짝으로만 붙입니다(아니면 나눠 앉음)</span></div>
     ${floorsT.map(pairTable).join("")}` : ""}`;
@@ -6524,7 +6640,7 @@ function renderSettings(){
         </div>
       </div>`).join("")}
     <div class="btn-row" style="margin-top:10px">
-      <button class="btn primary" onclick="addCourseRow()">＋ 행 추가</button>
+      <button class="btn" onclick="addCourseRow()">＋ 행 추가</button>
     </div>
     <p class="f-note">메뉴판 구성에 맞춰 행을 나누세요. 예약 시각에 맞는 행이 코스 선택 팝업에서 강조됩니다.</p>`;
 
@@ -6537,7 +6653,7 @@ function renderSettings(){
     </div>
     <div class="btn-row" style="margin-top:12px">
       <input id="ns" placeholder="예: 캐치테이블" style="flex:1 1 140px">
-      <button class="btn primary" onclick="addSource()">추가</button>
+      <button class="btn" onclick="addSource()">추가</button>
     </div>`;
 
   /* ---------- 디스플레이 ---------- */
@@ -6602,8 +6718,9 @@ function renderSettings(){
       ${supaOn() ? `<button class="btn" onclick="openAdminPw()">관리자 비밀번호 변경</button>` : ""}
       <button class="btn" onclick="openLogs()">로그</button>
       <button class="btn" onclick="openRate()">예약률 추이</button>
+      <button class="btn" onclick="openSmsFree()">문자 보내기</button>
       <button class="btn danger" onclick="resetSettingsAll()">설정 초기화</button>
-      <a class="btn" href="${location.pathname.indexOf('/dev/')>=0?'../':''}비상예약지.html" target="_blank" rel="noopener">비상 예약지 인쇄</a>
+      <button class="btn" onclick="openSlip()">비상 예약지 인쇄</button>
     </div>
     <p class="f-note">비상 예약지: 시스템이 안 될 때 손으로 받는 종이(A4 한 장에 6장). 열리면 Ctrl+P 로 인쇄해 카운터에 두세요.</p>
     <p class="f-note">PIN 변경에는 관리자 비밀번호가 필요합니다. PIN 은 직원과 공유하는 번호, 관리자 비밀번호는 사장님만 아는 것입니다.</p>`;
@@ -6697,6 +6814,15 @@ function renderSettings(){
     <textarea id="sms-park" rows="3" placeholder="비워 두면 문자에 안 들어갑니다"
       onchange="setSms('parkingNote',this.value)">${esc(sm.parkingNote||"")}</textarea>
     <p class="f-note">주차비나 발렛이 바뀌면 여기만 고치면 됩니다.</p>
+
+    <div class="subhead">문안 <span>{매장} {이름} {일시} {인원} {주차} {오늘내일} 자리에 값이 들어갑니다</span></div>
+    <div class="subhead">접수 문자 문안 <span>예약을 받은 즉시</span></div>
+    <textarea id="sms-tpl-new" rows="9" onchange="setSms('tplNew',this.value)">${esc(sm.tplNew||SMS_DEFAULT.tplNew)}</textarea>
+    <div class="btn-row" style="margin:6px 0 12px"><button class="btn sm" onclick="setSms('tplNew',SMS_DEFAULT.tplNew)">기본 문안으로</button></div>
+    <div class="subhead">재안내 문자 문안 <span>방문 전 재안내</span></div>
+    <textarea id="sms-tpl-rem" rows="12" onchange="setSms('tplRemind',this.value)">${esc(sm.tplRemind||SMS_DEFAULT.tplRemind)}</textarea>
+    <div class="btn-row" style="margin:6px 0 0"><button class="btn sm" onclick="setSms('tplRemind',SMS_DEFAULT.tplRemind)">기본 문안으로</button></div>
+    <p class="f-note">{주차}는 위 주차 안내가 비어 있으면 그 줄이 통째로 빠집니다. {오늘내일}은 보내는 날 기준으로 “오늘 / 내일 / 모레” 가 들어갑니다.</p>
 
     <div class="subhead">이렇게 나갑니다</div>
     <div class="smsprev">
@@ -7167,7 +7293,7 @@ function sheetPinList(){
 }
 function openAdminPw(){ view.form={type:"apw"}; render(); }
 function openLogs(){ view.form={type:"logs"}; render(); }
-function openSmsLog(){ view.form={type:"smslog"}; render(); }
+function openSmsLog(){ view.form={type:"smslog"}; view.smsOpen = {}; render(); }
 /* 예약률 시트는 자기 커서(view.rateEnd)로 주를 옮깁니다. 6차 전에는 moveDate(±7) 로 메인 날짜를 밀어서
    시트를 닫으면 대시보드가 엉뚱한 주에 가 있었습니다. 열 때 view.date 로 시작하고 닫으면 view.date 는 그대로 */
 function openRate(){ view.rateEnd = view.date; view.form={type:"rate"}; render(); }
@@ -7220,7 +7346,7 @@ function toastSaved(rec){
 }
 
 function renderSheet(){
-  const inner = { res:sheetRes, mark:sheetMark, unassigned:sheetUnassigned, pick:sheetPick, check:sheetCheck, search:sheetSearch, num:sheetNum, noshow:sheetNoshow, pin:sheetPin, apw:sheetAdminPw, hours:sheetHours, tedit:sheetTableEdit, naver:sheetNaver, setlog:sheetSetLog, pinlist:sheetPinList, zoomadj:sheetZoomAdj, logs:sheetLogs, smslog:sheetSmsLog, rate:sheetRate, sched:sheetSchedule, ovr:sheetOverride, blocks:sheetBlocks /*, staff:sheetStaff, att:sheetAtt, sale:sheetSale */ }[view.form.type]();
+  const inner = { res:sheetRes, mark:sheetMark, unassigned:sheetUnassigned, pick:sheetPick, check:sheetCheck, search:sheetSearch, num:sheetNum, noshow:sheetNoshow, pin:sheetPin, apw:sheetAdminPw, hours:sheetHours, tedit:sheetTableEdit, naver:sheetNaver, setlog:sheetSetLog, pinlist:sheetPinList, zoomadj:sheetZoomAdj, logs:sheetLogs, smslog:sheetSmsLog, smsfree:sheetSmsFree, rate:sheetRate, sched:sheetSchedule, ovr:sheetOverride, blocks:sheetBlocks /*, staff:sheetStaff, att:sheetAtt, sale:sheetSale */ }[view.form.type]();
   const wide = view.form.type==="rate" ? " sheet-wide" : "";
   if(view.form.page) return `<div class="sheet page-sheet">${inner}</div>`;   /* 화면형: 덮개 없이 본문 자리에 */
   return `<div class="overlay" onclick="closeSheet()"><div class="sheet${wide}" onclick="event.stopPropagation()">${inner}</div></div>`;
@@ -7479,7 +7605,7 @@ async function saveRes(){
   if(issues.length){
     const ok = await uiConfirm("이대로 저장할까요?",
       issues.map(x=>`· ${x}`).join("\n") +
-      "\n\n저장해도 됩니다. 대신 '경고 예약'으로 남아 확인 필요에 뜹니다.",
+      "\n\n저장해도 됩니다. 대신 '경고 예약'으로 남아 확인에 뜹니다.",
       {ok:"그래도 저장", cancel:"다시 고치기"});
     if(!ok) return;
   }
@@ -7597,9 +7723,7 @@ function sheetMark(){
   const r = s.reservations.find(x=>x.id===view.form.id);
   if(!r) return `${sheetHead("예약")}<div class="empty">예약을 찾을 수 없습니다.</div>`;
 
-  const seat = r.roomId ? resSeatLabel(r)
-             : isTablePref(r.seatPref) ? resSeatLabel(r)
-             : (r.tentativeRoomId ? `미배정 (${resTentLabel(r)} 잠정)` : "미배정");
+  const seat = seatTagText(r).text;   /* '장비 룸(잠정)' · '1층 테이블 · 21(잠정)' (재아) */
   const srcTxt = r.source==="기타" && r.sourceDetail ? `기타 · ${r.sourceDetail}` : (r.source||"전화");
   const made = r.createdAt ? new Date(r.createdAt) : null;
   const madeTxt = made
@@ -7617,8 +7741,11 @@ function sheetMark(){
     const st8 = !r.tentativeRoomId ? `<b style="color:var(--rust)">자리 없음</b> — 한 자리 최대 ${floorMaxParty(fl, r.date, r.time, r.id)}명`
               : r.tentativeSplit ? `<b style="color:var(--rust)">나눠 앉음</b> — 테이블 ${seatsOf(r).length}개, 붙일 수 없음`
               : `자리 있음 — 테이블 ${seatsOf(r).length}개`;
+    /* 숨은 잠정 배정을 '추천 좌석' 으로 — 4명 이하도(8차-Y 재아). 어디 앉힐지는 사장 자유, 참고용 */
+    const recNames = r.tentativeRoomId ? seatsOf(r).map(id=>{ const x = seatById(id); return x ? x.name : ""; }).filter(Boolean) : [];
+    const rec = recNames.length ? `<div class="lbl" style="margin:12px 0 4px">추천 좌석 <span class="lbl-note">참고용 · 당일 사장님이 정합니다</span></div><div class="f-note" style="margin:0">${esc(recNames.join(" + "))}${r.tentativeSplit ? " (나눠 앉음)" : ""}</div>` : "";
     seatPick = `<div class="lbl" style="margin:16px 0 8px">테이블 자리</div>
-      <p class="f-note">${esc(floorLabel(fl))} · ${st8}. 어느 테이블에 앉을지는 당일 현장에서 정합니다. 특정 테이블(파셜룸 등)을 잡으려면 '수정' 에서 고르세요.</p>`;
+      <p class="f-note">${esc(floorLabel(fl))} · ${st8}. 어느 테이블에 앉을지는 당일 현장에서 정합니다. 특정 테이블(파셜룸 등)을 잡으려면 '수정' 에서 고르세요.</p>${rec}`;
   }else if(!r.roomId){
     const kind = r.seatPref==="hall-any" ? "table-any" : (r.seatPref||"any");
     const ppl = pplOf(r);
@@ -7721,6 +7848,8 @@ async function markRes(id, status){
   if(readonlyBlock()) return;
   const s = store();
   const rec = s.reservations.find(r=>r.id===id);
+  /* 취소→노쇼 기준(설정)은 setStatus·saveRes 만 물었습니다 — 이 길로 와도 같게(11월 점검) */
+  if(status==="취소" && rec && rec.status!=="취소"){ const ans = await askNoshowOnCancel(rec); if(ans == null) return; status = ans; }
   if(status==="취소" && rec && rec.status!=="취소"){
     const ok = await uiConfirm("예약을 취소할까요?",
       `${rec.time} ${rec.name} 손님 · ${pplText(rec)}\n좌석이 비고, 기록에는 ‘취소’로 남습니다.`,
@@ -7897,7 +8026,7 @@ function sheetSearch(){
           ${r.status!=="확정"?`<span class="tag ${r.status==="노쇼"?"rust":""}">${r.status}</span>`:""}</span>
           <span class="s">${dateLabel(r.date)} ${esc(r.time)} · ${pplText(r)} · ${esc(r.phone||"연락처 없음")}${
           r.request?` · ${esc(r.request)}`:""}${r.allergy?` · 알러지 ${esc(r.allergy)}`:""}</span></span>
-        <span class="tag ${r.roomId?'pine':'amber'}">${r.roomId?esc(resSeatLabel(r)):"미배정"}</span>
+        ${seatTag(r)}
       </button>`).join("")
       : `<div class="empty">찾은 예약이 없습니다.</div>`;
   }
@@ -8004,36 +8133,42 @@ async function unclearNoshow(key){
 const DOW = ["일","월","화","수","목","금","토"];
 /* 운영시간 요약 한 줄에 붙는 세션 요약 — "점심 접수 ~14:00 · 저녁 접수 ~19:30" */
 function sessSummary(d){
-  const ss = d.sessions || []; if(!ss.length) return "";
-  return `<span class="sch-s">${ss.map(se=>`${esc(se.name)} 접수 ~${esc(se.lastBook)}${se.stay==="end"?"":` · ${se.stay}분`}`).join(" · ")}</span>`;
+  const ss = sessionsOfDay(d); if(!ss.length) return "";
+  const f = v => v === "end" ? "끝까지" : `${v||110}분`;
+  return `<span class="sch-s">${ss.map(se=>`${esc(se.name)} 접수 ~${esc(se.lastBook)} (룸 ${f(se.stay)} · 테이블 ${f(se.stayTable)})`).join(" · ")}</span>`;
 }
-/* 세션 표 한 줄 — 이름 · 시작 · 접수 마감 · 점유(끝까지 / 분) · 끝 */
-function sessRows(x, key){
-  const ss = x.sessions || [];
-  /* 시간 입력은 한글 로캘에서 '오전 11:00' 처럼 넓어 한 줄에 다섯 칸을 못 넣습니다 — 세션 하나를 두 줄 카드로 */
-  return `<div class="sess">
-    ${ss.map((se,si)=>`<div class="sess-r">
-      <div class="sf"><span>세션</span><input value="${esc(se.name||"")}" onchange="setSess('${key}',${si},'name',this.value)"></div>
-      <div class="sf"><span>시작</span><input type="time" value="${se.from||""}" onchange="setSess('${key}',${si},'from',this.value)"></div>
-      <div class="sf"><span>접수 마감</span><input type="time" value="${se.lastBook||""}" onchange="setSess('${key}',${si},'lastBook',this.value)"></div>
-      <button class="btn sm danger" onclick="delSess('${key}',${si})" title="세션 삭제">×</button>
-      <div class="sf"><span>점유</span><span class="sess-stay"><label class="chk"><input type="checkbox" ${se.stay==="end"?"checked":""} onchange="setSess('${key}',${si},'stay',this.checked?'end':110)"><span>끝까지</span></label>
-        <input type="number" min="30" step="10" value="${se.stay==="end"?"":(se.stay||110)}" ${se.stay==="end"?"disabled":""} onchange="setSess('${key}',${si},'stay',parseInt(this.value)||110)"><small>분</small></span></div>
-      <div class="sf"><span>끝</span><input type="time" value="${se.until||""}" onchange="setSess('${key}',${si},'until',this.value)"></div>
-    </div>`).join("")}
-    <button class="btn sm" onclick="addSess('${key}')">＋ 세션</button>
+/* 운영시간 편집(8차-X, 재아) — 월요일부터, 요일 카드는 접혀 있고 눌러서 폅니다.
+   세션은 '점심 경계' 하나 + 점심/저녁 접수 마감·점유(룸/테이블 따로). 브레이크가 있으면 경계는 브레이크 시작으로 잠깁니다.
+   라스트오더는 직접 입력하고 옆에 '마감 N분 전' 을 참고로만 보여 줍니다(자동 버튼 삭제) */
+function stayBox(i, seg, k, label){
+  const v = dayOf(i).sess[seg][k];
+  return `<div class="sf"><span>${label}</span><span class="sess-stay"><label class="chk"><input type="checkbox" ${v==="end"?"checked":""} onchange="setSessV(${i},'${seg}','${k}',this.checked?'end':110)"><span>끝까지</span></label>
+    <input type="number" min="30" step="10" value="${v==="end"?"":(v||110)}" ${v==="end"?"disabled":""} onchange="setSessV(${i},'${seg}','${k}',parseInt(this.value)||110)"><small>분</small></span></div>`;
+}
+function segBox(i, seg, title, note){
+  return `<div class="sess-r two">
+    <div class="sf full"><b>${title}</b><span class="lbl-note">${esc(note)}</span></div>
+    <div class="sf"><span>접수 마감</span><input type="time" value="${dayOf(i).sess[seg].lastBook||""}" onchange="setSessV(${i},'${seg}','lastBook',this.value)"></div>
+    ${stayBox(i, seg, "room", "점유 · 룸")}
+    ${stayBox(i, seg, "table", "점유 · 테이블")}
   </div>`;
 }
-function sessTarget(key){ const d = view.schedDraft; return key==="h" ? d.holiday : d.days[Number(key)]; }
-function setSess(key, si, k, v){ const t = sessTarget(key); if(!t.sessions) t.sessions = []; t.sessions[si][k] = v; render(); }
-function addSess(key){ const t = sessTarget(key); if(!t.sessions) t.sessions = []; t.sessions.push({name:"세션", from:t.open||"11:00", lastBook:t.close||"20:00", stay:"end", until:t.close||"22:00"}); render(); }
-function delSess(key, si){ const t = sessTarget(key); (t.sessions||[]).splice(si,1); render(); }
+function setSessV(i, seg, k, v){ dayOf(i).sess[seg][k] = v; render(); }
+function setEdge(i, v){ dayOf(i).sess.edge = v; render(); }
+function toggleEdge(i){ const x = dayOf(i).sess; x.edge = x.edge === "" ? "15:30" : ""; render(); }
+function toggleSchedDay(key){ const d = view.schedDraft; d.open = d.open || {}; d.open[key] = !d.open[key]; render(); }
 function sheetSchedule(){
   const d = view.schedDraft;
-  const dayBlock = (x, i, key, label, cls) => `
-    <div class="dayrow ${cls||''}">
-      <div class="dr-h"><b>${label}</b></div>
-      <div class="dr-in">
+  d.open = d.open || {};
+  const dayBlock = (x, i, label, cls) => {
+    ensureSess(x);
+    const key = String(i), isOpen = !!d.open[key];
+    const edge = x.bs ? x.bs : (x.sess.edge || "");
+    const loRef = x.lo ? `마감 ${hmDur(Math.max(0, toMin(x.close) - toMin(x.lo)))} 전` : "";
+    const sum = `${esc(x.open)} ~ ${esc(x.close)}${x.bs?` · 브레이크 ${esc(x.bs)} ~ ${esc(x.be)}`:""}${x.lo?` · 라스트오더 ${esc(x.lo)}`:""}`;
+    return `<div class="dayrow ${cls||''} ${isOpen?'on':''}">
+      <button class="dr-h" onclick="toggleSchedDay('${key}')"><b>${label}</b><span class="dr-sum">${sum}</span><span class="fh-i">${isOpen?"▲":"▼"}</span></button>
+      ${isOpen ? `<div class="dr-in">
         <label><span>영업</span>
           <input type="time" value="${x.open}" onchange="setDay(${i},'open',this.value)">
           <em>~</em>
@@ -8046,18 +8181,26 @@ function sheetSchedule(){
           <span>브레이크타임 없음</span></label>
         <label><span>라스트오더</span>
           <input type="time" value="${x.lo||""}" ${x.lo?"":"disabled"} onchange="setDay(${i},'lo',this.value)">
-          ${x.lo?`<button class="btn sm" onclick="autoLO(${i})">마감 1시간 20분 전</button>`:""}</label>
+          <em class="lo-ref">${loRef}</em></label>
         <label class="chk"><input type="checkbox" ${x.lo?"":"checked"} onchange="toggleLoDay(${i})">
           <span>라스트오더 없음</span></label>
-        ${sessRows(x, key)}
-      </div>
+        <label><span>점심 경계</span>
+          <input type="time" value="${edge}" ${(x.bs || x.sess.edge === "")?"disabled":""} onchange="setEdge(${i},this.value)">
+          <em class="lo-ref">${x.bs ? "브레이크 시작과 같음 (자동)" : edge ? "이 시각부터 저녁" : "하루가 한 세션"}</em></label>
+        ${x.bs ? "" : `<label class="chk"><input type="checkbox" ${x.sess.edge===""?"checked":""} onchange="toggleEdge(${i})">
+          <span>점심 경계 없음 (하루 한 세션)</span></label>`}
+        <div class="sess">
+          ${edge ? segBox(i,"lunch","점심", `${x.open} ~ ${edge}`) + segBox(i,"dinner","저녁", `${x.be||edge} ~ ${x.close}`) : segBox(i,"dinner","종일", `${x.open} ~ ${x.close}`)}
+        </div>
+      </div>` : ""}
     </div>`;
-  const rows = d.days.map((x,i)=>dayBlock(x, i, String(i), DOW[i], i===0?'sun':i===6?'sat':'')).join("")
-             + dayBlock(d.holiday, 7, "h", "공휴일", "sun");
+  };
+  const rows = [1,2,3,4,5,6,0].map(i=>dayBlock(d.days[i], i, DOW[i], i===0?'sun':i===6?'sat':'')).join("")
+             + dayBlock(d.holiday, 7, "공휴일", "sun");
   return `
     ${sheetHead(d.isNew?"운영시간 수정":"운영시간 편집")}
-    <p class="f-note" style="margin:-6px 0 12px">세션 = 손님을 받는 시간대. <b>접수 마감</b>은 마지막으로 입장을 받는 시각(식사 시간 보장), <b>점유 '끝까지'</b>는 그 세션 끝까지 한 자리에 한 팀만.
-      라스트오더는 주방 마감이라 별개입니다.</p>
+    <p class="f-note" style="margin:-6px 0 12px"><b>점심 경계</b>부터 저녁입니다(브레이크가 있으면 브레이크 시작). <b>접수 마감</b>은 마지막으로 입장을 받는 시각,
+      <b>점유 '끝까지'</b>는 그 세션 끝까지 한 자리에 한 팀. 라스트오더는 주방 마감이라 별개입니다.</p>
     <label class="f"><div class="lb">적용 시작일</div>
       <input type="date" value="${d.from}" onchange="setSchedFrom(this.value)">
       <div class="f-note">이 날짜부터 새 시간이 적용됩니다. 그 전 날짜는 이전 설정을 그대로 씁니다.</div>
@@ -8081,16 +8224,12 @@ function toggleLoDay(i){
   d.lo = d.lo ? "" : minToHM(Math.max(0, toMin(d.close)-80));
   render();
 }
-function autoLO(i){
-  const d = dayOf(i);
-  d.lo = minToHM(Math.max(0, toMin(d.close) - 80));
-  render();
-}
 function setSchedFrom(v){ view.schedDraft.from = v; render(); }
 async function saveSchedule(){
   const st = store().settings, d = view.schedDraft;
   if(!d.from) return uiAlert("적용 시작일을 정해주세요","","warn");
   st.schedules = (st.schedules||[]).filter(s=>s.from!==d.from && s.from!==d.origFrom);   /* 시작일을 바꿨으면 옛 항목도 정리 */
+  d.days.forEach(ensureSess); ensureSess(d.holiday);
   st.schedules.push({from:d.from, days:deepClone(d.days), holiday:deepClone(d.holiday)});
   st.schedules.sort((a,b)=>a.from.localeCompare(b.from));
   mirrorDraft("schedules");   /* 안 그러면 '적용하기'가 방금 저장한 것을 되돌립니다(점검 D1) */
@@ -8293,7 +8432,7 @@ function sheetBlocks(){
           <i>보기 ›</i></button>`).join("")}
         ${hits.length>8?`<div class="bh-more">외 ${hits.length-8}건</div>`:""}
         <div class="bh-s">그대로 등록해도 예약은 지워지지 않습니다.
-          <b>경고 예약</b>으로 남아 확인 필요에 뜹니다. 자리를 옮기려면 위에서 눌러 이동하세요.</div>
+          <b>경고 예약</b>으로 남아 확인에 뜹니다. 자리를 옮기려면 위에서 눌러 이동하세요.</div>
       </div>`:""}
     <div class="sheet-actions">
       <button class="btn ghost" onclick="closeSheet()">닫기</button>
@@ -8344,7 +8483,7 @@ async function saveBlock(){
       return `· ${dateLabel(r.date)} ${hm(r.time)} ${r.name} 손님 ${pplOf(r)}명`; }).join("\n");
     const ok = await uiConfirm(`${room.name}에 이 기간 예약 ${hits.length}건이 있습니다`,
       `${lines}${hits.length>6?`\n외 ${hits.length-6}건`:""}\n\n` +
-      "사용 중지해도 예약은 지워지지 않습니다.\n대신 '경고 예약'으로 남아 확인 필요에 뜹니다.",
+      "사용 중지해도 예약은 지워지지 않습니다.\n대신 '경고 예약'으로 남아 확인에 뜹니다.",
       {ok:"그래도 중지", cancel:"취소"});
     if(!ok) return;
   }
@@ -8558,25 +8697,61 @@ function sheetLogs(){
 /* ---------- 보낸 문자 ---------- */
 function sheetSmsLog(){
   const all = smsLog();
+  view.smsOpen = view.smsOpen || {};
+  /* 8차-X(재아): 전부 접어 두고 누르면 그 문자만 폅니다. 예약은 편 안에서 엽니다 */
   const rows = all.slice(0,200).map(({r,m})=>{
     const d = new Date(m.at);
     const t = isNaN(d) ? "" : `${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    return `<button class="smsrow" onclick="openMark('${r.id}')">
-      <span class="sr-top">
+    const key = (r.id || "free") + "|" + m.at, on = !!view.smsOpen[key];
+    return `<div class="smsrow ${on?'on':''}">
+      <button class="sr-top" onclick="toggleSmsRow('${key}')">
         <span class="sr-t">${esc(t)}</span>
-        <span class="sr-k ${m.kind==="접수"?'new':'rem'}">${esc(m.kind)}${m.resent?" · 재발송":""}</span>
+        <span class="sr-k ${m.kind==="접수"?'new':m.kind==="직접"?'free':'rem'}">${esc(m.kind)}${m.resent?" · 재발송":""}</span>
         <span class="sr-n">${esc(r.name)} 님</span>
         <span class="sr-p">${esc(m.to||"번호 없음")}</span>
-      </span>
-      <span class="smsmsg">${esc(m.text)}</span>
-    </button>`;
+        <span class="fh-i">${on?"▲":"▼"}</span>
+      </button>
+      ${on ? `<div class="smsmsg">${esc(m.text)}</div>${r.id ? `<div class="btn-row" style="margin:0 0 8px"><button class="btn sm" onclick="openMark('${r.id}')">예약 열기</button></div>` : ""}` : ""}
+    </div>`;
   }).join("");
   return `
     ${sheetHead("보낸 문자")}
     <div class="mockbar">실제로 나간 문자가 아닙니다. 화면 확인용 기록입니다.</div>
     <div class="smsbox">${rows || `<div class="empty">아직 보낸 문자가 없습니다.</div>`}</div>
-    <p class="f-note">전체 ${all.length}건 중 ${Math.min(all.length,200)}건 표시. 누르면 그 예약이 열립니다.</p>
+    <p class="f-note">전체 ${all.length}건 중 ${Math.min(all.length,200)}건 표시. 누르면 내용이 펼쳐집니다.</p>
     <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">닫기</button></div>`;
+}
+function toggleSmsRow(key){ view.smsOpen = view.smsOpen || {}; view.smsOpen[key] = !view.smsOpen[key]; render(); }
+/* ---------- 관리자 → 문자 보내기(흉내) — 예약과 무관한 임의 문자(재아) ----------
+   기록은 매장 설정(smsFreeLog, 최근 50건)에 남겨 다른 기기에서도 '보낸 문자' 에 보입니다 */
+function openSmsFree(){ view.form = {type:"smsfree"}; view.smsFree = {to:"", name:"", text:""}; render(); }
+function sheetSmsFree(){
+  const f = view.smsFree || {to:"", name:"", text:""};
+  return `
+    ${sheetHead("문자 보내기")}
+    <div class="mockbar">지금은 <b>흉내만</b> 냅니다. 실제로 문자가 나가지 않습니다.</div>
+    <label class="f"><div class="lb">받는 번호</div><input id="sf-to" type="tel" value="${esc(f.to)}" placeholder="010-0000-0000"></label>
+    <label class="f"><div class="lb">받는 분 (선택)</div><input id="sf-name" value="${esc(f.name)}" placeholder="홍길동"></label>
+    <label class="f"><div class="lb">내용</div><textarea id="sf-text" rows="7" placeholder="보낼 내용">${esc(f.text)}</textarea></label>
+    <div class="sheet-actions">
+      <button class="btn ghost" onclick="closeSheet()">닫기</button>
+      <button class="btn primary" onclick="sendSmsFree()">보내기 (흉내)</button>
+    </div>`;
+}
+async function sendSmsFree(){
+  const g = id => { const el = document.getElementById(id); return el ? el.value.trim() : ""; };
+  const to = g("sf-to"), name = g("sf-name"), text = g("sf-text");
+  view.smsFree = {to, name, text};
+  if(!to) return uiAlert("받는 번호를 입력하세요", "", "warn");
+  if(!text) return uiAlert("내용을 입력하세요", "", "warn");
+  if(!await uiConfirm(`${name ? name + " 님 " : ""}${to} 으로 보낼까요?`, text, {ok:"보내기", tone:"ok"})) return;
+  if(readonlyBlock()) return;
+  const st = store().settings;
+  st.smsFreeLog = [{ at:new Date().toISOString(), to, name, text }].concat(st.smsFreeLog || []).slice(0, 50);
+  mirrorDraft("smsFreeLog");
+  logEvent("문자 보내기(흉내)", `${to} ${name} ${text.slice(0, 40)}`);
+  view.form = null; view.smsFree = null; saveData(); render();
+  uiAlert("문자를 보낸 것으로 기록했습니다", "실제 발송은 업체 연동 뒤에 붙습니다.", "ok");
 }
 function setLogQuery(v){
   view.logQuery = v;
@@ -8809,8 +8984,9 @@ function openWizard(date){
   histPush();
   WZ = {
     step:0, source:null, sourceDetail:"",
+    /* 8차-Y(재아): 등록 버튼으로 열면 날짜가 안 골라진 채 시작합니다 — 보고 있던 날짜가 슬쩍 들어가면 헷갈립니다. 달력은 보던 달로 */
     calMonth:(date||view.date).slice(0,7),
-    date:date||view.date, time:null,
+    date:date||null, time:null,
     people:null, infants:0, chairs:0, customPeople:false, phoneNone:false,
     menuType:null, courses:{}, courseOpen:false,
     seat:null, seatExtra:[], seatKind:null,   /* 좌석 id | 'room-any' | 'table-any'. seatExtra = 합친 나머지 좌석 */
@@ -8927,7 +9103,9 @@ function renderWizard(){
     </header>
     <div class="wz-mid">
       <div class="wz-q">
+        <button class="wz-side prev ${WZ.step===0?'off':''}" onclick="wzGo(${WZ.step-1})" ${WZ.step===0?"disabled":""} aria-label="이전">‹ 이전</button>
         <h2>${WZ_STEPS[WZ.step]}</h2>
+        <button class="wz-side next ${canNext?'':'off'}" onclick="${last?'wzSubmit()':`wzGo(${WZ.step+1})`}" ${canNext?"":"disabled"} aria-label="다음">${last?"등록":"다음"} ›</button>
         <div class="wz-warn" id="wz-warn">${
         String(warn||"").split("\n").map(l=>`<div>${esc(l)}</div>`).join("")}</div></div>
       <div class="wz-body">${bodies[WZ.step]()}</div>
@@ -9008,7 +9186,7 @@ function shortWarn(msg){
 function wzWarnReason(){
   const st = store().settings;
   const out = [];
-  if(WZ.step===1){
+  if(WZ.step===1 && WZ.date){
     const dh = hoursFor(WZ.date);
     if(WZ.date < todayStr()) out.push("지난 날짜");
     if(WZ.time) out.push.apply(out, timeWarns(WZ.date, WZ.time));
@@ -9074,10 +9252,11 @@ function wzSummary(){
   return p.map(x=>`<span>${esc(x)}</span>`).join("");
 }
 function hm(t){
+  /* 8차-Y(재아): 시각 칸과 같은 모양 '오후 5:30'. '5시 30분' 은 길고 칸마다 폭이 달랐습니다 */
   const [h,m]=t.split(":").map(Number);
   const ap = h<12?"오전":"오후";
   const h12 = h%12===0?12:h%12;
-  return `${ap} ${h12}시${m?` ${m}분`:""}`;
+  return `${ap} ${h12}:${pad(m||0)}`;
 }
 function seatLabel(seat){
   const st = store().settings;
@@ -9112,6 +9291,22 @@ function tableHint(r){
   if(!isTablePref(r.seatPref) || pplOf(r) <= 4 || !r.tentativeRoomId) return "";
   const names = seatsOf(r).map(id=>{ const x = seatById(id); return x ? x.name : ""; }).filter(Boolean);
   return names.length ? ` (${names.join("+")}${r.tentativeSplit ? " 나눠" : ""})` : "";
+}
+/* 확인 시트·검색·상세에 쓰는 좌석 꼬리표(8차-AB 재아) — 잠정도 '배정된 것' 이라 붉게 쓰지 않습니다. 붉은색은 자리가 정말 없을 때만.
+   확정 룸/테이블 → 'pine', 잠정 → 색 없음 '장비 룸(잠정)' / '1층 테이블 · 21(잠정)', 자리 없음 → 'rust' */
+function seatTag(r){
+  var t = seatTagText(r);
+  return '<span class="tag ' + (r.roomId ? "pine" : (t.ok ? "" : "rust")) + '">' + esc(t.text) + '</span>';
+}
+function seatTagText(r){
+  if(r.roomId) return { ok:true, text:resSeatLabel(r) };
+  var live = holdsSeat(r);   /* 취소·노쇼는 자리를 안 잡으니 '자리 없음' 이라고 붉게 쓰지 않습니다 */
+  var names = r.tentativeRoomId ? seatsOf(r).map(function(id){ var x = seatById(id); return x ? x.name : ""; }).filter(Boolean) : [];
+  if(isTablePref(r.seatPref)){
+    var fl = prefFloor(r.seatPref), head = fl ? floorLabel(fl) : "테이블 (층 상관없음)";
+    return names.length ? { ok:true, text: head + " · " + names.join("+") + (r.tentativeSplit ? " 나눠" : "") + "(잠정)" } : { ok:!live, text: live ? head + " · 자리 없음" : head };
+  }
+  return names.length ? { ok:true, text: seatLabelIds([r.tentativeRoomId].concat(r.tentativeExtra||[])) + "(잠정)" } : { ok:!live, text:"미배정" };
 }
 /* 룸 미배정(잠정 포함) 여부 — 테이블 예약은 층이 자리이므로 미배정으로 세지 않습니다 */
 function isUnassigned(r){ return !r.roomId && !isTablePref(r.seatPref); }
@@ -9188,7 +9383,10 @@ function timeGrid(ctx){
   return ss.map(se=>{
     const from = toMin(se.from), last = toMin(se.lastBook);
     const cells = [];
+    /* 다음 세션이 있으면 그 시작(경계) 시각은 다음 세션 칸에만 — 15:30 이 점심·저녁에 둘 다 나와 같이 켜지던 것(재아) */
+    const cut = ss.indexOf(se) + 1 < ss.length ? toMin(se.until) : null;
     for(let t = from; t <= last; t += 30){
+      if(cut != null && t >= cut) break;
       if(dh.bs && dh.be && t >= toMin(dh.bs) && t < toMin(dh.be)) continue;
       const hmS = minToHM(t);
       const gone = isPastDate || (isToday && t+30 <= nowM);
@@ -9203,12 +9401,12 @@ function timeGrid(ctx){
       </button>`);
     }
     /* 접수 마감이 30분 단위가 아니면(예 19:50) 그 마지막 시각 칸을 하나 더 — 전화로 "몇 시까지 되나요" 에 바로 답하게(재아) */
-    if(last % 30 !== 0){
+    if(last % 30 !== 0 && !(cut != null && last >= cut)){
       const hmL = minToHM(last), goneL = isPastDate || (isToday && last <= nowM);
       cells.push(`<button class="hcell big last ${curT===last?'on':''} ${goneL?'gone':''}" onclick="${ctx.pick}(${last})">
         <span class="hh">${hm(hmL).replace(/^(오전|오후) /,"")}</span><span class="ap">마지막</span><span class="hn">접수 마감 시각</span></button>`);
     }
-    return `<div class="sess-h2"><b>${esc(se.name)}</b><span class="lbl-note">${se.from}부터 · 접수 ${se.lastBook}까지${se.stay==="end"?" · 세션 끝까지 한 팀":` · ${se.stay}분`}</span></div><div class="hgrid sess">${cells.join("")}</div>`;
+    return `<div class="sess-h2"><b>${esc(se.name)}</b><span class="lbl-note">${se.from}부터 · 접수 ${se.lastBook}까지 · ${stayLabel(se)}</span></div><div class="hgrid sess">${cells.join("")}</div>`;
   }).join("");
 }
 function wzStepDate(){
@@ -9228,7 +9426,7 @@ function wzStepDate(){
     const list = s.reservations.filter(r=>r.date===ds && r.status==="확정");
     const dow = new Date(ds+"T00:00:00").getDay();
     const cls = ["bday","btn-day", WZ.date===ds?"sel":"", ds===today?"today":"",
-                 ds<today?"past":"", dow===0?"sun":dow===6?"sat":""].join(" ");
+                 ds<today?"past":"", dow===0?"sun":dow===6?"sat":"", hoursFor(ds).closed?"closed":""].join(" ");
     const rt = list.length ? dayStat(ds).rate : 0;
     cells += `<button class="${cls}" onclick="wzPickDate('${ds}')">
         <span class="d">${d}</span>
@@ -9239,11 +9437,11 @@ function wzStepDate(){
 
   /* 영업시간 안에서 30분 단위 시각 후보 생성 (11:00, 11:30, … 마감 전까지).
      1시간 칸이면 7:00 과 7:30 의 사정(라스트오더·브레이크)이 한 칸에 섞여 어느 쪽이 안 되는지 안 보였습니다 */
-  const dh = hoursFor(WZ.date);
+  const dh = WZ.date ? hoursFor(WZ.date) : {closed:false, open:"", close:"", bs:"", be:"", lo:""};
   /* 칸 수는 '이번 주 중 가장 이른 개점 ~ 가장 늦은 마감' 으로 고정합니다.
      일요일(20:30 마감)을 누르면 칸이 세 개 줄어 아래가 올라오던 것이 원인이었습니다.
      오늘 영업시간 밖인 칸은 그대로 두고 '영업 전 / 영업 종료' 로 흐리게만 표시합니다. */
-  const range = weekHourRange(WZ.date);
+  const range = weekHourRange(WZ.date || todayStr());
   const slots = [];
   for(let t = range.open; t < range.close; t += 30) slots.push(t);
   const todayOpen = dh.closed ? null : toMin(dh.open), todayClose = dh.closed ? null : toMin(dh.close);
@@ -9256,8 +9454,8 @@ function wzStepDate(){
   const isPastDate = WZ.date < todayStr();
   const nowM = toMin(nowHM());
   /* 세션 칸에 이미 있는 시각은 여기서 뺍니다 — '접수 시간 밖' 은 나머지만 */
-  const inSess = {}; sessionsFor(WZ.date).forEach(se=>{ for(let t = toMin(se.from); t <= toMin(se.lastBook); t += 30) inSess[t] = 1; });
-  const slotCells = slots.filter(t=>!inSess[t] || (dh.bs && dh.be && t >= toMin(dh.bs) && t < toMin(dh.be))).map(t=>{
+  const inSess = {}; (WZ.date ? sessionsFor(WZ.date) : []).forEach(se=>{ for(let t = toMin(se.from); t <= toMin(se.lastBook); t += 30) inSess[t] = 1; });
+  const slotCells = !WZ.date ? "" : slots.filter(t=>!inSess[t] || (dh.bs && dh.be && t >= toMin(dh.bs) && t < toMin(dh.be))).map(t=>{
     const h = Math.floor(t/60), m = t%60;
     const n = 0;
     /* 이 칸을 고르면 경고가 생기는지 미리 확인합니다 */
@@ -9280,6 +9478,7 @@ function wzStepDate(){
            :`<span class="hn">&nbsp;</span>`}
     </button>`;
   }).join("");
+  /* (날짜가 없으면 slotCells 는 빈 문자열) */
 
   /* 분 조절은 고른 30분 칸 안에서만 움직입니다 — 정각 칸이면 00~25, 30분 칸이면 30~55.
      시각을 고르기 전에도 자리를 지킵니다(.idle) — 누르는 순간 레일이 생기며 화면이 내려앉지 않게 */
@@ -9314,9 +9513,9 @@ function wzStepDate(){
       <div class="bgrid">${cells}</div>
     </div>
     <div class="wz-time">
-      ${hoursLineHtml(dh)}
+      ${WZ.date ? hoursLineHtml(dh) : `<div class="hours-line"><span class="hl-c"><i>영업시간</i>—</span><span class="hl-c"><i>브레이크</i>—</span><span class="hl-c"><i>라스트오더</i>—</span></div>`}
       <div class="lbl" style="margin-bottom:8px">${WZ.date?dateLabel(WZ.date):"날짜를 먼저 고르세요"} · 시각</div>
-      ${sessionGrid()}
+      ${WZ.date ? sessionGrid() : `<div class="empty">왼쪽 달력에서 날짜를 고르면 시각이 나옵니다.</div>`}
       <details class="hmore" ${WZ.showAllSlots?"open":""} ontoggle="WZ.showAllSlots=this.open"><summary>접수 시간 밖 시각 보기 <span class="lbl-note">영업 전·브레이크·접수 마감 뒤 — 경고가 붙습니다</span></summary>
       <div class="hgrid">${slotCells}</div></details>
       ${minuteRail}
@@ -9448,7 +9647,7 @@ function afterRender(){
 /* ---------- 2단계: 인원 (유아 포함 총원) ---------- */
 function wzStepPeople(){
   const tiles = [1,2,3,4,5,6].map(n=>
-    `<button class="ptile ${WZ.people===n&&!WZ.customPeople?'on':''}" onclick="wzPeople(${n})">
+    `<button class="ptile ${WZ.people===n&&!WZ.customPeople?'on':''} ${n===1?'off':''}" onclick="wzPeople(${n})">
       <span class="pn">${n}</span><span class="pu">명</span></button>`).join("");
   const cur = WZ.people||0;
   return `
@@ -9473,6 +9672,8 @@ function wzStepPeople(){
     <div class="ptotal">${cur ? `총 <b>${cur}명</b>${WZ.infants?` (유아 ${WZ.infants}명 포함)`:""}` : ""}</div>`;
 }
 function wzPeople(n){
+  /* 1명 예약은 받지 않습니다(재아: 타일은 보이되 누르면 안내). 1인 규칙은 누님 질문 2번 대기 */
+  if(n === 1) return uiAlert("1명 예약은 받지 않습니다", "2명부터 예약할 수 있습니다.", "warn");
   WZ.people=n; WZ.customPeople=false;
   WZ.chairs = chairDefaultInfants() ? WZ.infants : 0;   /* 기본값은 설정에서 (유아 수 / 0개) */
   render();
@@ -9510,9 +9711,11 @@ function wzStepSeat(){
     const state = statuses.some(r=>r.state==="blocked") ? "blocked" : statuses.some(r=>r.state==="warn") ? "warn" : "free";
     const blocked = ids.some(id=>blockedAt(seatById(id), WZ.date, WZ.time));
     const over = total > seatsMax(ids), under = adults < seatsMin(ids, WZ.date);
-    const txt = blocked ? "사용 중지" : state==="free" ? (over?"인원 초과":under?"인원 부족":"이용 가능") : "이용 불가";
-    const cls = blocked ? "blocked" : state!=="free" ? state : (over||under ? "warn" : "free");
-    const bad = blocked || state!=="free" || over || under;
+    /* 2명이 2인석에 — 좁아서 손님이 싫어합니다. 고르는 단계부터 알립니다(8차-Y 재아). 규칙은 누님 질문 1번 대기 */
+    const two = ids.length === 1 && isTable(x) && total > 0 && total <= 2 && (x.seats||4) <= 2;
+    const txt = blocked ? "사용 중지" : state==="free" ? (over?"인원 초과":under?"인원 부족":two?"2인석 (좁음)":"이용 가능") : "이용 불가";
+    const cls = blocked ? "blocked" : state!=="free" ? state : (over||under||two ? "warn" : "free");
+    const bad = blocked || state!=="free" || over || under || two;
     const mv = statuses.reduce((a,r)=>a+(r.movable?r.movable.length:0),0);
     const key = ids.length > 1 ? x.id : ids[0];
     const sub = isTable(x) ? `${roomMin(x)?roomMin(x)+"~":""}${seatMax(x)}인${x.note?` · ${esc(x.note)}`:""}` : `${seatsMin(ids, WZ.date)}~${seatsMax(ids)}인${ids.length===1 && roomOpt(x) ? ` · 최적 ${roomOpt(x)}` : ""}`;
@@ -9540,8 +9743,10 @@ function wzStepSeat(){
       ${floors.map(fl=>{
       const key = "table:" + fl, tb = floorTables(fl);
       const fit = WZ.time ? floorFit(fl, WZ.date, WZ.time, total) : null;
-      const bad = fit && fit.state !== "ok";
-      const txt = !fit ? "시간을 먼저" : fit.state === "ok" ? "자리 있음"
+      /* 2명인데 이 층에 남은 게 2인석뿐이면 미리 알립니다 */
+      const twoOnly = fit && fit.state === "ok" && total <= 2 && fit.f && !(fit.f.extra||[]).length && ((seatById(fit.f.id)||{}).seats||4) <= 2;
+      const bad = fit && (fit.state !== "ok" || twoOnly);
+      const txt = !fit ? "시간을 먼저" : fit.state === "ok" ? (twoOnly ? "2인석만 남음 (좁음)" : "자리 있음")
                 : fit.state === "split" ? `붙일 테이블 없음 · 나눠 앉기 (한 자리 최대 ${floorMaxParty(fl, WZ.date, WZ.time)}명)`
                 : `자리 없음 (한 자리 최대 ${floorMaxParty(fl, WZ.date, WZ.time)}명)`;
       return `<button class="scell ${WZ.seat===key?'on':''} ${bad?'warned busy':''}" onclick="wzSeat('${key}')">
@@ -9554,7 +9759,8 @@ function wzStepSeat(){
         <div class="sgrid tables">${floorTables(fl).map(t=>cell([t.id], t)).join("")}</div>`).join("") : ""}`;
   }
   const sess = WZ.time ? sessionAt(WZ.date, WZ.time) : null;
-  const stayTxt = WZ.time ? (sess && sess.stay==="end" ? `${sess.name} 세션 끝(${hm(minToHM(sessionEnd(WZ.date, sess)))})까지 한 팀` : `${hmDur(stayMinAt(WZ.date, WZ.time))} 머무는 기준`) : "";
+  const stv = sess ? (kind === "table" && sess.stayTable != null ? sess.stayTable : sess.stay) : null;
+  const stayTxt = WZ.time ? (sess && stv==="end" ? `${sess.name} 세션 끝(${hm(minToHM(sessionEnd(WZ.date, sess)))})까지 한 팀` : `${hmDur(stayMinAt(WZ.date, WZ.time, kind === "table" ? "table-any" : null))} 머무는 기준`) : "";
   return `
     <div class="seat-note">${WZ.time?`<b>${hm(WZ.time)}</b> 입장 · ${stayTxt}`:"시간을 먼저 선택하세요"}</div>
     ${(()=>{ if(!WZ.time) return `<div class="seg seatkind"><button class="${kind==='room'?'on':''}" onclick="wzSeatKind('room')">룸 예약</button><button class="${kind==='table'?'on':''}" onclick="wzSeatKind('table')">테이블 예약</button></div>`;
@@ -10000,7 +10206,7 @@ function wzDone(){
       <div class="done-box">
         <div class="check">✓</div>
         <p class="done-msg">
-          <b>${d.getMonth()+1}월 ${d.getDate()}일 ${dow}요일, ${ap} ${h12}시${m?` ${m}분`:""}</b>,
+          <b>${d.getMonth()+1}월 ${d.getDate()}일 ${dow}요일, ${hm(WZ.done.time)}</b>,
           <b>${esc(seat)}</b> 좌석,
           <b>${esc(r.name)}</b> 손님<br>예약이 접수됐습니다
         </p>

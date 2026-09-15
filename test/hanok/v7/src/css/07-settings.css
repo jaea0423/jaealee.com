@@ -1,0 +1,217 @@
+/* ============================================================
+   7. 설정
+   ============================================================ */
+/* ---------- 적용하기 바 ----------
+   설정은 임시본(draft)에 쌓였다가 '적용하기'를 눌러야 반영됩니다. 바뀐 것이 있으면(.on) 호박색으로 알립니다.
+   sticky 라 긴 설정 화면을 내려도 화면 아래에 붙어 있습니다 */
+.applybar{position:sticky; bottom:12px; display:flex; align-items:center; gap:var(--s8); margin-top:var(--s24); background:var(--surface); border:1px solid var(--border); padding:var(--s12) var(--s16); box-shadow:0 4px 18px rgba(20,20,18,.12); border-radius:var(--r-md)}
+.applybar.on{border-color:var(--amber); background:var(--amber-soft)}
+.applybar.on .ab-t{color:var(--amber)}
+.applybar .btn:disabled{opacity:.4}
+.ab-t{flex:1; font-size:var(--fs-sub); font-weight:700; color:var(--text-2)}
+
+/* ---------- 좌석 배정 순서 줄의 ▲▼ 버튼 (설정 → 좌석) ----------
+   Phase 4-3 전까지 이 버튼에는 CSS 가 없어 브라우저 기본 버튼(28px)으로 나왔습니다. 손가락으로 누르므로 44px. */
+.ordbtns{display:inline-flex; gap:var(--s4); flex:none}
+.ordbtns button{min-width:44px; min-height:44px; border:1px solid var(--border-strong); background:var(--surface);
+  border-radius:var(--r-sm); font-size:var(--fs-sub); color:var(--text-2); cursor:pointer; -webkit-tap-highlight-color:transparent}
+.ordbtns button:active{filter:brightness(.9)}
+.ordbtns button:disabled{opacity:.3; cursor:default}
+.ordnum{width:24px; text-align:center; font-weight:700; color:var(--text-3); flex:none}
+
+/* ---------- 운영시간 ---------- */
+/* 적용 시작일별 운영시간 묶음. 지금 적용 중인 것(.cur)은 초록 바탕으로 카드 폭까지 넓혀 표시 */
+.schrow{padding:var(--s12) 0; border-bottom:1px solid var(--border)}
+.schrow:last-of-type{border-bottom:none}
+.schrow.cur{background:var(--pine-soft); margin:0 -14px; padding:var(--s12) var(--s16); border-radius:var(--r-sm); border-bottom:none}
+.sch-h{display:flex; align-items:center; gap:var(--s8); margin-bottom:var(--s8); font-size:var(--fs-body)}
+.sch-days{display:grid; grid-template-columns:1fr; gap:var(--s4)}
+.sch-d{font-size:var(--fs-sub); color:var(--text-2)}
+/* 요일 한 글자에 맞춘 18px 이었는데 '공휴'는 두 글자라 시간과 붙어 버렸습니다.
+   최소 너비만 주고 넘치면 늘어나게, 뒤에 여백을 둡니다. */
+.sch-d b{display:inline-block; min-width:18px; margin-right:var(--s4); color:var(--text); font-weight:700}
+/* 요일별 편집 줄 (운영시간 수정 시트) — 일요일은 벽돌색, 토요일은 파란색 글자 */
+.dayrow{border:1px solid var(--border); padding:var(--s12) var(--s12); margin-bottom:var(--s8); background:var(--surface); border-radius:var(--r-md)}
+.dayrow.sun .dr-h b{color:#B0553F}
+.dayrow.sat .dr-h b{color:#3E6291}
+.dr-h{display:flex; align-items:center; gap:var(--s12); margin-bottom:0; width:100%; background:none; border:0; padding:0; text-align:left; font:inherit; color:inherit; cursor:pointer}
+.dayrow.on .dr-h{margin-bottom:var(--s8)}
+.dr-sum{margin-left:auto; font-size:var(--fs-label); color:var(--text-3); text-align:right}
+.dr-h .fh-i{flex:none}
+.lo-ref{font-style:normal; font-size:var(--fs-label); color:var(--text-3)}
+.dr-h b{font-size:var(--fs-body)}
+.dr-h .btn{margin-left:auto}
+.dr-in label{display:flex; align-items:center; gap:var(--s8); margin-bottom:var(--s8); flex-wrap:wrap}
+.dr-in label span{font-size:var(--fs-sub); color:var(--text-3); font-weight:600; width:66px; flex:none}
+.dr-in label em{font-style:normal; color:var(--text-3)}
+.dr-in input{width:auto; flex:1 1 100px; min-width:96px; padding:var(--s8) var(--s12); font-size:var(--fs-body)}
+.dr-in input:disabled{background:var(--surface-2); color:var(--text-3)}
+/* 세션 표 (8차) — 요일 칸 안, 한 줄에 이름·시작·접수 마감·점유·끝 */
+.sch-s{display:block; color:var(--text-3); font-size:var(--fs-label); margin-top:2px}
+.sess{margin-top:var(--s8); border-top:1px dashed var(--border); padding-top:var(--s8)}
+.sess-r{display:grid; grid-template-columns:1fr 1fr 1fr 34px; gap:var(--s4) var(--s8); align-items:end; padding:var(--s8); margin-bottom:var(--s8); background:var(--surface-2); border-radius:var(--r-sm)}
+.sess-r > .sf{display:flex; flex-direction:column; gap:2px; min-width:0}
+.sess-r > .sf > span:first-child{font-size:var(--fs-label); color:var(--text-3); font-weight:600}
+/* 좌석 설정 줄 — 폰에서는 이름 줄 아래로 버튼들이 내려가게 (한 줄에 버튼 다섯 개가 안 들어감) */
+.rowitem.seat{flex-wrap:wrap}
+.rowitem.seat .grow{flex:1 1 160px}
+@media (max-width:640px){
+  .rowitem.seat{padding:var(--s12)}
+  .rowitem.seat .grow{flex:1 1 100%; order:-1; padding-left:0}
+  .rowitem.seat .ordbtns{order:1} .rowitem.seat .ordnum{display:none}
+  .rowitem.seat .tbl-in{order:2}
+  .rowitem.seat > .btn, .rowitem.seat > .numbtn{order:2}
+}
+/* 임시 일정 일괄 등록 */
+.bulk-guide{margin:0 0 var(--s8); padding:var(--s8) var(--s12); background:var(--surface-2); border-radius:var(--r-sm); font-size:var(--fs-label); line-height:1.6; white-space:pre-wrap; color:var(--text-2); font-family:var(--sans)}
+#naver-paste{width:100%; font:inherit; font-size:var(--fs-sub); padding:var(--s8) var(--s12); border:1px solid var(--border-strong); border-radius:var(--r-sm); resize:vertical; white-space:pre}
+#ovr-bulk{width:100%; font:inherit; font-size:var(--fs-sub); padding:var(--s8) var(--s12); border:1px solid var(--border-strong); border-radius:var(--r-sm); resize:vertical}
+.bulk-res{margin-top:var(--s12); border:1px solid var(--border); border-radius:var(--r-sm); overflow:hidden}
+.bulk-row{display:flex; gap:var(--s8); align-items:flex-start; padding:var(--s8) var(--s12); font-size:var(--fs-sub); border-top:1px solid var(--border)}
+.bulk-row:first-child{border-top:none}
+.bulk-row.ok{background:#F1F7F2} .bulk-row.bad{background:#FBEFEC}
+.bulk-ln{flex:none; width:20px; color:var(--text-3)} .bulk-row .grow{flex:1; min-width:0; word-break:break-all}
+.bulk-msg{flex:none; max-width:46%; color:var(--text-2)} .bulk-row.bad .bulk-msg{color:var(--rust)}
+.wz-adv{display:block; width:100%; margin-top:var(--s12); padding:var(--s8) var(--s12); text-align:left; background:none; border:1px dashed var(--border-strong); border-radius:var(--r-sm); font:inherit; font-size:var(--fs-sub); color:var(--text-2); cursor:pointer}
+.wz-adv.on{border-style:solid; color:var(--text)}
+/* 노쇼율 세 칸 */
+.ns-stats{display:grid; grid-template-columns:repeat(3,1fr); gap:var(--s8); margin-bottom:var(--s12)}
+.ns-stat{background:var(--surface-2); border-radius:var(--r-sm); padding:var(--s12); text-align:center}
+.ns-stat .v{font-size:var(--fs-num); font-weight:700; line-height:1.1} .ns-stat .v .u{font-size:var(--fs-sub); margin-left:2px; color:var(--text-2)}
+.ns-stat .k{font-size:var(--fs-sub); color:var(--text-2); margin-top:2px} .ns-stat .s{font-size:var(--fs-label); color:var(--text-3)}
+/* 좌석 폴드 탭·테이블 붙임 표 */
+.seg.seattabs{margin:0 0 var(--s12)}
+.pairwrap{overflow-x:auto}
+.pairs{border-collapse:collapse; font-size:var(--fs-sub)}
+.pairs th{font-weight:600; color:var(--text-2); padding:var(--s4) var(--s8); text-align:center; white-space:nowrap}
+.pairs td{text-align:center; padding:2px}
+.pairs td.self{background:var(--surface-2)}
+.pairs .pair{width:36px; height:36px; border:1px solid var(--border-strong); background:var(--surface); border-radius:var(--r-sm); font-size:12px; color:var(--pine); cursor:pointer}
+.pairs .pair.on{background:var(--pine); color:#fff; border-color:var(--pine)}
+.markgrid.two{grid-template-columns:1fr 1fr}
+.markbtn:disabled{opacity:.4; cursor:default}
+.sms-fold{margin-top:var(--s16); border:1px solid var(--border); border-radius:var(--r-sm); padding:0 var(--s12)}
+.sms-fold summary{cursor:pointer; padding:var(--s8) 0; font-weight:600; font-size:var(--fs-sub); color:var(--text-2); list-style:none}
+.sms-fold summary::-webkit-details-marker{display:none}
+.sms-fold summary:before{content:"▸ "; color:var(--text-3)} .sms-fold[open] summary:before{content:"▾ "}
+.sms-fold .sms-box{margin:0 0 var(--s12)}
+/* 화면형 시트(네이버 가져오기·빠른 입력) — 덮개 없이 본문에 카드로 */
+.page-wrap{max-width:820px; margin:0 auto}
+.sheet.page-sheet{position:static; max-width:none; max-height:none; width:auto; overflow:visible; border-radius:var(--r-md); box-shadow:0 2px 12px rgba(0,0,0,.06); animation:none; background:var(--surface)}
+.tl-legend.sym{color:var(--text-3)}
+.tk.end b{}
+.wz-cal.mini .bnav-row{display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--s8)} .wz-cal.mini .bnav-row .nav{width:36px; height:36px; border:1px solid var(--border-strong); background:var(--surface); border-radius:var(--r-sm)}
+.wz-cal.mini .bday{min-height:48px}
+.zoomadj{display:flex; align-items:center; justify-content:center; gap:var(--s16)} .zoomadj .btn{min-width:72px}
+.za-v{text-align:center; min-width:96px} .za-v b{display:block; font-size:var(--fs-num)} .za-v small{color:var(--text-3)}
+.sess-h2{display:flex; align-items:baseline; gap:var(--s8); margin:var(--s12) 0 var(--s8); font-size:var(--fs-body)}
+.hgrid.sess{grid-template-columns:repeat(auto-fill,minmax(84px,1fr)); gap:var(--s4); margin-bottom:var(--s8)}
+.hcell.big{height:auto; min-height:66px; padding:var(--s4) 2px}
+.hcell.big .hh{font-size:var(--fs-title); font-weight:700} .hcell.big .ap{order:-1; font-size:var(--fs-label); color:var(--text-3)}
+.hcell.big .hn{font-size:var(--fs-label); color:var(--text-2); margin-top:2px; white-space:nowrap}
+.hcell.big.busy .hn{color:var(--rust)} .hcell.big.on .hn{color:inherit}
+.hmore{margin-top:var(--s8)} .hmore summary{cursor:pointer; font-size:var(--fs-sub); color:var(--text-2); padding:var(--s8) 0; list-style:none}
+.hmore summary::-webkit-details-marker{display:none} .hmore summary:before{content:"▸ "} .hmore[open] summary:before{content:"▾ "}
+.cday.closed{background-image:repeating-linear-gradient(-45deg, rgba(58,56,51,.08) 0 4px, transparent 4px 10px)}
+/* 마법사·수정 달력의 휴무일 — 흐리고 빗금. 누를 수는 있습니다(휴무에도 받을 사정이 있을 수 있어 사장에게 맡김, 8차-Y 재아) */
+.btn-day.closed{background-image:repeating-linear-gradient(-45deg, rgba(58,56,51,.10) 0 4px, transparent 4px 10px)}
+.btn-day.closed .d{opacity:.4; text-decoration:line-through}
+.btn-day.closed.sel .d{opacity:1}
+.cday .cn small{font-weight:500; color:var(--text-3)}
+.tag.tapchip{cursor:pointer; font:inherit; font-size:var(--fs-sub); font-weight:600} .tag.tapchip.right{margin-left:auto}
+.tl-kpis{display:flex; align-items:center; flex-wrap:wrap; gap:var(--s8)}
+.tvbtn.amber{background:#F3E2B3; color:#5A4A1E; border-color:#E2C97F} .tvbtn.amber:not(:disabled):hover{background:#EED89A}
+.topbar.notoday .tvbtn.amber{background:#F3E2B3; color:#5A4A1E}
+.set-divider{display:flex; align-items:center; gap:var(--s12); margin:var(--s24) 0 var(--s8); color:var(--text-3); font-size:var(--fs-sub)}
+.set-divider:before, .set-divider:after{content:""; flex:1; height:1px; background:var(--border-strong)}
+.bday .obar{display:block; width:70%; min-width:28px; height:3px; margin:3px auto 0; background:var(--border); border-radius:2px; overflow:hidden}
+.bday .obar i{display:block; height:100%; background:var(--pine)} .bday .obar i.mid{background:#B8860B} .bday .obar i.hi{background:var(--rust)}
+.bulk-row.warn{background:#FBEFEC} .bulk-row.skipped{opacity:.45}
+.nv-req{font-size:var(--fs-label); color:var(--text-2); margin-top:2px; white-space:pre-wrap}
+.nv-ctl{display:flex; gap:var(--s8); align-items:center; margin-top:4px} .nv-ctl select{padding:2px 6px; font-size:var(--fs-label); min-height:0}
+.tap-plain{background:none; border:none; padding:0; text-align:left; font:inherit; color:inherit; cursor:pointer; display:flex; flex-direction:column; min-width:0}
+   
+/* 8차-P(재아): 설정 한 줄이 한 행을 다 먹지 않게 — 제목은 왼쪽, 버튼·토글은 오른쪽, 설명은 아래 한 줄 */
+.fold-b label.f, .fold-b .f{display:grid; grid-template-columns:1fr auto; column-gap:var(--s16); align-items:center; margin-bottom:var(--s8)}
+.fold-b .f > .lb{margin:0; display:flex; align-items:center; min-width:0}
+/* 제목과 조작부가 멀어 눈이 헤맵니다 — 사이를 점선으로 이어 줍니다(8차-AA 재아) */
+.fold-b .f > .lb:after{content:""; flex:1; min-width:16px; margin:0 var(--s12); border-bottom:1px dotted var(--border-strong); transform:translateY(1px)}
+/* 조작부는 제목 글씨(fs-sub)에 맞춰 작게 — 설정은 '읽는 화면' 이라 큰 버튼이 어울리지 않습니다 */
+.fold-b .togglebtn, .fold-b .numbtn{font-size:var(--fs-sub); padding:var(--s8) var(--s12); min-height:0}
+.fold-b .numbtn{font-size:var(--fs-body)}
+.fold-b .seg button{font-size:var(--fs-sub); padding:var(--s4) var(--s12); min-height:0}
+.fold-b .f > input[type=time], .fold-b .f > input[type=text], .fold-b .f > input:not([type]){padding:var(--s8) var(--s12); font-size:var(--fs-sub)}
+.fold-b .btn:not(.lg){font-size:var(--fs-sub); padding:var(--s8) var(--s12); min-height:0}
+.fold-b .f > .f-note{grid-column:1 / -1; margin-top:2px}
+.fold-b .f > .togglebtn, .fold-b .f > .numbtn{width:auto; min-width:0; justify-self:end}
+.fold-b .f > input[type=time], .fold-b .f > input[type=text], .fold-b .f > input:not([type]){justify-self:end; width:auto; min-width:140px}
+.fold-b .f > .seg{justify-self:end}
+   /* 세로로 둬야 하는 것(긴 입력)은 이 클래스 */
+@media (max-width:640px){ .fold-b label.f, .fold-b .f{grid-template-columns:1fr} .fold-b .f > *{justify-self:start} }
+.topbar.page .bdate.static{cursor:default; background:none; border:none}
+.topbar-in{min-height:64px}
+.tvbtn.b-revert:disabled, .tvbtn.b-apply:disabled{opacity:.4}
+.offline-card{padding:var(--s24); text-align:center}
+.offline-card .oc-t{font-size:var(--fs-title); font-weight:700; margin-bottom:var(--s8)}
+.offline-card .oc-s{font-size:var(--fs-sub); color:var(--text-2); max-width:560px; margin:0 auto var(--s16); line-height:1.6}
+.offline-card .btn-row{justify-content:center}
+.dr-in .sess-r label.chk{margin:0; flex-wrap:nowrap}
+.dr-in .sess-r label.chk span{width:auto}
+/* .dr-in input 의 padding·min-width 가 체크박스까지 키워 48px 네모가 됐습니다 (브레이크타임 없음 칸도 같은 문제) */
+.dr-in label.chk input{padding:0; min-width:0; min-height:0; width:20px; height:20px; flex:none}
+.sess-r > .sf:nth-child(5){grid-column:1 / span 2}
+/* .dr-in input 의 flex:1 1 100px 이 세로 방향에서 높이 100px 로 늘어나므로 여기서는 끕니다 */
+.dr-in .sess-r input:not([type=checkbox]){width:100%; min-width:0; flex:none; padding:var(--s4) var(--s8); font-size:var(--fs-sub); height:38px}
+.sess-r input:disabled{background:var(--surface-2); color:var(--text-3)}
+.sess-r > button{align-self:end; margin-bottom:2px}
+.sess-stay{display:flex; align-items:center; gap:var(--s4); min-width:0; height:38px}
+.sess-stay .chk{margin:0; white-space:nowrap}
+.dr-in .sess-r .sess-stay input[type=number]{width:64px; flex:0 0 auto}
+/* 8차-X 세션 표: 점심/저녁 한 덩어리 = 제목 줄 + 접수 마감 · 점유(룸) · 점유(테이블) */
+.sess-r.two{grid-template-columns:1fr 1fr 1fr}
+.sess-r.two > .sf{grid-column:auto; grid-row:auto}
+.sess-r.two > .sf.full{grid-column:1 / -1; flex-direction:row; align-items:baseline; gap:var(--s8)}
+.sess-r.two > .sf.full b{font-size:var(--fs-body)}
+/* 폰: 두 칸으로 — 세션|시작 / 접수 마감|끝 / 점유|삭제 */
+@media (max-width:640px){
+  .sess-r{grid-template-columns:1fr 1fr}
+  .sess-r > .sf:nth-child(1){grid-row:1; grid-column:1} .sess-r > .sf:nth-child(2){grid-row:1; grid-column:2}
+  .sess-r > .sf:nth-child(3){grid-row:2; grid-column:1} .sess-r > .sf:nth-child(6){grid-row:2; grid-column:2}
+  .sess-r > .sf:nth-child(5){grid-row:3; grid-column:1}
+  .sess-r > button{grid-row:3; grid-column:2; justify-self:end; width:44px}
+}
+/* 체크박스 줄 — .dr-in label 과 우선순위가 같아 반드시 그 뒤에 와야 합니다 (같은 요소에 둘 다 걸림) */
+label.chk{display:flex; align-items:center; gap:var(--s8); font-size:var(--fs-sub); color:var(--text-2); margin:var(--s4) 0 var(--s12)}
+label.chk input{width:18px; height:18px; flex:none; accent-color:var(--pine)}
+label.chk span{width:auto}
+
+/* ---------- 디스플레이 배치 (손님용 TV 에 좌석을 어느 줄에 놓을지) ----------
+   한 줄에 너무 많이 넣으면(.over) 벽돌색으로 알리되 막지 않습니다 */
+.disprow{border:1px solid var(--border); padding:var(--s12) var(--s12); margin-bottom:var(--s8); background:var(--surface); border-radius:var(--r-md)}
+.disprow.over{border-color:var(--rust); background:var(--rust-soft)}
+.disprow.over .dr-title span{color:var(--rust); font-weight:700}
+.dr-title{font-size:var(--fs-sub); font-weight:700; color:var(--text-2); margin-bottom:var(--s8)}
+.dr-title span{font-weight:500; color:var(--text-3); margin-left:var(--s4)}
+.dr-cells{display:flex; flex-wrap:wrap; gap:var(--s8)}
+.dcell{display:inline-flex; align-items:center; gap:var(--s4); background:var(--surface-2); border:1px solid var(--border); padding:var(--s8) var(--s8) var(--s8) var(--s12); font-size:var(--fs-sub); font-weight:600; border-radius:var(--r-sm)}
+.dcell button{width:36px; height:36px; border:1px solid var(--border); background:var(--surface);
+  border-radius:var(--r-sm); font-size:var(--fs-label); color:var(--text-3); padding:0}
+.dcell button:disabled{opacity:.3}
+
+/* ---------- 코스 구성 편집 — 그룹마다 언제 파는지(.wbtn: 종일/평일점심…)를 고릅니다 ---------- */
+.cgedit{padding:var(--s12) 0; border-bottom:1px solid var(--border)}
+.cgedit:last-of-type{border-bottom:none}
+.whenrow{display:flex; align-items:center; gap:var(--s8); flex-wrap:wrap; margin-top:var(--s4)}
+.wbtn{border:1px solid var(--border-strong); background:var(--surface); color:var(--text-2); padding:var(--s8) var(--s12); font-size:var(--fs-sub); font-weight:700; border-radius:var(--r-sm)}
+.wbtn.on{background:var(--pine); border-color:var(--pine); color:#fff}
+
+/* ---------- 접속 기록 — 고정폭 글꼴로 시각·IP 가 줄 맞춰 보이게 ---------- */
+.logbox{max-height:52vh; overflow:auto; background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--r-md); padding:var(--s8) 0}
+.logrow{display:flex; gap:var(--s12); padding:var(--s8) var(--s12); border-bottom:1px solid var(--border);
+  font-size:var(--fs-sub); font-family:ui-monospace,SFMono-Regular,Menlo,monospace; white-space:nowrap}
+.logrow:last-child{border-bottom:none}
+.lg-t{color:var(--text-3); flex:none}
+.lg-ip{color:var(--text-2); width:120px; flex:none; overflow:hidden; text-overflow:ellipsis}
+.lg-a{font-weight:700; width:96px; flex:none}
+.lg-d{color:var(--text-2); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis}
