@@ -54,6 +54,10 @@
     $('demo-toggle').textContent=demo?'예시 끄기':'예시 보기';$('demo-toggle').hidden=!designPreview;
     $('market-time').textContent=demo?'예시 · 실시간 시세 아님':state?.market_updated_at?new Date(state.market_updated_at).toLocaleString('ko-KR'):'시세 연결 대기';
     $('markets').innerHTML=(demo?names.map(([name,ticker,value,change])=>({name,ticker,value,change})):(state?.overview||[])).map(m=>`<div class="stock-market-item"><p>${esc(m.name)}<small>${esc(m.ticker)}</small></p><strong>${fmt(m.value,2)}</strong><em class="${cls(m.change)}">${typeof m.change==='number'?(m.change>=0?'▲ ':'▼ ')+fmt(Math.abs(m.change),2)+'%':m.at?esc(new Date(m.at).toLocaleString('ko-KR')):'등락률 미수집'}</em></div>`).join('');
+    if($('candidates')){
+      $('universe-note').textContent=`${d.universe_count||0}종목 · 매일 순위로 후보 갱신 · AI 15분 간격 · 단타 15:15 청산 / 스윙 최대 10일. 변동폭은 수집 가격의 고저 차이며 공식 일중 변동률이 아닙니다. ${d.universe_selection?.at ? "후보 선정 "+stamp(d.universe_selection.at) : "후보 선정 확인 중"}`;
+      $('candidates').innerHTML=(d.candidates||[]).map(c=>`<tr><td>${esc(c.name)}<br><small>${esc(c.symbol)}</small></td><td>${c.observed_range_pct==null?'장중 관측 대기':fmt(c.observed_range_pct,2)+'%'}</td><td title="${esc(c.reason)}">${esc({BUY:'매수',SELL:'매도',HOLD:'보유',WATCH:'관찰'}[c.action]||'판단 대기')}</td><td>${esc({INTRADAY:'단타',SWING:'스윙'}[c.strategy]||'—')}</td><td>${c.one_share_within_initial_30pct_limit?'수량·위험 조건 확인':'초기 30% 배정으로 1주 불가'}</td></tr>`).join('');
+    }
     const stats=[['누적 총손익',d.net_profit,'원','실현 + 평가손익 · 비용 차감'],['총 평가금액',d.equity,'원','현금 + 보유 자산'],['투자 가능 현금',d.cash,'원',demo?'예시 현금':'주식·환전 대기자금'],['금일 실현손익',d.today,'원','매도 체결 기준'],['누적 비용',d.fees,'원','체결에 반영한 비용']];
     $('stats').innerHTML=stats.map(([label,value,suffix,note],i)=>`<div class="stock-stat"><p>${esc(label)}</p><strong class="${i===0||i===3?cls(value):''}">${i===0||i===3?sign(value):''}${fmt(value)} <span style="font-size:11px">${suffix}</span></strong><small>${esc(note)}</small></div>`).join('');
     $('evidence-text').textContent=demo?'가상 예시 · 기업 발표 원문 대조':d.evidence||'근거 자료 연결 대기';$('unknown-text').textContent=demo?'가상 예시 · 최신 공시와 가격 반영 확인 필요':(d.unknowns||[]).join(' · ')||'미확인 항목 연결 대기';
@@ -74,7 +78,7 @@
     }
     $('chart').setAttribute('aria-label',profitView==='period'?'기간별 손익 막대 차트':'원화 기준 누적 총손익 차트');
     const trades=d.trades||[];$('trade-count').textContent=trades.length?'· '+trades.length+'건':'';
-    $('trades').innerHTML=trades.length?trades.slice(0,40).map(t=>`<tr><td>${esc(t.time)}</td><td class="${t.side==='BUY'?'stock-up':'stock-down'}">${t.side==='BUY'?'매수':'매도'}</td><td>${esc(t.name)}</td><td>${fmt(t.price,market==='US'?2:0)}</td><td>${fmt(t.quantity)}</td><td class="${cls(t.pnl)}">${sign(t.pnl)}${fmt(t.pnl)}</td></tr>`).join(''):'<tr><td class="empty" colspan="6">아직 매매 기록이 없습니다. 거래하지 않는 것도 정상적인 판단입니다.</td></tr>';
+    $('trades').innerHTML=trades.length?trades.slice(0,40).map(t=>`<tr><td>${esc(t.time)}</td><td class="${t.side==='BUY'?'stock-up':'stock-down'}">${t.side==='BUY'?'매수':'매도'}</td><td>${esc(t.name)}<br><small>${t.strategy==='INTRADAY'?'단타':'스윙'}</small></td><td>${fmt(t.price,market==='US'?2:0)}</td><td>${fmt(t.quantity)}</td><td class="${cls(t.pnl)}">${sign(t.pnl)}${fmt(t.pnl)}</td></tr>`).join(''):'<tr><td class="empty" colspan="6">아직 매매 기록이 없습니다. 거래하지 않는 것도 정상적인 판단입니다.</td></tr>';
     const logs=(logKind==='decisions'?d.decisions:d.logs)||[];
     $('logs').innerHTML=logs.length?logs.slice(0,logKind==='decisions'?12:80).map(l=>`<div class="stock-log-line"><time>${esc(stamp(l[0]))}</time><span><b>${esc(l[1])}</b> · ${esc(l[2])}</span></div>`).join(''):'<div class="stock-log-line">관찰 기록이 아직 연결되지 않았습니다.</div>';
     const at=state?.updated_at,age=at?Date.now()-Date.parse(at):NaN;
