@@ -726,7 +726,7 @@ button.blk.tent.warned.changed{background-image:repeating-linear-gradient(-45deg
 /* 8차-J: 현재 시각 선은 줄마다가 아니라 축 줄에 하나만 두고 표 전체를 가로지릅니다(높이는 afterRender 가 맞춤) */
 .nowline{position:absolute; top:0; bottom:0; width:2px; background:var(--rust); z-index:6; pointer-events:none}
 .tl-row.axis{position:relative; z-index:5; overflow:visible}
-.tl-row.axis .tl-track{overflow:visible}
+.tl-row.axis .tl-track{overflow:visible} .tl-row.axis .tl-rate{background:transparent}
 /* 그래프 범위를 벗어난 시각 — 끝에 붙여 두되 '실제 위치가 아님'을 점선으로 알립니다 */
 .nowline.edge{background:repeating-linear-gradient(180deg,
   var(--rust) 0 4px, transparent 4px 8px)}
@@ -761,10 +761,15 @@ button.blk.tent.warned.changed{background-image:repeating-linear-gradient(-45deg
 .rrow.s-방문, .rrow.s-취소, .rrow.s-노쇼{background:var(--surface-2); color:var(--text-3)}
 .rrow.s-방문 .rr-t:before{content:"✓ "; color:var(--pine); font-weight:700}
 .rrow.s-방문 .rr-n{color:var(--text-2)}
-.rrow.s-취소 .rr-n, .rrow.s-취소 .rr-t{text-decoration:line-through}
+/* 취소는 줄 전체에 굵은 삭선 + 흐리게(방문과 구분) */
+.rrow.s-취소{opacity:.55; position:relative}
+.rrow.s-취소:after{content:""; position:absolute; left:var(--s8); right:var(--s8); top:50%; height:2px; background:var(--text-3); pointer-events:none}
 .rrow.s-노쇼 .rr-n{text-decoration:line-through} .rrow.s-노쇼 .rr-t{color:var(--rust)}
+.rrow{padding-top:var(--s8); padding-bottom:var(--s8)}
+.rrow .pill{padding:1px 6px; font-size:var(--fs-label); line-height:1.4}
 .mrow.s-방문, .mrow.s-취소, .mrow.s-노쇼{background:var(--surface-2); color:var(--text-3)}
-.mrow.s-취소 .mr-n, .mrow.s-노쇼 .mr-n{text-decoration:line-through}
+.mrow.s-취소{opacity:.55; position:relative} .mrow.s-취소:after{content:""; position:absolute; left:var(--s12); right:var(--s12); top:50%; height:2px; background:var(--text-3); pointer-events:none}
+.mrow.s-노쇼 .mr-n{text-decoration:line-through}
 /* 예약 시각이 지났는데 아직 확정인 것 — 느낌표(.rr-bang)만 또렷하게 */
 .rrow.late{opacity:.55}
 .rrow.late .rr-bang{opacity:1}
@@ -1153,6 +1158,8 @@ button.bday.sel .b{background:rgba(255,255,255,.22); color:#fff}
 .sr-n{font-size:var(--fs-sub); font-weight:700; color:var(--text)}
 .sr-p{font-size:var(--fs-label); color:var(--text-3)}
 /* 당일 변동 상자 — 파란 펜 (3구역 .chg-tag 참고) */
+.chg-box.quiet{border-color:var(--border); background:var(--surface-2)}
+.chg-box.quiet .cb-t, .chg-box.quiet .cb-tm{color:var(--text-2)}
 .chg-box{border:1px solid var(--blue-line); background:var(--blue-soft);
   border-radius:var(--r-md); padding:var(--s12) var(--s12); margin-top:var(--s12)}
 .cb-t{font-size:var(--fs-sub); font-weight:700; color:var(--blue); margin-bottom:var(--s8)}
@@ -1352,7 +1359,7 @@ button.bday.sel .b{background:rgba(255,255,255,.22); color:#fff}
 .page-wrap{max-width:820px; margin:0 auto}
 .sheet.page-sheet{position:static; max-width:none; max-height:none; width:auto; overflow:visible; border-radius:var(--r-md); box-shadow:0 2px 12px rgba(0,0,0,.06); animation:none; background:var(--surface)}
 .tl-legend.sym{color:var(--text-3)}
-.tk.end b{transform:translateX(-100%); margin-left:-2px}
+.tk.end b{}   /* 예약률 글자를 빼서 오른쪽에 자리가 생겼으니 다른 눈금과 같게 */
 .bday .obar{display:block; height:3px; margin:2px 6px 0; background:var(--border); border-radius:2px; overflow:hidden}
 .bday .obar i{display:block; height:100%; background:var(--pine)} .bday .obar i.mid{background:#B8860B} .bday .obar i.hi{background:var(--rust)}
 .bulk-row.warn{background:#FBEFEC} .bulk-row.skipped{opacity:.45}
@@ -1995,7 +2002,7 @@ body.theme-hanok .pdot.on{color:var(--pine)}
 @media (hover:hover) and (pointer:fine){
   .tv-hot:hover ~ .tv-exit,
   .tv-hot:hover ~ .tv-swap{opacity:1; pointer-events:auto}
-  .tv-exit:hover{opacity:1; pointer-events:auto}
+  .tv-exit:hover, .tv-swap:hover{opacity:1; pointer-events:auto}
 }
 
 /* ---- 타임라인: 좁은 폰에서 블록 글자를 줄임 ---- */
@@ -2908,6 +2915,13 @@ function tryFullscreen(){
     if(document.fullscreenElement || !el.requestFullscreen) return;
     el.requestFullscreen().catch(function(){});
   }catch(e){}
+}
+function toggleFullscreen(){
+  try{
+    if(document.fullscreenElement){ if(document.exitFullscreen) document.exitFullscreen().catch(function(){}); }
+    else if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(function(){});
+  }catch(e){}
+  setTimeout(render, 300);
 }
 function setFullscreenAuto(on){ if(DATA && DATA._ui){ DATA._ui.fullscreen = !!on; uiSave(); } if(!on && document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(function(){}); if(on) tryFullscreen(); render(); }
 function uiSave(){ try{ if(DATA && DATA._ui) localStorage.setItem(UI_KEY, JSON.stringify(DATA._ui)); }catch(e){} }
@@ -4452,7 +4466,7 @@ async function setTab(t){
     view.draft = null;
   }
   if(t==="settings" && !view.draft) view.draft = deepClone(store().settings);
-  if(view.tab==="settings" && t!=="settings") Object.keys(view.open).forEach(function(x){ if(x.indexOf("s_") === 0) view.open[x] = false; });   /* 나갔다 오면 접힌 상태로(재아) */
+  Object.keys(view.open).forEach(function(x){ view.open[x] = false; });   /* 어디든 갔다 오면 폴드는 접힌 상태로(재아) — 설정·대시보드 모두 */
   view.tab=t; render(); window.scrollTo(0,0);
 }
 /* 설정 화면에서는 임시본을 씁니다 — '적용하기'를 눌러야 반영됩니다 */
@@ -4600,8 +4614,8 @@ function renderStore(){
               <button onclick="closeMore(); openHours()">${ICON.clock}<span>영업시간</span></button>
               <button onclick="closeMore(); setTab('settings')">${ICON.set}<span>설정</span></button>
               <button onclick="closeMore(); openDisplay()">${ICON.tv}<span>디스플레이 모드</span></button>
-              <button onclick="closeMore(); goHome()">${ICON.exit}<span>매장 나가기</span></button>
-              <button onclick="closeMore(); lockNow()">${ICON.exit}<span>로그아웃 (잠금)</span></button>
+              ${document.fullscreenEnabled ? `<button onclick="closeMore(); toggleFullscreen()">${ICON.tv}<span>${document.fullscreenElement?"전체화면 해제":"전체화면"}</span></button>` : ""}
+              <button onclick="closeMore(); lockNow()">${ICON.exit}<span>로그아웃</span></button>
             </div>` : ""}
           </div>`}
         </div>
@@ -4645,7 +4659,7 @@ function renderDash(){
 
   /* 예약이 쓰는 좌석 수 — 룸 1개 = 1, 테이블 1개 = 1, 합치면 그만큼 */
   const seatUse = active.reduce((a,r)=>a + seatsOf(r).length, 0);
-  const warnCnt = active.filter(r=>resWarn(r).length).length;
+  const warnCnt = dayRes.filter(r=>holdsSeat(r) && resWarn(r).length).length;   /* 타임라인 위 '경고 N건' 과 같은 기준(확정+방문) */
   const checkCnt = checkItems(d).length;
 
   /* 순서: 타임라인(오늘 상황이 한눈에) → 지표줄 → 예약 목록. 지표는 눌러서 여는 목록의 입구 역할이라 목록 바로 위가 맞습니다 */
@@ -5001,6 +5015,20 @@ function changeTag(r){
   return { kind: kind, fields: names, label: label };
 }
 /* 예약 상세에 펼쳐 보여줄 전체 이력 (그날 것만, 최근이 위로) */
+/* 처음부터의 이력 — 날짜까지 붙여서 */
+function changeLinesAll(r){
+  var cs = (r.changes || []).slice().reverse(), out = [], i, j;
+  for(i=0;i<cs.length;i++){
+    var c = cs[i], d = c.at ? new Date(c.at) : null;
+    var t = d && !isNaN(d) ? (d.getMonth()+1)+"/"+d.getDate()+" "+pad(d.getHours())+":"+pad(d.getMinutes()) : (c.on || "");
+    if(c.kind === "등록"){ out.push({t:t, s:"예약 접수"}); continue; }
+    if(c.kind === "취소"){ out.push({t:t, s:"예약 취소"}); continue; }
+    if(c.kind === "노쇼"){ out.push({t:t, s:"노쇼 처리"}); continue; }
+    if(!(c.items||[]).length){ out.push({t:t, s:"수정"}); continue; }
+    for(j=0;j<c.items.length;j++) out.push({t:t, s:c.items[j].n + (c.items[j].a != null ? " " + c.items[j].a + " → " + c.items[j].b : "")});
+  }
+  return out;
+}
 function changeLines(r){
   var cs = todayChanges(r).slice().reverse(), out = [], i, j;
   for(i=0;i<cs.length;i++){
@@ -6499,6 +6527,9 @@ function renderSettings(){
       <button class="btn" onclick="openSetLog()">설정 변경 내역</button>
       <button class="btn danger" onclick="resetSettingsAll()">설정 초기화</button>
     </div>
+    <div class="subhead" style="margin-top:14px">PIN 목록</div>
+    <div class="rowitem"><span class="grow"><span class="t">공용 <span class="tag pine">사용 중</span></span><span class="s">직원 모두가 쓰는 PIN. 접속 기록에는 '공용' 으로 남습니다.</span></span></div>
+    <p class="f-note">직원마다 다른 PIN(이름별)은 나중에 여기서 추가·삭제하게 만들 수 있습니다. 그러면 기록에 직원 이름이 남습니다(누님 질문 15).</p>
     <p class="f-note">PIN 변경에는 관리자 비밀번호가 필요합니다. PIN 은 직원과 공유하는 번호, 관리자 비밀번호는 사장님만 아는 것입니다.</p>`;
 
   /* 화면 크기 — 기기마다 적당한 값이 달라 사장님이 직접 고르게 둡니다.
@@ -7525,12 +7556,13 @@ function sheetMark(){
       </div>
     </div>
     ${(()=>{
-      const lines = changeLines(r);
+      /* 8차-R(재아): 오늘 것만이 아니라 처음부터의 이력 전부. 오늘 바뀐 게 있을 때만 파란 상자, 아니면 회색 */
+      const lines = changeLinesAll(r), todayN = todayChanges(r).length;
       if(!lines.length) return "";
-      return `<div class="chg-box">
-        <div class="cb-t">오늘 바뀐 내용</div>
+      return `<div class="chg-box ${todayN?"":"quiet"}">
+        <div class="cb-t">바뀐 내용${todayN?` <span class="tag blue">오늘 ${todayN}건</span>`:""}</div>
         ${lines.map(l=>`<div class="cb-l"><span class="cb-tm">${esc(l.t)}</span>${esc(l.s)}</div>`).join("")}
-        <div class="cb-s">주방에 이미 전달한 내용이 있다면 다시 알려주세요.</div>
+        ${todayN?`<div class="cb-s">주방에 이미 전달한 내용이 있다면 다시 알려주세요.</div>`:""}
       </div>`;
     })()}
     ${seatPick}
@@ -7783,8 +7815,8 @@ function sheetNoshow(){
     <div class="rowitem">
       <button class="grow tap-plain" onclick="openMark('${r.id}')" title="예약 상세"><span class="t">${dateLabel(r.date)} ${esc(r.time)} · ${esc(r.name)}${k && cnt[k]>1?` <span class="tag rust">노쇼 ${cnt[k]}회</span>`:""}${ex?` <span class="tag">경고 제외</span>`:""}</span>
         <span class="s">${pplText(r)} · ${esc(r.phone||(r.phoneTail?`***-****-${r.phoneTail} (네이버)`:"연락처 없음"))} · ${esc(resSeatLabel(r))}</span></button>
-      <button class="btn sm" onclick="undoNoshow('${r.id}')">되돌리기</button>
-      ${k && !ex ? `<button class="btn sm ghost" onclick="clearNoshow('${k}')" title="이 번호는 다음 예약 때 노쇼 경고를 띄우지 않음">경고 제외</button>` : ""}
+      <button class="btn sm" onclick="undoNoshow('${r.id}')">노쇼 취소</button>
+      ${k ? (ex ? `<button class="btn sm ghost" onclick="unclearNoshow('${k}')" title="다시 노쇼 경고를 띄움">경고 제외 해제</button>` : `<button class="btn sm ghost" onclick="clearNoshow('${k}')" title="이 번호는 다음 예약 때 노쇼 경고를 띄우지 않음">경고 제외</button>`) : ""}
     </div>`; }).join("") : `<div class="empty">노쇼 기록이 없습니다.</div>`;
   /* 노쇼율 — 이번 달·지난 달·최근 90일. 분모는 '올 손님'(방문+노쇼), 취소는 뺍니다 */
   const rate = (from, to) => { const all = store().reservations.filter(r=>r.date >= from && r.date <= to && r.date < todayStr() && (r.status==="방문"||r.status==="노쇼")); const ns = all.filter(r=>r.status==="노쇼").length; return {n:all.length, ns, pct: all.length ? Math.round(ns/all.length*1000)/10 : 0}; };
@@ -7802,7 +7834,7 @@ function sheetNoshow(){
     <div class="card" style="margin-bottom:12px">${rows}</div>
     <p class="f-note">예약 상태를 ‘노쇼’로 바꾸면 자동으로 여기에 쌓입니다.
       새 예약을 등록할 때 같은 번호가 있으면 확정 전에 알려드립니다.
-      ${excluded.length?`<br>제외된 번호 ${excluded.length}건 · <button class="linkbtn" onclick="restoreNoshow()">되돌리기</button>`:""}
+      ${excluded.length?`<br>경고 제외 번호 ${excluded.length}건 · <button class="linkbtn" onclick="restoreNoshow()">전부 해제</button>`:""}
     </p>
     <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">닫기</button></div>`;
 }
@@ -7810,9 +7842,9 @@ function sheetNoshow(){
 async function undoNoshow(id){
   const r = store().reservations.find(x=>x.id===id); if(!r) return;
   const to = r.date < todayStr() ? "방문" : "확정";
-  if(!await uiConfirm("노쇼를 되돌릴까요?", `${dateLabel(r.date)} ${r.time} ${r.name} 손님 → ${to}`, {ok:"되돌리기"})) return;
+  if(!await uiConfirm("노쇼를 취소할까요?", `${dateLabel(r.date)} ${r.time} ${r.name} 손님 → ${to}(으)로 돌아갑니다`, {ok:"노쇼 취소"})) return;
   if(readonlyBlock()) return;
-  logEvent("상태 변경", `${r.date} ${r.time} ${r.name} 노쇼 → ${to}`);
+  logEvent("노쇼 취소", `${r.date} ${r.time} ${r.name} ${pplOf(r)}명 ${r.phone||""} 노쇼 → ${to}`);
   addChange(r, "변경", [{n:"상태", a:"노쇼", b:to}]); r.status = to; touch(r);
   reflowTentatives(r.date); saveData(); render();
 }
@@ -7824,7 +7856,12 @@ async function clearNoshow(key){
   mirrorDraft("noshowExcluded");
   saveData(); render();
 }
-function restoreNoshow(){ store().settings.noshowExcluded = []; mirrorDraft("noshowExcluded"); saveData(); render(); }
+function restoreNoshow(){ store().settings.noshowExcluded = []; mirrorDraft("noshowExcluded"); logEvent("노쇼 경고 제외 전부 해제", ""); saveData(); render(); }
+async function unclearNoshow(key){
+  if(readonlyBlock()) return;
+  const st = store().settings; st.noshowExcluded = (st.noshowExcluded||[]).filter(k=>k!==key); mirrorDraft("noshowExcluded");
+  logEvent("노쇼 경고 제외 해제", key); saveData(); render();
+}
 
 /* ---------- 운영시간 수정 ---------- */
 const DOW = ["일","월","화","수","목","금","토"];
@@ -8624,6 +8661,7 @@ window.addEventListener("beforeunload", function(e){
 });
 function openWizard(date){
   if(readonlyBlock()) return;
+  Object.keys(view.open).forEach(function(x){ view.open[x] = false; });   /* 마법사 다녀오면 목록 폴드는 접힘 */
   histPush();
   WZ = {
     step:0, source:null, sourceDetail:"",
@@ -10182,7 +10220,7 @@ function renderDisplay(){
   return `
   <div class="tv tv-mode-${idle ? "list" : tvType()} ${idle ? "tv-idle" : ""}">
     <div class="tv-stage">${inner}</div>
-    <div class="tv-hot" aria-hidden="true"></div>
+    <div class="tv-hot" aria-hidden="true" onmouseenter="pokeExit(6000)"></div>   <!-- 마우스가 버튼으로 옮겨가는 사이 사라지지 않게 6초 유지 -->
     <div class="tv-tap" aria-hidden="true" onclick="pokeExit(5000)" ontouchstart="pokeExit(5000)"></div>
     <button class="tv-swap" onclick="swapTvType()">${tvType()==="grid" ? "목록으로" : "좌석표로"}</button>
     <button class="tv-exit" onclick="closeDisplay()" title="Esc 로도 나갈 수 있습니다">디스플레이 종료</button>
