@@ -25,10 +25,11 @@
     const cloud=connection?.provider==='supabase';
     const stale=!Number.isFinite(age)||age>(cloud?180:1200);
     const paused=h?.manual_paused;
-    const warning=loadError||stale||!h?.service_alive||h?.market_status==='FAILED'||h?.collection_label!=='수집 중';
+    const aiWaiting=h?.ai_decision_enabled&&state?.markets?.KR?.session_open&&h?.ai_status!=='CURRENT';
+    const warning=loadError||stale||!h?.service_alive||h?.market_status==='FAILED'||h?.collection_label!=='수집 중'||aiWaiting;
     box.dataset.level=paused?'stopped':warning?'warn':'ok';
     box.setAttribute('aria-label',paused?'사용자 비상정지':warning?'운영 상태 확인 필요':'자료 수집 중');
-    const items=[['자료 수집',loadError||stale?'상태 확인 필요':h?.collection_label||'확인 대기'],['마지막 수집 성공',h?.last_market_success_at?stamp(h.last_market_success_at):'기록 없음'],['telegram',h?.telegram_status==='CONNECTED'?'연결됨':h?.telegram_status==='FAILED'?'연결 재시도 · 수집 유지':'확인 대기'],['수동 비상정지',h?(paused?'켜짐':'꺼짐'):'확인 대기'],['AI 판단 / 체결','꺼짐 · 자료만 수집 중'],['사이트 데이터',cloud?'Supabase · 1분 발행':'GitHub · 최대 15분 발행']];
+    const items=[['자료 수집',loadError||stale?'상태 확인 필요':h?.collection_label||'확인 대기'],['마지막 수집 성공',h?.last_market_success_at?stamp(h.last_market_success_at):'기록 없음'],['telegram',h?.telegram_status==='CONNECTED'?'연결됨':h?.telegram_status==='FAILED'?'연결 재시도 · 수집 유지':'확인 대기'],['수동 비상정지',h?(paused?'켜짐':'꺼짐'):'확인 대기'],['AI 판단',h?.ai_decision_enabled?(h.ai_status==='CURRENT'?'Codex · '+({BUY:'매수',SELL:'매도',HOLD:'보유',WATCH:'관찰'}[h.ai_action]||'판단 완료'):'Codex · 다음 판단 대기'):'예약 확인 필요'],['마지막 AI 판단',h?.ai_last_decision_at?stamp(h.ai_last_decision_at):'기록 없음'],['체결 엔진',h?.paper_fills_enabled?(paused?'수동 중지':'가동 중 · 조건 충족 시 체결'):'연결 대기'],['사이트 데이터',cloud?'Supabase · 1분 발행':'GitHub · 최대 15분 발행']];
     $('health-details').innerHTML=items.map(([label,value])=>`<div class="stock-health-item"><span>${esc(label)}</span><b>${esc(value)}</b></div>`).join('');
     $('refresh-note').textContent=cloud?'상태·자료 1분 간격 발행 · 화면 15초 조회':'공개 데이터 최대 15분 간격 발행 · 화면 15초 조회';
   }
