@@ -3047,7 +3047,7 @@ function migrateSeats(d){
     (st.rooms||[]).forEach(function(x){
       if(x.type !== "room") return;
       var dr = (def.rooms||[]).find(function(y){ return y.type === "room" && y.name === x.name; });
-      if(dr && !x.tuned){ x.minCapacity = dr.minCapacity; x.capacity = dr.capacity; x.floor = dr.floor; }
+      if(dr && !x.tuned){ x.minCapacity = dr.minCapacity; x.minWeekend = dr.minWeekend; x.optCapacity = dr.optCapacity; x.capacity = dr.capacity; x.floor = dr.floor; }   /* 8차-L: 평일/주말 최소·최적도 기본표에서 */
     });
     /* 8차-L: 룸 최소를 평일/주말로 나눔. 옛 저장본은 '최소=최적' 하나뿐이라 임의로 나눕니다(누님 질문 목록) */
     (st.rooms || []).forEach(function(r){
@@ -4500,7 +4500,6 @@ function renderStore(){
               ${isMobile() && view.date!==todayStr() ? `<button onclick="closeMore(); goToday()">${ICON.cal}<span>오늘로</span></button>` : ``}
               <button onclick="closeMore(); openRate()">${ICON.chart}<span>예약률 추이</span></button>
               <button onclick="closeMore(); openHours()">${ICON.clock}<span>영업시간</span></button>
-              <button onclick="closeMore(); openNaver()">${ICON.res}<span>네이버 예약 가져오기</span></button>
               <button onclick="closeMore(); setTab('settings')">${ICON.set}<span>설정</span></button>
               <button onclick="closeMore(); openDisplay()">${ICON.tv}<span>디스플레이 모드</span></button>
             </div>` : ""}
@@ -5482,7 +5481,7 @@ function renderTimeline(date, compact){
     }).join("");
     const used = items.reduce((a,x)=>a+(x.e0-x.s0),0);
     const rate = Math.min(100, Math.round(used/span*100));
-    const sub = isTable(room) ? `${roomMin(room)?roomMin(room)+"~":""}${seatMax(room)}인` : `${roomMin(room)}~${room.capacity}인`;
+    const sub = isTable(room) ? `${roomMin(room)?roomMin(room)+"~":""}${seatMax(room)}인` : `${roomMin(room, date)}~${room.capacity}인`;   /* 그 날짜 기준(주말 최소) */
     return `<div class="tl-row ${isTable(room)?'tbl':''} ${blockedAllDay(room,date)?'off-seat':''}">
       <div class="tl-name"><b>${esc(room.name)}</b><small>${sub}</small>${blockTag(room)}</div>
       <div class="tl-track" style="height:${lanes*LANE}px">
@@ -6731,7 +6730,7 @@ function openUnassigned(){ view.form={type:"unassigned"}; render(); }
    · 전화번호는 뒷자리 4개만 오므로 phone 은 비우고 메모에 '네이버 ****1234' 를 남깁니다 — 노쇼 이력은 못 잇습니다
    · 상품에 '룸' 이 있으면 룸 미정(room-any), '테이블' 이면 테이블(층 미정, table-any). 자리는 잠정 배정이 잡습니다
    · 옵션 열(주말 A 세트·주말 B 세트·한코스 …)은 수량이 있으면 코스 구성으로. 이름이 코스 항목과 안 맞으면 요청사항에 적어 둡니다 */
-function openNaver(){ view.form = {type:"naver"}; view.naver = view.naver || {text:"", result:null}; render(); }
+function openNaver(){ view.form = {type:"naver"}; view.naver = {text:"", result:null}; render(); }   /* 열 때마다 비움(재아) */
 function sheetNaver(){
   const n = view.naver || {text:"", result:null};
   const res = n.result ? `<div class="bulk-res">${n.result.map(x=>`<div class="bulk-row ${x.ok?(x.kind==="skip"?"":"ok"):"bad"}"><span class="bulk-ln">${x.n}</span><span class="grow">${esc(x.text)}</span><span class="bulk-msg">${x.ok?`${x.kind==="new"?"＋ 새로":x.kind==="update"?"↻ 고침":"＝ 같음"} · ${esc(x.msg)}`:`✗ ${esc(x.msg)}`}</span></div>`).join("")}</div>` : "";
@@ -6762,11 +6761,30 @@ function naverPeople(s){
   const t = String(s||""); const tot = t.match(/(\d+)\s*명/); const kid = t.match(/(?:어린이|유아|아동)\((\d+)\)/);
   return { people: tot ? Number(tot[1]) : 0, infants: kid ? Number(kid[1]) : 0 };
 }
+/* 엑셀에서 복사한 표는 탭으로 나뉘고, 셀 안에 줄바꿈이 있으면 그 셀을 큰따옴표로 감쌉니다(안의 " 는 "").
+   줄 단위로 자르면 요청사항에 엔터가 든 손님이 통째로 사라졌습니다 — 글자 단위로 따옴표 상태를 보며 자릅니다 */
+function tsvRows(text){
+  const rows = []; let row = [], cell = "", q = false;
+  for(let i = 0; i < text.length; i++){
+    const c = text[i];
+    if(q){
+      if(c === '"'){ if(text[i+1] === '"'){ cell += '"'; i++; } else q = false; }
+      else cell += c;
+    }else{
+      if(c === '"' && cell === "") q = true;
+      else if(c === "\t"){ row.push(cell); cell = ""; }
+      else if(c === "\n" || c === "\r"){ if(c === "\r" && text[i+1] === "\n") i++; row.push(cell); rows.push(row); row = []; cell = ""; }
+      else cell += c;
+    }
+  }
+  if(cell !== "" || row.length) { row.push(cell); rows.push(row); }
+  return rows.filter(r=>r.some(x=>x.trim()));
+}
 function naverParse(text){
-  const lines = text.split(/\r?\n/).map(l=>l.replace(/\r/g,"")).filter(l=>l.trim());
-  const hi = lines.findIndex(l=>/예약번호/.test(l) && /\t/.test(l));
+  const table = tsvRows(text);
+  const hi = table.findIndex(r=>r.some(x=>x.trim()==="예약번호") && r.length > 3);
   if(hi < 0) return {err:"머리글 줄(예약번호 … 이용일시 … 인원)을 못 찾았습니다. 엑셀에서 표 전체를 복사해 붙여 넣으세요."};
-  const head = lines[hi].split("\t").map(x=>x.trim());
+  const head = table[hi].map(x=>x.trim());
   const col = name => head.findIndex(h=>h === name);
   const idx = { no:col("예약번호"), status:col("상태"), name:col("예약자"), phone:col("전화번호"), when:col("이용일시"), prod:col("상품"), ppl:col("인원"), req:col("요청사항"), memo:col("직원메모"), cancelWhy:col("취소사유"), route:col("유입경로") };
   if(idx.no < 0 || idx.when < 0) return {err:"예약번호·이용일시 열이 필요합니다"};
@@ -6774,8 +6792,8 @@ function naverParse(text){
   const opts = head.map((h,i)=>({h,i})).filter(x=>/^옵션\d+-/.test(x.h) && !/결제금액$/.test(x.h)).map(x=>({i:x.i, name:x.h.replace(/^옵션\d+-/,"").replace(/^한옥반점\s*/,"").trim()}));
   const st = store().settings, groups = st.courseGroups || DEFAULT_COURSE_GROUPS;
   const rows = [];
-  for(let k = hi + 1; k < lines.length; k++){
-    const c = lines[k].split("\t"); if(c.length < head.length - 5) continue;
+  for(let k = hi + 1; k < table.length; k++){
+    const c = table[k]; if(c.length < head.length - 5) continue;
     const g = i => i >= 0 && i < c.length ? String(c[i]||"").trim() : "";
     const no = g(idx.no); if(!/^\d{5,}$/.test(no)) continue;
     const when = naverWhen(g(idx.when)); const pp = naverPeople(g(idx.ppl));
@@ -6806,7 +6824,7 @@ function naverPreview(){
     if(!r.when) return {n:r.n, text:r.text, ok:false, msg:"이용일시를 못 읽었습니다"};
     if(!r.people) return {n:r.n, text:r.text, ok:false, msg:"인원을 못 읽었습니다"};
     const ex = s.reservations.concat(s.trash||[]).find(x=>x.naverNo === r.no);
-    if(!ex) return Object.assign({ok:true, kind:"new", msg:`${r.when.date} ${r.when.time} ${r.people}명 ${r.isRoomProd?"룸":"테이블"}${r.status!=="확정"?" · "+r.status:""}`}, r);
+    if(!ex) return Object.assign({ok:true, kind:"new", msg:`${r.when.date} ${r.when.time} ${r.people}명 ${r.isRoomProd?"룸":"테이블"}${r.status!=="확정"?" · "+r.status:""}${r.request?" · ⚠ 요청사항 있음 — 확인":""}`}, r);
     const diff = [];
     if(ex.date !== r.when.date || ex.time !== r.when.time) diff.push("시각");
     if(pplOf(ex) !== r.people) diff.push("인원");
@@ -6867,7 +6885,7 @@ function openSchedule(from){
   };
   view.form={type:"sched"}; render();
 }
-function openOverride(){ view.form={type:"ovr"}; render(); }
+function openOverride(){ view.form={type:"ovr"}; view.ovrBulk = null; render(); }
 // function openStaff(id){ view.form={type:"staff", id}; render(); }
 // function openAtt(id){ view.form={type:"att", id}; render(); }
 // function openSale(date){ view.form={type:"sale", id:date}; render(); }
@@ -6924,7 +6942,7 @@ function sheetRes(){
   /* 룸 / 테이블 / 합침 묶음. 합침은 대표+extraIds 로 저장되며 select 값은 그룹 id */
   const curJoin = (f.extraIds||[]).length ? joinOf([f.roomId].concat(f.extraIds)) : null;
   const opt = (v, label, sel) => `<option value="${v}" ${sel?'selected':''}>${label}</option>`;
-  const roomOpts = `<optgroup label="룸">${st.rooms.filter(isRoom).map(r=>opt(r.id, `${esc(r.name)} · ${roomMin(r)}~${r.capacity}인`, !curJoin && f.roomId===r.id)).join("")}</optgroup>` +
+  const roomOpts = `<optgroup label="룸">${st.rooms.filter(isRoom).map(r=>opt(r.id, `${esc(r.name)} · ${roomMin(r, f.date)}~${r.capacity}인`, !curJoin && f.roomId===r.id)).join("")}</optgroup>` +
     `<optgroup label="룸 합침">${(st.joins||[]).map(j=>opt(j.id, `${esc(seatLabel(j.id))} · ${j.min}~${j.max}인`, !!curJoin && curJoin.id===j.id)).join("")}</optgroup>` +
     `<optgroup label="테이블 (층만)">${tableFloors().map(fl=>opt("table:"+fl, `${esc(floorLabel(fl))} · 자리 ${floorSeats(fl)}석`, !f.roomId && f.seatPref==="table:"+fl)).join("")}</optgroup>` +
     `<optgroup label="특정 테이블 (파셜룸 등 꼭 잡아야 할 때)">${st.rooms.filter(isTable).map(r=>opt(r.id, `${esc(r.floor||"")} ${esc(r.name)} · ${roomMin(r)?roomMin(r)+"~":""}${seatMax(r)}인`, !curJoin && f.roomId===r.id)).join("")}</optgroup>` +
@@ -7299,7 +7317,7 @@ function sheetMark(){
       <div class="seatpick">${shown.map(({x,ok,rank,ids})=>`
         <button class="spick ${ok?'':'busy'} ${rank===1?'first':''} ${view.pickSeat===x.id?'picked':''} ${x.type==="join"?'join':''}"
           onclick="pickSeatCand('${r.id}','${x.id}')" ${x.note?`title="${esc(x.note)}"`:""}>
-          ${esc(x.name)} <small>${seatsMin(ids)?seatsMin(ids)+"~":""}${seatsMax(ids)}</small>
+          ${esc(x.name)} <small>${seatsMin(ids, r.date)?seatsMin(ids, r.date)+"~":""}${seatsMax(ids)}</small>
           ${rank?`<i>${rank}순위</i>`:""}
         </button>`).join("")}</div>
       ${hiddenN > 0 ? `<button class="linkbtn" style="margin-top:6px" onclick="view.pickAll=true; render()">다른 자리 ${hiddenN}개 보기</button>` : (showAll && ranked.length > 3 ? `<button class="linkbtn" style="margin-top:6px" onclick="view.pickAll=false; render()">접기</button>` : "")}
@@ -8695,19 +8713,22 @@ function resTentLabel(r){
 
 /* ---------- 0단계: 예약 경로 ---------- */
 function wzStepSource(){
-  const opts = [
-    ["전화 예약","전화 예약",""],
-    ["네이버 예약","네이버 예약",""],
-    ["기타","기타",""]
-  ];
+  /* 경로는 설정(sources)에서 — 예전엔 셋만 박혀 있어 '방문' 이 빠져 있었습니다(누락 수정). '기타' 는 항상 마지막 */
+  const srcs = (store().settings.sources || ["전화 예약","네이버 예약","방문","기타"]).slice();
+  if(srcs.indexOf("기타") < 0) srcs.push("기타");
+  const isNaver = /네이버/.test(WZ.source || "");
   return `
     <div class="srcgrid">
-      ${opts.map(([v,label,desc])=>`
+      ${srcs.map(v=>`
         <button class="srccell ${WZ.source===v?'on':''}" onclick="wzSource('${jsq(v)}')">
-          <span class="s-l">${label}</span>
-          ${desc?`<span class="s-d">${desc}</span>`:""}
+          <span class="s-l">${esc(v)}</span>
         </button>`).join("")}
     </div>
+    ${isNaver ? `<div class="lbl" style="margin-top:14px">네이버 예약은 어떻게 넣을까요?</div>
+    <div class="sgrid any">
+      <button class="scell" onclick="wzAutoNext()"><span class="sn">직접 등록</span><span class="sc">전화 받듯 한 건씩 입력</span></button>
+      <button class="scell" onclick="WZ=null; openNaver()"><span class="sn">Excel 등록</span><span class="sc">파트너센터 엑셀을 복사해 붙여 넣기 — 여러 건 한 번에, 고침도 됨</span></button>
+    </div>` : ""}
     <label class="f big src-detail ${WZ.source==="기타"?"":"hold"}"><div class="lb">경로</div>
         <input id="wz-src-detail" value="${esc(WZ.sourceDetail)}" placeholder="예: 지인 소개, 대면 예약" ${WZ.source==="기타"?"autofocus":"tabindex=\"-1\""}>
         <div class="f-note">예약 내역에 참고로만 남습니다</div>
@@ -8726,9 +8747,8 @@ function wzSource(v){
   const el = document.getElementById("wz-src-detail");
   if(el) WZ.sourceDetail = el.value;
   WZ.source = v;
-  /* 전화·네이버는 더 물을 것이 없으니 '다음'을 누르게 하지 않고 바로 넘어갑니다 (이전으로 돌아올 수 있습니다).
-     기타는 경로를 적어야 하므로 이 화면에 머뭅니다 */
-  if(v !== "기타"){ wzAutoNext(); return; }
+  /* 전화·방문은 더 물을 것이 없으니 바로 넘어갑니다. 기타는 경로를 적어야 하고, 네이버는 직접/Excel 을 고르므로 이 화면에 머뭅니다 */
+  if(v !== "기타" && !/네이버/.test(v)){ wzAutoNext(); return; }
   render();
 }
 
@@ -9516,8 +9536,7 @@ function wzDone(){
       <div class="done-box">
         <div class="check">✓</div>
         <p class="done-msg">
-          <b>${d.getMonth()+1}월 ${d.getDate()}일 ${dow}요일, ${ap} ${h12}시</b>
-          <b>${m}분</b>,
+          <b>${d.getMonth()+1}월 ${d.getDate()}일 ${dow}요일, ${ap} ${h12}시${m?` ${m}분`:""}</b>,
           <b>${esc(seat)}</b> 좌석,
           <b>${esc(r.name)}</b> 손님<br>예약이 접수됐습니다
         </p>
@@ -10037,7 +10056,7 @@ function renderTvGrid(){
       </li>`;
     }).join("") : ``;
     /* 손님이 보는 화면이라 룸 정원만 안내하고 테이블 수는 적지 않습니다 */
-    const capTxt = isT ? "" : `${roomMin(room)}~${room.capacity}인`;
+    const capTxt = isT ? "" : `${roomMin(room, today)}~${room.capacity}인`;
     /* 테이블 칸은 2열이라 필요한 줄 수가 절반입니다 (아래에서 grid-template-rows 를 그 수로 맞춥니다) */
     secN.push(isT ? Math.max(1, Math.ceil(rows.length/2)) : rows.length);
     return `<section class="dsec ${isT?'hall':''}">
