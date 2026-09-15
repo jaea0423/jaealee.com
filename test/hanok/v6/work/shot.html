@@ -1,0 +1,27 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>shot</title>
+<style>html,body{margin:0;height:100%;overflow:hidden;background:#888}iframe{border:0;width:100vw;height:100vh;display:block}</style>
+<iframe id="f"></iframe>
+<script>
+/* v4 스크린샷용 감싸개 (shot.py 가 헤드리스 크롬으로 엽니다).
+   ?src=/v6/dist/hanok-admin.html&w=430&h=932&js=<URL 인코딩한 JS>
+   앱을 iframe 에 띄우고 DATA 가 준비되면 js 를 앱 창 스코프에서 실행합니다 (잠금 건너뛰기·날짜 바꾸기 등).
+   헤드리스 크롬은 창 폭을 500px 아래로 못 줄이므로 폰 폭은 iframe 크기로 만들고 shot.py 가 잘라 냅니다.
+   --virtual-time-budget 으로 타이머가 빨리 감기므로 인트로·1분 갱신도 그 안에 끝납니다. */
+var q = {}; location.search.slice(1).split("&").forEach(function(kv){ var i = kv.indexOf("="); q[kv.slice(0,i)] = decodeURIComponent(kv.slice(i+1).replace(/\+/g," ")); });
+var f = document.getElementById("f");
+if (q.w) { f.style.width = q.w + "px"; f.style.height = (q.h || 932) + "px"; }
+f.src = q.src;
+f.addEventListener("load", function(){
+  var w = f.contentWindow, tries = 0;
+  (function wait(){
+    /* DATA·view 는 let 이라 window 속성이 아닙니다 — eval 로 살펴봅니다 */
+    var ready = false; try { ready = w.eval("typeof DATA!=='undefined' && !!DATA && typeof render==='function'"); } catch (e) {}
+    if (!ready) { if (tries++ < 400) return setTimeout(wait, 25); document.title = "no-data"; return; }
+    try { w.eval(q.js || ""); document.title = "ready"; }
+    catch (e) { document.title = "ERR " + e; console.error(e); }
+  })();
+});
+</script>

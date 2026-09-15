@@ -2618,7 +2618,20 @@ function reflowFuture(){
     });
   });
   view.storeKey = prev;
-  if(changed) saveData();
+  /* 저장하지 않습니다. 잠정 배정은 겹침으로 정해지는 '계산값' 이라 각 기기가 같은 규칙으로 같은 답을 내고,
+     저장하면 두 기기가 서로를 '먼저 수정한 기기' 로 보아 아무것도 안 했는데 충돌 알림이 떴습니다(7차 점검).
+     이 기기에서 실제로 예약을 고칠 때(saveRes/wzSubmit 의 reflowTentatives) 함께 올라갑니다 */
+  if(changed) syncMarkTentatives();
+}
+/* 재계산으로 바뀐 잠정 배정을 '이미 동기화된 것' 으로 표시해 flush 가 보내지 않게 합니다 */
+function syncMarkTentatives(){
+  Object.keys(DEFAULT_DATA).forEach(function(k){
+    var st = DATA[k]; if(!st) return;
+    (st.reservations || []).forEach(function(r){
+      if(r.roomId || !SYNC.res[r.id]) return;
+      try{ var was = JSON.parse(SYNC.res[r.id]); if(was.tentativeRoomId !== r.tentativeRoomId){ was.tentativeRoomId = r.tentativeRoomId; SYNC.res[r.id] = JSON.stringify(Object.assign({}, r, {updatedAt: was.updatedAt})); r.updatedAt = was.updatedAt; } }catch(e){}
+    });
+  });
 }
 /* 1분 갱신 — 전체가 아니라 바뀐 행만 (updated_at=gt.마지막으로 본 최대값).
    이 기기에서 고쳐 놓고 아직 못 보낸(dirty) 예약은 덮지 않습니다 — 다음 flush 의 조건부 PATCH 가 0행이 되어 충돌 절차로 갑니다 */
@@ -3899,15 +3912,20 @@ async function uiAlert2(msg){
    uiAlert / uiConfirm 은 Promise 를 돌려주므로 await 로 씁니다.
    ============================================================ */
 let MODAL = null;
+/* 알림이 떠 있는데 새 알림이 오면 이전 것은 '취소' 로 닫습니다 — 안 그러면 이전 Promise 가 영원히 대기해
+   그것을 기다리던 저장·단계 이동이 조용히 멈추고, 확인을 눌러도 다음 알림이 계속 뜹니다(7차 점검 U2) */
+function modalReplace(next){
+  var prev = MODAL; MODAL = next; render();
+  if(prev && prev.res) prev.res(false);
+}
 function uiAlert(title, msg, tone){
-  return new Promise(res => { MODAL = {mode:"alert", title, msg, tone:tone||"warn", res}; render(); });
+  return new Promise(res => { modalReplace({mode:"alert", title, msg, tone:tone||"warn", res}); });
 }
 function uiConfirm(title, msg, opt){
   opt = opt || {};
   return new Promise(res => {
-    MODAL = {mode:"confirm", title, msg, tone:opt.tone||"warn",
-             ok:opt.ok||"계속", cancel:opt.cancel||"취소", res};
-    render();
+    modalReplace({mode:"confirm", title, msg, tone:opt.tone||"warn",
+                  ok:opt.ok||"계속", cancel:opt.cancel||"취소", res});
   });
 }
 function modalAnswer(v){
