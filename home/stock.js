@@ -8,6 +8,31 @@
   const sign=v=>v>0?'+':''; const cls=v=>v>0?'stock-up':v<0?'stock-down':'';
   // 공개 요약 파일만 조회하며 증권사 API를 직접 호출하지 않습니다.
   const STATE_URL='/home/stock-state.json';
+  let connection=null,loadError=false;
+  async function connectionConfig(signal){
+    if(connection)return connection;
+    const r=await fetch('/home/stock-connection.json',{cache:'no-store',credentials:'omit',signal});
+    if(!r.ok)throw new Error('운영 데이터 연결 설정을 읽지 못했습니다.');
+    const cfg=await r.json();
+    if(cfg.provider==='supabase'&&(!/^https:\/\/[a-z0-9]{20}\.supabase\.co$/.test(cfg.url)||!String(cfg.publishable_key).startsWith('sb_publishable_')))throw new Error('운영 데이터 연결 설정 오류');
+    if(!['github','supabase'].includes(cfg.provider))throw new Error('알 수 없는 데이터 연결');
+    connection=cfg;return cfg;
+  }
+  function renderHealth(){
+    const box=$('health'),h=state?.health;
+    if(!box)return;
+    const age=h?Math.max(0,(Date.now()-Date.parse(h.reported_at))/1000):Infinity;
+    const cloud=connection?.provider==='supabase';
+    const stale=!Number.isFinite(age)||age>(cloud?180:1200);
+    const paused=h?.manual_paused;
+    const warning=loadError||stale||!h?.service_alive||h?.market_status==='FAILED'||h?.collection_label!=='수집 중';
+    box.dataset.level=paused?'stopped':warning?'warn':'ok';
+    $('health-title').textContent=!h?'운영 상태 확인 불가':paused?'사용자 비상정지 · 자료 수집 별도 유지':warning?'운영 상태 확인 필요':(cloud?'자료 수집 중':'최근 보고: 자료 수집 중');
+    $('health-summary').textContent=!h?'상태 데이터가 아직 연결되지 않았습니다.':`${loadError?'화면 조회 실패 · 마지막 기록 표시. ':stale?'최근 보고가 오래됐습니다. ':''}마지막 상태 보고 ${stamp(h.reported_at)} · 오늘 시세 관측 ${fmt(h.samples_today)}건. 자동 비상정지는 사용하지 않습니다.`;
+    const items=[['자료 수집',h?.collection_label||'확인 대기'],['마지막 수집 성공',h?.last_market_success_at?stamp(h.last_market_success_at):'기록 없음'],['텔레그램',h?.telegram_status==='CONNECTED'?'연결됨':h?.telegram_status==='FAILED'?'연결 재시도 · 수집 유지':'확인 대기'],['수동 비상정지',h?(paused?'켜짐':'꺼짐'):'확인 대기'],['AI 판단 / 모의 체결','미연결 · 자료 수집 단계'],['사이트 데이터',cloud?'Supabase · 1분 발행':'GitHub · 최대 15분 발행']];
+    $('health-details').innerHTML=items.map(([label,value])=>`<div class="stock-health-item"><span>${esc(label)}</span><b>${esc(value)}</b></div>`).join('');
+    $('refresh-note').textContent=cloud?'상태·자료 1분 간격 발행 · 화면 15초 조회':'공개 데이터 최대 15분 간격 발행 · 화면 15초 조회';
+  }
   const designPreview=root.dataset.designPreview==='true';
 
   let period="1m",assetPeriod="1m",profitView="cumulative";
@@ -18,6 +43,7 @@
   const demoData=()=>({label:market==='KR'?'한빛테크 · 가상 종목':'Example Tech · 가상 종목',price:market==='KR'?10280:128.5,change:2.8,cash:market==='KR'?1000000:1000,holdings:0,today:0,total:0,fees:0,verdict:'판단 보류',reason:'기업 발표는 확인했지만 가격 반영과 최신 공시를 더 확인해야 합니다.',series:series.map(v=>market==='KR'?v:v/80),trades:[],decisions:[['09:12','판단 보류','가격 반영과 최신 공시가 확인되지 않았습니다.'],['09:10','근거 확인','원문과 인용 문구를 대조했습니다.'],['08:35','자료 수집','예시 자료 묶음의 중복 기사를 제외했습니다.']],logs:[['09:12','OBSERVE','신규 진입 없음 · 예시'],['09:10','SOURCE','원문 대조 완료 · 예시'],['08:35','COLLECT','자료 수집 완료 · 예시']]});
   function data(){if(!demo)return state?.markets?.KR||{};return {...demoData(),net_profit:9800,equity:1509800,cash:597800,total:2800,today:-400,fees:120,initial_equity:1500000,verdict:'보유 유지 · 추가 매수 대기',reason:'예시 판단: 삼성전자 보유분은 유지하고, SK하이닉스는 추가 매수 없이 점검합니다. 달러는 배정 한도 안에서 보유합니다.',trades:Array.from({length:16},(_,i)=>({time:`09/${String(12-Math.floor(i/2)).padStart(2,'0')} ${i%2?'09:35':'14:20'}`,side:i%2?'BUY':'SELL',name:i%3?'삼성전자':'SK하이닉스',price:i%3?62000:160000,quantity:1,pnl:i%2?null:[-400,400,400,400,500,500,500,500][i/2]})),decisions:Array.from({length:12},(_,i)=>[`${String(14-Math.floor(i/3)).padStart(2,'0')}:${String(50-i*3).padStart(2,'0')}`,['보유 유지','추가 매수 대기','위험 한도 확인'][i%3],['기존 보유분의 조건 유지 · 더미','가격 조건 미충족으로 신규 매수하지 않음 · 더미','주식·달러 배정액과 현금 확인 · 더미'][i%3]]),logs:Array.from({length:80},(_,i)=>['09/12 '+String(14-Math.floor(i/6)).padStart(2,'0')+':00',['자료 확인','원문 대조','자산 평가','판단 기록'][i%4],'화면 검토용 더미 기록 '+(i+1)]),buckets:[{name:'주식',allocated:1000000,value:1007800,invested_value:410000,waiting_cash:597800},{name:'달러',allocated:500000,value:502000,invested_value:502000,waiting_cash:0,usd_quantity:502000/1372.45}],assets:[{id:'samsung',name:'삼성전자',value:250000,change:2.4,average_price:60000,price:62500,quantity:4,unit:'원 / 주'},{id:'hynix',name:'SK하이닉스',value:160000,change:-1.8,average_price:165000,price:160000,quantity:1,unit:'원 / 주'},{id:'usd',name:'미국 달러',value:502000,change:.4,average_price:1372.45/1.004,price:1372.45,quantity:502000/1372.45,unit:'원 / 1 USD'},{id:'cash',name:'원화 대기자금',value:597800,change:0,price:null,quantity:null,unit:'원'}],equity_series:[0,1200,800,2400,1800,3100,4600,3900,5200,4900,6300,6100,7200,6800,8100,7800,9300,9000,10200,9800]};}
   function render(){
+    renderHealth();
     const d=data(),unit=market==='KR'?'원':'USD';
     $('mode-note').textContent=demo?'화면 미리보기 · 아래 숫자와 기록은 모두 가상 예시입니다.':(state?.mode==='paper'?'실제 시세 기반 모의투자 · 가상 자금 장부 · 실제 주문 없음':'공개 관찰 기록 · 실제 주문 없음');
     $('demo-toggle').textContent=demo?'예시 끄기':'예시 보기';$('demo-toggle').hidden=!designPreview;
@@ -139,11 +165,25 @@
 
   root.querySelectorAll('[data-stock-profit]').forEach(b=>b.onclick=()=>{profitView=b.dataset.stockProfit;root.querySelectorAll('[data-stock-profit]').forEach(x=>x.setAttribute('aria-pressed',x===b));render();});
 
-  async function refresh(){if(demo||root.hidden||document.hidden||busy)return;busy=true;const c=new AbortController(),timer=setTimeout(()=>c.abort(),8000);try{const r=await fetch(STATE_URL,{cache:'no-store',credentials:'omit',signal:c.signal});if(!r.ok)throw new Error('공개 관찰 기록을 불러오지 못했습니다.');const next=await r.json();if(!['paper','observation_only'].includes(next.mode)||!next.markets)throw new Error('관찰 자료 형식을 확인할 수 없습니다.');state=next;$('error').hidden=true;render();}catch(e){state=null;$('error').textContent=e.message+' 연결을 확인하세요.';$('error').hidden=false;render();}finally{clearTimeout(timer);busy=false;}}
+  async function refresh(){
+    if(demo||root.hidden||document.hidden||busy)return;
+    busy=true;const c=new AbortController(),timer=setTimeout(()=>c.abort(),10000);
+    try{
+      const cfg=await connectionConfig(c.signal);
+      const url=cfg.provider==='supabase'?cfg.url+'/rest/v1/investment_live?id=eq.imac&select=payload':STATE_URL;
+      const headers=cfg.provider==='supabase'?{'apikey':cfg.publishable_key}:{};
+      const r=await fetch(url,{headers,cache:'no-store',credentials:'omit',signal:c.signal});
+      if(!r.ok)throw new Error('운영 데이터 조회 실패');
+      let next=await r.json();if(cfg.provider==='supabase')next=next[0]?.payload;
+      if(!next||!['paper','observation_only'].includes(next.mode)||!next.markets)throw new Error('운영 데이터 형식 오류');
+      state=next;loadError=false;$('error').hidden=true;render();
+    }catch(e){loadError=true;$('error').textContent='운영 데이터 조회 실패 · 마지막 수신 기록을 표시합니다. 연결 복구를 재시도합니다.';$('error').hidden=false;render();}
+    finally{clearTimeout(timer);busy=false;}
+  }
   $('demo-toggle').onclick=()=>{selectedAsset=null;demo=!demo;render();refresh();};
   root.querySelectorAll('[data-stock-chart]').forEach(b=>b.onclick=()=>{chartKind=b.dataset.stockChart;root.querySelectorAll('[data-stock-chart]').forEach(x=>x.setAttribute('aria-pressed',x===b));render();});
   root.querySelectorAll('[data-stock-log]').forEach(b=>b.onclick=()=>{logKind=b.dataset.stockLog;root.querySelectorAll('[data-stock-log]').forEach(x=>x.setAttribute('aria-pressed',x===b));render();});
   new MutationObserver(()=>{if(!root.hidden){render();refresh();}}).observe(root,{attributes:true,attributeFilter:['hidden']});
-  setInterval(refresh,5000);refresh();document.addEventListener('visibilitychange',refresh);
+  setInterval(()=>{renderHealth();refresh();},15000);refresh();document.addEventListener('visibilitychange',refresh);
   const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js';script.onload=()=>{draw();renderAssets();};script.onerror=()=>{$('chart-empty').textContent='차트를 불러오지 못했습니다. 네트워크 연결을 확인하세요.';};document.head.appendChild(script);render();
 })();
