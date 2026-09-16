@@ -172,6 +172,8 @@ async function enterStore(){
   var d = await loadFromServer();
   DATA = assembleData(d);
   AUTHED = true; OFFLINE = null; LOAD_ERROR = null;
+  /* 로그인 직후: 홈페이지 예약 끌어오기 + 남은 자리 한 번 올리기(11c) */
+  setTimeout(function(){ try{ if(typeof pullRequests === "function"){ pullRequests().then(function(n){ if(n) render(); }); publishAvail(true); } }catch(e){} }, 800);
   cacheSave();
   autoCloseDays();   /* 지난 날짜의 '확정' → '방문' (이 기기가 처음 켠 것이면 여기서 올라갑니다) */
   takeSnapshot();
@@ -513,6 +515,7 @@ function migrateSeats(d){
 }
 /* 저장된 옛 데이터에 새 항목이 없을 때 채워 넣기 */
 function migrate(d){
+  /* 예정 설정 중 날짜가 된 것은 불러오자마자 흡수(03b). migrate 안이라 매장별로 도는 아래 코드보다 먼저, 전역 store() 가 준비된 뒤에 한 번 더 부릅니다 */
   delete d._auth;   /* 7차: PIN 은 서버(Supabase 계정)에만. 옛 저장본에 평문으로 남아 있던 것을 지웁니다 */
   d._logs = d._logs || [];
   migrateSeats(d);   /* 8차: 홀(zones) → 테이블 개별, 세션, 경로, 합침 */
@@ -526,7 +529,7 @@ function migrate(d){
     /* 옛 기록에 deletedAt 이 붙은 채 reservations 에 남아 있으면 trash 로 옮깁니다 */
     d[k].trash = d[k].trash.concat(d[k].reservations.filter(r=>r.deletedAt));
     d[k].reservations = d[k].reservations.filter(r=>!r.deletedAt);
-    /* 옛 기록 정리: 인원을 유아 포함 총원으로, 상태 이름 변경 */
+    /* 옛 기록 정리: 인원을 어린이 포함 총원으로, 상태 이름 변경 */
     d[k].reservations = d[k].reservations.map(r=>({
       ...r,
       people: r.people != null ? r.people : pplOf(r),
@@ -622,6 +625,7 @@ async function flush(){
     }
     if(SAVE_FAIL){ SAVE_FAIL = null; saveFailBand(); }
     cacheSave();
+    if(typeof publishAvail === "function") publishAvail();   /* 예약·설정이 바뀌었으니 홈페이지 남은 자리도(45초 간격으로 묶임) */
   }catch(e){
     console.error("저장 실패", e.message);
     SAVE_FAIL = { msg: e.message, at: Date.now() }; saveFailBand();

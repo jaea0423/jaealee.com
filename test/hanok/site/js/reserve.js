@@ -35,7 +35,7 @@
       if(isHoliday(date)) add(11*60, 18*60);
       else if(isWeekend(date)) add(11*60, 19*60+30);
       else { add(11*60, 14*60); add(17*60, 19*60+30); }
-      return out.filter(t => !stubFull(date, t, seat));
+      return out.filter(t => seat === "any" || !stubFull(date, t, seat));
     },
     /* 기본 구현은 slots 를 날마다 불러 셉니다. 실제로는 한 번에 받아오게 바꾸세요 */
     month: async function(ym, people, seat){
@@ -47,15 +47,54 @@
     submit: async payload => { await new Promise(r => setTimeout(r, 600)); return {ok:true}; }
   };
 
+  /* ---------- 진짜 API: js/config.js 에 window.SUPA 가 있으면 예약 시스템(Supabase)과 붙습니다 ----------
+     · 남은 자리는 public_avail 표(예약 시스템 태블릿이 30일치를 올려 둠)를 읽습니다 —
+       {"11:00":{"rooms":[[최소,최대],…],"tableMax":n}, …}. 룸은 인원이 어느 룸의 범위에 들면, 테이블은 tableMax 이하면 가능.
+     · 접수는 requests 표에 한 줄. 서버가 규칙(내일부터·성인 2·룸 성인 5·12명 이하·번호당 하루 3건)을 한 번 더 확인합니다. */
+  if(window.SUPA && SUPA.url && SUPA.anonKey){
+    const H = { "apikey": SUPA.anonKey, "Authorization": "Bearer " + SUPA.anonKey, "Content-Type": "application/json" };
+    const get = async path => { const r = await fetch(SUPA.url + path, {headers:H}); if(!r.ok) throw new Error("HTTP " + r.status); return r.json(); };
+    const okAt = (e, people, seat) => {
+      if(!e) return false;
+      const room = (e.rooms||[]).some(([mn, mx]) => people >= mn && people <= mx), table = people <= (e.tableMax||0);
+      return seat === "room" ? room : seat === "table" ? table : (room || table);
+    };
+    const availCache = {};
+    const dayData = async date => { if(!(date in availCache)){ const rows = await get(`/rest/v1/public_avail?store=eq.${SUPA.store}&date=eq.${date}&select=data`); availCache[date] = rows[0] ? rows[0].data : null; } return availCache[date]; };
+    RES_API.slots = async (date, people, seat) => {
+      const d = await dayData(date); if(!d) return [];
+      return Object.keys(d).sort().filter(t => okAt(d[t], people, seat));
+    };
+    RES_API.month = async (ym, people, seat) => {
+      const rows = await get(`/rest/v1/public_avail?store=eq.${SUPA.store}&date=like.${ym}%25&select=date,data`);
+      const out = {}; rows.forEach(r => { availCache[r.date] = r.data; out[r.date] = Object.keys(r.data||{}).filter(t => okAt(r.data[t], people, seat)).length; });
+      /* 표에 없는 날(태블릿이 아직 안 올린 날)은 0 = 고를 수 없음 */
+      const first = new Date(ym + "-01T00:00:00"), last = new Date(first.getFullYear(), first.getMonth()+1, 0).getDate();
+      for(let i = 1; i <= last; i++){ const k = ym + "-" + pad(i); if(!(k in out)) out[k] = 0; }
+      return out;
+    };
+    RES_API.submit = async p => {
+      const body = { id:"rq_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36), store:SUPA.store,
+        date:p.date, time:p.time, adults:p.adults, kids:p.kids, people:p.people, seat:p.seat, course:p.course, course_label:p.courseLabel,
+        name:p.name, phone:String(p.phone).replace(/\D/g,""), request:p.request||"", status:"대기" };
+      const r = await fetch(SUPA.url + "/rest/v1/requests", { method:"POST", headers:Object.assign({"Prefer":"return=minimal"}, H), body:JSON.stringify(body) });
+      if(r.ok) return {ok:true};
+      let msg = ""; try{ msg = (await r.json()).message || ""; }catch(e){}
+      if(/RATE_PHONE/.test(msg)) return {ok:false, msg:"이 번호로 오늘 접수한 예약이 이미 3건입니다. 전화로 문의해 주세요."};
+      if(/RATE_ALL/.test(msg)) return {ok:false, msg:"지금 접수가 몰려 있습니다. 잠시 뒤 다시 시도해 주세요."};
+      return {ok:false, msg:"접수가 되지 않았습니다. 잠시 뒤 다시 시도하시거나 전화로 문의해 주세요."};
+    };
+  }
+
   /* ---------- 상태 ---------- */
-  let S, step, timer, left, ov, monthCache;
+  let S, step, timer, left, ov, monthCache, extended;   /* extended: 5분 연장을 한 번 썼는지 */
   const total = () => S.adults + S.kids;
   const tooMany = () => total() > ONLINE_MAX;
   function reset(){
     S = {date:"", adults:0, kids:0, time:"", seat:"", course:"", courseLabel:"", name:"", phone:"",
          sent:false, verified:false, req:"", agree:{rule:false, priv:false, age:false}};
     step = 1; monthCache = {};
-    clearInterval(timer); timer = null; left = LIMIT_SEC;
+    clearInterval(timer); timer = null; left = LIMIT_SEC; extended = false;
   }
 
   /* ---------- 창 ---------- */
@@ -66,7 +105,7 @@
     ov.innerHTML = `<div class="rv" role="dialog" aria-modal="true" aria-label="예약">
         <div class="rv-h">
           <div class="rv-ttl"><span>한옥반점</span><h2>예약</h2></div>
-          <div class="rv-timer" hidden><span>시간 내 예약을 완료해 주세요</span><b id="rv-clock">5:00</b></div>
+          <div class="rv-timer" hidden><span>시간 내 예약을 완료해 주세요</span><b id="rv-clock">5:00</b><button type="button" class="rv-ext" id="rv-ext" hidden>+5분</button></div>
           <button class="rv-x" aria-label="닫기"><svg viewBox="0 0 20 20"><path d="M4 4l12 12M16 4L4 16"/></svg></button>
         </div>
         <ol class="rv-steps"></ol>
@@ -105,12 +144,19 @@
     $(".yes", box).focus();
   }
 
-  function startTimer(){ if(timer) return; $(".rv-timer", ov).hidden = false; tick(); timer = setInterval(tick, 1000); }
+  function startTimer(){
+    if(timer) return;
+    $(".rv-timer", ov).hidden = false;
+    /* 1분 남으면 '+5분' 이 나타나고, 한 번만 쓸 수 있습니다 */
+    $("#rv-ext", ov).addEventListener("click", () => { if(extended) return; extended = true; left += LIMIT_SEC; $("#rv-ext", ov).hidden = true; tick(); });
+    tick(); timer = setInterval(tick, 1000);
+  }
   function tick(){
     if(!ov) return;
     const c = $("#rv-clock", ov); if(!c) return;
     c.textContent = Math.floor(left/60)+":"+pad(left%60);
     c.classList.toggle("warn", left <= 60);
+    const ext = $("#rv-ext", ov); if(ext) ext.hidden = !(left <= 60 && !extended);
     if(left <= 0){
       clearInterval(timer); timer = null;
       const keep = {adults:S.adults, kids:S.kids, date:S.date};
@@ -238,7 +284,7 @@
       }));
       if(!monthCache[ym]){
         days.classList.add("loading");
-        monthCache[ym] = await RES_API.month(ym, total(), S.seat || "room");
+        monthCache[ym] = await RES_API.month(ym, total(), S.seat || "any");
         days.classList.remove("loading");
       }
       const m = monthCache[ym];
@@ -257,7 +303,7 @@
     foot(f, true, next, "다음", true);
     (async () => {
       const want = S.date;
-      const list = await RES_API.slots(S.date, total(), S.seat || "room");
+      const list = await RES_API.slots(S.date, total(), S.seat || "any");
       if(!ov || want !== S.date) return;
       if(!list.length){ times.innerHTML = `<p class="rv-quiet">이 날은 예약 가능한 시간이 없습니다. 다른 날짜를 골라 주세요.</p>`; return; }
       const lunch = list.filter(t => mins(t) < LUNCH_END), dinner = list.filter(t => mins(t) >= LUNCH_END);
@@ -441,7 +487,7 @@
                                       seat:S.seat, course:S.course, courseLabel:S.courseLabel,
                                       name:S.name.trim(), phone:S.phone, request:S.req.trim()});
       if(r && r.ok){ clearInterval(timer); timer = null; step = 8; render(); }
-      else { btn.disabled = false; btn.textContent = "접수하기"; render("접수가 되지 않았습니다. 잠시 뒤 다시 시도하시거나 전화로 문의해 주세요."); }
+      else { btn.disabled = false; btn.textContent = "접수하기"; render((r && r.msg) || "접수가 되지 않았습니다. 잠시 뒤 다시 시도하시거나 전화로 문의해 주세요."); }
     }
     refoot();
   }

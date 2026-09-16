@@ -165,11 +165,11 @@ function startIntro(){
   render();                                   /* 한 번만 그립니다 */
   /* 글자 5개가 200ms 간격(1초) — 135ms 는 거의 동시라 단계가 안 느껴졌고, 260ms 는 붉은 첫 장면이 길었습니다(6차-F).
      첫 글자는 360ms, 마지막 글자 뒤 600ms 에 끝. 총 약 1.8초, 아무 데나 누르면 건너뜀 */
-  var steps = INTRO_TO.length, t0 = 120, gap = 150;   /* 8차-AA(재아): 조금 더 빠르게 — 글자 150ms 간격, 총 1.3초쯤 */
+  var steps = INTRO_TO.length, t0 = 70, gap = 88;   /* 재아: 1.7배 빠르게 — 글자 88ms 간격, 총 0.8초쯤 */
   for(var i=1;i<=steps;i++){
     introTimers.push(setTimeout((function(k){ return function(){ introStep(k); }; })(i), t0 + i*gap));
   }
-  introTimers.push(setTimeout(endIntro, t0 + steps*gap + 450));
+  introTimers.push(setTimeout(endIntro, t0 + steps*gap + 265));
 }
 /* 글자 진행 p(0~1)에 따른 바탕 두 겹의 불투명도 — 나무색은 앞 절반에서, 한지(와 창호)는 뒤 절반에서 올라옵니다 */
 function introBg(n){

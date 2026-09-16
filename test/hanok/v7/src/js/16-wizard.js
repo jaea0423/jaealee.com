@@ -11,7 +11,7 @@ const WZ_STEPS = [
   "\u201C날짜와 시간은 언제로 해 드릴까요?\u201D",
   "\u201C몇 분이서 오세요?\u201D",
   "\u201C룸과 테이블 중 어디로 해 드릴까요?\u201D",
-  "\u201C식사는 코스로 준비해 드릴까요?\u201D",
+  "\u201C식사는 코스나 세트로 준비해 드릴까요?\u201D",
   "\u201C예약자 성함과 연락처 부탁드립니다.\u201D",
   "\u201C알러지나 따로 요청하실 사항 있으세요?\u201D"
 ];
@@ -25,7 +25,7 @@ const DEFAULT_COURSE_GROUPS = [
   { id:"cg_welunch", label:"주말 점심",   items:["요리사","B","A"],        when:["주말점심"] }
 ];
 const WHEN_OPTS = ["종일","평일점심","평일저녁","주말점심","주말저녁"];
-function courseGroups(){ return store().settings.courseGroups || DEFAULT_COURSE_GROUPS; }
+function courseGroups(date){ return (date ? settingsAt(date) : store().settings).courseGroups || DEFAULT_COURSE_GROUPS; }
 /* 코스 키의 앞부분(cg_xxx)으로 묶음을 찾습니다.
    ※ 예전 키는 앞부분이 '순서 번호'(0, 1, 2) 였습니다. 설정에서 순서만 바꿔도
       저장된 예약이 전부 다른 묶음을 가리키게 되는 구조라 고정 id 로 바꿨습니다.
@@ -308,7 +308,7 @@ function wzWarnReason(){
       else if(fit.state === "split") out.push(`나눠 앉음 - ${floorLabel(fl)}에 붙일 테이블이 없어 옆 테이블에 나눠 앉습니다`);
     }
   }
-  if(WZ.step===2 && WZ.people && (WZ.infants||0) >= WZ.people) out.push(`성인이 없음 - 유아만 ${WZ.infants}명`);
+  if(WZ.step===2 && WZ.people && (WZ.infants||0) >= WZ.people) out.push(`성인이 없음 - 어린이만 ${WZ.infants}명`);
   if(WZ.step===5){
     if(WZ.phoneNone) out.push("전화번호 없음");
     else if(WZ.phone && WZ.phone.replace(/\D/g,"").length < 9)
@@ -321,18 +321,18 @@ function wzWarnReason(){
     if(seat && seat.type==="room"){
       const adults = adultCount(WZ.people, WZ.infants);
       const n = courseCount();
-      if(WZ.menuType==="해당 없음") out.push("룸인데 코스가 아님");
-      if(WZ.menuType==="확인 필요") out.push("룸인데 코스 여부 미확인");
+      if(WZ.menuType==="해당 없음") out.push("룸인데 코스·세트가 아님");
+      if(WZ.menuType==="확인 필요") out.push("룸인데 코스·세트 여부 미확인");
       if(WZ.menuType==="코스" && !WZ.courseUndecided && n>0 && n<adults)
-        out.push(`코스 부족 - ${n}인분 / 성인 ${adults}명`);
+        out.push(`코스·세트 부족 - ${n}인분 / 성인 ${adults}명`);
       if(WZ.menuType==="코스" && !WZ.courseUndecided && n>adults)
-        out.push(`코스 초과 - ${n}인분 / 성인 ${adults}명`);
+        out.push(`코스·세트 초과 - ${n}인분 / 성인 ${adults}명`);
     }
     out.push.apply(out, courseWarns());
   }
   if(WZ.step===6){
-    if((WZ.chairs||0) > (WZ.infants||0)) out.push(`의자가 유아보다 많음 - 의자 ${WZ.chairs||0} / 유아 ${WZ.infants||0}`);
-    if((WZ.chairs||0) < (WZ.infants||0)) out.push(`의자가 유아보다 적음 - 의자 ${WZ.chairs||0} / 유아 ${WZ.infants||0}`);
+    if((WZ.chairs||0) > (WZ.infants||0)) out.push(`의자가 어린이보다 많음 - 의자 ${WZ.chairs||0} / 어린이 ${WZ.infants||0}`);
+    if((WZ.chairs||0) < (WZ.infants||0)) out.push(`의자가 어린이보다 적음 - 의자 ${WZ.chairs||0} / 어린이 ${WZ.infants||0}`);
   }
   return out.join("\n");
 }
@@ -342,7 +342,7 @@ function wzSummary(){
   const p=[];
   if(WZ.source) p.push(WZ.source==="기타" && WZ.sourceDetail ? WZ.sourceDetail : WZ.source);
   if(WZ.date && WZ.time) p.push(`${(+WZ.date.slice(5,7))}/${(+WZ.date.slice(8))} ${hm(WZ.time)}`);
-  if(WZ.people) p.push(`${WZ.people}명${WZ.infants?`(유아${WZ.infants})`:""}`);
+  if(WZ.people) p.push(`${WZ.people}명${WZ.infants?`(어린이${WZ.infants})`:""}`);
   if(WZ.seat) p.push(WZ.seatExtra && WZ.seatExtra.length ? seatLabelIds([WZ.seat].concat(WZ.seatExtra)) : seatLabel(WZ.seat));
   return p.map(x=>`<span>${esc(x)}</span>`).join("");
 }
@@ -474,7 +474,7 @@ function timeGrid(ctx){
   const isToday = ctx.date===todayStr(), isPastDate = ctx.date < todayStr(), nowM = toMin(nowHM());
   const curT = ctx.time ? toMin(ctx.time) : null, curSlot = curT===null ? null : Math.floor(curT/30)*30;
   const people = ctx.people || 0;
-  const rooms = st.rooms.filter(isRoom);
+  const rooms = roomsAt(ctx.date).filter(isRoom);
   return ss.map(se=>{
     const from = toMin(se.from), last = toMin(se.lastBook);
     const cells = [];
@@ -739,7 +739,7 @@ function afterRender(){
   });
 }
 
-/* ---------- 2단계: 인원 (유아 포함 총원) ---------- */
+/* ---------- 2단계: 인원 (어린이 포함 총원) ---------- */
 function wzStepPeople(){
   const tiles = [1,2,3,4,5,6].map(n=>
     `<button class="ptile ${WZ.people===n&&!WZ.customPeople?'on':''} ${n===1?'off':''}" onclick="wzPeople(${n})">
@@ -754,7 +754,7 @@ function wzStepPeople(){
         <button onclick="wzAdj('people',1)" ${WZ.customPeople?'':'tabindex="-1"'}>＋</button>
       </div>
     <div class="infant ${WZ.infants>=(WZ.people||99)&&WZ.people?'bad':''}">
-      <div><div class="t">유아</div>
+      <div><div class="t">어린이</div>
         <div class="s">${WZ.infants>=(WZ.people||99)&&WZ.people
           ? "성인이 없습니다"
           : "총 인원에 포함"}</div></div>
@@ -764,13 +764,13 @@ function wzStepPeople(){
         <button onclick="wzAdj('infants',1)">＋</button>
       </div>
     </div>
-    <div class="ptotal">${cur ? `총 <b>${cur}명</b>${WZ.infants?` (유아 ${WZ.infants}명 포함)`:""}` : ""}</div>`;
+    <div class="ptotal">${cur ? `총 <b>${cur}명</b>${WZ.infants?` (어린이 ${WZ.infants}명 포함)`:""}` : ""}</div>`;
 }
 function wzPeople(n){
   /* 1명 예약은 받지 않습니다(재아: 타일은 보이되 누르면 안내). 1인 규칙은 누님 질문 2번 대기 */
   if(n === 1) return uiAlert("1명 예약은 받지 않습니다", "2명부터 예약할 수 있습니다.", "warn");
   WZ.people=n; WZ.customPeople=false;
-  WZ.chairs = chairDefaultInfants() ? WZ.infants : 0;   /* 기본값은 설정에서 (유아 수 / 0개) */
+  WZ.chairs = chairDefaultInfants() ? WZ.infants : 0;   /* 기본값은 설정에서 (어린이 수 / 0개) */
   render();
 }
 function wzCustom(){ WZ.customPeople=true; if(!WZ.people || WZ.people < 7) WZ.people=7; render(); }   /* 6명을 눌러 뒀어도 7부터(재아) */
@@ -824,8 +824,8 @@ function wzStepSeat(){
 
   let body = "";
   if(kind === "room"){
-    const rooms = st.rooms.filter(isRoom);
-    const joins = (st.joins||[]);   /* 인원이 안 맞아도 다 보여 주고 '인원 부족/초과' 로 표시(재아: 합침이 안 보였음) */
+    const rooms = roomsAt(WZ.date).filter(isRoom);   /* 예정 좌석 반영 */
+    const joins = joinsAt(WZ.date);   /* 인원이 안 맞아도 다 보여 주고 '인원 부족/초과' 로 표시(재아: 합침이 안 보였음) */
     body = `<div class="sgrid">${rooms.map(r=>cell([r.id], r)).join("")}</div>` +
       (joins.length ? `<div class="lbl" style="margin-top:16px">룸 합침 <span class="lbl-note">중문 탈거 · 자동 배정 안 됨</span></div>
         <div class="sgrid">${joins.map(j=>cell(j.ids, {id:j.id, name:"", note:j.note}, "join")).join("")}</div>` : "");
@@ -866,7 +866,7 @@ function wzStepSeat(){
         <button class="${kind==='room'?'on':''} ${roomOk?'':'warned'}" onclick="wzSeatKind('room')">룸 예약${roomOk?"":" · 빈 방 없음"}</button>
         <button class="${kind==='table'?'on':''} ${tf.state==='none'?'warned':''}" onclick="wzSeatKind('table')">테이블 예약${tf.state==='none'?" · 자리 없음":tf.state==='split'?" · 나눠 앉기":""}</button>
       </div>`; })()}
-    <div class="lbl-note" style="margin:6px 0 10px">${kind==='room' ? `정원은 ${seatCountsInfants()?"유아 포함":"유아 제외 성인"} 기준 · 순서는 사장님이 정한 배정 우선순위` : "그 시간에 비는 테이블(붙임 포함)로 앉힐 수 있는지 봅니다. 어느 테이블인지는 당일 현장에서"}</div>
+    <div class="lbl-note" style="margin:6px 0 10px">${kind==='room' ? `정원은 ${seatCountsInfants()?"어린이 포함":"어린이 제외 성인"} 기준 · 순서는 사장님이 정한 배정 우선순위` : "그 시간에 비는 테이블(붙임 포함)로 앉힐 수 있는지 봅니다. 어느 테이블인지는 당일 현장에서"}</div>
     ${body}
     ${!kind ? `<div class="empty">룸 예약인지 테이블 예약인지 먼저 고르세요.</div>` : kind==='room' ? `<p class="f-note" style="margin-top:12px">방을 안 고르고 <b>다음</b>을 누르면 '룸 미정' 으로 접수돼 빈 방에 잠정 배정됩니다.</p>` : `<p class="f-note" style="margin-top:12px">층을 안 고르고 <b>다음</b>을 누르면 층 상관없이 사장님 순서로 잡습니다. 어느 테이블인지는 당일 현장에서.</p>`}`;
 }
@@ -920,7 +920,7 @@ async function wzSeat(v){
       const adults = adultCount(people, WZ.infants);
       if(adults < seatsMin(ids, WZ.date)){
         const basis = store().settings.minCountAdultsOnly===false ? "총 인원" : "성인";
-        if(!await uiConfirm(`${label} 최소 인원 미달`, `최소 ${seatsMin(ids, WZ.date)}명부터 받습니다.\n지금 ${basis} ${adults}명입니다${WZ.infants?` (유아 ${WZ.infants}명 제외)`:""}.`, {ok:"그래도 배정", cancel:"다시 고르기"})) return;
+        if(!await uiConfirm(`${label} 최소 인원 미달`, `최소 ${seatsMin(ids, WZ.date)}명부터 받습니다.\n지금 ${basis} ${adults}명입니다${WZ.infants?` (어린이 ${WZ.infants}명 제외)`:""}.`, {ok:"그래도 배정", cancel:"다시 고르기"})) return;
       }
     }
     /* 한 테이블에 안 들어가는 인원이 테이블 하나를 고르면 붙일 테이블을 함께 제안 */
@@ -1042,9 +1042,9 @@ function wzStepMenu(){
   const isHall = seat ? isTable(seat) : isTablePref(WZ.seat);
   /* 테이블은 보통 메뉴를 정하지 않고 받습니다 — 선택지를 줄입니다 */
   const opts = isHall
-    ? [["코스","코스",""],
+    ? [["코스","코스·세트",""],
        ["해당 없음","해당 없음",""]]
-    : [["코스","코스",""],
+    : [["코스","코스·세트",""],
        ["코스 상당","코스 상당",""],
        ["확인 필요","확인 필요",""],
        ["해당 없음","해당 없음",""]];
@@ -1053,10 +1053,10 @@ function wzStepMenu(){
   const seatIsRoom = seat && seat.type==="room";
   /* 룸은 코스 주문을 전제로 받는 자리입니다 */
   const roomWarn = seatIsRoom && (
-    WZ.menuType==="해당 없음" ? "룸 예약에 코스 이용 예정 손님이 아닙니다" :
+    WZ.menuType==="해당 없음" ? "룸 예약에 코스·세트 이용 예정 손님이 아닙니다" :
     WZ.menuType==="확인 필요" ? "" :
     (WZ.menuType==="코스" && !WZ.courseUndecided && n>0 && n<adults)
-      ? `코스 ${n}인분 · 성인 ${adults}명보다 적습니다` : "");
+      ? `코스·세트 ${n}인분 · 성인 ${adults}명보다 적습니다` : "");
   /* 룸 경고 문구는 위 질문 아래 경고 자리(wz-warn)에 이미 뜨므로 여기서는 타일 색만 바꿉니다 */
   return `
     <div class="srcgrid menu4 ${opts.length===2?'menu2':''}">
@@ -1068,7 +1068,7 @@ function wzStepMenu(){
         </button>`).join("")}
     </div>
       <div class="course-sum ${WZ.menuType==="코스"?'':'hold'}">
-        ${WZ.courseUndecided ? "코스 미정 · 방문 전 확정" : (n?`${esc(courseSummary(WZ.courses))}`:"구성을 고르세요")}
+        ${WZ.courseUndecided ? "코스·세트 미정 · 방문 전 확정" : (n?`${esc(courseSummary(WZ.courses))}`:"구성을 고르세요")}
         <button class="btn sm" style="margin-left:auto" onclick="openCourse()" ${WZ.menuType==="코스"?'':'tabindex="-1"'}>${n||WZ.courseUndecided?"수정":"선택"}</button>
       </div>
     ${WZ.courseOpen?renderCourse():""}`;
@@ -1133,16 +1133,16 @@ function courseGroupFits(g){
    둘 다 막지 않습니다. 사장님이 예외를 둘 수 있으므로 빨갛게 알리기만 합니다 */
 function courseWarns(){
   const W = cTgt(); if(!W || W.menuType!=="코스" || W.courseUndecided) return [];
-  const gs = courseGroups(), out = [];
+  const gs = courseGroups(cTgt() && cTgt().date), out = [];
   const picked = Object.entries(W.courses||{}).filter(([k,v])=>v>0);
   const offNames = picked.filter(([k])=>{ const g = courseGroupById(gs, k.split("|")[0]); return g && !courseGroupFits(g); })
     .map(([k])=>k.split("|")[1]);
-  if(offNames.length) out.push(`이 시간엔 없는 코스 - ${offNames.join(", ")}`);
-  if(picked.length >= 2) out.push(`코스 ${picked.length}종류 - 한 테이블은 하나로`);
+  if(offNames.length) out.push(`이 시간엔 없는 코스·세트 - ${offNames.join(", ")}`);
+  if(picked.length >= 2) out.push(`코스·세트 ${picked.length}종류 - 한 테이블은 하나로`);
   return out;
 }
 function renderCourse(){
-  const gs = courseGroups();
+  const gs = courseGroups(cTgt() && cTgt().date);
   const W = cTgt();
   const fits = courseGroupFits;
   const rows = gs.map((g,gi)=>`
@@ -1161,18 +1161,18 @@ function renderCourse(){
   return `
     <div class="overlay" onclick="closeCourse()">
       <div class="sheet" onclick="event.stopPropagation()">
-        <div class="sheet-h"><h2>코스 선택</h2>
+        <div class="sheet-h"><h2>코스·세트 선택</h2>
           <button class="x" onclick="closeCourse()" aria-label="닫기">×</button></div>
                 ${rows}
         <button class="undecided ${W.courseUndecided?'on':''}" onclick="toggleUndecided()">
-          코스 미정
+          코스·세트 미정
         </button>
         ${(()=>{
           const n = courseCount(), ad = adultCount(W.people, W.infants);
           const short = n>0 && n<ad, over = n>ad;
           return `<div class="course-total ${short||over||courseWarns().length?'bad':''}">선택 합계 <b>${n}</b>명
-            ${W.people?` / 성인 ${ad}명${W.infants?` (유아 ${W.infants}명)`:""}`:""}
-            ${short?`<div class="ct-warn">코스 부족 - 성인보다 ${ad-n}명 적음</div>`:""}
+            ${W.people?` / 성인 ${ad}명${W.infants?` (어린이 ${W.infants}명)`:""}`:""}
+            ${short?`<div class="ct-warn">코스·세트 부족 - 성인보다 ${ad-n}명 적음</div>`:""}
             ${over?`<div class="ct-warn">코스 초과 - 성인보다 ${n-ad}명 많음</div>`:""}
             ${courseWarns().map(w=>`<div class="ct-warn">${esc(w)}</div>`).join("")}</div>`;
         })()}
@@ -1195,13 +1195,13 @@ function wzStepExtra(){
       </div>
     </div>
     <div class="f big"><div class="lb">유아용 의자
-      ${(WZ.chairs||0)>(WZ.infants||0)?`<span class="req">유아 ${WZ.infants||0}명보다 많음</span>`:""}</div>
+      ${(WZ.chairs||0)>(WZ.infants||0)?`<span class="req">어린이 ${WZ.infants||0}명보다 많음</span>`:""}</div>
       <div class="bigstep sm ${(WZ.chairs||0)>(WZ.infants||0)?'bad':''}" style="justify-content:flex-start; margin-top:0">
         <button onclick="wzChair(-1)">−</button>
         <div class="v"><span>${WZ.chairs||0}</span><small>개</small></div>
         <button onclick="wzChair(1)">＋</button>
       </div>
-      <div class="f-note">${chairDefaultInfants()?`유아 ${WZ.infants||0}명 기준 자동 입력`:"&nbsp;"}</div>
+      <div class="f-note">${chairDefaultInfants()?`어린이 ${WZ.infants||0}명 기준 자동 입력`:"&nbsp;"}</div>
     </div>
     <label class="f big"><div class="lb">요청사항 <span class="lbl-note">선택</span></div>
       <input id="wz-request" value="${esc(WZ.request)}" placeholder="예: 송별회, 상견례">
@@ -1211,7 +1211,7 @@ function wzStepExtra(){
     </label>
     <div class="wz-review">
       <div class="rv"><span>일시</span><b>${WZ.date?dateLabel(WZ.date):"-"} ${WZ.time?hm(WZ.time):""}</b></div>
-      <div class="rv"><span>인원</span><b>총 ${WZ.people||0}명${WZ.infants?` (유아 ${WZ.infants}명 포함)`:""}</b></div>
+      <div class="rv"><span>인원</span><b>총 ${WZ.people||0}명${WZ.infants?` (어린이 ${WZ.infants}명 포함)`:""}</b></div>
       ${WZ.chairs?`<div class="rv"><span>유아의자</span><b>${WZ.chairs}개</b></div>`:""}
       <div class="rv"><span>좌석</span><b>${WZ.seat?(WZ.seatExtra&&WZ.seatExtra.length?seatLabelIds([WZ.seat].concat(WZ.seatExtra)):seatLabel(WZ.seat)):"-"}</b></div>
       <div class="rv"><span>예약자</span><b>${esc(WZ.name)||"-"} ${esc(WZ.phone)}</b></div>
@@ -1282,6 +1282,7 @@ async function wzSubmit(){
     status:"확정"
   };
   createReservation(rec);
+  reqAfterRegister(rec);   /* 홈페이지 요청을 승인해 온 것이면 요청을 '확정' 으로 (11b) */
   /* 6차 전에는 view.date = rec.date 로 그 날짜로 점프했습니다. 이제 화면 날짜는 그대로 — 완료 화면에 날짜가 있고,
      닫은 뒤 토스트의 '보기' 로 갈 수 있습니다(closeWizardDone) */
   WZ.done = rec;

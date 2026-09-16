@@ -11,8 +11,8 @@ function dayStat(date){
      노쇼와 취소는 자리를 안 쓴 것이므로 예약률에서 빠집니다. */
   const list = s.reservations.filter(r=>r.date===date && holdsSeat(r));
   const people = list.reduce((a,r)=>a+pplOf(r),0);
-  const rooms = st.rooms.filter(isRoom);
-  const halls = st.rooms.filter(isTable);   /* 이름은 옛 것(hall) 그대로 — 스냅샷·호출부 호환. 뜻은 '테이블' */
+  const rooms = roomsAt(date).filter(isRoom);            /* 앞날은 예정 좌석 수로 (예약률 분모) */
+  const halls = roomsAt(date).filter(isTable);   /* 이름은 옛 것(hall) 그대로 — 스냅샷·호출부 호환. 뜻은 '테이블' */
   const hallT = halls.length;
   /* 지난 날짜는 그날의 좌석 수(스냅샷)로, 오늘·앞날은 현재 설정으로 (takeSnapshot 주석 참고).
      스냅샷이 없는 지난 날짜(1년 넘은 것)는 현재 설정으로 계산합니다 */

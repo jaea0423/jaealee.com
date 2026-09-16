@@ -53,7 +53,7 @@ function seedDemo(d){
       used[time+"|"+rm.n] = true;
       roomName = rm.n;
       people = rm.min + ((gi*3) % (rm.max - rm.min + 1));
-      if(gi % 11 === 0 && people >= rm.min + 2) infants = 1;   /* 유아가 있어도 성인이 최소 인원 이상 */
+      if(gi % 11 === 0 && people >= rm.min + 2) infants = 1;   /* 어린이가 있어도 성인이 최소 인원 이상 */
       const adults = people - infants;
       const pool = COURSE_BY(lunch, weekend);
       menuType = "코스";

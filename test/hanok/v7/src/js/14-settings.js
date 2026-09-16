@@ -105,8 +105,8 @@ function renderSettings(){
     <div class="subhead">인원</div>
     <label class="f"><div class="lb">룸 최소 인원 기준</div>
       <button class="togglebtn ${st.minCountAdultsOnly!==false?'on':''}" onclick="toggleAdultOnly()">
-        ${st.minCountAdultsOnly!==false?"성인 기준 (유아 제외)":"총 인원 기준 (유아 포함)"}</button>
-      <div class="f-note">성인 기준이면 성인 1명·유아 3명은 4인 룸 최소 인원에 못 미치는 것으로 봅니다.</div></label>
+        ${st.minCountAdultsOnly!==false?"성인 기준 (어린이 제외)":"총 인원 기준 (어린이 포함)"}</button>
+      <div class="f-note">성인 기준이면 성인 1명·어린이 3명은 4인 룸 최소 인원에 못 미치는 것으로 봅니다.</div></label>
     <label class="f"><div class="lb">단체 기준 인원</div>
       <button class="numbtn" onclick="openNum('groupSize','단체 기준 인원',2,40)">${st.groupSize||8}<small>명</small></button>
       <div class="f-note">이 인원부터 확인에 ‘단체 손님’으로 뜹니다.</div></label>
@@ -252,7 +252,7 @@ function renderSettings(){
     <div class="btn-row" style="margin-top:10px">
       <button class="btn" onclick="addCourseRow()">＋ 행 추가</button>
     </div>
-    <p class="f-note">메뉴판 구성에 맞춰 행을 나누세요. 예약 시각에 맞는 행이 코스 선택 팝업에서 강조됩니다.</p>`;
+    <p class="f-note">메뉴판 구성에 맞춰 행을 나누세요. 예약 시각에 맞는 행이 코스·세트 선택 팝업에서 강조됩니다. 저녁 코스는 종일, 점심 세트는 점심 시간에만 팝니다.</p>`;
 
   /* ---------- 예약경로 ---------- */
   const srcBody = `
@@ -287,7 +287,7 @@ function renderSettings(){
     <p class="f-note">오늘 남은 예약이 하나도 없으면(30분 넘게 지난 것은 빼고) 목록·좌석표 대신 광고 영상만 화면 가득 틉니다. 예약이 생기면 다음 갱신(1분) 때 목록으로 돌아옵니다.</p>
 
     <div class="subhead">광고 영상 <span>목록 화면 왼쪽에 나옵니다</span></div>
-    <input id="tv-ad" value="${esc(st.tvAd||"")}" placeholder="ad.mp4"
+    <input id="tv-ad" class="in-sm" value="${esc(st.tvAd||"")}" placeholder="ad.mp4"
       onchange="setPolicy('tvAd', this.value)">
     <p class="f-note">
       영상 파일을 <b>이 폴더에 같이 올려두고</b> 파일 이름만 적으면 됩니다 (예: <code>ad.mp4</code>).<br>
@@ -301,9 +301,7 @@ function renderSettings(){
       좌석표를 띄울 때의 배치입니다. 3줄로 고정되며 한 줄에 최대 ${DISP_MAX}칸까지 놓을 수 있습니다.</p>
     <div class="urlbox">
       <div class="ub-t">TV 전용 주소</div>
-      <div class="ub-u" id="screen-url">${esc(screenUrl())}</div>
-      <div class="ub-s">TV 브라우저 주소창에 이 주소를 넣으면 PIN 없이 바로 이 화면이 열립니다.</div>
-      <button class="btn sm" onclick="copyScreenUrl()">주소 복사</button>
+      <div class="ub-row"><a class="ub-u" id="screen-url" href="${esc(screenUrl())}" target="_blank" rel="noopener">${esc(screenUrl())}</a><button class="btn sm" onclick="copyScreenUrl()">주소 복사</button></div>
     </div>
     ${rows.map((ids,ri)=>`
       <div class="disprow ${ids.length>DISP_MAX?'over':''}">
@@ -333,7 +331,7 @@ function renderSettings(){
       <button class="btn" onclick="openSlip()">비상 예약지 인쇄</button>
     </div>
     <p class="f-note">비상 예약지: 시스템이 안 될 때 손으로 받는 종이(A4 한 장에 6장). 열리면 Ctrl+P 로 인쇄해 카운터에 두세요.</p>
-    <p class="f-note">PIN 변경에는 관리자 비밀번호가 필요합니다. PIN 은 직원과 공유하는 번호, 관리자 비밀번호는 사장님만 아는 것입니다.</p>`;
+    <p class="f-note">설정은 관리자 비밀번호로 들어옵니다. PIN 관리·관리자 비밀번호 변경·로그·초기화는 한 번 더 묻습니다. PIN 은 직원과 공유하는 번호, 관리자 비밀번호는 사장님만 아는 것입니다.</p>`;
 
   /* 화면 크기 — 기기마다 적당한 값이 달라 사장님이 직접 고르게 둡니다.
      저장 위치가 settings 가 아니라 DATA._ui 인 이유: 이건 매장 운영 값이 아니라
@@ -342,18 +340,18 @@ function renderSettings(){
   const policyBody = `
     <div class="subhead">유아용 의자 기본값</div>
     <div class="seg">
-      <button class="${st.chairDefault!=="zero"?'on':''}" onclick="setPolicy('chairDefault','infants')">유아 수와 같게</button>
-      <button class="${st.chairDefault==="zero"?'on':''}" onclick="setPolicy('chairDefault','zero')">0개</button>
+      <button class="${st.chairDefault==="infants"?'on':''}" onclick="setPolicy('chairDefault','infants')">어린이 수와 같게</button>
+      <button class="${st.chairDefault!=="infants"?'on':''}" onclick="setPolicy('chairDefault','zero')">0개</button>
     </div>
-    <p class="f-note">유아 인원을 입력할 때 의자 수가 자동으로 따라올지 정합니다.
-      0개로 두면 유아 수와 다를 때 경고가 뜹니다.</p>
+    <p class="f-note">어린이 인원을 입력할 때 의자 수가 자동으로 따라올지 정합니다.
+      0개로 두면 어린이 수와 다를 때 경고가 뜹니다.</p>
 
     <div class="subhead">룸 정원 기준</div>
     <div class="seg">
       <button class="${st.minCountAdultsOnly!==false?'on':''}" onclick="setPolicy('minCountAdultsOnly',true)">성인만</button>
-      <button class="${st.minCountAdultsOnly===false?'on':''}" onclick="setPolicy('minCountAdultsOnly',false)">유아 포함 총원</button>
+      <button class="${st.minCountAdultsOnly===false?'on':''}" onclick="setPolicy('minCountAdultsOnly',false)">어린이 포함 총원</button>
     </div>
-    <p class="f-note">룸 최소·최대 인원을 따질 때 유아를 셀지 정합니다.</p>
+    <p class="f-note">룸 최소·최대 인원을 따질 때 어린이를 셀지 정합니다.</p>
 
     <div class="subhead">라스트오더 임박 기준</div>
     <div class="seg">
@@ -388,9 +386,6 @@ function renderSettings(){
     roomId:(st.rooms[0]||{}).id || null
   };
   const smsBodyUI = `
-    <div class="mockbar">지금은 <b>흉내만</b> 냅니다. 실제로 문자가 나가지 않습니다.
-      화면과 문구를 먼저 정하고, 발송은 나중에 붙입니다.</div>
-
     <div class="subhead">문자 안내</div>
     <div class="seg">
       <button class="${sm.on?'on':''}" onclick="setSms('on',true)">보냄</button>
@@ -398,19 +393,18 @@ function renderSettings(){
     </div>
 
     <div class="subhead">발신번호 <span>손님 폰에 찍히는 번호</span></div>
-    <input id="sms-phone" type="tel" value="${esc(sm.storePhone||"")}"
-      placeholder="031-000-0000" oninput="setSms('storePhone',this.value)">
-    <p class="f-note">실제로 문자를 보내려면 이 번호를 통신사에 미리 등록해야 합니다.
-      지금은 적어만 둡니다.</p>
+    <input id="sms-phone" type="tel" class="in-sm" value="${esc(sm.storePhone||"031-724-1004")}"
+      placeholder="031-724-1004" oninput="setSms('storePhone',this.value)">
+    <p class="f-note">실제로 문자를 보내려면 이 번호를 통신사에 미리 등록해야 합니다.</p>
 
     <div class="subhead">재안내 문자를 언제 보낼까요</div>
     <div class="seg">
       ${[2,1,0].map(o=>`<button class="${sm.remindOffset===o?'on':''}"
         onclick="setSms('remindOffset',${o})">${offsetLabel(o)}</button>`).join("")}
     </div>
-    <div class="hourpick">
+    <div class="seg" style="margin-top:8px">
       ${remindHours(sm.remindOffset).map(h=>`<button class="${sm.remindHour===h?'on':''}"
-        onclick="setSms('remindHour',${h})">${hm(pad(h)+":00")}</button>`).join("")}
+        onclick="setSms('remindHour',${h})">${hourLabel(h)}</button>`).join("")}
     </div>
     <p class="f-note">
       ${sm.remindOffset===0
@@ -421,36 +415,32 @@ function renderSettings(){
       그런 건은 예약 상세에 이유가 뜨고, 거기서 직접 보내실 수 있습니다.</p>
 
     <div class="subhead">주차 안내 <span>재안내 문자에만 들어갑니다</span></div>
-    <textarea id="sms-park" rows="3" placeholder="비워 두면 문자에 안 들어갑니다"
+    <textarea id="sms-park" rows="3" class="in-sm" placeholder="비워 두면 문자에 안 들어갑니다"
       onchange="setSms('parkingNote',this.value)">${esc(sm.parkingNote||"")}</textarea>
     <p class="f-note">주차비나 발렛이 바뀌면 여기만 고치면 됩니다.</p>
 
     <div class="subhead">문안 <span>{매장} {이름} {일시} {인원} {주차} {오늘내일} 자리에 값이 들어갑니다</span></div>
     <div class="subhead">접수 문자 문안 <span>예약을 받은 즉시</span></div>
-    <textarea id="sms-tpl-new" rows="9" onchange="setSms('tplNew',this.value)">${esc(sm.tplNew||SMS_DEFAULT.tplNew)}</textarea>
-    <div class="btn-row" style="margin:6px 0 12px"><button class="btn sm" onclick="setSms('tplNew',SMS_DEFAULT.tplNew)">기본 문안으로</button></div>
+    <textarea id="sms-tpl-new" rows="9" class="in-sm" onchange="setSms('tplNew',this.value)">${esc(sm.tplNew||SMS_DEFAULT.tplNew)}</textarea>
+    <div class="btn-row" style="margin:6px 0 12px"><button class="btn sm" onclick="setSms('tplNew',SMS_DEFAULT.tplNew)">기본 문안으로</button><button class="btn sm" onclick="previewSms('접수')">미리보기</button></div>
     <div class="subhead">재안내 문자 문안 <span>방문 전 재안내</span></div>
-    <textarea id="sms-tpl-rem" rows="12" onchange="setSms('tplRemind',this.value)">${esc(sm.tplRemind||SMS_DEFAULT.tplRemind)}</textarea>
-    <div class="btn-row" style="margin:6px 0 0"><button class="btn sm" onclick="setSms('tplRemind',SMS_DEFAULT.tplRemind)">기본 문안으로</button></div>
+    <textarea id="sms-tpl-rem" rows="12" class="in-sm" onchange="setSms('tplRemind',this.value)">${esc(sm.tplRemind||SMS_DEFAULT.tplRemind)}</textarea>
+    <div class="btn-row" style="margin:6px 0 0"><button class="btn sm" onclick="setSms('tplRemind',SMS_DEFAULT.tplRemind)">기본 문안으로</button><button class="btn sm" onclick="previewSms('재안내')">미리보기</button></div>
     <p class="f-note">{주차}는 위 주차 안내가 비어 있으면 그 줄이 통째로 빠집니다. {오늘내일}은 보내는 날 기준으로 “오늘 / 내일 / 모레” 가 들어갑니다.</p>
 
-    <div class="subhead">이렇게 나갑니다</div>
-    <div class="smsprev">
-      <div class="sp-h">접수 문자 <span>예약을 받은 즉시</span></div>
-      <div class="smsmsg">${esc(smsText(smsSample,"접수"))}</div>
-    </div>
-    <div class="smsprev">
-      <div class="sp-h">재안내 문자 <span>${esc(offsetLabel(sm.remindOffset))} ${esc(hm(pad(sm.remindHour)+":00"))}</span></div>
-      <div class="smsmsg">${esc(smsText(smsSample,"재안내",sm.remindOffset))}</div>
-    </div>
-    <p class="f-note">점선 사이가 손님께 가는 내용입니다. 점선은 화면에만 그려집니다.<br>
-      보내는 시점을 바꾸면 “모레 / 내일 / 오늘” 이 자동으로 바뀝니다.
-      유아가 있는 예약이면 인원이 “4명(유아 1명 포함)” 처럼 나갑니다.</p>
+    <p class="f-note">보내는 시점을 바꾸면 “모레 / 내일 / 오늘” 이 자동으로 바뀝니다. 어린이가 있는 예약이면 인원이 “4명(어린이 1명 포함)” 처럼 나갑니다.</p>
 
     <div class="btn-row" style="margin-top:12px">
       <button class="btn" onclick="openSmsLog()">보낸 문자 보기</button>
     </div>`;
 
+  /* 문안 옆 '미리보기' — 가짜 예약으로 채운 문자를 확인창에 */
+  window.previewSms = function(kind){
+    const smNow = { ...SMS_DEFAULT, ...(draft().sms||{}) };
+    const sample = { ...smsSample, date: shiftDate(todayStr(), smNow.remindOffset) };
+    const text = kind === "접수" ? smsText(sample, "접수") : smsText(sample, "재안내", smNow.remindOffset);
+    uiAlert(kind === "접수" ? "접수 문자 — 이렇게 나갑니다" : `재안내 문자 — ${offsetLabel(smNow.remindOffset)} ${hourLabel(smNow.remindHour)}`, text, "ok");
+  };
   const etcBody = `
     <div class="btn-row">
       <button class="btn" onclick="openNoshow()">노쇼 관리</button>
@@ -458,9 +448,9 @@ function renderSettings(){
 
   return `
     ${sec("hours","운영시간",`${hoursFor(todayStr()).open} ~ ${hoursFor(todayStr()).close}`, schedBody)}
-    ${sec("rules","예약 규칙",`단체 ${st.groupSize||8}명`, ruleBody)}
-    ${sec("seats","좌석",`룸 ${st.rooms.filter(isRoom).length} · 테이블 ${st.rooms.filter(isTable).length}`, seatBody)}
-    ${sec("course","코스 구성",`${(st.courseGroups||[]).length}행`, courseBody)}
+    ${sec("rules","예약 규칙",`단체 ${st.groupSize||8}명${schedChip("rules")}`, ruleBody)}
+    ${sec("seats","좌석",`룸 ${st.rooms.filter(isRoom).length} · 테이블 ${st.rooms.filter(isTable).length}${schedChip("seats")}`, seatBody)}
+    ${sec("course","코스·세트 구성",`${(st.courseGroups||[]).length}행${schedChip("course")}`, courseBody)}
     ${sec("source","예약경로",`${(st.sources||[]).length}개`, srcBody)}
     ${sec("sms","문자 안내",
       sm.on===false ? "안 보냄"
@@ -468,7 +458,7 @@ function renderSettings(){
       smsBodyUI)}
     ${sec("disp","디스플레이 배치",`${rows.map(r=>r.length).join(" · ")}`, dispBody)}
     ${sec("policy","운영 판단 기준",
-      `의자 ${st.chairDefault==="zero"?"0개":"유아 수"} · 정원 ${st.minCountAdultsOnly===false?"총원":"성인"} · 임박 ${st.loSoon!=null?st.loSoon:120}분`,
+      `의자 ${st.chairDefault==="infants"?"어린이 수":"0개"} · 정원 ${st.minCountAdultsOnly===false?"총원":"성인"} · 임박 ${st.loSoon!=null?st.loSoon:120}분`,
       policyBody)}
     ${sec("zoom","화면 크기",`${uiZoom()}%`, zoomBody)}
     <div class="set-divider"></div>
@@ -502,7 +492,8 @@ function adUrl(name){
 }
 function screenUrl(){
   try{
-    if(location.protocol === "file:") return location.href.split("#")[0] + `#/screen/${view.storeKey}`;
+    /* 로컬(127.0.0.1·file:)에서 열어도 TV 에 넣을 주소는 실제 배포 주소여야 합니다(재아) */
+    if(/^(127\.|localhost|file:)/.test(location.host || location.protocol)) return "https://jaealee.com/test/hanok/v7/screen/";
     return location.origin + appDir() + "/screen/";
   }catch(e){ return "/screen/"; }
 }
@@ -683,3 +674,9 @@ async function addSource(){
   render();
 }
 function delSource(x){ const st=draft(); st.sources=(st.sources||[]).filter(s=>s!==x); render(); }
+
+/* 묶음 제목 옆 "9월 22일부터 바뀜" — 예정이 걸려 있으면 */
+function schedChip(group){
+  const l = schedFor(group, store().settings);
+  return l.length ? ` <span class="pill amber" onclick="event.stopPropagation(); openScheduled()">${esc(dateLabel(l[0].from))}${l[0].to?" ~":""}부터 바뀜${l.length>1?` 외 ${l.length-1}`:""}</span>` : "";
+}

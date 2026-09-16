@@ -19,7 +19,7 @@ var CHANGE_FIELDS = [
   {k:"date",     n:"날짜",   f:function(v){ return v ? dateLabel(v) : "-"; }},
   {k:"time",     n:"시간",   f:function(v){ return v ? hm(v) : "-"; }},
   {k:"people",   n:"인원",   f:function(v){ return (v||0)+"명"; }},
-  {k:"infants",  n:"유아",   f:function(v){ return (v||0)+"명"; }},
+  {k:"infants",  n:"어린이",   f:function(v){ return (v||0)+"명"; }},
   {k:"chairs",   n:"유아의자", f:function(v){ return (v||0)+"개"; }},
   {k:"roomId",   n:"좌석",   f:function(v){ return v ? seatLabel(v) : "미배정"; }},
   {k:"seatPref", n:"좌석 희망", f:function(v){ return v ? seatLabel(v) : "-"; }},   /* 지하 → 1층 처럼 층만 바꾼 것도 변동입니다(11월 점검) */
@@ -42,7 +42,7 @@ function diffRes(a, b){
   /* 코스는 개수 묶음이라 따로 비교합니다 */
   var ca = courseSummary(a && a.courses) || (a && a.courseUndecided ? "미정" : "");
   var cb = courseSummary(b && b.courses) || (b && b.courseUndecided ? "미정" : "");
-  if(ca !== cb) out.push({n:"코스", a:ca||"없음", b:cb||"없음"});
+  if(ca !== cb) out.push({n:"코스·세트", a:ca||"없음", b:cb||"없음"});
   return out;
 }
 

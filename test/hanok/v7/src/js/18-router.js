@@ -534,3 +534,26 @@ function renderTvGrid(){
         <footer class="tv-f">찾아주셔서 감사합니다</footer>
       </div>`;
 }
+
+/* 화면이 처음 그려질 때 예정 설정을 흡수합니다(불러온 직후) */
+setTimeout(function(){ try{ if(AUTHED && DATA && view.storeKey){ absorbScheduled(); if(typeof pullRequests === "function"){ pullRequests().then(function(n){ if(n) render(); }); publishAvail(true); } } }catch(e){} }, 1500);
+
+/* 시트·마법사 어디서든: Enter = 그 창의 확인·등록 단추(data-enter 가 있으면 그것, 없으면 .btn.primary 하나뿐일 때만),
+   Esc = 닫기. 여러 줄 입력(textarea) 안에서 Enter 는 줄바꿈이라 건드리지 않습니다. '이전' 은 일부러 안 묶습니다(재아) */
+document.addEventListener("keydown", function(e){
+  if(e.key === "Escape"){
+    if(document.querySelector(".modal-ov")) return;   /* 확인창은 자기 Esc 처리가 있음 */
+    if(view.form){ e.preventDefault(); closeSheet(); }
+    else if(view.moreOpen){ closeMore(); }
+    return;
+  }
+  if(e.key !== "Enter" || e.ctrlKey || e.altKey || e.isComposing) return;
+  const t = e.target;
+  if(t && (t.tagName === "TEXTAREA" || t.tagName === "BUTTON" || t.tagName === "A" || t.isContentEditable)) return;
+  if(document.querySelector(".modal-ov")) return;
+  const sheet = document.querySelector(".sheet");
+  if(!sheet) return;
+  let btn = sheet.querySelector("[data-enter]:not(:disabled)");
+  if(!btn){ const ps = sheet.querySelectorAll(".sheet-actions .btn.primary:not(:disabled)"); if(ps.length === 1) btn = ps[0]; }
+  if(btn){ e.preventDefault(); btn.click(); }
+});

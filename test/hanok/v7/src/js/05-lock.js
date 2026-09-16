@@ -114,7 +114,7 @@ async function lockNow(){
   if(!await flushBeforeLeave()) return;
   resetOverlays();
   logEvent("잠금", "");
-  AUTHED=false; PIN_BUF=""; PIN_ERR=""; view.storeKey=null; view.draft=null;
+  AUTHED=false; PIN_BUF=""; PIN_ERR=""; view.storeKey=null; view.draft=null; view.adminOk=false;
   DATA._session = {authed:false};
   sessionClear(); OFFLINE = null;
   saveData(); render();

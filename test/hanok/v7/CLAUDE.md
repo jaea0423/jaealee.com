@@ -52,6 +52,7 @@ python build.py dev    # dev  → dev/index.html, dev/screen/index.html
 - 흉내 표시(`.mockbar` `.sb-mock` `.lk-open`) 지우지 마세요
 - 나타났다 사라지는 요소는 **자리를 미리 잡아 두고 보이기만** 바꾸기
 - **예약 객체 모양을 바꾸지 않습니다.** 행 ↔ 객체 변환은 `rowToRes` / `resToRow` 두 함수에서만
+- **날짜가 정해진 계산은 `store().settings` 말고 `settingsAt(date)`(좌석은 `roomsAt(date)`·`joinsAt(date)`, 코스는 `courseGroups(date)`)** — 예정 설정(`03b-scheduled.js`)이 그 날짜에 유효한 값을 돌려줍니다. id 로 좌석을 찾을 땐 `seatById`(예정 좌석까지 찾음)
 - supabase-js · Realtime · Edge Function 안 씀. `fetch` 로 REST·Auth 직접 호출(`sb()` 헬퍼 하나)
 - service_role 키는 어떤 파일에도 쓰지 않음(build.py 가 막음). PIN 은 화면 4자리, 서버 비밀번호 = PIN+"00"
 

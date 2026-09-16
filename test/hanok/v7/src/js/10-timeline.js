@@ -59,7 +59,7 @@ function renderTimeline(date, compact){
                     :`지금 ${hm(nowHM())}`}"></span>` : "";
 
   const blockLabel = r =>
-    `<b>${esc(r.time)}</b> ${esc(r.name)} ${pplOf(r)}명${r.infants?`(유아${r.infants})`:""}`;
+    `<b>${esc(r.time)}</b> ${esc(r.name)} ${pplOf(r)}명${r.infants?`(어린이${r.infants})`:""}`;
 
   /* 좌석 이름 칸에 붙는 사용 중지 요약 — 빗금 위 글자가 예약에 가려도 여기서는 보입니다 */
   const blockTag = (seat)=>{
@@ -80,7 +80,7 @@ function renderTimeline(date, compact){
     const s = Math.max(o, sp.s), e = Math.min(c, sp.e);
     if(e <= s) return "";
     return `<span class="blockband" style="left:${pos(s)}%; width:${((e-s)/span)*100}%"
-      title="사용 중지 · ${esc(spanLabel(sp))}${sp.note?` · ${esc(sp.note)}`:""}"></span>`;
+      title="사용 중지 · ${esc(spanLabel(sp))}${sp.note?` · ${esc(sp.note)}`:""}"><i class="bb-l">사용 중지${sp.note?` (${esc(sp.note)}${sp.allDay?"":" · "+esc(spanLabel(sp))})`:` (${esc(spanLabel(sp))})`}</i></span>`;
   }).join("");
 
   /* ---------- 룸 ---------- */
@@ -128,7 +128,7 @@ function renderTimeline(date, compact){
     </div>`;
   };
 
-  const rooms = st.rooms.filter(isRoom);
+  const rooms = roomsAt(date).filter(isRoom);   /* 그 날짜의 좌석(예정 반영) */
   const groupRow = (label) => `<div class="tl-row group"><div class="tl-name"><b>${esc(label)}</b></div><div class="tl-track"></div><div class="tl-rate"></div></div>`;
   /* 테이블은 층 한 줄 — 겹치는 예약을 층(lane)으로 쌓고, 예약률은 손님 수 / 자리 수 (8차-H) */
   const floorRow = (fl)=>{
@@ -172,7 +172,7 @@ function renderTimeline(date, compact){
     const used = items.reduce((a,x)=>a+x.need*(x.e0-x.s0),0);
     const rate = tbls.length ? Math.min(100, Math.round(used/(tbls.length*span)*100)) : 0;
     const bands = (fl==null ? "" : floorTables(fl).map(blockBands).join(""))
-      + (over ? `<div class="offband overlane" style="left:0; right:0; top:0; height:${LANE}px" title="테이블 수를 넘은 팀이 놓이는 칸"></div>` : "");
+      + (over ? `<div class="offband overlane" style="left:0; right:0; top:0; height:${LANE}px" title="테이블 수를 넘은 팀이 놓이는 칸"><i class="ol-l">자리 없음 ${over}팀 — 테이블 수를 넘은 예약</i></div>` : "");
     return `<div class="tl-row tbl floor">
       <div class="tl-name"><b>${fl==null?"층 미정":esc(floorLabel(fl))}</b><small>${fl==null?"":`테이블 ${tbls.length} · ${seats}석`}</small></div>
       <div class="tl-track" style="height:${totalLanes*LANE}px; background-image:repeating-linear-gradient(to top, transparent 0, transparent ${LANE-1}px, var(--border) ${LANE-1}px, var(--border) ${LANE}px)">${layers}${bands}${blocks}</div>

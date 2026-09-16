@@ -39,11 +39,11 @@ function sheetNaver(){
       예약번호로 같은 예약을 찾아 고치고, 없으면 새로 넣습니다. 전화번호는 네이버가 뒷자리만 주어 메모에만 남습니다.</p>
     <textarea id="naver-paste" rows="7" placeholder="여기에 붙여 넣으세요 (머리글 줄 포함, 안내 문장이 섞여 있어도 됩니다)" oninput="view.naver={text:this.value, result:null}">${esc(n.text)}</textarea>
     <div class="btn-row" style="margin-top:8px">
-      <button class="btn" onclick="naverPreview()">미리보기</button>
-      ${n.result ? `<button class="btn primary" onclick="naverApply()" ${cnt("new")+cnt("update")?"":"disabled"}>새로 ${cnt("new")} · 고침 ${cnt("update")} 적용</button>` : ""}
+      <button class="btn" data-enter onclick="naverPreview()">확인</button>
+      ${n.result ? `<button class="btn primary" data-enter onclick="naverApply()" ${cnt("new")+cnt("update")?"":"disabled"}>신규 ${cnt("new")}건 · 수정 ${cnt("update")}건 · 등록</button>` : ""}
+      <button class="btn ghost" style="margin-left:auto" onclick="closeSheet()">닫기</button>
     </div>
-    ${res}
-    <div class="sheet-actions"><button class="btn ghost" onclick="closeSheet()">닫기</button></div>`;
+    ${res}`;
 }
 /* '26. 8. 17.(월) 오후 12:00' → {date:"2026-08-17", time:"12:00"} */
 function naverWhen(s){
@@ -184,9 +184,9 @@ async function naverApply(){
       reflowTentatives(ex.date); updated++;
     }
   });
-  logEvent("네이버 가져오기", `새로 ${added} · 고침 ${updated}`);
+  logEvent("네이버 가져오기", `신규 ${added} · 수정 ${updated}`);
   view.naver = null; view.form = null; saveData(); render();
-  uiAlert("네이버 예약 가져오기 완료", `새로 ${added}건, 고침 ${updated}건. 룸 예약은 '룸 미정' 으로 들어와 잠정 배정이 잡습니다 — 좌석 미정 목록에서 확정하세요.`, "ok");
+  uiAlert("네이버 예약 가져오기 완료", `신규 ${added}건, 수정 ${updated}건. 룸 예약은 '룸 미정' 으로 들어와 잠정 배정이 잡습니다 — 좌석 미정 목록에서 확정하세요.`, "ok");
 }
 
 function openNoshow(){ view.form={type:"noshow"}; render(); }
@@ -203,7 +203,7 @@ function sheetPinList(){
     <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">닫기</button></div>`;
 }
 function openAdminPw(){ view.form={type:"apw"}; render(); }
-function openLogs(){ view.form={type:"logs"}; render(); }
+async function openLogs(){ if(!await adminGate("접속 기록")) return; view.form={type:"logs"}; render(); }
 function openSmsLog(){ view.form={type:"smslog"}; view.smsOpen = {}; render(); }
 /* 예약률 시트는 자기 커서(view.rateEnd)로 주를 옮깁니다. 6차 전에는 moveDate(±7) 로 메인 날짜를 밀어서
    시트를 닫으면 대시보드가 엉뚱한 주에 가 있었습니다. 열 때 view.date 로 시작하고 닫으면 view.date 는 그대로 */
@@ -254,8 +254,9 @@ function toastSaved(rec){
 }
 
 function renderSheet(){
-  const inner = { res:sheetRes, mark:sheetMark, unassigned:sheetUnassigned, pick:sheetPick, check:sheetCheck, search:sheetSearch, num:sheetNum, noshow:sheetNoshow, pin:sheetPin, apw:sheetAdminPw, hours:sheetHours, tedit:sheetTableEdit, naver:sheetNaver, setlog:sheetSetLog, pinlist:sheetPinList, zoomadj:sheetZoomAdj, logs:sheetLogs, smslog:sheetSmsLog, smsfree:sheetSmsFree, rate:sheetRate, sched:sheetSchedule, ovr:sheetOverride, blocks:sheetBlocks /*, staff:sheetStaff, att:sheetAtt, sale:sheetSale */ }[view.form.type]();
-  const wide = view.form.type==="rate" ? " sheet-wide" : "";
+  const inner = { res:sheetRes, mark:sheetMark, unassigned:sheetUnassigned, pick:sheetPick, check:sheetCheck, search:sheetSearch, num:sheetNum, noshow:sheetNoshow, pin:sheetPin, apw:sheetAdminPw, hours:sheetHours, tedit:sheetTableEdit, naver:sheetNaver, setlog:sheetSetLog, pinlist:sheetPinList, zoomadj:sheetZoomAdj, logs:sheetLogs, smslog:sheetSmsLog, smsfree:sheetSmsFree, rate:sheetRate, sched:sheetSchedule, ovr:sheetOverride, blocks:sheetBlocks, reqs:sheetRequests, req:sheetRequest, sched2:sheetScheduled /*, staff:sheetStaff, att:sheetAtt, sale:sheetSale */ }[view.form.type]();
+  /* 검색은 창 높이를 고정해 두고 결과만 안에서 스크롤 — 칠 때마다 창이 늘었다 줄었다 하지 않게(재아) */
+  const wide = view.form.type==="rate" ? " sheet-wide" : ((view.form.type==="search" || view.form.type==="reqs") ? " sheet-tall" : "");
   if(view.form.page) return `<div class="sheet page-sheet">${inner}</div>`;   /* 화면형: 덮개 없이 본문 자리에 */
   return `<div class="overlay" onclick="closeSheet()"><div class="sheet${wide}" onclick="event.stopPropagation()">${inner}</div></div>`;
 }
@@ -281,10 +282,10 @@ function sheetRes(){
   /* 룸 / 테이블 / 합침 묶음. 합침은 대표+extraIds 로 저장되며 select 값은 그룹 id */
   const curJoin = (f.extraIds||[]).length ? joinOf([f.roomId].concat(f.extraIds)) : null;
   const opt = (v, label, sel) => `<option value="${v}" ${sel?'selected':''}>${label}</option>`;
-  const roomOpts = `<optgroup label="룸">${st.rooms.filter(isRoom).map(r=>opt(r.id, `${esc(r.name)} · ${roomMin(r, f.date)}~${r.capacity}인`, !curJoin && f.roomId===r.id)).join("")}</optgroup>` +
-    `<optgroup label="룸 합침">${(st.joins||[]).map(j=>opt(j.id, `${esc(seatLabel(j.id))} · ${j.min}~${j.max}인`, !!curJoin && curJoin.id===j.id)).join("")}</optgroup>` +
+  const roomOpts = `<optgroup label="룸">${roomsAt(f.date).filter(isRoom).map(r=>opt(r.id, `${esc(r.name)} · ${roomMin(r, f.date)}~${r.capacity}인`, !curJoin && f.roomId===r.id)).join("")}</optgroup>` +
+    `<optgroup label="룸 합침">${joinsAt(f.date).map(j=>opt(j.id, `${esc(seatLabel(j.id))} · ${j.min}~${j.max}인`, !!curJoin && curJoin.id===j.id)).join("")}</optgroup>` +
     `<optgroup label="테이블 (층만)">${tableFloors().map(fl=>opt("table:"+fl, `${esc(floorLabel(fl))} · 자리 ${floorSeats(fl)}석`, !f.roomId && f.seatPref==="table:"+fl)).join("")}</optgroup>` +
-    `<optgroup label="특정 테이블 (파셜룸 등 꼭 잡아야 할 때)">${st.rooms.filter(isTable).map(r=>opt(r.id, `${esc(r.floor||"")} ${esc(r.name)} · ${roomMin(r)?roomMin(r)+"~":""}${seatMax(r)}인`, !curJoin && f.roomId===r.id)).join("")}</optgroup>` +
+    `<optgroup label="특정 테이블 (파셜룸 등 꼭 잡아야 할 때)">${roomsAt(f.date).filter(isTable).map(r=>opt(r.id, `${esc(r.floor||"")} ${esc(r.name)} · ${roomMin(r)?roomMin(r)+"~":""}${seatMax(r)}인`, !curJoin && f.roomId===r.id)).join("")}</optgroup>` +
     ((f.extraIds||[]).length && !curJoin ? `<optgroup label="현재">${opt("__keep", esc(seatLabelIds([f.roomId].concat(f.extraIds))) + " (붙임 유지)", true)}</optgroup>` : "");
   const srcs = [...new Set([...(st.sources||["전화 예약","네이버 예약","기타"]), f.source||"전화 예약"])];
   const srcSeg = srcs.map(x=>`<button class="${f.source===x?'on':''}" onclick="pickSource('${jsq(x)}')">${esc(x)}</button>`).join("");
@@ -303,12 +304,12 @@ function sheetRes(){
   const cAd = adultCount(pplOf(f), f.infants||0);
   /* 룸은 코스 주문을 전제로 받는 자리입니다 — 막지 않고 알리기만 합니다 */
   const menuWarn = seatIsRoom && (
-    f.menuType==="해당 없음" ? "룸 예약에 코스 이용 예정 손님이 아닙니다" :
+    f.menuType==="해당 없음" ? "룸 예약에 코스·세트 이용 예정 손님이 아닙니다" :
     f.menuType==="확인 필요" ? "" :
     (f.menuType==="코스" && !f.courseUndecided && cN>0 && cN<cAd)
-      ? `코스 ${cN}인분 · 성인 ${cAd}명보다 적습니다` : "");
+      ? `코스·세트 ${cN}인분 · 성인 ${cAd}명보다 적습니다` : "");
   const menuSeg = menuOpts.map(x=>
-    `<button class="${f.menuType===x?'on':''}" onclick="pickMenuType('${x}')">${x}</button>`).join("");
+    `<button class="${f.menuType===x?'on':''}" onclick="pickMenuType('${x}')">${x==="코스"?"코스·세트":x}</button>`).join("");
 
   return `
     ${sheetHead(editing?"예약 내용 수정":"빠른 입력")}
@@ -325,9 +326,9 @@ function sheetRes(){
       <label class="f"><div class="lb">전화번호</div><input id="f-phone" type="tel" inputmode="numeric" value="${esc(f.phone)}" placeholder="010-0000-0000"></label>
     </div>
     <div class="grid2">
-      <label class="f"><div class="lb">총 인원 (유아 포함)</div>
+      <label class="f"><div class="lb">총 인원 (어린이 포함)</div>
         <input id="f-people" type="number" min="1" value="${pplOf(f)}"></label>
-      <label class="f"><div class="lb">유아</div>
+      <label class="f"><div class="lb">어린이</div>
         <input id="f-infants" type="number" min="0" value="${f.infants||0}"></label>
     </div>
     <label class="f"><div class="lb">유아용 의자</div>
@@ -344,7 +345,7 @@ function sheetRes(){
       <div class="seg">${menuSeg}</div>
       ${f.menuType==="코스"?`
         <div class="course-sum" style="margin-top:10px">
-          <span>${f.courseUndecided ? "코스 미정 — 방문 전 확정"
+          <span>${f.courseUndecided ? "코스·세트 미정 — 방문 전 확정"
             : (cN?`${esc(courseSummary(f.courses))}`:"구성을 고르세요")}</span>
           <button class="btn sm" style="margin-left:auto" onclick="openCourse()">${cN||f.courseUndecided?"수정":"선택"}</button>
         </div>`:""}
@@ -450,14 +451,14 @@ function saveIssues(rec, excludeId){
     if(j && j.note) out.push(`${label}: ${j.note}`);
   }
   /* 경고 판정(resWarn)과 같은 기준으로 — 여기서 안 물어본 것이 저장 뒤 '경고 예약'으로 뜨면 사장님이 놀랍니다.
-     (재아 발견: 유아를 총 인원까지 올려 저장하니 경고는 붙는데 확인창이 없었음 — '성인 없음' 이 빠져 있었습니다)
+     (재아 발견: 어린이를 총 인원까지 올려 저장하니 경고는 붙는데 확인창이 없었음 — '성인 없음' 이 빠져 있었습니다)
      시각·좌석 겹침·정원은 위에서 자세한 문장으로 이미 넣었으므로 나머지만 옮깁니다 */
   const words = {
-    "성인 없음": `유아 ${rec.infants||0}명이 총 인원 ${pplOf(rec)}명과 같습니다 — 성인이 없습니다`,
-    "유아의자 초과": `유아용 의자 ${rec.chairs||0}개가 유아 ${rec.infants||0}명보다 많습니다`,
-    "룸·코스 아님": `룸 예약인데 식사가 '해당 없음' 입니다`,
-    "코스 미확정": `코스가 '확인 필요' 상태입니다`,
-    "코스 인원 부족": `코스 인원이 성인 수보다 적습니다`,
+    "성인 없음": `어린이 ${rec.infants||0}명이 총 인원 ${pplOf(rec)}명과 같습니다 — 성인이 없습니다`,
+    "유아의자 초과": `유아용 의자 ${rec.chairs||0}개가 어린이 ${rec.infants||0}명보다 많습니다`,
+    "룸·코스·세트 아님": `룸 예약인데 식사가 '해당 없음' 입니다`,
+    "코스·세트 미확정": `코스·세트가 '확인 필요' 상태입니다`,
+    "코스·세트 인원 부족": `코스·세트 인원이 성인 수보다 적습니다`,
     "2인석 배정": `4인석이 없어 2인석에 앉게 됩니다 (2인석은 좁습니다)`,
     "테이블 자리 없음": `${seatLabel(rec.seatPref)}에 그 시간 ${pplOf(rec)}명이 앉을 자리가 없습니다 (한 자리 최대 ${floorMaxParty(prefFloor(rec.seatPref), rec.date, rec.time, excludeId)}명)`,
     "나눠 앉음": `${seatLabel(rec.seatPref)}에 붙일 수 있는 테이블이 없어 나눠 앉게 됩니다 (한 자리 최대 ${floorMaxParty(prefFloor(rec.seatPref), rec.date, rec.time, excludeId)}명)`
@@ -468,9 +469,9 @@ function saveIssues(rec, excludeId){
     rec.tentativeRoomId = ff.f ? ff.f.id : null; rec.tentativeExtra = ff.f ? ff.f.extra : []; rec.tentativeSplit = ff.state === "split";
   }
   resWarn(rec).forEach(k => { if(words[k]) out.push(words[k]); });
-  if((rec.infants||0) > pplOf(rec)) out.push(`유아 ${rec.infants}명이 총 인원 ${pplOf(rec)}명보다 많습니다`);
+  if((rec.infants||0) > pplOf(rec)) out.push(`어린이 ${rec.infants}명이 총 인원 ${pplOf(rec)}명보다 많습니다`);
   if(rec.menuType === "코스" && !rec.courseUndecided && !Object.keys(rec.courses||{}).some(k=>rec.courses[k] > 0))
-    out.push("코스인데 구성이 비어 있습니다 — '코스 미정' 으로 두거나 구성을 넣으세요");
+    out.push("코스·세트인데 구성이 비어 있습니다 — '코스·세트 미정' 으로 두거나 구성을 넣으세요");
   return out;
 }
 async function saveRes(){
@@ -482,7 +483,7 @@ async function saveRes(){
   if(!/^\d{4}-\d{2}-\d{2}$/.test(f.date||"")) return uiAlert("날짜를 입력하세요","","warn");
   if(!f.time) return uiAlert("시간을 입력하세요","","warn");
   if(!(f.people > 0)) return uiAlert("인원을 입력하세요","1명 이상이어야 합니다","warn");
-  /* 유아 > 총원은 마법사처럼 막지 않고 아래 saveIssues 에서 경고만 합니다(점검 R8 — 2-4 원칙) */
+  /* 어린이 > 총원은 마법사처럼 막지 않고 아래 saveIssues 에서 경고만 합니다(점검 R8 — 2-4 원칙) */
   const old = view.form.id ? s.reservations.find(r=>r.id===view.form.id) : null;
   const rec = {
     ...(old||{}),
@@ -658,7 +659,7 @@ function sheetMark(){
     const kind = r.seatPref==="hall-any" ? "table-any" : (r.seatPref||"any");
     const ppl = pplOf(r);
     /* 후보: 룸 또는 테이블(희망 종류) + 인원에 맞는 룸 합침 그룹. 붙일 테이블은 잠정 배정이 이미 골라 둔 것(tentativeExtra)만 */
-    let cand = st.rooms.filter(x=>{
+    let cand = roomsAt(r.date).filter(x=>{
       if(kind==="table-any" && !isTable(x)) return false;
       if(kind==="room-any" && !isRoom(x)) return false;
       return ppl <= seatMax(x);
@@ -668,7 +669,7 @@ function sheetMark(){
       const waste = (ppl <= 2 && isTable(x) && (x.seats||4) >= 4) ? -1 : (seatMax(x) - ppl);
       return {x, ok, first, waste, ids:[x.id]};
     });
-    if(kind!=="table-any") (st.joins||[]).filter(j=>ppl>=j.min && ppl<=j.max).forEach(j=>{
+    if(kind!=="table-any") joinsAt(r.date).filter(j=>ppl>=j.min && ppl<=j.max).forEach(j=>{
       const ok = j.ids.every(id=>roomStatus(r.date,r.time,id,r.id).state==="free");
       cand.push({x:{id:j.id, name:seatLabel(j.id).replace(/ 룸$/,""), type:"join", note:j.note}, ok, first:false, waste:j.max-ppl, ids:j.ids});
     });
@@ -1385,6 +1386,17 @@ async function saveBlock(){
   if(!d.allDay && d.fromTime && d.toTime && (d.openEnded || (d.to||d.from) === d.from) && d.toTime <= d.fromTime)
     return uiAlert("종료 시각이 시작 시각보다 빠릅니다","","warn");
 
+  /* 이미 사용 중지인 구간과 겹치면 넣지 않습니다 — 겹친 구간이 둘이면 나중에 하나만 지워도 남아서 헷갈립니다(재아) */
+  const dup = (room.blocks||[]).find(function(b){
+    if(b.id === d.id) return false;
+    const aS = d.from, aE = d.openEnded ? "9999-12-31" : (d.to || d.from);
+    const bS = b.from, bE = b.openEnded ? "9999-12-31" : (b.to || b.from);
+    if(aE < bS || bE < aS) return false;              /* 날짜가 안 겹침 */
+    if(d.allDay || b.allDay) return true;              /* 하루 종일이면 겹침 */
+    if(aS !== aE || bS !== bE) return true;            /* 여러 날짜면 사이 날이 종일이라 겹침 */
+    return !(d.toTime <= b.fromTime || b.toTime <= d.fromTime);   /* 같은 날 시각 비교 */
+  });
+  if(dup) return uiAlert("이미 사용 중지가 있습니다", `${dup.from}${dup.openEnded?" ~ (기한 없음)":dup.to&&dup.to!==dup.from?` ~ ${dup.to}`:""}${dup.allDay?" 하루 종일":` ${hm(dup.fromTime)} ~ ${hm(dup.toTime)}`}${dup.note?` · ${dup.note}`:""}\n\n겹치는 기간은 넣을 수 없습니다. 기존 것을 고치거나 지운 뒤 다시 넣으세요.`, "warn");
   const hits = blockHits(room, d);
   if(hits.length){
     const lines = hits.slice(0,6).map(function(r){

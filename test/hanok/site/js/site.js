@@ -27,10 +27,9 @@
   mnav.innerHTML = `<a href="index.html">홈</a>` + L.map(([h,k,l])=>`<a href="${h}">${l}</a>`).join("") + `<a href="#" data-reserve>예약</a><a href="tel:${INFO.tel}">전화 ${esc(INFO.tel)}</a>`;
   header.after(mnav);
   header.querySelector(".burger").addEventListener("click", () => mnav.classList.toggle("open"));
-  /* 폰 하단 고정 바 — 차림 · 위치 · 예약이 어디서든 한 번에 */
-  const mbar = document.createElement("nav"); mbar.className = "mbar";
-  mbar.innerHTML = `<a href="menu.html">차림</a><a href="visit.html">오시는 길</a><a href="#" data-reserve>예약</a>`;
-  document.body.append(mbar);
+  /* 폰: 오른쪽 아래 동그란 '예약' 단추 (차림·오시는 길은 위 메뉴에) */
+  const fab = document.createElement("button"); fab.type = "button"; fab.className = "fab"; fab.setAttribute("data-reserve", ""); fab.textContent = "예약";
+  document.body.append(fab);
 
   /* ---------- 바닥 ---------- */
   const foot = document.createElement("footer");
@@ -51,7 +50,11 @@
     const force = /[?&]notice=1/.test(location.search);
     if(!force && /[?&]shot(?!=notice)/.test(location.search)) return;
     const t = new Date(); const ymd = t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,"0")+"-"+String(t.getDate()).padStart(2,"0");
-    /* '오늘 하루' 는 localStorage(날짜), 그냥 닫기는 sessionStorage(이 방문 동안) */
+    /* '오늘 하루' 는 localStorage(날짜). 그냥 닫기는 sessionStorage — 다른 장으로 옮겨도 안 뜨지만, 새로고침이면 다시 뜨게 지웁니다 */
+    try{
+      const nav = performance.getEntriesByType && performance.getEntriesByType("navigation")[0];
+      if(nav && nav.type === "reload") Object.keys(sessionStorage).filter(k => k.indexOf("hanok-pop-") === 0).forEach(k => sessionStorage.removeItem(k));
+    }catch(e){}
     const hidden = id => { try{ return localStorage.getItem("hanok-pop-"+id) === ymd || sessionStorage.getItem("hanok-pop-"+id) === "1"; }catch(e){ return false; } };
     const show = list.filter(n => (!n.until || ymd <= n.until) && (force || !hidden(n.id)));
     if(!show.length) return;

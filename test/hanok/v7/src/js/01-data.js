@@ -10,7 +10,7 @@ const STORAGE_KEY = "hanok-admin-v2";
 var SMS_DEFAULT = {
   on:true,
   skipNaver:true,         /* 네이버 예약은 네이버가 문자를 보내므로 우리는 안 보냄(재아) */
-  storePhone:"",          /* 발신번호 — 문자에 찍히는 번호. 실제 발송을 붙일 때 필요합니다 */
+  storePhone:"031-724-1004",   /* 발신번호 — 매장 번호. 실제 발송을 붙일 때 통신사에 등록 */
   remindOffset:0,         /* 재안내를 며칠 전에 — 2 | 1 | 0(당일) */
   remindHour:9,           /* 그날 몇 시에 */
   parkingNote:"※ 주차 안내\n주차장 이용 가능합니다. 주차비 1,000원이며 발렛은 무료입니다.",

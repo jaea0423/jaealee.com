@@ -139,14 +139,14 @@ function logEvent(action, detail){
   saveData();
 }
 
-/* 총 인원 — 유아를 포함한 값. 옛 기록(성인+유아 분리)도 함께 처리 */
+/* 총 인원 — 어린이를 포함한 값. 옛 기록(성인+어린이 분리)도 함께 처리 */
 /* 총 인원. 옛 데이터는 people 없이 adults+infants 로 저장돼 있어 그때만 더해 씁니다.
    (예전에는 자기 자신을 다시 부르게 돼 있어 people 이 없으면 무한 재귀로 멈췄습니다) */
 function pplOf(r){ return r.people != null ? r.people : ((r.adults||0) + (r.infants||0)); }
-/* 인원 표기 — "6명 (유아 1명 포함)" */
+/* 인원 표기 — "6명 (어린이 1명 포함)" */
 function pplText(r){
   const n = pplOf(r), i = r.infants||0;
-  return i ? `${n}명(유아${i})` : `${n}명`;
+  return i ? `${n}명(어린이${i})` : `${n}명`;
 }
 
 /* ---------- 좌석 판정 (체류시간 기준) ---------- */
@@ -307,7 +307,8 @@ function stayOf(r){ return stayMinAt(r.date, r.time, effSeat(r) || r.seatPref); 
    룸: minCapacity(최적=최소) ~ capacity(최대). 테이블: seats(기본) ~ capacity(있으면, 여포 5) / 최소는 minCapacity(여포 4) 아니면 없음 */
 function isRoom(x){ return !!x && x.type === "room"; }
 function isTable(x){ return !!x && (x.type === "table" || x.type === "hall"); }
-function seatById(id){ const st = store().settings; return (st.rooms||[]).find(x=>x.id===id) || null; }
+/* id 로 좌석 찾기 — 지금 좌석에 없으면 예정 좌석에서도 찾습니다(예정 날짜의 예약이 그 좌석을 가리킬 수 있음) */
+function seatById(id){ const st = store().settings; return (st.rooms||[]).find(x=>x.id===id) || allSeatsEver().find(x=>x.id===id) || null; }
 /* 주말·공휴일이면 true (공휴일을 주말로 볼지는 설정) */
 function isWeekendDay(date){ if(!date) return false; const dow = new Date(date+"T00:00:00").getDay(); return dow===0 || dow===6 || (store().settings.holidayAsWeekend!==false && isHoliday(date)); }
 /* 룸 최소 인원 — 날짜를 주면 주말·공휴일은 minWeekend(있으면). 테이블은 minCapacity 없으면 0 */
@@ -343,14 +344,14 @@ function seatsMin(ids, date){
 }
 function sameIds(a, b){ if(!a || !b || a.length !== b.length) return false; const x = a.slice().sort(), y = b.slice().sort(); return x.every((v,i)=>v===y[i]); }
 /* 합침 그룹 찾기 */
-function joinOf(ids){ return (store().settings.joins||[]).find(g=>sameIds(g.ids, ids)) || null; }
+function joinOf(ids){ return allJoinsEver().find(g=>sameIds(g.ids, ids)) || null; }
 /* ---------- 테이블은 층 단위 (8차-H) ----------
    홀은 그날 남는 자리에 앉히는 곳이라 테이블을 미리 정해도 현장에서 지켜지지 않습니다.
    그래서 예약은 '1층 테이블 / 지하 테이블' 까지만 받고, 시스템은 층의 자리 수(테이블 인원 합)와
    같은 시간에 겹치는 손님 수로 '자리 부족' 만 알립니다. 특정 테이블 배정은 수정 시트에서만(파셜룸 등). */
 function isTablePref(p){ return p === "table-any" || p === "hall-any" || /^table:/.test(p || ""); }
 function prefFloor(p){ return /^table:/.test(p || "") ? p.slice(6) : null; }
-function floorTables(fl){ return (store().settings.rooms || []).filter(t => isTable(t) && (fl == null || (t.floor || "") === (fl || ""))); }   /* fl == null → 전체 */
+function floorTables(fl, date){ return (date ? roomsAt(date) : (store().settings.rooms || [])).filter(t => isTable(t) && (fl == null || (t.floor || "") === (fl || ""))); }   /* fl == null → 전체. date 를 주면 그 날짜의 좌석 */
 /* 예약이 쓰는 테이블 층. 룸이면 undefined, 층 미정 테이블이면 null */
 function resFloor(r){
   if(r.roomId){ const x = seatById(r.roomId); return x && isTable(x) ? (x.floor || "") : undefined; }
@@ -444,9 +445,9 @@ function adultCount(people, infants){
     ? (people||0) : Math.max(0,(people||0)-(infants||0));
 }
 /* 마지막으로 예약을 받을 수 있는 시각 */
-/* 유아용 의자 기본값을 유아 수로 채울지(true) 0개로 둘지(false). 설정에서 바꿉니다 */
-function chairDefaultInfants(){ return store().settings.chairDefault !== "zero"; }
-/* 자리 기준을 성인만으로 볼지, 유아를 포함해 볼지 */
+/* 유아용 의자 기본값을 어린이 수로 채울지(true) 0개로 둘지(false). 설정에서 바꿉니다 */
+function chairDefaultInfants(){ return store().settings.chairDefault === "infants"; }   /* 기본 0개(재아). 설정에서 '어린이 수와 같게' 를 고르면 따라감 */
+/* 자리 기준을 성인만으로 볼지, 어린이를 포함해 볼지 */
 function seatCountsInfants(){ return store().settings.minCountAdultsOnly === false; }
 
 /* 마지막으로 예약(입장)을 받을 수 있는 시각 — 그 시각이 속한 세션의 lastBook. 라스트오더(주방 마감)와는 다릅니다 */
@@ -553,7 +554,7 @@ function findSeat(o){
   /* 잠정만 있는 자리(그 팀이 다른 데로 갈 수 있을 때)도 후보로 — 단 잠정 재계산(strict)에서는 안 씁니다.
      재계산은 시간순으로 한 팀씩 자리를 잡는데, 앞 팀의 잠정을 '비켜줄 수 있다' 며 같은 자리를 또 주면 두 잠정이 한 자리에 겹쳐 보였습니다 */
   const freeLoose = id => !o.strict && o.excludeSeat !== id && roomStatus(date, time, id, o.excludeId).state === "free";
-  const seats = (st.rooms||[]).filter(x=>!blockedAt(x, date, time));
+  const seats = roomsAt(date).filter(x=>!blockedAt(x, date, time));
   if(wantRoom){
     const rooms = seats.filter(x=>isRoom(x) && people >= roomMin(x, date) && people <= seatMax(x));
     for(const r of rooms) if(free(r.id)) return {id:r.id, extra:[]};
@@ -565,7 +566,7 @@ function findSeat(o){
     const tables = seats.filter(x=>isTable(x) && inFloor(x) && people >= roomMin(x) && people <= seatMax(x));
     /* 2명은 4인석을 먼저 (2인석은 좁아 손님이 싫어함). 그 밖에는 사장님이 정한 순서(설정의 테이블 순서) —
        지하는 여포가 맨 앞이라 4~5명은 여포부터(재아: 우선순위 높음). 순서가 같을 리 없으니 남는 자리는 마지막 기준 */
-    const order = x => (st.rooms||[]).indexOf(x);
+    const order = x => roomsAt(date).indexOf(x);
     const score = x => ((people <= 2 && (x.seats||4) >= 4) ? 0 : 1000) + order(x);
     const sorted = tables.slice().sort((x,y)=>score(x)-score(y) || (seatMax(x)-seatMax(y)));
     for(const t of sorted) if(free(t.id)) return {id:t.id, extra:[]};
@@ -644,6 +645,7 @@ const ICON = {
   refresh:'<svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg>',
   exit:'<svg viewBox="0 0 24 24"><path d="M14 4h5a1 1 0 011 1v14a1 1 0 01-1 1h-5"/><path d="M10 17l5-5-5-5M15 12H3"/></svg>',
   search:'<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>',
+  inbox:'<svg viewBox="0 0 24 24"><path d="M4 13l2-8h12l2 8v6H4z"/><path d="M4 13h5l1.5 2h3L15 13h5"/></svg>',
   clock:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>',
   more:'<svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.6" fill="currentColor" stroke="none"/></svg>',
   cal:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="8.5" cy="14.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="12" cy="14.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="15.5" cy="14.5" r="1.2" fill="currentColor" stroke="none"/></svg>'

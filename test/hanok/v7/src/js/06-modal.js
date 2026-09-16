@@ -30,7 +30,11 @@ function uiChoice(title, msg, choices){
 /* 한 줄 입력 팝업 — 관리자 비밀번호 등. 취소면 null */
 function uiPrompt(title, msg, opt){
   opt = opt || {};
-  return new Promise(res => { modalReplace({mode:"prompt", title, msg, tone:"ok", ok:opt.ok||"확인", cancel:"취소", password:!!opt.password, res}); });
+  return new Promise(res => { modalReplace({mode:"prompt", title, msg, tone:"ok", ok:opt.ok||"확인", cancel:"취소", password:!!opt.password, value:opt.value||"", res}); });
+}
+/* 여러 개 중 하나 고르기 — 고른 번호(0부터), 취소면 null */
+function uiChoose(title, options, msg){
+  return new Promise(res => { modalReplace({mode:"choice", title, msg:msg||"", tone:"ok", choices:options.map((o,i)=>[o,i]), cancel:"취소", res}); });
 }
 function modalPromptAnswer(){ const el = document.getElementById("md-input"); const m = MODAL; MODAL = null; render(); if(m) m.res(el ? el.value : ""); }
 function renderModal(){
@@ -47,10 +51,10 @@ function renderModal(){
     <div class="overlay modal-ov" onclick="modalAnswer(false)">
       <div class="modal ${m.tone}" onclick="event.stopPropagation()">
         <div class="md-h">${esc(m.title)}</div>
-        <div class="md-b">${lines}${m.mode==="prompt"?`<input id="md-input" type="${m.password?"password":"text"}" autofocus style="margin-top:8px; width:100%" onkeydown="if(event.key==='Enter') modalPromptAnswer()">`:""}</div>
+        <div class="md-b">${lines}${m.mode==="prompt"?`<input id="md-input" type="${m.password?"password":"text"}" value="${esc(m.value||"")}" autofocus style="margin-top:8px; width:100%" onkeydown="if(event.key==='Enter') modalPromptAnswer()">`:""}</div>
         <div class="md-f">
           ${m.mode==="confirm"||m.mode==="prompt"||m.mode==="choice"?`<button class="btn" onclick="modalAnswer(${m.mode==="confirm"?"false":"null"})">${esc(m.cancel)}</button>`:""}
-          ${m.mode==="choice" ? (m.choices||[]).map(([lb,v],i)=>`<button class="btn ${i===0?"danger-fill":"primary"}" onclick="modalAnswer(${JSON.stringify(v)})">${esc(lb)}</button>`).join("") :
+          ${m.mode==="choice" ? (m.choices||[]).map(([lb,v],i)=>`<button class="btn ${m.tone==="warn"&&i===0?"danger-fill":"primary"}" onclick="modalAnswer(${JSON.stringify(v)})">${esc(lb)}</button>`).join("") :
           `<button class="btn ${m.tone==="warn"?"danger-fill":"primary"}" onclick="${m.mode==="prompt"?"modalPromptAnswer()":"modalAnswer(true)"}">
             ${m.mode==="confirm"||m.mode==="prompt"?esc(m.ok):"확인"}</button>`}
         </div>
@@ -99,6 +103,9 @@ async function setTab(t){
     if(!ok) return;
     view.draft = null;
   }
+  /* 설정은 관리자 비밀번호로만 들어갑니다(재아). 한 번 통과하면 잠글 때까지 다시 묻지 않고,
+     PIN 변경·관리자 비밀번호 변경·접속 기록·PIN 관리·초기화·기록 복사는 그 안에서 한 번 더 묻습니다 */
+  if(t==="settings" && !view.adminOk){ if(!await adminGate("설정 열기")) return; view.adminOk = true; }
   if(t==="settings" && !view.draft) view.draft = deepClone(store().settings);
   Object.keys(view.open).forEach(function(x){ view.open[x] = false; });   /* 어디든 갔다 오면 폴드는 접힌 상태로(재아) — 설정·대시보드 모두 */
   view.tab=t; render(); window.scrollTo(0,0);
@@ -117,7 +124,7 @@ function mirrorDraft(key){ if(view.draft) view.draft[key] = deepClone(store().se
 /* 설정 두 개의 차이를 '키: 이전 → 이후' 로 — 관리자 → 설정 변경 내역 */
 function settingsDiff(a, b){
   const out = [], keys = {}; Object.keys(a||{}).concat(Object.keys(b||{})).forEach(k=>{ keys[k]=1; });
-  const NAME = {rooms:"좌석", joins:"룸 합침", schedules:"운영시간", overrides:"임시 일정", holidays:"공휴일 추가", holidaysOff:"공휴일 제외", courseGroups:"코스 구성", sources:"예약경로", sms:"문자 안내", displayRows:"디스플레이 배치", tvType:"디스플레이 형식", groupSize:"단체 기준", noshowExcluded:"노쇼 경고 제외", uiZoom:"화면 크기", closeGapMin:"겹침 경고", noshowWarnCount:"노쇼 경고 기준", noshowCancelRule:"취소→노쇼 기준", tvAd:"광고 영상", holidayAsWeekend:"공휴일=주말", minCountAdultsOnly:"정원 기준", chairDefault:"유아의자 기본", loSoon:"임박 기준", breakMode:"브레이크 방식", _setlog:null};
+  const NAME = {scheduled:null, rooms:"좌석", joins:"룸 합침", schedules:"운영시간", overrides:"임시 일정", holidays:"공휴일 추가", holidaysOff:"공휴일 제외", courseGroups:"코스 구성", sources:"예약경로", sms:"문자 안내", displayRows:"디스플레이 배치", tvType:"디스플레이 형식", groupSize:"단체 기준", noshowExcluded:"노쇼 경고 제외", uiZoom:"화면 크기", closeGapMin:"겹침 경고", noshowWarnCount:"노쇼 경고 기준", noshowCancelRule:"취소→노쇼 기준", tvAd:"광고 영상", holidayAsWeekend:"공휴일=주말", minCountAdultsOnly:"정원 기준", chairDefault:"유아의자 기본", loSoon:"임박 기준", breakMode:"브레이크 방식", _setlog:null};
   Object.keys(keys).forEach(k=>{
     if(NAME[k] === null) return;
     const x = JSON.stringify(a ? a[k] : undefined), y = JSON.stringify(b ? b[k] : undefined);
@@ -127,15 +134,19 @@ function settingsDiff(a, b){
   });
   return out;
 }
-function applySettings(){
+async function applySettings(){
   if(!view.draft) return;
   if(readonlyBlock()) return;
   const before = store().settings, after = deepClone(view.draft);
+  /* 좌석·규칙·코스가 바뀌었으면 "지금 바로 / 날짜부터" — 날짜면 예정으로 들어가고 그 묶음은 되돌아옵니다(03b) */
+  if(!await askScheduleOnApply(before, after)) return;
+  after.scheduled = before.scheduled;   /* 예정 목록은 임시본이 아니라 설정에서 직접 관리 */
   const diff = settingsDiff(before, after);
   after._setlog = (before._setlog || []).concat(diff.length ? [{at:new Date().toISOString(), who:SESSION ? SESSION.who : "-", items:diff}] : []).slice(-60);
   store().settings = after;
   view.draft = deepClone(after);   /* _setlog 가 붙어 임시본과 달라지지 않게 */
   logEvent("설정 변경", diff.length ? diff.join(" / ").slice(0, 300) : "적용(변경 없음)");
+  absorbScheduled();
   takeSnapshot();   /* 룸·테이블 수가 바뀌었을 수 있으니 오늘 스냅샷을 새로 (내일부터 오늘을 이 수로 계산) */
   saveData(); render();
 }
@@ -155,6 +166,8 @@ async function refreshData(){
   try{
     var changed = await reloadFromStore();
     LAST_REFRESH = Date.now();
+    /* 홈페이지 연동(11c): 새 접수 끌어오기 → 팝업, 남은 자리 올리기(45초 간격) */
+    try{ if(SESSION && !view.display){ var fresh = await pullRequests(); if(fresh) changed = true; publishAvail(); } }catch(e){}
     return changed !== false;   /* 서버 모드는 바뀐 것이 있는지 돌려줍니다. 그 밖(undefined)은 '모름' = 다시 그림 */
   }catch(e){
     console.error("갱신 실패", e.message);
@@ -172,9 +185,10 @@ async function manualRefresh(){
    마법사·시트·확인창이 떠 있으면 건너뜁니다(입력 중에 화면이 바뀌면 안 되니까). '새로고침' 버튼은 즉시 + 무조건 다시 그림 */
 setInterval(function(){
   /* 자정을 넘겼으면 새 날짜의 좌석 수를 남깁니다 (밤새 켜 둔 태블릿·TV). 6차 전에는 자정 처리가 따로 없었습니다 */
-  if(SNAP_DAY && todayStr() !== SNAP_DAY){ takeSnapshot(); if(AUTHED && autoCloseDays()) saveData(); }   /* 어제 '확정' → '방문' 도 함께(점검 R7) */
+  if(SNAP_DAY && todayStr() !== SNAP_DAY){ if(AUTHED) absorbScheduled(); takeSnapshot(); if(AUTHED && autoCloseDays()) saveData(); }   /* 어제 '확정' → '방문' 도 함께(점검 R7) */
   sessionTick();   /* 토큰 만료 5분 전 갱신 */
   if(SAVE_FAIL && !OFFLINE) flush();   /* 저장 못 한 것이 있으면 다시 */
+  if(AUTHED && !view.display && typeof publishAvail === "function" && AVAIL_DIRTY) publishAvail();   /* 미뤄 둔 남은 자리 올리기 */
   if(!AUTHED || view.display || WZ || view.form || MODAL) return;
   refreshData().then(function(changed){ if(changed) render(); });
 }, 60000);
@@ -225,6 +239,7 @@ function renderStore(){
         <div class="bar-right">
           ${view.tab==="settings" ? `
           <!-- 설정: 되돌리기·적용하기를 여기(나가기 왼쪽)에 (재아). 아래 안내 띠는 없앴습니다 -->
+          <button class="tvbtn b-sched ${schedList().length?'has':''}" onclick="openScheduled()" title="예정된 설정">예정<i class="cnt">${schedList().length}</i></button>
           <button class="tvbtn b-revert" onclick="revertSettings()" ${settingsDirty()?"":"disabled"}>되돌리기</button>
           <button class="tvbtn amber b-apply" onclick="applySettings()" ${settingsDirty()?"":"disabled"}>적용하기</button>
           <button class="tvbtn icon b-exit" onclick="setTab('dash')" title="설정 나가기" aria-label="설정 나가기">${ICON.exit}</button>` : isMobile() ? `
@@ -232,10 +247,12 @@ function renderStore(){
                '오늘' 은 375px 에 안 들어가 더보기로 — 달력 아이콘의 점이 '오늘이 아님' 표시 -->
           <button class="tvbtn icon b-cal ${view.date===todayStr()?'':'dot'}" onclick="openCal()" title="날짜" aria-label="날짜 선택">${ICON.cal}</button>
           <button class="tvbtn icon b-refresh" onclick="manualRefresh()" title="새로고침" aria-label="새로고침">${ICON.refresh}</button>
-          <button class="tvbtn icon b-search" onclick="openSearch()" title="예약 검색" aria-label="예약 검색">${ICON.search}</button>` : `
+          <button class="tvbtn icon b-search" onclick="openSearch()" title="예약 검색" aria-label="예약 검색">${ICON.search}</button>
+          <button class="tvbtn icon b-reqs ${reqPending().length?'has':''}" onclick="openRequests()" title="홈페이지 예약" aria-label="홈페이지 예약">${ICON.inbox}<i class="cnt">${reqPending().length}</i></button>` : `
           ${view.date===todayStr() ? "" : `<button class="tvbtn b-today" onclick="goToday()">오늘</button>`}
           <button class="tvbtn icon b-refresh" onclick="manualRefresh()" title="새로고침" aria-label="새로고침">${ICON.refresh}</button>
           <button class="tvbtn b-search" onclick="openSearch()">예약 검색</button>
+          <button class="tvbtn b-reqs ${reqPending().length?'has':''}" onclick="openRequests()">홈페이지 예약<i class="cnt">${reqPending().length}</i></button>
           <button class="tvbtn accent b-add" onclick="openWizard()">＋ 예약 등록</button>`}
           ${view.tab==="settings" ? "" : `
           <!-- 더보기(⋮): 자주 안 쓰는 것들을 여기로 모았습니다 — 예약률 추이 · 영업시간 · 설정 · 디스플레이 모드 -->

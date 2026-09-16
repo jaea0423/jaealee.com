@@ -97,7 +97,7 @@ function resRowMobile(r){
   const warn = holdsSeat(r) && resWarn(r).length;
   const chg = changeTag(r);
   const pills = [
-    r.menuType==="코스" ? (r.courseUndecided ? "코스 미정" : "코스") : r.menuType==="코스 상당" ? "코스상당" : r.menuType==="확인 필요" ? "메뉴확인" : "",
+    r.menuType==="코스" ? (r.courseUndecided ? "코스·세트 미정" : "코스·세트") : r.menuType==="코스 상당" ? "코스상당" : r.menuType==="확인 필요" ? "메뉴확인" : "",
     r.allergy ? "알러지" : "", r.chairs ? `유아의자 ${r.chairs}` : "", r.request ? "요청" : "", r.memo ? "메모" : ""
   ].filter(Boolean).join(" · ");
   return `
@@ -111,7 +111,7 @@ function resRowMobile(r){
         ${chg?`<span class="chg-tag ${chg.kind==="취소"||chg.kind==="노쇼"?"off":""}">${esc(chg.label)}</span>`:""}
       </div>
       <div class="mr-2">
-        <span>${pplOf(r)}명${r.infants?`(유아${r.infants})`:""}</span>
+        <span>${pplOf(r)}명${r.infants?`(어린이${r.infants})`:""}</span>
         <span class="${room||r.tentativeRoomId?'':'none'}">${esc(seat)}</span>
         ${r.phone?`<span>${esc(r.phone)}</span>`:""}
         ${pills?`<span class="mr-p">${esc(pills)}</span>`:""}
@@ -252,9 +252,9 @@ function renderResList(date){
   let marked = false;
   const rows = day.length ? day.map(r=>{
     let m = "";
-    if(isToday && !marked && toMin(r.time) > nowM){ marked = true; m = `<div class="now-sep"><span>지금 ${hm(nowHM())}</span></div>`; }
+    if(isToday && !marked && toMin(r.time) > nowM){ marked = true; m = `<div class="now-sep"><span>지금 | ${hm(nowHM())}</span></div>`; }
     return m + resRow(r);
-  }).join("") + (isToday && !marked ? `<div class="now-sep"><span>지금 ${hm(nowHM())} · 오늘 남은 예약 없음</span></div>` : "")
+  }).join("") + (isToday && !marked ? `<div class="now-sep"><span>지금 | ${hm(nowHM())} · 오늘 남은 예약 없음</span></div>` : "")
     : `<div class="empty">해당 조건의 예약이 없습니다.</div>`;
   return `<div class="filters">${filters}</div><div class="rlist">${rows}</div>`;
 }
@@ -268,8 +268,8 @@ function resRow(r){
   const pills = [
     r.assignedLater ? `<span class="pill" title="접수 때는 좌석 미정이었습니다">배정 완료</span>` : "",
     r.menuType==="코스" ? (r.courseUndecided
-      ? `<span class="pill amber">코스 미정</span>`
-      : `<span class="pill pine" title="${esc(courseSummary(r.courses))}">코스</span>`) :
+      ? `<span class="pill amber">코스·세트 미정</span>`
+      : `<span class="pill pine" title="${esc(courseSummary(r.courses))}">코스·세트</span>`) :
     r.menuType==="코스 상당" ? `<span class="pill pine">코스상당</span>` :
     r.menuType==="확인 필요" ? `<span class="pill amber">메뉴확인</span>` : "",
     r.allergy ? `<span class="pill rust" title="${esc(r.allergy)}">알러지</span>` : "",
@@ -286,7 +286,7 @@ function resRow(r){
       <span class="rr-bang">${late?"!":""}</span>
       <span class="rr-t">${esc(r.time)}</span>
       <span class="rr-n">${esc(r.name)}</span>
-      <span class="rr-p">${pplOf(r)}명${r.infants?`(유아${r.infants})`:""}</span>
+      <span class="rr-p">${pplOf(r)}명${r.infants?`(어린이${r.infants})`:""}</span>
       <span class="rr-seat ${room||r.tentativeRoomId?'':'none'}">${esc(seat)}</span>
       <span class="rr-ph">${esc(r.phone||"-")}</span>
       ${rest?`<span class="rr-rest">${rest}</span>`:""}

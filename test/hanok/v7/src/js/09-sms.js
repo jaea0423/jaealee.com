@@ -33,7 +33,9 @@ function remindHours(offset){
   for(h = 9; h <= last; h++) out.push(h);
   return out;
 }
-function offsetLabel(o){ return o === 2 ? "2일 전" : o === 1 ? "1일 전 (전날)" : "당일 아침"; }
+function offsetLabel(o){ return o === 2 ? "2일 전" : o === 1 ? "1일 전" : "당일 아침"; }
+/* 재안내 시각 알약 — 30분 선택지가 없으니 "오전 9시" 로 짧게 */
+function hourLabel(h){ return (h < 12 ? "오전 " : "오후 ") + (h % 12 === 0 ? 12 : h % 12) + "시"; }
 /* 문자 안에 들어갈 말 — '설정값'이 아니라 '보내는 날과 예약일의 실제 차이'로 정합니다.
    앱이 꺼져 있어 뒤늦게 나가는 경우(전날 5시에 못 보내고 당일 아침에 나감)에
    설정값만 보면 "내일 예약입니다"라고 잘못 나갑니다. 손님이 날짜를 착각하게 됩니다. */
@@ -92,10 +94,10 @@ function smsWhen(r){
 }
 /* seatLabel() 은 '지금 보고 있는 매장'(store())을 씁니다.
    문자는 매장을 고르기 전에도 만들어질 수 있어서(smsTick) 여기서는 직접 찾습니다. */
-/* '4명' / 유아가 있으면 '4명(유아 1명 포함)'. 유아가 없으면 괄호를 아예 안 씁니다 */
+/* '4명' / 어린이가 있으면 '4명(어린이 1명 포함)'. 어린이가 없으면 괄호를 아예 안 씁니다 */
 function smsPpl(r){
   var inf = r.infants || 0;
-  return pplOf(r) + "명" + (inf > 0 ? "(유아 " + inf + "명 포함)" : "");
+  return pplOf(r) + "명" + (inf > 0 ? "(어린이 " + inf + "명 포함)" : "");
 }
 /* kind: "접수" | "재안내". 재안내는 offset 을 넘겨 문구를 바꿉니다 */
 function smsText(r, kind, offset, st){
@@ -206,9 +208,9 @@ function resWarn(r){
   if(seat && seat.type==="room"){
     const cn = Object.values(r.courses||{}).reduce((a,b)=>a+b,0);
     const ad = adultCount(pplOf(r), r.infants);
-    if(r.menuType==="해당 없음") out.push("룸·코스 아님");
-    else if(r.menuType==="확인 필요") out.push("코스 미확정");
-    else if(r.menuType==="코스" && !r.courseUndecided && cn>0 && cn<ad) out.push("코스 인원 부족");
+    if(r.menuType==="해당 없음") out.push("룸·코스·세트 아님");
+    else if(r.menuType==="확인 필요") out.push("코스·세트 미확정");
+    else if(r.menuType==="코스" && !r.courseUndecided && cn>0 && cn<ad) out.push("코스·세트 인원 부족");
   }
   if((r.chairs||0) > (r.infants||0)) out.push("유아의자 초과");
   /* 겹쳐 받은 룸은 접수 뒤에도 계속 보여야 합니다.
@@ -227,6 +229,11 @@ function checkItems(date){
   const list = s.reservations.filter(r=>r.date===d && r.status==="확정");
   const items = [];
 
+  /* 홈페이지에서 들어온 손님 요청 — 날짜와 상관없이 대기 중이면 맨 위에 */
+  const pend = reqPending();
+  if(pend.length) items.push(["blue", `홈페이지 예약 ${pend.length}건`,
+    pend.slice(0,3).map(q=>`${dateLabel(q.date)} ${hm(q.time)} ${q.name}`).join(", "), `openRequests()`]);
+
   const un = list.filter(isUnassigned);   /* 테이블 예약은 층이 자리 — 미배정 아님 */
   if(un.length) items.push(["amber", `좌석 미배정 ${un.length}건`,
     un.slice(0,3).map(r=>`${r.time} ${r.name}`).join(", "), `openUnassigned()`]);
@@ -240,7 +247,7 @@ function checkItems(date){
   if(chairSum) items.push(["pine", `유아용 의자 ${chairSum}개 준비`,
     chairs.slice(0,3).map(r=>`${r.time} ${r.name} ${r.chairs}개`).join(", "), `openPick('chairs')`]);
 
-  const gsize = s.settings.groupSize || 8;
+  const gsize = settingsAt(d).groupSize || 8;
   const group = list.filter(r=>pplOf(r) >= gsize);
   if(group.length) items.push(["pine", `단체 손님 ${group.length}건`,
     group.slice(0,3).map(r=>`${r.time} ${r.name} ${pplOf(r)}명`).join(", "), `openPick('group')`]);
@@ -301,7 +308,7 @@ function sheetPick(){
   const conf = {
     allergy:{title:"알러지 확인", pick:r=>r.allergy, note:"주방에 전달됐는지 확인하세요."},
     chairs:{title:"유아용 의자", pick:r=>r.chairs>0, note:"의자 개수를 미리 준비하세요."},
-    menu:{title:"메뉴 확인", pick:r=>r.menuType==="확인 필요", note:"방문 전 연락해 코스를 확정하세요."},
+    menu:{title:"메뉴 확인", pick:r=>r.menuType==="확인 필요", note:"방문 전 연락해 코스·세트를 확정하세요."},
     noshow:{title:"노쇼 이력 손님", pick:r=>!!noshowOf(r.phone), note:"확인 전화를 돌리면 노쇼가 줄어듭니다."},
     warn:{title:"경고 예약", pick:r=>resWarn(r).length>0, note:"사장 판단으로 접수된 예약입니다. 문제가 없는지 확인하세요."},
     confirmed:{title:"확정 예약", pick:r=>true, note:""},
@@ -327,7 +334,7 @@ function sheetPick(){
           kind==="chairs"?` · 의자 ${r.chairs}개`:""}${
           kind==="noshow"&&noshowOf(r.phone)?` · 노쇼 ${noshowOf(r.phone).count}회`:""}${
           kind==="warn"?` · ${resWarn(r).join(", ")}`:""}${
-          kind==="group"&&r.menuType==="코스"?` · 코스`:""}</span></span>
+          kind==="group"&&r.menuType==="코스"?` · 코스·세트`:""}</span></span>
       ${seatTag(r)}
     </button>`).join("") : `<div class="empty">해당 예약이 없습니다.</div>`;
   return `

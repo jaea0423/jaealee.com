@@ -343,7 +343,9 @@ button.rowitem:hover{background:var(--surface-2)}
 /* 입력창 + '해당 없음' 버튼을 한 줄에 */
 .inrow{display:flex; gap:var(--s8); align-items:stretch}
 .inrow input{flex:1 1 auto; min-width:0}
-.searchbox{max-height:56vh; overflow:auto}
+/* 검색 창: 시트 자체를 높이 고정(.sheet-tall) 하고 결과 상자가 남은 자리를 다 쓰며 스크롤 */
+.sheet-tall{height:calc(86vh / var(--ui-zoom, 1)); display:flex; flex-direction:column; overflow:hidden}
+.sheet-tall .searchbox{flex:1; min-height:0; overflow:auto}
 .checkbox-scroll{max-height:58vh; overflow-y:auto; padding-right:var(--s4)}
 
 /* ---------- 표 ---------- */
@@ -499,6 +501,13 @@ body.notoday .card{box-shadow:none}
 /* .tvbtn 단독 규칙은 '각진 모서리' 개편 때 붙은 것인데 .topbar .tvbtn(9px)이 더 세서 효력이 없습니다.
    화면을 안 바꾸려고 남겨 둡니다 — Phase 3 에서 반경 계단을 정할 때 같이 정리 */
 .tvbtn{border-radius:var(--r-sm)}
+/* 홈페이지 예약 단추의 건수 — 0이면 흐리게, 있으면 파란 배지 */
+.tvbtn.b-reqs .cnt{font-style:normal; margin-left:6px; min-width:18px; height:18px; padding:0 5px; border-radius:9px; background:rgba(255,255,255,.14); font-size:12px; line-height:18px; text-align:center}
+.tvbtn.b-reqs.has .cnt{background:#3F6C9E; color:#fff}
+.tvbtn.icon.b-reqs .cnt{position:absolute; top:-4px; right:-4px; margin:0; min-width:16px; height:16px; line-height:16px; font-size:11px}
+.tvbtn.icon.b-reqs{position:relative; overflow:visible}
+.tvbtn.b-sched .cnt{font-style:normal; margin-left:6px; min-width:18px; height:18px; padding:0 5px; border-radius:9px; background:rgba(255,255,255,.14); font-size:12px; line-height:18px; text-align:center}
+.tvbtn.b-sched.has .cnt{background:#C9A66B; color:#1a1714}
 /* 예전 상단바 부품 — 지금 HTML 에는 없거나 거의 안 쓰입니다. Phase 3 에서 확인 후 정리 */
 .topbar .title{color:var(--topbar-fg); font-family:var(--serif); font-size:var(--fs-head); font-weight:700; letter-spacing:.08em; white-space:nowrap}
 .topbar .right{margin-left:auto; display:flex; align-items:center; gap:var(--s8)}
@@ -510,6 +519,7 @@ body.notoday .card{box-shadow:none}
    상단바에 날짜 이동이 들어가기 전에 쓰던 줄입니다. 예약 목록 카드 머리 등에 아직 쓰입니다 */
 /* .nav 단독 규칙 — 위의 .res-head .nav / .datenav .nav 등이 더 세서 효력이 없습니다. .tvbtn 과 같은 이유로 남겨 둠 */
 .nav{border-radius:var(--r-sm)}
+.rowitem .left.soon, .rust{color:var(--rust)}
 /* ============================================================
    5. 대시보드
    ============================================================ */
@@ -736,6 +746,12 @@ button.blk.tent.warned.changed{background-image:linear-gradient(90deg, #3D8BD9 0
 
 /* ※ .sb-note 는 좌석 보드와 예약 상세의 문자 칸(.sb-t .sb-mock …)이 같은 접두사를 써서 두 곳에서 정의돼 있었습니다.
    최종값은 같으니 여기 한 번만 둡니다 */
+
+/* 사용 중지 빗금 위 라벨 — 예약 블록과 겹치지 않게 맨 위 한 줄, 작은 글씨 */
+.blockband{overflow:visible}
+.blockband .bb-l{position:absolute; left:6px; top:2px; font-style:normal; font-size:11px; font-weight:700; color:var(--rust); background:rgba(255,255,255,.92); padding:0 6px; border-radius:3px; white-space:nowrap; pointer-events:none; z-index:6}
+/* 테이블 초과 칸 라벨 */
+.overlane .ol-l{position:absolute; left:6px; top:2px; font-style:normal; font-size:11px; font-weight:700; color:var(--rust); background:rgba(255,255,255,.85); padding:0 6px; border-radius:3px; white-space:nowrap; pointer-events:none}
 /* ============================================================
    6. 예약 — 시트 / 달력 / 마법사 / 모달
    ============================================================ */
@@ -1381,6 +1397,12 @@ label.chk span{width:auto}
 .lg-ip{color:var(--text-2); width:120px; flex:none; overflow:hidden; text-overflow:ellipsis}
 .lg-a{font-weight:700; width:96px; flex:none}
 .lg-d{color:var(--text-2); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis}
+
+/* 설정의 긴 입력칸(발신번호·문안·주차 안내·광고 영상 이름)은 본문 크기로 — 제목 크기라 너무 컸습니다(재아) */
+.in-sm{font-size:var(--fs-sub) !important; line-height:1.65}
+/* TV 주소: 링크 + 오른쪽 복사 */
+.ub-row{display:flex; align-items:center; gap:var(--s8)}
+.ub-row .ub-u{flex:1; min-width:0; overflow-wrap:anywhere; text-decoration:underline; text-underline-offset:3px; margin:0}
 /* ============================================================
    8. 잠금 · 매장 선택
    ============================================================ */
@@ -2388,7 +2410,7 @@ const STORAGE_KEY = "hanok-admin-v2";
 var SMS_DEFAULT = {
   on:true,
   skipNaver:true,         /* 네이버 예약은 네이버가 문자를 보내므로 우리는 안 보냄(재아) */
-  storePhone:"",          /* 발신번호 — 문자에 찍히는 번호. 실제 발송을 붙일 때 필요합니다 */
+  storePhone:"031-724-1004",   /* 발신번호 — 매장 번호. 실제 발송을 붙일 때 통신사에 등록 */
   remindOffset:0,         /* 재안내를 며칠 전에 — 2 | 1 | 0(당일) */
   remindHour:9,           /* 그날 몇 시에 */
   parkingNote:"※ 주차 안내\n주차장 이용 가능합니다. 주차비 1,000원이며 발렛은 무료입니다.",
@@ -2681,6 +2703,8 @@ async function enterStore(){
   var d = await loadFromServer();
   DATA = assembleData(d);
   AUTHED = true; OFFLINE = null; LOAD_ERROR = null;
+  /* 로그인 직후: 홈페이지 예약 끌어오기 + 남은 자리 한 번 올리기(11c) */
+  setTimeout(function(){ try{ if(typeof pullRequests === "function"){ pullRequests().then(function(n){ if(n) render(); }); publishAvail(true); } }catch(e){} }, 800);
   cacheSave();
   autoCloseDays();   /* 지난 날짜의 '확정' → '방문' (이 기기가 처음 켠 것이면 여기서 올라갑니다) */
   takeSnapshot();
@@ -3022,6 +3046,7 @@ function migrateSeats(d){
 }
 /* 저장된 옛 데이터에 새 항목이 없을 때 채워 넣기 */
 function migrate(d){
+  /* 예정 설정 중 날짜가 된 것은 불러오자마자 흡수(03b). migrate 안이라 매장별로 도는 아래 코드보다 먼저, 전역 store() 가 준비된 뒤에 한 번 더 부릅니다 */
   delete d._auth;   /* 7차: PIN 은 서버(Supabase 계정)에만. 옛 저장본에 평문으로 남아 있던 것을 지웁니다 */
   d._logs = d._logs || [];
   migrateSeats(d);   /* 8차: 홀(zones) → 테이블 개별, 세션, 경로, 합침 */
@@ -3035,7 +3060,7 @@ function migrate(d){
     /* 옛 기록에 deletedAt 이 붙은 채 reservations 에 남아 있으면 trash 로 옮깁니다 */
     d[k].trash = d[k].trash.concat(d[k].reservations.filter(r=>r.deletedAt));
     d[k].reservations = d[k].reservations.filter(r=>!r.deletedAt);
-    /* 옛 기록 정리: 인원을 유아 포함 총원으로, 상태 이름 변경 */
+    /* 옛 기록 정리: 인원을 어린이 포함 총원으로, 상태 이름 변경 */
     d[k].reservations = d[k].reservations.map(r=>({
       ...r,
       people: r.people != null ? r.people : pplOf(r),
@@ -3131,6 +3156,7 @@ async function flush(){
     }
     if(SAVE_FAIL){ SAVE_FAIL = null; saveFailBand(); }
     cacheSave();
+    if(typeof publishAvail === "function") publishAvail();   /* 예약·설정이 바뀌었으니 홈페이지 남은 자리도(45초 간격으로 묶임) */
   }catch(e){
     console.error("저장 실패", e.message);
     SAVE_FAIL = { msg: e.message, at: Date.now() }; saveFailBand();
@@ -3362,14 +3388,14 @@ function logEvent(action, detail){
   saveData();
 }
 
-/* 총 인원 — 유아를 포함한 값. 옛 기록(성인+유아 분리)도 함께 처리 */
+/* 총 인원 — 어린이를 포함한 값. 옛 기록(성인+어린이 분리)도 함께 처리 */
 /* 총 인원. 옛 데이터는 people 없이 adults+infants 로 저장돼 있어 그때만 더해 씁니다.
    (예전에는 자기 자신을 다시 부르게 돼 있어 people 이 없으면 무한 재귀로 멈췄습니다) */
 function pplOf(r){ return r.people != null ? r.people : ((r.adults||0) + (r.infants||0)); }
-/* 인원 표기 — "6명 (유아 1명 포함)" */
+/* 인원 표기 — "6명 (어린이 1명 포함)" */
 function pplText(r){
   const n = pplOf(r), i = r.infants||0;
-  return i ? `${n}명(유아${i})` : `${n}명`;
+  return i ? `${n}명(어린이${i})` : `${n}명`;
 }
 
 /* ---------- 좌석 판정 (체류시간 기준) ---------- */
@@ -3530,7 +3556,8 @@ function stayOf(r){ return stayMinAt(r.date, r.time, effSeat(r) || r.seatPref); 
    룸: minCapacity(최적=최소) ~ capacity(최대). 테이블: seats(기본) ~ capacity(있으면, 여포 5) / 최소는 minCapacity(여포 4) 아니면 없음 */
 function isRoom(x){ return !!x && x.type === "room"; }
 function isTable(x){ return !!x && (x.type === "table" || x.type === "hall"); }
-function seatById(id){ const st = store().settings; return (st.rooms||[]).find(x=>x.id===id) || null; }
+/* id 로 좌석 찾기 — 지금 좌석에 없으면 예정 좌석에서도 찾습니다(예정 날짜의 예약이 그 좌석을 가리킬 수 있음) */
+function seatById(id){ const st = store().settings; return (st.rooms||[]).find(x=>x.id===id) || allSeatsEver().find(x=>x.id===id) || null; }
 /* 주말·공휴일이면 true (공휴일을 주말로 볼지는 설정) */
 function isWeekendDay(date){ if(!date) return false; const dow = new Date(date+"T00:00:00").getDay(); return dow===0 || dow===6 || (store().settings.holidayAsWeekend!==false && isHoliday(date)); }
 /* 룸 최소 인원 — 날짜를 주면 주말·공휴일은 minWeekend(있으면). 테이블은 minCapacity 없으면 0 */
@@ -3566,14 +3593,14 @@ function seatsMin(ids, date){
 }
 function sameIds(a, b){ if(!a || !b || a.length !== b.length) return false; const x = a.slice().sort(), y = b.slice().sort(); return x.every((v,i)=>v===y[i]); }
 /* 합침 그룹 찾기 */
-function joinOf(ids){ return (store().settings.joins||[]).find(g=>sameIds(g.ids, ids)) || null; }
+function joinOf(ids){ return allJoinsEver().find(g=>sameIds(g.ids, ids)) || null; }
 /* ---------- 테이블은 층 단위 (8차-H) ----------
    홀은 그날 남는 자리에 앉히는 곳이라 테이블을 미리 정해도 현장에서 지켜지지 않습니다.
    그래서 예약은 '1층 테이블 / 지하 테이블' 까지만 받고, 시스템은 층의 자리 수(테이블 인원 합)와
    같은 시간에 겹치는 손님 수로 '자리 부족' 만 알립니다. 특정 테이블 배정은 수정 시트에서만(파셜룸 등). */
 function isTablePref(p){ return p === "table-any" || p === "hall-any" || /^table:/.test(p || ""); }
 function prefFloor(p){ return /^table:/.test(p || "") ? p.slice(6) : null; }
-function floorTables(fl){ return (store().settings.rooms || []).filter(t => isTable(t) && (fl == null || (t.floor || "") === (fl || ""))); }   /* fl == null → 전체 */
+function floorTables(fl, date){ return (date ? roomsAt(date) : (store().settings.rooms || [])).filter(t => isTable(t) && (fl == null || (t.floor || "") === (fl || ""))); }   /* fl == null → 전체. date 를 주면 그 날짜의 좌석 */
 /* 예약이 쓰는 테이블 층. 룸이면 undefined, 층 미정 테이블이면 null */
 function resFloor(r){
   if(r.roomId){ const x = seatById(r.roomId); return x && isTable(x) ? (x.floor || "") : undefined; }
@@ -3667,9 +3694,9 @@ function adultCount(people, infants){
     ? (people||0) : Math.max(0,(people||0)-(infants||0));
 }
 /* 마지막으로 예약을 받을 수 있는 시각 */
-/* 유아용 의자 기본값을 유아 수로 채울지(true) 0개로 둘지(false). 설정에서 바꿉니다 */
-function chairDefaultInfants(){ return store().settings.chairDefault !== "zero"; }
-/* 자리 기준을 성인만으로 볼지, 유아를 포함해 볼지 */
+/* 유아용 의자 기본값을 어린이 수로 채울지(true) 0개로 둘지(false). 설정에서 바꿉니다 */
+function chairDefaultInfants(){ return store().settings.chairDefault === "infants"; }   /* 기본 0개(재아). 설정에서 '어린이 수와 같게' 를 고르면 따라감 */
+/* 자리 기준을 성인만으로 볼지, 어린이를 포함해 볼지 */
 function seatCountsInfants(){ return store().settings.minCountAdultsOnly === false; }
 
 /* 마지막으로 예약(입장)을 받을 수 있는 시각 — 그 시각이 속한 세션의 lastBook. 라스트오더(주방 마감)와는 다릅니다 */
@@ -3776,7 +3803,7 @@ function findSeat(o){
   /* 잠정만 있는 자리(그 팀이 다른 데로 갈 수 있을 때)도 후보로 — 단 잠정 재계산(strict)에서는 안 씁니다.
      재계산은 시간순으로 한 팀씩 자리를 잡는데, 앞 팀의 잠정을 '비켜줄 수 있다' 며 같은 자리를 또 주면 두 잠정이 한 자리에 겹쳐 보였습니다 */
   const freeLoose = id => !o.strict && o.excludeSeat !== id && roomStatus(date, time, id, o.excludeId).state === "free";
-  const seats = (st.rooms||[]).filter(x=>!blockedAt(x, date, time));
+  const seats = roomsAt(date).filter(x=>!blockedAt(x, date, time));
   if(wantRoom){
     const rooms = seats.filter(x=>isRoom(x) && people >= roomMin(x, date) && people <= seatMax(x));
     for(const r of rooms) if(free(r.id)) return {id:r.id, extra:[]};
@@ -3788,7 +3815,7 @@ function findSeat(o){
     const tables = seats.filter(x=>isTable(x) && inFloor(x) && people >= roomMin(x) && people <= seatMax(x));
     /* 2명은 4인석을 먼저 (2인석은 좁아 손님이 싫어함). 그 밖에는 사장님이 정한 순서(설정의 테이블 순서) —
        지하는 여포가 맨 앞이라 4~5명은 여포부터(재아: 우선순위 높음). 순서가 같을 리 없으니 남는 자리는 마지막 기준 */
-    const order = x => (st.rooms||[]).indexOf(x);
+    const order = x => roomsAt(date).indexOf(x);
     const score = x => ((people <= 2 && (x.seats||4) >= 4) ? 0 : 1000) + order(x);
     const sorted = tables.slice().sort((x,y)=>score(x)-score(y) || (seatMax(x)-seatMax(y)));
     for(const t of sorted) if(free(t.id)) return {id:t.id, extra:[]};
@@ -3867,12 +3894,195 @@ const ICON = {
   refresh:'<svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg>',
   exit:'<svg viewBox="0 0 24 24"><path d="M14 4h5a1 1 0 011 1v14a1 1 0 01-1 1h-5"/><path d="M10 17l5-5-5-5M15 12H3"/></svg>',
   search:'<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>',
+  inbox:'<svg viewBox="0 0 24 24"><path d="M4 13l2-8h12l2 8v6H4z"/><path d="M4 13h5l1.5 2h3L15 13h5"/></svg>',
   clock:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>',
   more:'<svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.6" fill="currentColor" stroke="none"/></svg>',
   cal:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="8.5" cy="14.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="12" cy="14.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="15.5" cy="14.5" r="1.2" fill="currentColor" stroke="none"/></svg>'
 };
 // 탭 없이 한 화면으로 운영합니다. 설정은 상단 톱니바퀴 버튼으로 엽니다.
 // 매출·직원 기능은 비활성화되어 있습니다 (아래 주석 블록 참고).
+/* ---------- 예정 설정 ----------
+   "다음 주 월요일부터 좌석이 하나 는다", "연말까지만 코스가 바뀐다" 처럼 날짜가 정해진 설정 변경.
+   지금 설정(settings) 은 그대로 두고, settings.scheduled[] 에 "언제부터(·언제까지) 어느 묶음이 이 값" 을 쌓아 둡니다.
+   날짜가 필요한 계산은 store().settings 대신 settingsAt(date) 를 씁니다 — 그 날짜에 유효한 예정을 덮어 씌운 설정.
+   운영시간은 예전부터 schedules[] 로 같은 일을 했으니 여기서는 다루지 않습니다.
+
+   항목 모양: { id, from:"2026-09-22", to:null|"2026-12-31", group:"seats"|"rules"|"course",
+               values:{ rooms:[…], joins:[…] }, note, createdAt, by }
+   · to 가 없으면 그 날부터 계속 — 날짜가 되면 absorbScheduled() 가 settings 로 흡수하고 목록에서 뺍니다(기록 남김)
+   · to 가 있으면 그 기간에만 유효, 지나면 목록에서 빠집니다 */
+const SCHED_GROUPS = {
+  seats:  { label:"좌석",        keys:["rooms","joins"] },
+  rules:  { label:"예약 규칙",   keys:["groupSize","closeGapMin","minuteSteps","noshowWarnCount","noshowCancelRule","noshowCancelHours","breakMode","minCountAdultsOnly"] },
+  course: { label:"코스·세트 구성", keys:["courseGroups"] }
+};
+function schedList(st){ return ((st || store().settings).scheduled || []).slice().sort((a,b)=>a.from.localeCompare(b.from)); }
+/* 그 날짜에 유효한 설정. 예정이 없으면 settings 그대로(같은 객체) */
+function settingsAt(date, st){
+  st = st || store().settings;
+  const list = st.scheduled || [];
+  if(!list.length || !date) return st;
+  let out = null;
+  schedList(st).forEach(e => {
+    if(e.from > date || (e.to && date > e.to)) return;
+    if(!out) out = Object.assign({}, st);
+    Object.keys(e.values || {}).forEach(k => { out[k] = e.values[k]; });
+  });
+  return out || st;
+}
+function roomsAt(date){ return settingsAt(date).rooms || []; }
+function joinsAt(date){ return settingsAt(date).joins || []; }
+/* 어느 날짜에도 나올 수 있는 좌석 전부(지금 + 예정) — id 로 찾을 때 씁니다 */
+function allSeatsEver(){
+  const st = store().settings, seen = {}, out = [];
+  const add = list => (list||[]).forEach(x => { if(!seen[x.id]){ seen[x.id] = 1; out.push(x); } });
+  add(st.rooms); (st.scheduled||[]).forEach(e => add(e.values && e.values.rooms));
+  return out;
+}
+function allJoinsEver(){
+  const st = store().settings, seen = {}, out = [];
+  const add = list => (list||[]).forEach(x => { if(!seen[x.id]){ seen[x.id] = 1; out.push(x); } });
+  add(st.joins); (st.scheduled||[]).forEach(e => add(e.values && e.values.joins));
+  return out;
+}
+/* 그 묶음에 걸린 예정 (설정 화면 표시용) */
+function schedFor(group, st){ return schedList(st).filter(e => e.group === group && (!e.to || e.to >= todayStr())); }
+function schedLabel(e){
+  const g = SCHED_GROUPS[e.group] || {label:e.group};
+  return `${dateLabel(e.from)}${e.to ? ` ~ ${dateLabel(e.to)}` : "부터"} · ${g.label}${e.note ? ` · ${e.note}` : ""}`;
+}
+
+/* 날짜가 된 예정을 설정으로 흡수, 기간이 끝난 예정을 정리. 불러올 때·자정 넘길 때·적용하기 때 부릅니다 */
+function absorbScheduled(){
+  const st = store().settings, today = todayStr();
+  const list = st.scheduled || []; if(!list.length) return false;
+  let changed = false;
+  const keep = [];
+  list.slice().sort((a,b)=>a.from.localeCompare(b.from)).forEach(e => {
+    if(e.to && e.to < today){ changed = true; logEvent("예정 설정 종료", schedLabel(e)); return; }      /* 기간 끝 */
+    if(!e.to && e.from <= today){                                                                       /* 날짜 됨 → 지금 설정으로 */
+      Object.keys(e.values||{}).forEach(k => { st[k] = e.values[k]; });
+      st._setlog = (st._setlog || []).concat([{at:new Date().toISOString(), who:"예정 적용", items:[schedLabel(e)]}]).slice(-60);
+      logEvent("예정 설정 적용", schedLabel(e)); changed = true; return;
+    }
+    keep.push(e);
+  });
+  if(changed){ st.scheduled = keep; if(view.draft) view.draft = deepClone(st); takeSnapshot(); saveData(); }
+  return changed;
+}
+
+/* ---------- 예정으로 넣기: 적용하기 때 바뀐 묶음이 있으면 묻습니다 ---------- */
+/* 임시본과 지금 설정을 묶음별로 비교해 바뀐 묶음 이름을 돌려줍니다 */
+function changedGroups(before, after){
+  return Object.keys(SCHED_GROUPS).filter(g => SCHED_GROUPS[g].keys.some(k => JSON.stringify(before[k]) !== JSON.stringify(after[k])));
+}
+/* 예정 항목이 걸리는 예약 — 좌석이 없어지거나 정원이 줄거나 코스가 사라지는 경우. 막지 않고 목록으로 보여 줍니다 */
+function schedConflicts(e){
+  const s = store(), st = s.settings, v = e.values || {}, out = [];
+  const inRange = r => r.date >= e.from && (!e.to || r.date <= e.to) && r.status !== "취소" && r.status !== "노쇼";
+  const list = s.reservations.filter(inRange);
+  if(v.rooms){
+    const ids = {}; v.rooms.forEach(x => { ids[x.id] = x; });
+    list.forEach(r => {
+      const used = (typeof seatsOf === "function" ? seatsOf(r) : [r.roomId]).filter(Boolean);
+      const gone = used.filter(id => !ids[id]);
+      if(gone.length) out.push(`${dateLabel(r.date)} ${hm(r.time)} ${r.name} — 좌석 ${gone.map(id => (seatById(id)||{}).name || id).join("+")} 이 없어짐`);
+      else if(r.roomId && ids[r.roomId] && pplOf(r) > seatMax(ids[r.roomId])) out.push(`${dateLabel(r.date)} ${hm(r.time)} ${r.name} ${pplOf(r)}명 — ${ids[r.roomId].name} 정원 ${seatMax(ids[r.roomId])}명 넘음`);
+    });
+  }
+  if(v.courseGroups){
+    const ok = {}; v.courseGroups.forEach(g => (g.items||[]).forEach(it => { ok[g.id + "|" + it] = 1; }));
+    list.forEach(r => {
+      const bad = Object.keys(r.courses||{}).filter(k => (r.courses[k] > 0) && !ok[k]);
+      if(bad.length) out.push(`${dateLabel(r.date)} ${hm(r.time)} ${r.name} — 코스 ${bad.map(k => k.split("|")[1]).join(", ")} 이 구성에서 빠짐`);
+    });
+  }
+  return out;
+}
+/* 적용하기에서 부름. 바뀐 묶음이 있으면 "지금 바로 / 날짜부터" 를 묻고, 날짜면 예정으로 넣고 그 묶음은 임시본에서 되돌립니다.
+   돌려주는 값: true = 계속 적용하기 진행, false = 취소 */
+async function askScheduleOnApply(before, after){
+  const groups = changedGroups(before, after);
+  if(!groups.length) return true;
+  const names = groups.map(g => SCHED_GROUPS[g].label).join(" · ");
+  const when = await uiChoose ? await uiChoose(`${names} 변경 — 언제부터 적용할까요?`, ["지금 바로", "날짜를 정해서 (예정)"]) : 0;
+  if(when == null) return false;
+  if(when === 0) return true;
+  const from = await uiPrompt("적용 시작일", "YYYY-MM-DD", {value:shiftDate(todayStr(), 1), ok:"다음"});
+  if(!from || !/^\d{4}-\d{2}-\d{2}$/.test(from)) return false;
+  if(from <= todayStr()){ await uiAlert("내일부터 정할 수 있습니다", "오늘 바로면 '지금 바로' 를 고르세요.", "warn"); return false; }
+  let to = await uiPrompt("적용 종료일 (비우면 계속)", "YYYY-MM-DD · 이 날까지만 쓰고 원래대로", {value:"", ok:"다음"});
+  if(to == null) return false;
+  to = to.trim() || null;
+  if(to && (!/^\d{4}-\d{2}-\d{2}$/.test(to) || to < from)){ await uiAlert("종료일이 시작일보다 빠릅니다", "", "warn"); return false; }
+  const note = ((await uiPrompt("메모 (선택)", "예: 여포 파셜룸 추가", {value:"", ok:"확인"})) || "").trim();
+  const st = store().settings;
+  st.scheduled = st.scheduled || [];
+  /* 예정은 '그 묶음 전체의 모습' 을 날짜순으로 덮어씁니다. 같은 묶음에 더 이른 예정이 있으면 이번 것이 그 뒤에 덮으므로
+     그 예정의 내용은 이번 값에 들어 있어야 합니다 — 지금 설정을 고쳐 만든 값이라 빠져 있을 수 있어 한 번 알립니다 */
+  for(const g of groups){
+    const earlier = (st.scheduled||[]).filter(e => e.group === g && e.from < from && !e.to);
+    if(earlier.length){
+      const ok = await uiConfirm(`${SCHED_GROUPS[g].label}에 더 이른 예정이 있습니다`,
+        earlier.map(schedLabel).join("\n") + `\n\n이번 예정(${dateLabel(from)}부터)은 그 뒤에 적용되어 위 내용을 덮어씁니다.\n위 예정에서 바꾼 것도 이번 값에 들어 있어야 합니다. 확실하지 않으면 취소하고 예정 목록을 먼저 보세요.`,
+        {ok:"알고 있습니다, 계속", cancel:"취소"});
+      if(!ok) return false;
+    }
+  }
+  for(const g of groups){
+    const values = {}; SCHED_GROUPS[g].keys.forEach(k => { if(after[k] !== undefined) values[k] = deepClone(after[k]); });
+    const e = { id:"sc_" + Date.now() + "_" + g, from, to, group:g, values, note, createdAt:new Date().toISOString(), by:SESSION ? SESSION.who : "-" };
+    const conf = schedConflicts(e);
+    if(conf.length){
+      const ok = await uiConfirm(`${SCHED_GROUPS[g].label} 예정에 걸리는 예약 ${conf.length}건`, conf.slice(0,8).join("\n") + (conf.length > 8 ? `\n외 ${conf.length-8}건` : "") + "\n\n예약은 지워지지 않고 '경고 예약' 으로 남습니다.", {ok:"그래도 예정", cancel:"취소"});
+      if(!ok) return false;
+    }
+    st.scheduled.push(e);
+    /* 그 묶음은 지금 설정으로 되돌립니다 — 예정에만 들어가야 하니까 */
+    SCHED_GROUPS[g].keys.forEach(k => { if(before[k] === undefined) delete after[k]; else after[k] = deepClone(before[k]); });
+    logEvent("예정 설정 등록", schedLabel(e));
+  }
+  return true;
+}
+
+/* ---------- 예정 목록 시트 (되돌리기 왼쪽 단추) ---------- */
+function openScheduled(){ view.form = {type:"sched2"}; render(); }
+function sheetScheduled(){
+  const list = schedList().filter(e => !e.to || e.to >= todayStr());
+  const rows = list.length ? list.map(e => {
+    const conf = schedConflicts(e);
+    return `<div class="rowitem" style="display:block">
+      <div class="t"><b>${esc(dateLabel(e.from))}${e.to ? ` ~ ${esc(dateLabel(e.to))}` : " 부터"}</b> <span class="tag">${esc(SCHED_GROUPS[e.group].label)}</span>${conf.length ? `<span class="tag rust">걸리는 예약 ${conf.length}</span>` : ""}</div>
+      <div class="s">${esc(schedSummary(e))}${e.note ? ` · ${esc(e.note)}` : ""} · ${esc(e.by||"")} ${esc((e.createdAt||"").slice(0,10))}</div>
+      <div class="btn-row" style="margin-top:8px">
+        <button class="btn sm" onclick="schedApplyNow('${e.id}')">지금 적용</button>
+        <button class="btn sm danger" onclick="schedDelete('${e.id}')">삭제</button></div>
+    </div>`; }).join("")
+    : `<div class="empty">예정된 설정 변경이 없습니다.<br><span class="s">설정을 고치고 '적용하기' 에서 '날짜를 정해서' 를 고르면 여기에 쌓입니다.</span></div>`;
+  return `${sheetHead(`예정된 설정 · ${list.length}건`)}
+    <div class="card searchbox">${rows}</div>
+    <p class="f-note">날짜가 되면 아무도 안 눌러도 그 날부터 적용됩니다. 기간이 있는 것은 끝나면 원래대로 돌아옵니다.</p>
+    <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">닫기</button></div>`;
+}
+function schedSummary(e){
+  const v = e.values || {};
+  if(v.rooms) return `룸 ${v.rooms.filter(isRoom).length} · 테이블 ${v.rooms.filter(isTable).length} · 합침 ${(v.joins||[]).length}`;
+  if(v.courseGroups) return `${v.courseGroups.length}행 · ${v.courseGroups.map(g => g.label).join(", ")}`;
+  return Object.keys(v).map(k => `${k} ${JSON.stringify(v[k])}`).join(" · ").slice(0, 80);
+}
+async function schedDelete(id){
+  const st = store().settings, e = (st.scheduled||[]).find(x => x.id === id); if(!e) return;
+  if(!await uiConfirm("이 예정을 지울까요?", schedLabel(e), {ok:"지우기"})) return;
+  st.scheduled = st.scheduled.filter(x => x.id !== id); if(view.draft) view.draft.scheduled = deepClone(st.scheduled);
+  logEvent("예정 설정 삭제", schedLabel(e)); saveData(); render();
+}
+async function schedApplyNow(id){
+  const st = store().settings, e = (st.scheduled||[]).find(x => x.id === id); if(!e) return;
+  if(!await uiConfirm("지금 바로 적용할까요?", schedLabel(e) + "\n\n예정 날짜를 기다리지 않고 오늘부터 씁니다.", {ok:"지금 적용"})) return;
+  Object.keys(e.values||{}).forEach(k => { st[k] = e.values[k]; });
+  st.scheduled = st.scheduled.filter(x => x.id !== id); if(view.draft) view.draft = deepClone(st);
+  logEvent("예정 설정 앞당겨 적용", schedLabel(e)); takeSnapshot(); saveData(); render();
+}
 /* ============================================================
    렌더링
    ============================================================ */
@@ -4040,11 +4250,11 @@ function startIntro(){
   render();                                   /* 한 번만 그립니다 */
   /* 글자 5개가 200ms 간격(1초) — 135ms 는 거의 동시라 단계가 안 느껴졌고, 260ms 는 붉은 첫 장면이 길었습니다(6차-F).
      첫 글자는 360ms, 마지막 글자 뒤 600ms 에 끝. 총 약 1.8초, 아무 데나 누르면 건너뜀 */
-  var steps = INTRO_TO.length, t0 = 120, gap = 150;   /* 8차-AA(재아): 조금 더 빠르게 — 글자 150ms 간격, 총 1.3초쯤 */
+  var steps = INTRO_TO.length, t0 = 70, gap = 88;   /* 재아: 1.7배 빠르게 — 글자 88ms 간격, 총 0.8초쯤 */
   for(var i=1;i<=steps;i++){
     introTimers.push(setTimeout((function(k){ return function(){ introStep(k); }; })(i), t0 + i*gap));
   }
-  introTimers.push(setTimeout(endIntro, t0 + steps*gap + 450));
+  introTimers.push(setTimeout(endIntro, t0 + steps*gap + 265));
 }
 /* 글자 진행 p(0~1)에 따른 바탕 두 겹의 불투명도 — 나무색은 앞 절반에서, 한지(와 창호)는 뒤 절반에서 올라옵니다 */
 function introBg(n){
@@ -4206,7 +4416,7 @@ async function lockNow(){
   if(!await flushBeforeLeave()) return;
   resetOverlays();
   logEvent("잠금", "");
-  AUTHED=false; PIN_BUF=""; PIN_ERR=""; view.storeKey=null; view.draft=null;
+  AUTHED=false; PIN_BUF=""; PIN_ERR=""; view.storeKey=null; view.draft=null; view.adminOk=false;
   DATA._session = {authed:false};
   sessionClear(); OFFLINE = null;
   saveData(); render();
@@ -4266,7 +4476,11 @@ function uiChoice(title, msg, choices){
 /* 한 줄 입력 팝업 — 관리자 비밀번호 등. 취소면 null */
 function uiPrompt(title, msg, opt){
   opt = opt || {};
-  return new Promise(res => { modalReplace({mode:"prompt", title, msg, tone:"ok", ok:opt.ok||"확인", cancel:"취소", password:!!opt.password, res}); });
+  return new Promise(res => { modalReplace({mode:"prompt", title, msg, tone:"ok", ok:opt.ok||"확인", cancel:"취소", password:!!opt.password, value:opt.value||"", res}); });
+}
+/* 여러 개 중 하나 고르기 — 고른 번호(0부터), 취소면 null */
+function uiChoose(title, options, msg){
+  return new Promise(res => { modalReplace({mode:"choice", title, msg:msg||"", tone:"ok", choices:options.map((o,i)=>[o,i]), cancel:"취소", res}); });
 }
 function modalPromptAnswer(){ const el = document.getElementById("md-input"); const m = MODAL; MODAL = null; render(); if(m) m.res(el ? el.value : ""); }
 function renderModal(){
@@ -4283,10 +4497,10 @@ function renderModal(){
     <div class="overlay modal-ov" onclick="modalAnswer(false)">
       <div class="modal ${m.tone}" onclick="event.stopPropagation()">
         <div class="md-h">${esc(m.title)}</div>
-        <div class="md-b">${lines}${m.mode==="prompt"?`<input id="md-input" type="${m.password?"password":"text"}" autofocus style="margin-top:8px; width:100%" onkeydown="if(event.key==='Enter') modalPromptAnswer()">`:""}</div>
+        <div class="md-b">${lines}${m.mode==="prompt"?`<input id="md-input" type="${m.password?"password":"text"}" value="${esc(m.value||"")}" autofocus style="margin-top:8px; width:100%" onkeydown="if(event.key==='Enter') modalPromptAnswer()">`:""}</div>
         <div class="md-f">
           ${m.mode==="confirm"||m.mode==="prompt"||m.mode==="choice"?`<button class="btn" onclick="modalAnswer(${m.mode==="confirm"?"false":"null"})">${esc(m.cancel)}</button>`:""}
-          ${m.mode==="choice" ? (m.choices||[]).map(([lb,v],i)=>`<button class="btn ${i===0?"danger-fill":"primary"}" onclick="modalAnswer(${JSON.stringify(v)})">${esc(lb)}</button>`).join("") :
+          ${m.mode==="choice" ? (m.choices||[]).map(([lb,v],i)=>`<button class="btn ${m.tone==="warn"&&i===0?"danger-fill":"primary"}" onclick="modalAnswer(${JSON.stringify(v)})">${esc(lb)}</button>`).join("") :
           `<button class="btn ${m.tone==="warn"?"danger-fill":"primary"}" onclick="${m.mode==="prompt"?"modalPromptAnswer()":"modalAnswer(true)"}">
             ${m.mode==="confirm"||m.mode==="prompt"?esc(m.ok):"확인"}</button>`}
         </div>
@@ -4335,6 +4549,9 @@ async function setTab(t){
     if(!ok) return;
     view.draft = null;
   }
+  /* 설정은 관리자 비밀번호로만 들어갑니다(재아). 한 번 통과하면 잠글 때까지 다시 묻지 않고,
+     PIN 변경·관리자 비밀번호 변경·접속 기록·PIN 관리·초기화·기록 복사는 그 안에서 한 번 더 묻습니다 */
+  if(t==="settings" && !view.adminOk){ if(!await adminGate("설정 열기")) return; view.adminOk = true; }
   if(t==="settings" && !view.draft) view.draft = deepClone(store().settings);
   Object.keys(view.open).forEach(function(x){ view.open[x] = false; });   /* 어디든 갔다 오면 폴드는 접힌 상태로(재아) — 설정·대시보드 모두 */
   view.tab=t; render(); window.scrollTo(0,0);
@@ -4353,7 +4570,7 @@ function mirrorDraft(key){ if(view.draft) view.draft[key] = deepClone(store().se
 /* 설정 두 개의 차이를 '키: 이전 → 이후' 로 — 관리자 → 설정 변경 내역 */
 function settingsDiff(a, b){
   const out = [], keys = {}; Object.keys(a||{}).concat(Object.keys(b||{})).forEach(k=>{ keys[k]=1; });
-  const NAME = {rooms:"좌석", joins:"룸 합침", schedules:"운영시간", overrides:"임시 일정", holidays:"공휴일 추가", holidaysOff:"공휴일 제외", courseGroups:"코스 구성", sources:"예약경로", sms:"문자 안내", displayRows:"디스플레이 배치", tvType:"디스플레이 형식", groupSize:"단체 기준", noshowExcluded:"노쇼 경고 제외", uiZoom:"화면 크기", closeGapMin:"겹침 경고", noshowWarnCount:"노쇼 경고 기준", noshowCancelRule:"취소→노쇼 기준", tvAd:"광고 영상", holidayAsWeekend:"공휴일=주말", minCountAdultsOnly:"정원 기준", chairDefault:"유아의자 기본", loSoon:"임박 기준", breakMode:"브레이크 방식", _setlog:null};
+  const NAME = {scheduled:null, rooms:"좌석", joins:"룸 합침", schedules:"운영시간", overrides:"임시 일정", holidays:"공휴일 추가", holidaysOff:"공휴일 제외", courseGroups:"코스 구성", sources:"예약경로", sms:"문자 안내", displayRows:"디스플레이 배치", tvType:"디스플레이 형식", groupSize:"단체 기준", noshowExcluded:"노쇼 경고 제외", uiZoom:"화면 크기", closeGapMin:"겹침 경고", noshowWarnCount:"노쇼 경고 기준", noshowCancelRule:"취소→노쇼 기준", tvAd:"광고 영상", holidayAsWeekend:"공휴일=주말", minCountAdultsOnly:"정원 기준", chairDefault:"유아의자 기본", loSoon:"임박 기준", breakMode:"브레이크 방식", _setlog:null};
   Object.keys(keys).forEach(k=>{
     if(NAME[k] === null) return;
     const x = JSON.stringify(a ? a[k] : undefined), y = JSON.stringify(b ? b[k] : undefined);
@@ -4363,15 +4580,19 @@ function settingsDiff(a, b){
   });
   return out;
 }
-function applySettings(){
+async function applySettings(){
   if(!view.draft) return;
   if(readonlyBlock()) return;
   const before = store().settings, after = deepClone(view.draft);
+  /* 좌석·규칙·코스가 바뀌었으면 "지금 바로 / 날짜부터" — 날짜면 예정으로 들어가고 그 묶음은 되돌아옵니다(03b) */
+  if(!await askScheduleOnApply(before, after)) return;
+  after.scheduled = before.scheduled;   /* 예정 목록은 임시본이 아니라 설정에서 직접 관리 */
   const diff = settingsDiff(before, after);
   after._setlog = (before._setlog || []).concat(diff.length ? [{at:new Date().toISOString(), who:SESSION ? SESSION.who : "-", items:diff}] : []).slice(-60);
   store().settings = after;
   view.draft = deepClone(after);   /* _setlog 가 붙어 임시본과 달라지지 않게 */
   logEvent("설정 변경", diff.length ? diff.join(" / ").slice(0, 300) : "적용(변경 없음)");
+  absorbScheduled();
   takeSnapshot();   /* 룸·테이블 수가 바뀌었을 수 있으니 오늘 스냅샷을 새로 (내일부터 오늘을 이 수로 계산) */
   saveData(); render();
 }
@@ -4391,6 +4612,8 @@ async function refreshData(){
   try{
     var changed = await reloadFromStore();
     LAST_REFRESH = Date.now();
+    /* 홈페이지 연동(11c): 새 접수 끌어오기 → 팝업, 남은 자리 올리기(45초 간격) */
+    try{ if(SESSION && !view.display){ var fresh = await pullRequests(); if(fresh) changed = true; publishAvail(); } }catch(e){}
     return changed !== false;   /* 서버 모드는 바뀐 것이 있는지 돌려줍니다. 그 밖(undefined)은 '모름' = 다시 그림 */
   }catch(e){
     console.error("갱신 실패", e.message);
@@ -4408,9 +4631,10 @@ async function manualRefresh(){
    마법사·시트·확인창이 떠 있으면 건너뜁니다(입력 중에 화면이 바뀌면 안 되니까). '새로고침' 버튼은 즉시 + 무조건 다시 그림 */
 setInterval(function(){
   /* 자정을 넘겼으면 새 날짜의 좌석 수를 남깁니다 (밤새 켜 둔 태블릿·TV). 6차 전에는 자정 처리가 따로 없었습니다 */
-  if(SNAP_DAY && todayStr() !== SNAP_DAY){ takeSnapshot(); if(AUTHED && autoCloseDays()) saveData(); }   /* 어제 '확정' → '방문' 도 함께(점검 R7) */
+  if(SNAP_DAY && todayStr() !== SNAP_DAY){ if(AUTHED) absorbScheduled(); takeSnapshot(); if(AUTHED && autoCloseDays()) saveData(); }   /* 어제 '확정' → '방문' 도 함께(점검 R7) */
   sessionTick();   /* 토큰 만료 5분 전 갱신 */
   if(SAVE_FAIL && !OFFLINE) flush();   /* 저장 못 한 것이 있으면 다시 */
+  if(AUTHED && !view.display && typeof publishAvail === "function" && AVAIL_DIRTY) publishAvail();   /* 미뤄 둔 남은 자리 올리기 */
   if(!AUTHED || view.display || WZ || view.form || MODAL) return;
   refreshData().then(function(changed){ if(changed) render(); });
 }, 60000);
@@ -4461,6 +4685,7 @@ function renderStore(){
         <div class="bar-right">
           ${view.tab==="settings" ? `
           <!-- 설정: 되돌리기·적용하기를 여기(나가기 왼쪽)에 (재아). 아래 안내 띠는 없앴습니다 -->
+          <button class="tvbtn b-sched ${schedList().length?'has':''}" onclick="openScheduled()" title="예정된 설정">예정<i class="cnt">${schedList().length}</i></button>
           <button class="tvbtn b-revert" onclick="revertSettings()" ${settingsDirty()?"":"disabled"}>되돌리기</button>
           <button class="tvbtn amber b-apply" onclick="applySettings()" ${settingsDirty()?"":"disabled"}>적용하기</button>
           <button class="tvbtn icon b-exit" onclick="setTab('dash')" title="설정 나가기" aria-label="설정 나가기">${ICON.exit}</button>` : isMobile() ? `
@@ -4468,10 +4693,12 @@ function renderStore(){
                '오늘' 은 375px 에 안 들어가 더보기로 — 달력 아이콘의 점이 '오늘이 아님' 표시 -->
           <button class="tvbtn icon b-cal ${view.date===todayStr()?'':'dot'}" onclick="openCal()" title="날짜" aria-label="날짜 선택">${ICON.cal}</button>
           <button class="tvbtn icon b-refresh" onclick="manualRefresh()" title="새로고침" aria-label="새로고침">${ICON.refresh}</button>
-          <button class="tvbtn icon b-search" onclick="openSearch()" title="예약 검색" aria-label="예약 검색">${ICON.search}</button>` : `
+          <button class="tvbtn icon b-search" onclick="openSearch()" title="예약 검색" aria-label="예약 검색">${ICON.search}</button>
+          <button class="tvbtn icon b-reqs ${reqPending().length?'has':''}" onclick="openRequests()" title="홈페이지 예약" aria-label="홈페이지 예약">${ICON.inbox}<i class="cnt">${reqPending().length}</i></button>` : `
           ${view.date===todayStr() ? "" : `<button class="tvbtn b-today" onclick="goToday()">오늘</button>`}
           <button class="tvbtn icon b-refresh" onclick="manualRefresh()" title="새로고침" aria-label="새로고침">${ICON.refresh}</button>
           <button class="tvbtn b-search" onclick="openSearch()">예약 검색</button>
+          <button class="tvbtn b-reqs ${reqPending().length?'has':''}" onclick="openRequests()">홈페이지 예약<i class="cnt">${reqPending().length}</i></button>
           <button class="tvbtn accent b-add" onclick="openWizard()">＋ 예약 등록</button>`}
           ${view.tab==="settings" ? "" : `
           <!-- 더보기(⋮): 자주 안 쓰는 것들을 여기로 모았습니다 — 예약률 추이 · 영업시간 · 설정 · 디스플레이 모드 -->
@@ -4598,7 +4825,7 @@ function resRowMobile(r){
   const warn = holdsSeat(r) && resWarn(r).length;
   const chg = changeTag(r);
   const pills = [
-    r.menuType==="코스" ? (r.courseUndecided ? "코스 미정" : "코스") : r.menuType==="코스 상당" ? "코스상당" : r.menuType==="확인 필요" ? "메뉴확인" : "",
+    r.menuType==="코스" ? (r.courseUndecided ? "코스·세트 미정" : "코스·세트") : r.menuType==="코스 상당" ? "코스상당" : r.menuType==="확인 필요" ? "메뉴확인" : "",
     r.allergy ? "알러지" : "", r.chairs ? `유아의자 ${r.chairs}` : "", r.request ? "요청" : "", r.memo ? "메모" : ""
   ].filter(Boolean).join(" · ");
   return `
@@ -4612,7 +4839,7 @@ function resRowMobile(r){
         ${chg?`<span class="chg-tag ${chg.kind==="취소"||chg.kind==="노쇼"?"off":""}">${esc(chg.label)}</span>`:""}
       </div>
       <div class="mr-2">
-        <span>${pplOf(r)}명${r.infants?`(유아${r.infants})`:""}</span>
+        <span>${pplOf(r)}명${r.infants?`(어린이${r.infants})`:""}</span>
         <span class="${room||r.tentativeRoomId?'':'none'}">${esc(seat)}</span>
         ${r.phone?`<span>${esc(r.phone)}</span>`:""}
         ${pills?`<span class="mr-p">${esc(pills)}</span>`:""}
@@ -4753,9 +4980,9 @@ function renderResList(date){
   let marked = false;
   const rows = day.length ? day.map(r=>{
     let m = "";
-    if(isToday && !marked && toMin(r.time) > nowM){ marked = true; m = `<div class="now-sep"><span>지금 ${hm(nowHM())}</span></div>`; }
+    if(isToday && !marked && toMin(r.time) > nowM){ marked = true; m = `<div class="now-sep"><span>지금 | ${hm(nowHM())}</span></div>`; }
     return m + resRow(r);
-  }).join("") + (isToday && !marked ? `<div class="now-sep"><span>지금 ${hm(nowHM())} · 오늘 남은 예약 없음</span></div>` : "")
+  }).join("") + (isToday && !marked ? `<div class="now-sep"><span>지금 | ${hm(nowHM())} · 오늘 남은 예약 없음</span></div>` : "")
     : `<div class="empty">해당 조건의 예약이 없습니다.</div>`;
   return `<div class="filters">${filters}</div><div class="rlist">${rows}</div>`;
 }
@@ -4769,8 +4996,8 @@ function resRow(r){
   const pills = [
     r.assignedLater ? `<span class="pill" title="접수 때는 좌석 미정이었습니다">배정 완료</span>` : "",
     r.menuType==="코스" ? (r.courseUndecided
-      ? `<span class="pill amber">코스 미정</span>`
-      : `<span class="pill pine" title="${esc(courseSummary(r.courses))}">코스</span>`) :
+      ? `<span class="pill amber">코스·세트 미정</span>`
+      : `<span class="pill pine" title="${esc(courseSummary(r.courses))}">코스·세트</span>`) :
     r.menuType==="코스 상당" ? `<span class="pill pine">코스상당</span>` :
     r.menuType==="확인 필요" ? `<span class="pill amber">메뉴확인</span>` : "",
     r.allergy ? `<span class="pill rust" title="${esc(r.allergy)}">알러지</span>` : "",
@@ -4787,7 +5014,7 @@ function resRow(r){
       <span class="rr-bang">${late?"!":""}</span>
       <span class="rr-t">${esc(r.time)}</span>
       <span class="rr-n">${esc(r.name)}</span>
-      <span class="rr-p">${pplOf(r)}명${r.infants?`(유아${r.infants})`:""}</span>
+      <span class="rr-p">${pplOf(r)}명${r.infants?`(어린이${r.infants})`:""}</span>
       <span class="rr-seat ${room||r.tentativeRoomId?'':'none'}">${esc(seat)}</span>
       <span class="rr-ph">${esc(r.phone||"-")}</span>
       ${rest?`<span class="rr-rest">${rest}</span>`:""}
@@ -4814,7 +5041,7 @@ var CHANGE_FIELDS = [
   {k:"date",     n:"날짜",   f:function(v){ return v ? dateLabel(v) : "-"; }},
   {k:"time",     n:"시간",   f:function(v){ return v ? hm(v) : "-"; }},
   {k:"people",   n:"인원",   f:function(v){ return (v||0)+"명"; }},
-  {k:"infants",  n:"유아",   f:function(v){ return (v||0)+"명"; }},
+  {k:"infants",  n:"어린이",   f:function(v){ return (v||0)+"명"; }},
   {k:"chairs",   n:"유아의자", f:function(v){ return (v||0)+"개"; }},
   {k:"roomId",   n:"좌석",   f:function(v){ return v ? seatLabel(v) : "미배정"; }},
   {k:"seatPref", n:"좌석 희망", f:function(v){ return v ? seatLabel(v) : "-"; }},   /* 지하 → 1층 처럼 층만 바꾼 것도 변동입니다(11월 점검) */
@@ -4837,7 +5064,7 @@ function diffRes(a, b){
   /* 코스는 개수 묶음이라 따로 비교합니다 */
   var ca = courseSummary(a && a.courses) || (a && a.courseUndecided ? "미정" : "");
   var cb = courseSummary(b && b.courses) || (b && b.courseUndecided ? "미정" : "");
-  if(ca !== cb) out.push({n:"코스", a:ca||"없음", b:cb||"없음"});
+  if(ca !== cb) out.push({n:"코스·세트", a:ca||"없음", b:cb||"없음"});
   return out;
 }
 
@@ -4938,7 +5165,9 @@ function remindHours(offset){
   for(h = 9; h <= last; h++) out.push(h);
   return out;
 }
-function offsetLabel(o){ return o === 2 ? "2일 전" : o === 1 ? "1일 전 (전날)" : "당일 아침"; }
+function offsetLabel(o){ return o === 2 ? "2일 전" : o === 1 ? "1일 전" : "당일 아침"; }
+/* 재안내 시각 알약 — 30분 선택지가 없으니 "오전 9시" 로 짧게 */
+function hourLabel(h){ return (h < 12 ? "오전 " : "오후 ") + (h % 12 === 0 ? 12 : h % 12) + "시"; }
 /* 문자 안에 들어갈 말 — '설정값'이 아니라 '보내는 날과 예약일의 실제 차이'로 정합니다.
    앱이 꺼져 있어 뒤늦게 나가는 경우(전날 5시에 못 보내고 당일 아침에 나감)에
    설정값만 보면 "내일 예약입니다"라고 잘못 나갑니다. 손님이 날짜를 착각하게 됩니다. */
@@ -4997,10 +5226,10 @@ function smsWhen(r){
 }
 /* seatLabel() 은 '지금 보고 있는 매장'(store())을 씁니다.
    문자는 매장을 고르기 전에도 만들어질 수 있어서(smsTick) 여기서는 직접 찾습니다. */
-/* '4명' / 유아가 있으면 '4명(유아 1명 포함)'. 유아가 없으면 괄호를 아예 안 씁니다 */
+/* '4명' / 어린이가 있으면 '4명(어린이 1명 포함)'. 어린이가 없으면 괄호를 아예 안 씁니다 */
 function smsPpl(r){
   var inf = r.infants || 0;
-  return pplOf(r) + "명" + (inf > 0 ? "(유아 " + inf + "명 포함)" : "");
+  return pplOf(r) + "명" + (inf > 0 ? "(어린이 " + inf + "명 포함)" : "");
 }
 /* kind: "접수" | "재안내". 재안내는 offset 을 넘겨 문구를 바꿉니다 */
 function smsText(r, kind, offset, st){
@@ -5111,9 +5340,9 @@ function resWarn(r){
   if(seat && seat.type==="room"){
     const cn = Object.values(r.courses||{}).reduce((a,b)=>a+b,0);
     const ad = adultCount(pplOf(r), r.infants);
-    if(r.menuType==="해당 없음") out.push("룸·코스 아님");
-    else if(r.menuType==="확인 필요") out.push("코스 미확정");
-    else if(r.menuType==="코스" && !r.courseUndecided && cn>0 && cn<ad) out.push("코스 인원 부족");
+    if(r.menuType==="해당 없음") out.push("룸·코스·세트 아님");
+    else if(r.menuType==="확인 필요") out.push("코스·세트 미확정");
+    else if(r.menuType==="코스" && !r.courseUndecided && cn>0 && cn<ad) out.push("코스·세트 인원 부족");
   }
   if((r.chairs||0) > (r.infants||0)) out.push("유아의자 초과");
   /* 겹쳐 받은 룸은 접수 뒤에도 계속 보여야 합니다.
@@ -5132,6 +5361,11 @@ function checkItems(date){
   const list = s.reservations.filter(r=>r.date===d && r.status==="확정");
   const items = [];
 
+  /* 홈페이지에서 들어온 손님 요청 — 날짜와 상관없이 대기 중이면 맨 위에 */
+  const pend = reqPending();
+  if(pend.length) items.push(["blue", `홈페이지 예약 ${pend.length}건`,
+    pend.slice(0,3).map(q=>`${dateLabel(q.date)} ${hm(q.time)} ${q.name}`).join(", "), `openRequests()`]);
+
   const un = list.filter(isUnassigned);   /* 테이블 예약은 층이 자리 — 미배정 아님 */
   if(un.length) items.push(["amber", `좌석 미배정 ${un.length}건`,
     un.slice(0,3).map(r=>`${r.time} ${r.name}`).join(", "), `openUnassigned()`]);
@@ -5145,7 +5379,7 @@ function checkItems(date){
   if(chairSum) items.push(["pine", `유아용 의자 ${chairSum}개 준비`,
     chairs.slice(0,3).map(r=>`${r.time} ${r.name} ${r.chairs}개`).join(", "), `openPick('chairs')`]);
 
-  const gsize = s.settings.groupSize || 8;
+  const gsize = settingsAt(d).groupSize || 8;
   const group = list.filter(r=>pplOf(r) >= gsize);
   if(group.length) items.push(["pine", `단체 손님 ${group.length}건`,
     group.slice(0,3).map(r=>`${r.time} ${r.name} ${pplOf(r)}명`).join(", "), `openPick('group')`]);
@@ -5206,7 +5440,7 @@ function sheetPick(){
   const conf = {
     allergy:{title:"알러지 확인", pick:r=>r.allergy, note:"주방에 전달됐는지 확인하세요."},
     chairs:{title:"유아용 의자", pick:r=>r.chairs>0, note:"의자 개수를 미리 준비하세요."},
-    menu:{title:"메뉴 확인", pick:r=>r.menuType==="확인 필요", note:"방문 전 연락해 코스를 확정하세요."},
+    menu:{title:"메뉴 확인", pick:r=>r.menuType==="확인 필요", note:"방문 전 연락해 코스·세트를 확정하세요."},
     noshow:{title:"노쇼 이력 손님", pick:r=>!!noshowOf(r.phone), note:"확인 전화를 돌리면 노쇼가 줄어듭니다."},
     warn:{title:"경고 예약", pick:r=>resWarn(r).length>0, note:"사장 판단으로 접수된 예약입니다. 문제가 없는지 확인하세요."},
     confirmed:{title:"확정 예약", pick:r=>true, note:""},
@@ -5232,7 +5466,7 @@ function sheetPick(){
           kind==="chairs"?` · 의자 ${r.chairs}개`:""}${
           kind==="noshow"&&noshowOf(r.phone)?` · 노쇼 ${noshowOf(r.phone).count}회`:""}${
           kind==="warn"?` · ${resWarn(r).join(", ")}`:""}${
-          kind==="group"&&r.menuType==="코스"?` · 코스`:""}</span></span>
+          kind==="group"&&r.menuType==="코스"?` · 코스·세트`:""}</span></span>
       ${seatTag(r)}
     </button>`).join("") : `<div class="empty">해당 예약이 없습니다.</div>`;
   return `
@@ -5302,7 +5536,7 @@ function renderTimeline(date, compact){
                     :`지금 ${hm(nowHM())}`}"></span>` : "";
 
   const blockLabel = r =>
-    `<b>${esc(r.time)}</b> ${esc(r.name)} ${pplOf(r)}명${r.infants?`(유아${r.infants})`:""}`;
+    `<b>${esc(r.time)}</b> ${esc(r.name)} ${pplOf(r)}명${r.infants?`(어린이${r.infants})`:""}`;
 
   /* 좌석 이름 칸에 붙는 사용 중지 요약 — 빗금 위 글자가 예약에 가려도 여기서는 보입니다 */
   const blockTag = (seat)=>{
@@ -5323,7 +5557,7 @@ function renderTimeline(date, compact){
     const s = Math.max(o, sp.s), e = Math.min(c, sp.e);
     if(e <= s) return "";
     return `<span class="blockband" style="left:${pos(s)}%; width:${((e-s)/span)*100}%"
-      title="사용 중지 · ${esc(spanLabel(sp))}${sp.note?` · ${esc(sp.note)}`:""}"></span>`;
+      title="사용 중지 · ${esc(spanLabel(sp))}${sp.note?` · ${esc(sp.note)}`:""}"><i class="bb-l">사용 중지${sp.note?` (${esc(sp.note)}${sp.allDay?"":" · "+esc(spanLabel(sp))})`:` (${esc(spanLabel(sp))})`}</i></span>`;
   }).join("");
 
   /* ---------- 룸 ---------- */
@@ -5371,7 +5605,7 @@ function renderTimeline(date, compact){
     </div>`;
   };
 
-  const rooms = st.rooms.filter(isRoom);
+  const rooms = roomsAt(date).filter(isRoom);   /* 그 날짜의 좌석(예정 반영) */
   const groupRow = (label) => `<div class="tl-row group"><div class="tl-name"><b>${esc(label)}</b></div><div class="tl-track"></div><div class="tl-rate"></div></div>`;
   /* 테이블은 층 한 줄 — 겹치는 예약을 층(lane)으로 쌓고, 예약률은 손님 수 / 자리 수 (8차-H) */
   const floorRow = (fl)=>{
@@ -5415,7 +5649,7 @@ function renderTimeline(date, compact){
     const used = items.reduce((a,x)=>a+x.need*(x.e0-x.s0),0);
     const rate = tbls.length ? Math.min(100, Math.round(used/(tbls.length*span)*100)) : 0;
     const bands = (fl==null ? "" : floorTables(fl).map(blockBands).join(""))
-      + (over ? `<div class="offband overlane" style="left:0; right:0; top:0; height:${LANE}px" title="테이블 수를 넘은 팀이 놓이는 칸"></div>` : "");
+      + (over ? `<div class="offband overlane" style="left:0; right:0; top:0; height:${LANE}px" title="테이블 수를 넘은 팀이 놓이는 칸"><i class="ol-l">자리 없음 ${over}팀 — 테이블 수를 넘은 예약</i></div>` : "");
     return `<div class="tl-row tbl floor">
       <div class="tl-name"><b>${fl==null?"층 미정":esc(floorLabel(fl))}</b><small>${fl==null?"":`테이블 ${tbls.length} · ${seats}석`}</small></div>
       <div class="tl-track" style="height:${totalLanes*LANE}px; background-image:repeating-linear-gradient(to top, transparent 0, transparent ${LANE-1}px, var(--border) ${LANE-1}px, var(--border) ${LANE}px)">${layers}${bands}${blocks}</div>
@@ -5494,8 +5728,8 @@ function dayStat(date){
      노쇼와 취소는 자리를 안 쓴 것이므로 예약률에서 빠집니다. */
   const list = s.reservations.filter(r=>r.date===date && holdsSeat(r));
   const people = list.reduce((a,r)=>a+pplOf(r),0);
-  const rooms = st.rooms.filter(isRoom);
-  const halls = st.rooms.filter(isTable);   /* 이름은 옛 것(hall) 그대로 — 스냅샷·호출부 호환. 뜻은 '테이블' */
+  const rooms = roomsAt(date).filter(isRoom);            /* 앞날은 예정 좌석 수로 (예약률 분모) */
+  const halls = roomsAt(date).filter(isTable);   /* 이름은 옛 것(hall) 그대로 — 스냅샷·호출부 호환. 뜻은 '테이블' */
   const hallT = halls.length;
   /* 지난 날짜는 그날의 좌석 수(스냅샷)로, 오늘·앞날은 현재 설정으로 (takeSnapshot 주석 참고).
      스냅샷이 없는 지난 날짜(1년 넘은 것)는 현재 설정으로 계산합니다 */
@@ -5637,6 +5871,294 @@ async function askNoshowOnCancel(rec){
   const r = await uiChoice(`${label}는 노쇼에 해당합니다`, `${rec.time} ${rec.name} 손님 · ${pplText(rec)}\n어떻게 처리할까요?`, [["노쇼로 처리","노쇼"],["취소로 처리","취소"]]);
   return r;
 }
+/* ---------- 홈페이지 예약 — 흉내 ----------
+   가게 사이트(../site) 예약 창에서 손님이 접수한 것이 여기로 들어옵니다. 접수는 바로 확정이 아니고,
+   직원이 보고 ① 승인 → 마법사가 그 내용으로 채워져 열리고 좌석까지 골라 등록 → 확정 문자
+          ② 거절 → 사유 골라 문자(흉내)
+   지금은 서버가 없어 브라우저 안(메모리)에서만 돕니다. REQ_API 세 개만 Supabase 로 바꾸면 됩니다.
+     list()          → 대기 목록        submit 은 사이트 쪽(site/js/reserve.js RES_API.submit) 이 넣습니다
+     accept(id, res) → 확정 처리 + 예약 id 기록
+     reject(id, why) → 거절 처리
+   요청 모양 = 사이트가 보내는 payload 그대로:
+     {id, createdAt, date, time, adults, kids, people, seat:"room"|"table", course:"course:촉 코스"|"set:B 세트"|"later"|"none",
+      courseLabel, name, phone, request, status:"대기"|"확정"|"거절", resId, reason}
+   온라인 접수 기준(재아, 사이트와 같은 값): 성인 2명부터 · 룸은 성인 5명부터 · 13명 이상은 전화. 사이트에서 이미 걸러서 오지만
+   여기서도 한 번 더 표시합니다(경고는 막지 않고 알리기만). */
+const REQ_RULE = { minAdults:2, roomMinAdults:5, onlineMax:12, expireH:24 };   /* expireH: 이 시간 안에 확정·거절이 없으면 자동 취소 */
+let REQUESTS = [];
+const REQ_API = {
+  list: async () => REQUESTS.filter(q => q.status === "대기"),
+  accept: async (id, resId) => { const q = REQUESTS.find(x => x.id === id); if(q){ q.status = "확정"; q.resId = resId; } return {ok:true}; },
+  reject: async (id, why) => { const q = REQUESTS.find(x => x.id === id); if(q){ q.status = "거절"; q.reason = why; } return {ok:true}; }
+};
+/* 24시간 지나면 자동 만료 — 목록을 볼 때마다 정리합니다. 실제 서버에서는 cron 이 하고, 여기서는 흉내 */
+function reqExpireAt(q){ return q.expiresAt ? new Date(q.expiresAt).getTime() : new Date(q.createdAt).getTime() + REQ_RULE.expireH * 3600e3; }   /* 서버 값이 있으면 그것 */
+function reqSweep(){
+  const now = Date.now();
+  REQUESTS.forEach(q => { if(q.status === "대기" && reqExpireAt(q) <= now){ q.status = "만료"; q.reason = "24시간 안에 처리되지 않음"; } });
+}
+function reqPending(){ reqSweep(); return REQUESTS.filter(q => q.status === "대기"); }
+/* "23시간 10분 남음" — 1시간 아래면 분만, 다 되면 '만료 임박' */
+function reqLeft(q){
+  const ms = reqExpireAt(q) - Date.now(); if(ms <= 0) return "만료";
+  const h = Math.floor(ms / 3600e3), m = Math.floor((ms % 3600e3) / 60000);
+  return h ? `${h}시간 ${m}분 남음` : `${m}분 남음`;
+}
+function reqById(id){ return REQUESTS.find(q => q.id === id); }
+function reqPeopleText(q){ return q.kids ? `${q.people}명(어린이${q.kids})` : `${q.people}명`; }
+function reqMenuText(q){
+  if(q.course === "later") return "코스·세트 미정";
+  if(q.course === "none") return "단품 주문";
+  return `${q.courseLabel} ${q.people}인분`;
+}
+/* 사이트에서 접수할 때는 되던 것이 그 사이에 안 되게 된 것 — '충돌' 만 봅니다(규칙은 사이트가 이미 걸렀음).
+   · 그 날 같은 번호로 다른 예약이 들어옴  · 그 사이 자리가 참  · 날짜가 지남 */
+function reqWarns(q){
+  const out = [];
+  if(q.date < todayStr()) out.push("지난 날짜");
+  try{
+    const seats = store().settings.rooms;
+    const free = seats.filter(x => (q.seat === "room" ? isRoom(x) : isTable(x)) && !blockedAt(x, q.date, q.time)
+                   && q.people <= seatMax(x) && (q.seat !== "room" || q.people >= roomMin(x, q.date))
+                   && roomStatus(q.date, q.time, x.id).state === "free").length;
+    if(!free) out.push(q.seat === "room" ? "그 시간에 빈 룸이 없음" : "그 시간에 빈 테이블이 없음");
+  }catch(e){}
+  const dup = store().reservations.find(r => r.date === q.date && r.status !== "취소" && (r.phone||"").replace(/\D/g,"") === (q.phone||"").replace(/\D/g,""));
+  if(dup) out.push(`같은 날 같은 번호 예약 있음 (${dup.time} ${dup.name})`);
+  return out;
+}
+
+/* ---------- 목록 시트 ---------- */
+function openRequests(){ view.form = {type:"reqs"}; render(); }
+function sheetRequests(){
+  const list = reqPending().sort((a,b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
+  const rows = list.length ? list.map(q => {
+    const w = reqWarns(q);
+    return `<button class="rowitem tap" onclick="openRequest('${q.id}')">
+      <span class="grow"><span class="t">${esc(q.name)} <span class="tag">${q.seat==="room"?"룸":"테이블"}</span>${w.length?`<span class="tag rust">${esc(w[0])}</span>`:""}</span>
+        <span class="s">${dateLabel(q.date)} ${hm(q.time)} · ${reqPeopleText(q)} · ${esc(reqMenuText(q))}</span></span>
+      <span class="s left ${reqExpireAt(q)-Date.now() < 3600e3 ? "soon" : ""}" style="white-space:nowrap; text-align:right">${reqLeft(q)}<br><span class="muted">${reqAgo(q.createdAt)} 접수</span></span>
+    </button>`; }).join("")
+    : `<div class="empty">처리할 홈페이지 예약이 없습니다.<br><span class="s">손님이 홈페이지에서 접수하면 여기로 들어옵니다. 24시간 안에 확정·거절하지 않으면 자동 취소됩니다.</span></div>`;
+  return `
+    ${sheetHead(`홈페이지 예약 · ${list.length}건`)}
+    <div class="card searchbox">${rows}</div>
+    <div class="sheet-actions">
+      ${supaOn() ? "" : `<button class="btn ghost" onclick="reqSeedDemo()">흉내 예약 넣기</button>`}
+      <button class="btn primary" onclick="closeSheet()">닫기</button></div>`;
+}
+function reqAgo(iso){
+  const m = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+  return m < 1 ? "방금" : m < 60 ? `${m}분 전` : m < 1440 ? `${Math.floor(m/60)}시간 전` : `${Math.floor(m/1440)}일 전`;
+}
+
+/* ---------- 요청 하나 ---------- */
+function openRequest(id){ view.form = {type:"req", id}; render(); }
+function sheetRequest(){
+  const q = reqById(view.form.id); if(!q) return sheetRequests();
+  const w = reqWarns(q);
+  const row = (k, v) => `<div class="rv"><span>${k}</span><b>${v}</b></div>`;
+  return `
+    ${sheetHead("홈페이지 예약")}
+    <div class="card" style="padding:12px 14px">
+      ${row("날짜", `${dateLabel(q.date)} ${hm(q.time)}`)}
+      ${row("인원", q.kids ? `성인 ${q.adults} · 어린이 ${q.kids}` : `성인 ${q.adults}`)}
+      ${row("자리", q.seat === "room" ? "룸" : "테이블")}
+      ${row("메뉴", esc(reqMenuText(q)))}
+      ${row("예약자", `${esc(q.name)} · ${esc(q.phone)}`)}
+      ${q.request ? row("요청사항", esc(q.request)) : ""}
+      ${row("접수", `${reqAgo(q.createdAt)} · <b class="${reqExpireAt(q)-Date.now() < 3600e3 ? "rust" : ""}">${reqLeft(q)}</b>`)}
+    </div>
+    ${w.length ? `<div class="menu-warn" style="margin-top:10px">${w.map(esc).join(" · ")}</div>` : ""}
+    <p class="f-note" style="margin-top:10px">승인하면 이 내용으로 예약 등록이 열립니다. 좌석을 고르고 등록하면 손님께 확정 문자가 나갑니다. 24시간 안에 처리하지 않으면 자동 취소되고 손님께 안내 문자가 갑니다.</p>
+    <div class="sheet-actions">
+      <button class="btn ghost" onclick="reqReject('${q.id}')">거절</button>
+      <button class="btn ghost" onclick="openRequests()">목록</button>
+      <button class="btn primary" data-enter onclick="reqAccept('${q.id}')">승인 → 예약 등록</button></div>`;
+}
+
+/* 승인: 마법사를 요청 내용으로 채워 엽니다. 좌석·알러지 확인은 직원이 마저 합니다 */
+function reqAccept(id){
+  const q = reqById(id); if(!q) return;
+  view.form = null;
+  openWizard(q.date);
+  if(!WZ){ render(); return; }   /* 읽기 전용(연결 끊김)이면 마법사가 안 열립니다 — 그 안내는 openWizard 가 띄움 */
+  const gs = courseGroups();
+  const courses = {};
+  const m = /^(course|set):(.+)$/.exec(q.course || "");
+  if(m){
+    /* 사이트 이름('촉 코스' '요리사 추천세트') → 설정의 짧은 이름('촉' '요리사') 로 맞춥니다 */
+    const short = m[2].replace(/\s*(코스|세트)$/,"").replace(/추천세트$/,"").trim();
+    for(const g of gs){ const it = (g.items||[]).find(x => short.indexOf(x) === 0 || x.indexOf(short) === 0); if(it){ courses[g.id + "|" + it] = q.people; break; } }
+  }
+  Object.assign(WZ, {
+    step:1, source:"기타", sourceDetail:"홈페이지 예약",
+    date:q.date, time:q.time, calMonth:q.date.slice(0,7),
+    people:q.people, infants:q.kids||0, chairs:0,
+    menuType: q.course === "none" ? "해당 없음" : "코스",
+    courses, courseUndecided: q.course === "later" || (m && !Object.keys(courses).length),
+    seatKind: q.seat === "room" ? "room" : "table",
+    name:q.name, phone:q.phone, request:q.request||"",
+    memo:`홈페이지 접수 ${q.createdAt.slice(0,16).replace("T"," ")}`,
+    reqId:q.id
+  });
+  /* 방금 그려진 0단계의 경로 입력칸이 비어 있어서 render() 의 wzSyncInputs 가 sourceDetail 을 지웁니다 — 칸에도 넣어 둠 */
+  const el = document.getElementById("wz-src-detail"); if(el) el.value = WZ.sourceDetail;
+  render();
+}
+/* 마법사가 등록을 마치면 요청을 확정으로 돌립니다(wzRegister 끝에서 부름) */
+function reqAfterRegister(rec){
+  if(!WZ || !WZ.reqId) return;
+  REQ_API.accept(WZ.reqId, rec.id);
+  const q = reqById(WZ.reqId);
+  if(q) smsMockSend(q.phone, q.name, `[한옥반점] ${q.name}님, ${dateLabel(q.date)} ${hm(q.time)} ${reqPeopleText(q)} 예약이 확정되었습니다. 문의 ${store().settings.tel || "031-724-1004"}`);
+}
+async function reqReject(id){
+  const q = reqById(id); if(!q) return;
+  const reasons = ["그 시간에 자리가 없습니다", "룸은 성인 5명부터 받고 있습니다", "당일·연휴는 전화로 부탁드립니다", "직접 입력"];
+  const pick = await uiPick("거절 사유", reasons); if(pick == null) return;
+  let why = reasons[pick];
+  if(why === "직접 입력"){ why = (prompt("거절 사유") || "").trim(); if(!why) return; }
+  await REQ_API.reject(id, why);
+  smsMockSend(q.phone, q.name, `[한옥반점] ${q.name}님, 요청하신 ${dateLabel(q.date)} ${hm(q.time)} 예약을 받지 못했습니다. ${why}. 전화 주시면 자리를 찾아드리겠습니다. ${store().settings.tel || "031-724-1004"}`);
+  showToast("거절했습니다 · 문자 흉내");
+  openRequests();
+}
+/* 목록 시트에서 고르는 작은 상자 — 없으면 confirm 으로 대신 */
+async function uiPick(title, opts){
+  if(typeof uiChoose === "function") return uiChoose(title, opts);
+  const s = prompt(title + "\n" + opts.map((o,i)=>`${i+1}. ${o}`).join("\n"), "1");
+  const n = parseInt(s, 10); return n >= 1 && n <= opts.length ? n - 1 : null;
+}
+
+/* 새 홈페이지 예약이 들어오면 화면 위에 알림 — 확인하면 그 창으로, 닫으면 그냥 닫힘.
+   실제 연동에서는 갱신(refresh) 때 못 보던 id 가 있으면 reqNotify(newOnes) 를 부르면 됩니다 */
+let REQ_SEEN = {};
+function reqNotify(list){
+  const fresh = list.filter(q => !REQ_SEEN[q.id]); list.forEach(q => REQ_SEEN[q.id] = true);
+  if(!fresh.length || view.display) return;
+  const q = fresh[0];
+  const body = fresh.length === 1
+    ? `${dateLabel(q.date)} ${hm(q.time)} · ${reqPeopleText(q)} · ${q.seat==="room"?"룸":"테이블"}\n${q.name} ${q.phone}`
+    : `${fresh.length}건이 들어왔습니다. 가장 빠른 것: ${dateLabel(q.date)} ${hm(q.time)} ${q.name}`;
+  uiConfirm(fresh.length === 1 ? "새 홈페이지 예약이 들어왔습니다" : `새 홈페이지 예약 ${fresh.length}건`, body, {ok:"확인하기", cancel:"닫기", tone:"ok"})
+    .then(ok => { if(ok){ if(WZ) return; view.form = null; fresh.length === 1 ? openRequest(q.id) : openRequests(); } });
+}
+function reqPush(q){ REQUESTS.push(q); render(); reqNotify([q]); }
+
+/* 흉내 데이터 — 사이트에서 접수한 것처럼 몇 건 넣습니다 */
+function reqSeedDemo(){
+  const t = todayStr(), d1 = shiftDate(t, 2), d2 = shiftDate(t, 5), d3 = shiftDate(t, 9);
+  const now = Date.now();
+  const mk = (o) => Object.assign({ id:"q" + Math.random().toString(36).slice(2,8), status:"대기", createdAt:new Date(now - Math.random()*3*3600e3).toISOString() }, o);
+  const items = [
+    mk({ date:d1, time:"12:30", adults:5, kids:1, people:6, seat:"room", course:"set:요리사 추천세트", courseLabel:"요리사 추천세트", name:"김서연", phone:"010-2233-4455", request:"어린이 의자 하나 부탁드립니다." }),
+    mk({ date:d2, time:"18:00", adults:2, kids:0, people:2, seat:"table", course:"none", courseLabel:"단품 주문", name:"박도현", phone:"010-9876-1234", request:"" }),
+    mk({ date:d3, time:"19:00", adults:8, kids:0, people:8, seat:"room", course:"later", courseLabel:"메뉴 미정", name:"이준호", phone:"010-5555-0001", request:"회사 회식입니다. 창가 쪽 룸이면 좋겠습니다." }),
+    mk({ date:d1, time:"11:30", adults:3, kids:0, people:3, seat:"room", course:"course:위 코스", courseLabel:"위 코스", name:"최민아", phone:"010-4444-7777", request:"" })
+  ];
+  /* 하나는 곧 만료되는 것으로 — 카운트다운 확인용 */
+  items[1].createdAt = new Date(now - (REQ_RULE.expireH*3600e3 - 40*60000)).toISOString();
+  REQUESTS.push.apply(REQUESTS, items);
+  view.form = null; render(); reqNotify(items);
+}
+
+/* 문자 흉내 기록 — '보낸 문자' 목록(smsFreeLog)에 남깁니다. 실제 발송은 업체 연동 뒤 */
+function smsMockSend(to, name, text){
+  const st = store().settings;
+  st.smsFreeLog = [{ at:new Date().toISOString(), to, name, text }].concat(st.smsFreeLog || []).slice(0, 50);
+  if(typeof mirrorDraft === "function") mirrorDraft("smsFreeLog");
+  logEvent("문자 보내기(흉내)", `${to} ${name} ${text.slice(0, 40)}`);
+  saveData();
+}
+/* ---------- 홈페이지 연동 (Supabase 가 켜져 있을 때만) ----------
+   ① 남은 자리 올리기: 내일부터 30일치를 계산해 public_avail 에 upsert. 홈페이지는 이 표만 읽습니다.
+      계산은 여기(v7)가 이미 하는 것 그대로 — roomStatus·floorMaxParty. SQL 로 다시 짜지 않습니다.
+      부르는 때: 저장 뒤(flush) · 1분 갱신 · 설정 적용. 너무 자주 안 올리게 45초 간격으로 묶습니다.
+   ② 홈페이지 예약 읽기: requests 표에서 '대기' 를 가져와 REQUESTS 에 맞춥니다(11b 의 흉내 REQ_API 를 덮어씀).
+      새로 보이는 것은 reqNotify 로 팝업. 24시간 지난 것은 '만료' 로 PATCH.
+   supaOn() 이 아니면(로컬·데모) 아무것도 안 하고 11b 의 흉내가 그대로 돕니다. */
+var AVAIL_LAST = 0, AVAIL_BUSY = false, AVAIL_DIRTY = false, AVAIL_DAYS = 30;
+
+/* 하루치 남은 자리 — {"11:00":{"rooms":[[min,max],…],"tableMax":n}, …} */
+function availOfDay(date){
+  const out = {}, ss = sessionsFor(date); if(!ss.length) return out;
+  const rooms = roomsAt(date).filter(isRoom);
+  const floors = []; roomsAt(date).filter(isTable).forEach(t => { const f = t.floor || ""; if(floors.indexOf(f) < 0) floors.push(f); });
+  ss.forEach(se => {
+    const from = toMin(se.from), last = toMin(se.lastBook);
+    for(let m = from; m <= last; m += 30){
+      const time = minToHM(m);
+      if(inBreak(date, time)) continue;
+      /* 잠정 배정(미배정 예약이 임시로 잡은 방)도 찬 것으로 — findSeat 의 free 판정과 같게. state 만 보면 '비켜줄 수 있는' 잠정이 있는 방이
+         빈 방으로 세어져 홈페이지에 실제보다 방이 많아 보였습니다 */
+      const free = rooms.filter(x => { if(blockedAt(x, date, time)) return false; const rs = roomStatus(date, time, x.id); return rs.state === "free" && !rs.tentative.length && !rs.movable.length; })
+                        .map(x => [roomMin(x, date), seatMax(x)]);
+      let tableMax = 0; floors.forEach(f => { tableMax = Math.max(tableMax, floorMaxParty(f, date, time)); });
+      out[time] = { rooms: free, tableMax: tableMax };
+    }
+  });
+  return out;
+}
+async function publishAvail(force){
+  if(!supaOn() || !SESSION || OFFLINE || !DATA || DATA._readonly) return;
+  if(!force && Date.now() - AVAIL_LAST < 45000){ AVAIL_DIRTY = true; return; }
+  if(AVAIL_BUSY){ AVAIL_DIRTY = true; return; }
+  AVAIL_BUSY = true;
+  try{
+    const key = view.storeKey || "hanok", today = todayStr(), rows = [];
+    for(let i = 1; i <= AVAIL_DAYS; i++){ const d = shiftDate(today, i); rows.push({ store:key, date:d, data:availOfDay(d) }); }
+    await sb("/rest/v1/public_avail?on_conflict=store,date", { method:"POST", body:rows, prefer:"resolution=merge-duplicates,return=minimal" });
+    AVAIL_LAST = Date.now(); AVAIL_DIRTY = false;
+  }catch(e){ console.error("남은 자리 올리기 실패", e.message); }
+  finally{ AVAIL_BUSY = false; }
+}
+
+/* ---------- requests ↔ REQUESTS ---------- */
+const rowToReq = function(x){
+  return { id:x.id, createdAt:x.created_at, date:x.date, time:x.time, adults:x.adults, kids:x.kids, people:x.people, seat:x.seat,
+           course:x.course, courseLabel:x.course_label, name:x.name, phone:phoneFmtReq(x.phone), request:x.request||"",
+           status:x.status, reason:x.reason||"", resId:x.res_id||null, expiresAt:x.expires_at };
+};
+function phoneFmtReq(p){ const d = String(p||"").replace(/\D/g,""); return d.length >= 10 ? d.replace(/(\d{3})(\d{3,4})(\d{4})/, "$1-$2-$3") : d; }
+async function pullRequests(){
+  if(!supaOn() || !SESSION || OFFLINE) return;
+  const key = view.storeKey || "hanok";
+  let rows;
+  try{ rows = await sb("/rest/v1/requests?store=eq." + key + "&status=eq.%EB%8C%80%EA%B8%B0&select=*&order=created_at"); }
+  catch(e){ console.error("홈페이지 예약 읽기 실패", e.message); return; }
+  const now = Date.now(), fresh = [], seen = {};
+  for(const x of rows){
+    const q = rowToReq(x); seen[q.id] = 1;
+    if(new Date(q.expiresAt).getTime() <= now){   /* 만료 → 서버에도 표시 */
+      try{ await sb("/rest/v1/requests?id=eq." + encodeURIComponent(q.id), { method:"PATCH", body:{status:"만료", reason:"24시간 안에 처리되지 않음"}, prefer:"return=minimal" }); }catch(e){}
+      continue;
+    }
+    const i = REQUESTS.findIndex(r => r.id === q.id);
+    if(i < 0){ REQUESTS.push(q); fresh.push(q); } else REQUESTS[i] = q;
+  }
+  /* 서버에서 사라진(다른 기기가 처리한) 것은 목록에서 뺌 */
+  for(let i = REQUESTS.length - 1; i >= 0; i--) if(REQUESTS[i].status === "대기" && !seen[REQUESTS[i].id]) REQUESTS.splice(i, 1);
+  if(fresh.length && REQ_SEEN_INIT) reqNotify(fresh); else fresh.forEach(q => { REQ_SEEN[q.id] = true; });
+  REQ_SEEN_INIT = true;
+  return fresh.length;
+}
+var REQ_SEEN_INIT = false;   /* 처음 불러온 것은 '새로 들어온 것' 이 아니므로 팝업을 안 띄웁니다 */
+
+/* 11b 의 흉내 API 를 서버 것으로 덮어씀 (supaOn 일 때만) */
+if(typeof supaOn === "function" && supaOn()){
+  REQ_API.list = async () => { await pullRequests(); return reqPending(); };
+  REQ_API.accept = async (id, resId) => {
+    await sb("/rest/v1/requests?id=eq." + encodeURIComponent(id), { method:"PATCH", body:{status:"확정", res_id:resId}, prefer:"return=minimal" });
+    const q = REQUESTS.find(x => x.id === id); if(q){ q.status = "확정"; q.resId = resId; }
+    return {ok:true};
+  };
+  REQ_API.reject = async (id, why) => {
+    await sb("/rest/v1/requests?id=eq." + encodeURIComponent(id), { method:"PATCH", body:{status:"거절", reason:why}, prefer:"return=minimal" });
+    const q = REQUESTS.find(x => x.id === id); if(q){ q.status = "거절"; q.reason = why; }
+    return {ok:true};
+  };
+}
 /* ============================================================
    설정
    ============================================================ */
@@ -5744,8 +6266,8 @@ function renderSettings(){
     <div class="subhead">인원</div>
     <label class="f"><div class="lb">룸 최소 인원 기준</div>
       <button class="togglebtn ${st.minCountAdultsOnly!==false?'on':''}" onclick="toggleAdultOnly()">
-        ${st.minCountAdultsOnly!==false?"성인 기준 (유아 제외)":"총 인원 기준 (유아 포함)"}</button>
-      <div class="f-note">성인 기준이면 성인 1명·유아 3명은 4인 룸 최소 인원에 못 미치는 것으로 봅니다.</div></label>
+        ${st.minCountAdultsOnly!==false?"성인 기준 (어린이 제외)":"총 인원 기준 (어린이 포함)"}</button>
+      <div class="f-note">성인 기준이면 성인 1명·어린이 3명은 4인 룸 최소 인원에 못 미치는 것으로 봅니다.</div></label>
     <label class="f"><div class="lb">단체 기준 인원</div>
       <button class="numbtn" onclick="openNum('groupSize','단체 기준 인원',2,40)">${st.groupSize||8}<small>명</small></button>
       <div class="f-note">이 인원부터 확인에 ‘단체 손님’으로 뜹니다.</div></label>
@@ -5891,7 +6413,7 @@ function renderSettings(){
     <div class="btn-row" style="margin-top:10px">
       <button class="btn" onclick="addCourseRow()">＋ 행 추가</button>
     </div>
-    <p class="f-note">메뉴판 구성에 맞춰 행을 나누세요. 예약 시각에 맞는 행이 코스 선택 팝업에서 강조됩니다.</p>`;
+    <p class="f-note">메뉴판 구성에 맞춰 행을 나누세요. 예약 시각에 맞는 행이 코스·세트 선택 팝업에서 강조됩니다. 저녁 코스는 종일, 점심 세트는 점심 시간에만 팝니다.</p>`;
 
   /* ---------- 예약경로 ---------- */
   const srcBody = `
@@ -5926,7 +6448,7 @@ function renderSettings(){
     <p class="f-note">오늘 남은 예약이 하나도 없으면(30분 넘게 지난 것은 빼고) 목록·좌석표 대신 광고 영상만 화면 가득 틉니다. 예약이 생기면 다음 갱신(1분) 때 목록으로 돌아옵니다.</p>
 
     <div class="subhead">광고 영상 <span>목록 화면 왼쪽에 나옵니다</span></div>
-    <input id="tv-ad" value="${esc(st.tvAd||"")}" placeholder="ad.mp4"
+    <input id="tv-ad" class="in-sm" value="${esc(st.tvAd||"")}" placeholder="ad.mp4"
       onchange="setPolicy('tvAd', this.value)">
     <p class="f-note">
       영상 파일을 <b>이 폴더에 같이 올려두고</b> 파일 이름만 적으면 됩니다 (예: <code>ad.mp4</code>).<br>
@@ -5940,9 +6462,7 @@ function renderSettings(){
       좌석표를 띄울 때의 배치입니다. 3줄로 고정되며 한 줄에 최대 ${DISP_MAX}칸까지 놓을 수 있습니다.</p>
     <div class="urlbox">
       <div class="ub-t">TV 전용 주소</div>
-      <div class="ub-u" id="screen-url">${esc(screenUrl())}</div>
-      <div class="ub-s">TV 브라우저 주소창에 이 주소를 넣으면 PIN 없이 바로 이 화면이 열립니다.</div>
-      <button class="btn sm" onclick="copyScreenUrl()">주소 복사</button>
+      <div class="ub-row"><a class="ub-u" id="screen-url" href="${esc(screenUrl())}" target="_blank" rel="noopener">${esc(screenUrl())}</a><button class="btn sm" onclick="copyScreenUrl()">주소 복사</button></div>
     </div>
     ${rows.map((ids,ri)=>`
       <div class="disprow ${ids.length>DISP_MAX?'over':''}">
@@ -5972,7 +6492,7 @@ function renderSettings(){
       <button class="btn" onclick="openSlip()">비상 예약지 인쇄</button>
     </div>
     <p class="f-note">비상 예약지: 시스템이 안 될 때 손으로 받는 종이(A4 한 장에 6장). 열리면 Ctrl+P 로 인쇄해 카운터에 두세요.</p>
-    <p class="f-note">PIN 변경에는 관리자 비밀번호가 필요합니다. PIN 은 직원과 공유하는 번호, 관리자 비밀번호는 사장님만 아는 것입니다.</p>`;
+    <p class="f-note">설정은 관리자 비밀번호로 들어옵니다. PIN 관리·관리자 비밀번호 변경·로그·초기화는 한 번 더 묻습니다. PIN 은 직원과 공유하는 번호, 관리자 비밀번호는 사장님만 아는 것입니다.</p>`;
 
   /* 화면 크기 — 기기마다 적당한 값이 달라 사장님이 직접 고르게 둡니다.
      저장 위치가 settings 가 아니라 DATA._ui 인 이유: 이건 매장 운영 값이 아니라
@@ -5981,18 +6501,18 @@ function renderSettings(){
   const policyBody = `
     <div class="subhead">유아용 의자 기본값</div>
     <div class="seg">
-      <button class="${st.chairDefault!=="zero"?'on':''}" onclick="setPolicy('chairDefault','infants')">유아 수와 같게</button>
-      <button class="${st.chairDefault==="zero"?'on':''}" onclick="setPolicy('chairDefault','zero')">0개</button>
+      <button class="${st.chairDefault==="infants"?'on':''}" onclick="setPolicy('chairDefault','infants')">어린이 수와 같게</button>
+      <button class="${st.chairDefault!=="infants"?'on':''}" onclick="setPolicy('chairDefault','zero')">0개</button>
     </div>
-    <p class="f-note">유아 인원을 입력할 때 의자 수가 자동으로 따라올지 정합니다.
-      0개로 두면 유아 수와 다를 때 경고가 뜹니다.</p>
+    <p class="f-note">어린이 인원을 입력할 때 의자 수가 자동으로 따라올지 정합니다.
+      0개로 두면 어린이 수와 다를 때 경고가 뜹니다.</p>
 
     <div class="subhead">룸 정원 기준</div>
     <div class="seg">
       <button class="${st.minCountAdultsOnly!==false?'on':''}" onclick="setPolicy('minCountAdultsOnly',true)">성인만</button>
-      <button class="${st.minCountAdultsOnly===false?'on':''}" onclick="setPolicy('minCountAdultsOnly',false)">유아 포함 총원</button>
+      <button class="${st.minCountAdultsOnly===false?'on':''}" onclick="setPolicy('minCountAdultsOnly',false)">어린이 포함 총원</button>
     </div>
-    <p class="f-note">룸 최소·최대 인원을 따질 때 유아를 셀지 정합니다.</p>
+    <p class="f-note">룸 최소·최대 인원을 따질 때 어린이를 셀지 정합니다.</p>
 
     <div class="subhead">라스트오더 임박 기준</div>
     <div class="seg">
@@ -6027,9 +6547,6 @@ function renderSettings(){
     roomId:(st.rooms[0]||{}).id || null
   };
   const smsBodyUI = `
-    <div class="mockbar">지금은 <b>흉내만</b> 냅니다. 실제로 문자가 나가지 않습니다.
-      화면과 문구를 먼저 정하고, 발송은 나중에 붙입니다.</div>
-
     <div class="subhead">문자 안내</div>
     <div class="seg">
       <button class="${sm.on?'on':''}" onclick="setSms('on',true)">보냄</button>
@@ -6037,19 +6554,18 @@ function renderSettings(){
     </div>
 
     <div class="subhead">발신번호 <span>손님 폰에 찍히는 번호</span></div>
-    <input id="sms-phone" type="tel" value="${esc(sm.storePhone||"")}"
-      placeholder="031-000-0000" oninput="setSms('storePhone',this.value)">
-    <p class="f-note">실제로 문자를 보내려면 이 번호를 통신사에 미리 등록해야 합니다.
-      지금은 적어만 둡니다.</p>
+    <input id="sms-phone" type="tel" class="in-sm" value="${esc(sm.storePhone||"031-724-1004")}"
+      placeholder="031-724-1004" oninput="setSms('storePhone',this.value)">
+    <p class="f-note">실제로 문자를 보내려면 이 번호를 통신사에 미리 등록해야 합니다.</p>
 
     <div class="subhead">재안내 문자를 언제 보낼까요</div>
     <div class="seg">
       ${[2,1,0].map(o=>`<button class="${sm.remindOffset===o?'on':''}"
         onclick="setSms('remindOffset',${o})">${offsetLabel(o)}</button>`).join("")}
     </div>
-    <div class="hourpick">
+    <div class="seg" style="margin-top:8px">
       ${remindHours(sm.remindOffset).map(h=>`<button class="${sm.remindHour===h?'on':''}"
-        onclick="setSms('remindHour',${h})">${hm(pad(h)+":00")}</button>`).join("")}
+        onclick="setSms('remindHour',${h})">${hourLabel(h)}</button>`).join("")}
     </div>
     <p class="f-note">
       ${sm.remindOffset===0
@@ -6060,36 +6576,32 @@ function renderSettings(){
       그런 건은 예약 상세에 이유가 뜨고, 거기서 직접 보내실 수 있습니다.</p>
 
     <div class="subhead">주차 안내 <span>재안내 문자에만 들어갑니다</span></div>
-    <textarea id="sms-park" rows="3" placeholder="비워 두면 문자에 안 들어갑니다"
+    <textarea id="sms-park" rows="3" class="in-sm" placeholder="비워 두면 문자에 안 들어갑니다"
       onchange="setSms('parkingNote',this.value)">${esc(sm.parkingNote||"")}</textarea>
     <p class="f-note">주차비나 발렛이 바뀌면 여기만 고치면 됩니다.</p>
 
     <div class="subhead">문안 <span>{매장} {이름} {일시} {인원} {주차} {오늘내일} 자리에 값이 들어갑니다</span></div>
     <div class="subhead">접수 문자 문안 <span>예약을 받은 즉시</span></div>
-    <textarea id="sms-tpl-new" rows="9" onchange="setSms('tplNew',this.value)">${esc(sm.tplNew||SMS_DEFAULT.tplNew)}</textarea>
-    <div class="btn-row" style="margin:6px 0 12px"><button class="btn sm" onclick="setSms('tplNew',SMS_DEFAULT.tplNew)">기본 문안으로</button></div>
+    <textarea id="sms-tpl-new" rows="9" class="in-sm" onchange="setSms('tplNew',this.value)">${esc(sm.tplNew||SMS_DEFAULT.tplNew)}</textarea>
+    <div class="btn-row" style="margin:6px 0 12px"><button class="btn sm" onclick="setSms('tplNew',SMS_DEFAULT.tplNew)">기본 문안으로</button><button class="btn sm" onclick="previewSms('접수')">미리보기</button></div>
     <div class="subhead">재안내 문자 문안 <span>방문 전 재안내</span></div>
-    <textarea id="sms-tpl-rem" rows="12" onchange="setSms('tplRemind',this.value)">${esc(sm.tplRemind||SMS_DEFAULT.tplRemind)}</textarea>
-    <div class="btn-row" style="margin:6px 0 0"><button class="btn sm" onclick="setSms('tplRemind',SMS_DEFAULT.tplRemind)">기본 문안으로</button></div>
+    <textarea id="sms-tpl-rem" rows="12" class="in-sm" onchange="setSms('tplRemind',this.value)">${esc(sm.tplRemind||SMS_DEFAULT.tplRemind)}</textarea>
+    <div class="btn-row" style="margin:6px 0 0"><button class="btn sm" onclick="setSms('tplRemind',SMS_DEFAULT.tplRemind)">기본 문안으로</button><button class="btn sm" onclick="previewSms('재안내')">미리보기</button></div>
     <p class="f-note">{주차}는 위 주차 안내가 비어 있으면 그 줄이 통째로 빠집니다. {오늘내일}은 보내는 날 기준으로 “오늘 / 내일 / 모레” 가 들어갑니다.</p>
 
-    <div class="subhead">이렇게 나갑니다</div>
-    <div class="smsprev">
-      <div class="sp-h">접수 문자 <span>예약을 받은 즉시</span></div>
-      <div class="smsmsg">${esc(smsText(smsSample,"접수"))}</div>
-    </div>
-    <div class="smsprev">
-      <div class="sp-h">재안내 문자 <span>${esc(offsetLabel(sm.remindOffset))} ${esc(hm(pad(sm.remindHour)+":00"))}</span></div>
-      <div class="smsmsg">${esc(smsText(smsSample,"재안내",sm.remindOffset))}</div>
-    </div>
-    <p class="f-note">점선 사이가 손님께 가는 내용입니다. 점선은 화면에만 그려집니다.<br>
-      보내는 시점을 바꾸면 “모레 / 내일 / 오늘” 이 자동으로 바뀝니다.
-      유아가 있는 예약이면 인원이 “4명(유아 1명 포함)” 처럼 나갑니다.</p>
+    <p class="f-note">보내는 시점을 바꾸면 “모레 / 내일 / 오늘” 이 자동으로 바뀝니다. 어린이가 있는 예약이면 인원이 “4명(어린이 1명 포함)” 처럼 나갑니다.</p>
 
     <div class="btn-row" style="margin-top:12px">
       <button class="btn" onclick="openSmsLog()">보낸 문자 보기</button>
     </div>`;
 
+  /* 문안 옆 '미리보기' — 가짜 예약으로 채운 문자를 확인창에 */
+  window.previewSms = function(kind){
+    const smNow = { ...SMS_DEFAULT, ...(draft().sms||{}) };
+    const sample = { ...smsSample, date: shiftDate(todayStr(), smNow.remindOffset) };
+    const text = kind === "접수" ? smsText(sample, "접수") : smsText(sample, "재안내", smNow.remindOffset);
+    uiAlert(kind === "접수" ? "접수 문자 — 이렇게 나갑니다" : `재안내 문자 — ${offsetLabel(smNow.remindOffset)} ${hourLabel(smNow.remindHour)}`, text, "ok");
+  };
   const etcBody = `
     <div class="btn-row">
       <button class="btn" onclick="openNoshow()">노쇼 관리</button>
@@ -6097,9 +6609,9 @@ function renderSettings(){
 
   return `
     ${sec("hours","운영시간",`${hoursFor(todayStr()).open} ~ ${hoursFor(todayStr()).close}`, schedBody)}
-    ${sec("rules","예약 규칙",`단체 ${st.groupSize||8}명`, ruleBody)}
-    ${sec("seats","좌석",`룸 ${st.rooms.filter(isRoom).length} · 테이블 ${st.rooms.filter(isTable).length}`, seatBody)}
-    ${sec("course","코스 구성",`${(st.courseGroups||[]).length}행`, courseBody)}
+    ${sec("rules","예약 규칙",`단체 ${st.groupSize||8}명${schedChip("rules")}`, ruleBody)}
+    ${sec("seats","좌석",`룸 ${st.rooms.filter(isRoom).length} · 테이블 ${st.rooms.filter(isTable).length}${schedChip("seats")}`, seatBody)}
+    ${sec("course","코스·세트 구성",`${(st.courseGroups||[]).length}행${schedChip("course")}`, courseBody)}
     ${sec("source","예약경로",`${(st.sources||[]).length}개`, srcBody)}
     ${sec("sms","문자 안내",
       sm.on===false ? "안 보냄"
@@ -6107,7 +6619,7 @@ function renderSettings(){
       smsBodyUI)}
     ${sec("disp","디스플레이 배치",`${rows.map(r=>r.length).join(" · ")}`, dispBody)}
     ${sec("policy","운영 판단 기준",
-      `의자 ${st.chairDefault==="zero"?"0개":"유아 수"} · 정원 ${st.minCountAdultsOnly===false?"총원":"성인"} · 임박 ${st.loSoon!=null?st.loSoon:120}분`,
+      `의자 ${st.chairDefault==="infants"?"어린이 수":"0개"} · 정원 ${st.minCountAdultsOnly===false?"총원":"성인"} · 임박 ${st.loSoon!=null?st.loSoon:120}분`,
       policyBody)}
     ${sec("zoom","화면 크기",`${uiZoom()}%`, zoomBody)}
     <div class="set-divider"></div>
@@ -6141,7 +6653,8 @@ function adUrl(name){
 }
 function screenUrl(){
   try{
-    if(location.protocol === "file:") return location.href.split("#")[0] + `#/screen/${view.storeKey}`;
+    /* 로컬(127.0.0.1·file:)에서 열어도 TV 에 넣을 주소는 실제 배포 주소여야 합니다(재아) */
+    if(/^(127\.|localhost|file:)/.test(location.host || location.protocol)) return "https://jaealee.com/test/hanok/v7/screen/";
     return location.origin + appDir() + "/screen/";
   }catch(e){ return "/screen/"; }
 }
@@ -6322,6 +6835,12 @@ async function addSource(){
   render();
 }
 function delSource(x){ const st=draft(); st.sources=(st.sources||[]).filter(s=>s!==x); render(); }
+
+/* 묶음 제목 옆 "9월 22일부터 바뀜" — 예정이 걸려 있으면 */
+function schedChip(group){
+  const l = schedFor(group, store().settings);
+  return l.length ? ` <span class="pill amber" onclick="event.stopPropagation(); openScheduled()">${esc(dateLabel(l[0].from))}${l[0].to?" ~":""}부터 바뀜${l.length>1?` 외 ${l.length-1}`:""}</span>` : "";
+}
 /* ============================================================
    입력 시트 (예약 / 직원 / 근태)
    ============================================================ */
@@ -6363,11 +6882,11 @@ function sheetNaver(){
       예약번호로 같은 예약을 찾아 고치고, 없으면 새로 넣습니다. 전화번호는 네이버가 뒷자리만 주어 메모에만 남습니다.</p>
     <textarea id="naver-paste" rows="7" placeholder="여기에 붙여 넣으세요 (머리글 줄 포함, 안내 문장이 섞여 있어도 됩니다)" oninput="view.naver={text:this.value, result:null}">${esc(n.text)}</textarea>
     <div class="btn-row" style="margin-top:8px">
-      <button class="btn" onclick="naverPreview()">미리보기</button>
-      ${n.result ? `<button class="btn primary" onclick="naverApply()" ${cnt("new")+cnt("update")?"":"disabled"}>새로 ${cnt("new")} · 고침 ${cnt("update")} 적용</button>` : ""}
+      <button class="btn" data-enter onclick="naverPreview()">확인</button>
+      ${n.result ? `<button class="btn primary" data-enter onclick="naverApply()" ${cnt("new")+cnt("update")?"":"disabled"}>신규 ${cnt("new")}건 · 수정 ${cnt("update")}건 · 등록</button>` : ""}
+      <button class="btn ghost" style="margin-left:auto" onclick="closeSheet()">닫기</button>
     </div>
-    ${res}
-    <div class="sheet-actions"><button class="btn ghost" onclick="closeSheet()">닫기</button></div>`;
+    ${res}`;
 }
 /* '26. 8. 17.(월) 오후 12:00' → {date:"2026-08-17", time:"12:00"} */
 function naverWhen(s){
@@ -6508,9 +7027,9 @@ async function naverApply(){
       reflowTentatives(ex.date); updated++;
     }
   });
-  logEvent("네이버 가져오기", `새로 ${added} · 고침 ${updated}`);
+  logEvent("네이버 가져오기", `신규 ${added} · 수정 ${updated}`);
   view.naver = null; view.form = null; saveData(); render();
-  uiAlert("네이버 예약 가져오기 완료", `새로 ${added}건, 고침 ${updated}건. 룸 예약은 '룸 미정' 으로 들어와 잠정 배정이 잡습니다 — 좌석 미정 목록에서 확정하세요.`, "ok");
+  uiAlert("네이버 예약 가져오기 완료", `신규 ${added}건, 수정 ${updated}건. 룸 예약은 '룸 미정' 으로 들어와 잠정 배정이 잡습니다 — 좌석 미정 목록에서 확정하세요.`, "ok");
 }
 
 function openNoshow(){ view.form={type:"noshow"}; render(); }
@@ -6527,7 +7046,7 @@ function sheetPinList(){
     <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">닫기</button></div>`;
 }
 function openAdminPw(){ view.form={type:"apw"}; render(); }
-function openLogs(){ view.form={type:"logs"}; render(); }
+async function openLogs(){ if(!await adminGate("접속 기록")) return; view.form={type:"logs"}; render(); }
 function openSmsLog(){ view.form={type:"smslog"}; view.smsOpen = {}; render(); }
 /* 예약률 시트는 자기 커서(view.rateEnd)로 주를 옮깁니다. 6차 전에는 moveDate(±7) 로 메인 날짜를 밀어서
    시트를 닫으면 대시보드가 엉뚱한 주에 가 있었습니다. 열 때 view.date 로 시작하고 닫으면 view.date 는 그대로 */
@@ -6578,8 +7097,9 @@ function toastSaved(rec){
 }
 
 function renderSheet(){
-  const inner = { res:sheetRes, mark:sheetMark, unassigned:sheetUnassigned, pick:sheetPick, check:sheetCheck, search:sheetSearch, num:sheetNum, noshow:sheetNoshow, pin:sheetPin, apw:sheetAdminPw, hours:sheetHours, tedit:sheetTableEdit, naver:sheetNaver, setlog:sheetSetLog, pinlist:sheetPinList, zoomadj:sheetZoomAdj, logs:sheetLogs, smslog:sheetSmsLog, smsfree:sheetSmsFree, rate:sheetRate, sched:sheetSchedule, ovr:sheetOverride, blocks:sheetBlocks /*, staff:sheetStaff, att:sheetAtt, sale:sheetSale */ }[view.form.type]();
-  const wide = view.form.type==="rate" ? " sheet-wide" : "";
+  const inner = { res:sheetRes, mark:sheetMark, unassigned:sheetUnassigned, pick:sheetPick, check:sheetCheck, search:sheetSearch, num:sheetNum, noshow:sheetNoshow, pin:sheetPin, apw:sheetAdminPw, hours:sheetHours, tedit:sheetTableEdit, naver:sheetNaver, setlog:sheetSetLog, pinlist:sheetPinList, zoomadj:sheetZoomAdj, logs:sheetLogs, smslog:sheetSmsLog, smsfree:sheetSmsFree, rate:sheetRate, sched:sheetSchedule, ovr:sheetOverride, blocks:sheetBlocks, reqs:sheetRequests, req:sheetRequest, sched2:sheetScheduled /*, staff:sheetStaff, att:sheetAtt, sale:sheetSale */ }[view.form.type]();
+  /* 검색은 창 높이를 고정해 두고 결과만 안에서 스크롤 — 칠 때마다 창이 늘었다 줄었다 하지 않게(재아) */
+  const wide = view.form.type==="rate" ? " sheet-wide" : ((view.form.type==="search" || view.form.type==="reqs") ? " sheet-tall" : "");
   if(view.form.page) return `<div class="sheet page-sheet">${inner}</div>`;   /* 화면형: 덮개 없이 본문 자리에 */
   return `<div class="overlay" onclick="closeSheet()"><div class="sheet${wide}" onclick="event.stopPropagation()">${inner}</div></div>`;
 }
@@ -6605,10 +7125,10 @@ function sheetRes(){
   /* 룸 / 테이블 / 합침 묶음. 합침은 대표+extraIds 로 저장되며 select 값은 그룹 id */
   const curJoin = (f.extraIds||[]).length ? joinOf([f.roomId].concat(f.extraIds)) : null;
   const opt = (v, label, sel) => `<option value="${v}" ${sel?'selected':''}>${label}</option>`;
-  const roomOpts = `<optgroup label="룸">${st.rooms.filter(isRoom).map(r=>opt(r.id, `${esc(r.name)} · ${roomMin(r, f.date)}~${r.capacity}인`, !curJoin && f.roomId===r.id)).join("")}</optgroup>` +
-    `<optgroup label="룸 합침">${(st.joins||[]).map(j=>opt(j.id, `${esc(seatLabel(j.id))} · ${j.min}~${j.max}인`, !!curJoin && curJoin.id===j.id)).join("")}</optgroup>` +
+  const roomOpts = `<optgroup label="룸">${roomsAt(f.date).filter(isRoom).map(r=>opt(r.id, `${esc(r.name)} · ${roomMin(r, f.date)}~${r.capacity}인`, !curJoin && f.roomId===r.id)).join("")}</optgroup>` +
+    `<optgroup label="룸 합침">${joinsAt(f.date).map(j=>opt(j.id, `${esc(seatLabel(j.id))} · ${j.min}~${j.max}인`, !!curJoin && curJoin.id===j.id)).join("")}</optgroup>` +
     `<optgroup label="테이블 (층만)">${tableFloors().map(fl=>opt("table:"+fl, `${esc(floorLabel(fl))} · 자리 ${floorSeats(fl)}석`, !f.roomId && f.seatPref==="table:"+fl)).join("")}</optgroup>` +
-    `<optgroup label="특정 테이블 (파셜룸 등 꼭 잡아야 할 때)">${st.rooms.filter(isTable).map(r=>opt(r.id, `${esc(r.floor||"")} ${esc(r.name)} · ${roomMin(r)?roomMin(r)+"~":""}${seatMax(r)}인`, !curJoin && f.roomId===r.id)).join("")}</optgroup>` +
+    `<optgroup label="특정 테이블 (파셜룸 등 꼭 잡아야 할 때)">${roomsAt(f.date).filter(isTable).map(r=>opt(r.id, `${esc(r.floor||"")} ${esc(r.name)} · ${roomMin(r)?roomMin(r)+"~":""}${seatMax(r)}인`, !curJoin && f.roomId===r.id)).join("")}</optgroup>` +
     ((f.extraIds||[]).length && !curJoin ? `<optgroup label="현재">${opt("__keep", esc(seatLabelIds([f.roomId].concat(f.extraIds))) + " (붙임 유지)", true)}</optgroup>` : "");
   const srcs = [...new Set([...(st.sources||["전화 예약","네이버 예약","기타"]), f.source||"전화 예약"])];
   const srcSeg = srcs.map(x=>`<button class="${f.source===x?'on':''}" onclick="pickSource('${jsq(x)}')">${esc(x)}</button>`).join("");
@@ -6627,12 +7147,12 @@ function sheetRes(){
   const cAd = adultCount(pplOf(f), f.infants||0);
   /* 룸은 코스 주문을 전제로 받는 자리입니다 — 막지 않고 알리기만 합니다 */
   const menuWarn = seatIsRoom && (
-    f.menuType==="해당 없음" ? "룸 예약에 코스 이용 예정 손님이 아닙니다" :
+    f.menuType==="해당 없음" ? "룸 예약에 코스·세트 이용 예정 손님이 아닙니다" :
     f.menuType==="확인 필요" ? "" :
     (f.menuType==="코스" && !f.courseUndecided && cN>0 && cN<cAd)
-      ? `코스 ${cN}인분 · 성인 ${cAd}명보다 적습니다` : "");
+      ? `코스·세트 ${cN}인분 · 성인 ${cAd}명보다 적습니다` : "");
   const menuSeg = menuOpts.map(x=>
-    `<button class="${f.menuType===x?'on':''}" onclick="pickMenuType('${x}')">${x}</button>`).join("");
+    `<button class="${f.menuType===x?'on':''}" onclick="pickMenuType('${x}')">${x==="코스"?"코스·세트":x}</button>`).join("");
 
   return `
     ${sheetHead(editing?"예약 내용 수정":"빠른 입력")}
@@ -6649,9 +7169,9 @@ function sheetRes(){
       <label class="f"><div class="lb">전화번호</div><input id="f-phone" type="tel" inputmode="numeric" value="${esc(f.phone)}" placeholder="010-0000-0000"></label>
     </div>
     <div class="grid2">
-      <label class="f"><div class="lb">총 인원 (유아 포함)</div>
+      <label class="f"><div class="lb">총 인원 (어린이 포함)</div>
         <input id="f-people" type="number" min="1" value="${pplOf(f)}"></label>
-      <label class="f"><div class="lb">유아</div>
+      <label class="f"><div class="lb">어린이</div>
         <input id="f-infants" type="number" min="0" value="${f.infants||0}"></label>
     </div>
     <label class="f"><div class="lb">유아용 의자</div>
@@ -6668,7 +7188,7 @@ function sheetRes(){
       <div class="seg">${menuSeg}</div>
       ${f.menuType==="코스"?`
         <div class="course-sum" style="margin-top:10px">
-          <span>${f.courseUndecided ? "코스 미정 — 방문 전 확정"
+          <span>${f.courseUndecided ? "코스·세트 미정 — 방문 전 확정"
             : (cN?`${esc(courseSummary(f.courses))}`:"구성을 고르세요")}</span>
           <button class="btn sm" style="margin-left:auto" onclick="openCourse()">${cN||f.courseUndecided?"수정":"선택"}</button>
         </div>`:""}
@@ -6774,14 +7294,14 @@ function saveIssues(rec, excludeId){
     if(j && j.note) out.push(`${label}: ${j.note}`);
   }
   /* 경고 판정(resWarn)과 같은 기준으로 — 여기서 안 물어본 것이 저장 뒤 '경고 예약'으로 뜨면 사장님이 놀랍니다.
-     (재아 발견: 유아를 총 인원까지 올려 저장하니 경고는 붙는데 확인창이 없었음 — '성인 없음' 이 빠져 있었습니다)
+     (재아 발견: 어린이를 총 인원까지 올려 저장하니 경고는 붙는데 확인창이 없었음 — '성인 없음' 이 빠져 있었습니다)
      시각·좌석 겹침·정원은 위에서 자세한 문장으로 이미 넣었으므로 나머지만 옮깁니다 */
   const words = {
-    "성인 없음": `유아 ${rec.infants||0}명이 총 인원 ${pplOf(rec)}명과 같습니다 — 성인이 없습니다`,
-    "유아의자 초과": `유아용 의자 ${rec.chairs||0}개가 유아 ${rec.infants||0}명보다 많습니다`,
-    "룸·코스 아님": `룸 예약인데 식사가 '해당 없음' 입니다`,
-    "코스 미확정": `코스가 '확인 필요' 상태입니다`,
-    "코스 인원 부족": `코스 인원이 성인 수보다 적습니다`,
+    "성인 없음": `어린이 ${rec.infants||0}명이 총 인원 ${pplOf(rec)}명과 같습니다 — 성인이 없습니다`,
+    "유아의자 초과": `유아용 의자 ${rec.chairs||0}개가 어린이 ${rec.infants||0}명보다 많습니다`,
+    "룸·코스·세트 아님": `룸 예약인데 식사가 '해당 없음' 입니다`,
+    "코스·세트 미확정": `코스·세트가 '확인 필요' 상태입니다`,
+    "코스·세트 인원 부족": `코스·세트 인원이 성인 수보다 적습니다`,
     "2인석 배정": `4인석이 없어 2인석에 앉게 됩니다 (2인석은 좁습니다)`,
     "테이블 자리 없음": `${seatLabel(rec.seatPref)}에 그 시간 ${pplOf(rec)}명이 앉을 자리가 없습니다 (한 자리 최대 ${floorMaxParty(prefFloor(rec.seatPref), rec.date, rec.time, excludeId)}명)`,
     "나눠 앉음": `${seatLabel(rec.seatPref)}에 붙일 수 있는 테이블이 없어 나눠 앉게 됩니다 (한 자리 최대 ${floorMaxParty(prefFloor(rec.seatPref), rec.date, rec.time, excludeId)}명)`
@@ -6792,9 +7312,9 @@ function saveIssues(rec, excludeId){
     rec.tentativeRoomId = ff.f ? ff.f.id : null; rec.tentativeExtra = ff.f ? ff.f.extra : []; rec.tentativeSplit = ff.state === "split";
   }
   resWarn(rec).forEach(k => { if(words[k]) out.push(words[k]); });
-  if((rec.infants||0) > pplOf(rec)) out.push(`유아 ${rec.infants}명이 총 인원 ${pplOf(rec)}명보다 많습니다`);
+  if((rec.infants||0) > pplOf(rec)) out.push(`어린이 ${rec.infants}명이 총 인원 ${pplOf(rec)}명보다 많습니다`);
   if(rec.menuType === "코스" && !rec.courseUndecided && !Object.keys(rec.courses||{}).some(k=>rec.courses[k] > 0))
-    out.push("코스인데 구성이 비어 있습니다 — '코스 미정' 으로 두거나 구성을 넣으세요");
+    out.push("코스·세트인데 구성이 비어 있습니다 — '코스·세트 미정' 으로 두거나 구성을 넣으세요");
   return out;
 }
 async function saveRes(){
@@ -6806,7 +7326,7 @@ async function saveRes(){
   if(!/^\d{4}-\d{2}-\d{2}$/.test(f.date||"")) return uiAlert("날짜를 입력하세요","","warn");
   if(!f.time) return uiAlert("시간을 입력하세요","","warn");
   if(!(f.people > 0)) return uiAlert("인원을 입력하세요","1명 이상이어야 합니다","warn");
-  /* 유아 > 총원은 마법사처럼 막지 않고 아래 saveIssues 에서 경고만 합니다(점검 R8 — 2-4 원칙) */
+  /* 어린이 > 총원은 마법사처럼 막지 않고 아래 saveIssues 에서 경고만 합니다(점검 R8 — 2-4 원칙) */
   const old = view.form.id ? s.reservations.find(r=>r.id===view.form.id) : null;
   const rec = {
     ...(old||{}),
@@ -6982,7 +7502,7 @@ function sheetMark(){
     const kind = r.seatPref==="hall-any" ? "table-any" : (r.seatPref||"any");
     const ppl = pplOf(r);
     /* 후보: 룸 또는 테이블(희망 종류) + 인원에 맞는 룸 합침 그룹. 붙일 테이블은 잠정 배정이 이미 골라 둔 것(tentativeExtra)만 */
-    let cand = st.rooms.filter(x=>{
+    let cand = roomsAt(r.date).filter(x=>{
       if(kind==="table-any" && !isTable(x)) return false;
       if(kind==="room-any" && !isRoom(x)) return false;
       return ppl <= seatMax(x);
@@ -6992,7 +7512,7 @@ function sheetMark(){
       const waste = (ppl <= 2 && isTable(x) && (x.seats||4) >= 4) ? -1 : (seatMax(x) - ppl);
       return {x, ok, first, waste, ids:[x.id]};
     });
-    if(kind!=="table-any") (st.joins||[]).filter(j=>ppl>=j.min && ppl<=j.max).forEach(j=>{
+    if(kind!=="table-any") joinsAt(r.date).filter(j=>ppl>=j.min && ppl<=j.max).forEach(j=>{
       const ok = j.ids.every(id=>roomStatus(r.date,r.time,id,r.id).state==="free");
       cand.push({x:{id:j.id, name:seatLabel(j.id).replace(/ 룸$/,""), type:"join", note:j.note}, ok, first:false, waste:j.max-ppl, ids:j.ids});
     });
@@ -7709,6 +8229,17 @@ async function saveBlock(){
   if(!d.allDay && d.fromTime && d.toTime && (d.openEnded || (d.to||d.from) === d.from) && d.toTime <= d.fromTime)
     return uiAlert("종료 시각이 시작 시각보다 빠릅니다","","warn");
 
+  /* 이미 사용 중지인 구간과 겹치면 넣지 않습니다 — 겹친 구간이 둘이면 나중에 하나만 지워도 남아서 헷갈립니다(재아) */
+  const dup = (room.blocks||[]).find(function(b){
+    if(b.id === d.id) return false;
+    const aS = d.from, aE = d.openEnded ? "9999-12-31" : (d.to || d.from);
+    const bS = b.from, bE = b.openEnded ? "9999-12-31" : (b.to || b.from);
+    if(aE < bS || bE < aS) return false;              /* 날짜가 안 겹침 */
+    if(d.allDay || b.allDay) return true;              /* 하루 종일이면 겹침 */
+    if(aS !== aE || bS !== bE) return true;            /* 여러 날짜면 사이 날이 종일이라 겹침 */
+    return !(d.toTime <= b.fromTime || b.toTime <= d.fromTime);   /* 같은 날 시각 비교 */
+  });
+  if(dup) return uiAlert("이미 사용 중지가 있습니다", `${dup.from}${dup.openEnded?" ~ (기한 없음)":dup.to&&dup.to!==dup.from?` ~ ${dup.to}`:""}${dup.allDay?" 하루 종일":` ${hm(dup.fromTime)} ~ ${hm(dup.toTime)}`}${dup.note?` · ${dup.note}`:""}\n\n겹치는 기간은 넣을 수 없습니다. 기존 것을 고치거나 지운 뒤 다시 넣으세요.`, "warn");
   const hits = blockHits(room, d);
   if(hits.length){
     const lines = hits.slice(0,6).map(function(r){
@@ -8026,7 +8557,7 @@ const WZ_STEPS = [
   "\u201C날짜와 시간은 언제로 해 드릴까요?\u201D",
   "\u201C몇 분이서 오세요?\u201D",
   "\u201C룸과 테이블 중 어디로 해 드릴까요?\u201D",
-  "\u201C식사는 코스로 준비해 드릴까요?\u201D",
+  "\u201C식사는 코스나 세트로 준비해 드릴까요?\u201D",
   "\u201C예약자 성함과 연락처 부탁드립니다.\u201D",
   "\u201C알러지나 따로 요청하실 사항 있으세요?\u201D"
 ];
@@ -8040,7 +8571,7 @@ const DEFAULT_COURSE_GROUPS = [
   { id:"cg_welunch", label:"주말 점심",   items:["요리사","B","A"],        when:["주말점심"] }
 ];
 const WHEN_OPTS = ["종일","평일점심","평일저녁","주말점심","주말저녁"];
-function courseGroups(){ return store().settings.courseGroups || DEFAULT_COURSE_GROUPS; }
+function courseGroups(date){ return (date ? settingsAt(date) : store().settings).courseGroups || DEFAULT_COURSE_GROUPS; }
 /* 코스 키의 앞부분(cg_xxx)으로 묶음을 찾습니다.
    ※ 예전 키는 앞부분이 '순서 번호'(0, 1, 2) 였습니다. 설정에서 순서만 바꿔도
       저장된 예약이 전부 다른 묶음을 가리키게 되는 구조라 고정 id 로 바꿨습니다.
@@ -8323,7 +8854,7 @@ function wzWarnReason(){
       else if(fit.state === "split") out.push(`나눠 앉음 - ${floorLabel(fl)}에 붙일 테이블이 없어 옆 테이블에 나눠 앉습니다`);
     }
   }
-  if(WZ.step===2 && WZ.people && (WZ.infants||0) >= WZ.people) out.push(`성인이 없음 - 유아만 ${WZ.infants}명`);
+  if(WZ.step===2 && WZ.people && (WZ.infants||0) >= WZ.people) out.push(`성인이 없음 - 어린이만 ${WZ.infants}명`);
   if(WZ.step===5){
     if(WZ.phoneNone) out.push("전화번호 없음");
     else if(WZ.phone && WZ.phone.replace(/\D/g,"").length < 9)
@@ -8336,18 +8867,18 @@ function wzWarnReason(){
     if(seat && seat.type==="room"){
       const adults = adultCount(WZ.people, WZ.infants);
       const n = courseCount();
-      if(WZ.menuType==="해당 없음") out.push("룸인데 코스가 아님");
-      if(WZ.menuType==="확인 필요") out.push("룸인데 코스 여부 미확인");
+      if(WZ.menuType==="해당 없음") out.push("룸인데 코스·세트가 아님");
+      if(WZ.menuType==="확인 필요") out.push("룸인데 코스·세트 여부 미확인");
       if(WZ.menuType==="코스" && !WZ.courseUndecided && n>0 && n<adults)
-        out.push(`코스 부족 - ${n}인분 / 성인 ${adults}명`);
+        out.push(`코스·세트 부족 - ${n}인분 / 성인 ${adults}명`);
       if(WZ.menuType==="코스" && !WZ.courseUndecided && n>adults)
-        out.push(`코스 초과 - ${n}인분 / 성인 ${adults}명`);
+        out.push(`코스·세트 초과 - ${n}인분 / 성인 ${adults}명`);
     }
     out.push.apply(out, courseWarns());
   }
   if(WZ.step===6){
-    if((WZ.chairs||0) > (WZ.infants||0)) out.push(`의자가 유아보다 많음 - 의자 ${WZ.chairs||0} / 유아 ${WZ.infants||0}`);
-    if((WZ.chairs||0) < (WZ.infants||0)) out.push(`의자가 유아보다 적음 - 의자 ${WZ.chairs||0} / 유아 ${WZ.infants||0}`);
+    if((WZ.chairs||0) > (WZ.infants||0)) out.push(`의자가 어린이보다 많음 - 의자 ${WZ.chairs||0} / 어린이 ${WZ.infants||0}`);
+    if((WZ.chairs||0) < (WZ.infants||0)) out.push(`의자가 어린이보다 적음 - 의자 ${WZ.chairs||0} / 어린이 ${WZ.infants||0}`);
   }
   return out.join("\n");
 }
@@ -8357,7 +8888,7 @@ function wzSummary(){
   const p=[];
   if(WZ.source) p.push(WZ.source==="기타" && WZ.sourceDetail ? WZ.sourceDetail : WZ.source);
   if(WZ.date && WZ.time) p.push(`${(+WZ.date.slice(5,7))}/${(+WZ.date.slice(8))} ${hm(WZ.time)}`);
-  if(WZ.people) p.push(`${WZ.people}명${WZ.infants?`(유아${WZ.infants})`:""}`);
+  if(WZ.people) p.push(`${WZ.people}명${WZ.infants?`(어린이${WZ.infants})`:""}`);
   if(WZ.seat) p.push(WZ.seatExtra && WZ.seatExtra.length ? seatLabelIds([WZ.seat].concat(WZ.seatExtra)) : seatLabel(WZ.seat));
   return p.map(x=>`<span>${esc(x)}</span>`).join("");
 }
@@ -8489,7 +9020,7 @@ function timeGrid(ctx){
   const isToday = ctx.date===todayStr(), isPastDate = ctx.date < todayStr(), nowM = toMin(nowHM());
   const curT = ctx.time ? toMin(ctx.time) : null, curSlot = curT===null ? null : Math.floor(curT/30)*30;
   const people = ctx.people || 0;
-  const rooms = st.rooms.filter(isRoom);
+  const rooms = roomsAt(ctx.date).filter(isRoom);
   return ss.map(se=>{
     const from = toMin(se.from), last = toMin(se.lastBook);
     const cells = [];
@@ -8754,7 +9285,7 @@ function afterRender(){
   });
 }
 
-/* ---------- 2단계: 인원 (유아 포함 총원) ---------- */
+/* ---------- 2단계: 인원 (어린이 포함 총원) ---------- */
 function wzStepPeople(){
   const tiles = [1,2,3,4,5,6].map(n=>
     `<button class="ptile ${WZ.people===n&&!WZ.customPeople?'on':''} ${n===1?'off':''}" onclick="wzPeople(${n})">
@@ -8769,7 +9300,7 @@ function wzStepPeople(){
         <button onclick="wzAdj('people',1)" ${WZ.customPeople?'':'tabindex="-1"'}>＋</button>
       </div>
     <div class="infant ${WZ.infants>=(WZ.people||99)&&WZ.people?'bad':''}">
-      <div><div class="t">유아</div>
+      <div><div class="t">어린이</div>
         <div class="s">${WZ.infants>=(WZ.people||99)&&WZ.people
           ? "성인이 없습니다"
           : "총 인원에 포함"}</div></div>
@@ -8779,13 +9310,13 @@ function wzStepPeople(){
         <button onclick="wzAdj('infants',1)">＋</button>
       </div>
     </div>
-    <div class="ptotal">${cur ? `총 <b>${cur}명</b>${WZ.infants?` (유아 ${WZ.infants}명 포함)`:""}` : ""}</div>`;
+    <div class="ptotal">${cur ? `총 <b>${cur}명</b>${WZ.infants?` (어린이 ${WZ.infants}명 포함)`:""}` : ""}</div>`;
 }
 function wzPeople(n){
   /* 1명 예약은 받지 않습니다(재아: 타일은 보이되 누르면 안내). 1인 규칙은 누님 질문 2번 대기 */
   if(n === 1) return uiAlert("1명 예약은 받지 않습니다", "2명부터 예약할 수 있습니다.", "warn");
   WZ.people=n; WZ.customPeople=false;
-  WZ.chairs = chairDefaultInfants() ? WZ.infants : 0;   /* 기본값은 설정에서 (유아 수 / 0개) */
+  WZ.chairs = chairDefaultInfants() ? WZ.infants : 0;   /* 기본값은 설정에서 (어린이 수 / 0개) */
   render();
 }
 function wzCustom(){ WZ.customPeople=true; if(!WZ.people || WZ.people < 7) WZ.people=7; render(); }   /* 6명을 눌러 뒀어도 7부터(재아) */
@@ -8839,8 +9370,8 @@ function wzStepSeat(){
 
   let body = "";
   if(kind === "room"){
-    const rooms = st.rooms.filter(isRoom);
-    const joins = (st.joins||[]);   /* 인원이 안 맞아도 다 보여 주고 '인원 부족/초과' 로 표시(재아: 합침이 안 보였음) */
+    const rooms = roomsAt(WZ.date).filter(isRoom);   /* 예정 좌석 반영 */
+    const joins = joinsAt(WZ.date);   /* 인원이 안 맞아도 다 보여 주고 '인원 부족/초과' 로 표시(재아: 합침이 안 보였음) */
     body = `<div class="sgrid">${rooms.map(r=>cell([r.id], r)).join("")}</div>` +
       (joins.length ? `<div class="lbl" style="margin-top:16px">룸 합침 <span class="lbl-note">중문 탈거 · 자동 배정 안 됨</span></div>
         <div class="sgrid">${joins.map(j=>cell(j.ids, {id:j.id, name:"", note:j.note}, "join")).join("")}</div>` : "");
@@ -8881,7 +9412,7 @@ function wzStepSeat(){
         <button class="${kind==='room'?'on':''} ${roomOk?'':'warned'}" onclick="wzSeatKind('room')">룸 예약${roomOk?"":" · 빈 방 없음"}</button>
         <button class="${kind==='table'?'on':''} ${tf.state==='none'?'warned':''}" onclick="wzSeatKind('table')">테이블 예약${tf.state==='none'?" · 자리 없음":tf.state==='split'?" · 나눠 앉기":""}</button>
       </div>`; })()}
-    <div class="lbl-note" style="margin:6px 0 10px">${kind==='room' ? `정원은 ${seatCountsInfants()?"유아 포함":"유아 제외 성인"} 기준 · 순서는 사장님이 정한 배정 우선순위` : "그 시간에 비는 테이블(붙임 포함)로 앉힐 수 있는지 봅니다. 어느 테이블인지는 당일 현장에서"}</div>
+    <div class="lbl-note" style="margin:6px 0 10px">${kind==='room' ? `정원은 ${seatCountsInfants()?"어린이 포함":"어린이 제외 성인"} 기준 · 순서는 사장님이 정한 배정 우선순위` : "그 시간에 비는 테이블(붙임 포함)로 앉힐 수 있는지 봅니다. 어느 테이블인지는 당일 현장에서"}</div>
     ${body}
     ${!kind ? `<div class="empty">룸 예약인지 테이블 예약인지 먼저 고르세요.</div>` : kind==='room' ? `<p class="f-note" style="margin-top:12px">방을 안 고르고 <b>다음</b>을 누르면 '룸 미정' 으로 접수돼 빈 방에 잠정 배정됩니다.</p>` : `<p class="f-note" style="margin-top:12px">층을 안 고르고 <b>다음</b>을 누르면 층 상관없이 사장님 순서로 잡습니다. 어느 테이블인지는 당일 현장에서.</p>`}`;
 }
@@ -8935,7 +9466,7 @@ async function wzSeat(v){
       const adults = adultCount(people, WZ.infants);
       if(adults < seatsMin(ids, WZ.date)){
         const basis = store().settings.minCountAdultsOnly===false ? "총 인원" : "성인";
-        if(!await uiConfirm(`${label} 최소 인원 미달`, `최소 ${seatsMin(ids, WZ.date)}명부터 받습니다.\n지금 ${basis} ${adults}명입니다${WZ.infants?` (유아 ${WZ.infants}명 제외)`:""}.`, {ok:"그래도 배정", cancel:"다시 고르기"})) return;
+        if(!await uiConfirm(`${label} 최소 인원 미달`, `최소 ${seatsMin(ids, WZ.date)}명부터 받습니다.\n지금 ${basis} ${adults}명입니다${WZ.infants?` (어린이 ${WZ.infants}명 제외)`:""}.`, {ok:"그래도 배정", cancel:"다시 고르기"})) return;
       }
     }
     /* 한 테이블에 안 들어가는 인원이 테이블 하나를 고르면 붙일 테이블을 함께 제안 */
@@ -9057,9 +9588,9 @@ function wzStepMenu(){
   const isHall = seat ? isTable(seat) : isTablePref(WZ.seat);
   /* 테이블은 보통 메뉴를 정하지 않고 받습니다 — 선택지를 줄입니다 */
   const opts = isHall
-    ? [["코스","코스",""],
+    ? [["코스","코스·세트",""],
        ["해당 없음","해당 없음",""]]
-    : [["코스","코스",""],
+    : [["코스","코스·세트",""],
        ["코스 상당","코스 상당",""],
        ["확인 필요","확인 필요",""],
        ["해당 없음","해당 없음",""]];
@@ -9068,10 +9599,10 @@ function wzStepMenu(){
   const seatIsRoom = seat && seat.type==="room";
   /* 룸은 코스 주문을 전제로 받는 자리입니다 */
   const roomWarn = seatIsRoom && (
-    WZ.menuType==="해당 없음" ? "룸 예약에 코스 이용 예정 손님이 아닙니다" :
+    WZ.menuType==="해당 없음" ? "룸 예약에 코스·세트 이용 예정 손님이 아닙니다" :
     WZ.menuType==="확인 필요" ? "" :
     (WZ.menuType==="코스" && !WZ.courseUndecided && n>0 && n<adults)
-      ? `코스 ${n}인분 · 성인 ${adults}명보다 적습니다` : "");
+      ? `코스·세트 ${n}인분 · 성인 ${adults}명보다 적습니다` : "");
   /* 룸 경고 문구는 위 질문 아래 경고 자리(wz-warn)에 이미 뜨므로 여기서는 타일 색만 바꿉니다 */
   return `
     <div class="srcgrid menu4 ${opts.length===2?'menu2':''}">
@@ -9083,7 +9614,7 @@ function wzStepMenu(){
         </button>`).join("")}
     </div>
       <div class="course-sum ${WZ.menuType==="코스"?'':'hold'}">
-        ${WZ.courseUndecided ? "코스 미정 · 방문 전 확정" : (n?`${esc(courseSummary(WZ.courses))}`:"구성을 고르세요")}
+        ${WZ.courseUndecided ? "코스·세트 미정 · 방문 전 확정" : (n?`${esc(courseSummary(WZ.courses))}`:"구성을 고르세요")}
         <button class="btn sm" style="margin-left:auto" onclick="openCourse()" ${WZ.menuType==="코스"?'':'tabindex="-1"'}>${n||WZ.courseUndecided?"수정":"선택"}</button>
       </div>
     ${WZ.courseOpen?renderCourse():""}`;
@@ -9148,16 +9679,16 @@ function courseGroupFits(g){
    둘 다 막지 않습니다. 사장님이 예외를 둘 수 있으므로 빨갛게 알리기만 합니다 */
 function courseWarns(){
   const W = cTgt(); if(!W || W.menuType!=="코스" || W.courseUndecided) return [];
-  const gs = courseGroups(), out = [];
+  const gs = courseGroups(cTgt() && cTgt().date), out = [];
   const picked = Object.entries(W.courses||{}).filter(([k,v])=>v>0);
   const offNames = picked.filter(([k])=>{ const g = courseGroupById(gs, k.split("|")[0]); return g && !courseGroupFits(g); })
     .map(([k])=>k.split("|")[1]);
-  if(offNames.length) out.push(`이 시간엔 없는 코스 - ${offNames.join(", ")}`);
-  if(picked.length >= 2) out.push(`코스 ${picked.length}종류 - 한 테이블은 하나로`);
+  if(offNames.length) out.push(`이 시간엔 없는 코스·세트 - ${offNames.join(", ")}`);
+  if(picked.length >= 2) out.push(`코스·세트 ${picked.length}종류 - 한 테이블은 하나로`);
   return out;
 }
 function renderCourse(){
-  const gs = courseGroups();
+  const gs = courseGroups(cTgt() && cTgt().date);
   const W = cTgt();
   const fits = courseGroupFits;
   const rows = gs.map((g,gi)=>`
@@ -9176,18 +9707,18 @@ function renderCourse(){
   return `
     <div class="overlay" onclick="closeCourse()">
       <div class="sheet" onclick="event.stopPropagation()">
-        <div class="sheet-h"><h2>코스 선택</h2>
+        <div class="sheet-h"><h2>코스·세트 선택</h2>
           <button class="x" onclick="closeCourse()" aria-label="닫기">×</button></div>
                 ${rows}
         <button class="undecided ${W.courseUndecided?'on':''}" onclick="toggleUndecided()">
-          코스 미정
+          코스·세트 미정
         </button>
         ${(()=>{
           const n = courseCount(), ad = adultCount(W.people, W.infants);
           const short = n>0 && n<ad, over = n>ad;
           return `<div class="course-total ${short||over||courseWarns().length?'bad':''}">선택 합계 <b>${n}</b>명
-            ${W.people?` / 성인 ${ad}명${W.infants?` (유아 ${W.infants}명)`:""}`:""}
-            ${short?`<div class="ct-warn">코스 부족 - 성인보다 ${ad-n}명 적음</div>`:""}
+            ${W.people?` / 성인 ${ad}명${W.infants?` (어린이 ${W.infants}명)`:""}`:""}
+            ${short?`<div class="ct-warn">코스·세트 부족 - 성인보다 ${ad-n}명 적음</div>`:""}
             ${over?`<div class="ct-warn">코스 초과 - 성인보다 ${n-ad}명 많음</div>`:""}
             ${courseWarns().map(w=>`<div class="ct-warn">${esc(w)}</div>`).join("")}</div>`;
         })()}
@@ -9210,13 +9741,13 @@ function wzStepExtra(){
       </div>
     </div>
     <div class="f big"><div class="lb">유아용 의자
-      ${(WZ.chairs||0)>(WZ.infants||0)?`<span class="req">유아 ${WZ.infants||0}명보다 많음</span>`:""}</div>
+      ${(WZ.chairs||0)>(WZ.infants||0)?`<span class="req">어린이 ${WZ.infants||0}명보다 많음</span>`:""}</div>
       <div class="bigstep sm ${(WZ.chairs||0)>(WZ.infants||0)?'bad':''}" style="justify-content:flex-start; margin-top:0">
         <button onclick="wzChair(-1)">−</button>
         <div class="v"><span>${WZ.chairs||0}</span><small>개</small></div>
         <button onclick="wzChair(1)">＋</button>
       </div>
-      <div class="f-note">${chairDefaultInfants()?`유아 ${WZ.infants||0}명 기준 자동 입력`:"&nbsp;"}</div>
+      <div class="f-note">${chairDefaultInfants()?`어린이 ${WZ.infants||0}명 기준 자동 입력`:"&nbsp;"}</div>
     </div>
     <label class="f big"><div class="lb">요청사항 <span class="lbl-note">선택</span></div>
       <input id="wz-request" value="${esc(WZ.request)}" placeholder="예: 송별회, 상견례">
@@ -9226,7 +9757,7 @@ function wzStepExtra(){
     </label>
     <div class="wz-review">
       <div class="rv"><span>일시</span><b>${WZ.date?dateLabel(WZ.date):"-"} ${WZ.time?hm(WZ.time):""}</b></div>
-      <div class="rv"><span>인원</span><b>총 ${WZ.people||0}명${WZ.infants?` (유아 ${WZ.infants}명 포함)`:""}</b></div>
+      <div class="rv"><span>인원</span><b>총 ${WZ.people||0}명${WZ.infants?` (어린이 ${WZ.infants}명 포함)`:""}</b></div>
       ${WZ.chairs?`<div class="rv"><span>유아의자</span><b>${WZ.chairs}개</b></div>`:""}
       <div class="rv"><span>좌석</span><b>${WZ.seat?(WZ.seatExtra&&WZ.seatExtra.length?seatLabelIds([WZ.seat].concat(WZ.seatExtra)):seatLabel(WZ.seat)):"-"}</b></div>
       <div class="rv"><span>예약자</span><b>${esc(WZ.name)||"-"} ${esc(WZ.phone)}</b></div>
@@ -9297,6 +9828,7 @@ async function wzSubmit(){
     status:"확정"
   };
   createReservation(rec);
+  reqAfterRegister(rec);   /* 홈페이지 요청을 승인해 온 것이면 요청을 '확정' 으로 (11b) */
   /* 6차 전에는 view.date = rec.date 로 그 날짜로 점프했습니다. 이제 화면 날짜는 그대로 — 완료 화면에 날짜가 있고,
      닫은 뒤 토스트의 '보기' 로 갈 수 있습니다(closeWizardDone) */
   WZ.done = rec;
@@ -9874,6 +10406,29 @@ function renderTvGrid(){
         <footer class="tv-f">찾아주셔서 감사합니다</footer>
       </div>`;
 }
+
+/* 화면이 처음 그려질 때 예정 설정을 흡수합니다(불러온 직후) */
+setTimeout(function(){ try{ if(AUTHED && DATA && view.storeKey){ absorbScheduled(); if(typeof pullRequests === "function"){ pullRequests().then(function(n){ if(n) render(); }); publishAvail(true); } } }catch(e){} }, 1500);
+
+/* 시트·마법사 어디서든: Enter = 그 창의 확인·등록 단추(data-enter 가 있으면 그것, 없으면 .btn.primary 하나뿐일 때만),
+   Esc = 닫기. 여러 줄 입력(textarea) 안에서 Enter 는 줄바꿈이라 건드리지 않습니다. '이전' 은 일부러 안 묶습니다(재아) */
+document.addEventListener("keydown", function(e){
+  if(e.key === "Escape"){
+    if(document.querySelector(".modal-ov")) return;   /* 확인창은 자기 Esc 처리가 있음 */
+    if(view.form){ e.preventDefault(); closeSheet(); }
+    else if(view.moreOpen){ closeMore(); }
+    return;
+  }
+  if(e.key !== "Enter" || e.ctrlKey || e.altKey || e.isComposing) return;
+  const t = e.target;
+  if(t && (t.tagName === "TEXTAREA" || t.tagName === "BUTTON" || t.tagName === "A" || t.isContentEditable)) return;
+  if(document.querySelector(".modal-ov")) return;
+  const sheet = document.querySelector(".sheet");
+  if(!sheet) return;
+  let btn = sheet.querySelector("[data-enter]:not(:disabled)");
+  if(!btn){ const ps = sheet.querySelectorAll(".sheet-actions .btn.primary:not(:disabled)"); if(ps.length === 1) btn = ps[0]; }
+  if(btn){ e.preventDefault(); btn.click(); }
+});
 /* ============================================================
    예시 데이터 — 처음 실행할 때만 채웁니다 (설정에서 지울 수 있음)
    ============================================================ */
@@ -9929,7 +10484,7 @@ function seedDemo(d){
       used[time+"|"+rm.n] = true;
       roomName = rm.n;
       people = rm.min + ((gi*3) % (rm.max - rm.min + 1));
-      if(gi % 11 === 0 && people >= rm.min + 2) infants = 1;   /* 유아가 있어도 성인이 최소 인원 이상 */
+      if(gi % 11 === 0 && people >= rm.min + 2) infants = 1;   /* 어린이가 있어도 성인이 최소 인원 이상 */
       const adults = people - infants;
       const pool = COURSE_BY(lunch, weekend);
       menuType = "코스";
