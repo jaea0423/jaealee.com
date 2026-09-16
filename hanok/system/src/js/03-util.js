@@ -401,9 +401,26 @@ function blockSpans(room, date){
     const s = (date === b.from && b.fromTime) ? toMin(b.fromTime) : 0;
     const e = (last && date === last && b.toTime) ? toMin(b.toTime) : 24*60;
     if(e <= s) continue;
-    out.push({s, e, note:b.note||"", id:b.id, allDay:(s===0 && e===24*60)});
+    out.push({s, e, note:b.note||"", id:b.id, allDay:(s===0 && e===24*60), blk:b});
   }
   return out;
+}
+/* 그 날짜에 걸리는 사용 중지 항목(원본 block)들 — 라벨에 '기간' 을 적으려고. blockSpans 는 그 날의 분 구간만 주기 때문 */
+function blocksOn(room, date){
+  return roomBlocks(room).filter(function(b){ if(!b.from || date < b.from) return false; if(!b.openEnded && b.to && date > b.to) return false; return true; });
+}
+/* "9/17" · "9/17 ~ 9/19" · "9/17 부터" — 하루면 날짜 하나, 여러 날이면 시작 ~ 끝(재아) */
+function blockPeriod(b){
+  const md = function(d){ return d ? (+d.slice(5,7)) + "/" + (+d.slice(8,10)) : ""; };
+  if(!b || !b.from) return "";
+  if(b.openEnded) return md(b.from) + " 부터";
+  if(!b.to || b.to === b.from) return md(b.from);
+  return md(b.from) + " ~ " + md(b.to);
+}
+/* "사용 중지 (사유 / 기간)" — 사유가 없으면 기간만 */
+function blockLabelText(b){
+  const p = blockPeriod(b);
+  return "사용 중지 (" + (b.note ? b.note + " / " : "") + p + ")";
 }
 /* 그 날짜(·시각)에 사용 중지인지. time 을 주면 그 시각만, 안 주면 그 날 하루 중 일부라도 */
 function blockedAt(room, date, time){

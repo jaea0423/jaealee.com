@@ -752,7 +752,7 @@ button.blk.tent.warned.changed{background-image:linear-gradient(90deg, #3D8BD9 0
 .blockband{overflow:visible}
 .blockband .bb-l{position:absolute; left:6px; top:2px; font-style:normal; font-size:11px; font-weight:700; color:var(--rust); background:rgba(255,255,255,.92); padding:0 6px; border-radius:3px; white-space:nowrap; pointer-events:none; z-index:6}
 /* 테이블 초과 칸 라벨 */
-.overlane .ol-l{position:absolute; left:6px; top:2px; font-style:normal; font-size:11px; font-weight:700; color:var(--rust); background:rgba(255,255,255,.85); padding:0 6px; border-radius:3px; white-space:nowrap; pointer-events:none}
+.overlane .ol-l{position:absolute; left:6px; top:2px; font-style:normal; font-size:11px; font-weight:700; color:var(--rust); background:rgba(255,255,255,.92); padding:0 6px; border-radius:3px; white-space:nowrap; pointer-events:none; z-index:6}   /* 초과 블록이 그 칸 왼쪽에 놓여도 라벨은 위에 보이게(재아). 층 이름 칸에도 같은 글이 있음 */
 /* ============================================================
    6. 예약 — 시트 / 달력 / 마법사 / 모달
    ============================================================ */
@@ -3711,9 +3711,26 @@ function blockSpans(room, date){
     const s = (date === b.from && b.fromTime) ? toMin(b.fromTime) : 0;
     const e = (last && date === last && b.toTime) ? toMin(b.toTime) : 24*60;
     if(e <= s) continue;
-    out.push({s, e, note:b.note||"", id:b.id, allDay:(s===0 && e===24*60)});
+    out.push({s, e, note:b.note||"", id:b.id, allDay:(s===0 && e===24*60), blk:b});
   }
   return out;
+}
+/* 그 날짜에 걸리는 사용 중지 항목(원본 block)들 — 라벨에 '기간' 을 적으려고. blockSpans 는 그 날의 분 구간만 주기 때문 */
+function blocksOn(room, date){
+  return roomBlocks(room).filter(function(b){ if(!b.from || date < b.from) return false; if(!b.openEnded && b.to && date > b.to) return false; return true; });
+}
+/* "9/17" · "9/17 ~ 9/19" · "9/17 부터" — 하루면 날짜 하나, 여러 날이면 시작 ~ 끝(재아) */
+function blockPeriod(b){
+  const md = function(d){ return d ? (+d.slice(5,7)) + "/" + (+d.slice(8,10)) : ""; };
+  if(!b || !b.from) return "";
+  if(b.openEnded) return md(b.from) + " 부터";
+  if(!b.to || b.to === b.from) return md(b.from);
+  return md(b.from) + " ~ " + md(b.to);
+}
+/* "사용 중지 (사유 / 기간)" — 사유가 없으면 기간만 */
+function blockLabelText(b){
+  const p = blockPeriod(b);
+  return "사용 중지 (" + (b.note ? b.note + " / " : "") + p + ")";
 }
 /* 그 날짜(·시각)에 사용 중지인지. time 을 주면 그 시각만, 안 주면 그 날 하루 중 일부라도 */
 function blockedAt(room, date, time){
@@ -4614,6 +4631,8 @@ async function setTab(t){
   /* 설정은 관리자 비밀번호로만 들어갑니다(재아). 한 번 통과하면 잠글 때까지 다시 묻지 않고,
      PIN 변경·관리자 비밀번호 변경·접속 기록·PIN 관리·초기화·기록 복사는 그 안에서 한 번 더 묻습니다 */
   if(t==="settings" && !view.adminOk){ if(!await adminGate("설정 열기")) return; view.adminOk = true; }
+  /* 설정에서 나가면 관리자 확인도 풀립니다 — 다시 들어올 때 비밀번호를 또 묻게(재아). 홈페이지 관리도 설정 안에 있으니 같이 */
+  if(view.tab==="settings" && t!=="settings") view.adminOk = false;
   if(t==="settings" && !view.draft) view.draft = deepClone(store().settings);
   Object.keys(view.open).forEach(function(x){ view.open[x] = false; });   /* 어디든 갔다 오면 폴드는 접힌 상태로(재아) — 설정·대시보드 모두 */
   view.tab=t; render(); window.scrollTo(0,0);
@@ -5617,11 +5636,10 @@ function renderTimeline(date, compact){
   const blockTag = (seat)=>{
     const sp = blockSpans(seat, date);
     if(!sp.length) return "";
-    /* 자세한 시각·사유는 그래프 위 빗금에 적혀 있으므로 여기는 짧게만 */
-    const txt = sp.length>1 ? `중지 ${sp.length}구간`
-              : (sp[0].allDay ? "하루 중지" : "일부 중지");
-    const tip = sp.map(x=>spanLabel(x)+(x.note?` · ${x.note}`:"")).join(" / ");
-    return `<span class="bk" title="사용 중지 · ${esc(tip)}">${esc(txt)}</span>`;
+    /* '사용 중지 (사유 / 기간)' — 기간은 날짜(하루면 날짜 하나). 시각은 빗금이 이미 보여 주니 적지 않음(재아) */
+    const txt = sp.map(x=>blockLabelText(x.blk)).join(" · ");
+    const tip = sp.map(x=>blockLabelText(x.blk)+(x.allDay?"":" · "+spanLabel(x))).join(" / ");
+    return `<span class="bk" title="${esc(tip)}">${esc(txt)}</span>`;
   };
 
   /* 좌석 사용 중지 구간을 그 줄에만 덮습니다.
@@ -5632,7 +5650,7 @@ function renderTimeline(date, compact){
     const s = Math.max(o, sp.s), e = Math.min(c, sp.e);
     if(e <= s) return "";
     return `<span class="blockband" style="left:${pos(s)}%; width:${((e-s)/span)*100}%"
-      title="사용 중지 · ${esc(spanLabel(sp))}${sp.note?` · ${esc(sp.note)}`:""}"><i class="bb-l">사용 중지${sp.note?` (${esc(sp.note)}${sp.allDay?"":" · "+esc(spanLabel(sp))})`:` (${esc(spanLabel(sp))})`}</i></span>`;
+      title="${esc(blockLabelText(sp.blk))}${sp.allDay?"":" · "+esc(spanLabel(sp))}"><i class="bb-l">${esc(blockLabelText(sp.blk))}</i></span>`;
   }).join("");
 
   /* ---------- 룸 ---------- */
@@ -5726,7 +5744,7 @@ function renderTimeline(date, compact){
     const bands = (fl==null ? "" : floorTables(fl).map(blockBands).join(""))
       + (over ? `<div class="offband overlane" style="left:0; right:0; top:0; height:${LANE}px" title="테이블 수를 넘은 팀이 놓이는 칸"><i class="ol-l">자리 없음 ${over}팀 — 테이블 수를 넘은 예약</i></div>` : "");
     return `<div class="tl-row tbl floor">
-      <div class="tl-name"><b>${fl==null?"층 미정":esc(floorLabel(fl))}</b><small>${fl==null?"":`테이블 ${tbls.length} · ${seats}석`}</small></div>
+      <div class="tl-name"><b>${fl==null?"층 미정":esc(floorLabel(fl))}</b><small>${fl==null?"":`테이블 ${tbls.length} · ${seats}석`}</small>${over?`<span class="bk" title="같은 시간에 테이블 수보다 팀이 많습니다 — 맨 위 빗금 칸에 놓인 예약">자리 없음 ${over}팀</span>`:""}</div>
       <div class="tl-track" style="height:${totalLanes*LANE}px; background-image:repeating-linear-gradient(to top, transparent 0, transparent ${LANE-1}px, var(--border) ${LANE-1}px, var(--border) ${LANE}px)">${layers}${bands}${blocks}</div>
       <div class="tl-rate" style="height:${totalLanes*LANE}px">${lanes>1
         ? `<span class="rb"><i></i><b>${rate}%</b><i></i></span>` : `<span class="rt">${rate}%</span>`}${over?`<small class="over" title="같은 시간에 테이블 수보다 팀이 많습니다 — 자리 없는 팀(경고 예약)">자리 없음 ${over}</small>`:""}</div>
@@ -7273,7 +7291,7 @@ function saTabHours(){
       hours.map(function(h, i){ return '<div class="sa-row"><input type="text" class="in-sm sa-k" value="' + esc(h.day) + '" placeholder="월 – 토" oninput="saSet(\'hours.' + i + '.day\', this.value)"><input type="text" class="in-sm" value="' + esc(h.open) + '" placeholder="11:00 – 22:00" oninput="saSet(\'hours.' + i + '.open\', this.value)"><button class="btn sm ghost" onclick="saArrDel(\'hours\', ' + i + ')">×</button></div>'; }).join("") +
       '<div class="btn-row"><button class="btn sm" onclick="saArrAdd(\'hours\', {day:\'\', open:\'\'})">줄 추가</button></div>' +
       saL("hoursNote", "아래 작은 글", "브레이크·라스트오더 같은 것") +
-      '<p class="f-note">여기 글은 홈페이지에 보이는 것만 바꿉니다. 예약 시각 계산은 예약 시스템 설정의 운영시간을 따릅니다 — 둘을 같이 맞춰 주세요.</p>') +
+      '<p class="f-note"><b>홈페이지에 보이는 글자</b>일 뿐, 예약 시스템 운영시간과 연결돼 있지 않습니다. 운영시간을 바꾸면(설정 → 운영시간) 여기 글도 직접 고쳐 주세요. 예약 창의 시각 칸은 시스템 운영시간을 따릅니다.</p>') +
     saBox("연락처·주소",
       '<div class="grid2">' + saF("info.tel", "전화") + saF("info.parking", "주차 한 줄") + '</div>' +
       saF("info.addr", "주소 (한 줄)") + saT("info.addr2", "주소 (두 줄 표시)", "홈·오시는 길에 두 줄로 나올 때", 2) +

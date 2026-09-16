@@ -65,11 +65,10 @@ function renderTimeline(date, compact){
   const blockTag = (seat)=>{
     const sp = blockSpans(seat, date);
     if(!sp.length) return "";
-    /* 자세한 시각·사유는 그래프 위 빗금에 적혀 있으므로 여기는 짧게만 */
-    const txt = sp.length>1 ? `중지 ${sp.length}구간`
-              : (sp[0].allDay ? "하루 중지" : "일부 중지");
-    const tip = sp.map(x=>spanLabel(x)+(x.note?` · ${x.note}`:"")).join(" / ");
-    return `<span class="bk" title="사용 중지 · ${esc(tip)}">${esc(txt)}</span>`;
+    /* '사용 중지 (사유 / 기간)' — 기간은 날짜(하루면 날짜 하나). 시각은 빗금이 이미 보여 주니 적지 않음(재아) */
+    const txt = sp.map(x=>blockLabelText(x.blk)).join(" · ");
+    const tip = sp.map(x=>blockLabelText(x.blk)+(x.allDay?"":" · "+spanLabel(x))).join(" / ");
+    return `<span class="bk" title="${esc(tip)}">${esc(txt)}</span>`;
   };
 
   /* 좌석 사용 중지 구간을 그 줄에만 덮습니다.
@@ -80,7 +79,7 @@ function renderTimeline(date, compact){
     const s = Math.max(o, sp.s), e = Math.min(c, sp.e);
     if(e <= s) return "";
     return `<span class="blockband" style="left:${pos(s)}%; width:${((e-s)/span)*100}%"
-      title="사용 중지 · ${esc(spanLabel(sp))}${sp.note?` · ${esc(sp.note)}`:""}"><i class="bb-l">사용 중지${sp.note?` (${esc(sp.note)}${sp.allDay?"":" · "+esc(spanLabel(sp))})`:` (${esc(spanLabel(sp))})`}</i></span>`;
+      title="${esc(blockLabelText(sp.blk))}${sp.allDay?"":" · "+esc(spanLabel(sp))}"><i class="bb-l">${esc(blockLabelText(sp.blk))}</i></span>`;
   }).join("");
 
   /* ---------- 룸 ---------- */
@@ -174,7 +173,7 @@ function renderTimeline(date, compact){
     const bands = (fl==null ? "" : floorTables(fl).map(blockBands).join(""))
       + (over ? `<div class="offband overlane" style="left:0; right:0; top:0; height:${LANE}px" title="테이블 수를 넘은 팀이 놓이는 칸"><i class="ol-l">자리 없음 ${over}팀 — 테이블 수를 넘은 예약</i></div>` : "");
     return `<div class="tl-row tbl floor">
-      <div class="tl-name"><b>${fl==null?"층 미정":esc(floorLabel(fl))}</b><small>${fl==null?"":`테이블 ${tbls.length} · ${seats}석`}</small></div>
+      <div class="tl-name"><b>${fl==null?"층 미정":esc(floorLabel(fl))}</b><small>${fl==null?"":`테이블 ${tbls.length} · ${seats}석`}</small>${over?`<span class="bk" title="같은 시간에 테이블 수보다 팀이 많습니다 — 맨 위 빗금 칸에 놓인 예약">자리 없음 ${over}팀</span>`:""}</div>
       <div class="tl-track" style="height:${totalLanes*LANE}px; background-image:repeating-linear-gradient(to top, transparent 0, transparent ${LANE-1}px, var(--border) ${LANE-1}px, var(--border) ${LANE}px)">${layers}${bands}${blocks}</div>
       <div class="tl-rate" style="height:${totalLanes*LANE}px">${lanes>1
         ? `<span class="rb"><i></i><b>${rate}%</b><i></i></span>` : `<span class="rt">${rate}%</span>`}${over?`<small class="over" title="같은 시간에 테이블 수보다 팀이 많습니다 — 자리 없는 팀(경고 예약)">자리 없음 ${over}</small>`:""}</div>

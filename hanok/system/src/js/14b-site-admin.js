@@ -338,7 +338,7 @@ function saTabHours(){
       hours.map(function(h, i){ return '<div class="sa-row"><input type="text" class="in-sm sa-k" value="' + esc(h.day) + '" placeholder="월 – 토" oninput="saSet(\'hours.' + i + '.day\', this.value)"><input type="text" class="in-sm" value="' + esc(h.open) + '" placeholder="11:00 – 22:00" oninput="saSet(\'hours.' + i + '.open\', this.value)"><button class="btn sm ghost" onclick="saArrDel(\'hours\', ' + i + ')">×</button></div>'; }).join("") +
       '<div class="btn-row"><button class="btn sm" onclick="saArrAdd(\'hours\', {day:\'\', open:\'\'})">줄 추가</button></div>' +
       saL("hoursNote", "아래 작은 글", "브레이크·라스트오더 같은 것") +
-      '<p class="f-note">여기 글은 홈페이지에 보이는 것만 바꿉니다. 예약 시각 계산은 예약 시스템 설정의 운영시간을 따릅니다 — 둘을 같이 맞춰 주세요.</p>') +
+      '<p class="f-note"><b>홈페이지에 보이는 글자</b>일 뿐, 예약 시스템 운영시간과 연결돼 있지 않습니다. 운영시간을 바꾸면(설정 → 운영시간) 여기 글도 직접 고쳐 주세요. 예약 창의 시각 칸은 시스템 운영시간을 따릅니다.</p>') +
     saBox("연락처·주소",
       '<div class="grid2">' + saF("info.tel", "전화") + saF("info.parking", "주차 한 줄") + '</div>' +
       saF("info.addr", "주소 (한 줄)") + saT("info.addr2", "주소 (두 줄 표시)", "홈·오시는 길에 두 줄로 나올 때", 2) +
