@@ -45,6 +45,12 @@ function renderSettings(){
   const dirty = settingsDirty();
   const DOWN = ["일","월","화","수","목","금","토"];
 
+  /* ---------- 홈페이지 (손님이 보는 사이트) ---------- */
+  const siteBody = `
+    <p class="f-note" style="margin:0 0 12px">손님이 보는 홈페이지(jaealee.com/hanok)의 <b>예약 접수 켜고 끄기 · 팝업 공지 · 글 · 차림 · 사진 · 영업시간 표시</b>를 고칩니다.
+      여기 설정과 달리 '적용' 을 누르는 즉시(또는 정한 시각부터) 홈페이지에 나갑니다. 미리보기로 먼저 확인할 수 있습니다.</p>
+    <div class="btn-row"><button class="btn primary" onclick="openSiteAdmin()">홈페이지 관리 열기</button></div>`;
+
   /* ---------- 운영시간 ---------- */
   const schedBody = `
     ${(st.schedules||[]).slice().sort((a,b)=>b.from.localeCompare(a.from)).map(sc=>{
@@ -287,14 +293,16 @@ function renderSettings(){
     <p class="f-note">오늘 남은 예약이 하나도 없으면(30분 넘게 지난 것은 빼고) 목록·좌석표 대신 광고 영상만 화면 가득 틉니다. 예약이 생기면 다음 갱신(1분) 때 목록으로 돌아옵니다.</p>
 
     <div class="subhead">광고 영상 <span>목록 화면 왼쪽에 나옵니다</span></div>
-    <input id="tv-ad" class="in-sm" value="${esc(st.tvAd||"")}" placeholder="ad.mp4"
-      onchange="setPolicy('tvAd', this.value)">
+    <div class="ub-row">
+      <span class="grow" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap">${st.tvAd ? `<a href="${esc(adUrl(st.tvAd))}" target="_blank" rel="noopener">${esc(st.tvAd.replace(/^.*\//, ""))}</a>` : `<span class="muted">영상 없음 — 매장 사진이 넘어갑니다</span>`}</span>
+      <button class="btn sm" onclick="saPickFile('video', function(url){ setPolicy('tvAd', url); })">영상 올리기</button>
+      ${st.tvAd ? `<button class="btn sm ghost" onclick="setPolicy('tvAd', '')">비우기</button>` : ``}
+    </div>
     <p class="f-note">
-      영상 파일을 <b>이 폴더에 같이 올려두고</b> 파일 이름만 적으면 됩니다 (예: <code>ad.mp4</code>).<br>
-      · <b>H.264 (MP4)</b> 로 만드세요. 다른 형식은 구형 TV에서 안 나옵니다.<br>
+      태블릿·PC 에서 영상 파일을 고르면 서버에 올라가고 TV 가 그걸 틉니다(적용하기를 눌러야 바뀜).<br>
+      · <b>H.264 (MP4)</b> 로 만드세요. 다른 형식은 구형 TV에서 안 나옵니다. 50MB 까지.<br>
       · 소리는 빼세요. 자동 재생이 막히고, 입구에서 소리가 나면 민폐입니다.<br>
-      · 20~40초, 10MB 이하. 좌우가 잘리므로 <b>중요한 것은 가운데</b>에 두세요.<br>
-      비워 두면 매장 사진이 천천히 넘어갑니다.</p>
+      · 20~40초. 좌우가 잘리므로 <b>중요한 것은 가운데</b>에 두세요.</p>
 
     <div class="subhead">좌석표 화면 배치</div>
     <p class="f-note" style="margin:0 0 12px">
@@ -447,6 +455,7 @@ function renderSettings(){
     </div>`;
 
   return `
+    ${sec("site","홈페이지",`예약 접수 · 팝업 · 글 · 사진`, siteBody)}
     ${sec("hours","운영시간",`${hoursFor(todayStr()).open} ~ ${hoursFor(todayStr()).close}`, schedBody)}
     ${sec("rules","예약 규칙",`단체 ${st.groupSize||8}명${schedChip("rules")}`, ruleBody)}
     ${sec("seats","좌석",`룸 ${st.rooms.filter(isRoom).length} · 테이블 ${st.rooms.filter(isTable).length}${schedChip("seats")}`, seatBody)}

@@ -1,5 +1,5 @@
 -- ============================================================
--- 10차 — 홈페이지 관리 (예약 시스템 '더보기 → 관리자 → 홈페이지 관리' 에서 사이트 글·사진·팝업을 고침)
+-- 10차 — 홈페이지 관리 (예약 시스템 '설정 → 홈페이지 → 홈페이지 관리 열기' 에서 사이트 글·사진·팝업·예약 접수를 고침. TV 광고 영상 파일도 같은 버킷)
 -- Supabase 대시보드 → SQL Editor 에 붙여 넣고 실행. 두 번 실행해도 됩니다. hanok-dev 먼저, 실서비스는 prod 에서 다시.
 --
 -- 구조 (왜 이렇게 했나):
@@ -57,10 +57,10 @@ grant select, insert, delete on site_versions to authenticated;
 grant usage, select on sequence site_versions_id_seq to authenticated;
 
 -- ---------- 3. 파일 버킷 (사진·메뉴판 PDF) ----------
--- 대시보드 Storage 에서 만들어도 되지만 SQL 로도 됩니다. public = 누구나 읽기(주소만 알면). 50MB 제한, 그림·PDF 만.
+-- 대시보드 Storage 에서 만들어도 되지만 SQL 로도 됩니다. public = 누구나 읽기(주소만 알면). 50MB 제한, 그림·PDF·MP4(TV 광고 영상)만.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('site', 'site', true, 52428800, array['image/jpeg','image/png','image/webp','application/pdf'])
-on conflict (id) do update set public = true, file_size_limit = 52428800, allowed_mime_types = array['image/jpeg','image/png','image/webp','application/pdf'];
+values ('site', 'site', true, 52428800, array['image/jpeg','image/png','image/webp','application/pdf','video/mp4'])
+on conflict (id) do update set public = true, file_size_limit = 52428800, allowed_mime_types = array['image/jpeg','image/png','image/webp','application/pdf','video/mp4'];
 drop policy if exists site_public_read on storage.objects;
 drop policy if exists site_staff_write on storage.objects;
 drop policy if exists site_staff_update on storage.objects;
