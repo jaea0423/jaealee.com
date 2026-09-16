@@ -12,6 +12,7 @@
 | 학습 자료 | `drive/` | 과목별 강의 자료. `archive/`도 기존 주소를 유지하는 보관 자료 |
 | 날짜별 콘텐츠 | `news/`, `knowledge/`, `opportunities/` | 원고 JSON·목록·과거 뉴스 HTML |
 | 개별 사이트 | `projects/`, `boyeoii/`, `hogu/`, `sister/`, `yb/` | 각 경로로 접근하는 프로젝트와 개인 페이지 |
+| 한옥반점 | `hanok/` | 가게 사이트(`hanok/`)와 예약 관리 시스템(`hanok/system/`). 옛 버전은 `test/hanok/` 에 보관 |
 | 공유 중인 테스트 | `test/` | 외부에 전달한 주소 포함. 전체 경로와 파일 보존 |
 | 운영 | `automation/`, `bot/`, `supabase/` | 콘텐츠 발행·텔레그램 봇·DB 설정 자료 |
 | 프로젝트 문서 | `docs/projects/` | 페이지 실행과 분리된 기획·설명 문서 |
