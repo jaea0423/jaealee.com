@@ -298,7 +298,7 @@ function saTabOnline(){
       saF("online.offTitle", "중단 안내 제목") + saT("online.offMsg", "중단 안내 문구", "", 2)) +
     saBox("규칙",
       '<div class="grid2">' +
-      saN("online.maxDays", "며칠 앞까지 받나", 1, 31, "일", "당일은 항상 전화(서버 규칙)") +
+      saN("online.maxDays", "며칠 앞까지 받나", 1, 30, "일", "최대 30일 — 시스템이 남은 자리를 30일치만 올립니다. 당일은 항상 전화(서버 규칙)") +
       saN("online.minAdults", "성인 몇 명부터", 2, 12, "명") +
       saN("online.maxPeople", "총 몇 명까지", 2, 12, "명", "넘으면 전화 안내") +
       saN("online.roomMinAdults", "룸은 성인 몇 명부터", 5, 12, "명") +
@@ -372,8 +372,8 @@ function saTabTexts(){
 /* 5. 차림 */
 function saTabMenu(){
   var C = saGet("menu.courses.items") || [], L = saGet("menu.lunch") || [], D = saGet("menu.dishes") || [], DM = saGet("menu.dumplings.items") || [], DR = saGet("menu.drinks") || [];
-  var itemLines = function(items){ return items.map(function(x){ return x.name + (x.tag ? " | " + x.tag : ""); }); };
-  return '<p class="f-note" style="margin:0 0 12px">가격은 홈페이지에 안 나옵니다(메뉴판 PDF 에서만). 이름 뒤에 <b>|</b> 를 두고 적으면 작은 설명이 됩니다 — 예: <code>중새우요리 | 칠리 · 크림 · 깐풍 중 택 1</code></p>' +
+  var itemLines = function(items, withTag){ return items.map(function(x){ return x.name + (withTag && x.tag ? " | " + x.tag : ""); }); };
+  return '<p class="f-note" style="margin:0 0 12px">가격은 홈페이지에 안 나옵니다(메뉴판 PDF 에서만). 요리·만두는 이름만 보이고, 주류는 이름 뒤에 <b>|</b> 를 두고 적으면 작은 설명이 붙습니다 — 예: <code>소주 | 참이슬 · 처음처럼</code></p>' +
     saBox("저녁 코스",
       C.map(function(c, i){ var p = "menu.courses.items." + i + "."; return '<div class="sa-sub"><div class="grid2">' + saF(p + "name", "이름") + saF(p + "cn", "한자") + '</div>' + saL(p + "dishes", "구성", "", 4) + '<div class="btn-row"><button class="btn sm ghost" onclick="saArrMove(\'menu.courses.items\', ' + i + ', -1)">↑</button><button class="btn sm ghost" onclick="saArrMove(\'menu.courses.items\', ' + i + ', 1)">↓</button><button class="btn sm ghost" onclick="saArrDel(\'menu.courses.items\', ' + i + ', \'코스\')">삭제</button></div></div>'; }).join("") +
       '<div class="btn-row"><button class="btn sm" onclick="saArrAdd(\'menu.courses.items\', {name:\'\', cn:\'\', dishes:[]})">코스 추가</button></div>') +
@@ -383,24 +383,25 @@ function saTabMenu(){
         '<div class="btn-row"><button class="btn sm" onclick="saArrAdd(\'' + gp + 'items\', {name:\'\', dishes:[]})">세트 추가</button><button class="btn sm ghost" onclick="saArrDel(\'menu.lunch\', ' + gi + ', \'묶음\')">묶음 삭제</button></div></div>'; }).join("") +
       '<div class="btn-row"><button class="btn sm" onclick="saArrAdd(\'menu.lunch\', {title:\'\', sub:\'\', items:[]})">묶음 추가</button></div>') +
     saBox("요리",
-      D.map(function(g, gi){ var gp = "menu.dishes." + gi + "."; return '<div class="sa-sub">' + saF(gp + "group", "분류") + saMenuLines(gp + "items", "메뉴", itemLines(g.items || [])) + '<div class="btn-row"><button class="btn sm ghost" onclick="saArrMove(\'menu.dishes\', ' + gi + ', -1)">↑</button><button class="btn sm ghost" onclick="saArrMove(\'menu.dishes\', ' + gi + ', 1)">↓</button><button class="btn sm ghost" onclick="saArrDel(\'menu.dishes\', ' + gi + ', \'분류\')">분류 삭제</button></div></div>'; }).join("") +
+      D.map(function(g, gi){ var gp = "menu.dishes." + gi + "."; return '<div class="sa-sub">' + saF(gp + "group", "분류") + saMenuLines(gp + "items", "메뉴", itemLines(g.items || []), false) + '<div class="btn-row"><button class="btn sm ghost" onclick="saArrMove(\'menu.dishes\', ' + gi + ', -1)">↑</button><button class="btn sm ghost" onclick="saArrMove(\'menu.dishes\', ' + gi + ', 1)">↓</button><button class="btn sm ghost" onclick="saArrDel(\'menu.dishes\', ' + gi + ', \'분류\')">분류 삭제</button></div></div>'; }).join("") +
       '<div class="btn-row"><button class="btn sm" onclick="saArrAdd(\'menu.dishes\', {group:\'\', items:[]})">분류 추가</button></div>') +
-    saBox("만두", saMenuLines("menu.dumplings.items", "메뉴", itemLines(DM))) +
+    saBox("만두", saMenuLines("menu.dumplings.items", "메뉴", itemLines(DM), false)) +
     saBox("주류",
-      DR.map(function(g, gi){ var gp = "menu.drinks." + gi + "."; return '<div class="sa-sub">' + saF(gp + "group", "분류") + saMenuLines(gp + "items", "메뉴", itemLines(g.items || [])) + '<div class="btn-row"><button class="btn sm ghost" onclick="saArrDel(\'menu.drinks\', ' + gi + ', \'분류\')">분류 삭제</button></div></div>'; }).join("") +
+      DR.map(function(g, gi){ var gp = "menu.drinks." + gi + "."; return '<div class="sa-sub">' + saF(gp + "group", "분류") + saMenuLines(gp + "items", "메뉴", itemLines(g.items || [], true), true) + '<div class="btn-row"><button class="btn sm ghost" onclick="saArrDel(\'menu.drinks\', ' + gi + ', \'분류\')">분류 삭제</button></div></div>'; }).join("") +
       '<div class="btn-row"><button class="btn sm" onclick="saArrAdd(\'menu.drinks\', {group:\'\', items:[]})">분류 추가</button></div>');
 }
 /* "이름 | 설명" 줄들 ↔ [{name, tag}] . 가격·용량(price·sizes)은 화면에 안 쓰지만 있던 항목은 이름이 같으면 그대로 붙여 둡니다 */
-function saMenuLines(path, label, lines){
-  return '<label class="f sa-f"><div class="lb">' + esc(label) + ' <span class="lbl-note">한 줄에 하나 · 이름 | 설명</span></div><textarea class="in-sm" rows="' + Math.max(3, lines.length + 1) + '" oninput="saSetMenuLines(\'' + path + '\', this.value)">' + esc(lines.join("\n")) + '</textarea></label>';
+function saMenuLines(path, label, lines, withTag){
+  return '<label class="f sa-f"><div class="lb">' + esc(label) + ' <span class="lbl-note">한 줄에 하나' + (withTag ? ' · 이름 | 설명' : '') + '</span></div><textarea class="in-sm" rows="' + Math.max(3, lines.length + 1) + '" oninput="saSetMenuLines(\'' + path + '\', this.value, ' + (withTag ? 'true' : 'false') + ')">' + esc(lines.join("\n")) + '</textarea></label>';
 }
-function saSetMenuLines(path, text){
+/* 줄 → 항목. withTag(주류)면 "이름 | 설명" 을 tag 로. 아니면(요리·만두) 이름만 받고, 있던 tag·price 는 이름이 같으면 그대로 둠(화면엔 안 나와도 자료로 남김) */
+function saSetMenuLines(path, text, withTag){
   var old = saGet(path) || [];
   var items = String(text).split("\n").map(function(l){ return l.trim(); }).filter(function(l){ return l.length; }).map(function(l){
-    var sp = l.split("|"), name = sp[0].trim(), tag = sp.slice(1).join("|").trim();
+    var sp = withTag ? l.split("|") : [l], name = sp[0].trim(), tag = withTag ? sp.slice(1).join("|").trim() : null;
     var prev = old.filter(function(x){ return x.name === name; })[0];
     var it = prev ? deepClone(prev) : {name:name};
-    it.name = name; if(tag) it.tag = tag; else delete it.tag;
+    it.name = name; if(withTag){ if(tag) it.tag = tag; else delete it.tag; }
     return it;
   });
   saSet(path, items);

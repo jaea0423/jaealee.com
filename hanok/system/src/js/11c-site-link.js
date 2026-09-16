@@ -57,8 +57,11 @@ async function pullRequests(){
   const now = Date.now(), fresh = [], seen = {};
   for(const x of rows){
     const q = rowToReq(x); seen[q.id] = 1;
-    if(new Date(q.expiresAt).getTime() <= now){   /* 만료 → 서버에도 표시 */
-      try{ await sb("/rest/v1/requests?id=eq." + encodeURIComponent(q.id), { method:"PATCH", body:{status:"만료", reason:"24시간 안에 처리되지 않음"}, prefer:"return=minimal" }); }catch(e){}
+    if(new Date(q.expiresAt).getTime() <= now){   /* 만료 → 서버에도 표시 + 손님께 안내 문자(흉내). 먼저 본 기기 하나만 하게 됨 — 다음 기기는 '대기' 가 아니라 못 봄 */
+      try{
+        await sb("/rest/v1/requests?id=eq." + encodeURIComponent(q.id), { method:"PATCH", body:{status:"만료", reason:"24시간 안에 처리되지 않음"}, prefer:"return=minimal" });
+        reqExpireSms(q);
+      }catch(e){}
       continue;
     }
     const i = REQUESTS.findIndex(r => r.id === q.id);

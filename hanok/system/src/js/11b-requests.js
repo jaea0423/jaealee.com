@@ -22,9 +22,14 @@ const REQ_API = {
 function reqExpireAt(q){ return q.expiresAt ? new Date(q.expiresAt).getTime() : new Date(q.createdAt).getTime() + REQ_RULE.expireH * 3600e3; }   /* 서버 값이 있으면 그것 */
 function reqSweep(){
   const now = Date.now();
-  REQUESTS.forEach(q => { if(q.status === "대기" && reqExpireAt(q) <= now){ q.status = "만료"; q.reason = "24시간 안에 처리되지 않음"; } });
+  REQUESTS.forEach(q => { if(q.status === "대기" && reqExpireAt(q) <= now){ q.status = "만료"; q.reason = "24시간 안에 처리되지 않음"; reqExpireSms(q); } });
 }
 function reqPending(){ reqSweep(); return REQUESTS.filter(q => q.status === "대기"); }
+/* 만료 안내 문자(흉내) — 홈페이지 예약 시트·사이트 안내문에 "자동 취소되고 안내 문자가 갑니다" 라고 적혀 있어 실제로도 보냅니다 */
+function reqExpireSms(q){
+  if(!q || !q.phone || typeof smsMockSend !== "function") return;
+  smsMockSend(q.phone, q.name, `[한옥반점] ${q.name}님, ${dateLabel(q.date)} ${hm(q.time)} 예약 요청을 24시간 안에 확인해 드리지 못해 접수가 취소되었습니다. 죄송합니다. 전화 주시면 자리를 찾아드리겠습니다. ${store().settings.tel || "031-724-1004"}`);
+}
 /* "23시간 10분 남음" — 1시간 아래면 분만, 다 되면 '만료 임박' */
 function reqLeft(q){
   const ms = reqExpireAt(q) - Date.now(); if(ms <= 0) return "만료";

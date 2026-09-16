@@ -305,7 +305,8 @@ a.btn{text-decoration:none; display:inline-flex; align-items:center}   /* 링크
 .rowitem:first-child{border-top:none}
 .rowitem .grow{flex:1; min-width:0}
 .rowitem .t{font-weight:600; font-size:var(--fs-body)}
-.rowitem .s{color:var(--text-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:var(--fs-sub)}
+.rowitem .t{display:block}
+.rowitem .s{display:block; color:var(--text-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:var(--fs-sub)}   /* span 은 inline 이라 말줄임이 안 걸려 옆으로 삐져나갔음(검토 D2) */
 .rowitem.past{opacity:.45}
 .rowitem.past .t{color:var(--text-2)}
 /* 오늘의 예약 — 행 자체가 버튼이라 눌러서 처리합니다 */
@@ -4871,12 +4872,20 @@ function renderDashMobile(d, m){
 function renderAgenda(date){
   const s = store();
   let day = s.reservations.filter(r=>r.date===date).sort((a,b)=>a.time.localeCompare(b.time));
-  const filters = ["전체",...STATUS].map(f=>{
-    const n = f==="전체" ? day.length : day.filter(r=>r.status===f).length;
-    return `<button class="${view.filter===f?'on':''}" onclick="setFilter('${f}')">${f} ${n}</button>`;
+  const { GROUPS, eff } = listGroups(date);
+  const filters = Object.keys(GROUPS).map(f=>{
+    const n = day.filter(GROUPS[f]).length;
+    return `<button class="${eff===f?'on':''}" onclick="setFilter('${f}')">${f} ${n}</button>`;
   }).join("");
-  if(view.filter!=="전체") day = day.filter(r=>r.status===view.filter);
-  const rows = day.length ? day.map(resRowMobile).join("") : `<div class="empty">해당 조건의 예약이 없습니다.</div>`;
+  if(eff!=="전체") day = day.filter(GROUPS[eff]);
+  const nowM = toMin(nowHM()), isToday = date === todayStr();
+  let marked = false;
+  const rows = day.length ? day.map(r=>{
+    let m = "";
+    if(isToday && !marked && toMin(r.time) > nowM){ marked = true; m = `<div class="now-sep"><span>지금 | ${hm(nowHM())}</span></div>`; }
+    return m + resRowMobile(r);
+  }).join("") + (isToday && !marked ? `<div class="now-sep"><span>지금 | ${hm(nowHM())} · 오늘 남은 예약 없음</span></div>` : "")
+    : `<div class="empty">${eff === "예정" ? "앞으로 남은 예약이 없습니다. 지난 것은 '지난·방문' 또는 '전체'." : "해당 조건의 예약이 없습니다."}</div>`;
   return `<div class="filters">${filters}</div><div class="mlist">${rows}</div>`;
 }
 function resRowMobile(r){
@@ -5020,17 +5029,22 @@ function rateChart(endDate, days){
 }
 
 /* ---------- 예약 목록 (한 줄) ---------- */
-function renderResList(date){
-  const s = store();
-  let day = s.reservations.filter(r=>r.date===date).sort((a,b)=>a.time.localeCompare(b.time));
-  /* 8차-W(재아): 전체 / 예정(아직 안 온 확정) / 지난·방문(1시간 지난 확정 + 방문) / 취소·노쇼 */
+/* 목록 묶음 — PC 목록과 폰 목록이 같이 씁니다.
+   8차-W(재아): 전체 / 예정(아직 안 온 확정) / 지난·방문(1시간 지난 확정 + 방문) / 취소·노쇼
+   '예정' 에는 아직 시각이 안 지난 '방문' 도 흐리게 넣습니다 — 잘못 누른 방문 처리를 눈치채게(8차-Z 재아) */
+function listGroups(date){
   const nowM0 = toMin(nowHM()), isToday0 = date === todayStr();
   const isPastRes = r => r.date < todayStr() || (isToday0 && toMin(r.time) + 60 < nowM0);
-  /* '예정' 에는 아직 시각이 안 지난 '방문' 도 흐리게 넣습니다 — 잘못 누른 방문 처리를 눈치채게(8차-Z 재아) */
   const GROUPS = { "전체": r=>true, "예정": r=>(r.status==="확정" || r.status==="방문") && !isPastRes(r), "지난·방문": r=>r.status==="방문" || (r.status==="확정" && isPastRes(r)), "취소·노쇼": r=>r.status==="취소" || r.status==="노쇼" };
   if(!GROUPS[view.filter]) view.filter = "예정";
   /* 기본은 '예정'. 지난 날짜에서는 예정이 늘 비므로 그때만 '전체' 로 보여 줍니다(버튼도 전체가 켜짐) */
   const eff = (view.filter === "예정" && date < todayStr()) ? "전체" : view.filter;
+  return { GROUPS, eff };
+}
+function renderResList(date){
+  const s = store();
+  let day = s.reservations.filter(r=>r.date===date).sort((a,b)=>a.time.localeCompare(b.time));
+  const { GROUPS, eff } = listGroups(date);
   const filters = Object.keys(GROUPS).map(f=>{
     const n = s.reservations.filter(r=>r.date===date && GROUPS[f](r)).length;
     return `<button class="${eff===f?'on':''}" onclick="setFilter('${f}')">${f} ${n}</button>`;
@@ -5044,7 +5058,7 @@ function renderResList(date){
     if(isToday && !marked && toMin(r.time) > nowM){ marked = true; m = `<div class="now-sep"><span>지금 | ${hm(nowHM())}</span></div>`; }
     return m + resRow(r);
   }).join("") + (isToday && !marked ? `<div class="now-sep"><span>지금 | ${hm(nowHM())} · 오늘 남은 예약 없음</span></div>` : "")
-    : `<div class="empty">해당 조건의 예약이 없습니다.</div>`;
+    : `<div class="empty">${eff === "예정" ? "앞으로 남은 예약이 없습니다. 지난 것은 '지난·방문' 또는 '전체'." : "해당 조건의 예약이 없습니다."}</div>`;
   return `<div class="filters">${filters}</div><div class="rlist">${rows}</div>`;
 }
 function resRow(r){
@@ -5956,9 +5970,14 @@ const REQ_API = {
 function reqExpireAt(q){ return q.expiresAt ? new Date(q.expiresAt).getTime() : new Date(q.createdAt).getTime() + REQ_RULE.expireH * 3600e3; }   /* 서버 값이 있으면 그것 */
 function reqSweep(){
   const now = Date.now();
-  REQUESTS.forEach(q => { if(q.status === "대기" && reqExpireAt(q) <= now){ q.status = "만료"; q.reason = "24시간 안에 처리되지 않음"; } });
+  REQUESTS.forEach(q => { if(q.status === "대기" && reqExpireAt(q) <= now){ q.status = "만료"; q.reason = "24시간 안에 처리되지 않음"; reqExpireSms(q); } });
 }
 function reqPending(){ reqSweep(); return REQUESTS.filter(q => q.status === "대기"); }
+/* 만료 안내 문자(흉내) — 홈페이지 예약 시트·사이트 안내문에 "자동 취소되고 안내 문자가 갑니다" 라고 적혀 있어 실제로도 보냅니다 */
+function reqExpireSms(q){
+  if(!q || !q.phone || typeof smsMockSend !== "function") return;
+  smsMockSend(q.phone, q.name, `[한옥반점] ${q.name}님, ${dateLabel(q.date)} ${hm(q.time)} 예약 요청을 24시간 안에 확인해 드리지 못해 접수가 취소되었습니다. 죄송합니다. 전화 주시면 자리를 찾아드리겠습니다. ${store().settings.tel || "031-724-1004"}`);
+}
 /* "23시간 10분 남음" — 1시간 아래면 분만, 다 되면 '만료 임박' */
 function reqLeft(q){
   const ms = reqExpireAt(q) - Date.now(); if(ms <= 0) return "만료";
@@ -6191,8 +6210,11 @@ async function pullRequests(){
   const now = Date.now(), fresh = [], seen = {};
   for(const x of rows){
     const q = rowToReq(x); seen[q.id] = 1;
-    if(new Date(q.expiresAt).getTime() <= now){   /* 만료 → 서버에도 표시 */
-      try{ await sb("/rest/v1/requests?id=eq." + encodeURIComponent(q.id), { method:"PATCH", body:{status:"만료", reason:"24시간 안에 처리되지 않음"}, prefer:"return=minimal" }); }catch(e){}
+    if(new Date(q.expiresAt).getTime() <= now){   /* 만료 → 서버에도 표시 + 손님께 안내 문자(흉내). 먼저 본 기기 하나만 하게 됨 — 다음 기기는 '대기' 가 아니라 못 봄 */
+      try{
+        await sb("/rest/v1/requests?id=eq." + encodeURIComponent(q.id), { method:"PATCH", body:{status:"만료", reason:"24시간 안에 처리되지 않음"}, prefer:"return=minimal" });
+        reqExpireSms(q);
+      }catch(e){}
       continue;
     }
     const i = REQUESTS.findIndex(r => r.id === q.id);
@@ -7211,7 +7233,7 @@ function saTabOnline(){
       saF("online.offTitle", "중단 안내 제목") + saT("online.offMsg", "중단 안내 문구", "", 2)) +
     saBox("규칙",
       '<div class="grid2">' +
-      saN("online.maxDays", "며칠 앞까지 받나", 1, 31, "일", "당일은 항상 전화(서버 규칙)") +
+      saN("online.maxDays", "며칠 앞까지 받나", 1, 30, "일", "최대 30일 — 시스템이 남은 자리를 30일치만 올립니다. 당일은 항상 전화(서버 규칙)") +
       saN("online.minAdults", "성인 몇 명부터", 2, 12, "명") +
       saN("online.maxPeople", "총 몇 명까지", 2, 12, "명", "넘으면 전화 안내") +
       saN("online.roomMinAdults", "룸은 성인 몇 명부터", 5, 12, "명") +
@@ -7285,8 +7307,8 @@ function saTabTexts(){
 /* 5. 차림 */
 function saTabMenu(){
   var C = saGet("menu.courses.items") || [], L = saGet("menu.lunch") || [], D = saGet("menu.dishes") || [], DM = saGet("menu.dumplings.items") || [], DR = saGet("menu.drinks") || [];
-  var itemLines = function(items){ return items.map(function(x){ return x.name + (x.tag ? " | " + x.tag : ""); }); };
-  return '<p class="f-note" style="margin:0 0 12px">가격은 홈페이지에 안 나옵니다(메뉴판 PDF 에서만). 이름 뒤에 <b>|</b> 를 두고 적으면 작은 설명이 됩니다 — 예: <code>중새우요리 | 칠리 · 크림 · 깐풍 중 택 1</code></p>' +
+  var itemLines = function(items, withTag){ return items.map(function(x){ return x.name + (withTag && x.tag ? " | " + x.tag : ""); }); };
+  return '<p class="f-note" style="margin:0 0 12px">가격은 홈페이지에 안 나옵니다(메뉴판 PDF 에서만). 요리·만두는 이름만 보이고, 주류는 이름 뒤에 <b>|</b> 를 두고 적으면 작은 설명이 붙습니다 — 예: <code>소주 | 참이슬 · 처음처럼</code></p>' +
     saBox("저녁 코스",
       C.map(function(c, i){ var p = "menu.courses.items." + i + "."; return '<div class="sa-sub"><div class="grid2">' + saF(p + "name", "이름") + saF(p + "cn", "한자") + '</div>' + saL(p + "dishes", "구성", "", 4) + '<div class="btn-row"><button class="btn sm ghost" onclick="saArrMove(\'menu.courses.items\', ' + i + ', -1)">↑</button><button class="btn sm ghost" onclick="saArrMove(\'menu.courses.items\', ' + i + ', 1)">↓</button><button class="btn sm ghost" onclick="saArrDel(\'menu.courses.items\', ' + i + ', \'코스\')">삭제</button></div></div>'; }).join("") +
       '<div class="btn-row"><button class="btn sm" onclick="saArrAdd(\'menu.courses.items\', {name:\'\', cn:\'\', dishes:[]})">코스 추가</button></div>') +
@@ -7296,24 +7318,25 @@ function saTabMenu(){
         '<div class="btn-row"><button class="btn sm" onclick="saArrAdd(\'' + gp + 'items\', {name:\'\', dishes:[]})">세트 추가</button><button class="btn sm ghost" onclick="saArrDel(\'menu.lunch\', ' + gi + ', \'묶음\')">묶음 삭제</button></div></div>'; }).join("") +
       '<div class="btn-row"><button class="btn sm" onclick="saArrAdd(\'menu.lunch\', {title:\'\', sub:\'\', items:[]})">묶음 추가</button></div>') +
     saBox("요리",
-      D.map(function(g, gi){ var gp = "menu.dishes." + gi + "."; return '<div class="sa-sub">' + saF(gp + "group", "분류") + saMenuLines(gp + "items", "메뉴", itemLines(g.items || [])) + '<div class="btn-row"><button class="btn sm ghost" onclick="saArrMove(\'menu.dishes\', ' + gi + ', -1)">↑</button><button class="btn sm ghost" onclick="saArrMove(\'menu.dishes\', ' + gi + ', 1)">↓</button><button class="btn sm ghost" onclick="saArrDel(\'menu.dishes\', ' + gi + ', \'분류\')">분류 삭제</button></div></div>'; }).join("") +
+      D.map(function(g, gi){ var gp = "menu.dishes." + gi + "."; return '<div class="sa-sub">' + saF(gp + "group", "분류") + saMenuLines(gp + "items", "메뉴", itemLines(g.items || []), false) + '<div class="btn-row"><button class="btn sm ghost" onclick="saArrMove(\'menu.dishes\', ' + gi + ', -1)">↑</button><button class="btn sm ghost" onclick="saArrMove(\'menu.dishes\', ' + gi + ', 1)">↓</button><button class="btn sm ghost" onclick="saArrDel(\'menu.dishes\', ' + gi + ', \'분류\')">분류 삭제</button></div></div>'; }).join("") +
       '<div class="btn-row"><button class="btn sm" onclick="saArrAdd(\'menu.dishes\', {group:\'\', items:[]})">분류 추가</button></div>') +
-    saBox("만두", saMenuLines("menu.dumplings.items", "메뉴", itemLines(DM))) +
+    saBox("만두", saMenuLines("menu.dumplings.items", "메뉴", itemLines(DM), false)) +
     saBox("주류",
-      DR.map(function(g, gi){ var gp = "menu.drinks." + gi + "."; return '<div class="sa-sub">' + saF(gp + "group", "분류") + saMenuLines(gp + "items", "메뉴", itemLines(g.items || [])) + '<div class="btn-row"><button class="btn sm ghost" onclick="saArrDel(\'menu.drinks\', ' + gi + ', \'분류\')">분류 삭제</button></div></div>'; }).join("") +
+      DR.map(function(g, gi){ var gp = "menu.drinks." + gi + "."; return '<div class="sa-sub">' + saF(gp + "group", "분류") + saMenuLines(gp + "items", "메뉴", itemLines(g.items || [], true), true) + '<div class="btn-row"><button class="btn sm ghost" onclick="saArrDel(\'menu.drinks\', ' + gi + ', \'분류\')">분류 삭제</button></div></div>'; }).join("") +
       '<div class="btn-row"><button class="btn sm" onclick="saArrAdd(\'menu.drinks\', {group:\'\', items:[]})">분류 추가</button></div>');
 }
 /* "이름 | 설명" 줄들 ↔ [{name, tag}] . 가격·용량(price·sizes)은 화면에 안 쓰지만 있던 항목은 이름이 같으면 그대로 붙여 둡니다 */
-function saMenuLines(path, label, lines){
-  return '<label class="f sa-f"><div class="lb">' + esc(label) + ' <span class="lbl-note">한 줄에 하나 · 이름 | 설명</span></div><textarea class="in-sm" rows="' + Math.max(3, lines.length + 1) + '" oninput="saSetMenuLines(\'' + path + '\', this.value)">' + esc(lines.join("\n")) + '</textarea></label>';
+function saMenuLines(path, label, lines, withTag){
+  return '<label class="f sa-f"><div class="lb">' + esc(label) + ' <span class="lbl-note">한 줄에 하나' + (withTag ? ' · 이름 | 설명' : '') + '</span></div><textarea class="in-sm" rows="' + Math.max(3, lines.length + 1) + '" oninput="saSetMenuLines(\'' + path + '\', this.value, ' + (withTag ? 'true' : 'false') + ')">' + esc(lines.join("\n")) + '</textarea></label>';
 }
-function saSetMenuLines(path, text){
+/* 줄 → 항목. withTag(주류)면 "이름 | 설명" 을 tag 로. 아니면(요리·만두) 이름만 받고, 있던 tag·price 는 이름이 같으면 그대로 둠(화면엔 안 나와도 자료로 남김) */
+function saSetMenuLines(path, text, withTag){
   var old = saGet(path) || [];
   var items = String(text).split("\n").map(function(l){ return l.trim(); }).filter(function(l){ return l.length; }).map(function(l){
-    var sp = l.split("|"), name = sp[0].trim(), tag = sp.slice(1).join("|").trim();
+    var sp = withTag ? l.split("|") : [l], name = sp[0].trim(), tag = withTag ? sp.slice(1).join("|").trim() : null;
     var prev = old.filter(function(x){ return x.name === name; })[0];
     var it = prev ? deepClone(prev) : {name:name};
-    it.name = name; if(tag) it.tag = tag; else delete it.tag;
+    it.name = name; if(withTag){ if(tag) it.tag = tag; else delete it.tag; }
     return it;
   });
   saSet(path, items);
@@ -7605,7 +7628,7 @@ function toastSaved(rec){
 function renderSheet(){
   const inner = { res:sheetRes, mark:sheetMark, unassigned:sheetUnassigned, pick:sheetPick, check:sheetCheck, search:sheetSearch, num:sheetNum, noshow:sheetNoshow, pin:sheetPin, apw:sheetAdminPw, hours:sheetHours, tedit:sheetTableEdit, naver:sheetNaver, setlog:sheetSetLog, pinlist:sheetPinList, zoomadj:sheetZoomAdj, logs:sheetLogs, smslog:sheetSmsLog, smsfree:sheetSmsFree, rate:sheetRate, sched:sheetSchedule, ovr:sheetOverride, blocks:sheetBlocks, reqs:sheetRequests, req:sheetRequest, sched2:sheetScheduled, site:sheetSite /*, staff:sheetStaff, att:sheetAtt, sale:sheetSale */ }[view.form.type]();
   /* 검색은 창 높이를 고정해 두고 결과만 안에서 스크롤 — 칠 때마다 창이 늘었다 줄었다 하지 않게(재아) */
-  const wide = view.form.type==="rate" ? " sheet-wide" : ((view.form.type==="search" || view.form.type==="reqs") ? " sheet-tall" : "");
+  const wide = view.form.type==="rate" ? " sheet-wide" : ((view.form.type==="search" || (view.form.type==="reqs" && reqPending().length)) ? " sheet-tall" : "");   /* 홈페이지 예약이 0건이면 빈 상자를 길게 안 보임(검토 D3) */
   if(view.form.page) return `<div class="sheet page-sheet">${inner}</div>`;   /* 화면형: 덮개 없이 본문 자리에 */
   return `<div class="overlay" onclick="closeSheet()"><div class="sheet${wide}" onclick="event.stopPropagation()">${inner}</div></div>`;
 }
@@ -9340,7 +9363,7 @@ function wzWarnReason(){
     else if(dh.closed) out.push(`휴무일${dh.note?` - ${dh.note}`:""}`);
   }
   if(WZ.step===3 && WZ.seat){
-    const room = st.rooms.find(x=>x.id===WZ.seat);
+    const room = seatById(WZ.seat);   /* 예정 설정으로 그 날짜에만 있는 룸도 찾음(검토 B2) */
     if(room && room.type==="room"){
       const rs = roomStatus(WZ.date, WZ.time, WZ.seat);
       const who = rs.hits.map(x=>`${hm(x.time)} ${x.name} ${pplText(x)}`).join(", ");
@@ -9369,7 +9392,7 @@ function wzWarnReason(){
     if(ns) out.push(`노쇼 이력 - ${ns.count}회`);
   }
   if(WZ.step===4){
-    const seat = st.rooms.find(x=>x.id===WZ.seat);
+    const seat = seatById(WZ.seat);
     if(seat && seat.type==="room"){
       const adults = adultCount(WZ.people, WZ.infants);
       const n = courseCount();

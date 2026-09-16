@@ -288,7 +288,7 @@ function wzWarnReason(){
     else if(dh.closed) out.push(`휴무일${dh.note?` - ${dh.note}`:""}`);
   }
   if(WZ.step===3 && WZ.seat){
-    const room = st.rooms.find(x=>x.id===WZ.seat);
+    const room = seatById(WZ.seat);   /* 예정 설정으로 그 날짜에만 있는 룸도 찾음(검토 B2) */
     if(room && room.type==="room"){
       const rs = roomStatus(WZ.date, WZ.time, WZ.seat);
       const who = rs.hits.map(x=>`${hm(x.time)} ${x.name} ${pplText(x)}`).join(", ");
@@ -317,7 +317,7 @@ function wzWarnReason(){
     if(ns) out.push(`노쇼 이력 - ${ns.count}회`);
   }
   if(WZ.step===4){
-    const seat = st.rooms.find(x=>x.id===WZ.seat);
+    const seat = seatById(WZ.seat);
     if(seat && seat.type==="room"){
       const adults = adultCount(WZ.people, WZ.infants);
       const n = courseCount();

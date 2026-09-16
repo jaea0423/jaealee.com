@@ -31,4 +31,8 @@ since = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=
 save("stores.json",       fetch_all("stores?select=*&order=key"))
 save("reservations.json", fetch_all("reservations?select=*&order=date,time,id"))
 save("logs-30d.json",     fetch_all("logs?select=*&order=at,id&at=gte." + since)   # 같은 시각이 여러 줄이면 페이지 경계에서 빠지거나 겹치므로 id 로 순서를 고정)
+# 9·10차에서 생긴 표들 — 홈페이지 예약 접수, 홈페이지 내용(초안·적용 판). public_avail 은 시스템이 매번 다시 올리니 안 받음
+save("requests.json",      fetch_all("requests?select=*&order=created_at,id"))
+save("site_draft.json",    fetch_all("site_draft?select=*&order=store"))
+save("site_versions.json", fetch_all("site_versions?select=*&order=id"))
 with open(os.path.join(OUT, "backup-at.txt"), "w") as f: f.write(datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ") + "\n")

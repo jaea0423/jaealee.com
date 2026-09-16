@@ -401,7 +401,7 @@
   function sGuest(b, f){
     b.insertAdjacentHTML("beforeend", sumLine() + `<section class="rv-sec">
         <h3>예약자 정보</h3>
-        <div class="rv-fld"><label for="rv-name">성함</label><input id="rv-name" value="${esc(S.name)}" placeholder="성함을 입력해 주세요" autocomplete="name"></div>
+        <div class="rv-fld"><label for="rv-name">성함</label><input id="rv-name" value="${esc(S.name)}" placeholder="성함을 입력해 주세요" autocomplete="name" maxlength="30"></div>
         <div class="rv-fld">
           <label for="rv-phone">전화번호</label>
           <div class="rv-inline">
@@ -415,7 +415,7 @@
           <p class="rv-fld-hint" id="rv-tel-hint">${S.verified ? "인증되었습니다." : ""}</p>
         </div>
         <div class="rv-fld"><label for="rv-req">요청사항 <em>선택</em></label>
-          <textarea id="rv-req" rows="3" placeholder="알레르기가 있으시거나 어린이 의자·식기가 필요하시면 적어 주세요. 예약하시는 분과 방문하시는 분이 다르면 함께 적어 주세요.">${esc(S.req)}</textarea></div>
+          <textarea id="rv-req" rows="3" maxlength="300" placeholder="알레르기가 있으시거나 어린이 의자·식기가 필요하시면 적어 주세요. 예약하시는 분과 방문하시는 분이 다르면 함께 적어 주세요.">${esc(S.req)}</textarea></div>
       </section>`);
     const name = $("#rv-name", b), phone = $("#rv-phone", b), send = $("#rv-send", b),
           codebox = $("#rv-codebox", b), code = $("#rv-code", b), verify = $("#rv-verify", b), hint = $("#rv-tel-hint", b), req = $("#rv-req", b);
