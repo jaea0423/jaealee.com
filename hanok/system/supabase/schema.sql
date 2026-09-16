@@ -83,10 +83,13 @@ revoke all on stores, reservations, logs from anon;
 -- 전화·요청사항·메모·문자는 뷰에 절대 넣지 않습니다.
 
 -- 한 글자 이름도 가리고, 별은 하나로(별 개수로 이름 길이가 드러나지 않게)
+-- 12차: 앱(maskName)과 같은 모양 — 띄어쓰기 빼고 첫·끝 글자만, 글자 수만큼 별 (남궁민수 → 남 * * 수, Tom Cruise → T * * * * * * * e)
 create or replace function mask_name(n text) returns text language sql immutable as $$
-  select case when length(trim(n)) <= 1 then '*'
-              when length(trim(n)) = 2 then left(trim(n),1) || ' *'
-              else left(trim(n),1) || ' * ' || right(trim(n),1) end
+  with s as (select regexp_replace(trim(coalesce(n, '')), '\s+', '', 'g') as v)
+  select case when length(v) <= 1 then '*'
+              when length(v) = 2 then left(v, 1) || ' *'
+              else left(v, 1) || ' ' || array_to_string(array_fill('*'::text, array[length(v) - 2]), ' ') || ' ' || right(v, 1) end
+  from s
 $$;
 
 -- 오늘(한국 시각) 확정·방문 예약만. 날짜 비교가 문자열이라 시차 문제가 없습니다

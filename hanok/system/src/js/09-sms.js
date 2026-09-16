@@ -234,6 +234,11 @@ function checkItems(date){
   if(pend.length) items.push(["blue", `홈페이지 예약 ${pend.length}건`,
     pend.slice(0,3).map(q=>`${dateLabel(q.date)} ${hm(q.time)} ${q.name}`).join(", "), `openRequests()`]);
 
+  /* 사용 중지 좌석에 잡힌 예약 — 날짜 상관없이 오늘 이후 전부. 미리 연락하거나 자리를 옮겨야 하니(재아) */
+  const blk = s.reservations.filter(r=>r.date>=today && holdsSeat(r) && resBlocked(r)).sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time));
+  if(blk.length) items.push(["rust", `사용 중지 좌석에 잡힌 예약 ${blk.length}건`,
+    blk.slice(0,3).map(r=>`${dateLabel(r.date)} ${r.time} ${r.name} · ${resSeatLabel(r)}`).join(", "), `openPick('blocked')`]);
+
   const un = list.filter(isUnassigned);   /* 테이블 예약은 층이 자리 — 미배정 아님 */
   if(un.length) items.push(["amber", `좌석 미배정 ${un.length}건`,
     un.slice(0,3).map(r=>`${r.time} ${r.name}`).join(", "), `openUnassigned()`]);
@@ -319,17 +324,21 @@ function sheetPick(){
              note:"오늘 안에 바뀐 예약입니다. 주방에 이미 전달한 내용이 있다면 다시 알려주세요."},
     group:{title:"단체 손님", pick:r=>pplOf(r) >= (store().settings.groupSize||8),
            note:"상차림과 인력 배치를 미리 준비하세요. 기준 인원은 설정에서 바꿀 수 있습니다."},
-    auto:{title:"어제 자동 방문 처리", pick:null, note:""}
+    auto:{title:"어제 자동 방문 처리", pick:null, note:""},
+    blocked:{title:"사용 중지 좌석에 잡힌 예약", pick:null, note:"그 좌석은 그 기간 쓸 수 없습니다. 미리 연락해 다른 자리로 옮기거나 사용 중지를 풀어 주세요. 오늘 이후 전부입니다."}
   }[kind];
   const list = kind==="auto"
     ? autoClosedList(shiftDate(today,-1))
+    : kind==="blocked"
+    ? s.reservations.filter(r=>r.date>=today && holdsSeat(r) && resBlocked(r)).sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time))
     : s.reservations.filter(r=>r.date===d && (kind==="changed" || r.status==="확정") && conf.pick(r))
         .sort((a,b)=>a.time.localeCompare(b.time));
   const rows = list.length ? list.map(r=>`
     <button class="rowitem tap" onclick="openMark('${r.id}')">
       <span class="time-col">${esc(r.time)}</span>
       <span class="grow"><span class="t">${esc(r.name)}</span>
-        <span class="s">${pplText(r)}${r.phone?` · ${esc(r.phone)}`:""}${
+        <span class="s">${kind==="blocked"?`${dateLabel(r.date)} · `:""}${pplText(r)}${r.phone?` · ${esc(r.phone)}`:""}${
+          kind==="blocked"&&resBlocked(r)?` · ${esc(blockLabelText(resBlocked(r).blk))}`:""}${
           kind==="allergy"&&r.allergy?` · ${esc(r.allergy)}`:""}${
           kind==="chairs"?` · 의자 ${r.chairs}개`:""}${
           kind==="noshow"&&noshowOf(r.phone)?` · 노쇼 ${noshowOf(r.phone).count}회`:""}${
@@ -338,7 +347,7 @@ function sheetPick(){
       ${seatTag(r)}
     </button>`).join("") : `<div class="empty">해당 예약이 없습니다.</div>`;
   return `
-    ${sheetHead(`${conf.title} · ${kind==="auto"?dateLabel(shiftDate(today,-1)):dateLabel(d)}`)}
+    ${sheetHead(kind==="blocked" ? conf.title : `${conf.title} · ${kind==="auto"?dateLabel(shiftDate(today,-1)):dateLabel(d)}`)   /* 사용 중지 예약은 날짜와 무관하게 전부 모음 */}
     <div class="card" style="margin-bottom:12px">${rows}</div>
     <p class="f-note">${conf.note}</p>
     <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">닫기</button></div>`;

@@ -119,6 +119,23 @@ async function lockNow(){
   sessionClear(); OFFLINE = null;
   saveData(); render();
 }
+/* 더보기 → 종료하기: 로그아웃하고 창을 닫습니다(재아).
+   브라우저는 스크립트가 연 창만 window.close() 로 닫아 줍니다 — 태블릿 홈 화면 앱(PWA)이나 직접 연 탭은 안 닫힐 수 있어,
+   그럴 땐 '종료했습니다 · 창을 닫아 주세요' 화면을 보여 줍니다(다시 열면 처음부터) */
+async function exitApp(){
+  if(!await uiConfirm("종료할까요?", "로그아웃하고 이 창을 닫습니다.", {ok:"종료", cancel:"취소"})) return;
+  if(!await flushBeforeLeave()) return;
+  resetOverlays();
+  logEvent("종료", "");
+  AUTHED=false; PIN_BUF=""; PIN_ERR=""; view.storeKey=null; view.draft=null; view.adminOk=false;
+  DATA._session = {authed:false};
+  sessionClear(); OFFLINE = null;
+  try{ saveData(); }catch(e){}
+  try{ window.close(); }catch(e){}
+  setTimeout(function(){
+    document.body.innerHTML = '<div class="bye"><b>종료했습니다</b><span>이 창은 닫아도 됩니다.</span><button class="btn" onclick="location.reload()">다시 열기</button></div>';
+  }, 300);
+}
 /* PC에서 키보드로도 입력 */
 function pinKeydown(e){
   if(AUTHED) return;

@@ -168,6 +168,11 @@ function toggleFold(k){
   view.open[k] = !was;
   view.foldJust = was ? null : k;   /* 이번 render 에만 열림 애니메이션 */
   render();
+  /* 폰에서는 설정 폴드가 목록 아래쪽에 열려 내용이 화면 밖에 있었음(모바일 2026-09-17) → 연 폴드 머리를 위로 끌어올림 */
+  if(!was && isMobile() && k.indexOf("s_") === 0){
+    var h = document.querySelector(".fold.on > .fold-h");
+    if(h && h.scrollIntoView) try{ h.scrollIntoView({block:"start", behavior:"smooth"}); }catch(e){ h.scrollIntoView(true); }
+  }
 }
 
 /* 미리보기 — 값과 눈금 없이 막대와 선만 */
@@ -222,7 +227,7 @@ function rateChart(endDate, days){
   return `
     <div class="legend">
       <span><i class="sw rb-room"></i>룸 ${st0.roomSeats}개</span>
-      <span><i class="sw rb-hall"></i>홀 ${st0.hallSeats}테이블</span>
+      <span><i class="sw rb-hall"></i>테이블 ${st0.hallSeats}개</span>
       <span><i class="sw ln total"></i>전체 예약률</span>
     </div>
     <svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="예약률 추이">

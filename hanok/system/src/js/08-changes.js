@@ -22,7 +22,7 @@ var CHANGE_FIELDS = [
   {k:"infants",  n:"어린이",   f:function(v){ return (v||0)+"명"; }},
   {k:"chairs",   n:"유아의자", f:function(v){ return (v||0)+"개"; }},
   {k:"roomId",   n:"좌석",   f:function(v){ return v ? seatLabel(v) : "미배정"; }},
-  {k:"seatPref", n:"좌석 희망", f:function(v){ return v ? seatLabel(v) : "-"; }},   /* 지하 → 1층 처럼 층만 바꾼 것도 변동입니다(11월 점검) */
+  {k:"seatPref", n:"좌석 희망", f:function(v){ return v ? seatLabel(v) : "-"; }},   /* 저층 → 1층 처럼 층만 바꾼 것도 변동입니다(11월 점검) */
   {k:"menuType", n:"식사",   f:function(v){ return v || "-"; }},
   {k:"request",  n:"요청",   f:function(v){ return v || "없음"; }},
   {k:"allergy",  n:"알러지", f:function(v){ return v || "없음"; }},

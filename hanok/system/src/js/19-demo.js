@@ -13,7 +13,7 @@ function seedDemo(d){
     {n:"관우", min:4, max:6}, {n:"공명", min:4, max:6}, {n:"주유", min:4, max:6},
     {n:"초선", min:6, max:8}, {n:"동탁", min:8, max:10}
   ];
-  const HALLS = ["1층 홀","지하 홀"];
+  const HALLS = ["1층 홀","저층 홀"];
   /* 룸(체류 3h)·홀(2.5h) 모두 안전한 시각만 사용 */
   const SLOTS = {
     0: {lunch:["11:30","12:00","12:30","13:00"], dinner:["17:00","17:30"]},           /* 일 20:30 마감 */

@@ -725,7 +725,20 @@ function runSearch(word) {
   });
   hitEl.textContent = marks.length ? '0/' + marks.length : '없음';
 }
-qInput.addEventListener('input', e => runSearch(e.target.value.trim().toLowerCase()));
+/* 검색은 본문 텍스트 노드를 통째로 갈아끼우기 때문에 브라우저가 스크롤 기준점을 잃고
+   맨 위로 튄다. 그래서 바꾸기 직전 위치를 적어 두었다가 끝나고 바로 되돌린다.
+   html에 scroll-behavior:smooth 가 걸려 있어 되돌릴 때 애니메이션이 보이므로 잠깐 꺼 둔다. */
+function keepScroll(fn) {
+  const y = window.scrollY, root = document.documentElement, prev = root.style.scrollBehavior;
+  root.style.scrollBehavior = 'auto';
+  fn();
+  window.scrollTo(0, y);
+  root.style.scrollBehavior = prev;
+}
+qInput.addEventListener('input', e => {
+  const w = e.target.value.trim().toLowerCase();
+  keepScroll(() => runSearch(w));
+});
 qInput.addEventListener('keydown', e => {
   if (e.key !== 'Enter' || !marks.length) return;
   e.preventDefault();
@@ -745,9 +758,12 @@ document.getElementById('vTotal').textContent = words.length;
 
 document.getElementById('vq').addEventListener('input', e => {
   const k = e.target.value.trim().toLowerCase();
-  let shown = 0;
-  words.forEach(w => { const ok = w.innerText.toLowerCase().includes(k); w.style.display = ok ? '' : 'none'; if (ok) shown++; });
-  document.getElementById('vcount').textContent = shown + '개';
+  // 항목을 숨기면 문서 높이가 바뀌어 스크롤이 튄다. 여기도 위치를 고정해 둔다.
+  keepScroll(() => {
+    let shown = 0;
+    words.forEach(w => { const ok = w.innerText.toLowerCase().includes(k); w.style.display = ok ? '' : 'none'; if (ok) shown++; });
+    document.getElementById('vcount').textContent = shown + '개';
+  });
 });
 
 const maskBtn = document.getElementById('maskBtn');

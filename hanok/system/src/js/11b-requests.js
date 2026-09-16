@@ -24,18 +24,41 @@ function reqSweep(){
   const now = Date.now();
   REQUESTS.forEach(q => { if(q.status === "대기" && reqExpireAt(q) <= now){ q.status = "만료"; q.reason = "24시간 안에 처리되지 않음"; reqExpireSms(q); } });
 }
-function reqPending(){ reqSweep(); return REQUESTS.filter(q => q.status === "대기"); }
+function reqPending(){ reqSweep(); return REQUESTS.filter(q => q.status === "대기").sort((a, b) => (a.createdAt || "").localeCompare(b.createdAt || "")); }   /* 접수 순(오래된 것부터) — 시간 제한이 있으니(재아) */
+/* 대기 중인 요청을 예약처럼 — 타임라인에 연회색으로 그리고, 남은 자리 계산에서 찬 것으로 칩니다(확정 전이라도 자리를 잡아 두려고 — 재아).
+   좌석은 그때그때 빈 곳을 골라 잠정으로. 실제 예약 표에는 없고 화면·계산에만 잠깐 끼워 넣습니다 */
+function reqAsRes(q){
+  const f = suggestSeatFull(q.date, q.time, q.people, q.seat === "room" ? "room-any" : "table-any");
+  let pref = q.seat === "room" ? "room-any" : "table-any";
+  if(q.seat !== "room" && f){ const t = seatById(f.id); if(t && isTable(t)) pref = "table:" + (t.floor || ""); }
+  if(q.seat !== "room" && !f){ const fl = tableFloors()[0]; if(fl != null) pref = "table:" + fl; }
+  return { id:"req:" + q.id, _req:q, date:q.date, time:q.time, name:q.name, phone:q.phone, people:q.people, infants:q.kids || 0, chairs:0,
+           roomId:null, extraIds:[], seatPref:pref, tentativeRoomId:f ? f.id : null, tentativeExtra:f ? (f.extra || []) : [], tentativeSplit:!!(f && f.split),
+           source:"기타", sourceDetail:"홈페이지 예약", createdAt:q.createdAt, menuType:"해당 없음", courses:{}, courseUndecided:false,
+           allergy:q.allergy || "", allergyChecked:true, request:q.request || "", memo:"", status:"확정", changes:[], sms:[] };
+}
+function reqPendingOn(date){ return reqPending().filter(q => q.date === date); }
+/* fn 을 돌리는 동안만 대기 요청을 예약 표에 끼워 넣습니다 — 남은 자리 계산용 */
+function withPendingReqs(date, fn){
+  const s = store(), add = reqPendingOn(date).map(reqAsRes);
+  if(!add.length) return fn();
+  s.reservations.push.apply(s.reservations, add);
+  try{ return fn(); }
+  finally{ for(let i = s.reservations.length - 1; i >= 0; i--) if(s.reservations[i]._req) s.reservations.splice(i, 1); }
+}
 /* 만료 안내 문자(흉내) — 홈페이지 예약 시트·사이트 안내문에 "자동 취소되고 안내 문자가 갑니다" 라고 적혀 있어 실제로도 보냅니다 */
 function reqExpireSms(q){
   if(!q || !q.phone || typeof smsMockSend !== "function") return;
   smsMockSend(q.phone, q.name, `[한옥반점] ${q.name}님, ${dateLabel(q.date)} ${hm(q.time)} 예약 요청을 24시간 안에 확인해 드리지 못해 접수가 취소되었습니다. 죄송합니다. 전화 주시면 자리를 찾아드리겠습니다. ${store().settings.tel || "031-724-1004"}`);
 }
-/* "23시간 10분 남음" — 1시간 아래면 분만, 다 되면 '만료 임박' */
+/* "6시간 38분 후 만료" — 12시간 안으로 들어오면 빨간 "11시간 59분 남음" (reqLeftClass) */
 function reqLeft(q){
   const ms = reqExpireAt(q) - Date.now(); if(ms <= 0) return "만료";
   const h = Math.floor(ms / 3600e3), m = Math.floor((ms % 3600e3) / 60000);
-  return h ? `${h}시간 ${m}분 남음` : `${m}분 남음`;
+  if(ms < 12 * 3600e3) return h ? `${h}시간 ${m}분 남음` : `${m}분 남음`;
+  return `${h}시간 ${m}분 후 만료`;
 }
+function reqLeftClass(q){ return reqExpireAt(q) - Date.now() < 12 * 3600e3 ? "rust" : ""; }
 function reqById(id){ return REQUESTS.find(q => q.id === id); }
 function reqPeopleText(q){ return q.kids ? `${q.people}명(어린이${q.kids})` : `${q.people}명`; }
 function reqMenuText(q){
@@ -53,7 +76,7 @@ function reqWarns(q){
     const free = seats.filter(x => (q.seat === "room" ? isRoom(x) : isTable(x)) && !blockedAt(x, q.date, q.time)
                    && q.people <= seatMax(x) && (q.seat !== "room" || q.people >= roomMin(x, q.date))
                    && roomStatus(q.date, q.time, x.id).state === "free").length;
-    if(!free) out.push(q.seat === "room" ? "그 시간에 빈 룸이 없음" : "그 시간에 빈 테이블이 없음");
+    if(!free) out.push(q.seat === "room" ? "룸 없음" : "테이블 없음");
   }catch(e){}
   const dup = store().reservations.find(r => r.date === q.date && r.status !== "취소" && (r.phone||"").replace(/\D/g,"") === (q.phone||"").replace(/\D/g,""));
   if(dup) out.push(`같은 날 같은 번호 예약 있음 (${dup.time} ${dup.name})`);
@@ -63,13 +86,13 @@ function reqWarns(q){
 /* ---------- 목록 시트 ---------- */
 function openRequests(){ view.form = {type:"reqs"}; render(); }
 function sheetRequests(){
-  const list = reqPending().sort((a,b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
+  const list = reqPending();   /* 접수 순 */
   const rows = list.length ? list.map(q => {
     const w = reqWarns(q);
     return `<button class="rowitem tap" onclick="openRequest('${q.id}')">
-      <span class="grow"><span class="t">${esc(q.name)} <span class="tag">${q.seat==="room"?"룸":"테이블"}</span>${w.length?`<span class="tag rust">${esc(w[0])}</span>`:""}</span>
-        <span class="s">${dateLabel(q.date)} ${hm(q.time)} · ${reqPeopleText(q)} · ${esc(reqMenuText(q))}</span></span>
-      <span class="s left ${reqExpireAt(q)-Date.now() < 3600e3 ? "soon" : ""}" style="white-space:nowrap; text-align:right">${reqLeft(q)}<br><span class="muted">${reqAgo(q.createdAt)} 접수</span></span>
+      <span class="grow"><span class="t">${esc(q.name)}${w.length?` <span class="tag rust sm">${esc(w[0])}</span>`:""}</span>
+        <span class="s">${dateLabel(q.date)} ${hm(q.time)} · ${reqPeopleText(q)} · ${q.seat==="room"?"룸":"테이블"} · ${esc(reqMenuText(q))}</span></span>
+      <span class="s left ${reqLeftClass(q)}" style="white-space:nowrap; text-align:right">${reqLeft(q)}</span>
     </button>`; }).join("")
     : `<div class="empty">처리할 홈페이지 예약이 없습니다.<br><span class="s">손님이 홈페이지에서 접수하면 여기로 들어옵니다. 24시간 안에 확정·거절하지 않으면 자동 취소됩니다.</span></div>`;
   return `
@@ -98,19 +121,63 @@ function sheetRequest(){
       ${row("자리", q.seat === "room" ? "룸" : "테이블")}
       ${row("메뉴", esc(reqMenuText(q)))}
       ${row("예약자", `${esc(q.name)} · ${esc(q.phone)}`)}
+      ${q.allergy ? row("알레르기", `<span class="rust">${esc(q.allergy)}</span>`) : ""}
       ${q.request ? row("요청사항", esc(q.request)) : ""}
-      ${row("접수", `${reqAgo(q.createdAt)} · <b class="${reqExpireAt(q)-Date.now() < 3600e3 ? "rust" : ""}">${reqLeft(q)}</b>`)}
+      ${row("만료", `<b class="${reqLeftClass(q)}">${reqLeft(q)}</b>`)}
     </div>
     ${w.length ? `<div class="menu-warn" style="margin-top:10px">${w.map(esc).join(" · ")}</div>` : ""}
-    <p class="f-note" style="margin-top:10px">승인하면 이 내용으로 예약 등록이 열립니다. 좌석을 고르고 등록하면 손님께 확정 문자가 나갑니다. 24시간 안에 처리하지 않으면 자동 취소되고 손님께 안내 문자가 갑니다.</p>
+    <p class="f-note" style="margin-top:10px">'예약 확정' 을 누르면 이 내용 그대로 예약이 등록되고(자리는 빈 곳으로 잠정 배정) 손님께 확정 문자가 나갑니다. 경고가 있으면 먼저 알려 드립니다. 24시간 안에 처리하지 않으면 자동 취소됩니다.</p>
     <div class="sheet-actions">
-      <button class="btn ghost" onclick="reqReject('${q.id}')">거절</button>
+      <button class="btn ghost" onclick="openReqReject('${q.id}')">거절</button>
       <button class="btn ghost" onclick="openRequests()">목록</button>
-      <button class="btn primary" data-enter onclick="reqAccept('${q.id}')">승인 → 예약 등록</button></div>`;
+      <button class="btn primary" data-enter onclick="reqAccept('${q.id}')">예약 확정</button></div>`;
 }
 
-/* 승인: 마법사를 요청 내용으로 채워 엽니다. 좌석·알러지 확인은 직원이 마저 합니다 */
-function reqAccept(id){
+/* 요청의 코스 이름('촉 코스' '요리사 추천세트') → 설정 항목('cg_dinner|촉') */
+function reqCourses(q){
+  const gs = courseGroups(q.date), courses = {};
+  const m = /^(course|set):(.+)$/.exec(q.course || "");
+  if(m){
+    const short = m[2].replace(/\s*(코스|세트)$/,"").replace(/추천세트$/,"").trim();
+    for(const g of gs){ const it = (g.items||[]).find(x => short.indexOf(x) === 0 || x.indexOf(short) === 0); if(it){ courses[g.id + "|" + it] = q.adults || q.people; break; } }   /* 코스 인분 = 성인 수(어린이 제외) */
+  }
+  return { courses, matched: !!(m && Object.keys(courses).length), isCourse: q.course !== "none" };
+}
+/* 예약 확정: 요청 내용 그대로 바로 등록(자리는 빈 곳으로 잠정). 경고가 있으면 먼저 팝업 —
+   그래도 확정 / 예약 창에서 자리 고르기(마법사 좌석 단계로) / 취소 (재아) */
+async function reqAccept(id){
+  const q = reqById(id); if(!q) return;
+  if(readonlyBlock && readonlyBlock()) return;
+  const warns = reqWarns(q);
+  const pr = reqAsRes(q);   /* 잠정 좌석 계산 */
+  if(!pr.tentativeRoomId) warns.push(q.seat === "room" ? "빈 룸이 없어 미배정으로 들어갑니다" : "빈 테이블이 없어 자리 없음으로 들어갑니다");
+  const cr = reqCourses(q);
+  if(cr.isCourse && !cr.matched && q.course !== "later") warns.push(`코스 이름을 설정에서 못 찾음 (${q.courseLabel}) — 미정으로 넣습니다`);
+  if(warns.length){
+    const pick = await uiChoose("확인이 필요합니다", ["그래도 예약 확정", "예약 창에서 직접 고르기"], warns.join("\n"));
+    if(pick == null) return;
+    if(pick === 1){ reqAcceptWizard(id, 3); return; }
+  }
+  const st = store().settings;
+  const rec = {
+    id:newId("res"), date:q.date, time:q.time, name:q.name, phone:phoneNorm(q.phone),
+    people:q.people, infants:q.kids || 0, chairs:(typeof chairDefaultInfants === "function" && chairDefaultInfants()) ? (q.kids || 0) : 0,
+    roomId:null, extraIds:[], seatPref:pr.seatPref, tentativeRoomId:pr.tentativeRoomId, tentativeSplit:pr.tentativeSplit, tentativeExtra:pr.tentativeExtra,
+    source:"기타", sourceDetail:"홈페이지 예약", createdAt:new Date().toISOString(),
+    menuType: q.course === "none" ? "해당 없음" : "코스", courses:cr.courses, courseUndecided: q.course === "later" || (cr.isCourse && !cr.matched),
+    allergy:(q.allergy || "").trim(), allergyChecked:true, request:(q.request || "").trim(),
+    memo:`홈페이지 접수 ${(q.createdAt || "").slice(0,16).replace("T"," ")}`, status:"확정"
+  };
+  createReservation(rec);
+  await REQ_API.accept(q.id, rec.id);
+  /* 확정 문자는 createReservation 이 '접수' 문자로 이미 보냅니다 — 여기서 또 보내면 두 통(검토 2026-09-17) */
+  saveData();
+  showToast(`${q.name} 예약 확정 · 문자 흉내`, "보기", () => goRes(rec.id, rec.date));
+  view.form = null; render();
+  if(reqPending().length) openRequests();
+}
+/* 예약 창(마법사)으로 — 요청 내용을 채워 열고, 원하는 단계로 */
+function reqAcceptWizard(id, step){
   const q = reqById(id); if(!q) return;
   view.form = null;
   openWizard(q.date);
@@ -124,13 +191,13 @@ function reqAccept(id){
     for(const g of gs){ const it = (g.items||[]).find(x => short.indexOf(x) === 0 || x.indexOf(short) === 0); if(it){ courses[g.id + "|" + it] = q.people; break; } }
   }
   Object.assign(WZ, {
-    step:1, source:"기타", sourceDetail:"홈페이지 예약",
+    step:step || 1, maxStep:step || 1, source:"기타", sourceDetail:"홈페이지 예약",
     date:q.date, time:q.time, calMonth:q.date.slice(0,7),
     people:q.people, infants:q.kids||0, chairs:0,
     menuType: q.course === "none" ? "해당 없음" : "코스",
     courses, courseUndecided: q.course === "later" || (m && !Object.keys(courses).length),
     seatKind: q.seat === "room" ? "room" : "table",
-    name:q.name, phone:q.phone, request:q.request||"",
+    name:q.name, phone:q.phone, request:q.request||"", allergy:q.allergy||"", allergyNone:!(q.allergy||"").trim(),
     memo:`홈페이지 접수 ${q.createdAt.slice(0,16).replace("T"," ")}`,
     reqId:q.id
   });
@@ -143,18 +210,35 @@ function reqAfterRegister(rec){
   if(!WZ || !WZ.reqId) return;
   REQ_API.accept(WZ.reqId, rec.id);
   const q = reqById(WZ.reqId);
-  if(q) smsMockSend(q.phone, q.name, `[한옥반점] ${q.name}님, ${dateLabel(q.date)} ${hm(q.time)} ${reqPeopleText(q)} 예약이 확정되었습니다. 문의 ${store().settings.tel || "031-724-1004"}`);
+  /* 확정 문자는 등록 때 '접수' 문자로 나갑니다(중복 방지) */
 }
-async function reqReject(id){
+/* 거절 — 사유를 고르거나 직접 적거나 생략. 문자에 사유가 들어갑니다 */
+const REQ_REASONS = ["그 시간에 자리가 없습니다", "룸은 성인 5명부터 받고 있습니다", "당일·연휴는 전화로 부탁드립니다", "단체는 전화로 부탁드립니다"];
+function openReqReject(id){ view.form = {type:"reqrej", id}; view.reqRej = {pick:0, text:""}; render(); }
+function sheetReqReject(){
+  const q = reqById(view.form.id); if(!q) return sheetRequests();
+  const d = view.reqRej || {pick:0, text:""};
+  return `
+    ${sheetHead("거절")}
+    <p class="f-note" style="margin:-6px 0 12px">${esc(q.name)} · ${dateLabel(q.date)} ${hm(q.time)} · ${reqPeopleText(q)}. 손님께 거절 문자가 나갑니다(사유는 넣어도, 안 넣어도 됩니다).</p>
+    <div class="rj-list">
+      ${REQ_REASONS.map((r, i) => `<label class="chk"><input type="radio" name="rj" ${d.pick === i ? "checked" : ""} onchange="view.reqRej.pick=${i}; render()"><span>${esc(r)}</span></label>`).join("")}
+      <label class="chk"><input type="radio" name="rj" ${d.pick === -1 ? "checked" : ""} onchange="view.reqRej.pick=-1; render()"><span>직접 입력</span></label>
+      ${d.pick === -1 ? `<textarea class="in-sm" rows="2" placeholder="사유" oninput="view.reqRej.text=this.value">${esc(d.text)}</textarea>` : ""}
+    </div>
+    <div class="sheet-actions">
+      <button class="btn ghost" onclick="openRequest('${q.id}')">돌아가기</button>
+      <button class="btn ghost" onclick="reqReject('${q.id}', '')">사유 없이 거절</button>
+      <button class="btn primary" data-enter onclick="reqReject('${q.id}')">거절하기</button></div>`;
+}
+async function reqReject(id, whyGiven){
   const q = reqById(id); if(!q) return;
-  const reasons = ["그 시간에 자리가 없습니다", "룸은 성인 5명부터 받고 있습니다", "당일·연휴는 전화로 부탁드립니다", "직접 입력"];
-  const pick = await uiPick("거절 사유", reasons); if(pick == null) return;
-  let why = reasons[pick];
-  if(why === "직접 입력"){ why = (prompt("거절 사유") || "").trim(); if(!why) return; }
-  await REQ_API.reject(id, why);
-  smsMockSend(q.phone, q.name, `[한옥반점] ${q.name}님, 요청하신 ${dateLabel(q.date)} ${hm(q.time)} 예약을 받지 못했습니다. ${why}. 전화 주시면 자리를 찾아드리겠습니다. ${store().settings.tel || "031-724-1004"}`);
+  let why = whyGiven;
+  if(why === undefined){ const d = view.reqRej || {pick:0, text:""}; why = d.pick === -1 ? (d.text || "").trim() : REQ_REASONS[d.pick]; if(d.pick === -1 && !why){ await uiAlert("사유를 적어 주세요", "사유 없이 거절하려면 '사유 없이 거절' 을 누르세요.", "warn"); return; } }
+  await REQ_API.reject(id, why || "");
+  smsMockSend(q.phone, q.name, `[한옥반점] ${q.name}님, 요청하신 ${dateLabel(q.date)} ${hm(q.time)} 예약을 받지 못했습니다.${why ? " " + why + "." : ""} 전화 주시면 자리를 찾아드리겠습니다. ${store().settings.tel || "031-724-1004"}`);
   showToast("거절했습니다 · 문자 흉내");
-  openRequests();
+  view.reqRej = null; openRequests();
 }
 /* 목록 시트에서 고르는 작은 상자 — 없으면 confirm 으로 대신 */
 async function uiPick(title, opts){
@@ -168,13 +252,17 @@ async function uiPick(title, opts){
 let REQ_SEEN = {};
 function reqNotify(list){
   const fresh = list.filter(q => !REQ_SEEN[q.id]); list.forEach(q => REQ_SEEN[q.id] = true);
-  if(!fresh.length || view.display) return;
+  if(!fresh.length || view.display || !AUTHED || !view.storeKey) return;   /* 잠금·매장 선택 화면에는 안 띄움 */
   const q = fresh[0];
-  const body = fresh.length === 1
-    ? `${dateLabel(q.date)} ${hm(q.time)} · ${reqPeopleText(q)} · ${q.seat==="room"?"룸":"테이블"}\n${q.name} ${q.phone}`
-    : `${fresh.length}건이 들어왔습니다. 가장 빠른 것: ${dateLabel(q.date)} ${hm(q.time)} ${q.name}`;
-  uiConfirm(fresh.length === 1 ? "새 홈페이지 예약이 들어왔습니다" : `새 홈페이지 예약 ${fresh.length}건`, body, {ok:"확인하기", cancel:"닫기", tone:"ok"})
+  uiConfirm(`새 홈페이지 예약 ${fresh.length}건`, `${fresh.length}건의 예약이 접수되었습니다.`, {ok:"확인하기", cancel:"닫기", tone:"ok"})
     .then(ok => { if(ok){ if(WZ) return; view.form = null; fresh.length === 1 ? openRequest(q.id) : openRequests(); } });
+}
+/* 켤 때 이미 대기 중인 건이 있으면 — 새로 들어온 것은 아니지만 처리해야 하니 한 번 알림(재아) */
+function reqNotifyPending(){
+  const pend = reqPending(); if(!pend.length || view.display || !AUTHED || !view.storeKey) return;
+  pend.forEach(q => { REQ_SEEN[q.id] = true; });
+  uiConfirm(`홈페이지 예약 대기 ${pend.length}건`, `${pend.length}건의 예약이 확정을 기다리고 있습니다.`, {ok:"확인하기", cancel:"닫기", tone:"ok"})
+    .then(ok => { if(ok){ if(WZ) return; view.form = null; openRequests(); } });
 }
 function reqPush(q){ REQUESTS.push(q); render(); reqNotify([q]); }
 

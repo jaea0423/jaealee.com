@@ -9,6 +9,11 @@ var AVAIL_LAST = 0, AVAIL_BUSY = false, AVAIL_DIRTY = false, AVAIL_DAYS = 30;
 
 /* 하루치 남은 자리 — {"11:00":{"rooms":[[min,max],…],"tableMax":n}, …} */
 function availOfDay(date){
+  /* 대기 중인 홈페이지 요청도 찬 것으로 — 확정 전이라도 그 자리를 다른 손님에게 안 내주려고(재아) */
+  if(typeof withPendingReqs === "function") return withPendingReqs(date, function(){ return availOfDayRaw(date); });
+  return availOfDayRaw(date);
+}
+function availOfDayRaw(date){
   const out = {}, ss = sessionsFor(date); if(!ss.length) return out;
   const rooms = roomsAt(date).filter(isRoom);
   const floors = []; roomsAt(date).filter(isTable).forEach(t => { const f = t.floor || ""; if(floors.indexOf(f) < 0) floors.push(f); });
@@ -44,7 +49,7 @@ async function publishAvail(force){
 /* ---------- requests ↔ REQUESTS ---------- */
 const rowToReq = function(x){
   return { id:x.id, createdAt:x.created_at, date:x.date, time:x.time, adults:x.adults, kids:x.kids, people:x.people, seat:x.seat,
-           course:x.course, courseLabel:x.course_label, name:x.name, phone:phoneFmtReq(x.phone), request:x.request||"",
+           course:x.course, courseLabel:x.course_label, name:x.name, phone:phoneFmtReq(x.phone), request:x.request||"", allergy:x.allergy||"",
            status:x.status, reason:x.reason||"", resId:x.res_id||null, expiresAt:x.expires_at };
 };
 function phoneFmtReq(p){ const d = String(p||"").replace(/\D/g,""); return d.length >= 10 ? d.replace(/(\d{3})(\d{3,4})(\d{4})/, "$1-$2-$3") : d; }
@@ -69,7 +74,8 @@ async function pullRequests(){
   }
   /* 서버에서 사라진(다른 기기가 처리한) 것은 목록에서 뺌 */
   for(let i = REQUESTS.length - 1; i >= 0; i--) if(REQUESTS[i].status === "대기" && !seen[REQUESTS[i].id]) REQUESTS.splice(i, 1);
-  if(fresh.length && REQ_SEEN_INIT) reqNotify(fresh); else fresh.forEach(q => { REQ_SEEN[q.id] = true; });
+  if(REQ_SEEN_INIT){ if(fresh.length) reqNotify(fresh); }
+  else { reqNotifyPending(); }   /* 처음 불러온 것: 새 건은 아니지만 대기 중이면 알림 */
   REQ_SEEN_INIT = true;
   return fresh.length;
 }

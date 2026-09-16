@@ -21,7 +21,7 @@
   const WD = ["일","월","화","수","목","금","토"];
   const dateText = s => { const d = new Date(s+"T00:00:00"); return (d.getMonth()+1)+"월 "+d.getDate()+"일 ("+WD[d.getDay()]+")"; };
   /* 접수 규칙은 SITE.online(관리 화면에서 바꿈). 값이 없으면 아래 기본값. 서버 정책(성인 2~12·룸 성인 5·내일부터)이 최종이라 그 밖으로 넓힐 수는 없습니다 */
-  const R = () => Object.assign({enabled:true, maxDays:30, minAdults:2, maxPeople:12, roomMinAdults:5, tableMax:8, limitMin:5,
+  const R = () => Object.assign({enabled:true, maxDays:30, minAdults:2, maxPeople:12, roomMinAdults:5, limitMin:5,
                                  offTitle:"지금은 온라인 예약을 받지 않습니다", offMsg:"예약은 전화로 부탁드립니다."}, (window.SITE && SITE.online) || {});
   const MAX_SEAT = 40, LUNCH_END = 15*60+30, CODE_SEC = 60;
   const LIMIT_SEC = () => Math.max(1, R().limitMin || 5) * 60;
@@ -80,7 +80,7 @@
     RES_API.submit = async p => {
       const body = { id:"rq_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36), store:SUPA.store,
         date:p.date, time:p.time, adults:p.adults, kids:p.kids, people:p.people, seat:p.seat, course:p.course, course_label:p.courseLabel,
-        name:p.name, phone:String(p.phone).replace(/\D/g,""), request:p.request||"", status:"대기" };
+        name:p.name, phone:String(p.phone).replace(/\D/g,""), request:p.request||"", allergy:p.allergy||"", status:"대기" };
       const r = await fetch(SUPA.url + "/rest/v1/requests", { method:"POST", headers:Object.assign({"Prefer":"return=minimal"}, H), body:JSON.stringify(body) });
       if(r.ok) return {ok:true};
       let msg = ""; try{ msg = (await r.json()).message || ""; }catch(e){}
@@ -96,7 +96,7 @@
   const tooMany = () => total() > R().maxPeople;
   function reset(){
     S = {date:"", adults:0, kids:0, time:"", seat:"", course:"", courseLabel:"", name:"", phone:"",
-         sent:false, verified:false, req:"", agree:{rule:false, priv:false, age:false}};
+         sent:false, verified:false, req:"", allergy:"", agree:{rule:false, priv:false, age:false}};
     step = 1; monthCache = {};
     clearInterval(timer); timer = null; left = LIMIT_SEC(); extended = false;
   }
@@ -175,7 +175,6 @@
   /* ---------- 온라인으로 못 받는 조합은 전화로 ---------- */
   function phoneOnly(){
     if(S.seat === "room" && S.adults < R().roomMinAdults) return `룸 예약은 성인 기준 ${R().roomMinAdults}명부터 받고 있습니다.`;
-    if(S.seat === "table" && total() > R().tableMax) return `테이블은 ${R().tableMax}명까지 온라인으로 받고 있습니다.`;
     return "";
   }
   const telBox = msg => `<div class="rv-note">${esc(msg)}<a class="rv-tel-lnk" href="tel:${INFO.tel}">${esc(INFO.tel)}</a></div>`;
@@ -240,7 +239,7 @@
       b.querySelectorAll(".rv-cnt").forEach(r => r.querySelectorAll("button").forEach(y =>
         y.disabled = (y.dataset.d === "-1" ? S[r.dataset.k] <= 0 : total() >= MAX_SEAT)));
       const warn = tooMany()
-        ? `${total()}명은 온라인으로 접수하기 어렵습니다.<br>전화로 문의해 주세요. <a href="tel:${INFO.tel}">${esc(INFO.tel)}</a>`
+        ? `유선으로 예약 도와드리겠습니다. <a href="tel:${INFO.tel}">${esc(INFO.tel)}</a>`
         : (S.adults < R().minAdults ? `성인 ${R().minAdults}명부터 접수할 수 있습니다.` : "");
       foot(f, false, next, "다음", !ok(), warn);
     }
@@ -359,21 +358,20 @@
   }
 
   /* ---------- ⑤ 메뉴 — 점심 시각이면 그 날(평일·주말)의 점심 세트도 함께 ---------- */
+  /* 저녁 코스는 종일 되니 늘 먼저(비싼 것부터 — 재아), 점심 시각이면 그 아래 점심 세트 */
   function menuGroups(){
-    const out = [];
+    const out = [{ title: "저녁 코스 (종일)", items: MENU.courses.items.map(c => ({key:"course:"+c.name, name:c.name, cn:c.cn})) }];
     if(mins(S.time) < LUNCH_END){
       const want = isWeekend(S.date) ? "주말" : "평일";
       const set = MENU.lunch.filter(g => g.title.indexOf(want) === 0)[0] || MENU.lunch[0];
       out.push({ title: set.title, items: set.items.map(x => ({key:"set:"+x.name, name:x.name, cn:""})) });
     }
-    out.push({ title: MENU.courses.title, items: MENU.courses.items.map(c => ({key:"course:"+c.name, name:c.name, cn:c.cn})) });
     return out;
   }
   function sMenu(b, f){
     const room = S.seat === "room";
     b.insertAdjacentHTML("beforeend", sumLine() + `<section class="rv-sec">
         <h3>메뉴</h3>
-        ${room ? `<p class="rv-quiet">룸은 코스, 또는 그에 상응하는 금액의 단품 주문이 가능합니다.</p>` : ""}
         <div class="rv-pick" id="rv-cs">
           ${menuGroups().map(g => `<div class="rv-pick-h">${esc(g.title)}</div>` + g.items.map(it =>
               `<button type="button" data-c="${esc(it.key)}" data-l="${esc(it.name)}" class="${S.course===it.key?'on':''}"><b>${esc(it.name)}${it.cn?`<small>${esc(it.cn)}</small>`:""}</b><span class="qty">${total()}인분</span></button>`).join("")).join("")}
@@ -391,7 +389,7 @@
     function go(){ step = 6; render(); }
     function next(){
       if(!S.course) return;
-      if(room) ask("룸 이용 안내", "룸에서는 <b>코스</b>, 또는 그에 상응하는 금액의 단품 주문만 가능합니다.", "확인", go);
+      if(room && S.course === "later") ask("룸 이용 안내", "룸에서는 <b>코스</b>, 또는 그에 상응하는 금액의 단품 주문만 가능합니다.", "확인", go);
       else go();
     }
     foot(f, true, next, "다음", !S.course);
@@ -414,8 +412,10 @@
           </div>
           <p class="rv-fld-hint" id="rv-tel-hint">${S.verified ? "인증되었습니다." : ""}</p>
         </div>
+        <div class="rv-fld"><label for="rv-allergy">알레르기 <em>선택</em></label>
+          <input id="rv-allergy" value="${esc(S.allergy)}" maxlength="100" placeholder="예: 갑각류 · 땅콩 · 밀가루 (없으면 비워 두세요)"></div>
         <div class="rv-fld"><label for="rv-req">요청사항 <em>선택</em></label>
-          <textarea id="rv-req" rows="3" maxlength="300" placeholder="알레르기가 있으시거나 어린이 의자·식기가 필요하시면 적어 주세요. 예약하시는 분과 방문하시는 분이 다르면 함께 적어 주세요.">${esc(S.req)}</textarea></div>
+          <textarea id="rv-req" rows="3" maxlength="300" placeholder="어린이 의자·식기가 필요하시거나, 예약하시는 분과 방문하시는 분이 다르면 적어 주세요.">${esc(S.req)}</textarea></div>
       </section>`);
     const name = $("#rv-name", b), phone = $("#rv-phone", b), send = $("#rv-send", b),
           codebox = $("#rv-codebox", b), code = $("#rv-code", b), verify = $("#rv-verify", b), hint = $("#rv-tel-hint", b), req = $("#rv-req", b);
@@ -428,6 +428,7 @@
     const refoot = () => foot(f, true, next, "다음", !ok());
     name.addEventListener("input", () => { S.name = name.value; refoot(); });
     req.addEventListener("input", () => { S.req = req.value; });
+    $("#rv-allergy", b).addEventListener("input", e => { S.allergy = e.target.value; });
     phone.addEventListener("input", () => {
       const d = phone.value.replace(/\D/g, "").slice(0, 11);
       phone.value = d.length > 7 ? d.replace(/(\d{3})(\d{3,4})(\d{0,4})/, "$1-$2-$3") : d.length > 3 ? d.replace(/(\d{3})(\d{0,4})/, "$1-$2") : d;
@@ -460,6 +461,7 @@
       ["메뉴", S.course === "later" ? "미정" : (S.course === "none" ? "단품 주문" : `${S.courseLabel} · ${total()}인분`)],
       ["예약자", S.name.trim()+" · "+S.phone]
     ];
+    if(S.allergy.trim()) rows.push(["알레르기", S.allergy.trim()]);
     if(S.req.trim()) rows.push(["요청사항", S.req.trim()]);
     const box = (key, title, body) => `<div class="rv-agree${S.agree[key]?" on":""}">
         <div class="rv-agree-h">
@@ -497,7 +499,7 @@
       const btn = $("[data-next]", f); btn.disabled = true; btn.textContent = "접수 중…";
       const r = await RES_API.submit({date:S.date, time:S.time, adults:S.adults, kids:S.kids, people:total(),
                                       seat:S.seat, course:S.course, courseLabel:S.courseLabel,
-                                      name:S.name.trim(), phone:S.phone, request:S.req.trim()});
+                                      name:S.name.trim(), phone:S.phone, request:S.req.trim(), allergy:S.allergy.trim()});
       if(r && r.ok){ clearInterval(timer); timer = null; step = 8; render(); }
       else { btn.disabled = false; btn.textContent = "접수하기"; render((r && r.msg) || "접수가 되지 않았습니다. 잠시 뒤 다시 시도하시거나 전화로 문의해 주세요."); }
     }

@@ -214,7 +214,7 @@ function renderSettings(){
 ` : ""}
     ${seatTab==="table" ? `
     <div class="subhead">테이블 <span>예약은 층까지만 받습니다. 여기 목록은 층의 '자리 수' 를 세는 근거 — 테이블 인원을 더한 값이 그 층 자리 수</span></div>
-    <p class="f-note" style="margin:0 0 8px">층 구분 없이 <b>위에서부터 좋은 자리</b> 순서입니다(▲▼). 층은 표시·안내용. 1층 창가 다음이 지하 여포일 수도 있으니 섞어서 정하세요.</p>
+    <p class="f-note" style="margin:0 0 8px">층 구분 없이 <b>위에서부터 좋은 자리</b> 순서입니다(▲▼). 층은 표시·안내용. 1층 창가 다음이 저층 여포일 수도 있으니 섞어서 정하세요.</p>
     ${tables.map(t=>tableRowHtml(tables, t)).join("")}
     <div class="btn-row" style="margin-top:8px">
       <input id="nt-name" placeholder="테이블 이름 (예: 26)" style="flex:2 1 120px">
@@ -316,9 +316,11 @@ function renderSettings(){
         <div class="dr-title">${ri+1}번째 줄 <span>${ids.length}칸${ids.length>DISP_MAX?" · 너무 많습니다":""}</span></div>
         <div class="dr-cells">
           ${ids.map(id=>{
+            /* "tables:1층" 은 좌석이 아니라 층 테이블 묶음 칸 — 이름이 없어 빈 칸으로 그려졌음(검토) */
             const r = st.rooms.find(x=>x.id===id);
-            if(!r) return "";
-            return `<span class="dcell">${esc(r.name)}
+            const name = r ? r.name : (/^tables:/.test(id) ? `${id.slice(7)} 테이블` : "");
+            if(!name) return "";
+            return `<span class="dcell">${esc(name)}
               <button ${ri===0?"disabled":""} onclick="moveDisp('${id}',-1)" title="윗줄로">▲</button>
               <button ${ri===2?"disabled":""} onclick="moveDisp('${id}',1)" title="아랫줄로">▼</button>
             </span>`;

@@ -302,10 +302,11 @@ function reflowTwoCol(ul){
 
 /* 가운데 글자를 가립니다. 이재아 → 이 * 아
    ○ 를 붙여 쓰면(이○아) TV에서 글자가 뭉쳐 보여 별표와 띄어쓰기로 바꿨습니다.
-   글자 수는 그대로 지킵니다 — 네 글자면 '남 * * 수'. */
+   글자 수는 그대로 지킵니다 — 네 글자면 '남 * * 수'. 외국 이름도 같은 규칙(재아 2026-09-17): 띄어쓰기는 빼고
+   첫 글자와 끝 글자만 남김 — Tom Cruise → T * * * * * * * e. 서버(mask_name, patch_12차)도 같은 모양 */
 function maskName(n){
-  const s = String(n||"").trim();
-  if(s.indexOf("*") >= 0) return s;   /* 서버(mask_name)가 이미 가린 이름 */
+  const s = String(n||"").trim().replace(/\s+/g, "");
+  if(s.indexOf("*") >= 0) return String(n||"").trim();   /* 서버(mask_name)가 이미 가린 이름 */
   if(s.length<=1) return s;
   if(s.length===2) return s[0] + " *";
   var mid = "*";

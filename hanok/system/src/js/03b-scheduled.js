@@ -84,7 +84,14 @@ function schedConflicts(e){
       const used = (typeof seatsOf === "function" ? seatsOf(r) : [r.roomId]).filter(Boolean);
       const gone = used.filter(id => !ids[id]);
       if(gone.length) out.push(`${dateLabel(r.date)} ${hm(r.time)} ${r.name} — 좌석 ${gone.map(id => (seatById(id)||{}).name || id).join("+")} 이 없어짐`);
-      else if(r.roomId && ids[r.roomId] && pplOf(r) > seatMax(ids[r.roomId])) out.push(`${dateLabel(r.date)} ${hm(r.time)} ${r.name} ${pplOf(r)}명 — ${ids[r.roomId].name} 정원 ${seatMax(ids[r.roomId])}명 넘음`);
+      else if(r.roomId && ids[r.roomId]){
+        /* 합친 좌석은 묶음 정원으로 봅니다(예정 joins 가 있으면 그것, 없으면 지금 것). 지금도 이미 넘는 예약은 예정 때문이 아니니 빼고,
+           예정으로 정원이 '줄어서' 넘게 되는 것만 셉니다(검토: 합침 12명이 "주유 정원 7명 넘음" 으로 22건 잡혔음) */
+        const joins = v.joins || st.joins || [];
+        const j = joins.find(g => sameIds(g.ids, used));
+        const after = j ? j.max : used.reduce((a, id) => a + seatMax(ids[id]), 0);
+        if(pplOf(r) > after && after < seatsMax(used)) out.push(`${dateLabel(r.date)} ${hm(r.time)} ${r.name} ${pplOf(r)}명 — ${used.map(id => ids[id].name).join("+")} 정원 ${after}명 넘음`);
+      }
     });
   }
   if(v.courseGroups){

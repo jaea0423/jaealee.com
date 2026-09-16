@@ -347,7 +347,7 @@ function sameIds(a, b){ if(!a || !b || a.length !== b.length) return false; cons
 function joinOf(ids){ return allJoinsEver().find(g=>sameIds(g.ids, ids)) || null; }
 /* ---------- 테이블은 층 단위 (8차-H) ----------
    홀은 그날 남는 자리에 앉히는 곳이라 테이블을 미리 정해도 현장에서 지켜지지 않습니다.
-   그래서 예약은 '1층 테이블 / 지하 테이블' 까지만 받고, 시스템은 층의 자리 수(테이블 인원 합)와
+   그래서 예약은 '1층 테이블 / 저층 테이블' 까지만 받고, 시스템은 층의 자리 수(테이블 인원 합)와
    같은 시간에 겹치는 손님 수로 '자리 부족' 만 알립니다. 특정 테이블 배정은 수정 시트에서만(파셜룸 등). */
 function isTablePref(p){ return p === "table-any" || p === "hall-any" || /^table:/.test(p || ""); }
 function prefFloor(p){ return /^table:/.test(p || "") ? p.slice(6) : null; }
@@ -582,7 +582,7 @@ function findSeat(o){
     const inFloor = x => o.floor == null || (x.floor||"") === (o.floor||"");
     const tables = seats.filter(x=>isTable(x) && inFloor(x) && people >= roomMin(x) && people <= seatMax(x));
     /* 2명은 4인석을 먼저 (2인석은 좁아 손님이 싫어함). 그 밖에는 사장님이 정한 순서(설정의 테이블 순서) —
-       지하는 여포가 맨 앞이라 4~5명은 여포부터(재아: 우선순위 높음). 순서가 같을 리 없으니 남는 자리는 마지막 기준 */
+       저층은 여포가 맨 앞이라 4~5명은 여포부터(재아: 우선순위 높음). 순서가 같을 리 없으니 남는 자리는 마지막 기준 */
     const order = x => roomsAt(date).indexOf(x);
     const score = x => ((people <= 2 && (x.seats||4) >= 4) ? 0 : 1000) + order(x);
     const sorted = tables.slice().sort((x,y)=>score(x)-score(y) || (seatMax(x)-seatMax(y)));

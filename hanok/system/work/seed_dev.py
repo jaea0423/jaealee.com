@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """dev DB 에 더미 예약을 넣습니다 (2026-08-01 ~ 2026-11-30). 실서비스(prod)에는 절대 쓰지 않습니다.
-   10차(2026-09-16): 홈페이지 예약(requests, source 기타·홈페이지 예약) · 사용 중지(하루/기간/시각) · 임시 휴무·임시 운영시간 · 예정 설정(여포 룸) ·
+   10차(2026-09-16): 홈페이지 예약(requests, source 기타·홈페이지 예약) · 사용 중지(하루/기간/시각) · 임시 휴무·임시 운영시간 · 예정 설정(마초 룸) ·
    겹침 강한 경고 · 사용 중지 좌석에 잡힌 예약 · 어제는 확정으로 남김(자동 처리 확인) · 문자 흉내 기록 · 같은 번호 두 건.
    먼저 SQL Editor 에서 표를 비우고(work/seed_dev.py 위 안내 SQL) 돌립니다. 설정(stores.settings)의 blocks·overrides·scheduled 도 이 값으로 덮습니다.
    8차 좌석 모형(룸 8·합침·층 테이블·특정 테이블·나눠 앉기) 기준. 날짜마다 없음/한산/보통/붐빔/포화 프로필을 섞습니다.
@@ -370,9 +370,9 @@ def main():
     ns3 = base_rec(D(3), dow_of(D(3)), 19*60, 4, today, seatPref="room-any", status="확정", menuType="확인 필요"); ns3["name"] = nsn; ns3["phone"] = nsp; ns3["memo"] = "노쇼 이력 — 전날 확인 전화"; add(ns3)
     # 5) 지난 날짜에 아직 확정(방문 처리 안 됨) — 그저께
     add(base_rec(D(-2), dow_of(D(-2)), 13*60, 2, today, seatPref="table:" + FLOORS[1], status="확정", memo="방문 처리 빠뜨림"))
-    # 6) 예정 설정(여포 룸, D+7 부터)이 생기기 전 날짜에 여포를 잡은 예약은 없음. 대신 D+8 에 여포 지정 예약(예정 좌석)
+    # 6) 예정 설정(마초 룸, D+7 부터)이 생기기 전 날짜에 마초를 잡은 예약은 없음. 대신 D+8 에 마초 지정 예약(예정 좌석)
     yeopo_id = "r_yeopo"
-    add(base_rec(D(8), dow_of(D(8)), 18*60, 6, today, roomId=yeopo_id, status="확정", menuType="코스", courses=make_courses(dow_of(D(8)), 18*60, 6, "ok"), memo="여포 룸(예정 설정) 첫 손님"))
+    add(base_rec(D(8), dow_of(D(8)), 18*60, 6, today, roomId=yeopo_id, status="확정", menuType="코스", courses=make_courses(dow_of(D(8)), 18*60, 6, "ok"), memo="마초 룸(예정 설정) 첫 손님"))
     # 7) 임시 휴무일(D+9)에 잡힌 예약 — 경고
     add(base_rec(D(9), dow_of(D(9)), 12*60, 4, today, seatPref="table:" + FLOORS[0], status="확정", memo="휴무일인데 받아 둠 — 확인"))
     # 8) 정원 초과 룸(조조 8명), 최소 미달 룸(동탁 4명) — 모레
@@ -419,6 +419,7 @@ def seed_reqs_and_settings(rows, today, T, D, r_by_name, yeopo_id, nsn, nsp):
                      "name": name, "phone": phone, "request": request, "status": "대기", "reason": "", "res_id": None,
                      "created_at": (now - datetime.timedelta(hours=24 - hours_left)).strftime("%Y-%m-%dT%H:%M:%SZ"), "expires_at": (now + datetime.timedelta(hours=hours_left)).strftime("%Y-%m-%dT%H:%M:%SZ")})
     pending("rq_p1", D(2), "12:00", 6, 1, "room", "set:요리사 추천세트", "요리사 추천세트", "박보검", "01055551111", "아이 의자 하나 부탁드립니다", 21)
+    reqs[-1]["allergy"] = "아이 땅콩 알레르기"   # 11차: 알레르기 칸
     pending("rq_p2", D(3), "18:30", 2, 0, "table", "none", "", "장원영", "01055552222", "", 15)
     pending("rq_p3", D(1), "18:00", 5, 0, "room", "later", "미정", "손흥민", "01055553333", "룸이면 어디든 괜찮아요", 9)          # 내일 18:00 룸 — 조조 겹침 날이라 자리 없음 경고 가능
     pending("rq_p4", D(2), "18:00", 4, 0, "table", "course:촉 코스", "촉 코스", nsn, "".join(ch for ch in nsp if ch.isdigit()), "", 6)   # 노쇼 이력 번호 + 같은 날 예약 있는 번호
@@ -433,7 +434,7 @@ def seed_reqs_and_settings(rows, today, T, D, r_by_name, yeopo_id, nsn, nsp):
         call("/rest/v1/requests", "POST", reqs[i:i+200], token=tok, prefer="return=minimal")
     print("홈페이지 예약: %d 건 (대기 5 · 거절 1 · 만료 1 · 확정 %d)" % (len(reqs), len(web_rows)))
 
-    # ----- 설정: 사용 중지 · 임시 휴무/운영시간 · 예정 설정(여포) -----
+    # ----- 설정: 사용 중지 · 임시 휴무/운영시간 · 예정 설정(마초) -----
     def blk(room_name, frm, to, note, fromTime="", toTime="", openEnded=False):
         r = r_by_name[room_name]; r.setdefault("blocks", []); r["blocks"] = [b for b in r["blocks"] if not b.get("demo")]
         r["blocks"].append({"id": "blk_demo_" + room_name + "_" + frm, "from": frm, "to": to, "fromTime": fromTime, "toTime": toTime, "openEnded": openEnded, "note": note, "demo": True})
@@ -449,14 +450,14 @@ def seed_reqs_and_settings(rows, today, T, D, r_by_name, yeopo_id, nsn, nsp):
         {"date": D(9), "closed": True, "note": "직원 워크숍", "demo": True},
         {"date": D(12), "closed": False, "open": "12:00", "close": "21:00", "bs": "", "be": "", "lo": "19:40", "note": "행사로 늦게 엶", "demo": True},
     ]
-    # 예정 설정: D+7 부터 지하에 '여포' 파셜룸(4~8) 추가
+    # 예정 설정: D+7 부터 저층에 '마초' 룸(4~8) 추가 — 이름은 기존 테이블 '여포' 와 겹치지 않게
     rooms_after = json.loads(json.dumps(st["rooms"]))
     if not any(r["id"] == yeopo_id for r in rooms_after):
-        rooms_after.append({"id": yeopo_id, "name": "여포", "type": "room", "floor": "지하", "minCapacity": 4, "minWeekend": 4, "optCapacity": 6, "capacity": 8, "blocks": []})
+        rooms_after.append({"id": yeopo_id, "name": "마초", "type": "room", "floor": "저층", "minCapacity": 4, "minWeekend": 4, "optCapacity": 6, "capacity": 8, "blocks": []})
     st["scheduled"] = [x for x in st.get("scheduled", []) if not x.get("demo")] + [
-        {"id": "sc_demo_seats", "from": D(7), "to": None, "group": "seats", "values": {"rooms": rooms_after, "joins": st.get("joins", [])}, "note": "지하 여포 파셜룸 추가", "createdAt": now.strftime("%Y-%m-%dT%H:%M:%SZ"), "by": "staff", "demo": True}]
+        {"id": "sc_demo_seats", "from": D(7), "to": None, "group": "seats", "values": {"rooms": rooms_after, "joins": st.get("joins", [])}, "note": "저층 마초 룸 추가", "createdAt": now.strftime("%Y-%m-%dT%H:%M:%SZ"), "by": "staff", "demo": True}]
     call("/rest/v1/stores?key=eq.hanok", "PATCH", {"settings": st}, token=tok, prefer="return=minimal")
-    print("설정: 사용 중지 4(하루·기간·시각·무기한) · 임시 휴무 1 · 임시 운영시간 1 · 예정 설정 1(여포, %s 부터)" % D(7))
+    print("설정: 사용 중지 4(하루·기간·시각·무기한) · 임시 휴무 1 · 임시 운영시간 1 · 예정 설정 1(마초, %s 부터)" % D(7))
 
 if __name__ == "__main__":
     if "reqs" in sys.argv[1:]:

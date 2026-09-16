@@ -206,7 +206,7 @@ function renderWizard(){
       <div class="wz-body">${bodies[WZ.step]()}</div>
     </div>
     <footer class="wz-foot">
-      ${last?`<button class="btn ghost lg" onclick="wzSubmit()">바로 등록</button>`:""}
+      <div class="wz-foot-warn" id="wz-warn2">${String(warn||"").split("\n").filter(Boolean).map(l=>`<div>${esc(l)}</div>`).join("")}</div>
       <button id="wz-next" class="btn primary lg grow ${canNext?'':'off'} ${warn?'warned':''}"
         onclick="${last?'wzSubmit()':`wzGo(${WZ.step+1})`}" ${canNext?"":"disabled"}>
         ${last?"예약 등록":"다음"}
@@ -252,7 +252,8 @@ function timeWarns(date, time){
 /* 분 → "1시간 05분" 꼴. 한 시간이 안 돼도 "0시간 40분" 으로 자리를 맞춥니다 (문구 길이가 흔들리지 않게) */
 function hmDur(m){
   m = Math.max(0, m);
-  return `${Math.floor(m/60)}시간 ${pad(m%60)}분`;
+  const h = Math.floor(m/60), mm = m%60;   /* "1시간 00분" 이 아니라 "1시간", "1시간 30분", "30분"(검토 2026-09-17) */
+  return h ? (mm ? `${h}시간 ${mm}분` : `${h}시간`) : `${mm}분`;
 }
 function timeWarn(date, time){ return timeWarns(date, time).join("\n"); }
 /* 확인 팝업을 띄울 만큼 심각한 것만.
@@ -443,7 +444,7 @@ function wzStepSource(){
         <input id="wz-src-detail" value="${esc(WZ.sourceDetail)}" placeholder="예: 지인 소개, 대면 예약" ${WZ.source==="기타"?"autofocus":"tabindex=\"-1\""}>
         <div class="f-note">예약 내역에 참고로만 남습니다</div>
       </label>
-    <button class="linkbtn wz-quick" onclick="openQuick()">한 화면으로 입력</button>`;
+`;   /* '한 화면으로 입력'(빠른 입력)은 2026-09-17 뺐습니다 — 경고가 안 보여 오히려 불편(재아). openQuick 은 남겨 둠 */
 }
 /* 빠른 입력 — 새 화면을 만들지 않고 이미 있는 수정 시트(sheetRes)를 빈 예약으로 엽니다 (새 코드가 적어야 오류도 적습니다).
    마법사 1단계 아래 '한 화면으로 입력' 에서만 들어옵니다. 날짜는 마법사가 열려 있던 날짜(= 보고 있던 날짜) */
@@ -667,6 +668,8 @@ function wzRefreshNext(){
   b.classList.toggle("warned", !!warn);
   const bar = document.getElementById("wz-warn");
   if(bar){ bar.innerHTML = String(warn||"").split("\n").map(l=>`<div>${esc(l)}</div>`).join(""); }
+  const bar2 = document.getElementById("wz-warn2");   /* 아래 버튼 옆 경고(검토 2026-09-17: 위 경고는 스크롤하면 안 보임) */
+  if(bar2){ bar2.innerHTML = String(warn||"").split("\n").filter(Boolean).map(l=>`<div>${esc(l)}</div>`).join(""); }
 }
 /* 창 크기나 브라우저 배율이 바뀌면 칸 높이도 바뀝니다.
    글자 크기는 CSS 가 알아서 따라가지만, '몇 줄까지 보일지'는 자바스크립트가 정하므로

@@ -259,13 +259,14 @@ function saShrink(file){
 function saBox(title, inner, extra){ return '<section class="card sa-box"><div class="sa-box-h"><b>' + esc(title) + '</b>' + (extra || "") + '</div>' + inner + '</section>'; }
 
 /* ---------- 화면 ---------- */
+function saHead(){ return (view.form && view.form.page) ? "" : sheetHead("홈페이지 관리"); }   /* 화면형은 상단바에 제목이 있어 겹치지 않게(검토 2026-09-17) */
 function sheetSite(){
-  if(!SA || SA.loading) return sheetHead("홈페이지 관리") + '<p class="muted" style="padding:20px 0">불러오는 중…</p>';
-  if(SA.err) return sheetHead("홈페이지 관리") + '<div class="alert rust"><span class="ic">!</span><div><div class="a-t">불러오지 못했습니다</div><div class="a-s">' + esc(SA.err) + '</div></div></div><div class="btn-row" style="margin-top:12px"><button class="btn" onclick="openSiteAdmin()">다시 시도</button></div>';
+  if(!SA || SA.loading) return saHead() + '<p class="muted" style="padding:20px 0">불러오는 중…</p>';
+  if(SA.err) return saHead() + '<div class="alert rust"><span class="ic">!</span><div><div class="a-t">불러오지 못했습니다</div><div class="a-s">' + esc(SA.err) + '</div></div></div><div class="btn-row" style="margin-top:12px"><button class="btn" onclick="openSiteAdmin()">다시 시도</button></div>';
   var TABS = [["online","홈페이지 예약"],["notices","팝업 공지"],["hours","영업시간·연락처"],["texts","글"],["menu","차림"],["images","사진"],["history","적용 기록"]];
   var future = (SA.versions || []).filter(function(v){ return new Date(v.apply_at).getTime() > Date.now(); });
   var body = ({online:saTabOnline, notices:saTabNotices, hours:saTabHours, texts:saTabTexts, menu:saTabMenu, images:saTabImages, history:saTabHistory}[SA.tab] || saTabOnline)();
-  return sheetHead("홈페이지 관리") +
+  return saHead() +
     '<div class="sa-top">' +
       '<div class="sa-status"><span id="sa-state">' + (saDirty() ? "고친 내용이 있습니다 — 초안 저장을 누르세요" : saSavedText()) + '</span>' +
         '<span class="muted">지금 홈페이지: ' + (SA.live ? saWhen(SA.live.apply_at) + " 판" + (SA.live.note ? ' · ' + esc(SA.live.note) : '') : "기본값(적용한 판 없음)") + (future.length ? ' · <b class="sa-fut">예약 ' + future.length + '건</b>' : '') + '</span></div>' +
@@ -302,7 +303,6 @@ function saTabOnline(){
       saN("online.minAdults", "성인 몇 명부터", 2, 12, "명") +
       saN("online.maxPeople", "총 몇 명까지", 2, 12, "명", "넘으면 전화 안내") +
       saN("online.roomMinAdults", "룸은 성인 몇 명부터", 5, 12, "명") +
-      saN("online.tableMax", "테이블은 몇 명까지", 2, 12, "명") +
       saN("online.limitMin", "시간 고른 뒤 몇 분 안에", 3, 15, "분") +
       '</div><p class="f-note">서버가 성인 2~12명 · 룸 성인 5명 · 내일부터를 최종으로 확인합니다. 여기서는 그 안에서 좁히기만 됩니다. 더 넓히려면 재아에게(서버 정책).</p>') +
     saBox("홈페이지 예약 안 받는 날",
@@ -342,7 +342,8 @@ function saTabHours(){
     saBox("연락처·주소",
       '<div class="grid2">' + saF("info.tel", "전화") + saF("info.parking", "주차 한 줄") + '</div>' +
       saF("info.addr", "주소 (한 줄)") + saT("info.addr2", "주소 (두 줄 표시)", "홈·오시는 길에 두 줄로 나올 때", 2) +
-      '<div class="grid2">' + saF("info.owner", "대표") + saF("info.bizno", "사업자등록번호") + '</div>') +
+      '<div class="grid2">' + saF("info.owner", "대표") + saF("info.bizno", "사업자등록번호") + '</div>' +
+      saL("info.services", "이용 안내 알약", "홈 소개 아래·오시는 길에 한 줄로. 예: 콜키지 가능 · 병당 20,000원 / 단체 이용 가능 / 포장 가능 / 배달 가능", 4)) +
     saBox("링크",
       saF("info.naverMap", "네이버 지도") + saF("info.kakaoMap", "카카오맵") + saF("info.instagram", "인스타그램") + saF("info.blog", "블로그") +
       saFile("info.menuPdf", "메뉴판 PDF", "파일명(menu.pdf) 또는 올린 파일 주소. '올리기' 로 새 PDF 를 올리면 주소가 채워집니다")) +

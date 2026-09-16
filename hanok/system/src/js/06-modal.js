@@ -132,7 +132,20 @@ function settingsDiff(a, b){
     const x = JSON.stringify(a ? a[k] : undefined), y = JSON.stringify(b ? b[k] : undefined);
     if(x === y) return;
     const short = v => { if(v === undefined) return "없음"; const t = typeof v === "string" ? v : JSON.stringify(v); return t.length > 60 ? t.slice(0,57) + "…" : t; };
-    out.push(`${NAME[k] || k}: ${short(a ? a[k] : undefined)} → ${short(b ? b[k] : undefined)}`);
+    const av = a ? a[k] : undefined, bv = b ? b[k] : undefined;
+    /* 배열(좌석·경로·합침·코스 구성·임시 일정)은 JSON 을 그대로 적으면 못 읽습니다(검토 2026-09-17) — 개수와 늘고 준 이름만 */
+    if(Array.isArray(av) || Array.isArray(bv)){
+      const nm = x => x == null ? "" : (typeof x === "string" ? x : (x.name || x.title || x.date || x.id || ""));
+      const A = (av || []).map(nm), B = (bv || []).map(nm);
+      const added = B.filter(n => n && A.indexOf(n) < 0), removed = A.filter(n => n && B.indexOf(n) < 0);
+      let s = `${A.length}개 → ${B.length}개`;
+      if(added.length) s += ` · 추가 ${added.slice(0,4).join(", ")}${added.length > 4 ? " 외" : ""}`;
+      if(removed.length) s += ` · 삭제 ${removed.slice(0,4).join(", ")}${removed.length > 4 ? " 외" : ""}`;
+      if(!added.length && !removed.length) s += " · 내용 수정";
+      out.push(`${NAME[k] || k}: ${s}`);
+      return;
+    }
+    out.push(`${NAME[k] || k}: ${short(av)} → ${short(bv)}`);
   });
   return out;
 }
@@ -269,6 +282,7 @@ function renderStore(){
               <button onclick="closeMore(); openZoomAdj()">${ICON.search}<span>화면 보정</span></button>
               <button onclick="closeMore(); setTab('settings')">${ICON.set}<span>설정</span></button>
               <button onclick="closeMore(); lockNow()">${ICON.exit}<span>로그아웃</span></button>
+              <button onclick="closeMore(); exitApp()">${ICON.shrink}<span>종료하기</span></button>
             </div>` : ""}
           </div>`}
         </div>
