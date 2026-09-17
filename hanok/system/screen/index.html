@@ -3737,7 +3737,13 @@ function floorTables(fl, date){ return (date ? roomsAt(date) : (store().settings
 /* 예약이 쓰는 테이블 층. 룸이면 undefined, 층 미정 테이블이면 null */
 function resFloor(r){
   if(r.roomId){ const x = seatById(r.roomId); return x && isTable(x) ? (x.floor || "") : undefined; }
-  if(isTablePref(r.seatPref)) return prefFloor(r.seatPref);   /* table-any → null(층 미정) */
+  if(isTablePref(r.seatPref)){
+    const pf = prefFloor(r.seatPref);
+    if(pf != null) return pf;
+    /* 층 상관없음(table-any)이라도 잠정 배정된 테이블이 있으면 그 층 — '층 미정' 줄은 정말 자리를 못 찾았을 때만(재아 09-17) */
+    const t = r.tentativeRoomId ? seatById(r.tentativeRoomId) : null;
+    return t && isTable(t) ? (t.floor || "") : null;
+  }
   return undefined;
 }
 function floorSeats(fl, date, time){
@@ -4031,6 +4037,7 @@ function shopState(st){
 
 /* 아이콘 (선으로만 그린 최소한의 아이콘) */
 const ICON = {
+  print:'<svg viewBox="0 0 24 24"><path d="M7 8V4h10v4M7 16H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2M7 13h10v7H7z"/></svg>',
   site:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>',
   expand:'<svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
   shrink:'<svg viewBox="0 0 24 24"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>',
@@ -4909,6 +4916,7 @@ function renderStore(){
               ${isMobile() ? `` : `<button onclick="closeMore(); openDisplay()">${ICON.tv}<span>디스플레이 모드</span></button>`}
               ${document.fullscreenEnabled ? `<button onclick="closeMore(); toggleFullscreen()">${document.fullscreenElement?ICON.shrink:ICON.expand}<span>${document.fullscreenElement?"전체화면 해제":"전체화면"}</span></button>` : ""}
               <button onclick="closeMore(); openZoomAdj()">${ICON.search}<span>화면 보정</span></button>
+              <button onclick="closeMore(); openSlip()">${ICON.print}<span>비상 예약지</span></button>
               <button onclick="closeMore(); setTab('settings')">${ICON.set}<span>설정</span></button>
               <button onclick="closeMore(); lockNow()">${ICON.exit}<span>로그아웃</span></button>
               <button onclick="closeMore(); exitApp()">${ICON.shrink}<span>종료하기</span></button>
@@ -5734,7 +5742,7 @@ function renderTimeline(date, compact){
       ${dh.bs&&dh.be?`<span class="breakband" style="left:${pos(toMin(dh.bs))}%; width:${((toMin(dh.be)-toMin(dh.bs))/span)*100}%"></span>`:""}
     `}`;
   const LANE = compact ? 26 : 21;   /* 층 하나의 높이(px). 폰 압축판은 손가락 크기로 조금 높게 */
-  const MAX_LANES = 4;   /* 룸 한 줄이 너무 두꺼워지지 않게. 넘치면 '초과 N' 으로 알림 */
+
 
   const ticks = [];
   for(let m=Math.ceil(o/60)*60; m<=c; m+=60)
@@ -5785,24 +5793,16 @@ function renderTimeline(date, compact){
     const items = list.filter(r=>usesSeat(r, room.id))
       .sort(byCreated)
       .map(r=>({ r, need:1, s0:toMin(r.time), e0:Math.min(c, toMin(r.time)+stayOf(r)), joined:seatsOf(r).length>1 }));
-    /* 사장 판단으로 겹치게 받은 경우가 있으므로 층을 유동적으로.
-       ※ 예전에는 겹치기만 하면 무조건 2층이라, 같은 시간에 3건이 들어오면
-          세 번째가 첫 번째 뒤에 완전히 가려져 화면에서 사라졌습니다.
-          실제로 동시에 겹치는 최대 건수만큼 층을 만듭니다. */
-    let lanes = 1;
-    for(const a of items){
-      let k = 0;
-      for(const b of items) if(a.s0 < b.e0 && b.s0 < a.e0) k++;   /* 자기 자신 포함 */
-      if(k > lanes) lanes = k;
-    }
-    if(lanes > MAX_LANES) lanes = MAX_LANES;   /* 그 이상은 '초과'로 알립니다 */
-    const placed = laneLayout(items, lanes);
-    const over = placed.filter(x=>x.lane===null).length;
+    /* 룸은 방 하나 = 칸 하나. 겹쳐 받은(사장 판단) 예약은 홀처럼 **위에 빗금 칸을 쌓아** 넣습니다 — 먼저 들어온 예약이 아래 정상 칸,
+       늦게 들어온 것이 위 '겹침' 칸(재아 09-17). 예전에는 겹치는 수만큼 칸을 늘려 전부 정상 칸처럼 보였음 */
+    const placed = laneLayout(items, 1);
+    let overK = 0; placed.forEach(x=>{ if(x.lane===null){ x.overLane = 1 + overK; overK++; } });
+    const over = overK, lanes = 1 + over;
     const blocks = placed.map(it=>{
       const w = ((it.e0-it.s0)/span)*100;
       const tent = !it.r.roomId;
       const past = isBlockPast(it.r, it.s0, date, nowM);
-      const lane = it.lane===null?0:it.lane;
+      const lane = it.lane===null?it.overLane:it.lane;
       const bad = resWarn(it.r).length>0;
       const chg = changeTag(it.r);
       return `<button class="blk ${tent?'tent':''} ${it.r._req?'req':''} ${bad?'warned':''} ${past?'past':''} ${chg?'changed':''} ${it.joined?'joined':''}" onclick="${it.r._req?`openRequest('${it.r._req.id}')`:`openMark('${it.r.id}')`}"
@@ -5813,10 +5813,11 @@ function renderTimeline(date, compact){
     const used = items.reduce((a,x)=>a+(x.e0-x.s0),0);
     const rate = Math.min(100, Math.round(used/span*100));
     const sub = isTable(room) ? `${roomMin(room)?roomMin(room)+"~":""}${seatMax(room)}인` : `${roomMin(room, date)}~${room.capacity}인`;   /* 그 날짜 기준(주말 최소) */
+    const overBand = over ? `<div class="offband overlane" style="left:0; right:0; top:0; height:${over*LANE}px" title="같은 룸에 겹쳐 받은 예약이 놓이는 칸"><i class="ol-l tl-lbl">겹침 ${over}팀 — 같은 룸에 겹쳐 받은 예약</i></div>` : "";
     return `<div class="tl-row ${isTable(room)?'tbl':''} ${blockedAllDay(room,date)?'off-seat':''}">
       <div class="tl-name"><b>${esc(room.name)}</b><small>${sub}</small></div>
-      <div class="tl-track" data-lane="${LANE}" style="height:${lanes*LANE}px">
-        ${layers}${blockBands(room)}${blocks}
+      <div class="tl-track" data-lane="${LANE}" style="height:${lanes*LANE}px${over?`; background-image:repeating-linear-gradient(to top, transparent 0, transparent ${LANE-1}px, var(--border) ${LANE-1}px, var(--border) ${LANE}px)`:""}">
+        ${layers}${blockBands(room)}${overBand}${blocks}
       </div>
       <div class="tl-rate" style="height:${lanes*LANE}px">${lanes>1
         ? `<span class="rb"><i></i><b>${rate}%</b><i></i></span>`
@@ -6313,7 +6314,7 @@ async function reqAccept(id){
   await REQ_API.accept(q.id, rec.id);
   /* 확정 문자는 createReservation 이 '접수' 문자로 이미 보냅니다 — 여기서 또 보내면 두 통(검토 2026-09-17) */
   saveData();
-  showToast(`${q.name} 예약 확정 · 문자 흉내`, "보기", () => goRes(rec.id, rec.date));
+  showToast(`${q.name} 예약 확정 · 문자 흉내`, "보기", () => openMark(rec.id));   /* 상세만 — 그 날짜로 옮겨 가면(검은 상단바) 오늘을 놓침(재아 09-17) */
   view.form = null; render();
   if(reqPending().length) openRequests();
 }
@@ -6872,7 +6873,7 @@ function renderSettings(){
       <button class="btn danger" onclick="resetSettingsAll()">설정 초기화</button>
       <button class="btn" onclick="openSlip()">비상 예약지 인쇄</button>
     </div>
-    <p class="f-note">비상 예약지: 시스템이 안 될 때 손으로 받는 종이(A4 한 장에 6장). 열리면 Ctrl+P 로 인쇄해 카운터에 두세요.</p>
+    <p class="f-note">비상 예약지: 시스템이 안 될 때 손으로 받는 종이(A4 한 장에 6장). 열리면 Ctrl+P 로 인쇄해 카운터에 두세요. 더보기(⋮) 메뉴에서도 열립니다 — 관리자 비밀번호 없이.</p>
     <p class="f-note">설정은 관리자 비밀번호로 들어옵니다. PIN 관리·관리자 비밀번호 변경·로그·초기화는 한 번 더 묻습니다. PIN 은 직원과 공유하는 번호, 관리자 비밀번호는 사장님만 아는 것입니다.</p>`;
 
   /* 화면 크기 — 기기마다 적당한 값이 달라 사장님이 직접 고르게 둡니다.

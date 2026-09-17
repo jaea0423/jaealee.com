@@ -340,7 +340,7 @@ function renderSettings(){
       <button class="btn danger" onclick="resetSettingsAll()">설정 초기화</button>
       <button class="btn" onclick="openSlip()">비상 예약지 인쇄</button>
     </div>
-    <p class="f-note">비상 예약지: 시스템이 안 될 때 손으로 받는 종이(A4 한 장에 6장). 열리면 Ctrl+P 로 인쇄해 카운터에 두세요.</p>
+    <p class="f-note">비상 예약지: 시스템이 안 될 때 손으로 받는 종이(A4 한 장에 6장). 열리면 Ctrl+P 로 인쇄해 카운터에 두세요. 더보기(⋮) 메뉴에서도 열립니다 — 관리자 비밀번호 없이.</p>
     <p class="f-note">설정은 관리자 비밀번호로 들어옵니다. PIN 관리·관리자 비밀번호 변경·로그·초기화는 한 번 더 묻습니다. PIN 은 직원과 공유하는 번호, 관리자 비밀번호는 사장님만 아는 것입니다.</p>`;
 
   /* 화면 크기 — 기기마다 적당한 값이 달라 사장님이 직접 고르게 둡니다.

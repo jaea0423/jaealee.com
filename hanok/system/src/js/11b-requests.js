@@ -176,7 +176,7 @@ async function reqAccept(id){
   await REQ_API.accept(q.id, rec.id);
   /* 확정 문자는 createReservation 이 '접수' 문자로 이미 보냅니다 — 여기서 또 보내면 두 통(검토 2026-09-17) */
   saveData();
-  showToast(`${q.name} 예약 확정 · 문자 흉내`, "보기", () => goRes(rec.id, rec.date));
+  showToast(`${q.name} 예약 확정 · 문자 흉내`, "보기", () => openMark(rec.id));   /* 상세만 — 그 날짜로 옮겨 가면(검은 상단바) 오늘을 놓침(재아 09-17) */
   view.form = null; render();
   if(reqPending().length) openRequests();
 }

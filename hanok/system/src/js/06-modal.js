@@ -287,6 +287,7 @@ function renderStore(){
               ${isMobile() ? `` : `<button onclick="closeMore(); openDisplay()">${ICON.tv}<span>디스플레이 모드</span></button>`}
               ${document.fullscreenEnabled ? `<button onclick="closeMore(); toggleFullscreen()">${document.fullscreenElement?ICON.shrink:ICON.expand}<span>${document.fullscreenElement?"전체화면 해제":"전체화면"}</span></button>` : ""}
               <button onclick="closeMore(); openZoomAdj()">${ICON.search}<span>화면 보정</span></button>
+              <button onclick="closeMore(); openSlip()">${ICON.print}<span>비상 예약지</span></button>
               <button onclick="closeMore(); setTab('settings')">${ICON.set}<span>설정</span></button>
               <button onclick="closeMore(); lockNow()">${ICON.exit}<span>로그아웃</span></button>
               <button onclick="closeMore(); exitApp()">${ICON.shrink}<span>종료하기</span></button>

@@ -355,7 +355,13 @@ function floorTables(fl, date){ return (date ? roomsAt(date) : (store().settings
 /* 예약이 쓰는 테이블 층. 룸이면 undefined, 층 미정 테이블이면 null */
 function resFloor(r){
   if(r.roomId){ const x = seatById(r.roomId); return x && isTable(x) ? (x.floor || "") : undefined; }
-  if(isTablePref(r.seatPref)) return prefFloor(r.seatPref);   /* table-any → null(층 미정) */
+  if(isTablePref(r.seatPref)){
+    const pf = prefFloor(r.seatPref);
+    if(pf != null) return pf;
+    /* 층 상관없음(table-any)이라도 잠정 배정된 테이블이 있으면 그 층 — '층 미정' 줄은 정말 자리를 못 찾았을 때만(재아 09-17) */
+    const t = r.tentativeRoomId ? seatById(r.tentativeRoomId) : null;
+    return t && isTable(t) ? (t.floor || "") : null;
+  }
   return undefined;
 }
 function floorSeats(fl, date, time){
@@ -649,6 +655,7 @@ function shopState(st){
 
 /* 아이콘 (선으로만 그린 최소한의 아이콘) */
 const ICON = {
+  print:'<svg viewBox="0 0 24 24"><path d="M7 8V4h10v4M7 16H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2M7 13h10v7H7z"/></svg>',
   site:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>',
   expand:'<svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
   shrink:'<svg viewBox="0 0 24 24"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>',

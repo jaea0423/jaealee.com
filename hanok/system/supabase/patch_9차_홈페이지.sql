@@ -74,7 +74,7 @@ revoke delete on requests, public_avail from authenticated;   -- 지우지 않�
 drop trigger if exists t_req_upd on requests;
 create trigger t_req_upd before update on requests for each row execute function set_updated_at();
 
--- 접수 폭주 막기: 같은 번호는 하루 3건, 전체는 10분에 20건. 넘으면 거부(홈페이지는 "잠시 뒤 다시" 안내)
+-- 접수 폭주 막기: 같은 번호는 하루 3건(13차에서 5건으로), 전체는 10분에 20건. 넘으면 거부(홈페이지는 "잠시 뒤 다시" 안내)
 create or replace function requests_rate_limit() returns trigger language plpgsql security definer as $$
 begin
   if (select count(*) from requests where phone = new.phone and created_at > now() - interval '1 day') >= 3 then

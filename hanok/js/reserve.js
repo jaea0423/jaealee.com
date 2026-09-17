@@ -56,7 +56,7 @@
   /* ---------- 진짜 API: js/config.js 에 window.SUPA 가 있으면 예약 시스템(Supabase)과 붙습니다 ----------
      · 남은 자리는 public_avail 표(예약 시스템 태블릿이 30일치를 올려 둠)를 읽습니다 —
        {"11:00":{"rooms":[[최소,최대],…],"tableMax":n}, …}. 룸은 인원이 어느 룸의 범위에 들면, 테이블은 tableMax 이하면 가능.
-     · 접수는 requests 표에 한 줄. 서버가 규칙(내일부터·성인 2·룸 성인 5·12명 이하·번호당 하루 3건)을 한 번 더 확인합니다. */
+     · 접수는 requests 표에 한 줄. 서버가 규칙(내일부터·성인 2·룸 성인 5·12명 이하·번호당 하루 5건)을 한 번 더 확인합니다. */
   if(window.SUPA && SUPA.url && SUPA.anonKey){
     const H = { "apikey": SUPA.anonKey, "Authorization": "Bearer " + SUPA.anonKey, "Content-Type": "application/json" };
     const get = async path => { const r = await fetch(SUPA.url + path, {headers:H}); if(!r.ok) throw new Error("HTTP " + r.status); return r.json(); };
@@ -87,7 +87,7 @@
       const r = await fetch(SUPA.url + "/rest/v1/requests", { method:"POST", headers:Object.assign({"Prefer":"return=minimal"}, H), body:JSON.stringify(body) });
       if(r.ok) return {ok:true};
       let msg = ""; try{ msg = (await r.json()).message || ""; }catch(e){}
-      if(/RATE_PHONE/.test(msg)) return {ok:false, msg:"이 번호로 오늘 접수한 예약이 이미 3건입니다. 전화로 문의해 주세요."};
+      if(/RATE_PHONE/.test(msg)) return {ok:false, msg:"이 번호로 오늘 접수한 예약이 이미 5건입니다. 전화로 문의해 주세요."};
       if(/RATE_ALL/.test(msg)) return {ok:false, msg:"지금 접수가 몰려 있습니다. 잠시 뒤 다시 시도해 주세요."};
       return {ok:false, msg:"접수가 되지 않았습니다. 잠시 뒤 다시 시도하시거나 전화로 문의해 주세요."};
     };

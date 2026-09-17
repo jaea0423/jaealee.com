@@ -43,7 +43,7 @@ function renderTimeline(date, compact){
       ${dh.bs&&dh.be?`<span class="breakband" style="left:${pos(toMin(dh.bs))}%; width:${((toMin(dh.be)-toMin(dh.bs))/span)*100}%"></span>`:""}
     `}`;
   const LANE = compact ? 26 : 21;   /* 층 하나의 높이(px). 폰 압축판은 손가락 크기로 조금 높게 */
-  const MAX_LANES = 4;   /* 룸 한 줄이 너무 두꺼워지지 않게. 넘치면 '초과 N' 으로 알림 */
+
 
   const ticks = [];
   for(let m=Math.ceil(o/60)*60; m<=c; m+=60)
@@ -94,24 +94,16 @@ function renderTimeline(date, compact){
     const items = list.filter(r=>usesSeat(r, room.id))
       .sort(byCreated)
       .map(r=>({ r, need:1, s0:toMin(r.time), e0:Math.min(c, toMin(r.time)+stayOf(r)), joined:seatsOf(r).length>1 }));
-    /* 사장 판단으로 겹치게 받은 경우가 있으므로 층을 유동적으로.
-       ※ 예전에는 겹치기만 하면 무조건 2층이라, 같은 시간에 3건이 들어오면
-          세 번째가 첫 번째 뒤에 완전히 가려져 화면에서 사라졌습니다.
-          실제로 동시에 겹치는 최대 건수만큼 층을 만듭니다. */
-    let lanes = 1;
-    for(const a of items){
-      let k = 0;
-      for(const b of items) if(a.s0 < b.e0 && b.s0 < a.e0) k++;   /* 자기 자신 포함 */
-      if(k > lanes) lanes = k;
-    }
-    if(lanes > MAX_LANES) lanes = MAX_LANES;   /* 그 이상은 '초과'로 알립니다 */
-    const placed = laneLayout(items, lanes);
-    const over = placed.filter(x=>x.lane===null).length;
+    /* 룸은 방 하나 = 칸 하나. 겹쳐 받은(사장 판단) 예약은 홀처럼 **위에 빗금 칸을 쌓아** 넣습니다 — 먼저 들어온 예약이 아래 정상 칸,
+       늦게 들어온 것이 위 '겹침' 칸(재아 09-17). 예전에는 겹치는 수만큼 칸을 늘려 전부 정상 칸처럼 보였음 */
+    const placed = laneLayout(items, 1);
+    let overK = 0; placed.forEach(x=>{ if(x.lane===null){ x.overLane = 1 + overK; overK++; } });
+    const over = overK, lanes = 1 + over;
     const blocks = placed.map(it=>{
       const w = ((it.e0-it.s0)/span)*100;
       const tent = !it.r.roomId;
       const past = isBlockPast(it.r, it.s0, date, nowM);
-      const lane = it.lane===null?0:it.lane;
+      const lane = it.lane===null?it.overLane:it.lane;
       const bad = resWarn(it.r).length>0;
       const chg = changeTag(it.r);
       return `<button class="blk ${tent?'tent':''} ${it.r._req?'req':''} ${bad?'warned':''} ${past?'past':''} ${chg?'changed':''} ${it.joined?'joined':''}" onclick="${it.r._req?`openRequest('${it.r._req.id}')`:`openMark('${it.r.id}')`}"
@@ -122,10 +114,11 @@ function renderTimeline(date, compact){
     const used = items.reduce((a,x)=>a+(x.e0-x.s0),0);
     const rate = Math.min(100, Math.round(used/span*100));
     const sub = isTable(room) ? `${roomMin(room)?roomMin(room)+"~":""}${seatMax(room)}인` : `${roomMin(room, date)}~${room.capacity}인`;   /* 그 날짜 기준(주말 최소) */
+    const overBand = over ? `<div class="offband overlane" style="left:0; right:0; top:0; height:${over*LANE}px" title="같은 룸에 겹쳐 받은 예약이 놓이는 칸"><i class="ol-l tl-lbl">겹침 ${over}팀 — 같은 룸에 겹쳐 받은 예약</i></div>` : "";
     return `<div class="tl-row ${isTable(room)?'tbl':''} ${blockedAllDay(room,date)?'off-seat':''}">
       <div class="tl-name"><b>${esc(room.name)}</b><small>${sub}</small></div>
-      <div class="tl-track" data-lane="${LANE}" style="height:${lanes*LANE}px">
-        ${layers}${blockBands(room)}${blocks}
+      <div class="tl-track" data-lane="${LANE}" style="height:${lanes*LANE}px${over?`; background-image:repeating-linear-gradient(to top, transparent 0, transparent ${LANE-1}px, var(--border) ${LANE-1}px, var(--border) ${LANE}px)`:""}">
+        ${layers}${blockBands(room)}${overBand}${blocks}
       </div>
       <div class="tl-rate" style="height:${lanes*LANE}px">${lanes>1
         ? `<span class="rb"><i></i><b>${rate}%</b><i></i></span>`
