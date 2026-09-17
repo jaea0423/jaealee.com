@@ -88,7 +88,7 @@ function renderAgenda(date){
     return `<button class="${eff===f?'on':''}" onclick="setFilter('${f}')">${f} ${n}</button>`;
   }).join("");
   if(eff!=="전체") day = day.filter(GROUPS[eff]);
-  const nowM = toMin(nowHM()), isToday = date === todayStr();
+  const nowM = toMin(nowHM()), isToday = date === todayStr() && (eff === "전체" || eff === "예정");   /* '지난·방문'·'취소·노쇼' 에는 지금 선 없음 — 남은 예약이 없는 목록(재아 09-17) */
   let marked = false;
   const rows = day.length ? day.map(r=>{
     let m = "";
@@ -106,7 +106,7 @@ function resRowMobile(r){
   const chg = changeTag(r);
   const pills = [
     r.menuType==="코스" ? (r.courseUndecided ? "코스·세트 미정" : "코스·세트") : r.menuType==="코스 상당" ? "코스상당" : r.menuType==="확인 필요" ? "메뉴확인" : "",
-    r.allergy ? "알러지" : "", r.chairs ? `유아의자 ${r.chairs}` : "", r.request ? "요청" : "", r.memo ? "메모" : ""
+    r.allergy ? "알러지" : "", r.request ? "요청" : "", r.memo ? "메모" : ""
   ].filter(Boolean).join(" · ");
   return `
     <button class="mrow s-${r.status} ${late?'late':''}" onclick="openMark('${r.id}')">
@@ -266,7 +266,7 @@ function renderResList(date){
   }).join("");
   if(eff!=="전체") day = day.filter(GROUPS[eff]);
   /* 8차-V(재아): 오늘 목록에는 '지금' 선을 넣어 위(지난)·아래(앞으로) 가 갈리게 */
-  const nowM = toMin(nowHM()), isToday = date === todayStr();
+  const nowM = toMin(nowHM()), isToday = date === todayStr() && (eff === "전체" || eff === "예정");   /* '지난·방문'·'취소·노쇼' 에는 지금 선 없음 — 남은 예약이 없는 목록(재아 09-17) */
   let marked = false;
   const rows = day.length ? day.map(r=>{
     let m = "";
@@ -291,7 +291,6 @@ function resRow(r){
     r.menuType==="코스 상당" ? `<span class="pill pine">코스상당</span>` :
     r.menuType==="확인 필요" ? `<span class="pill amber">메뉴확인</span>` : "",
     r.allergy ? `<span class="pill rust" title="${esc(r.allergy)}">알러지</span>` : "",
-    r.chairs ? `<span class="pill pine">유아의자 ${r.chairs}</span>` : "",
     r.request ? `<span class="pill" title="${esc(r.request)}">요청</span>` : "",
     r.memo ? `<span class="pill blue" title="${esc(r.memo)}">메모</span>` : ""
   ].join("");

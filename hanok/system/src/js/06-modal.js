@@ -196,17 +196,24 @@ async function manualRefresh(){
   await refreshData();
   render();
 }
-/* 대시보드는 1분마다 스스로 갱신합니다 — 서버에서 바뀐 행만 받아 오고, 실제로 바뀐 것이 있을 때만 다시 그립니다.
-   마법사·시트·확인창이 떠 있으면 건너뜁니다(입력 중에 화면이 바뀌면 안 되니까). '새로고침' 버튼은 즉시 + 무조건 다시 그림 */
+/* 대시보드는 10초마다 스스로 갱신합니다(재아 2026-09-17, 전에는 1분) — 서버에서 바뀐 행만 받아 오고, 실제로 바뀐 것이 있을 때만 다시 그립니다.
+   마법사·시트·확인창이 떠 있으면 건너뜁니다(입력 중에 화면이 바뀌면 안 되니까). 탭이 뒤로 가 있으면(document.hidden) 쉽니다 — 폰 배터리.
+   '새로고침' 버튼은 즉시 + 무조건 다시 그림. 자정 처리·토큰 갱신 같은 살림은 1분에 한 번만 */
+var TICK_N = 0;
 setInterval(function(){
+  TICK_N++;
+  if(TICK_N % 6 === 0){
   /* 자정을 넘겼으면 새 날짜의 좌석 수를 남깁니다 (밤새 켜 둔 태블릿·TV). 6차 전에는 자정 처리가 따로 없었습니다 */
   if(SNAP_DAY && todayStr() !== SNAP_DAY){ if(AUTHED) absorbScheduled(); takeSnapshot(); if(AUTHED && autoCloseDays()) saveData(); }   /* 어제 '확정' → '방문' 도 함께(점검 R7) */
   sessionTick();   /* 토큰 만료 5분 전 갱신 */
   if(SAVE_FAIL && !OFFLINE) flush();   /* 저장 못 한 것이 있으면 다시 */
   if(AUTHED && !view.display && typeof publishAvail === "function" && AVAIL_DIRTY) publishAvail();   /* 미뤄 둔 남은 자리 올리기 */
-  if(!AUTHED || view.display || WZ || view.form || MODAL) return;
-  refreshData().then(function(changed){ if(changed) render(); });
-}, 60000);
+  }
+  if(!AUTHED || view.display || WZ || view.form || MODAL || document.hidden || REFRESH_BUSY) return;
+  REFRESH_BUSY = true;
+  refreshData().then(function(changed){ REFRESH_BUSY = false; if(changed) render(); }, function(){ REFRESH_BUSY = false; });   /* 느린 회선에서 앞 갱신이 안 끝났으면 겹치지 않게(finally 는 구형 TV 에 없을 수 있어 then 둘로) */
+}, 10000);
+var REFRESH_BUSY = false;
 
 /* 폰 여부 — CSS 의 @media (max-width:640px) 와 같은 기준. 폰에서는 상단바·대시보드를 다른 구성으로 그립니다(PC 는 그대로) */
 function isMobile(){ return window.innerWidth <= 640; }

@@ -72,10 +72,15 @@ function reqWarns(q){
   const out = [];
   if(q.date < todayStr()) out.push("지난 날짜");
   try{
-    const seats = store().settings.rooms;
-    const free = seats.filter(x => (q.seat === "room" ? isRoom(x) : isTable(x)) && !blockedAt(x, q.date, q.time)
-                   && q.people <= seatMax(x) && (q.seat !== "room" || q.people >= roomMin(x, q.date))
+    const seats = roomsAt(q.date);
+    let free;
+    if(q.seat === "room"){
+      free = seats.filter(x => isRoom(x) && !blockedAt(x, q.date, q.time) && q.people <= seatMax(x) && q.people >= roomMin(x, q.date)
                    && roomStatus(q.date, q.time, x.id).state === "free").length;
+    }else{
+      /* 테이블은 붙여 앉을 수 있으니 홈페이지(availOfDay)와 같은 기준인 층별 최대 일행(floorMaxParty)으로 — 테이블 하나 정원으로 보면 6명이 늘 '없음' 이 됐음 */
+      free = 0; tableFloors().forEach(f => { if(floorMaxParty(f, q.date, q.time) >= q.people) free++; });
+    }
     if(!free) out.push(q.seat === "room" ? "룸 없음" : "테이블 없음");
   }catch(e){}
   const dup = store().reservations.find(r => r.date === q.date && r.status !== "취소" && (r.phone||"").replace(/\D/g,"") === (q.phone||"").replace(/\D/g,""));
@@ -94,7 +99,7 @@ function sheetRequests(){
         <span class="s">${dateLabel(q.date)} ${hm(q.time)} · ${reqPeopleText(q)} · ${q.seat==="room"?"룸":"테이블"} · ${esc(reqMenuText(q))}</span></span>
       <span class="s left ${reqLeftClass(q)}" style="white-space:nowrap; text-align:right">${reqLeft(q)}</span>
     </button>`; }).join("")
-    : `<div class="empty">처리할 홈페이지 예약이 없습니다.<br><span class="s">손님이 홈페이지에서 접수하면 여기로 들어옵니다. 24시간 안에 확정·거절하지 않으면 자동 취소됩니다.</span></div>`;
+    : `<div class="empty">확정 대기 중인 예약이 없습니다.</div>`;
   return `
     ${sheetHead(`홈페이지 예약 · ${list.length}건`)}
     <div class="card searchbox">${rows}</div>
@@ -118,7 +123,7 @@ function sheetRequest(){
     <div class="card" style="padding:12px 14px">
       ${row("날짜", `${dateLabel(q.date)} ${hm(q.time)}`)}
       ${row("인원", q.kids ? `성인 ${q.adults} · 어린이 ${q.kids}` : `성인 ${q.adults}`)}
-      ${row("자리", q.seat === "room" ? "룸" : "테이블")}
+      ${row("좌석", q.seat === "room" ? "룸" : "테이블")}
       ${row("메뉴", esc(reqMenuText(q)))}
       ${row("예약자", `${esc(q.name)} · ${esc(q.phone)}`)}
       ${q.allergy ? row("알레르기", `<span class="rust">${esc(q.allergy)}</span>`) : ""}
@@ -126,7 +131,6 @@ function sheetRequest(){
       ${row("만료", `<b class="${reqLeftClass(q)}">${reqLeft(q)}</b>`)}
     </div>
     ${w.length ? `<div class="menu-warn" style="margin-top:10px">${w.map(esc).join(" · ")}</div>` : ""}
-    <p class="f-note" style="margin-top:10px">'예약 확정' 을 누르면 이 내용 그대로 예약이 등록되고(자리는 빈 곳으로 잠정 배정) 손님께 확정 문자가 나갑니다. 경고가 있으면 먼저 알려 드립니다. 24시간 안에 처리하지 않으면 자동 취소됩니다.</p>
     <div class="sheet-actions">
       <button class="btn ghost" onclick="openReqReject('${q.id}')">거절</button>
       <button class="btn ghost" onclick="openRequests()">목록</button>
@@ -213,28 +217,29 @@ function reqAfterRegister(rec){
   /* 확정 문자는 등록 때 '접수' 문자로 나갑니다(중복 방지) */
 }
 /* 거절 — 사유를 고르거나 직접 적거나 생략. 문자에 사유가 들어갑니다 */
-const REQ_REASONS = ["그 시간에 자리가 없습니다", "룸은 성인 5명부터 받고 있습니다", "당일·연휴는 전화로 부탁드립니다", "단체는 전화로 부탁드립니다"];
+/* 첫 선택지 '사유 생략' (재아 2026-09-17) — 문자에 사유가 안 붙습니다. 당일·연휴/단체 문구는 홈페이지가 애초에 안 받으니 뺐음 */
+const REQ_REASONS = ["", "접수해주신 시간에 예약이 마감되었습니다", "룸은 성인 5인부터 예약 가능합니다"];
+const REQ_REASON_LABEL = r => r || "사유 생략";
 function openReqReject(id){ view.form = {type:"reqrej", id}; view.reqRej = {pick:0, text:""}; render(); }
 function sheetReqReject(){
   const q = reqById(view.form.id); if(!q) return sheetRequests();
   const d = view.reqRej || {pick:0, text:""};
   return `
     ${sheetHead("거절")}
-    <p class="f-note" style="margin:-6px 0 12px">${esc(q.name)} · ${dateLabel(q.date)} ${hm(q.time)} · ${reqPeopleText(q)}. 손님께 거절 문자가 나갑니다(사유는 넣어도, 안 넣어도 됩니다).</p>
+    <p class="f-note" style="margin:-6px 0 12px">${esc(q.name)} · ${dateLabel(q.date)} ${hm(q.time)} · ${reqPeopleText(q)}</p>
     <div class="rj-list">
-      ${REQ_REASONS.map((r, i) => `<label class="chk"><input type="radio" name="rj" ${d.pick === i ? "checked" : ""} onchange="view.reqRej.pick=${i}; render()"><span>${esc(r)}</span></label>`).join("")}
+      ${REQ_REASONS.map((r, i) => `<label class="chk"><input type="radio" name="rj" ${d.pick === i ? "checked" : ""} onchange="view.reqRej.pick=${i}; render()"><span>${esc(REQ_REASON_LABEL(r))}</span></label>`).join("")}
       <label class="chk"><input type="radio" name="rj" ${d.pick === -1 ? "checked" : ""} onchange="view.reqRej.pick=-1; render()"><span>직접 입력</span></label>
       ${d.pick === -1 ? `<textarea class="in-sm" rows="2" placeholder="사유" oninput="view.reqRej.text=this.value">${esc(d.text)}</textarea>` : ""}
     </div>
     <div class="sheet-actions">
       <button class="btn ghost" onclick="openRequest('${q.id}')">돌아가기</button>
-      <button class="btn ghost" onclick="reqReject('${q.id}', '')">사유 없이 거절</button>
       <button class="btn primary" data-enter onclick="reqReject('${q.id}')">거절하기</button></div>`;
 }
 async function reqReject(id, whyGiven){
   const q = reqById(id); if(!q) return;
   let why = whyGiven;
-  if(why === undefined){ const d = view.reqRej || {pick:0, text:""}; why = d.pick === -1 ? (d.text || "").trim() : REQ_REASONS[d.pick]; if(d.pick === -1 && !why){ await uiAlert("사유를 적어 주세요", "사유 없이 거절하려면 '사유 없이 거절' 을 누르세요.", "warn"); return; } }
+  if(why === undefined){ const d = view.reqRej || {pick:0, text:""}; why = d.pick === -1 ? (d.text || "").trim() : REQ_REASONS[d.pick]; if(d.pick === -1 && !why){ await uiAlert("사유를 적어 주세요", "사유 없이 거절하려면 '사유 생략' 을 고르세요.", "warn"); return; } }
   await REQ_API.reject(id, why || "");
   smsMockSend(q.phone, q.name, `[한옥반점] ${q.name}님, 요청하신 ${dateLabel(q.date)} ${hm(q.time)} 예약을 받지 못했습니다.${why ? " " + why + "." : ""} 전화 주시면 자리를 찾아드리겠습니다. ${store().settings.tel || "031-724-1004"}`);
   showToast("거절했습니다 · 문자 흉내");

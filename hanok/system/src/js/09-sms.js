@@ -212,7 +212,6 @@ function resWarn(r){
     else if(r.menuType==="확인 필요") out.push("코스·세트 미확정");
     else if(r.menuType==="코스" && !r.courseUndecided && cn>0 && cn<ad) out.push("코스·세트 인원 부족");
   }
-  if((r.chairs||0) > (r.infants||0)) out.push("유아의자 초과");
   /* 겹쳐 받은 룸은 접수 뒤에도 계속 보여야 합니다.
      막지 않고 받는 대신(설계 5.2), 취소를 깜빡한 예약이 남아 있는 경우를
      '확인 필요'에서 나중에라도 잡아낼 수 있게 합니다. */
@@ -246,11 +245,6 @@ function checkItems(date){
   const allergy = list.filter(r=>r.allergy);
   if(allergy.length) items.push(["rust", `알러지 확인 ${allergy.length}건`,
     allergy.slice(0,2).map(r=>`${r.time} ${r.name} · ${r.allergy}`).join(" / "), `openPick('allergy')`]);
-
-  const chairs = list.filter(r=>r.chairs>0);
-  const chairSum = chairs.reduce((a,r)=>a+(r.chairs||0),0);
-  if(chairSum) items.push(["pine", `유아용 의자 ${chairSum}개 준비`,
-    chairs.slice(0,3).map(r=>`${r.time} ${r.name} ${r.chairs}개`).join(", "), `openPick('chairs')`]);
 
   const gsize = settingsAt(d).groupSize || 8;
   const group = list.filter(r=>pplOf(r) >= gsize);
@@ -290,12 +284,11 @@ function checkItems(date){
 }
 function openCheck(){ view.form={type:"check"}; render(); }
 function sheetCheck(){
-  const items = checkItems(view.date);
+  const items = checkItems(view.date);   /* 세부(sub)는 안 보임 — 제목만, 누르면 목록(재아 09-17) */
   const body = items.length
     ? `<div class="alerts">${items.map(([c,t,sub,act])=>`
         <button class="alert ${c}" onclick="${act}">
           <span class="a-t">${esc(t)}</span>
-          ${sub?`<span class="a-s">${esc(sub)}</span>`:""}
           <span class="a-go">&rsaquo;</span>
         </button>`).join("")}</div>`
     : `<div class="empty">지금 확인할 항목이 없습니다.</div>`;
@@ -312,16 +305,14 @@ function sheetPick(){
   const kind = view.form.kind;
   const conf = {
     allergy:{title:"알러지 확인", pick:r=>r.allergy, note:"주방에 전달됐는지 확인하세요."},
-    chairs:{title:"유아용 의자", pick:r=>r.chairs>0, note:"의자 개수를 미리 준비하세요."},
     menu:{title:"메뉴 확인", pick:r=>r.menuType==="확인 필요", note:"방문 전 연락해 코스·세트를 확정하세요."},
     noshow:{title:"노쇼 이력 손님", pick:r=>!!noshowOf(r.phone), note:"확인 전화를 돌리면 노쇼가 줄어듭니다."},
-    warn:{title:"경고 예약", pick:r=>resWarn(r).length>0, note:"사장 판단으로 접수된 예약입니다. 문제가 없는지 확인하세요."},
+    warn:{title:"경고 예약", pick:r=>resWarn(r).length>0, note:""},
     confirmed:{title:"확정 예약", pick:r=>true, note:""},
     better:{title:"자리 개선 가능", pick:r=>isTablePref(r.seatPref) && (r.tentativeSplit || !r.tentativeRoomId) && floorFit(prefFloor(r.seatPref), r.date, r.time, pplOf(r), r.id).state==="ok", note:"취소 등으로 자리가 났습니다. 다시 계산되면 한 자리로 배정됩니다."},
-    request:{title:"요청사항 있는 예약", pick:r=>!!(r.request||"").trim(), note:"요청이 가능한지, 주방·홀에 전달됐는지 확인하세요."},
+    request:{title:"요청사항 있는 예약", pick:r=>!!(r.request||"").trim(), note:""},
     memo:{title:"메모 있는 예약", pick:r=>!!(r.memo||"").trim(), note:""},
-    changed:{title:"오늘 변동", pick:r=>!!changeTag(r),
-             note:"오늘 안에 바뀐 예약입니다. 주방에 이미 전달한 내용이 있다면 다시 알려주세요."},
+    changed:{title:"오늘 변동", pick:r=>!!changeTag(r), note:""},
     group:{title:"단체 손님", pick:r=>pplOf(r) >= (store().settings.groupSize||8),
            note:"상차림과 인력 배치를 미리 준비하세요. 기준 인원은 설정에서 바꿀 수 있습니다."},
     auto:{title:"어제 자동 방문 처리", pick:null, note:""},
@@ -337,18 +328,16 @@ function sheetPick(){
     <button class="rowitem tap" onclick="openMark('${r.id}')">
       <span class="time-col">${esc(r.time)}</span>
       <span class="grow"><span class="t">${esc(r.name)}</span>
-        <span class="s">${kind==="blocked"?`${dateLabel(r.date)} · `:""}${pplText(r)}${r.phone?` · ${esc(r.phone)}`:""}${
+        <span class="s">${kind==="warn"?`<span class="rust">${esc(resWarn(r).join(", "))}</span> · `:""}${kind==="blocked"?`${dateLabel(r.date)} · `:""}${pplText(r)}${r.phone?` · ${esc(r.phone)}`:""}${
           kind==="blocked"&&resBlocked(r)?` · ${esc(blockLabelText(resBlocked(r).blk))}`:""}${
           kind==="allergy"&&r.allergy?` · ${esc(r.allergy)}`:""}${
-          kind==="chairs"?` · 의자 ${r.chairs}개`:""}${
           kind==="noshow"&&noshowOf(r.phone)?` · 노쇼 ${noshowOf(r.phone).count}회`:""}${
-          kind==="warn"?` · ${resWarn(r).join(", ")}`:""}${
+
           kind==="group"&&r.menuType==="코스"?` · 코스·세트`:""}</span></span>
-      ${seatTag(r)}
-    </button>`).join("") : `<div class="empty">해당 예약이 없습니다.</div>`;
+    </button>`).join("") : `<div class="empty">해당 예약이 없습니다.</div>`;   /* 좌석 알약은 뺐음 — 목록에서는 이름·시각이면 충분(재아 09-17) */
   return `
     ${sheetHead(kind==="blocked" ? conf.title : `${conf.title} · ${kind==="auto"?dateLabel(shiftDate(today,-1)):dateLabel(d)}`)   /* 사용 중지 예약은 날짜와 무관하게 전부 모음 */}
     <div class="card" style="margin-bottom:12px">${rows}</div>
-    <p class="f-note">${conf.note}</p>
+    ${conf.note ? `<p class="f-note">${conf.note}</p>` : ""}
     <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">닫기</button></div>`;
 }

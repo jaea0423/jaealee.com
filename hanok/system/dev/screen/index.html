@@ -2876,7 +2876,7 @@ function syncMarkTentatives(){
     });
   });
 }
-/* 1분 갱신 — 전체가 아니라 바뀐 행만 (updated_at=gt.마지막으로 본 최대값).
+/* 자동 갱신(10초) — 전체가 아니라 바뀐 행만 (updated_at=gt.마지막으로 본 최대값).
    이 기기에서 고쳐 놓고 아직 못 보낸(dirty) 예약은 덮지 않습니다 — 다음 flush 의 조건부 PATCH 가 0행이 되어 충돌 절차로 갑니다 */
 async function reloadFromStore(){
   if(!supaOn()) return;
@@ -2884,13 +2884,15 @@ async function reloadFromStore(){
   if(!SESSION) return;
   if(OFFLINE){ await reconnect(); return; }
   var keys = Object.keys(DEFAULT_DATA), i, k, changed = false;
-  var stores = await sb("/rest/v1/stores?select=key,name,settings,snapshots,updated_at");
+  /* 10초마다 도니(재아 2026-09-17, 전에는 1분) 설정·스냅샷 본문은 updated_at 이 바뀌었을 때만 받습니다 — 매번 받으면 기기당 하루 수 MB */
+  var stores = await sb("/rest/v1/stores?select=key,updated_at");
   for(i = 0; i < keys.length; i++){
     k = keys[i]; if(!DEFAULT_DATA[k].enabled || !DATA[k]) continue;
     var st = DATA[k];
     /* 설정·스냅샷 — 다른 기기가 바꿨고 이 기기는 안 건드렸으면 받아들임 */
     var srow = stores.find(function(r){ return r.key === k; });
     if(srow && srow.updated_at !== SYNC.storeUpd[k]){
+      srow = (await sb("/rest/v1/stores?key=eq." + k + "&select=key,name,settings,snapshots,updated_at"))[0] || srow;
       if(JSON.stringify(st.settings) === SYNC.settings[k]){ var mg = {}; mg[k] = { settings: srow.settings || {} }; st.settings = migrate(mg)[k].settings; SYNC.settings[k] = JSON.stringify(st.settings); changed = true; }
       if(JSON.stringify(st.snapshots || {}) === SYNC.snapshots[k]){ st.snapshots = srow.snapshots || {}; SYNC.snapshots[k] = JSON.stringify(st.snapshots); }
       SYNC.storeUpd[k] = srow.updated_at;
@@ -4816,17 +4818,24 @@ async function manualRefresh(){
   await refreshData();
   render();
 }
-/* 대시보드는 1분마다 스스로 갱신합니다 — 서버에서 바뀐 행만 받아 오고, 실제로 바뀐 것이 있을 때만 다시 그립니다.
-   마법사·시트·확인창이 떠 있으면 건너뜁니다(입력 중에 화면이 바뀌면 안 되니까). '새로고침' 버튼은 즉시 + 무조건 다시 그림 */
+/* 대시보드는 10초마다 스스로 갱신합니다(재아 2026-09-17, 전에는 1분) — 서버에서 바뀐 행만 받아 오고, 실제로 바뀐 것이 있을 때만 다시 그립니다.
+   마법사·시트·확인창이 떠 있으면 건너뜁니다(입력 중에 화면이 바뀌면 안 되니까). 탭이 뒤로 가 있으면(document.hidden) 쉽니다 — 폰 배터리.
+   '새로고침' 버튼은 즉시 + 무조건 다시 그림. 자정 처리·토큰 갱신 같은 살림은 1분에 한 번만 */
+var TICK_N = 0;
 setInterval(function(){
+  TICK_N++;
+  if(TICK_N % 6 === 0){
   /* 자정을 넘겼으면 새 날짜의 좌석 수를 남깁니다 (밤새 켜 둔 태블릿·TV). 6차 전에는 자정 처리가 따로 없었습니다 */
   if(SNAP_DAY && todayStr() !== SNAP_DAY){ if(AUTHED) absorbScheduled(); takeSnapshot(); if(AUTHED && autoCloseDays()) saveData(); }   /* 어제 '확정' → '방문' 도 함께(점검 R7) */
   sessionTick();   /* 토큰 만료 5분 전 갱신 */
   if(SAVE_FAIL && !OFFLINE) flush();   /* 저장 못 한 것이 있으면 다시 */
   if(AUTHED && !view.display && typeof publishAvail === "function" && AVAIL_DIRTY) publishAvail();   /* 미뤄 둔 남은 자리 올리기 */
-  if(!AUTHED || view.display || WZ || view.form || MODAL) return;
-  refreshData().then(function(changed){ if(changed) render(); });
-}, 60000);
+  }
+  if(!AUTHED || view.display || WZ || view.form || MODAL || document.hidden || REFRESH_BUSY) return;
+  REFRESH_BUSY = true;
+  refreshData().then(function(changed){ REFRESH_BUSY = false; if(changed) render(); }, function(){ REFRESH_BUSY = false; });   /* 느린 회선에서 앞 갱신이 안 끝났으면 겹치지 않게(finally 는 구형 TV 에 없을 수 있어 then 둘로) */
+}, 10000);
+var REFRESH_BUSY = false;
 
 /* 폰 여부 — CSS 의 @media (max-width:640px) 와 같은 기준. 폰에서는 상단바·대시보드를 다른 구성으로 그립니다(PC 는 그대로) */
 function isMobile(){ return window.innerWidth <= 640; }
@@ -5006,7 +5015,7 @@ function renderAgenda(date){
     return `<button class="${eff===f?'on':''}" onclick="setFilter('${f}')">${f} ${n}</button>`;
   }).join("");
   if(eff!=="전체") day = day.filter(GROUPS[eff]);
-  const nowM = toMin(nowHM()), isToday = date === todayStr();
+  const nowM = toMin(nowHM()), isToday = date === todayStr() && (eff === "전체" || eff === "예정");   /* '지난·방문'·'취소·노쇼' 에는 지금 선 없음 — 남은 예약이 없는 목록(재아 09-17) */
   let marked = false;
   const rows = day.length ? day.map(r=>{
     let m = "";
@@ -5024,7 +5033,7 @@ function resRowMobile(r){
   const chg = changeTag(r);
   const pills = [
     r.menuType==="코스" ? (r.courseUndecided ? "코스·세트 미정" : "코스·세트") : r.menuType==="코스 상당" ? "코스상당" : r.menuType==="확인 필요" ? "메뉴확인" : "",
-    r.allergy ? "알러지" : "", r.chairs ? `유아의자 ${r.chairs}` : "", r.request ? "요청" : "", r.memo ? "메모" : ""
+    r.allergy ? "알러지" : "", r.request ? "요청" : "", r.memo ? "메모" : ""
   ].filter(Boolean).join(" · ");
   return `
     <button class="mrow s-${r.status} ${late?'late':''}" onclick="openMark('${r.id}')">
@@ -5184,7 +5193,7 @@ function renderResList(date){
   }).join("");
   if(eff!=="전체") day = day.filter(GROUPS[eff]);
   /* 8차-V(재아): 오늘 목록에는 '지금' 선을 넣어 위(지난)·아래(앞으로) 가 갈리게 */
-  const nowM = toMin(nowHM()), isToday = date === todayStr();
+  const nowM = toMin(nowHM()), isToday = date === todayStr() && (eff === "전체" || eff === "예정");   /* '지난·방문'·'취소·노쇼' 에는 지금 선 없음 — 남은 예약이 없는 목록(재아 09-17) */
   let marked = false;
   const rows = day.length ? day.map(r=>{
     let m = "";
@@ -5209,7 +5218,6 @@ function resRow(r){
     r.menuType==="코스 상당" ? `<span class="pill pine">코스상당</span>` :
     r.menuType==="확인 필요" ? `<span class="pill amber">메뉴확인</span>` : "",
     r.allergy ? `<span class="pill rust" title="${esc(r.allergy)}">알러지</span>` : "",
-    r.chairs ? `<span class="pill pine">유아의자 ${r.chairs}</span>` : "",
     r.request ? `<span class="pill" title="${esc(r.request)}">요청</span>` : "",
     r.memo ? `<span class="pill blue" title="${esc(r.memo)}">메모</span>` : ""
   ].join("");
@@ -5552,7 +5560,6 @@ function resWarn(r){
     else if(r.menuType==="확인 필요") out.push("코스·세트 미확정");
     else if(r.menuType==="코스" && !r.courseUndecided && cn>0 && cn<ad) out.push("코스·세트 인원 부족");
   }
-  if((r.chairs||0) > (r.infants||0)) out.push("유아의자 초과");
   /* 겹쳐 받은 룸은 접수 뒤에도 계속 보여야 합니다.
      막지 않고 받는 대신(설계 5.2), 취소를 깜빡한 예약이 남아 있는 경우를
      '확인 필요'에서 나중에라도 잡아낼 수 있게 합니다. */
@@ -5586,11 +5593,6 @@ function checkItems(date){
   const allergy = list.filter(r=>r.allergy);
   if(allergy.length) items.push(["rust", `알러지 확인 ${allergy.length}건`,
     allergy.slice(0,2).map(r=>`${r.time} ${r.name} · ${r.allergy}`).join(" / "), `openPick('allergy')`]);
-
-  const chairs = list.filter(r=>r.chairs>0);
-  const chairSum = chairs.reduce((a,r)=>a+(r.chairs||0),0);
-  if(chairSum) items.push(["pine", `유아용 의자 ${chairSum}개 준비`,
-    chairs.slice(0,3).map(r=>`${r.time} ${r.name} ${r.chairs}개`).join(", "), `openPick('chairs')`]);
 
   const gsize = settingsAt(d).groupSize || 8;
   const group = list.filter(r=>pplOf(r) >= gsize);
@@ -5630,12 +5632,11 @@ function checkItems(date){
 }
 function openCheck(){ view.form={type:"check"}; render(); }
 function sheetCheck(){
-  const items = checkItems(view.date);
+  const items = checkItems(view.date);   /* 세부(sub)는 안 보임 — 제목만, 누르면 목록(재아 09-17) */
   const body = items.length
     ? `<div class="alerts">${items.map(([c,t,sub,act])=>`
         <button class="alert ${c}" onclick="${act}">
           <span class="a-t">${esc(t)}</span>
-          ${sub?`<span class="a-s">${esc(sub)}</span>`:""}
           <span class="a-go">&rsaquo;</span>
         </button>`).join("")}</div>`
     : `<div class="empty">지금 확인할 항목이 없습니다.</div>`;
@@ -5652,16 +5653,14 @@ function sheetPick(){
   const kind = view.form.kind;
   const conf = {
     allergy:{title:"알러지 확인", pick:r=>r.allergy, note:"주방에 전달됐는지 확인하세요."},
-    chairs:{title:"유아용 의자", pick:r=>r.chairs>0, note:"의자 개수를 미리 준비하세요."},
     menu:{title:"메뉴 확인", pick:r=>r.menuType==="확인 필요", note:"방문 전 연락해 코스·세트를 확정하세요."},
     noshow:{title:"노쇼 이력 손님", pick:r=>!!noshowOf(r.phone), note:"확인 전화를 돌리면 노쇼가 줄어듭니다."},
-    warn:{title:"경고 예약", pick:r=>resWarn(r).length>0, note:"사장 판단으로 접수된 예약입니다. 문제가 없는지 확인하세요."},
+    warn:{title:"경고 예약", pick:r=>resWarn(r).length>0, note:""},
     confirmed:{title:"확정 예약", pick:r=>true, note:""},
     better:{title:"자리 개선 가능", pick:r=>isTablePref(r.seatPref) && (r.tentativeSplit || !r.tentativeRoomId) && floorFit(prefFloor(r.seatPref), r.date, r.time, pplOf(r), r.id).state==="ok", note:"취소 등으로 자리가 났습니다. 다시 계산되면 한 자리로 배정됩니다."},
-    request:{title:"요청사항 있는 예약", pick:r=>!!(r.request||"").trim(), note:"요청이 가능한지, 주방·홀에 전달됐는지 확인하세요."},
+    request:{title:"요청사항 있는 예약", pick:r=>!!(r.request||"").trim(), note:""},
     memo:{title:"메모 있는 예약", pick:r=>!!(r.memo||"").trim(), note:""},
-    changed:{title:"오늘 변동", pick:r=>!!changeTag(r),
-             note:"오늘 안에 바뀐 예약입니다. 주방에 이미 전달한 내용이 있다면 다시 알려주세요."},
+    changed:{title:"오늘 변동", pick:r=>!!changeTag(r), note:""},
     group:{title:"단체 손님", pick:r=>pplOf(r) >= (store().settings.groupSize||8),
            note:"상차림과 인력 배치를 미리 준비하세요. 기준 인원은 설정에서 바꿀 수 있습니다."},
     auto:{title:"어제 자동 방문 처리", pick:null, note:""},
@@ -5677,19 +5676,17 @@ function sheetPick(){
     <button class="rowitem tap" onclick="openMark('${r.id}')">
       <span class="time-col">${esc(r.time)}</span>
       <span class="grow"><span class="t">${esc(r.name)}</span>
-        <span class="s">${kind==="blocked"?`${dateLabel(r.date)} · `:""}${pplText(r)}${r.phone?` · ${esc(r.phone)}`:""}${
+        <span class="s">${kind==="warn"?`<span class="rust">${esc(resWarn(r).join(", "))}</span> · `:""}${kind==="blocked"?`${dateLabel(r.date)} · `:""}${pplText(r)}${r.phone?` · ${esc(r.phone)}`:""}${
           kind==="blocked"&&resBlocked(r)?` · ${esc(blockLabelText(resBlocked(r).blk))}`:""}${
           kind==="allergy"&&r.allergy?` · ${esc(r.allergy)}`:""}${
-          kind==="chairs"?` · 의자 ${r.chairs}개`:""}${
           kind==="noshow"&&noshowOf(r.phone)?` · 노쇼 ${noshowOf(r.phone).count}회`:""}${
-          kind==="warn"?` · ${resWarn(r).join(", ")}`:""}${
+
           kind==="group"&&r.menuType==="코스"?` · 코스·세트`:""}</span></span>
-      ${seatTag(r)}
-    </button>`).join("") : `<div class="empty">해당 예약이 없습니다.</div>`;
+    </button>`).join("") : `<div class="empty">해당 예약이 없습니다.</div>`;   /* 좌석 알약은 뺐음 — 목록에서는 이름·시각이면 충분(재아 09-17) */
   return `
     ${sheetHead(kind==="blocked" ? conf.title : `${conf.title} · ${kind==="auto"?dateLabel(shiftDate(today,-1)):dateLabel(d)}`)   /* 사용 중지 예약은 날짜와 무관하게 전부 모음 */}
     <div class="card" style="margin-bottom:12px">${rows}</div>
-    <p class="f-note">${conf.note}</p>
+    ${conf.note ? `<p class="f-note">${conf.note}</p>` : ""}
     <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">닫기</button></div>`;
 }
 /* ============================================================
@@ -5715,6 +5712,9 @@ function laneLayout(items, laneCount){
   }
   return placed;
 }
+/* 층(lane)에 놓는 순서 = 먼저 들어온 예약이 아래, 늦게 들어온 예약이 위로 쌓임(재아 09-17) — 겹쳐 받았을 때 누가 원래 자리인지 한눈에.
+   예전에는 시각 순이라 나중에 받은 예약이 먼저 시작하면 아래로 갔음. 홈페이지 대기 건은 접수 시각이 createdAt */
+function byCreated(a, b){ return String(a.createdAt||"").localeCompare(String(b.createdAt||"")) || a.time.localeCompare(b.time); }
 /* 폰 압축판에서 층 테이블 줄 접기/펼치기 — 층별로 기억(새로 고침하면 다시 접힘) */
 function tlToggleFloor(key){ view.tlOpen = view.tlOpen || {}; view.tlOpen[key] = !view.tlOpen[key]; render(); }
 function renderTimeline(date, compact){
@@ -5783,7 +5783,7 @@ function renderTimeline(date, compact){
   /* 룸이든 테이블이든 좌석 하나 = 한 줄. 합쳐 쓰는 예약은 관련된 줄마다 블록이 그려지고 '+' 표시가 붙습니다 */
   const roomRow = (room)=>{
     const items = list.filter(r=>usesSeat(r, room.id))
-      .sort((a,b)=>a.time.localeCompare(b.time))
+      .sort(byCreated)
       .map(r=>({ r, need:1, s0:toMin(r.time), e0:Math.min(c, toMin(r.time)+stayOf(r)), joined:seatsOf(r).length>1 }));
     /* 사장 판단으로 겹치게 받은 경우가 있으므로 층을 유동적으로.
        ※ 예전에는 겹치기만 하면 무조건 2층이라, 같은 시간에 3건이 들어오면
@@ -5834,7 +5834,7 @@ function renderTimeline(date, compact){
     /* 칸 수 = 숨은 배정(붙임·나눠 앉기 포함)이 쓰는 테이블 개수. 자리를 못 찾은 예약은 1칸 + 경고 */
     const needOf = r => Math.max(1, seatsOf(r).length);
     const items = list.filter(r=>resFloor(r) !== undefined && (resFloor(r)||"") === (fl||""))
-      .sort((a,b)=>a.time.localeCompare(b.time))
+      .sort(byCreated)
       .map(r=>({ r, need:needOf(r), s0:toMin(r.time), e0:Math.min(c, toMin(r.time)+stayOf(r)) }));
     /* 폰(압축판)은 테이블 6칸이 너무 높아 3칸으로 접고, 층 이름을 누르면 펼칩니다(모바일 2026-09-17).
        접힌 동안 못 들어간 팀은 그리지 않고 "숨은 N팀" 으로만 — 겹쳐 그리면 뒤 팀이 안 보입니다 */
@@ -5848,7 +5848,7 @@ function renderTimeline(date, compact){
     if(placed.some(x=>x.lane===null && x.need>1)){
       const again = [];
       placed.forEach(x=>{ if(x.lane===null && x.need>1){ for(let k=0;k<x.need;k++) again.push(Object.assign({}, x, {need:1, part:k+1, parts:x.need, lane:undefined})); } else again.push(Object.assign({}, x, {lane:undefined})); });
-      again.sort((a,b)=>a.s0-b.s0);
+      again.sort((a,b)=>byCreated(a.r, b.r));
       placed = laneLayout(again, lanes);
     }
     const hidden = folded ? placed.filter(x=>x.lane===null).length : 0;
@@ -5911,7 +5911,7 @@ function renderTimeline(date, compact){
             메모: live.filter(x=>(x.memo||"").trim()).length
           };
           const cls = {확정:"", 경고:"rust", 변경:"blue", 요청:"", 메모:"blue"};
-          const nm  = {변경:"오늘 변경", 요청:"요청사항"};
+          const nm  = {변경:"오늘 변동", 요청:"요청사항"};   /* 목록 제목·범례와 같은 말로(재아 09-17) */
           const act = {확정:"openPick('confirmed')", 경고:"openPick('warn')", 변경:"openPick('changed')", 요청:"openPick('request')", 메모:"openPick('memo')"};
           const chk = checkItems(date).length;
           return Object.keys(cnt).filter(k=>cnt[k])
@@ -6209,10 +6209,15 @@ function reqWarns(q){
   const out = [];
   if(q.date < todayStr()) out.push("지난 날짜");
   try{
-    const seats = store().settings.rooms;
-    const free = seats.filter(x => (q.seat === "room" ? isRoom(x) : isTable(x)) && !blockedAt(x, q.date, q.time)
-                   && q.people <= seatMax(x) && (q.seat !== "room" || q.people >= roomMin(x, q.date))
+    const seats = roomsAt(q.date);
+    let free;
+    if(q.seat === "room"){
+      free = seats.filter(x => isRoom(x) && !blockedAt(x, q.date, q.time) && q.people <= seatMax(x) && q.people >= roomMin(x, q.date)
                    && roomStatus(q.date, q.time, x.id).state === "free").length;
+    }else{
+      /* 테이블은 붙여 앉을 수 있으니 홈페이지(availOfDay)와 같은 기준인 층별 최대 일행(floorMaxParty)으로 — 테이블 하나 정원으로 보면 6명이 늘 '없음' 이 됐음 */
+      free = 0; tableFloors().forEach(f => { if(floorMaxParty(f, q.date, q.time) >= q.people) free++; });
+    }
     if(!free) out.push(q.seat === "room" ? "룸 없음" : "테이블 없음");
   }catch(e){}
   const dup = store().reservations.find(r => r.date === q.date && r.status !== "취소" && (r.phone||"").replace(/\D/g,"") === (q.phone||"").replace(/\D/g,""));
@@ -6231,7 +6236,7 @@ function sheetRequests(){
         <span class="s">${dateLabel(q.date)} ${hm(q.time)} · ${reqPeopleText(q)} · ${q.seat==="room"?"룸":"테이블"} · ${esc(reqMenuText(q))}</span></span>
       <span class="s left ${reqLeftClass(q)}" style="white-space:nowrap; text-align:right">${reqLeft(q)}</span>
     </button>`; }).join("")
-    : `<div class="empty">처리할 홈페이지 예약이 없습니다.<br><span class="s">손님이 홈페이지에서 접수하면 여기로 들어옵니다. 24시간 안에 확정·거절하지 않으면 자동 취소됩니다.</span></div>`;
+    : `<div class="empty">확정 대기 중인 예약이 없습니다.</div>`;
   return `
     ${sheetHead(`홈페이지 예약 · ${list.length}건`)}
     <div class="card searchbox">${rows}</div>
@@ -6255,7 +6260,7 @@ function sheetRequest(){
     <div class="card" style="padding:12px 14px">
       ${row("날짜", `${dateLabel(q.date)} ${hm(q.time)}`)}
       ${row("인원", q.kids ? `성인 ${q.adults} · 어린이 ${q.kids}` : `성인 ${q.adults}`)}
-      ${row("자리", q.seat === "room" ? "룸" : "테이블")}
+      ${row("좌석", q.seat === "room" ? "룸" : "테이블")}
       ${row("메뉴", esc(reqMenuText(q)))}
       ${row("예약자", `${esc(q.name)} · ${esc(q.phone)}`)}
       ${q.allergy ? row("알레르기", `<span class="rust">${esc(q.allergy)}</span>`) : ""}
@@ -6263,7 +6268,6 @@ function sheetRequest(){
       ${row("만료", `<b class="${reqLeftClass(q)}">${reqLeft(q)}</b>`)}
     </div>
     ${w.length ? `<div class="menu-warn" style="margin-top:10px">${w.map(esc).join(" · ")}</div>` : ""}
-    <p class="f-note" style="margin-top:10px">'예약 확정' 을 누르면 이 내용 그대로 예약이 등록되고(자리는 빈 곳으로 잠정 배정) 손님께 확정 문자가 나갑니다. 경고가 있으면 먼저 알려 드립니다. 24시간 안에 처리하지 않으면 자동 취소됩니다.</p>
     <div class="sheet-actions">
       <button class="btn ghost" onclick="openReqReject('${q.id}')">거절</button>
       <button class="btn ghost" onclick="openRequests()">목록</button>
@@ -6350,28 +6354,29 @@ function reqAfterRegister(rec){
   /* 확정 문자는 등록 때 '접수' 문자로 나갑니다(중복 방지) */
 }
 /* 거절 — 사유를 고르거나 직접 적거나 생략. 문자에 사유가 들어갑니다 */
-const REQ_REASONS = ["그 시간에 자리가 없습니다", "룸은 성인 5명부터 받고 있습니다", "당일·연휴는 전화로 부탁드립니다", "단체는 전화로 부탁드립니다"];
+/* 첫 선택지 '사유 생략' (재아 2026-09-17) — 문자에 사유가 안 붙습니다. 당일·연휴/단체 문구는 홈페이지가 애초에 안 받으니 뺐음 */
+const REQ_REASONS = ["", "접수해주신 시간에 예약이 마감되었습니다", "룸은 성인 5인부터 예약 가능합니다"];
+const REQ_REASON_LABEL = r => r || "사유 생략";
 function openReqReject(id){ view.form = {type:"reqrej", id}; view.reqRej = {pick:0, text:""}; render(); }
 function sheetReqReject(){
   const q = reqById(view.form.id); if(!q) return sheetRequests();
   const d = view.reqRej || {pick:0, text:""};
   return `
     ${sheetHead("거절")}
-    <p class="f-note" style="margin:-6px 0 12px">${esc(q.name)} · ${dateLabel(q.date)} ${hm(q.time)} · ${reqPeopleText(q)}. 손님께 거절 문자가 나갑니다(사유는 넣어도, 안 넣어도 됩니다).</p>
+    <p class="f-note" style="margin:-6px 0 12px">${esc(q.name)} · ${dateLabel(q.date)} ${hm(q.time)} · ${reqPeopleText(q)}</p>
     <div class="rj-list">
-      ${REQ_REASONS.map((r, i) => `<label class="chk"><input type="radio" name="rj" ${d.pick === i ? "checked" : ""} onchange="view.reqRej.pick=${i}; render()"><span>${esc(r)}</span></label>`).join("")}
+      ${REQ_REASONS.map((r, i) => `<label class="chk"><input type="radio" name="rj" ${d.pick === i ? "checked" : ""} onchange="view.reqRej.pick=${i}; render()"><span>${esc(REQ_REASON_LABEL(r))}</span></label>`).join("")}
       <label class="chk"><input type="radio" name="rj" ${d.pick === -1 ? "checked" : ""} onchange="view.reqRej.pick=-1; render()"><span>직접 입력</span></label>
       ${d.pick === -1 ? `<textarea class="in-sm" rows="2" placeholder="사유" oninput="view.reqRej.text=this.value">${esc(d.text)}</textarea>` : ""}
     </div>
     <div class="sheet-actions">
       <button class="btn ghost" onclick="openRequest('${q.id}')">돌아가기</button>
-      <button class="btn ghost" onclick="reqReject('${q.id}', '')">사유 없이 거절</button>
       <button class="btn primary" data-enter onclick="reqReject('${q.id}')">거절하기</button></div>`;
 }
 async function reqReject(id, whyGiven){
   const q = reqById(id); if(!q) return;
   let why = whyGiven;
-  if(why === undefined){ const d = view.reqRej || {pick:0, text:""}; why = d.pick === -1 ? (d.text || "").trim() : REQ_REASONS[d.pick]; if(d.pick === -1 && !why){ await uiAlert("사유를 적어 주세요", "사유 없이 거절하려면 '사유 없이 거절' 을 누르세요.", "warn"); return; } }
+  if(why === undefined){ const d = view.reqRej || {pick:0, text:""}; why = d.pick === -1 ? (d.text || "").trim() : REQ_REASONS[d.pick]; if(d.pick === -1 && !why){ await uiAlert("사유를 적어 주세요", "사유 없이 거절하려면 '사유 생략' 을 고르세요.", "warn"); return; } }
   await REQ_API.reject(id, why || "");
   smsMockSend(q.phone, q.name, `[한옥반점] ${q.name}님, 요청하신 ${dateLabel(q.date)} ${hm(q.time)} 예약을 받지 못했습니다.${why ? " " + why + "." : ""} 전화 주시면 자리를 찾아드리겠습니다. ${store().settings.tel || "031-724-1004"}`);
   showToast("거절했습니다 · 문자 흉내");
@@ -6874,14 +6879,8 @@ function renderSettings(){
      저장 위치가 settings 가 아니라 DATA._ui 인 이유: 이건 매장 운영 값이 아니라
      '이 기기에서 어떻게 보이는지'라 '적용하기' 없이 즉시 반영되는 편이 낫습니다. */
   /* 사장님이 정할 값들 — 코드에 박아 두면 나중에 못 바꿉니다 (작업 규칙) */
+  /* 유아용 의자 기본값 항목은 뺐음 — 의자는 요청사항에 적는 방식(재아 09-17). chairDefault 설정값은 남아 있어도 안 씀 */
   const policyBody = `
-    <div class="subhead">유아용 의자 기본값</div>
-    <div class="seg">
-      <button class="${st.chairDefault==="infants"?'on':''}" onclick="setPolicy('chairDefault','infants')">어린이 수와 같게</button>
-      <button class="${st.chairDefault!=="infants"?'on':''}" onclick="setPolicy('chairDefault','zero')">0개</button>
-    </div>
-    <p class="f-note">어린이 인원을 입력할 때 의자 수가 자동으로 따라올지 정합니다.
-      0개로 두면 어린이 수와 다를 때 경고가 뜹니다.</p>
 
     <div class="subhead">룸 정원 기준</div>
     <div class="seg">
@@ -6996,7 +6995,7 @@ function renderSettings(){
       smsBodyUI)}
     ${sec("disp","디스플레이 배치",`${rows.map(r=>r.length).join(" · ")}`, dispBody)}
     ${sec("policy","운영 판단 기준",
-      `의자 ${st.chairDefault==="infants"?"어린이 수":"0개"} · 정원 ${st.minCountAdultsOnly===false?"총원":"성인"} · 임박 ${st.loSoon!=null?st.loSoon:120}분`,
+      `정원 ${st.minCountAdultsOnly===false?"총원":"성인"} · 임박 ${st.loSoon!=null?st.loSoon:120}분`,
       policyBody)}
     ${sec("zoom","화면 크기",`${uiZoom()}%`, zoomBody)}
     <div class="set-divider"></div>
@@ -7693,8 +7692,7 @@ function sheetNaver(){
   const cnt = k => n.result ? n.result.filter(x=>x.ok && x.kind===k).length : 0;
   return `
     ${sheetHead("네이버 예약 가져오기")}
-    <p class="f-note" style="margin:-6px 0 10px">네이버 파트너센터 → 예약자 관리 → 엑셀 다운로드 → 파일을 열어 <b>표 전체 복사(Ctrl+A, Ctrl+C)</b> → 아래에 붙여 넣기(Ctrl+V).
-      예약번호로 같은 예약을 찾아 고치고, 없으면 새로 넣습니다. 전화번호는 네이버가 뒷자리만 주어 메모에만 남습니다.</p>
+    <p class="f-note" style="margin:-6px 0 10px">네이버 파트너센터 → 예약자 관리 → 엑셀 다운로드 → 파일을 열어 <b>표 전체 복사(Ctrl+A, Ctrl+C)</b> → 아래에 붙여 넣기(Ctrl+V).</p>
     <textarea id="naver-paste" rows="7" placeholder="여기에 붙여 넣으세요 (머리글 줄 포함, 안내 문장이 섞여 있어도 됩니다)" oninput="view.naver={text:this.value, result:null}">${esc(n.text)}</textarea>
     <div class="btn-row" style="margin-top:8px">
       <button class="btn" data-enter onclick="naverPreview()">확인</button>
@@ -7898,7 +7896,7 @@ function showToast(text, actionLabel, fn){
   if(actionLabel) el.querySelector(".toast-a").textContent = actionLabel;
   el.className = "toast on";
   if(TOAST_T) clearTimeout(TOAST_T);
-  TOAST_T = setTimeout(hideToast, 3000);
+  TOAST_T = setTimeout(hideToast, actionLabel ? 6000 : 4000);   /* 3초는 너무 금방 사라짐(재아 09-17). '보기' 같은 버튼이 있으면 더 길게 */
 }
 function hideToast(){ var el = document.getElementById("toast"); if(el) el.className = "toast"; TOAST_T = null; }
 function toastAction(){ var fn = TOAST_FN; hideToast(); if(fn) fn(); }
@@ -7914,7 +7912,7 @@ function toastSaved(rec){
 function renderSheet(){
   const inner = { res:sheetRes, mark:sheetMark, unassigned:sheetUnassigned, pick:sheetPick, check:sheetCheck, search:sheetSearch, num:sheetNum, noshow:sheetNoshow, pin:sheetPin, apw:sheetAdminPw, hours:sheetHours, tedit:sheetTableEdit, naver:sheetNaver, setlog:sheetSetLog, pinlist:sheetPinList, zoomadj:sheetZoomAdj, logs:sheetLogs, smslog:sheetSmsLog, smsfree:sheetSmsFree, rate:sheetRate, sched:sheetSchedule, ovr:sheetOverride, blocks:sheetBlocks, reqs:sheetRequests, req:sheetRequest, reqrej:sheetReqReject, sched2:sheetScheduled, site:sheetSite /*, staff:sheetStaff, att:sheetAtt, sale:sheetSale */ }[view.form.type]();
   /* 검색은 창 높이를 고정해 두고 결과만 안에서 스크롤 — 칠 때마다 창이 늘었다 줄었다 하지 않게(재아) */
-  const wide = view.form.type==="rate" ? " sheet-wide" : ((view.form.type==="search" || (view.form.type==="reqs" && reqPending().length >= 6)) ? " sheet-tall" : "");   /* 홈페이지 예약이 적으면 빈 상자를 길게 안 보임(검토 D3) */
+  const wide = view.form.type==="rate" ? " sheet-wide" : ((view.form.type==="search" || (view.form.type==="reqs" && reqPending().length >= 3)) ? " sheet-tall" : "");   /* 홈페이지 예약은 3건부터 높이를 고정하고 목록만 스크롤(재아 09-17). 0~2건이면 빈 상자를 길게 안 보임(검토 D3) */
   if(view.form.page) return `<div class="sheet page-sheet">${inner}</div>`;   /* 화면형: 덮개 없이 본문 자리에 */
   return `<div class="overlay" onclick="closeSheet()"><div class="sheet${wide}" onclick="event.stopPropagation()">${inner}</div></div>`;
 }
@@ -7989,8 +7987,6 @@ function sheetRes(){
       <label class="f"><div class="lb">어린이</div>
         <input id="f-infants" type="number" min="0" value="${f.infants||0}"></label>
     </div>
-    <label class="f"><div class="lb">유아용 의자</div>
-      <input id="f-chairs" type="number" min="0" value="${f.chairs||0}"></label>
     <label class="f"><div class="lb">좌석</div>
       <select id="f-room" onchange="pickRoom(this.value)"><option value="">미배정</option>${roomOpts}</select></label>
     <div class="f"><div class="lb">경로</div><div class="seg">${srcSeg}</div>
@@ -8009,7 +8005,7 @@ function sheetRes(){
         </div>`:""}
     </div>
     <label class="f"><div class="lb">알러지</div><input id="f-allergy" value="${esc(f.allergy||'')}" placeholder="예: 갑각류 알러지 1명"></label>
-    <label class="f"><div class="lb">요청사항</div><input id="f-request" value="${esc(f.request||'')}" placeholder="예: 창가 자리"></label>
+    <label class="f"><div class="lb">요청사항</div><input id="f-request" value="${esc(f.request||'')}" placeholder="예: 유아용 의자, 송별회, 상견례"></label>
     <label class="f"><div class="lb">메모 <span class="lbl-note">선택</span></div>
       <input id="f-memo" value="${esc(f.memo||'')}" placeholder="예: 사장님 지인, 상석 준비"></label>
     <div class="f"><div class="lb">상태</div><div class="seg">${stSeg}</div></div>
@@ -8080,7 +8076,7 @@ function syncRes(){
    ["sourceDetail","f-src-detail"],["request","f-request"],["allergy","f-allergy"],
    ["memo","f-memo"]]
     .forEach(([k,id])=>{ const x=g(id); if(x!==undefined) v[k]=x; });
-  [["people","f-people"],["infants","f-infants"],["chairs","f-chairs"]]
+  [["people","f-people"],["infants","f-infants"]]
     .forEach(([k,id])=>{ const x=g(id); if(x!==undefined) v[k]=Math.max(0,parseInt(x)||0); });
   tmpRes = {...tmpRes, ...v};
 }
@@ -8113,7 +8109,6 @@ function saveIssues(rec, excludeId){
      시각·좌석 겹침·정원은 위에서 자세한 문장으로 이미 넣었으므로 나머지만 옮깁니다 */
   const words = {
     "성인 없음": `어린이 ${rec.infants||0}명이 총 인원 ${pplOf(rec)}명과 같습니다 — 성인이 없습니다`,
-    "유아의자 초과": `유아용 의자 ${rec.chairs||0}개가 어린이 ${rec.infants||0}명보다 많습니다`,
     "룸·코스·세트 아님": `룸 예약인데 식사가 '해당 없음' 입니다`,
     "코스·세트 미확정": `코스·세트가 '확인 필요' 상태입니다`,
     "코스·세트 인원 부족": `코스·세트 인원이 성인 수보다 적습니다`,
@@ -8374,7 +8369,6 @@ function sheetMark(){
         r.courseUndecided?" (구성 미정)":(r.courses&&Object.keys(r.courses).length?` (${esc(courseSummary(r.courses))})`:"")}</div>
       ${r.assignedLater?`<div class="mi-s">좌석 미정으로 접수 → ${esc(resSeatLabel(r))} 배정 완료</div>`:""}
       ${resWarn(r).length?`<div class="mi-s warn-txt">경고 · ${esc(resWarn(r).join(", "))}</div>`:""}
-      ${r.chairs?`<div class="mi-s">유아용 의자 ${r.chairs}개</div>`:""}
       ${r.allergy?`<div class="mi-s warn-txt">알러지: ${esc(r.allergy)}</div>`:""}
       ${r.request?`<div class="mi-s">요청: ${esc(r.request)}</div>`:""}
       ${r.memo?`<div class="mi-s memo-line">메모: ${esc(r.memo)}</div>`:""}
@@ -8580,7 +8574,7 @@ function sheetSearch(){
   const lower = q.toLowerCase();
   const okNum = digits.length >= 1 && /^[\d\-\s]+$/.test(q);
   const okTxt = q.length >= 1 && !okNum;
-  let rows = `<div class="empty">이름·전화·메모·요청사항 무엇이든 한 글자부터 찾습니다.</div>`;
+  let rows = "";   /* 안내 문구는 입력칸 placeholder 하나로(재아 09-17) */
   if(okNum || okTxt){
     const hits = s.reservations.filter(r=>{
       if(okNum) return (r.phone||"").replace(/\D/g,"").includes(digits);
@@ -8600,7 +8594,7 @@ function sheetSearch(){
   const hintTxt = "";
   return `
     ${sheetHead("예약 검색")}
-    <input id="search-q" value="${esc(q)}" placeholder="이름·전화·메모·요청 (한 글자부터)"
+    <input id="search-q" value="${esc(q)}" placeholder="이름, 전화, 메모, 요청사항에서 검색합니다."
            oninput="setSearchQ(this.value)" autocomplete="off" style="margin-bottom:10px">
     ${hintTxt}
     <div class="card searchbox">${rows}</div>`;
@@ -9437,6 +9431,9 @@ window.addEventListener("beforeunload", function(e){
 function openWizard(date){
   if(readonlyBlock()) return;
   Object.keys(view.open).forEach(function(x){ view.open[x] = false; });   /* 마법사 다녀오면 목록 폴드는 접힘 */
+  /* 다른 날짜(검은 상단바)를 보다가 '예약 등록' 을 누르면 대시보드는 오늘로 돌아옵니다(재아 09-17) — 보던 날짜가 새 예약에 슬쩍 들어가는 것을 막음.
+     날짜를 주고 여는 경우(홈페이지 요청·같은 날 새 예약)는 그대로 */
+  if(!date && view.date !== todayStr()){ view.date = todayStr(); view.calMonth = view.date.slice(0,7); }
   histPush();
   WZ = {
     step:0, source:null, sourceDetail:"",
@@ -9691,10 +9688,6 @@ function wzWarnReason(){
         out.push(`코스·세트 초과 - ${n}인분 / 성인 ${adults}명`);
     }
     out.push.apply(out, courseWarns());
-  }
-  if(WZ.step===6){
-    if((WZ.chairs||0) > (WZ.infants||0)) out.push(`의자가 어린이보다 많음 - 의자 ${WZ.chairs||0} / 어린이 ${WZ.infants||0}`);
-    if((WZ.chairs||0) < (WZ.infants||0)) out.push(`의자가 어린이보다 적음 - 의자 ${WZ.chairs||0} / 어린이 ${WZ.infants||0}`);
   }
   return out.join("\n");
 }
@@ -10134,7 +10127,6 @@ function wzPeople(n){
   /* 1명 예약은 받지 않습니다(재아: 타일은 보이되 누르면 안내). 1인 규칙은 누님 질문 2번 대기 */
   if(n === 1) return uiAlert("1명 예약은 받지 않습니다", "2명부터 예약할 수 있습니다.", "warn");
   WZ.people=n; WZ.customPeople=false;
-  WZ.chairs = chairDefaultInfants() ? WZ.infants : 0;   /* 기본값은 설정에서 (어린이 수 / 0개) */
   render();
 }
 function wzCustom(){ WZ.customPeople=true; if(!WZ.people || WZ.people < 7) WZ.people=7; render(); }   /* 6명을 눌러 뒀어도 7부터(재아) */
@@ -10142,7 +10134,6 @@ function wzAdj(k,d){
   /* 막지 않습니다 — 이상한 값은 빨갛게 보여 주고 사장이 판단합니다 */
   if(k==="infants"){
     WZ.infants = Math.max(0,(WZ.infants||0)+d);
-    WZ.chairs = chairDefaultInfants() ? WZ.infants : 0;
   }else{
     WZ.people = Math.max(1,(WZ.people||0)+d);
     /* 직접 입력 상태는 유지합니다 — 1명까지 내려도 됩니다 */
@@ -10235,7 +10226,6 @@ function wzStepSeat(){
     ${!kind ? `<div class="empty">룸 예약인지 테이블 예약인지 먼저 고르세요.</div>` : kind==='room' ? `<p class="f-note" style="margin-top:12px">방을 안 고르고 <b>다음</b>을 누르면 '룸 미정' 으로 접수돼 빈 방에 잠정 배정됩니다.</p>` : `<p class="f-note" style="margin-top:12px">층을 안 고르고 <b>다음</b>을 누르면 층 상관없이 사장님 순서로 잡습니다. 어느 테이블인지는 당일 현장에서.</p>`}`;
 }
 function wzSeatKind(k){ WZ.seatKind = k; if(WZ.seat){ const cur = seatById(WZ.seat) || (store().settings.joins||[]).find(j=>j.id===WZ.seat); const isT = cur ? isTable(cur) : isTablePref(WZ.seat); if((k==="room") === !!isT) WZ.seat = null; } render(); }   /* 갈래를 바꾸면 다른 갈래의 선택은 지움 */
-function wzChair(d){ WZ.chairs = Math.max(0,(WZ.chairs||0)+d); render(); }
 
 /* 좌석 선택 — 막을 것은 막고, 판단이 필요한 것은 물어봅니다 */
 /* 좌석 선택 — 막을 것은 막고, 판단이 필요한 것은 물어봅니다. v = 좌석 id / 합침 그룹 id / room-any / table-any */
@@ -10558,17 +10548,8 @@ function wzStepExtra(){
         <button class="nonebtn sm ${WZ.allergyNone?'on':''}" onclick="wzAllergyNone()">없음</button>
       </div>
     </div>
-    <div class="f big"><div class="lb">유아용 의자
-      ${(WZ.chairs||0)>(WZ.infants||0)?`<span class="req">어린이 ${WZ.infants||0}명보다 많음</span>`:""}</div>
-      <div class="bigstep sm ${(WZ.chairs||0)>(WZ.infants||0)?'bad':''}" style="justify-content:flex-start; margin-top:0">
-        <button onclick="wzChair(-1)">−</button>
-        <div class="v"><span>${WZ.chairs||0}</span><small>개</small></div>
-        <button onclick="wzChair(1)">＋</button>
-      </div>
-      <div class="f-note">${chairDefaultInfants()?`어린이 ${WZ.infants||0}명 기준 자동 입력`:"&nbsp;"}</div>
-    </div>
     <label class="f big"><div class="lb">요청사항 <span class="lbl-note">선택</span></div>
-      <input id="wz-request" value="${esc(WZ.request)}" placeholder="예: 송별회, 상견례">
+      <input id="wz-request" value="${esc(WZ.request)}" placeholder="예: 유아용 의자, 송별회, 상견례">
     </label>
     <label class="f big"><div class="lb">메모 <span class="lbl-note">선택</span></div>
       <input id="wz-memo" value="${esc(WZ.memo||"")}" placeholder="예: 사장님 지인, 상석 준비">
@@ -10576,7 +10557,6 @@ function wzStepExtra(){
     <div class="wz-review">
       <div class="rv"><span>일시</span><b>${WZ.date?dateLabel(WZ.date):"-"} ${WZ.time?hm(WZ.time):""}</b></div>
       <div class="rv"><span>인원</span><b>총 ${WZ.people||0}명${WZ.infants?` (어린이 ${WZ.infants}명 포함)`:""}</b></div>
-      ${WZ.chairs?`<div class="rv"><span>유아의자</span><b>${WZ.chairs}개</b></div>`:""}
       <div class="rv"><span>좌석</span><b>${WZ.seat?(WZ.seatExtra&&WZ.seatExtra.length?seatLabelIds([WZ.seat].concat(WZ.seatExtra)):seatLabel(WZ.seat)):"-"}</b></div>
       <div class="rv"><span>예약자</span><b>${esc(WZ.name)||"-"} ${esc(WZ.phone)}</b></div>
       <div class="rv"><span>식사</span><b>${esc(WZ.menuType||"-")}${WZ.menuType==="코스"&&courseCount()?` · ${esc(courseSummary(WZ.courses))}`:""}</b></div>
@@ -10629,7 +10609,7 @@ async function wzSubmit(){
   const rec = {
     id:newId("res"), date:WZ.date, time:WZ.time,
     name:WZ.name.trim(), phone:phoneNorm(WZ.phone),
-    people:WZ.people, infants:WZ.infants, chairs:WZ.chairs||0,
+    people:WZ.people, infants:WZ.infants, chairs:0,   /* 유아의자 기능은 뺐음(재아 09-17) — 칸은 0 으로 유지(객체 모양 안 바꿈) */
     roomId: fixed ? WZ.seat : null,
     extraIds: fixed ? (WZ.seatExtra || []) : [],
     seatPref: fixed ? null : WZ.seat,     /* 미배정일 때 희망 좌석 종류를 기억 */
@@ -10672,7 +10652,6 @@ function wzDone(){
         </p>
         <div class="done-sub">${pplText(r)}${r.phone?` · ${esc(r.phone)}`:""}
           ${r.menuType?`<br>식사: ${esc(r.menuType)}${r.courses&&Object.keys(r.courses).length?` (${esc(courseSummary(r.courses))})`:""}`:""}
-          ${r.chairs?`<br>유아용 의자 ${r.chairs}개`:""}
           ${r.allergy?`<br>알러지: ${esc(r.allergy)}`:""}${r.request?`<br>요청: ${esc(r.request)}`:""}</div>
         <div class="done-btns">
           <button class="btn lg" onclick="openWizard('${r.date}')">새 예약</button>
@@ -11232,16 +11211,28 @@ setTimeout(function(){ try{ if(AUTHED && DATA && view.storeKey){ absorbScheduled
 /* 시트·마법사 어디서든: Enter = 그 창의 확인·등록 단추(data-enter 가 있으면 그것, 없으면 .btn.primary 하나뿐일 때만),
    Esc = 닫기. 여러 줄 입력(textarea) 안에서 Enter 는 줄바꿈이라 건드리지 않습니다. '이전' 은 일부러 안 묶습니다(재아) */
 document.addEventListener("keydown", function(e){
+  const t = e.target;
   if(e.key === "Escape"){
-    if(document.querySelector(".modal-ov")) return;   /* 확인창은 자기 Esc 처리가 있음 */
+    /* 확인창(MODAL): Esc = 취소. 마법사: Esc = 닫기(입력이 있으면 확인창). 시트·더보기: 닫기 (재아 09-17: 이 셋만 묶고 나머지는 안 묶음) */
+    if(MODAL){ e.preventDefault(); if(MODAL.mode === "alert") modalAnswer(true); else modalAnswer(MODAL.mode === "confirm" ? false : null); return; }
+    if(WZ && !WZ.done){ e.preventDefault(); closeWizard(); return; }
     if(view.form){ e.preventDefault(); closeSheet(); }
     else if(view.moreOpen){ closeMore(); }
     return;
   }
   if(e.key !== "Enter" || e.ctrlKey || e.altKey || e.isComposing) return;
-  const t = e.target;
   if(t && (t.tagName === "TEXTAREA" || t.tagName === "BUTTON" || t.tagName === "A" || t.isContentEditable)) return;
-  if(document.querySelector(".modal-ov")) return;
+  if(MODAL){
+    /* 확인창: Enter = 확인. 고르기(choice)는 답이 여럿이라 안 묶음. 입력창(prompt)은 자기 Enter 가 있음 */
+    if(MODAL.mode === "alert" || MODAL.mode === "confirm"){ e.preventDefault(); modalAnswer(true); }
+    return;
+  }
+  if(WZ && !WZ.done){
+    /* 마법사: Enter = 다음/예약 등록(막혀 있으면 아무 일도 없음) */
+    const nb = document.getElementById("wz-next");
+    if(nb && !nb.disabled){ e.preventDefault(); nb.click(); }
+    return;
+  }
   const sheet = document.querySelector(".sheet");
   if(!sheet) return;
   let btn = sheet.querySelector("[data-enter]:not(:disabled)");

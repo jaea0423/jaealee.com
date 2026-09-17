@@ -76,6 +76,9 @@ window.addEventListener("beforeunload", function(e){
 function openWizard(date){
   if(readonlyBlock()) return;
   Object.keys(view.open).forEach(function(x){ view.open[x] = false; });   /* 마법사 다녀오면 목록 폴드는 접힘 */
+  /* 다른 날짜(검은 상단바)를 보다가 '예약 등록' 을 누르면 대시보드는 오늘로 돌아옵니다(재아 09-17) — 보던 날짜가 새 예약에 슬쩍 들어가는 것을 막음.
+     날짜를 주고 여는 경우(홈페이지 요청·같은 날 새 예약)는 그대로 */
+  if(!date && view.date !== todayStr()){ view.date = todayStr(); view.calMonth = view.date.slice(0,7); }
   histPush();
   WZ = {
     step:0, source:null, sourceDetail:"",
@@ -330,10 +333,6 @@ function wzWarnReason(){
         out.push(`코스·세트 초과 - ${n}인분 / 성인 ${adults}명`);
     }
     out.push.apply(out, courseWarns());
-  }
-  if(WZ.step===6){
-    if((WZ.chairs||0) > (WZ.infants||0)) out.push(`의자가 어린이보다 많음 - 의자 ${WZ.chairs||0} / 어린이 ${WZ.infants||0}`);
-    if((WZ.chairs||0) < (WZ.infants||0)) out.push(`의자가 어린이보다 적음 - 의자 ${WZ.chairs||0} / 어린이 ${WZ.infants||0}`);
   }
   return out.join("\n");
 }
@@ -773,7 +772,6 @@ function wzPeople(n){
   /* 1명 예약은 받지 않습니다(재아: 타일은 보이되 누르면 안내). 1인 규칙은 누님 질문 2번 대기 */
   if(n === 1) return uiAlert("1명 예약은 받지 않습니다", "2명부터 예약할 수 있습니다.", "warn");
   WZ.people=n; WZ.customPeople=false;
-  WZ.chairs = chairDefaultInfants() ? WZ.infants : 0;   /* 기본값은 설정에서 (어린이 수 / 0개) */
   render();
 }
 function wzCustom(){ WZ.customPeople=true; if(!WZ.people || WZ.people < 7) WZ.people=7; render(); }   /* 6명을 눌러 뒀어도 7부터(재아) */
@@ -781,7 +779,6 @@ function wzAdj(k,d){
   /* 막지 않습니다 — 이상한 값은 빨갛게 보여 주고 사장이 판단합니다 */
   if(k==="infants"){
     WZ.infants = Math.max(0,(WZ.infants||0)+d);
-    WZ.chairs = chairDefaultInfants() ? WZ.infants : 0;
   }else{
     WZ.people = Math.max(1,(WZ.people||0)+d);
     /* 직접 입력 상태는 유지합니다 — 1명까지 내려도 됩니다 */
@@ -874,7 +871,6 @@ function wzStepSeat(){
     ${!kind ? `<div class="empty">룸 예약인지 테이블 예약인지 먼저 고르세요.</div>` : kind==='room' ? `<p class="f-note" style="margin-top:12px">방을 안 고르고 <b>다음</b>을 누르면 '룸 미정' 으로 접수돼 빈 방에 잠정 배정됩니다.</p>` : `<p class="f-note" style="margin-top:12px">층을 안 고르고 <b>다음</b>을 누르면 층 상관없이 사장님 순서로 잡습니다. 어느 테이블인지는 당일 현장에서.</p>`}`;
 }
 function wzSeatKind(k){ WZ.seatKind = k; if(WZ.seat){ const cur = seatById(WZ.seat) || (store().settings.joins||[]).find(j=>j.id===WZ.seat); const isT = cur ? isTable(cur) : isTablePref(WZ.seat); if((k==="room") === !!isT) WZ.seat = null; } render(); }   /* 갈래를 바꾸면 다른 갈래의 선택은 지움 */
-function wzChair(d){ WZ.chairs = Math.max(0,(WZ.chairs||0)+d); render(); }
 
 /* 좌석 선택 — 막을 것은 막고, 판단이 필요한 것은 물어봅니다 */
 /* 좌석 선택 — 막을 것은 막고, 판단이 필요한 것은 물어봅니다. v = 좌석 id / 합침 그룹 id / room-any / table-any */
@@ -1197,17 +1193,8 @@ function wzStepExtra(){
         <button class="nonebtn sm ${WZ.allergyNone?'on':''}" onclick="wzAllergyNone()">없음</button>
       </div>
     </div>
-    <div class="f big"><div class="lb">유아용 의자
-      ${(WZ.chairs||0)>(WZ.infants||0)?`<span class="req">어린이 ${WZ.infants||0}명보다 많음</span>`:""}</div>
-      <div class="bigstep sm ${(WZ.chairs||0)>(WZ.infants||0)?'bad':''}" style="justify-content:flex-start; margin-top:0">
-        <button onclick="wzChair(-1)">−</button>
-        <div class="v"><span>${WZ.chairs||0}</span><small>개</small></div>
-        <button onclick="wzChair(1)">＋</button>
-      </div>
-      <div class="f-note">${chairDefaultInfants()?`어린이 ${WZ.infants||0}명 기준 자동 입력`:"&nbsp;"}</div>
-    </div>
     <label class="f big"><div class="lb">요청사항 <span class="lbl-note">선택</span></div>
-      <input id="wz-request" value="${esc(WZ.request)}" placeholder="예: 송별회, 상견례">
+      <input id="wz-request" value="${esc(WZ.request)}" placeholder="예: 유아용 의자, 송별회, 상견례">
     </label>
     <label class="f big"><div class="lb">메모 <span class="lbl-note">선택</span></div>
       <input id="wz-memo" value="${esc(WZ.memo||"")}" placeholder="예: 사장님 지인, 상석 준비">
@@ -1215,7 +1202,6 @@ function wzStepExtra(){
     <div class="wz-review">
       <div class="rv"><span>일시</span><b>${WZ.date?dateLabel(WZ.date):"-"} ${WZ.time?hm(WZ.time):""}</b></div>
       <div class="rv"><span>인원</span><b>총 ${WZ.people||0}명${WZ.infants?` (어린이 ${WZ.infants}명 포함)`:""}</b></div>
-      ${WZ.chairs?`<div class="rv"><span>유아의자</span><b>${WZ.chairs}개</b></div>`:""}
       <div class="rv"><span>좌석</span><b>${WZ.seat?(WZ.seatExtra&&WZ.seatExtra.length?seatLabelIds([WZ.seat].concat(WZ.seatExtra)):seatLabel(WZ.seat)):"-"}</b></div>
       <div class="rv"><span>예약자</span><b>${esc(WZ.name)||"-"} ${esc(WZ.phone)}</b></div>
       <div class="rv"><span>식사</span><b>${esc(WZ.menuType||"-")}${WZ.menuType==="코스"&&courseCount()?` · ${esc(courseSummary(WZ.courses))}`:""}</b></div>
@@ -1268,7 +1254,7 @@ async function wzSubmit(){
   const rec = {
     id:newId("res"), date:WZ.date, time:WZ.time,
     name:WZ.name.trim(), phone:phoneNorm(WZ.phone),
-    people:WZ.people, infants:WZ.infants, chairs:WZ.chairs||0,
+    people:WZ.people, infants:WZ.infants, chairs:0,   /* 유아의자 기능은 뺐음(재아 09-17) — 칸은 0 으로 유지(객체 모양 안 바꿈) */
     roomId: fixed ? WZ.seat : null,
     extraIds: fixed ? (WZ.seatExtra || []) : [],
     seatPref: fixed ? null : WZ.seat,     /* 미배정일 때 희망 좌석 종류를 기억 */
@@ -1311,7 +1297,6 @@ function wzDone(){
         </p>
         <div class="done-sub">${pplText(r)}${r.phone?` · ${esc(r.phone)}`:""}
           ${r.menuType?`<br>식사: ${esc(r.menuType)}${r.courses&&Object.keys(r.courses).length?` (${esc(courseSummary(r.courses))})`:""}`:""}
-          ${r.chairs?`<br>유아용 의자 ${r.chairs}개`:""}
           ${r.allergy?`<br>알러지: ${esc(r.allergy)}`:""}${r.request?`<br>요청: ${esc(r.request)}`:""}</div>
         <div class="done-btns">
           <button class="btn lg" onclick="openWizard('${r.date}')">새 예약</button>

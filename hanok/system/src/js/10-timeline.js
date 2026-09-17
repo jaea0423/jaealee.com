@@ -21,6 +21,9 @@ function laneLayout(items, laneCount){
   }
   return placed;
 }
+/* 층(lane)에 놓는 순서 = 먼저 들어온 예약이 아래, 늦게 들어온 예약이 위로 쌓임(재아 09-17) — 겹쳐 받았을 때 누가 원래 자리인지 한눈에.
+   예전에는 시각 순이라 나중에 받은 예약이 먼저 시작하면 아래로 갔음. 홈페이지 대기 건은 접수 시각이 createdAt */
+function byCreated(a, b){ return String(a.createdAt||"").localeCompare(String(b.createdAt||"")) || a.time.localeCompare(b.time); }
 /* 폰 압축판에서 층 테이블 줄 접기/펼치기 — 층별로 기억(새로 고침하면 다시 접힘) */
 function tlToggleFloor(key){ view.tlOpen = view.tlOpen || {}; view.tlOpen[key] = !view.tlOpen[key]; render(); }
 function renderTimeline(date, compact){
@@ -89,7 +92,7 @@ function renderTimeline(date, compact){
   /* 룸이든 테이블이든 좌석 하나 = 한 줄. 합쳐 쓰는 예약은 관련된 줄마다 블록이 그려지고 '+' 표시가 붙습니다 */
   const roomRow = (room)=>{
     const items = list.filter(r=>usesSeat(r, room.id))
-      .sort((a,b)=>a.time.localeCompare(b.time))
+      .sort(byCreated)
       .map(r=>({ r, need:1, s0:toMin(r.time), e0:Math.min(c, toMin(r.time)+stayOf(r)), joined:seatsOf(r).length>1 }));
     /* 사장 판단으로 겹치게 받은 경우가 있으므로 층을 유동적으로.
        ※ 예전에는 겹치기만 하면 무조건 2층이라, 같은 시간에 3건이 들어오면
@@ -140,7 +143,7 @@ function renderTimeline(date, compact){
     /* 칸 수 = 숨은 배정(붙임·나눠 앉기 포함)이 쓰는 테이블 개수. 자리를 못 찾은 예약은 1칸 + 경고 */
     const needOf = r => Math.max(1, seatsOf(r).length);
     const items = list.filter(r=>resFloor(r) !== undefined && (resFloor(r)||"") === (fl||""))
-      .sort((a,b)=>a.time.localeCompare(b.time))
+      .sort(byCreated)
       .map(r=>({ r, need:needOf(r), s0:toMin(r.time), e0:Math.min(c, toMin(r.time)+stayOf(r)) }));
     /* 폰(압축판)은 테이블 6칸이 너무 높아 3칸으로 접고, 층 이름을 누르면 펼칩니다(모바일 2026-09-17).
        접힌 동안 못 들어간 팀은 그리지 않고 "숨은 N팀" 으로만 — 겹쳐 그리면 뒤 팀이 안 보입니다 */
@@ -154,7 +157,7 @@ function renderTimeline(date, compact){
     if(placed.some(x=>x.lane===null && x.need>1)){
       const again = [];
       placed.forEach(x=>{ if(x.lane===null && x.need>1){ for(let k=0;k<x.need;k++) again.push(Object.assign({}, x, {need:1, part:k+1, parts:x.need, lane:undefined})); } else again.push(Object.assign({}, x, {lane:undefined})); });
-      again.sort((a,b)=>a.s0-b.s0);
+      again.sort((a,b)=>byCreated(a.r, b.r));
       placed = laneLayout(again, lanes);
     }
     const hidden = folded ? placed.filter(x=>x.lane===null).length : 0;
@@ -217,7 +220,7 @@ function renderTimeline(date, compact){
             메모: live.filter(x=>(x.memo||"").trim()).length
           };
           const cls = {확정:"", 경고:"rust", 변경:"blue", 요청:"", 메모:"blue"};
-          const nm  = {변경:"오늘 변경", 요청:"요청사항"};
+          const nm  = {변경:"오늘 변동", 요청:"요청사항"};   /* 목록 제목·범례와 같은 말로(재아 09-17) */
           const act = {확정:"openPick('confirmed')", 경고:"openPick('warn')", 변경:"openPick('changed')", 요청:"openPick('request')", 메모:"openPick('memo')"};
           const chk = checkItems(date).length;
           return Object.keys(cnt).filter(k=>cnt[k])

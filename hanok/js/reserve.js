@@ -48,7 +48,9 @@
       for(let d = 1; d <= last; d++){ const key = ym+"-"+pad(d); out[key] = (await this.slots(key, people, seat)).length; }
       return out;
     },
-    submit: async payload => { await new Promise(r => setTimeout(r, 600)); return {ok:true}; }
+    submit: async payload => { await new Promise(r => setTimeout(r, 600)); return {ok:true}; },
+    /* 그 시각에 이 좌석 종류로 받을 수 있나 — 시간표는 '룸이든 테이블이든' 되는 시각을 보여 주므로 좌석 단계에서 한 번 더 봅니다 */
+    seatOk: async (date, time, people, seat) => !stubFull(date, time, seat)
   };
 
   /* ---------- 진짜 API: js/config.js 에 window.SUPA 가 있으면 예약 시스템(Supabase)과 붙습니다 ----------
@@ -69,6 +71,7 @@
       const d = await dayData(date); if(!d) return [];
       return Object.keys(d).sort().filter(t => okAt(d[t], people, seat));
     };
+    RES_API.seatOk = async (date, time, people, seat) => { const d = await dayData(date); return !!(d && okAt(d[time], people, seat)); };
     RES_API.month = async (ym, people, seat) => {
       const rows = await get(`/rest/v1/public_avail?store=eq.${SUPA.store}&date=like.${ym}%25&select=date,data`);
       const out = {}; rows.forEach(r => { availCache[r.date] = r.data; out[r.date] = Object.keys(r.data||{}).filter(t => okAt(r.data[t], people, seat)).length; });
@@ -180,7 +183,7 @@
   const telBox = msg => `<div class="rv-note">${esc(msg)}<a class="rv-tel-lnk" href="tel:${INFO.tel}">${esc(INFO.tel)}</a></div>`;
 
   /* ---------- 틀 ---------- */
-  const STEPS = ["인원", "날짜", "시간", "자리", "메뉴", "예약자 정보", "예약 확인"];
+  const STEPS = ["인원", "날짜", "시간", "좌석", "메뉴", "예약자 정보", "예약 확인"];
   function render(msg){
     const steps = $(".rv-steps", ov);
     /* 접수 중단(관리 화면에서 끔) — 단계 없이 안내와 전화만 */
@@ -199,11 +202,12 @@
     [null, sPeople, sDate, sTime, sSeat, sMenu, sGuest, sConfirm, done][step](b, f);
     const on = steps.querySelector(".on"); if(on && on.scrollIntoView) on.scrollIntoView({block:"nearest", inline:"center"});
   }
-  /* warn 을 주면 다음 버튼 왼쪽에 경고 문구가 뜹니다(이전 버튼·전화 안내 자리) */
+  /* warn 을 주면 다음 버튼 왼쪽에 경고 문구가 뜹니다(이전 버튼 자리).
+     '전화로 예약' 안내는 다음 버튼이 막혔을 때(온라인으로 못 받는 경우)만 — 늘 보이면 전화하라는 뜻으로 읽힘(재아 2026-09-17) */
   function foot(f, prev, next, label, off, warn){
     const leftEl = warn ? `<div class="rv-warn">${warn}</div>`
                  : prev ? `<button type="button" class="btn ghost" data-prev>이전</button>`
-                        : `<a class="rv-call" href="tel:${INFO.tel}"><b>전화로 예약</b><span>${esc(INFO.tel)}</span></a>`;
+                 : off ? `<a class="rv-call" href="tel:${INFO.tel}"><b>전화로 예약</b><span>${esc(INFO.tel)}</span></a>` : `<span></span>`;
     f.innerHTML = leftEl + `<button type="button" class="btn fill" data-next${off?" disabled":""}>${label||"다음"}</button>`;
     if(prev) $("[data-prev]", f).addEventListener("click", () => { step--; render(); });
     $("[data-next]", f).addEventListener("click", next);
@@ -230,7 +234,7 @@
         </div>
       </div>`;
     b.insertAdjacentHTML("beforeend", `<section class="rv-sec">
-        <h3>몇 분이 오시나요</h3>
+        <h3>인원</h3>
         ${stepper("adults", "성인")}
         ${stepper("kids", "어린이", "유아 포함")}
       </section>`);
@@ -240,7 +244,7 @@
         y.disabled = (y.dataset.d === "-1" ? S[r.dataset.k] <= 0 : total() >= MAX_SEAT)));
       const warn = tooMany()
         ? `유선으로 예약 도와드리겠습니다. <a href="tel:${INFO.tel}">${esc(INFO.tel)}</a>`
-        : (S.adults < R().minAdults ? `성인 ${R().minAdults}명부터 접수할 수 있습니다.` : "");
+        : (S.adults < R().minAdults ? `성인 ${R().minAdults}인부터 접수 가능합니다.` : "");
       foot(f, false, next, "다음", !ok(), warn);
     }
     b.querySelectorAll(".rv-cnt").forEach(row => {
@@ -316,7 +320,7 @@
       const want = S.date;
       const list = await RES_API.slots(S.date, total(), S.seat || "any");
       if(!ov || want !== S.date) return;
-      if(!list.length){ times.innerHTML = `<p class="rv-quiet">이 날은 예약 가능한 시간이 없습니다. 다른 날짜를 골라 주세요.</p>`; return; }
+      if(!list.length){ times.innerHTML = `<p class="rv-quiet">이 날은 예약 가능한 시간이 없습니다. 다른 날짜를 고르시거나 유선으로 문의해 주세요. <a href="tel:${INFO.tel}">${esc(INFO.tel)}</a></p>`; return; }
       const lunch = list.filter(t => mins(t) < LUNCH_END), dinner = list.filter(t => mins(t) >= LUNCH_END);
       const grid = (label, arr) => arr.length ? `<div class="rv-tgroup"><span>${label}</span><div class="rv-times">${
         arr.map(t => `<button type="button" data-t="${t}" class="${t===S.time?'on':''}">${hm(t)}</button>`).join("")}</div></div>` : "";
@@ -332,10 +336,10 @@
     function next(){ if(S.time){ startTimer(); step = 4; render(); } }
   }
 
-  /* ---------- ④ 자리 ---------- */
+  /* ---------- ④ 좌석 ---------- */
   function sSeat(b, f){
     b.insertAdjacentHTML("beforeend", sumLine() + `<section class="rv-sec">
-        <h3>자리</h3>
+        <h3>좌석</h3>
         <div class="rv-pick two" id="rv-seat">
           <button type="button" data-s="table" class="${S.seat==='table'?'on':''}"><b>테이블</b></button>
           <button type="button" data-s="room" class="${S.seat==='room'?'on':''}"><b>룸</b></button>
@@ -343,18 +347,29 @@
         <div id="rv-seat-hint"></div>
       </section>`);
     const seg = $("#rv-seat", b), hint = $("#rv-seat-hint", b);
+    /* 시간표는 '룸이든 테이블이든' 되는 시각이라, 고른 시각에 못 받는 좌석은 여기서 막고 유선으로 돌립니다 —
+       접수된 뒤에야 "테이블 없음" 이 뜨면 매장도 손님도 곤란함(재아 2026-09-17) */
+    const okBy = {};
+    async function load(){
+      for(const k of ["table", "room"]) okBy[k] = await RES_API.seatOk(S.date, S.time, total(), k);
+      if(!ov || step !== 4) return;
+      seg.querySelectorAll("[data-s]").forEach(x => { x.disabled = !okBy[x.dataset.s]; x.classList.toggle("off", !okBy[x.dataset.s]); });
+      draw();
+    }
     function draw(){
       seg.querySelectorAll("[data-s]").forEach(x => x.classList.toggle("on", x.dataset.s === S.seat));
-      const po = S.seat ? phoneOnly() : "";
-      hint.innerHTML = "";
+      const label = S.seat === "room" ? "룸" : "테이블";
+      const po = !S.seat ? "" : (okBy[S.seat] === false ? `이 시각에는 ${label} 자리가 없습니다. 유선으로 예약 도와드리겠습니다.` : phoneOnly());
+      const off = ["table", "room"].filter(k => okBy[k] === false).map(k => k === "room" ? "룸" : "테이블");
+      hint.innerHTML = off.length ? `<p class="rv-quiet">${esc(off.join("·"))}은 이 시각에 자리가 없어 고를 수 없습니다.</p>` : "";
       foot(f, true, next, "다음", !S.seat || !!po, po ? `${esc(po)} <a href="tel:${INFO.tel}">${esc(INFO.tel)}</a>` : "");
     }
     seg.querySelectorAll("[data-s]").forEach(x => x.addEventListener("click", () => {
       if(S.seat !== x.dataset.s){ S.seat = x.dataset.s; S.course = ""; S.courseLabel = ""; }
       draw();
     }));
-    function next(){ if(S.seat && !phoneOnly()){ step = 5; render(); } }
-    draw();
+    function next(){ if(S.seat && okBy[S.seat] !== false && !phoneOnly()){ step = 5; render(); } }
+    draw(); load();
   }
 
   /* ---------- ⑤ 메뉴 — 점심 시각이면 그 날(평일·주말)의 점심 세트도 함께 ---------- */
@@ -375,7 +390,7 @@
         <div class="rv-pick" id="rv-cs">
           ${menuGroups().map(g => `<div class="rv-pick-h">${esc(g.title)}</div>` + g.items.map(it =>
               `<button type="button" data-c="${esc(it.key)}" data-l="${esc(it.name)}" class="${S.course===it.key?'on':''}"><b>${esc(it.name)}${it.cn?`<small>${esc(it.cn)}</small>`:""}</b><span class="qty">${total()}인분</span></button>`).join("")).join("")}
-          <div class="rv-pick-h">그 밖에</div>
+          <div class="rv-pick-h"></div>
           ${room ? `<button type="button" data-c="later" data-l="메뉴 미정" class="${S.course==='later'?'on':''}"><b>미정</b></button>`
                  : `<button type="button" data-c="none" data-l="단품 주문" class="${S.course==='none'?'on':''}"><b>단품 주문</b></button>`}
         </div>
@@ -411,14 +426,20 @@
             <button type="button" class="btn" id="rv-verify">확인</button>
           </div>
           <p class="rv-fld-hint" id="rv-tel-hint">${S.verified ? "인증되었습니다." : ""}</p>
+          <button type="button" class="rv-linkbtn" id="rv-tel-edit"${S.sent && !S.verified ? "" : " hidden"}>번호 수정</button>
         </div>
         <div class="rv-fld"><label for="rv-allergy">알레르기 <em>선택</em></label>
-          <input id="rv-allergy" value="${esc(S.allergy)}" maxlength="100" placeholder="예: 갑각류 · 땅콩 · 밀가루 (없으면 비워 두세요)"></div>
+          <input id="rv-allergy" value="${esc(S.allergy)}" maxlength="100" placeholder="갑각류, 땅콩, 밀가루 등"></div>
         <div class="rv-fld"><label for="rv-req">요청사항 <em>선택</em></label>
-          <textarea id="rv-req" rows="3" maxlength="300" placeholder="어린이 의자·식기가 필요하시거나, 예약하시는 분과 방문하시는 분이 다르면 적어 주세요.">${esc(S.req)}</textarea></div>
+          <textarea id="rv-req" rows="3" maxlength="300" placeholder="매장에 추가로 요청하실 내용이 있다면 적어 주세요.">${esc(S.req)}</textarea></div>
       </section>`);
     const name = $("#rv-name", b), phone = $("#rv-phone", b), send = $("#rv-send", b),
-          codebox = $("#rv-codebox", b), code = $("#rv-code", b), verify = $("#rv-verify", b), hint = $("#rv-tel-hint", b), req = $("#rv-req", b);
+          codebox = $("#rv-codebox", b), code = $("#rv-code", b), verify = $("#rv-verify", b), hint = $("#rv-tel-hint", b), req = $("#rv-req", b), edit = $("#rv-tel-edit", b);
+    if(S.sent && !S.verified) phone.disabled = true;
+    edit.addEventListener("click", () => {
+      S.sent = false; phone.disabled = false; edit.hidden = true; codebox.hidden = true; send.textContent = "인증번호 요청";
+      clearInterval(codeTimer); codeTimer = null; hint.textContent = ""; hint.classList.remove("bad"); phone.focus();
+    });
     let codeTimer = null, codeLeft = 0;
     const codeTick = () => {
       if(codeLeft <= 0){ clearInterval(codeTimer); codeTimer = null; verify.disabled = true; hint.textContent = "인증번호가 만료되었습니다. 다시 요청해 주세요."; hint.classList.add("bad"); return; }
@@ -437,15 +458,16 @@
     send.addEventListener("click", () => {
       const d = S.phone.replace(/\D/g, "");
       if(!/^01\d{8,9}$/.test(d)){ hint.textContent = "휴대폰 번호를 확인해 주세요."; hint.classList.add("bad"); return; }
-      /* 실제로는 여기서 문자를 보냅니다 */
+      /* 실제로는 여기서 문자를 보냅니다. 보낸 뒤에는 번호를 못 바꾸게 잠급니다(바꾸려면 '번호 수정') — 인증한 번호와 적힌 번호가 달라지는 것을 막음(재아) */
       S.sent = true; codebox.hidden = false; send.textContent = "다시 요청"; verify.disabled = false; code.value = "";
+      phone.disabled = true; edit.hidden = false;
       hint.classList.remove("bad"); clearInterval(codeTimer); codeLeft = CODE_SEC; codeTick(); codeTimer = setInterval(codeTick, 1000);
       code.focus();
     });
     verify.addEventListener("click", () => {
       if(!/^\d{6}$/.test(code.value)){ hint.textContent = "6자리 숫자를 입력해 주세요."; hint.classList.add("bad"); return; }
       clearInterval(codeTimer); codeTimer = null;
-      S.verified = true; codebox.hidden = true; phone.disabled = true; send.disabled = true; send.textContent = "인증 완료";
+      S.verified = true; codebox.hidden = true; phone.disabled = true; send.disabled = true; send.textContent = "인증 완료"; edit.hidden = true;
       hint.classList.remove("bad"); hint.textContent = "인증되었습니다."; refoot();
     });
     function next(){ if(ok()){ step = 7; render(); } }
@@ -457,36 +479,37 @@
     const rows = [
       ["날짜", dateText(S.date)], ["시간", hm(S.time)],
       ["인원", S.kids ? `성인 ${S.adults}명 · 어린이 ${S.kids}명` : `성인 ${S.adults}명`],
-      ["자리", S.seat === "room" ? "룸" : "테이블"],
+      ["좌석", S.seat === "room" ? "룸" : "테이블"],
       ["메뉴", S.course === "later" ? "미정" : (S.course === "none" ? "단품 주문" : `${S.courseLabel} · ${total()}인분`)],
       ["예약자", S.name.trim()+" · "+S.phone]
     ];
     if(S.allergy.trim()) rows.push(["알레르기", S.allergy.trim()]);
     if(S.req.trim()) rows.push(["요청사항", S.req.trim()]);
-    const box = (key, title, body) => `<div class="rv-agree${S.agree[key]?" on":""}">
+    /* body 가 없으면(만 14세) 펼치기 없이 제목만 — 펼쳐 봐야 할 말이 없음(재아) */
+    const box = (key, title, body) => `<div class="rv-agree${S.agree[key]?" on":""}${body?"":" plain"}">
         <div class="rv-agree-h">
-          <label class="rv-chk"><input type="checkbox" data-a="${key}"${S.agree[key]?" checked":""}><i></i></label>
-          <button type="button" class="rv-agree-t"><b>[필수] ${title}</b><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+          <label class="rv-chk"><input type="checkbox" id="rv-a-${key}" data-a="${key}"${S.agree[key]?" checked":""}><i></i></label>
+          ${body ? `<button type="button" class="rv-agree-t"><b>[필수] ${title}</b><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>`
+                 : `<label class="rv-agree-t" for="rv-a-${key}"><b>[필수] ${title}</b></label>`}
         </div>
-        <div class="body">${body}</div></div>`;
+        ${body ? `<div class="body">${body}</div>` : ""}</div>`;
     b.insertAdjacentHTML("beforeend", `<section class="rv-sec">
         <h3>예약 확인</h3>
         <dl class="rv-check">${rows.map(([k,v])=>`<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
       </section>
       <section class="rv-sec">
         ${box("rule", "매장 이용규정에 동의합니다", `<ul>
-            <li>접수 후 가게에서 확인하고 문자로 확정을 알려드립니다.</li>
-            <li>룸에서는 코스, 또는 그에 상응하는 금액의 단품 주문만 가능합니다.</li>
-            <li>룸은 인원에 맞춰 배정합니다. 원하시는 룸이 있으면 요청사항에 적어 주세요.</li>
-            <li>인원이 바뀌면 미리 알려 주세요. 자리와 준비가 달라집니다.</li>
-            <li>예약 시각에서 20분이 지나도록 연락이 없으면 자리를 다른 손님께 드릴 수 있습니다.</li>
-            <li>취소는 전화로 부탁드립니다. 예약금과 결제는 없습니다.</li></ul>`)}
+            <li>접수 후 매장에서 확인 후 확정 여부를 문자로 전송드립니다.</li>
+            <li>룸에서는 코스 및 세트, 또는 그에 상응하는 금액의 단품 주문만 가능합니다.</li>
+            <li>룸은 매장 상황에 맞춰 배정합니다.</li>
+            <li>예약 시각 20분 내로 방문이 되지 않을 경우 예약이 취소되며 No-Show로 처리됩니다.</li>
+            <li>인원 변동이 생기면 매장으로 유선 연락 바랍니다.</li>
+            <li>예약 변경 및 취소는 매장으로 유선 연락 바랍니다.</li></ul>`)}
         ${box("priv", "개인정보 수집 · 이용에 동의합니다", `<table>
             <tr><th>항목</th><th>목적</th><th>보유 기간</th></tr>
-            <tr><td>성함, 휴대폰 번호</td><td>예약 확인과 안내 문자 발송</td><td>방문일로부터 90일</td></tr>
-            <tr><td>요청사항</td><td>자리와 식사 준비</td><td>방문일로부터 90일</td></tr></table>
-          <p>동의하지 않으셔도 전화로 예약하실 수 있습니다.</p>`)}
-        ${box("age", "만 14세 이상입니다", `<p>만 14세 미만은 보호자가 대신 예약해 주세요.</p>`)}
+            <tr><td>성함, 휴대폰 번호</td><td>예약 확인·안내 문자 발송, 예약 관리</td><td>삭제를 요청하실 때까지</td></tr>
+            <tr><td>알레르기, 요청사항</td><td>좌석과 식사 준비</td><td>삭제를 요청하실 때까지</td></tr></table>`)}
+        ${box("age", "만 14세 이상입니다", "")}
       </section>`);
     b.querySelectorAll("[data-a]").forEach(c => c.addEventListener("change", () => {
       S.agree[c.dataset.a] = c.checked; c.closest(".rv-agree").classList.toggle("on", c.checked); refoot();

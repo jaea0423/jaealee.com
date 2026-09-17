@@ -214,7 +214,7 @@ function syncMarkTentatives(){
     });
   });
 }
-/* 1분 갱신 — 전체가 아니라 바뀐 행만 (updated_at=gt.마지막으로 본 최대값).
+/* 자동 갱신(10초) — 전체가 아니라 바뀐 행만 (updated_at=gt.마지막으로 본 최대값).
    이 기기에서 고쳐 놓고 아직 못 보낸(dirty) 예약은 덮지 않습니다 — 다음 flush 의 조건부 PATCH 가 0행이 되어 충돌 절차로 갑니다 */
 async function reloadFromStore(){
   if(!supaOn()) return;
@@ -222,13 +222,15 @@ async function reloadFromStore(){
   if(!SESSION) return;
   if(OFFLINE){ await reconnect(); return; }
   var keys = Object.keys(DEFAULT_DATA), i, k, changed = false;
-  var stores = await sb("/rest/v1/stores?select=key,name,settings,snapshots,updated_at");
+  /* 10초마다 도니(재아 2026-09-17, 전에는 1분) 설정·스냅샷 본문은 updated_at 이 바뀌었을 때만 받습니다 — 매번 받으면 기기당 하루 수 MB */
+  var stores = await sb("/rest/v1/stores?select=key,updated_at");
   for(i = 0; i < keys.length; i++){
     k = keys[i]; if(!DEFAULT_DATA[k].enabled || !DATA[k]) continue;
     var st = DATA[k];
     /* 설정·스냅샷 — 다른 기기가 바꿨고 이 기기는 안 건드렸으면 받아들임 */
     var srow = stores.find(function(r){ return r.key === k; });
     if(srow && srow.updated_at !== SYNC.storeUpd[k]){
+      srow = (await sb("/rest/v1/stores?key=eq." + k + "&select=key,name,settings,snapshots,updated_at"))[0] || srow;
       if(JSON.stringify(st.settings) === SYNC.settings[k]){ var mg = {}; mg[k] = { settings: srow.settings || {} }; st.settings = migrate(mg)[k].settings; SYNC.settings[k] = JSON.stringify(st.settings); changed = true; }
       if(JSON.stringify(st.snapshots || {}) === SYNC.snapshots[k]){ st.snapshots = srow.snapshots || {}; SYNC.snapshots[k] = JSON.stringify(st.snapshots); }
       SYNC.storeUpd[k] = srow.updated_at;

@@ -347,14 +347,8 @@ function renderSettings(){
      저장 위치가 settings 가 아니라 DATA._ui 인 이유: 이건 매장 운영 값이 아니라
      '이 기기에서 어떻게 보이는지'라 '적용하기' 없이 즉시 반영되는 편이 낫습니다. */
   /* 사장님이 정할 값들 — 코드에 박아 두면 나중에 못 바꿉니다 (작업 규칙) */
+  /* 유아용 의자 기본값 항목은 뺐음 — 의자는 요청사항에 적는 방식(재아 09-17). chairDefault 설정값은 남아 있어도 안 씀 */
   const policyBody = `
-    <div class="subhead">유아용 의자 기본값</div>
-    <div class="seg">
-      <button class="${st.chairDefault==="infants"?'on':''}" onclick="setPolicy('chairDefault','infants')">어린이 수와 같게</button>
-      <button class="${st.chairDefault!=="infants"?'on':''}" onclick="setPolicy('chairDefault','zero')">0개</button>
-    </div>
-    <p class="f-note">어린이 인원을 입력할 때 의자 수가 자동으로 따라올지 정합니다.
-      0개로 두면 어린이 수와 다를 때 경고가 뜹니다.</p>
 
     <div class="subhead">룸 정원 기준</div>
     <div class="seg">
@@ -469,7 +463,7 @@ function renderSettings(){
       smsBodyUI)}
     ${sec("disp","디스플레이 배치",`${rows.map(r=>r.length).join(" · ")}`, dispBody)}
     ${sec("policy","운영 판단 기준",
-      `의자 ${st.chairDefault==="infants"?"어린이 수":"0개"} · 정원 ${st.minCountAdultsOnly===false?"총원":"성인"} · 임박 ${st.loSoon!=null?st.loSoon:120}분`,
+      `정원 ${st.minCountAdultsOnly===false?"총원":"성인"} · 임박 ${st.loSoon!=null?st.loSoon:120}분`,
       policyBody)}
     ${sec("zoom","화면 크기",`${uiZoom()}%`, zoomBody)}
     <div class="set-divider"></div>

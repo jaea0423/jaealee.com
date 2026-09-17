@@ -35,8 +35,7 @@ function sheetNaver(){
   const cnt = k => n.result ? n.result.filter(x=>x.ok && x.kind===k).length : 0;
   return `
     ${sheetHead("네이버 예약 가져오기")}
-    <p class="f-note" style="margin:-6px 0 10px">네이버 파트너센터 → 예약자 관리 → 엑셀 다운로드 → 파일을 열어 <b>표 전체 복사(Ctrl+A, Ctrl+C)</b> → 아래에 붙여 넣기(Ctrl+V).
-      예약번호로 같은 예약을 찾아 고치고, 없으면 새로 넣습니다. 전화번호는 네이버가 뒷자리만 주어 메모에만 남습니다.</p>
+    <p class="f-note" style="margin:-6px 0 10px">네이버 파트너센터 → 예약자 관리 → 엑셀 다운로드 → 파일을 열어 <b>표 전체 복사(Ctrl+A, Ctrl+C)</b> → 아래에 붙여 넣기(Ctrl+V).</p>
     <textarea id="naver-paste" rows="7" placeholder="여기에 붙여 넣으세요 (머리글 줄 포함, 안내 문장이 섞여 있어도 됩니다)" oninput="view.naver={text:this.value, result:null}">${esc(n.text)}</textarea>
     <div class="btn-row" style="margin-top:8px">
       <button class="btn" data-enter onclick="naverPreview()">확인</button>
@@ -240,7 +239,7 @@ function showToast(text, actionLabel, fn){
   if(actionLabel) el.querySelector(".toast-a").textContent = actionLabel;
   el.className = "toast on";
   if(TOAST_T) clearTimeout(TOAST_T);
-  TOAST_T = setTimeout(hideToast, 3000);
+  TOAST_T = setTimeout(hideToast, actionLabel ? 6000 : 4000);   /* 3초는 너무 금방 사라짐(재아 09-17). '보기' 같은 버튼이 있으면 더 길게 */
 }
 function hideToast(){ var el = document.getElementById("toast"); if(el) el.className = "toast"; TOAST_T = null; }
 function toastAction(){ var fn = TOAST_FN; hideToast(); if(fn) fn(); }
@@ -256,7 +255,7 @@ function toastSaved(rec){
 function renderSheet(){
   const inner = { res:sheetRes, mark:sheetMark, unassigned:sheetUnassigned, pick:sheetPick, check:sheetCheck, search:sheetSearch, num:sheetNum, noshow:sheetNoshow, pin:sheetPin, apw:sheetAdminPw, hours:sheetHours, tedit:sheetTableEdit, naver:sheetNaver, setlog:sheetSetLog, pinlist:sheetPinList, zoomadj:sheetZoomAdj, logs:sheetLogs, smslog:sheetSmsLog, smsfree:sheetSmsFree, rate:sheetRate, sched:sheetSchedule, ovr:sheetOverride, blocks:sheetBlocks, reqs:sheetRequests, req:sheetRequest, reqrej:sheetReqReject, sched2:sheetScheduled, site:sheetSite /*, staff:sheetStaff, att:sheetAtt, sale:sheetSale */ }[view.form.type]();
   /* 검색은 창 높이를 고정해 두고 결과만 안에서 스크롤 — 칠 때마다 창이 늘었다 줄었다 하지 않게(재아) */
-  const wide = view.form.type==="rate" ? " sheet-wide" : ((view.form.type==="search" || (view.form.type==="reqs" && reqPending().length >= 6)) ? " sheet-tall" : "");   /* 홈페이지 예약이 적으면 빈 상자를 길게 안 보임(검토 D3) */
+  const wide = view.form.type==="rate" ? " sheet-wide" : ((view.form.type==="search" || (view.form.type==="reqs" && reqPending().length >= 3)) ? " sheet-tall" : "");   /* 홈페이지 예약은 3건부터 높이를 고정하고 목록만 스크롤(재아 09-17). 0~2건이면 빈 상자를 길게 안 보임(검토 D3) */
   if(view.form.page) return `<div class="sheet page-sheet">${inner}</div>`;   /* 화면형: 덮개 없이 본문 자리에 */
   return `<div class="overlay" onclick="closeSheet()"><div class="sheet${wide}" onclick="event.stopPropagation()">${inner}</div></div>`;
 }
@@ -331,8 +330,6 @@ function sheetRes(){
       <label class="f"><div class="lb">어린이</div>
         <input id="f-infants" type="number" min="0" value="${f.infants||0}"></label>
     </div>
-    <label class="f"><div class="lb">유아용 의자</div>
-      <input id="f-chairs" type="number" min="0" value="${f.chairs||0}"></label>
     <label class="f"><div class="lb">좌석</div>
       <select id="f-room" onchange="pickRoom(this.value)"><option value="">미배정</option>${roomOpts}</select></label>
     <div class="f"><div class="lb">경로</div><div class="seg">${srcSeg}</div>
@@ -351,7 +348,7 @@ function sheetRes(){
         </div>`:""}
     </div>
     <label class="f"><div class="lb">알러지</div><input id="f-allergy" value="${esc(f.allergy||'')}" placeholder="예: 갑각류 알러지 1명"></label>
-    <label class="f"><div class="lb">요청사항</div><input id="f-request" value="${esc(f.request||'')}" placeholder="예: 창가 자리"></label>
+    <label class="f"><div class="lb">요청사항</div><input id="f-request" value="${esc(f.request||'')}" placeholder="예: 유아용 의자, 송별회, 상견례"></label>
     <label class="f"><div class="lb">메모 <span class="lbl-note">선택</span></div>
       <input id="f-memo" value="${esc(f.memo||'')}" placeholder="예: 사장님 지인, 상석 준비"></label>
     <div class="f"><div class="lb">상태</div><div class="seg">${stSeg}</div></div>
@@ -422,7 +419,7 @@ function syncRes(){
    ["sourceDetail","f-src-detail"],["request","f-request"],["allergy","f-allergy"],
    ["memo","f-memo"]]
     .forEach(([k,id])=>{ const x=g(id); if(x!==undefined) v[k]=x; });
-  [["people","f-people"],["infants","f-infants"],["chairs","f-chairs"]]
+  [["people","f-people"],["infants","f-infants"]]
     .forEach(([k,id])=>{ const x=g(id); if(x!==undefined) v[k]=Math.max(0,parseInt(x)||0); });
   tmpRes = {...tmpRes, ...v};
 }
@@ -455,7 +452,6 @@ function saveIssues(rec, excludeId){
      시각·좌석 겹침·정원은 위에서 자세한 문장으로 이미 넣었으므로 나머지만 옮깁니다 */
   const words = {
     "성인 없음": `어린이 ${rec.infants||0}명이 총 인원 ${pplOf(rec)}명과 같습니다 — 성인이 없습니다`,
-    "유아의자 초과": `유아용 의자 ${rec.chairs||0}개가 어린이 ${rec.infants||0}명보다 많습니다`,
     "룸·코스·세트 아님": `룸 예약인데 식사가 '해당 없음' 입니다`,
     "코스·세트 미확정": `코스·세트가 '확인 필요' 상태입니다`,
     "코스·세트 인원 부족": `코스·세트 인원이 성인 수보다 적습니다`,
@@ -716,7 +712,6 @@ function sheetMark(){
         r.courseUndecided?" (구성 미정)":(r.courses&&Object.keys(r.courses).length?` (${esc(courseSummary(r.courses))})`:"")}</div>
       ${r.assignedLater?`<div class="mi-s">좌석 미정으로 접수 → ${esc(resSeatLabel(r))} 배정 완료</div>`:""}
       ${resWarn(r).length?`<div class="mi-s warn-txt">경고 · ${esc(resWarn(r).join(", "))}</div>`:""}
-      ${r.chairs?`<div class="mi-s">유아용 의자 ${r.chairs}개</div>`:""}
       ${r.allergy?`<div class="mi-s warn-txt">알러지: ${esc(r.allergy)}</div>`:""}
       ${r.request?`<div class="mi-s">요청: ${esc(r.request)}</div>`:""}
       ${r.memo?`<div class="mi-s memo-line">메모: ${esc(r.memo)}</div>`:""}
@@ -922,7 +917,7 @@ function sheetSearch(){
   const lower = q.toLowerCase();
   const okNum = digits.length >= 1 && /^[\d\-\s]+$/.test(q);
   const okTxt = q.length >= 1 && !okNum;
-  let rows = `<div class="empty">이름·전화·메모·요청사항 무엇이든 한 글자부터 찾습니다.</div>`;
+  let rows = "";   /* 안내 문구는 입력칸 placeholder 하나로(재아 09-17) */
   if(okNum || okTxt){
     const hits = s.reservations.filter(r=>{
       if(okNum) return (r.phone||"").replace(/\D/g,"").includes(digits);
@@ -942,7 +937,7 @@ function sheetSearch(){
   const hintTxt = "";
   return `
     ${sheetHead("예약 검색")}
-    <input id="search-q" value="${esc(q)}" placeholder="이름·전화·메모·요청 (한 글자부터)"
+    <input id="search-q" value="${esc(q)}" placeholder="이름, 전화, 메모, 요청사항에서 검색합니다."
            oninput="setSearchQ(this.value)" autocomplete="off" style="margin-bottom:10px">
     ${hintTxt}
     <div class="card searchbox">${rows}</div>`;

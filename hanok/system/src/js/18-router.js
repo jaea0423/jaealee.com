@@ -542,16 +542,28 @@ setTimeout(function(){ try{ if(AUTHED && DATA && view.storeKey){ absorbScheduled
 /* 시트·마법사 어디서든: Enter = 그 창의 확인·등록 단추(data-enter 가 있으면 그것, 없으면 .btn.primary 하나뿐일 때만),
    Esc = 닫기. 여러 줄 입력(textarea) 안에서 Enter 는 줄바꿈이라 건드리지 않습니다. '이전' 은 일부러 안 묶습니다(재아) */
 document.addEventListener("keydown", function(e){
+  const t = e.target;
   if(e.key === "Escape"){
-    if(document.querySelector(".modal-ov")) return;   /* 확인창은 자기 Esc 처리가 있음 */
+    /* 확인창(MODAL): Esc = 취소. 마법사: Esc = 닫기(입력이 있으면 확인창). 시트·더보기: 닫기 (재아 09-17: 이 셋만 묶고 나머지는 안 묶음) */
+    if(MODAL){ e.preventDefault(); if(MODAL.mode === "alert") modalAnswer(true); else modalAnswer(MODAL.mode === "confirm" ? false : null); return; }
+    if(WZ && !WZ.done){ e.preventDefault(); closeWizard(); return; }
     if(view.form){ e.preventDefault(); closeSheet(); }
     else if(view.moreOpen){ closeMore(); }
     return;
   }
   if(e.key !== "Enter" || e.ctrlKey || e.altKey || e.isComposing) return;
-  const t = e.target;
   if(t && (t.tagName === "TEXTAREA" || t.tagName === "BUTTON" || t.tagName === "A" || t.isContentEditable)) return;
-  if(document.querySelector(".modal-ov")) return;
+  if(MODAL){
+    /* 확인창: Enter = 확인. 고르기(choice)는 답이 여럿이라 안 묶음. 입력창(prompt)은 자기 Enter 가 있음 */
+    if(MODAL.mode === "alert" || MODAL.mode === "confirm"){ e.preventDefault(); modalAnswer(true); }
+    return;
+  }
+  if(WZ && !WZ.done){
+    /* 마법사: Enter = 다음/예약 등록(막혀 있으면 아무 일도 없음) */
+    const nb = document.getElementById("wz-next");
+    if(nb && !nb.disabled){ e.preventDefault(); nb.click(); }
+    return;
+  }
   const sheet = document.querySelector(".sheet");
   if(!sheet) return;
   let btn = sheet.querySelector("[data-enter]:not(:disabled)");
