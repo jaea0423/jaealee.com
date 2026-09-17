@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>인공지능 3주차 1차시 — 인공지능 기술과 최근 응용 동향 · 연구와 구현</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<style>
+:root{
+  --accent:#9333EA;
+  --accent-deep:#6B21A8;
+  --accent-soft:#F3E8FF;
+
+  --bg:#F7F8FA;
+  --surface:#FFFFFF;
+  --ink:#15161B;
+  --ink-2:#565C66;
+  --ink-3:#8B9098;
+  --line:#E5E7EC;
+  --line-2:#F0F1F4;
+  --code-bg:#1B1D24;
+  --code-ink:#E4E6ED;
+  --mark:#FFE27A;
+  --font:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,system-ui,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  --mono:'JetBrains Mono','SFMono-Regular',Consolas,'D2Coding',monospace;
+}
+html[data-theme="dark"]{
+  --accent:#B085EF;
+  --accent-deep:#C9A6F5;
+  --accent-soft:#2A2135;
+  --bg:#101116;
+  --surface:#181A20;
+  --ink:#E8E9ED;
+  --ink-2:#A6AAB4;
+  --ink-3:#73777F;
+  --line:#2A2C34;
+  --line-2:#202229;
+  --code-bg:#0C0D11;
+  --mark:#6E5C16;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15.5px;line-height:1.72;letter-spacing:-.012em;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-deep)}
+::selection{background:var(--accent);color:#fff}
+
+#scrollbar{position:fixed;top:0;left:0;height:3px;width:0;background:var(--accent);z-index:99}
+
+.topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:10px;padding:10px 22px;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.back{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink-2);font-size:14px;font-weight:700;white-space:nowrap}
+.back:hover{color:var(--accent-deep)}
+.back i{width:10px;height:10px;border-radius:3px;background:var(--accent);display:block}
+.search{flex:1;max-width:300px;margin-left:auto;position:relative}
+.search input{width:100%;padding:7px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14px}
+.search input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.hit{position:absolute;right:10px;top:8px;font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums;pointer-events:none}
+.tools{display:flex;gap:6px}
+.tbtn{border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:9px;padding:7px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);white-space:nowrap}
+.tbtn:hover{border-color:var(--accent);color:var(--accent-deep)}
+.tbtn.solid{background:var(--accent);border-color:var(--accent);color:#fff}
+.tbtn:disabled{opacity:.4;cursor:default}
+
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);gap:38px;max-width:1200px;margin:0 auto;padding:26px 24px 120px}
+main{min-width:0}
+
+.side{position:sticky;top:80px;align-self:start;max-height:calc(100vh - 100px);overflow-y:auto;scrollbar-width:thin}
+.panel{background:var(--accent);border-radius:16px;padding:18px 16px;color:#fff;box-shadow:0 8px 24px -12px color-mix(in srgb,var(--accent) 70%,transparent)}
+.panel .cap{font-size:11.5px;font-weight:700;opacity:.72;margin-bottom:9px}
+.panel .subject{font-size:19px;font-weight:800;letter-spacing:-.03em;line-height:1.3;margin-bottom:2px}
+.panel .when{font-size:12.5px;opacity:.8;margin-bottom:16px}
+.toc{list-style:none;margin:0;padding:0}
+.toc a{display:block;padding:6px 10px;border-radius:8px;color:#fff;opacity:.82;text-decoration:none;font-size:13.5px;font-weight:600;line-height:1.45}
+.toc a:hover{background:rgba(255,255,255,.16);opacity:1}
+.toc a.on{background:#fff;color:var(--accent-deep);opacity:1;font-weight:800}
+.toc .num{display:inline-block;width:17px;font-variant-numeric:tabular-nums;opacity:.7}
+.toc a.on .num{opacity:1}
+.panel hr{border:0;border-top:1px solid rgba(255,255,255,.22);margin:14px 0}
+.chk label{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;padding:3px 0;cursor:pointer;line-height:1.5;opacity:.9}
+.chk input{margin-top:4px;accent-color:#fff;flex-shrink:0}
+.chk input:checked + span{opacity:.5;text-decoration:line-through}
+.pbar{height:4px;border-radius:99px;background:rgba(255,255,255,.28);margin-top:11px;overflow:hidden}
+.pbar i{display:block;height:100%;width:0;background:#fff;transition:width .25s}
+
+.hero{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px 28px 22px;overflow:hidden;margin-bottom:16px}
+.hero::after{content:attr(data-w);position:absolute;right:14px;bottom:-26px;font-size:112px;font-weight:800;color:var(--accent);opacity:.09;letter-spacing:-.06em;line-height:1;pointer-events:none}
+.chip{display:inline-flex;align-items:center;gap:7px;background:var(--accent-soft);color:var(--accent-deep);font-size:12.5px;font-weight:800;padding:4px 11px;border-radius:99px}
+h1{font-size:clamp(26px,3.6vw,34px);font-weight:800;letter-spacing:-.04em;line-height:1.24;margin:12px 0 6px;position:relative}
+.hero .sub{color:var(--ink-2);font-size:15px;margin:0 0 14px;position:relative}
+[hidden]{display:none!important}
+.metaline{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-3);position:relative}
+.metaline b{color:var(--ink-2);font-weight:600}
+
+.files{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;position:relative}
+.file{display:inline-flex;align-items:center;gap:9px;padding:8px 13px 8px 9px;border:1px solid var(--line);border-radius:10px;background:var(--surface);text-decoration:none;color:var(--ink);font-size:13.5px;font-weight:700}
+.file:hover{border-color:var(--accent);background:var(--accent-soft)}
+.file .ic{background:var(--accent);color:#fff;font-size:10px;font-weight:800;padding:3px 6px;border-radius:6px;letter-spacing:.02em}
+.file em{font-style:normal;color:var(--ink-3);font-weight:600;font-size:12.5px}
+.files .none{font-size:12.5px;color:var(--ink-3);font-weight:600;padding:8px 0}
+.extra-chip:disabled{cursor:default;opacity:.6}
+
+.flow{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:26px}
+.flow a{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--line);border-radius:99px;background:var(--surface);text-decoration:none;color:var(--ink-2);font-size:13px;font-weight:600}
+.flow a:hover{border-color:var(--accent);color:var(--accent-deep);background:var(--accent-soft)}
+.flow a b{color:var(--accent);font-variant-numeric:tabular-nums}
+
+.keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:34px}
+.key{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:14px;padding:16px 17px}
+.key .n{font-size:12px;font-weight:800;color:var(--accent);margin-bottom:5px}
+.key p{margin:0;font-size:14.5px;line-height:1.6}
+.key b{font-weight:800}
+
+section{margin-bottom:46px;scroll-margin-top:82px}
+h2.st{display:flex;align-items:center;gap:11px;font-size:22px;font-weight:800;letter-spacing:-.035em;margin:0 0 14px}
+h2.st .sq{flex-shrink:0;width:30px;height:30px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+h3{font-size:16.5px;font-weight:800;margin:26px 0 8px;letter-spacing:-.025em;padding-left:11px;border-left:3px solid var(--accent)}
+h4{font-size:14.5px;font-weight:700;margin:18px 0 6px;color:var(--ink-2)}
+p{margin:9px 0}
+ul,ol{margin:9px 0;padding-left:21px}
+li{margin:3px 0}
+li::marker{color:var(--accent)}
+.en{color:var(--ink-3);font-weight:500;font-size:.9em}
+mark{background:linear-gradient(transparent 54%,var(--mark) 54%);color:inherit;padding:0 2px}
+.hit-mark{background:var(--accent);color:#fff;border-radius:3px}
+.imgnote{font-size:12.5px;color:var(--ink-3);margin:6px 0;line-height:1.6;padding-left:2px}
+.imgnote b{color:var(--ink-2);font-weight:700}
+
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin:-6px 0 12px}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:6px;letter-spacing:0}
+.badge.exam{color:#92580B;background:#FDF0D5}
+.badge.prof{color:var(--accent-deep);background:var(--accent-soft)}
+.badge.ask{color:#B02020;background:#FCE4E4}
+html[data-theme="dark"] .badge.exam{background:#3B2D0E;color:#EFC470}
+html[data-theme="dark"] .badge.ask{background:#3A1919;color:#F0A0A0}
+
+.call{border-radius:13px;padding:14px 17px;margin:15px 0;background:var(--surface);border:1px solid var(--line)}
+.call .t{font-size:12.5px;font-weight:800;margin-bottom:5px}
+.call p:first-of-type{margin-top:0}
+.call p:last-child,.call ul:last-child{margin-bottom:0}
+.call.quote{background:var(--accent-soft);border-color:transparent}
+.call.quote .t{color:var(--accent-deep)}
+.call.quote p{font-size:14.8px}
+.call.warn{border-left:4px solid #E5A50A}
+.call.warn .t{color:#A16207}
+.call.ask{border-left:4px solid #DC2626}
+.call.ask .t{color:#B02020}
+.call.link{border-left:4px solid var(--accent)}
+.call.link .t{color:var(--accent-deep)}
+.call.person{background:var(--line-2);border:1px solid var(--line)}
+.call.person .t{color:var(--ink-2)}
+
+.call.extra{background:repeating-linear-gradient(135deg,var(--line-2),var(--line-2) 9px,transparent 9px,transparent 18px);border:1.5px dashed var(--ink-3);border-left-width:1.5px}
+.call.extra .t{color:var(--ink-2);display:flex;align-items:center;gap:6px}
+.call.extra .t::before{content:"보충";background:var(--ink-3);color:var(--surface);font-size:10.5px;padding:1px 6px;border-radius:5px}
+.call.extra p{color:var(--ink-2)}
+.badge.extra{color:var(--ink-2);background:var(--line-2);border:1px dashed var(--ink-3)}
+.ext{border-bottom:2px dotted var(--ink-3);color:var(--ink-2)}
+.ext::after{content:"보충";font-size:9.5px;font-weight:800;vertical-align:super;color:var(--ink-3);margin-left:2px;letter-spacing:0}
+.extra-chip{border:1.5px dashed var(--ink-3);background:transparent;color:var(--ink-2);cursor:pointer;font-family:var(--font)}
+body.no-extra .call.extra,body.no-extra .badge.extra{display:none}
+body.no-extra .ext{border-bottom:0}
+body.no-extra .ext::after{display:none}
+html[data-theme="dark"] .call.warn .t{color:#E5B547}
+html[data-theme="dark"] .call.ask .t{color:#F0A0A0}
+
+details.raw{margin:12px 0;border:1px dashed var(--line);border-radius:10px;background:var(--line-2)}
+details.raw summary{cursor:pointer;padding:8px 14px;font-size:12.5px;color:var(--ink-3);font-weight:700;list-style:none}
+details.raw summary::-webkit-details-marker{display:none}
+details.raw summary::before{content:"▸ ";color:var(--accent)}
+details.raw[open] summary::before{content:"▾ "}
+details.raw .txt{padding:0 14px 12px;font-size:13px;color:var(--ink-2);white-space:pre-wrap;line-height:1.7}
+
+.rawnote{border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+.rawitem{display:grid;grid-template-columns:78px 1fr;gap:16px;padding:15px 18px;border-bottom:1px solid var(--line-2)}
+.rawitem:last-child{border-bottom:0}
+.rawitem .seq{font-size:12px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+.rawitem .seq span{display:block;color:var(--ink-3);font-weight:600;font-size:11px;margin-top:2px}
+.rawitem .body{white-space:pre-wrap;font-size:14px;line-height:1.75;color:var(--ink)}
+.rawitem .where{margin-top:7px;font-size:12px}
+.rawitem .where a{color:var(--accent-deep);text-decoration:none;font-weight:700;background:var(--accent-soft);padding:2px 8px;border-radius:6px}
+.rawitem .where a:hover{background:var(--accent);color:#fff}
+.rawnote .empty{padding:24px 18px;color:var(--ink-3);font-size:13.5px}
+
+.tablewrap{overflow-x:auto;margin:15px 0;border:1px solid var(--line);border-radius:13px}
+table{border-collapse:collapse;width:100%;font-size:13.5px;background:var(--surface)}
+th,td{padding:9px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line-2)}
+th{background:var(--accent);color:#fff;font-weight:700;font-size:12.5px;white-space:nowrap;border-bottom:0}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--line-2)}
+
+.codebox{margin:15px 0;border-radius:13px;overflow:hidden;background:var(--code-bg);border:1px solid var(--code-bg)}
+.codebox .head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 14px;font-size:12px;color:#9AA0AC;font-weight:700;background:rgba(255,255,255,.04)}
+.codebox .head .tag{color:#fff;background:var(--accent);border-radius:5px;padding:1px 7px;font-size:11px;margin-right:7px}
+.codebox pre{margin:0;padding:15px 17px;overflow-x:auto;font-family:var(--mono);font-size:13.2px;line-height:1.7;color:var(--code-ink)}
+.codebox .cm{color:#7C8494}
+.codebox .kw{color:#C4A6FF}
+.codebox .st2{color:#8BD5A0}
+.copy{border:0;background:transparent;color:#9AA0AC;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font)}
+.copy:hover{color:#fff}
+.codebox.pseudo{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent)}
+.codebox.pseudo .head{background:var(--accent-soft);color:var(--accent-deep)}
+.codebox.pseudo .head .tag{background:var(--accent-deep)}
+.codebox.pseudo pre{color:var(--ink);font-size:13.6px}
+.codebox.pseudo .cm{color:var(--ink-3)}
+.codebox.pseudo .kw{color:var(--accent-deep);font-weight:700}
+.codebox.pseudo .copy{color:var(--ink-3)}
+.codebox.pseudo .copy:hover{color:var(--accent-deep)}
+code:not(pre code){background:var(--accent-soft);color:var(--accent-deep);padding:1px 6px;border-radius:6px;font-family:var(--mono);font-size:.88em;font-weight:600}
+
+figure{margin:18px 0;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 14px 12px}
+figure svg{max-width:100%;height:auto}
+figcaption{font-size:12.5px;color:var(--ink-3);margin-top:10px}
+
+.terms{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:11px}
+.term{border:1px solid var(--line);border-radius:13px;padding:13px 15px;background:var(--surface)}
+.term b{display:block;font-size:15px}
+.term .e{display:block;font-size:12px;color:var(--accent-deep);font-family:var(--mono);margin-bottom:6px}
+.term p{margin:0;font-size:13.3px;color:var(--ink-2);line-height:1.6}
+
+.q{border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:12px 0;background:var(--surface)}
+.q .qh{display:flex;gap:10px;align-items:flex-start;font-weight:700;font-size:15px}
+.q .qn{color:#fff;background:var(--accent);border-radius:7px;padding:1px 8px;font-size:12.5px;font-weight:800;flex-shrink:0;margin-top:3px}
+.q .type{font-size:11px;font-weight:800;color:var(--ink-3);border:1px solid var(--line);border-radius:6px;padding:1px 7px;margin-left:auto;flex-shrink:0;margin-top:3px}
+.q ol.ch{list-style:none;padding-left:0;margin:11px 0 0;counter-reset:c}
+.q ol.ch li{padding:3px 0 3px 26px;position:relative;font-size:14.3px}
+.q ol.ch li::before{content:counter(c);counter-increment:c;position:absolute;left:0;top:4px;width:19px;height:19px;border:1px solid var(--line);border-radius:50%;font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--ink-3)}
+.ans{margin-top:12px;padding:11px 13px;border-radius:10px;background:var(--accent-soft);font-size:14.2px;cursor:pointer}
+.ans .lab{font-weight:800;color:var(--accent-deep);font-size:12.5px;margin-right:7px}
+body.hide-ans .ans:not(.on){background:var(--line-2);color:transparent;user-select:none;cursor:pointer;position:relative}
+body.hide-ans .ans:not(.on) *{color:transparent!important}
+body.hide-ans .ans:not(.on)::after{content:"눌러서 정답 확인";position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-3);font-size:12.5px;font-weight:700}
+
+.vhead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px}
+.vhead input[type=search]{flex:1;min-width:170px;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14px}
+.vhead input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.vlist{margin:0;padding:0;list-style:none;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
+.vword{display:grid;grid-template-columns:190px 1fr;gap:16px;padding:14px 18px;border-bottom:1px solid var(--line-2)}
+.vword:last-child{border-bottom:0}
+.vword:hover{background:var(--line-2)}
+.vword .w{font-weight:800;font-size:16px;letter-spacing:-.02em}
+.vword .ipa{display:block;font-family:var(--mono);font-size:12px;color:var(--ink-3);font-weight:400;margin-top:1px}
+.vword .pos{display:inline-block;font-size:10.5px;font-weight:800;color:#fff;background:var(--accent);border-radius:5px;padding:1px 6px;margin-top:5px}
+.vword .mean{font-size:14.5px;margin:0;font-weight:600}
+.vword .ex{font-size:13px;color:var(--ink-2);margin:5px 0 0}
+.vword .ex b{color:var(--accent-deep);font-weight:700}
+.vword .ex .ko{display:block;color:var(--ink-3);font-size:12.5px}
+.masked .mean,.masked .ex{background:var(--line-2);border-radius:6px;color:transparent;cursor:pointer}
+.masked .mean *,.masked .ex *{color:transparent!important}
+.masked .mean.show,.masked .ex.show{background:transparent;color:inherit}
+.masked .mean.show *,.masked .ex.show *{color:revert!important}
+.masked .ex.show b{color:var(--accent-deep)!important}
+.quizbox{margin-top:18px;padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--surface);display:none}
+.quizbox.on{display:block}
+.quizbox .qq{font-size:22px;font-weight:800;margin-bottom:14px;letter-spacing:-.02em}
+.quizbox .opts{display:grid;gap:8px}
+.quizbox .opt{text-align:left;padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14.5px;cursor:pointer}
+.quizbox .opt:hover{border-color:var(--accent)}
+.quizbox .opt.ok{border-color:#16A34A;background:color-mix(in srgb,#16A34A 12%,var(--surface))}
+.quizbox .opt.no{border-color:#DC2626;background:color-mix(in srgb,#DC2626 12%,var(--surface))}
+.quizbox .score{margin-top:13px;font-size:13px;color:var(--ink-3);font-weight:600}
+.vlist .empty{padding:24px 18px;color:var(--ink-3);font-size:13.5px}
+
+footer{margin-top:54px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-3);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+@media(max-width:900px){
+  .wrap{grid-template-columns:1fr;gap:18px;padding:16px 16px 80px}
+  .side{position:static;max-height:none;order:-1}
+  .vword{grid-template-columns:1fr;gap:5px}
+  .search{max-width:none;order:3;flex-basis:100%;max-width:100%}
+  .topbar{flex-wrap:wrap}
+  .hero::after{font-size:78px}
+}
+@media print{
+  .topbar,.side,#scrollbar,.quizbox,.vhead,.flow,.files,.extra-chip{display:none!important}
+  .wrap{display:block;max-width:none;padding:0}
+  body{font-size:10.5pt;background:#fff}
+  section{page-break-inside:avoid;margin-bottom:22px}
+  body.hide-ans .ans:not(.on){background:var(--accent-soft)!important;color:inherit!important}
+  body.hide-ans .ans:not(.on) *{color:inherit!important}
+  body.hide-ans .ans:not(.on)::after{display:none}
+  details.raw{display:none}
+  #viewVocab,#viewRaw{display:block!important;page-break-before:always}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body class="hide-ans">
+<div id="scrollbar"></div>
+
+<div class="topbar">
+  <a class="back" href="../"><i></i>인공지능</a>
+  <div class="search"><input id="q" type="search" placeholder="찾기 (Enter로 다음)" aria-label="문서 내 검색"><span class="hit" id="hit"></span></div>
+  <div class="tools">
+    <button class="tbtn" id="ansBtn">정답 가리기</button>
+    <button class="tbtn" id="vocabBtn">단어장</button>
+    <button class="tbtn" id="rawBtn">필기 원문</button>
+    <button class="tbtn" id="themeBtn">다크</button>
+    <button class="tbtn" id="printBtn">🖨</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<aside class="side">
+  <div class="panel">
+    <div class="subject">인공지능</div>
+    <div class="when">3주차 1차시 · 2026.09.17 (목)</div>
+
+    <div id="tocWrap">
+      <div class="cap">목차</div>
+      <ul class="toc" id="toc">
+        <li><a href="#s1"><span class="num">01</span>2.1 AI 도우미와 SW 공개</a></li>
+        <li><a href="#s2"><span class="num">02</span>2.2 AI 기술 경쟁과 교육</a></li>
+        <li><a href="#s3"><span class="num">03</span>2.3 생활 속 응용</a></li>
+        <li><a href="#s4"><span class="num">04</span>2.4 타 학문 분야 응용</a></li>
+        <li><a href="#s5"><span class="num">05</span>2.5 AI와 일자리 문제</a></li>
+        <li><a href="#s6"><span class="num">06</span>3.1 AI의 분류 체계</a></li>
+        <li><a href="#s7"><span class="num">07</span>3.2 AI의 연구 분야</a></li>
+        <li><a href="#s8"><span class="num">08</span>3.3 시대별 연구 요약</a></li>
+        <li><a href="#s9"><span class="num">09</span>3.4 혁신적인 6개 시스템</a></li>
+        <li><a href="#s10"><span class="num">10</span>3.5 앨런 튜링과 AI 테스트</a></li>
+        <li><a href="#s11"><span class="num">11</span>3.6 문제 해결과 코딩</a></li>
+        <li><a href="#s12"><span class="num">12</span>3.7 AI와 소프트웨어</a></li>
+        <li><a href="#s13"><span class="num">13</span>영상1 · 음성인식 기술 원리</a></li>
+        <li><a href="#s14"><span class="num">14</span>영상2 · 컴공에서 무엇을 배워야 할까</a></li>
+      </ul>
+      <hr>
+      <div class="cap">복습 체크</div>
+      <div class="chk">
+        <label><input type="checkbox"><span>규칙기반 AI와 신경망의 차이 설명 가능</span></label>
+        <label><input type="checkbox"><span>6개 혁신 시스템을 연도순으로 말할 수 있다</span></label>
+        <label><input type="checkbox"><span>튜링 테스트 방법 설명 가능</span></label>
+      </div>
+      <div class="pbar"><i id="barFill"></i></div>
+    </div>
+
+    <div id="rawNav" hidden>
+      <div class="cap">필기 원문</div>
+      <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">내가 수업 중에 보낸 내용 <b id="rawTotal">0</b>개를 손대지 않고 그대로 모아둔 페이지입니다.</p>
+      <hr>
+      <div class="cap">확인 방법</div>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">여기 있는 내용이 본문에 다 반영됐는지 대조하세요. 각 항목의 파란 링크를 누르면 정리된 위치로 이동합니다.</p>
+    </div>
+
+    <div id="vocabNav" hidden>
+      <div class="cap">단어장</div>
+      <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">이번 차시에 나온 전공 필수 단어 <b id="vTotal">0</b>개입니다.</p>
+      <hr>
+      <div class="cap">사용법</div>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">뜻 가리기를 켜면 회색 칸을 눌러 하나씩 확인할 수 있습니다. 퀴즈는 아래 목록에서 문제를 자동으로 만듭니다.</p>
+    </div>
+  </div>
+</aside>
+
+<main>
+<div id="viewNote">
+
+  <div class="hero" data-w="2·3장">
+    <span class="chip">3주차 · 1차시</span>
+    <button class="chip extra-chip" id="extraChip"></button>
+    <h1>인공지능 기술과 최근 응용 동향 · 연구와 구현</h1>
+    <p class="sub">교안(교재 2·3장)과 예습 영상 2편 기반 초안입니다 — 아직 실제 수업 필기가 반영되지 않았습니다. 수업 중 보내주시는 내용으로 이어서 채워집니다.</p>
+    <div class="metaline">
+      <span>2026.09.17 (목)</span>
+      <span><b>강은송</b> 교수님</span>
+      <span>교재 2·3장 · 처음 만나는 인공지능</span>
+    </div>
+
+    <div class="files">
+      <a class="file" href="03-1-slides-ch2.pdf" target="_blank"><span class="ic">PDF</span>2장 인공지능 기술과 최근 응용 동향<em>55p</em></a>
+      <a class="file" href="03-1-slides-ch3.pdf" target="_blank"><span class="ic">PDF</span>3장 인공지능 연구와 구현<em>64p</em></a>
+      <a class="file" href="https://www.youtube.com/watch?v=z3hNBhvkHG0" target="_blank"><span class="ic">YT</span>영상1 · 음성인식 기술 원리<em>7분</em></a>
+      <a class="file" href="https://www.youtube.com/watch?v=i0NcKL1JLfg" target="_blank"><span class="ic">YT</span>영상2 · 컴공에서 무엇을 배워야 할까<em>20분</em></a>
+    </div>
+  </div>
+
+  <nav class="flow">
+    <a href="#s1"><b>01</b> AI 도우미</a>
+    <a href="#s2"><b>02</b> 기술 경쟁·교육</a>
+    <a href="#s3"><b>03</b> 생활 속 응용</a>
+    <a href="#s4"><b>04</b> 타 학문 응용</a>
+    <a href="#s5"><b>05</b> 일자리 문제</a>
+    <a href="#s6"><b>06</b> 분류 체계</a>
+    <a href="#s7"><b>07</b> 연구 분야</a>
+    <a href="#s8"><b>08</b> 시대별 요약</a>
+    <a href="#s9"><b>09</b> 6개 시스템</a>
+    <a href="#s10"><b>10</b> 튜링과 테스트</a>
+    <a href="#s11"><b>11</b> 문제 해결·코딩</a>
+    <a href="#s12"><b>12</b> AI와 SW</a>
+    <a href="#s13"><b>13</b> 영상1</a>
+    <a href="#s14"><b>14</b> 영상2</a>
+  </nav>
+
+  <div class="keys">
+    <div class="key"><div class="n">핵심 1</div><p>규칙기반 AI는 <b>'무엇을 하나'</b>, 신경망은 <b>'어떻게 작동하나'</b>에서 출발했다.</p></div>
+    <div class="key"><div class="n">핵심 2</div><p>혁신적인 6개 시스템은 <b>퍼셉트론→마이신→딥블루→왓슨→알파고→ChatGPT</b> 순이다.</p></div>
+    <div class="key"><div class="n">핵심 3</div><p>튜링 테스트는 <b>대화만으로 상대가 사람인지 기계인지 구별 못 하면 통과</b>한 것으로 본다.</p></div>
+  </div>
+
+  <!-- 01 : 2.1 -->
+  <section id="s1">
+    <h2 class="st"><span class="sq">01</span>2.1 인공지능 도우미와 소프트웨어 공개 동향</h2>
+
+    <h3>(1) 인공지능 도우미들(Assistants)</h3>
+    <ul>
+      <li>구글의 <b>구글 어시스턴트</b><span class="en">(Google Assistant)</span> — 2016년 발표, 음성으로 음악 재생·예약·일정 조회·메시지 전송 수행, 이메일 읽기와 양방향 대화 가능</li>
+      <li>마이크로소프트의 <b>코타나</b><span class="en">(Cortana)</span> — 2014년 공개, 윈도우 PC·모바일용, "헤이 코타나"로 활성화(한국어 미지원)</li>
+      <li>애플의 <b>시리</b><span class="en">(Siri)</span> — 2011년 아이폰4S와 함께 등장, 음성 명령으로 문자 전송·길 안내 등 수행</li>
+      <li>페이스북의 <b>챗봇</b><span class="en">(Chatbot)</span> — 2013년 인공지능연구소 설립 후 공개</li>
+      <li>아마존의 <b>알렉사</b><span class="en">(Alexa)</span> — 2014년 개발, 아마존 에코로 소통, 음악 재생·날씨·교통정보 제공</li>
+      <li>삼성전자의 <b>빅스비</b><span class="en">(Bixby)</span> — 2017년 공개, 갤럭시S8 이후 탑재, 카메라로 이미지·텍스트·QR코드 인식 가능</li>
+    </ul>
+    <p class="imgnote"><b>그림 2.1~2.6</b> 각 도우미의 로고·실행화면 — 코타나는 저자와의 실제 대화 예시("What do I have for today?" → "You have 2 events today")가 교재에 수록됨</p>
+
+    <h3>(2) 인공지능 소프트웨어 공개 동향</h3>
+    <ul>
+      <li><b>오픈소스</b><span class="en">(open source)</span> — 프로그램 소스 코드를 무료로 공개하는 것, 자사 AI 생태계를 빨리 정착시키려는 전략</li>
+      <li>MS 코타나, 구글 <b>텐서플로</b><span class="en">(TensorFlow)</span>, 페이스북 빅서<span class="en">(Big Sur)</span>, 바이두 WARP-CTC 등이 공개됨</li>
+    </ul>
+    <p class="imgnote"><b>그림 2.8</b> 페이스북 Big Sur 서버 — 초록색 GPU 모듈이 꽂힌 랙 조립 사진</p>
+
+    <h3>(3) 인공지능 시장 전망</h3>
+    <ul>
+      <li>세계 AI 소프트웨어 시장은 2018년 95억 달러 → 2025년 1,186억 달러로 급성장 전망</li>
+      <li>자연어 처리, 언어 번역, 로봇 자동화, 머신러닝 등을 포함</li>
+    </ul>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>연도</th><th>2018</th><th>2019</th><th>2020</th><th>2021</th><th>2022</th><th>2023</th><th>2024</th><th>2025</th></tr></thead>
+        <tbody><tr><td>시장규모(십억$)</td><td>9.51</td><td>14.69</td><td>22.59</td><td>34.87</td><td>51.27</td><td>70.94</td><td>94.41</td><td>118.6</td></tr></tbody>
+      </table>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink-3)">〈그림 2.9〉 인공지능 세계시장 전망</p>
+
+    <h3>(4) 인공지능 관련 특허와 국가별 역량 순위</h3>
+    <ul>
+      <li>MS·IBM·삼성전자 등이 특허 다수 보유, 구글·퀄컴·필립스·지멘스·소니·인텔·페이스북도 다수</li>
+      <li>바이두·알리바바·텐센트 등 중국 기업도 특허 다수 취득 — 혁신·투자 면에서 주목받는 중</li>
+    </ul>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>순위</th><th>국가</th><th>점수</th><th>순위</th><th>국가</th><th>점수</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>미국</td><td>100</td><td>6</td><td>한국</td><td>40</td></tr>
+          <tr><td>2</td><td>중국</td><td>61</td><td>7</td><td>이스라엘</td><td>-</td></tr>
+          <tr><td>3</td><td>싱가포르</td><td>50</td><td>8</td><td>독일</td><td>-</td></tr>
+          <tr><td>4</td><td>영국</td><td>41</td><td>9</td><td>스위스</td><td>-</td></tr>
+          <tr><td>5</td><td>캐나다</td><td>40</td><td>10</td><td>핀란드</td><td>-</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink-3)">〈표 2.1〉 2023년 'The Global AI Index' 순위</p>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 2장 p.1–13 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 02 : 2.2 -->
+  <section id="s2">
+    <h2 class="st"><span class="sq">02</span>2.2 인공지능 기술 경쟁과 인공지능 교육</h2>
+
+    <h3>(1) 인공지능 기술의 치열한 경쟁</h3>
+    <ul>
+      <li>미국·중국·일본·프랑스·독일 등 국가 경쟁이 치열, 정상들이 직접 정책을 진두지휘</li>
+      <li>중국 시진핑의 '차세대 인공지능 발전 계획' — 2025년까지 미국 수준을 뛰어넘으려는 목표</li>
+      <li>미국은 첨단 반도체·AI 반도체의 중국 수출을 규제</li>
+      <li>프랑스 마크롱은 파리를 AI 중심도시로 — 삼성 AI연구소 유치, 스타트업 캠퍼스 'Station F' 오픈</li>
+      <li>독일은 제조업에 AI를 접목한 '인더스트리 4.0' 추진</li>
+    </ul>
+
+    <h3>(2) 일본의 인공지능 교육</h3>
+    <ul>
+      <li>2020년부터 초등학생 AI 교육 의무화, 대학 신입생 60만 명 전원 AI 기초교육</li>
+      <li>연간 25만 명 AI 전문 인력 양성 목표</li>
+    </ul>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>구분</th><th>초중교육</th><th>고등교육</th><th>대학교육</th><th>평생교육</th></tr></thead>
+        <tbody>
+          <tr><td>교육 형태</td><td>기초정보 능력</td><td>수리와 데이터 교육</td><td>AI와 데이터 사이언스</td><td>AI 기술 습득</td></tr>
+          <tr><td>목표 인원</td><td>연 100만 명</td><td>연 100만 명</td><td>연 50만 명</td><td>연 전문가 2천 명</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink-3)">〈표 2.2〉 일본 교육개혁 주요 정책</p>
+
+    <h3>(3) 북한의 인공지능 교육과 연구</h3>
+    <ul>
+      <li>인공지능연구소·김책공대 등에서 음성인식·문자인식·얼굴인식을 중점 연구, 동시통역기·AI 스피커 등 개발</li>
+    </ul>
+
+    <h3>(4) 중국의 인공지능 교육</h3>
+    <ul>
+      <li>2030년 세계 최고 AI 국가 목표, 2018년 고교 AI 수업 시작</li>
+      <li>2019년 '인공지능학과'·'빅데이터 학과' 대거 신설 — 101개 로봇공정학과, 203개 데이터과학·빅데이터기술학과</li>
+    </ul>
+
+    <h3>(5) 미국 MIT의 인공지능대학 설립</h3>
+    <ul>
+      <li>10억 달러(1조 2천억 원) 투입해 '인공지능대학' 설립, 2020년 가을 개강</li>
+      <li>AI·머신러닝·데이터과학을 타 분야와 연계 연구</li>
+    </ul>
+
+    <h3>(6) 한국의 인공지능 교육</h3>
+    <ul>
+      <li>2019년 정부 지원 '인공지능 대학원' 공모, 1차 5개 대학 선정 — 아직 선진국 대비 부족한 수준</li>
+      <li>2021년 9월부터 고교 선택과목 'AI 기초'·'AI 수학' 실시</li>
+      <li>정부는 '인공지능 정부'를 목표로 AI 경쟁력 혁신, 활용 전면화, AI 반도체 육성 등 'AI 국가전략' 추진 중</li>
+    </ul>
+    <div class="call quote">
+      <div class="t">교재 만화 — 인공지능 강국의 비결</div>
+      <p>"우리나라가 인공지능 강국이 될 수 있는 비결이 뭘까요?" — "과감한 연구 개발 투자가 관건이지요." "또 없나요?" — "인공지능 교육과 우수한 인재양성도 매우 중요하지요."</p>
+    </div>
+
+    <h3>(7) 미래 교육과 인공지능</h3>
+    <ul>
+      <li>스마트한 지식·새로운 사고·코딩 지식이 필요한 시대, 시간·장소에 구애받지 않는 온라인 교육 확산</li>
+      <li>유튜브·블로그·트위터·검색엔진을 통한 지식 습득 다양화, 코로나 이후 구글 미트·줌을 통한 비대면 교육 정착</li>
+    </ul>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 2장 p.14–23 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 03 : 2.3 -->
+  <section id="s3">
+    <h2 class="st"><span class="sq">03</span>2.3 인공지능의 생활 속의 다양한 응용</h2>
+
+    <ul>
+      <li><b>(1) 광고</b> — 신문 기사 중간 광고, 검색·구매 이력 기반 추천 광고, 유튜브 동영상 추천(사용자 시청 경향 분석)</li>
+      <li><b>(2) 사물인식</b> — 중국 베이징대 얼굴인식 신입생 등록, 대형마트 얼굴인식 결제 — 한국·미국은 얼굴 정보 수집 자체가 불법</li>
+      <li><b>(3) 로봇 심판</b> — 미국에서 AI가 스트라이크·볼 판정, 시비는 줄지만 인간 심판 실직 우려 제기됨</li>
+      <li><b>(4) 가사도우미</b> — AI 청소기(스마트폰 원격조정), KIST 개발 휴머노이드 '마루 Z'(자율보행, 물건 이동)</li>
+      <li><b>(5) 서비스 로봇</b> — 독일 바에서 맥주·커피를 따르는 바텐더 로봇, 식당 서빙 로봇, 유럽·일본에서 증가 추세</li>
+      <li><b>(6) 국내 로봇 카페</b> — 서울 성수동 '카페 봇' — 디저트 봇(케이크에 그림), 바리스타 봇(5분에 3잔 추출)</li>
+      <li><b>(7) 인공지능 스피커</b> — 음성으로 가전기기 제어, 디스플레이 탑재가 추세(구글 홈 허브, SKT '누구 네모')</li>
+    </ul>
+    <p class="imgnote"><b>그림 2.17~2.30</b> 각 응용 사례 사진 — 얼굴인식 단말 앞에 줄 선 중국 대학 신입생, 로봇 심판이 본 첫 야구경기, 마루 Z, 바텐더 로봇, 카페 봇, 구글 홈 허브 등</p>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 2장 p.24–35 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 04 : 2.4 -->
+  <section id="s4">
+    <h2 class="st"><span class="sq">04</span>2.4 인공지능의 타 학문 분야에의 응용</h2>
+
+    <ul>
+      <li><b>(1) 인문학</b> — 스탠퍼드 인간중심 인공지능연구소<span class="en">(HAI)</span>에서 AI 개발자와 인문학자가 협업 연구</li>
+      <li><b>(2) 법률</b> — <b>리걸테크</b><span class="en">(LegalTech)</span>. 2019년 '알파로(Alpha Law) 경진대회'에서 AI와 짝을 이룬 3개 팀이 1~3등 석권 — 인간 변호사 팀을 이김</li>
+      <li><b>(3) 의학</b> — AI 로봇 수술 시행 중, IBM '왓슨'이 암 발견·최적 치료 수행, 국내 X-ray·MRI 인공지능 분석 시스템 개발</li>
+      <li><b>(4) 로봇공학</b> — 휴머노이드 '소피아'(Sophia)는 사람 피부 질감, 60여 개 감정 표현과 대화 가능</li>
+      <li><b>(5) 간호 의료</b> — 로봇 간호사가 환자 자세 이동을 도움, 국내 지능형 간호 로봇 '실벗 3'(원격회의·치매 관리)</li>
+      <li><b>(6) 비즈니스</b> — 국제유가 변동성 예측, 소비자 패턴 분석, AI 주식 분석가가 상당한 수준의 예측 제공</li>
+      <li><b>(7) 농업</b> — 농업용 로봇의 물·영양제 공급, 포도 수확, 축산 사료 공급, <b>스마트팜</b>(IoT+AI로 온도·습도·일사량 자동 관리)</li>
+      <li><b>(8) 방역</b> — DNA 구조 분석으로 백신 개발 기여, 코로나19 방역 로봇(SK텔레콤 등)</li>
+    </ul>
+    <p class="imgnote"><b>그림 2.31~2.44</b> HAI 회의실, 알파로 경진대회 현수막, 수술 로봇, 소피아, 로봇 간호사 RIBA II, 스마트팜 화면, 코로나 방역 로봇 등</p>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 2장 p.36–48 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 05 : 2.5 -->
+  <section id="s5">
+    <h2 class="st"><span class="sq">05</span>2.5 인공지능과 일자리 문제</h2>
+
+    <h3>(1) 인공지능 발달로 인한 일자리 감소</h3>
+    <ul>
+      <li>OECD: 20년 내 일자리 약 14% 감소 전망 / 옥스포드대: 20년 내 현재 직업의 47%가 사라질 것</li>
+      <li>텔레마케터·운동경기 심판·물류 직원은 99% 대체 가능, 단순 조립 생산직·전화교환원·주차요원도 위협</li>
+      <li>자동 운반 로봇(AGV) 확산, 20년 내 AI 자동번역으로 외국어 학습 필요성도 줄어들 전망</li>
+    </ul>
+
+    <h3>(2)~(3) 구체적 사례</h3>
+    <ul>
+      <li>배달차에서 피자를 굽는 '줌 피자(Zume pizza)' 로봇 — 위험하고 반복적인 일을 인간 대신 담당</li>
+      <li>2030년경 자율주행 로봇 택시로 택시기사 수 감소, 택배 드론 등장으로 택배원 수 감소 전망</li>
+    </ul>
+
+    <h3>(4) 인공지능 시대의 일자리 논쟁 — 마윈 vs 머스크</h3>
+    <div class="call quote">
+      <div class="t">제2회 세계인공지능대회(WAIC) 대담</div>
+      <p>알리바바 창업자 마윈은 AI의 미래를 낙관적으로 본 반면, 테슬라 CEO 머스크는 상당한 위험성을 내포한다며 실업 문제로 인간이 화성으로 이주해야 할지도 모른다고 주장했다. 대담 직후 마윈은 회장직에서 물러나 공익사업에 몰두했다.</p>
+    </div>
+
+    <h3>(5) 인공지능 시대의 인기 있는 일자리들</h3>
+    <ul>
+      <li>초등입학생의 65%가 20년 후 새로 생겨난 직업에 종사할 것이라는 전망</li>
+      <li>AI 기술자, 데이터 과학자, 기존 학문과 AI를 융합하는 인재가 유망</li>
+    </ul>
+    <div class="call warn">
+      <div class="t">여기서 잠깐! 인공지능 시대의 변화하는 직업들</div>
+      <p>유망 직업: AI 관련 전문가, 로봇 관련 직업, 소프트웨어 개발자, 머신러닝 전문가, 데이터 과학자·분석가. 줄어드는 직업: 텔레마케터, 은행원, 회계사, 운전기사, 택배기사. 인간의 감성과 관련된 예술 분야 직업은 큰 영향을 받지 않을 전망이다.</p>
+    </div>
+
+    <h3>(6) 일자리 문제와 대책</h3>
+    <ul>
+      <li>로봇은 24시간 가동돼 비용·생산성이 좋아 기존 일자리는 점차 줄어들 것 — 새로운 일자리 흐름은 거스를 수 없는 대세</li>
+      <li>AI 관련 지식을 익혀 잘 대응하는 자세가 필요</li>
+    </ul>
+    <p class="imgnote"><b>그림 2.52</b> "Will AI replace me? The short answer is NO." — 반은 뇌, 반은 회로인 아이콘과 함께 제시된 인용구</p>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 2장 p.49–56 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 06 : 3.1 -->
+  <section id="s6">
+    <h2 class="st"><span class="sq">06</span>3.1 인공지능의 분류 체계</h2>
+
+    <h3>(1) 규칙기반 인공지능</h3>
+    <ul>
+      <li>기호<span class="en">(symbol)</span>와 논리<span class="en">(logic)</span> 위주 — '초기 인공지능' 또는 '좁은 의미의 인공지능'</li>
+      <li>대표 인물: 매카시, 민스키, 사이먼, 뉴웰 — 수학적 정리 증명, 자연어 처리, 문제 해결, 게임, 전문가 시스템에 관심</li>
+      <li>학습이 어렵고 패턴인식(문자·음성·영상)에 한계 노출 — 1980년대 초부터 전문가 시스템으로 방향 전환</li>
+      <li>선험적 규칙인 <b>휴리스틱</b><span class="en">(heuristic)</span> 방법 개발, 문제 해결의 결과를 입증·설명하는 데는 큰 장점</li>
+    </ul>
+    <div class="call quote">
+      <div class="t">교재 만화</div>
+      <p>"규칙기반 인공지능의 대표적인 장점은?" — "규칙을 이용해 인간처럼 추론하는 기능이지요." "가장 큰 단점은?" — "학습 기능이 약하다는 점이지요."</p>
+    </div>
+
+    <h3>(2) 신경망 기반 인공지능</h3>
+    <ul>
+      <li><b>신경망</b><span class="en">(Neural Network)</span>은 인간 두뇌 뉴런 사이의 연결에서 아이디어를 따옴</li>
+      <li>1957년 로젠블럿의 퍼셉트론에서 시작, 1969년 《퍼셉트론즈》 출판 후 급격히 쇠퇴</li>
+      <li>1986년 다층 퍼셉트론 + 역전파 알고리즘으로 제2 도약 → 머신러닝의 중심이 됨</li>
+      <li>2004년 힌튼 교수가 <b>딥러닝</b> 학습 알고리즘 제안 — 신경망 계열의 최신 학습 방법</li>
+    </ul>
+
+    <h3>인공지능 발전의 분류 체계와 흐름도</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>계열</th><th>구간</th></tr></thead>
+        <tbody>
+          <tr><td>기호주의<span class="en">(symbolism)</span> → 규칙기반 AI</td><td>1956년~현재</td></tr>
+          <tr><td>연결주의<span class="en">(connectionism)</span> → 신경망 기반 AI → 머신러닝 → 심층 신경망</td><td>1957~1969 · 1980~1987 → 1987~2006 → 2006~현재</td></tr>
+          <tr><td>통계적 AI<span class="en">(statistics)</span> → 머신러닝(베이지안·HMM·SVM)으로 합류</td><td>-</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink-3)">〈그림 3.2, 3.3〉 신경망은 1970~1980년 첫 번째 침체기를 거쳐 1980~2005년 재도약, 2006년 이후 심층 신경망으로 이어짐</p>
+
+    <h3>(3) 신경망과 규칙기반 인공지능의 관계</h3>
+    <ul>
+      <li>규칙기반 AI는 '두뇌는 무엇을 하나'에, 신경망은 '두뇌가 어떻게 작동하나'에서 착안</li>
+    </ul>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th></th><th>신경망</th><th>규칙기반 인공지능</th></tr></thead>
+        <tbody>
+          <tr><td>영역</td><td>연결주의</td><td>기호주의</td></tr>
+          <tr><td>도구</td><td>뉴런의 연결</td><td>기호와 규칙</td></tr>
+          <tr><td>대표 개발자</td><td>로젠블럿, 힌턴 등</td><td>민스키와 매카시 등</td></tr>
+          <tr><td>핵심 기술</td><td>머신러닝, 딥러닝</td><td>규칙기반의 추론</td></tr>
+          <tr><td>응용 분야</td><td>음성인식 등 패턴인식</td><td>문제 해결, 전문가 시스템</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink-3)">〈표 3.1〉 신경망과 규칙기반 인공지능의 비교</p>
+
+    <div class="call extra">
+      <div class="t">여기서 잠깐! 신경망과 규칙기반의 경쟁과 발전</div>
+      <p><span class="ext">1950년대 앞서갔던 신경망은 1969년 민스키가 지적한 XOR 문제로 한동안 침묵했고, 그 기간 규칙기반 AI가 크게 발달했다. 1984년 이후 신경망이 재도약했고, 1990년대부터는 둘 다 함께 발전했다. 요즘은 머신러닝의 발달로 신경망이 다시 득세하는 시대다.</span></p>
+    </div>
+
+    <h3>(4) 인공지능의 분류</h3>
+    <p>관점에 따라 두 가지 벤다이어그램으로 표현 가능하다. 일반적 관점은 신경망을 머신러닝 영역에 포함시키고, 3분류 관점은 규칙기반·신경망기반·통계적 AI를 나란히 놓고 일부만 겹치게 그린다.</p>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 3장 p.3–13 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 07 : 3.2 -->
+  <section id="s7">
+    <h2 class="st"><span class="sq">07</span>3.2 인공지능의 연구 분야</h2>
+
+    <h3>(1) 규칙기반 인공지능의 연구 분야</h3>
+    <ul>
+      <li>① 수학적 정리<span class="en">(theorem)</span>의 증명</li>
+      <li>② 게임<span class="en">(game)</span></li>
+      <li>③ 자연어 처리<span class="en">(natural language processing)</span> — 인간 언어로 컴퓨터와 대화, 언어 간 기계번역<span class="en">(machine translation)</span></li>
+      <li>④ 전문가 시스템 — 자동차 진단, 의사의 질병 진단, 화합물 구조 분석, 광물 매장량 추정, 개인 교사 시스템 등</li>
+    </ul>
+
+    <h3>(2) 신경망의 연구 분야</h3>
+    <ul>
+      <li>뉴런처럼 수많은 신경망 처리기의 네트워크로 구성, 신경망 → 다층 신경망 → 딥러닝 순으로 연구가 이어짐</li>
+      <li>3가지 주요 분야: ① 문자인식 ② 음성인식 ③ 영상인식</li>
+      <li>그 외 뉴런의 생물학적 네트워크 연구, 학습 능력·특성 연구, 제안된 신경망의 구현 연구, 동영상 물체 인식 연구</li>
+    </ul>
+
+    <h3>(3) 딥러닝의 연구 분야</h3>
+    <ul>
+      <li>영상인식·음성인식 기술이 더욱 정교해지고, 동영상 인식 기술로까지 발전 중</li>
+    </ul>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 3장 p.14–20 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 08 : 3.3 -->
+  <section id="s8">
+    <h2 class="st"><span class="sq">08</span>3.3 인공지능의 시대별 연구 요약</h2>
+
+    <h3>(1) 초기 인공지능 연구 분야(1960~70년대)</h3>
+    <ul>
+      <li>새로운 수학적 정리의 증명, 8-puzzle을 비롯한 문제 해결, 자연어의 처리 및 번역</li>
+      <li>체스를 비롯한 게임과 간단한 음성인식, 신경망을 이용한 문자·숫자인식</li>
+    </ul>
+
+    <h3>(2) 인공지능 연구와 체스 게임</h3>
+    <ul>
+      <li>1951년 프린츠가 최초의 체스 프로그램 완성, 40여 년 후 IBM 딥 블루가 인간 세계 챔피언을 이김</li>
+      <li>체스는 AI의 수준을 평가하는 척도로 오랫동안 활용됨</li>
+    </ul>
+
+    <h3>(3) 1980~2000년 사이의 연구 분야</h3>
+    <ul>
+      <li>화자독립 음성인식, 연속 음성인식 연구개발, 의학 진단 등 전문가 시스템 활용 확대</li>
+      <li>1990년대 <b>지능형 에이전트</b><span class="en">(Intelligent agent)</span> 연구 시작 — 환경을 센서로 인지하고 행위자로 행동을 되돌리는 순환 구조</li>
+      <li>베이지안 네트워크 등 머신러닝 도입, 1997년 IBM '딥 블루'가 세계 체스 챔피언 등극</li>
+    </ul>
+
+    <h3>(4) 2000년대부터 최근까지</h3>
+    <ul>
+      <li>2004년 힌튼의 딥러닝 알고리즘 제안, 2010년 왓슨의 퀴즈쇼 우승, 2016년 알파고의 바둑 세계 챔피언 등극</li>
+      <li>수많은 데이터를 처리하는 <b>빅데이터</b><span class="en">(Big data)</span> 시대 개시, 2022년 OpenAI의 ChatGPT 개발</li>
+    </ul>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 3장 p.21–27 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 09 : 3.4 -->
+  <section id="s9">
+    <h2 class="st"><span class="sq">09</span>3.4 혁신적인 6개의 인공지능 시스템</h2>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>연도</th><th>이름</th><th>사건</th><th>특징</th></tr></thead>
+        <tbody>
+          <tr><td>1957</td><td>마크 I 퍼셉트론</td><td>최초로 문자인식</td><td>로젠블럿이 개발한 최초의 신경망 학습 모델</td></tr>
+          <tr><td>1976</td><td>마이신<span class="en">(MYCIN)</span></td><td>최초의 전문가 시스템</td><td>스탠퍼드대 개발, 혈액질병을 진단·처방하는 의학 전문가 시스템</td></tr>
+          <tr><td>1997</td><td>딥 블루</td><td>세계 체스 챔피언</td><td>IBM의 체스 전용 규칙기반 전문가 시스템</td></tr>
+          <tr><td>2010</td><td>왓슨</td><td>퀴즈쇼 챔피언</td><td>IBM의 다양한 지식을 가진 퀴즈 전문가 시스템</td></tr>
+          <tr><td>2016</td><td>알파고</td><td>세계 바둑 챔피언</td><td>구글의 딥러닝 기법 신경망 학습 소프트웨어</td></tr>
+          <tr><td>2022</td><td>ChatGPT</td><td>생성형 대화 전문 챗봇</td><td>OpenAI의 자연어 대화 가능 소프트웨어</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink-3)">〈표 3.2〉 6개의 혁신적인 인공지능 시스템</p>
+
+    <h3>세부 내용</h3>
+    <ul>
+      <li><b>마크 I 퍼셉트론</b> — 1957년 미국 개발, A·B·C 등 문자 인식, 미국인의 선풍적 관심을 일으킴</li>
+      <li><b>마이신</b> — 1976년 스탠퍼드대 개발, 비교적 간단한 추론 엔진과 600여 개 규칙 사용</li>
+      <li><b>딥 블루</b> — 32개 마이크로프로세서·512개 체스 칩 내장, 70만 번 이상의 체스 경기 기보 내장, 1997년 카스파로프를 이겨 인터넷 생중계로 7,400만 건 조회수 기록</li>
+      <li><b>왓슨</b> — 기억력·판단력·언어능력과 방대한 정보로 논리적 추론, 2010년 제퍼디! 퀴즈쇼 우승, 현재 암 진단 등 의료 분야에서 활약</li>
+      <li><b>알파고</b> — 프로기사 기보의 전략을 분석·학습, 경우의 수가 엄청난 바둑에서 딥러닝 기법 활용, AI 소프트웨어와 하드웨어 능력의 결합</li>
+      <li><b>ChatGPT</b> — 2022년 11월 말 공개, GPT는 'Generative Pre-trained Transformer'의 약자, 대규모 언어 모델</li>
+    </ul>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 3장 p.28–35 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 10 : 3.5 -->
+  <section id="s10">
+    <h2 class="st"><span class="sq">10</span>3.5 앨런 튜링과 인공지능 테스트</h2>
+
+    <div class="call person">
+      <div class="t">인물 탐구 — 앨런 튜링(Alan Turing, 1912–1954)</div>
+      <p>영국의 수학자·암호학자·컴퓨터과학자. 1936년 '튜링 머신'이란 컴퓨터 이론 모델을 창안해 '컴퓨터과학의 아버지'로 불린다(에니악보다 10년 앞섬). 제2차 세계대전 중 암호해독기를 개발해 최고 훈장을 받았으나, 전후 동성애자임이 발각되어 화학적 거세형을 받았고 1954년 42세에 자살했다. 기념판에는 "전쟁 시의 암호 해독자, 편견의 희생자"라고 적혀 있다.</p>
+    </div>
+
+    <h3>튜링상과 암호해독기</h3>
+    <ul>
+      <li><b>튜링상</b><span class="en">(Turing Award)</span>은 컴퓨터 분야의 노벨상 격, 1966년부터 수여, 현재 구글이 후원하며 상금 100만 달러</li>
+    </ul>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>연도</th><th>수상자</th></tr></thead>
+        <tbody>
+          <tr><td>1969</td><td>민스키</td></tr>
+          <tr><td>1971</td><td>매카시</td></tr>
+          <tr><td>1975</td><td>뉴웰과 사이먼</td></tr>
+          <tr><td>1994</td><td>파이겐바움</td></tr>
+          <tr><td>2018</td><td>힌튼, 벤지오, 르쿤</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink-3)">〈표 3.3〉 인공지능 분야에서의 튜링상 수상자</p>
+
+    <h3>인공지능 튜링 테스트</h3>
+    <ul>
+      <li>1950년 논문에서 '기계는 생각할 수 있다'고 주장, <b>튜링 테스트</b>는 AI 성능을 판별하는 기법</li>
+      <li>방법: 사람 A와 컴퓨터 B가 각각 분리된 방에 있고, 평가자 C가 둘과 대화 — A와 B 중 누가 사람인지 구별하지 못하면 B가 테스트를 통과한 것으로 판단</li>
+    </ul>
+
+    <h3>'엘리자'와 유진 구스트만</h3>
+    <ul>
+      <li>1966년 와이젠바움이 개발한 <b>엘리자</b><span class="en">(ELIZA)</span> — Lisp으로 만든 초기 자연어 처리 프로그램, 정신과 의사와의 대화를 흉내 냄, 실제로는 패턴 매칭에 불과했지만 상당한 지능이 있는 것처럼 보였음</li>
+      <li>2014년 영국 레딩대에서 개발한 '유진 구스트만'이 자신을 우크라이나의 13세 소년으로 소개해 5분간 대화 끝에 튜링 테스트를 통과했다고 화제가 됐으나, 추후 충분히 통과하지 않은 수준으로 판명됨</li>
+    </ul>
+    <div class="call quote">
+      <div class="t">교재 수록 — 엘리자와의 실제 대화</div>
+      <p>"I'm glad to talk with you." → "Do you believe it is normal to be glad to talk with me?" / "Please help me, Eliza!!!" → "I see." — 패턴 매칭만으로도 대화가 이어지는 모습을 보여준다.</p>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 3장 p.36–45 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 11 : 3.6 -->
+  <section id="s11">
+    <h2 class="st"><span class="sq">11</span>3.6 인공지능에서의 문제 해결과 코딩</h2>
+
+    <h3>(1) 인공지능과 문제 해결</h3>
+    <div class="call quote">
+      <div class="t">교재 만화</div>
+      <p>"앞으로 AI가 우리 문제를 대부분 해결해 줄 것 같아요." — "그러면 우리가 깊이 생각할 일도 별로 없겠네요." — "인공지능은 우리가 정해준 일과 역할을 대신해 줄 뿐이지요. 문제 해결의 근본적인 방법을 찾는 것은 여전히 인간의 몫이지요."</p>
+    </div>
+    <ul>
+      <li>문제 해결에 도움 되는 핵심 방안: 기본 개념·원리를 문제에 적용, 비슷한 유형은 같은 방법 적용, 문제를 단순화·단계별로 분해, 다양한 관점으로 접근, 자유로운 발상</li>
+      <li>AI 시대의 전략: 블록 다이어그램으로 단계별 분석, 규칙기반 적용 여부 검토, 신경망·딥러닝 인식 기능 활용, 데이터 사이언스 적용 검토, <b>컴퓨팅 사고</b> 적용</li>
+    </ul>
+
+    <h3>(2) 문제 해결의 핵심인 사고의 힘</h3>
+    <div class="call quote">
+      <div class="t">사고를 강조한 명언들</div>
+      <ul>
+        <li>데카르트 — "나는 생각한다, 그러므로 존재한다"<span class="en">(I think, therefore I am)</span></li>
+        <li>IBM 왓슨 회장의 사훈 — 'Think'</li>
+        <li>스티브 잡스 — "남과 다르게 생각하라"<span class="en">(Think Different)</span></li>
+        <li>빌 게이츠 — 1년에 두 차례 외딴 곳에서 갖는 'Think Week'</li>
+      </ul>
+    </div>
+
+    <h3>(3) 코딩을 통한 인공지능 접근</h3>
+    <ul>
+      <li><b>코딩</b><span class="en">(coding)</span>이란 실행 가능한 프로그램(코드)을 작성하는 행위 — 프로그래밍과 같은 의미</li>
+    </ul>
+    <div class="codebox">
+      <div class="head"><span><span class="tag">Python</span>polygon.py — 육각형 그리기</span><button class="copy">복사</button></div>
+      <pre><span class="kw">import</span> turtle <span class="kw">as</span> t
+
+n = 6                  <span class="cm"># 육각형을 그린다.</span>
+t.color(<span class="st2">"red"</span>)         <span class="cm"># 빨간색으로 정한다.</span>
+t.begin_fill()         <span class="cm"># 색칠한 영역을 시작한다.</span>
+<span class="kw">for</span> x <span class="kw">in</span> range(n):     <span class="cm"># n번 반복한다.</span>
+    t.forward(50)      <span class="cm"># 거북이를 50만큼 앞으로 이동한다.</span>
+    t.left(360/n)      <span class="cm"># 거북이를 360/n만큼 왼쪽으로 회전한다.</span>
+t.end_fill()           <span class="cm"># 색칠한 영역을 마친다.</span></pre>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink-3)">교재 수록 예제 — Python turtle 모듈로 빨간 육각형을 그리는 코드</p>
+
+    <h3>(4) 코딩의 궁극적인 목표와 중요성</h3>
+    <p>흐름: <b>문제</b> → <b>문제 해결을 위한 방법 구상</b> → <b>코딩</b> → <b>문제 해결</b></p>
+    <div class="call quote">
+      <div class="t">코딩의 중요성을 강조한 인사들</div>
+      <ul>
+        <li>빌 게이츠 — "13살 때 처음 코딩을 배웠고, 이를 바탕으로 마이크로소프트를 세웠다."</li>
+        <li>오바마 전 대통령 — "코딩 기술을 배우는 것이 여러분의 미래는 물론 조국의 미래에도 매우 중요하다."</li>
+        <li>스티브 잡스 — "이 나라 모든 사람들은 컴퓨터 프로그래밍, 즉 코딩을 배워야 한다. 코딩은 생각하는 방법을 가르쳐 주기 때문이다."</li>
+      </ul>
+    </div>
+
+    <h3>(5) 코딩의 주요 목적</h3>
+    <ul>
+      <li>인공지능 시대의 기초적·필수적 요소, 논리적 사고력 향상, 문제 해결을 위한 생각하는 힘</li>
+      <li>창의적 발상과 지구력 향상, 컴퓨팅 사고로 미래 직업에 효율적으로 대응</li>
+    </ul>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 3장 p.46–53 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 12 : 3.7 -->
+  <section id="s12">
+    <h2 class="st"><span class="sq">12</span>3.7 인공지능과 소프트웨어</h2>
+
+    <h3>(1) 인공지능 소프트웨어 시대</h3>
+    <ul>
+      <li>총 개발비 중 소프트웨어 비중이 점차 높아짐 — 자동차 56%, 항공기 60%, 의료 서비스 50%</li>
+      <li>BMW 자율주행차 연구개발비의 약 90%가 소프트웨어, 테슬라·구글도 AI 소프트웨어가 핵심</li>
+      <li>차세대 전투기 F35 기능의 92% 이상이 소프트웨어로 구현, 영화 '아바타' 그래픽에 3만 5천 대 컴퓨터 사용</li>
+    </ul>
+    <div class="call extra">
+      <div class="t">여기서 잠깐! 인공지능 소프트웨어란?</div>
+      <p><span class="ext">인공지능 소프트웨어(AI Software)란 소프트웨어에 인공지능 기술을 접목한 것이다. 신경망·딥러닝 알고리즘도 사실 소프트웨어에 속한다. 인공지능 소프트웨어 = 인공지능 + 소프트웨어.</span></p>
+    </div>
+
+    <h3>(2) 인공지능 시대의 소프트웨어의 중요성</h3>
+    <div class="call quote">
+      <div class="t">"소프트웨어가 세상을 지배하는 이유"</div>
+      <p>마크 앤드리센(넷스케이프 창업자)이 2011년 월스트리트저널에 기고한 글에서 "Software is eating the world, in all sectors. In the future every company will become a software company"라고 주장했다.</p>
+    </div>
+    <ul>
+      <li>나이키 CEO는 '소프트웨어와 스포츠의 결합'을, 벤츠 CEO는 "이제 자동차는 기름이 아니라 소프트웨어로 달린다"고 강조</li>
+      <li>소프트웨어는 제품의 부가가치를 결정하는 핵심 요소이자 고용효과가 높고 선두 기술 추격이 어려운 영역</li>
+    </ul>
+
+    <h3>(3) 인공지능과 타 학문과의 융합</h3>
+    <ul>
+      <li>국내 여러 대학에서 AI 교양강의 시작, 일부 대학은 전체 신입생에 AI를 교양 필수로 지정</li>
+      <li>전공과 관계없이 기초 지식을 익혀 융합·경쟁력을 갖추려는 세계적 추세</li>
+    </ul>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 3장 p.54–64 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 13 : 영상1 -->
+  <section id="s13">
+    <h2 class="st"><span class="sq">13</span>영상1 · 음성인식 기술 원리</h2>
+    <p style="font-size:13px;color:var(--ink-3)">AI 비서부터 인공지능 스피커까지! 사람 말을 알아듣는 음성인식 기술 원리! · 7분</p>
+
+    <h3>목소리부터 인식하기</h3>
+    <p>AI 스피커는 평소에도 마이크로 주변 소리를 계속 듣고 있다가, 특정 주파수 대역(여자 목소리 약 200~250Hz, 남자 목소리 약 100~150Hz)이 평소보다 강하게 잡히면 "주인이 말을 걸었다"고 판단해 반응한다.</p>
+
+    <h3>푸리에 변환으로 파형 분해</h3>
+    <p>사람마다 목소리 톤·크기·음색이 달라 파형만 보고 해석하기는 어렵다. 그래서 신호처리 분야에서 널리 쓰이는 <b>푸리에 변환</b><span class="en">(Fourier Transform)</span>을 이용해, 지저분한 파형을 높낮이·주기가 다른 여러 파동의 합으로 분해한 뒤 <b>주파수 축</b>에서 분석한다. 이렇게 하면 어떤 소리가 어떤 글자에 대응하는지 훨씬 쉽게 구분할 수 있다.</p>
+
+    <h3>두 가지 모델 — 음향 모델과 언어 모델</h3>
+    <ul>
+      <li><b>음향 모델</b><span class="en">(Acoustic Model)</span> — 마이크로 들어온 음성을 ㄱ·ㄴ·ㄷ, ㅏ·ㅑ·ㅓ 같은 음소 단위로 쪼개, 각 파형이 어떤 문자와 연결되는지 확률로 판단한다. 딥러닝 기반 네트워크가 많은 데이터를 학습할수록 정확도가 올라간다.</li>
+      <li><b>언어 모델</b><span class="en">(Language Model)</span> — 음향 모델만으로는 확률이 가장 높은 음절을 그대로 이어 붙여 "에러였습니다" 같은 어색한 문장이 나올 수 있다. 언어 모델은 문맥과 자연스러운 단어 조합을 학습해, 확률이 조금 낮더라도 실제로 쓰이는 자연스러운 문장으로 보정한다.</li>
+    </ul>
+    <div class="call quote">
+      <div class="t">영상 속 비유</div>
+      <p>"아버지가 방에 들어가신다"는 "아버지가 가방에 들어가신다"보다 훨씬 자연스러운 조합이다. 언어 모델은 이런 자연스러운 단어 조합의 확률을 미리 학습해 둔다.</p>
+    </div>
+
+    <h3>기업들의 경쟁</h3>
+    <p>구글·아마존·네이버·카카오 같은 기업들은 각자의 데이터베이스를 모아 학습시켜 점점 더 정확도 높은 음성인식 플랫폼을 구축하고 있으며, 사투리까지 인식하는 수준으로 계속 발전 중이다.</p>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(예습 영상 1 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 14 : 영상2 -->
+  <section id="s14">
+    <h2 class="st"><span class="sq">14</span>영상2 · 컴공에서는 무엇을 배워야 할까</h2>
+    <p style="font-size:13px;color:var(--ink-3)">코딩도 과제도 AI가 다 하는 시대, 컴공에서는 무엇을 배워야 할까? · 서울대 이재욱 교수(AI연구원장) · 20분</p>
+
+    <h3>바뀐 것 — 쓰기에서 읽기·비평으로</h3>
+    <p>이재욱 교수는 예전엔 논문·코드·슬라이드를 쓰는 데 에너지 대부분을 썼다면, 요즘은 <b>읽고 비평하는 시간</b>이 훨씬 늘었다고 말한다. 아이디어를 실제로 만들어내는 일 자체는 쉬워졌기 때문이다. 프로그램 코드를 쓰는 부분은 자동화 비중이 계속 늘어 거의 100%에 가까워질 수 있지만, <b>무엇을 구현할지 정의하는 일</b>은 여전히 인간의 영역으로 남을 것이라고 본다.</p>
+
+    <h3>왜 개발자가 먼저 대체 대상이 됐나</h3>
+    <ul>
+      <li>AI 애플리케이션에서 코딩이 차지하는 비중이 처음부터 높았음</li>
+      <li>초기 AI 사용자 상당수가 소프트웨어 개발자 자신이었음</li>
+      <li>인터넷에 코드 데이터가 방대하고 논리 구조가 뚜렷해 AI가 학습하기 좋음</li>
+    </ul>
+
+    <h3>바이브 코딩의 가능성과 한계</h3>
+    <p><b>바이브 코딩</b><span class="en">(vibe coding)</span>으로 기본 프로토타입은 꽤 잘 만들 수 있다 — 광진구청 공무원이 복잡한 행정 규정을 AI로 찾아주는 챗봇을 직접 만든 사례가 소개됐다. 다만 정확도 99%도 느슨한 기준일 수 있다는 점을 짚는다: 10억 명이 쓰는 서비스에서 1%만 오작동해도 1천만 명이 잘못된 결과를 받는 셈이며, 금융·보안 분야라면 더욱 심각하다.</p>
+
+    <h3>능력 격차(capability overhang)</h3>
+    <p>AI 모델의 발전 속도가 사람의 숙련 속도보다 훨씬 빠르다는 통계를 언급하며, AI를 잘 쓰는 사람과 평균적인 사람 사이의 <b>생산성 격차</b>가 점점 벌어지고 있다고 말한다. AI를 잘 쓰려면 (1) AI로 무엇을 할 수 있는지 파악하는 것과 (2) AI의 한계를 아는 것, 이 두 가지가 중요하다.</p>
+
+    <h3>과제와 학습— 학생이 '배달원'이 되는 문제</h3>
+    <p>예전 방식의 교과서형 문제는 AI가 100% 정확히 풀어버려 더 이상 학습 도구로서 의미가 없다. 문제는 학생이 문제를 AI에 넣고 답만 받아오는 <b>'배달원'</b> 역할에 그치는 것 — 이 경우 의미 있는 학습이 일어나지 않는다. 계산기가 있어도 구구단을 가르치는 것처럼, 결과를 해석·평가할 수 있으려면 기초 개념 교육(지식 문턱)은 여전히 필요하다. 대안으로 시험·퀴즈 같은 기존 방식과 함께, 학생이 직접 문제를 정의하도록 최소한의 제약만 주고 설계를 맡기는 방향을 제시한다.</p>
+
+    <h3>그래도 컴퓨터공학을 배워야 하는 이유</h3>
+    <p>컴퓨터공학의 본질은 다양한 문제를 계산적으로 해결하는 <b>사고방식</b>을 가르치는 것이다. 핵심은 두 가지 — <b>알고리즘적 사고</b><span class="en">(algorithmic thinking)</span>: 복잡한 일을 단순한 단계로 쪼개는 능력, <b>데이터 기반 사고</b><span class="en">(data-driven thinking)</span>: 데이터 분포를 분석해 통찰을 끌어내는 능력. 이 두 능력은 AI가 발전해도 계속 필요하다.</p>
+
+    <h3>일자리 — 제번스 역설 vs 완전 자동화</h3>
+    <p>AI로 코딩이 쉬워지면 전체 코딩 수요(산업의 파이) 자체가 커질 수 있다는 <b>제번스 역설</b> 관점과, AI가 코딩을 전부 자동화해 수요가 사라진다는 관점이 공존한다. 이재욱 교수는 현실은 그 중간일 것이라 본다 — ATM 도입 후 은행 창구 직원이 사라지지 않고 상담·전략 역할로 옮겨간 것과 비슷한 흐름을 기대한다. 다만 <b>신입(entry-level) 개발자가 진입하기 어려워지는 현실</b>은 사회가 함께 풀어야 할 문제라고 짚는다.</p>
+
+    <h3>미래 개발자에게 더 중요해질 역량</h3>
+    <ul>
+      <li>실제 코딩 경험 없이는 AI 에이전트에게 일을 잘 나눠 맡기기(delegate) 어렵다 — 엔지니어링 경험이 있어야 좋은 매니저가 되는 것과 같은 논리</li>
+      <li>문제를 정의하는 능력과 좋은 해결책을 가려내는 <b>안목(taste)</b>이 점점 더 중요해진다 — 이는 많이 만들어보고 많이 버려보는 경험에서 나온다</li>
+      <li>커리큘럼은 AI 사용을 전제로 <b>설계·문제 정의</b> 중심으로 재편되어야 하며, 서로의 코드·설계를 평가하는 <b>비평 훈련</b>이 중요해진다</li>
+      <li>기획자와 개발자가 분리된 과거와 달리, 이제 한 사람이 기획부터 개발까지 맡는 <b>'프로덕트 매니저-개발자' 하이브리드</b>가 방향으로 제시된다</li>
+    </ul>
+
+    <h3>비전공자를 위한 조언</h3>
+    <p>지금 가진 작은 프로젝트에 AI 도구를 직접 적용해보며 무엇이 되고 무엇이 안 되는지 감을 쌓아가는 방식을 권한다. 반복할수록 AI를 문제 해결 도구로 쓰는 직관이 는다.</p>
+
+    <div class="call quote">
+      <div class="t">마무리 — "The Great Equalizer"</div>
+      <p>AI로 인한 변화는 경력자든 신입이든 모두에게 새롭다는 점에서 누구에게나 같은 출발선을 준다는 의미로 언급됐다. 컴퓨터공학과는 코딩만 가르치는 곳이 아니라 복잡한 문제를 풀 수 있는 형태로 바꾸는 사고방식을 가르치는 곳이라는 점이 강조됐다.</p>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(예습 영상 2 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <footer><span>인공지능 · 3주차 1차시 · 2026.09.17</span><span>jaealee.com</span></footer>
+</div>
+
+<!-- ═══════════ 단어장 뷰 ═══════════ -->
+<div id="viewVocab" hidden>
+  <div class="hero" data-w="A–Z">
+    <span class="chip">3주차 1차시 단어장</span>
+    <h1>인공지능 필수 용어</h1>
+    <p class="sub">교안 초안 단계라 아직 등록된 단어가 없습니다. 수업이 끝나면 채워집니다.</p>
+  </div>
+
+  <div class="vhead">
+    <input type="search" id="vq" placeholder="단어 · 뜻으로 찾기">
+    <button class="tbtn" id="maskBtn">뜻 가리기</button>
+    <button class="tbtn" id="quizBtn">퀴즈 풀기</button>
+    <span style="font-size:13px;color:var(--ink-3);font-weight:600" id="vcount"></span>
+  </div>
+
+  <ul class="vlist" id="vlist"></ul>
+
+  <div class="quizbox" id="quiz">
+    <div class="qq" id="quizQ"></div>
+    <div class="opts" id="quizOpts"></div>
+    <div class="score" id="quizScore"></div>
+  </div>
+</div>
+
+<!-- ═══════════ 필기 원문 뷰 ═══════════ -->
+<div id="viewRaw" hidden>
+  <div class="hero" data-w="RAW">
+    <span class="chip">3주차 1차시 필기 원문</span>
+    <h1>내가 보낸 그대로</h1>
+    <p class="sub">이번 차시는 교안·영상만 전달되어, 실시간으로 입력한 필기 원문은 아직 없습니다.</p>
+  </div>
+
+  <div class="rawnote" id="rawlist"></div>
+</div>
+
+</main>
+</div>
+
+<script>
+const sb = document.getElementById('scrollbar');
+addEventListener('scroll', () => {
+  const h = document.documentElement.scrollHeight - innerHeight;
+  sb.style.width = (h > 0 ? scrollY / h * 100 : 0) + '%';
+}, { passive: true });
+
+const html = document.documentElement, themeBtn = document.getElementById('themeBtn');
+themeBtn.onclick = () => {
+  const dark = html.dataset.theme === 'dark';
+  html.dataset.theme = dark ? 'light' : 'dark';
+  themeBtn.textContent = dark ? '다크' : '라이트';
+};
+
+const ansBtn = document.getElementById('ansBtn');
+const answers = [...document.querySelectorAll('.ans')];
+function syncAnsBtn() {
+  const opened = answers.filter(a => a.classList.contains('on')).length;
+  ansBtn.disabled = opened === 0;
+  ansBtn.textContent = opened ? `정답 가리기 (${opened})` : '정답 가리기';
+}
+answers.forEach(a => a.addEventListener('click', () => { a.classList.toggle('on'); syncAnsBtn(); }));
+ansBtn.onclick = () => { answers.forEach(a => a.classList.remove('on')); syncAnsBtn(); };
+syncAnsBtn();
+
+const extraChip = document.getElementById('extraChip');
+const extraCount = document.querySelectorAll('#viewNote .call.extra, #viewNote .ext').length;
+if (extraCount) {
+  extraChip.textContent = `보충 ${extraCount}곳`;
+  extraChip.onclick = () => {
+    const off = document.body.classList.toggle('no-extra');
+    extraChip.classList.toggle('solid', !off);
+  };
+} else {
+  extraChip.remove();
+}
+
+const printBtn = document.getElementById('printBtn');
+printBtn.onclick = () => window.print();
+
+document.querySelectorAll('.copy').forEach(btn => {
+  btn.onclick = async () => {
+    const pre = btn.closest('.codebox').querySelector('pre');
+    try {
+      await navigator.clipboard.writeText(pre.innerText);
+      btn.textContent = '복사됨';
+    }
+    catch { btn.textContent = '실패'; }
+    setTimeout(() => btn.textContent = '복사', 1200);
+  };
+});
+
+const boxes = document.querySelectorAll('.chk input'), fill = document.getElementById('barFill');
+boxes.forEach(b => b.addEventListener('change', () => {
+  fill.style.width = [...boxes].filter(x => x.checked).length / boxes.length * 100 + '%';
+}));
+
+const views = {
+  note:  { el: document.getElementById('viewNote'),  nav: document.getElementById('tocWrap') },
+  vocab: { el: document.getElementById('viewVocab'), nav: document.getElementById('vocabNav'), btn: document.getElementById('vocabBtn'), on: '본문으로', off: '단어장' },
+  raw:   { el: document.getElementById('viewRaw'),   nav: document.getElementById('rawNav'),   btn: document.getElementById('rawBtn'),  on: '본문으로', off: '필기 원문' }
+};
+let current = 'note';
+function setView(name) {
+  current = name;
+  Object.entries(views).forEach(([k, v]) => {
+    v.el.hidden = k !== name;
+    v.nav.hidden = k !== name;
+    if (v.btn) { v.btn.classList.toggle('solid', k === name); v.btn.textContent = k === name ? v.on : v.off; }
+  });
+  clearMarks();
+  document.getElementById('q').value = '';
+  document.getElementById('hit').textContent = '';
+  scrollTo({ top: 0, behavior: 'smooth' });
+}
+views.vocab.btn.onclick = () => setView(current === 'vocab' ? 'note' : 'vocab');
+views.raw.btn.onclick   = () => setView(current === 'raw'   ? 'note' : 'raw');
+document.getElementById('rawTotal').textContent = document.querySelectorAll('#rawlist .rawitem').length;
+if (!document.querySelectorAll('#rawlist .rawitem').length) {
+  document.getElementById('rawlist').innerHTML = '<div class="empty">아직 저장된 필기 원문이 없습니다. 수업 중 보내주시는 내용부터 실시간으로 쌓입니다.</div>';
+}
+document.querySelectorAll('#rawlist .where a').forEach(a => {
+  a.onclick = e => { e.preventDefault(); setView('note'); setTimeout(() => document.querySelector(a.getAttribute('href')).scrollIntoView(), 60); };
+});
+
+const links = [...document.querySelectorAll('#toc a')];
+const spy = new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) return;
+  links.forEach(l => l.classList.toggle('on', l.getAttribute('href') === '#' + e.target.id));
+}), { rootMargin: '-80px 0px -68% 0px' });
+document.querySelectorAll('#viewNote section').forEach(s => spy.observe(s));
+
+const qInput = document.getElementById('q'), hitEl = document.getElementById('hit');
+let marks = [], cursor = -1;
+function clearMarks() {
+  marks.forEach(m => { const p = m.parentNode; if (!p) return; p.replaceChild(document.createTextNode(m.textContent), m); p.normalize(); });
+  marks = []; cursor = -1;
+}
+function runSearch(word) {
+  const savedY = window.scrollY;
+  clearMarks();
+  if (word.length < 2) { hitEl.textContent = ''; requestAnimationFrame(() => window.scrollTo(0, savedY)); return; }
+  const root = views[current].el;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const targets = [];
+  while (walker.nextNode()) {
+    const n = walker.currentNode;
+    if (n.parentElement.closest('script,style')) continue;
+    if (n.nodeValue.toLowerCase().includes(word)) targets.push(n);
+  }
+  targets.forEach(n => {
+    const re = new RegExp('(' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    const frag = document.createDocumentFragment();
+    n.nodeValue.split(re).forEach(p => {
+      if (p.toLowerCase() === word) { const m = document.createElement('span'); m.className = 'hit-mark'; m.textContent = p; frag.appendChild(m); marks.push(m); }
+      else frag.appendChild(document.createTextNode(p));
+    });
+    n.parentNode.replaceChild(frag, n);
+  });
+  hitEl.textContent = marks.length ? '0/' + marks.length : '없음';
+  requestAnimationFrame(() => window.scrollTo(0, savedY));
+}
+qInput.addEventListener('input', e => runSearch(e.target.value.trim().toLowerCase()));
+qInput.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || !marks.length) return;
+  e.preventDefault();
+  cursor = (cursor + 1) % marks.length;
+  marks[cursor].scrollIntoView({ block: 'center', behavior: 'smooth' });
+  hitEl.textContent = (cursor + 1) + '/' + marks.length;
+});
+addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); qInput.focus(); qInput.select(); }
+});
+
+const vlist = document.getElementById('vlist');
+const words = [...vlist.querySelectorAll('.vword')];
+document.getElementById('vcount').textContent = words.length + '개';
+document.getElementById('vTotal').textContent = words.length;
+if (!words.length) { vlist.innerHTML = '<li class="empty">등록된 단어가 없습니다.</li>'; }
+
+document.getElementById('vq').addEventListener('input', e => {
+  const k = e.target.value.trim().toLowerCase();
+  let shown = 0;
+  words.forEach(w => { const ok = w.innerText.toLowerCase().includes(k); w.style.display = ok ? '' : 'none'; if (ok) shown++; });
+  document.getElementById('vcount').textContent = shown + '개';
+});
+
+const maskBtn = document.getElementById('maskBtn');
+maskBtn.onclick = () => {
+  const on = vlist.classList.toggle('masked');
+  maskBtn.classList.toggle('solid', on);
+  maskBtn.textContent = on ? '뜻 보이기' : '뜻 가리기';
+  if (!on) vlist.querySelectorAll('.show').forEach(el => el.classList.remove('show'));
+};
+vlist.querySelectorAll('.mean, .ex').forEach(el => {
+  el.onclick = () => { if (vlist.classList.contains('masked')) el.classList.toggle('show'); };
+});
+
+const quiz = document.getElementById('quiz'), quizBtn = document.getElementById('quizBtn');
+const qQ = document.getElementById('quizQ'), qO = document.getElementById('quizOpts'), qS = document.getElementById('quizScore');
+let pool = [], solved = 0, correct = 0;
+const data = () => words.map(w => ({
+  word: w.querySelector('.w').textContent,
+  mean: (w.querySelector('.mean').textContent.split('—')[1] || w.querySelector('.mean').textContent).trim()
+}));
+function nextQuiz() {
+  if (!pool.length) { qQ.textContent = words.length ? '한 바퀴 끝' : '단어가 없습니다'; qO.innerHTML = ''; qS.textContent = words.length ? `${solved}문제 중 ${correct}개 정답` : ''; return; }
+  const all = data(), cur = pool.pop();
+  qQ.textContent = cur.word;
+  const opts = [cur, ...all.filter(d => d.word !== cur.word).sort(() => Math.random() - .5).slice(0, 3)].sort(() => Math.random() - .5);
+  qO.innerHTML = '';
+  opts.forEach(o => {
+    const b = document.createElement('button');
+    b.className = 'opt'; b.textContent = o.mean;
+    b.onclick = () => {
+      solved++;
+      if (o.word === cur.word) { b.classList.add('ok'); correct++; }
+      else { b.classList.add('no'); [...qO.children].find(x => x.textContent === cur.mean)?.classList.add('ok'); }
+      [...qO.children].forEach(x => x.disabled = true);
+      qS.textContent = `${solved}문제 중 ${correct}개 정답`;
+      setTimeout(nextQuiz, 1000);
+    };
+    qO.appendChild(b);
+  });
+  qS.textContent = `${solved}문제 중 ${correct}개 정답 · 남은 ${pool.length}개`;
+}
+quizBtn.onclick = () => {
+  if (!words.length) return;
+  const on = quiz.classList.toggle('on');
+  quizBtn.classList.toggle('solid', on);
+  quizBtn.textContent = on ? '퀴즈 닫기' : '퀴즈 풀기';
+  if (on) { pool = data().sort(() => Math.random() - .5); solved = 0; correct = 0; nextQuiz(); }
+};
+</script>
+</body>
+</html>

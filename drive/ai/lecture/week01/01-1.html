@@ -856,8 +856,9 @@ function clearMarks() {
   marks = []; cursor = -1;
 }
 function runSearch(word) {
+  const savedY = window.scrollY;
   clearMarks();
-  if (word.length < 2) { hitEl.textContent = ''; return; }
+  if (word.length < 2) { hitEl.textContent = ''; requestAnimationFrame(() => window.scrollTo(0, savedY)); return; }
   const root = views[current].el;
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   const targets = [];
@@ -876,6 +877,7 @@ function runSearch(word) {
     n.parentNode.replaceChild(frag, n);
   });
   hitEl.textContent = marks.length ? '0/' + marks.length : '없음';
+  requestAnimationFrame(() => window.scrollTo(0, savedY));
 }
 qInput.addEventListener('input', e => runSearch(e.target.value.trim().toLowerCase()));
 qInput.addEventListener('keydown', e => {

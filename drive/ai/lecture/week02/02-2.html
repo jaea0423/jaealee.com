@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>인공지능 2주차 2차시 — 인공지능 개요와 발달사</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<style>
+:root{
+  --accent:#9333EA;
+  --accent-deep:#6B21A8;
+  --accent-soft:#F3E8FF;
+
+  --bg:#F7F8FA;
+  --surface:#FFFFFF;
+  --ink:#15161B;
+  --ink-2:#565C66;
+  --ink-3:#8B9098;
+  --line:#E5E7EC;
+  --line-2:#F0F1F4;
+  --code-bg:#1B1D24;
+  --code-ink:#E4E6ED;
+  --mark:#FFE27A;
+  --font:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,system-ui,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  --mono:'JetBrains Mono','SFMono-Regular',Consolas,'D2Coding',monospace;
+}
+html[data-theme="dark"]{
+  --accent:#B085EF;
+  --accent-deep:#C9A6F5;
+  --accent-soft:#2A2135;
+  --bg:#101116;
+  --surface:#181A20;
+  --ink:#E8E9ED;
+  --ink-2:#A6AAB4;
+  --ink-3:#73777F;
+  --line:#2A2C34;
+  --line-2:#202229;
+  --code-bg:#0C0D11;
+  --mark:#6E5C16;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15.5px;line-height:1.72;letter-spacing:-.012em;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-deep)}
+::selection{background:var(--accent);color:#fff}
+
+#scrollbar{position:fixed;top:0;left:0;height:3px;width:0;background:var(--accent);z-index:99}
+
+.topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:10px;padding:10px 22px;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.back{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink-2);font-size:14px;font-weight:700;white-space:nowrap}
+.back:hover{color:var(--accent-deep)}
+.back i{width:10px;height:10px;border-radius:3px;background:var(--accent);display:block}
+.search{flex:1;max-width:300px;margin-left:auto;position:relative}
+.search input{width:100%;padding:7px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14px}
+.search input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.hit{position:absolute;right:10px;top:8px;font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums;pointer-events:none}
+.tools{display:flex;gap:6px}
+.tbtn{border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:9px;padding:7px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);white-space:nowrap}
+.tbtn:hover{border-color:var(--accent);color:var(--accent-deep)}
+.tbtn.solid{background:var(--accent);border-color:var(--accent);color:#fff}
+.tbtn:disabled{opacity:.4;cursor:default}
+
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);gap:38px;max-width:1200px;margin:0 auto;padding:26px 24px 120px}
+main{min-width:0}
+
+.side{position:sticky;top:80px;align-self:start;max-height:calc(100vh - 100px);overflow-y:auto;scrollbar-width:thin}
+.panel{background:var(--accent);border-radius:16px;padding:18px 16px;color:#fff;box-shadow:0 8px 24px -12px color-mix(in srgb,var(--accent) 70%,transparent)}
+.panel .cap{font-size:11.5px;font-weight:700;opacity:.72;margin-bottom:9px}
+.panel .subject{font-size:19px;font-weight:800;letter-spacing:-.03em;line-height:1.3;margin-bottom:2px}
+.panel .when{font-size:12.5px;opacity:.8;margin-bottom:16px}
+.toc{list-style:none;margin:0;padding:0}
+.toc a{display:block;padding:6px 10px;border-radius:8px;color:#fff;opacity:.82;text-decoration:none;font-size:13.5px;font-weight:600;line-height:1.45}
+.toc a:hover{background:rgba(255,255,255,.16);opacity:1}
+.toc a.on{background:#fff;color:var(--accent-deep);opacity:1;font-weight:800}
+.toc .num{display:inline-block;width:17px;font-variant-numeric:tabular-nums;opacity:.7}
+.toc a.on .num{opacity:1}
+.panel hr{border:0;border-top:1px solid rgba(255,255,255,.22);margin:14px 0}
+.chk label{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;padding:3px 0;cursor:pointer;line-height:1.5;opacity:.9}
+.chk input{margin-top:4px;accent-color:#fff;flex-shrink:0}
+.chk input:checked + span{opacity:.5;text-decoration:line-through}
+.pbar{height:4px;border-radius:99px;background:rgba(255,255,255,.28);margin-top:11px;overflow:hidden}
+.pbar i{display:block;height:100%;width:0;background:#fff;transition:width .25s}
+
+.hero{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px 28px 22px;overflow:hidden;margin-bottom:16px}
+.hero::after{content:attr(data-w);position:absolute;right:14px;bottom:-26px;font-size:112px;font-weight:800;color:var(--accent);opacity:.09;letter-spacing:-.06em;line-height:1;pointer-events:none}
+.chip{display:inline-flex;align-items:center;gap:7px;background:var(--accent-soft);color:var(--accent-deep);font-size:12.5px;font-weight:800;padding:4px 11px;border-radius:99px}
+h1{font-size:clamp(26px,3.6vw,34px);font-weight:800;letter-spacing:-.04em;line-height:1.24;margin:12px 0 6px;position:relative}
+.hero .sub{color:var(--ink-2);font-size:15px;margin:0 0 14px;position:relative}
+[hidden]{display:none!important}
+.metaline{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-3);position:relative}
+.metaline b{color:var(--ink-2);font-weight:600}
+
+.files{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;position:relative}
+.file{display:inline-flex;align-items:center;gap:9px;padding:8px 13px 8px 9px;border:1px solid var(--line);border-radius:10px;background:var(--surface);text-decoration:none;color:var(--ink);font-size:13.5px;font-weight:700}
+.file:hover{border-color:var(--accent);background:var(--accent-soft)}
+.file .ic{background:var(--accent);color:#fff;font-size:10px;font-weight:800;padding:3px 6px;border-radius:6px;letter-spacing:.02em}
+.file em{font-style:normal;color:var(--ink-3);font-weight:600;font-size:12.5px}
+.files .none{font-size:12.5px;color:var(--ink-3);font-weight:600;padding:8px 0}
+.extra-chip:disabled{cursor:default;opacity:.6}
+
+.flow{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:26px}
+.flow a{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--line);border-radius:99px;background:var(--surface);text-decoration:none;color:var(--ink-2);font-size:13px;font-weight:600}
+.flow a:hover{border-color:var(--accent);color:var(--accent-deep);background:var(--accent-soft)}
+.flow a b{color:var(--accent);font-variant-numeric:tabular-nums}
+
+.keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:34px}
+.key{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:14px;padding:16px 17px}
+.key .n{font-size:12px;font-weight:800;color:var(--accent);margin-bottom:5px}
+.key p{margin:0;font-size:14.5px;line-height:1.6}
+.key b{font-weight:800}
+
+section{margin-bottom:46px;scroll-margin-top:82px}
+h2.st{display:flex;align-items:center;gap:11px;font-size:22px;font-weight:800;letter-spacing:-.035em;margin:0 0 14px}
+h2.st .sq{flex-shrink:0;width:30px;height:30px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+h3{font-size:16.5px;font-weight:800;margin:26px 0 8px;letter-spacing:-.025em;padding-left:11px;border-left:3px solid var(--accent)}
+h4{font-size:14.5px;font-weight:700;margin:18px 0 6px;color:var(--ink-2)}
+p{margin:9px 0}
+ul,ol{margin:9px 0;padding-left:21px}
+li{margin:3px 0}
+li::marker{color:var(--accent)}
+.en{color:var(--ink-3);font-weight:500;font-size:.9em}
+mark{background:linear-gradient(transparent 54%,var(--mark) 54%);color:inherit;padding:0 2px}
+.hit-mark{background:var(--accent);color:#fff;border-radius:3px}
+.imgnote{font-size:12.5px;color:var(--ink-3);margin:6px 0;line-height:1.6;padding-left:2px}
+.imgnote b{color:var(--ink-2);font-weight:700}
+
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin:-6px 0 12px}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:6px;letter-spacing:0}
+.badge.exam{color:#92580B;background:#FDF0D5}
+.badge.prof{color:var(--accent-deep);background:var(--accent-soft)}
+.badge.ask{color:#B02020;background:#FCE4E4}
+html[data-theme="dark"] .badge.exam{background:#3B2D0E;color:#EFC470}
+html[data-theme="dark"] .badge.ask{background:#3A1919;color:#F0A0A0}
+
+.call{border-radius:13px;padding:14px 17px;margin:15px 0;background:var(--surface);border:1px solid var(--line)}
+.call .t{font-size:12.5px;font-weight:800;margin-bottom:5px}
+.call p:first-of-type{margin-top:0}
+.call p:last-child,.call ul:last-child{margin-bottom:0}
+.call.quote{background:var(--accent-soft);border-color:transparent}
+.call.quote .t{color:var(--accent-deep)}
+.call.quote p{font-size:14.8px}
+.call.warn{border-left:4px solid #E5A50A}
+.call.warn .t{color:#A16207}
+.call.ask{border-left:4px solid #DC2626}
+.call.ask .t{color:#B02020}
+.call.link{border-left:4px solid var(--accent)}
+.call.link .t{color:var(--accent-deep)}
+.call.person{background:var(--line-2);border:1px solid var(--line)}
+.call.person .t{color:var(--ink-2)}
+
+.call.extra{background:repeating-linear-gradient(135deg,var(--line-2),var(--line-2) 9px,transparent 9px,transparent 18px);border:1.5px dashed var(--ink-3);border-left-width:1.5px}
+.call.extra .t{color:var(--ink-2);display:flex;align-items:center;gap:6px}
+.call.extra .t::before{content:"보충";background:var(--ink-3);color:var(--surface);font-size:10.5px;padding:1px 6px;border-radius:5px}
+.call.extra p{color:var(--ink-2)}
+.badge.extra{color:var(--ink-2);background:var(--line-2);border:1px dashed var(--ink-3)}
+.ext{border-bottom:2px dotted var(--ink-3);color:var(--ink-2)}
+.ext::after{content:"보충";font-size:9.5px;font-weight:800;vertical-align:super;color:var(--ink-3);margin-left:2px;letter-spacing:0}
+.extra-chip{border:1.5px dashed var(--ink-3);background:transparent;color:var(--ink-2);cursor:pointer;font-family:var(--font)}
+body.no-extra .call.extra,body.no-extra .badge.extra{display:none}
+body.no-extra .ext{border-bottom:0}
+body.no-extra .ext::after{display:none}
+html[data-theme="dark"] .call.warn .t{color:#E5B547}
+html[data-theme="dark"] .call.ask .t{color:#F0A0A0}
+
+details.raw{margin:12px 0;border:1px dashed var(--line);border-radius:10px;background:var(--line-2)}
+details.raw summary{cursor:pointer;padding:8px 14px;font-size:12.5px;color:var(--ink-3);font-weight:700;list-style:none}
+details.raw summary::-webkit-details-marker{display:none}
+details.raw summary::before{content:"▸ ";color:var(--accent)}
+details.raw[open] summary::before{content:"▾ "}
+details.raw .txt{padding:0 14px 12px;font-size:13px;color:var(--ink-2);white-space:pre-wrap;line-height:1.7}
+
+.rawnote{border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+.rawitem{display:grid;grid-template-columns:78px 1fr;gap:16px;padding:15px 18px;border-bottom:1px solid var(--line-2)}
+.rawitem:last-child{border-bottom:0}
+.rawitem .seq{font-size:12px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+.rawitem .seq span{display:block;color:var(--ink-3);font-weight:600;font-size:11px;margin-top:2px}
+.rawitem .body{white-space:pre-wrap;font-size:14px;line-height:1.75;color:var(--ink)}
+.rawitem .where{margin-top:7px;font-size:12px}
+.rawitem .where a{color:var(--accent-deep);text-decoration:none;font-weight:700;background:var(--accent-soft);padding:2px 8px;border-radius:6px}
+.rawitem .where a:hover{background:var(--accent);color:#fff}
+.rawnote .empty{padding:24px 18px;color:var(--ink-3);font-size:13.5px}
+
+.tablewrap{overflow-x:auto;margin:15px 0;border:1px solid var(--line);border-radius:13px}
+table{border-collapse:collapse;width:100%;font-size:13.5px;background:var(--surface)}
+th,td{padding:9px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line-2)}
+th{background:var(--accent);color:#fff;font-weight:700;font-size:12.5px;white-space:nowrap;border-bottom:0}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--line-2)}
+
+.codebox{margin:15px 0;border-radius:13px;overflow:hidden;background:var(--code-bg);border:1px solid var(--code-bg)}
+.codebox .head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 14px;font-size:12px;color:#9AA0AC;font-weight:700;background:rgba(255,255,255,.04)}
+.codebox .head .tag{color:#fff;background:var(--accent);border-radius:5px;padding:1px 7px;font-size:11px;margin-right:7px}
+.codebox pre{margin:0;padding:15px 17px;overflow-x:auto;font-family:var(--mono);font-size:13.2px;line-height:1.7;color:var(--code-ink)}
+.codebox .cm{color:#7C8494}
+.codebox .kw{color:#C4A6FF}
+.codebox .st2{color:#8BD5A0}
+.copy{border:0;background:transparent;color:#9AA0AC;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font)}
+.copy:hover{color:#fff}
+.codebox.pseudo{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent)}
+.codebox.pseudo .head{background:var(--accent-soft);color:var(--accent-deep)}
+.codebox.pseudo .head .tag{background:var(--accent-deep)}
+.codebox.pseudo pre{color:var(--ink);font-size:13.6px}
+.codebox.pseudo .cm{color:var(--ink-3)}
+.codebox.pseudo .kw{color:var(--accent-deep);font-weight:700}
+.codebox.pseudo .copy{color:var(--ink-3)}
+.codebox.pseudo .copy:hover{color:var(--accent-deep)}
+code:not(pre code){background:var(--accent-soft);color:var(--accent-deep);padding:1px 6px;border-radius:6px;font-family:var(--mono);font-size:.88em;font-weight:600}
+
+figure{margin:18px 0;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 14px 12px}
+figure svg{max-width:100%;height:auto}
+figcaption{font-size:12.5px;color:var(--ink-3);margin-top:10px}
+
+.terms{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:11px}
+.term{border:1px solid var(--line);border-radius:13px;padding:13px 15px;background:var(--surface)}
+.term b{display:block;font-size:15px}
+.term .e{display:block;font-size:12px;color:var(--accent-deep);font-family:var(--mono);margin-bottom:6px}
+.term p{margin:0;font-size:13.3px;color:var(--ink-2);line-height:1.6}
+
+.q{border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:12px 0;background:var(--surface)}
+.q .qh{display:flex;gap:10px;align-items:flex-start;font-weight:700;font-size:15px}
+.q .qn{color:#fff;background:var(--accent);border-radius:7px;padding:1px 8px;font-size:12.5px;font-weight:800;flex-shrink:0;margin-top:3px}
+.q .type{font-size:11px;font-weight:800;color:var(--ink-3);border:1px solid var(--line);border-radius:6px;padding:1px 7px;margin-left:auto;flex-shrink:0;margin-top:3px}
+.q ol.ch{list-style:none;padding-left:0;margin:11px 0 0;counter-reset:c}
+.q ol.ch li{padding:3px 0 3px 26px;position:relative;font-size:14.3px}
+.q ol.ch li::before{content:counter(c);counter-increment:c;position:absolute;left:0;top:4px;width:19px;height:19px;border:1px solid var(--line);border-radius:50%;font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--ink-3)}
+.ans{margin-top:12px;padding:11px 13px;border-radius:10px;background:var(--accent-soft);font-size:14.2px;cursor:pointer}
+.ans .lab{font-weight:800;color:var(--accent-deep);font-size:12.5px;margin-right:7px}
+body.hide-ans .ans:not(.on){background:var(--line-2);color:transparent;user-select:none;cursor:pointer;position:relative}
+body.hide-ans .ans:not(.on) *{color:transparent!important}
+body.hide-ans .ans:not(.on)::after{content:"눌러서 정답 확인";position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-3);font-size:12.5px;font-weight:700}
+
+.vhead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px}
+.vhead input[type=search]{flex:1;min-width:170px;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14px}
+.vhead input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.vlist{margin:0;padding:0;list-style:none;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
+.vword{display:grid;grid-template-columns:190px 1fr;gap:16px;padding:14px 18px;border-bottom:1px solid var(--line-2)}
+.vword:last-child{border-bottom:0}
+.vword:hover{background:var(--line-2)}
+.vword .w{font-weight:800;font-size:16px;letter-spacing:-.02em}
+.vword .ipa{display:block;font-family:var(--mono);font-size:12px;color:var(--ink-3);font-weight:400;margin-top:1px}
+.vword .pos{display:inline-block;font-size:10.5px;font-weight:800;color:#fff;background:var(--accent);border-radius:5px;padding:1px 6px;margin-top:5px}
+.vword .mean{font-size:14.5px;margin:0;font-weight:600}
+.vword .ex{font-size:13px;color:var(--ink-2);margin:5px 0 0}
+.vword .ex b{color:var(--accent-deep);font-weight:700}
+.vword .ex .ko{display:block;color:var(--ink-3);font-size:12.5px}
+.masked .mean,.masked .ex{background:var(--line-2);border-radius:6px;color:transparent;cursor:pointer}
+.masked .mean *,.masked .ex *{color:transparent!important}
+.masked .mean.show,.masked .ex.show{background:transparent;color:inherit}
+.masked .mean.show *,.masked .ex.show *{color:revert!important}
+.masked .ex.show b{color:var(--accent-deep)!important}
+.quizbox{margin-top:18px;padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--surface);display:none}
+.quizbox.on{display:block}
+.quizbox .qq{font-size:22px;font-weight:800;margin-bottom:14px;letter-spacing:-.02em}
+.quizbox .opts{display:grid;gap:8px}
+.quizbox .opt{text-align:left;padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14.5px;cursor:pointer}
+.quizbox .opt:hover{border-color:var(--accent)}
+.quizbox .opt.ok{border-color:#16A34A;background:color-mix(in srgb,#16A34A 12%,var(--surface))}
+.quizbox .opt.no{border-color:#DC2626;background:color-mix(in srgb,#DC2626 12%,var(--surface))}
+.quizbox .score{margin-top:13px;font-size:13px;color:var(--ink-3);font-weight:600}
+.vlist .empty{padding:24px 18px;color:var(--ink-3);font-size:13.5px}
+
+footer{margin-top:54px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-3);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+@media(max-width:900px){
+  .wrap{grid-template-columns:1fr;gap:18px;padding:16px 16px 80px}
+  .side{position:static;max-height:none;order:-1}
+  .vword{grid-template-columns:1fr;gap:5px}
+  .search{max-width:none;order:3;flex-basis:100%;max-width:100%}
+  .topbar{flex-wrap:wrap}
+  .hero::after{font-size:78px}
+}
+@media print{
+  .topbar,.side,#scrollbar,.quizbox,.vhead,.flow,.files,.extra-chip{display:none!important}
+  .wrap{display:block;max-width:none;padding:0}
+  body{font-size:10.5pt;background:#fff}
+  section{page-break-inside:avoid;margin-bottom:22px}
+  body.hide-ans .ans:not(.on){background:var(--accent-soft)!important;color:inherit!important}
+  body.hide-ans .ans:not(.on) *{color:inherit!important}
+  body.hide-ans .ans:not(.on)::after{display:none}
+  details.raw{display:none}
+  #viewVocab,#viewRaw{display:block!important;page-break-before:always}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body class="hide-ans">
+<div id="scrollbar"></div>
+
+<div class="topbar">
+  <a class="back" href="../"><i></i>인공지능</a>
+  <div class="search"><input id="q" type="search" placeholder="찾기 (Enter로 다음)" aria-label="문서 내 검색"><span class="hit" id="hit"></span></div>
+  <div class="tools">
+    <button class="tbtn" id="ansBtn">정답 가리기</button>
+    <button class="tbtn" id="vocabBtn">단어장</button>
+    <button class="tbtn" id="rawBtn">필기 원문</button>
+    <button class="tbtn" id="themeBtn">다크</button>
+    <button class="tbtn" id="printBtn">🖨</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<aside class="side">
+  <div class="panel">
+    <div class="subject">인공지능</div>
+    <div class="when">2주차 2차시 · 2026.09.14 (월)</div>
+
+    <div id="tocWrap">
+      <div class="cap">목차</div>
+      <ul class="toc" id="toc">
+        <li><a href="#s1"><span class="num">01</span>1.1 인공지능이란 무엇인가?</a></li>
+        <li><a href="#s2"><span class="num">02</span>1.2 인공지능의 도전과 한계</a></li>
+        <li><a href="#s3"><span class="num">03</span>1.3 인간 두뇌 능력의 근원</a></li>
+        <li><a href="#s4"><span class="num">04</span>1.4 인간의 지능과 인공지능</a></li>
+        <li><a href="#s5"><span class="num">05</span>1.5 인공지능의 시작과 발전</a></li>
+        <li><a href="#s6"><span class="num">06</span>1.6 인간 두뇌 영역에 도전하는 AI</a></li>
+        <li><a href="#s7"><span class="num">07</span>1.7 생성형 AI ChatGPT의 등장</a></li>
+      </ul>
+      <hr>
+      <div class="cap">복습 체크</div>
+      <div class="chk">
+        <label><input type="checkbox"><span>인공지능 정의를 내 말로 설명 가능</span></label>
+        <label><input type="checkbox"><span>인공지능 역사 7단계 순서대로 말할 수 있다</span></label>
+        <label><input type="checkbox"><span>좌뇌·우뇌와 규칙기반·신경망의 대응 이해</span></label>
+      </div>
+      <div class="pbar"><i id="barFill"></i></div>
+    </div>
+
+    <div id="rawNav" hidden>
+      <div class="cap">필기 원문</div>
+      <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">내가 수업 중에 보낸 내용 <b id="rawTotal">0</b>개를 손대지 않고 그대로 모아둔 페이지입니다.</p>
+      <hr>
+      <div class="cap">확인 방법</div>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">여기 있는 내용이 본문에 다 반영됐는지 대조하세요. 각 항목의 파란 링크를 누르면 정리된 위치로 이동합니다.</p>
+    </div>
+
+    <div id="vocabNav" hidden>
+      <div class="cap">단어장</div>
+      <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">이번 차시에 나온 전공 필수 단어 <b id="vTotal">0</b>개입니다.</p>
+      <hr>
+      <div class="cap">사용법</div>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">뜻 가리기를 켜면 회색 칸을 눌러 하나씩 확인할 수 있습니다. 퀴즈는 아래 목록에서 문제를 자동으로 만듭니다.</p>
+    </div>
+  </div>
+</aside>
+
+<main>
+<div id="viewNote">
+
+  <div class="hero" data-w="1장">
+    <span class="chip">2주차 · 2차시</span>
+    <button class="chip extra-chip" id="extraChip"></button>
+    <h1>인공지능 개요와 발달사</h1>
+    <p class="sub">교안(교재 1장, 87쪽) 기반 초안입니다 — 아직 실제 수업 필기가 반영되지 않았습니다. 수업 중 보내주시는 내용으로 이어서 채워집니다.</p>
+    <div class="metaline">
+      <span>2026.09.14 (월)</span>
+      <span><b>강은송</b> 교수님</span>
+      <span>교재 1장 · 처음 만나는 인공지능</span>
+    </div>
+
+    <div class="files">
+      <a class="file" href="02-2-slides.md" target="_blank"><span class="ic">MD</span>1장 인공지능 개요와 발달사<em>87p</em></a>
+    </div>
+  </div>
+
+  <nav class="flow">
+    <a href="#s1"><b>01</b> 인공지능이란</a>
+    <a href="#s2"><b>02</b> 도전과 한계</a>
+    <a href="#s3"><b>03</b> 두뇌 능력의 근원</a>
+    <a href="#s4"><b>04</b> 인간의 지능과 AI</a>
+    <a href="#s5"><b>05</b> 시작과 발전</a>
+    <a href="#s6"><b>06</b> 두뇌 영역에 도전</a>
+    <a href="#s7"><b>07</b> ChatGPT의 등장</a>
+  </nav>
+
+  <div class="keys">
+    <div class="key"><div class="n">핵심 1</div><p>인공지능은 <b>1956년 다트머스 워크숍</b>에서 이름이 생긴, 60년 넘은 오래된 기술이다.</p></div>
+    <div class="key"><div class="n">핵심 2</div><p>인공지능 역사는 <b>2번의 겨울기</b>를 지나 2011년 부흥기(딥러닝) 이후 지금까지 이어지고 있다.</p></div>
+    <div class="key"><div class="n">핵심 3</div><p>좌뇌는 <b>규칙기반 인공지능</b>, 우뇌는 <b>신경망</b>과 대응된다.</p></div>
+  </div>
+
+  <!-- 01 : 1.1 -->
+  <section id="s1">
+    <h2 class="st"><span class="sq">01</span>1.1 인공지능이란 무엇인가?</h2>
+
+    <h3>(1) 인공지능(Artificial Intelligence, A.I.)이란?</h3>
+    <ul>
+      <li>컴퓨터를 사용하여 <b>인간의 지능을 모델링</b>하는 기술</li>
+      <li>인간과 같이 인식<span class="en">(perception)</span>·사고<span class="en">(thinking)</span>·학습<span class="en">(learning)</span> 활동 방법 등을 연구하는 분야</li>
+      <li>컴퓨터를 통해 지능을 구현하는 <b>기계 지능</b><span class="en">(Machine Intelligence)</span></li>
+      <li>컴퓨터가 언어를 인식하고 스스로 학습하며 인간의 감정을 이해</li>
+      <li>인간과 유사한 지능이 요구되는 기계 장치를 만드는 기술</li>
+      <li>예: 스마트폰의 음성인식 명령</li>
+    </ul>
+    <p class="imgnote"><b>그림 1.1</b> 스마트폰에 음성 명령을 하는 사람 사진</p>
+
+    <h4>인공지능의 주요 목표와 생활의 응용</h4>
+    <ul>
+      <li>주요 목표는 <b>'인간의 지능 활동을 컴퓨터에 접목하는 것'</b></li>
+      <li>인간과 로봇이 장차 밀접한 관계를 맺을 것</li>
+      <li>'지능적인 원리를 컴퓨터에 적용하고 현실 생활에 활용하는 것'</li>
+      <li>컴퓨터공학 등 IT 분야와 밀접, 사회과학·인문학에도 도입</li>
+      <li>영화·미술·음악·농업·비즈니스·광고 등 현대 사회 거의 모든 분야와 연관</li>
+    </ul>
+    <p class="imgnote"><b>그림 1.2</b> 로봇 손과 사람 손의 악수, Artificial Intelligence vs Human Intelligence 도식 · <b>그림 1.3</b> 홀로그램을 조작하는 휴머노이드 로봇</p>
+
+    <div class="call quote">
+      <div class="t">인공지능 시대를 표현하는 말</div>
+      <ul>
+        <li>인공지능 시대는 이미 시작됐으며, 이 흐름은 바꿀 수도 막을 수도 없다</li>
+        <li>주어진 일을 비판 없이 열심히 하면 되는 일은 이제부터 인공지능이 대체할 것이다</li>
+        <li>인간이 어떤 일을 할지 최종적으로 결정한 후 인공지능에 맡기는 사회가 올 것이다</li>
+        <li>인공지능을 잘 이용하는 사람이 4차 산업혁명 시대의 경쟁에서 앞서갈 수 있다</li>
+        <li>인간은 산업혁명을 통해 근육의 한계를 극복했고, <mark>인공지능</mark>을 통해 두뇌의 한계를 뛰어넘는다</li>
+      </ul>
+    </div>
+    <p class="imgnote"><b>그림 1.4</b> 신경망으로 표현된 사람 머리 옆모습 · <b>그림 1.5</b> 토마토를 수확하는 인공지능 로봇</p>
+
+    <h3>(2) 날로 발전하는 인공지능</h3>
+    <ul>
+      <li>인공지능 연구는 1950년대 중반에 시작</li>
+      <li>인간처럼 생각·판단·학습하는 면에서 많이 발전</li>
+      <li>초기에는 게임·문제 해결·문자인식 등에 국한됐으나, 지금은 지식 처리가 고도화되고 음성·영상까지 인식 가능</li>
+      <li>주로 소프트웨어 중심으로 연구·개발되어 왔으나 하드웨어 분야도 많이 발전</li>
+    </ul>
+    <div class="call quote">
+      <div class="t">수업 중 언급 — 보스턴 다이내믹스</div>
+      <p><b>보스턴 다이내믹스</b><span class="en">(Boston Dynamics)</span>도 인공지능 로봇의 대표적인 예로 언급되었다.</p>
+    </div>
+    <p class="imgnote"><b>그림 1.6</b> 사람 손을 인식해 반응하는 인공 시각 로봇 · <b>그림 1.7</b> 트럼펫·첼로를 연주하는 로봇 음악가들, 3인조 로봇 밴드 'Z-machine'</p>
+
+    <div class="call person">
+      <div class="t">감성 인식 로봇 '페퍼'</div>
+      <p>일본 소프트뱅크가 세계 최초의 감성인식 로봇 <b>페퍼</b><span class="en">(Pepper)</span>를 개발했다. 페퍼는 인간과 대화하며 감정까지 느낄 수 있고, 발표회장에서 사회도 무리 없이 진행하며, 사람 표정과 억양 변화로 감정을 유추할 수 있다.</p>
+    </div>
+    <p class="imgnote"><b>그림 1.8</b> 페퍼 정면 사진, 손정의 회장과 함께 무대에 선 페퍼</p>
+
+    <div class="call quote">
+      <div class="t">손정의 회장의 강조</div>
+      <p>재일교포 손정의 회장은 한국 방문에서 "인공지능은 인류 역사상 최대 수준의 혁명을 불러올 것"이라며, <mark>"한국은 첫째도 인공지능, 둘째도 인공지능, 셋째도 인공지능!"</mark>이라고 강조하고 교육·정책·투자 전반의 육성을 권유했다.</p>
+    </div>
+    <ul>
+      <li>미국의 인공지능 로봇은 대입 자격시험에서 우수한 성적을 받음</li>
+      <li>일본의 '도로보쿤'은 사립대의 80%에 합격 가능하지만, 독해력 부족으로 동경대 입시엔 4년 연속 낙방</li>
+    </ul>
+    <p class="imgnote"><b>그림 1.9</b> 답안지에 글씨를 쓰는 도로보쿤 로봇 · <b>그림 1.10</b> 운전자가 잡지를 읽는 동안 자율주행하는 차량 내부</p>
+    <ul>
+      <li>자율주행차<span class="en">(Autonomous Vehicle)</span>는 '무인자동차'와 혼용해서 쓰임</li>
+      <li>스스로 교통상황을 인식·제어해 목적지까지 주행하며, 현재 도로 시험 단계</li>
+      <li>인공지능은 60여 년간의 연구와 개발로 날로 발전 중</li>
+    </ul>
+
+    <h3>(3) 인공지능을 접하고 익혀야 하는 이유</h3>
+    <ul>
+      <li>변화하는 시대 흐름에 부응하는 핵심 기술 발전 배경 이해</li>
+      <li>21세기 일상생활과 밀접한 관계</li>
+      <li>문제 해결을 위한 효율적 방법 구상에 큰 도움</li>
+      <li><b>생각하는 힘</b><span class="en">(thinking power)</span>을 기를 수 있음</li>
+      <li>인간 능력과 인공지능 기술의 융합으로 시너지 효과 기대</li>
+      <li>각자의 직업에서 인공지능 활용이 점차 많아질 것이기 때문</li>
+    </ul>
+    <p class="imgnote"><b>그림 1.11</b> Problem/Solving 글자 사이 루빅스 큐브, 'THINKING CAP' 모자를 쓴 아이 캐릭터</p>
+
+    <h3>(4) 컴퓨터를 이용한 인공지능</h3>
+    <ul>
+      <li>인공지능 과학자들은 컴퓨터를 통해 인간 지능 구현을 시도</li>
+      <li><b>1946년</b> 세계 최초의 전자식 컴퓨터 <b>에니악</b><span class="en">(ENIAC)</span> 개발</li>
+      <li>10년 후인 <b>1956년</b> '인공지능'이 최초로 명명되어 연구 시작</li>
+      <li>디지털 컴퓨터의 이론적 바탕은 <b>앨런 튜링</b><span class="en">(Turing)</span>, 이후 <b>폰 노이만</b><span class="en">(Neumann)</span>이 설계</li>
+    </ul>
+    <p class="imgnote"><b>그림 1.12</b> 최초의 전자식 컴퓨터 에니악 — 진공관 패널로 가득 찬 방에서 배선을 조작하는 흑백 사진</p>
+
+    <h4>컴퓨터의 주요 장치와 인간 기관</h4>
+    <p>각 장치는 두뇌와 감각기관 등 인간의 기관에 대응한다. 기억 장치는 두뇌, 입출력 장치는 귀와 입, 제어·연산 장치는 두뇌와 신경계에 해당한다.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>기능</th><th>인간</th><th>컴퓨터</th></tr></thead>
+        <tbody>
+          <tr><td>입력 기능(외부 자료 입력)</td><td>감각 기관</td><td>입력 장치</td></tr>
+          <tr><td>기억 장치(정보 기억)</td><td>두뇌</td><td>주기억 장치</td></tr>
+          <tr><td>연산 기능(계산·분류·정렬 등)</td><td>두뇌</td><td>연산 장치 → 중앙처리 장치</td></tr>
+          <tr><td>제어 기능(동작의 지시 제어)</td><td>두뇌</td><td>제어 장치 → 중앙처리 장치</td></tr>
+          <tr><td>출력 기능(정보 출력)</td><td>반응 기관(입·손·발)</td><td>출력 장치</td></tr>
+          <tr><td>보조기억 기능(대량의 정보 기억)</td><td>노트</td><td>보조기억 장치</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink-3)">〈표 1.1〉 인간과 컴퓨터의 비교 — 연산 장치와 제어 장치를 묶어 중앙처리 장치라 함</p>
+    <ul>
+      <li>컴퓨터란 기억과 계산 등을 빠르고 정확하게 처리해주는 기계, 명칭은 '계산을 수행하는 장치'에서 유래</li>
+      <li>오늘날 컴퓨터는 인공지능 개발에 꼭 필요한 핵심 장치</li>
+      <li>컴퓨터는 명령을 수행하는 기계로서 시키는 대로만 실행함</li>
+    </ul>
+    <p class="imgnote"><b>그림 1.13</b> 초기 개인용 컴퓨터(Apple I 형태)와 데이터센터 서버랙</p>
+
+    <h3>(5) 인공지능의 장점과 협력</h3>
+    <ul>
+      <li>인공지능 수준이 높아지면 인간에게 많은 도움이 됨</li>
+      <li>생활에서 상당 부분 인간의 역할을 대신 가능, 자율주행차로 편리함 제공</li>
+      <li>업무 효율을 높이고 로봇을 통해 생산성을 높임</li>
+      <li>복잡한 상황에서 빠른 판단과 올바른 결정에 도움</li>
+      <li>인간의 실수를 피하게 하고 위험한 일을 대역하여 위험을 줄임</li>
+      <li>우주 탐사, 정교한 용접, 방사능 진단 등에 활용</li>
+    </ul>
+    <p class="imgnote"><b>그림 1.14</b> 사람과 로봇의 악수, 마주 앉아 대화하는 사람과 휴머노이드 · <b>그림 1.15</b> 불꽃 튀는 산업용 용접 로봇</p>
+
+    <h3>(6) 인공지능의 단점</h3>
+    <ul>
+      <li>인공지능 발달은 인간의 일자리를 잃게 할 수 있음 — 자율주행차로 택시·버스 운전사 일자리 위협, 일본 보험회사에서 몇백 명 실업 사례</li>
+      <li>윤리적 문제 발생 가능, 인공지능에 의지하다 보면 판단이 흐려지고 종속될 가능성</li>
+      <li>인공지능의 보이지 않는 손에 의해 감시받을 가능성</li>
+    </ul>
+    <div class="call warn">
+      <div class="t">여기서 잠깐! 무기 체계에 동원되는 인공지능</div>
+      <p>미국·중국·러시아 등 강대국은 인공지능 핵심 기술을 군사 무기 체계에 적용하기 시작했다. 사이버 공격, 편대를 이룬 전투 드론, 무인공격기, 자율로봇 전투, AI 알고리즘에 의한 정확하고 치명적인 공격 등의 방법이 개발되고 있다.</p>
+    </div>
+
+    <h4>인공지능 장단점의 요약</h4>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>장점</th><th>단점</th></tr></thead>
+        <tbody>
+          <tr><td>인간의 역할을 대신하여 편리함을 제공</td><td>인간의 일자리를 잃게 함</td></tr>
+          <tr><td>로봇이 24시간 일함으로써 생산성 향상</td><td>인공지능에 의지하는 습관에 종속될 가능성</td></tr>
+          <tr><td>빠르고 올바른 판단에 도움을 줌</td><td>인공지능에 의해 감시받거나 조종받을 가능성</td></tr>
+          <tr><td>인간의 실수와 위험을 줄임</td><td>연구와 개발이 어려움</td></tr>
+          <tr><td>개인 비서 역할 담당 가능</td><td>인간관계가 줄어들 수 있음</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink-3)">〈표 1.2〉 인공지능의 장단점</p>
+
+    <h3>(7) 인공지능 모르고 살아가기</h3>
+    <ul>
+      <li>인공지능을 전혀 모르는 사람을 <b>'인맹'</b>이라 칭함</li>
+      <li>몰라도 기초적인 생활에는 별 지장 없지만, 경쟁 사회에서 대화 참여가 어려움</li>
+      <li>인공지능은 4차 산업혁명의 핵심 기술이므로 필요함</li>
+      <li>일반인은 기본 지식과 기술을 이해해 자기 업무에 적용해야 함</li>
+    </ul>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 p.4–24 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 02 : 1.2 -->
+  <section id="s2">
+    <h2 class="st"><span class="sq">02</span>1.2 인공지능의 도전과 한계</h2>
+
+    <h3>(1) 인공지능 시스템의 구성</h3>
+    <ul>
+      <li>'마크 I 퍼셉트론' 신경망 시스템은 이론을 하드웨어로 구현</li>
+      <li>이세돌 9단과 대결한 <b>알파고</b>는 소프트웨어로 유명하며, 엄청난 수의 컴퓨터가 동원됨</li>
+      <li>GPU나 병렬처리 장치 등은 하드웨어에 속함</li>
+    </ul>
+
+    <h4>인공지능을 구성하는 4가지 핵심 요소</h4>
+    <ol>
+      <li><b>모델 형태</b> — 신경망, 머신러닝, 다층 퍼셉트론, 전문가 시스템 등</li>
+      <li><b>하드웨어와 소프트웨어</b> — GPU, SPARK 같은 병렬처리 장치와 텐서플로<span class="en">(TensorFlow)</span> 등</li>
+      <li><b>프로그래밍 언어</b> — Python, C, Lisp, Prolog 등</li>
+      <li><b>응용 분야</b> — 음성인식, 영상인식, 챗봇, 자연어 처리, 지식 처리, 감정 분석 등</li>
+    </ol>
+    <p>GPU<span class="en">(Graphics Processing Unit)</span>는 인공지능용 그래픽카드 칩, NPU<span class="en">(Neural Processing Unit)</span>는 신경망 칩이다.</p>
+
+    <div class="call extra">
+      <div class="t">여기서 잠깐! CPU·GPU·NPU 차이</div>
+      <p><span class="ext">CPU(Central Processing Unit)는 일반 컴퓨터의 명령·연산을 처리하는 프로세서, GPU는 단순한 형태의 대량 연산을 CPU에서 독립시킨 그래픽 처리기로 인공지능 연산에 활용되며, NPU는 신경망 처리 연산에 특화된 인공지능용 칩이다. TPU는 구글이 만든 NPU의 이름이다.</span></p>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>CPU</th><th>GPU</th><th>NPU</th></tr></thead>
+        <tbody>
+          <tr><td>큰 Control 유닛 1개 + ALU 4개 + 큰 Cache</td><td>작은 Control·Cache 옆에 소형 연산 코어 수십 개가 격자로 배열</td><td>소형 코어가 더 촘촘히 배열되고 코어마다 메모리가 붙음</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink-3)">CPU는 소수의 강력한 코어, GPU·NPU는 다수의 단순한 코어를 병렬 배치하는 구조</p>
+
+    <h3>(2) 인공지능이란 용어 사용의 조심성</h3>
+    <ul>
+      <li>편리한 몇 가지 기능만 넣고도 '인공지능 제품'이라 부르는 것에 신중해야 함 — 과대포장 우려</li>
+      <li>인공지능 초창기에는 미래에 대해 낙관적 견해가 많아, '1980년 이전에 인간 수준의 인공지능 실현될 것'이라 예언되기도 함</li>
+    </ul>
+
+    <div class="call person">
+      <div class="t">인물 탐구 — 마빈 민스키(Marvin Minsky, 1927–2016)</div>
+      <p>인공지능 분야를 개척한 미국인 과학자로 MIT 인공지능 연구소 공동 설립자다. 1950년 하버드에서 수학 학사, 1954년 프린스턴에서 수학박사를 받고 1958년부터 MIT 교수로 재직했다. 1969년 제자 페퍼트와 함께 로젠블럿의 '퍼셉트론' 모델의 단점을 지적한 책 《퍼셉트론즈》를 저술했고, 1970년 튜링상을 받았다.</p>
+    </div>
+
+    <h3>(3) 인공지능에 대한 기대와 끊임없는 노력</h3>
+    <ul>
+      <li>연구는 초기부터 많은 기대 속에 출발, 60여 년간 발전과 '인공지능의 겨울'을 함께 겪음</li>
+      <li>문자인식·음성인식·영상인식에서 상당한 성과 — 개와 고양이를 구별하는 결과에 환호</li>
+      <li>현재 인공지능의 영상인식 능력은 서너 살 아이들 수준</li>
+    </ul>
+    <ul>
+      <li>인간 수준의 인공지능 구현은 너무나 어려운 작업</li>
+      <li>성급한 기대와 그걸 만족시키지 못한 것도 문제</li>
+      <li>큰 기대감만으로 연구하다 그만두는 자세로는 성과를 내기 어려움</li>
+      <li>인간 지능 규명 자체가 어마어마한 연구 주제</li>
+    </ul>
+    <p class="imgnote"><b>그림 1.26</b> '지식과 경험' 솥에 '창의적 사고 능력'을 붓는 요리사 만화 · 바다에서 언덕 위 'AI' 깃발을 향해 기어가는 거북이들(느리지만 꾸준한 연구 자세 비유)</p>
+
+    <h3>(4) 인공지능의 제한점과 한계</h3>
+    <ul>
+      <li>학습의 문제 — 신경망에 의한 학습으로 가능성이 열렸으나, 학습이 어렵고 시간이 오래 걸리는 제한점 존재</li>
+      <li>실세계 응용에서 상당한 양의 지식이 필요함</li>
+      <li>정신세계에 대한 표현과 창의성 구현이 매우 어려움</li>
+    </ul>
+    <div class="call extra">
+      <div class="t">여기서 잠깐! 학습이란 무엇이며 왜 중요한가?</div>
+      <p><span class="ext">학습(learning)이란 한번 배운 것을 두뇌에 저장했다가 관련 상황이 발생하면 지능적으로 대처하는 능력을 말한다. 인공지능이 사람처럼 풍부한 지식과 인식 능력을 바탕으로 상황을 판단하려면 반드시 학습이 필요하다.</span></p>
+    </div>
+    <p class="imgnote"><b>그림 1.24</b> 머신러닝 학습 흐름도 — 자동차 이미지 → 사람이 라벨링 → 신경망 → 'CAR / NOT CAR' 판별 · <b>그림 1.25</b> 도형 끼우기 퍼즐을 푸는 로봇 손</p>
+
+    <h3>(5) 인공지능의 구현은 신에 대한 도전인가?</h3>
+    <ul>
+      <li>인공지능 연구개발이 곧 신에 대한 도전은 현재로선 아님</li>
+      <li>인공지능이 인간 지능을 훨씬 뛰어넘는 <b>'지능 폭발'</b>은 예외로 논의됨</li>
+      <li>발달로 인한 사회적 변화 — 일자리 감소, 윤리 문제 등을 서둘러 논의할 필요</li>
+    </ul>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 p.25–34 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 03 : 1.3 -->
+  <section id="s3">
+    <h2 class="st"><span class="sq">03</span>1.3 인간 두뇌 능력의 근원</h2>
+
+    <h3>(1) 두뇌 연구와 인공지능 개발</h3>
+    <ul>
+      <li>지능적인 능력의 인공지능 개발은 인간의 오랜 꿈</li>
+      <li>개발을 위해 두뇌에 관한 탐구가 필요</li>
+      <li>인간 두뇌는 수많은 <b>뉴런</b><span class="en">(neuron)</span>으로 이루어져 있으며, 정교한 작동으로 고도의 두뇌 활동이 가능</li>
+    </ul>
+
+    <h3>(2) 인간 두뇌와 뉴런</h3>
+    <ul>
+      <li>인간 두뇌는 수많은 뉴런이 복잡하게 연결된 네트워크</li>
+      <li>20세기 중반 뉴런 작동 이론이 제시·입증됨, 두뇌 특정 부분의 작용은 상당 부분 판명됨</li>
+      <li>두뇌 작용은 뉴런들의 호르몬·전기적 작동으로 추정</li>
+      <li>인간 두뇌에는 약 <b>140억 개</b>의 뉴런이 있으나 작동 원리는 자세히 알기 어렵고, 지금까지 규명된 건 뉴런의 <b>구조</b>뿐</li>
+    </ul>
+    <p class="imgnote"><b>그림 1.29</b> 뉴런의 구조 — 수상 돌기(가지처럼 뻗은 부분), 핵(세포체 중앙), 신경 세포체, 축색 돌기(마디마다 절연 피복이 있는 긴 줄기)</p>
+    <ul>
+      <li>태어난 아기 뇌의 무게는 약 400g(성인의 약 30%), 뉴런 개수는 성인과 같음</li>
+      <li>뉴런은 태어난 이후 늘어나지 않고 재생 불가 — 인간은 20세 이후 매일 수만 개의 뉴런이 죽어감</li>
+      <li>머리를 많이 쓸수록 후천적으로 두뇌가 발달하며, 인간 두뇌의 구현이 신경망·인공지능 연구의 목표</li>
+    </ul>
+
+    <h3>(3) 인간의 좌뇌와 우뇌</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>좌뇌 — 순차적 정보처리</th><th>우뇌 — 병렬 정보처리</th></tr></thead>
+        <tbody>
+          <tr><td>언어</td><td>음악 · 문학</td></tr>
+          <tr><td>논리적</td><td>예술적</td></tr>
+          <tr><td>계산</td><td>공간적</td></tr>
+          <tr><td>분석적</td><td>추상적</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink-3)">두 반구 사이는 '뇌량'으로 연결됨</p>
+    <ul>
+      <li>좌뇌는 합리적·분석적·계수적 논리 사고(계산·분석·논리적 추리)를 담당하며 <b>규칙기반 인공지능</b>과 대응</li>
+      <li>우뇌는 예술적·추상적 사고, 패턴인식·기하학적 정보처리를 담당하며 <b>신경망</b>과 대응 — 특히 음성·영상 인식은 우뇌 뉴런 활동을 모델링한 것</li>
+      <li>좌뇌·우뇌의 정보는 뇌량을 통해 종합적으로 판단됨</li>
+    </ul>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 p.35–40 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 04 : 1.4 -->
+  <section id="s4">
+    <h2 class="st"><span class="sq">04</span>1.4 인간의 지능과 인공지능</h2>
+
+    <h3>(1) 인간의 지능과 인공지능</h3>
+    <p>지능<span class="en">(intelligence)</span>이 가지는 주요 능력:</p>
+    <ul>
+      <li>학습하고 논리적으로 추론하는 능력</li>
+      <li>패턴을 인식하고 주어진 상황을 해석하는 능력</li>
+      <li>상황을 단순화시켜 문제의 본질을 분석하는 능력</li>
+      <li>다양하게 만나는 문제들의 해결 능력</li>
+    </ul>
+
+    <h3>(2) 인간 두뇌의 능력</h3>
+    <ul>
+      <li>빠르고 정확한 계산 능력</li>
+      <li>이전에 일어난 수많은 일을 기억하는 능력</li>
+      <li>빠르고 정확하게 추론해내는 능력</li>
+      <li>도형의 특성을 이해·인식하는 공간 지각 능력</li>
+      <li>물체와 문자를 인식·이해하는 능력</li>
+      <li>꿈꾸듯 상상하는 상상력</li>
+    </ul>
+
+    <h3>(3) 인공지능이 따라올 수 없는 인간 두뇌 능력</h3>
+    <p>기억력·계산력에 해당하는 인공지능은 많이 발전해, 현재 수준의 컴퓨터로도 인간보다 빠르고 정확하다. 추리력 면에서도 Lisp을 사용하면 빠르고 정확하다. 다만 다음 영역은 인공지능이 인간을 따라올 수 없다:</p>
+    <ul>
+      <li><b>상상력</b> — 상상의 날개를 펴는 능력</li>
+      <li><b>직관력</b> — '척 보면 아는 듯한' 능력</li>
+      <li><b>이해력</b> — 사리를 분별하여 해석하는 힘</li>
+      <li><b>공간 능력</b> — 물체를 인식할 수 있는 능력</li>
+      <li><b>연상 능력</b> — 일부 정보로 나머지를 연상해내는 능력</li>
+    </ul>
+    <p>인공지능의 창의성은 특히 상상력과 직관력 등에서 제한된다.</p>
+
+    <h3>(4) 인간의 지능지수</h3>
+    <ul>
+      <li>인간의 지능은 다양한 능력을 종합적으로 평가</li>
+      <li>평가 기준은 <b>지능지수</b><span class="en">(Intelligence Quotient, IQ)</span></li>
+      <li>IQ는 정신연령을 실제 생활연령으로 나누어 100을 곱한 수: <code>IQ = (정신연령 / 생활연령) × 100</code></li>
+      <li>IQ는 평균 100을 기준으로 정규 분포하며, 지능지수와 학업 성적이 비례하는 것은 아님</li>
+    </ul>
+    <p class="imgnote"><b>그림 1.34</b> IQ 정규분포 곡선 — 55·70·85·<b>100</b>·115·130·145를 중심으로 0.1%·2.1%·13.6%·34.1%·34.1%·13.6%·2.1%·0.1% 비율로 좌우 대칭</p>
+
+    <h3>(5) 동물의 지능지수</h3>
+    <ul>
+      <li>동물의 지능지수는 인간보다 훨씬 낮음</li>
+      <li>돌고래는 최대 IQ 70 정도, 개와 고양이는 IQ 50, 닭은 IQ 10 정도</li>
+      <li>원숭이의 지능지수는 보통 50~60 정도로 추측</li>
+    </ul>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 p.41–46 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 05 : 1.5 -->
+  <section id="s5">
+    <h2 class="st"><span class="sq">05</span>1.5 인공지능의 시작과 발전</h2>
+
+    <h3>(1) 인공지능은 최근 기술인가 오래된 것인가?</h3>
+    <ul>
+      <li>최근 딥러닝 인식 기술과 알파고의 지식 학습에 대한 보도가 관심의 계기가 됨</li>
+      <li>인공지능은 과학·의학·교육·산업 등 전 분야에 관련되며 4차 산업혁명의 핵심 기술</li>
+      <li>사실 인공지능은 <b>1950년대 후반부터</b> 꾸준히 발전되어온 오래된 기술</li>
+    </ul>
+
+    <h3>(2) 인공지능의 역사 요약</h3>
+    <p>인공지능의 역사는 1956년을 기점으로 7단계로 나눌 수 있다.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>연도</th><th>구분</th><th>주요 인물/사건</th><th>내용</th></tr></thead>
+        <tbody>
+          <tr><td>1943–1956</td><td>준비기</td><td>맥컬럭과 피츠 · 앨런 튜링 · 프린츠</td><td>명제 논리 개념 · 튜링 테스트 · 최초의 체스 프로그램</td></tr>
+          <tr><td>1956–1974</td><td>요람기</td><td>다트머스 회의 · 로젠블럿 · 매카시 · 와이젠바움 · 민스키·페퍼트</td><td>'인공지능' 명명 · 마크 I 퍼셉트론 · Lisp 개발 · ELIZA · 《퍼셉트론즈》 출간</td></tr>
+          <tr><td>1974–1980</td><td>첫 번째 겨울기</td><td>미국·영국</td><td>《퍼셉트론즈》 이후 신경망 쇠퇴, 연구 기금 급감</td></tr>
+          <tr><td>1980–1987</td><td>발전기</td><td>DEC사 · 일본 · 러멜하트 등</td><td>전문가 시스템 'XCON' · 제5세대 컴퓨터 프로젝트 · 다층 신경망 부활</td></tr>
+          <tr><td>1987–1993</td><td>두 번째 겨울기</td><td>미국 · DARPA</td><td>제한적 성능·컴퓨팅 파워 부족 · AI 기업 300여 개 붕괴 · 정부 연구 기금 고갈</td></tr>
+          <tr><td>1993–2011</td><td>안정기</td><td>IBM Deep Blue · IBM Watson</td><td>세계 체스 챔피언 · 제퍼디 퀴즈쇼 챔피언</td></tr>
+          <tr><td>2011–현재</td><td>부흥기</td><td>힌튼 · 앤드류 응 · 구글 알파고 · OpenAI ChatGPT</td><td>딥러닝 기반 ImageNet · 고양이 인식 프로젝트 · 세계 바둑 챔피언 · 생성형 챗봇</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink-3)">〈표 1.3〉 인공지능의 간략한 역사</p>
+
+    <h3>(3)~(9) 시대별 상세</h3>
+
+    <h4>준비기 (1943–1956)</h4>
+    <ul>
+      <li>1943년 맥컬럭 등은 인간 두뇌를 논리적 이진 원소들로 추측 — 뉴런을 AND·OR·NOT으로 연결하면 두뇌 기능이 가능함을 입증</li>
+      <li>1949년 헵<span class="en">(Hebb)</span>은 뉴런 사이 반복적 점화가 발생할 때 학습효과가 있다고 주장</li>
+      <li>1950년 앨런 튜링은 기계가 인간과 대화할 가능성을 제시하고, 기계 지능을 판별하는 <b>튜링 테스트</b><span class="en">(Turing test)</span>를 제안</li>
+    </ul>
+
+    <h4>요람기 (1956–1974)</h4>
+    <ul>
+      <li>1956년 미국 다트머스 대학 '하계 워크숍'에서 시작 — 수학자·생물학자·심리학자 등 10명이 모여 인공지능 개념을 정의</li>
+      <li><b>존 매카시</b>가 '인공지능(A.I.)'으로 부르기를 제안, 이후 이 용어가 사용됨</li>
+      <li>1957년 로젠블럿이 '마크 I 퍼셉트론' 신경망 모델을 개발 — 문자 인식에 성공해 큰 환호</li>
+      <li>1962년 매카시가 최초의 인공지능 프로그래밍 언어 <b>Lisp</b>을 개발</li>
+      <li>1965년 최초의 전문가 시스템<span class="en">(Expert system)</span> DENDRAL 개발</li>
+      <li>1966년 ELIZA 프로그램이 개발되어 큰 관심을 끔</li>
+      <li>1969년 민스키와 페퍼트가 《퍼셉트론즈》를 출판 — 퍼셉트론의 결정적 문제점이 드러나며 신경망 연구가 침체됨</li>
+    </ul>
+    <p class="imgnote"><b>그림 1.37</b> 다트머스 워크숍 10명(John McCarthy, Marvin Minsky, Claude Shannon, Ray Solomonoff, Alan Newell, Herbert Simon, Arthur Samuel, Oliver Selfridge, Nathaniel Rochester, Trenchard More) · <b>그림 1.39</b> 마크 I 퍼셉트론 하드웨어</p>
+
+    <h4>첫 번째 겨울기 (1974–1980)</h4>
+    <ul>
+      <li>지나친 낙관과 기대에 대한 실망감으로 상당한 어려움에 봉착</li>
+      <li>1958년 사이먼과 뉴웰은 '10년 안에 체스 세계챔피언이 될 것', 1970년 민스키는 '8년 이내에 인간 지능의 기계가 만들어질 것'이라 예상했으나 실현되지 않음</li>
+      <li>연구 방향이 전문가 시스템으로 전환됨</li>
+    </ul>
+
+    <h4>발전기 (1980–1987)</h4>
+    <ul>
+      <li>1980년대 최대 화두는 신경망의 부활 — '단층 퍼셉트론'이 '다층 퍼셉트론'으로 컴백</li>
+      <li>러멜하트<span class="en">(Rumelhart)</span> 등 PDP 그룹이 <b>역전파 알고리즘</b><span class="en">(Backpropagation)</span>을 제안</li>
+      <li>신경망이 패턴인식을 통해 문자·영상인식에 크게 기여</li>
+    </ul>
+    <p class="imgnote"><b>그림 1.41</b> 입력 3개·은닉 5개·출력 2개 노드의 3층 신경망과, 오류 신호가 출력→입력으로 거슬러 전파되는 역전파 구조</p>
+
+    <h4>두 번째 겨울기 (1987–1993)</h4>
+    <ul>
+      <li>다층 신경망의 성능과 느린 컴퓨터 속도로 연구가 정체</li>
+      <li>미국에서 300개 이상의 상업용 인공지능 회사가 사라짐</li>
+      <li>미국방성(DARPA) 등 연구 기금이 대폭 축소됨</li>
+    </ul>
+
+    <h4>안정기 (1993–2011)</h4>
+    <ul>
+      <li>1990년대 지능형 에이전트<span class="en">(Intelligent agent)</span> 연구 시작, 베이지안 네트워크 등 머신러닝 도입</li>
+      <li>1997년 IBM <b>딥 블루</b><span class="en">(Deep Blue)</span>가 체스 세계 챔피언에 승리</li>
+      <li>2004년 힌튼 교수가 딥러닝 기반 학습 알고리즘을 제안 — 사진·동영상·음성 정보 분류에 크게 활용됨</li>
+      <li>2011년 IBM <b>왓슨</b>이 TV 퀴즈쇼에서 인간 우승자들에 승리</li>
+    </ul>
+    <div class="call person">
+      <div class="t">인물 탐구 — 제프리 힌튼(Geoffrey Hinton, 1947– )</div>
+      <p>딥러닝 분야를 개척한 영국 출신 캐나다 컴퓨터과학자·인지심리학자다. 케임브리지대에서 실험심리학을, 에딘버러대에서 인공지능으로 박사학위를 받았다. 1984년 볼츠만 머신 모델을 제안했고 러멜하트 등과 역전파 알고리즘 논문의 공동 저자다. 토론토대 교수이자 2013년부터 구글 딥러닝 프로젝트에서 큰 역할을 맡아 <b>'딥러닝의 대부'</b>로 불린다.</p>
+    </div>
+
+    <h4>부흥기 (2011–현재)</h4>
+    <ul>
+      <li>2012년 구글이 앤드류 응 교수와 함께 심층신경망<span class="en">(DNN)</span> 구현 — 1만 6천 개 컴퓨터로 10억 개 이상의 신경망 구성, 유튜브 영상에서 고양이 인식에 성공</li>
+      <li>2014년 페이스북이 얼굴인식 알고리즘 '딥페이스' 개발</li>
+      <li>딥러닝이 부상한 이유: 기존 신경망 모델 단점 극복, 강력한 <b>GPU</b>가 복잡한 행렬 연산 시간을 크게 단축, 다량의 자료·태그 정보를 가진 <b>빅데이터</b>가 학습에 활용</li>
+      <li>2016년 <b>알파고</b>가 이세돌 9단과의 바둑 대결에서 승리 — 인공지능에 대한 기대와 관심이 폭발적으로 커짐</li>
+      <li>2022년 11월 말 OpenAI가 생성형 챗봇 <b>ChatGPT</b> 공개 — 이후 ChatGPT-3.5·ChatGPT-4가 문장 작성·요약, 시·소설 쓰기 등 다양한 영역에 활용됨</li>
+    </ul>
+    <p class="imgnote"><b>그림 1.42</b> 딥페이스 얼굴인식 · <b>그림 1.43</b> Train(고양이·개 학습, 오류 피드백)→Deploy(새 사진 판정) 딥러닝 흐름도</p>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 p.47–58 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 06 : 1.6 -->
+  <section id="s6">
+    <h2 class="st"><span class="sq">06</span>1.6 인간 두뇌 영역에 도전하는 인공지능</h2>
+
+    <h3>(1) 인공지능의 다양한 분야에의 도전</h3>
+    <ul>
+      <li>예술·문학 분야 등에도 도전 중 — 기사 작성, 시·소설 쓰기, 작곡, 그림 그리기</li>
+      <li>인공지능이 스스로 만든 창작물의 저작권은 누구에게 속할지, 관련 법 체제 준비 필요</li>
+      <li>창의성<span class="en">(creativity)</span>은 인간이 특권으로 가지는 마지막 보루일지 모르며, 인공지능의 창의성 구현에는 상당한 시일이 소요될 전망</li>
+    </ul>
+
+    <h3>(2) 기자를 대신해서 기사를 작성하는 인공지능</h3>
+    <ul>
+      <li>인공지능 소프트웨어 로봇의 출현으로 기자 직업이 위협받음</li>
+      <li>포브스 잡지의 로봇 기자는 매일 수십 건의 주식시황 기사를 작성 — 사람이 쓴 기사와 구분이 어려울 정도</li>
+      <li>자동차 엔지니어도 AI 소프트웨어로 정비·수리, 인공지능이 금융상품도 만들어냄</li>
+      <li>우리나라 언론사에도 로봇 기자가 증권시황·날씨 안내 등에 활동</li>
+    </ul>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>언론사</th><th>프로그램 이름</th><th>활용 분야</th></tr></thead>
+        <tbody>
+          <tr><td>포브스</td><td>퀼(Quill)</td><td>증권 시황·스포츠 경기 결과 기사 작성</td></tr>
+          <tr><td>AP 통신</td><td>워드스미스</td><td>분기당 4,300여 개 기업 실적 기사 작성</td></tr>
+          <tr><td>로이터</td><td>트레이서</td><td>소셜미디어를 이용한 속보 작성</td></tr>
+          <tr><td>아사히 신문</td><td>오토리</td><td>고교야구 경기평가 기사 작성</td></tr>
+          <tr><td>서울경제신문</td><td>서경 뉴스봇</td><td>증권 시장 분석 뉴스</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink-3)">〈표 1.4〉 각국 언론사의 로봇기자 이용 현황</p>
+
+    <h3>(3) 인공지능이 시를 쓸 수 있을까요?</h3>
+    <ul>
+      <li>인공지능이 시를 쓰는 시도는 1960년대부터 — 이런 시를 <b>'컴퓨터 시'</b><span class="en">(Computo-poem)</span>라 부름</li>
+      <li>핵심은 구문<span class="en">(syntax)</span>에 맞게 문장을 생성하고, 의미<span class="en">(semantics)</span>가 통하는 문장을 만드는 것</li>
+      <li>예: "강아지가 빵을 먹는다"는 가능하지만 "빵이 강아지를 먹는다"는 글로서 적합하지 않음</li>
+      <li>최근 MS와 일본 교토대가 개발한 시 짓는 인공지능의 수준이 상당히 높으며, ChatGPT에 주제를 입력하면 유려한 시를 씀</li>
+    </ul>
+    <div class="call quote">
+      <div class="t">오스카 슈워츠의 TEDx 강연 — 사람이 쓴 시는?</div>
+      <p><b>Poem 1</b>: "Little Fly / Thy summer's play, / My thoughtless hand / Has brush'd away."<br>
+      <b>Poem 2</b>: "We can feel / Activist through your life's morning / Pauses to see, pope I hate the / Non all the night to start a great otherwise"<br>
+      어느 쪽이 사람이 쓴 시이고 어느 쪽이 컴퓨터가 쓴 시인지 맞혀보는 문제로 제시됨.</p>
+    </div>
+
+    <h3>(4) 인공지능이 소설을 쓸 수 있을까요?</h3>
+    <ul>
+      <li>인공지능이 쓴 소설은 '로봇 소설'이라고도 불림</li>
+      <li>2016년 일본 '호시 신이치 문학상' 1차 심사를 인공지능 단편 소설 〈컴퓨터가 소설을 쓰는 날〉이 통과 — 일본 소설 천여 편과 문장 작법을 미리 학습</li>
+      <li>인공지능이 상상력·창의력을 발휘해 소설을 쓰기는 여전히 어렵지만, 의미 있는 단편 작성에는 의미가 있음</li>
+      <li>미국에서는 인공지능이 책을 저술해 펴낸 사례도 다수</li>
+      <li>소설가 김영하 씨는 "소설은 인공지능이 대체하기 어려운 이유가 있다"며 로봇 소설의 한계를 지적</li>
+    </ul>
+
+    <h3>(5) 주식투자와 투자 시스템에 활용되는 인공지능</h3>
+    <ul>
+      <li>데이터를 정확하게 분석해 주식투자에 활용 — 시장 동향, 개별 주식, 경제 지표, 뉴스 기사 등 분석</li>
+      <li>주가 예측 등 자동화된 투자 시스템에 활용, 규칙에 따라 자동 매수·매도 가능</li>
+      <li>시장 변동성을 이용해 이익을 내거나 위험을 관리</li>
+      <li>인공지능은 예측만 할 뿐, <b>결과에 대한 책임은 없음</b>에 유의</li>
+    </ul>
+
+    <h3>(6) 자율주행차에 활용되는 인공지능</h3>
+    <ul>
+      <li>사람이 운전하지 않아도 목적지까지 주행, 주변 환경을 인식하고 스스로 상황을 판단</li>
+      <li>여러 자동차 회사가 개발 중이며 시험주행 단계</li>
+      <li>물체를 빠르고 정확히 인식하는 영상인식 기술, 장애물·차선을 인식해 이탈을 방지</li>
+      <li>그 외 다양한 센서와 네트워크 기술을 활용</li>
+    </ul>
+
+    <h3>(7) 인공지능은 어떤 그림을 그릴 수 있을까요?</h3>
+    <ul>
+      <li>2018년 경매장에서 인공지능 그림이 약 <b>5억 원</b>에 낙찰 — 프랑스 AI 화가 오비어스<span class="en">(Obvious)</span>의 '에드몽 드 벨라미', 서양화 1만 5,000여 작품을 학습해 규칙을 찾아냄. 서명 대신 작품 생성 알고리즘이 적혀 있음</li>
+      <li>트위터의 '딥포저'<span class="en">(Deep Forger)</span>는 유명 화가의 화풍으로 질감을 변형 — 예: '구피'를 고흐 화풍으로 변환</li>
+      <li>구글의 '딥드림'<span class="en">(Deep Dream)</span>은 심층신경망 딥러닝 알고리즘으로 이미지 분위기를 바꿈</li>
+      <li>국내에서도 '인공지능 그림' 전시장이 처음 개장 — 독도 사진 수천 장을 학습해 그린 그림이 작품당 500만~1,000만원에 책정</li>
+    </ul>
+
+    <h3>(8) 인공지능이 작곡하는 K-Pop</h3>
+    <ul>
+      <li>악기별 연주 구성과 편곡까지 가능하며, 10년 후 미국 인기 차트곡의 약 20%가 인공지능에 의존할 것으로 예상</li>
+      <li>구글이 머신러닝으로 작곡한 피아노곡(Magenta)을 발표</li>
+      <li>영국에서 개발한 K-Pop 인공지능(Jukedeck)은 30초 만에 곡 하나를 완성 — 13개 장르의 1만여 곡을 학습</li>
+    </ul>
+
+    <h3>(9) 인공지능 챗봇에의 활용</h3>
+    <ul>
+      <li>챗봇<span class="en">(Chatbot)</span>은 텍스트·음성으로 질문에 답하고 문제를 해결하는 시스템</li>
+      <li>연중무휴로 시간 제약 없이 서비스 제공, 반복 작업을 자동화해 직원 부담을 줄임</li>
+      <li>고객 맞춤 서비스로 생산성을 향상시킴</li>
+    </ul>
+
+    <h3>(10) 인공지능의 외국인과 음성 대화에의 활용</h3>
+    <ul>
+      <li>Naver의 <b>Papago</b> 번역 앱 '음성' 기능으로 영어·일본어·중국어·베트남어 등 음성 대화 가능</li>
+      <li>"안녕하십니까?"라고 말하면 일본어로 "오하이오 고자이마스"로 번역, 베트남어도 같은 맥락으로 대화 가능</li>
+      <li>외국 여행에서도 기본적인 소통에는 큰 애로 사항이 없음</li>
+    </ul>
+
+    <h3>(11) 인공지능의 예술 분야에서의 발전 예측</h3>
+    <ul>
+      <li>인공지능+예술은 '컴퓨터 예술'<span class="en">(Computer Art)</span> 장르 — 인공지능 예술가는 주어진 알고리즘에 따라 작품을 생성할 뿐, 감성이나 의식이 없어 아름다움 평가는 인간만 가능</li>
+      <li>미래 예술가들은 인공지능·신경망을 활용해 작품 활동을 할 수 있음</li>
+    </ul>
+    <p>미국 인공지능 전문가 350명의 예측 조사 결과:</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>연도</th><th>달성 예상</th></tr></thead>
+        <tbody>
+          <tr><td>2026년</td><td>고등학교 수준의 글쓰기</td></tr>
+          <tr><td>2027년</td><td>작곡가의 음악 모방 수준</td></tr>
+          <tr><td>2028년</td><td>40위 내에 드는 팝송 음악 작곡</td></tr>
+          <tr><td>2029년</td><td>창의적인 비디오 생성</td></tr>
+          <tr><td>2049년</td><td>뉴욕타임즈 베스트 셀러급 작품 저술</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink-3)">〈표 1.5〉 인공지능의 창의적인 작업 예상</p>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 p.59–77 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 07 : 1.7 -->
+  <section id="s7">
+    <h2 class="st"><span class="sq">07</span>1.7 생성형 인공지능 ChatGPT의 등장</h2>
+
+    <h3>(1) ChatGPT란 무엇인가?</h3>
+    <ul>
+      <li>미국 AI 개발업체 <b>OpenAI</b>가 개발, <b>2022년 11월 말</b> 공개한 생성형 대화 전문 챗봇</li>
+      <li>처음 발표 때는 'ChatGPT-3.5' 버전, 2023년 3월 'ChatGPT-4' 버전이 개발되어 활용 중</li>
+      <li><b>GPT</b>는 'Generative Pre-trained Transformer'(생성형 사전 훈련 변환)의 약자로, 자연어 처리의 대규모 언어 모델</li>
+      <li>공개 5일 만에 하루 이용자 100만 명 돌파</li>
+      <li>논문작성·번역·작사·Python 코딩 등 가능하며 영상·음성인식으로 영역이 확대 중</li>
+      <li>이전 대화 내용을 기억하고 반영하는 학습 능력이 구글 검색과 다른 큰 장점</li>
+    </ul>
+
+    <h3>(2) ChatGPT의 개발 단계</h3>
+    <ul>
+      <li>초기 테슬라 회장 일론 머스크 등이 투자에 참여, 현재는 MS가 대규모로 투자</li>
+      <li>ChatGPT 3.5는 무료로 시작해 현재도 지원 중이며, 사용자가 많을 땐 오류가 발생하기도 함</li>
+      <li>2023년 3월 월 $20의 유료 버전 'ChatGPT Plus' 출시 — 24시간 접속, GPT-4 사용 가능</li>
+    </ul>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>항목</th><th>내용</th></tr></thead>
+        <tbody>
+          <tr><td>분류</td><td>LLMs 대화형 인공지능</td></tr>
+          <tr><td>개발사</td><td>OpenAI</td></tr>
+          <tr><td>서비스</td><td>부분적 유료</td></tr>
+          <tr><td>출시일</td><td>2022.11.30(초기 베타) / 2023.5.24(안정화 베타)</td></tr>
+          <tr><td>모바일</td><td>Android, iOS, iPadOS</td></tr>
+          <tr><td>기반</td><td>GPT-3.5, GPT-4</td></tr>
+          <tr><td>사용자</td><td>2억 명(2023.2 추정)</td></tr>
+          <tr><td>구독자</td><td>100만 명(2023.2 추정)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink-3)">〈그림 1.63〉 ChatGPT 개요 정보 상자</p>
+
+    <h3>(3) ChatGPT의 능력과 활용</h3>
+    <ul>
+      <li>AI 개발 기업들이 ChatGPT API를 가져와 접속, 빠른 시일 내 다양한 응용 개발이 가능</li>
+      <li>삼성·카카오·네이버 등이 ChatGPT API를 구입해 적용</li>
+      <li>카카오톡의 <b>AskUp</b>(아숙업) 서비스 — 최근에는 이미지 활용까지 가능</li>
+    </ul>
+
+    <h3>(4) ChatGPT 기술의 확산과 API</h3>
+    <ul>
+      <li>ChatGPT를 활용한 다양한 응용의 확산이 이루어지는 중</li>
+      <li><b>API</b><span class="en">(Application Programming Interface)</span>는 인터페이스와 함수를 모은 응용 프로그램 인터페이스</li>
+      <li>개발자들이 쉽게 가져다 연결해 쓸 수 있어 빠른 활용이 가능하며, 곧 API를 이용한 다양한 인공지능 플랫폼이 만들어질 전망</li>
+    </ul>
+
+    <h3>(5) 생성형 인공지능</h3>
+    <ul>
+      <li>프롬프트에 대응해 텍스트·이미지·기타 미디어를 생성</li>
+      <li>ChatGPT, Bing의 챗봇, 구글의 바드, 메타의 라마<span class="en">(LLaMa)</span> 등</li>
+      <li>텍스트를 그림으로 바꾸는 <b>스테이블 디퓨전</b><span class="en">(Stable Diffusion)</span>, <b>미드저니</b><span class="en">(Midjourney)</span>, <b>달리</b><span class="en">(Dall-E)</span> 등</li>
+      <li>먼저 트레이닝 데이터의 패턴·구조를 학습한 뒤, 유사 특징의 새로운 데이터를 만들어냄</li>
+      <li>예술·작문·소프트웨어 개발·의료·금융·게임·마케팅·패션 등 다양한 산업에 응용됨</li>
+    </ul>
+    <div class="call warn">
+      <div class="t">생성형 AI의 잠재적 오용 우려</div>
+      <p>사람을 속이기 위해 사용될 수 있는 가짜 뉴스나 <b>딥페이크</b><span class="en">(deep fake)</span> — 영상을 합성하는 인공지능 기술 — 를 만드는 것 등이 우려된다.</p>
+    </div>
+
+    <h3>(6) 여러 생성형 인공지능의 출현과 경쟁</h3>
+    <ul>
+      <li>2022년 11월 말 OpenAI가 ChatGPT 발표</li>
+      <li>MS는 검색엔진 'Bing'에 GPT-4를 탑재해 선풍을 일으킴</li>
+      <li>검색계 최강자 구글이 비상 걸려 경쟁에 합류, 대항마 '바드'<span class="en">(Bard)</span> 발표</li>
+      <li>이후 메타가 라마2<span class="en">(LLaMa2)</span>를 발표하며 치열한 경쟁이 이어짐</li>
+    </ul>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th></th><th>ChatGPT</th><th>Bing '챗봇'</th><th>바드(Bard)</th><th>라마(LLaMa)</th></tr></thead>
+        <tbody>
+          <tr><td>개발회사</td><td>OpenAI</td><td>마이크로소프트</td><td>구글</td><td>메타</td></tr>
+          <tr><td>사용방식</td><td>오픈AI 홈페이지</td><td>검색창에 탑재</td><td>검색창에 탑재</td><td>대학·기관·연구소(비영리)</td></tr>
+          <tr><td>기반 모델</td><td>GPT-3.5 / GPT-4.0(유료)</td><td>GPT-4.0</td><td>람다(LaMDA) / PaLM2</td><td>라마2(LLaMa2)</td></tr>
+          <tr><td>매개변수</td><td>1,750억 개 / 5,000억 개(추정)</td><td>5,000억 개(추정)</td><td>1,350억 개 / 3,400억 개(추정)</td><td>70~650억 개(4가지)</td></tr>
+          <tr><td>사용료</td><td>3.5 무료 / 4.0 20$/월</td><td>무료</td><td>무료</td><td>비영리기관만 사용 가능(무료)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink-3)">〈표 1.6〉 주요 생성형 인공지능 모델의 특징 비교</p>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 p.78–87 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <footer><span>인공지능 · 2주차 2차시 · 2026.09.14</span><span>jaealee.com</span></footer>
+</div>
+
+<!-- ═══════════ 단어장 뷰 ═══════════ -->
+<div id="viewVocab" hidden>
+  <div class="hero" data-w="A–Z">
+    <span class="chip">2주차 2차시 단어장</span>
+    <h1>인공지능 필수 용어</h1>
+    <p class="sub">교안 초안 단계라 아직 등록된 단어가 없습니다. 수업이 끝나면 채워집니다.</p>
+  </div>
+
+  <div class="vhead">
+    <input type="search" id="vq" placeholder="단어 · 뜻으로 찾기">
+    <button class="tbtn" id="maskBtn">뜻 가리기</button>
+    <button class="tbtn" id="quizBtn">퀴즈 풀기</button>
+    <span style="font-size:13px;color:var(--ink-3);font-weight:600" id="vcount"></span>
+  </div>
+
+  <ul class="vlist" id="vlist"></ul>
+
+  <div class="quizbox" id="quiz">
+    <div class="qq" id="quizQ"></div>
+    <div class="opts" id="quizOpts"></div>
+    <div class="score" id="quizScore"></div>
+  </div>
+</div>
+
+<!-- ═══════════ 필기 원문 뷰 ═══════════ -->
+<div id="viewRaw" hidden>
+  <div class="hero" data-w="RAW">
+    <span class="chip">2주차 2차시 필기 원문</span>
+    <h1>내가 보낸 그대로</h1>
+    <p class="sub">수업 중 보내주신 내용을 순서대로 그대로 모았습니다.</p>
+  </div>
+
+  <div class="rawnote" id="rawlist">
+    <div class="rawitem">
+      <div class="seq">01</div>
+      <div>
+        <div class="body">Boston Dynamics
+(로봇 예시)</div>
+        <div class="where"><a href="#s1">01. 1.1 인공지능이란 무엇인가?</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+const sb = document.getElementById('scrollbar');
+addEventListener('scroll', () => {
+  const h = document.documentElement.scrollHeight - innerHeight;
+  sb.style.width = (h > 0 ? scrollY / h * 100 : 0) + '%';
+}, { passive: true });
+
+const html = document.documentElement, themeBtn = document.getElementById('themeBtn');
+themeBtn.onclick = () => {
+  const dark = html.dataset.theme === 'dark';
+  html.dataset.theme = dark ? 'light' : 'dark';
+  themeBtn.textContent = dark ? '다크' : '라이트';
+};
+
+const ansBtn = document.getElementById('ansBtn');
+const answers = [...document.querySelectorAll('.ans')];
+function syncAnsBtn() {
+  const opened = answers.filter(a => a.classList.contains('on')).length;
+  ansBtn.disabled = opened === 0;
+  ansBtn.textContent = opened ? `정답 가리기 (${opened})` : '정답 가리기';
+}
+answers.forEach(a => a.addEventListener('click', () => { a.classList.toggle('on'); syncAnsBtn(); }));
+ansBtn.onclick = () => { answers.forEach(a => a.classList.remove('on')); syncAnsBtn(); };
+syncAnsBtn();
+
+const extraChip = document.getElementById('extraChip');
+const extraCount = document.querySelectorAll('#viewNote .call.extra, #viewNote .ext').length;
+if (extraCount) {
+  extraChip.textContent = `보충 ${extraCount}곳`;
+  extraChip.onclick = () => {
+    const off = document.body.classList.toggle('no-extra');
+    extraChip.classList.toggle('solid', !off);
+  };
+} else {
+  extraChip.remove();
+}
+
+const printBtn = document.getElementById('printBtn');
+printBtn.onclick = () => window.print();
+
+document.querySelectorAll('.copy').forEach(btn => {
+  btn.onclick = async () => {
+    const pre = btn.closest('.codebox').querySelector('pre');
+    try {
+      await navigator.clipboard.writeText(pre.innerText);
+      btn.textContent = '복사됨';
+    }
+    catch { btn.textContent = '실패'; }
+    setTimeout(() => btn.textContent = '복사', 1200);
+  };
+});
+
+const boxes = document.querySelectorAll('.chk input'), fill = document.getElementById('barFill');
+boxes.forEach(b => b.addEventListener('change', () => {
+  fill.style.width = [...boxes].filter(x => x.checked).length / boxes.length * 100 + '%';
+}));
+
+const views = {
+  note:  { el: document.getElementById('viewNote'),  nav: document.getElementById('tocWrap') },
+  vocab: { el: document.getElementById('viewVocab'), nav: document.getElementById('vocabNav'), btn: document.getElementById('vocabBtn'), on: '본문으로', off: '단어장' },
+  raw:   { el: document.getElementById('viewRaw'),   nav: document.getElementById('rawNav'),   btn: document.getElementById('rawBtn'),  on: '본문으로', off: '필기 원문' }
+};
+let current = 'note';
+function setView(name) {
+  current = name;
+  Object.entries(views).forEach(([k, v]) => {
+    v.el.hidden = k !== name;
+    v.nav.hidden = k !== name;
+    if (v.btn) { v.btn.classList.toggle('solid', k === name); v.btn.textContent = k === name ? v.on : v.off; }
+  });
+  clearMarks();
+  document.getElementById('q').value = '';
+  document.getElementById('hit').textContent = '';
+  scrollTo({ top: 0, behavior: 'smooth' });
+}
+views.vocab.btn.onclick = () => setView(current === 'vocab' ? 'note' : 'vocab');
+views.raw.btn.onclick   = () => setView(current === 'raw'   ? 'note' : 'raw');
+document.getElementById('rawTotal').textContent = document.querySelectorAll('#rawlist .rawitem').length;
+if (!document.querySelectorAll('#rawlist .rawitem').length) {
+  document.getElementById('rawlist').innerHTML = '<div class="empty">아직 저장된 필기 원문이 없습니다. 수업 중 보내주시는 내용부터 실시간으로 쌓입니다.</div>';
+}
+document.querySelectorAll('#rawlist .where a').forEach(a => {
+  a.onclick = e => { e.preventDefault(); setView('note'); setTimeout(() => document.querySelector(a.getAttribute('href')).scrollIntoView(), 60); };
+});
+
+const links = [...document.querySelectorAll('#toc a')];
+const spy = new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) return;
+  links.forEach(l => l.classList.toggle('on', l.getAttribute('href') === '#' + e.target.id));
+}), { rootMargin: '-80px 0px -68% 0px' });
+document.querySelectorAll('#viewNote section').forEach(s => spy.observe(s));
+
+const qInput = document.getElementById('q'), hitEl = document.getElementById('hit');
+let marks = [], cursor = -1;
+function clearMarks() {
+  marks.forEach(m => { const p = m.parentNode; if (!p) return; p.replaceChild(document.createTextNode(m.textContent), m); p.normalize(); });
+  marks = []; cursor = -1;
+}
+function runSearch(word) {
+  const savedY = window.scrollY;
+  clearMarks();
+  if (word.length < 2) { hitEl.textContent = ''; requestAnimationFrame(() => window.scrollTo(0, savedY)); return; }
+  const root = views[current].el;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const targets = [];
+  while (walker.nextNode()) {
+    const n = walker.currentNode;
+    if (n.parentElement.closest('script,style')) continue;
+    if (n.nodeValue.toLowerCase().includes(word)) targets.push(n);
+  }
+  targets.forEach(n => {
+    const re = new RegExp('(' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    const frag = document.createDocumentFragment();
+    n.nodeValue.split(re).forEach(p => {
+      if (p.toLowerCase() === word) { const m = document.createElement('span'); m.className = 'hit-mark'; m.textContent = p; frag.appendChild(m); marks.push(m); }
+      else frag.appendChild(document.createTextNode(p));
+    });
+    n.parentNode.replaceChild(frag, n);
+  });
+  hitEl.textContent = marks.length ? '0/' + marks.length : '없음';
+  requestAnimationFrame(() => window.scrollTo(0, savedY));
+}
+qInput.addEventListener('input', e => runSearch(e.target.value.trim().toLowerCase()));
+qInput.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || !marks.length) return;
+  e.preventDefault();
+  cursor = (cursor + 1) % marks.length;
+  marks[cursor].scrollIntoView({ block: 'center', behavior: 'smooth' });
+  hitEl.textContent = (cursor + 1) + '/' + marks.length;
+});
+addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); qInput.focus(); qInput.select(); }
+});
+
+const vlist = document.getElementById('vlist');
+const words = [...vlist.querySelectorAll('.vword')];
+document.getElementById('vcount').textContent = words.length + '개';
+document.getElementById('vTotal').textContent = words.length;
+if (!words.length) { vlist.innerHTML = '<li class="empty">등록된 단어가 없습니다.</li>'; }
+
+document.getElementById('vq').addEventListener('input', e => {
+  const k = e.target.value.trim().toLowerCase();
+  let shown = 0;
+  words.forEach(w => { const ok = w.innerText.toLowerCase().includes(k); w.style.display = ok ? '' : 'none'; if (ok) shown++; });
+  document.getElementById('vcount').textContent = shown + '개';
+});
+
+const maskBtn = document.getElementById('maskBtn');
+maskBtn.onclick = () => {
+  const on = vlist.classList.toggle('masked');
+  maskBtn.classList.toggle('solid', on);
+  maskBtn.textContent = on ? '뜻 보이기' : '뜻 가리기';
+  if (!on) vlist.querySelectorAll('.show').forEach(el => el.classList.remove('show'));
+};
+vlist.querySelectorAll('.mean, .ex').forEach(el => {
+  el.onclick = () => { if (vlist.classList.contains('masked')) el.classList.toggle('show'); };
+});
+
+const quiz = document.getElementById('quiz'), quizBtn = document.getElementById('quizBtn');
+const qQ = document.getElementById('quizQ'), qO = document.getElementById('quizOpts'), qS = document.getElementById('quizScore');
+let pool = [], solved = 0, correct = 0;
+const data = () => words.map(w => ({
+  word: w.querySelector('.w').textContent,
+  mean: (w.querySelector('.mean').textContent.split('—')[1] || w.querySelector('.mean').textContent).trim()
+}));
+function nextQuiz() {
+  if (!pool.length) { qQ.textContent = words.length ? '한 바퀴 끝' : '단어가 없습니다'; qO.innerHTML = ''; qS.textContent = words.length ? `${solved}문제 중 ${correct}개 정답` : ''; return; }
+  const all = data(), cur = pool.pop();
+  qQ.textContent = cur.word;
+  const opts = [cur, ...all.filter(d => d.word !== cur.word).sort(() => Math.random() - .5).slice(0, 3)].sort(() => Math.random() - .5);
+  qO.innerHTML = '';
+  opts.forEach(o => {
+    const b = document.createElement('button');
+    b.className = 'opt'; b.textContent = o.mean;
+    b.onclick = () => {
+      solved++;
+      if (o.word === cur.word) { b.classList.add('ok'); correct++; }
+      else { b.classList.add('no'); [...qO.children].find(x => x.textContent === cur.mean)?.classList.add('ok'); }
+      [...qO.children].forEach(x => x.disabled = true);
+      qS.textContent = `${solved}문제 중 ${correct}개 정답`;
+      setTimeout(nextQuiz, 1000);
+    };
+    qO.appendChild(b);
+  });
+  qS.textContent = `${solved}문제 중 ${correct}개 정답 · 남은 ${pool.length}개`;
+}
+quizBtn.onclick = () => {
+  if (!words.length) return;
+  const on = quiz.classList.toggle('on');
+  quizBtn.classList.toggle('solid', on);
+  quizBtn.textContent = on ? '퀴즈 닫기' : '퀴즈 풀기';
+  if (on) { pool = data().sort(() => Math.random() - .5); solved = 0; correct = 0; nextQuiz(); }
+};
+</script>
+</body>
+</html>

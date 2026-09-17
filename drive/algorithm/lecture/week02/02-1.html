@@ -253,6 +253,10 @@ figcaption{font-size:12.5px;color:var(--ink-3);margin-top:10px}
 .q .qh{display:flex;gap:10px;align-items:flex-start;font-weight:700;font-size:15px}
 .q .qn{color:#fff;background:var(--accent);border-radius:7px;padding:1px 8px;font-size:12.5px;font-weight:800;flex-shrink:0;margin-top:3px}
 .q .type{font-size:11px;font-weight:800;color:var(--ink-3);border:1px solid var(--line);border-radius:6px;padding:1px 7px;margin-left:auto;flex-shrink:0;margin-top:3px}
+.q .lv{font-size:10.5px;font-weight:800;border-radius:6px;padding:1px 7px;flex-shrink:0;margin-top:3px;margin-left:6px}
+.q .lv.b{color:var(--c2);border:1px solid var(--c2)}
+.q .lv.m{color:var(--accent-deep);border:1px solid var(--accent)}
+.q .lv.h{color:var(--c3);border:1px solid var(--c3);background:color-mix(in srgb,var(--c3) 12%,transparent)}
 .q ol.ch{list-style:none;padding-left:0;margin:11px 0 0;counter-reset:c}
 .q ol.ch li{padding:3px 0 3px 26px;position:relative;font-size:14.3px}
 .q ol.ch li::before{content:counter(c);counter-increment:c;position:absolute;left:0;top:4px;width:19px;height:19px;border:1px solid var(--line);border-radius:50%;font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--ink-3)}
@@ -1132,37 +1136,97 @@ T_w(n) = n - 1 + n - 2 + ... + 1 + T_w(1)
   <section id="sx">
     <h2 class="st"><span class="sq">08</span>예상 문제</h2>
 
+    <p style="font-size:13px;color:var(--ink-3);margin-bottom:14px">난이도 — <b style="color:var(--c2)">기본</b> 수업에서 그대로 나온 것 · <b style="color:var(--accent-deep)">응용</b> 조합하거나 한 단계 더 가야 하는 것 · <b style="color:var(--c3)">심화</b> 수업 논리를 새 상황에 옮겨야 하는 것</p>
+
     <div class="q">
-      <div class="qh"><span class="qn">Q1</span><span>n개의 값 중 최댓값을 찾을 때 필요한 비교 횟수의 tight bound는?</span><span class="type">객관식</span></div>
-      <ol class="ch"><li>n</li><li>n − 1</li><li>n/2</li><li>⌈log₂ n⌉</li></ol>
-      <div class="ans"><span class="lab">정답 ②</span>상한도 n−1(원소가 n개라 그 이상 비교할 필요 없음), 하한도 n−1(최소 n−1번은 필요함이 증명됨). 둘이 같으므로 tight bound = n−1.</div>
+      <div class="qh"><span class="qn">Q1</span><span>다음 중 필요한 비교 횟수가 <b>n − 1번</b>인 것을 <b>모두</b> 고르시오. (복수 선택 가능)</span><span class="type">복수선택</span><span class="lv b">기본</span></div>
+      <ol class="ch"><li>n개 중 최댓값 찾기</li><li>n개 중 최솟값 찾기</li><li>최댓값과 최솟값을 동시에 찾기</li><li>토너먼트 방식으로 최댓값 찾기</li></ol>
+      <div class="ans"><span class="lab">정답 ①②④</span>①②는 tight bound가 n−1. ④ 토너먼트도 매 비교마다 후보가 정확히 1개씩 탈락하므로 n−1번으로 같다. ③은 (3/2)n−2 이므로 해당하지 않는다.</div>
     </div>
 
     <div class="q">
-      <div class="qh"><span class="qn">Q2</span><span>최댓값과 최솟값을 동시에 찾을 때, 단순히 각각 찾으면 2n−3번이다. 토너먼트를 쓰면 (3/2)n−2로 줄일 수 있는 이유를 설명하시오.</span><span class="type">서술형</span></div>
-      <div class="ans"><span class="lab">모범답안</span>최댓값 토너먼트(n−1번)를 진행하면, 1라운드에서 진 n/2개는 각자 자기 짝보다 작다는 것이 이미 밝혀진다. 따라서 최솟값은 반드시 그 n/2개 안에 있으므로, 나머지 전부(n−2개)가 아니라 그 n/2개 중에서만 찾으면 되고 이때 n/2−1번이면 충분하다. 합치면 (n−1)+(n/2−1) = (3/2)n−2.</div>
+      <div class="qh"><span class="qn">Q2</span><span>다음 코드들의 시간복잡도를 Big-O로 나타내시오.</span><span class="type">코드</span><span class="lv m">응용</span></div>
+      <div class="codebox pseudo">
+        <div class="head"><span><span class="tag">Python</span>(a)</span><button class="copy">복사</button></div>
+<pre><code><span class="kw">def</span> g(L, k):
+    P = L[<span class="st2">0</span>]
+    A = [x <span class="kw">for</span> x <span class="kw">in</span> L <span class="kw">if</span> x &lt; P]
+    <span class="kw">if</span> len(A) &gt;= k: <span class="kw">return</span> g(A, k)
+    <span class="kw">return</span> P</code></pre>
+      </div>
+      <div class="codebox pseudo">
+        <div class="head"><span><span class="tag">Python</span>(b)</span><button class="copy">복사</button></div>
+<pre><code><span class="kw">def</span> h(n):
+    cnt = <span class="st2">0</span>
+    <span class="kw">while</span> n &gt; <span class="st2">1</span>:
+        <span class="kw">for</span> j <span class="kw">in</span> range(n):
+            cnt += <span class="st2">1</span>
+        n = n // <span class="st2">2</span>
+    <span class="kw">return</span> cnt</code></pre>
+      </div>
+      <div class="codebox pseudo">
+        <div class="head"><span><span class="tag">Python</span>(c)</span><button class="copy">복사</button></div>
+<pre><code><span class="kw">def</span> t(L):
+    <span class="kw">if</span> len(L) &lt;= <span class="st2">1</span>: <span class="kw">return</span> L
+    nxt = []
+    <span class="kw">for</span> i <span class="kw">in</span> range(<span class="st2">0</span>, len(L)<span class="st2">-1</span>, <span class="st2">2</span>):
+        nxt.append(max(L[i], L[i<span class="st2">+1</span>]))
+    <span class="kw">if</span> len(L) % <span class="st2">2</span>: nxt.append(L[<span class="st2">-1</span>])
+    <span class="kw">return</span> t(nxt)</code></pre>
+      </div>
+      <div class="ans"><span class="lab">정답</span><b>(a) O(n²)</b> — 매번 A가 1개씩만 줄어드는 최악에서 T(n) = n + T(n−1) = n(n+1)/2.<br><b>(b) O(n)</b> — 내부 루프 합이 n + n/2 + n/4 + … 이고 등비급수라 2n을 넘지 않는다. <u>O(n log n)이 아님에 주의</u>.<br><b>(c) O(n)</b> — 토너먼트로 최댓값을 찾는 코드. 단계마다 크기가 절반이 되어 총 비교는 n/2 + n/4 + … &lt; n, 즉 n−1번이다. 재귀 깊이가 log n이라고 O(n log n)으로 잘못 세지 않도록 주의.</div>
     </div>
 
     <div class="q">
-      <div class="qh"><span class="qn">Q3</span><span>n=16일 때, 최솟값과 두 번째로 작은 값을 모두 찾는 데 필요한 비교 횟수를 구하시오.</span><span class="type">계산</span></div>
-      <div class="ans"><span class="lab">풀이</span>n + ⌈log₂ n⌉ − 2에 n=16 대입. ⌈log₂16⌉ = 4이므로 16 + 4 − 2 = <b>18번</b>. (최솟값 15번 + 후보 4개 중 최솟값 3번 = 18번으로도 확인됨)</div>
+      <div class="qh"><span class="qn">Q3</span><span>L = [6, 5, 1, 7, 9, 3, 8, 10, 2] 에 대해 <code>quick_select(L, 8)</code>을 수행한다. 피벗은 항상 L[0]으로 잡는다. 각 재귀 호출 단계의 A, M, B와 최종 반환값을 표에 작성하시오.</span><span class="type">추적</span><span class="lv b">기본</span></div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>단계</th><th>L</th><th>k</th><th>P</th><th>A</th><th>M</th><th>B</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>[6,5,1,7,9,3,8,10,2]</td><td>8</td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>2</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>3</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:13.5px;color:var(--ink-3)">반환값: ____________</p>
+      <div class="ans"><span class="lab">정답</span>
+        1단계 — P=6, A=[5,1,3,2], M=[6], B=[7,9,8,10]. |A|=4 &lt; 8, |A|+|M|=5 &lt; 8 → B로, k = 8−4−1 = 3.<br>
+        2단계 — L=[7,9,8,10], k=3, P=7, A=[], M=[7], B=[9,8,10]. |A|+|M|=1 &lt; 3 → B로, k = 3−0−1 = 2.<br>
+        3단계 — L=[9,8,10], k=2, P=9, A=[8], M=[9], B=[10]. |A|=1 &lt; 2 이고 |A|+|M|=2 ≥ 2 → else → <b>반환값 9</b>.</div>
     </div>
 
     <div class="q">
-      <div class="qh"><span class="qn">Q4</span><span>quick_select에서 B로 재귀 호출할 때 <code>quick_select(B, k - len(A) - len(M))</code>처럼 k를 바꾸는 이유는?</span><span class="type">코드</span></div>
-      <div class="ans"><span class="lab">정답</span>A와 M의 원소는 전부 B의 원소보다 작으므로, 전체 기준 1등부터 |A|+|M|등까지는 이미 A·M이 차지한다. 따라서 B 안에서의 순위는 전체 순위 k에서 그만큼을 뺀 k−|A|−|M|이 된다.</div>
+      <div class="qh"><span class="qn">Q4</span><span>다음 quick_select 함수의 빈칸을 채우고, <b>(가)에서 k를 그대로 두는 이유</b>와 <b>(나)에서 k를 바꾸는 이유</b>를 각각 한 문장으로 쓰시오.</span><span class="type">빈칸+서술</span><span class="lv m">응용</span></div>
+      <div class="codebox pseudo">
+        <div class="head"><span><span class="tag">Python</span>quick_select</span><button class="copy">복사</button></div>
+<pre><code>    <span class="kw">if</span> len(A) ____ k:
+        <span class="kw">return</span> ________________        <span class="cm"># (가)</span>
+    <span class="kw">elif</span> len(A) + len(M) &lt; k:
+        <span class="kw">return</span> ________________        <span class="cm"># (나)</span>
+    <span class="kw">else</span>:
+        <span class="kw">return</span> ________________</code></pre>
+      </div>
+      <div class="ans"><span class="lab">정답</span>빈칸: <code>&gt;=</code> / <code>quick_select(A, k)</code> / <code>quick_select(B, k - len(A) - len(M))</code> / <code>P</code><br>
+        <b>(가)</b> A의 원소는 전부 M·B보다 작으므로 A 안에서의 순위가 전체 순위와 그대로 같다.<br>
+        <b>(나)</b> A와 M의 원소가 전체 1등부터 |A|+|M|등까지를 이미 차지했으므로, B 안에서의 순위는 그만큼 당겨진다.<br>
+        <span style="color:var(--c3)">주의</span> 첫 조건이 <code>&gt;</code>이면 |A| = k 인 경우(답이 A의 맨 끝에 있는 경우)를 놓쳐 잘못된 값을 반환한다.</div>
     </div>
 
     <div class="q">
-      <div class="qh"><span class="qn">Q5</span><span>Quick Select의 최악의 경우 시간복잡도는?</span><span class="type">객관식</span></div>
-      <ol class="ch"><li>O(n)</li><li>O(n log n)</li><li>O(n²)</li><li>O(log n)</li></ol>
-      <div class="ans"><span class="lab">정답 ③</span>매 재귀마다 A 또는 B가 비어서 피벗 1개만 줄어드는 경우. T(n) = (n−1) + T(n−1)을 전개하면 (n−1)+(n−2)+...+1 = n(n−1)/2 → O(n²).</div>
+      <div class="qh"><span class="qn">Q5</span><span>토너먼트 방식으로 최솟값을 찾은 뒤, <b>두 번째로 작은 값</b>은 최솟값과 직접 맞붙어 진 원소들 중에 반드시 있다. 그 이유를 설명하고, 이때 필요한 전체 비교 횟수를 n에 대한 식으로 나타내시오.</span><span class="type">서술형</span><span class="lv m">응용</span></div>
+      <div class="ans"><span class="lab">모범답안</span><b>이유</b> — 두 번째로 작은 값이 최솟값이 아닌 다른 원소 x에게 졌다고 가정하자. 그러면 x가 두 번째로 작은 값보다 작다는 뜻이고, 최솟값까지 더하면 그보다 작은 원소가 둘이 되어 "두 번째"라는 전제와 모순이다. 따라서 두 번째로 작은 값은 오직 최솟값에게만 질 수 있고, 최솟값의 상대들 중에 있다.<br>
+        <b>비교 횟수</b> — 최솟값 찾기에 n−1번. 최솟값의 상대 수는 최솟값이 거친 라운드 수와 같으므로 ⌈log₂ n⌉개이고, 그중 최솟값을 찾는 데 ⌈log₂ n⌉ − 1번. 합하면 <b>n + ⌈log₂ n⌉ − 2</b>번.</div>
     </div>
 
     <div class="q">
-      <div class="qh"><span class="qn">Q6</span><span>T(n) = n + T(n/2), T(1) = C 를 전개해 시간복잡도를 구하시오.</span><span class="type">계산</span></div>
-      <div class="ans"><span class="lab">풀이</span>T(n) = n + n/2 + n/4 + ... + T(1) = T(1) + n(1 + 1/2 + 1/2² + ... ). 괄호 안은 항이 절반씩 줄어드는 등비급수라 아무리 더해도 2를 넘지 않으므로 상수 C′(&lt;2)로 볼 수 있다. 따라서 T(n) = T(1) + n·C′ = <b>O(n)</b>.</div>
+      <div class="qh"><span class="qn">Q6</span><span>수업에서는 <b>최솟값과 두 번째로 작은 값</b>을 n + ⌈log₂ n⌉ − 2번에 찾았다. 이제 <b>최댓값과 두 번째로 큰 값</b>을 동시에 찾는 문제를 생각하자. (1) 같은 방법을 쓸 수 있는지 판단하고 근거를 쓰시오. (2) n = 16일 때 필요한 비교 횟수를 구하시오. (3) 이 방법이 단순히 "최댓값 찾고 빼고 다시 최댓값 찾기"보다 몇 번 이득인지 n = 16으로 비교하시오.</span><span class="type">서술+계산</span><span class="lv h">심화</span></div>
+      <div class="ans"><span class="lab">모범답안</span>
+        <b>(1)</b> 쓸 수 있다. 부등호 방향만 뒤집으면 논리가 그대로 대칭이다. 두 번째로 큰 값이 최댓값이 아닌 x에게 졌다면 x가 그보다 크다는 뜻이고, 최댓값까지 더하면 그보다 큰 원소가 둘이 되어 "두 번째"에 모순이다. 따라서 두 번째로 큰 값은 최댓값의 상대들 중에 있다.<br>
+        <b>(2)</b> n + ⌈log₂ n⌉ − 2 에 n = 16 대입. ⌈log₂16⌉ = 4 이므로 16 + 4 − 2 = <b>18번</b>. (최댓값 15번 + 후보 4개 중 최댓값 3번 = 18번으로도 확인된다.)<br>
+        <b>(3)</b> 단순한 방법은 (n−1) + (n−2) = 2n−3 = 29번. 18번과 비교하면 <b>11번 이득</b>이다. n이 커질수록 2n−3과 n+⌈log₂n⌉−2 의 차이는 거의 n만큼 벌어진다.</div>
     </div>
+
   </section>
 
   <footer><span>알고리즘 · 2주차 1차시 · 2026.09.10</span><span>jaealee.com</span></footer>
