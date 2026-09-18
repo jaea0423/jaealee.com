@@ -122,6 +122,7 @@ def supa_cfg(mode):
         role = None
     if role == "service_role":
         print("!! service_role 키가 들어 있습니다. 이 키는 파일에 넣으면 안 됩니다(전체 DB 권한). anon public 키로 바꾸세요."); sys.exit(1)
+    if cfg.get("geminiKey"): print("   Gemini 키 포함(감사 문자) — 공개 HTML 에 들어갑니다. 구글 콘솔에서 리퍼러 제한·한도를 걸어 두세요")
     cfg["mode"] = mode
     cfg["demo"] = bool(cfg.get("demo")) and mode == "dev"   # 예시 데이터 버튼은 dev 에서만 (prod 에서는 코드상 없음)
     print("Supabase 설정: %s (%s, role=%s, demo=%s)" % (os.path.relpath(path, BASE), cfg["url"], role, cfg["demo"]))

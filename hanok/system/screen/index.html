@@ -2829,7 +2829,7 @@ let view = { storeKey:null, tab:"dash", date:todayStr(), filter:"예정", form:n
    SUPA_CFG 는 build.py 가 supabase.{dev|prod}.json 으로 채웁니다. null 이면 지금처럼 브라우저 안에서만(예시 데이터).
    결정 사항은 work/7차_작업지시.md — 여기 주석은 '왜' 만 짧게.
    ============================================================ */
-var SUPA_CFG = {"url": "https://tequnppstugefkhilaqs.supabase.co", "anonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlcXVucHBzdHVnZWZraGlsYXFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkzMTM3MTIsImV4cCI6MjEwNDg4OTcxMn0.OTzk47tHUYmavOysPJ_vKsTjKkcX3gt7UiAC0kjntqE", "staffEmail": "staff@jaealee.com", "adminEmail": "admin@jaealee.com", "demo": true, "mode": "dev"};
+var SUPA_CFG = {"url": "https://tequnppstugefkhilaqs.supabase.co", "anonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlcXVucHBzdHVnZWZraGlsYXFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkzMTM3MTIsImV4cCI6MjEwNDg4OTcxMn0.OTzk47tHUYmavOysPJ_vKsTjKkcX3gt7UiAC0kjntqE", "staffEmail": "staff@jaealee.com", "adminEmail": "admin@jaealee.com", "demo": true, "geminiKey": "AQ.Ab8RN6Jijf9wNlwiDDYSSR7x4fGffJlbvbkqpXxdy19XhkYZdA", "mode": "dev"};
 var SESSION = null;          /* {access_token, refresh_token, expires_at(초), who:"staff"|"admin"} — 메모리 + sessionStorage 에만 */
 var OFFLINE = null;          /* 서버를 못 읽어 캐시로 보는 중: {at:마지막 갱신, pin:재접속용 PIN} */
 var READONLY_WHY = "";       /* 읽기 전용인 이유 (안내문에 씀) */
@@ -8634,10 +8634,19 @@ function sheetOwner(){
    글은 Gemini 가 예약 정보(이름·인원·룸/테이블·시간·요청·어린이·손님 메모)와 사장님 키워드(팔순·생일·회식·날씨…)로 만듭니다 —
    과하지 않고 광고 같지 않게. 마음에 안 들면 다시 만들기 / 직접 고치기 / 기본 양식. AI 가 막히면(키 없음·한도·오류) 기본 양식으로.
    보내기는 '예약 발송' — thanks_sms 표에 넣고 보낼 시각이 되면 1분 갱신(thanksTick)이 보냅니다(문자 업체 연결 전엔 흉내).
-   Gemini 키는 설정(stores.settings.ai) — 직원 로그인이면 볼 수 있으니 무료 키를 쓰고, 유출되면 구글 콘솔에서 바꾸세요. */
+   Gemini 키는 빌드 설정(supabase.*.json 의 geminiKey → SUPA_CFG)에 박음(재아 09-19). 화면에서 못 바꿈. 유료 키라 구글 콘솔에서
+   'HTTP 리퍼러 제한(jaealee.com/*)' 과 하루 한도를 걸어 두는 것이 안전장치. 모델은 3.6-flash → 안 되면 flash-latest → flash-lite 순으로 시도. */
 var TH = null;
-var TH_DEF_MODEL = "gemini-2.5-flash";
-function thCfg(){ var a = store().settings.ai || {}; return { key: a.geminiKey || "", model: a.model || TH_DEF_MODEL, hour: a.thanksHour || "11:00", common: a.thanksCommon || "" }; }
+var TH_MODELS = ["gemini-3.6-flash", "gemini-flash-latest", "gemini-flash-lite-latest"];   /* gemini-2.5-flash 는 새 키에서 404 (2026-09 확인) */
+var TH_DEF_MODEL = TH_MODELS[0];
+function thCfg(){ var a = store().settings.ai || {}; return { key: (typeof SUPA_CFG !== "undefined" && SUPA_CFG && SUPA_CFG.geminiKey) || "", model: a.model || TH_DEF_MODEL, hour: a.thanksHour || "11:00", common: a.thanksCommon || "" }; }
+/* 모델마다 '생각(thinking)' 을 끄는 설정이 다름: 3.x 는 thinkingLevel, 2.5 계열(flash-latest)은 thinkingBudget 0. 안 끄면 토큰을 생각에 다 써 본문이 잘림 */
+function thGenCfg(model){
+  var g = { temperature:0.9, maxOutputTokens:2048 };
+  if(/gemini-3/.test(model)) g.thinkingConfig = { thinkingLevel:"minimal" };
+  else if(/flash-latest|2\.5/.test(model) && !/lite/.test(model)) g.thinkingConfig = { thinkingBudget:0 };
+  return g;
+}
 function thSaveCfg(patch){ var st = store().settings; st.ai = Object.assign({}, st.ai || {}, patch); if(typeof mirrorDraft === "function") mirrorDraft("ai"); saveData(); }
 
 async function openThanksPage(){
@@ -8681,18 +8690,24 @@ function thPrompt(r, kw){
 }
 async function thGemini(prompt){
   var cfg = thCfg(); if(!cfg.key) throw new Error("NOKEY");
-  var ctl = new AbortController(), t = setTimeout(function(){ ctl.abort(); }, 20000);
-  var res;
-  try{
-    res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(cfg.model) + ":generateContent?key=" + encodeURIComponent(cfg.key), {
-      method:"POST", headers:{ "Content-Type":"application/json" }, signal:ctl.signal,
-      body: JSON.stringify({ contents:[{ role:"user", parts:[{ text:prompt }] }], generationConfig:{ temperature:0.9, maxOutputTokens:400 } }) });
-  }finally{ clearTimeout(t); }
-  if(!res.ok){ var m = ""; try{ m = (await res.json()).error.message || ""; }catch(e){} throw new Error("HTTP " + res.status + (m ? " · " + m : "")); }
-  var j = await res.json(), text = "";
-  try{ text = j.candidates[0].content.parts.map(function(p){ return p.text || ""; }).join("").trim(); }catch(e){}
-  if(!text) throw new Error("빈 응답");
-  return text.replace(/^```[\s\S]*?\n|```$/g, "").trim();
+  var models = [cfg.model].concat(TH_MODELS.filter(function(m){ return m !== cfg.model; })), lastErr = null;
+  for(var i = 0; i < models.length; i++){
+    var model = models[i], ctl = new AbortController(), t = setTimeout(function(){ ctl.abort(); }, 25000), res;
+    try{
+      res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":generateContent?key=" + encodeURIComponent(cfg.key), {
+        method:"POST", headers:{ "Content-Type":"application/json" }, signal:ctl.signal,
+        body: JSON.stringify({ contents:[{ role:"user", parts:[{ text:prompt }] }], generationConfig:thGenCfg(model) }) });
+    }catch(e){ clearTimeout(t); throw e; }
+    clearTimeout(t);
+    if(res.status === 404 || res.status === 400){ var m0 = ""; try{ m0 = (await res.json()).error.message || ""; }catch(e){} lastErr = new Error("HTTP " + res.status + " · " + model + (m0 ? " · " + m0.slice(0, 80) : "")); continue; }   /* 그 모델이 없으면 다음 모델 */
+    if(!res.ok){ var m = ""; try{ m = (await res.json()).error.message || ""; }catch(e){} throw new Error("HTTP " + res.status + (m ? " · " + m.slice(0, 120) : "")); }
+    var j = await res.json(), text = "";
+    try{ text = j.candidates[0].content.parts.filter(function(p){ return p.text && !p.thought; }).map(function(p){ return p.text; }).join("").trim(); }catch(e){}   /* 생각(thought) 조각은 뺌 */
+    if(!text){ lastErr = new Error("빈 응답 · " + model); continue; }
+    if(cfg.model !== model) thSaveCfg({model:model});   /* 되는 모델을 기억 */
+    return text.replace(/^```[\s\S]*?\n|```$/g, "").trim();
+  }
+  throw lastErr || new Error("쓸 수 있는 모델이 없음");
 }
 async function thMake(resId, force){
   var r = store().reservations.find(function(x){ return x.id === resId; }); if(!r) return;
@@ -8701,7 +8716,7 @@ async function thMake(resId, force){
   try{
     it.text = await thGemini(thPrompt(r, it.kw)); it.made = "ai"; it.err = "";
   }catch(e){
-    var why = e.name === "AbortError" ? "응답이 20초 안에 안 옴" : e.message === "NOKEY" ? "Gemini 키가 없음(설정)" : e.message;
+    var why = e.name === "AbortError" ? "응답이 25초 안에 안 옴" : e.message === "NOKEY" ? "Gemini 키가 빌드에 없음(supabase.*.json 의 geminiKey)" : e.message;
     it.err = why; if(!it.text || force){ it.text = thTemplate(r, it.kw); it.made = "template"; }
   }
   TH.busy[resId] = false; render();
@@ -8760,7 +8775,7 @@ function sheetThanks(){
   var cfg = thCfg();
   var tabs = '<div class="seg" style="margin-bottom:12px"><button class="' + (TH.tab === "make" ? "on" : "") + '" onclick="TH.tab=\'make\'; render()">만들기</button><button class="' + (TH.tab === "queue" ? "on" : "") + '" onclick="TH.tab=\'queue\'; render()">대기·보낸 문자' + ((TH.queue || []).filter(function(q){ return q.status === "대기"; }).length ? ' <i class="cnt">' + (TH.queue || []).filter(function(q){ return q.status === "대기"; }).length + '</i>' : '') + '</button></div>';
   var body = TH.tab === "queue" ? thQueueHtml() : thMakeHtml();
-  return '<div class="th-top">' + tabs + '<div class="btn-row"><button class="btn sm ghost" onclick="TH.setup=true; render()">' + (cfg.key ? "AI 설정" : "AI 설정 · 키 없음") + '</button></div></div>' + body + (TH.setup ? thSetupHtml() : "");
+  return '<div class="th-top">' + tabs + '<div class="btn-row"><button class="btn sm ghost" onclick="TH.setup=true; render()">' + (cfg.key ? "AI 설정" : "AI 설정 · 키 없음!") + '</button></div></div>' + body + (TH.setup ? thSetupHtml() : "");
 }
 function thMakeHtml(){
   var list = thTargets(), anyBusy = Object.keys(TH.busy).some(function(k){ return TH.busy[k]; });
@@ -8795,10 +8810,10 @@ function thQueueHtml(){
 function thSetupHtml(){
   var cfg = thCfg();
   return '<div class="overlay" onclick="TH.setup=false; render()"><div class="sheet" onclick="event.stopPropagation()">' + sheetHead("AI 설정 (Gemini)") +
-    '<label class="f"><div class="lb">Gemini API 키</div><input id="th-key" type="password" value="' + esc(cfg.key) + '" placeholder="AIza…" autocomplete="off"></label>' +
-    '<p class="f-note">Google AI Studio(aistudio.google.com) → Get API key 에서 무료 키를 만듭니다. 이 키는 매장 설정에 저장돼 직원 로그인에서도 보일 수 있으니 무료 키를 쓰고, 유출되면 콘솔에서 바꾸세요.</p>' +
-    '<div class="grid2"><label class="f"><div class="lb">모델</div><input id="th-model" type="text" value="' + esc(cfg.model) + '"></label><label class="f"><div class="lb">보내는 시각 기본값</div><input id="th-hour" type="time" value="' + esc(cfg.hour) + '"></label></div>' +
-    '<div class="sheet-actions"><button class="btn ghost" onclick="TH.setup=false; render()">취소</button><button class="btn primary" onclick="thSaveCfg({geminiKey:document.getElementById(\'th-key\').value.trim(), model:document.getElementById(\'th-model\').value.trim()||TH_DEF_MODEL, thanksHour:document.getElementById(\'th-hour\').value||\'11:00\'}); TH.setup=false; render()">저장</button></div></div></div>';
+    '<div class="f"><div class="lb">API 키</div><div class="' + (cfg.key ? "" : "rust") + '">' + (cfg.key ? "빌드에 들어 있음 (" + esc(cfg.key.slice(0, 6)) + "…" + esc(cfg.key.slice(-4)) + ")" : "없음 — supabase.*.json 의 geminiKey 에 넣고 다시 빌드") + '</div></div>' +
+    '<p class="f-note">키는 화면에서 바꾸지 않습니다(재아). 바꾸려면 supabase.dev.json / supabase.prod.json 의 geminiKey 를 고치고 빌드. 유료 키이니 구글 클라우드 콘솔에서 이 키에 "HTTP 리퍼러 제한: jaealee.com/*" 과 하루 사용 한도를 걸어 두세요.</p>' +
+    '<div class="grid2"><label class="f"><div class="lb">모델 <span class="lbl-note">안 되면 자동으로 다음 모델</span></div><input id="th-model" type="text" value="' + esc(cfg.model) + '" placeholder="' + TH_DEF_MODEL + '"></label><label class="f"><div class="lb">보내는 시각 기본값</div><input id="th-hour" type="time" value="' + esc(cfg.hour) + '"></label></div>' +
+    '<div class="sheet-actions"><button class="btn ghost" onclick="TH.setup=false; render()">취소</button><button class="btn primary" onclick="thSaveCfg({model:document.getElementById(\'th-model\').value.trim()||TH_DEF_MODEL, thanksHour:document.getElementById(\'th-hour\').value||\'11:00\'}); TH.setup=false; render()">저장</button></div></div></div>';
 }
 function thEsc(){ if(TH && view.form && view.form.type === "thanks" && TH.setup){ TH.setup = false; render(); return true; } return false; }
 
