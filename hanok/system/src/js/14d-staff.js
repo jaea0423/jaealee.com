@@ -302,35 +302,95 @@ function hrPayView(){
     '<tr class="tot"><td colspan="4">합계</td><td class="won">' + hrWon(tot.gross) + '</td><td class="won">−' + hrWon(tot.ded) + '</td><td class="won"><b>' + hrWon(tot.net) + '</b></td><td></td></tr></tbody></table></div>' +
     '<p class="f-note">총지급 = 기본급 + 연장·야간 가산(5인 이상) + 주휴수당(시급제, 주 15h 이상 개근) + 배율 가산. 월급제는 월급 고정 + 가산(통상시급 = 월급 ÷ 209), 결근 공제는 직원마다 켬. 공제 = 4대보험(근로자분) 또는 3.3%. 사업주 부담 4대보험(산재 제외) 약 ' + hrWon(tot.employer) + '. 퇴사자는 퇴사한 달까지 회색으로. <b>참고용 계산</b> — 신고·정산은 세무사/노무사 확인 후.</p>';
 }
+/* ---------- 급여계산서: 영수증 모양 (재아 09-19 "직원한테 보내기 안 민망하게") ----------
+   hrSlipData 가 줄 목록을 만들고, 화면(HTML)·인쇄·사진 저장(캔버스)이 같은 줄을 씁니다 — 셋이 늘 같게 */
+function hrSlipData(s, m){
+  var mx = new Date(m + "-01T00:00:00"), title = mx.getFullYear() + "년 " + (mx.getMonth() + 1) + "월", t = hrCalc(s, m), cfg = hrCfg();
+  var st = store(), shop = (st && st.name) || "한옥반점";
+  var L = [];   /* {k:"h1|sub|sec|row|tot|note|log|dash", a, b, n} */
+  L.push({k:"h1", a:shop}); L.push({k:"sub", a:title + " 급여계산서"});
+  L.push({k:"dash"});
+  L.push({k:"row", a:"직원", b:hrLabel(s) + (s.nick && s.name !== s.nick ? " (" + s.name + ")" : "") + (s.role ? " · " + s.role : "")});
+  L.push({k:"row", a:"기준", b:(s.pay_type === "monthly" ? "월급제 · 통상시급 " + hrWon(t.wage) : "시급 " + hrWon(t.wage)) + " · " + (s.tax || "4대보험")});
+  L.push({k:"row", a:"근무", b:t.days + "일 · " + t.hours + "시간" + (t.abs ? " · 결근 " + t.abs + "일" : "")});
+  L.push({k:"dash"}); L.push({k:"sec", a:"지급"});
+  L.push({k:"row", a:s.pay_type === "monthly" ? "월급" : "기본급", b:hrWon(t.base), n:s.pay_type === "monthly" ? "" : t.hours + "h × " + hrWon(t.wage)});
+  if(t.otPay) L.push({k:"row", a:"연장수당", b:hrWon(t.otPay), n:t.ot + "h × 0.5"});
+  if(t.nightPay) L.push({k:"row", a:"야간수당", b:hrWon(t.nightPay), n:t.night + "h × 0.5"});
+  if(t.weeklyPay) L.push({k:"row", a:"주휴수당", b:hrWon(t.weeklyPay), n:t.weekly + "h"});
+  if(t.bonusPay) L.push({k:"row", a:"휴일·배율 가산", b:hrWon(t.bonusPay), n:t.bonusH + "h"});
+  if(t.absentPay) L.push({k:"row", a:"결근 공제", b:hrWon(t.absentPay), n:t.abs + "일 × 8h"});
+  L.push({k:"tot", a:"총지급", b:hrWon(t.gross)});
+  L.push({k:"sec", a:"공제 · " + (s.tax || "4대보험")});
+  if(Object.keys(t.ded).length) Object.keys(t.ded).forEach(function(k){ L.push({k:"row", a:k, b:"−" + hrWon(t.ded[k])}); }); else L.push({k:"row", a:"공제 없음", b:"0원"});
+  L.push({k:"tot", a:"실지급액", b:hrWon(t.net), big:true});
+  L.push({k:"dash"}); L.push({k:"sec", a:"근무 기록 " + t.log.length + "일"});
+  t.log.forEach(function(l){ var dt = new Date(l.date + "T00:00:00"); L.push({k:"log", a:(dt.getMonth() + 1) + "/" + dt.getDate() + "(" + HR_DAYS[dt.getDay()] + ")", b:HR_STATUS[l.status] + " " + (l.spans.length ? l.spans.map(function(sp){ return minToHM(sp.s0) + "-" + minToHM(sp.e0 % 1440); }).join("+") + " " + hrRound(l.hours) + "h" : l.status) + (l.rate > 1 ? " " + l.rate + "x" : ""), n:l.memo || ""}); });
+  L.push({k:"dash"});
+  L.push({k:"note", a:"발행 " + todayStr() + " · " + shop});
+  L.push({k:"note", a:"참고용 계산서 — 소득세(간이세액)·비과세·수습 감액은 넣지 않았습니다"});
+  return { lines:L, title:title, t:t, cfg:cfg, shop:shop };
+}
 function hrSlipHtml(){
   var s = HR.staff.find(function(x){ return x.id === HR.slip.id; }); if(!s) return "";
-  var m = HR.slip.month, mx = new Date(m + "-01T00:00:00"), title = mx.getFullYear() + "년 " + (mx.getMonth() + 1) + "월", t = hrCalc(s, m), cfg = hrCfg();
-  var line = function(k, v, note){ return '<div class="slip-l"><span>' + k + (note ? '<small>' + note + '</small>' : '') + '</span><b>' + v + '</b></div>'; };
-  var logRows = t.log.map(function(l){ var dt = new Date(l.date + "T00:00:00"); return '<tr><td>' + (dt.getMonth() + 1) + '/' + dt.getDate() + ' ' + HR_DAYS[dt.getDay()] + '</td><td>' + HR_STATUS[l.status] + ' ' + l.status + '</td><td>' + (l.spans.length ? l.spans.map(function(sp){ return minToHM(sp.s0) + '–' + minToHM(sp.e0 % 1440) + (sp.brk ? '(휴게 ' + sp.brk + ')' : ''); }).join(' + ') : '') + '</td><td>' + (l.spans.length ? hrRound(l.hours) + 'h' : '') + '</td><td>' + (l.rate > 1 ? l.rate + 'x' : '') + '</td><td>' + esc(l.memo) + '</td></tr>'; }).join("");
-  var html = '<div class="slip-h"><b>' + esc(hrLabel(s)) + '</b>' + (s.nick && s.name !== s.nick ? ' <span class="muted">' + esc(s.name) + '</span>' : '') + ' · ' + esc(s.role || "") + '<br><small>' + title + ' 급여 · 근무 ' + t.days + '일 ' + t.hours + 'h · ' + (s.pay_type === "monthly" ? "월급제(통상시급 " + hrWon(t.wage) + ")" : "시급 " + hrWon(t.wage)) + ' · 공제 ' + esc(s.tax || "4대보험") + '</small></div>' +
-    '<div class="slip-sec">지급</div>' +
-    line(s.pay_type === "monthly" ? "월급" : "기본급", hrWon(t.base), s.pay_type === "monthly" ? "" : t.hours + "h × 시급") +
-    (t.otPay ? line("연장수당", hrWon(t.otPay), t.ot + "h × 0.5") : "") + (t.nightPay ? line("야간수당", hrWon(t.nightPay), t.night + "h × 0.5") : "") +
-    (t.weeklyPay ? line("주휴수당", hrWon(t.weeklyPay), t.weekly + "h") : "") + (t.bonusPay ? line("휴일·배율 가산", hrWon(t.bonusPay), t.bonusH + "h") : "") + (t.absentPay ? line("결근 공제", hrWon(t.absentPay), t.abs + "일 × 8h") : "") +
-    line("<b>총지급</b>", "<b>" + hrWon(t.gross) + "</b>") +
-    '<div class="slip-sec">공제 · ' + esc(s.tax || "4대보험") + '</div>' +
-    (Object.keys(t.ded).length ? Object.keys(t.ded).map(function(k){ return line(k, "−" + hrWon(t.ded[k])); }).join("") : line("공제 없음", "0원")) +
-    line("<b>실지급</b>", "<b class='pine'>" + hrWon(t.net) + "</b>") +
-    '<div class="slip-sec">근무 기록 (' + t.log.length + '일)</div><table class="slip-log"><thead><tr><th>날짜</th><th>구분</th><th>시간</th><th>근무</th><th>배율</th><th>메모</th></tr></thead><tbody>' + (logRows || '<tr><td colspan="6">기록 없음</td></tr>') + '</tbody></table>' +
-    (t.employer ? '<p class="f-note">사업주 부담 4대보험(참고, 산재 제외): 약 ' + hrWon(t.employer) + ' — 국민연금 ' + cfg.rates.pension + '% · 건강 ' + cfg.rates.health + '% · 장기요양 ' + cfg.rates.care + '%(건강보험료의) · 고용 ' + cfg.rates.employ + '%</p>' : '') +
-    '<p class="f-note">참고용 계산서입니다. 소득세(4대보험 가입자의 간이세액)·비과세 식대·수습 감액 등은 넣지 않았습니다. 만든 날 ' + todayStr() + '</p>';
-  var text = title + " 급여계산서 · " + hrLabel(s) + (s.nick && s.name !== s.nick ? "(" + s.name + ")" : "") + "\n근무 " + t.days + "일 " + t.hours + "h · " + (s.pay_type === "monthly" ? "월급제" : "시급 " + hrWon(t.wage)) + "\n" +
-    (s.pay_type === "monthly" ? "월급 " : "기본급 ") + hrWon(t.base) + (t.otPay ? "\n연장수당 " + hrWon(t.otPay) + " (" + t.ot + "h)" : "") + (t.nightPay ? "\n야간수당 " + hrWon(t.nightPay) + " (" + t.night + "h)" : "") + (t.weeklyPay ? "\n주휴수당 " + hrWon(t.weeklyPay) : "") + (t.bonusPay ? "\n휴일·배율 가산 " + hrWon(t.bonusPay) : "") + (t.absentPay ? "\n결근 공제 " + hrWon(t.absentPay) : "") +
-    "\n총지급 " + hrWon(t.gross) + "\n공제(" + (s.tax || "4대보험") + ") " + Object.keys(t.ded).map(function(k){ return k + " " + hrWon(t.ded[k]); }).join(", ") + "\n실지급 " + hrWon(t.net) +
-    "\n\n근무 기록\n" + t.log.map(function(l){ return l.date + " " + l.status + (l.spans.length ? " " + l.spans.map(function(sp){ return minToHM(sp.s0) + "-" + minToHM(sp.e0 % 1440); }).join("+") + " " + hrRound(l.hours) + "h" : "") + (l.rate > 1 ? " " + l.rate + "x" : "") + (l.memo ? " · " + l.memo : ""); }).join("\n");
-  return '<div class="overlay" onclick="HR.slip=null; render()"><div class="sheet sheet-tall" onclick="event.stopPropagation()">' + sheetHead("급여계산서") + '<div class="slip searchbox">' + html + '</div>' +
-    '<div class="sheet-actions"><button class="btn ghost" onclick="navigator.clipboard&&navigator.clipboard.writeText(' + JSON.stringify(text).replace(/"/g, "&quot;") + ').then(function(){ showToast(\'복사했습니다\'); })">글로 복사</button><button class="btn ghost" onclick="hrPrintSlip()">인쇄</button><button class="btn primary" onclick="HR.slip=null; render()">닫기</button></div></div></div>';
+  var d = hrSlipData(s, HR.slip.month);
+  var html = d.lines.map(function(l){
+    if(l.k === "h1") return '<div class="rc-h1">' + esc(l.a) + '</div>';
+    if(l.k === "sub") return '<div class="rc-sub">' + esc(l.a) + '</div>';
+    if(l.k === "dash") return '<div class="rc-dash"></div>';
+    if(l.k === "sec") return '<div class="rc-sec">' + esc(l.a) + '</div>';
+    if(l.k === "note") return '<div class="rc-note">' + esc(l.a) + '</div>';
+    if(l.k === "tot") return '<div class="rc-row rc-tot' + (l.big ? ' big' : '') + '"><span>' + esc(l.a) + '</span><b>' + esc(l.b) + '</b></div>';
+    if(l.k === "log") return '<div class="rc-row rc-log"><span>' + esc(l.a) + '</span><span class="g">' + esc(l.b) + '</span>' + (l.n ? '<small>' + esc(l.n) + '</small>' : '') + '</div>';
+    return '<div class="rc-row"><span>' + esc(l.a) + (l.n ? '<small>' + esc(l.n) + '</small>' : '') + '</span><b>' + esc(l.b) + '</b></div>';
+  }).join("");
+  var text = d.lines.map(function(l){ return l.k === "dash" ? "-----------------------------" : l.k === "log" ? l.a + " " + l.b + (l.n ? " · " + l.n : "") : (l.a || "") + (l.b ? "  " + l.b : "") + (l.n ? " (" + l.n + ")" : ""); }).join("\n");
+  return '<div class="overlay" onclick="HR.slip=null; render()"><div class="sheet sheet-tall" onclick="event.stopPropagation()">' + sheetHead("급여계산서") +
+    '<div class="searchbox rc-wrap"><div class="receipt">' + html + '</div></div>' +
+    '<div class="sheet-actions"><button class="btn ghost" onclick="hrSlipImage()">사진으로 저장</button><button class="btn ghost" onclick="navigator.clipboard&&navigator.clipboard.writeText(' + JSON.stringify(text).replace(/"/g, "&quot;") + ').then(function(){ showToast(\'복사했습니다\'); })">글로 복사</button><button class="btn ghost" onclick="hrPrintSlip()">인쇄</button><button class="btn primary" onclick="HR.slip=null; render()">닫기</button></div></div></div>';
 }
 function hrPrintSlip(){
-  var el = document.querySelector(".slip"); if(!el) return;
+  var el = document.querySelector(".receipt"); if(!el) return;
   var w = window.open("", "_blank"); if(!w){ uiAlert("팝업이 막혀 있습니다", "브라우저에서 팝업을 허용해 주세요.", "warn"); return; }
-  w.document.write('<!doctype html><meta charset="utf-8"><title>급여계산서</title><style>body{font:13px/1.6 sans-serif; padding:24px; max-width:620px} .slip-h{font-size:16px; margin-bottom:12px} .slip-h small{font-size:12px; color:#666} .slip-sec{font-weight:700; margin:14px 0 6px; border-bottom:1px solid #ccc} .slip-l{display:flex; justify-content:space-between; padding:3px 0} .slip-l small{display:block; color:#666; font-size:11px} .f-note{color:#666; font-size:11px} table{border-collapse:collapse; width:100%; font-size:11px} th,td{border-bottom:1px solid #ddd; padding:3px 4px; text-align:left}</style>' + el.innerHTML);
+  var css = ""; try{ css = Array.prototype.slice.call(document.styleSheets).map(function(ss){ try{ return Array.prototype.slice.call(ss.cssRules).filter(function(r){ return /\.rc-|\.receipt/.test(r.cssText); }).map(function(r){ return r.cssText; }).join("\n"); }catch(e){ return ""; } }).join("\n"); }catch(e){}
+  w.document.write('<!doctype html><meta charset="utf-8"><title>급여계산서</title><style>' + css + ' body{background:#fff; margin:0; padding:20px; display:flex; justify-content:center; font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif} .receipt{box-shadow:none}</style><div class="receipt">' + el.innerHTML + '</div>');
   w.document.close(); w.focus(); setTimeout(function(){ w.print(); }, 300);
+}
+/* 사진으로 저장: 캔버스에 같은 줄을 그려 PNG 로. 폰·태블릿이면 공유 시트(카톡으로 바로), 아니면 내려받기 */
+async function hrSlipImage(){
+  var s = HR.staff.find(function(x){ return x.id === HR.slip.id; }); if(!s) return;
+  var d = hrSlipData(s, HR.slip.month), W = 720, P = 44, y = 0, scale = 2;
+  var c = document.createElement("canvas"), g = c.getContext("2d");
+  var F = '"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+  var hOf = function(l){ return l.k === "h1" ? 48 : l.k === "sub" ? 30 : l.k === "dash" ? 22 : l.k === "sec" ? 30 : l.k === "note" ? 22 : (l.k === "tot" && l.big) ? 56 : l.k === "tot" ? 36 : l.k === "log" ? (l.n ? 44 : 26) : (l.n ? 42 : 28); };
+  var heights = d.lines.reduce(function(a, l){ return a + hOf(l); }, 0);
+  c.width = W * scale; c.height = (heights + P * 2 + 20) * scale; g.scale(scale, scale);
+  g.fillStyle = "#fff"; g.fillRect(0, 0, W, heights + P * 2 + 20); g.fillStyle = "#1B1A18"; g.textBaseline = "top";
+  y = P;
+  var right = function(txt, yy, font){ g.font = font; g.textAlign = "right"; g.fillText(txt, W - P, yy); g.textAlign = "left"; };
+  var dash = function(yy){ g.save(); g.strokeStyle = "#999"; g.setLineDash([4, 4]); g.beginPath(); g.moveTo(P, yy); g.lineTo(W - P, yy); g.stroke(); g.restore(); };
+  d.lines.forEach(function(l){
+    if(l.k === "h1"){ g.font = "800 30px " + F; g.textAlign = "center"; g.fillText(l.a.split("").join(" "), W / 2, y); g.textAlign = "left"; }
+    else if(l.k === "sub"){ g.font = "16px " + F; g.fillStyle = "#555"; g.textAlign = "center"; g.fillText(l.a, W / 2, y); g.textAlign = "left"; g.fillStyle = "#1B1A18"; }
+    else if(l.k === "dash"){ dash(y + 10); }
+    else if(l.k === "sec"){ g.font = "700 16px " + F; g.fillStyle = "#555"; g.fillText(l.a, P, y + 8); g.fillStyle = "#1B1A18"; }
+    else if(l.k === "note"){ g.font = "13px " + F; g.fillStyle = "#888"; g.textAlign = "center"; g.fillText(l.a, W / 2, y + 4); g.textAlign = "left"; g.fillStyle = "#1B1A18"; }
+    else if(l.k === "tot"){ g.save(); g.strokeStyle = "#333"; g.beginPath(); g.moveTo(P, y + 2); g.lineTo(W - P, y + 2); g.stroke(); g.restore(); var big = !!l.big;
+      g.font = (big ? "800 22px " : "700 17px ") + F; g.fillText(l.a, P, y + (big ? 14 : 10)); right(l.b, y + (big ? 12 : 10), (big ? "800 28px " : "800 18px ") + F); }
+    else if(l.k === "log"){ g.font = "14px " + F; g.fillStyle = "#555"; g.fillText(l.a, P, y + 4); g.fillStyle = "#1B1A18"; g.fillText(l.b, P + 84, y + 4); if(l.n){ g.font = "12px " + F; g.fillStyle = "#888"; g.fillText("· " + l.n, P + 84, y + 24); g.fillStyle = "#1B1A18"; } }
+    else { g.font = "16px " + F; g.fillText(l.a, P, y + 4); right(l.b, y + 4, "600 16px " + F); if(l.n){ g.font = "12px " + F; g.fillStyle = "#888"; g.fillText(l.n, P, y + 25); g.fillStyle = "#1B1A18"; } }
+    y += hOf(l);
+  });
+  var name = d.title.replace(/\s/g, "") + "_급여계산서_" + hrLabel(s) + ".png";
+  c.toBlob(async function(blob){
+    if(!blob){ uiAlert("사진을 만들지 못했습니다", "", "warn"); return; }
+    try{
+      var file = new File([blob], name, {type:"image/png"});
+      if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:name}); return; }   /* 폰·태블릿: 카톡 등으로 바로 */
+    }catch(e){ if(e && e.name === "AbortError") return; }
+    var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+    showToast("사진으로 저장했습니다 · " + name);
+  }, "image/png");
 }
 function hrPopHtml(){
   var p = HR.pop, s = HR.staff.find(function(x){ return x.id === p.staff_id; }) || {};
