@@ -110,8 +110,15 @@ def sys_jobs(tok):
       ("60 테이블 편집",    "view.adminOk=true; view.tab='settings'; openTableEdit(roomsAt(todayStr()).filter(isTable)[0].id);"),
     ]
     site_open = "view.adminOk=true; openSiteAdmin();"
-    for key, name in [("online","홈페이지 예약"),("notices","팝업 공지"),("hours","영업시간·연락처"),("texts","글"),("menu","차림"),("images","사진"),("history","적용 기록")]:
+    for key, name in [("online","홈페이지 예약"),("notices","팝업 공지"),("posts","소식"),("hours","영업시간·연락처"),("texts","글"),("menu","차림"),("images","사진"),("history","적용 기록")]:
         jobs.append(("61 홈페이지 관리 · %s" % name, site_open + " setTimeout(function(){ if(SA&&!SA.loading){ SA.tab='%s'; render(); } }, 2500);" % key))
+    jobs.append(("61 홈페이지 관리 · 소식 글 고치기", site_open + " setTimeout(function(){ if(SA&&!SA.loading){ SA.tab='posts'; saPostsLoad().then(function(){ if(SA.posts&&SA.posts[0]) saPostEdit(SA.posts[0].id); }); } }, 2500);"))
+    jobs.append(("65 직원 근태", "view.adminOk=true; openStaffPage();"))
+    jobs.append(("66 직원 근태 · 칸 편집", "view.adminOk=true; openStaffPage().then(function(){ if(HR.staff[0]) hrCell(HR.staff[0].id, todayStr()); });"))
+    jobs.append(("67 직원 근태 · 직원 편집", "view.adminOk=true; openStaffPage().then(function(){ if(HR.staff[0]) hrStaffEdit(HR.staff[0].id); });"))
+    jobs.append(("68 직원 근태 · 정산", "view.adminOk=true; openStaffPage().then(function(){ HR.pay=true; render(); });"))
+    jobs.append(("69 손님 관리", "view.adminOk=true; openGuestsPage();"))
+    jobs.append(("69 손님 관리 · 상세", "view.adminOk=true; openGuestsPage().then(function(){ var l=gsList(); if(l[0]) gsOpen(l[0].phone); });"))
     jobs.append(("62 홈페이지 관리 · 적용 대화창", site_open + " setTimeout(function(){ if(SA&&!SA.loading){ view.saApply={mode:'at', date:shiftDate(todayStr(),1), time:'09:00', note:''}; render(); } }, 2500);"))
     jobs.append(("63 홈페이지 관리 · 미리보기", site_open + " setTimeout(function(){ if(SA&&!SA.loading){ view.saPreview='index'; render(); } }, 2500);"))
     return login, jobs
@@ -120,6 +127,7 @@ def site_jobs():
     pages = [("index","홈"),("about","이야기"),("space","공간"),("menu","차림"),("visit","오시는 길"),("reserve","예약")]
     jobs = [("S%02d 사이트 · %s" % (i+1, n), "/%s.html?shot=1" % p, 5200) for i, (p, n) in enumerate(pages)]
     jobs.append(("S07 사이트 · 팝업", "/index.html?shot=notice&notice=1", 1100))
+    jobs.append(("S08 사이트 · 소식", "/news.html?shot=1", 2400))   # 14차. 첫 글을 펼친 채로 보려면 #post_… 를 붙임
     for k in range(1, 8):
         jobs.append(("S1%d 예약 창 %d단계" % (k, k), "/reserve.html?shot=1&rv=%d" % k, 1000))
     return jobs

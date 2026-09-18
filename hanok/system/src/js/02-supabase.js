@@ -173,7 +173,7 @@ async function enterStore(){
   DATA = assembleData(d);
   AUTHED = true; OFFLINE = null; LOAD_ERROR = null;
   /* 로그인 직후: 홈페이지 예약 끌어오기 + 남은 자리 한 번 올리기(11c) */
-  setTimeout(function(){ try{ if(typeof pullRequests === "function"){ pullRequests().then(function(n){ if(n) render(); }); publishAvail(true); } }catch(e){} }, 800);
+  setTimeout(function(){ try{ if(typeof pullRequests === "function"){ pullRequests().then(function(n){ if(n) render(); }); publishAvail(true); } if(typeof gsLoadMemos === "function") gsLoadMemos(); }catch(e){} }, 800);   /* 손님 메모(15차)도 한 번 */
   cacheSave();
   autoCloseDays();   /* 지난 날짜의 '확정' → '방문' (이 기기가 처음 켠 것이면 여기서 올라갑니다) */
   takeSnapshot();

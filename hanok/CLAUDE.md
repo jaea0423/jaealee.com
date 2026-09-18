@@ -11,7 +11,7 @@
 
 | 주소 | 폴더 | 무엇 |
 |---|---|---|
-| `jaealee.com/hanok/` | `hanok/` (이 폴더) | **가게 사이트** — 손님이 보는 홈페이지 6장 + 예약 창. 정적 파일, 빌드 없음. 자세한 건 `README.md` |
+| `jaealee.com/hanok/` | `hanok/` (이 폴더) | **가게 사이트** — 손님이 보는 홈페이지 7장(소식 포함) + 예약 창. 정적 파일, 빌드 없음. 자세한 건 `README.md` |
 | `jaealee.com/hanok/system/` | `system/` | **예약 관리 시스템** — 카운터 태블릿·사장님 폰. HTML 파일 하나로 빌드. **규칙은 `system/CLAUDE.md`** |
 | `jaealee.com/hanok/system/dev/` | `system/dev/` | 시스템 개발용 빌드 (`python build.py dev`) |
 | `jaealee.com/hanok/system/screen/` | `system/screen/` | 손님용 TV 화면 (+ 광고 영상 `ad.mp4`) |
@@ -33,6 +33,7 @@
 - 시스템이 내일부터 30일치 남은 자리를 `public_avail` 에 올리고(`system/src/js/11c-site-link.js`), 사이트 예약 창은 그것만 읽습니다.
 - 사이트 접수는 `requests` 표에 한 줄(anon 은 넣기만). 시스템이 1분마다 읽어 팝업 → 승인/거절.
 - 사이트 내용은 `data/site.js`(기본값) 위에 서버 `site_versions` 최신 판을 덮음(`js/content.js`). 시스템 설정 → 홈페이지 → **홈페이지 관리**(`system/src/js/14b-site-admin.js`)에서 초안 → 미리보기(`?preview=1`) → 적용(지금/정한 시각). 사진·PDF·TV 광고 영상은 Storage `site` 버킷에 올림(`saPickFile`).
+- **소식**(`news.html`, `js/news.js`)은 서버 `site_posts` 표를 바로 읽습니다 — 초안·적용 판과 무관하게 시스템 홈페이지 관리 → 소식 에서 저장하면 즉시 반영. 표·정책은 `system/supabase/patch_14차_소식.sql`.
 - 접속 정보는 `js/config.js`(anon 키·URL — 공개해도 되는 키). **service_role 키는 어떤 파일에도 쓰지 않습니다.**
 - 서버 표·정책은 `system/supabase/patch_9차_홈페이지.sql`. 실서비스 순서는 `system/supabase/checklist.md` 8장.
 

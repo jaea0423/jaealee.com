@@ -207,14 +207,14 @@ function saFile(path, label, note){   /* PDF 같은 파일: 주소 + 올리기 *
 }
 
 /* ---------- 파일 올리기 (Storage 'site' 버킷, 공개 읽기·직원만 쓰기) ----------
-   kind: image(축소해서 JPEG/PNG) · pdf · video(mp4 그대로). 올린 뒤 공개 주소를 cb 로 돌려줍니다.
+   kind: image(축소해서 JPEG/PNG) · pdf · video(mp4 그대로) · file(소식 첨부 — 종류 안 가림, 14차). 올린 뒤 공개 주소(와 원래 파일 이름)를 cb 로 돌려줍니다.
    사진은 올리기 전에 긴 변 1600px 로 줄입니다 — 폰 사진 원본(4~8MB)을 그대로 두면 홈페이지가 느리고 무료 전송량(월 5GB)이 금방 찹니다 */
 var SA_PICK = null;
 function saPickFile(kind, cb){
   if(!supaOn() || !SESSION){ uiAlert("서버 연결이 필요합니다", "", "warn"); return; }
   var inp = document.getElementById("sa-file");
   if(!inp){ inp = document.createElement("input"); inp.type = "file"; inp.id = "sa-file"; inp.style.display = "none"; document.body.appendChild(inp); inp.addEventListener("change", saFileChosen); }
-  inp.accept = kind === "image" ? "image/*" : kind === "pdf" ? "application/pdf" : "video/mp4,video/*";
+  inp.accept = kind === "image" ? "image/*" : kind === "pdf" ? "application/pdf" : kind === "file" ? "" : "video/mp4,video/*";
   inp.value = ""; SA_PICK = {kind:kind, cb:cb}; inp.click();
 }
 async function saFileChosen(e){
@@ -226,6 +226,7 @@ async function saFileChosen(e){
     if(p.kind === "image"){ var r = await saShrink(f); blob = r.blob; ext = r.ext; type = r.type; }
     else if(p.kind === "pdf"){ if(type !== "application/pdf" && ext !== "pdf") throw new Error("PDF 파일만 올릴 수 있습니다"); type = "application/pdf"; ext = "pdf"; }
     else if(p.kind === "video"){ if(!/mp4|quicktime|video\//.test(type) && ext !== "mp4") throw new Error("MP4 영상만 올릴 수 있습니다"); if(ext !== "mp4") throw new Error("MP4(H.264) 로 바꿔서 올려 주세요 — 구형 TV 는 다른 형식을 못 틉니다"); type = "video/mp4"; }
+    else if(p.kind === "file"){ if(!type) type = "application/octet-stream"; if(!ext) ext = "bin"; }   /* 한글(hwp) 같은 건 브라우저가 종류를 모름 → 그냥 파일 */
     if(blob.size > 50 * 1024 * 1024) throw new Error("50MB 를 넘습니다 (" + Math.round(blob.size / 1048576) + "MB)");
     var safe = f.name.replace(/\.[^.]+$/, "").replace(/[^0-9A-Za-z_-]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 40) || "file";   /* Storage 는 한글 키를 거부합니다("Invalid key") — 영문·숫자만 */
     var path = (view.storeKey || "hanok") + "/" + p.kind + "/" + Date.now().toString(36) + "_" + safe + "." + ext;
@@ -234,7 +235,7 @@ async function saFileChosen(e){
     var url = SUPA_CFG.url + "/storage/v1/object/public/site/" + path;
     logEvent("파일 올림", p.kind + " " + f.name + " → " + path);
     showToast("올렸습니다 · " + Math.round(blob.size / 1024) + "KB");
-    p.cb(url);
+    p.cb(url, f.name);
   }catch(err){ await uiAlert("올리지 못했습니다", err.message || String(err), "warn"); }
 }
 /* 사진 줄이기: 긴 변 1600px, JPEG 0.85. PNG(투명 배경 — 주방장 사진 같은 것)는 PNG 로 둡니다 */
@@ -263,9 +264,9 @@ function saHead(){ return (view.form && view.form.page) ? "" : sheetHead("홈페
 function sheetSite(){
   if(!SA || SA.loading) return saHead() + '<p class="muted" style="padding:20px 0">불러오는 중…</p>';
   if(SA.err) return saHead() + '<div class="alert rust"><span class="ic">!</span><div><div class="a-t">불러오지 못했습니다</div><div class="a-s">' + esc(SA.err) + '</div></div></div><div class="btn-row" style="margin-top:12px"><button class="btn" onclick="openSiteAdmin()">다시 시도</button></div>';
-  var TABS = [["online","홈페이지 예약"],["notices","팝업 공지"],["hours","영업시간·연락처"],["texts","글"],["menu","차림"],["images","사진"],["history","적용 기록"]];
+  var TABS = [["online","홈페이지 예약"],["notices","팝업 공지"],["posts","소식"],["hours","영업시간·연락처"],["texts","글"],["menu","차림"],["images","사진"],["history","적용 기록"]];
   var future = (SA.versions || []).filter(function(v){ return new Date(v.apply_at).getTime() > Date.now(); });
-  var body = ({online:saTabOnline, notices:saTabNotices, hours:saTabHours, texts:saTabTexts, menu:saTabMenu, images:saTabImages, history:saTabHistory}[SA.tab] || saTabOnline)();
+  var body = ({online:saTabOnline, notices:saTabNotices, posts:saTabPosts, hours:saTabHours, texts:saTabTexts, menu:saTabMenu, images:saTabImages, history:saTabHistory}[SA.tab] || saTabOnline)();   /* posts 는 14c */
   return saHead() +
     '<div class="sa-top">' +
       '<div class="sa-status"><span id="sa-state">' + (saDirty() ? "고친 내용이 있습니다 — 초안 저장을 누르세요" : saSavedText()) + '</span>' +
@@ -282,7 +283,7 @@ function sheetSite(){
     (view.saPreview ? saPreviewHtml() : "") + (view.saApply ? saApplyHtml() : "");
 }
 function saPreviewHtml(){
-  var PAGES = [["index","홈"],["about","이야기"],["space","공간"],["menu","차림"],["visit","오시는 길"],["reserve","예약"]];
+  var PAGES = [["index","홈"],["about","이야기"],["space","공간"],["menu","차림"],["news","소식"],["visit","오시는 길"],["reserve","예약"]];
   return '<div class="sa-pv"><div class="sa-pv-h"><b>미리보기 — 초안</b>' +
     '<div class="sa-pv-pages">' + PAGES.map(function(p){ return '<button class="' + (view.saPreview === p[0] ? "on" : "") + '" onclick="saPreview(\'' + p[0] + '\')">' + p[1] + '</button>'; }).join("") + '</div>' +
     '<a class="btn sm" href="' + saPreviewUrl(view.saPreview) + '" target="_blank" rel="noopener">새 창</a><button class="btn sm ghost" onclick="saPreviewClose()">닫기</button></div>' +

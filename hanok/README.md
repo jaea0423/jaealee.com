@@ -1,6 +1,6 @@
 # 한옥반점 가게 사이트 (`hanok/` — 주소 jaealee.com/hanok)
 
-정적 파일 — 빌드 없음. 여섯 장: `index.html`(홈) · `about.html`(이야기) · `space.html`(공간) · `menu.html`(차림) · `visit.html`(오시는 길) · `reserve.html`(예약).
+정적 파일 — 빌드 없음. 일곱 장: `index.html`(홈) · `about.html`(이야기) · `space.html`(공간) · `menu.html`(차림) · `news.html`(소식 — 글은 서버 `site_posts`, `js/news.js`) · `visit.html`(오시는 길) · `reserve.html`(예약).
 공통: `css/site.css` + `js/site.js`(상단·바닥·팝업을 넣고 장별 내용을 그림) + `js/reserve.js`(예약 창) + `img/` + `fonts/`.
 관리 화면(system/)과 다른 물건: 구형 TV 제약 없음, 폰 우선, 현대 CSS.
 

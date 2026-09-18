@@ -537,7 +537,7 @@ function renderTvGrid(){
 }
 
 /* 화면이 처음 그려질 때 예정 설정을 흡수합니다(불러온 직후) */
-setTimeout(function(){ try{ if(AUTHED && DATA && view.storeKey){ absorbScheduled(); if(typeof pullRequests === "function"){ pullRequests().then(function(n){ if(n) render(); }); publishAvail(true); } } }catch(e){} }, 1500);
+setTimeout(function(){ try{ if(AUTHED && DATA && view.storeKey){ absorbScheduled(); if(typeof pullRequests === "function"){ pullRequests().then(function(n){ if(n) render(); }); publishAvail(true); } if(typeof gsLoadMemos === "function") gsLoadMemos(); } }catch(e){} }, 1500);
 
 /* 시트·마법사 어디서든: Enter = 그 창의 확인·등록 단추(data-enter 가 있으면 그것, 없으면 .btn.primary 하나뿐일 때만),
    Esc = 닫기. 여러 줄 입력(textarea) 안에서 Enter 는 줄바꿈이라 건드리지 않습니다. '이전' 은 일부러 안 묶습니다(재아) */
@@ -547,6 +547,7 @@ document.addEventListener("keydown", function(e){
     /* 확인창(MODAL): Esc = 취소. 마법사: Esc = 닫기(입력이 있으면 확인창). 시트·더보기: 닫기 (재아 09-17: 이 셋만 묶고 나머지는 안 묶음) */
     if(MODAL){ e.preventDefault(); if(MODAL.mode === "alert") modalAnswer(true); else modalAnswer(MODAL.mode === "confirm" ? false : null); return; }
     if(WZ && !WZ.done){ e.preventDefault(); closeWizard(); return; }
+    if((typeof hrEsc === "function" && hrEsc()) || (typeof gsEsc === "function" && gsEsc())){ e.preventDefault(); return; }   /* 근태·손님 화면 안의 작은 창부터 */
     if(view.form){ e.preventDefault(); closeSheet(); }
     else if(view.moreOpen){ closeMore(); }
     return;
