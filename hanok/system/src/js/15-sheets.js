@@ -253,7 +253,7 @@ function toastSaved(rec){
 }
 
 function renderSheet(){
-  const inner = { res:sheetRes, mark:sheetMark, unassigned:sheetUnassigned, pick:sheetPick, check:sheetCheck, search:sheetSearch, num:sheetNum, noshow:sheetNoshow, pin:sheetPin, apw:sheetAdminPw, hours:sheetHours, tedit:sheetTableEdit, naver:sheetNaver, setlog:sheetSetLog, pinlist:sheetPinList, zoomadj:sheetZoomAdj, logs:sheetLogs, smslog:sheetSmsLog, smsfree:sheetSmsFree, rate:sheetRate, sched:sheetSchedule, ovr:sheetOverride, blocks:sheetBlocks, reqs:sheetRequests, req:sheetRequest, reqrej:sheetReqReject, sched2:sheetScheduled, site:sheetSite, staff:sheetStaff, guests:sheetGuests }[view.form.type]();   /* staff·guests 는 14d·14e(15차) */
+  const inner = { res:sheetRes, mark:sheetMark, unassigned:sheetUnassigned, pick:sheetPick, check:sheetCheck, search:sheetSearch, num:sheetNum, noshow:sheetNoshow, pin:sheetPin, apw:sheetAdminPw, hours:sheetHours, tedit:sheetTableEdit, naver:sheetNaver, setlog:sheetSetLog, pinlist:sheetPinList, zoomadj:sheetZoomAdj, logs:sheetLogs, smslog:sheetSmsLog, smsfree:sheetSmsFree, rate:sheetRate, sched:sheetSchedule, ovr:sheetOverride, blocks:sheetBlocks, reqs:sheetRequests, req:sheetRequest, reqrej:sheetReqReject, sched2:sheetScheduled, site:sheetSite, staff:sheetStaff, guests:sheetGuests, owner:sheetOwner, thanks:sheetThanks }[view.form.type]();   /* staff·guests 는 14d·14e(15차) */
   /* 검색은 창 높이를 고정해 두고 결과만 안에서 스크롤 — 칠 때마다 창이 늘었다 줄었다 하지 않게(재아) */
   const wide = view.form.type==="rate" ? " sheet-wide" : ((view.form.type==="search" || (view.form.type==="reqs" && reqPending().length >= 3)) ? " sheet-tall" : "");   /* 홈페이지 예약은 3건부터 높이를 고정하고 목록만 스크롤(재아 09-17). 0~2건이면 빈 상자를 길게 안 보임(검토 D3) */
   if(view.form.page) return `<div class="sheet page-sheet">${inner}</div>`;   /* 화면형: 덮개 없이 본문 자리에 */
@@ -1194,6 +1194,8 @@ function sheetOverride(){
         <span>라스트오더 없음</span></label>`}
     <label class="f"><div class="lb">메모</div>
       <input value="${esc(d.note||"")}" placeholder="예: 창립기념일 단축 영업" onchange="setOvr('note',this.value)"></label>
+    <label class="chk"><input type="checkbox" ${d.holiday || (d.holiday == null && isHoliday(d.date||todayStr())) ? "checked" : ""} onchange="setOvr('holiday',this.checked)">
+      <span>공휴일(빨간날)로도 표시 — 워크시프트 휴일 가산·달력 색에 반영</span></label>
     <div class="sheet-actions">
       <button class="btn ghost" onclick="closeSheet()">닫기</button>
       <button class="btn primary" onclick="saveOverride()">추가</button>
@@ -1445,6 +1447,7 @@ async function saveOverride(){
        lo:d.noLo?"":(d.lo||base.lo), note:d.note||"임시 운영시간"};
   st.overrides = [...(st.overrides||[]).filter(o=>o.date!==d.date), rec];
   mirrorDraft("overrides");
+  if(d.holiday != null) setHolidayFlag(d.date, !!d.holiday);   /* 휴무 등록 때 공휴일 여부도 함께(재아 09-19) */
   logEvent("설정 변경", `임시 일정 ${rec.date} ${rec.closed?"휴무":"시간변경"}`);
   view.ovrDraft = null; saveData(); render();
 }

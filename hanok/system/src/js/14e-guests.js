@@ -89,7 +89,7 @@ function sheetGuests(){
   if(!GS || GS.loading) return '<p class="muted" style="padding:20px 0">불러오는 중…</p>';
   var seg = function(k, label){ return '<button class="' + (GS.sort === k ? "on" : "") + '" onclick="GS.sort=\'' + k + '\'; render()">' + label + '</button>'; };
   return '<div class="gs-top"><input id="gs-q" value="' + esc(GS.q || "") + '" placeholder="뒷자리 4자리 · 번호 · 이름 · 메모" oninput="gsSetQ(this.value)" autocomplete="off">' +
-    '<div class="seg">' + seg("recent", "최근 방문") + seg("visits", "많이 온 순") + seg("vip", "VIP 이상") + seg("noshow", "노쇼") + seg("memo", "메모 있음") + '</div></div>' +
+    '<button class="btn sm ghost" onclick="openNoshow()">노쇼 관리</button><div class="seg">' + seg("recent", "최근 방문") + seg("visits", "많이 온 순") + seg("vip", "VIP 이상") + seg("noshow", "노쇼") + seg("memo", "메모 있음") + '</div></div>' +
     '<div class="card searchbox" id="gs-list">' + gsRows() + '</div>' +
     '<p class="f-note">전화번호 하나 = 손님 하나. 이름은 그 번호로 가장 많이 적힌 이름이고, 열어서 고정 이름·메모를 적을 수 있습니다. 예약을 고치면 여기도 바로 바뀝니다.<br>등급: 방문 ' + TIER_VIP + '회 이상 <b>VIP</b>, ' + TIER_VVIP + '회 이상 <b>VVIP</b> — 노쇼 한 번에 방문 ' + TIER_NOSHOW + '회를 뺍니다.</p>' +
     (GS.open ? gsDetailHtml() : "");

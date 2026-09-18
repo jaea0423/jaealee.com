@@ -144,7 +144,7 @@ window.SITE_DEFAULT = {
   },
 
   /* 소식 장 머리. 글 자체는 서버 site_posts 표(예약 시스템 → 홈페이지 관리 → 소식)에서 옵니다 — 여기 기본값은 머리글뿐 */
-  news: { head: { img: "bg2.jpg", title: "소식", sub: "계절 메뉴, 휴무, 행사 — 한옥반점의 새 소식을 전합니다." } },
+  news: { head: { img: "bg2.jpg", title: "소식", sub: "한옥반점의 새 소식을 전합니다." } },
   visit: {
     head: { img: "hanok.jpg", title: "오시는 길", sub: "서현동과 율동공원을 잇는 새마을로 골목 초입에 위치하고 있습니다." },
     hoursTitle: "영업시간", mapCaption: "약도는 실제 축적과 다를 수 있습니다.",

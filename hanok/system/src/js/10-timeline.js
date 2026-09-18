@@ -89,7 +89,16 @@ function renderTimeline(date, compact){
   }).join("");
 
   /* ---------- 룸 ---------- */
-  /* 룸이든 테이블이든 좌석 하나 = 한 줄. 합쳐 쓰는 예약은 관련된 줄마다 블록이 그려지고 '+' 표시가 붙습니다 */
+  /* 좌석 하나 = 한 줄. 합쳐 쓰는(중문 탈거) 예약은 **이어진 줄들을 가로질러 한 덩어리**로 — 맨 위 방 줄에 그리고 높이는 그린 뒤(tlSpanJoined) 맞춥니다(재아 09-19).
+     방들이 표에서 이어져 있지 않으면 예전처럼 줄마다 따로 */
+  const rooms = roomsAt(date).filter(isRoom);   /* 그 날짜의 좌석(예정 반영) */
+  const roomIdx = {}; rooms.forEach((r, i) => { roomIdx[r.id] = i; });
+  const spanInfo = r => {   /* 합침 예약이 이어진 방 줄을 쓰면 {first, ids} */
+    const ids = seatsOf(r).filter(id => roomIdx[id] != null); if(ids.length < 2) return null;
+    const idx = ids.map(id => roomIdx[id]).sort((a, b) => a - b);
+    for(let i = 1; i < idx.length; i++) if(idx[i] !== idx[i-1] + 1) return null;
+    return { first: rooms[idx[0]].id, last: rooms[idx[idx.length-1]].id, ids };
+  };
   const roomRow = (room)=>{
     const items = list.filter(r=>usesSeat(r, room.id))
       .sort(byCreated)
@@ -106,8 +115,11 @@ function renderTimeline(date, compact){
       const lane = it.lane===null?it.overLane:it.lane;
       const bad = resWarn(it.r).length>0;
       const chg = changeTag(it.r);
-      return `<button class="blk ${tent?'tent':''} ${it.r._req?'req':''} ${bad?'warned':''} ${past?'past':''} ${chg?'changed':''} ${it.joined?'joined':''}" onclick="${it.r._req?`openRequest('${it.r._req.id}')`:`openMark('${it.r.id}')`}"
-        style="left:${pos(it.s0)}%; width:${w}%; bottom:${lane*LANE+1}px; height:${LANE-2}px"
+      const sp = it.joined ? spanInfo(it.r) : null;
+      if(sp && sp.first !== room.id) return "";   /* 이어진 합침: 맨 위 방 줄에서만 그림(칸은 비워 둬 겹침 판단은 그대로) */
+      const spanAttr = sp ? ` data-span-to="${esc(sp.last)}"` : "";
+      return `<button class="blk ${tent?'tent':''} ${it.r._req?'req':''} ${bad?'warned':''} ${past?'past':''} ${chg?'changed':''} ${it.joined?'joined':''} ${sp?'spanned':''} ${it.lane===null?'overlap':''}"${spanAttr} onclick="${it.r._req?`openRequest('${it.r._req.id}')`:`openMark('${it.r.id}')`}"
+        style="left:${pos(it.s0)}%; width:${w}%; ${sp ? `top:${(lanes - 1 - lane)*LANE+1}px` : `bottom:${lane*LANE+1}px`}; height:${LANE-2}px"
         title="${esc(it.r.time)} ${esc(it.r.name)} ${pplText(it.r)}${it.joined?` · ${esc(it.r.roomId?resSeatLabel(it.r):resTentLabel(it.r))} 합침`:""}${tent?' · 잠정':''}${chg?` · 오늘 ${esc(chg.label)}`:""}${bad?` · 경고: ${esc(resWarn(it.r).join(", "))}`:""}">
         ${it.joined?`<i class="jn">${(joinOf(seatsOf(it.r))||{}).split?"⊕":"⊞"}</i>`:''}${chg?`<span class="chg-chip">${blockLabel(it.r)}</span>`:blockLabel(it.r)}</button>`;
     }).join("");
@@ -115,7 +127,7 @@ function renderTimeline(date, compact){
     const rate = Math.min(100, Math.round(used/span*100));
     const sub = isTable(room) ? `${roomMin(room)?roomMin(room)+"~":""}${seatMax(room)}인` : `${roomMin(room, date)}~${room.capacity}인`;   /* 그 날짜 기준(주말 최소) */
     const overBand = over ? `<div class="offband overlane" style="left:0; right:0; top:0; height:${over*LANE}px" title="같은 룸에 겹쳐 받은 예약이 놓이는 칸"><i class="ol-l tl-lbl">겹침 ${over}팀 — 같은 룸에 겹쳐 받은 예약</i></div>` : "";
-    return `<div class="tl-row ${isTable(room)?'tbl':''} ${blockedAllDay(room,date)?'off-seat':''}">
+    return `<div class="tl-row ${isTable(room)?'tbl':''} ${blockedAllDay(room,date)?'off-seat':''}" data-room="${esc(room.id)}">
       <div class="tl-name"><b>${esc(room.name)}</b><small>${sub}</small></div>
       <div class="tl-track" data-lane="${LANE}" style="height:${lanes*LANE}px${over?`; background-image:repeating-linear-gradient(to top, transparent 0, transparent ${LANE-1}px, var(--border) ${LANE-1}px, var(--border) ${LANE}px)`:""}">
         ${layers}${blockBands(room)}${overBand}${blocks}
@@ -126,7 +138,6 @@ function renderTimeline(date, compact){
     </div>`;
   };
 
-  const rooms = roomsAt(date).filter(isRoom);   /* 그 날짜의 좌석(예정 반영) */
   const groupRow = (label) => `<div class="tl-row group"><div class="tl-name"><b>${esc(label)}</b></div><div class="tl-track"></div><div class="tl-rate"></div></div>`;
   /* 테이블은 층 한 줄 — 겹치는 예약을 층(lane)으로 쌓고, 예약률은 손님 수 / 자리 수 (8차-H) */
   const floorRow = (fl)=>{
@@ -156,10 +167,12 @@ function renderTimeline(date, compact){
     const hidden = folded ? placed.filter(x=>x.lane===null).length : 0;
     if(folded) placed = placed.filter(x=>x.lane!==null);
     const over = placed.filter(x=>x.lane===null).length;
+    /* 줄 높이는 실제로 쓰인 칸까지만(최소 1칸) — 테이블 6개라고 늘 6칸이면 빈 공간이 아까움(재아 09-19). 자리 없음 칸은 그 위에 */
+    const usedLanes = Math.max(1, placed.filter(x=>x.lane!==null).reduce((a,x)=>Math.max(a, x.lane + x.need), 0));
     /* 자리를 못 받은 팀(테이블 수보다 팀이 많음)은 다른 블록 위에 겹쳐 그리지 않고 **맨 위에 칸을 더** 만들어 넣습니다.
        팀마다 한 칸씩 — 둘이면 두 칸(포개면 뒤 팀이 안 보임, 재아). 그 칸은 영업 종료 빗금으로 채워 '정상 칸이 아니다' 가 보이게 */
-    let overK = 0; placed.forEach(x=>{ if(x.lane===null){ x.overLane = lanes + overK; overK++; } });
-    const totalLanes = lanes + over;
+    let overK = 0; placed.forEach(x=>{ if(x.lane===null){ x.overLane = usedLanes + overK; overK++; } });
+    const totalLanes = usedLanes + over;
     const seats = fl==null ? 0 : floorSeats(fl);
     const blocks = placed.map(it=>{
       const w = ((it.e0-it.s0)/span)*100, lane = it.lane===null?it.overLane:it.lane;
@@ -182,7 +195,7 @@ function renderTimeline(date, compact){
       <div class="tl-name ${foldable?'foldable':''}" ${foldable?`onclick="tlToggleFloor('${esc(key)}')" role="button"`:""}><b>${fl==null?"층 미정":esc(floorLabel(fl))}</b><small>${fl==null?"":`테이블 ${tbls.length} · ${seats}석`}</small>${
         foldable ? `<small class="fold-hint">${folded ? `${FOLD}칸만 ▾${hidden?`<i>숨은 ${hidden}팀</i>`:""}` : "접기 ▴"}</small>` : ""}</div>
       <div class="tl-track" data-lane="${LANE}" style="height:${totalLanes*LANE}px; background-image:repeating-linear-gradient(to top, transparent 0, transparent ${LANE-1}px, var(--border) ${LANE-1}px, var(--border) ${LANE}px)">${layers}${bands}${blocks}</div>
-      <div class="tl-rate" style="height:${totalLanes*LANE}px">${lanes>1
+      <div class="tl-rate" style="height:${totalLanes*LANE}px">${totalLanes>1
         ? `<span class="rb"><i></i><b>${rate}%</b><i></i></span>` : `<span class="rt">${rate}%</span>`}</div>
     </div>`;
   };
@@ -249,7 +262,17 @@ function renderTimeline(date, compact){
    사용 중지·자리 없음 글자는 그래프 안에만 둡니다(좌석 이름 칸·예약률 칸에는 안 적음 — 재아).
    자리: 띠의 왼쪽 → 거기에 예약 블록이 겹치면 오른쪽 → 그래도 겹치면 그 줄 위에 층(LANE)을 하나 더 만들어 거기에.
    블록은 bottom 기준으로 놓여 있어 트랙 높이를 늘리면 위에 빈 층이 생깁니다. */
+/* 합침 블록(data-span-to)을 마지막 방 줄 바닥까지 늘림 — 줄마다 높이가 달라(겹침 칸) 그린 뒤 픽셀로 */
+function tlSpanJoined(){
+  document.querySelectorAll(".blk.spanned[data-span-to]").forEach(function(b){
+    var track = b.parentNode, row = track.closest(".tl-row"), last = row && row.parentNode.querySelector('.tl-row[data-room="' + b.getAttribute("data-span-to") + '"] .tl-track');
+    if(!last) return;
+    var top = track.getBoundingClientRect().top + parseFloat(b.style.top || 0), bottom = last.getBoundingClientRect().bottom;
+    b.style.height = Math.max(20, bottom - top - 2) + "px"; track.classList.add("has-span");
+  });
+}
 function tlPlaceLabels(){
+  tlSpanJoined();
   var tracks = document.querySelectorAll(".tl-track");
   for(var t = 0; t < tracks.length; t++){
     var track = tracks[t], labels = track.querySelectorAll(".tl-lbl");

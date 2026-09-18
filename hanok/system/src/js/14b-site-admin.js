@@ -310,6 +310,15 @@ function saTabOnline(){
       '<div class="sa-chips">' + closed.slice().sort().map(function(d, i){ return '<span class="tag">' + esc(d) + '<button onclick="saArrDel(\'closed\', ' + closed.indexOf(d) + ')" title="빼기">×</button></span>'; }).join("") + (closed.length ? "" : '<span class="muted">없음</span>') + '</div>' +
       '<div class="btn-row" style="margin-top:8px"><input type="date" id="sa-closed-date" style="flex:1 1 160px"><button class="btn" onclick="(function(){ var el=document.getElementById(\'sa-closed-date\'); if(!el.value) return; var a=saGet(\'closed\')||[]; if(a.indexOf(el.value)<0) a.push(el.value); saSet(\'closed\', a); render(); })()">추가</button></div>' +
       '<p class="f-note">그날은 예약 창에 시각이 안 나옵니다(전화는 그대로). 영업 자체를 쉬는 날은 설정 → 운영시간 → 임시 영업·휴무.</p>') +
+    saBox("특별 기간 차림 (명절 등)",
+      (saGet("online.special") || []).map(function(sp, i){ var p = "online.special." + i; return '<div class="sa-box-in">' +
+        '<div class="grid3"><label class="f"><div class="lb">이름</div><input type="text" class="in-sm" value="' + esc(sp.title || "") + '" placeholder="예: 추석 연휴 코스" oninput="saSet(\'' + p + '.title\', this.value)"></label>' +
+        '<label class="f"><div class="lb">시작일</div><input type="date" class="in-sm" value="' + esc(sp.from || "") + '" onchange="saSet(\'' + p + '.from\', this.value)"></label><label class="f"><div class="lb">마감일</div><input type="date" class="in-sm" value="' + esc(sp.to || "") + '" onchange="saSet(\'' + p + '.to\', this.value)"></label></div>' +
+        '<label class="f"><div class="lb">이 기간의 코스 <span class="lbl-note">한 줄에 하나 · "이름 | 한자" 가능 · 홈페이지 예약 창에는 이것만 나옴</span></div><textarea class="in-sm" rows="3" oninput="saSetLines(\'' + p + '.courses\', this.value)">' + esc((sp.courses || []).join("\n")) + '</textarea></label>' +
+        '<label class="f"><div class="lb">안내 한 줄 <span class="lbl-note">예약 창 메뉴 단계에 보임</span></div><input type="text" class="in-sm" value="' + esc(sp.note || "") + '" oninput="saSet(\'' + p + '.note\', this.value)"></label>' +
+        '<div class="btn-row"><button class="btn sm ghost" onclick="saArrDel(\'online.special\', ' + i + ', \'특별 기간\')">삭제</button></div></div>'; }).join("") +
+      '<div class="btn-row"><button class="btn sm" onclick="saArrAdd(\'online.special\', {title:\'\', from:\'\', to:\'\', courses:[], note:\'\'})">＋ 특별 기간</button></div>' +
+      '<p class="f-note">명절처럼 차림이 다른 기간. 그 기간 날짜를 고르면 홈페이지 예약 창의 메뉴 단계에 <b>여기 적은 코스만</b> 나오고(점심 세트·단품 없음) 안내 한 줄이 붙습니다. 시스템 쪽 코스 구성은 설정 → 코스·세트 구성에서 "날짜를 정해서(예정)" 로 같은 기간을 넣어 두세요.</p>') +
     saBox("예약 페이지 안내 문구",
       saF("reserve.head.sub", "위 소개 한 줄") +
       (saGet("reserve.notes") || []).map(function(n, i){ return '<div class="sa-row"><input type="text" class="in-sm sa-k" value="' + esc(n.b) + '" oninput="saSet(\'reserve.notes.' + i + '.b\', this.value)"><input type="text" class="in-sm" value="' + esc(n.s) + '" oninput="saSet(\'reserve.notes.' + i + '.s\', this.value)"><button class="btn sm ghost" onclick="saArrDel(\'reserve.notes\', ' + i + ')">×</button></div>'; }).join("") +

@@ -145,7 +145,8 @@ function renderApp(){
                   : (view.storeKey ? renderStore() : renderSelect())) + renderModal() + renderLoadError();
   syncHash();      /* 주소를 지금 화면에 맞춥니다 — 새로고침해도 그 자리로 */
   afterRender();   /* 화면을 그린 뒤 필요한 이벤트 연결 (분 조절 레일 등) */
-  if(typeof tlPlaceLabels === "function") tlPlaceLabels();   /* 타임라인 라벨(사용 중지·자리 없음) 자리 — 실제 픽셀로 겹침을 보고 정함 */
+  if(typeof tlPlaceLabels === "function") tlPlaceLabels();
+  if(typeof aiWaveStart === "function") aiWaveStart();   /* 감사 문자 AI 물결(14g) — 캔버스가 있을 때만 돎 */   /* 타임라인 라벨(사용 중지·자리 없음) 자리 — 실제 픽셀로 겹침을 보고 정함 */
 }
 
 /* ---------- 들어갈 때 인사 ----------

@@ -24,7 +24,7 @@
         const files = Array.isArray(p.files) ? p.files.filter(f => f && f.url) : [];
         return `<article class="post${p.id === want ? " open" : ""}" id="${esc(p.id)}">
           <button type="button" class="post-h" aria-expanded="${p.id === want}">
-            <span class="post-meta">${p.pinned ? `<em>공지</em>` : ""}<time datetime="${esc(p.date)}">${esc(dateText(p.date))}</time></span>
+            <span class="post-meta">${p.pinned ? `<em>고정</em>` : ""}<time datetime="${esc(p.date)}">${esc(dateText(p.date))}</time></span>
             <h2>${esc(p.title)}</h2>
             ${first ? `<p class="post-first">${rich(first)}</p>` : ""}
             <i class="post-arrow"></i>

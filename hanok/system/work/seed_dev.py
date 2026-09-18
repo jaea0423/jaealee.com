@@ -236,17 +236,18 @@ def room_menu(dow, t, ppl, infants):
 
 # ---------- 하루 ----------
 def day_profile(d, dow):
-    if dow in (0, 6):  weights = [3, 12, 35, 32, 18]     # 주말은 붐빔·포화가 많음
-    elif dow == 1:     weights = [10, 35, 35, 15, 5]     # 월요일 한산
-    else:              weights = [6, 22, 42, 22, 8]
-    if d > datetime.date(2026, 10, 12): weights = [25, 45, 25, 5, 0]   # 먼 미래는 드문드문
-    if d > datetime.date(2026, 11, 5): weights = [55, 35, 10, 0, 0]
+    # 11차(2026-09-19, 재아 "너무 과하고 오예약이 많다"): 현실적으로 — 평일은 한산~보통, 주말 보통~붐빔, 포화는 드물게
+    if dow in (0, 6):  weights = [4, 22, 46, 24, 4]
+    elif dow == 1:     weights = [18, 50, 27, 5, 0]      # 월요일 한산
+    else:              weights = [12, 44, 36, 8, 0]
+    if d > datetime.date(2026, 10, 12): weights = [35, 45, 18, 2, 0]   # 먼 미래는 드문드문
+    if d > datetime.date(2026, 11, 5): weights = [65, 30, 5, 0, 0]
     return random.choices(["none", "quiet", "normal", "busy", "full"], weights)[0]
 
 def gen_day(date, dow, today, prof):
     rows = []
     if prof == "none": return rows
-    frac = {"quiet": 0.25, "normal": 0.5, "busy": 0.75, "full": 0.95}[prof]
+    frac = {"quiet": 0.18, "normal": 0.38, "busy": 0.62, "full": 0.85}[prof]
     for se in sessions(dow):
         sl = slots_of(dow, se)
         if not sl: continue
@@ -264,8 +265,8 @@ def gen_day(date, dow, today, prof):
                 kw = {"roomId": room["id"]}
                 if random.random() < 0.30: kw = {"seatPref": "room-any"}          # 룸 미정(잠정) — 실제로는 이런 접수가 많음(재아)
                 r = random.random()
-                if r < 0.03: ppl = hi + random.randint(1, 2)                  # 정원 초과 경고
-                elif r < 0.06: ppl = max(1, lo - random.randint(1, 2))       # 최소 인원 미달 경고
+                if r < 0.006: ppl = hi + random.randint(1, 2)                 # 정원 초과 경고(드물게)
+                elif r < 0.012: ppl = max(1, lo - random.randint(1, 2))      # 최소 인원 미달 경고(드물게)
                 infants = random.choice([1, 2]) if (ppl >= 3 and random.random() < 0.2) else 0
                 if ppl - infants < lo and r >= 0.06:                             # 유아를 빼도 최소 인원은 맞게 (일부러 만든 미달 케이스 제외)
                     if lo + infants <= hi: ppl = lo + infants
@@ -300,7 +301,7 @@ def gen_day(date, dow, today, prof):
                 if random.random() < 0.10 and ids:
                     kw = {"roomId": ids[0], "extraIds": ids[1:], "memo": "테이블 지정" if len(ids) == 1 else "붙여서 앉힘"}   # 특정 테이블 지정(파셜룸 등)
                 elif not ids:
-                    if random.random() < 0.04 and not any(r.get("_none") for r in rows): kw = {"seatPref": "table:" + fl, "_none": True}; ids = []   # 자리 없음 경고 케이스(하루 1건)
+                    if random.random() < 0.01 and not any(r.get("_none") for r in rows): kw = {"seatPref": "table:" + fl, "_none": True}; ids = []   # 자리 없음 경고 케이스(아주 드물게)
                     else: continue
                 else: kw = {"seatPref": "table:" + fl}
                 if random.random() < 0.12 and ppl >= 2: kw.update({"menuType": "코스", "courses": make_courses(dow, t, max(1, ppl), "ok")})
@@ -316,12 +317,12 @@ def gen_day(date, dow, today, prof):
             rows.append(base_rec(date, dow, t, ppl, today, seatPref="room-any", request="방으로 부탁드려요 — 어느 방이든"))
     # ----- 시간 경고 케이스: 라스트오더 이후 / 브레이크 안 -----
     h = hours(dow)
-    if random.random() < 0.06 and h.get("lo"):
+    if random.random() < 0.012 and h.get("lo"):
         rows.append(base_rec(date, dow, tm(h["lo"]) + 10, 2, today, seatPref="table:" + FLOORS[0], memo="라스트오더 지나서 받음 — 사장님 확인"))
-    if random.random() < 0.04 and h.get("bs"):
+    if random.random() < 0.008 and h.get("bs"):
         rows.append(base_rec(date, dow, tm(h["bs"]) + 30, 4, today, seatPref="table:" + FLOORS[-1], memo="브레이크타임 중 — 단골"))
     # ----- 유아만 / 유아의자 초과 -----
-    if random.random() < 0.04:
+    if False:   # 11차: 유아의자 기능을 뺐으니(09-17) 어린이만 온 팀 케이스는 안 넣음
         rec = base_rec(date, dow, random.choice(sorted(POPULAR)), 3, today, seatPref="table:" + FLOORS[0], infants=3); rec["chairs"] = 4; rows.append(rec)
     return rows
 
@@ -373,16 +374,7 @@ def main():
     # 6) 예정 설정(마초 룸, D+7 부터)이 생기기 전 날짜에 마초를 잡은 예약은 없음. 대신 D+8 에 마초 지정 예약(예정 좌석)
     yeopo_id = "r_yeopo"
     add(base_rec(D(8), dow_of(D(8)), 18*60, 6, today, roomId=yeopo_id, status="확정", menuType="코스", courses=make_courses(dow_of(D(8)), 18*60, 6, "ok"), memo="마초 룸(예정 설정) 첫 손님"))
-    # 7) 임시 휴무일(D+9)에 잡힌 예약 — 경고
-    add(base_rec(D(9), dow_of(D(9)), 12*60, 4, today, seatPref="table:" + FLOORS[0], status="확정", memo="휴무일인데 받아 둠 — 확인"))
-    # 8) 정원 초과 룸(조조 8명), 최소 미달 룸(동탁 4명) — 모레
-    add(base_rec(D(2), dow_of(D(2)), 12*60, 8, today, roomId=r_by_name["조조"]["id"], status="확정", menuType="코스", courses=make_courses(dow_of(D(2)), 12*60, 8, "ok")))
-    add(base_rec(D(2), dow_of(D(2)), 12*60+30, 4, today, roomId=r_by_name["동탁"]["id"], status="확정", menuType="코스", courses=make_courses(dow_of(D(2)), 12*60+30, 4, "ok")))
-    # 9) 어린이만(성인 없음) + 의자 초과 — 내일 점심 테이블
-    kid = base_rec(D(1), dow_of(D(1)), 12*60+30, 3, today, seatPref="table:" + FLOORS[0], status="확정", infants=3); kid["chairs"] = 4; add(kid)
-    # 10) 라스트오더 뒤 · 브레이크 안 — 내일
-    add(base_rec(D(1), dow_of(D(1)), 20*60+50, 2, today, seatPref="table:" + FLOORS[0], status="확정", memo="라스트오더 지나서 받음"))
-    add(base_rec(D(1), dow_of(D(1)), 16*60, 4, today, seatPref="table:" + FLOORS[1], status="확정", memo="브레이크 중 — 단골"))
+    # 7~10) 휴무일 예약·정원 초과/미달·어린이만·라스트오더/브레이크 케이스는 11차에서 뺐음(현실적으로, 재아). 무작위로 아주 드물게만 섞임
     # 11) 지난 3주 안에 취소→노쇼 판단 케이스: 당일 취소
     cc = base_rec(D(-3), dow_of(D(-3)), 18*60, 4, today, roomId=r_by_name["관우"]["id"], status="취소"); cc["changes"][-1]["on"] = D(-3); add(cc)
     # ----- 같은 날 같은 번호 두 건 (중복 확인 케이스) — 내일 -----
@@ -422,14 +414,14 @@ def seed_reqs_and_settings(rows, today, T, D, r_by_name, yeopo_id, nsn, nsp):
     reqs[-1]["allergy"] = "아이 땅콩 알레르기"   # 11차: 알레르기 칸
     pending("rq_p2", D(3), "18:30", 2, 0, "table", "none", "", "장원영", "01055552222", "", 15)
     pending("rq_p3", D(1), "18:00", 5, 0, "room", "later", "미정", "손흥민", "01055553333", "룸이면 어디든 괜찮아요", 9)          # 내일 18:00 룸 — 조조 겹침 날이라 자리 없음 경고 가능
-    pending("rq_p4", D(2), "18:00", 4, 0, "table", "course:촉 코스", "촉 코스", nsn, "".join(ch for ch in nsp if ch.isdigit()), "", 6)   # 노쇼 이력 번호 + 같은 날 예약 있는 번호
-    pending("rq_p5", D(1), "12:30", 2, 0, "table", "none", "", "카리나", "01055555555", "", 0.7)                              # 40분 남음
+    # rq_p4(노쇼 이력 번호)·rq_p5(40분 남음)는 11차에서 뺐음 — 대기 3건이면 충분
     reqs.append({"id": "rq_rej1", "store": "hanok", "date": D(4), "time": "19:00", "adults": 3, "kids": 0, "people": 3, "seat": "room", "course": "later", "course_label": "미정",
                  "name": "유재석", "phone": "01055556666", "request": "", "status": "거절", "reason": "룸은 성인 5명부터 받고 있습니다", "res_id": None,
                  "created_at": (now - datetime.timedelta(hours=30)).strftime("%Y-%m-%dT%H:%M:%SZ"), "expires_at": (now - datetime.timedelta(hours=6)).strftime("%Y-%m-%dT%H:%M:%SZ")})
     reqs.append({"id": "rq_exp1", "store": "hanok", "date": D(5), "time": "12:00", "adults": 2, "kids": 0, "people": 2, "seat": "table", "course": "none", "course_label": "",
                  "name": "아이유", "phone": "01055557777", "request": "", "status": "만료", "reason": "24시간 안에 처리되지 않음", "res_id": None,
                  "created_at": (now - datetime.timedelta(hours=40)).strftime("%Y-%m-%dT%H:%M:%SZ"), "expires_at": (now - datetime.timedelta(hours=16)).strftime("%Y-%m-%dT%H:%M:%SZ")})
+    for x in reqs: x.setdefault("allergy", "")   # 한 번에 넣을 때 키가 전부 같아야 함(PGRST102)
     for i in range(0, len(reqs), 200):
         call("/rest/v1/requests", "POST", reqs[i:i+200], token=tok, prefer="return=minimal")
     print("홈페이지 예약: %d 건 (대기 5 · 거절 1 · 만료 1 · 확정 %d)" % (len(reqs), len(web_rows)))

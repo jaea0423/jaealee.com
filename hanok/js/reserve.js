@@ -374,7 +374,11 @@
 
   /* ---------- ⑤ 메뉴 — 점심 시각이면 그 날(평일·주말)의 점심 세트도 함께 ---------- */
   /* 저녁 코스는 종일 되니 늘 먼저(비싼 것부터 — 재아), 점심 시각이면 그 아래 점심 세트 */
+  /* 특별 기간(명절 등, 홈페이지 관리 → 홈페이지 예약 → 특별 기간 차림): 그 날짜면 그 코스만 */
+  function specialOf(date){ return (R().special || []).find(sp => sp && sp.from && sp.to && date >= sp.from && date <= sp.to && (sp.courses || []).length) || null; }
   function menuGroups(){
+    const sp = specialOf(S.date);
+    if(sp) return [{ title: sp.title || "특별 코스", note: sp.note || "", items: sp.courses.map(x => { const m = String(x).split("|"); const name = m[0].trim(); return {key:"course:"+name, name, cn:(m[1]||"").trim()}; }) }];
     const out = [{ title: "저녁 코스 (종일)", items: MENU.courses.items.map(c => ({key:"course:"+c.name, name:c.name, cn:c.cn})) }];
     if(mins(S.time) < LUNCH_END){
       const want = isWeekend(S.date) ? "주말" : "평일";
@@ -388,11 +392,11 @@
     b.insertAdjacentHTML("beforeend", sumLine() + `<section class="rv-sec">
         <h3>메뉴</h3>
         <div class="rv-pick" id="rv-cs">
-          ${menuGroups().map(g => `<div class="rv-pick-h">${esc(g.title)}</div>` + g.items.map(it =>
+          ${menuGroups().map(g => `<div class="rv-pick-h">${esc(g.title)}${g.note ? `<small>${esc(g.note)}</small>` : ""}</div>` + g.items.map(it =>
               `<button type="button" data-c="${esc(it.key)}" data-l="${esc(it.name)}" class="${S.course===it.key?'on':''}"><b>${esc(it.name)}${it.cn?`<small>${esc(it.cn)}</small>`:""}</b><span class="qty">${total()}인분</span></button>`).join("")).join("")}
-          <div class="rv-pick-h"></div>
+          ${specialOf(S.date) ? "" : `<div class="rv-pick-h"></div>
           ${room ? `<button type="button" data-c="later" data-l="메뉴 미정" class="${S.course==='later'?'on':''}"><b>미정</b></button>`
-                 : `<button type="button" data-c="none" data-l="단품 주문" class="${S.course==='none'?'on':''}"><b>단품 주문</b></button>`}
+                 : `<button type="button" data-c="none" data-l="단품 주문" class="${S.course==='none'?'on':''}"><b>단품 주문</b></button>`}`}
         </div>
         <p class="rv-quiet"><a href="${INFO.menuPdf}" target="_blank" rel="noopener">메뉴판(PDF) 보기</a></p>
       </section>`);

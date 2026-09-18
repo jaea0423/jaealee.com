@@ -126,7 +126,7 @@ function mirrorDraft(key){ if(view.draft) view.draft[key] = deepClone(store().se
 /* 설정 두 개의 차이를 '키: 이전 → 이후' 로 — 관리자 → 설정 변경 내역 */
 function settingsDiff(a, b){
   const out = [], keys = {}; Object.keys(a||{}).concat(Object.keys(b||{})).forEach(k=>{ keys[k]=1; });
-  const NAME = {scheduled:null, rooms:"좌석", joins:"룸 합침", schedules:"운영시간", overrides:"임시 일정", holidays:"공휴일 추가", holidaysOff:"공휴일 제외", courseGroups:"코스 구성", sources:"예약경로", sms:"문자 안내", displayRows:"디스플레이 배치", tvType:"디스플레이 형식", groupSize:"단체 기준", noshowExcluded:"노쇼 경고 제외", uiZoom:"화면 크기", closeGapMin:"겹침 경고", noshowWarnCount:"노쇼 경고 기준", noshowCancelRule:"취소→노쇼 기준", tvAd:"광고 영상", holidayAsWeekend:"공휴일=주말", minCountAdultsOnly:"정원 기준", chairDefault:"유아의자 기본", loSoon:"임박 기준", breakMode:"브레이크 방식", _setlog:null};
+  const NAME = {scheduled:null, rooms:"좌석", joins:"룸 합침", schedules:"운영시간", overrides:"임시 일정", holidays:"공휴일 추가", holidaysOff:"공휴일 제외", courseGroups:"코스 구성", sources:"예약경로", sms:"문자 안내", displayRows:"디스플레이 배치", tvType:"디스플레이 형식", groupSize:"단체 기준", noshowExcluded:"노쇼 경고 제외", uiZoom:"화면 크기", closeGapMin:"겹침 경고", noshowWarnCount:"노쇼 경고 기준", noshowCancelRule:"취소→노쇼 기준", tvAd:"광고 영상", ai:"AI 설정", smsFreeLog:null, holidayAsWeekend:"공휴일=주말", minCountAdultsOnly:"정원 기준", chairDefault:"유아의자 기본", loSoon:"임박 기준", breakMode:"브레이크 방식", _setlog:null};
   Object.keys(keys).forEach(k=>{
     if(NAME[k] === null) return;
     const x = JSON.stringify(a ? a[k] : undefined), y = JSON.stringify(b ? b[k] : undefined);
@@ -208,6 +208,7 @@ setInterval(function(){
   sessionTick();   /* 토큰 만료 5분 전 갱신 */
   if(SAVE_FAIL && !OFFLINE) flush();   /* 저장 못 한 것이 있으면 다시 */
   if(AUTHED && !view.display && typeof publishAvail === "function" && AVAIL_DIRTY) publishAvail();   /* 미뤄 둔 남은 자리 올리기 */
+  if(typeof thanksTick === "function") thanksTick();   /* 감사 문자 — 보낼 시각이 된 것(14g) */
   }
   if(!AUTHED || view.display || WZ || view.form || MODAL || document.hidden || REFRESH_BUSY) return;
   REFRESH_BUSY = true;
@@ -229,7 +230,7 @@ function renderStore(){
   const stt = shopState(s.settings);
   /* 8차-O(재아): 네이버 가져오기·빠른 입력은 팝업 시트가 아니라 화면 전체로 (view.form.page) */
   const pageForm = !!(view.form && view.form.page);
-  const pageTitle = pageForm ? ({naver:"네이버 예약 가져오기", site:"홈페이지 관리", staff:"워크시프트", guests:"손님 관리"}[view.form.type] || "빠른 입력") : "";
+  const pageTitle = pageForm ? ({naver:"네이버 예약 가져오기", site:"홈페이지 관리", staff:"워크시프트", guests:"손님 관리", owner:"사장님", thanks:"감사 문자"}[view.form.type] || "빠른 입력") : "";
   const body = pageForm ? `<div class="page-wrap">${renderSheet()}</div>` : (view.tab==="settings" ? renderSettings : renderDash)();
 
   return `
@@ -284,12 +285,9 @@ function renderStore(){
             <div class="more-menu">
               ${isMobile() && view.date!==todayStr() ? `<button onclick="closeMore(); goToday()">${ICON.cal}<span>오늘로</span></button>` : ``}
               <button onclick="closeMore(); openHours()">${ICON.clock}<span>영업시간</span></button>
-              ${isMobile() ? `` : `<button onclick="closeMore(); openDisplay()">${ICON.tv}<span>디스플레이 모드</span></button>`}
               ${document.fullscreenEnabled ? `<button onclick="closeMore(); toggleFullscreen()">${document.fullscreenElement?ICON.shrink:ICON.expand}<span>${document.fullscreenElement?"전체화면 해제":"전체화면"}</span></button>` : ""}
               <button onclick="closeMore(); openZoomAdj()">${ICON.search}<span>화면 보정</span></button>
-              <button onclick="closeMore(); openSlip()">${ICON.print}<span>비상 예약지</span></button>
-              <button onclick="closeMore(); openStaffPage()">${ICON.staff}<span>워크시프트</span></button>
-              <button onclick="closeMore(); openGuestsPage()">${ICON.users}<span>손님 관리</span></button>
+              <button onclick="closeMore(); openOwnerPage()">${ICON.staff}<span>사장님</span></button>
               <button onclick="closeMore(); setTab('settings')">${ICON.set}<span>설정</span></button>
               <button onclick="closeMore(); lockNow()">${ICON.exit}<span>로그아웃</span></button>
               <button onclick="closeMore(); exitApp()">${ICON.shrink}<span>종료하기</span></button>

@@ -126,7 +126,7 @@ function saPostPreviewHtml(){
   var date = isNaN(dt) ? p.date : dt.getFullYear() + ". " + (dt.getMonth() + 1) + ". " + dt.getDate() + " (" + WD[dt.getDay()] + ")";
   var imgs = (p.images || []).filter(Boolean), files = (p.files || []).filter(function(f){ return f && f.url; });
   return '<div class="overlay" onclick="SA.postPreview=null; render()"><div class="sheet sheet-tall sa-pv-post" onclick="event.stopPropagation()">' + sheetHead("미리보기 — 홈페이지 소식") +
-    '<div class="np"><div class="np-meta">' + (p.pinned ? '<em>공지</em>' : '') + '<time>' + esc(date) + '</time></div><h2>' + esc(p.title || "(제목 없음)") + '</h2>' +
+    '<div class="np"><div class="np-meta">' + (p.pinned ? '<em>고정</em>' : '') + '<time>' + esc(date) + '</time></div><h2>' + esc(p.title || "(제목 없음)") + '</h2>' +
     '<div class="np-text">' + paras.map(function(x){ return '<p>' + rich(x).replace(/\n/g, "<br>") + '</p>'; }).join("") + '</div>' +
     (imgs.length ? '<div class="np-imgs ' + (imgs.length === 1 ? "one" : "") + '">' + imgs.map(function(u, i){ return '<img src="' + esc(u) + '" alt="" onclick="saPostZoom(' + i + ')">'; }).join("") + '</div>' : '') +
     (files.length ? '<ul class="np-files">' + files.map(function(f){ return '<li><a href="' + esc(f.url) + '" target="_blank" rel="noopener">↓ ' + esc(f.name || f.url.split("/").pop()) + '</a></li>'; }).join("") + '</ul>' : '') + '</div>' +
