@@ -254,7 +254,7 @@ async function reloadFromStore(){
     });
     if(changed) st.reservations.sort(function(a, b){ return (a.date + a.time).localeCompare(b.date + b.time); });
   }
-  if(changed){ cacheSave(); reflowFuture(); }
+  if(changed){ cacheSave(); reflowFuture(); RES_VER++; }   /* 단골 등급 색인 다시(03c) */
   return changed;
 }
 
@@ -363,7 +363,7 @@ async function loadPublic(){
     d[k] = { name: row.name || DEFAULT_DATA[k].name, settings: sset, reservations: [] };
     tr.forEach(function(r){
       if(r.store !== k) return;
-      d[k].reservations.push({ id: k + "-" + r.time + "-" + r.name, date: today, time: r.time, name: r.name, people: r.people, roomId: r.room_id, seatPref: r.seat_pref || null, status: r.status, masked: true });
+      d[k].reservations.push({ id: k + "-" + r.time + "-" + r.name, date: today, time: r.time, name: r.name, people: r.people, roomId: r.room_id, seatPref: r.seat_pref || null, status: r.status, masked: true, tier: r.tier || "" });   /* tier: 단골 등급(16차, 서버가 셈) */
     });
   });
   if(AUTHED) return;   /* 기다리는 사이 PIN 으로 들어왔으면 공개 데이터로 덮지 않습니다(점검 D5) */
@@ -584,6 +584,7 @@ function migrate(d){
   return d;
 }
 async function saveData(){
+  RES_VER++;   /* 단골 등급 색인(03c)은 예약이 바뀔 때만 다시 셈 */
   uiSave();                            /* 테마·배율·tvType 폴백은 기기별 — 서버와 무관하게 늘 저장 */
   if(DATA && DATA._readonly) return;   /* 불러오기 실패 · 오프라인 — 덮어쓰지 않습니다 */
   if(supaOn()) return flush();         /* 서버 모드: 바뀐 것만 보냅니다 */

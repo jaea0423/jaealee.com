@@ -229,7 +229,7 @@ function renderStore(){
   const stt = shopState(s.settings);
   /* 8차-O(재아): 네이버 가져오기·빠른 입력은 팝업 시트가 아니라 화면 전체로 (view.form.page) */
   const pageForm = !!(view.form && view.form.page);
-  const pageTitle = pageForm ? ({naver:"네이버 예약 가져오기", site:"홈페이지 관리", staff:"직원 근태", guests:"손님 관리"}[view.form.type] || "빠른 입력") : "";
+  const pageTitle = pageForm ? ({naver:"네이버 예약 가져오기", site:"홈페이지 관리", staff:"워크시프트", guests:"손님 관리"}[view.form.type] || "빠른 입력") : "";
   const body = pageForm ? `<div class="page-wrap">${renderSheet()}</div>` : (view.tab==="settings" ? renderSettings : renderDash)();
 
   return `
@@ -288,7 +288,7 @@ function renderStore(){
               ${document.fullscreenEnabled ? `<button onclick="closeMore(); toggleFullscreen()">${document.fullscreenElement?ICON.shrink:ICON.expand}<span>${document.fullscreenElement?"전체화면 해제":"전체화면"}</span></button>` : ""}
               <button onclick="closeMore(); openZoomAdj()">${ICON.search}<span>화면 보정</span></button>
               <button onclick="closeMore(); openSlip()">${ICON.print}<span>비상 예약지</span></button>
-              <button onclick="closeMore(); openStaffPage()">${ICON.staff}<span>직원 근태</span></button>
+              <button onclick="closeMore(); openStaffPage()">${ICON.staff}<span>워크시프트</span></button>
               <button onclick="closeMore(); openGuestsPage()">${ICON.users}<span>손님 관리</span></button>
               <button onclick="closeMore(); setTab('settings')">${ICON.set}<span>설정</span></button>
               <button onclick="closeMore(); lockNow()">${ICON.exit}<span>로그아웃</span></button>

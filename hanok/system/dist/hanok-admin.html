@@ -421,6 +421,9 @@ button.rowitem:hover{background:var(--surface-2)}
 /* 예전 3주 달력(.cal 카드)의 잔재. 지금은 날짜 이동의 달력 버튼(<button class="nav cal">)에도 걸려
    그 버튼 아래 여백이 됩니다. 화면을 안 바꾸려고 남겨 둡니다 — Phase 3 에서 정리 */
 .cal{margin-bottom:var(--s16)}
+/* 단골 등급 알약(16차): 이름 옆. VIP 는 금색 테두리, VVIP 는 금색 채움 */
+.tier{display:inline-block; vertical-align:middle; margin-left:6px; padding:1px 6px; border-radius:999px; font-size:10px; font-weight:800; letter-spacing:.04em; line-height:1.5; border:1px solid #B8860B; color:#8A6114; background:#FFF8E1}
+.tier.vvip{background:#B8860B; color:#fff; border-color:#B8860B}
 /* ============================================================
    4. 레이아웃 (상단바 / shell / content)
    ============================================================ */
@@ -1201,6 +1204,12 @@ button.bday.sel .b{background:rgba(255,255,255,.22); color:#fff}
 @keyframes fade-in{from{opacity:0} to{opacity:1}}
 /* 8차-P(재아): 등장 애니메이션은 전부 끕니다 — 매일 쓰는 도구는 '짠' 하고 뜨는 게 낫습니다 */
 .sheet, .calbox, .modal, .overlay{animation:none}
+/* 마법사 손님 단계: 번호를 치면 뜨는 손님 정보(16차) — 등급·방문·노쇼·메모 */
+.guest-hint{margin-top:0; padding:var(--s8) var(--s12); border-radius:var(--r-sm); background:var(--pine-soft); font-size:var(--fs-sub); font-weight:600; color:var(--text); display:flex; flex-wrap:wrap; gap:var(--s4) var(--s12); align-items:center}
+.guest-hint.new{background:var(--surface-2); color:var(--text-2); font-weight:500}
+.guest-hint.bad{background:#FBEFEC}
+.guest-hint .gh-memo{font-weight:500; color:var(--text-2)}
+.guest-hint .tier{margin-left:0}
 /* ============================================================
    7. 설정
    ============================================================ */
@@ -1960,6 +1969,9 @@ body.theme-hanok .pdot.on{color:var(--pine)}
 .intro.turning .intro-w:after{width:60%}
 /* 좁은 화면(폰): 창호는 접어 둡니다 */
 @media (max-width:640px){ .intro-sash{display:none} }
+/* 단골 등급(16차): TV 는 3~5m 에서 보니 알약을 크게. VIP 금색 테두리, VVIP 금색 채움 */
+.tv .tier{display:inline-block; vertical-align:middle; margin-left:calc(var(--tvu)*0.9); padding:calc(var(--tvu)*0.15) calc(var(--tvu)*0.7); border-radius:999px; font-size:calc(var(--tvu)*1.3); font-weight:800; letter-spacing:.05em; line-height:1.5; border:1px solid #D6BE8A; color:#D6BE8A; background:rgba(214,190,138,.12)}
+.tv .tier.vvip{background:#D6BE8A; color:#1B1A18; border-color:#D6BE8A}
 /* ============================================================
    11. 반응형 — 정리한 구역의 @media 규칙
    원본에서의 앞뒤 순서를 그대로 지키고, 붙어 있는 같은 조건끼리만 한 블록으로 묶었습니다.
@@ -2975,7 +2987,7 @@ async function reloadFromStore(){
     });
     if(changed) st.reservations.sort(function(a, b){ return (a.date + a.time).localeCompare(b.date + b.time); });
   }
-  if(changed){ cacheSave(); reflowFuture(); }
+  if(changed){ cacheSave(); reflowFuture(); RES_VER++; }   /* 단골 등급 색인 다시(03c) */
   return changed;
 }
 
@@ -3084,7 +3096,7 @@ async function loadPublic(){
     d[k] = { name: row.name || DEFAULT_DATA[k].name, settings: sset, reservations: [] };
     tr.forEach(function(r){
       if(r.store !== k) return;
-      d[k].reservations.push({ id: k + "-" + r.time + "-" + r.name, date: today, time: r.time, name: r.name, people: r.people, roomId: r.room_id, seatPref: r.seat_pref || null, status: r.status, masked: true });
+      d[k].reservations.push({ id: k + "-" + r.time + "-" + r.name, date: today, time: r.time, name: r.name, people: r.people, roomId: r.room_id, seatPref: r.seat_pref || null, status: r.status, masked: true, tier: r.tier || "" });   /* tier: 단골 등급(16차, 서버가 셈) */
     });
   });
   if(AUTHED) return;   /* 기다리는 사이 PIN 으로 들어왔으면 공개 데이터로 덮지 않습니다(점검 D5) */
@@ -3305,6 +3317,7 @@ function migrate(d){
   return d;
 }
 async function saveData(){
+  RES_VER++;   /* 단골 등급 색인(03c)은 예약이 바뀔 때만 다시 셈 */
   uiSave();                            /* 테마·배율·tvType 폴백은 기기별 — 서버와 무관하게 늘 저장 */
   if(DATA && DATA._readonly) return;   /* 불러오기 실패 · 오프라인 — 덮어쓰지 않습니다 */
   if(supaOn()) return flush();         /* 서버 모드: 바뀐 것만 보냅니다 */
@@ -4308,6 +4321,37 @@ async function schedApplyNow(id){
   st.scheduled = st.scheduled.filter(x => x.id !== id); if(view.draft) view.draft = deepClone(st);
   logEvent("예정 설정 앞당겨 적용", schedLabel(e)); takeSnapshot(); saveData(); render();
 }
+/* ---------- 단골 등급 (16차, 재아) ----------
+   점수 = 방문 횟수 − 노쇼 × 5.  점수 2 이상 VIP, 5 이상 VVIP. 전화번호(숫자만) 기준으로 예약 기록에서 셉니다.
+   TV(공개 뷰)는 전화번호가 없으니 서버가 같은 규칙(hanok_tier)으로 계산해 tier 열로 줍니다 — 숫자를 바꾸면 SQL 도 같이.
+   예약 이름 옆 알약(tierTag)·손님 목록·마법사 손님 단계·TV 에서 씁니다. */
+var TIER_VIP = 2, TIER_VVIP = 5, TIER_NOSHOW = 5;
+var CUST_IDX = null, CUST_IDX_KEY = "", RES_VER = 0;   /* RES_VER 은 저장·동기화 때 올라감 → 그때만 다시 셈 */
+function tierOf(visit, noshow){ var s = visit - TIER_NOSHOW * noshow; return s >= TIER_VVIP ? "VVIP" : s >= TIER_VIP ? "VIP" : ""; }
+function custIndex(){
+  var s = store(); if(!s) return {};
+  var key = RES_VER + "|" + s.reservations.length + "|" + (view.storeKey || "");
+  if(CUST_IDX && CUST_IDX_KEY === key) return CUST_IDX;
+  var idx = {};
+  s.reservations.forEach(function(r){
+    var d = String(r.phone || "").replace(/\D/g, ""); if(d.length < 8) return;
+    var g = idx[d] || (idx[d] = { visit:0, noshow:0, total:0 });
+    g.total++; if(r.status === "방문") g.visit++; else if(r.status === "노쇼") g.noshow++;
+  });
+  Object.keys(idx).forEach(function(k){ var g = idx[k]; g.score = g.visit - TIER_NOSHOW * g.noshow; g.tier = tierOf(g.visit, g.noshow); });
+  CUST_IDX = idx; CUST_IDX_KEY = key; return idx;
+}
+/* 전화번호(또는 예약 객체) → {visit, noshow, score, tier, memo, name} */
+function custStat(x){
+  var phone = x && typeof x === "object" ? x.phone : x;
+  var d = String(phone || "").replace(/\D/g, "");
+  var g = (d.length >= 8 && custIndex()[d]) || { visit:0, noshow:0, total:0, score:0, tier:"" };
+  var c = typeof custOf === "function" ? custOf(d) : null;
+  return { visit:g.visit, noshow:g.noshow, total:g.total, score:g.score, tier:g.tier, memo:(c && c.memo) || "", fixedName:(c && c.name) || "" };
+}
+/* 이름 옆 알약. TV 처럼 tier 문자열만 있을 때는 tierTagOf */
+function tierTag(x){ return tierTagOf(custStat(x).tier); }
+function tierTagOf(t){ return t === "VVIP" ? '<span class="tier vvip" title="VVIP — 방문 5회 이상">VVIP</span>' : t === "VIP" ? '<span class="tier vip" title="VIP — 방문 2회 이상">VIP</span>' : ""; }
 /* ============================================================
    렌더링
    ============================================================ */
@@ -5109,7 +5153,7 @@ function resRowMobile(r){
     <button class="mrow s-${r.status} ${late?'late':''}" onclick="openMark('${r.id}')">
       <div class="mr-1">
         <span class="mr-t">${esc(r.time)}</span>
-        <span class="mr-n">${esc(r.name)}</span>
+        <span class="mr-n">${esc(r.name)}${tierTag(r)}</span>
         ${late?`<span class="mr-bang">!</span>`:""}
         ${r.status!=="확정"?`<span class="tag ${r.status==="노쇼"?"rust":""}">${r.status}</span>`:""}
         ${warn?`<span class="tag rust">경고</span>`:""}
@@ -5299,7 +5343,7 @@ function resRow(r){
     <button class="rrow s-${r.status} ${late?'late':''} ${resWarn(r).length?'k-warn':''} ${changeTag(r)?'k-chg':''} ${!r.roomId && !isTablePref(r.seatPref)?'k-tent':''}" onclick="openMark('${r.id}')">
       <span class="rr-bang">${late?"!":""}</span>
       <span class="rr-t">${esc(r.time)}</span>
-      <span class="rr-n">${esc(r.name)}</span>
+      <span class="rr-n">${esc(r.name)}${tierTag(r)}</span>
       <span class="rr-p">${pplOf(r)}명${r.infants?`(어린이${r.infants})`:""}</span>
       <span class="rr-seat ${room||r.tentativeRoomId?'':'none'}">${esc(seat)}</span>
       <span class="rr-ph">${esc(r.phone||"-")}</span>
@@ -5745,7 +5789,7 @@ function sheetPick(){
   const rows = list.length ? list.map(r=>`
     <button class="rowitem tap" onclick="openMark('${r.id}')">
       <span class="time-col">${esc(r.time)}</span>
-      <span class="grow"><span class="t">${esc(r.name)}</span>
+      <span class="grow"><span class="t">${esc(r.name)}${tierTag(r)}</span>
         <span class="s">${kind==="warn"?`<span class="rust">${esc(resWarn(r).join(", "))}</span> · `:""}${kind==="blocked"?`${dateLabel(r.date)} · `:""}${pplText(r)}${r.phone?` · ${esc(r.phone)}`:""}${
           kind==="blocked"&&resBlocked(r)?` · ${esc(blockLabelText(resBlocked(r).blk))}`:""}${
           kind==="allergy"&&r.allergy?` · ${esc(r.allergy)}`:""}${
@@ -6295,7 +6339,7 @@ function sheetRequests(){
   const rows = list.length ? list.map(q => {
     const w = reqWarns(q);
     return `<button class="rowitem tap" onclick="openRequest('${q.id}')">
-      <span class="grow"><span class="t">${esc(q.name)}${w.length?` <span class="tag rust sm">${esc(w[0])}</span>`:""}</span>
+      <span class="grow"><span class="t">${esc(q.name)}${tierTag(q)}${w.length?` <span class="tag rust sm">${esc(w[0])}</span>`:""}</span>
         <span class="s">${dateLabel(q.date)} ${hm(q.time)} · ${reqPeopleText(q)} · ${q.seat==="room"?"룸":"테이블"} · ${esc(reqMenuText(q))}</span></span>
       <span class="s left ${reqLeftClass(q)}" style="white-space:nowrap; text-align:right">${reqLeft(q)}</span>
     </button>`; }).join("")
@@ -6325,7 +6369,8 @@ function sheetRequest(){
       ${row("인원", q.kids ? `성인 ${q.adults} · 어린이 ${q.kids}` : `성인 ${q.adults}`)}
       ${row("좌석", q.seat === "room" ? "룸" : "테이블")}
       ${row("메뉴", esc(reqMenuText(q)))}
-      ${row("예약자", `${esc(q.name)} · ${esc(q.phone)}`)}
+      ${row("예약자", `${esc(q.name)}${tierTag(q)} · ${esc(q.phone)}${(custStat(q).visit || custStat(q).noshow) ? ` <small class="muted">방문 ${custStat(q).visit}회${custStat(q).noshow ? ` · 노쇼 ${custStat(q).noshow}회` : ""}</small>` : ""}`)}
+      ${custStat(q).memo ? row("손님 메모", esc(custStat(q).memo)) : ""}
       ${q.allergy ? row("알레르기", `<span class="rust">${esc(q.allergy)}</span>`) : ""}
       ${q.request ? row("요청사항", esc(q.request)) : ""}
       ${row("만료", `<b class="${reqLeftClass(q)}">${reqLeft(q)}</b>`)}
@@ -8093,6 +8138,7 @@ function gsList(){
     if(GS.sort === "recent") all.sort(function(a, b){ return (b.last || "").localeCompare(a.last || "") || b.total - a.total; });
     else if(GS.sort === "visits") all.sort(function(a, b){ return b.visit - a.visit || b.total - a.total; });
     else if(GS.sort === "noshow") all = all.filter(function(g){ return g.noshow; }).sort(function(a, b){ return b.noshow - a.noshow; });
+    else if(GS.sort === "vip") all = all.filter(function(g){ return tierOf(g.visit, g.noshow); }).sort(function(a, b){ return (b.visit - TIER_NOSHOW * b.noshow) - (a.visit - TIER_NOSHOW * a.noshow); });
     else if(GS.sort === "memo") all = all.filter(function(g){ return g.memo; }).sort(function(a, b){ return (b.last || "").localeCompare(a.last || ""); });
   }
   return all;
@@ -8103,7 +8149,7 @@ function gsRows(){
   var list = gsList().slice(0, 200);
   if(!list.length) return '<div class="empty">' + (GS.q ? "맞는 손님이 없습니다." : "예약 기록이 있는 손님이 여기 모입니다.") + '</div>';
   return list.map(function(g){
-    return '<button class="rowitem tap" onclick="gsOpen(\'' + g.phone + '\')"><span class="grow"><span class="t">' + esc(g.name) + (g.memo ? ' <span class="tag blue sm">메모</span>' : '') + (g.noshow ? ' <span class="tag rust sm">노쇼 ' + g.noshow + '</span>' : '') + '</span>' +
+    return '<button class="rowitem tap" onclick="gsOpen(\'' + g.phone + '\')"><span class="grow"><span class="t">' + esc(g.name) + tierTagOf(tierOf(g.visit, g.noshow)) + (g.memo ? ' <span class="tag blue sm">메모</span>' : '') + (g.noshow ? ' <span class="tag rust sm">노쇼 ' + g.noshow + '</span>' : '') + '</span>' +
       '<span class="s">' + gsPhoneHtml(g.phone) + ' · 방문 ' + g.visit + (g.upcoming ? ' · 예정 ' + g.upcoming : '') + (g.cancel ? ' · 취소 ' + g.cancel : '') + (g.last ? ' · 마지막 ' + dateLabel(g.last) : '') + '</span></span></button>';
   }).join("");
 }
@@ -8122,9 +8168,9 @@ function sheetGuests(){
   if(!GS || GS.loading) return '<p class="muted" style="padding:20px 0">불러오는 중…</p>';
   var seg = function(k, label){ return '<button class="' + (GS.sort === k ? "on" : "") + '" onclick="GS.sort=\'' + k + '\'; render()">' + label + '</button>'; };
   return '<div class="gs-top"><input id="gs-q" value="' + esc(GS.q || "") + '" placeholder="뒷자리 4자리 · 번호 · 이름 · 메모" oninput="gsSetQ(this.value)" autocomplete="off">' +
-    '<div class="seg">' + seg("recent", "최근 방문") + seg("visits", "많이 온 순") + seg("noshow", "노쇼") + seg("memo", "메모 있음") + '</div></div>' +
+    '<div class="seg">' + seg("recent", "최근 방문") + seg("visits", "많이 온 순") + seg("vip", "VIP 이상") + seg("noshow", "노쇼") + seg("memo", "메모 있음") + '</div></div>' +
     '<div class="card searchbox" id="gs-list">' + gsRows() + '</div>' +
-    '<p class="f-note">전화번호 하나 = 손님 하나. 이름은 그 번호로 가장 많이 적힌 이름이고, 열어서 고정 이름·메모를 적을 수 있습니다. 예약을 고치면 여기도 바로 바뀝니다.</p>' +
+    '<p class="f-note">전화번호 하나 = 손님 하나. 이름은 그 번호로 가장 많이 적힌 이름이고, 열어서 고정 이름·메모를 적을 수 있습니다. 예약을 고치면 여기도 바로 바뀝니다.<br>등급: 방문 ' + TIER_VIP + '회 이상 <b>VIP</b>, ' + TIER_VVIP + '회 이상 <b>VVIP</b> — 노쇼 한 번에 방문 ' + TIER_NOSHOW + '회를 뺍니다.</p>' +
     (GS.open ? gsDetailHtml() : "");
 }
 function gsDetailHtml(){
@@ -8135,7 +8181,7 @@ function gsDetailHtml(){
       '<span class="s">' + esc(resSeatLabel(r)) + (r.name !== g.name ? ' · ' + esc(r.name) : '') + (r.request ? ' · ' + esc(r.request) : '') + (r.allergy ? ' · 알러지 ' + esc(r.allergy) : '') + '</span></span></button>';
   }).join("");
   return '<div class="overlay" onclick="gsClose()"><div class="sheet sheet-tall" onclick="event.stopPropagation()">' +
-    sheetHead(esc(g.name) + ' <small class="muted">' + gsPhoneHtml(g.phone) + '</small>') +
+    sheetHead(esc(g.name) + tierTagOf(tierOf(g.visit, g.noshow)) + ' <small class="muted">' + gsPhoneHtml(g.phone) + '</small>') +
     '<div class="gs-stats"><span><b>' + g.visit + '</b>방문</span><span><b>' + g.upcoming + '</b>예정</span><span class="' + (g.noshow ? "rust" : "") + '"><b>' + g.noshow + '</b>노쇼</span><span><b>' + g.cancel + '</b>취소</span><span><b>' + (g.total ? Math.round(g.people / g.total) : 0) + '</b>평균 인원</span></div>' +
     (g.aka.length ? '<p class="f-note">이 번호로 적힌 다른 이름: ' + esc(g.aka.join(", ")) + '</p>' : '') +
     '<div class="grid2"><label class="f"><div class="lb">고정 이름 <span class="lbl-note">비우면 자동</span></div><input id="gs-name" type="text" value="' + esc(c ? c.name : "") + '" placeholder="' + esc(g.name) + '"></label>' +
@@ -8852,7 +8898,8 @@ function sheetMark(){
   return `
     ${sheetHead("예약 상세")}
     <div class="mark-info">
-      <div class="mi-t">${esc(r.time)} · ${esc(r.name)} 손님</div>
+      <div class="mi-t">${esc(r.time)} · ${esc(r.name)} 손님${tierTag(r)}</div>
+      ${custStat(r).total > 1 ? `<div class="mi-s">방문 ${custStat(r).visit}회${custStat(r).noshow ? ` · <span class="rust">노쇼 ${custStat(r).noshow}회</span>` : ""}</div>` : ""}
       <div class="mi-s">${pplText(r)} · ${esc(seat)}</div>
       ${r.phone?`<div class="mi-s">${esc(r.phone)}</div>`:(r.phoneTail?`<div class="mi-s">***-****-${esc(r.phoneTail)} <small class="muted">(네이버 예약 — 번호는 네이버에서)</small></div>`:"")}
       ${custOf(r.phone)&&custOf(r.phone).memo?`<div class="mi-s"><b>손님 메모</b> · ${esc(custOf(r.phone).memo)}</div>`:""}
@@ -9074,7 +9121,7 @@ function sheetSearch(){
     }).sort((a,b)=> b.date.localeCompare(a.date) || b.time.localeCompare(a.time)).slice(0,80);
     rows = hits.length ? hits.map(r=>`
       <button class="rowitem tap" onclick="goRes('${r.id}','${r.date}')">
-        <span class="grow"><span class="t">${esc(r.name)}
+        <span class="grow"><span class="t">${esc(r.name)}${tierTag(r)}
           ${r.status!=="확정"?`<span class="tag ${r.status==="노쇼"?"rust":""}">${r.status}</span>`:""}</span>
           <span class="s">${dateLabel(r.date)} ${esc(r.time)} · ${pplText(r)} · ${esc(r.phone||"연락처 없음")}${
           r.request?` · ${esc(r.request)}`:""}${r.allergy?` · 알러지 ${esc(r.allergy)}`:""}</span></span>
@@ -10566,7 +10613,7 @@ function afterRender(){
     }, 60);
   }
   if(phoneEl){
-    phoneEl.oninput = (ev)=>{ fmtPhone(phoneEl, ev); wzRefreshNext(); };
+    phoneEl.oninput = (ev)=>{ fmtPhone(phoneEl, ev); wzRefreshNext(); const slot = document.querySelector(".ns-slot"); if(slot) slot.innerHTML = noshowHint(); };   /* 손님 정보는 번호를 치는 대로 */
   }
 
   const rail = document.getElementById("mrail");
@@ -10791,12 +10838,18 @@ async function wzSeat(v){
   WZ.seat = v; WZ.step = 4; WZ.maxStep = Math.max(WZ.maxStep||0, 4); render();
 }
 /* 전화번호가 노쇼 이력이 있는 번호인지 — 입력하는 즉시 보여줍니다 */
+/* 번호를 치면 바로 뜨는 손님 정보(재아 09-18): 등급(VIP/VVIP)·방문 횟수·노쇼·손님 메모. 처음 오는 번호면 "새 손님" */
 function noshowHint(){
   const ph = (WZ.phone||"").replace(/\D/g,"");
   if(ph.length < 9) return "";
-  const ns = noshowOf(WZ.phone);
-  if(!ns) return "";
-  return `<div class="ns-hint">노쇼 이력 ${ns.count}회</div>`;
+  const c = custStat(ph);
+  if(!c.total) return `<div class="guest-hint new">처음 예약하는 번호</div>`;
+  const bits = [];
+  if(c.tier) bits.push(tierTagOf(c.tier));
+  if(c.fixedName) bits.push(`<b>${esc(c.fixedName)}</b>`);
+  bits.push(`방문 ${c.visit}회`);
+  if(c.noshow) bits.push(`<span class="rust">노쇼 ${c.noshow}회</span>`);
+  return `<div class="guest-hint ${c.noshow ? "bad" : ""}"><span>${bits.join(" · ")}</span>${c.memo ? `<span class="gh-memo">메모 · ${esc(c.memo)}</span>` : ""}</div>`;
 }
 /* ---------- 4단계: 예약자 ---------- */
 function wzStepGuest(){
@@ -11606,7 +11659,7 @@ function tvSideHtml(){
     const items = g.items.map(function(r){
       const seat = r.roomId ? resSeatLabel(r) : "";
       return `<div class="tvl-g">
-        <span class="tvl-n">${esc(maskName(r.name))} 님</span>
+        <span class="tvl-n">${esc(maskName(r.name))} 님${r.tier ? tierTagOf(r.tier) : ""}</span>
         <span class="tvl-s">${seat ? `<span class="tvl-seat">${esc(seat)}</span>` : ""}<span class="tvl-cnt">${pplOf(r)}<small>명</small></span></span>
       </div>`;
     }).join("");
@@ -11649,7 +11702,7 @@ function renderTvGrid(){
       const tn = "";   /* 손님에게 테이블 번호는 알리지 않습니다 — 층까지만(8차-H) */
       return `<li class="${past?'past':''} ${next?'next':''}">
         <span class="t">${esc(r.time)}</span>
-        <span class="n">${esc(maskName(r.name))} 님${tn?` <small class="tn">${esc(tn)}</small>`:""}</span>
+        <span class="n">${esc(maskName(r.name))} 님${r.tier ? tierTagOf(r.tier) : ""}${tn?` <small class="tn">${esc(tn)}</small>`:""}</span>
         <span class="p">${pplOf(r)}명</span>
       </li>`;
     }).join("") : ``;

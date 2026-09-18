@@ -327,7 +327,7 @@ function sheetPick(){
   const rows = list.length ? list.map(r=>`
     <button class="rowitem tap" onclick="openMark('${r.id}')">
       <span class="time-col">${esc(r.time)}</span>
-      <span class="grow"><span class="t">${esc(r.name)}</span>
+      <span class="grow"><span class="t">${esc(r.name)}${tierTag(r)}</span>
         <span class="s">${kind==="warn"?`<span class="rust">${esc(resWarn(r).join(", "))}</span> · `:""}${kind==="blocked"?`${dateLabel(r.date)} · `:""}${pplText(r)}${r.phone?` · ${esc(r.phone)}`:""}${
           kind==="blocked"&&resBlocked(r)?` · ${esc(blockLabelText(resBlocked(r).blk))}`:""}${
           kind==="allergy"&&r.allergy?` · ${esc(r.allergy)}`:""}${

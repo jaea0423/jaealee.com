@@ -446,7 +446,7 @@ function tvSideHtml(){
     const items = g.items.map(function(r){
       const seat = r.roomId ? resSeatLabel(r) : "";
       return `<div class="tvl-g">
-        <span class="tvl-n">${esc(maskName(r.name))} 님</span>
+        <span class="tvl-n">${esc(maskName(r.name))} 님${r.tier ? tierTagOf(r.tier) : ""}</span>
         <span class="tvl-s">${seat ? `<span class="tvl-seat">${esc(seat)}</span>` : ""}<span class="tvl-cnt">${pplOf(r)}<small>명</small></span></span>
       </div>`;
     }).join("");
@@ -489,7 +489,7 @@ function renderTvGrid(){
       const tn = "";   /* 손님에게 테이블 번호는 알리지 않습니다 — 층까지만(8차-H) */
       return `<li class="${past?'past':''} ${next?'next':''}">
         <span class="t">${esc(r.time)}</span>
-        <span class="n">${esc(maskName(r.name))} 님${tn?` <small class="tn">${esc(tn)}</small>`:""}</span>
+        <span class="n">${esc(maskName(r.name))} 님${r.tier ? tierTagOf(r.tier) : ""}${tn?` <small class="tn">${esc(tn)}</small>`:""}</span>
         <span class="p">${pplOf(r)}명</span>
       </li>`;
     }).join("") : ``;

@@ -705,7 +705,8 @@ function sheetMark(){
   return `
     ${sheetHead("예약 상세")}
     <div class="mark-info">
-      <div class="mi-t">${esc(r.time)} · ${esc(r.name)} 손님</div>
+      <div class="mi-t">${esc(r.time)} · ${esc(r.name)} 손님${tierTag(r)}</div>
+      ${custStat(r).total > 1 ? `<div class="mi-s">방문 ${custStat(r).visit}회${custStat(r).noshow ? ` · <span class="rust">노쇼 ${custStat(r).noshow}회</span>` : ""}</div>` : ""}
       <div class="mi-s">${pplText(r)} · ${esc(seat)}</div>
       ${r.phone?`<div class="mi-s">${esc(r.phone)}</div>`:(r.phoneTail?`<div class="mi-s">***-****-${esc(r.phoneTail)} <small class="muted">(네이버 예약 — 번호는 네이버에서)</small></div>`:"")}
       ${custOf(r.phone)&&custOf(r.phone).memo?`<div class="mi-s"><b>손님 메모</b> · ${esc(custOf(r.phone).memo)}</div>`:""}
@@ -927,7 +928,7 @@ function sheetSearch(){
     }).sort((a,b)=> b.date.localeCompare(a.date) || b.time.localeCompare(a.time)).slice(0,80);
     rows = hits.length ? hits.map(r=>`
       <button class="rowitem tap" onclick="goRes('${r.id}','${r.date}')">
-        <span class="grow"><span class="t">${esc(r.name)}
+        <span class="grow"><span class="t">${esc(r.name)}${tierTag(r)}
           ${r.status!=="확정"?`<span class="tag ${r.status==="노쇼"?"rust":""}">${r.status}</span>`:""}</span>
           <span class="s">${dateLabel(r.date)} ${esc(r.time)} · ${pplText(r)} · ${esc(r.phone||"연락처 없음")}${
           r.request?` · ${esc(r.request)}`:""}${r.allergy?` · 알러지 ${esc(r.allergy)}`:""}</span></span>

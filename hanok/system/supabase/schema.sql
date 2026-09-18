@@ -93,8 +93,16 @@ create or replace function mask_name(n text) returns text language sql immutable
 $$;
 
 -- 오늘(한국 시각) 확정·방문 예약만. 날짜 비교가 문자열이라 시차 문제가 없습니다
+-- 16차: hanok_tier — 단골 등급(방문 2회 VIP · 5회 VVIP · 노쇼 −5). 앱 03c-tier.js 와 같은 숫자
+-- security definer: 뷰 안에서 불리지만 함수는 부르는 쪽(anon) 권한으로 돌아 reservations 를 못 읽음 → 소유자 권한으로
+create or replace function hanok_tier(p text) returns text language sql stable security definer set search_path = public as $$
+  select case when p is null or p = '' then ''
+              when s >= 5 then 'VVIP' when s >= 2 then 'VIP' else '' end
+  from (select coalesce(count(*) filter (where status = '방문'), 0) - 5 * coalesce(count(*) filter (where status = '노쇼'), 0) as s
+        from reservations where deleted_at is null and phone = p) x
+$$;
 create or replace view public_today as
-  select store, time, mask_name(name) as name, people, room_id, status, data->>'seatPref' as seat_pref
+  select store, time, mask_name(name) as name, people, room_id, status, data->>'seatPref' as seat_pref, hanok_tier(phone) as tier
   from reservations
   where deleted_at is null and status in ('확정','방문')
     and date = to_char(now() at time zone 'Asia/Seoul', 'YYYY-MM-DD');

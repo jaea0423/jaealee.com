@@ -59,6 +59,7 @@ function gsList(){
     if(GS.sort === "recent") all.sort(function(a, b){ return (b.last || "").localeCompare(a.last || "") || b.total - a.total; });
     else if(GS.sort === "visits") all.sort(function(a, b){ return b.visit - a.visit || b.total - a.total; });
     else if(GS.sort === "noshow") all = all.filter(function(g){ return g.noshow; }).sort(function(a, b){ return b.noshow - a.noshow; });
+    else if(GS.sort === "vip") all = all.filter(function(g){ return tierOf(g.visit, g.noshow); }).sort(function(a, b){ return (b.visit - TIER_NOSHOW * b.noshow) - (a.visit - TIER_NOSHOW * a.noshow); });
     else if(GS.sort === "memo") all = all.filter(function(g){ return g.memo; }).sort(function(a, b){ return (b.last || "").localeCompare(a.last || ""); });
   }
   return all;
@@ -69,7 +70,7 @@ function gsRows(){
   var list = gsList().slice(0, 200);
   if(!list.length) return '<div class="empty">' + (GS.q ? "맞는 손님이 없습니다." : "예약 기록이 있는 손님이 여기 모입니다.") + '</div>';
   return list.map(function(g){
-    return '<button class="rowitem tap" onclick="gsOpen(\'' + g.phone + '\')"><span class="grow"><span class="t">' + esc(g.name) + (g.memo ? ' <span class="tag blue sm">메모</span>' : '') + (g.noshow ? ' <span class="tag rust sm">노쇼 ' + g.noshow + '</span>' : '') + '</span>' +
+    return '<button class="rowitem tap" onclick="gsOpen(\'' + g.phone + '\')"><span class="grow"><span class="t">' + esc(g.name) + tierTagOf(tierOf(g.visit, g.noshow)) + (g.memo ? ' <span class="tag blue sm">메모</span>' : '') + (g.noshow ? ' <span class="tag rust sm">노쇼 ' + g.noshow + '</span>' : '') + '</span>' +
       '<span class="s">' + gsPhoneHtml(g.phone) + ' · 방문 ' + g.visit + (g.upcoming ? ' · 예정 ' + g.upcoming : '') + (g.cancel ? ' · 취소 ' + g.cancel : '') + (g.last ? ' · 마지막 ' + dateLabel(g.last) : '') + '</span></span></button>';
   }).join("");
 }
@@ -88,9 +89,9 @@ function sheetGuests(){
   if(!GS || GS.loading) return '<p class="muted" style="padding:20px 0">불러오는 중…</p>';
   var seg = function(k, label){ return '<button class="' + (GS.sort === k ? "on" : "") + '" onclick="GS.sort=\'' + k + '\'; render()">' + label + '</button>'; };
   return '<div class="gs-top"><input id="gs-q" value="' + esc(GS.q || "") + '" placeholder="뒷자리 4자리 · 번호 · 이름 · 메모" oninput="gsSetQ(this.value)" autocomplete="off">' +
-    '<div class="seg">' + seg("recent", "최근 방문") + seg("visits", "많이 온 순") + seg("noshow", "노쇼") + seg("memo", "메모 있음") + '</div></div>' +
+    '<div class="seg">' + seg("recent", "최근 방문") + seg("visits", "많이 온 순") + seg("vip", "VIP 이상") + seg("noshow", "노쇼") + seg("memo", "메모 있음") + '</div></div>' +
     '<div class="card searchbox" id="gs-list">' + gsRows() + '</div>' +
-    '<p class="f-note">전화번호 하나 = 손님 하나. 이름은 그 번호로 가장 많이 적힌 이름이고, 열어서 고정 이름·메모를 적을 수 있습니다. 예약을 고치면 여기도 바로 바뀝니다.</p>' +
+    '<p class="f-note">전화번호 하나 = 손님 하나. 이름은 그 번호로 가장 많이 적힌 이름이고, 열어서 고정 이름·메모를 적을 수 있습니다. 예약을 고치면 여기도 바로 바뀝니다.<br>등급: 방문 ' + TIER_VIP + '회 이상 <b>VIP</b>, ' + TIER_VVIP + '회 이상 <b>VVIP</b> — 노쇼 한 번에 방문 ' + TIER_NOSHOW + '회를 뺍니다.</p>' +
     (GS.open ? gsDetailHtml() : "");
 }
 function gsDetailHtml(){
@@ -101,7 +102,7 @@ function gsDetailHtml(){
       '<span class="s">' + esc(resSeatLabel(r)) + (r.name !== g.name ? ' · ' + esc(r.name) : '') + (r.request ? ' · ' + esc(r.request) : '') + (r.allergy ? ' · 알러지 ' + esc(r.allergy) : '') + '</span></span></button>';
   }).join("");
   return '<div class="overlay" onclick="gsClose()"><div class="sheet sheet-tall" onclick="event.stopPropagation()">' +
-    sheetHead(esc(g.name) + ' <small class="muted">' + gsPhoneHtml(g.phone) + '</small>') +
+    sheetHead(esc(g.name) + tierTagOf(tierOf(g.visit, g.noshow)) + ' <small class="muted">' + gsPhoneHtml(g.phone) + '</small>') +
     '<div class="gs-stats"><span><b>' + g.visit + '</b>방문</span><span><b>' + g.upcoming + '</b>예정</span><span class="' + (g.noshow ? "rust" : "") + '"><b>' + g.noshow + '</b>노쇼</span><span><b>' + g.cancel + '</b>취소</span><span><b>' + (g.total ? Math.round(g.people / g.total) : 0) + '</b>평균 인원</span></div>' +
     (g.aka.length ? '<p class="f-note">이 번호로 적힌 다른 이름: ' + esc(g.aka.join(", ")) + '</p>' : '') +
     '<div class="grid2"><label class="f"><div class="lb">고정 이름 <span class="lbl-note">비우면 자동</span></div><input id="gs-name" type="text" value="' + esc(c ? c.name : "") + '" placeholder="' + esc(g.name) + '"></label>' +

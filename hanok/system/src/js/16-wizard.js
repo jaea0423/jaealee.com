@@ -720,7 +720,7 @@ function afterRender(){
     }, 60);
   }
   if(phoneEl){
-    phoneEl.oninput = (ev)=>{ fmtPhone(phoneEl, ev); wzRefreshNext(); };
+    phoneEl.oninput = (ev)=>{ fmtPhone(phoneEl, ev); wzRefreshNext(); const slot = document.querySelector(".ns-slot"); if(slot) slot.innerHTML = noshowHint(); };   /* 손님 정보는 번호를 치는 대로 */
   }
 
   const rail = document.getElementById("mrail");
@@ -945,12 +945,18 @@ async function wzSeat(v){
   WZ.seat = v; WZ.step = 4; WZ.maxStep = Math.max(WZ.maxStep||0, 4); render();
 }
 /* 전화번호가 노쇼 이력이 있는 번호인지 — 입력하는 즉시 보여줍니다 */
+/* 번호를 치면 바로 뜨는 손님 정보(재아 09-18): 등급(VIP/VVIP)·방문 횟수·노쇼·손님 메모. 처음 오는 번호면 "새 손님" */
 function noshowHint(){
   const ph = (WZ.phone||"").replace(/\D/g,"");
   if(ph.length < 9) return "";
-  const ns = noshowOf(WZ.phone);
-  if(!ns) return "";
-  return `<div class="ns-hint">노쇼 이력 ${ns.count}회</div>`;
+  const c = custStat(ph);
+  if(!c.total) return `<div class="guest-hint new">처음 예약하는 번호</div>`;
+  const bits = [];
+  if(c.tier) bits.push(tierTagOf(c.tier));
+  if(c.fixedName) bits.push(`<b>${esc(c.fixedName)}</b>`);
+  bits.push(`방문 ${c.visit}회`);
+  if(c.noshow) bits.push(`<span class="rust">노쇼 ${c.noshow}회</span>`);
+  return `<div class="guest-hint ${c.noshow ? "bad" : ""}"><span>${bits.join(" · ")}</span>${c.memo ? `<span class="gh-memo">메모 · ${esc(c.memo)}</span>` : ""}</div>`;
 }
 /* ---------- 4단계: 예약자 ---------- */
 function wzStepGuest(){

@@ -95,7 +95,7 @@ function sheetRequests(){
   const rows = list.length ? list.map(q => {
     const w = reqWarns(q);
     return `<button class="rowitem tap" onclick="openRequest('${q.id}')">
-      <span class="grow"><span class="t">${esc(q.name)}${w.length?` <span class="tag rust sm">${esc(w[0])}</span>`:""}</span>
+      <span class="grow"><span class="t">${esc(q.name)}${tierTag(q)}${w.length?` <span class="tag rust sm">${esc(w[0])}</span>`:""}</span>
         <span class="s">${dateLabel(q.date)} ${hm(q.time)} · ${reqPeopleText(q)} · ${q.seat==="room"?"룸":"테이블"} · ${esc(reqMenuText(q))}</span></span>
       <span class="s left ${reqLeftClass(q)}" style="white-space:nowrap; text-align:right">${reqLeft(q)}</span>
     </button>`; }).join("")
@@ -125,7 +125,8 @@ function sheetRequest(){
       ${row("인원", q.kids ? `성인 ${q.adults} · 어린이 ${q.kids}` : `성인 ${q.adults}`)}
       ${row("좌석", q.seat === "room" ? "룸" : "테이블")}
       ${row("메뉴", esc(reqMenuText(q)))}
-      ${row("예약자", `${esc(q.name)} · ${esc(q.phone)}`)}
+      ${row("예약자", `${esc(q.name)}${tierTag(q)} · ${esc(q.phone)}${(custStat(q).visit || custStat(q).noshow) ? ` <small class="muted">방문 ${custStat(q).visit}회${custStat(q).noshow ? ` · 노쇼 ${custStat(q).noshow}회` : ""}</small>` : ""}`)}
+      ${custStat(q).memo ? row("손님 메모", esc(custStat(q).memo)) : ""}
       ${q.allergy ? row("알레르기", `<span class="rust">${esc(q.allergy)}</span>`) : ""}
       ${q.request ? row("요청사항", esc(q.request)) : ""}
       ${row("만료", `<b class="${reqLeftClass(q)}">${reqLeft(q)}</b>`)}
