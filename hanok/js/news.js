@@ -41,6 +41,18 @@
         a.classList.toggle("open", open); h.setAttribute("aria-expanded", open);
         if(open) history.replaceState(null, "", "#" + a.id);
       }));
+      /* 사진 크게 보기 — 새 탭 대신 화면 위 덮개. ‹ › 로 넘기고, 바깥·Esc 로 닫힘 */
+      box.querySelectorAll(".post-imgs a").forEach(a => a.addEventListener("click", e => {
+        e.preventDefault();
+        const all = [...a.parentNode.querySelectorAll("a")].map(x => x.href); let i = all.indexOf(a.href);
+        const lb = document.createElement("div"); lb.className = "lb";
+        lb.innerHTML = `<img alt="">${all.length > 1 ? `<button type="button" class="lb-nav prev" aria-label="이전">‹</button><button type="button" class="lb-nav next" aria-label="다음">›</button>` : ""}<button type="button" class="lb-x" aria-label="닫기">×</button><span class="lb-n"></span>`;
+        const show = () => { lb.querySelector("img").src = all[i]; lb.querySelector(".lb-n").textContent = all.length > 1 ? `${i + 1} / ${all.length}` : ""; };
+        const close = () => { lb.remove(); document.removeEventListener("keydown", key); document.body.classList.remove("lb-open"); };
+        const key = ev => { if(ev.key === "Escape") close(); else if(ev.key === "ArrowLeft"){ i = (i + all.length - 1) % all.length; show(); } else if(ev.key === "ArrowRight"){ i = (i + 1) % all.length; show(); } };
+        lb.addEventListener("click", ev => { const t = ev.target; if(t.classList.contains("prev")){ i = (i + all.length - 1) % all.length; show(); } else if(t.classList.contains("next")){ i = (i + 1) % all.length; show(); } else close(); });   /* 사진·바깥·× 어디를 눌러도 닫힘 */
+        document.addEventListener("keydown", key); document.body.classList.add("lb-open"); document.body.append(lb); show();
+      }));
       const cur = want && document.getElementById(want);
       if(cur) setTimeout(() => cur.scrollIntoView({block:"start", behavior:"smooth"}), 50);
     })

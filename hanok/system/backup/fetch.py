@@ -39,5 +39,6 @@ save("site_posts.json",    fetch_all("site_posts?select=*&order=created_at,id"))
 # 15차 직원 근태·손님 메모
 save("staff.json",         fetch_all("staff?select=*&order=sort,name"))
 save("attendance.json",    fetch_all("attendance?select=*&order=date,staff_id"))
-save("customers.json",     fetch_all("customers?select=*&order=phone"))   # 14차 소식 글(첨부 파일 자체는 Storage — 백업 안 됨)
+save("customers.json",     fetch_all("customers?select=*&order=phone"))
+save("hr_settings.json",   fetch_all("hr_settings?select=*"))   # 14차 소식 글(첨부 파일 자체는 Storage — 백업 안 됨)
 with open(os.path.join(OUT, "backup-at.txt"), "w") as f: f.write(datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ") + "\n")

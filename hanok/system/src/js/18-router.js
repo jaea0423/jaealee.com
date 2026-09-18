@@ -547,7 +547,8 @@ document.addEventListener("keydown", function(e){
     /* 확인창(MODAL): Esc = 취소. 마법사: Esc = 닫기(입력이 있으면 확인창). 시트·더보기: 닫기 (재아 09-17: 이 셋만 묶고 나머지는 안 묶음) */
     if(MODAL){ e.preventDefault(); if(MODAL.mode === "alert") modalAnswer(true); else modalAnswer(MODAL.mode === "confirm" ? false : null); return; }
     if(WZ && !WZ.done){ e.preventDefault(); closeWizard(); return; }
-    if((typeof hrEsc === "function" && hrEsc()) || (typeof gsEsc === "function" && gsEsc())){ e.preventDefault(); return; }   /* 근태·손님 화면 안의 작은 창부터 */
+    if((typeof hrEsc === "function" && hrEsc()) || (typeof gsEsc === "function" && gsEsc())){ e.preventDefault(); return; }   /* 워크시프트·손님 화면 안의 작은 창부터 */
+    if(view.form && view.form.type === "site" && SA && (SA.postZoom != null || SA.postPreview)){ e.preventDefault(); SA.postZoom = null; SA.postPreview = null; render(); return; }
     if(view.form){ e.preventDefault(); closeSheet(); }
     else if(view.moreOpen){ closeMore(); }
     return;

@@ -75,7 +75,7 @@ curl -s -H "apikey: ANON" "URL/rest/v1/public_today"
 ## 8. 실서비스로 갈 때
 
 1. `hanok` 프로젝트에 1~5 반복 (`supabase.prod.json`)
-   - 스키마 다음에 패치도 순서대로: `patch_8차.sql` → `patch_9차_홈페이지.sql`(홈페이지 예약: `public_avail`·`requests` 표, anon 은 읽기·접수만) → `patch_10차_홈페이지관리.sql`(홈페이지 관리: `site_draft`·`site_versions`·Storage `site` 버킷) → `patch_11차_알러지.sql`(requests.allergy) → `patch_12차_이름가림.sql`(TV 이름 가림을 앱과 같은 모양으로) → `patch_13차_접수제한.sql`(번호당 하루 5건) → `patch_14차_소식.sql`(site_posts 표 + 첨부 파일 종류) → `patch_15차_근태_손님.sql`(staff·attendance·customers) → `patch_16차_단골.sql`(hanok_tier + public_today.tier)
+   - 스키마 다음에 패치도 순서대로: `patch_8차.sql` → `patch_9차_홈페이지.sql`(홈페이지 예약: `public_avail`·`requests` 표, anon 은 읽기·접수만) → `patch_10차_홈페이지관리.sql`(홈페이지 관리: `site_draft`·`site_versions`·Storage `site` 버킷) → `patch_11차_알러지.sql`(requests.allergy) → `patch_12차_이름가림.sql`(TV 이름 가림을 앱과 같은 모양으로) → `patch_13차_접수제한.sql`(번호당 하루 5건) → `patch_14차_소식.sql`(site_posts 표 + 첨부 파일 종류) → `patch_15차_근태_손님.sql`(staff·attendance·customers) → `patch_16차_단골.sql`(hanok_tier + public_today.tier) → `patch_17차_워크시프트.sql`(staff.nick/tax/weekly_pay + hr_settings) → `python work/seed_staff.py`(직원 기본 목록)
    - 홈페이지 쪽은 `site/js/config.js` 의 `url`·`anonKey` 를 prod 값으로 교체 (anon 키는 공개해도 됨)
 2. `python build.py` (dev 없이) → `v5/index.html` `v5/screen/index.html`
 3. 그 전까지 **prod 프로젝트에는 아무것도 쓰지 않습니다.** 예시 데이터 버튼은 prod 빌드에 없습니다

@@ -81,7 +81,7 @@ function saTabPosts(){
 function saPostEditor(){
   var p = SA.post;
   var imgs = (p.images || []).map(function(u, i){
-    return '<div class="sa-pimg"><img src="' + esc(u) + '" alt=""><div class="sa-pimg-x">' +
+    return '<div class="sa-pimg"><img src="' + esc(u) + '" alt="" onclick="saPostZoom(' + i + ')" title="크게 보기"><div class="sa-pimg-x">' +
       '<button class="btn sm ghost" onclick="saPostImgMove(' + i + ',-1)" ' + (i === 0 ? "disabled" : "") + '>←</button>' +
       '<button class="btn sm ghost" onclick="saPostImgMove(' + i + ',1)" ' + (i === p.images.length - 1 ? "disabled" : "") + '>→</button>' +
       '<button class="btn sm ghost" onclick="saPostImgDel(' + i + ')">×</button></div></div>';
@@ -102,9 +102,33 @@ function saPostEditor(){
       '<div class="btn-row" style="margin-top:16px; align-items:center">' +
         '<button class="btn ghost" onclick="saPostBack()">목록</button>' +
         (p._new ? '' : '<button class="btn danger" onclick="saPostDelete()">지우기</button>') +
+        '<button class="btn ghost" onclick="SA.postPreview=true; render()">미리보기</button>' +
         '<span id="sa-post-state" class="muted" style="margin-left:auto; font-size:var(--fs-label)">' + (saPostDirty() ? "고친 내용이 있습니다" : "") + '</span>' +
         '<button class="btn" onclick="saPostSave(\'초안\')">초안으로 저장</button>' +
         '<button class="btn primary" onclick="saPostSave(\'게시\')">' + (p.status === "게시" && !p._new ? "고친 것 게시" : "게시") + '</button>' +
       '</div>',
-      p.status === "초안" ? '<span class="tag amber sm" style="margin-left:auto">초안 — 홈페이지에 안 보임</span>' : '');
+      p.status === "초안" ? '<span class="tag amber sm" style="margin-left:auto">초안 — 홈페이지에 안 보임</span>' : '') +
+    (SA.postPreview ? saPostPreviewHtml() : '') + (SA.postZoom != null ? saPostZoomHtml() : '');
+}
+/* 사진 크게 보기(관리 화면) */
+function saPostZoom(i){ SA.postZoom = i; render(); }
+function saPostZoomHtml(){
+  var imgs = SA.post.images || [], i = SA.postZoom, u = imgs[i]; if(!u){ SA.postZoom = null; return ""; }
+  return '<div class="overlay sa-zoom" onclick="SA.postZoom=null; render()"><img src="' + esc(u) + '" alt="" onclick="event.stopPropagation()">' +
+    (imgs.length > 1 ? '<button class="sa-zoom-nav prev" onclick="event.stopPropagation(); SA.postZoom=(' + i + '+' + imgs.length + '-1)%' + imgs.length + '; render()">‹</button><button class="sa-zoom-nav next" onclick="event.stopPropagation(); SA.postZoom=(' + i + '+1)%' + imgs.length + '; render()">›</button>' : '') +
+    '<span class="sa-zoom-n">' + (i + 1) + ' / ' + imgs.length + '</span></div>';
+}
+/* 미리보기 — 홈페이지 소식 장에 나오는 모양 그대로(js/news.js 와 같은 규칙: 빈 줄 문단, **굵게**) */
+function saPostPreviewHtml(){
+  var p = SA.post, rich = function(s){ return esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>"); };
+  var paras = String(p.body || "").split(/\n{2,}/).map(function(x){ return x.trim(); }).filter(Boolean);
+  var WD = ["일","월","화","수","목","금","토"], dt = new Date(p.date + "T00:00:00");
+  var date = isNaN(dt) ? p.date : dt.getFullYear() + ". " + (dt.getMonth() + 1) + ". " + dt.getDate() + " (" + WD[dt.getDay()] + ")";
+  var imgs = (p.images || []).filter(Boolean), files = (p.files || []).filter(function(f){ return f && f.url; });
+  return '<div class="overlay" onclick="SA.postPreview=null; render()"><div class="sheet sheet-tall sa-pv-post" onclick="event.stopPropagation()">' + sheetHead("미리보기 — 홈페이지 소식") +
+    '<div class="np"><div class="np-meta">' + (p.pinned ? '<em>공지</em>' : '') + '<time>' + esc(date) + '</time></div><h2>' + esc(p.title || "(제목 없음)") + '</h2>' +
+    '<div class="np-text">' + paras.map(function(x){ return '<p>' + rich(x).replace(/\n/g, "<br>") + '</p>'; }).join("") + '</div>' +
+    (imgs.length ? '<div class="np-imgs ' + (imgs.length === 1 ? "one" : "") + '">' + imgs.map(function(u, i){ return '<img src="' + esc(u) + '" alt="" onclick="saPostZoom(' + i + ')">'; }).join("") + '</div>' : '') +
+    (files.length ? '<ul class="np-files">' + files.map(function(f){ return '<li><a href="' + esc(f.url) + '" target="_blank" rel="noopener">↓ ' + esc(f.name || f.url.split("/").pop()) + '</a></li>'; }).join("") + '</ul>' : '') + '</div>' +
+    '<div class="sheet-actions"><button class="btn primary" onclick="SA.postPreview=null; render()">닫기</button></div></div></div>';
 }

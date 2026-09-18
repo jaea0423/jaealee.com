@@ -198,6 +198,17 @@ def main():
             print("      스마트TV 에서 흰 화면이 뜹니다. 고친 뒤 다시 빌드하세요.")
         else:
             print("구형 브라우저 문법 검사 통과")
+        # 문법 오류(잘못된 정규식 같은 것)는 위 검사로 못 잡음 — node 가 있으면 합친 JS 를 한 번 파싱해 봅니다(2026-09-18: 줄바꿈이 섞인 정규식이 흰 화면을 냈음)
+        try:
+            import subprocess, tempfile
+            tf = tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8"); tf.write(js); tf.close()
+            r = subprocess.run(["node", "--check", tf.name], capture_output=True, text=True, encoding="utf-8", errors="replace")
+            os.unlink(tf.name)
+            if r.returncode != 0:
+                print("!!! JS 문법 오류 — 화면이 통째로 안 뜹니다: " + (r.stderr or "").strip()[:800]); raise SystemExit(1)
+            print("JS 문법 검사(node) 통과")
+        except FileNotFoundError:
+            pass   # node 없음 — 검사 생략
 
     # dev 빌드는 dev/ 폴더에만 씁니다 (jaealee.com/hanok/system/dev/). 실서비스 파일은 건드리지 않습니다
     if mode == "dev":

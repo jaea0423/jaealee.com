@@ -123,6 +123,7 @@ def sys_jobs(tok):
     jobs.append(("68 워크시프트 · 설정", "view.adminOk=true; openStaffPage().then(function(){ hrSetupOpen(); });"))
     jobs.append(("69 손님 관리", "view.adminOk=true; openGuestsPage();"))
     jobs.append(("69 손님 관리 · 상세", "view.adminOk=true; openGuestsPage().then(function(){ var l=gsList(); if(l[0]) gsOpen(l[0].phone); });"))
+    jobs.append(("61 홈페이지 관리 · 소식 미리보기", site_open + " setTimeout(function(){ if(SA&&!SA.loading){ SA.tab='posts'; saPostsLoad().then(function(){ var p=(SA.posts||[]).filter(function(x){return (x.images||[]).length;})[0]||SA.posts[0]; if(p){ saPostEdit(p.id); SA.postPreview=true; render(); } }); } }, 2500);"))
     jobs.append(("62 홈페이지 관리 · 적용 대화창", site_open + " setTimeout(function(){ if(SA&&!SA.loading){ view.saApply={mode:'at', date:shiftDate(todayStr(),1), time:'09:00', note:''}; render(); } }, 2500);"))
     jobs.append(("63 홈페이지 관리 · 미리보기", site_open + " setTimeout(function(){ if(SA&&!SA.loading){ view.saPreview='index'; render(); } }, 2500);"))
     return login, jobs
