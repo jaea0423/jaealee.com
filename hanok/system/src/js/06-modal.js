@@ -36,6 +36,19 @@ function uiPrompt(title, msg, opt){
 function uiChoose(title, options, msg){
   return new Promise(res => { modalReplace({mode:"choice", title, msg:msg||"", tone:"ok", choices:options.map((o,i)=>[o,i]), cancel:"취소", res}); });
 }
+/* 숫자 비밀번호 팝업(09-20 재아): PIN 화면과 같은 키패드 · 점 n개. 다 채우면 바로 답. 취소면 null.
+   사장님 2차 비밀번호(6자리)에 씁니다 — 숫자 밖에는 칠 수 없음. 키보드 숫자·Backspace 도 받음(18-router keydown) */
+function uiPin(title, msg, digits){
+  return new Promise(res => { modalReplace({mode:"pin", title, msg, tone:"ok", digits:digits || 6, buf:"", cancel:"취소", res}); });
+}
+function pinModalPush(n){
+  const m = MODAL; if(!m || m.mode !== "pin") return;
+  if(n === "back"){ m.buf = m.buf.slice(0, -1); render(); return; }
+  if(n === "clear"){ m.buf = ""; render(); return; }
+  if(m.buf.length >= m.digits) return;
+  m.buf += String(n); render();
+  if(m.buf.length === m.digits){ const b = m.buf; setTimeout(function(){ if(MODAL === m){ MODAL = null; render(); m.res(b); } }, 120); }
+}
 function modalPromptAnswer(){ const el = document.getElementById("md-input"); const m = MODAL; MODAL = null; render(); if(m) m.res(el ? el.value : ""); }
 function renderModal(){
   if(!MODAL) return "";
@@ -51,10 +64,12 @@ function renderModal(){
     <div class="overlay modal-ov" onclick="modalAnswer(false)">
       <div class="modal ${m.tone}" onclick="event.stopPropagation()">
         <div class="md-h">${esc(m.title)}</div>
-        <div class="md-b">${lines}${m.mode==="prompt"?`<input id="md-input" type="${m.password?"password":"text"}" value="${esc(m.value||"")}" autofocus style="margin-top:8px; width:100%${m.numeric?"; font-size:24px; letter-spacing:.3em; text-align:center":""}"${m.numeric?' inputmode="numeric" pattern="[0-9]*"':""}${m.maxlen?` maxlength="${m.maxlen}"`:""} onkeydown="if(event.key==='Enter') modalPromptAnswer()">`:""}</div>
+        <div class="md-b">${lines}${m.mode==="pin"?`
+          <div class="pdots md">${Array.apply(null, Array(m.digits)).map((_, i)=>`<span class="pdot sm ${i<m.buf.length?'on':''}">${i<m.buf.length?'●':''}</span>`).join("")}</div>
+          <div class="pkeys md">${[1,2,3,4,5,6,7,8,9,"clear",0,"back"].map(k=>k==="clear"?`<button class="pkey sub" onclick="pinModalPush('clear')" title="다시 입력">↻</button>`:k==="back"?`<button class="pkey sub" onclick="pinModalPush('back')">←</button>`:`<button class="pkey" onclick="pinModalPush(${k})">${k}</button>`).join("")}</div>`:""}${m.mode==="prompt"?`<input id="md-input" type="${m.password?"password":"text"}" value="${esc(m.value||"")}" autofocus style="margin-top:8px; width:100%${m.numeric?"; font-size:24px; letter-spacing:.3em; text-align:center":""}"${m.numeric?' inputmode="numeric" pattern="[0-9]*"':""}${m.maxlen?` maxlength="${m.maxlen}"`:""} onkeydown="if(event.key==='Enter') modalPromptAnswer()">`:""}</div>
         <div class="md-f">
-          ${m.mode==="confirm"||m.mode==="prompt"||m.mode==="choice"?`<button class="btn" onclick="modalAnswer(${m.mode==="confirm"?"false":"null"})">${esc(m.cancel)}</button>`:""}
-          ${m.mode==="choice" ? (m.choices||[]).map(([lb,v],i)=>`<button class="btn ${m.tone==="warn"&&i===0?"danger-fill":"primary"}" onclick="modalAnswer(${JSON.stringify(v)})">${esc(lb)}</button>`).join("") :
+          ${m.mode==="confirm"||m.mode==="prompt"||m.mode==="choice"||m.mode==="pin"?`<button class="btn" onclick="modalAnswer(${m.mode==="confirm"?"false":"null"})">${esc(m.cancel)}</button>`:""}
+          ${m.mode==="pin" ? "" : m.mode==="choice" ? (m.choices||[]).map(([lb,v],i)=>`<button class="btn ${m.tone==="warn"&&i===0?"danger-fill":"primary"}" onclick="modalAnswer(${JSON.stringify(v)})">${esc(lb)}</button>`).join("") :
           `<button class="btn ${m.tone==="warn"?"danger-fill":"primary"}" onclick="${m.mode==="prompt"?"modalPromptAnswer()":"modalAnswer(true)"}">
             ${m.mode==="confirm"||m.mode==="prompt"?esc(m.ok):"확인"}</button>`}
         </div>
@@ -272,11 +287,11 @@ function renderStore(){
           <button class="tvbtn icon b-cal ${view.date===todayStr()?'':'dot'}" onclick="openCal()" title="날짜" aria-label="날짜 선택">${ICON.cal}</button>
           <button class="tvbtn icon b-refresh" onclick="manualRefresh()" title="새로고침" aria-label="새로고침">${ICON.refresh}</button>
           <button class="tvbtn icon b-search" onclick="openSearch()" title="예약 검색" aria-label="예약 검색">${ICON.search}</button>
-          <button class="tvbtn icon b-reqs ${reqPending().length?'has':''}" onclick="openRequests()" title="홈페이지 예약" aria-label="홈페이지 예약">${ICON.inbox}<i class="cnt">${reqPending().length}</i></button>` : `
+          <button class="tvbtn icon b-reqs ${reqPending().length?'has':''}" onclick="openRequests()" title="홈페이지 예약${reqPending().length?` ${reqPending().length}건`:""}" aria-label="홈페이지 예약">${ICON.inbox}<i class="dot"></i></button>` : `
           ${view.date===todayStr() ? "" : `<button class="tvbtn b-today" onclick="goToday()">오늘</button>`}
           <button class="tvbtn icon b-refresh" onclick="manualRefresh()" title="새로고침" aria-label="새로고침">${ICON.refresh}</button>
           <button class="tvbtn b-search" onclick="openSearch()">예약 검색</button>
-          <button class="tvbtn b-reqs ${reqPending().length?'has':''}" onclick="openRequests()">홈페이지 예약<i class="cnt">${reqPending().length}</i></button>
+          <button class="tvbtn b-reqs ${reqPending().length?'has':''}" onclick="openRequests()" title="${reqPending().length?`대기 ${reqPending().length}건`:""}">홈페이지 예약<i class="dot"></i></button>   <!-- 09-20: 개수 대신 오른쪽 위 불빛(1건 이상) -->
           <button class="tvbtn accent b-add" onclick="openWizard()">＋ 예약 등록</button>`}
           ${view.tab==="settings" ? "" : `
           <!-- 더보기(⋮): 자주 안 쓰는 것들을 여기로 모았습니다 — 예약률 추이 · 영업시간 · 설정 · 디스플레이 모드 -->

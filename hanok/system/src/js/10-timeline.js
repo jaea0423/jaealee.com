@@ -69,7 +69,7 @@ function renderTimeline(date, compact){
       ${dOpen>o?`<span class="offband" style="left:0; width:${pos(dOpen)}%"></span>`:""}
       ${dClose<c?`<span class="offband" style="left:${pos(dClose)}%; right:0"></span>`:""}
       ${dh.bs&&dh.be&&part==="day"?`<span class="breakband" style="left:${pos(toMin(dh.bs))}%; width:${((toMin(dh.be)-toMin(dh.bs))/span)*100}%"></span>`:""}
-      ${ext?`<span class="extband ${part==="dinner"?"l":""}" style="left:${pos(ext[0])}%; width:${((ext[1]-ext[0])/span)*100}%" title="${part==="lunch"?"저녁 시간대 — 이어지는 예약만 흐리게":"점심 시간대 — 이어지는 예약만 흐리게"}"></span>`:""}
+      ${ext?`<span class="extband ${part==="dinner"?"l":""}" style="left:${pos(ext[0])}%; width:${((ext[1]-ext[0])/span)*100}%" title="${part==="lunch"?"저녁 시간대 — 이어지는 예약만 흐리게":"점심 시간대 — 이어지는 예약만 흐리게"}"><i>${part==="lunch"?"저녁":"점심"}</i></span>`:""}
     `}`;
   const LANE = compact ? 30 : 34;   /* 층 하나의 높이(px). 09-20 재아: 21 → 32 — 카운터에서 보기에 너무 작았음(눈이 침침). 폰 압축판은 30 */
 
@@ -166,7 +166,8 @@ function renderTimeline(date, compact){
     </div>`;
   };
 
-  const groupRow = (label) => `<div class="tl-row group"><div class="tl-name"><b>${esc(label)}</b></div><div class="tl-track"></div></div>`;
+  /* 09-20(재아): '룸'·'테이블' 구분 글자는 뺌. 테이블 묶음 앞에 빈 줄 하나로만 나눔 */
+  const groupRow = (label) => label === "테이블" ? `<div class="tl-row gap"></div>` : "";
   /* 테이블은 층 한 줄 — 겹치는 예약을 층(lane)으로 쌓고, 예약률은 손님 수 / 자리 수 (8차-H) */
   const floorRow = (fl)=>{
     /* 층 한 줄의 높이는 그 층 테이블 수만큼(테이블 하나 = 한 칸). 여러 테이블이 필요한 팀은 그만큼 칸을 병합해 그립니다 —
@@ -253,8 +254,12 @@ function renderTimeline(date, compact){
           const chk = checkItems(date).length;
           return Object.keys(cnt).filter(k=>cnt[k])
             .map(k=>`<button class="tag tapchip ${cls[k]}" onclick="${act[k]}">${nm[k]||k} ${cnt[k]}건</button>`).join("")
-            + `<button class="tag tapchip ${chk?'amber':''} right" onclick="openCheck()">확인 ${chk}건</button>`;
+            + `<button class="tag tapchip ${chk?'amber':''} apart" onclick="openCheck()">확인 ${chk}건</button>`;
         })()}
+        ${dh.closed ? "" : `<span class="tl-part" role="group" aria-label="시간대">
+          <button class="pt ${part==="lunch"?"on":""}" onclick="tlSetPart('${part==="lunch"?"day":"lunch"}')" title="점심만">${ICON.sun}</button>
+          <button class="pt ${part==="dinner"?"on":""}" onclick="tlSetPart('${part==="dinner"?"day":"dinner"}')" title="저녁만">${ICON.moon}</button>
+        </span>`}
       </div>
       <div class="tl-legends">
         <span class="tl-legend"><i class="lgsw ok"></i>확정</span>
@@ -264,9 +269,6 @@ function renderTimeline(date, compact){
         <span class="tl-legend sym" title="룸 합침(중문 탈거) — 한 방처럼">⊞ 합침</span>
         <span class="tl-legend sym" title="룸 합침인데 공간이 나뉨(원탁) — 손님 확인. '나눠 앉음'(테이블을 못 붙여 따로 앉음)과는 다릅니다">⊕ 공간 나뉨</span>
         <span class="tl-legend sym" title="붙일 테이블이 없어 옆 테이블에 나눠 앉음">↔ 나눠 앉음</span>
-        ${dh.closed ? "" : `<span class="seg tl-part" role="group" aria-label="시간대">
-          <button class="${part==="lunch"?"on":""}" onclick="tlSetPart('lunch')">점심</button><button class="${part==="dinner"?"on":""}" onclick="tlSetPart('dinner')">저녁</button><button class="${part==="day"?"on":""}" onclick="tlSetPart('day')">하루</button>
-        </span>`}
       </div>
     </div>
     <div class="tl-scroll ${compact?'compact':''}" id="tl-scroll">

@@ -233,6 +233,8 @@ function checkItems(date){
   const list = s.reservations.filter(r=>r.date===d && r.status==="확정");
   const items = [];
 
+  /* 어제 다녀간 손님 감사 문자 미발송 — 누락 방지(09-20). 수는 thanksTick 이 1분마다 셈 */
+  if(typeof TH_MISSING === "number" && TH_MISSING > 0 && d === today) items.push(["amber", `감사 문자 안 보낸 손님 ${TH_MISSING}명`, "어제 방문 손님 중 예약 발송이 없는 건", `openThanksPage()`]);
   /* 홈페이지에서 들어온 손님 요청 — 날짜와 상관없이 대기 중이면 맨 위에 */
   const pend = reqPending();
   if(pend.length) items.push(["blue", `홈페이지 예약 ${pend.length}건`,

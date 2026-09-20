@@ -561,6 +561,8 @@ document.addEventListener("keydown", function(e){
     else if(view.moreOpen){ closeMore(); }
     return;
   }
+  /* 숫자 비밀번호 팝업: 키보드 숫자·Backspace 도 받음 */
+  if(MODAL && MODAL.mode === "pin"){ if(/^[0-9]$/.test(e.key)){ e.preventDefault(); pinModalPush(e.key); } else if(e.key === "Backspace"){ e.preventDefault(); pinModalPush("back"); } return; }
   if(e.key !== "Enter" || e.ctrlKey || e.altKey || e.isComposing) return;
   if(t && (t.tagName === "TEXTAREA" || t.tagName === "BUTTON" || t.tagName === "A" || t.isContentEditable)) return;
   if(MODAL){
