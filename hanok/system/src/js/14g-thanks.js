@@ -22,10 +22,12 @@ var TH_DEF_PROMPT = [
 ];
 var TH_DEF_TEMPLATE = "[한옥반점]\n{이름}님, 예약하고 찾아 주셔서 진심으로 감사합니다.{단골}{키워드} 준비한 음식과 자리가 편안하셨기를 바랍니다. 다음에 오실 때도 정성껏 모시겠습니다. 늘 건강하시고 좋은 날 보내세요.\n한옥반점 드림";
 var TH_DEF_KW = ["가족 모임", "생신", "회식", "상견례", "아이 생일", "첫 방문", "단골"];
+/* 사장님이 더한 문장. 옛 저장본(promptLines 전체)이면 기본 줄 수를 넘는 부분만 */
+function thExtraLines(a){ if(Array.isArray(a.extraLines)) return a.extraLines.filter(Boolean); if(Array.isArray(a.promptLines) && a.promptLines.length > TH_DEF_PROMPT.length) return a.promptLines.slice(TH_DEF_PROMPT.length).filter(Boolean); return []; }
 function thCfg(){
   var a = store().settings.ai || {};
   return { key: (typeof SUPA_CFG !== "undefined" && SUPA_CFG && SUPA_CFG.geminiKey) || "", model: a.model || TH_DEF_MODEL, hour: a.thanksHour || "11:00", common: a.thanksCommon || "",
-    promptLines: Array.isArray(a.promptLines) && a.promptLines.length ? a.promptLines : TH_DEF_PROMPT.slice(),
+    promptLines: TH_DEF_PROMPT.concat(thExtraLines(a)),   /* 기본 문장(코드) + 사장님이 더한 문장(설정 extraLines) */
     template: a.template || TH_DEF_TEMPLATE, maxLen: Number(a.maxLen) || 300,
     kwPresets: Array.isArray(a.kwPresets) ? a.kwPresets : TH_DEF_KW.slice() };
 }
@@ -252,21 +254,19 @@ function thQueueHtml(){
 /* 설정 → 감사 문자 AI (14-settings 가 부름). draft 의 settings.ai 를 고칩니다 — '적용하기' 로 저장.
    기본 문장(앞 TH_DEF_PROMPT.length 줄)은 고칠 수는 있어도 지울 수 없음. 모델·API 키는 화면에 없음(재아가 코드에서) */
 function thSettingsBody(st){
-  var a = st.ai = st.ai || {}, cfg = { promptLines: Array.isArray(a.promptLines) && a.promptLines.length ? a.promptLines : TH_DEF_PROMPT.slice(), template: a.template || TH_DEF_TEMPLATE, maxLen: Number(a.maxLen) || 300, kwPresets: Array.isArray(a.kwPresets) ? a.kwPresets : TH_DEF_KW.slice(), hour: a.thanksHour || "11:00" };
-  var lines = cfg.promptLines.map(function(l, i){ var core = i < TH_DEF_PROMPT.length; return '<div class="th-pl"><span class="n">' + (i + 1) + '</span><input type="text" value="' + esc(l) + '" onchange="thSetLine(' + i + ', this.value)"><button class="btn sm ghost danger" ' + (core ? 'disabled title="기본 문장은 지울 수 없습니다"' : '') + ' onclick="thDelLine(' + i + ')">삭제</button></div>'; }).join("");
-  return '<div class="subhead">프롬프트 <span>문장 하나가 한 줄. 앞 ' + TH_DEF_PROMPT.length + '줄은 기본(고칠 수는 있음). 더한 문장은 그 뒤에 만드는 글부터 적용</span></div>' + lines +
-    '<div class="btn-row" style="margin:4px 0 16px"><button class="btn sm" onclick="thAddLine()">＋ 문장 추가</button><button class="btn sm ghost" onclick="thResetLines()">기본으로</button></div>' +
-    '<p class="f-note">예: "이번 주는 창립 기념으로 감사 인사를 한 줄 더 넣으세요" 같은 문장을 그때그때 더하고, 끝나면 지우면 됩니다. 손님 정보(이름·인원·자리·방문 횟수·요청·메모)와 다녀간 날·보내는 날(계절·명절·요일)은 자동으로 붙습니다.</p>' +
+  var a = st.ai = st.ai || {}, cfg = { template: a.template || TH_DEF_TEMPLATE, maxLen: Number(a.maxLen) || 300, kwPresets: Array.isArray(a.kwPresets) ? a.kwPresets : TH_DEF_KW.slice(), hour: a.thanksHour || "11:00" };
+  if(!Array.isArray(a.extraLines)) a.extraLines = thExtraLines(a);
+  var tab = view.thSetTab || "mine";
+  var mine = a.extraLines.map(function(l, i){ return '<div class="th-pl"><span class="n">' + (i + 1) + '</span><input type="text" value="' + esc(l) + '" placeholder="예: 이번 주는 창립 기념이니 감사 인사를 한 줄 더" onchange="draft().ai.extraLines[' + i + ']=this.value"><button class="btn sm ghost danger" onclick="draft().ai.extraLines.splice(' + i + ',1); render()">삭제</button></div>'; }).join("");
+  var base = '<ol class="th-base">' + TH_DEF_PROMPT.map(function(l){ return '<li>' + esc(l) + '</li>'; }).join("") + '</ol><p class="f-note">기본 문장은 코드에 있어 여기서 못 고칩니다(재아). 말투나 특별한 지시는 \'내가 더한 문장\' 에 넣으면 기본 문장 뒤에 붙어 그 뒤에 만드는 글부터 적용됩니다.</p>';
+  return '<div class="subhead">프롬프트</div>' +
+    '<div class="seg" style="margin-bottom:12px"><button class="' + (tab === "mine" ? "on" : "") + '" onclick="view.thSetTab=\'mine\'; render()">내가 더한 문장' + (a.extraLines.length ? ' ' + a.extraLines.length : '') + '</button><button class="' + (tab === "base" ? "on" : "") + '" onclick="view.thSetTab=\'base\'; render()">기본 프롬프트 보기</button></div>' +
+    (tab === "base" ? base : (mine || '<p class="muted" style="margin:0 0 8px">더한 문장이 없습니다. 기본 프롬프트만으로 씁니다.</p>') + '<div class="btn-row" style="margin:4px 0 16px"><button class="btn sm" onclick="draft().ai.extraLines.push(\'\'); render()">＋ 문장 추가</button></div>') +
     '<label class="f big"><div class="lb">기본 양식 <span class="lbl-note">AI 가 막혔을 때 · \'기본양식 적용하기\'. {이름} {단골} {키워드} {매장} 자리에 값이 들어감</span></div><textarea class="in-sm" rows="4" onchange="draft().ai.template=this.value; render()">' + esc(cfg.template) + '</textarea></label>' +
-    '<div class="grid2"><label class="f"><div class="lb">글자 한도</div><input type="number" min="80" max="400" value="' + cfg.maxLen + '" onchange="draft().ai.maxLen=Number(this.value)||300; render()"></label>' +
+    '<div class="grid2"><label class="f"><div class="lb">글자 한도</div><input type="number" min="80" max="450" value="' + cfg.maxLen + '" onchange="draft().ai.maxLen=Number(this.value)||300; render()"></label>' +
     '<label class="f"><div class="lb">보내는 시각 기본 <span class="lbl-note">다녀간 다음 날</span></div><input type="time" value="' + esc(cfg.hour) + '" onchange="draft().ai.thanksHour=this.value; render()"></label></div>' +
     '<label class="f big"><div class="lb">키워드 프리셋 <span class="lbl-note">쉼표로 — 감사 문자 카드에 단추로 뜸</span></div><input type="text" value="' + esc(cfg.kwPresets.join(", ")) + '" onchange="draft().ai.kwPresets=this.value.split(\',\').map(function(x){return x.trim();}).filter(Boolean); render()"></label>';
 }
-function thLines(){ var a = draft().ai = draft().ai || {}; if(!Array.isArray(a.promptLines) || !a.promptLines.length) a.promptLines = TH_DEF_PROMPT.slice(); return a.promptLines; }
-function thSetLine(i, v){ thLines()[i] = v; render(); }
-function thDelLine(i){ if(i < TH_DEF_PROMPT.length) return; thLines().splice(i, 1); render(); }
-function thAddLine(){ thLines().push(""); render(); }
-function thResetLines(){ draft().ai.promptLines = TH_DEF_PROMPT.slice(); render(); }
 function thEsc(){ return false; }
 /* AI 가 도는 동안은 감사 문자 화면을 못 나감(15-sheets closeSheet 가 부름) */
 function thGuard(){ if(view.form && view.form.type === "thanks" && thRunning()){ showToast("AI 가 글을 짓는 중입니다 — 끝나거나 중단한 뒤에 나가세요"); return true; } return false; }

@@ -80,7 +80,7 @@ function renderTimeline(date, compact){
       ${dh.bs&&dh.be&&part==="day"?`<span class="breakband" style="left:${pos(toMin(dh.bs))}%; width:${((toMin(dh.be)-toMin(dh.bs))/span)*100}%"></span>`:""}
       ${ext?`<span class="extband ${part==="dinner"?"l":""}" style="left:${pos(ext[0])}%; width:${((ext[1]-ext[0])/span)*100}%" title="${part==="lunch"?"저녁 시간대 — 이어지는 예약만 흐리게":"점심 시간대 — 이어지는 예약만 흐리게"}"><i>${part==="lunch"?"저녁":"점심"}</i></span>`:""}
     `}`;
-  const LANE = compact ? 30 : 34;   /* 층 하나의 높이(px). 09-20 재아: 21 → 32 — 카운터에서 보기에 너무 작았음(눈이 침침). 폰 압축판은 30 */
+  const LANE = compact ? 30 : 34;   /* 층 하나의 높이(px). 트랙은 border-box 라 높이에 테두리 2px 를 더함(09-20 — 위 칸이 테두리를 넘던 것). 09-20 재아: 21 → 32 — 카운터에서 보기에 너무 작았음(눈이 침침). 폰 압축판은 30 */
 
 
   const ticks = [];
@@ -165,7 +165,7 @@ function renderTimeline(date, compact){
       const shortJ = jIds.length > 1 && Math.min.apply(null, jIds.map(id => roomIdx[id])) !== roomIdx[room.id];
       const spanAttr = sp ? ` data-span-to="${esc(sp.last)}"` : "";
       return `<button class="blk ${tent?'tent':''} ${it.r._req?'req':''} ${bad?'warned':''} ${past?'past':''} ${chg?'changed':''} ${it.joined?'joined':''} ${sp?'spanned':''} ${it.lane===null?'overlap':''}"${spanAttr} onclick="${it.r._req?`openRequest('${it.r._req.id}')`:`openMark('${it.r.id}')`}"
-        style="left:${pos(it.s0)}%; width:${w}%; ${sp ? `top:${(lanes - 1 - lane)*LANE+1}px` : `bottom:${lane*LANE+1}px`}; height:${LANE-2}px; line-height:${LANE-2}px"
+        style="left:${pos(it.s0)}%; width:${w}%; bottom:${lane*LANE}px; height:${LANE}px; line-height:${LANE-2}px"
         title="${esc(it.r.time)} ${esc(it.r.name)} ${pplText(it.r)}${it.joined?` · ${esc(it.r.roomId?resSeatLabel(it.r):resTentLabel(it.r))} 합침`:""}${tent?' · 잠정':''}${chg?` · 오늘 ${esc(chg.label)}`:""}${bad?` · 경고: ${esc(resWarn(it.r).join(", "))}`:""}">
         ${it.joined?`<i class="jn">${(joinOf(seatsOf(it.r))||{}).split?"⊕":"⊞"}</i>`:''}${chg && !shortJ?`<span class="chg-chip">${blockLabel(it.r)}</span>`:blockLabel(it.r, shortJ)}</button>`;
     }).join("");
@@ -173,7 +173,7 @@ function renderTimeline(date, compact){
     const overBand = over ? `<div class="offband overlane" style="left:0; right:0; top:0; height:${over*LANE}px" title="같은 룸에 겹쳐 받은 예약이 놓이는 칸"></div>` : "";   /* '겹침 N팀' 글자는 뺌(재아 09-20) — 회색 칸이 곧 그 뜻 */
     return `<div class="tl-row ${isTable(room)?'tbl':''} ${blockedAllDay(room,date)?'off-seat':''}" data-room="${esc(room.id)}">
       <div class="tl-name" title="${esc(sub)}"><b>${esc(room.name)}</b></div>
-      <div class="tl-track" data-lane="${LANE}" style="height:${lanes*LANE}px${over?`; background-image:repeating-linear-gradient(to top, transparent 0, transparent ${LANE-1}px, var(--border-strong) ${LANE-1}px, var(--border-strong) ${LANE}px)`:""}">
+      <div class="tl-track" data-lane="${LANE}" style="height:${lanes*LANE+2}px${over?`; background-image:repeating-linear-gradient(to top, transparent 0, transparent ${LANE-1}px, var(--border-strong) ${LANE-1}px, var(--border-strong) ${LANE}px)`:""}">
         ${layers}${blockBands(room)}${overBand}${blocks}
       </div>
     </div>`;
@@ -222,10 +222,10 @@ function renderTimeline(date, compact){
       const past = isBlockPast(it.r, it.s0, date, nowM);
       const bad = resWarn(it.r).length>0, chg = changeTag(it.r);
       const tn = it.r.roomId ? seatLabelIds(seatsOf(it.r)).replace(/ 테이블$/,"") : tableHint(it.r).replace(/^ \(|\)$/g,"").replace(/ 나눠$/,"");
-      const h = (it.lane===null ? 1 : it.need) * LANE - 2;   /* 테이블 n개 → n칸 높이로 병합 */
+      const h = (it.lane===null ? 1 : it.need) * LANE;   /* 테이블 n개 → n칸 높이로 병합. 글은 늘 맨 위 칸 높이에(line-height = 한 칸, 09-20 재아) */
       const split = !it.r.roomId && it.r.tentativeSplit, none = !it.r.roomId && !it.r.tentativeRoomId;
       return `<button class="blk ${it.r._req?'req':''} ${bad?'warned':''} ${past?'past':''} ${chg?'changed':''} ${it.need>1?'multi':''} ${split?'split':''}" onclick="${it.r._req?`openRequest('${it.r._req.id}')`:`openMark('${it.r.id}')`}"
-        style="left:${pos(it.s0)}%; width:${w}%; bottom:${lane*LANE+1}px; height:${h}px; line-height:${h}px"
+        style="left:${pos(it.s0)}%; width:${w}%; bottom:${lane*LANE}px; height:${h}px; line-height:${LANE-2}px"
         title="${esc(it.r.time)} ${esc(it.r.name)} ${pplText(it.r)}${tn?` · ${esc(tn)} 테이블 지정`:""}${split?" · 나눠 앉음":""}${none?" · 자리 없음":""}${chg?` · 오늘 ${esc(chg.label)}`:""}">
         ${split?'<i class="jn">↔</i>':''}${chg?`<span class="chg-chip">${blockLabel(it.r)}</span>`:blockLabel(it.r)}${it.part?` <small class="tn">${it.part}/${it.parts}</small>`:""}</button>`;   /* 테이블 번호(tn)는 칸에 안 씀(09-20) — 상세에서 */
     }).join("");
@@ -234,7 +234,7 @@ function renderTimeline(date, compact){
     return `<div class="tl-row tbl floor">
       <div class="tl-name ${foldable?'foldable':''}" ${foldable?`onclick="tlToggleFloor('${esc(key)}')" role="button"`:`title="${fl==null?"":`테이블 ${tbls.length} · ${seats}석`}"`}><b>${fl==null?"층 미정":esc(floorLabel(fl))}</b>${
         foldable ? `<small class="fold-hint">${folded ? `${FOLD}칸만 ▾${hidden?`<i>숨은 ${hidden}팀</i>`:""}` : "접기 ▴"}</small>` : ""}</div>
-      <div class="tl-track" data-lane="${LANE}" style="height:${totalLanes*LANE}px; background-image:repeating-linear-gradient(to top, transparent 0, transparent ${LANE-1}px, var(--border-strong) ${LANE-1}px, var(--border-strong) ${LANE}px)">${layers}${bands}${blocks}</div>
+      <div class="tl-track" data-lane="${LANE}" style="height:${totalLanes*LANE+2}px; background-image:repeating-linear-gradient(to top, transparent 0, transparent ${LANE-1}px, var(--border-strong) ${LANE-1}px, var(--border-strong) ${LANE}px)">${layers}${bands}${blocks}</div>
     </div>`;
   };
   const unknownFloor = list.some(r=>resFloor(r) === null);
