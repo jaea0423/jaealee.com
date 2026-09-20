@@ -10735,7 +10735,8 @@ async function saveAdminPw(){
    아직 옛 비밀번호(자유 문자열)를 쓰는 서버면 그것도 받아 줍니다 — 6자리 → 안 되면 친 그대로 한 번 더 */
 async function adminGate(what){
   if(!supaOn()) return true;
-  const pw = await uiPrompt(what, "사장님 2차 비밀번호(숫자 6자리)를 입력하세요", {password:true, numeric:true, maxlen:12, ok:"확인"});
+  /* 아직 6자리로 안 바꾼 서버는 옛 비밀번호(영문 섞임·긴 것)를 쳐야 하므로 글자 수·숫자 제한을 두지 않습니다 */
+  const pw = await uiPrompt(what, "사장님 2차 비밀번호(숫자 6자리 · 아직 안 정했으면 예전 관리자 비밀번호)를 입력하세요", {password:true, ok:"확인"});
   if(pw == null) return false;
   try{ await authToken(SUPA_CFG.adminEmail, /^\d{6}$/.test(pw) ? adminToPassword(pw) : pw); logEvent("관리자 확인", what); return true; }
   catch(e){
