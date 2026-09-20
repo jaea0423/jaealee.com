@@ -163,7 +163,7 @@ button.blk.tent.warned.changed{background-image:linear-gradient(90deg, #3D8BD9 0
 .blk .chg-chip-old{display:inline-block; line-height:12px; height:12px; padding:0 4px; margin-left:-2px; border-radius:3px; font-size:10px;   /* inline-flex 는 시각·이름 사이 공백을 버립니다. 15px 는 블록(19px)을 거의 채워 어색 → 12px·글자 10px */
   background:var(--blue); color:#fff; box-shadow:0 0 0 1px rgba(255,255,255,.4)}   /* (옛 칩 규칙 — 참고용, 안 씀) */
 /* 8차-J: 현재 시각 선은 줄마다가 아니라 축 줄에 하나만 두고 표 전체를 가로지릅니다(높이는 afterRender 가 맞춤) */
-.nowline{position:absolute; top:0; bottom:0; width:2px; background:var(--rust); z-index:6; pointer-events:none}
+.nowline{position:absolute; top:0; bottom:0; width:2px; background:var(--rust); z-index:30; pointer-events:none}   /* 09-20: 예약 칸(overlap 25)보다 위 — 선이 칸 뒤로 숨던 것 */
 .tl-row.axis{position:relative; z-index:5; overflow:visible}
 .tl-row.axis .tl-track{overflow:visible} .tl-row.axis .tl-rate{background:transparent}
 /* 그래프 범위를 벗어난 시각 — 끝에 붙여 두되 '실제 위치가 아님'을 점선으로 알립니다 */
@@ -212,7 +212,7 @@ button.blk.tent.warned.changed{background-image:linear-gradient(90deg, #3D8BD9 0
 /* 한 줄 = grid. 느낌표 | 시각 | 이름 | 인원 | 룸 | 전화 | 나머지(꼬리표).
    6차 전에는 flex 로 흘러서 룸 이름 길이('동탁 룸' vs '저층 홀')에 따라 전화번호 자리가 밀렸습니다.
    앞 여섯 칸을 고정 폭으로 두면 전화 열이 세로로 맞습니다. 인원은 '4명(유아1)' 까지 들어가게 72px */
-.rrow{display:grid; grid-template-columns:12px 52px 92px 72px 88px 118px minmax(0,1fr); column-gap:var(--s8); align-items:center; width:100%; text-align:left; background:none; border:none; border-top:1px solid var(--border); font:inherit; color:inherit; white-space:nowrap; overflow:hidden; padding:var(--s12) var(--s8); padding-top:var(--s8); padding-bottom:var(--s8)}
+.rrow{display:grid; grid-template-columns:12px 52px 150px 72px 88px 118px minmax(0,1fr);   /* 이름 칸 92 → 150 (VIP·단체 딱지까지 들어가게, 09-20) */ column-gap:var(--s8); align-items:center; width:100%; text-align:left; background:none; border:none; border-top:1px solid var(--border); font:inherit; color:inherit; white-space:nowrap; overflow:hidden; padding:var(--s12) var(--s8); padding-top:var(--s8); padding-bottom:var(--s8)}
 .rrow:first-child{border-top:none}
 .rrow:hover{background:var(--surface-2)}
 /* 끝난 예약은 흐리게 — 노쇼는 확인할 일이 남아 조금 덜 흐리게 */
@@ -235,7 +235,10 @@ button.blk.tent.warned.changed{background-image:linear-gradient(90deg, #3D8BD9 0
 .rrow.late .rr-bang{opacity:1}
 .rr-bang{width:12px; flex:none; font-weight:700; color:var(--rust); font-size:var(--fs-body); text-align:center}
 .rr-t{font-size:var(--fs-body); font-weight:400; color:var(--text)}
-.rr-n{font-size:var(--fs-body); font-weight:400; min-width:0; overflow:hidden; text-overflow:ellipsis}
+.rr-n{font-size:var(--fs-body); font-weight:400; min-width:0; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; gap:4px}
+.rr-n .tier{flex:none; margin-left:2px}   /* 딱지는 안 줄고, 긴 이름이 … 으로(09-20) */
+.rr-n{white-space:nowrap}
+.rr-n > .tier:first-child{margin-left:0}
 /* 8차-T(재아): 아직 안 온 확정 예약만 굵게(시간·이름). 왼쪽 띠는 타임라인 블록과 같은 색 규칙 — 먹=확정, 벽돌=경고, 파랑=오늘 변동, 빗금=룸 미정(잠정) */
 .rrow.s-확정 .rr-t, .rrow.s-확정 .rr-n{font-weight:700}
 /* 행 자체를 타임라인 블록처럼: 경고=옅은 벽돌 바탕, 오늘 변동=앞 절반 옅은 파랑, 룸 미정=빗금. 지난·방문·취소는 흐림 */
@@ -267,3 +270,6 @@ button.blk.tent.warned.changed{background-image:linear-gradient(90deg, #3D8BD9 0
 .tl-track.has-span{overflow:visible}
 .blk.spanned{z-index:20; box-shadow:0 2px 8px rgba(0,0,0,.25)}
 .blk.overlap{z-index:25}   /* 겹침 칸의 블록은 합침 덩어리보다 위 — 가려져 안 보이면 안 됨 */
+
+.rr-nm{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.mr-n{display:flex; align-items:center; gap:4px; min-width:0} .mr-n .tier{flex:none}
