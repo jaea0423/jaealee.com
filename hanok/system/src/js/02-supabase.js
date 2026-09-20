@@ -528,6 +528,13 @@ function migrate(d){
     d[k].settings = { ...DEFAULT_DATA[k].settings, ...(d[k].settings||{}) };
     for(const arr of ["reservations","staff","attendance","sales","trash"]) d[k][arr] = d[k][arr] || [];
     d[k].snapshots = d[k].snapshots || {};   /* 날짜별 좌석 수 (takeSnapshot 참고) */
+    /* 층 이름은 '1층 / 저층' 으로 통일(09-16 재아). '지하' 가 옛 저장본·예정 설정·seatPref 로 되돌아온 적이 있어(09-18) 불러올 때마다 바꿉니다 */
+    (function(){
+      var fixFloor = function(rooms){ (rooms || []).forEach(function(r){ if(r && r.floor === "지하") r.floor = "저층"; }); };
+      fixFloor(d[k].settings.rooms);
+      (d[k].settings.scheduled || []).forEach(function(sc){ if(sc && sc.values) fixFloor(sc.values.rooms); });   /* 예정 설정은 values 에 묶음별 값 */
+      d[k].reservations.forEach(function(r){ if(r.seatPref === "table:지하") r.seatPref = "table:저층"; });
+    })();
     /* 옛 기록에 deletedAt 이 붙은 채 reservations 에 남아 있으면 trash 로 옮깁니다 */
     d[k].trash = d[k].trash.concat(d[k].reservations.filter(r=>r.deletedAt));
     d[k].reservations = d[k].reservations.filter(r=>!r.deletedAt);

@@ -64,8 +64,9 @@ function renderTimeline(date, compact){
                     :nowM>c?`그래프 끝(${hm(minToHM(c))})을 지났습니다`
                     :`지금 ${hm(nowHM())}`}"></span>` : "";
 
+  /* 이름 뒤 VIP·VVIP 알약(tierTag) — 그래프에서도 단골이 보이게(재아 09-20). 칸이 좁으면 잘려도 시각·이름이 먼저 */
   const blockLabel = r =>
-    `${r._req?`<i class="rq">홈페이지</i> `:""}<b>${esc(r.time)}</b> ${esc(r.name)} ${pplOf(r)}명${r.infants?`(어린이${r.infants})`:""}${r._req?" · 확정 전":""}`;
+    `${r._req?`<i class="rq">홈페이지</i> `:""}<b>${esc(r.time)}</b> ${esc(r.name)}${tierTag(r)} ${pplOf(r)}명${r.infants?`(어린이${r.infants})`:""}${r._req?" · 확정 전":""}`;
 
   /* (안 씀 — 사용 중지는 빗금 위에만 적습니다. 자리는 tlPlaceLabels 가 그린 뒤 정함) */
   const blockTag = (seat)=>{
@@ -128,7 +129,7 @@ function renderTimeline(date, compact){
     const sub = isTable(room) ? `${roomMin(room)?roomMin(room)+"~":""}${seatMax(room)}인` : `${roomMin(room, date)}~${room.capacity}인`;   /* 그 날짜 기준(주말 최소) */
     const overBand = over ? `<div class="offband overlane" style="left:0; right:0; top:0; height:${over*LANE}px" title="같은 룸에 겹쳐 받은 예약이 놓이는 칸"><i class="ol-l tl-lbl">겹침 ${over}팀 — 같은 룸에 겹쳐 받은 예약</i></div>` : "";
     return `<div class="tl-row ${isTable(room)?'tbl':''} ${blockedAllDay(room,date)?'off-seat':''}" data-room="${esc(room.id)}">
-      <div class="tl-name"><b>${esc(room.name)}</b><small>${sub}</small></div>
+      <div class="tl-name" title="${esc(sub)}"><b>${esc(room.name)}</b></div>
       <div class="tl-track" data-lane="${LANE}" style="height:${lanes*LANE}px${over?`; background-image:repeating-linear-gradient(to top, transparent 0, transparent ${LANE-1}px, var(--border) ${LANE-1}px, var(--border) ${LANE}px)`:""}">
         ${layers}${blockBands(room)}${overBand}${blocks}
       </div>
@@ -192,7 +193,7 @@ function renderTimeline(date, compact){
     const bands = (fl==null ? "" : floorTables(fl).map(blockBands).join(""))
       + (over ? `<div class="offband overlane" style="left:0; right:0; top:0; height:${over*LANE}px" title="테이블 수를 넘은 팀이 놓이는 칸"><i class="ol-l tl-lbl">자리 없음 ${over}팀 — 테이블 수를 넘은 예약</i></div>` : "");
     return `<div class="tl-row tbl floor">
-      <div class="tl-name ${foldable?'foldable':''}" ${foldable?`onclick="tlToggleFloor('${esc(key)}')" role="button"`:""}><b>${fl==null?"층 미정":esc(floorLabel(fl))}</b><small>${fl==null?"":`테이블 ${tbls.length} · ${seats}석`}</small>${
+      <div class="tl-name ${foldable?'foldable':''}" ${foldable?`onclick="tlToggleFloor('${esc(key)}')" role="button"`:`title="${fl==null?"":`테이블 ${tbls.length} · ${seats}석`}"`}><b>${fl==null?"층 미정":esc(floorLabel(fl))}</b>${
         foldable ? `<small class="fold-hint">${folded ? `${FOLD}칸만 ▾${hidden?`<i>숨은 ${hidden}팀</i>`:""}` : "접기 ▴"}</small>` : ""}</div>
       <div class="tl-track" data-lane="${LANE}" style="height:${totalLanes*LANE}px; background-image:repeating-linear-gradient(to top, transparent 0, transparent ${LANE-1}px, var(--border) ${LANE-1}px, var(--border) ${LANE}px)">${layers}${bands}${blocks}</div>
       <div class="tl-rate" style="height:${totalLanes*LANE}px">${totalLanes>1

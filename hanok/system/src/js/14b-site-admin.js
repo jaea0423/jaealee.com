@@ -62,6 +62,18 @@ function saMerge(base, over){
   Object.keys(over).forEach(function(k){ out[k] = (base && typeof base[k] === "object" && base[k] && !Array.isArray(base[k])) ? saMerge(base[k], over[k]) : deepClone(over[k]); });
   return out;
 }
+/* 서버에는 '기본값과 다른 것만' 저장합니다(saDiff). 읽을 때는 언제나 saMerge(기본값, 서버값) 이므로
+   data/site.js 의 기본 문구를 고치면 여기서 안 건드린 칸은 그대로 사이트에 흐릅니다.
+   (09-20 전에는 초안이 전체 복사본이라, 기본 문구를 고쳐도 초안을 적용하는 순간 옛 문구로 되돌아갔습니다)
+   객체는 키별로 비교, 배열·문자열·숫자는 통째로(같으면 뺌). 빈 객체가 되면 그 키도 뺌 */
+function saDiff(base, cur){
+  if(!cur || typeof cur !== "object" || Array.isArray(cur) || !base || typeof base !== "object" || Array.isArray(base))
+    return JSON.stringify(cur) === JSON.stringify(base) ? undefined : deepClone(cur);
+  var out = {};
+  Object.keys(cur).forEach(function(k){ var d = saDiff(base[k], cur[k]); if(d !== undefined) out[k] = d; });
+  return Object.keys(out).length ? out : undefined;
+}
+function saDiffData(){ return saDiff(SA.defaults || {}, SA.draft) || {}; }
 function saDirty(){ return !!(SA && SA.draft && JSON.stringify(SA.draft) !== SA.saved); }
 /* 경로("notices.0.title")로 읽고 쓰기 — 숫자 키는 배열 칸 */
 function saGet(path){ return path.split(".").reduce(function(o, k){ return o == null ? undefined : o[k]; }, SA.draft); }
@@ -91,7 +103,7 @@ async function saSave(quiet){
   if(!SA || !SA.draft) return false;
   try{
     var key = view.storeKey || "hanok";
-    await sb("/rest/v1/site_draft?on_conflict=store", { method:"POST", body:{ store:key, data:SA.draft, by:(SESSION && SESSION.who) || "" }, prefer:"resolution=merge-duplicates,return=minimal" });
+    await sb("/rest/v1/site_draft?on_conflict=store", { method:"POST", body:{ store:key, data:saDiffData(), by:(SESSION && SESSION.who) || "" }, prefer:"resolution=merge-duplicates,return=minimal" });
     SA.saved = JSON.stringify(SA.draft); SA.savedAt = new Date().toISOString(); SA.savedBy = (SESSION && SESSION.who) || "";
     if(!quiet) showToast("초안을 저장했습니다");
     saHeader(); return true;
@@ -140,7 +152,7 @@ async function saApplyDo(){
   view.saApply = null;
   try{
     var key = view.storeKey || "hanok";
-    await sb("/rest/v1/site_versions", { method:"POST", body:{ store:key, data:SA.draft, apply_at:at.toISOString(), note:note, by:(SESSION && SESSION.who) || "" }, prefer:"return=minimal" });
+    await sb("/rest/v1/site_versions", { method:"POST", body:{ store:key, data:saDiffData(), apply_at:at.toISOString(), note:note, by:(SESSION && SESSION.who) || "" }, prefer:"return=minimal" });
     logEvent("홈페이지 적용", (when === 1 ? "예약 " + d + " " + t : "지금") + (note ? " · " + note : ""));
     showToast(when === 1 ? "예약해 두었습니다 · " + d + " " + t : "홈페이지에 적용했습니다");
     SA.loading = true; render(); await saLoad(); render();
@@ -355,7 +367,7 @@ function saTabHours(){
       '<div class="grid2">' + saF("info.owner", "대표") + saF("info.bizno", "사업자등록번호") + '</div>' +
       saL("info.services", "이용 안내 알약", "홈 소개 아래·오시는 길에 한 줄로. 예: 콜키지 가능 · 병당 20,000원 / 단체 이용 가능 / 포장 가능 / 배달 가능", 4)) +
     saBox("링크",
-      saF("info.naverMap", "네이버 지도") + saF("info.kakaoMap", "카카오맵") + saF("info.instagram", "인스타그램") + saF("info.blog", "블로그") +
+      saF("info.naverMap", "네이버 지도") + saF("info.kakaoMap", "카카오맵") + saF("info.instagram", "인스타그램") +
       saFile("info.menuPdf", "메뉴판 PDF", "파일명(menu.pdf) 또는 올린 파일 주소. '올리기' 로 새 PDF 를 올리면 주소가 채워집니다")) +
     saBox("공휴일 (예약 창 시각 계산용)", saL("holidays", "공휴일", "YYYY-MM-DD 한 줄에 하나. 일요일 시간으로 봅니다", 6));
 }

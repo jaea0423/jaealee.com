@@ -12,7 +12,6 @@ window.SITE_DEFAULT = {
     naverMap: "https://naver.me/Gubj9Qkx",
     kakaoMap: "https://place.map.kakao.com/2103030097",
     instagram: "https://www.instagram.com/hanok_banjeom",
-    blog: "https://blog.naver.com/doni8625",
     owner: "김지아", bizno: "533-35-00711",
     naverBooking: "#",   /* 네이버 예약 주소 — 재아가 채움 */
     services: ["콜키지 가능 · 병당 20,000원", "단체 이용 가능", "포장 가능", "배달 가능"],   /* 홈·오시는 길에 한 줄로. 네이버 플레이스 정보와 같게 */
@@ -138,7 +137,7 @@ window.SITE_DEFAULT = {
     head: { img: "bg1.jpg", title: "차림", sub: "고객님의 소중한 시간을 위해 정성을 담아 조리합니다. 만두는 매일 아침 빚고, 튀김은 주문을 받은 뒤에 합니다." },
     pdfLabel: "메뉴판 PDF",
     chefBand: { who: "총주방장 박수일 · 중식 경력 35년", quote: "\"정성을 담습니다. 최고만을 대접하기 위해.\"", img: "chef.png" },
-    courses: { title: "저녁 코스 (종일)", sub: "종일 주문하실 수 있습니다." },
+    courses: { title: "저녁 코스", sub: "종일 주문 가능" },
     lunch: { title: "점심 세트", sub: "오전 11:00 – 오후 3:30" },
     dishes: { title: "요리" }, dumplings: { title: "만두" }, drinks: { title: "주류" }
   },

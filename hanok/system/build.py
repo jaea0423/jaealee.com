@@ -29,6 +29,9 @@ import json
 import os
 import re
 import sys
+# 콘솔이 cp949(윈도우 기본)면 "—" 같은 글자를 못 찍어 빌드 마지막 줄에서 죽었습니다(09-20). 출력만 UTF-8 로
+try: sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+except Exception: pass
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 
@@ -122,7 +125,7 @@ def supa_cfg(mode):
         role = None
     if role == "service_role":
         print("!! service_role 키가 들어 있습니다. 이 키는 파일에 넣으면 안 됩니다(전체 DB 권한). anon public 키로 바꾸세요."); sys.exit(1)
-    if cfg.get("geminiKey"): print("   Gemini 키 포함(감사 문자) — 공개 HTML 에 들어갑니다. 구글 콘솔에서 리퍼러 제한·한도를 걸어 두세요")
+    if cfg.get("geminiKey"): print("   Gemini 키 포함(감사 문자) - 공개 HTML 에 들어갑니다. 구글 콘솔에서 리퍼러 제한/한도를 걸어 두세요")   # 특수문자 없이: cp949 콘솔에서 빌드가 죽었음(09-20)
     cfg["mode"] = mode
     cfg["demo"] = bool(cfg.get("demo")) and mode == "dev"   # 예시 데이터 버튼은 dev 에서만 (prod 에서는 코드상 없음)
     print("Supabase 설정: %s (%s, role=%s, demo=%s)" % (os.path.relpath(path, BASE), cfg["url"], role, cfg["demo"]))

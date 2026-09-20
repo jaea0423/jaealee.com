@@ -379,7 +379,7 @@
   function menuGroups(){
     const sp = specialOf(S.date);
     if(sp) return [{ title: sp.title || "특별 코스", note: sp.note || "", items: sp.courses.map(x => { const m = String(x).split("|"); const name = m[0].trim(); return {key:"course:"+name, name, cn:(m[1]||"").trim()}; }) }];
-    const out = [{ title: "저녁 코스 (종일)", items: MENU.courses.items.map(c => ({key:"course:"+c.name, name:c.name, cn:c.cn})) }];
+    const out = [{ title: "저녁 코스 · 종일 주문 가능", items: MENU.courses.items.map(c => ({key:"course:"+c.name, name:c.name, cn:c.cn})) }];
     if(mins(S.time) < LUNCH_END){
       const want = isWeekend(S.date) ? "주말" : "평일";
       const set = MENU.lunch.filter(g => g.title.indexOf(want) === 0)[0] || MENU.lunch[0];

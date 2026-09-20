@@ -290,7 +290,7 @@ function renderStore(){
               <button onclick="closeMore(); openOwnerPage()">${ICON.staff}<span>사장님</span></button>
               <button onclick="closeMore(); setTab('settings')">${ICON.set}<span>설정</span></button>
               <button onclick="closeMore(); lockNow()">${ICON.exit}<span>로그아웃</span></button>
-              <button onclick="closeMore(); exitApp()">${ICON.shrink}<span>종료하기</span></button>
+              <button onclick="closeMore(); exitApp()">${ICON.power}<span>종료하기</span></button>
             </div>` : ""}
           </div>`}
         </div>

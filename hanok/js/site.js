@@ -46,7 +46,7 @@ window.SITE_READY.then(function(){
       <div class="fb"><img class="foot-logo" src="img/logo.png" alt="한옥반점 BUNDANG"><div><p>${esc(INFO.addr)}</p><a href="tel:${INFO.tel}">${esc(INFO.tel)}</a></div></div>
       <div><h5>영업시간</h5>${HOURS.map(h=>`<p>${esc(h.day)} ${esc(h.open)}</p>`).join("")}${HOURS_NOTE.map(n=>`<p class="mute">${esc(n)}</p>`).join("")}</div>
       <div><h5>주차</h5><p>${esc(INFO.parking)}</p></div>
-      <div><h5>소식</h5><a href="news.html">소식</a><a href="${INFO.instagram}" target="_blank" rel="noopener">인스타그램</a><a href="${INFO.blog}" target="_blank" rel="noopener">블로그</a></div>
+      <div><h5>소식</h5><a href="news.html">소식</a><a href="${INFO.instagram}" target="_blank" rel="noopener">인스타그램</a></div>
     </div>
     <div class="foot-copy"><span>© ${new Date().getFullYear()} 한옥반점</span><span>대표 ${esc(INFO.owner)} · 사업자등록번호 ${esc(INFO.bizno)}</span></div>`;
   document.body.append(foot);
@@ -129,12 +129,10 @@ window.SITE_READY.then(function(){
     $("#home-courses").innerHTML = MENU.courses.items.map(c => `<a href="menu.html#courses"><b>${esc(c.name)}<small>${esc(c.cn)}</small></b><i>보기</i></a>`).join("");
     $("#home-hours").innerHTML = HOURS.map(h=>`<div class="row"><span>${esc(h.day)}</span><span>${esc(h.open)}</span></div>`).join("") + HOURS_NOTE.map(n=>`<div class="row mute"><span></span><span>${esc(n)}</span></div>`).join("");
     document.querySelectorAll("a.insta").forEach(a => a.href = INFO.instagram);
-    document.querySelectorAll("a.blog").forEach(a => a.href = INFO.blog);
   }
   if(page === "about"){
     $("#story-pics").innerHTML = S.about.story.pics.map(p => `<figure><img src="${esc(imgUrl(p.img))}" alt="${esc(p.alt||"")}"></figure>`).join("");
     document.querySelectorAll("a.insta").forEach(a => a.href = INFO.instagram);
-    document.querySelectorAll("a.blog").forEach(a => a.href = INFO.blog);
   }
   if(page === "space"){
     $("#rooms").innerHTML = ROOMS.map(roomCard).join("");

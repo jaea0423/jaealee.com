@@ -552,21 +552,24 @@ body.has-preview .fab{bottom:56px}
 .facts li{font-size:13px; letter-spacing:.01em; color:var(--sub); border:1px solid var(--line); border-radius:999px; padding:6px 12px}
 .two .t .facts + .more{margin-top:26px}
 
-/* ---------- 소식 (news.html) — 글 목록. 제목·날짜·첫 줄만 보이고 누르면 그 자리에서 펼쳐짐 ---------- */
+/* ---------- 소식 (news.html) — 목록(제목·날짜·첫 줄)과 글 한 편(?p=…) 을 같은 자리에 그립니다 ---------- */
 .news-wrap{max-width:860px}
 .news{border-top:1px solid var(--line-2)}
+.news.one{border-top:0}
 .news-empty{padding:60px 0; text-align:center; color:var(--sub); font-size:15px}
-.post{border-bottom:1px solid var(--line)}
-.post-h{position:relative; display:block; width:100%; padding:30px 44px 30px 0; background:none; border:0; text-align:left; color:var(--text); font:inherit; cursor:pointer}
+/* 목록 — 글 하나가 링크 하나(누르면 글 페이지로) */
+.post-l{position:relative; display:block; padding:30px 44px 30px 0; border-bottom:1px solid var(--line); color:var(--text); text-decoration:none}
 .post-meta{display:flex; align-items:center; gap:10px; font-size:13px; color:var(--sub); letter-spacing:.02em}
-.post-meta em{font-style:normal; font-size:11.5px; font-weight:700; color:var(--bg); background:#fff; padding:2px 8px; border-radius:999px}
-.post-h h2{margin:8px 0 0; font-size:22px; font-weight:600; color:var(--ink); letter-spacing:0; line-height:1.4}
+.post-meta em{font-style:normal; font-weight:700; color:var(--ink)}   /* '고정' — 알약이 과하다는 평(재아 09-20)이라 흰 글씨만 */
+.post-l h2, .post-vh h2{margin:8px 0 0; font-size:22px; font-weight:600; color:var(--ink); letter-spacing:0; line-height:1.4}
 .post-first{margin:8px 0 0; font-size:15px; color:var(--sub); line-height:1.7; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-.post.open .post-first{display:none}
-.post-arrow{position:absolute; right:6px; top:50%; width:9px; height:9px; margin-top:-8px; border-right:1px solid var(--sub); border-bottom:1px solid var(--sub); transform:rotate(45deg); transition:transform .25s}
-.post.open .post-arrow{transform:rotate(-135deg); margin-top:-2px}
-.post-b{display:none; padding:0 0 36px}
-.post.open .post-b{display:block}
+.post-arrow{position:absolute; right:6px; top:50%; width:9px; height:9px; margin-top:-5px; border-right:1px solid var(--sub); border-bottom:1px solid var(--sub); transform:rotate(-45deg); transition:transform .25s, border-color .2s}
+.post-l:hover .post-arrow{border-color:#fff}
+.post-l:hover h2{text-decoration:underline; text-underline-offset:4px; text-decoration-color:var(--line-2)}
+/* 글 한 편 */
+.post-v{padding:8px 0 40px}
+.post-vh{padding-bottom:24px; margin-bottom:28px; border-bottom:1px solid var(--line)}
+.post-vh h2{font-size:26px}
 .post-text p{margin:0 0 1em; font-size:16.5px; line-height:1.85; color:var(--text)}
 .post-text p:last-child{margin-bottom:0}
 .post-imgs{display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:10px; margin-top:24px}
@@ -575,13 +578,26 @@ body.has-preview .fab{bottom:56px}
 .post-imgs img{display:block; width:100%; height:auto; aspect-ratio:4/3; object-fit:cover; transition:opacity .2s}
 .post-imgs.one img{aspect-ratio:auto}
 .post-imgs a:hover img{opacity:.85}
-.post-files{list-style:none; margin:22px 0 0; padding:0; display:flex; flex-wrap:wrap; gap:8px}
-.post-files a{display:inline-flex; align-items:center; gap:8px; font-size:14px; color:var(--ink); padding:6px 0; border-bottom:1px solid var(--line-2); transition:border-color .2s, color .2s}
+/* 첨부 — 밑줄·테두리 없이 ↓ 와 이름만(재아 09-20) */
+.post-files{list-style:none; margin:22px 0 0; padding:0; display:flex; flex-wrap:wrap; gap:8px 22px}
+.post-files a{display:inline-flex; align-items:center; gap:8px; font-size:14px; color:var(--ink); padding:6px 0; text-decoration:none; transition:color .2s}
 .post-files a:before{content:"↓"; color:var(--sub)}
-.post-files a:hover{border-bottom-color:#fff}
+.post-files a:hover{color:#fff}
+.post-files a:hover:before{color:#fff}
+/* 이전 글 / 다음 글 / 목록 — 글 아래. 다음 글이 위(더 새 글), 이전 글이 아래(더 오래된 글) */
+.post-nav{display:grid; grid-template-columns:1fr; border-top:1px solid var(--line-2); margin-top:8px}
+.post-nav .nx, .post-nav .pv{display:grid; grid-template-columns:64px 1fr; align-items:baseline; gap:14px; padding:18px 0; border-bottom:1px solid var(--line); color:var(--text); text-decoration:none; transition:color .2s}
+.post-nav small{font-size:12.5px; color:var(--sub); letter-spacing:.02em}
+.post-nav span span, .post-nav a span{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:15.5px}
+.post-nav a:hover{color:var(--ink)}
+.post-nav .off{color:var(--sub)}
+.post-nav .off span{color:var(--sub)}
+.post-nav .all{display:inline-block; margin-top:26px; justify-self:start; font-size:14.5px; font-weight:600; color:var(--ink); text-decoration:none; padding:10px 22px; border:1px solid var(--line-2); border-radius:999px; transition:border-color .2s, background .2s}
+.post-nav .all:hover{border-color:#fff; background:rgba(255,255,255,.06)}
 @media (max-width:640px){
-  .post-h{padding:22px 34px 22px 0}
-  .post-h h2{font-size:19px}
+  .post-l{padding:22px 34px 22px 0}
+  .post-l h2{font-size:19px}
+  .post-vh h2{font-size:22px}
   .post-text p{font-size:15.5px}
 }
 /* 소식 사진 크게 보기(덮개) */

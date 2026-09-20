@@ -21,7 +21,7 @@ function renderLock(){
       <div class="lockbox">
         <div class="lk-title">${esc(s?s.name:"")} 예약 시스템</div>
         <div class="pdots">${dots}</div>
-        <div class="lk-err ${LOCK_BUSY?'busy':''}">${LOCK_BUSY ? "서버 확인 중…" : (pinLockLeft() > 0 ? `${pinLockLeft()}초 뒤에 다시 입력할 수 있습니다` : esc(PIN_ERR))}</div>
+        <div class="lk-err ${LOCK_BUSY?'busy':''}">${LOCK_BUSY ? "확인 중…" : (pinLockLeft() > 0 ? `${pinLockLeft()}초 뒤에 다시 입력할 수 있습니다` : esc(PIN_ERR))}</div>
         <div class="pkeys">${keys}</div>
         ${supaOn() ? "" : `<div class="lk-open"><b>서버 설정이 없는 빌드</b> — supabase.dev.json 또는 supabase.prod.json 을 넣고 다시 빌드하세요</div>`}
         <button class="lk-back" onclick="backToStores()">← 매장 다시 고르기</button>
