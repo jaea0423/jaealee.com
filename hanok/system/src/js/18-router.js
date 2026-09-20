@@ -200,7 +200,7 @@ function dispCell(id){
 /* vh 단위, 큰 것부터. 첫 값이 상한, 마지막이 하한입니다.
    **글자가 크거나 작다는 말이 나오면 첫 값만 바꾸면 됩니다.**
    하한보다 더 줄이면 TV에서 못 읽으므로, 그래도 안 들어가면 목록을 접습니다. */
-var TV_SIZES = [3.0, 2.8, 2.6, 2.4, 2.2];   /* 8차-J: 칸이 비어 있으면 글자를 키웁니다 — 안 넘치는 가장 큰 값을 고릅니다 */
+var TV_SIZES = [3.6, 3.3, 3.0, 2.8, 2.6, 2.4, 2.2];   /* 09-20: 좌석표를 층 기둥으로 바꾸며 칸이 커져 상한을 3.6 으로 */   /* 8차-J: 칸이 비어 있으면 글자를 키웁니다 — 안 넘치는 가장 큰 값을 고릅니다 */
 /* 목록형 — 날개에 들어가는 줄 수는 TV 높이에 따라 달라집니다.
    넘치는 줄은 숨기고 '외 N건' 으로 알립니다.
    글자를 줄이지 않는 이유: 입구 TV 는 멀리서 봅니다. 작아지면 있으나 마나입니다. */
@@ -324,7 +324,7 @@ function tvType(){
   if(view.tvTypeLocal) return view.tvTypeLocal;   /* TV 에서 리모컨으로 바꾼 것 — 저장은 못 하니 이 화면에서만 */
   var st = view.storeKey && DATA && DATA[view.storeKey] ? DATA[view.storeKey].settings : null;
   var t = st && st.tvType ? st.tvType : (DATA && DATA._ui ? DATA._ui.tvType : null);
-  return t === "grid" ? "grid" : "list";
+  return t === "list" ? "list" : "grid";   /* 09-20(재아): 좌석표가 기본. 목록은 설정에서 고른 경우만 */
 }
 function setTvType(t){
   if(readonlyBlock()) return;
@@ -464,75 +464,72 @@ function tvSideHtml(){
         <div class="tvl-foot">찾아주셔서 감사합니다${DISP_FAIL >= 3 ? '<span class="tvl-off">연결 확인 중</span>' : ""}</div>`;
 }
 
-/* ---------- 좌석표형 (보조) ---------- */
+/* ---------- 좌석표형 (기본, 09-20 재개편) ----------
+   재아: 손님·직원 피드백이 "목록보다 좌석표가 낫다" → 좌석표를 기본으로 하고 판을 다시 짰습니다.
+   · 층 단위로 두 기둥(1층 | 저층). 손님은 "어느 층으로 가면 되는지" 를 먼저 찾습니다. 설정의 3줄 배치(displayRows)는 더 안 씁니다.
+   · 기둥 안: 룸 카드 2×2 + 아래에 그 층 테이블 카드(넓게). 룸 이름은 명조 크게, 정원은 작게.
+   · 카드 안: 지난 손님은 빼고(30분), '다음 손님' 한 줄만 크게 — 나머지는 작은 줄. 비어 있으면 '예약 없음' 을 조용히.
+   · TV(40~43인치, 3~5m)는 대비가 중요 — 유리판 카드 위에 흰 글자, 금색은 다음 손님 표시에만.
+   fitDisplay/capLists 는 그대로 씁니다(.tv-grid · .dsec ul · li.past · li.more · two-col). */
 function renderTvGrid(){
   const s = store() || DATA.hanok;
-  const st = s.settings, today = todayStr();
-  const now = nowHM();
-  /* 좌석이 배정된 예약만 표시 — 당일에는 미배정이 없도록 운영한다는 전제 */
+  const today = todayStr();
+  const nowM = toMin(nowHM());
   /* 룸은 배정된 것만, 테이블은 층 희망(seatPref)까지 — 당일에는 룸 미배정이 없도록 운영한다는 전제 */
   const list = s.reservations.filter(r=>r.date===today && (r.status==="확정"||r.status==="방문") && (r.roomId || isTablePref(r.seatPref)));
+  const rooms = roomsAt(today).filter(isRoom);
+  const floors = [];
+  rooms.forEach(r => { const f = r.floor || ""; if(floors.indexOf(f) < 0) floors.push(f); });
+  tableFloors().forEach(f => { if(floors.indexOf(f) < 0) floors.push(f); });
 
-  /* 설정에 정한 3행 배치대로 그립니다 */
-  const rowIds = displayRows();
-  const order = [].concat.apply([], rowIds).map(dispCell).filter(Boolean);
-  const secN = [];   /* 칸마다 '한 열에 몇 줄이 들어가는지' — 행 높이를 나눌 때 씁니다 */
-  const sec = order.map(room=>{
-    const isT = room.type === "tables";
-    /* 대표 좌석이 이 칸에 속하는 예약 (합친 예약은 한 번만) */
-    const rows = list.filter(r=>isT ? (resFloor(r) !== undefined && (resFloor(r)||"") === (room.floorKey||"")) : room.ids.indexOf(r.roomId)>=0).sort((a,b)=>a.time.localeCompare(b.time));
+  const card = (title, cap, rows, hall) => {
     let nextMarked = false;
-    const items = rows.length ? rows.map(r=>{
-      /* 흐림 기준은 타임라인 블록과 같은 함수(isBlockPast). 자리를 접어야 할 때 이런 건이 먼저 밀립니다 */
-      const past = isBlockPast(r, toMin(r.time), today, toMin(now));
+    const items = rows.map(r => {
+      const past = isBlockPast(r, toMin(r.time), today, nowM);
       const next = !past && !nextMarked && r.status !== "방문"; if(next) nextMarked = true;   /* 아직 안 온 손님 중 첫 번째 = 다음 손님 */
-      const tn = "";   /* 손님에게 테이블 번호는 알리지 않습니다 — 층까지만(8차-H) */
       return `<li class="${past?'past':''} ${next?'next':''}">
         <span class="t">${esc(r.time)}</span>
-        <span class="n">${esc(maskName(r.name))} 님${r.tier ? tierTagOf(r.tier) : ""}${tn?` <small class="tn">${esc(tn)}</small>`:""}</span>
-        <span class="p">${pplOf(r)}명</span>
+        <span class="n">${esc(maskName(r.name))} 님${r.tier ? tierTagOf(r.tier) : ""}</span>
+        <span class="p">${pplOf(r)}<small>명</small></span>
       </li>`;
-    }).join("") : ``;
-    /* 손님이 보는 화면이라 룸 정원만 안내하고 테이블 수는 적지 않습니다 */
-    const capTxt = isT ? "" : `${roomMin(room, today)}~${room.capacity}인`;
-    /* 테이블 칸은 2열이라 필요한 줄 수가 절반입니다 (아래에서 grid-template-rows 를 그 수로 맞춥니다) */
-    secN.push(isT ? Math.max(1, Math.ceil(rows.length/2)) : rows.length);
-    return `<section class="dsec ${isT?'hall':''}">
-      <h3><span class="fl">${esc(room.floor||"")}</span>
-        <span class="nm">${esc(room.name)}</span>
-        <span class="cap">${capTxt}</span></h3>
-      <ul class="${isT?"two-col":""}"${isT
-        ? ` style="grid-template-rows:repeat(${Math.max(1,Math.ceil(rows.length/2))},auto)"` : ""}>${items}</ul>
+    }).join("");
+    return `<section class="dsec ${hall?'hall':''} ${rows.length?'':'empty'}">
+      <h3><span class="nm">${esc(title)}</span>${cap ? `<span class="cap">${esc(cap)}</span>` : ""}</h3>
+      <ul class="${hall?"two-col":""}"${hall ? ` style="grid-template-rows:repeat(${Math.max(1,Math.ceil(rows.length/2))},auto)"` : ""}>${items || `<li class="none">예약 없음</li>`}</ul>
     </section>`;
-  });
-
-  /* 행 높이는 CSS 에서 내용만큼만 쓰게 두고(flex:0 0 auto), 남는 높이는 위아래 여백으로 둡니다.
-     예전에는 세 행이 화면 높이를 억지로 나눠 채워서, 예약이 1건인 칸도 큰 상자가 되고
-     그 안에 글자만 덩그러니 떠 있었습니다. */
-  let idx = 0;
-  const rowsHtml = rowIds.map((ids,i)=>{
-    const cells = ids.map(()=>sec[idx++]).filter(Boolean);
-    if(!cells.length) return "";
-    return `<div class="tv-row ${i===0?"halls":""}">${cells.join("")}</div>`;
+  };
+  const cols = floors.map(fl => {
+    const rs = rooms.filter(r => (r.floor || "") === fl);
+    const roomCards = rs.map(room => {
+      /* 합쳐 쓰는 예약은 대표 방(roomId)에만 한 번 */
+      const rows = list.filter(r => r.roomId === room.id).sort((a,b)=>a.time.localeCompare(b.time));
+      return card(room.name, `${roomMin(room, today)}~${room.capacity}인`, rows, false);
+    }).join("");
+    const tbls = floorTables(fl);
+    const trows = list.filter(r => !r.roomId && resFloor(r) !== undefined && (resFloor(r)||"") === fl).sort((a,b)=>a.time.localeCompare(b.time));
+    const hall = tbls.length ? card(`${fl} 테이블`, "", trows, true) : "";
+    return `<div class="tv-col">
+      <div class="tv-col-h"><b>${esc(fl || "층 미정")}</b><span>룸 ${rs.length}${tbls.length ? ` · 테이블 ${tbls.length}` : ""}</span><em>${(()=>{ const n = list.filter(r => (r.roomId ? (rs.some(x => x.id === r.roomId)) : ((resFloor(r)||"") === fl)) && !isBlockPast(r, toMin(r.time), today, nowM)).length; return n ? `남은 예약 ${n}팀` : "남은 예약 없음"; })()}</em></div>
+      <div class="tv-cells" style="grid-template-columns:repeat(${Math.min(2, Math.max(1, rs.length))},1fr)">${roomCards}</div>
+      ${hall}
+    </div>`;
   });
 
   const d = new Date();
   const dateTxt = `${d.getMonth()+1}월 ${d.getDate()}일 ${["일","월","화","수","목","금","토"][d.getDay()]}요일`;
-
-  /* tv-stage 안에 실제 화면(tv-inner)을 넣습니다.
-     세로로 든 휴대폰에서는 stage 가 16:9 로 고정되고 inner 가 통째로 축소됩니다. */
+  const clock = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
   return `
       <div class="tv-bgs" aria-hidden="true">
         ${[1,2,3,4,5,6,7].map(i=>`<div class="tv-bg b${i} ${i===(view.bgIndex||1)?'on':''}"></div>`).join("")}
       </div>
       <div class="tv-inner">
         <header class="tv-h">
-          <div class="tv-date">${dateTxt}</div>
+          <div class="tv-date">${dateTxt}<span class="tv-clock">${clock}</span></div>
           <h1>오늘의 예약 안내</h1>
           <div class="tv-line"></div>
         </header>
-        <div class="tv-grid">${rowsHtml.join("")}</div>
-        <footer class="tv-f">찾아주셔서 감사합니다</footer>
+        <div class="tv-grid tv-floors" style="grid-template-columns:repeat(${Math.max(1, cols.length)},1fr)">${cols.join("")}</div>
+        <footer class="tv-f">찾아주셔서 감사합니다${DISP_FAIL >= 3 ? '<span class="tvl-off">연결 확인 중</span>' : ""}</footer>
       </div>`;
 }
 

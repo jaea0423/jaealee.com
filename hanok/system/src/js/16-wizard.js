@@ -13,7 +13,7 @@ const WZ_STEPS = [
   "\u201C룸과 테이블 중 어디로 해 드릴까요?\u201D",
   "\u201C식사는 코스나 세트로 준비해 드릴까요?\u201D",
   "\u201C예약자 성함과 연락처 부탁드립니다.\u201D",
-  "\u201C알러지나 따로 요청하실 사항 있으세요?\u201D"
+  "\u201C따로 요청하실 사항 있으세요?\u201D"
 ];
 const WZ_LABELS = ["경로","날짜·시간","인원","좌석","메뉴","예약자","요청사항"];
 const LAST_STEP = 6;
@@ -162,9 +162,7 @@ function wzCanNext(){
   /* 한 글자라도 들어가면 됩니다 — 가명·이니셜·외국 이름도 받습니다 */
   if(WZ.step===5) return WZ.name.trim().length>0 &&
     (WZ.phoneNone || WZ.phone.trim().length>0);
-  /* 알러지는 확인했다는 표시가 있어야 넘어갑니다 */
-  if(WZ.step===6) return WZ.allergyNone || (WZ.allergy||"").trim().length>0;
-  return true;
+  return true;   /* 6단계(요청사항)는 전부 선택 — 알러지 확인 단계는 없앰(09-20) */
 }
 /* 화면을 다시 그리기 전에 입력창 값을 상태로 옮김.
    ※ 예전에는 입력창이 없을 때 g() 가 빈 문자열을 돌려주고, 그 빈 값을 그대로 WZ 에 넣었습니다.
@@ -176,7 +174,6 @@ function wzSyncInputs(){
   const set=function(key,id){ const v=g(id); if(v!==null) WZ[key]=v; };
   set("name","wz-name");
   set("phone","wz-phone");
-  set("allergy","wz-allergy");
   set("request","wz-request");
   set("memo","wz-memo");
   set("sourceDetail","wz-src-detail");
@@ -1189,18 +1186,12 @@ function renderCourse(){
     </div>`;
 }
 
-/* ---------- 6단계: 추가사항 ---------- */
+/* ---------- 6단계: 추가사항 ----------
+   09-20(재아): 알러지 칸을 없애고 요청사항에 적는 것으로 통합(유아의자와 같은 방식). 예약 객체의 allergy 는 빈 값으로 그대로 둠(옛 예약 표시용) */
 function wzStepExtra(){
   return `
-    <div class="f big"><div class="lb">알러지</div>
-      <div class="inrow">
-        <input id="wz-allergy" value="${esc(WZ.allergy)}"
-               placeholder="예: 갑각류 알러지 1명" onfocus="wzAllergyNone(false)">
-        <button class="nonebtn sm ${WZ.allergyNone?'on':''}" onclick="wzAllergyNone()">없음</button>
-      </div>
-    </div>
     <label class="f big"><div class="lb">요청사항 <span class="lbl-note">선택</span></div>
-      <input id="wz-request" value="${esc(WZ.request)}" placeholder="예: 유아용 의자, 송별회, 상견례">
+      <input id="wz-request" value="${esc(WZ.request)}" placeholder="예: 갑각류 알러지 1명, 유아용 의자, 송별회, 상견례">
     </label>
     <label class="f big"><div class="lb">메모 <span class="lbl-note">선택</span></div>
       <input id="wz-memo" value="${esc(WZ.memo||"")}" placeholder="예: 사장님 지인, 상석 준비">
@@ -1272,7 +1263,7 @@ async function wzSubmit(){
     createdAt:new Date().toISOString(),
     menuType:WZ.menuType||"해당 없음", courses:{...(WZ.courses||{})},
     courseUndecided: !!WZ.courseUndecided,
-    allergy:WZ.allergyNone?"":WZ.allergy.trim(), allergyChecked:true, request:WZ.request.trim(),
+    allergy:"", allergyChecked:true, request:WZ.request.trim(),
     memo:(WZ.memo||"").trim(),
     status:"확정"
   };

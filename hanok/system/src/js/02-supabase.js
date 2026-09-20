@@ -280,13 +280,13 @@ function tryFullscreen(){
     el.requestFullscreen().catch(function(){});
   }catch(e){}
 }
-/* 비상 예약지를 새 탭에 — 새 탭이 열리면 전체화면이 풀리므로, 전체화면이었다면 돌아와서 다시 켤 버튼을 띄웁니다(재아).
+/* 수기 예약지를 새 탭에 — 새 탭이 열리면 전체화면이 풀리므로, 전체화면이었다면 돌아와서 다시 켤 버튼을 띄웁니다(재아).
    전체화면은 손짓이 있어야 켜져서 팝업 버튼을 누르는 순간에 요청합니다 */
 async function openSlip(){
   var wasFs = !!document.fullscreenElement;
-  window.open((location.pathname.indexOf('/dev/') >= 0 ? '../' : '') + '비상예약지.html', '_blank', 'noopener');
+  window.open((location.pathname.indexOf('/dev/') >= 0 ? '../' : '') + '수기예약지.html', '_blank', 'noopener');
   if(!wasFs) return;
-  if(await uiConfirm("비상 예약지를 새 탭에 열었습니다", "새 탭이 열리면서 전체화면이 풀립니다.\n인쇄하고 돌아오면 아래 버튼으로 다시 켜세요.", {ok:"다시 전체화면", cancel:"그냥 두기", tone:"ok"})) tryFullscreenForce();
+  if(await uiConfirm("수기 예약지를 새 탭에 열었습니다", "새 탭이 열리면서 전체화면이 풀립니다.\n인쇄하고 돌아오면 아래 버튼으로 다시 켜세요.", {ok:"다시 전체화면", cancel:"그냥 두기", tone:"ok"})) tryFullscreenForce();
 }
 function toggleFullscreen(){
   try{

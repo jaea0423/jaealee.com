@@ -135,60 +135,75 @@
 .tv-exit:hover{color:#F3EADA; background:rgba(243,234,218,.2)}
 /* 머리글 — 날짜 · 매장 이름 · 금색 실선. 머리글·바닥글이 화면 높이의 1/4를 쓰던 것을 줄여 그만큼 목록 글자를 키웠습니다 */
 .tv-h{flex:none; text-align:center; position:relative; z-index:1; padding-bottom:calc(var(--tvu)*1.6)}
+/* 좌석표(09-20): 머리글을 한 줄로 — 왼쪽 날짜·시계, 가운데 제목. 세로 공간을 칸에 줍니다 */
+.tv-mode-grid .tv-h{display:flex; align-items:baseline; justify-content:center; gap:calc(var(--tvu)*3); padding-bottom:calc(var(--tvu)*1.2)}
+.tv-mode-grid .tv-h .tv-date{position:absolute; left:0; top:calc(var(--tvu)*.9)}
+.tv-mode-grid .tv-h h1{font-size:calc(var(--tvu)*3.8); margin:0}
+.tv-mode-grid .tv-h .tv-line{display:none}
+.tv-mode-grid .tv-inner{padding-top:calc(var(--tvu)*2.2); padding-bottom:calc(var(--tvu)*1.8)}
 .tv-h h1{font-family:var(--serif-tv); font-weight:800; margin:7px 0 0; letter-spacing:.18em; text-indent:.18em; line-height:1.2; color:#FFFFFF; text-shadow:0 2px 16px rgba(0,0,0,.75); font-size:calc(var(--tvu)*4.6); margin-top:calc(var(--tvu)*.7)}
 .tv-date{font-family:var(--serif-tv); letter-spacing:.24em; color:#E3D3B2; text-shadow:0 2px 10px rgba(0,0,0,.7); font-size:calc(var(--tvu)*2.2)}
 .tv-line{height:1px; margin:clamp(9px,1.5vh,18px) auto 0; background:linear-gradient(90deg, transparent, #C9AE79, transparent); width:calc(var(--tvu)*9); margin-top:calc(var(--tvu)*1.2)}
-/* 칸 배치 — 칸 크기와 글자 크기를 고정합니다.
-   예전에는 내용에 맞춰 늘였는데, 예약이 하나 늘고 줄 때마다 칸과 글자가 들썩여 화면이 산만했습니다.
-   넘치는 만큼은 '외 N건' 으로 접습니다(capLists). --tv-li·--tv-h3 은 fitDisplay() 가 다시 정하며, 여기 값은 자바스크립트가 못 돌았을 때의 기본값입니다 */
-.tv-grid{flex:1 1 auto; min-height:0; display:flex; flex-direction:column; overflow:hidden; --tv-li:calc(var(--tvu, 1vh) * 2.2); --tv-h3:calc(var(--tvu, 1vh) * 2.09); position:relative; z-index:1; gap:calc(var(--tvu)*1.6)}
-.tv-row{flex:1 1 0; min-height:0; display:flex; gap:calc(var(--tvu)*1.8)}
-/* ---------- 좌석표 카드 (8차-J 개편) ----------
-   재아: 더 눈에 들어오고 고급스럽게. 형식(3행·룸 칸·층 테이블 칸)은 그대로.
-   · 카드: 옻칠 검정 + 금 선. 위쪽에 은은한 빛, 모서리는 둥글게. 거의 불투명(뒤 사진 밝기에 글자가 묻히지 않게)
-   · 머리: [층 배지] 룸 이름(명조 900, 크게) · 정원(오른쪽, 흐리게)
-   · 줄: 시각은 금색 알약, 이름은 흰 고딕 굵게, 인원은 오른쪽 흐리게. 줄 사이 머리카락 선
-   · 다음 손님(.next): 왼쪽 금 띠 + 살짝 밝은 바탕 — 홀 직원이 멀리서도 '다음이 누구' 를 봅니다
-   · 지난 손님: 흐리게 */
-.dsec{flex:1 1 0; min-width:0; min-height:0; display:flex; flex-direction:column;
-  background:
-    radial-gradient(ellipse at 18% 0%, rgba(255,214,140,.14) 0%, rgba(255,214,140,0) 46%),
-    linear-gradient(180deg, rgba(14,17,22,.96) 0%, rgba(7,9,13,.97) 100%);
-  border:1px solid rgba(214,190,138,.38); border-top-color:rgba(255,226,170,.6);
+/* 칸 배치(09-20 재개편) — 층 기둥(.tv-col) 두 개. 칸 크기와 글자 크기는 고정하고 넘치는 만큼만 '외 N건' 으로 접습니다(capLists).
+   --tv-li·--tv-h3 은 fitDisplay() 가 다시 정하며, 여기 값은 자바스크립트가 못 돌았을 때의 기본값입니다 */
+.tv-grid{flex:1 1 auto; min-height:0; display:grid; grid-template-columns:1fr 1fr; gap:calc(var(--tvu)*3.2); overflow:hidden; --tv-li:calc(var(--tvu, 1vh) * 2.2); --tv-h3:calc(var(--tvu, 1vh) * 2.09); position:relative; z-index:1}
+.tv-col{min-width:0; min-height:0; display:grid; grid-template-rows:auto minmax(0,1fr) auto; gap:calc(var(--tvu)*1.4)}   /* 머리 / 룸 칸(남는 높이 전부) / 테이블 칸 */
+/* 층 머리 — 큰 명조 '1층' + 오른쪽에 룸·테이블 수. 아래 금 선 */
+.tv-col-h{flex:none; display:flex; align-items:baseline; gap:calc(var(--tvu)*1.4); padding:0 calc(var(--tvu)*.6) calc(var(--tvu)*.5); border-bottom:1px solid rgba(214,190,138,.45)}
+.tv-col-h b{font-family:var(--serif-tv); font-weight:900; font-size:calc(var(--tvu)*3.2); letter-spacing:.14em; color:#FFF6E4; text-shadow:0 2px 14px rgba(0,0,0,.7)}
+.tv-col-h span{font-family:var(--sans); font-size:calc(var(--tvu)*1.7); font-weight:600; color:#C9B891; letter-spacing:.06em}
+.tv-col-h em{margin-left:auto; font-style:normal; font-family:var(--sans); font-size:calc(var(--tvu)*1.7); font-weight:700; color:#FFD98A; letter-spacing:.04em}   /* 남은 예약 N팀 — 오른쪽 끝 */
+.tv-col + .tv-col{position:relative}
+.tv-col + .tv-col::before{content:""; position:absolute; left:calc(var(--tvu)*-1.6); top:calc(var(--tvu)*.5); bottom:0; width:1px; background:linear-gradient(180deg, rgba(214,190,138,.0), rgba(214,190,138,.35) 15%, rgba(214,190,138,.35) 85%, rgba(214,190,138,0))}   /* 두 층 사이 얇은 금 선 */
+.tv-cells{min-height:0; display:grid; grid-auto-rows:minmax(0,1fr); gap:calc(var(--tvu)*1.4)}
+.tv-row{display:none}   /* 옛 3줄 배치 — 안 씀 */
+/* ---------- 좌석표 카드 ----------
+   · 카드: 검은 유리판(거의 불투명) + 얇은 금 테. 모서리 둥글게. 뒤 사진은 분위기만
+   · 머리: 룸 이름(명조 900, 크게) · 정원(오른쪽, 작고 흐리게)
+   · 줄: 시각은 금색 숫자, 이름은 흰 고딕 굵게, 인원은 오른쪽 흐리게
+   · 다음 손님(.next): 한 단계 크게 + 왼쪽 금 띠 — 직원이 멀리서도 '다음이 누구' 를 봅니다
+   · 지난 손님: 흐리게. 비어 있는 카드(.empty)는 테두리·글자 모두 한 단계 죽여 눈이 예약 있는 칸으로 가게 */
+.dsec{min-width:0; min-height:0; display:flex; flex-direction:column;
+  background:linear-gradient(180deg, rgba(12,14,18,.93) 0%, rgba(7,9,12,.95) 100%);
+  border:1px solid rgba(214,190,138,.42); border-top-color:rgba(255,226,170,.62);
   border-radius:calc(var(--tvu)*1.4);
-  box-shadow:0 10px 34px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,235,200,.14);
-  padding:calc(var(--tvu)*1.3) calc(var(--tvu)*1.8) calc(var(--tvu)*1.2)}
-.dsec.hall{background:
-    radial-gradient(ellipse at 18% 0%, rgba(255,200,120,.16) 0%, rgba(255,200,120,0) 46%),
-    linear-gradient(180deg, rgba(28,22,13,.96), rgba(16,12,7,.97)); border-color:rgba(214,182,120,.5)}
+  box-shadow:0 10px 34px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,235,200,.12);
+  padding:calc(var(--tvu)*.9) calc(var(--tvu)*1.6) calc(var(--tvu)*.9)}
+.dsec.hall{height:calc(var(--tvu)*19); border-color:rgba(214,182,120,.5);
+  background:linear-gradient(180deg, rgba(24,19,11,.93), rgba(14,11,6,.95))}
+.dsec.empty{border-color:rgba(214,190,138,.18); border-top-color:rgba(214,190,138,.22); background:linear-gradient(180deg, rgba(12,14,18,.62), rgba(7,9,12,.66)); box-shadow:0 6px 20px rgba(0,0,0,.35)}
+.dsec.empty h3 .nm{color:rgba(255,246,228,.55); text-shadow:none}
+.dsec.empty h3 .cap{color:rgba(185,169,133,.5)}
 .dsec li .tn{font-size:.72em; color:#C8B795; margin-left:.4em; font-weight:500}
 /* 카드 머리 */
-.dsec h3{flex:none; display:flex; align-items:center; gap:calc(var(--tvu)*1); font-size:var(--tv-h3); font-weight:700; letter-spacing:.04em;
-  border-bottom:1px solid rgba(214,190,138,.35); white-space:nowrap; color:#FFFFFF; margin:0 0 calc(var(--tvu)*.9); padding:0 0 calc(var(--tvu)*.8)}
-.dsec h3 .nm{font-family:var(--serif-tv); font-weight:900; font-size:1.25em; letter-spacing:.08em; color:#FFF6E4; text-shadow:0 2px 12px rgba(0,0,0,.6), 0 0 1px rgba(255,220,160,.4); flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; text-align:left}
-.dsec h3 .fl{font-family:var(--sans); font-size:.62em; font-weight:700; letter-spacing:.12em; color:#E9D6A8; flex:none;
-  border:1px solid rgba(233,214,168,.55); border-radius:999px; padding:calc(var(--tvu)*.18) calc(var(--tvu)*.8); line-height:1.4}
-.dsec h3 .fl:empty{display:none}
-.dsec h3 .cap{font-family:var(--sans); font-size:.68em; font-weight:600; color:#B9A985; flex:none; letter-spacing:.04em}
+.dsec h3{flex:none; display:flex; align-items:baseline; gap:calc(var(--tvu)*1); font-size:var(--tv-h3); font-weight:700; letter-spacing:.04em;
+  border-bottom:1px solid rgba(214,190,138,.28); white-space:nowrap; color:#FFFFFF; margin:0 0 calc(var(--tvu)*.5); padding:0 0 calc(var(--tvu)*.4)}
+.dsec h3 .nm{font-family:var(--serif-tv); font-weight:900; font-size:1.3em; letter-spacing:.1em; color:#FFF6E4; text-shadow:0 2px 12px rgba(0,0,0,.6); flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; text-align:left}
+.dsec.hall h3 .nm{font-size:1.15em}
+.dsec h3 .fl{display:none}
+.dsec h3 .cap{font-family:var(--sans); font-size:.72em; font-weight:600; color:#B9A985; flex:none; letter-spacing:.04em}
 /* 예약 줄 */
 .dsec ul{flex:1 1 auto; min-height:0; list-style:none; margin:0; padding:0; display:flex; flex-direction:column; overflow:hidden; gap:0}
 .dsec ul.two-col{display:grid; grid-template-columns:1fr 1fr; grid-auto-flow:column; grid-template-rows:repeat(6,auto); align-content:start; gap:0 calc(var(--tvu)*2.6)}
-.dsec li{flex:none; display:flex; align-items:center; font-family:var(--sans); font-weight:600; font-size:var(--tv-li); line-height:1.35; white-space:nowrap;
-  gap:calc(var(--tvu)*1); padding:calc(var(--tvu)*.42) calc(var(--tvu)*.5); border-bottom:1px solid rgba(255,255,255,.06); border-radius:calc(var(--tvu)*.5)}
+.dsec li{flex:none; display:flex; align-items:baseline; font-family:var(--sans); font-weight:600; font-size:var(--tv-li); line-height:1.35; white-space:nowrap;
+  gap:calc(var(--tvu)*1); padding:calc(var(--tvu)*.3) calc(var(--tvu)*.6); border-bottom:1px solid rgba(255,255,255,.06); border-radius:calc(var(--tvu)*.5)}
 .dsec li:last-child{border-bottom:none}
-.dsec li .t{font-weight:800; color:#FFD98A; flex:none; letter-spacing:.02em; font-variant-numeric:tabular-nums;
-  background:rgba(255,217,138,.13); border:1px solid rgba(255,217,138,.28); border-radius:999px; padding:calc(var(--tvu)*.1) calc(var(--tvu)*.7); font-size:.88em; line-height:1.3}
+.dsec li .t{font-weight:800; color:#FFD98A; flex:none; letter-spacing:.02em; font-variant-numeric:tabular-nums; font-size:.95em}
 .dsec li .n{flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; color:#FFFFFF}
 .dsec li .p{flex:none; color:#C9BB9C; font-size:.86em; font-weight:500}
-/* 다음 손님 — 금 띠 */
-.dsec li.next{background:linear-gradient(90deg, rgba(255,217,138,.16), rgba(255,217,138,.03)); box-shadow:inset 3px 0 0 #FFD98A}
+.dsec li .p small{font-size:.8em; margin-left:.1em}
+/* 다음 손님 — 한 단계 크게 + 금 띠 */
+.dsec li.next{font-size:calc(var(--tv-li) * 1.12); background:linear-gradient(90deg, rgba(255,217,138,.16), rgba(255,217,138,.02)); box-shadow:inset 4px 0 0 #FFD98A; padding-top:calc(var(--tvu)*.4); padding-bottom:calc(var(--tvu)*.4)}
 .dsec li.next .n{color:#FFF9EC}
+.dsec li.next .t{color:#FFE6A8}
 /* 지난 예약은 흐리게 하되, TV에서 아예 사라지지 않을 만큼만 */
-.dsec li.past{opacity:.42}
-.dsec li.past .t{color:#C9B68F; background:transparent; border-color:rgba(201,182,143,.3)}
-.dsec li.none{color:#A2947C; font-weight:500; font-size:calc(var(--tv-li) * .8); padding-top:calc(var(--tvu)*.8); border:none}
+.dsec li.past{opacity:.4}
+.dsec li.past .t{color:#C9B68F}
+.dsec li.none{color:#8E836F; font-weight:500; font-size:calc(var(--tv-li) * .8); padding-top:calc(var(--tvu)*.6); border:none}
 /* 자리가 모자라 접은 줄 수 (fitDisplay → trimOverflow) */
 .dsec li.more{color:#C3B49A; font-weight:600; font-size:calc(var(--tv-li) * .8); border:none; justify-content:flex-end}
+/* 머리글의 시계 — 날짜 옆에 */
+.tv-clock{margin-left:calc(var(--tvu)*1.6); font-family:var(--sans); font-weight:700; letter-spacing:.04em; color:#FFF6E4; font-variant-numeric:tabular-nums}
 /* 바닥글 */
 .tv-f{flex:none; text-align:center; border-top:1px solid rgba(243,234,218,.24); font-family:var(--serif-tv); color:#D3C2A2; text-shadow:0 2px 10px rgba(0,0,0,.7); letter-spacing:.26em; text-indent:.26em; position:relative; z-index:1; padding-top:calc(var(--tvu)*1.4); margin-top:calc(var(--tvu)*1.2); font-size:calc(var(--tvu)*2.5)}
 /* 화면이 작으면(900px 이하 또는 높이 480 이하) 디스플레이 대신 '화면이 작습니다' 안내(.tv-small)를 띄웁니다 — 11구역 @media */

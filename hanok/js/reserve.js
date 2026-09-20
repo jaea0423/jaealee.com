@@ -432,10 +432,8 @@
           <p class="rv-fld-hint" id="rv-tel-hint">${S.verified ? "인증되었습니다." : ""}</p>
           <button type="button" class="rv-linkbtn" id="rv-tel-edit"${S.sent && !S.verified ? "" : " hidden"}>번호 수정</button>
         </div>
-        <div class="rv-fld"><label for="rv-allergy">알레르기 <em>선택</em></label>
-          <input id="rv-allergy" value="${esc(S.allergy)}" maxlength="100" placeholder="갑각류, 땅콩, 밀가루 등"></div>
         <div class="rv-fld"><label for="rv-req">요청사항 <em>선택</em></label>
-          <textarea id="rv-req" rows="3" maxlength="300" placeholder="매장에 추가로 요청하실 내용이 있다면 적어 주세요.">${esc(S.req)}</textarea></div>
+          <textarea id="rv-req" rows="3" maxlength="300" placeholder="알레르기, 유아용 의자, 기념일 등 요청하실 내용이 있다면 적어 주세요.">${esc(S.req)}</textarea></div>
       </section>`);
     const name = $("#rv-name", b), phone = $("#rv-phone", b), send = $("#rv-send", b),
           codebox = $("#rv-codebox", b), code = $("#rv-code", b), verify = $("#rv-verify", b), hint = $("#rv-tel-hint", b), req = $("#rv-req", b), edit = $("#rv-tel-edit", b);
@@ -453,7 +451,6 @@
     const refoot = () => foot(f, true, next, "다음", !ok());
     name.addEventListener("input", () => { S.name = name.value; refoot(); });
     req.addEventListener("input", () => { S.req = req.value; });
-    $("#rv-allergy", b).addEventListener("input", e => { S.allergy = e.target.value; });
     phone.addEventListener("input", () => {
       const d = phone.value.replace(/\D/g, "").slice(0, 11);
       phone.value = d.length > 7 ? d.replace(/(\d{3})(\d{3,4})(\d{0,4})/, "$1-$2-$3") : d.length > 3 ? d.replace(/(\d{3})(\d{0,4})/, "$1-$2") : d;
@@ -487,7 +484,6 @@
       ["메뉴", S.course === "later" ? "미정" : (S.course === "none" ? "단품 주문" : `${S.courseLabel} · ${total()}인분`)],
       ["예약자", S.name.trim()+" · "+S.phone]
     ];
-    if(S.allergy.trim()) rows.push(["알레르기", S.allergy.trim()]);
     if(S.req.trim()) rows.push(["요청사항", S.req.trim()]);
     /* body 가 없으면(만 14세) 펼치기 없이 제목만 — 펼쳐 봐야 할 말이 없음(재아) */
     const box = (key, title, body) => `<div class="rv-agree${S.agree[key]?" on":""}${body?"":" plain"}">

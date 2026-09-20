@@ -706,7 +706,12 @@ button.blk.tent.warned.changed{background-image:linear-gradient(90deg, #3D8BD9 0
 /* 영업 외 시간(.offband) · 휴무(.closed-band) 는 회색 빗금, 브레이크타임(.breakband) 은 옅은 벽돌색 */
 .offband{position:absolute; top:0; bottom:0; z-index:1; pointer-events:none; background:repeating-linear-gradient(45deg, rgba(27,27,25,.24) 0 5px, rgba(27,27,25,.13) 5px 10px)}
 .breakband{position:absolute; top:0; bottom:0; border-left:1px dashed rgba(156,59,39,.45); border-right:1px dashed rgba(156,59,39,.45); z-index:1; pointer-events:none; background:rgba(156,59,39,.20)}
-.offband.overlane{z-index:0; background:repeating-linear-gradient(45deg, rgba(27,27,25,.30) 0 6px, rgba(27,27,25,.17) 6px 12px)}   /* 테이블 수를 넘은 팀의 칸 — 영업 종료와 같은 빗금 */
+.offband.overlane{z-index:0; background:rgba(27,27,25,.13)}   /* 테이블 수를 넘은 팀의 칸 — 빗금이 많으면 정신없다는 평(재아 09-20)이라 그냥 회색 */
+/* 점심/저녁 판에서 경계 너머 흐리게 덧붙인 구간 — 이어지는 예약만 보이라고. 위에 흰 막을 씌워 블록도 같이 흐려집니다 */
+.extband{position:absolute; top:0; bottom:0; z-index:4; pointer-events:none; background:rgba(250,248,243,.62); border-left:1px dashed var(--border-strong)}
+.extband.l{border-left:none; border-right:1px dashed var(--border-strong)}
+.tk.half i{background:rgba(27,27,25,.06)}   /* 30분 눈금은 더 옅게 */
+.seg.tl-part{margin-left:auto}
 .closed-band{position:absolute; top:0; right:0; bottom:0; left:0; z-index:1; pointer-events:none; background:repeating-linear-gradient(45deg, rgba(27,27,25,.30) 0 6px, rgba(27,27,25,.17) 6px 12px)}
 /* 좌석 사용 중지 구간 — 영업시간 밖과 같은 빗금이되, 사람이 일부러 잠근 것이라
    더 진하고 벽돌색 테두리를 둡니다. 사유는 구간이 넓을 때만 적습니다. */
@@ -1588,8 +1593,9 @@ label.chk span{width:auto}
 .hr-grid tr.gone td, .hr-grid tr.gone th, .hr-pay tr.gone td{background:#F1F0EE; color:var(--text-3)}
 .hr-grid tr.gone td.hc{opacity:.6}
 .hr-grid thead th.hd{cursor:pointer} .hr-grid thead th.hd:hover b{text-decoration:underline}
-.hr-grid.week{table-layout:fixed; width:100%} .hr-grid.week th.hr-name, .hr-grid.week td.hr-sum{width:132px} .hr-grid.week td.hc{overflow:hidden}
-.hr-grid .hr-sum small{white-space:normal; line-height:1.2}
+.hr-grid.week{table-layout:fixed; width:100%} .hr-grid.week th.hr-name, .hr-grid.week td.hr-sum{width:132px} .hr-grid.week th.hr-sum{width:132px} .hr-grid.week td.hc{overflow:hidden}
+.hr-grid .hr-sum small{white-space:nowrap; line-height:1.25}
+.hr-grid .hr-sum small.rust{color:var(--rust)}
 .hr-name .hr-nm b, .hr-name .hr-nm small{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .hr-pay td.nm{min-width:130px} .hr-pay td.nm .hr-nm small{white-space:normal}
 .hr-pay td.won small{display:block; color:var(--text-3); font-size:var(--fs-label)}
@@ -1648,6 +1654,21 @@ label.chk span{width:auto}
 .rc-tot{border-top:1px solid #333; margin-top:4px; padding-top:5px} .rc-tot b{font-weight:800} .rc-tot.big{font-size:16px; padding:8px 0 4px} .rc-tot.big b{font-size:20px}
 .rc-log{font-size:11.5px; padding:1px 0} .rc-log span:first-child{flex:0 0 58px; color:#555} .rc-log .g{flex:1} .rc-log small{flex:0 1 auto; text-align:right}
 .rc-note{color:#888; font-size:10.5px; text-align:center; margin-top:2px}
+
+/* ---------- 개발자에게 (14h) ---------- */
+.dq-top{display:flex; align-items:center; gap:var(--s16); margin-bottom:var(--s8)}
+.dq-top .btn{flex:none; white-space:nowrap}
+.dq-row.urgent .t{color:var(--rust)}
+.dq-done{opacity:.7}
+.dq-body{font-size:var(--fs-body); line-height:1.7; color:var(--text); background:var(--surface-2); border-radius:var(--r-sm); padding:var(--s12) var(--s16); margin-bottom:var(--s12); white-space:normal}
+.dq-reply{font-size:var(--fs-body); line-height:1.7; color:var(--text); background:var(--pine-soft); border-radius:var(--r-sm); padding:var(--s12) var(--s16)}
+.dq-reply small{display:block; margin-top:var(--s4); color:var(--text-3); font-size:var(--fs-label)}
+.dq-imgs{display:flex; flex-wrap:wrap; gap:var(--s8); align-items:center}
+.dq-img{position:relative; display:block; width:96px; height:72px; border-radius:var(--r-sm); overflow:hidden; border:1px solid var(--border); background:#000}
+.dq-img img{width:100%; height:100%; object-fit:cover; display:block}
+.dq-img .x{position:absolute; top:2px; right:2px; width:22px; height:22px; border:none; border-radius:50%; background:rgba(0,0,0,.6); color:#fff; font-size:14px; line-height:1; cursor:pointer}
+.seg button.rust.on{background:var(--rust); border-color:var(--rust); color:#fff}
+@media (max-width:640px){ .dq-top{flex-direction:column; align-items:stretch} }
 /* ============================================================
    8. 잠금 · 매장 선택
    ============================================================ */
@@ -1925,60 +1946,75 @@ body.theme-hanok .pdot.on{color:var(--pine)}
 .tv-exit:hover{color:#F3EADA; background:rgba(243,234,218,.2)}
 /* 머리글 — 날짜 · 매장 이름 · 금색 실선. 머리글·바닥글이 화면 높이의 1/4를 쓰던 것을 줄여 그만큼 목록 글자를 키웠습니다 */
 .tv-h{flex:none; text-align:center; position:relative; z-index:1; padding-bottom:calc(var(--tvu)*1.6)}
+/* 좌석표(09-20): 머리글을 한 줄로 — 왼쪽 날짜·시계, 가운데 제목. 세로 공간을 칸에 줍니다 */
+.tv-mode-grid .tv-h{display:flex; align-items:baseline; justify-content:center; gap:calc(var(--tvu)*3); padding-bottom:calc(var(--tvu)*1.2)}
+.tv-mode-grid .tv-h .tv-date{position:absolute; left:0; top:calc(var(--tvu)*.9)}
+.tv-mode-grid .tv-h h1{font-size:calc(var(--tvu)*3.8); margin:0}
+.tv-mode-grid .tv-h .tv-line{display:none}
+.tv-mode-grid .tv-inner{padding-top:calc(var(--tvu)*2.2); padding-bottom:calc(var(--tvu)*1.8)}
 .tv-h h1{font-family:var(--serif-tv); font-weight:800; margin:7px 0 0; letter-spacing:.18em; text-indent:.18em; line-height:1.2; color:#FFFFFF; text-shadow:0 2px 16px rgba(0,0,0,.75); font-size:calc(var(--tvu)*4.6); margin-top:calc(var(--tvu)*.7)}
 .tv-date{font-family:var(--serif-tv); letter-spacing:.24em; color:#E3D3B2; text-shadow:0 2px 10px rgba(0,0,0,.7); font-size:calc(var(--tvu)*2.2)}
 .tv-line{height:1px; margin:clamp(9px,1.5vh,18px) auto 0; background:linear-gradient(90deg, transparent, #C9AE79, transparent); width:calc(var(--tvu)*9); margin-top:calc(var(--tvu)*1.2)}
-/* 칸 배치 — 칸 크기와 글자 크기를 고정합니다.
-   예전에는 내용에 맞춰 늘였는데, 예약이 하나 늘고 줄 때마다 칸과 글자가 들썩여 화면이 산만했습니다.
-   넘치는 만큼은 '외 N건' 으로 접습니다(capLists). --tv-li·--tv-h3 은 fitDisplay() 가 다시 정하며, 여기 값은 자바스크립트가 못 돌았을 때의 기본값입니다 */
-.tv-grid{flex:1 1 auto; min-height:0; display:flex; flex-direction:column; overflow:hidden; --tv-li:calc(var(--tvu, 1vh) * 2.2); --tv-h3:calc(var(--tvu, 1vh) * 2.09); position:relative; z-index:1; gap:calc(var(--tvu)*1.6)}
-.tv-row{flex:1 1 0; min-height:0; display:flex; gap:calc(var(--tvu)*1.8)}
-/* ---------- 좌석표 카드 (8차-J 개편) ----------
-   재아: 더 눈에 들어오고 고급스럽게. 형식(3행·룸 칸·층 테이블 칸)은 그대로.
-   · 카드: 옻칠 검정 + 금 선. 위쪽에 은은한 빛, 모서리는 둥글게. 거의 불투명(뒤 사진 밝기에 글자가 묻히지 않게)
-   · 머리: [층 배지] 룸 이름(명조 900, 크게) · 정원(오른쪽, 흐리게)
-   · 줄: 시각은 금색 알약, 이름은 흰 고딕 굵게, 인원은 오른쪽 흐리게. 줄 사이 머리카락 선
-   · 다음 손님(.next): 왼쪽 금 띠 + 살짝 밝은 바탕 — 홀 직원이 멀리서도 '다음이 누구' 를 봅니다
-   · 지난 손님: 흐리게 */
-.dsec{flex:1 1 0; min-width:0; min-height:0; display:flex; flex-direction:column;
-  background:
-    radial-gradient(ellipse at 18% 0%, rgba(255,214,140,.14) 0%, rgba(255,214,140,0) 46%),
-    linear-gradient(180deg, rgba(14,17,22,.96) 0%, rgba(7,9,13,.97) 100%);
-  border:1px solid rgba(214,190,138,.38); border-top-color:rgba(255,226,170,.6);
+/* 칸 배치(09-20 재개편) — 층 기둥(.tv-col) 두 개. 칸 크기와 글자 크기는 고정하고 넘치는 만큼만 '외 N건' 으로 접습니다(capLists).
+   --tv-li·--tv-h3 은 fitDisplay() 가 다시 정하며, 여기 값은 자바스크립트가 못 돌았을 때의 기본값입니다 */
+.tv-grid{flex:1 1 auto; min-height:0; display:grid; grid-template-columns:1fr 1fr; gap:calc(var(--tvu)*3.2); overflow:hidden; --tv-li:calc(var(--tvu, 1vh) * 2.2); --tv-h3:calc(var(--tvu, 1vh) * 2.09); position:relative; z-index:1}
+.tv-col{min-width:0; min-height:0; display:grid; grid-template-rows:auto minmax(0,1fr) auto; gap:calc(var(--tvu)*1.4)}   /* 머리 / 룸 칸(남는 높이 전부) / 테이블 칸 */
+/* 층 머리 — 큰 명조 '1층' + 오른쪽에 룸·테이블 수. 아래 금 선 */
+.tv-col-h{flex:none; display:flex; align-items:baseline; gap:calc(var(--tvu)*1.4); padding:0 calc(var(--tvu)*.6) calc(var(--tvu)*.5); border-bottom:1px solid rgba(214,190,138,.45)}
+.tv-col-h b{font-family:var(--serif-tv); font-weight:900; font-size:calc(var(--tvu)*3.2); letter-spacing:.14em; color:#FFF6E4; text-shadow:0 2px 14px rgba(0,0,0,.7)}
+.tv-col-h span{font-family:var(--sans); font-size:calc(var(--tvu)*1.7); font-weight:600; color:#C9B891; letter-spacing:.06em}
+.tv-col-h em{margin-left:auto; font-style:normal; font-family:var(--sans); font-size:calc(var(--tvu)*1.7); font-weight:700; color:#FFD98A; letter-spacing:.04em}   /* 남은 예약 N팀 — 오른쪽 끝 */
+.tv-col + .tv-col{position:relative}
+.tv-col + .tv-col::before{content:""; position:absolute; left:calc(var(--tvu)*-1.6); top:calc(var(--tvu)*.5); bottom:0; width:1px; background:linear-gradient(180deg, rgba(214,190,138,.0), rgba(214,190,138,.35) 15%, rgba(214,190,138,.35) 85%, rgba(214,190,138,0))}   /* 두 층 사이 얇은 금 선 */
+.tv-cells{min-height:0; display:grid; grid-auto-rows:minmax(0,1fr); gap:calc(var(--tvu)*1.4)}
+.tv-row{display:none}   /* 옛 3줄 배치 — 안 씀 */
+/* ---------- 좌석표 카드 ----------
+   · 카드: 검은 유리판(거의 불투명) + 얇은 금 테. 모서리 둥글게. 뒤 사진은 분위기만
+   · 머리: 룸 이름(명조 900, 크게) · 정원(오른쪽, 작고 흐리게)
+   · 줄: 시각은 금색 숫자, 이름은 흰 고딕 굵게, 인원은 오른쪽 흐리게
+   · 다음 손님(.next): 한 단계 크게 + 왼쪽 금 띠 — 직원이 멀리서도 '다음이 누구' 를 봅니다
+   · 지난 손님: 흐리게. 비어 있는 카드(.empty)는 테두리·글자 모두 한 단계 죽여 눈이 예약 있는 칸으로 가게 */
+.dsec{min-width:0; min-height:0; display:flex; flex-direction:column;
+  background:linear-gradient(180deg, rgba(12,14,18,.93) 0%, rgba(7,9,12,.95) 100%);
+  border:1px solid rgba(214,190,138,.42); border-top-color:rgba(255,226,170,.62);
   border-radius:calc(var(--tvu)*1.4);
-  box-shadow:0 10px 34px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,235,200,.14);
-  padding:calc(var(--tvu)*1.3) calc(var(--tvu)*1.8) calc(var(--tvu)*1.2)}
-.dsec.hall{background:
-    radial-gradient(ellipse at 18% 0%, rgba(255,200,120,.16) 0%, rgba(255,200,120,0) 46%),
-    linear-gradient(180deg, rgba(28,22,13,.96), rgba(16,12,7,.97)); border-color:rgba(214,182,120,.5)}
+  box-shadow:0 10px 34px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,235,200,.12);
+  padding:calc(var(--tvu)*.9) calc(var(--tvu)*1.6) calc(var(--tvu)*.9)}
+.dsec.hall{height:calc(var(--tvu)*19); border-color:rgba(214,182,120,.5);
+  background:linear-gradient(180deg, rgba(24,19,11,.93), rgba(14,11,6,.95))}
+.dsec.empty{border-color:rgba(214,190,138,.18); border-top-color:rgba(214,190,138,.22); background:linear-gradient(180deg, rgba(12,14,18,.62), rgba(7,9,12,.66)); box-shadow:0 6px 20px rgba(0,0,0,.35)}
+.dsec.empty h3 .nm{color:rgba(255,246,228,.55); text-shadow:none}
+.dsec.empty h3 .cap{color:rgba(185,169,133,.5)}
 .dsec li .tn{font-size:.72em; color:#C8B795; margin-left:.4em; font-weight:500}
 /* 카드 머리 */
-.dsec h3{flex:none; display:flex; align-items:center; gap:calc(var(--tvu)*1); font-size:var(--tv-h3); font-weight:700; letter-spacing:.04em;
-  border-bottom:1px solid rgba(214,190,138,.35); white-space:nowrap; color:#FFFFFF; margin:0 0 calc(var(--tvu)*.9); padding:0 0 calc(var(--tvu)*.8)}
-.dsec h3 .nm{font-family:var(--serif-tv); font-weight:900; font-size:1.25em; letter-spacing:.08em; color:#FFF6E4; text-shadow:0 2px 12px rgba(0,0,0,.6), 0 0 1px rgba(255,220,160,.4); flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; text-align:left}
-.dsec h3 .fl{font-family:var(--sans); font-size:.62em; font-weight:700; letter-spacing:.12em; color:#E9D6A8; flex:none;
-  border:1px solid rgba(233,214,168,.55); border-radius:999px; padding:calc(var(--tvu)*.18) calc(var(--tvu)*.8); line-height:1.4}
-.dsec h3 .fl:empty{display:none}
-.dsec h3 .cap{font-family:var(--sans); font-size:.68em; font-weight:600; color:#B9A985; flex:none; letter-spacing:.04em}
+.dsec h3{flex:none; display:flex; align-items:baseline; gap:calc(var(--tvu)*1); font-size:var(--tv-h3); font-weight:700; letter-spacing:.04em;
+  border-bottom:1px solid rgba(214,190,138,.28); white-space:nowrap; color:#FFFFFF; margin:0 0 calc(var(--tvu)*.5); padding:0 0 calc(var(--tvu)*.4)}
+.dsec h3 .nm{font-family:var(--serif-tv); font-weight:900; font-size:1.3em; letter-spacing:.1em; color:#FFF6E4; text-shadow:0 2px 12px rgba(0,0,0,.6); flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; text-align:left}
+.dsec.hall h3 .nm{font-size:1.15em}
+.dsec h3 .fl{display:none}
+.dsec h3 .cap{font-family:var(--sans); font-size:.72em; font-weight:600; color:#B9A985; flex:none; letter-spacing:.04em}
 /* 예약 줄 */
 .dsec ul{flex:1 1 auto; min-height:0; list-style:none; margin:0; padding:0; display:flex; flex-direction:column; overflow:hidden; gap:0}
 .dsec ul.two-col{display:grid; grid-template-columns:1fr 1fr; grid-auto-flow:column; grid-template-rows:repeat(6,auto); align-content:start; gap:0 calc(var(--tvu)*2.6)}
-.dsec li{flex:none; display:flex; align-items:center; font-family:var(--sans); font-weight:600; font-size:var(--tv-li); line-height:1.35; white-space:nowrap;
-  gap:calc(var(--tvu)*1); padding:calc(var(--tvu)*.42) calc(var(--tvu)*.5); border-bottom:1px solid rgba(255,255,255,.06); border-radius:calc(var(--tvu)*.5)}
+.dsec li{flex:none; display:flex; align-items:baseline; font-family:var(--sans); font-weight:600; font-size:var(--tv-li); line-height:1.35; white-space:nowrap;
+  gap:calc(var(--tvu)*1); padding:calc(var(--tvu)*.3) calc(var(--tvu)*.6); border-bottom:1px solid rgba(255,255,255,.06); border-radius:calc(var(--tvu)*.5)}
 .dsec li:last-child{border-bottom:none}
-.dsec li .t{font-weight:800; color:#FFD98A; flex:none; letter-spacing:.02em; font-variant-numeric:tabular-nums;
-  background:rgba(255,217,138,.13); border:1px solid rgba(255,217,138,.28); border-radius:999px; padding:calc(var(--tvu)*.1) calc(var(--tvu)*.7); font-size:.88em; line-height:1.3}
+.dsec li .t{font-weight:800; color:#FFD98A; flex:none; letter-spacing:.02em; font-variant-numeric:tabular-nums; font-size:.95em}
 .dsec li .n{flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; color:#FFFFFF}
 .dsec li .p{flex:none; color:#C9BB9C; font-size:.86em; font-weight:500}
-/* 다음 손님 — 금 띠 */
-.dsec li.next{background:linear-gradient(90deg, rgba(255,217,138,.16), rgba(255,217,138,.03)); box-shadow:inset 3px 0 0 #FFD98A}
+.dsec li .p small{font-size:.8em; margin-left:.1em}
+/* 다음 손님 — 한 단계 크게 + 금 띠 */
+.dsec li.next{font-size:calc(var(--tv-li) * 1.12); background:linear-gradient(90deg, rgba(255,217,138,.16), rgba(255,217,138,.02)); box-shadow:inset 4px 0 0 #FFD98A; padding-top:calc(var(--tvu)*.4); padding-bottom:calc(var(--tvu)*.4)}
 .dsec li.next .n{color:#FFF9EC}
+.dsec li.next .t{color:#FFE6A8}
 /* 지난 예약은 흐리게 하되, TV에서 아예 사라지지 않을 만큼만 */
-.dsec li.past{opacity:.42}
-.dsec li.past .t{color:#C9B68F; background:transparent; border-color:rgba(201,182,143,.3)}
-.dsec li.none{color:#A2947C; font-weight:500; font-size:calc(var(--tv-li) * .8); padding-top:calc(var(--tvu)*.8); border:none}
+.dsec li.past{opacity:.4}
+.dsec li.past .t{color:#C9B68F}
+.dsec li.none{color:#8E836F; font-weight:500; font-size:calc(var(--tv-li) * .8); padding-top:calc(var(--tvu)*.6); border:none}
 /* 자리가 모자라 접은 줄 수 (fitDisplay → trimOverflow) */
 .dsec li.more{color:#C3B49A; font-weight:600; font-size:calc(var(--tv-li) * .8); border:none; justify-content:flex-end}
+/* 머리글의 시계 — 날짜 옆에 */
+.tv-clock{margin-left:calc(var(--tvu)*1.6); font-family:var(--sans); font-weight:700; letter-spacing:.04em; color:#FFF6E4; font-variant-numeric:tabular-nums}
 /* 바닥글 */
 .tv-f{flex:none; text-align:center; border-top:1px solid rgba(243,234,218,.24); font-family:var(--serif-tv); color:#D3C2A2; text-shadow:0 2px 10px rgba(0,0,0,.7); letter-spacing:.26em; text-indent:.26em; position:relative; z-index:1; padding-top:calc(var(--tvu)*1.4); margin-top:calc(var(--tvu)*1.2); font-size:calc(var(--tvu)*2.5)}
 /* 화면이 작으면(900px 이하 또는 높이 480 이하) 디스플레이 대신 '화면이 작습니다' 안내(.tv-small)를 띄웁니다 — 11구역 @media */
@@ -2669,7 +2705,7 @@ input, select, textarea{border-color:var(--border-strong); border-radius:var(--r
   .metrics > *{margin:1px}
   .btn-row > *,.seg > *,.bar-right > *,.tl-legends > *,.dr-cells > *{margin:3px}
   .tl-row > * + *{margin-left:8px}
-  .tv-row > * + *{margin-left:14px}
+  .tv-col > * + *{margin-top:12px}   /* 좌석표 층 기둥(09-20) — grid gap 은 구형에서도 되지만 flex gap 은 안 됨 */
 }
 /* clamp 를 못 읽는 브라우저를 위한 기본값.
    ※ 예전에는 이 규칙들이 @supports 없이 그냥 파일 끝에 놓여 있었습니다.
@@ -3112,13 +3148,13 @@ function tryFullscreen(){
     el.requestFullscreen().catch(function(){});
   }catch(e){}
 }
-/* 비상 예약지를 새 탭에 — 새 탭이 열리면 전체화면이 풀리므로, 전체화면이었다면 돌아와서 다시 켤 버튼을 띄웁니다(재아).
+/* 수기 예약지를 새 탭에 — 새 탭이 열리면 전체화면이 풀리므로, 전체화면이었다면 돌아와서 다시 켤 버튼을 띄웁니다(재아).
    전체화면은 손짓이 있어야 켜져서 팝업 버튼을 누르는 순간에 요청합니다 */
 async function openSlip(){
   var wasFs = !!document.fullscreenElement;
-  window.open((location.pathname.indexOf('/dev/') >= 0 ? '../' : '') + '비상예약지.html', '_blank', 'noopener');
+  window.open((location.pathname.indexOf('/dev/') >= 0 ? '../' : '') + '수기예약지.html', '_blank', 'noopener');
   if(!wasFs) return;
-  if(await uiConfirm("비상 예약지를 새 탭에 열었습니다", "새 탭이 열리면서 전체화면이 풀립니다.\n인쇄하고 돌아오면 아래 버튼으로 다시 켜세요.", {ok:"다시 전체화면", cancel:"그냥 두기", tone:"ok"})) tryFullscreenForce();
+  if(await uiConfirm("수기 예약지를 새 탭에 열었습니다", "새 탭이 열리면서 전체화면이 풀립니다.\n인쇄하고 돌아오면 아래 버튼으로 다시 켜세요.", {ok:"다시 전체화면", cancel:"그냥 두기", tone:"ok"})) tryFullscreenForce();
 }
 function toggleFullscreen(){
   try{
@@ -5084,7 +5120,7 @@ function renderStore(){
   const stt = shopState(s.settings);
   /* 8차-O(재아): 네이버 가져오기·빠른 입력은 팝업 시트가 아니라 화면 전체로 (view.form.page) */
   const pageForm = !!(view.form && view.form.page);
-  const pageTitle = pageForm ? ({naver:"네이버 예약 가져오기", site:"홈페이지 관리", staff:"워크시프트", guests:"손님 관리", owner:"사장님", thanks:"감사 문자"}[view.form.type] || "빠른 입력") : "";
+  const pageTitle = pageForm ? ({naver:"네이버 예약 가져오기", site:"홈페이지 관리", staff:"워크시프트", guests:"손님 관리", owner:"사장님", thanks:"감사 문자", devreq:"개발자에게"}[view.form.type] || "빠른 입력") : "";
   const body = pageForm ? `<div class="page-wrap">${renderSheet()}</div>` : (view.tab==="settings" ? renderSettings : renderDash)();
 
   return `
@@ -5141,6 +5177,7 @@ function renderStore(){
               <button onclick="closeMore(); openHours()">${ICON.clock}<span>영업시간</span></button>
               ${document.fullscreenEnabled ? `<button onclick="closeMore(); toggleFullscreen()">${document.fullscreenElement?ICON.shrink:ICON.expand}<span>${document.fullscreenElement?"전체화면 해제":"전체화면"}</span></button>` : ""}
               <button onclick="closeMore(); openZoomAdj()">${ICON.search}<span>화면 보정</span></button>
+              <button onclick="closeMore(); openDevPage()">${ICON.sms}<span>개발자에게</span></button>
               <button onclick="closeMore(); openOwnerPage()">${ICON.staff}<span>사장님</span></button>
               <button onclick="closeMore(); setTab('settings')">${ICON.set}<span>설정</span></button>
               <button onclick="closeMore(); lockNow()">${ICON.exit}<span>로그아웃</span></button>
@@ -5950,12 +5987,40 @@ function laneLayout(items, laneCount){
 function byCreated(a, b){ return String(a.createdAt||"").localeCompare(String(b.createdAt||"")) || a.time.localeCompare(b.time); }
 /* 폰 압축판에서 층 테이블 줄 접기/펼치기 — 층별로 기억(새로 고침하면 다시 접힘) */
 function tlToggleFloor(key){ view.tlOpen = view.tlOpen || {}; view.tlOpen[key] = !view.tlOpen[key]; render(); }
+/* ---------- 점심 / 저녁 / 하루 판 (재아 09-20) ----------
+   그래프 글씨가 작다는 평 → 하루를 반으로 잘라 폭을 두 배로. 경계는 브레이크가 있는 날은 브레이크(점심 = 개점~브레이크 시작,
+   저녁 = 브레이크 끝~마감), 없는 날(주말·공휴일)은 세션 경계(sess.edge, 보통 15:30).
+   브레이크가 없는 날은 경계 너머 1시간을 흐리게 덧붙여 이어지는 예약이 보이게(EXT 분).
+   기본값: 오늘은 지금 시각이 속한 판, 다른 날짜는 하루 전체. 버튼으로 바꾼 값은 그 날짜에만(view.tlPart / tlPartDate) */
+const TL_EXT = 60;
+function tlParts(date){
+  const dh = hoursFor(date), edge = sessFromDay(dh).edge || "15:30";
+  const o = toMin(dh.open), c = toMin(dh.close), brk = !!(dh.bs && dh.be);
+  const lEnd = brk ? toMin(dh.bs) : toMin(edge), dStart = brk ? toMin(dh.be) : toMin(edge);
+  return { open:o, close:c, brk:brk,
+    lunch:  { o:o, c:lEnd, extEnd: brk ? lEnd : Math.min(c, lEnd + TL_EXT) },
+    dinner: { o:dStart, c:c, extStart: brk ? dStart : Math.max(o, dStart - TL_EXT) } };
+}
+function tlPartOf(date){
+  if(view.tlPart && view.tlPartDate === date) return view.tlPart;
+  if(date !== todayStr()) return "day";
+  const p = tlParts(date), now = toMin(nowHM());
+  return now < p.dinner.o ? "lunch" : "dinner";
+}
+function tlSetPart(part){ view.tlPart = part; view.tlPartDate = view.date; render(); }
 function renderTimeline(date, compact){
   const s = store(), st = s.settings;
-  const ax = axisRange();                       /* 가장 넓은 영업시간 = 가로축 */
-  const o = ax.o, c = ax.c, span = c - o;
   const dh = hoursFor(date);                    /* 그날 실제 운영시간 */
   const dOpen = toMin(dh.open), dClose = toMin(dh.close);
+  /* 가로축 = 그날 영업시간(예전엔 가장 넓은 영업시간이라 일찍 닫는 날은 끝이 빗금이었음 — 재아 09-20). 휴무면 기본 시간대 */
+  const parts = tlParts(date), part = dh.closed ? "day" : tlPartOf(date);
+  const ax = dh.closed ? axisRange() : parts;
+  const o = part === "dinner" ? parts.dinner.extStart : (dh.closed ? ax.o : parts.open);
+  const c = part === "lunch" ? parts.lunch.extEnd : (dh.closed ? ax.c : parts.close);
+  const span = Math.max(30, c - o);
+  /* 흐리게 덧붙인 구간(경계 너머) */
+  const ext = part === "lunch" && parts.lunch.extEnd > parts.lunch.c ? [parts.lunch.c, parts.lunch.extEnd]
+            : part === "dinner" && parts.dinner.extStart < parts.dinner.o ? [parts.dinner.extStart, parts.dinner.o] : null;
   const list = s.reservations.filter(r=>r.date===date && holdsSeat(r))
     .concat(typeof reqPendingOn === "function" ? reqPendingOn(date).map(reqAsRes) : []);   /* 대기 중인 홈페이지 요청 — 연회색(확정 전 자리 확보, 재아) */
   const pos = m => ((m-o)/span)*100;
@@ -5964,14 +6029,16 @@ function renderTimeline(date, compact){
     ${dh.closed?`<span class="closed-band"></span>`:`
       ${dOpen>o?`<span class="offband" style="left:0; width:${pos(dOpen)}%"></span>`:""}
       ${dClose<c?`<span class="offband" style="left:${pos(dClose)}%; right:0"></span>`:""}
-      ${dh.bs&&dh.be?`<span class="breakband" style="left:${pos(toMin(dh.bs))}%; width:${((toMin(dh.be)-toMin(dh.bs))/span)*100}%"></span>`:""}
+      ${dh.bs&&dh.be&&part==="day"?`<span class="breakband" style="left:${pos(toMin(dh.bs))}%; width:${((toMin(dh.be)-toMin(dh.bs))/span)*100}%"></span>`:""}
+      ${ext?`<span class="extband ${part==="dinner"?"l":""}" style="left:${pos(ext[0])}%; width:${((ext[1]-ext[0])/span)*100}%" title="${part==="lunch"?"저녁 시간대 — 이어지는 예약만 흐리게":"점심 시간대 — 이어지는 예약만 흐리게"}"></span>`:""}
     `}`;
   const LANE = compact ? 26 : 21;   /* 층 하나의 높이(px). 폰 압축판은 손가락 크기로 조금 높게 */
 
 
   const ticks = [];
-  for(let m=Math.ceil(o/60)*60; m<=c; m+=60)
-    ticks.push(`<span class="tk ${m>=c?'end':''}" style="left:${pos(m)}%"><i></i><b>${Math.floor(m/60)}</b></span>`);   /* 맨 끝 눈금은 글자를 왼쪽으로 붙여 잘리지 않게 */
+  const step = part === "day" ? 60 : 30;   /* 반쪽 판은 30분 눈금까지 */
+  for(let m=Math.ceil(o/step)*step; m<=c; m+=step)
+    ticks.push(`<span class="tk ${m>=c?'end':''} ${m%60?'half':''}" style="left:${pos(m)}%"><i></i><b>${m%60?"":Math.floor(m/60)}</b></span>`);   /* 맨 끝 눈금은 글자를 왼쪽으로 붙여 잘리지 않게 */
   const layers = ticks.join("") + shade;
   /* 현재 시각 선.
      예전에는 그래프 범위(o~c)를 벗어나면 선을 아예 안 그렸습니다.
@@ -6027,7 +6094,8 @@ function renderTimeline(date, compact){
   const roomRow = (room)=>{
     const items = list.filter(r=>usesSeat(r, room.id))
       .sort(byCreated)
-      .map(r=>({ r, need:1, s0:toMin(r.time), e0:Math.min(c, toMin(r.time)+stayOf(r)), joined:seatsOf(r).length>1 }));
+      .map(r=>({ r, need:1, s0:Math.max(o, toMin(r.time)), e0:Math.min(c, toMin(r.time)+stayOf(r)), joined:seatsOf(r).length>1 }))
+      .filter(it=>it.e0 > it.s0);   /* 판(점심/저녁) 밖의 예약은 안 그림 */
     /* 룸은 방 하나 = 칸 하나. 겹쳐 받은(사장 판단) 예약은 홀처럼 **위에 빗금 칸을 쌓아** 넣습니다 — 먼저 들어온 예약이 아래 정상 칸,
        늦게 들어온 것이 위 '겹침' 칸(재아 09-17). 예전에는 겹치는 수만큼 칸을 늘려 전부 정상 칸처럼 보였음 */
     const placed = laneLayout(items, 1);
@@ -6048,8 +6116,6 @@ function renderTimeline(date, compact){
         title="${esc(it.r.time)} ${esc(it.r.name)} ${pplText(it.r)}${it.joined?` · ${esc(it.r.roomId?resSeatLabel(it.r):resTentLabel(it.r))} 합침`:""}${tent?' · 잠정':''}${chg?` · 오늘 ${esc(chg.label)}`:""}${bad?` · 경고: ${esc(resWarn(it.r).join(", "))}`:""}">
         ${it.joined?`<i class="jn">${(joinOf(seatsOf(it.r))||{}).split?"⊕":"⊞"}</i>`:''}${chg?`<span class="chg-chip">${blockLabel(it.r)}</span>`:blockLabel(it.r)}</button>`;
     }).join("");
-    const used = items.reduce((a,x)=>a+(x.e0-x.s0),0);
-    const rate = Math.min(100, Math.round(used/span*100));
     const sub = isTable(room) ? `${roomMin(room)?roomMin(room)+"~":""}${seatMax(room)}인` : `${roomMin(room, date)}~${room.capacity}인`;   /* 그 날짜 기준(주말 최소) */
     const overBand = over ? `<div class="offband overlane" style="left:0; right:0; top:0; height:${over*LANE}px" title="같은 룸에 겹쳐 받은 예약이 놓이는 칸"><i class="ol-l tl-lbl">겹침 ${over}팀 — 같은 룸에 겹쳐 받은 예약</i></div>` : "";
     return `<div class="tl-row ${isTable(room)?'tbl':''} ${blockedAllDay(room,date)?'off-seat':''}" data-room="${esc(room.id)}">
@@ -6057,13 +6123,10 @@ function renderTimeline(date, compact){
       <div class="tl-track" data-lane="${LANE}" style="height:${lanes*LANE}px${over?`; background-image:repeating-linear-gradient(to top, transparent 0, transparent ${LANE-1}px, var(--border) ${LANE-1}px, var(--border) ${LANE}px)`:""}">
         ${layers}${blockBands(room)}${overBand}${blocks}
       </div>
-      <div class="tl-rate" style="height:${lanes*LANE}px">${lanes>1
-        ? `<span class="rb"><i></i><b>${rate}%</b><i></i></span>`
-        : `<span class="rt">${rate}%</span>`}</div>
     </div>`;
   };
 
-  const groupRow = (label) => `<div class="tl-row group"><div class="tl-name"><b>${esc(label)}</b></div><div class="tl-track"></div><div class="tl-rate"></div></div>`;
+  const groupRow = (label) => `<div class="tl-row group"><div class="tl-name"><b>${esc(label)}</b></div><div class="tl-track"></div></div>`;
   /* 테이블은 층 한 줄 — 겹치는 예약을 층(lane)으로 쌓고, 예약률은 손님 수 / 자리 수 (8차-H) */
   const floorRow = (fl)=>{
     /* 층 한 줄의 높이는 그 층 테이블 수만큼(테이블 하나 = 한 칸). 여러 테이블이 필요한 팀은 그만큼 칸을 병합해 그립니다 —
@@ -6073,7 +6136,8 @@ function renderTimeline(date, compact){
     const needOf = r => Math.max(1, seatsOf(r).length);
     const items = list.filter(r=>resFloor(r) !== undefined && (resFloor(r)||"") === (fl||""))
       .sort(byCreated)
-      .map(r=>({ r, need:needOf(r), s0:toMin(r.time), e0:Math.min(c, toMin(r.time)+stayOf(r)) }));
+      .map(r=>({ r, need:needOf(r), s0:Math.max(o, toMin(r.time)), e0:Math.min(c, toMin(r.time)+stayOf(r)) }))
+      .filter(it=>it.e0 > it.s0);
     /* 폰(압축판)은 테이블 6칸이 너무 높아 3칸으로 접고, 층 이름을 누르면 펼칩니다(모바일 2026-09-17).
        접힌 동안 못 들어간 팀은 그리지 않고 "숨은 N팀" 으로만 — 겹쳐 그리면 뒤 팀이 안 보입니다 */
     const FOLD = 3, key = fl == null ? "_" : fl;
@@ -6111,17 +6175,12 @@ function renderTimeline(date, compact){
         title="${esc(it.r.time)} ${esc(it.r.name)} ${pplText(it.r)}${tn?` · ${esc(tn)} 테이블 지정`:""}${split?" · 나눠 앉음":""}${none?" · 자리 없음":""}${chg?` · 오늘 ${esc(chg.label)}`:""}">
         ${split?'<i class="jn">↔</i>':''}${chg?`<span class="chg-chip">${blockLabel(it.r)}</span>`:blockLabel(it.r)}${tn?` <small class="tn">${esc(tn)}</small>`:""}${it.part?` <small class="tn">${it.part}/${it.parts}</small>`:""}</button>`;
     }).join("");
-    /* 예약률 = 손님·분 / 자리·분 (영업시간 안으로 자른 것) */
-    const used = items.reduce((a,x)=>a+x.need*(x.e0-x.s0),0);
-    const rate = tbls.length ? Math.min(100, Math.round(used/(tbls.length*span)*100)) : 0;
     const bands = (fl==null ? "" : floorTables(fl).map(blockBands).join(""))
       + (over ? `<div class="offband overlane" style="left:0; right:0; top:0; height:${over*LANE}px" title="테이블 수를 넘은 팀이 놓이는 칸"><i class="ol-l tl-lbl">자리 없음 ${over}팀 — 테이블 수를 넘은 예약</i></div>` : "");
     return `<div class="tl-row tbl floor">
       <div class="tl-name ${foldable?'foldable':''}" ${foldable?`onclick="tlToggleFloor('${esc(key)}')" role="button"`:`title="${fl==null?"":`테이블 ${tbls.length} · ${seats}석`}"`}><b>${fl==null?"층 미정":esc(floorLabel(fl))}</b>${
         foldable ? `<small class="fold-hint">${folded ? `${FOLD}칸만 ▾${hidden?`<i>숨은 ${hidden}팀</i>`:""}` : "접기 ▴"}</small>` : ""}</div>
       <div class="tl-track" data-lane="${LANE}" style="height:${totalLanes*LANE}px; background-image:repeating-linear-gradient(to top, transparent 0, transparent ${LANE-1}px, var(--border) ${LANE-1}px, var(--border) ${LANE}px)">${layers}${bands}${blocks}</div>
-      <div class="tl-rate" style="height:${totalLanes*LANE}px">${totalLanes>1
-        ? `<span class="rb"><i></i><b>${rate}%</b><i></i></span>` : `<span class="rt">${rate}%</span>`}</div>
     </div>`;
   };
   const unknownFloor = list.some(r=>resFloor(r) === null);
@@ -6167,6 +6226,9 @@ function renderTimeline(date, compact){
         <span class="tl-legend sym" title="룸 합침(중문 탈거) — 한 방처럼">⊞ 합침</span>
         <span class="tl-legend sym" title="룸 합침인데 공간이 나뉨(원탁) — 손님 확인. '나눠 앉음'(테이블을 못 붙여 따로 앉음)과는 다릅니다">⊕ 공간 나뉨</span>
         <span class="tl-legend sym" title="붙일 테이블이 없어 옆 테이블에 나눠 앉음">↔ 나눠 앉음</span>
+        ${dh.closed ? "" : `<span class="seg tl-part" role="group" aria-label="시간대">
+          <button class="${part==="lunch"?"on":""}" onclick="tlSetPart('lunch')">점심</button><button class="${part==="dinner"?"on":""}" onclick="tlSetPart('dinner')">저녁</button><button class="${part==="day"?"on":""}" onclick="tlSetPart('day')">하루</button>
+        </span>`}
       </div>
     </div>
     <div class="tl-scroll ${compact?'compact':''}" id="tl-scroll">
@@ -6174,7 +6236,6 @@ function renderTimeline(date, compact){
         <div class="tl-row axis">
           <div class="tl-name"></div>
           <div class="tl-track">${ticks.join("")}${nowLine}</div>
-          <div class="tl-rate"></div>
         </div>
         ${groupRow("룸")}
         ${rooms.map(roomRow).join("")}
@@ -6215,7 +6276,6 @@ function tlPlaceLabels(){
         raised = true;
         var lane = parseInt(track.getAttribute("data-lane") || "21", 10);
         track.style.height = (track.offsetHeight + lane) + "px";
-        var rate = track.parentNode.querySelector(".tl-rate"); if(rate) rate.style.height = track.style.height;
         var ol = track.querySelector(".overlane"); if(ol) ol.style.height = (ol.offsetHeight + lane) + "px";   /* 초과 칸 빗금도 새 층까지 */
       }
     }
@@ -7056,16 +7116,14 @@ function renderSettings(){
     </div>`;
 
   /* ---------- 디스플레이 ---------- */
-  const rows = displayRows();
   const dispBody = `
     <div class="subhead">평소 띄울 화면</div>
     <div class="seg">
       <button class="${tvType()!=="grid"?'on':''}" onclick="setTvType('list')">목록 (영상+예약)</button>
       <button class="${tvType()==="grid"?'on':''}" onclick="setTvType('grid')">좌석표</button>
     </div>
-    <p class="f-note">입구에 걸어 두는 TV라면 <b>목록</b>이 낫습니다.
-      손님은 지나가면서 3~5초 보기 때문에, 좌석표보다 시각 순으로 늘어놓는 편이 자기 예약을 빨리 찾습니다.<br>
-      TV 화면에서도 우측 상단에 마우스를 올리거나 화면을 한 번 누르면 바꿀 수 있습니다.
+    <p class="f-note"><b>좌석표</b>가 기본입니다(09-20, 손님·직원 피드백). 1층 | 저층 두 기둥에 룸과 테이블이 층별로 놓입니다.<br>
+      목록은 왼쪽 영상 + 오른쪽 시각순 예약. TV 화면에서도 우측 상단에 마우스를 올리거나 화면을 한 번 누르면 바꿀 수 있습니다.
       여기서 고른 값이 새로 켤 때의 기본입니다.</p>
 
     <div class="subhead">예약이 없을 때</div>
@@ -7087,30 +7145,10 @@ function renderSettings(){
       · 소리는 빼세요. 자동 재생이 막히고, 입구에서 소리가 나면 민폐입니다.<br>
       · 20~40초. 좌우가 잘리므로 <b>중요한 것은 가운데</b>에 두세요.</p>
 
-    <div class="subhead">좌석표 화면 배치</div>
-    <p class="f-note" style="margin:0 0 12px">
-      좌석표를 띄울 때의 배치입니다. 3줄로 고정되며 한 줄에 최대 ${DISP_MAX}칸까지 놓을 수 있습니다.</p>
     <div class="urlbox">
       <div class="ub-t">TV 전용 주소</div>
       <div class="ub-row"><a class="ub-u" id="screen-url" href="${esc(screenUrl())}" target="_blank" rel="noopener">${esc(screenUrl())}</a><button class="btn sm" onclick="copyScreenUrl()">주소 복사</button></div>
-    </div>
-    ${rows.map((ids,ri)=>`
-      <div class="disprow ${ids.length>DISP_MAX?'over':''}">
-        <div class="dr-title">${ri+1}번째 줄 <span>${ids.length}칸${ids.length>DISP_MAX?" · 너무 많습니다":""}</span></div>
-        <div class="dr-cells">
-          ${ids.map(id=>{
-            /* "tables:1층" 은 좌석이 아니라 층 테이블 묶음 칸 — 이름이 없어 빈 칸으로 그려졌음(검토) */
-            const r = st.rooms.find(x=>x.id===id);
-            const name = r ? r.name : (/^tables:/.test(id) ? `${id.slice(7)} 테이블` : "");
-            if(!name) return "";
-            return `<span class="dcell">${esc(name)}
-              <button ${ri===0?"disabled":""} onclick="moveDisp('${id}',-1)" title="윗줄로">▲</button>
-              <button ${ri===2?"disabled":""} onclick="moveDisp('${id}',1)" title="아랫줄로">▼</button>
-            </span>`;
-          }).join("")}
-          ${ids.length?"":`<span class="muted" style="font-size:13px">비어 있음</span>`}
-        </div>
-      </div>`).join("")}`;
+    </div>`;
 
   /* ---------- 보안 / 기타 ---------- */
   const adminBody = `
@@ -7121,9 +7159,9 @@ function renderSettings(){
       <button class="btn" onclick="openRate()">예약률 추이</button>
       <button class="btn" onclick="openSmsFree()">문자 보내기</button>
       <button class="btn danger" onclick="resetSettingsAll()">설정 초기화</button>
-      <button class="btn" onclick="openSlip()">비상 예약지 인쇄</button>
+      <button class="btn" onclick="openSlip()">수기 예약지 인쇄</button>
     </div>
-    <p class="f-note">비상 예약지: 시스템이 안 될 때 손으로 받는 종이(A4 한 장에 6장). 열리면 Ctrl+P 로 인쇄해 카운터에 두세요. 더보기(⋮) 메뉴에서도 열립니다 — 관리자 비밀번호 없이.</p>
+    <p class="f-note">수기 예약지: 직원이 전화로 받은 예약을 손으로 적는 종이(A4 한 장에 2장). 사장님이 시스템에 넣습니다. 열리면 Ctrl+P 로 인쇄해 카운터에 두세요. 더보기(⋮) 메뉴에서도 열립니다 — 관리자 비밀번호 없이.</p>
     <p class="f-note">설정은 관리자 비밀번호로 들어옵니다. PIN 관리·관리자 비밀번호 변경·로그·초기화는 한 번 더 묻습니다. PIN 은 직원과 공유하는 번호, 관리자 비밀번호는 사장님만 아는 것입니다.</p>`;
 
   /* 화면 크기 — 기기마다 적당한 값이 달라 사장님이 직접 고르게 둡니다.
@@ -8091,7 +8129,7 @@ function hrWeekDays(w){ var out = []; for(var i = 0; i < 7; i++) out.push(shiftD
 function hrWeekLabel(w){ var th = new Date(shiftDate(w, 3) + "T00:00:00"); return (th.getMonth() + 1) + "월 " + (Math.floor((th.getDate() - 1) / 7) + 1) + "주차"; }
 function hrMonthEnd(m){ var d = new Date(m + "-01T00:00:00"); d.setMonth(d.getMonth() + 1); d.setDate(0); return m + "-" + pad(d.getDate()); }
 function hrMonthDays(m){ var n = Number(hrMonthEnd(m).slice(8)), out = []; for(var i = 1; i <= n; i++) out.push(m + "-" + pad(i)); return out; }
-function hrCfg(){ var c = (HR && HR.cfg) || {}; return { over5: c.over5 !== false, rates: Object.assign({}, HR_DEF.rates, c.rates || {}), night: c.night || HR_DEF.night, taxRate: c.taxRate != null ? c.taxRate : HR_DEF.taxRate, weeklyPay: c.weeklyPay !== false }; }
+function hrCfg(){ var c = (HR && HR.cfg) || {}; return { over5: c.over5 !== false, inclusive: !!c.inclusive, rates: Object.assign({}, HR_DEF.rates, c.rates || {}), night: c.night || HR_DEF.night, taxRate: c.taxRate != null ? c.taxRate : HR_DEF.taxRate, weeklyPay: c.weeklyPay !== false }; }
 async function hrLoad(){
   var key = view.storeKey || "hanok";
   try{
@@ -8168,7 +8206,7 @@ function hrWeekCalc(s, w){
 }
 /* 한 달 급여. 시급이 달 중간에 바뀌면 날마다 그날 시급으로 셉니다(basePay). 연장·야간·주휴·배율은 달의 마지막 날 시급 기준 */
 function hrCalc(s, month){
-  var cfg = hrCfg(), days = hrMonthDays(month), t = { reg:0, alt:0, abs:0, off:0, days:0, hours:0, night:0, ot:0, weekly:0, bonusH:0, base:0, otPay:0, nightPay:0, weeklyPay:0, bonusPay:0, absentPay:0, gross:0, ded:{}, dedTotal:0, net:0, employer:0, wage:0, log:[] };
+  var cfg = hrCfg(), days = hrMonthDays(month), t = { reg:0, alt:0, abs:0, off:0, days:0, hours:0, night:0, ot:0, weekly:0, bonusH:0, base:0, otPay:0, nightPay:0, weeklyPay:0, bonusPay:0, absentPay:0, extraH:0, extraPay:0, gross:0, ded:{}, dedTotal:0, net:0, employer:0, wage:0, log:[] };
   var hourly = s.pay_type !== "monthly", last = days[days.length - 1];
   var monthPay = hrPayAt(s, last);
   t.wage = hourly ? monthPay : Math.round(monthPay / 209);
@@ -8179,6 +8217,9 @@ function hrCalc(s, month){
     t.log.push({ date:d, status:a.status, spans:sps, hours:h, rate:r, memo:a.memo || "", wage:w });
     if(!sps.length) return;
     t.hours += h; t.night += hrNight(sps); if(hourly) t.base += h * w;
+    /* 월급제: 월급은 '정규 근무 시간' 값입니다. 그날 정규 시간을 넘긴 만큼(휴무일 출근은 전부)은 통상시급 × 1.0 을 따로 줍니다(초과 기본분, 재아 09-20).
+       그 위에 연장 0.5 가산(5인 이상)은 아래 otPay 에서. 포괄임금(월급에 연장 포함)이면 설정에서 끔 */
+    if(!hourly && !cfg.inclusive){ var sh = hrOnDuty(s, d) ? hrSchedAt(s, d).spans.reduce(function(a2, sp){ var s0 = toMin(sp.start), e0 = toMin(sp.end); if(e0 <= s0) e0 += 1440; return a2 + Math.max(0, (e0 - s0 - Number(sp.break || 0)) / 60); }, 0) : 0; if(h > sh) t.extraH += h - sh; }
     if(r > 1) t.bonusH += h * (r - 1);
   });
   t.days = t.reg + t.alt;
@@ -8186,8 +8227,8 @@ function hrCalc(s, month){
   for(; hrWeekDays(w0)[6] <= last; w0 = shiftDate(w0, 7)){ var wk = hrWeekCalc(s, w0); t.ot += wk.ot; t.weekly += wk.weeklyPay; }
   if(!cfg.over5) t.night = 0;
   if(!hourly){ t.base = monthPay; if(s.absent_deduct && t.abs) t.absentPay = -Math.round(t.abs * t.wage * 8); }
-  t.otPay = t.ot * t.wage * 0.5; t.nightPay = t.night * t.wage * 0.5; t.weeklyPay = hourly ? t.weekly * t.wage : 0; t.bonusPay = t.bonusH * t.wage;
-  t.gross = Math.round(t.base + t.otPay + t.nightPay + t.weeklyPay + t.bonusPay + t.absentPay);
+  t.otPay = t.ot * t.wage * 0.5; t.nightPay = t.night * t.wage * 0.5; t.weeklyPay = hourly ? t.weekly * t.wage : 0; t.bonusPay = t.bonusH * t.wage; t.extraPay = t.extraH * t.wage;
+  t.gross = Math.round(t.base + t.extraPay + t.otPay + t.nightPay + t.weeklyPay + t.bonusPay + t.absentPay);
   var tax = s.tax || "4대보험", r = cfg.rates;
   if(tax === "4대보험"){
     var health = Math.round(t.gross * r.health / 100);
@@ -8196,7 +8237,7 @@ function hrCalc(s, month){
   }else if(tax === "3.3%"){ var inc = Math.round(t.gross * (cfg.taxRate / 1.1) / 100); t.ded = { "소득세(3%)": inc, "지방소득세(0.3%)": Math.round(inc / 10) }; }
   t.dedTotal = Object.keys(t.ded).reduce(function(a, k){ return a + t.ded[k]; }, 0);
   t.net = t.gross - t.dedTotal;
-  ["hours","night","ot","weekly","bonusH"].forEach(function(k){ t[k] = hrRound(t[k]); });
+  ["hours","night","ot","weekly","bonusH","extraH"].forEach(function(k){ t[k] = hrRound(t[k]); });
   return t;
 }
 async function hrSeverance(s){
@@ -8338,7 +8379,8 @@ function hrWeekView(){
         (a && Number(a.rate) > 1 ? '<i class="r">' + a.rate + 'x</i>' : '') + (a && a.memo ? '<i class="dot" title="' + esc(a.memo) + '"></i>' : '') + '</td>';
     }).join("");
     return '<tr' + (s.active === false ? ' class="gone"' : '') + '><th class="hr-name"><button class="hr-nm" onclick="hrStaffEdit(\'' + s.id + '\')"><b>' + esc(hrLabel(s)) + '</b><small>' + esc(s.nick && s.name !== s.nick ? s.name + " · " : "") + esc(s.role || "") + (s.active === false && s.end_date ? " · " + s.end_date.slice(5).replace("-", "/") + " 퇴사" : "") + '</small></button></th>' + tds +
-      '<td class="hr-sum"><b>' + hrRound(wk.hours) + 'h</b><small>' + wk.days + '일' + (wk.ot ? ' · 연장 ' + hrRound(wk.ot) : '') + (wk.night ? ' · 야간 ' + hrRound(wk.night) : '') + (wk.weeklyPay ? ' · 주휴 ' + hrRound(wk.weeklyPay) + 'h' : '') + (wk.absent ? ' · <span class="rust">결근 ' + wk.absent + '</span>' : '') + '</small></td></tr>';
+      /* 줄마다 하나씩(연장·야간·주휴·결근) — 한 줄에 '·' 로 이으면 좁은 칸에서 낱말 중간이 잘려 깨져 보였음(재아 09-20) */
+      '<td class="hr-sum"><b>' + hrRound(wk.hours) + 'h</b><small>' + wk.days + '일 근무</small>' + (wk.ot ? '<small>연장 ' + hrRound(wk.ot) + 'h</small>' : '') + (wk.night ? '<small>야간 ' + hrRound(wk.night) + 'h</small>' : '') + (wk.weeklyPay ? '<small>주휴 ' + hrRound(wk.weeklyPay) + 'h</small>' : '') + (wk.absent ? '<small class="rust">결근 ' + wk.absent + '</small>' : '') + '</td></tr>';
   };
   var trs = hrGroups(list).map(function(g){ return '<tr class="hr-grp"><th class="hr-name">' + esc(g.role) + '</th><td colspan="8"></td></tr>' + g.list.map(rowHtml).join(""); }).join("");
   if(!list.length) trs = '<tr><td colspan="9" class="empty">' + (HR.retired ? "퇴사한 직원이 없습니다." : "재직 중인 직원이 없습니다.") + '</td></tr>';
@@ -8379,6 +8421,7 @@ function hrSlipData(s, m){
   L.push({k:"row", a:"근무", b:t.days + "일 · " + t.hours + "시간" + (t.abs ? " · 결근 " + t.abs + "일" : "")});
   L.push({k:"dash"}); L.push({k:"sec", a:"지급"});
   L.push({k:"row", a:s.pay_type === "monthly" ? "월급" : "기본급", b:hrWon(t.base), n:s.pay_type === "monthly" ? "" : t.hours + "h × " + hrWon(t.wage)});
+  if(t.extraPay) L.push({k:"row", a:"정규 외 근무", b:hrWon(t.extraPay), n:t.extraH + "h × " + hrWon(t.wage)});
   if(t.otPay) L.push({k:"row", a:"연장수당", b:hrWon(t.otPay), n:t.ot + "h × 0.5"});
   if(t.nightPay) L.push({k:"row", a:"야간수당", b:hrWon(t.nightPay), n:t.night + "h × 0.5"});
   if(t.weeklyPay) L.push({k:"row", a:"주휴수당", b:hrWon(t.weeklyPay), n:t.weekly + "h"});
@@ -8512,6 +8555,7 @@ function hrSetupHtml(){
   var num = function(path, label, note){ var ks = path.split("."), v = ks.length === 2 ? d[ks[0]][ks[1]] : d[ks[0]]; return '<label class="f"><div class="lb">' + label + (note ? ' <span class="lbl-note">' + note + '</span>' : '') + '</div><input type="number" step="0.001" value="' + v + '" oninput="' + (ks.length === 2 ? 'HR.setup.' + ks[0] + '.' + ks[1] : 'HR.setup.' + ks[0]) + '=Number(this.value)"></label>'; };
   return '<div class="overlay" onclick="HR.setup=null; render()"><div class="sheet" onclick="event.stopPropagation()">' + sheetHead("워크시프트 설정") +
     '<div class="f"><div class="lb">사업장 규모 <span class="lbl-note">사장님 제외 동시 근무 5인 이상이면 연장·야간·휴일 가산 의무</span></div><div class="seg"><button class="' + (d.over5 ? "on" : "") + '" onclick="HR.setup.over5=true; render()">5인 이상</button><button class="' + (!d.over5 ? "on" : "") + '" onclick="HR.setup.over5=false; render()">5인 미만</button></div></div>' +
+    '<div class="f"><div class="lb">월급제 정규 외 근무 <span class="lbl-note">정규 시간을 넘긴 만큼 통상시급으로 따로 줌</span></div><div class="seg"><button class="' + (!d.inclusive ? "on" : "") + '" onclick="HR.setup.inclusive=false; render()">따로 계산</button><button class="' + (d.inclusive ? "on" : "") + '" onclick="HR.setup.inclusive=true; render()">월급에 포함(포괄)</button></div><div class="f-note">근로계약서에 "월급에 연장근로 ○시간 포함" 이라고 써 뒀으면(포괄임금) 포함으로. 아니면 따로 계산이 법대로입니다.</div></div>' +
     '<div class="f"><div class="lb">주휴수당 자동 계산</div><div class="seg"><button class="' + (d.weeklyPay !== false ? "on" : "") + '" onclick="HR.setup.weeklyPay=true; render()">켬</button><button class="' + (d.weeklyPay === false ? "on" : "") + '" onclick="HR.setup.weeklyPay=false; render()">끔</button></div></div>' +
     '<div class="subhead">4대보험 근로자 부담 요율(%) <span>매년 1월 바뀝니다 — 확인 후 고치세요</span></div>' +
     '<div class="grid2">' + num("rates.pension", "국민연금") + num("rates.health", "건강보험") + num("rates.care", "장기요양", "건강보험료의 %") + num("rates.employ", "고용보험") + '</div>' +
@@ -8635,7 +8679,7 @@ function gsDetailHtml(){
 function gsEsc(){ if(GS && view.form && view.form.type === "guests" && GS.open){ GS.open = null; render(); return true; } return false; }
 /* ---------- 사장님 메뉴 (18차, 재아) ----------
    더보기(⋮) → 사장님. 관리자 비밀번호 한 번 통과하면 그 안의 것들은 다시 안 묻습니다(설정과 같은 view.adminOk).
-   여기 모은 것: 디스플레이 모드 · 비상 예약지 · 워크시프트 · 손님 관리(노쇼 관리 포함) · 문자(기록·직접 보내기·감사 문자) · PIN 관리 · 홈페이지 관리.
+   여기 모은 것: 디스플레이 모드 · 수기 예약지 · 워크시프트 · 손님 관리(노쇼 관리 포함) · 문자(기록·직접 보내기·감사 문자) · PIN 관리 · 홈페이지 관리.
    화면형(view.form={type:"owner", page:true}) — 큰 단추 격자. 폰에서는 두 줄. */
 async function openOwnerPage(){
   if(!view.adminOk){ if(!await adminGate("사장님 메뉴 열기")) return; view.adminOk = true; }
@@ -8652,7 +8696,8 @@ function sheetOwner(){
     item("openSmsLog()", ICON.inbox, "문자 기록", "나간 문자 전부") +
     item("openSmsFree()", ICON.sms, "문자 직접 보내기", "번호 넣고 바로") +
     (isMobile() ? "" : item("openDisplay()", ICON.tv, "디스플레이 모드", "손님용 TV 화면")) +
-    item("openSlip()", ICON.print, "비상 예약지", "시스템이 안 될 때 종이") +
+    item("openSlip()", ICON.print, "수기 예약지", "전화 예약을 손으로 적는 종이") +
+    item("openDevPage()", ICON.sms, "개발자에게", "고칠 것 · 급한 것 글로 남기기") +
     item("openPinManage()", ICON.key, "PIN 관리", "직원 PIN · 관리자 비밀번호") +
     item("setTab('settings')", ICON.set, "설정", "운영시간 · 좌석 · 코스 · 문자 안내") +
     '</div><p class="f-note">사장님만 쓰는 것들을 모았습니다. 직원 화면에서는 안 보이게 하는 작업(권한)은 나중에.</p>';
@@ -8869,6 +8914,93 @@ function aiWaveTick(){
   if(!reduce) AI_WAVE_RAF = requestAnimationFrame(aiWaveTick);
 }
 function aiWaveStart(){ if(!AI_WAVE_RAF && document.querySelector("canvas.ai-wave")) AI_WAVE_RAF = requestAnimationFrame(aiWaveTick); }
+/* ---------- 개발자에게 (19차, 재아 09-20) ----------
+   사장님·직원이 개선 요청이나 급한 조치를 글로 남기는 곳. 매번 전화·카톡으로 연락하는 게 서로 불편해서.
+   · 급함 / 보통 — 급함만 재아에게 알림(서버 웹훅, patch_19차 주석). 보통은 재아가 모아서 봄.
+   · 재아가 답변(reply)·상태(접수 → 확인 → 처리 중 → 끝)를 적음. 화면에서는 '끝' 표시만 할 수 있음(해결된 걸 치우려고).
+   · 화면 사진을 붙일 수 있음(홈페이지 관리의 saPickFile 재사용 — Storage site 버킷).
+   더보기(⋮)에서 바로 열림(관리자 비밀번호 없음 — 직원도 씀). 화면형(view.form={type:"devreq", page:true}). */
+var DQ = null;
+
+async function openDevPage(){
+  if(!supaOn()){ await uiAlert("서버 설정이 없는 빌드입니다", "개발자에게는 서버가 있어야 합니다.", "warn"); return; }
+  view.form = {type:"devreq", page:true};
+  if(!DQ) DQ = { list:[], loading:true, err:null, open:null, draft:null };
+  DQ.loading = true; render();
+  await dqLoad(); render();
+}
+async function dqLoad(){
+  try{
+    DQ.list = await sb("/rest/v1/dev_requests?store=eq." + (view.storeKey || "hanok") + "&select=*&order=created_at.desc&limit=200");
+    DQ.err = null;
+  }catch(e){ DQ.err = e.message || String(e); DQ.list = DQ.list || []; }
+  DQ.loading = false;
+}
+function dqWhen(iso){ var d = new Date(iso); return (d.getMonth()+1) + "/" + d.getDate() + " " + pad(d.getHours()) + ":" + pad(d.getMinutes()); }
+function dqStatusTag(s){ var c = s === "끝" ? "" : s === "처리 중" ? "blue" : s === "확인" ? "pine" : "amber"; return '<span class="tag sm ' + c + '">' + esc(s) + '</span>'; }
+
+function sheetDevReq(){
+  if(!DQ || DQ.loading) return '<p class="muted" style="padding:20px 0">불러오는 중…</p>';
+  var open = DQ.list.filter(function(r){ return r.status !== "끝"; }), done = DQ.list.filter(function(r){ return r.status === "끝"; });
+  var row = function(r){
+    return '<button class="rowitem tap dq-row' + (r.urgent ? ' urgent' : '') + '" onclick="DQ.open=\'' + esc(r.id) + '\'; render()">' +
+      '<span class="time-col">' + esc(dqWhen(r.created_at)) + '</span>' +
+      '<span class="grow"><span class="t">' + (r.urgent ? '<span class="tag rust sm">급함</span> ' : '') + esc(r.title) + '</span>' +
+      '<span class="s">' + (r.reply ? '답변: ' + esc(r.reply).slice(0, 80) : esc(r.body || "").split("\n")[0].slice(0, 80)) + '</span></span>' +
+      dqStatusTag(r.status) + '</button>';
+  };
+  return '<div class="dq-top"><button class="btn primary" onclick="dqNew()">글 쓰기</button>' +
+    '<p class="f-note" style="margin:0">고쳤으면 하는 것, 이상한 것, 급하게 바꿔야 하는 것을 여기 적어 주세요. <b>급함</b>이면 재아에게 바로 알림이 가고, <b>보통</b>은 모아서 봅니다. 정말 급하면 전화.</p></div>' +
+    (DQ.err ? '<p class="f-note rust">불러오지 못했습니다: ' + esc(DQ.err) + ' (서버에 patch_19차가 아직 없을 수 있습니다)</p>' : '') +
+    '<div class="subhead">진행 중 ' + open.length + '건</div>' +
+    '<div class="card searchbox">' + (open.length ? open.map(row).join("") : '<p class="muted" style="padding:16px">남긴 글이 없습니다.</p>') + '</div>' +
+    (done.length ? '<div class="subhead">끝난 것 ' + done.length + '건</div><div class="card searchbox dq-done">' + done.slice(0, 30).map(row).join("") + '</div>' : '') +
+    (DQ.draft ? dqFormHtml() : DQ.open ? dqDetailHtml() : "");
+}
+function dqNew(){ DQ.draft = { title:"", body:"", urgent:false, images:[] }; render(); setTimeout(function(){ var el = document.getElementById("dq-title"); if(el) el.focus(); }, 50); }
+function dqSet(k, v){ if(DQ.draft) DQ.draft[k] = v; }
+function dqFormHtml(){
+  var d = DQ.draft;
+  return '<div class="overlay" onclick="DQ.draft=null; render()"><div class="sheet" onclick="event.stopPropagation()">' +
+    sheetHead("개발자에게 글 쓰기") +
+    '<div class="f"><div class="lb">얼마나 급한가요</div><div class="seg">' +
+      '<button class="' + (!d.urgent ? "on" : "") + '" onclick="dqSet(\'urgent\', false); render()">보통</button>' +
+      '<button class="' + (d.urgent ? "on rust" : "") + '" onclick="dqSet(\'urgent\', true); render()">급함</button></div>' +
+      '<div class="f-note">' + (d.urgent ? '지금 영업에 지장이 있는 것 — 재아에게 바로 알림이 갑니다.' : '개선 요청·건의 — 재아가 모아서 봅니다.') + '</div></div>' +
+    '<label class="f"><div class="lb">제목</div><input id="dq-title" type="text" value="' + esc(d.title) + '" placeholder="예: 예약 목록에서 전화번호가 안 보여요" oninput="dqSet(\'title\', this.value)"></label>' +
+    '<label class="f big"><div class="lb">내용 <span class="lbl-note">언제, 어느 화면에서, 무엇이</span></div><textarea rows="6" placeholder="예: 오늘 12시쯤 태블릿에서 예약 등록 마지막 단계에서 버튼이 안 눌렸어요" oninput="dqSet(\'body\', this.value)">' + esc(d.body) + '</textarea></label>' +
+    '<div class="f"><div class="lb">화면 사진 <span class="lbl-note">선택</span></div><div class="dq-imgs">' +
+      d.images.map(function(u, i){ return '<span class="dq-img"><img src="' + esc(u) + '" alt=""><button class="x" onclick="DQ.draft.images.splice(' + i + ',1); render()" aria-label="빼기">×</button></span>'; }).join("") +
+      '<button class="btn sm" onclick="saPickFile(\'image\', function(u){ DQ.draft.images.push(u); render(); })">사진 올리기</button></div></div>' +
+    '<div class="sheet-actions"><button class="btn" onclick="DQ.draft=null; render()">취소</button><button class="btn primary" onclick="dqSend()">보내기</button></div></div></div>';
+}
+async function dqSend(){
+  var d = DQ.draft; if(!d) return;
+  if(!d.title.trim()){ await uiAlert("제목을 적어 주세요", "", "warn"); return; }
+  try{
+    var row = { id:newId("dq"), store:view.storeKey || "hanok", title:d.title.trim(), body:d.body.trim(), urgent:!!d.urgent, images:d.images, by:(SESSION && SESSION.who) || "" };
+    await sb("/rest/v1/dev_requests", { method:"POST", body:row, prefer:"return=minimal" });
+    logEvent("개발자에게", (d.urgent ? "급함 " : "") + row.title);
+    DQ.draft = null; showToast(d.urgent ? "보냈습니다 · 재아에게 알림이 갑니다" : "보냈습니다");
+    await dqLoad(); render();
+  }catch(e){ await uiAlert("보내지 못했습니다", e.message || String(e), "warn"); }
+}
+function dqDetailHtml(){
+  var r = DQ.list.filter(function(x){ return x.id === DQ.open; })[0]; if(!r) return "";
+  var imgs = Array.isArray(r.images) ? r.images : [];
+  return '<div class="overlay" onclick="DQ.open=null; render()"><div class="sheet" onclick="event.stopPropagation()">' +
+    sheetHead((r.urgent ? '<span class="tag rust sm">급함</span> ' : '') + esc(r.title) + ' ' + dqStatusTag(r.status)) +
+    '<p class="f-note" style="margin-top:-6px">' + esc(dqWhen(r.created_at)) + (r.by ? ' · ' + esc(r.by === "admin" ? "사장님" : "직원") : '') + '</p>' +
+    (r.body ? '<div class="dq-body">' + esc(r.body).replace(/\n/g, "<br>") + '</div>' : '') +
+    (imgs.length ? '<div class="dq-imgs">' + imgs.map(function(u){ return '<a class="dq-img" href="' + esc(u) + '" target="_blank" rel="noopener"><img src="' + esc(u) + '" alt=""></a>'; }).join("") + '</div>' : '') +
+    '<div class="subhead">재아 답변</div>' +
+    (r.reply ? '<div class="dq-reply">' + esc(r.reply).replace(/\n/g, "<br>") + (r.replied_at ? '<small>' + esc(dqWhen(r.replied_at)) + '</small>' : '') + '</div>' : '<p class="muted">아직 답변이 없습니다.</p>') +
+    '<div class="sheet-actions">' + (r.status !== "끝" ? '<button class="btn" onclick="dqDone(\'' + esc(r.id) + '\')">해결됨 · 끝으로</button>' : '') + '<button class="btn primary" onclick="DQ.open=null; render()">닫기</button></div></div></div>';
+}
+async function dqDone(id){
+  try{ await sb("/rest/v1/dev_requests?id=eq." + id, { method:"PATCH", body:{ status:"끝" }, prefer:"return=minimal" }); DQ.open = null; await dqLoad(); render(); }
+  catch(e){ await uiAlert("바꾸지 못했습니다", e.message || String(e), "warn"); }
+}
 /* ============================================================
    입력 시트 (예약 / 직원 / 근태)
    ============================================================ */
@@ -9124,7 +9256,7 @@ function toastSaved(rec){
 }
 
 function renderSheet(){
-  const inner = { res:sheetRes, mark:sheetMark, unassigned:sheetUnassigned, pick:sheetPick, check:sheetCheck, search:sheetSearch, num:sheetNum, noshow:sheetNoshow, pin:sheetPin, apw:sheetAdminPw, hours:sheetHours, tedit:sheetTableEdit, naver:sheetNaver, setlog:sheetSetLog, pinlist:sheetPinList, zoomadj:sheetZoomAdj, logs:sheetLogs, smslog:sheetSmsLog, smsfree:sheetSmsFree, rate:sheetRate, sched:sheetSchedule, ovr:sheetOverride, blocks:sheetBlocks, reqs:sheetRequests, req:sheetRequest, reqrej:sheetReqReject, sched2:sheetScheduled, site:sheetSite, staff:sheetStaff, guests:sheetGuests, owner:sheetOwner, thanks:sheetThanks }[view.form.type]();   /* staff·guests 는 14d·14e(15차) */
+  const inner = { res:sheetRes, mark:sheetMark, unassigned:sheetUnassigned, pick:sheetPick, check:sheetCheck, search:sheetSearch, num:sheetNum, noshow:sheetNoshow, pin:sheetPin, apw:sheetAdminPw, hours:sheetHours, tedit:sheetTableEdit, naver:sheetNaver, setlog:sheetSetLog, pinlist:sheetPinList, zoomadj:sheetZoomAdj, logs:sheetLogs, smslog:sheetSmsLog, smsfree:sheetSmsFree, rate:sheetRate, sched:sheetSchedule, ovr:sheetOverride, blocks:sheetBlocks, reqs:sheetRequests, req:sheetRequest, reqrej:sheetReqReject, sched2:sheetScheduled, site:sheetSite, staff:sheetStaff, guests:sheetGuests, owner:sheetOwner, thanks:sheetThanks, devreq:sheetDevReq }[view.form.type]();   /* staff·guests 는 14d·14e(15차) */
   /* 검색은 창 높이를 고정해 두고 결과만 안에서 스크롤 — 칠 때마다 창이 늘었다 줄었다 하지 않게(재아) */
   const wide = view.form.type==="rate" ? " sheet-wide" : ((view.form.type==="search" || (view.form.type==="reqs" && reqPending().length >= 3)) ? " sheet-tall" : "");   /* 홈페이지 예약은 3건부터 높이를 고정하고 목록만 스크롤(재아 09-17). 0~2건이면 빈 상자를 길게 안 보임(검토 D3) */
   if(view.form.page) return `<div class="sheet page-sheet">${inner}</div>`;   /* 화면형: 덮개 없이 본문 자리에 */
@@ -9218,8 +9350,8 @@ function sheetRes(){
           <button class="btn sm" style="margin-left:auto" onclick="openCourse()">${cN||f.courseUndecided?"수정":"선택"}</button>
         </div>`:""}
     </div>
-    <label class="f"><div class="lb">알러지</div><input id="f-allergy" value="${esc(f.allergy||'')}" placeholder="예: 갑각류 알러지 1명"></label>
-    <label class="f"><div class="lb">요청사항</div><input id="f-request" value="${esc(f.request||'')}" placeholder="예: 유아용 의자, 송별회, 상견례"></label>
+    ${f.allergy?`<label class="f"><div class="lb">알러지 <span class="lbl-note">옛 예약</span></div><input id="f-allergy" value="${esc(f.allergy)}"></label>`:""}
+    <label class="f"><div class="lb">요청사항</div><input id="f-request" value="${esc(f.request||'')}" placeholder="예: 갑각류 알러지 1명, 유아용 의자, 송별회"></label>
     <label class="f"><div class="lb">메모 <span class="lbl-note">선택</span></div>
       <input id="f-memo" value="${esc(f.memo||'')}" placeholder="예: 사장님 지인, 상석 준비"></label>
     <div class="f"><div class="lb">상태</div><div class="seg">${stSeg}</div></div>
@@ -10587,7 +10719,7 @@ const WZ_STEPS = [
   "\u201C룸과 테이블 중 어디로 해 드릴까요?\u201D",
   "\u201C식사는 코스나 세트로 준비해 드릴까요?\u201D",
   "\u201C예약자 성함과 연락처 부탁드립니다.\u201D",
-  "\u201C알러지나 따로 요청하실 사항 있으세요?\u201D"
+  "\u201C따로 요청하실 사항 있으세요?\u201D"
 ];
 const WZ_LABELS = ["경로","날짜·시간","인원","좌석","메뉴","예약자","요청사항"];
 const LAST_STEP = 6;
@@ -10736,9 +10868,7 @@ function wzCanNext(){
   /* 한 글자라도 들어가면 됩니다 — 가명·이니셜·외국 이름도 받습니다 */
   if(WZ.step===5) return WZ.name.trim().length>0 &&
     (WZ.phoneNone || WZ.phone.trim().length>0);
-  /* 알러지는 확인했다는 표시가 있어야 넘어갑니다 */
-  if(WZ.step===6) return WZ.allergyNone || (WZ.allergy||"").trim().length>0;
-  return true;
+  return true;   /* 6단계(요청사항)는 전부 선택 — 알러지 확인 단계는 없앰(09-20) */
 }
 /* 화면을 다시 그리기 전에 입력창 값을 상태로 옮김.
    ※ 예전에는 입력창이 없을 때 g() 가 빈 문자열을 돌려주고, 그 빈 값을 그대로 WZ 에 넣었습니다.
@@ -10750,7 +10880,6 @@ function wzSyncInputs(){
   const set=function(key,id){ const v=g(id); if(v!==null) WZ[key]=v; };
   set("name","wz-name");
   set("phone","wz-phone");
-  set("allergy","wz-allergy");
   set("request","wz-request");
   set("memo","wz-memo");
   set("sourceDetail","wz-src-detail");
@@ -11763,18 +11892,12 @@ function renderCourse(){
     </div>`;
 }
 
-/* ---------- 6단계: 추가사항 ---------- */
+/* ---------- 6단계: 추가사항 ----------
+   09-20(재아): 알러지 칸을 없애고 요청사항에 적는 것으로 통합(유아의자와 같은 방식). 예약 객체의 allergy 는 빈 값으로 그대로 둠(옛 예약 표시용) */
 function wzStepExtra(){
   return `
-    <div class="f big"><div class="lb">알러지</div>
-      <div class="inrow">
-        <input id="wz-allergy" value="${esc(WZ.allergy)}"
-               placeholder="예: 갑각류 알러지 1명" onfocus="wzAllergyNone(false)">
-        <button class="nonebtn sm ${WZ.allergyNone?'on':''}" onclick="wzAllergyNone()">없음</button>
-      </div>
-    </div>
     <label class="f big"><div class="lb">요청사항 <span class="lbl-note">선택</span></div>
-      <input id="wz-request" value="${esc(WZ.request)}" placeholder="예: 유아용 의자, 송별회, 상견례">
+      <input id="wz-request" value="${esc(WZ.request)}" placeholder="예: 갑각류 알러지 1명, 유아용 의자, 송별회, 상견례">
     </label>
     <label class="f big"><div class="lb">메모 <span class="lbl-note">선택</span></div>
       <input id="wz-memo" value="${esc(WZ.memo||"")}" placeholder="예: 사장님 지인, 상석 준비">
@@ -11846,7 +11969,7 @@ async function wzSubmit(){
     createdAt:new Date().toISOString(),
     menuType:WZ.menuType||"해당 없음", courses:{...(WZ.courses||{})},
     courseUndecided: !!WZ.courseUndecided,
-    allergy:WZ.allergyNone?"":WZ.allergy.trim(), allergyChecked:true, request:WZ.request.trim(),
+    allergy:"", allergyChecked:true, request:WZ.request.trim(),
     memo:(WZ.memo||"").trim(),
     status:"확정"
   };
@@ -12094,7 +12217,7 @@ function dispCell(id){
 /* vh 단위, 큰 것부터. 첫 값이 상한, 마지막이 하한입니다.
    **글자가 크거나 작다는 말이 나오면 첫 값만 바꾸면 됩니다.**
    하한보다 더 줄이면 TV에서 못 읽으므로, 그래도 안 들어가면 목록을 접습니다. */
-var TV_SIZES = [3.0, 2.8, 2.6, 2.4, 2.2];   /* 8차-J: 칸이 비어 있으면 글자를 키웁니다 — 안 넘치는 가장 큰 값을 고릅니다 */
+var TV_SIZES = [3.6, 3.3, 3.0, 2.8, 2.6, 2.4, 2.2];   /* 09-20: 좌석표를 층 기둥으로 바꾸며 칸이 커져 상한을 3.6 으로 */   /* 8차-J: 칸이 비어 있으면 글자를 키웁니다 — 안 넘치는 가장 큰 값을 고릅니다 */
 /* 목록형 — 날개에 들어가는 줄 수는 TV 높이에 따라 달라집니다.
    넘치는 줄은 숨기고 '외 N건' 으로 알립니다.
    글자를 줄이지 않는 이유: 입구 TV 는 멀리서 봅니다. 작아지면 있으나 마나입니다. */
@@ -12218,7 +12341,7 @@ function tvType(){
   if(view.tvTypeLocal) return view.tvTypeLocal;   /* TV 에서 리모컨으로 바꾼 것 — 저장은 못 하니 이 화면에서만 */
   var st = view.storeKey && DATA && DATA[view.storeKey] ? DATA[view.storeKey].settings : null;
   var t = st && st.tvType ? st.tvType : (DATA && DATA._ui ? DATA._ui.tvType : null);
-  return t === "grid" ? "grid" : "list";
+  return t === "list" ? "list" : "grid";   /* 09-20(재아): 좌석표가 기본. 목록은 설정에서 고른 경우만 */
 }
 function setTvType(t){
   if(readonlyBlock()) return;
@@ -12358,75 +12481,72 @@ function tvSideHtml(){
         <div class="tvl-foot">찾아주셔서 감사합니다${DISP_FAIL >= 3 ? '<span class="tvl-off">연결 확인 중</span>' : ""}</div>`;
 }
 
-/* ---------- 좌석표형 (보조) ---------- */
+/* ---------- 좌석표형 (기본, 09-20 재개편) ----------
+   재아: 손님·직원 피드백이 "목록보다 좌석표가 낫다" → 좌석표를 기본으로 하고 판을 다시 짰습니다.
+   · 층 단위로 두 기둥(1층 | 저층). 손님은 "어느 층으로 가면 되는지" 를 먼저 찾습니다. 설정의 3줄 배치(displayRows)는 더 안 씁니다.
+   · 기둥 안: 룸 카드 2×2 + 아래에 그 층 테이블 카드(넓게). 룸 이름은 명조 크게, 정원은 작게.
+   · 카드 안: 지난 손님은 빼고(30분), '다음 손님' 한 줄만 크게 — 나머지는 작은 줄. 비어 있으면 '예약 없음' 을 조용히.
+   · TV(40~43인치, 3~5m)는 대비가 중요 — 유리판 카드 위에 흰 글자, 금색은 다음 손님 표시에만.
+   fitDisplay/capLists 는 그대로 씁니다(.tv-grid · .dsec ul · li.past · li.more · two-col). */
 function renderTvGrid(){
   const s = store() || DATA.hanok;
-  const st = s.settings, today = todayStr();
-  const now = nowHM();
-  /* 좌석이 배정된 예약만 표시 — 당일에는 미배정이 없도록 운영한다는 전제 */
+  const today = todayStr();
+  const nowM = toMin(nowHM());
   /* 룸은 배정된 것만, 테이블은 층 희망(seatPref)까지 — 당일에는 룸 미배정이 없도록 운영한다는 전제 */
   const list = s.reservations.filter(r=>r.date===today && (r.status==="확정"||r.status==="방문") && (r.roomId || isTablePref(r.seatPref)));
+  const rooms = roomsAt(today).filter(isRoom);
+  const floors = [];
+  rooms.forEach(r => { const f = r.floor || ""; if(floors.indexOf(f) < 0) floors.push(f); });
+  tableFloors().forEach(f => { if(floors.indexOf(f) < 0) floors.push(f); });
 
-  /* 설정에 정한 3행 배치대로 그립니다 */
-  const rowIds = displayRows();
-  const order = [].concat.apply([], rowIds).map(dispCell).filter(Boolean);
-  const secN = [];   /* 칸마다 '한 열에 몇 줄이 들어가는지' — 행 높이를 나눌 때 씁니다 */
-  const sec = order.map(room=>{
-    const isT = room.type === "tables";
-    /* 대표 좌석이 이 칸에 속하는 예약 (합친 예약은 한 번만) */
-    const rows = list.filter(r=>isT ? (resFloor(r) !== undefined && (resFloor(r)||"") === (room.floorKey||"")) : room.ids.indexOf(r.roomId)>=0).sort((a,b)=>a.time.localeCompare(b.time));
+  const card = (title, cap, rows, hall) => {
     let nextMarked = false;
-    const items = rows.length ? rows.map(r=>{
-      /* 흐림 기준은 타임라인 블록과 같은 함수(isBlockPast). 자리를 접어야 할 때 이런 건이 먼저 밀립니다 */
-      const past = isBlockPast(r, toMin(r.time), today, toMin(now));
+    const items = rows.map(r => {
+      const past = isBlockPast(r, toMin(r.time), today, nowM);
       const next = !past && !nextMarked && r.status !== "방문"; if(next) nextMarked = true;   /* 아직 안 온 손님 중 첫 번째 = 다음 손님 */
-      const tn = "";   /* 손님에게 테이블 번호는 알리지 않습니다 — 층까지만(8차-H) */
       return `<li class="${past?'past':''} ${next?'next':''}">
         <span class="t">${esc(r.time)}</span>
-        <span class="n">${esc(maskName(r.name))} 님${r.tier ? tierTagOf(r.tier) : ""}${tn?` <small class="tn">${esc(tn)}</small>`:""}</span>
-        <span class="p">${pplOf(r)}명</span>
+        <span class="n">${esc(maskName(r.name))} 님${r.tier ? tierTagOf(r.tier) : ""}</span>
+        <span class="p">${pplOf(r)}<small>명</small></span>
       </li>`;
-    }).join("") : ``;
-    /* 손님이 보는 화면이라 룸 정원만 안내하고 테이블 수는 적지 않습니다 */
-    const capTxt = isT ? "" : `${roomMin(room, today)}~${room.capacity}인`;
-    /* 테이블 칸은 2열이라 필요한 줄 수가 절반입니다 (아래에서 grid-template-rows 를 그 수로 맞춥니다) */
-    secN.push(isT ? Math.max(1, Math.ceil(rows.length/2)) : rows.length);
-    return `<section class="dsec ${isT?'hall':''}">
-      <h3><span class="fl">${esc(room.floor||"")}</span>
-        <span class="nm">${esc(room.name)}</span>
-        <span class="cap">${capTxt}</span></h3>
-      <ul class="${isT?"two-col":""}"${isT
-        ? ` style="grid-template-rows:repeat(${Math.max(1,Math.ceil(rows.length/2))},auto)"` : ""}>${items}</ul>
+    }).join("");
+    return `<section class="dsec ${hall?'hall':''} ${rows.length?'':'empty'}">
+      <h3><span class="nm">${esc(title)}</span>${cap ? `<span class="cap">${esc(cap)}</span>` : ""}</h3>
+      <ul class="${hall?"two-col":""}"${hall ? ` style="grid-template-rows:repeat(${Math.max(1,Math.ceil(rows.length/2))},auto)"` : ""}>${items || `<li class="none">예약 없음</li>`}</ul>
     </section>`;
-  });
-
-  /* 행 높이는 CSS 에서 내용만큼만 쓰게 두고(flex:0 0 auto), 남는 높이는 위아래 여백으로 둡니다.
-     예전에는 세 행이 화면 높이를 억지로 나눠 채워서, 예약이 1건인 칸도 큰 상자가 되고
-     그 안에 글자만 덩그러니 떠 있었습니다. */
-  let idx = 0;
-  const rowsHtml = rowIds.map((ids,i)=>{
-    const cells = ids.map(()=>sec[idx++]).filter(Boolean);
-    if(!cells.length) return "";
-    return `<div class="tv-row ${i===0?"halls":""}">${cells.join("")}</div>`;
+  };
+  const cols = floors.map(fl => {
+    const rs = rooms.filter(r => (r.floor || "") === fl);
+    const roomCards = rs.map(room => {
+      /* 합쳐 쓰는 예약은 대표 방(roomId)에만 한 번 */
+      const rows = list.filter(r => r.roomId === room.id).sort((a,b)=>a.time.localeCompare(b.time));
+      return card(room.name, `${roomMin(room, today)}~${room.capacity}인`, rows, false);
+    }).join("");
+    const tbls = floorTables(fl);
+    const trows = list.filter(r => !r.roomId && resFloor(r) !== undefined && (resFloor(r)||"") === fl).sort((a,b)=>a.time.localeCompare(b.time));
+    const hall = tbls.length ? card(`${fl} 테이블`, "", trows, true) : "";
+    return `<div class="tv-col">
+      <div class="tv-col-h"><b>${esc(fl || "층 미정")}</b><span>룸 ${rs.length}${tbls.length ? ` · 테이블 ${tbls.length}` : ""}</span><em>${(()=>{ const n = list.filter(r => (r.roomId ? (rs.some(x => x.id === r.roomId)) : ((resFloor(r)||"") === fl)) && !isBlockPast(r, toMin(r.time), today, nowM)).length; return n ? `남은 예약 ${n}팀` : "남은 예약 없음"; })()}</em></div>
+      <div class="tv-cells" style="grid-template-columns:repeat(${Math.min(2, Math.max(1, rs.length))},1fr)">${roomCards}</div>
+      ${hall}
+    </div>`;
   });
 
   const d = new Date();
   const dateTxt = `${d.getMonth()+1}월 ${d.getDate()}일 ${["일","월","화","수","목","금","토"][d.getDay()]}요일`;
-
-  /* tv-stage 안에 실제 화면(tv-inner)을 넣습니다.
-     세로로 든 휴대폰에서는 stage 가 16:9 로 고정되고 inner 가 통째로 축소됩니다. */
+  const clock = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
   return `
       <div class="tv-bgs" aria-hidden="true">
         ${[1,2,3,4,5,6,7].map(i=>`<div class="tv-bg b${i} ${i===(view.bgIndex||1)?'on':''}"></div>`).join("")}
       </div>
       <div class="tv-inner">
         <header class="tv-h">
-          <div class="tv-date">${dateTxt}</div>
+          <div class="tv-date">${dateTxt}<span class="tv-clock">${clock}</span></div>
           <h1>오늘의 예약 안내</h1>
           <div class="tv-line"></div>
         </header>
-        <div class="tv-grid">${rowsHtml.join("")}</div>
-        <footer class="tv-f">찾아주셔서 감사합니다</footer>
+        <div class="tv-grid tv-floors" style="grid-template-columns:repeat(${Math.max(1, cols.length)},1fr)">${cols.join("")}</div>
+        <footer class="tv-f">찾아주셔서 감사합니다${DISP_FAIL >= 3 ? '<span class="tvl-off">연결 확인 중</span>' : ""}</footer>
       </div>`;
 }
 

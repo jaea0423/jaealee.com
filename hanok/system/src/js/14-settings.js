@@ -273,16 +273,14 @@ function renderSettings(){
     </div>`;
 
   /* ---------- 디스플레이 ---------- */
-  const rows = displayRows();
   const dispBody = `
     <div class="subhead">평소 띄울 화면</div>
     <div class="seg">
       <button class="${tvType()!=="grid"?'on':''}" onclick="setTvType('list')">목록 (영상+예약)</button>
       <button class="${tvType()==="grid"?'on':''}" onclick="setTvType('grid')">좌석표</button>
     </div>
-    <p class="f-note">입구에 걸어 두는 TV라면 <b>목록</b>이 낫습니다.
-      손님은 지나가면서 3~5초 보기 때문에, 좌석표보다 시각 순으로 늘어놓는 편이 자기 예약을 빨리 찾습니다.<br>
-      TV 화면에서도 우측 상단에 마우스를 올리거나 화면을 한 번 누르면 바꿀 수 있습니다.
+    <p class="f-note"><b>좌석표</b>가 기본입니다(09-20, 손님·직원 피드백). 1층 | 저층 두 기둥에 룸과 테이블이 층별로 놓입니다.<br>
+      목록은 왼쪽 영상 + 오른쪽 시각순 예약. TV 화면에서도 우측 상단에 마우스를 올리거나 화면을 한 번 누르면 바꿀 수 있습니다.
       여기서 고른 값이 새로 켤 때의 기본입니다.</p>
 
     <div class="subhead">예약이 없을 때</div>
@@ -304,30 +302,10 @@ function renderSettings(){
       · 소리는 빼세요. 자동 재생이 막히고, 입구에서 소리가 나면 민폐입니다.<br>
       · 20~40초. 좌우가 잘리므로 <b>중요한 것은 가운데</b>에 두세요.</p>
 
-    <div class="subhead">좌석표 화면 배치</div>
-    <p class="f-note" style="margin:0 0 12px">
-      좌석표를 띄울 때의 배치입니다. 3줄로 고정되며 한 줄에 최대 ${DISP_MAX}칸까지 놓을 수 있습니다.</p>
     <div class="urlbox">
       <div class="ub-t">TV 전용 주소</div>
       <div class="ub-row"><a class="ub-u" id="screen-url" href="${esc(screenUrl())}" target="_blank" rel="noopener">${esc(screenUrl())}</a><button class="btn sm" onclick="copyScreenUrl()">주소 복사</button></div>
-    </div>
-    ${rows.map((ids,ri)=>`
-      <div class="disprow ${ids.length>DISP_MAX?'over':''}">
-        <div class="dr-title">${ri+1}번째 줄 <span>${ids.length}칸${ids.length>DISP_MAX?" · 너무 많습니다":""}</span></div>
-        <div class="dr-cells">
-          ${ids.map(id=>{
-            /* "tables:1층" 은 좌석이 아니라 층 테이블 묶음 칸 — 이름이 없어 빈 칸으로 그려졌음(검토) */
-            const r = st.rooms.find(x=>x.id===id);
-            const name = r ? r.name : (/^tables:/.test(id) ? `${id.slice(7)} 테이블` : "");
-            if(!name) return "";
-            return `<span class="dcell">${esc(name)}
-              <button ${ri===0?"disabled":""} onclick="moveDisp('${id}',-1)" title="윗줄로">▲</button>
-              <button ${ri===2?"disabled":""} onclick="moveDisp('${id}',1)" title="아랫줄로">▼</button>
-            </span>`;
-          }).join("")}
-          ${ids.length?"":`<span class="muted" style="font-size:13px">비어 있음</span>`}
-        </div>
-      </div>`).join("")}`;
+    </div>`;
 
   /* ---------- 보안 / 기타 ---------- */
   const adminBody = `
@@ -338,9 +316,9 @@ function renderSettings(){
       <button class="btn" onclick="openRate()">예약률 추이</button>
       <button class="btn" onclick="openSmsFree()">문자 보내기</button>
       <button class="btn danger" onclick="resetSettingsAll()">설정 초기화</button>
-      <button class="btn" onclick="openSlip()">비상 예약지 인쇄</button>
+      <button class="btn" onclick="openSlip()">수기 예약지 인쇄</button>
     </div>
-    <p class="f-note">비상 예약지: 시스템이 안 될 때 손으로 받는 종이(A4 한 장에 6장). 열리면 Ctrl+P 로 인쇄해 카운터에 두세요. 더보기(⋮) 메뉴에서도 열립니다 — 관리자 비밀번호 없이.</p>
+    <p class="f-note">수기 예약지: 직원이 전화로 받은 예약을 손으로 적는 종이(A4 한 장에 2장). 사장님이 시스템에 넣습니다. 열리면 Ctrl+P 로 인쇄해 카운터에 두세요. 더보기(⋮) 메뉴에서도 열립니다 — 관리자 비밀번호 없이.</p>
     <p class="f-note">설정은 관리자 비밀번호로 들어옵니다. PIN 관리·관리자 비밀번호 변경·로그·초기화는 한 번 더 묻습니다. PIN 은 직원과 공유하는 번호, 관리자 비밀번호는 사장님만 아는 것입니다.</p>`;
 
   /* 화면 크기 — 기기마다 적당한 값이 달라 사장님이 직접 고르게 둡니다.
