@@ -17,7 +17,7 @@ var HR_ROLES = ["주방", "홀"];   /* 묶는 순서. 다른 역할은 뒤에 '�
 async function openStaffPage(){
   if(!supaOn()){ await uiAlert("서버 설정이 없는 빌드입니다", "워크시프트는 서버가 있어야 합니다.", "warn"); return; }
   if(!await adminGate("워크시프트 열기")) return;
-  view.form = {type:"staff", page:true};
+  view.form = {type:"staff", page:true, back:(view.form && (view.form.type === "owner" || view.form.back)) ? "owner" : ""};   /* 사장님 페이지에서 열었으면 닫을 때 거기로(09-20) */
   if(!HR) HR = { week: hrWeekStart(todayStr()), month: monthStr(), staff:[], att:{}, loaded:{}, cfg:null, loading:true, pop:null, edit:null, view:"week", slip:null, setup:false, retired:false };
   render(); await hrLoad(); render();
 }

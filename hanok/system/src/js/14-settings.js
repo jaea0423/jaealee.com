@@ -636,33 +636,32 @@ function setPair(id, other){
   t.pair = other; o.pair = id; render();
 }
 /* ---------- 배치 보기(09-20 재아): 설정이 의도대로 들어갔는지 한눈에 ----------
-   층마다 테이블을 둥글게 놓고, 붙일 수 있는 것끼리 선으로 잇습니다. 짝(pair)은 굵은 선. 번호 = 배정 순서(위에서부터).
-   룸은 순서대로 알약, 합침 그룹은 묶음 상자. 도면이 아니라 '규칙' 을 그린 것입니다 */
+   룸은 동그라미, 테이블은 네모. 위에 있을수록 배정 순서가 빠름(숫자 대신 높이). 붙일 수 있는 테이블은 점선, 평소 붙여 두는 짝은 굵은 파란 선,
+   룸 합침 그룹은 초록 선으로 묶음. 도면이 아니라 '규칙' 을 그린 것입니다 */
 function seatMapHtml(st){
-  const rooms = st.rooms || [], order = r => rooms.indexOf(r) + 1;
+  const rooms = st.rooms || [];
+  const cols = [];   /* [{title, items:[seat…], kind:"room"|"table"}] — 룸 한 기둥 + 층마다 테이블 기둥 */
+  const rs = rooms.filter(isRoom); if(rs.length) cols.push({ title:"룸", items:rs, kind:"room" });
   const floors = []; rooms.filter(isTable).forEach(t => { const f = t.floor || ""; if(floors.indexOf(f) < 0) floors.push(f); });
-  const floorSvg = fl => {
-    const ts = rooms.filter(t => isTable(t) && (t.floor || "") === fl), n = ts.length;
-    const W = 420, H = 300, cx = W / 2, cy = H / 2, R = Math.min(W, H) / 2 - 46;
-    const pos = {}; ts.forEach((t, i) => { const a = -Math.PI / 2 + i * 2 * Math.PI / Math.max(n, 1); pos[t.id] = { x: cx + R * Math.cos(a), y: cy + R * Math.sin(a) }; });
-    const seen = {}, edges = [];
-    ts.forEach(t => (t.joinWith || []).forEach(o => { if(!pos[o]) return; const k = [t.id, o].sort().join("|"); if(seen[k]) return; seen[k] = 1; const pair = t.pair === o; edges.push(`<line x1="${pos[t.id].x}" y1="${pos[t.id].y}" x2="${pos[o].x}" y2="${pos[o].y}" stroke="${pair ? "#3F6C9E" : "#C9C3B8"}" stroke-width="${pair ? 5 : 1.5}" ${pair ? "" : 'stroke-dasharray="4 4"'}/>`); }));
-    const nodes = ts.map(t => { const p = pos[t.id], r = 30; return `<g><circle cx="${p.x}" cy="${p.y}" r="${r}" fill="${t.pair ? "#EAF1F8" : "#FFFFFF"}" stroke="${t.minCapacity ? "#A63B26" : "#8E877C"}" stroke-width="1.5"/>
-      <text x="${p.x}" y="${p.y - 4}" text-anchor="middle" font-size="12" font-weight="700" fill="#1B1A18">${esc(t.name)}</text>
-      <text x="${p.x}" y="${p.y + 11}" text-anchor="middle" font-size="10" fill="#6B655B">${t.seats || 4}${t.capacity && t.capacity !== t.seats ? "~" + t.capacity : ""}인</text>
-      <circle cx="${p.x + r - 4}" cy="${p.y - r + 4}" r="9" fill="#1B1A18"/><text x="${p.x + r - 4}" y="${p.y - r + 7.5}" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">${order(t)}</text></g>`; }).join("");
-    return `<div class="smap-floor"><div class="smap-t">${esc(fl || "층 미정")} 테이블 <small>${n}개 · ${ts.reduce((a, t) => a + (t.seats || 4), 0)}석</small></div>
-      <svg viewBox="0 0 ${W} ${H}" class="smap">${edges}${nodes}</svg></div>`;
+  floors.forEach(fl => cols.push({ title:(fl || "층 미정") + " 테이블", items:rooms.filter(t => isTable(t) && (t.floor || "") === fl), kind:"table" }));
+  const colSvg = col => {
+    const n = col.items.length, W = 300, STEP = 64, H = 40 + n * STEP + 10, R = 24;
+    const pos = {}; col.items.forEach((t, i) => { pos[t.id] = { x: 60 + (i % 3) * 90, y: 40 + i * STEP }; });   /* 위에서부터 순서, 좌우는 세 줄로 번갈아 */
+    const edges = [], seen = {};
+    if(col.kind === "table") col.items.forEach(t => (t.joinWith || []).forEach(o => { if(!pos[o]) return; const k = [t.id, o].sort().join("|"); if(seen[k]) return; seen[k] = 1; const pair = t.pair === o;
+      edges.push(`<line x1="${pos[t.id].x}" y1="${pos[t.id].y}" x2="${pos[o].x}" y2="${pos[o].y}" stroke="${pair ? "#3F6C9E" : "#C9C3B8"}" stroke-width="${pair ? 5 : 1.5}" ${pair ? "" : 'stroke-dasharray="4 4"'}/>`); }));
+    if(col.kind === "room") (st.joins || []).forEach(j => { const ids = (j.ids || []).filter(id => pos[id]); for(let k = 1; k < ids.length; k++) edges.push(`<line x1="${pos[ids[k-1]].x}" y1="${pos[ids[k-1]].y}" x2="${pos[ids[k]].x}" y2="${pos[ids[k]].y}" stroke="#4E7A5B" stroke-width="4" opacity=".8"/>`); });
+    const nodes = col.items.map(t => { const p = pos[t.id];
+      const shape = col.kind === "room" ? `<circle cx="${p.x}" cy="${p.y}" r="${R}" fill="#FFFFFF" stroke="#8E877C" stroke-width="1.5"/>`
+        : `<rect x="${p.x - R}" y="${p.y - R + 2}" width="${R * 2}" height="${R * 2 - 4}" rx="5" fill="${t.pair ? "#EAF1F8" : "#FFFFFF"}" stroke="${t.minCapacity ? "#A63B26" : "#8E877C"}" stroke-width="1.5"/>`;
+      const sub = col.kind === "room" ? `${t.minCapacity || 0}/${t.minWeekend || t.minCapacity || 0}~${t.capacity}` : `${t.seats || 4}${t.capacity && t.capacity !== t.seats ? "~" + t.capacity : ""}인`;
+      return `<g>${shape}<text x="${p.x}" y="${p.y - 3}" text-anchor="middle" font-size="12" font-weight="700" fill="#1B1A18">${esc(t.name)}</text><text x="${p.x}" y="${p.y + 11}" text-anchor="middle" font-size="9.5" fill="#6B655B">${sub}</text></g>`; }).join("");
+    return `<div class="smap-floor"><div class="smap-t">${esc(col.title)} <small>${n}개${col.kind === "table" ? " · " + col.items.reduce((a, t) => a + (t.seats || 4), 0) + "석" : ""}</small></div>
+      <svg viewBox="0 0 ${W} ${H}" class="smap" style="max-height:${H}px"><text x="10" y="18" font-size="10" fill="#9A9186">▲ 위쪽이 먼저 배정</text>${edges}${nodes}</svg></div>`;
   };
-  const roomList = rooms.filter(isRoom).map(r => `<span class="smap-room"><i>${order(r)}</i>${esc(r.name)}<small>${r.minCapacity || 0}/${r.minWeekend || r.minCapacity || 0}~${r.capacity}</small></span>`).join("");
-  const joins = (st.joins || []).map(j => `<span class="smap-join">${j.ids.map(id => { const r = rooms.find(x => x.id === id); return r ? esc(r.name) : id; }).join(" ⊞ ")}<small>${j.min || "?"}~${j.max || "?"}인${j.note ? " · " + esc(j.note) : ""}</small></span>`).join("");
   return `<div class="smap-wrap">
-    <div class="subhead">룸 <span>번호 = 배정 순서 · 아래 숫자는 최소 평일/주말 ~ 최대</span></div>
-    <div class="smap-rooms">${roomList || '<span class="muted">룸 없음</span>'}</div>
-    <div class="subhead">룸 합침 <span>중문을 떼서 한 방처럼</span></div>
-    <div class="smap-rooms">${joins || '<span class="muted">합침 그룹 없음</span>'}</div>
-    <div class="subhead">테이블 <span>점선 = 붙일 수 있음 · 굵은 파란 선 = 평소 붙여 두는 짝 · 붉은 테두리 = 최소 인원 있음 · 번호 = 배정 순서</span></div>
-    <div class="smap-floors">${floors.map(floorSvg).join("")}</div>
+    <p class="f-note" style="margin:0 0 12px">동그라미 = 룸, 네모 = 테이블. <b>위에 있을수록 먼저 배정</b>됩니다. 룸의 초록 선 = 합침 그룹(중문 탈거) · 테이블의 점선 = 붙일 수 있음 · 굵은 파란 선 = 평소 붙여 두는 짝 · 붉은 테두리 = 최소 인원 있음. 숫자는 룸이 최소 평일/주말~최대, 테이블이 좌석 수.</p>
+    <div class="smap-floors">${cols.map(colSvg).join("")}</div>
   </div>`;
 }
 function toggleJoinWith(id, other){

@@ -22,7 +22,7 @@ function saRoot(){
 async function openSiteAdmin(){
   if(!supaOn()){ await uiAlert("서버 설정이 없는 빌드입니다", "홈페이지 관리는 서버가 있어야 합니다.", "warn"); return; }
   if(!await adminGate("홈페이지 관리 열기")) return;
-  view.form = {type:"site", page:true};
+  view.form = {type:"site", page:true, back:(view.form && (view.form.type === "owner" || view.form.back)) ? "owner" : ""};   /* 사장님 페이지에서 열었으면 닫을 때 거기로(09-20) */
   /* 닫았다 다시 열면 고치던 초안은 그대로(서버에서 다시 읽지 않음). 저장돼 있으면 새로 읽어 다른 기기 변경을 반영 */
   if(SA && !SA.err && !SA.loading && saDirty()){ render(); return; }
   if(!SA || SA.err) SA = {loading:true, tab:"online"}; else SA.loading = true;

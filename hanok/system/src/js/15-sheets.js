@@ -222,6 +222,7 @@ function openSchedule(from){
 function openOverride(){ view.form={type:"ovr"}; view.ovrBulk = null; render(); }
 function closeSheet(){
   if(typeof thGuard === "function" && thGuard()) return;   /* 감사 문자 AI 진행 중엔 못 나감(09-20) */
+  if(view.form && view.form.page && view.form.back === "owner"){ view.form = {type:"owner", page:true}; render(); return; }   /* 사장님 페이지로 돌아감(09-20 재아: 홈으로 튀는 게 불편) */
   var was = view.form && view.form.type === "res", wasNaver = view.form && view.form.type === "naver";
   view.form=null; tmpRes=null; view.pickAll=false; view.pickSeat=null; render(); if(was) histPop();
   if(wasNaver && view.fsWas){ view.fsWas = false; tryFullscreenForce(); }   /* 닫기 버튼 클릭이 손짓이라 여기서는 됩니다 */

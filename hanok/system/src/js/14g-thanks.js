@@ -17,11 +17,12 @@ var TH_DEF_PROMPT = [
   "말투는 부드럽고 따뜻하게. 절대 날카롭거나 딱딱하거나 훈계하듯 쓰지 마세요. 받는 사람이 기분 좋아지는 담백한 한 통이어야 합니다.",
   "다녀간 날과 문자를 보내는 날을 보고 '어제·그제·지난주' 같은 표현을 보내는 날 기준으로 맞추고, 계절·요일·명절(설·추석·크리스마스·연말연시 등)이면 그에 맞는 인사를 한 줄 자연스럽게 넣으세요.",
   "요청사항·손님 메모는 참고만 하세요. 직원끼리 보는 메모, 민감한 내용(노쇼·불만·건강·개인사·금액)은 알아도 모르는 척, 문자에 절대 드러내지 마세요.",
+  "손님 등급이 VIP 면 이 문장을 그대로 한 번 넣으세요: '늘 찾아 주시는 마음, 잊지 않고 있습니다.' VVIP 면: '언제나 저희를 아껴 주셔서 고맙습니다. 앞으로도 정성으로 보답하겠습니다.' 등급이 없으면 넣지 마세요.",
   "이모지는 최대 1개(없어도 됨). 광고·할인·링크·해시태그·과장은 쓰지 마세요. 스팸처럼 보이면 안 됩니다.",
   "설명 없이 문자 본문만 답하세요."
 ];
 var TH_DEF_TEMPLATE = "[한옥반점]\n{이름}님, 예약하고 찾아 주셔서 진심으로 감사합니다.{단골}{키워드} 준비한 음식과 자리가 편안하셨기를 바랍니다. 다음에 오실 때도 정성껏 모시겠습니다. 늘 건강하시고 좋은 날 보내세요.\n한옥반점 드림";
-var TH_DEF_KW = ["가족 모임", "생신", "회식", "상견례", "아이 생일", "첫 방문", "단골"];
+var TH_DEF_KW = ["가족 모임", "생신", "회식", "상견례", "아이 생일", "어르신 모시고", "데이트", "단체 모임"];   /* 첫 방문·단골은 자동으로 아니까 뺌(09-20) */
 /* 사장님이 더한 문장. 옛 저장본(promptLines 전체)이면 기본 줄 수를 넘는 부분만 */
 function thExtraLines(a){ if(Array.isArray(a.extraLines)) return a.extraLines.filter(Boolean); if(Array.isArray(a.promptLines) && a.promptLines.length > TH_DEF_PROMPT.length) return a.promptLines.slice(TH_DEF_PROMPT.length).filter(Boolean); return []; }
 function thCfg(){
@@ -43,8 +44,8 @@ function thSaveCfg(patch){ var st = store().settings; st.ai = Object.assign({}, 
 async function openThanksPage(){
   if(!supaOn()){ await uiAlert("서버 설정이 없는 빌드입니다", "감사 문자는 서버가 있어야 합니다.", "warn"); return; }
   if(!await adminGate("감사 문자 열기")) return;
-  view.form = {type:"thanks", page:true};
-  if(!TH) TH = { date: shiftDate(todayStr(), -1), items:{}, queue:[], tab:"make", busy:{}, sendAt:"", adv:false, run:null, stop:false, qf:"all" };
+  view.form = {type:"thanks", page:true, back:(view.form && (view.form.type === "owner" || view.form.back)) ? "owner" : ""};   /* 사장님 페이지에서 열었으면 닫을 때 거기로(09-20) */
+  if(!TH) TH = { date: todayStr(), items:{}, queue:[], tab:"make", busy:{}, sendAt:"", adv:false, run:null, stop:false, qf:"all" };   /* 다녀간 날 기본 = 오늘(퇴근 때 만드니까, 09-20) · 발송 내일 */
   TH.sendAt = TH.sendAt || (shiftDate(todayStr(), 1) + "T" + thCfg().hour);   /* 기본 내일 11시(09-20) */
   render(); await thLoadQueue(); render();
 }
@@ -63,7 +64,7 @@ function thItem(r){ return TH.items[r.id] || (TH.items[r.id] = { kws:[], text:""
 function thKw(it){ return (it.kws || []).join(", "); }
 /* 기본 양식 — AI 가 막혔을 때, 또는 사장님이 원할 때. 설정에서 고칠 수 있음: {이름} {단골} {키워드} {매장} 자리에 값이 들어감 */
 function thTemplate(r, kw){
-  var c = custStat(r), again = c.visit >= 3 ? " 늘 찾아 주셔서 더욱 감사합니다." : "";
+  var c = custStat(r), again = c.tier === "VVIP" ? " 언제나 저희를 아껴 주셔서 고맙습니다. 앞으로도 정성으로 보답하겠습니다." : c.tier === "VIP" ? " 늘 찾아 주시는 마음, 잊지 않고 있습니다." : "";   /* 등급 문장은 정해진 대로(09-20) */
   var extra = kw ? " " + kw.replace(/[,.]?\s*$/, "") + " 함께한 자리가 좋은 기억으로 남으셨기를 바랍니다." : "";
   return thCfg().template.replace(/\{이름\}/g, r.name).replace(/\{단골\}/g, again).replace(/\{키워드\}/g, extra).replace(/\{매장\}/g, store().name || "한옥반점");
 }
@@ -73,7 +74,7 @@ function thPrompt(r, kw){
   var lines = cfg.promptLines.slice().concat([
     "길이: 80자 이상 " + cfg.maxLen + "자 이하.",
     "손님 정보: 이름 " + r.name + " · " + pplText(r) + (r.infants ? "(어린이 " + r.infants + "명)" : "") + " · " + dateLabel(r.date) + " " + hm(r.time) + " · " + seat + (r.menuType === "코스" ? " · 코스 식사" : "") +
-      (c.visit >= 2 ? " · 방문 " + c.visit + "회째(단골)" : " · 첫 방문") + (r.request ? " · 요청사항: " + r.request : "") + (r.allergy ? " · 알러지: " + r.allergy : "") + (c.memo ? " · 손님 메모: " + c.memo : ""),
+      (c.visit >= 2 ? " · 방문 " + c.visit + "회째(단골)" : " · 첫 방문") + (c.tier ? " · 등급 " + c.tier : "") + (r.request ? " · 요청사항: " + r.request : "") + (r.allergy ? " · 알러지: " + r.allergy : "") + (c.memo ? " · 손님 메모: " + c.memo : ""),
     kw ? "사장님이 준 키워드(꼭 자연스럽게 녹일 것): " + kw : "사장님 키워드 없음",
     cfg.common ? "공통 참고(계절·날씨 등): " + cfg.common : "",
     "다녀간 날: " + r.date + " (" + dateLabel(r.date) + ") · 문자 보내는 날: " + sendD + " (" + dateLabel(sendD) + ", 다녀간 지 " + gap + "일 뒤" + (holi ? ", 공휴일" : "") + ")"
@@ -199,7 +200,7 @@ function sheetThanks(){
   var tabs = '<div class="seg" style="margin-bottom:12px"><button class="' + (TH.tab === "make" ? "on" : "") + '" onclick="TH.tab=\'make\'; render()">만들기</button><button class="' + (TH.tab === "queue" ? "on" : "") + '" onclick="TH.tab=\'queue\'; render()">보낸 문자' + (wait ? '<i class="cnt">' + wait + '</i>' : '') + '</button></div>';
   var body = TH.tab === "queue" ? thQueueHtml() : thMakeHtml();
   /* AI 가 도는 동안: 화면 위 가운데 동그라미 하나(카드마다·맨 위 띠가 아니라). 중단 가능. 그동안 닫기는 막힘(thGuard) */
-  var run = thRunning() ? '<div class="th-orb"><canvas class="ai-wave"></canvas><div class="th-orb-t">AI 가 문자를 완성하고 있습니다' + (TH.run ? '<small>' + TH.run.done + ' / ' + TH.run.total + '</small>' : '') + '</div><button class="btn sm" onclick="thStop()">중단</button></div>' : '';
+  var run = thRunning() ? '<div class="th-dim"></div><div class="th-orb"><canvas class="ai-wave"></canvas><div class="th-orb-t">AI 가 문자를 완성하고 있습니다' + (TH.run ? '<small>' + TH.run.done + ' / ' + TH.run.total + '</small>' : '') + '</div><button class="btn sm" onclick="thStop()">중단</button></div>' : '';
   return run + '<div class="th-top">' + tabs + (cfg.key ? '' : '<span class="tag rust sm">Gemini 키 없음 — 기본 양식만</span>') + '</div>' + body;
 }
 function thMakeHtml(){

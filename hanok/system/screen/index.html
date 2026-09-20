@@ -1730,6 +1730,9 @@ label.chk span{width:auto}
 .cd-step{display:grid; grid-template-columns:36px 1fr; gap:var(--s12); padding:var(--s16) 0; border-top:1px solid var(--border)}
 .cd-n{width:32px; height:32px; border-radius:50%; background:var(--text); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700}
 .cd-step.done .cd-n{background:var(--pine)}
+.cd-row .cd-v.on{background:var(--text); border-color:var(--text); color:#fff}
+.cd-row .cd-n{color:var(--rust)} .cd-row .cd-n.on{background:var(--text); border-color:var(--text); color:#FF9A88}   /* 노쇼: 빨간 글씨, 누르면 검은 바탕 */
+.cd-row.s-노쇼 .t{text-decoration:line-through}
 .cd-b b{display:block; font-size:var(--fs-title)} .cd-b small{display:block; color:var(--text-2); font-size:var(--fs-sub); margin-top:2px; line-height:1.5}
 /* ---------- 개발자에게 (14h) ---------- */
 .dq-top{display:flex; flex-direction:row-reverse; align-items:center; gap:var(--s16); margin-bottom:var(--s8)}   /* 글 쓰기는 오른쪽(09-20) */
@@ -1767,6 +1770,7 @@ label.chk span{width:auto}
 .th-pl input{width:100%; font:inherit; font-size:var(--fs-sub); padding:6px 10px; border:1px solid var(--border); border-radius:var(--r-sm)}
 
 /* 감사 문자 09-20 두 번째 손질 */
+.th-dim{position:fixed; top:0; right:0; bottom:0; left:0; z-index:55; background:rgba(23,22,20,.45)}   /* AI 진행 중엔 뒤를 어둡게 하고 못 누르게(09-20) — 중단만 */
 .th-orb{position:fixed; top:74px; left:50%; transform:translateX(-50%); z-index:60; display:flex; align-items:center; gap:var(--s12); padding:var(--s8) var(--s16) var(--s8) var(--s8); border-radius:999px; background:radial-gradient(120% 100% at 50% 100%, #1B1633 0%, #0B0A14 70%); color:#fff; box-shadow:0 12px 32px rgba(0,0,0,.35)}
 .th-orb canvas{width:56px; height:56px; border-radius:50%; flex:none}
 .th-orb-t{font-size:var(--fs-sub); font-weight:600; letter-spacing:.03em; line-height:1.3}
@@ -7691,33 +7695,32 @@ function setPair(id, other){
   t.pair = other; o.pair = id; render();
 }
 /* ---------- 배치 보기(09-20 재아): 설정이 의도대로 들어갔는지 한눈에 ----------
-   층마다 테이블을 둥글게 놓고, 붙일 수 있는 것끼리 선으로 잇습니다. 짝(pair)은 굵은 선. 번호 = 배정 순서(위에서부터).
-   룸은 순서대로 알약, 합침 그룹은 묶음 상자. 도면이 아니라 '규칙' 을 그린 것입니다 */
+   룸은 동그라미, 테이블은 네모. 위에 있을수록 배정 순서가 빠름(숫자 대신 높이). 붙일 수 있는 테이블은 점선, 평소 붙여 두는 짝은 굵은 파란 선,
+   룸 합침 그룹은 초록 선으로 묶음. 도면이 아니라 '규칙' 을 그린 것입니다 */
 function seatMapHtml(st){
-  const rooms = st.rooms || [], order = r => rooms.indexOf(r) + 1;
+  const rooms = st.rooms || [];
+  const cols = [];   /* [{title, items:[seat…], kind:"room"|"table"}] — 룸 한 기둥 + 층마다 테이블 기둥 */
+  const rs = rooms.filter(isRoom); if(rs.length) cols.push({ title:"룸", items:rs, kind:"room" });
   const floors = []; rooms.filter(isTable).forEach(t => { const f = t.floor || ""; if(floors.indexOf(f) < 0) floors.push(f); });
-  const floorSvg = fl => {
-    const ts = rooms.filter(t => isTable(t) && (t.floor || "") === fl), n = ts.length;
-    const W = 420, H = 300, cx = W / 2, cy = H / 2, R = Math.min(W, H) / 2 - 46;
-    const pos = {}; ts.forEach((t, i) => { const a = -Math.PI / 2 + i * 2 * Math.PI / Math.max(n, 1); pos[t.id] = { x: cx + R * Math.cos(a), y: cy + R * Math.sin(a) }; });
-    const seen = {}, edges = [];
-    ts.forEach(t => (t.joinWith || []).forEach(o => { if(!pos[o]) return; const k = [t.id, o].sort().join("|"); if(seen[k]) return; seen[k] = 1; const pair = t.pair === o; edges.push(`<line x1="${pos[t.id].x}" y1="${pos[t.id].y}" x2="${pos[o].x}" y2="${pos[o].y}" stroke="${pair ? "#3F6C9E" : "#C9C3B8"}" stroke-width="${pair ? 5 : 1.5}" ${pair ? "" : 'stroke-dasharray="4 4"'}/>`); }));
-    const nodes = ts.map(t => { const p = pos[t.id], r = 30; return `<g><circle cx="${p.x}" cy="${p.y}" r="${r}" fill="${t.pair ? "#EAF1F8" : "#FFFFFF"}" stroke="${t.minCapacity ? "#A63B26" : "#8E877C"}" stroke-width="1.5"/>
-      <text x="${p.x}" y="${p.y - 4}" text-anchor="middle" font-size="12" font-weight="700" fill="#1B1A18">${esc(t.name)}</text>
-      <text x="${p.x}" y="${p.y + 11}" text-anchor="middle" font-size="10" fill="#6B655B">${t.seats || 4}${t.capacity && t.capacity !== t.seats ? "~" + t.capacity : ""}인</text>
-      <circle cx="${p.x + r - 4}" cy="${p.y - r + 4}" r="9" fill="#1B1A18"/><text x="${p.x + r - 4}" y="${p.y - r + 7.5}" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">${order(t)}</text></g>`; }).join("");
-    return `<div class="smap-floor"><div class="smap-t">${esc(fl || "층 미정")} 테이블 <small>${n}개 · ${ts.reduce((a, t) => a + (t.seats || 4), 0)}석</small></div>
-      <svg viewBox="0 0 ${W} ${H}" class="smap">${edges}${nodes}</svg></div>`;
+  floors.forEach(fl => cols.push({ title:(fl || "층 미정") + " 테이블", items:rooms.filter(t => isTable(t) && (t.floor || "") === fl), kind:"table" }));
+  const colSvg = col => {
+    const n = col.items.length, W = 300, STEP = 64, H = 40 + n * STEP + 10, R = 24;
+    const pos = {}; col.items.forEach((t, i) => { pos[t.id] = { x: 60 + (i % 3) * 90, y: 40 + i * STEP }; });   /* 위에서부터 순서, 좌우는 세 줄로 번갈아 */
+    const edges = [], seen = {};
+    if(col.kind === "table") col.items.forEach(t => (t.joinWith || []).forEach(o => { if(!pos[o]) return; const k = [t.id, o].sort().join("|"); if(seen[k]) return; seen[k] = 1; const pair = t.pair === o;
+      edges.push(`<line x1="${pos[t.id].x}" y1="${pos[t.id].y}" x2="${pos[o].x}" y2="${pos[o].y}" stroke="${pair ? "#3F6C9E" : "#C9C3B8"}" stroke-width="${pair ? 5 : 1.5}" ${pair ? "" : 'stroke-dasharray="4 4"'}/>`); }));
+    if(col.kind === "room") (st.joins || []).forEach(j => { const ids = (j.ids || []).filter(id => pos[id]); for(let k = 1; k < ids.length; k++) edges.push(`<line x1="${pos[ids[k-1]].x}" y1="${pos[ids[k-1]].y}" x2="${pos[ids[k]].x}" y2="${pos[ids[k]].y}" stroke="#4E7A5B" stroke-width="4" opacity=".8"/>`); });
+    const nodes = col.items.map(t => { const p = pos[t.id];
+      const shape = col.kind === "room" ? `<circle cx="${p.x}" cy="${p.y}" r="${R}" fill="#FFFFFF" stroke="#8E877C" stroke-width="1.5"/>`
+        : `<rect x="${p.x - R}" y="${p.y - R + 2}" width="${R * 2}" height="${R * 2 - 4}" rx="5" fill="${t.pair ? "#EAF1F8" : "#FFFFFF"}" stroke="${t.minCapacity ? "#A63B26" : "#8E877C"}" stroke-width="1.5"/>`;
+      const sub = col.kind === "room" ? `${t.minCapacity || 0}/${t.minWeekend || t.minCapacity || 0}~${t.capacity}` : `${t.seats || 4}${t.capacity && t.capacity !== t.seats ? "~" + t.capacity : ""}인`;
+      return `<g>${shape}<text x="${p.x}" y="${p.y - 3}" text-anchor="middle" font-size="12" font-weight="700" fill="#1B1A18">${esc(t.name)}</text><text x="${p.x}" y="${p.y + 11}" text-anchor="middle" font-size="9.5" fill="#6B655B">${sub}</text></g>`; }).join("");
+    return `<div class="smap-floor"><div class="smap-t">${esc(col.title)} <small>${n}개${col.kind === "table" ? " · " + col.items.reduce((a, t) => a + (t.seats || 4), 0) + "석" : ""}</small></div>
+      <svg viewBox="0 0 ${W} ${H}" class="smap" style="max-height:${H}px"><text x="10" y="18" font-size="10" fill="#9A9186">▲ 위쪽이 먼저 배정</text>${edges}${nodes}</svg></div>`;
   };
-  const roomList = rooms.filter(isRoom).map(r => `<span class="smap-room"><i>${order(r)}</i>${esc(r.name)}<small>${r.minCapacity || 0}/${r.minWeekend || r.minCapacity || 0}~${r.capacity}</small></span>`).join("");
-  const joins = (st.joins || []).map(j => `<span class="smap-join">${j.ids.map(id => { const r = rooms.find(x => x.id === id); return r ? esc(r.name) : id; }).join(" ⊞ ")}<small>${j.min || "?"}~${j.max || "?"}인${j.note ? " · " + esc(j.note) : ""}</small></span>`).join("");
   return `<div class="smap-wrap">
-    <div class="subhead">룸 <span>번호 = 배정 순서 · 아래 숫자는 최소 평일/주말 ~ 최대</span></div>
-    <div class="smap-rooms">${roomList || '<span class="muted">룸 없음</span>'}</div>
-    <div class="subhead">룸 합침 <span>중문을 떼서 한 방처럼</span></div>
-    <div class="smap-rooms">${joins || '<span class="muted">합침 그룹 없음</span>'}</div>
-    <div class="subhead">테이블 <span>점선 = 붙일 수 있음 · 굵은 파란 선 = 평소 붙여 두는 짝 · 붉은 테두리 = 최소 인원 있음 · 번호 = 배정 순서</span></div>
-    <div class="smap-floors">${floors.map(floorSvg).join("")}</div>
+    <p class="f-note" style="margin:0 0 12px">동그라미 = 룸, 네모 = 테이블. <b>위에 있을수록 먼저 배정</b>됩니다. 룸의 초록 선 = 합침 그룹(중문 탈거) · 테이블의 점선 = 붙일 수 있음 · 굵은 파란 선 = 평소 붙여 두는 짝 · 붉은 테두리 = 최소 인원 있음. 숫자는 룸이 최소 평일/주말~최대, 테이블이 좌석 수.</p>
+    <div class="smap-floors">${cols.map(colSvg).join("")}</div>
   </div>`;
 }
 function toggleJoinWith(id, other){
@@ -7791,7 +7794,7 @@ function saRoot(){
 async function openSiteAdmin(){
   if(!supaOn()){ await uiAlert("서버 설정이 없는 빌드입니다", "홈페이지 관리는 서버가 있어야 합니다.", "warn"); return; }
   if(!await adminGate("홈페이지 관리 열기")) return;
-  view.form = {type:"site", page:true};
+  view.form = {type:"site", page:true, back:(view.form && (view.form.type === "owner" || view.form.back)) ? "owner" : ""};   /* 사장님 페이지에서 열었으면 닫을 때 거기로(09-20) */
   /* 닫았다 다시 열면 고치던 초안은 그대로(서버에서 다시 읽지 않음). 저장돼 있으면 새로 읽어 다른 기기 변경을 반영 */
   if(SA && !SA.err && !SA.loading && saDirty()){ render(); return; }
   if(!SA || SA.err) SA = {loading:true, tab:"online"}; else SA.loading = true;
@@ -8382,7 +8385,7 @@ var HR_ROLES = ["주방", "홀"];   /* 묶는 순서. 다른 역할은 뒤에 '�
 async function openStaffPage(){
   if(!supaOn()){ await uiAlert("서버 설정이 없는 빌드입니다", "워크시프트는 서버가 있어야 합니다.", "warn"); return; }
   if(!await adminGate("워크시프트 열기")) return;
-  view.form = {type:"staff", page:true};
+  view.form = {type:"staff", page:true, back:(view.form && (view.form.type === "owner" || view.form.back)) ? "owner" : ""};   /* 사장님 페이지에서 열었으면 닫을 때 거기로(09-20) */
   if(!HR) HR = { week: hrWeekStart(todayStr()), month: monthStr(), staff:[], att:{}, loaded:{}, cfg:null, loading:true, pop:null, edit:null, view:"week", slip:null, setup:false, retired:false };
   render(); await hrLoad(); render();
 }
@@ -8885,7 +8888,7 @@ function custOf(phone){ var d = String(phone || "").replace(/\D/g, ""); return (
 async function openGuestsPage(){
   if(!supaOn()){ await uiAlert("서버 설정이 없는 빌드입니다", "손님 관리는 서버가 있어야 합니다.", "warn"); return; }
   if(!await adminGate("손님 관리 열기")) return;
-  view.form = {type:"guests", page:true};
+  view.form = {type:"guests", page:true, back:(view.form && (view.form.type === "owner" || view.form.back)) ? "owner" : ""};   /* 사장님 페이지에서 열었으면 닫을 때 거기로(09-20) */
   if(!GS) GS = { q:"", sort:"recent", open:null, loading:true };
   render(); await gsLoadMemos(); GS.loading = false; render();
 }
@@ -8989,26 +8992,46 @@ async function openOwnerPage(){
 }
 /* ---------- 퇴근하기(09-20 재아) — 안내 겸 정리. 써도 되고 안 써도 되는 편의 기능 ----------
    1) 오늘 예약 중 아직 '확정' 인 것 → 방문/노쇼 한 번에   2) 근무 찍기(워크시프트)   3) 감사 문자 만들어 예약 발송   4) 끝 */
-async function openCloseDay(date){ view.form = {type:"closeday", page:true, date:date || todayStr()}; render(); }
+async function openCloseDay(date){
+  var d = date || todayStr();
+  if(d === todayStr()){   /* 영업 종료 2시간 전부터(재아 09-20). 그 전이면 막지 않고 되묻기만 */
+    var h = hoursFor(d); if(!h.closed && toMin(nowHM()) < toMin(h.close) - 120){
+      if(!await uiConfirm("아직 영업 중입니다", "퇴근 정리는 영업 종료 2시간 전(" + hm(minToHM(toMin(h.close) - 120)) + ")부터 여는 걸 권합니다. 그래도 열까요?", {ok:"열기", cancel:"나중에"})) return;
+    }
+  }
+  view.form = {type:"closeday", page:true, date:d, back:(view.form && (view.form.type === "owner" || view.form.back)) ? "owner" : ""}; render();
+}
 function sheetCloseDay(){
-  var today = (view.form && view.form.date) || todayStr(), nowM = toMin(nowHM());
-  var left = store().reservations.filter(function(r){ return r.date === today && r.status === "확정"; }).sort(function(a,b){ return a.time.localeCompare(b.time); });
-  var rows = left.map(function(r){ return '<div class="rowitem"><span class="time-col">' + esc(hm(r.time)) + '</span><span class="grow"><span class="t">' + esc(r.name) + tierTag(r) + groupTag(r) + '</span><span class="s">' + esc(pplText(r)) + ' · ' + esc(resSeatLabel(r)) + '</span></span>' +
-    '<span class="btn-row"><button class="btn sm primary" onclick="cdMark(\'' + r.id + '\', \'방문\')">방문</button><button class="btn sm ghost danger" onclick="cdMark(\'' + r.id + '\', \'노쇼\')">노쇼</button></span></div>'; }).join("");
+  var today = (view.form && view.form.date) || todayStr();
+  /* 그날 예약 전부(확정·방문·노쇼) — 누른 건 사라지지 않고 검게 표시된 채 남음(재아 09-20) */
+  var all = store().reservations.filter(function(r){ return r.date === today && (r.status === "확정" || r.status === "방문" || r.status === "노쇼"); }).sort(function(a,b){ return a.time.localeCompare(b.time); });
+  var left = all.filter(function(r){ return r.status === "확정"; });
+  var rows = all.map(function(r){ return '<div class="rowitem cd-row s-' + r.status + '"><span class="time-col">' + esc(hm(r.time)) + '</span><span class="grow"><span class="t">' + esc(r.name) + tierTag(r) + groupTag(r) + '</span><span class="s">' + esc(pplText(r)) + ' · ' + esc(resSeatLabel(r)) + '</span></span>' +
+    '<span class="btn-row"><button class="btn sm cd-v ' + (r.status === "방문" ? "on" : "ghost") + '" onclick="cdMark(\'' + r.id + '\', \'방문\')">방문</button><button class="btn sm cd-n ' + (r.status === "노쇼" ? "on" : "ghost") + '" onclick="cdMark(\'' + r.id + '\', \'노쇼\')">노쇼</button></span></div>'; }).join("");
   var done = left.length === 0;
   return '<div class="cd-wrap">' +
     '<div class="cd-hello"><b>' + (today === todayStr() ? "오늘도 고생 많으셨습니다." : dateLabel(today) + " 정리") + '</b><small>' + esc(dateLabel(today)) + ' · 문 닫기 전에 세 가지만 정리하면 내일 아침이 편합니다.</small></div>' +
-    '<div class="cd-step ' + (done ? "done" : "") + '"><div class="cd-n">1</div><div class="cd-b"><b>오늘 손님 방문 처리</b>' +
-      (done ? '<small>예약이 모두 정리됐습니다.</small>' : '<small>아직 \'확정\' 으로 남은 ' + left.length + '건 — 온 손님은 방문, 안 온 손님은 노쇼. 감사 문자는 방문으로 표시한 손님께만 갑니다.</small><div class="card searchbox" style="margin-top:8px">' + rows + '</div>') + '</div></div>' +
+    '<div class="cd-step ' + (done ? "done" : "") + '"><div class="cd-n">1</div><div class="cd-b"><b>손님 방문 처리</b>' +
+      (all.length ? '<small>' + (done ? '예약이 모두 정리됐습니다.' : '아직 \'확정\' 으로 남은 ' + left.length + '건 — 온 손님은 방문, 안 온 손님은 노쇼. 감사 문자는 방문으로 표시한 손님께만 갑니다.') + '</small>' +
+        (done ? '' : '<div class="btn-row" style="margin-top:8px"><button class="btn sm primary" onclick="cdMarkAll()">남은 ' + left.length + '건 전부 방문</button></div>') +
+        '<div class="card searchbox" style="margin-top:8px">' + rows + '</div>' : '<small>이날 예약이 없습니다.</small>') + '</div></div>' +
     '<div class="cd-step"><div class="cd-n">2</div><div class="cd-b"><b>근무 찍기</b><small>오늘 나온 직원의 근무를 워크시프트에 표시합니다. 정규대로면 ○ 한 번.</small><div class="btn-row" style="margin-top:8px"><button class="btn sm" onclick="openStaffPage()">워크시프트 열기</button></div></div></div>' +
     '<div class="cd-step"><div class="cd-n">3</div><div class="cd-b"><b>감사 문자</b><small>방문 처리한 손님께 키워드를 넣고 \'AI 로 완성하기\' → \'예약발송하기\'. 내일 오전 11시에 나갑니다. 지금 안 해도 내일 아침 확인 목록에 남습니다.</small><div class="btn-row" style="margin-top:8px"><button class="btn sm" onclick="openThanksPage()">감사 문자 열기</button></div></div></div>' +
     '<div class="cd-step"><div class="cd-n">4</div><div class="cd-b"><b>끝</b><small>다 했으면 닫고 퇴근하세요. 시스템은 켜 둬도 됩니다(TV 는 따로).</small><div class="btn-row" style="margin-top:8px"><button class="btn sm primary" onclick="closeSheet()">퇴근</button></div></div></div>' +
     '</div>';
 }
 async function cdMark(id, st){
-  var r = store().reservations.find(function(x){ return x.id === id; }); if(!r) return;
+  var r = store().reservations.find(function(x){ return x.id === id; }); if(!r || r.status === st) return;
   if(st === "노쇼" && !await uiConfirm("노쇼로 표시할까요?", r.name + " 손님 · " + hm(r.time), {ok:"노쇼", cancel:"취소", tone:"warn"})) return;
   var before = deepClone(r); r.status = st; addChange(r, "상태", diffRes(before, r)); saveData(); render();
+}
+async function cdMarkAll(){
+  var today = (view.form && view.form.date) || todayStr();
+  var left = store().reservations.filter(function(r){ return r.date === today && r.status === "확정"; });
+  if(!left.length) return;
+  if(!await uiConfirm("남은 " + left.length + "건을 전부 방문으로 표시할까요?", "안 온 손님이 있으면 그 줄만 노쇼로 바꾸면 됩니다.", {ok:"전부 방문", cancel:"취소"})) return;
+  left.forEach(function(r){ var before = deepClone(r); r.status = "방문"; addChange(r, "상태", diffRes(before, r)); });
+  saveData(); render();
 }
 /* ---------- 예약 내보내기(CSV, 09-20 재아) — 엑셀에서 바로 열림(UTF-8 BOM). 기간은 물어봄 ---------- */
 async function exportCsv(){
@@ -9060,11 +9083,12 @@ var TH_DEF_PROMPT = [
   "말투는 부드럽고 따뜻하게. 절대 날카롭거나 딱딱하거나 훈계하듯 쓰지 마세요. 받는 사람이 기분 좋아지는 담백한 한 통이어야 합니다.",
   "다녀간 날과 문자를 보내는 날을 보고 '어제·그제·지난주' 같은 표현을 보내는 날 기준으로 맞추고, 계절·요일·명절(설·추석·크리스마스·연말연시 등)이면 그에 맞는 인사를 한 줄 자연스럽게 넣으세요.",
   "요청사항·손님 메모는 참고만 하세요. 직원끼리 보는 메모, 민감한 내용(노쇼·불만·건강·개인사·금액)은 알아도 모르는 척, 문자에 절대 드러내지 마세요.",
+  "손님 등급이 VIP 면 이 문장을 그대로 한 번 넣으세요: '늘 찾아 주시는 마음, 잊지 않고 있습니다.' VVIP 면: '언제나 저희를 아껴 주셔서 고맙습니다. 앞으로도 정성으로 보답하겠습니다.' 등급이 없으면 넣지 마세요.",
   "이모지는 최대 1개(없어도 됨). 광고·할인·링크·해시태그·과장은 쓰지 마세요. 스팸처럼 보이면 안 됩니다.",
   "설명 없이 문자 본문만 답하세요."
 ];
 var TH_DEF_TEMPLATE = "[한옥반점]\n{이름}님, 예약하고 찾아 주셔서 진심으로 감사합니다.{단골}{키워드} 준비한 음식과 자리가 편안하셨기를 바랍니다. 다음에 오실 때도 정성껏 모시겠습니다. 늘 건강하시고 좋은 날 보내세요.\n한옥반점 드림";
-var TH_DEF_KW = ["가족 모임", "생신", "회식", "상견례", "아이 생일", "첫 방문", "단골"];
+var TH_DEF_KW = ["가족 모임", "생신", "회식", "상견례", "아이 생일", "어르신 모시고", "데이트", "단체 모임"];   /* 첫 방문·단골은 자동으로 아니까 뺌(09-20) */
 /* 사장님이 더한 문장. 옛 저장본(promptLines 전체)이면 기본 줄 수를 넘는 부분만 */
 function thExtraLines(a){ if(Array.isArray(a.extraLines)) return a.extraLines.filter(Boolean); if(Array.isArray(a.promptLines) && a.promptLines.length > TH_DEF_PROMPT.length) return a.promptLines.slice(TH_DEF_PROMPT.length).filter(Boolean); return []; }
 function thCfg(){
@@ -9086,8 +9110,8 @@ function thSaveCfg(patch){ var st = store().settings; st.ai = Object.assign({}, 
 async function openThanksPage(){
   if(!supaOn()){ await uiAlert("서버 설정이 없는 빌드입니다", "감사 문자는 서버가 있어야 합니다.", "warn"); return; }
   if(!await adminGate("감사 문자 열기")) return;
-  view.form = {type:"thanks", page:true};
-  if(!TH) TH = { date: shiftDate(todayStr(), -1), items:{}, queue:[], tab:"make", busy:{}, sendAt:"", adv:false, run:null, stop:false, qf:"all" };
+  view.form = {type:"thanks", page:true, back:(view.form && (view.form.type === "owner" || view.form.back)) ? "owner" : ""};   /* 사장님 페이지에서 열었으면 닫을 때 거기로(09-20) */
+  if(!TH) TH = { date: todayStr(), items:{}, queue:[], tab:"make", busy:{}, sendAt:"", adv:false, run:null, stop:false, qf:"all" };   /* 다녀간 날 기본 = 오늘(퇴근 때 만드니까, 09-20) · 발송 내일 */
   TH.sendAt = TH.sendAt || (shiftDate(todayStr(), 1) + "T" + thCfg().hour);   /* 기본 내일 11시(09-20) */
   render(); await thLoadQueue(); render();
 }
@@ -9106,7 +9130,7 @@ function thItem(r){ return TH.items[r.id] || (TH.items[r.id] = { kws:[], text:""
 function thKw(it){ return (it.kws || []).join(", "); }
 /* 기본 양식 — AI 가 막혔을 때, 또는 사장님이 원할 때. 설정에서 고칠 수 있음: {이름} {단골} {키워드} {매장} 자리에 값이 들어감 */
 function thTemplate(r, kw){
-  var c = custStat(r), again = c.visit >= 3 ? " 늘 찾아 주셔서 더욱 감사합니다." : "";
+  var c = custStat(r), again = c.tier === "VVIP" ? " 언제나 저희를 아껴 주셔서 고맙습니다. 앞으로도 정성으로 보답하겠습니다." : c.tier === "VIP" ? " 늘 찾아 주시는 마음, 잊지 않고 있습니다." : "";   /* 등급 문장은 정해진 대로(09-20) */
   var extra = kw ? " " + kw.replace(/[,.]?\s*$/, "") + " 함께한 자리가 좋은 기억으로 남으셨기를 바랍니다." : "";
   return thCfg().template.replace(/\{이름\}/g, r.name).replace(/\{단골\}/g, again).replace(/\{키워드\}/g, extra).replace(/\{매장\}/g, store().name || "한옥반점");
 }
@@ -9116,7 +9140,7 @@ function thPrompt(r, kw){
   var lines = cfg.promptLines.slice().concat([
     "길이: 80자 이상 " + cfg.maxLen + "자 이하.",
     "손님 정보: 이름 " + r.name + " · " + pplText(r) + (r.infants ? "(어린이 " + r.infants + "명)" : "") + " · " + dateLabel(r.date) + " " + hm(r.time) + " · " + seat + (r.menuType === "코스" ? " · 코스 식사" : "") +
-      (c.visit >= 2 ? " · 방문 " + c.visit + "회째(단골)" : " · 첫 방문") + (r.request ? " · 요청사항: " + r.request : "") + (r.allergy ? " · 알러지: " + r.allergy : "") + (c.memo ? " · 손님 메모: " + c.memo : ""),
+      (c.visit >= 2 ? " · 방문 " + c.visit + "회째(단골)" : " · 첫 방문") + (c.tier ? " · 등급 " + c.tier : "") + (r.request ? " · 요청사항: " + r.request : "") + (r.allergy ? " · 알러지: " + r.allergy : "") + (c.memo ? " · 손님 메모: " + c.memo : ""),
     kw ? "사장님이 준 키워드(꼭 자연스럽게 녹일 것): " + kw : "사장님 키워드 없음",
     cfg.common ? "공통 참고(계절·날씨 등): " + cfg.common : "",
     "다녀간 날: " + r.date + " (" + dateLabel(r.date) + ") · 문자 보내는 날: " + sendD + " (" + dateLabel(sendD) + ", 다녀간 지 " + gap + "일 뒤" + (holi ? ", 공휴일" : "") + ")"
@@ -9242,7 +9266,7 @@ function sheetThanks(){
   var tabs = '<div class="seg" style="margin-bottom:12px"><button class="' + (TH.tab === "make" ? "on" : "") + '" onclick="TH.tab=\'make\'; render()">만들기</button><button class="' + (TH.tab === "queue" ? "on" : "") + '" onclick="TH.tab=\'queue\'; render()">보낸 문자' + (wait ? '<i class="cnt">' + wait + '</i>' : '') + '</button></div>';
   var body = TH.tab === "queue" ? thQueueHtml() : thMakeHtml();
   /* AI 가 도는 동안: 화면 위 가운데 동그라미 하나(카드마다·맨 위 띠가 아니라). 중단 가능. 그동안 닫기는 막힘(thGuard) */
-  var run = thRunning() ? '<div class="th-orb"><canvas class="ai-wave"></canvas><div class="th-orb-t">AI 가 문자를 완성하고 있습니다' + (TH.run ? '<small>' + TH.run.done + ' / ' + TH.run.total + '</small>' : '') + '</div><button class="btn sm" onclick="thStop()">중단</button></div>' : '';
+  var run = thRunning() ? '<div class="th-dim"></div><div class="th-orb"><canvas class="ai-wave"></canvas><div class="th-orb-t">AI 가 문자를 완성하고 있습니다' + (TH.run ? '<small>' + TH.run.done + ' / ' + TH.run.total + '</small>' : '') + '</div><button class="btn sm" onclick="thStop()">중단</button></div>' : '';
   return run + '<div class="th-top">' + tabs + (cfg.key ? '' : '<span class="tag rust sm">Gemini 키 없음 — 기본 양식만</span>') + '</div>' + body;
 }
 function thMakeHtml(){
@@ -9362,7 +9386,7 @@ var DQ = null;
 
 async function openDevPage(){
   if(!supaOn()){ await uiAlert("서버 설정이 없는 빌드입니다", "개발자에게는 서버가 있어야 합니다.", "warn"); return; }
-  view.form = {type:"devreq", page:true};
+  view.form = {type:"devreq", page:true, back:(view.form && (view.form.type === "owner" || view.form.back)) ? "owner" : ""};   /* 사장님 페이지에서 열었으면 닫을 때 거기로(09-20) */
   if(!DQ) DQ = { list:[], loading:true, err:null, open:null, draft:null };
   DQ.loading = true; render();
   await dqLoad(); render();
@@ -9669,6 +9693,7 @@ function openSchedule(from){
 function openOverride(){ view.form={type:"ovr"}; view.ovrBulk = null; render(); }
 function closeSheet(){
   if(typeof thGuard === "function" && thGuard()) return;   /* 감사 문자 AI 진행 중엔 못 나감(09-20) */
+  if(view.form && view.form.page && view.form.back === "owner"){ view.form = {type:"owner", page:true}; render(); return; }   /* 사장님 페이지로 돌아감(09-20 재아: 홈으로 튀는 게 불편) */
   var was = view.form && view.form.type === "res", wasNaver = view.form && view.form.type === "naver";
   view.form=null; tmpRes=null; view.pickAll=false; view.pickSeat=null; render(); if(was) histPop();
   if(wasNaver && view.fsWas){ view.fsWas = false; tryFullscreenForce(); }   /* 닫기 버튼 클릭이 손짓이라 여기서는 됩니다 */

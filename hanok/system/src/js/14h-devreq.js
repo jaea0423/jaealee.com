@@ -8,7 +8,7 @@ var DQ = null;
 
 async function openDevPage(){
   if(!supaOn()){ await uiAlert("서버 설정이 없는 빌드입니다", "개발자에게는 서버가 있어야 합니다.", "warn"); return; }
-  view.form = {type:"devreq", page:true};
+  view.form = {type:"devreq", page:true, back:(view.form && (view.form.type === "owner" || view.form.back)) ? "owner" : ""};   /* 사장님 페이지에서 열었으면 닫을 때 거기로(09-20) */
   if(!DQ) DQ = { list:[], loading:true, err:null, open:null, draft:null };
   DQ.loading = true; render();
   await dqLoad(); render();
