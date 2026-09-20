@@ -19,7 +19,7 @@ function sheetOwner(){
     (isMobile() ? "" : item("openDisplay()", ICON.tv, "디스플레이 모드", "손님용 TV 화면")) +
     item("openSlip()", ICON.print, "수기 예약지", "전화 예약을 손으로 적는 종이") +
     item("openDevPage()", ICON.sms, "개발자에게", "고칠 것 · 급한 것 글로 남기기") +
-    item("openPinManage()", ICON.key, "PIN 관리", "직원 PIN · 관리자 비밀번호") +
+    item("openPinManage()", ICON.key, "PIN 관리", "직원 PIN · 사장님 2차 비밀번호") +
     item("setTab('settings')", ICON.set, "설정", "운영시간 · 좌석 · 코스 · 문자 안내") +
     '</div><p class="f-note">사장님만 쓰는 것들을 모았습니다. 직원 화면에서는 안 보이게 하는 작업(권한)은 나중에.</p>';
 }

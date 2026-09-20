@@ -30,7 +30,7 @@ function uiChoice(title, msg, choices){
 /* 한 줄 입력 팝업 — 관리자 비밀번호 등. 취소면 null */
 function uiPrompt(title, msg, opt){
   opt = opt || {};
-  return new Promise(res => { modalReplace({mode:"prompt", title, msg, tone:"ok", ok:opt.ok||"확인", cancel:"취소", password:!!opt.password, value:opt.value||"", res}); });
+  return new Promise(res => { modalReplace({mode:"prompt", title, msg, tone:"ok", ok:opt.ok||"확인", cancel:"취소", password:!!opt.password, numeric:!!opt.numeric, maxlen:opt.maxlen||0, value:opt.value||"", res}); });
 }
 /* 여러 개 중 하나 고르기 — 고른 번호(0부터), 취소면 null */
 function uiChoose(title, options, msg){
@@ -51,7 +51,7 @@ function renderModal(){
     <div class="overlay modal-ov" onclick="modalAnswer(false)">
       <div class="modal ${m.tone}" onclick="event.stopPropagation()">
         <div class="md-h">${esc(m.title)}</div>
-        <div class="md-b">${lines}${m.mode==="prompt"?`<input id="md-input" type="${m.password?"password":"text"}" value="${esc(m.value||"")}" autofocus style="margin-top:8px; width:100%" onkeydown="if(event.key==='Enter') modalPromptAnswer()">`:""}</div>
+        <div class="md-b">${lines}${m.mode==="prompt"?`<input id="md-input" type="${m.password?"password":"text"}" value="${esc(m.value||"")}" autofocus style="margin-top:8px; width:100%${m.numeric?"; font-size:24px; letter-spacing:.3em; text-align:center":""}"${m.numeric?' inputmode="numeric" pattern="[0-9]*"':""}${m.maxlen?` maxlength="${m.maxlen}"`:""} onkeydown="if(event.key==='Enter') modalPromptAnswer()">`:""}</div>
         <div class="md-f">
           ${m.mode==="confirm"||m.mode==="prompt"||m.mode==="choice"?`<button class="btn" onclick="modalAnswer(${m.mode==="confirm"?"false":"null"})">${esc(m.cancel)}</button>`:""}
           ${m.mode==="choice" ? (m.choices||[]).map(([lb,v],i)=>`<button class="btn ${m.tone==="warn"&&i===0?"danger-fill":"primary"}" onclick="modalAnswer(${JSON.stringify(v)})">${esc(lb)}</button>`).join("") :
@@ -63,27 +63,27 @@ function renderModal(){
 }
 
 /* ---------- 매장 선택 ---------- */
+/* 첫 화면 — 09-20(재아): 안집은 뺌(사장·직원이 다 달라서 나중에 따로). 한옥반점 한 장만 잠깐 보이고 몇 초 뒤 자동으로 PIN 화면으로.
+   아무 데나 누르면 바로. (예전엔 안집|한옥반점 좌우 분할에서 골랐음 — .split/.panel CSS 는 그대로 씀) */
+var SELECT_TIMER = null;
 function renderSelect(){
-  const order = ["anjip","hanok"];   // 왼쪽 안집, 오른쪽 한옥반점
-  const panels = order.map(key => {
-    const s = DATA[key];
-    const cnt = s.reservations.filter(r => r.date===todayStr() && r.status==="확정").length;
-    const locked = !s.enabled;
-    return `
-      <button class="panel ${locked?'soon':''}" data-store="${key}"
-        ${locked?'aria-disabled="true"':''} onclick="${locked?"":`goStore('${key}')`}">
+  const key = "hanok", s = DATA[key];
+  const cnt = s.reservations.filter(r => r.date===todayStr() && r.status==="확정").length;
+  clearTimeout(SELECT_TIMER);
+  SELECT_TIMER = setTimeout(function(){ if(!view.storeKey && !view.display) goStore(key); }, 2500);
+  return `<div class="split solo" onclick="goStore('${key}')">
+      <button class="panel" data-store="${key}">
         <span class="bg"></span><span class="veil"></span>
         <span class="label">
           <span class="name">${esc(s.name)}</span>
           <span class="rule"></span>
-          ${locked ? `<span class="badge">준비 중</span>`
-                   : `<span class="meta">오늘 예약 ${cnt}건</span>`}
+          <span class="meta">오늘 예약 ${cnt}건</span>
         </span>
-      </button>`;
-  }).join("");
-  return `<div class="split">${panels}</div>`;
+      </button>
+    </div>`;
 }
 function goStore(key){
+  clearTimeout(SELECT_TIMER);
   view.storeKey=key; view.tab="dash"; view.date=todayStr(); view.calMonth=monthStr();
   if(AUTHED) logEvent("매장 진입", key);
   render();

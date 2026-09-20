@@ -29,7 +29,7 @@ function infoize(html){
 }
 /* 설정 화면의 구역 — 09-20(재아): 접이식 행 대신 사장님 메뉴처럼 큰 단추 목록. 하나를 누르면 그 구역만 펼쳐지고 '← 설정' 으로 돌아옵니다.
    (접힌 행만 죽 늘어선 화면은 내용이 안 보여 허전했음) */
-const SET_ICON = { site:"site", hours:"clock", rules:"res", seats:"dash", course:"chart", source:"inbox", sms:"sms", disp:"tv", policy:"set", zoom:"search", admin:"key", etc:"more" };
+const SET_ICON = { thanks:"spark", site:"site", hours:"clock", rules:"res", seats:"dash", course:"chart", source:"inbox", sms:"sms", disp:"tv", policy:"set", zoom:"search", admin:"key", etc:"more" };
 function sec(key, title, extra, inner){
   if(view.setSec === key) return `
     <section class="card fold on set-one">
@@ -312,7 +312,7 @@ function renderSettings(){
   const adminBody = `
     <div class="btn-row">
       <button class="btn" onclick="openPinManage()">PIN 번호 관리</button>
-      ${supaOn() ? `<button class="btn" onclick="openAdminPw()">관리자 비밀번호 변경</button>` : ""}
+      ${supaOn() ? `<button class="btn" onclick="openAdminPw()">사장님 2차 비밀번호 변경</button>` : ""}
       <button class="btn" onclick="openLogs()">로그</button>
       <button class="btn" onclick="openRate()">예약률 추이</button>
       <button class="btn" onclick="openSmsFree()">문자 보내기</button>
@@ -320,7 +320,7 @@ function renderSettings(){
       <button class="btn" onclick="openSlip()">수기 예약지 인쇄</button>
     </div>
     <p class="f-note">수기 예약지: 직원이 전화로 받은 예약을 손으로 적는 종이(A4 한 장에 2장). 사장님이 시스템에 넣습니다. 열리면 Ctrl+P 로 인쇄해 카운터에 두세요. 더보기(⋮) 메뉴에서도 열립니다 — 관리자 비밀번호 없이.</p>
-    <p class="f-note">설정은 관리자 비밀번호로 들어옵니다. PIN 관리·관리자 비밀번호 변경·로그·초기화는 한 번 더 묻습니다. PIN 은 직원과 공유하는 번호, 관리자 비밀번호는 사장님만 아는 것입니다.</p>`;
+    <p class="f-note">설정은 사장님 2차 비밀번호로 들어옵니다. PIN 관리·2차 비밀번호 변경·로그·초기화는 한 번 더 묻습니다. PIN 은 직원과 공유하는 번호, 관리자 비밀번호는 사장님만 아는 것입니다.</p>`;
 
   /* 화면 크기 — 기기마다 적당한 값이 달라 사장님이 직접 고르게 둡니다.
      저장 위치가 settings 가 아니라 DATA._ui 인 이유: 이건 매장 운영 값이 아니라
@@ -442,6 +442,7 @@ function renderSettings(){
         : `${offsetLabel(sm.remindOffset)} ${hm(pad(sm.remindHour)+":00")}`,
       smsBodyUI)}
     ${sec("disp","디스플레이",`${tvType()==="grid"?"좌석표":"목록"} · 광고 영상`, dispBody)}
+    ${sec("thanks","감사 문자 AI",`프롬프트 · 기본 양식 · 한도`, typeof thSettingsBody === "function" ? thSettingsBody(st) : "")}
     ${sec("policy","운영 판단 기준",
       `정원 ${st.minCountAdultsOnly===false?"총원":"성인"} · 임박 ${st.loSoon!=null?st.loSoon:120}분`,
       policyBody)}

@@ -15,6 +15,8 @@ var CACHE_KEY = "hanok.cache.v1" + PROJ_TAG, UI_KEY = "hanok.ui.v1", SESSION_KEY
 function supaOn(){ return !!(SUPA_CFG && SUPA_CFG.url && SUPA_CFG.anonKey); }
 /* PIN 은 화면에서 4자리, Supabase 비밀번호는 최소 6자리 → 뒤에 "00" 을 붙여 씁니다 (재아 결정. 계정 비밀번호도 그렇게 등록) */
 function pinToPassword(pin){ return String(pin) + "00"; }
+/* 사장님 2차 비밀번호(숫자 6자리, 09-20 재아) → 서버 admin 계정 비밀번호. 옛 관리자 비밀번호(자유 문자열)도 당분간 그대로 받아 줍니다(adminGate) */
+function adminToPassword(code){ return String(code) + "00"; }
 
 /* 호출 하나. 실패는 Error 로 던집니다 — e.network(연결 없음) / e.status(HTTP) 로 구분 */
 async function sb(path, opt){

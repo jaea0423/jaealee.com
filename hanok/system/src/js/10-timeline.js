@@ -234,9 +234,7 @@ function renderTimeline(date, compact){
   return `
     <div class="tl-top">
       <div class="tl-kpis">
-        <span class="tl-kpi"><b>${st2.rate}%</b></span>
-        <span class="tl-kpi sub">룸 <b>${roomRate}%</b></span>
-        <span class="tl-kpi sub">테이블 <b>${hallRate}%</b></span>
+        <!-- 예약률 숫자(전체·룸·테이블)는 뺌(재아 09-20: 그래프로 보이고, 예약률 추이 기능이 따로 있음) -->
         ${(()=>{
           /* 그날 상황을 한 줄로 — 각자 뜻에 맞는 색으로 */
           const day = s.reservations.filter(x=>x.date===date);

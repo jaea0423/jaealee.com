@@ -46,7 +46,7 @@ SRC_CANDIDATES = [
 # 이미지·글꼴 base64 는 system/assets/ 에 둡니다 (2026-09-16 hanok/ 으로 옮기면서 test/hanok/assets · v4/assets 에서 복사해 옴)
 ASSET_DIRS = ["assets", ".", "src", "img", "images"]
 
-SUBS = [("__ANJIP_B64__", "anjip.b64"), ("__HANOK_B64__", "hanok.b64")] + \
+SUBS = [("__ANJIP_B64__", "anjip.b64"), ("__HANOK_B64__", "hanok.b64"), ("__LOGO_B64__", "logo-dark.b64")] + \
        [("__BG%d_B64__" % i, "bg%d.b64" % i) for i in range(1, 8)] + \
        [# 글꼴 — 한글 2,350자(KS X 1001)+영문+기호로 서브셋한 woff2 를 base64 로.
         # 외부에서 불러오지 않는 이유: 오프라인·구형 TV 에서도 떠야 합니다.

@@ -221,6 +221,7 @@ function openSchedule(from){
 }
 function openOverride(){ view.form={type:"ovr"}; view.ovrBulk = null; render(); }
 function closeSheet(){
+  if(typeof thGuard === "function" && thGuard()) return;   /* 감사 문자 AI 진행 중엔 못 나감(09-20) */
   var was = view.form && view.form.type === "res", wasNaver = view.form && view.form.type === "naver";
   view.form=null; tmpRes=null; view.pickAll=false; view.pickSeat=null; render(); if(was) histPop();
   if(wasNaver && view.fsWas){ view.fsWas = false; tryFullscreenForce(); }   /* 닫기 버튼 클릭이 손짓이라 여기서는 됩니다 */
@@ -1466,8 +1467,8 @@ function sheetPin(){
     <div class="sheet-actions"><button class="btn ghost" onclick="closeSheet()">닫기</button></div>`;
   return `
     ${sheetHead("PIN 번호 변경")}
-    <label class="f big"><div class="lb">관리자 비밀번호</div>
-      <input id="pin-admin" type="password" placeholder="관리자 비밀번호" autocomplete="off">
+    <label class="f big"><div class="lb">사장님 2차 비밀번호</div>
+      <input id="pin-admin" type="password" placeholder="숫자 6자리" autocomplete="off" inputmode="numeric">
     </label>
     <label class="f big"><div class="lb">현재 PIN</div>
       <input id="pin-cur" type="password" inputmode="numeric" maxlength="4" placeholder="••••" autocomplete="off">
@@ -1504,8 +1505,8 @@ async function savePin(){
   if(a !== b){ await uiAlert2("새 PIN이 서로 다릅니다."); return; }
   if(!/^\d{4}$/.test(cur)){ await uiAlert2("현재 PIN을 입력하세요."); return; }
   try{
-    try{ await authToken(SUPA_CFG.adminEmail, adminPw); }
-    catch(e){ if(e.status === 400){ logEvent("PIN 변경 실패", "관리자 비밀번호 불일치"); await uiAlert2("관리자 비밀번호가 맞지 않습니다."); return; } throw e; }
+    try{ await authToken(SUPA_CFG.adminEmail, /^\d{6}$/.test(adminPw) ? adminToPassword(adminPw) : adminPw); }
+    catch(e){ if(e.status === 400){ logEvent("PIN 변경 실패", "2차 비밀번호 불일치"); await uiAlert2("사장님 2차 비밀번호가 맞지 않습니다."); return; } throw e; }
     var staffTok;
     try{ staffTok = await authToken(SUPA_CFG.staffEmail, pinToPassword(cur)); }
     catch(e){ if(e.status === 400){ logEvent("PIN 변경 실패", "현재 PIN 불일치"); await uiAlert2("현재 PIN이 맞지 않습니다."); return; } throw e; }
@@ -1521,17 +1522,17 @@ async function savePin(){
 /* 관리자 비밀번호 변경 — admin 본인 토큰으로 */
 function sheetAdminPw(){
   return `
-    ${sheetHead("관리자 비밀번호 변경")}
-    <label class="f big"><div class="lb">현재 관리자 비밀번호</div>
-      <input id="apw-cur" type="password" autocomplete="off">
+    ${sheetHead("사장님 2차 비밀번호 변경")}
+    <label class="f big"><div class="lb">현재 2차 비밀번호</div>
+      <input id="apw-cur" type="password" autocomplete="off" inputmode="numeric">
     </label>
-    <label class="f big"><div class="lb">새 비밀번호 (6자 이상)</div>
-      <input id="apw-new" type="password" autocomplete="off">
+    <label class="f big"><div class="lb">새 2차 비밀번호 (숫자 6자리)</div>
+      <input id="apw-new" type="password" autocomplete="off" inputmode="numeric" maxlength="6" pattern="[0-9]*">
     </label>
-    <label class="f big"><div class="lb">새 비밀번호 확인</div>
-      <input id="apw-new2" type="password" autocomplete="off">
+    <label class="f big"><div class="lb">새 2차 비밀번호 확인</div>
+      <input id="apw-new2" type="password" autocomplete="off" inputmode="numeric" maxlength="6" pattern="[0-9]*">
     </label>
-    <p class="f-note">관리자 비밀번호는 PIN 을 바꿀 때 씁니다. 잊으면 Supabase 대시보드에서만 되돌릴 수 있습니다.</p>
+    <p class="f-note">2차 비밀번호는 사장님 메뉴·설정·PIN 변경처럼 사장님만 하는 일에 씁니다. 직원 PIN(4자리)과 다르게 정하세요. 잊으면 Supabase 대시보드에서만 되돌릴 수 있습니다.</p>
     <div class="sheet-actions">
       <button class="btn ghost" onclick="closeSheet()">닫기</button>
       <button class="btn primary" onclick="saveAdminPw()">변경</button>
@@ -1540,29 +1541,38 @@ function sheetAdminPw(){
 async function saveAdminPw(){
   const g = id => document.getElementById(id).value;
   const cur = g("apw-cur"), a = g("apw-new"), b = g("apw-new2");
-  if(a.length < 6){ await uiAlert2("새 비밀번호는 6자 이상이어야 합니다."); return; }
-  if(a !== b){ await uiAlert2("새 비밀번호가 서로 다릅니다."); return; }
+  if(!/^\d{6}$/.test(a)){ await uiAlert2("새 2차 비밀번호는 숫자 6자리여야 합니다."); return; }
+  if(a !== b){ await uiAlert2("새 2차 비밀번호가 서로 다릅니다."); return; }
   try{
     var tok;
-    try{ tok = await authToken(SUPA_CFG.adminEmail, cur); }
-    catch(e){ if(e.status === 400){ logEvent("관리자 비밀번호 변경 실패", "현재 비밀번호 불일치"); await uiAlert2("현재 관리자 비밀번호가 맞지 않습니다."); return; } throw e; }
-    await setPassword(tok, a);
+    try{ tok = await authToken(SUPA_CFG.adminEmail, /^\d{6}$/.test(cur) ? adminToPassword(cur) : cur); }
+    catch(e){
+      var ok2 = false;
+      if(/^\d{6}$/.test(cur)){ try{ tok = await authToken(SUPA_CFG.adminEmail, cur); ok2 = true; }catch(e2){} }   /* 옛 비밀번호가 우연히 6자리였던 경우 */
+      if(!ok2){ if(e.status === 400){ logEvent("2차 비밀번호 변경 실패", "현재 비밀번호 불일치"); await uiAlert2("현재 2차 비밀번호가 맞지 않습니다."); return; } throw e; }
+    }
+    await setPassword(tok, adminToPassword(a));
   }catch(e){
     await uiAlert("비밀번호를 바꾸지 못했습니다", e.network ? "서버에 연결할 수 없습니다." : e.message, "warn"); return;
   }
   logEvent("관리자 비밀번호 변경", "성공");
   view.form = null; render();
-  await uiAlert2("관리자 비밀번호가 변경되었습니다.");
+  await uiAlert2("사장님 2차 비밀번호가 변경되었습니다.");
 }
 
 /* ---------- 접속 기록 ---------- */
 /* 관리자 비밀번호 한 번 묻기 — 서버가 없는 빌드는 그냥 통과 */
+/* 09-20(재아): '사장님 아이디' 대신 사장님 2차 비밀번호(숫자 6자리). 서버 admin 계정 비밀번호 = 6자리+"00".
+   아직 옛 비밀번호(자유 문자열)를 쓰는 서버면 그것도 받아 줍니다 — 6자리 → 안 되면 친 그대로 한 번 더 */
 async function adminGate(what){
   if(!supaOn()) return true;
-  const pw = await uiPrompt(what, "관리자 비밀번호를 입력하세요", {password:true, ok:"확인"});
+  const pw = await uiPrompt(what, "사장님 2차 비밀번호(숫자 6자리)를 입력하세요", {password:true, numeric:true, maxlen:12, ok:"확인"});
   if(pw == null) return false;
-  try{ await authToken(SUPA_CFG.adminEmail, pw); logEvent("관리자 확인", what); return true; }
-  catch(e){ await uiAlert("관리자 비밀번호가 다릅니다", "", "warn"); return false; }
+  try{ await authToken(SUPA_CFG.adminEmail, /^\d{6}$/.test(pw) ? adminToPassword(pw) : pw); logEvent("관리자 확인", what); return true; }
+  catch(e){
+    if(/^\d{6}$/.test(pw)){ try{ await authToken(SUPA_CFG.adminEmail, pw); logEvent("관리자 확인", what + " (옛 비밀번호)"); return true; }catch(e2){} }
+    await uiAlert("2차 비밀번호가 다릅니다", "", "warn"); return false;
+  }
 }
 function sheetSetLog(){
   const log = (store().settings._setlog || []).slice().reverse();
