@@ -51,6 +51,7 @@ python build.py dev    # dev  → dev/index.html, dev/screen/index.html
 - 주석은 한국어로, '왜' 를 쓰기
 - 흉내 표시(`.mockbar` `.sb-mock` `.lk-open`) 지우지 마세요
 - 나타났다 사라지는 요소는 **자리를 미리 잡아 두고 보이기만** 바꾸기
+- 시트는 `.overlay` 의 `onclick` 이 닫기입니다 — `15b-sheetdrag.js`(손가락으로 끌어서 닫기)가 그 클릭을 대신 부르므로 닫는 길을 다른 곳으로 옮기지 마세요. 스크롤 가장자리(상단바 밑선)는 `12c-apple.css` + 같은 조각의 `body.scrolled`
 - **예약 객체 모양을 바꾸지 않습니다.** 행 ↔ 객체 변환은 `rowToRes` / `resToRow` 두 함수에서만
 - **날짜가 정해진 계산은 `store().settings` 말고 `settingsAt(date)`(좌석은 `roomsAt(date)`·`joinsAt(date)`, 코스는 `courseGroups(date)`)** — 예정 설정(`03b-scheduled.js`)이 그 날짜에 유효한 값을 돌려줍니다. id 로 좌석을 찾을 땐 `seatById`(예정 좌석까지 찾음)
 - supabase-js · Realtime · Edge Function 안 씀. `fetch` 로 REST·Auth 직접 호출(`sb()` 헬퍼 하나)
