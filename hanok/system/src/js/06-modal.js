@@ -293,9 +293,9 @@ function renderStore(){
           <button class="tvbtn icon b-reqs ${reqPending().length?'has':''}" onclick="openRequests()" title="홈페이지 예약${reqPending().length?` ${reqPending().length}건`:""}" aria-label="홈페이지 예약">${ICON.inbox}<i class="dot"></i></button>` : `
           ${view.date===todayStr() ? "" : `<button class="tvbtn b-today" onclick="goToday()">오늘</button>`}
           <button class="tvbtn icon b-refresh" onclick="manualRefresh()" title="새로고침" aria-label="새로고침">${ICON.refresh}</button>
-          <button class="tvbtn b-search" onclick="openSearch()">예약 검색</button>
-          <button class="tvbtn b-reqs ${reqPending().length?'has':''}" onclick="openRequests()" title="${reqPending().length?`대기 ${reqPending().length}건`:""}">홈페이지 예약<i class="dot"></i></button>   <!-- 09-20: 개수 대신 오른쪽 위 불빛(1건 이상) -->
-          <button class="tvbtn accent b-add" onclick="openWizard()">＋ 예약 등록</button>`}
+          <button class="tvbtn icon b-reqs ${reqPending().length?'has':''}" onclick="openRequests()" title="홈페이지 예약${reqPending().length?` · 대기 ${reqPending().length}건`:""}" aria-label="홈페이지 예약">${ICON.inbox}<i class="dot"></i></button>   <!-- 09-20: 아이콘 + 강조색, 대기 있으면 불빛 -->
+          <button class="tvbtn b-search" onclick="openSearch()" title="단축키 /">검색</button>
+          <button class="tvbtn accent b-add" onclick="openWizard()" title="단축키 +">＋ 등록</button>`}
           ${view.tab==="settings" ? "" : `
           <!-- 더보기(⋮): 자주 안 쓰는 것들을 여기로 모았습니다 — 예약률 추이 · 영업시간 · 설정 · 디스플레이 모드 -->
           <div class="more-wrap">

@@ -554,6 +554,11 @@ document.addEventListener("keydown", function(e){
     else if(view.moreOpen){ closeMore(); }
     return;
   }
+  /* 대시보드 단축키(09-20 재아): / = 예약 검색, + 또는 = = 예약 등록. 입력칸에 커서가 있거나 창이 떠 있으면 안 됨 */
+  if(!MODAL && !WZ && !view.form && view.tab === "dash" && AUTHED && !view.display && !(t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable))){
+    if(e.key === "/"){ e.preventDefault(); openSearch(); return; }
+    if(e.key === "+" || e.key === "="){ e.preventDefault(); openWizard(); return; }
+  }
   /* 숫자 비밀번호 팝업: 키보드 숫자·Backspace 도 받음 */
   if(MODAL && MODAL.mode === "pin"){ if(/^[0-9]$/.test(e.key)){ e.preventDefault(); pinModalPush(e.key); } else if(e.key === "Backspace"){ e.preventDefault(); pinModalPush("back"); } return; }
   if(e.key !== "Enter" || e.ctrlKey || e.altKey || e.isComposing) return;

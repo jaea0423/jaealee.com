@@ -520,6 +520,8 @@ body.notoday .card{box-shadow:none}
 .tvbtn.b-reqs{position:relative; overflow:visible}
 .tvbtn.b-reqs .dot{display:none; position:absolute; top:-5px; right:-5px; width:12px; height:12px; border-radius:50%; background:#F0932B; border:2px solid var(--surface); box-shadow:0 0 0 3px rgba(240,147,43,.25)}
 .tvbtn.b-reqs.has .dot{display:block}
+.tvbtn.icon.b-reqs{border-color:#3F6C9E; color:#3F6C9E}   /* 홈페이지 예약 아이콘은 파란 강조(검정 아님, 09-20) */
+.tvbtn.icon.b-reqs svg{stroke:#3F6C9E}
 .tvbtn.b-sched .cnt{font-style:normal; margin-left:6px; min-width:18px; height:18px; padding:0 5px; border-radius:9px; background:rgba(255,255,255,.14); font-size:12px; line-height:18px; text-align:center}
 .tvbtn.b-sched.has .cnt{background:#C9A66B; color:#1a1714}
 /* 예전 상단바 부품 — 지금 HTML 에는 없거나 거의 안 쓰입니다. Phase 3 에서 확인 후 정리 */
@@ -1469,6 +1471,16 @@ label.chk span{width:auto}
 .ub-row{display:flex; align-items:center; gap:var(--s8)}
 .ub-row .ub-u{flex:1; min-width:0; overflow-wrap:anywhere; text-decoration:underline; text-underline-offset:3px; margin:0}
 
+/* 배치 보기(09-20) */
+.smap-rooms{display:flex; flex-wrap:wrap; gap:var(--s8); margin-bottom:var(--s8)}
+.smap-room, .smap-join{display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border:1px solid var(--border-strong); border-radius:999px; background:var(--surface); font-weight:700; font-size:var(--fs-sub)}
+.smap-room i{width:18px; height:18px; border-radius:50%; background:var(--text); color:#fff; font-style:normal; font-size:10px; display:inline-flex; align-items:center; justify-content:center}
+.smap-room small, .smap-join small{font-weight:500; color:var(--text-3); font-size:var(--fs-label)}
+.smap-join{border-style:dashed; background:var(--pine-soft)}
+.smap-floors{display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:var(--s16)}
+.smap-floor{border:1px solid var(--border); border-radius:var(--r-md); background:var(--surface); padding:var(--s8)}
+.smap-t{font-weight:700; font-size:var(--fs-body); padding:var(--s4) var(--s8)} .smap-t small{color:var(--text-3); font-weight:500; margin-left:6px}
+.smap{width:100%; height:auto; display:block}
 /* 설정 목록형(09-20) — 큰 단추 격자(사장님 메뉴와 같은 .own-grid). 열린 구역은 카드 하나 + 위에 '← 설정' */
 .set-grid{margin-top:var(--s8)}
 .set-grid .set-divider{grid-column:1 / -1; margin:var(--s16) 0 var(--s4)}
@@ -1666,6 +1678,7 @@ label.chk span{width:auto}
 }
 /* 사장님 메뉴(14f): 큰 단추 격자 */
 .own-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:var(--s12)}
+.own-it small{display:none}   /* 단추 아래 설명은 뺌(09-20 재아: 정신없음) */
 .own-it{display:flex; flex-direction:column; align-items:flex-start; gap:var(--s4); padding:var(--s16); background:var(--surface); border:1px solid var(--border); border-radius:var(--r-md); text-align:left; font:inherit; color:var(--text); cursor:pointer; min-height:112px}
 .own-it:active{background:var(--surface-2)}
 .own-it svg{width:26px; height:26px; stroke:currentColor; fill:none; stroke-width:1.6; color:var(--pine); margin-bottom:var(--s4)}
@@ -1709,7 +1722,7 @@ label.chk span{width:auto}
 .cd-step.done .cd-n{background:var(--pine)}
 .cd-b b{display:block; font-size:var(--fs-title)} .cd-b small{display:block; color:var(--text-2); font-size:var(--fs-sub); margin-top:2px; line-height:1.5}
 /* ---------- 개발자에게 (14h) ---------- */
-.dq-top{display:flex; align-items:center; gap:var(--s16); margin-bottom:var(--s8)}
+.dq-top{display:flex; flex-direction:row-reverse; align-items:center; gap:var(--s16); margin-bottom:var(--s8)}   /* 글 쓰기는 오른쪽(09-20) */
 .dq-top .btn{flex:none; white-space:nowrap}
 .dq-row.urgent .t{color:var(--rust)}
 .dq-done{opacity:.7}
@@ -2863,7 +2876,7 @@ var SMS_DEFAULT = {
   remindHour:19,          /* 그날 몇 시에 — 전날 오후 7시 */
   parkingNote:"※ 주차 안내\n주차장 이용 가능합니다. 주차비 1,000원이며 발렛은 무료입니다.",
   /* 문안(8차-X, 재아): 설정에서 고칠 수 있습니다. {매장} {이름} {일시} {인원} {주차} {오늘내일} 자리에 값이 들어갑니다 */
-  tplNew:"[ 예약 완료 안내 ]\n\n안녕하세요, {매장}입니다.\n예약확인 문자 드립니다.\n\n{이름} 님\n{일시}\n{인원}\n\n예약해주셔서 감사합니다.",
+  tplNew:"[ 예약 완료 안내 ]\n\n안녕하세요, {매장}입니다.\n예약확인 문자 드립니다.\n\n{이름} 님\n{일시}\n{인원}\n예약번호 {예약번호}\n\n예약해주셔서 감사합니다.",
   tplRemind:"[ 예약 방문 안내 ]\n\n{오늘내일} 예약 방문 안내드립니다.\n\n{이름} 님\n{일시}\n{인원}\n\n{주차}\n\n시간 변경이 필요하시면 미리 연락 주시기 바랍니다.\n\n감사합니다."
 };
 const DEFAULT_DATA = {
@@ -3724,11 +3737,11 @@ function pad(n){ return String(n).padStart(2,"0"); }
 /* 예약 번호(09-20 재아): 손님과 통화하거나 문자에 적을 때 부르는 6자리. 예약 id 에서 늘 같은 값이 나옵니다(저장 안 함).
    지운 예약이라도 id 가 다르니 번호가 겹치지 않습니다(같은 id 는 없음). 글자는 헷갈리는 0·O·1·I 를 뺀 32자 */
 function resCode(r){
-  var s = String(r && r.id || ""), h = 2166136261;
+  /* 숫자 8자리(재아 09-20). 앞 prefix(res_/rq_)는 빼고 셈 — 홈페이지 접수 번호(rq_…)와 그걸 받은 예약(res_…)이 같은 번호가 되게(사이트 js/reserve.js 에 같은 함수) */
+  var s = String(r && r.id || "").replace(/^(res|rq)_/, ""), h = 2166136261;
   for(var i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
-  var A = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ", out = "";
-  for(var k = 0; k < 6; k++){ out += A[h % 32]; h = Math.floor(h / 32) ^ (h * 7 & 0xffffffff); h >>>= 0; }
-  return out;
+  h = (h ^ (h >>> 13)) >>> 0; h = Math.imul(h, 2654435761) >>> 0;
+  return String(h % 100000000).padStart(8, "0");
 }
 function newId(prefix){
   var h = "0123456789abcdef", out = "", i, r;
@@ -5317,9 +5330,9 @@ function renderStore(){
           <button class="tvbtn icon b-reqs ${reqPending().length?'has':''}" onclick="openRequests()" title="홈페이지 예약${reqPending().length?` ${reqPending().length}건`:""}" aria-label="홈페이지 예약">${ICON.inbox}<i class="dot"></i></button>` : `
           ${view.date===todayStr() ? "" : `<button class="tvbtn b-today" onclick="goToday()">오늘</button>`}
           <button class="tvbtn icon b-refresh" onclick="manualRefresh()" title="새로고침" aria-label="새로고침">${ICON.refresh}</button>
-          <button class="tvbtn b-search" onclick="openSearch()">예약 검색</button>
-          <button class="tvbtn b-reqs ${reqPending().length?'has':''}" onclick="openRequests()" title="${reqPending().length?`대기 ${reqPending().length}건`:""}">홈페이지 예약<i class="dot"></i></button>   <!-- 09-20: 개수 대신 오른쪽 위 불빛(1건 이상) -->
-          <button class="tvbtn accent b-add" onclick="openWizard()">＋ 예약 등록</button>`}
+          <button class="tvbtn icon b-reqs ${reqPending().length?'has':''}" onclick="openRequests()" title="홈페이지 예약${reqPending().length?` · 대기 ${reqPending().length}건`:""}" aria-label="홈페이지 예약">${ICON.inbox}<i class="dot"></i></button>   <!-- 09-20: 아이콘 + 강조색, 대기 있으면 불빛 -->
+          <button class="tvbtn b-search" onclick="openSearch()" title="단축키 /">검색</button>
+          <button class="tvbtn accent b-add" onclick="openWizard()" title="단축키 +">＋ 등록</button>`}
           ${view.tab==="settings" ? "" : `
           <!-- 더보기(⋮): 자주 안 쓰는 것들을 여기로 모았습니다 — 예약률 추이 · 영업시간 · 설정 · 디스플레이 모드 -->
           <div class="more-wrap">
@@ -5872,7 +5885,7 @@ function smsPpl(r){
 /* kind: "접수" | "재안내". 재안내는 offset 을 넘겨 문구를 바꿉니다 */
 function smsText(r, kind, offset, st){
   var c = smsCfg(st), s = st || store();
-  var map = { "매장": s.name || "", "이름": r.name || "", "일시": smsWhen(r), "인원": smsPpl(r),
+  var map = { "매장": s.name || "", "이름": r.name || "", "일시": smsWhen(r), "인원": smsPpl(r), "예약번호": typeof resCode === "function" ? resCode(r) : "",
               "주차": (c.parkingNote || "").trim(),
               /* '오늘 / 내일 / 모레' 는 설정값이 아니라 보내는 날과 예약일의 실제 차이로 정합니다 */
               "오늘내일": kind === "접수" ? "" : (smsGapWord(r) || "") };
@@ -5881,7 +5894,7 @@ function smsText(r, kind, offset, st){
 }
 /* 문안의 {자리} 를 채우고, 빈 값 때문에 생긴 앞 공백·겹친 빈 줄을 정리합니다 */
 function smsFill(tpl, map){
-  var out = String(tpl || "").replace(/\{(매장|이름|일시|인원|주차|오늘내일)\}/g, function(_, k){ return map[k] != null ? map[k] : ""; });
+  var out = String(tpl || "").replace(/\{(매장|이름|일시|인원|주차|오늘내일|예약번호)\}/g, function(_, k){ return map[k] != null ? map[k] : ""; });
   out = out.replace(/^[ \t]+/mg, "").replace(/\n{3,}/g, "\n\n");
   return out.trim();
 }
@@ -6003,6 +6016,11 @@ function checkItems(date){
   const list = s.reservations.filter(r=>r.date===d && r.status==="확정");
   const items = [];
 
+  /* 어제(또는 그 전) '확정' 으로 남은 예약 — 방문/노쇼 정리를 안 한 것(09-20: 퇴근하기를 안 눌렀을 때의 그물). 감사 문자는 방문으로 표시해야만 나감 */
+  if(d === today){
+    var stale = s.reservations.filter(function(r){ return r.status === "확정" && r.date < today; });
+    if(stale.length) items.push(["amber", `방문·노쇼 정리 안 된 예약 ${stale.length}건`, stale.slice(0,3).map(function(r){ return dateLabel(r.date).replace(/ \(.\)$/, "") + " " + r.name; }).join(", "), `openCloseDay('${stale[0].date}')`]);
+  }
   /* 어제 다녀간 손님 감사 문자 미발송 — 누락 방지(09-20). 수는 thanksTick 이 1분마다 셈 */
   if(typeof TH_MISSING === "number" && TH_MISSING > 0 && d === today) items.push(["amber", `감사 문자 안 보낸 손님 ${TH_MISSING}명`, "어제 방문 손님 중 예약 발송이 없는 건", `openThanksPage()`]);
   /* 홈페이지에서 들어온 손님 요청 — 날짜와 상관없이 대기 중이면 맨 위에 */
@@ -6795,7 +6813,7 @@ async function reqAccept(id){
   }
   const st = store().settings;
   const rec = {
-    id:newId("res"), date:q.date, time:q.time, name:q.name, phone:phoneNorm(q.phone),
+    id:"res_" + String(q.id).replace(/^rq_/, ""), date:q.date, time:q.time, name:q.name, phone:phoneNorm(q.phone),   /* 접수 번호와 같은 예약 번호가 나오게(resCode) */
     people:q.people, infants:q.kids || 0, chairs:(typeof chairDefaultInfants === "function" && chairDefaultInfants()) ? (q.kids || 0) : 0,
     roomId:null, extraIds:[], seatPref:pr.seatPref, tentativeRoomId:pr.tentativeRoomId, tentativeSplit:pr.tentativeSplit, tentativeExtra:pr.tentativeExtra,
     source:"기타", sourceDetail:"홈페이지 예약", createdAt:new Date().toISOString(),
@@ -7226,7 +7244,8 @@ function renderSettings(){
     <p class="f-note" style="margin:0 0 12px">
       <b>배정 순서</b>는 좌석을 정하지 않은 손님에게 자리를 미리 잡아 둘 때 씁니다.
       인원이 맞는 좌석 중 <b>위에서부터</b> 고릅니다(▲▼로 순서를 바꾸세요). 룸과 테이블은 손님이 고른 쪽만 봅니다.</p>
-    <div class="seg seattabs">${tabBtn("room","룸")}${tabBtn("table","테이블")}${tabBtn("join","합침")}</div>
+    <div class="seg seattabs">${tabBtn("room","룸")}${tabBtn("table","테이블")}${tabBtn("join","합침")}<button class="${seatTab==="map"?"on":""}" onclick="view.seatTab='map'; render()">배치 보기</button></div>
+    ${seatTab==="map" ? seatMapHtml(st) : ""}
     ${seatTab==="room" ? `
     <div class="subhead">룸 <span>최소(평일 / 주말·공휴일)보다 적으면 경고. 최적은 안내용(마법사에 표시)</span></div>
     ${rooms.map(roomRowHtml).join("")}
@@ -7659,6 +7678,36 @@ function setPair(id, other){
   const o = st.rooms.find(x=>x.id===other); if(!o) return;
   if(o.pair && o.pair !== id){ const old2 = st.rooms.find(x=>x.id===o.pair); if(old2) delete old2.pair; }
   t.pair = other; o.pair = id; render();
+}
+/* ---------- 배치 보기(09-20 재아): 설정이 의도대로 들어갔는지 한눈에 ----------
+   층마다 테이블을 둥글게 놓고, 붙일 수 있는 것끼리 선으로 잇습니다. 짝(pair)은 굵은 선. 번호 = 배정 순서(위에서부터).
+   룸은 순서대로 알약, 합침 그룹은 묶음 상자. 도면이 아니라 '규칙' 을 그린 것입니다 */
+function seatMapHtml(st){
+  const rooms = st.rooms || [], order = r => rooms.indexOf(r) + 1;
+  const floors = []; rooms.filter(isTable).forEach(t => { const f = t.floor || ""; if(floors.indexOf(f) < 0) floors.push(f); });
+  const floorSvg = fl => {
+    const ts = rooms.filter(t => isTable(t) && (t.floor || "") === fl), n = ts.length;
+    const W = 420, H = 300, cx = W / 2, cy = H / 2, R = Math.min(W, H) / 2 - 46;
+    const pos = {}; ts.forEach((t, i) => { const a = -Math.PI / 2 + i * 2 * Math.PI / Math.max(n, 1); pos[t.id] = { x: cx + R * Math.cos(a), y: cy + R * Math.sin(a) }; });
+    const seen = {}, edges = [];
+    ts.forEach(t => (t.joinWith || []).forEach(o => { if(!pos[o]) return; const k = [t.id, o].sort().join("|"); if(seen[k]) return; seen[k] = 1; const pair = t.pair === o; edges.push(`<line x1="${pos[t.id].x}" y1="${pos[t.id].y}" x2="${pos[o].x}" y2="${pos[o].y}" stroke="${pair ? "#3F6C9E" : "#C9C3B8"}" stroke-width="${pair ? 5 : 1.5}" ${pair ? "" : 'stroke-dasharray="4 4"'}/>`); }));
+    const nodes = ts.map(t => { const p = pos[t.id], r = 30; return `<g><circle cx="${p.x}" cy="${p.y}" r="${r}" fill="${t.pair ? "#EAF1F8" : "#FFFFFF"}" stroke="${t.minCapacity ? "#A63B26" : "#8E877C"}" stroke-width="1.5"/>
+      <text x="${p.x}" y="${p.y - 4}" text-anchor="middle" font-size="12" font-weight="700" fill="#1B1A18">${esc(t.name)}</text>
+      <text x="${p.x}" y="${p.y + 11}" text-anchor="middle" font-size="10" fill="#6B655B">${t.seats || 4}${t.capacity && t.capacity !== t.seats ? "~" + t.capacity : ""}인</text>
+      <circle cx="${p.x + r - 4}" cy="${p.y - r + 4}" r="9" fill="#1B1A18"/><text x="${p.x + r - 4}" y="${p.y - r + 7.5}" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">${order(t)}</text></g>`; }).join("");
+    return `<div class="smap-floor"><div class="smap-t">${esc(fl || "층 미정")} 테이블 <small>${n}개 · ${ts.reduce((a, t) => a + (t.seats || 4), 0)}석</small></div>
+      <svg viewBox="0 0 ${W} ${H}" class="smap">${edges}${nodes}</svg></div>`;
+  };
+  const roomList = rooms.filter(isRoom).map(r => `<span class="smap-room"><i>${order(r)}</i>${esc(r.name)}<small>${r.minCapacity || 0}/${r.minWeekend || r.minCapacity || 0}~${r.capacity}</small></span>`).join("");
+  const joins = (st.joins || []).map(j => `<span class="smap-join">${j.ids.map(id => { const r = rooms.find(x => x.id === id); return r ? esc(r.name) : id; }).join(" ⊞ ")}<small>${j.min || "?"}~${j.max || "?"}인${j.note ? " · " + esc(j.note) : ""}</small></span>`).join("");
+  return `<div class="smap-wrap">
+    <div class="subhead">룸 <span>번호 = 배정 순서 · 아래 숫자는 최소 평일/주말 ~ 최대</span></div>
+    <div class="smap-rooms">${roomList || '<span class="muted">룸 없음</span>'}</div>
+    <div class="subhead">룸 합침 <span>중문을 떼서 한 방처럼</span></div>
+    <div class="smap-rooms">${joins || '<span class="muted">합침 그룹 없음</span>'}</div>
+    <div class="subhead">테이블 <span>점선 = 붙일 수 있음 · 굵은 파란 선 = 평소 붙여 두는 짝 · 붉은 테두리 = 최소 인원 있음 · 번호 = 배정 순서</span></div>
+    <div class="smap-floors">${floors.map(floorSvg).join("")}</div>
+  </div>`;
 }
 function toggleJoinWith(id, other){
   const st = draft(), t = st.rooms.find(x=>x.id===id), o = st.rooms.find(x=>x.id===other);
@@ -8929,17 +8978,17 @@ async function openOwnerPage(){
 }
 /* ---------- 퇴근하기(09-20 재아) — 안내 겸 정리. 써도 되고 안 써도 되는 편의 기능 ----------
    1) 오늘 예약 중 아직 '확정' 인 것 → 방문/노쇼 한 번에   2) 근무 찍기(워크시프트)   3) 감사 문자 만들어 예약 발송   4) 끝 */
-async function openCloseDay(){ view.form = {type:"closeday", page:true}; render(); }
+async function openCloseDay(date){ view.form = {type:"closeday", page:true, date:date || todayStr()}; render(); }
 function sheetCloseDay(){
-  var today = todayStr(), nowM = toMin(nowHM());
+  var today = (view.form && view.form.date) || todayStr(), nowM = toMin(nowHM());
   var left = store().reservations.filter(function(r){ return r.date === today && r.status === "확정"; }).sort(function(a,b){ return a.time.localeCompare(b.time); });
   var rows = left.map(function(r){ return '<div class="rowitem"><span class="time-col">' + esc(hm(r.time)) + '</span><span class="grow"><span class="t">' + esc(r.name) + tierTag(r) + groupTag(r) + '</span><span class="s">' + esc(pplText(r)) + ' · ' + esc(resSeatLabel(r)) + '</span></span>' +
     '<span class="btn-row"><button class="btn sm primary" onclick="cdMark(\'' + r.id + '\', \'방문\')">방문</button><button class="btn sm ghost danger" onclick="cdMark(\'' + r.id + '\', \'노쇼\')">노쇼</button></span></div>'; }).join("");
   var done = left.length === 0;
   return '<div class="cd-wrap">' +
-    '<div class="cd-hello"><b>오늘도 고생 많으셨습니다.</b><small>' + esc(dateLabel(today)) + ' · 문 닫기 전에 세 가지만 정리하면 내일 아침이 편합니다.</small></div>' +
+    '<div class="cd-hello"><b>' + (today === todayStr() ? "오늘도 고생 많으셨습니다." : dateLabel(today) + " 정리") + '</b><small>' + esc(dateLabel(today)) + ' · 문 닫기 전에 세 가지만 정리하면 내일 아침이 편합니다.</small></div>' +
     '<div class="cd-step ' + (done ? "done" : "") + '"><div class="cd-n">1</div><div class="cd-b"><b>오늘 손님 방문 처리</b>' +
-      (done ? '<small>오늘 예약이 모두 정리됐습니다.</small>' : '<small>아직 \'확정\' 으로 남은 ' + left.length + '건 — 온 손님은 방문, 안 온 손님은 노쇼. 감사 문자는 방문으로 표시한 손님께만 갑니다.</small><div class="card searchbox" style="margin-top:8px">' + rows + '</div>') + '</div></div>' +
+      (done ? '<small>예약이 모두 정리됐습니다.</small>' : '<small>아직 \'확정\' 으로 남은 ' + left.length + '건 — 온 손님은 방문, 안 온 손님은 노쇼. 감사 문자는 방문으로 표시한 손님께만 갑니다.</small><div class="card searchbox" style="margin-top:8px">' + rows + '</div>') + '</div></div>' +
     '<div class="cd-step"><div class="cd-n">2</div><div class="cd-b"><b>근무 찍기</b><small>오늘 나온 직원의 근무를 워크시프트에 표시합니다. 정규대로면 ○ 한 번.</small><div class="btn-row" style="margin-top:8px"><button class="btn sm" onclick="openStaffPage()">워크시프트 열기</button></div></div></div>' +
     '<div class="cd-step"><div class="cd-n">3</div><div class="cd-b"><b>감사 문자</b><small>방문 처리한 손님께 키워드를 넣고 \'AI 로 완성하기\' → \'예약발송하기\'. 내일 오전 11시에 나갑니다. 지금 안 해도 내일 아침 확인 목록에 남습니다.</small><div class="btn-row" style="margin-top:8px"><button class="btn sm" onclick="openThanksPage()">감사 문자 열기</button></div></div></div>' +
     '<div class="cd-step"><div class="cd-n">4</div><div class="cd-b"><b>끝</b><small>다 했으면 닫고 퇴근하세요. 시스템은 켜 둬도 됩니다(TV 는 따로).</small><div class="btn-row" style="margin-top:8px"><button class="btn sm primary" onclick="closeSheet()">퇴근</button></div></div></div>' +
@@ -9009,7 +9058,7 @@ function thCfg(){
   var a = store().settings.ai || {};
   return { key: (typeof SUPA_CFG !== "undefined" && SUPA_CFG && SUPA_CFG.geminiKey) || "", model: a.model || TH_DEF_MODEL, hour: a.thanksHour || "11:00", common: a.thanksCommon || "",
     promptLines: Array.isArray(a.promptLines) && a.promptLines.length ? a.promptLines : TH_DEF_PROMPT.slice(),
-    template: a.template || TH_DEF_TEMPLATE, maxLen: Number(a.maxLen) || 200,
+    template: a.template || TH_DEF_TEMPLATE, maxLen: Number(a.maxLen) || 300,
     kwPresets: Array.isArray(a.kwPresets) ? a.kwPresets : TH_DEF_KW.slice() };
 }
 /* 모델마다 '생각(thinking)' 을 끄는 설정이 다름: 3.x 는 thinkingLevel, 2.5 계열(flash-latest)은 thinkingBudget 0. 안 끄면 토큰을 생각에 다 써 본문이 잘림 */
@@ -9235,13 +9284,13 @@ function thQueueHtml(){
 /* 설정 → 감사 문자 AI (14-settings 가 부름). draft 의 settings.ai 를 고칩니다 — '적용하기' 로 저장.
    기본 문장(앞 TH_DEF_PROMPT.length 줄)은 고칠 수는 있어도 지울 수 없음. 모델·API 키는 화면에 없음(재아가 코드에서) */
 function thSettingsBody(st){
-  var a = st.ai = st.ai || {}, cfg = { promptLines: Array.isArray(a.promptLines) && a.promptLines.length ? a.promptLines : TH_DEF_PROMPT.slice(), template: a.template || TH_DEF_TEMPLATE, maxLen: Number(a.maxLen) || 200, kwPresets: Array.isArray(a.kwPresets) ? a.kwPresets : TH_DEF_KW.slice(), hour: a.thanksHour || "11:00" };
+  var a = st.ai = st.ai || {}, cfg = { promptLines: Array.isArray(a.promptLines) && a.promptLines.length ? a.promptLines : TH_DEF_PROMPT.slice(), template: a.template || TH_DEF_TEMPLATE, maxLen: Number(a.maxLen) || 300, kwPresets: Array.isArray(a.kwPresets) ? a.kwPresets : TH_DEF_KW.slice(), hour: a.thanksHour || "11:00" };
   var lines = cfg.promptLines.map(function(l, i){ var core = i < TH_DEF_PROMPT.length; return '<div class="th-pl"><span class="n">' + (i + 1) + '</span><input type="text" value="' + esc(l) + '" onchange="thSetLine(' + i + ', this.value)"><button class="btn sm ghost danger" ' + (core ? 'disabled title="기본 문장은 지울 수 없습니다"' : '') + ' onclick="thDelLine(' + i + ')">삭제</button></div>'; }).join("");
   return '<div class="subhead">프롬프트 <span>문장 하나가 한 줄. 앞 ' + TH_DEF_PROMPT.length + '줄은 기본(고칠 수는 있음). 더한 문장은 그 뒤에 만드는 글부터 적용</span></div>' + lines +
     '<div class="btn-row" style="margin:4px 0 16px"><button class="btn sm" onclick="thAddLine()">＋ 문장 추가</button><button class="btn sm ghost" onclick="thResetLines()">기본으로</button></div>' +
     '<p class="f-note">예: "이번 주는 창립 기념으로 감사 인사를 한 줄 더 넣으세요" 같은 문장을 그때그때 더하고, 끝나면 지우면 됩니다. 손님 정보(이름·인원·자리·방문 횟수·요청·메모)와 다녀간 날·보내는 날(계절·명절·요일)은 자동으로 붙습니다.</p>' +
     '<label class="f big"><div class="lb">기본 양식 <span class="lbl-note">AI 가 막혔을 때 · \'기본양식 적용하기\'. {이름} {단골} {키워드} {매장} 자리에 값이 들어감</span></div><textarea class="in-sm" rows="4" onchange="draft().ai.template=this.value; render()">' + esc(cfg.template) + '</textarea></label>' +
-    '<div class="grid2"><label class="f"><div class="lb">글자 한도</div><input type="number" min="80" max="400" value="' + cfg.maxLen + '" onchange="draft().ai.maxLen=Number(this.value)||200; render()"></label>' +
+    '<div class="grid2"><label class="f"><div class="lb">글자 한도</div><input type="number" min="80" max="400" value="' + cfg.maxLen + '" onchange="draft().ai.maxLen=Number(this.value)||300; render()"></label>' +
     '<label class="f"><div class="lb">보내는 시각 기본 <span class="lbl-note">다녀간 다음 날</span></div><input type="time" value="' + esc(cfg.hour) + '" onchange="draft().ai.thanksHour=this.value; render()"></label></div>' +
     '<label class="f big"><div class="lb">키워드 프리셋 <span class="lbl-note">쉼표로 — 감사 문자 카드에 단추로 뜸</span></div><input type="text" value="' + esc(cfg.kwPresets.join(", ")) + '" onchange="draft().ai.kwPresets=this.value.split(\',\').map(function(x){return x.trim();}).filter(Boolean); render()"></label>';
 }
@@ -9315,11 +9364,11 @@ async function dqLoad(){
   DQ.loading = false;
 }
 function dqWhen(iso){ var d = new Date(iso); return (d.getMonth()+1) + "/" + d.getDate() + " " + pad(d.getHours()) + ":" + pad(d.getMinutes()); }
-function dqStatusTag(s){ var c = s === "끝" ? "" : s === "처리 중" ? "blue" : s === "확인" ? "pine" : "amber"; return '<span class="tag sm ' + c + '">' + esc(s) + '</span>'; }
+function dqStatusTag(s){ var c = (s === "답변 완료" || s === "끝") ? "pine" : s === "처리 중" ? "blue" : "amber"; return '<span class="tag sm ' + c + '">' + esc(s === "끝" ? "답변 완료" : s) + '</span>'; }
 
 function sheetDevReq(){
   if(!DQ || DQ.loading) return '<p class="muted" style="padding:20px 0">불러오는 중…</p>';
-  var open = DQ.list.filter(function(r){ return r.status !== "끝"; }), done = DQ.list.filter(function(r){ return r.status === "끝"; });
+  var open = DQ.list.filter(function(r){ return r.status !== "끝" && r.status !== "답변 완료"; }), done = DQ.list.filter(function(r){ return r.status === "끝" || r.status === "답변 완료"; });
   var row = function(r){
     return '<button class="rowitem tap dq-row' + (r.urgent ? ' urgent' : '') + '" onclick="DQ.open=\'' + esc(r.id) + '\'; render()">' +
       '<span class="time-col">' + esc(dqWhen(r.created_at)) + '</span>' +
@@ -9330,9 +9379,9 @@ function sheetDevReq(){
   return '<div class="dq-top"><button class="btn primary" onclick="dqNew()">글 쓰기</button>' +
     '<p class="f-note" style="margin:0">고쳤으면 하는 것, 이상한 것, 급하게 바꿔야 하는 것을 여기 적어 주세요. <b>급함</b>이면 재아에게 바로 알림이 가고, <b>보통</b>은 모아서 봅니다. 정말 급하면 전화.</p></div>' +
     (DQ.err ? '<p class="f-note rust">불러오지 못했습니다: ' + esc(DQ.err) + ' (서버에 patch_19차가 아직 없을 수 있습니다)</p>' : '') +
-    '<div class="subhead">진행 중 ' + open.length + '건</div>' +
+    '<div class="subhead">답변 기다리는 중 ' + open.length + '건</div>' +
     '<div class="card searchbox">' + (open.length ? open.map(row).join("") : '<p class="muted" style="padding:16px">남긴 글이 없습니다.</p>') + '</div>' +
-    (done.length ? '<div class="subhead">끝난 것 ' + done.length + '건</div><div class="card searchbox dq-done">' + done.slice(0, 30).map(row).join("") + '</div>' : '') +
+    (done.length ? '<div class="subhead">답변 완료 ' + done.length + '건</div><div class="card searchbox dq-done">' + done.slice(0, 30).map(row).join("") + '</div>' : '') +
     (DQ.draft ? dqFormHtml() : DQ.open ? dqDetailHtml() : "");
 }
 function dqNew(){ DQ.draft = { title:"", body:"", urgent:false, images:[] }; render(); setTimeout(function(){ var el = document.getElementById("dq-title"); if(el) el.focus(); }, 50); }
@@ -9373,7 +9422,13 @@ function dqDetailHtml(){
     (imgs.length ? '<div class="dq-imgs">' + imgs.map(function(u){ return '<a class="dq-img" href="' + esc(u) + '" target="_blank" rel="noopener"><img src="' + esc(u) + '" alt=""></a>'; }).join("") + '</div>' : '') +
     '<div class="subhead">재아 답변</div>' +
     (r.reply ? '<div class="dq-reply">' + esc(r.reply).replace(/\n/g, "<br>") + (r.replied_at ? '<small>' + esc(dqWhen(r.replied_at)) + '</small>' : '') + '</div>' : '<p class="muted">아직 답변이 없습니다.</p>') +
-    '<div class="sheet-actions">' + (r.status !== "끝" ? '<button class="btn" onclick="dqDone(\'' + esc(r.id) + '\')">해결됨 · 끝으로</button>' : '') + '<button class="btn primary" onclick="DQ.open=null; render()">닫기</button></div></div></div>';
+    '<div class="sheet-actions"><button class="btn ghost danger" onclick="dqDelete(\'' + esc(r.id) + '\')">삭제하기</button><button class="btn primary" onclick="DQ.open=null; render()">닫기</button></div></div></div>';
+}
+/* 사장님은 '삭제하기' 만(09-20): 답변은 재아가 표에 적음(status '답변 완료'). 지우면 글은 사라지고 사진은 저장소에 남음(재아가 가끔 비움) */
+async function dqDelete(id){
+  if(!await uiConfirm("이 글을 지울까요?", "지우면 되돌릴 수 없습니다. 답변도 같이 사라집니다.", {ok:"삭제", cancel:"취소", tone:"warn"})) return;
+  try{ await sb("/rest/v1/dev_requests?id=eq." + id, { method:"DELETE", prefer:"return=minimal" }); DQ.open = null; await dqLoad(); render(); }
+  catch(e){ await uiAlert("지우지 못했습니다", e.message || String(e), "warn"); }
 }
 async function dqDone(id){
   try{ await sb("/rest/v1/dev_requests?id=eq." + id, { method:"PATCH", body:{ status:"끝" }, prefer:"return=minimal" }); DQ.open = null; await dqLoad(); render(); }
@@ -12961,6 +13016,11 @@ document.addEventListener("keydown", function(e){
     if(view.form){ e.preventDefault(); closeSheet(); }
     else if(view.moreOpen){ closeMore(); }
     return;
+  }
+  /* 대시보드 단축키(09-20 재아): / = 예약 검색, + 또는 = = 예약 등록. 입력칸에 커서가 있거나 창이 떠 있으면 안 됨 */
+  if(!MODAL && !WZ && !view.form && view.tab === "dash" && AUTHED && !view.display && !(t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable))){
+    if(e.key === "/"){ e.preventDefault(); openSearch(); return; }
+    if(e.key === "+" || e.key === "="){ e.preventDefault(); openWizard(); return; }
   }
   /* 숫자 비밀번호 팝업: 키보드 숫자·Backspace 도 받음 */
   if(MODAL && MODAL.mode === "pin"){ if(/^[0-9]$/.test(e.key)){ e.preventDefault(); pinModalPush(e.key); } else if(e.key === "Backspace"){ e.preventDefault(); pinModalPush("back"); } return; }

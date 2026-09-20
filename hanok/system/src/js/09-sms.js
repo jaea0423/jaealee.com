@@ -102,7 +102,7 @@ function smsPpl(r){
 /* kind: "접수" | "재안내". 재안내는 offset 을 넘겨 문구를 바꿉니다 */
 function smsText(r, kind, offset, st){
   var c = smsCfg(st), s = st || store();
-  var map = { "매장": s.name || "", "이름": r.name || "", "일시": smsWhen(r), "인원": smsPpl(r),
+  var map = { "매장": s.name || "", "이름": r.name || "", "일시": smsWhen(r), "인원": smsPpl(r), "예약번호": typeof resCode === "function" ? resCode(r) : "",
               "주차": (c.parkingNote || "").trim(),
               /* '오늘 / 내일 / 모레' 는 설정값이 아니라 보내는 날과 예약일의 실제 차이로 정합니다 */
               "오늘내일": kind === "접수" ? "" : (smsGapWord(r) || "") };
@@ -111,7 +111,7 @@ function smsText(r, kind, offset, st){
 }
 /* 문안의 {자리} 를 채우고, 빈 값 때문에 생긴 앞 공백·겹친 빈 줄을 정리합니다 */
 function smsFill(tpl, map){
-  var out = String(tpl || "").replace(/\{(매장|이름|일시|인원|주차|오늘내일)\}/g, function(_, k){ return map[k] != null ? map[k] : ""; });
+  var out = String(tpl || "").replace(/\{(매장|이름|일시|인원|주차|오늘내일|예약번호)\}/g, function(_, k){ return map[k] != null ? map[k] : ""; });
   out = out.replace(/^[ \t]+/mg, "").replace(/\n{3,}/g, "\n\n");
   return out.trim();
 }
@@ -233,6 +233,11 @@ function checkItems(date){
   const list = s.reservations.filter(r=>r.date===d && r.status==="확정");
   const items = [];
 
+  /* 어제(또는 그 전) '확정' 으로 남은 예약 — 방문/노쇼 정리를 안 한 것(09-20: 퇴근하기를 안 눌렀을 때의 그물). 감사 문자는 방문으로 표시해야만 나감 */
+  if(d === today){
+    var stale = s.reservations.filter(function(r){ return r.status === "확정" && r.date < today; });
+    if(stale.length) items.push(["amber", `방문·노쇼 정리 안 된 예약 ${stale.length}건`, stale.slice(0,3).map(function(r){ return dateLabel(r.date).replace(/ \(.\)$/, "") + " " + r.name; }).join(", "), `openCloseDay('${stale[0].date}')`]);
+  }
   /* 어제 다녀간 손님 감사 문자 미발송 — 누락 방지(09-20). 수는 thanksTick 이 1분마다 셈 */
   if(typeof TH_MISSING === "number" && TH_MISSING > 0 && d === today) items.push(["amber", `감사 문자 안 보낸 손님 ${TH_MISSING}명`, "어제 방문 손님 중 예약 발송이 없는 건", `openThanksPage()`]);
   /* 홈페이지에서 들어온 손님 요청 — 날짜와 상관없이 대기 중이면 맨 위에 */

@@ -21,11 +21,11 @@ async function dqLoad(){
   DQ.loading = false;
 }
 function dqWhen(iso){ var d = new Date(iso); return (d.getMonth()+1) + "/" + d.getDate() + " " + pad(d.getHours()) + ":" + pad(d.getMinutes()); }
-function dqStatusTag(s){ var c = s === "끝" ? "" : s === "처리 중" ? "blue" : s === "확인" ? "pine" : "amber"; return '<span class="tag sm ' + c + '">' + esc(s) + '</span>'; }
+function dqStatusTag(s){ var c = (s === "답변 완료" || s === "끝") ? "pine" : s === "처리 중" ? "blue" : "amber"; return '<span class="tag sm ' + c + '">' + esc(s === "끝" ? "답변 완료" : s) + '</span>'; }
 
 function sheetDevReq(){
   if(!DQ || DQ.loading) return '<p class="muted" style="padding:20px 0">불러오는 중…</p>';
-  var open = DQ.list.filter(function(r){ return r.status !== "끝"; }), done = DQ.list.filter(function(r){ return r.status === "끝"; });
+  var open = DQ.list.filter(function(r){ return r.status !== "끝" && r.status !== "답변 완료"; }), done = DQ.list.filter(function(r){ return r.status === "끝" || r.status === "답변 완료"; });
   var row = function(r){
     return '<button class="rowitem tap dq-row' + (r.urgent ? ' urgent' : '') + '" onclick="DQ.open=\'' + esc(r.id) + '\'; render()">' +
       '<span class="time-col">' + esc(dqWhen(r.created_at)) + '</span>' +
@@ -36,9 +36,9 @@ function sheetDevReq(){
   return '<div class="dq-top"><button class="btn primary" onclick="dqNew()">글 쓰기</button>' +
     '<p class="f-note" style="margin:0">고쳤으면 하는 것, 이상한 것, 급하게 바꿔야 하는 것을 여기 적어 주세요. <b>급함</b>이면 재아에게 바로 알림이 가고, <b>보통</b>은 모아서 봅니다. 정말 급하면 전화.</p></div>' +
     (DQ.err ? '<p class="f-note rust">불러오지 못했습니다: ' + esc(DQ.err) + ' (서버에 patch_19차가 아직 없을 수 있습니다)</p>' : '') +
-    '<div class="subhead">진행 중 ' + open.length + '건</div>' +
+    '<div class="subhead">답변 기다리는 중 ' + open.length + '건</div>' +
     '<div class="card searchbox">' + (open.length ? open.map(row).join("") : '<p class="muted" style="padding:16px">남긴 글이 없습니다.</p>') + '</div>' +
-    (done.length ? '<div class="subhead">끝난 것 ' + done.length + '건</div><div class="card searchbox dq-done">' + done.slice(0, 30).map(row).join("") + '</div>' : '') +
+    (done.length ? '<div class="subhead">답변 완료 ' + done.length + '건</div><div class="card searchbox dq-done">' + done.slice(0, 30).map(row).join("") + '</div>' : '') +
     (DQ.draft ? dqFormHtml() : DQ.open ? dqDetailHtml() : "");
 }
 function dqNew(){ DQ.draft = { title:"", body:"", urgent:false, images:[] }; render(); setTimeout(function(){ var el = document.getElementById("dq-title"); if(el) el.focus(); }, 50); }
@@ -79,7 +79,13 @@ function dqDetailHtml(){
     (imgs.length ? '<div class="dq-imgs">' + imgs.map(function(u){ return '<a class="dq-img" href="' + esc(u) + '" target="_blank" rel="noopener"><img src="' + esc(u) + '" alt=""></a>'; }).join("") + '</div>' : '') +
     '<div class="subhead">재아 답변</div>' +
     (r.reply ? '<div class="dq-reply">' + esc(r.reply).replace(/\n/g, "<br>") + (r.replied_at ? '<small>' + esc(dqWhen(r.replied_at)) + '</small>' : '') + '</div>' : '<p class="muted">아직 답변이 없습니다.</p>') +
-    '<div class="sheet-actions">' + (r.status !== "끝" ? '<button class="btn" onclick="dqDone(\'' + esc(r.id) + '\')">해결됨 · 끝으로</button>' : '') + '<button class="btn primary" onclick="DQ.open=null; render()">닫기</button></div></div></div>';
+    '<div class="sheet-actions"><button class="btn ghost danger" onclick="dqDelete(\'' + esc(r.id) + '\')">삭제하기</button><button class="btn primary" onclick="DQ.open=null; render()">닫기</button></div></div></div>';
+}
+/* 사장님은 '삭제하기' 만(09-20): 답변은 재아가 표에 적음(status '답변 완료'). 지우면 글은 사라지고 사진은 저장소에 남음(재아가 가끔 비움) */
+async function dqDelete(id){
+  if(!await uiConfirm("이 글을 지울까요?", "지우면 되돌릴 수 없습니다. 답변도 같이 사라집니다.", {ok:"삭제", cancel:"취소", tone:"warn"})) return;
+  try{ await sb("/rest/v1/dev_requests?id=eq." + id, { method:"DELETE", prefer:"return=minimal" }); DQ.open = null; await dqLoad(); render(); }
+  catch(e){ await uiAlert("지우지 못했습니다", e.message || String(e), "warn"); }
 }
 async function dqDone(id){
   try{ await sb("/rest/v1/dev_requests?id=eq." + id, { method:"PATCH", body:{ status:"끝" }, prefer:"return=minimal" }); DQ.open = null; await dqLoad(); render(); }

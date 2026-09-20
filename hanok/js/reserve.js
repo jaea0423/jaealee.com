@@ -85,7 +85,7 @@
         date:p.date, time:p.time, adults:p.adults, kids:p.kids, people:p.people, seat:p.seat, course:p.course, course_label:p.courseLabel,
         name:p.name, phone:String(p.phone).replace(/\D/g,""), request:p.request||"", allergy:p.allergy||"", status:"대기" };
       const r = await fetch(SUPA.url + "/rest/v1/requests", { method:"POST", headers:Object.assign({"Prefer":"return=minimal"}, H), body:JSON.stringify(body) });
-      if(r.ok) return {ok:true};
+      if(r.ok) return {ok:true, id:body.id};
       let msg = ""; try{ msg = (await r.json()).message || ""; }catch(e){}
       if(/RATE_PHONE/.test(msg)) return {ok:false, msg:"이 번호로 오늘 접수한 예약이 이미 5건입니다. 전화로 문의해 주세요."};
       if(/RATE_ALL/.test(msg)) return {ok:false, msg:"지금 접수가 몰려 있습니다. 잠시 뒤 다시 시도해 주세요."};
@@ -529,12 +529,19 @@
       const r = await RES_API.submit({date:S.date, time:S.time, adults:S.adults, kids:S.kids, people:total(),
                                       seat:S.seat, course:S.course, courseLabel:S.courseLabel,
                                       name:S.name.trim(), phone:S.phone, request:S.req.trim(), allergy:S.allergy.trim()});
-      if(r && r.ok){ clearInterval(timer); timer = null; step = 8; render(); }
+      if(r && r.ok){ S.reqId = r.id || ""; clearInterval(timer); timer = null; step = 8; render(); }
       else { btn.disabled = false; btn.textContent = "접수하기"; render((r && r.msg) || "접수가 되지 않았습니다. 잠시 뒤 다시 시도하시거나 전화로 문의해 주세요."); }
     }
     refoot();
   }
 
+  /* 예약번호 — 예약 시스템(03-util resCode)과 같은 계산. 접수 번호(rq_…)와 시스템이 만든 예약(res_…)이 같은 8자리가 됩니다 */
+  function resCode(id){
+    let s = String(id || "").replace(/^(res|rq)_/, ""), h = 2166136261;
+    for(let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+    h = (h ^ (h >>> 13)) >>> 0; h = Math.imul(h, 2654435761) >>> 0;
+    return String(h % 100000000).padStart(8, "0");
+  }
   /* ---------- 접수 완료 ---------- */
   function done(b, f){
     $(".rv-timer", ov).hidden = true;
@@ -542,6 +549,7 @@
         <div class="rv-tick"><svg viewBox="0 0 48 48"><path d="M14 25l7 7 14-15"/></svg></div>
         <h3>접수되었습니다</h3>
         <p class="big">${esc(dateText(S.date))} ${esc(hm(S.time))} · ${esc(peopleText())} · ${S.seat==="room"?"룸":"테이블"}</p>
+        ${S.reqId ? `<p class="rv-code">예약번호 <b class="num">${resCode(S.reqId)}</b></p>` : ""}
         <p>확인 후 <b>${esc(S.phone)}</b> 로 예약 확정 문자를 보내드립니다.</p>
         <p class="rv-quiet">예약 변경 혹은 다른 문의사항은 <a href="tel:${INFO.tel}">${esc(INFO.tel)}</a> 로 전화 주세요.</p>
       </div>`;

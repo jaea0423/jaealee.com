@@ -9,11 +9,11 @@ function pad(n){ return String(n).padStart(2,"0"); }
 /* 예약 번호(09-20 재아): 손님과 통화하거나 문자에 적을 때 부르는 6자리. 예약 id 에서 늘 같은 값이 나옵니다(저장 안 함).
    지운 예약이라도 id 가 다르니 번호가 겹치지 않습니다(같은 id 는 없음). 글자는 헷갈리는 0·O·1·I 를 뺀 32자 */
 function resCode(r){
-  var s = String(r && r.id || ""), h = 2166136261;
+  /* 숫자 8자리(재아 09-20). 앞 prefix(res_/rq_)는 빼고 셈 — 홈페이지 접수 번호(rq_…)와 그걸 받은 예약(res_…)이 같은 번호가 되게(사이트 js/reserve.js 에 같은 함수) */
+  var s = String(r && r.id || "").replace(/^(res|rq)_/, ""), h = 2166136261;
   for(var i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
-  var A = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ", out = "";
-  for(var k = 0; k < 6; k++){ out += A[h % 32]; h = Math.floor(h / 32) ^ (h * 7 & 0xffffffff); h >>>= 0; }
-  return out;
+  h = (h ^ (h >>> 13)) >>> 0; h = Math.imul(h, 2654435761) >>> 0;
+  return String(h % 100000000).padStart(8, "0");
 }
 function newId(prefix){
   var h = "0123456789abcdef", out = "", i, r;

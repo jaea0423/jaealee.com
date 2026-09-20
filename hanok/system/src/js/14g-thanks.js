@@ -26,7 +26,7 @@ function thCfg(){
   var a = store().settings.ai || {};
   return { key: (typeof SUPA_CFG !== "undefined" && SUPA_CFG && SUPA_CFG.geminiKey) || "", model: a.model || TH_DEF_MODEL, hour: a.thanksHour || "11:00", common: a.thanksCommon || "",
     promptLines: Array.isArray(a.promptLines) && a.promptLines.length ? a.promptLines : TH_DEF_PROMPT.slice(),
-    template: a.template || TH_DEF_TEMPLATE, maxLen: Number(a.maxLen) || 200,
+    template: a.template || TH_DEF_TEMPLATE, maxLen: Number(a.maxLen) || 300,
     kwPresets: Array.isArray(a.kwPresets) ? a.kwPresets : TH_DEF_KW.slice() };
 }
 /* 모델마다 '생각(thinking)' 을 끄는 설정이 다름: 3.x 는 thinkingLevel, 2.5 계열(flash-latest)은 thinkingBudget 0. 안 끄면 토큰을 생각에 다 써 본문이 잘림 */
@@ -252,13 +252,13 @@ function thQueueHtml(){
 /* 설정 → 감사 문자 AI (14-settings 가 부름). draft 의 settings.ai 를 고칩니다 — '적용하기' 로 저장.
    기본 문장(앞 TH_DEF_PROMPT.length 줄)은 고칠 수는 있어도 지울 수 없음. 모델·API 키는 화면에 없음(재아가 코드에서) */
 function thSettingsBody(st){
-  var a = st.ai = st.ai || {}, cfg = { promptLines: Array.isArray(a.promptLines) && a.promptLines.length ? a.promptLines : TH_DEF_PROMPT.slice(), template: a.template || TH_DEF_TEMPLATE, maxLen: Number(a.maxLen) || 200, kwPresets: Array.isArray(a.kwPresets) ? a.kwPresets : TH_DEF_KW.slice(), hour: a.thanksHour || "11:00" };
+  var a = st.ai = st.ai || {}, cfg = { promptLines: Array.isArray(a.promptLines) && a.promptLines.length ? a.promptLines : TH_DEF_PROMPT.slice(), template: a.template || TH_DEF_TEMPLATE, maxLen: Number(a.maxLen) || 300, kwPresets: Array.isArray(a.kwPresets) ? a.kwPresets : TH_DEF_KW.slice(), hour: a.thanksHour || "11:00" };
   var lines = cfg.promptLines.map(function(l, i){ var core = i < TH_DEF_PROMPT.length; return '<div class="th-pl"><span class="n">' + (i + 1) + '</span><input type="text" value="' + esc(l) + '" onchange="thSetLine(' + i + ', this.value)"><button class="btn sm ghost danger" ' + (core ? 'disabled title="기본 문장은 지울 수 없습니다"' : '') + ' onclick="thDelLine(' + i + ')">삭제</button></div>'; }).join("");
   return '<div class="subhead">프롬프트 <span>문장 하나가 한 줄. 앞 ' + TH_DEF_PROMPT.length + '줄은 기본(고칠 수는 있음). 더한 문장은 그 뒤에 만드는 글부터 적용</span></div>' + lines +
     '<div class="btn-row" style="margin:4px 0 16px"><button class="btn sm" onclick="thAddLine()">＋ 문장 추가</button><button class="btn sm ghost" onclick="thResetLines()">기본으로</button></div>' +
     '<p class="f-note">예: "이번 주는 창립 기념으로 감사 인사를 한 줄 더 넣으세요" 같은 문장을 그때그때 더하고, 끝나면 지우면 됩니다. 손님 정보(이름·인원·자리·방문 횟수·요청·메모)와 다녀간 날·보내는 날(계절·명절·요일)은 자동으로 붙습니다.</p>' +
     '<label class="f big"><div class="lb">기본 양식 <span class="lbl-note">AI 가 막혔을 때 · \'기본양식 적용하기\'. {이름} {단골} {키워드} {매장} 자리에 값이 들어감</span></div><textarea class="in-sm" rows="4" onchange="draft().ai.template=this.value; render()">' + esc(cfg.template) + '</textarea></label>' +
-    '<div class="grid2"><label class="f"><div class="lb">글자 한도</div><input type="number" min="80" max="400" value="' + cfg.maxLen + '" onchange="draft().ai.maxLen=Number(this.value)||200; render()"></label>' +
+    '<div class="grid2"><label class="f"><div class="lb">글자 한도</div><input type="number" min="80" max="400" value="' + cfg.maxLen + '" onchange="draft().ai.maxLen=Number(this.value)||300; render()"></label>' +
     '<label class="f"><div class="lb">보내는 시각 기본 <span class="lbl-note">다녀간 다음 날</span></div><input type="time" value="' + esc(cfg.hour) + '" onchange="draft().ai.thanksHour=this.value; render()"></label></div>' +
     '<label class="f big"><div class="lb">키워드 프리셋 <span class="lbl-note">쉼표로 — 감사 문자 카드에 단추로 뜸</span></div><input type="text" value="' + esc(cfg.kwPresets.join(", ")) + '" onchange="draft().ai.kwPresets=this.value.split(\',\').map(function(x){return x.trim();}).filter(Boolean); render()"></label>';
 }

@@ -165,7 +165,7 @@ async function reqAccept(id){
   }
   const st = store().settings;
   const rec = {
-    id:newId("res"), date:q.date, time:q.time, name:q.name, phone:phoneNorm(q.phone),
+    id:"res_" + String(q.id).replace(/^rq_/, ""), date:q.date, time:q.time, name:q.name, phone:phoneNorm(q.phone),   /* 접수 번호와 같은 예약 번호가 나오게(resCode) */
     people:q.people, infants:q.kids || 0, chairs:(typeof chairDefaultInfants === "function" && chairDefaultInfants()) ? (q.kids || 0) : 0,
     roomId:null, extraIds:[], seatPref:pr.seatPref, tentativeRoomId:pr.tentativeRoomId, tentativeSplit:pr.tentativeSplit, tentativeExtra:pr.tentativeExtra,
     source:"기타", sourceDetail:"홈페이지 예약", createdAt:new Date().toISOString(),

@@ -200,7 +200,8 @@ function renderSettings(){
     <p class="f-note" style="margin:0 0 12px">
       <b>배정 순서</b>는 좌석을 정하지 않은 손님에게 자리를 미리 잡아 둘 때 씁니다.
       인원이 맞는 좌석 중 <b>위에서부터</b> 고릅니다(▲▼로 순서를 바꾸세요). 룸과 테이블은 손님이 고른 쪽만 봅니다.</p>
-    <div class="seg seattabs">${tabBtn("room","룸")}${tabBtn("table","테이블")}${tabBtn("join","합침")}</div>
+    <div class="seg seattabs">${tabBtn("room","룸")}${tabBtn("table","테이블")}${tabBtn("join","합침")}<button class="${seatTab==="map"?"on":""}" onclick="view.seatTab='map'; render()">배치 보기</button></div>
+    ${seatTab==="map" ? seatMapHtml(st) : ""}
     ${seatTab==="room" ? `
     <div class="subhead">룸 <span>최소(평일 / 주말·공휴일)보다 적으면 경고. 최적은 안내용(마법사에 표시)</span></div>
     ${rooms.map(roomRowHtml).join("")}
@@ -633,6 +634,36 @@ function setPair(id, other){
   const o = st.rooms.find(x=>x.id===other); if(!o) return;
   if(o.pair && o.pair !== id){ const old2 = st.rooms.find(x=>x.id===o.pair); if(old2) delete old2.pair; }
   t.pair = other; o.pair = id; render();
+}
+/* ---------- 배치 보기(09-20 재아): 설정이 의도대로 들어갔는지 한눈에 ----------
+   층마다 테이블을 둥글게 놓고, 붙일 수 있는 것끼리 선으로 잇습니다. 짝(pair)은 굵은 선. 번호 = 배정 순서(위에서부터).
+   룸은 순서대로 알약, 합침 그룹은 묶음 상자. 도면이 아니라 '규칙' 을 그린 것입니다 */
+function seatMapHtml(st){
+  const rooms = st.rooms || [], order = r => rooms.indexOf(r) + 1;
+  const floors = []; rooms.filter(isTable).forEach(t => { const f = t.floor || ""; if(floors.indexOf(f) < 0) floors.push(f); });
+  const floorSvg = fl => {
+    const ts = rooms.filter(t => isTable(t) && (t.floor || "") === fl), n = ts.length;
+    const W = 420, H = 300, cx = W / 2, cy = H / 2, R = Math.min(W, H) / 2 - 46;
+    const pos = {}; ts.forEach((t, i) => { const a = -Math.PI / 2 + i * 2 * Math.PI / Math.max(n, 1); pos[t.id] = { x: cx + R * Math.cos(a), y: cy + R * Math.sin(a) }; });
+    const seen = {}, edges = [];
+    ts.forEach(t => (t.joinWith || []).forEach(o => { if(!pos[o]) return; const k = [t.id, o].sort().join("|"); if(seen[k]) return; seen[k] = 1; const pair = t.pair === o; edges.push(`<line x1="${pos[t.id].x}" y1="${pos[t.id].y}" x2="${pos[o].x}" y2="${pos[o].y}" stroke="${pair ? "#3F6C9E" : "#C9C3B8"}" stroke-width="${pair ? 5 : 1.5}" ${pair ? "" : 'stroke-dasharray="4 4"'}/>`); }));
+    const nodes = ts.map(t => { const p = pos[t.id], r = 30; return `<g><circle cx="${p.x}" cy="${p.y}" r="${r}" fill="${t.pair ? "#EAF1F8" : "#FFFFFF"}" stroke="${t.minCapacity ? "#A63B26" : "#8E877C"}" stroke-width="1.5"/>
+      <text x="${p.x}" y="${p.y - 4}" text-anchor="middle" font-size="12" font-weight="700" fill="#1B1A18">${esc(t.name)}</text>
+      <text x="${p.x}" y="${p.y + 11}" text-anchor="middle" font-size="10" fill="#6B655B">${t.seats || 4}${t.capacity && t.capacity !== t.seats ? "~" + t.capacity : ""}인</text>
+      <circle cx="${p.x + r - 4}" cy="${p.y - r + 4}" r="9" fill="#1B1A18"/><text x="${p.x + r - 4}" y="${p.y - r + 7.5}" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">${order(t)}</text></g>`; }).join("");
+    return `<div class="smap-floor"><div class="smap-t">${esc(fl || "층 미정")} 테이블 <small>${n}개 · ${ts.reduce((a, t) => a + (t.seats || 4), 0)}석</small></div>
+      <svg viewBox="0 0 ${W} ${H}" class="smap">${edges}${nodes}</svg></div>`;
+  };
+  const roomList = rooms.filter(isRoom).map(r => `<span class="smap-room"><i>${order(r)}</i>${esc(r.name)}<small>${r.minCapacity || 0}/${r.minWeekend || r.minCapacity || 0}~${r.capacity}</small></span>`).join("");
+  const joins = (st.joins || []).map(j => `<span class="smap-join">${j.ids.map(id => { const r = rooms.find(x => x.id === id); return r ? esc(r.name) : id; }).join(" ⊞ ")}<small>${j.min || "?"}~${j.max || "?"}인${j.note ? " · " + esc(j.note) : ""}</small></span>`).join("");
+  return `<div class="smap-wrap">
+    <div class="subhead">룸 <span>번호 = 배정 순서 · 아래 숫자는 최소 평일/주말 ~ 최대</span></div>
+    <div class="smap-rooms">${roomList || '<span class="muted">룸 없음</span>'}</div>
+    <div class="subhead">룸 합침 <span>중문을 떼서 한 방처럼</span></div>
+    <div class="smap-rooms">${joins || '<span class="muted">합침 그룹 없음</span>'}</div>
+    <div class="subhead">테이블 <span>점선 = 붙일 수 있음 · 굵은 파란 선 = 평소 붙여 두는 짝 · 붉은 테두리 = 최소 인원 있음 · 번호 = 배정 순서</span></div>
+    <div class="smap-floors">${floors.map(floorSvg).join("")}</div>
+  </div>`;
 }
 function toggleJoinWith(id, other){
   const st = draft(), t = st.rooms.find(x=>x.id===id), o = st.rooms.find(x=>x.id===other);
