@@ -96,6 +96,7 @@ async function setTab(t){
   /* 다른 기기가 설정을 바꿨는데 이 기기에 옛 임시본이 남아 있으면 '저장 안 한 변경' 으로 오탐하고, 적용하면 되돌립니다(점검 C3).
      고친 것이 없으면 들어올 때마다 새로 뜹니다 */
   if(t === "settings" && view.draft && !settingsDirty()) view.draft = null;
+  if(t === "settings") view.setSec = null;   /* 설정은 늘 목록부터(09-20) */
   /* 설정에서 나갈 때 저장 안 한 변경이 있으면 물어봅니다 */
   if(view.tab==="settings" && t!=="settings" && settingsDirty()){
     const ok = await uiConfirm("저장하지 않은 변경이 있습니다",

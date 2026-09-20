@@ -232,18 +232,25 @@ function fitDisplay(){
   /* 글자 크기는 고정입니다. 칸 크기도 CSS 에서 고정입니다.
      넘치는 만큼만 목록을 접습니다 — 칸마다 몇 줄까지 보일지를 줄여 나갑니다. */
   /* 큰 글자부터 시도해서 안 넘치는 첫 크기로. 다 넘치면 가장 작은 크기에서 줄을 접습니다 */
-  var si, cap;
+  /* 09-20: 칸마다 따로 접습니다. 큰 글자부터 시도해서, 모든 칸이 '최소 2줄' 을 보이며 들어가는 첫 크기를 고르고,
+     그래도 넘치는 칸만 1줄까지 더 접습니다. (예전엔 한 칸이 넘치면 모든 칸을 같이 접어 여유 있는 칸에도 '외 N건' 이 붙었음) */
+  var si;
   for(si = 0; si < TV_SIZES.length; si++){
-    setGridSize(grid, TV_SIZES[si]); cap = 12; capLists(grid, cap);
-    while(cap > 2 && overflowing(grid)){ cap--; capLists(grid, cap); }   /* 칸마다 최소 2줄(테이블 칸은 4건)은 보이게 접고, 그래도 넘치면 다음(작은) 크기 */
-    if(!overflowing(grid)) break;
+    setGridSize(grid, TV_SIZES[si]);
+    if(capEach(grid, 2)) break;
   }
-  if(cap == null) cap = 12;
-  capLists(grid, cap);
-  while(cap > 1 && overflowing(grid)){
-    cap--;
-    capLists(grid, cap);
+  capEach(grid, 1);
+}
+/* 칸마다 넘치지 않을 때까지 줄을 접음(최소 minKeep 줄). 전부 들어가면 true */
+function capEach(grid, minKeep){
+  var uls = grid.querySelectorAll(".dsec ul"), ok = true, u;
+  for(u = 0; u < uls.length; u++){
+    var ul = uls[u], cap = 12;
+    capList(ul, cap);
+    while(cap > minKeep && ul.scrollHeight > ul.clientHeight + 1){ cap--; capList(ul, cap); }
+    if(ul.scrollHeight > ul.clientHeight + 1) ok = false;
   }
+  return ok;
 }
 /* 칸 안의 목록이 칸 높이를 넘는지 */
 function overflowing(grid){
@@ -262,15 +269,17 @@ function setGridSize(grid, s){
    이미 지나간 시각은 자리를 차지할 값어치가 가장 낮습니다. */
 function capLists(grid, cap){
   var uls = grid.querySelectorAll(".dsec ul");
-  for(var u=0; u<uls.length; u++){
-    var ul = uls[u];
+  for(var u=0; u<uls.length; u++) capList(uls[u], cap);
+}
+function capList(ul, cap){
+  {
     var items = [], k;
     var all = ul.querySelectorAll("li");
     for(k=0; k<all.length; k++) if(all[k].className.indexOf("more") < 0) items.push(all[k]);
     var keep = ul.className.indexOf("two-col") >= 0 ? cap * 2 : cap;   /* 홀은 2열 */
     for(k=0; k<items.length; k++) items[k].style.display = "";
     var hide = items.length - keep;
-    if(hide <= 0){ setMore(ul, 0); reflowTwoCol(ul); continue; }
+    if(hide <= 0){ setMore(ul, 0); reflowTwoCol(ul); return; }
     var done = 0;
     for(k=0; k<items.length && done<hide; k++)                 /* 먼저 지난 예약 */
       if(items[k].className.indexOf("past") >= 0){ items[k].style.display = "none"; done++; }
@@ -305,6 +314,7 @@ function reflowTwoCol(ul){
    글자 수는 그대로 지킵니다 — 네 글자면 '남 * * 수'. 외국 이름도 같은 규칙(재아 2026-09-17): 띄어쓰기는 빼고
    첫 글자와 끝 글자만 남김 — Tom Cruise → T * * * * * * * e. 서버(mask_name, patch_12차)도 같은 모양 */
 function maskName(n){
+  return String(n||"").trim();   /* 09-20(재아): TV 는 매장 안에 두니 이름을 가리지 않음. 서버 쪽도 patch_20차(mask_name 을 그대로 돌려줌). 아래는 옛 가림 규칙 — 되돌릴 때 */
   const s = String(n||"").trim().replace(/\s+/g, "");
   if(s.indexOf("*") >= 0) return String(n||"").trim();   /* 서버(mask_name)가 이미 가린 이름 */
   if(s.length<=1) return s;
@@ -503,13 +513,13 @@ function renderTvGrid(){
     const roomCards = rs.map(room => {
       /* 합쳐 쓰는 예약은 대표 방(roomId)에만 한 번 */
       const rows = list.filter(r => r.roomId === room.id).sort((a,b)=>a.time.localeCompare(b.time));
-      return card(room.name, `${roomMin(room, today)}~${room.capacity}인`, rows, false);
+      return card(room.name, "", rows, false);   /* 정원 표시는 뺌(09-20 재아: 조잡) */
     }).join("");
     const tbls = floorTables(fl);
     const trows = list.filter(r => !r.roomId && resFloor(r) !== undefined && (resFloor(r)||"") === fl).sort((a,b)=>a.time.localeCompare(b.time));
     const hall = tbls.length ? card(`${fl} 테이블`, "", trows, true) : "";
     return `<div class="tv-col">
-      <div class="tv-col-h"><b>${esc(fl || "층 미정")}</b><span>룸 ${rs.length}${tbls.length ? ` · 테이블 ${tbls.length}` : ""}</span><em>${(()=>{ const n = list.filter(r => (r.roomId ? (rs.some(x => x.id === r.roomId)) : ((resFloor(r)||"") === fl)) && !isBlockPast(r, toMin(r.time), today, nowM)).length; return n ? `남은 예약 ${n}팀` : "남은 예약 없음"; })()}</em></div>
+      <div class="tv-col-h"><b>${esc(fl || "층 미정")}</b><span></span><em>${(()=>{ const n = list.filter(r => (r.roomId ? (rs.some(x => x.id === r.roomId)) : ((resFloor(r)||"") === fl)) && !isBlockPast(r, toMin(r.time), today, nowM)).length; return n ? `남은 예약 ${n}팀` : "남은 예약 없음"; })()}</em></div>
       <div class="tv-cells" style="grid-template-columns:repeat(${Math.min(2, Math.max(1, rs.length))},1fr)">${roomCards}</div>
       ${hall}
     </div>`;

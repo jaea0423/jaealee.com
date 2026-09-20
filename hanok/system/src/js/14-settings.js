@@ -27,18 +27,19 @@ function infoize(html){
   }
   return out + html.slice(last);
 }
-/* 설정 화면의 접이식 구역 */
+/* 설정 화면의 구역 — 09-20(재아): 접이식 행 대신 사장님 메뉴처럼 큰 단추 목록. 하나를 누르면 그 구역만 펼쳐지고 '← 설정' 으로 돌아옵니다.
+   (접힌 행만 죽 늘어선 화면은 내용이 안 보여 허전했음) */
+const SET_ICON = { site:"site", hours:"clock", rules:"res", seats:"dash", course:"chart", source:"inbox", sms:"sms", disp:"tv", policy:"set", zoom:"search", admin:"key", etc:"more" };
 function sec(key, title, extra, inner){
-  const open = !!view.open["s_"+key];
-  return `
-    <section class="card fold ${open?'on':''}" style="margin-top:12px">
-      <button class="fold-h" onclick="toggleFold('s_${key}')">
-        <span class="fh-t">${title}</span>
-        <span class="fh-x">${extra||""}</span>
-      </button>
-      ${open?`<div class="fold-b ${view.foldJust==="s_"+key?'just':''}">${infoize(inner)}</div>`:""}
+  if(view.setSec === key) return `
+    <section class="card fold on set-one">
+      <div class="fold-h static"><span class="fh-t">${title}</span><span class="fh-x">${extra||""}</span></div>
+      <div class="fold-b">${infoize(inner)}</div>
     </section>`;
+  if(view.setSec) return "";   /* 다른 구역이 열려 있으면 안 그림 */
+  return `<button class="own-it" onclick="view.setSec='${key}'; render(); window.scrollTo(0,0)">${ICON[SET_ICON[key]] || ""}<b>${title}</b><small>${extra||""}</small></button>`;
 }
+function setSecBack(){ view.setSec = null; render(); }
 function renderSettings(){
   INFO_NOTES = [];                  /* ⓘ 설명은 그릴 때마다 새로 모읍니다 */
   const st = draft();               /* 임시본 — '적용하기'를 눌러야 반영됩니다 */
@@ -428,7 +429,8 @@ function renderSettings(){
       <button class="btn" onclick="openNoshow()">노쇼 관리</button>
     </div>`;
 
-  return `
+  const back = view.setSec ? `<div class="set-back"><button class="btn sm ghost" onclick="setSecBack()">← 설정</button></div>` : "";
+  return back + `<div class="${view.setSec ? "set-open" : "own-grid set-grid"}">
     ${sec("site","홈페이지",`예약 접수 · 팝업 · 글 · 사진`, siteBody)}
     ${sec("hours","운영시간",`${hoursFor(todayStr()).open} ~ ${hoursFor(todayStr()).close}`, schedBody)}
     ${sec("rules","예약 규칙",`단체 ${st.groupSize||8}명${schedChip("rules")}`, ruleBody)}
@@ -439,14 +441,15 @@ function renderSettings(){
       sm.on===false ? "안 보냄"
         : `${offsetLabel(sm.remindOffset)} ${hm(pad(sm.remindHour)+":00")}`,
       smsBodyUI)}
-    ${sec("disp","디스플레이 배치",`${rows.map(r=>r.length).join(" · ")}`, dispBody)}
+    ${sec("disp","디스플레이",`${tvType()==="grid"?"좌석표":"목록"} · 광고 영상`, dispBody)}
     ${sec("policy","운영 판단 기준",
       `정원 ${st.minCountAdultsOnly===false?"총원":"성인"} · 임박 ${st.loSoon!=null?st.loSoon:120}분`,
       policyBody)}
     ${sec("zoom","화면 크기",`${uiZoom()}%`, zoomBody)}
-    <div class="set-divider"></div>
+    ${view.setSec ? "" : `<div class="set-divider">관리</div>`}
     ${sec("admin","관리자",`PIN · 로그 · 초기화`, adminBody)}
     ${sec("etc","기타",`노쇼 관리`, etcBody)}
+    </div>
 
     ${dirty ? `<div class="applybar on"><span class="ab-t">저장하지 않은 변경이 있습니다</span></div>` : ""}`;
 }

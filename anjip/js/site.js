@@ -89,13 +89,15 @@ window.SITE_READY.then(function(){
     const item = x => `<div class="mi${x.badge?' has-badge':''}">
         <div class="mi-n"><b>${esc(x.name)}</b>${x.size?`<small>${esc(x.size)}</small>`:""}${x.badge?`<em>${esc(x.badge)}</em>`:""}</div>
         ${x.desc?`<div class="mi-d">${esc(x.desc)}</div>`:""}
-        <div class="mi-p num">${x.sizes ? x.sizes.map(s=>`<span>${esc(s[0])} <b>${won(s[1])}</b></span>`).join("") : `<b>${won(x.price)}</b>`}</div>
-      </div>`;
+        ${INFO.showPrices ? `<div class="mi-p num">${x.sizes ? x.sizes.map(s=>`<span>${esc(s[0])} <b>${won(s[1])}</b></span>`).join("") : `<b>${won(x.price)}</b>`}</div>`
+          : (x.sizes ? `<div class="mi-p"><span>${x.sizes.map(s=>esc(s[0])).join(" · ")}</span></div>` : "")}
+      </div>`;   /* 가격은 화면에 안 씀(고모 09-20: PDF 에만). 막걸리 대·소 같은 크기 이름만 남김 */
     $("#menu-body").innerHTML = MENU.map(sec => `<section class="sec" id="${esc(sec.id)}"><div class="wrap ed">
         <div class="eh"><h2>${esc(sec.title)}</h2>${sec.sub?`<p>${esc(sec.sub)}</p>`:""}</div>
         <div><div class="mlist">${sec.items.map(item).join("")}</div>${sec.note?`<p class="cap mnote">${esc(sec.note)}</p>`:""}</div>
       </div></section>`).join("");   /* .wrap.ed 는 두 칸(왼쪽 제목 · 오른쪽 본문) — 본문은 한 덩어리여야 해서 목록과 메모를 같이 감쌈 */
     $("#menu-notes").innerHTML = (S.menuPage.notes||[]).map(n => `<li>${rich(n)}</li>`).join("");
+    const pdf = $("a.pdf"); if(pdf){ if(INFO.menuPdf) pdf.href = /^https?:/.test(INFO.menuPdf) ? INFO.menuPdf : INFO.menuPdf; else pdf.remove(); }
     $("#menu-origin").textContent = S.menuPage.origin || "";
   }
   if(page === "visit"){
