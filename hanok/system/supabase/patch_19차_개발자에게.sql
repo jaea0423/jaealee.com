@@ -26,3 +26,34 @@ grant select, insert, update on dev_requests to authenticated;
 --   표 dev_requests · INSERT · 조건 없음(웹훅은 조건을 못 걸어 받는 쪽에서 urgent 만 거름)
 --   URL 은 텔레그램 봇(https://api.telegram.org/bot<토큰>/sendMessage) 앞에 둔 작은 중계(Cloudflare Worker 등) 또는 디스코드 웹훅.
 --   메일 주소는 화면에 안 박음(재아 09-20: 매크로·스팸 우려).
+
+-- ---------- 급함 알림 → 텔레그램 (재아 09-20) ----------
+-- 봇 토큰·채팅 ID 는 저장소·대화·HTML 어디에도 적지 않고 Supabase Vault 에만 둡니다.
+-- 준비(대시보드에서 한 번):
+--   1) Database → Extensions 에서 pg_net 켜기
+--   2) Project Settings → Vault → New secret 두 개
+--        이름 telegram_bot_token   값 123456:ABC-…   (BotFather 가 준 토큰)
+--        이름 telegram_chat_id     값 987654321      (재아 채팅 ID — @userinfobot 에게 아무 말이나 보내면 알려 줌)
+--   3) 아래를 SQL Editor 에서 실행
+--   4) 봇에게 먼저 /start 한 번 보내 두기 (봇은 먼저 말을 건 사람에게만 보낼 수 있음)
+create extension if not exists pg_net;
+create or replace function hanok_notify_dev_request() returns trigger
+language plpgsql security definer set search_path = public, vault, net as $$
+declare tok text; chat text; body text;
+begin
+  if not new.urgent then return new; end if;   -- 보통은 알림 없음(재아가 모아서 봄)
+  select decrypted_secret into tok  from vault.decrypted_secrets where name = 'telegram_bot_token' limit 1;
+  select decrypted_secret into chat from vault.decrypted_secrets where name = 'telegram_chat_id'   limit 1;
+  if tok is null or chat is null then return new; end if;   -- 아직 안 넣었으면 조용히 통과(글은 저장됨)
+  body := '🔴 ' || case new.store when 'hanok' then '한옥반점' when 'anjip' then '안집' else new.store end || ' · 급함' || E'\n' || new.title   -- 봇 하나로 여러 가게(재아 09-20): 첫 줄에서 가게를 가름
+        || E'\n' || left(coalesce(new.body, ''), 300)
+        || E'\n' || '— ' || case when new.by = 'admin' then '사장님' else '직원' end || ' · ' || to_char(new.created_at at time zone 'Asia/Seoul', 'MM/DD HH24:MI');
+  perform net.http_post(
+    url := 'https://api.telegram.org/bot' || tok || '/sendMessage',
+    headers := '{"Content-Type":"application/json"}'::jsonb,
+    body := jsonb_build_object('chat_id', chat, 'text', body));
+  return new;
+end $$;
+drop trigger if exists t_devreq_notify on dev_requests;
+create trigger t_devreq_notify after insert on dev_requests for each row execute function hanok_notify_dev_request();
+-- 시험: insert into dev_requests (id, title, body, urgent, by) values ('dq_test', '알림 시험', '이게 오면 됩니다', true, 'admin');  → 폰 확인 뒤 delete from dev_requests where id='dq_test';

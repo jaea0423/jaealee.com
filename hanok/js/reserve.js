@@ -288,10 +288,14 @@
       for(let i = 0; i < first.getDay(); i++) cells.push(`<span class="pad"></span>`);
       for(let d = 1; d <= lastDay; d++){
         const key = ym+"-"+pad(d), wd = new Date(key+"T00:00:00").getDay();
-        const out = key < min || key > max;
+        const out = key < min || key > max || !!lockedOf(key);
         cells.push(`<button type="button" data-day="${key}" class="${wd===0||isHoliday(key)?'sun':(wd===6?'sat':'')}${key===S.date?' on':''}"${out?" disabled":""}>${d}</button>`);
       }
       days.innerHTML = cells.join("");
+      /* 이 달에 잠근 특별 기간이 있으면 달력 아래 한 줄 */
+      const locks = (R().special || []).filter(sp => sp && sp.lock && sp.from && sp.to && sp.from.slice(0,7) <= ym && sp.to.slice(0,7) >= ym);
+      let ln = b.querySelector(".rv-lock"); if(!ln){ ln = document.createElement("p"); ln.className = "rv-fld-hint rv-lock"; days.after(ln); }
+      ln.innerHTML = locks.length ? locks.map(sp => `${esc(sp.title || "특별 기간")} (${esc(sp.from.slice(5).replace("-", "/"))} ~ ${esc(sp.to.slice(5).replace("-", "/"))}) 예약은 준비 중입니다. 전화로 문의해 주세요. <a href="tel:${esc(INFO.tel)}" class="num">${esc(INFO.tel)}</a>`).join("<br>") : "";
       days.querySelectorAll("[data-day]").forEach(el => el.addEventListener("click", () => {
         S.date = el.dataset.day; S.time = "";
         days.querySelectorAll("[data-day]").forEach(x => x.classList.toggle("on", x === el));
@@ -376,6 +380,8 @@
   /* 저녁 코스는 종일 되니 늘 먼저(비싼 것부터 — 재아), 점심 시각이면 그 아래 점심 세트 */
   /* 특별 기간(명절 등, 홈페이지 관리 → 홈페이지 예약 → 특별 기간 차림): 그 날짜면 그 코스만 */
   function specialOf(date){ return (R().special || []).find(sp => sp && sp.from && sp.to && date >= sp.from && date <= sp.to && (sp.courses || []).length) || null; }
+  /* 잠근 특별 기간(방침·차림이 정해지기 전, 홈페이지 관리에서 '잠금') — 그 날짜는 온라인으로 안 받고 전화 안내 */
+  function lockedOf(date){ return (R().special || []).find(sp => sp && sp.lock && sp.from && sp.to && date >= sp.from && date <= sp.to) || null; }
   function menuGroups(){
     const sp = specialOf(S.date);
     if(sp) return [{ title: sp.title || "특별 코스", note: sp.note || "", items: sp.courses.map(x => { const m = String(x).split("|"); const name = m[0].trim(); return {key:"course:"+name, name, cn:(m[1]||"").trim()}; }) }];

@@ -37,7 +37,7 @@ function diffRes(a, b){
     var x = a ? a[c.k] : undefined, y = b ? b[c.k] : undefined;
     if((x||"") === (y||"")) continue;
     if((x||0) === (y||0) && typeof x !== "string") continue;
-    out.push({n:c.n, a:c.f(x), b:c.f(y)});
+    out.push({n:c.n, a:c.f(x), b:c.f(y), k:c.k, ra:x, rb:y});   /* k·ra·rb = 항목 키와 원값(노쇼 회피 판단에 씀, 09-20) */
   }
   /* 코스는 개수 묶음이라 따로 비교합니다 */
   var ca = courseSummary(a && a.courses) || (a && a.courseUndecided ? "미정" : "");

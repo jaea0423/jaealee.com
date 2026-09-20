@@ -600,7 +600,8 @@ function findSeat(o){
     /* 2명은 4인석을 먼저 (2인석은 좁아 손님이 싫어함). 그 밖에는 사장님이 정한 순서(설정의 테이블 순서) —
        저층은 여포가 맨 앞이라 4~5명은 여포부터(재아: 우선순위 높음). 순서가 같을 리 없으니 남는 자리는 마지막 기준 */
     const order = x => roomsAt(date).indexOf(x);
-    const score = x => ((people <= 2 && (x.seats||4) >= 4) ? 0 : 1000) + order(x);
+    /* 짝(pair)이 있는 테이블(하후상-1·2)은 평소 붙여 8인석으로 두므로, 한 테이블만 쓰는 팀에게는 맨 뒤 — 다른 4인석이 다 찼을 때만 나눠 씁니다(누님 09-20) */
+    const score = x => ((people <= 2 && (x.seats||4) >= 4) ? 0 : 1000) + (x.pair ? 500 : 0) + order(x);
     const sorted = tables.slice().sort((x,y)=>score(x)-score(y) || (seatMax(x)-seatMax(y)));
     for(const t of sorted) if(free(t.id)) return {id:t.id, extra:[]};
     if(!o.confirmedOnly) for(const t of sorted) if(freeLoose(t.id)) return {id:t.id, extra:[]};
@@ -610,7 +611,8 @@ function findSeat(o){
     const tryCombo = (combo, sum) => {
       if(sum >= people){
         const waste = sum - people;
-        if(!best || combo.length < best.combo.length || (combo.length === best.combo.length && waste < best.waste)) best = {combo:combo.slice(), waste};
+        const paired = combo.length === 2 && combo[0].pair === combo[1].id;   /* 평소 붙여 둔 짝(하후상-1·2)은 같은 조건이면 먼저 */
+        if(!best || combo.length < best.combo.length || (combo.length === best.combo.length && (waste < best.waste || (waste === best.waste && paired && !best.paired)))) best = {combo:combo.slice(), waste, paired};
         return;
       }
       if(combo.length >= 5) return;

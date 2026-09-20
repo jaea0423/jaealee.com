@@ -125,8 +125,8 @@ function renderSettings(){
       <button class="togglebtn ${st.minuteSteps!==false?'on':''}" onclick="setSetting('minuteSteps', ${st.minuteSteps===false?'true':'false'})">${st.minuteSteps!==false?"5분 단위 조절 켬":"30분 단위만"}</button>
       <div class="f-note">끄면 시각 선택에서 분 눈금이 사라지고 30분 단위로만 받습니다(누님 답 대기).</div></label>
     <label class="f"><div class="lb">취소를 노쇼로 볼 기준</div>
-      <div class="seg">${[["none","안 함"],["sameday","당일"],["day1","전날부터"],["day2","이틀 전부터"],["hours","N시간 전"],["after","시각 지난 뒤"]].map(([v,l])=>`<button class="${(st.noshowCancelRule||"none")===v?'on':''}" onclick="setSetting('noshowCancelRule','${v}')">${l}</button>`).join("")}</div>
-      <div class="f-note">기준 안에서 취소하면 '노쇼에 해당합니다 — 노쇼 / 취소' 를 되묻습니다. 취소는 언제나 남겨 둡니다(어제 취소를 오늘 입력할 수도 있으니).${st.noshowCancelRule==="hours"?` 지금 기준 <button class="numbtn sm" onclick="openNum('noshowCancelHours','몇 시간 전부터',1,48)">${st.noshowCancelHours||3}시간</button>`:""}</div></label>
+      <div class="seg">${[["none","안 함"],["sameday","당일"],["day1","전날부터"],["day2","이틀 전부터"],["hours","N시간 전"],["after","시각 지난 뒤"]].map(([v,l])=>`<button class="${(st.noshowCancelRule||"sameday")===v?'on':''}" onclick="setSetting('noshowCancelRule','${v}')">${l}</button>`).join("")}</div>
+      <div class="f-note">기준 안에서 취소하면 '노쇼에 해당합니다 — 노쇼 / 취소' 를 되묻습니다. 취소는 언제나 남겨 둡니다(어제 취소를 오늘 입력할 수도 있으니). 당일에 날짜를 미뤄 두고 취소하는 것도 당일 취소로 봅니다.${st.noshowCancelRule==="hours"?` 지금 기준 <button class="numbtn sm" onclick="openNum('noshowCancelHours','몇 시간 전부터',1,48)">${st.noshowCancelHours||3}시간</button>`:""}</div></label>
     <label class="f"><div class="lb">노쇼 경고 기준</div>
       <button class="numbtn" onclick="openNum('noshowWarnCount','노쇼 몇 회부터 경고',1,10)">${st.noshowWarnCount != null ? st.noshowWarnCount : 1}<small>회부터</small></button>
       <div class="f-note">같은 번호의 노쇼가 이 횟수 이상이면 새 예약 때 '노쇼 이력' 안내가 뜹니다.</div></label>

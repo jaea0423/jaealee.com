@@ -27,7 +27,7 @@ function hrWeekDays(w){ var out = []; for(var i = 0; i < 7; i++) out.push(shiftD
 function hrWeekLabel(w){ var th = new Date(shiftDate(w, 3) + "T00:00:00"); return (th.getMonth() + 1) + "월 " + (Math.floor((th.getDate() - 1) / 7) + 1) + "주차"; }
 function hrMonthEnd(m){ var d = new Date(m + "-01T00:00:00"); d.setMonth(d.getMonth() + 1); d.setDate(0); return m + "-" + pad(d.getDate()); }
 function hrMonthDays(m){ var n = Number(hrMonthEnd(m).slice(8)), out = []; for(var i = 1; i <= n; i++) out.push(m + "-" + pad(i)); return out; }
-function hrCfg(){ var c = (HR && HR.cfg) || {}; return { over5: c.over5 !== false, inclusive: !!c.inclusive, rates: Object.assign({}, HR_DEF.rates, c.rates || {}), night: c.night || HR_DEF.night, taxRate: c.taxRate != null ? c.taxRate : HR_DEF.taxRate, weeklyPay: c.weeklyPay !== false }; }
+function hrCfg(){ var c = (HR && HR.cfg) || {}; return { over5: c.over5 !== false, over5Mode: c.over5Mode || "auto", inclusive: !!c.inclusive, rates: Object.assign({}, HR_DEF.rates, c.rates || {}), night: c.night || HR_DEF.night, taxRate: c.taxRate != null ? c.taxRate : HR_DEF.taxRate, weeklyPay: c.weeklyPay !== false }; }
 async function hrLoad(){
   var key = view.storeKey || "hanok";
   try{
@@ -86,8 +86,33 @@ function hrNight(sps){
 }
 function hrRound(h){ return Math.round(h * 10) / 10; }
 function hrWon(n){ return Math.round(Number(n || 0)).toLocaleString("ko-KR") + "원"; }
+/* 상시 근로자 5인 이상인지 — 근로기준법 시행령 7조의2 방식(재아 09-20: "그날 몇 명 나왔느냐가 아니라 어떻게 세느냐").
+   한 달(여기서는 그 급여 달) 동안 날마다 나온 사람 수를 전부 더해 영업일 수로 나눈 평균이 5 이상이면 5인 이상.
+   단, 평균이 5 이상이라도 5인 미만인 날이 영업일의 절반 이상이면 미만으로, 평균이 5 미만이라도 5인 이상인 날이 절반 이상이면 이상으로 봅니다.
+   영업일 = 한 명이라도 근무를 찍은 날. 사장님은 직원 표에 없으니 자연히 빠집니다. 설정이 '자동' 이 아니면 설정값 그대로 */
+function hrOver5Note(month){
+  var c = hrCfg(), r = hrOver5Calc(month), m = month.split("-");
+  var what = c.over5Mode === "auto" ? (m[1].replace(/^0/, "") + "월 근태 기준 하루 평균 " + r.avg + "명(영업일 " + r.biz + "일 · 5인 미만인 날 " + r.under + "일) → ") : "설정: ";
+  return what + (hrOver5(month) ? "5인 이상 사업장 — 하루 8h·주 40h 넘김 연장 ×1.5, 22~06시 야간 ×1.5." : "5인 미만 사업장 — 연장·야간 가산 없음(정규 외 시간은 ×1.0).");
+}
+function hrOver5(month){
+  var c = hrCfg();
+  if(c.over5Mode !== "auto") return c.over5;
+  var r = hrOver5Calc(month); return r.over5;
+}
+function hrOver5Calc(month){
+  var days = hrMonthDays(month), cnt = {}, total = 0, biz = 0, under = 0, over = 0;
+  HR.staff.forEach(function(st){
+    days.forEach(function(d){ var a = HR.att[st.id + "|" + d]; if(!a || a.status === "결근" || a.status === "휴무") return; if(!hrSpans(st, a).length) return; cnt[d] = (cnt[d] || 0) + 1; });
+  });
+  days.forEach(function(d){ var n = cnt[d] || 0; if(!n) return; biz++; total += n; if(n < 5) under++; else over++; });
+  var avg = biz ? total / biz : 0, over5 = avg >= 5;
+  if(over5 && under * 2 >= biz) over5 = false;          /* 평균은 5 넘는데 5인 미만인 날이 절반 이상 */
+  if(!over5 && biz && over * 2 >= biz) over5 = true;   /* 평균은 5 아래인데 5인 이상인 날이 절반 이상 */
+  return { over5: over5, avg: Math.round(avg * 10) / 10, biz: biz, under: under, over: over };
+}
 function hrWeekCalc(s, w){
-  var cfg = hrCfg(), t = { hours:0, ot:0, night:0, days:0, absent:0, dutyDays:0, sched:0, weeklyPay:0 };
+  var cfg = hrCfg(), _m = w.slice(0, 7); cfg.over5 = hrOver5(_m); t = { hours:0, ot:0, night:0, days:0, absent:0, dutyDays:0, sched:0, weeklyPay:0 };
   hrWeekDays(w).forEach(function(d){
     var duty = hrOnDuty(s, d);
     if(duty){ t.dutyDays++; t.sched += hrSchedAt(s, d).spans.reduce(function(a, sp){ var s0 = toMin(sp.start), e0 = toMin(sp.end); if(e0 <= s0) e0 += 1440; return a + Math.max(0, (e0 - s0 - Number(sp.break || 0)) / 60); }, 0); }
@@ -104,7 +129,7 @@ function hrWeekCalc(s, w){
 }
 /* 한 달 급여. 시급이 달 중간에 바뀌면 날마다 그날 시급으로 셉니다(basePay). 연장·야간·주휴·배율은 달의 마지막 날 시급 기준 */
 function hrCalc(s, month){
-  var cfg = hrCfg(), days = hrMonthDays(month), t = { reg:0, alt:0, abs:0, off:0, days:0, hours:0, night:0, ot:0, weekly:0, bonusH:0, base:0, otPay:0, nightPay:0, weeklyPay:0, bonusPay:0, absentPay:0, extraH:0, extraPay:0, gross:0, ded:{}, dedTotal:0, net:0, employer:0, wage:0, log:[] };
+  var cfg = hrCfg(); cfg.over5 = hrOver5(month); var days = hrMonthDays(month), t = { reg:0, alt:0, abs:0, off:0, days:0, hours:0, night:0, ot:0, weekly:0, bonusH:0, base:0, otPay:0, nightPay:0, weeklyPay:0, bonusPay:0, absentPay:0, extraH:0, extraPay:0, gross:0, ded:{}, dedTotal:0, net:0, employer:0, wage:0, log:[] };
   var hourly = s.pay_type !== "monthly", last = days[days.length - 1];
   var monthPay = hrPayAt(s, last);
   t.wage = hourly ? monthPay : Math.round(monthPay / 209);
@@ -285,7 +310,7 @@ function hrWeekView(){
   return head + '<div class="hr-scroll"><table class="hr-grid week"><thead><tr><th class="hr-name"></th>' + ths + '<th class="hr-sum">이번 주</th></tr></thead><tbody>' + trs + '</tbody></table></div>' +
     '<div class="hr-legend"><span><i class="hc reg">○</i>정규</span><span><i class="hc alt">△</i>다른 시간</span><span><i class="hc abs">×</i>결근</span><span><i class="hc off">–</i>휴무</span><span><i class="hc due"></i>안 찍은 근무일</span><span><i class="r-ex">1.5x</i>배율(휴일 등)</span><span><i class="dot-ex"></i>메모</span></div>' +
     '<p class="f-note">칸을 누르면 찍습니다(안 찍힌 칸은 상태를 골라야 저장). 이름을 누르면 정규 근무·시급을 기간별로 고칩니다. 날짜를 누르면 공휴일 지정/해제. ' +
-      (cfg.over5 ? '5인 이상 사업장: 하루 8h·주 40h 넘김 연장 ×1.5, 22~06시 야간 ×1.5.' : '5인 미만 사업장으로 설정됨: 연장·야간 가산 없음.') + '</p>';
+      hrOver5Note(HR.week.slice(0, 7)) + '</p>';
 }
 function hrPayView(){
   var m = HR.month, mx = new Date(m + "-01T00:00:00"), title = mx.getFullYear() + "년 " + (mx.getMonth() + 1) + "월";
@@ -452,7 +477,8 @@ function hrSetupHtml(){
   var d = HR.setup;
   var num = function(path, label, note){ var ks = path.split("."), v = ks.length === 2 ? d[ks[0]][ks[1]] : d[ks[0]]; return '<label class="f"><div class="lb">' + label + (note ? ' <span class="lbl-note">' + note + '</span>' : '') + '</div><input type="number" step="0.001" value="' + v + '" oninput="' + (ks.length === 2 ? 'HR.setup.' + ks[0] + '.' + ks[1] : 'HR.setup.' + ks[0]) + '=Number(this.value)"></label>'; };
   return '<div class="overlay" onclick="HR.setup=null; render()"><div class="sheet" onclick="event.stopPropagation()">' + sheetHead("워크시프트 설정") +
-    '<div class="f"><div class="lb">사업장 규모 <span class="lbl-note">사장님 제외 동시 근무 5인 이상이면 연장·야간·휴일 가산 의무</span></div><div class="seg"><button class="' + (d.over5 ? "on" : "") + '" onclick="HR.setup.over5=true; render()">5인 이상</button><button class="' + (!d.over5 ? "on" : "") + '" onclick="HR.setup.over5=false; render()">5인 미만</button></div></div>' +
+    '<div class="f"><div class="lb">사업장 규모 <span class="lbl-note">5인 이상이면 연장·야간·휴일 가산 의무</span></div><div class="seg"><button class="' + ((d.over5Mode || "auto") === "auto" ? "on" : "") + '" onclick="HR.setup.over5Mode=\'auto\'; render()">근태로 자동</button><button class="' + (d.over5Mode === "yes" ? "on" : "") + '" onclick="HR.setup.over5Mode=\'yes\'; HR.setup.over5=true; render()">5인 이상</button><button class="' + (d.over5Mode === "no" ? "on" : "") + '" onclick="HR.setup.over5Mode=\'no\'; HR.setup.over5=false; render()">5인 미만</button></div>' +
+      '<div class="f-note">"그날 몇 명" 이 아니라 <b>한 달 평균</b>으로 봅니다(근로기준법 시행령 7조의2): 날마다 나온 사람 수를 더해 영업일로 나눈 값이 5 이상이면 5인 이상. 5인 미만인 날이 절반을 넘으면 미만, 반대면 이상. 자동이면 달마다 근태에서 계산합니다. ' + hrOver5Note(HR.month) + '</div></div>' +
     '<div class="f"><div class="lb">월급제 정규 외 근무 <span class="lbl-note">정규 시간을 넘긴 만큼 통상시급으로 따로 줌</span></div><div class="seg"><button class="' + (!d.inclusive ? "on" : "") + '" onclick="HR.setup.inclusive=false; render()">따로 계산</button><button class="' + (d.inclusive ? "on" : "") + '" onclick="HR.setup.inclusive=true; render()">월급에 포함(포괄)</button></div><div class="f-note">근로계약서에 "월급에 연장근로 ○시간 포함" 이라고 써 뒀으면(포괄임금) 포함으로. 아니면 따로 계산이 법대로입니다.</div></div>' +
     '<div class="f"><div class="lb">주휴수당 자동 계산</div><div class="seg"><button class="' + (d.weeklyPay !== false ? "on" : "") + '" onclick="HR.setup.weeklyPay=true; render()">켬</button><button class="' + (d.weeklyPay === false ? "on" : "") + '" onclick="HR.setup.weeklyPay=false; render()">끔</button></div></div>' +
     '<div class="subhead">4대보험 근로자 부담 요율(%) <span>매년 1월 바뀝니다 — 확인 후 고치세요</span></div>' +

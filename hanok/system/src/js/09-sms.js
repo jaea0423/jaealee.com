@@ -205,13 +205,18 @@ function resWarn(r){
     if(!r.tentativeRoomId){ if(r.date >= todayStr()) out.push("테이블 자리 없음"); }
     else if(r.tentativeSplit) out.push("나눠 앉음");
   }
-  if(seat && seat.type==="room"){
+  {
     const cn = Object.values(r.courses||{}).reduce((a,b)=>a+b,0);
     const ad = adultCount(pplOf(r), r.infants);
-    if(r.menuType==="해당 없음") out.push("룸·코스·세트 아님");
-    else if(r.menuType==="확인 필요") out.push("코스·세트 미확정");
-    else if(r.menuType==="코스" && !r.courseUndecided && cn>0 && cn<ad) out.push("코스·세트 인원 부족");
+    if(seat && seat.type==="room"){
+      if(r.menuType==="해당 없음") out.push("룸·코스·세트 아님");
+      else if(r.menuType==="확인 필요") out.push("코스·세트 미확정");
+    }
+    /* 코스·세트 인원은 룸이든 테이블이든 어른 수에 맞춰야 합니다(누님 09-20: 인원에 맞춰 음식이 나가므로) */
+    if(r.menuType==="코스" && !r.courseUndecided && cn>0 && cn<ad) out.push("코스·세트 인원 부족");
   }
+  /* 테이블 하나에 기본 좌석보다 많이 앉힘(여포 4인석에 5명 — 되긴 하지만 좁음, 누님 09-20) */
+  if(tSeats.length === 1 && isTable(tSeats[0]) && pplOf(r) > (tSeats[0].seats||4) && pplOf(r) <= seatMax(tSeats[0]) && r.status !== "취소") out.push(`${tSeats[0].seats||4}인석에 ${pplOf(r)}명`);
   /* 겹쳐 받은 룸은 접수 뒤에도 계속 보여야 합니다.
      막지 않고 받는 대신(설계 5.2), 취소를 깜빡한 예약이 남아 있는 경우를
      '확인 필요'에서 나중에라도 잡아낼 수 있게 합니다. */

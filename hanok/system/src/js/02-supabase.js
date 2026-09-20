@@ -535,6 +535,12 @@ function migrate(d){
       (d[k].settings.scheduled || []).forEach(function(sc){ if(sc && sc.values) fixFloor(sc.values.rooms); });   /* 예정 설정은 values 에 묶음별 값 */
       d[k].reservations.forEach(function(r){ if(r.seatPref === "table:지하") r.seatPref = "table:저층"; });
     })();
+    /* 누님 답(09-20): 여포는 홀과 같이(최소 인원 없음) · 하후상-1·2 는 평소 붙여 두는 짝. 옛 저장본에 기본값이 남아 있으면 맞춥니다 */
+    (d[k].settings.rooms || []).forEach(function(r){
+      if(r.id === "tyb" && r.minCapacity === 4) delete r.minCapacity;
+      if(r.id === "ths1" && !r.pair) r.pair = "ths2";
+      if(r.id === "ths2" && !r.pair) r.pair = "ths1";
+    });
     /* 옛 기록에 deletedAt 이 붙은 채 reservations 에 남아 있으면 trash 로 옮깁니다 */
     d[k].trash = d[k].trash.concat(d[k].reservations.filter(r=>r.deletedAt));
     d[k].reservations = d[k].reservations.filter(r=>!r.deletedAt);

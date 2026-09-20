@@ -328,8 +328,10 @@ function saTabOnline(){
         '<label class="f"><div class="lb">시작일</div><input type="date" class="in-sm" value="' + esc(sp.from || "") + '" onchange="saSet(\'' + p + '.from\', this.value)"></label><label class="f"><div class="lb">마감일</div><input type="date" class="in-sm" value="' + esc(sp.to || "") + '" onchange="saSet(\'' + p + '.to\', this.value)"></label></div>' +
         '<label class="f"><div class="lb">이 기간의 코스 <span class="lbl-note">한 줄에 하나 · "이름 | 한자" 가능 · 홈페이지 예약 창에는 이것만 나옴</span></div><textarea class="in-sm" rows="3" oninput="saSetLines(\'' + p + '.courses\', this.value)">' + esc((sp.courses || []).join("\n")) + '</textarea></label>' +
         '<label class="f"><div class="lb">안내 한 줄 <span class="lbl-note">예약 창 메뉴 단계에 보임</span></div><input type="text" class="in-sm" value="' + esc(sp.note || "") + '" oninput="saSet(\'' + p + '.note\', this.value)"></label>' +
+        '<div class="f"><div class="lb">홈페이지 접수 <span class="lbl-note">차림·방침이 정해지기 전이면 잠가 두세요 — 그 기간 날짜를 못 고르고 "전화 문의" 안내</span></div><div class="seg"><button class="' + (!sp.lock ? "on" : "") + '" onclick="saSet(\'' + p + '.lock\', false); render()">받음</button><button class="' + (sp.lock ? "on rust" : "") + '" onclick="saSet(\'' + p + '.lock\', true); render()">잠금 (준비 중)</button></div></div>' +
         '<div class="btn-row"><button class="btn sm ghost" onclick="saArrDel(\'online.special\', ' + i + ', \'특별 기간\')">삭제</button></div></div>'; }).join("") +
-      '<div class="btn-row"><button class="btn sm" onclick="saArrAdd(\'online.special\', {title:\'\', from:\'\', to:\'\', courses:[], note:\'\'})">＋ 특별 기간</button></div>' +
+      '<div class="btn-row"><button class="btn sm" onclick="saArrAdd(\'online.special\', {title:\'\', from:\'\', to:\'\', courses:[], note:\'\', lock:true})">＋ 특별 기간</button></div>' +
+      '<p class="f-note"><b>명절이 다가오면 먼저 기간만 만들어 "잠금" 으로 두세요.</b> 차림과 방침(코스만 받을지, 최소 인원 등)을 정한 뒤 코스를 적고 "받음" 으로 바꾸면 그때부터 홈페이지 예약이 열립니다. 잠가 둔 사이 전화로 온 예약은 시스템에 그냥 넣으시면 됩니다(시스템은 막지 않습니다).</p>' +
       '<p class="f-note">명절처럼 차림이 다른 기간. 그 기간 날짜를 고르면 홈페이지 예약 창의 메뉴 단계에 <b>여기 적은 코스만</b> 나오고(점심 세트·단품 없음) 안내 한 줄이 붙습니다. 시스템 쪽 코스 구성은 설정 → 코스·세트 구성에서 "날짜를 정해서(예정)" 로 같은 기간을 넣어 두세요.</p>') +
     saBox("예약 페이지 안내 문구",
       saF("reserve.head.sub", "위 소개 한 줄") +

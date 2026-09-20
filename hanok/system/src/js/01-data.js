@@ -11,8 +11,8 @@ var SMS_DEFAULT = {
   on:true,
   skipNaver:true,         /* 네이버 예약은 네이버가 문자를 보내므로 우리는 안 보냄(재아) */
   storePhone:"031-724-1004",   /* 발신번호 — 매장 번호. 실제 발송을 붙일 때 통신사에 등록 */
-  remindOffset:0,         /* 재안내를 며칠 전에 — 2 | 1 | 0(당일) */
-  remindHour:9,           /* 그날 몇 시에 */
+  remindOffset:1,         /* 재안내를 며칠 전에 — 2 | 1 | 0(당일). 누님 09-20: 전날 */
+  remindHour:19,          /* 그날 몇 시에 — 전날 오후 7시 */
   parkingNote:"※ 주차 안내\n주차장 이용 가능합니다. 주차비 1,000원이며 발렛은 무료입니다.",
   /* 문안(8차-X, 재아): 설정에서 고칠 수 있습니다. {매장} {이름} {일시} {인원} {주차} {오늘내일} 자리에 값이 들어갑니다 */
   tplNew:"[ 예약 완료 안내 ]\n\n안녕하세요, {매장}입니다.\n예약확인 문자 드립니다.\n\n{이름} 님\n{일시}\n{인원}\n\n예약해주셔서 감사합니다.",
@@ -96,10 +96,10 @@ const DEFAULT_DATA = {
         {id:"t23b",name:"23-2",type:"table",floor:"1층",seats:2,joinWith:["t23a"]},
         {id:"t24", name:"24",  type:"table",floor:"1층",seats:2,joinWith:[]},
         {id:"t25", name:"25",  type:"table",floor:"1층",seats:2,joinWith:[]},
-        {id:"tyb", name:"여포",    type:"table",floor:"저층",seats:4,capacity:5,minCapacity:4,joinWith:[],note:"파셜룸"},
+        {id:"tyb", name:"여포",    type:"table",floor:"저층",seats:4,capacity:5,joinWith:[],note:"파셜룸"},   /* 누님 09-20: 홀과 같이 취급(최소 없음), 5명까지 — 5명이면 경고 */
         {id:"thd", name:"하후돈",  type:"table",floor:"저층",seats:4,joinWith:["ths1","ths2","thy","the"]},
-        {id:"ths1",name:"하후상-1",type:"table",floor:"저층",seats:4,joinWith:["thd","ths2","thy","the"]},
-        {id:"ths2",name:"하후상-2",type:"table",floor:"저층",seats:4,joinWith:["thd","ths1","thy","the"]},
+        {id:"ths1",name:"하후상-1",type:"table",floor:"저층",seats:4,joinWith:["thd","ths2","thy","the"],pair:"ths2"},   /* 누님 09-20: 평소엔 1·2 를 붙여 8인석. 4인석이 모자랄 때만 나눔 → pair 가 있는 테이블은 작은 팀에 맨 뒤 순서 */
+        {id:"ths2",name:"하후상-2",type:"table",floor:"저층",seats:4,joinWith:["thd","ths1","thy","the"],pair:"ths1"},
         {id:"thy", name:"하후연",  type:"table",floor:"저층",seats:2,joinWith:["thd","ths1","ths2","the"]},
         {id:"the", name:"하후은",  type:"table",floor:"저층",seats:2,joinWith:["thd","ths1","ths2","thy"]}
       ],

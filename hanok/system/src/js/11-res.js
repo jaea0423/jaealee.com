@@ -139,8 +139,18 @@ function moveMonthDate(n){
 }
 /* 취소하려는 시점이 설정한 기준 안이면(당일 등) '노쇼에 해당' 되묻기. 답: "노쇼" | "취소" | null(그만) */
 async function askNoshowOnCancel(rec){
-  const rule = store().settings.noshowCancelRule || "none";
-  if(rule === "none" || !rec || rec.status === "취소") return "취소";
+  const rule = store().settings.noshowCancelRule || "sameday";   /* 기본 '당일'(누님 09-20). 설정에서 바꿀 수 있음 */
+  if(!rec || rec.status === "취소") return "취소";
+  /* 노쇼 회피 막기(재아 09-20): 오늘 예약을 내일로 미뤄 두고 다시 취소하면 '당일 취소' 가 아니게 되는 것.
+     변동 이력에 '원래 날짜 당일(또는 그 뒤)에 날짜를 미룬' 기록이 있으면 지금 취소해도 당일 취소로 봅니다 */
+  const dodged = (rec.changes||[]).some(c => (c.items||[]).some(it => it.k === "date" && it.ra && it.rb && it.rb > it.ra && c.on >= it.ra));
+  if(dodged){
+    const first = (rec.changes||[]).map(c => (c.items||[]).filter(it => it.k === "date" && it.ra && it.rb && it.rb > it.ra && c.on >= it.ra).map(it => it.ra)[0]).filter(Boolean)[0];
+    const r0 = await uiChoice("당일에 날짜를 미룬 뒤의 취소 — 노쇼에 해당합니다", `${rec.name} 손님 · 원래 ${dateLabel(first)} 예약을 그날 ${dateLabel(rec.date)} 로 미뤘다가 취소합니다.
+어떻게 처리할까요?`, [["노쇼로 처리","노쇼"],["취소로 처리","취소"]]);
+    return r0;
+  }
+  if(rule === "none") return "취소";
   const now = new Date(), t = new Date(rec.date + "T" + rec.time + ":00");
   const hoursLeft = (t - now) / 3600000;
   const hit = rule === "after" ? hoursLeft <= 0
