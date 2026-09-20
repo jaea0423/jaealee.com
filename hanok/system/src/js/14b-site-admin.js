@@ -21,7 +21,7 @@ function saRoot(){
 }
 async function openSiteAdmin(){
   if(!supaOn()){ await uiAlert("서버 설정이 없는 빌드입니다", "홈페이지 관리는 서버가 있어야 합니다.", "warn"); return; }
-  if(!view.adminOk){ if(!await adminGate("홈페이지 관리 열기")) return; view.adminOk = true; }
+  if(!await adminGate("홈페이지 관리 열기")) return;
   view.form = {type:"site", page:true};
   /* 닫았다 다시 열면 고치던 초안은 그대로(서버에서 다시 읽지 않음). 저장돼 있으면 새로 읽어 다른 기기 변경을 반영 */
   if(SA && !SA.err && !SA.loading && saDirty()){ render(); return; }

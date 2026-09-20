@@ -28,4 +28,6 @@ function custStat(x){
 }
 /* 이름 옆 알약. TV 처럼 tier 문자열만 있을 때는 tierTagOf */
 function tierTag(x){ return tierTagOf(custStat(x).tier); }
+/* 단체 딱지(09-20 재아) — 설정 groupSize(기본 8명) 이상. 예약 객체를 받음 */
+function groupTag(r){ return r && pplOf(r) >= (store().settings.groupSize || 8) ? '<span class="tier grp" title="단체">단체</span>' : ""; }
 function tierTagOf(t){ return t === "VVIP" ? '<span class="tier vvip" title="VVIP — 방문 5회 이상">VVIP</span>' : t === "VIP" ? '<span class="tier vip" title="VIP — 방문 2회 이상">VIP</span>' : ""; }

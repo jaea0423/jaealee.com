@@ -11,15 +11,16 @@ var TH_DEF_MODEL = TH_MODELS[0];
 /* 설정(store().settings.ai) — 09-20(재아): AI 설정을 감사 문자 화면에서 빼고 설정 → 감사 문자 AI 로. 프롬프트는 문장 단위로 고치고(promptLines),
    기본 양식(template)·글자 한도(maxLen)·키워드 프리셋(kwPresets)도 거기서. 바꾸면 그 뒤에 만드는 글부터 적용 */
 var TH_DEF_PROMPT = [
-  "당신은 경기 성남 분당의 한옥 중식당 '한옥반점' 사장입니다. 다녀간 손님께 보내는 감사 문자를 한국어로 한 통만 쓰세요.",
-  "존댓말로, 첫 줄은 '[한옥반점]' 로 시작하고 손님 이름을 '○○님' 으로 한 번 부르세요. 마지막은 '한옥반점 드림' 으로 맺으세요.",
+  "당신은 경기 성남 분당의 한옥 중식당 '한옥반점' 사장입니다. 예약하고 찾아와 준 손님께 보내는 감사 문자를 한국어로 한 통만 쓰세요. 예약해 주신 것과 방문해 주신 것 모두에 감사합니다.",
+  "형식은 꼭 이렇게: 첫 줄은 '[한옥반점]' 만 쓰고 줄을 바꾸세요. 둘째 줄부터 본문(손님 이름을 '○○님' 으로 한 번 부르며 시작). 본문은 2~3문장, 문장이 끝나면 마침표. 마지막 줄은 줄을 바꿔 '한옥반점 드림'.",
+  "존댓말로 쓰세요.",
   "말투는 부드럽고 따뜻하게. 절대 날카롭거나 딱딱하거나 훈계하듯 쓰지 마세요. 받는 사람이 기분 좋아지는 담백한 한 통이어야 합니다.",
   "다녀간 날과 문자를 보내는 날을 보고 '어제·그제·지난주' 같은 표현을 보내는 날 기준으로 맞추고, 계절·요일·명절(설·추석·크리스마스·연말연시 등)이면 그에 맞는 인사를 한 줄 자연스럽게 넣으세요.",
   "요청사항·손님 메모는 참고만 하세요. 직원끼리 보는 메모, 민감한 내용(노쇼·불만·건강·개인사·금액)은 알아도 모르는 척, 문자에 절대 드러내지 마세요.",
   "이모지는 최대 1개(없어도 됨). 광고·할인·링크·해시태그·과장은 쓰지 마세요. 스팸처럼 보이면 안 됩니다.",
   "설명 없이 문자 본문만 답하세요."
 ];
-var TH_DEF_TEMPLATE = "[한옥반점] {이름}님, 저희 한옥반점을 찾아 주셔서 진심으로 감사합니다.{단골}{키워드} 준비한 음식과 자리가 편안하셨기를 바랍니다. 다음에 오실 때도 정성껏 모시겠습니다. 늘 건강하시고 좋은 날 보내세요. — 한옥반점 드림";
+var TH_DEF_TEMPLATE = "[한옥반점]\n{이름}님, 예약하고 찾아 주셔서 진심으로 감사합니다.{단골}{키워드} 준비한 음식과 자리가 편안하셨기를 바랍니다. 다음에 오실 때도 정성껏 모시겠습니다. 늘 건강하시고 좋은 날 보내세요.\n한옥반점 드림";
 var TH_DEF_KW = ["가족 모임", "생신", "회식", "상견례", "아이 생일", "첫 방문", "단골"];
 function thCfg(){
   var a = store().settings.ai || {};
@@ -39,7 +40,7 @@ function thSaveCfg(patch){ var st = store().settings; st.ai = Object.assign({}, 
 
 async function openThanksPage(){
   if(!supaOn()){ await uiAlert("서버 설정이 없는 빌드입니다", "감사 문자는 서버가 있어야 합니다.", "warn"); return; }
-  if(!view.adminOk){ if(!await adminGate("감사 문자 열기")) return; view.adminOk = true; }
+  if(!await adminGate("감사 문자 열기")) return;
   view.form = {type:"thanks", page:true};
   if(!TH) TH = { date: shiftDate(todayStr(), -1), items:{}, queue:[], tab:"make", busy:{}, sendAt:"", adv:false, run:null, stop:false, qf:"all" };
   TH.sendAt = TH.sendAt || (shiftDate(todayStr(), 1) + "T" + thCfg().hour);   /* 기본 내일 11시(09-20) */
@@ -103,9 +104,14 @@ async function thMake(resId, force){
   var it = thItem(r); if(TH.busy[resId]) return;
   TH.busy[resId] = true; render();
   try{
-    var t = await thGemini(thPrompt(r, thKw(it)));
+    var max = thCfg().maxLen, t = thTidy(await thGemini(thPrompt(r, thKw(it))));
     if(TH.stop) throw new Error("STOP");
-    it.text = t.slice(0, thCfg().maxLen); it.made = "ai"; it.err = ""; it.manual = false;
+    if(t.length > max){   /* 한도를 넘으면 잘라 내지 말고 더 짧게 한 번 더(09-20) — 그래도 길면 문장 끝에서 */
+      t = thTidy(await thGemini(thPrompt(r, thKw(it)) + "\n\n방금 쓴 글이 " + t.length + "자로 너무 깁니다. 같은 내용으로 " + (max - 20) + "자 이내로 다시, 문장을 줄이세요."));
+      if(TH.stop) throw new Error("STOP");
+      if(t.length > max){ var cut = t.slice(0, max), k = Math.max(cut.lastIndexOf("."), cut.lastIndexOf("!"), cut.lastIndexOf("?")); t = (k > max * 0.5 ? cut.slice(0, k + 1) : cut).trim(); if(!/한옥반점 드림$/.test(t)) t += "\n한옥반점 드림"; }
+    }
+    it.text = t; it.made = "ai"; it.err = ""; it.manual = false;
   }catch(e){
     if(e.message === "STOP"){ TH.busy[resId] = false; return; }
     var why = e.name === "AbortError" ? "응답이 25초 안에 안 옴" : e.message === "NOKEY" ? "Gemini 키가 빌드에 없음(supabase.*.json 의 geminiKey)" : e.message;
@@ -121,9 +127,17 @@ async function thMakeAll(again){
   for(var i = 0; i < list.length && !TH.stop; i++){ await thMake(list[i].id); TH.run.done = i + 1; }
   TH.run = null; TH.stop = false; render();
 }
+/* AI 답을 한 모양으로: '[한옥반점]' 한 줄 / 본문 / '한옥반점 드림' 한 줄. 앞뒤 공백·따옴표·설명 줄 정리 */
+function thTidy(t){
+  t = String(t || "").replace(/\r/g, "").replace(/^["'\s]+|["'\s]+$/g, "");
+  t = t.replace(/^\[한옥반점\]\s*/, "");                       /* 머리는 떼고 */
+  t = t.replace(/\s*[—-]?\s*한옥반점\s*드림\s*\.?\s*$/, "");   /* 꼬리도 떼고 */
+  t = t.replace(/\n{2,}/g, "\n").trim();
+  return "[한옥반점]\n" + t + "\n한옥반점 드림";                  /* 같은 모양으로 다시 붙임 */
+}
 function thStop(){ TH.stop = true; TH.run = null; Object.keys(TH.busy).forEach(function(k){ TH.busy[k] = false; }); render(); showToast("중단했습니다"); }
 function thRunning(){ return !!(TH && (TH.run || Object.keys(TH.busy).some(function(k){ return TH.busy[k]; }))); }
-function thUseTemplate(resId){ var r = store().reservations.find(function(x){ return x.id === resId; }); if(!r) return; var it = thItem(r); it.text = thTemplate(r, thKw(it)); it.made = "template"; it.err = ""; it.manual = false; render(); }
+function thUseTemplate(resId){ var r = store().reservations.find(function(x){ return x.id === resId; }); if(!r) return; var it = thItem(r); it.text = thTemplate(r, thKw(it)); it.made = "template"; it.err = ""; it.manual = true; render(); }
 function thManual(resId){ var it = TH.items[resId]; if(it){ it.manual = true; if(!it.made) it.made = "manual"; render(); setTimeout(function(){ var el = document.getElementById("th-ta-" + resId); if(el) el.focus(); }, 30); } }
 function thSetText(resId, v, el){ var it = TH.items[resId]; if(!it) return; var max = thCfg().maxLen; if(v.length > max){ v = v.slice(0, max); if(el) el.value = v; } it.text = v; it.made = "manual"; it.manual = true; if(el){ el.style.height = "auto"; el.style.height = Math.min(el.scrollHeight, 220) + "px"; var m = el.parentNode.querySelector(".th-meta > span"); if(m) m.textContent = v.length + "자 / " + max + "자 · 직접 입력"; } }
 /* 키워드 알약 — Enter 나 '등록' 으로 쌓이고 × 로 뺌. 프리셋(설정)은 누르면 바로 들어감 */
@@ -211,13 +225,14 @@ function thMakeHtml(){
     var presets = cfg.kwPresets.filter(function(k){ return it.kws.indexOf(k) < 0; }).map(function(k){ return '<button class="chip preset" onclick="thAddKw(\'' + r.id + '\', thCfg().kwPresets[' + cfg.kwPresets.indexOf(k) + '])">+ ' + esc(k) + '</button>'; }).join("");
     var showText = !!(it.text || it.manual);
     return '<div class="th-card"><div class="th-h"><label class="chk" style="margin:0"><input type="checkbox" ' + (it.pick ? "checked" : "") + ' onchange="thItem(store().reservations.find(function(x){return x.id===\'' + r.id + '\';})).pick=this.checked"> <b>' + esc(r.name) + '</b>' + tierTag(r) + ' <small class="muted">' + esc(phoneNorm(r.phone)) + '</small></label>' +
-      '<label class="chk th-manual"><input type="checkbox" ' + (it.manual ? "checked" : "") + ' onchange="thSetManual(\'' + r.id + '\', this.checked)"> 직접 입력</label></div>' +
+      '<span class="th-hr">' + (it.manual ? '' : '<button class="btn sm ghost th-one" onclick="thMake(\'' + r.id + '\')" ' + (thRunning() ? "disabled" : "") + ' title="이 손님 것만 AI 로">' + ICON.spark + (it.text && it.made === "ai" ? ' 다시' : ' AI') + '</button>') +
+      '<label class="chk th-manual"><input type="checkbox" ' + (it.manual ? "checked" : "") + ' onchange="thSetManual(\'' + r.id + '\', this.checked)"> 직접 입력</label></span></div>' +
       '<div class="th-info">' + info + (tags ? ' <span class="kwtags">' + tags + '</span>' : '') + (extra ? '<div class="th-extra">' + extra + '</div>' : '') + '</div>' +
       '<div class="th-kwrow"><div class="chips"><input id="th-kw-' + r.id + '" type="text" class="chip-in" placeholder="키워드 — 예: 아버님 팔순 (Enter)" onkeydown="thKwKey(event, \'' + r.id + '\')"><button class="btn sm ghost" onclick="var el=document.getElementById(\'th-kw-' + r.id + '\'); thAddKw(\'' + r.id + '\', el.value); el.value=\'\'">등록</button></div>' +
         (presets ? '<div class="chips presets">' + presets + '</div>' : '') + '</div>' +
       (showText ? '<textarea id="th-ta-' + r.id + '" class="th-text grow" rows="2" placeholder="문자 내용" oninput="thSetText(\'' + r.id + '\', this.value, this)" maxlength="' + cfg.maxLen + '">' + esc(it.text) + '</textarea>' : '') +
       '<div class="th-meta"><span>' + (it.err ? '<span class="rust">AI 실패: ' + esc(it.err) + '</span> · ' : '') + (showText ? (it.text.length + '자 / ' + cfg.maxLen + '자' + (thMadeLabel(it) ? ' · ' + thMadeLabel(it) : '')) : '아직 글이 없습니다') + '</span>' +
-        '<label class="chk th-tpl"><input type="checkbox" ' + (it.made === "template" ? "checked" : "") + ' onchange="thToggleTemplate(\'' + r.id + '\', this.checked)"> 기본양식 적용하기</label></div>' +
+        (it.manual ? '<label class="chk th-tpl"><input type="checkbox" ' + (it.made === "template" ? "checked" : "") + ' onchange="thToggleTemplate(\'' + r.id + '\', this.checked)"> 기본양식 적용하기</label>' : '') + '</div>' +
       '</div>';
   }).join("");
   return head + rows + '<p class="f-note">체크한 건만 보냅니다. 같은 손님이 하루 두 번 다녀갔으면 한 번만. 글은 ' + cfg.maxLen + '자까지 — 넘으면 문자가 나뉘어 요금이 늘거나 실패합니다. 프롬프트·기본 양식·한도·키워드 프리셋은 설정 → 감사 문자 AI 에서.</p>';

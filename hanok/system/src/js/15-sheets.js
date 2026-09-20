@@ -254,7 +254,7 @@ function toastSaved(rec){
 }
 
 function renderSheet(){
-  const inner = { res:sheetRes, mark:sheetMark, unassigned:sheetUnassigned, pick:sheetPick, check:sheetCheck, search:sheetSearch, num:sheetNum, noshow:sheetNoshow, pin:sheetPin, apw:sheetAdminPw, hours:sheetHours, tedit:sheetTableEdit, naver:sheetNaver, setlog:sheetSetLog, pinlist:sheetPinList, zoomadj:sheetZoomAdj, logs:sheetLogs, smslog:sheetSmsLog, smsfree:sheetSmsFree, rate:sheetRate, sched:sheetSchedule, ovr:sheetOverride, blocks:sheetBlocks, reqs:sheetRequests, req:sheetRequest, reqrej:sheetReqReject, sched2:sheetScheduled, site:sheetSite, staff:sheetStaff, guests:sheetGuests, owner:sheetOwner, thanks:sheetThanks, devreq:sheetDevReq }[view.form.type]();   /* staff·guests 는 14d·14e(15차) */
+  const inner = { res:sheetRes, mark:sheetMark, unassigned:sheetUnassigned, pick:sheetPick, check:sheetCheck, search:sheetSearch, num:sheetNum, noshow:sheetNoshow, pin:sheetPin, apw:sheetAdminPw, hours:sheetHours, tedit:sheetTableEdit, naver:sheetNaver, setlog:sheetSetLog, pinlist:sheetPinList, zoomadj:sheetZoomAdj, logs:sheetLogs, smslog:sheetSmsLog, smsfree:sheetSmsFree, rate:sheetRate, sched:sheetSchedule, ovr:sheetOverride, blocks:sheetBlocks, reqs:sheetRequests, req:sheetRequest, reqrej:sheetReqReject, sched2:sheetScheduled, site:sheetSite, staff:sheetStaff, guests:sheetGuests, owner:sheetOwner, thanks:sheetThanks, devreq:sheetDevReq, closeday:sheetCloseDay }[view.form.type]();   /* staff·guests 는 14d·14e(15차) */
   /* 검색은 창 높이를 고정해 두고 결과만 안에서 스크롤 — 칠 때마다 창이 늘었다 줄었다 하지 않게(재아) */
   const wide = view.form.type==="rate" ? " sheet-wide" : ((view.form.type==="search" || (view.form.type==="reqs" && reqPending().length >= 3)) ? " sheet-tall" : "");   /* 홈페이지 예약은 3건부터 높이를 고정하고 목록만 스크롤(재아 09-17). 0~2건이면 빈 상자를 길게 안 보임(검토 D3) */
   if(view.form.page) return `<div class="sheet page-sheet">${inner}</div>`;   /* 화면형: 덮개 없이 본문 자리에 */
@@ -706,7 +706,7 @@ function sheetMark(){
   return `
     ${sheetHead("예약 상세")}
     <div class="mark-info">
-      <div class="mi-t">${esc(r.time)} · ${esc(r.name)} 손님${tierTag(r)}</div>
+      <div class="mi-t">${esc(r.time)} · ${esc(r.name)} 손님${tierTag(r)}${groupTag(r)} <small class="muted num" title="예약 번호">#${resCode(r)}</small></div>
       ${custStat(r).total > 1 ? `<div class="mi-s">방문 ${custStat(r).visit}회${custStat(r).noshow ? ` · <span class="rust">노쇼 ${custStat(r).noshow}회</span>` : ""}</div>` : ""}
       <div class="mi-s">${pplText(r)} · ${esc(seat)}</div>
       ${r.phone?`<div class="mi-s">${esc(r.phone)}</div>`:(r.phoneTail?`<div class="mi-s">***-****-${esc(r.phoneTail)} <small class="muted">(네이버 예약 — 번호는 네이버에서)</small></div>`:"")}
@@ -1564,11 +1564,14 @@ async function saveAdminPw(){
 /* 관리자 비밀번호 한 번 묻기 — 서버가 없는 빌드는 그냥 통과 */
 /* 09-20(재아): '사장님 아이디' 대신 사장님 2차 비밀번호(숫자 6자리). 서버 admin 계정 비밀번호 = 6자리+"00".
    아직 옛 비밀번호(자유 문자열)를 쓰는 서버면 그것도 받아 줍니다 — 6자리 → 안 되면 친 그대로 한 번 더 */
+var ADMIN_UNTIL = 0;   /* '10분간 다시 묻지 않기' 를 켜고 맞힌 시각 + 10분 */
 async function adminGate(what){
   if(!supaOn()) return true;
-  const pw = await uiPin(what, "사장님 2차 비밀번호 6자리", 6);   /* PIN 화면과 같은 키패드(09-20) — 서버는 이미 6자리로 바뀜 */
-  if(pw == null) return false;
-  try{ await authToken(SUPA_CFG.adminEmail, /^\d{6}$/.test(pw) ? adminToPassword(pw) : pw); logEvent("관리자 확인", what); return true; }
+  if(ADMIN_UNTIL > Date.now()) return true;
+  const r = await uiPin(what, "사장님 2차 비밀번호 6자리", 6, {keep:"10분간 다시 묻지 않기"});   /* PIN 화면과 같은 키패드(09-20) */
+  if(r == null) return false;
+  const pw = r.code;
+  try{ await authToken(SUPA_CFG.adminEmail, /^\d{6}$/.test(pw) ? adminToPassword(pw) : pw); logEvent("관리자 확인", what + (r.keep ? " · 10분 유지" : "")); if(r.keep) ADMIN_UNTIL = Date.now() + 10 * 60000; return true; }
   catch(e){
     if(/^\d{6}$/.test(pw)){ try{ await authToken(SUPA_CFG.adminEmail, pw); logEvent("관리자 확인", what + " (옛 비밀번호)"); return true; }catch(e2){} }
     await uiAlert("2차 비밀번호가 다릅니다", "", "warn"); return false;

@@ -618,7 +618,21 @@ function sheetTableEdit(){
     <div class="btn-row" style="flex-wrap:wrap">
       ${others.map(o=>`<button class="wbtn ${(t.joinWith||[]).indexOf(o.id)>=0?'on':''}" onclick="toggleJoinWith('${t.id}','${o.id}')">${esc(o.name)}</button>`).join("") || `<span class="muted">같은 층에 다른 테이블이 없습니다</span>`}
     </div>
+    <div class="lbl" style="margin-top:12px">평소 붙여 두는 짝 <span class="lbl-note">둘을 늘 붙여 큰 자리로 씀(하후상-1·2). 작은 팀엔 맨 뒤 순서, 붙일 땐 먼저</span></div>
+    <div class="btn-row" style="flex-wrap:wrap">
+      ${others.filter(o=>(t.joinWith||[]).indexOf(o.id)>=0).map(o=>`<button class="wbtn ${t.pair===o.id?'on':''}" onclick="setPair('${t.id}','${o.id}')">${esc(o.name)}</button>`).join("") || `<span class="muted">먼저 위에서 붙일 수 있는 테이블을 체크하세요</span>`}
+      ${t.pair?`<button class="wbtn" onclick="setPair('${t.id}','')">짝 없음</button>`:""}
+    </div>
     <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">닫기</button></div>`;
+}
+/* 짝은 양쪽에 같이(09-20). 풀면 양쪽 다 풂 */
+function setPair(id, other){
+  const st = draft(), t = st.rooms.find(x=>x.id===id); if(!t) return;
+  if(t.pair){ const old = st.rooms.find(x=>x.id===t.pair); if(old && old.pair === id) delete old.pair; }
+  if(!other){ delete t.pair; render(); return; }
+  const o = st.rooms.find(x=>x.id===other); if(!o) return;
+  if(o.pair && o.pair !== id){ const old2 = st.rooms.find(x=>x.id===o.pair); if(old2) delete old2.pair; }
+  t.pair = other; o.pair = id; render();
 }
 function toggleJoinWith(id, other){
   const st = draft(), t = st.rooms.find(x=>x.id===id), o = st.rooms.find(x=>x.id===other);

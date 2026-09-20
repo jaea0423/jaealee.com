@@ -6,6 +6,15 @@ function pad(n){ return String(n).padStart(2,"0"); }
    예전엔 "res_"+Date.now() 였는데, 기기 두 대가 같은 밀리초에 저장하면 같은 번호가 나옵니다.
    DB 의 기본 키가 될 값이라 겹치면 한쪽이 덮어써집니다.
    crypto.randomUUID 는 구형 TV 에 없어서 직접 만듭니다 (RFC 4122 v4 모양). */
+/* 예약 번호(09-20 재아): 손님과 통화하거나 문자에 적을 때 부르는 6자리. 예약 id 에서 늘 같은 값이 나옵니다(저장 안 함).
+   지운 예약이라도 id 가 다르니 번호가 겹치지 않습니다(같은 id 는 없음). 글자는 헷갈리는 0·O·1·I 를 뺀 32자 */
+function resCode(r){
+  var s = String(r && r.id || ""), h = 2166136261;
+  for(var i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+  var A = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ", out = "";
+  for(var k = 0; k < 6; k++){ out += A[h % 32]; h = Math.floor(h / 32) ^ (h * 7 & 0xffffffff); h >>>= 0; }
+  return out;
+}
 function newId(prefix){
   var h = "0123456789abcdef", out = "", i, r;
   for(i = 0; i < 36; i++){

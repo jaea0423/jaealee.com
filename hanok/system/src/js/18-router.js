@@ -496,34 +496,27 @@ function renderTvGrid(){
     let nextMarked = false;
     const items = rows.map(r => {
       const past = isBlockPast(r, toMin(r.time), today, nowM);
-      const next = !past && !nextMarked && r.status !== "방문"; if(next) nextMarked = true;   /* 아직 안 온 손님 중 첫 번째 = 다음 손님 */
-      return `<li class="${past?'past':''} ${next?'next':''}">
+      return `<li class="${past?'past':''}">
         <span class="t">${esc(r.time)}</span>
-        <span class="n">${esc(maskName(r.name))} 님${r.tier ? tierTagOf(r.tier) : ""}</span>
+        <span class="n">${esc(maskName(r.name))} 님${r.tier ? tierTagOf(r.tier) : ""}${pplOf(r) >= (s.settings.groupSize || 8) ? '<span class="tier grp">단체</span>' : ""}</span>
         <span class="p">${pplOf(r)}<small>명</small></span>
       </li>`;
     }).join("");
     return `<section class="dsec ${hall?'hall':''} ${rows.length?'':'empty'}">
       <h3><span class="nm">${esc(title)}</span>${cap ? `<span class="cap">${esc(cap)}</span>` : ""}</h3>
-      <ul class="${hall?"two-col":""}"${hall ? ` style="grid-template-rows:repeat(${Math.max(1,Math.ceil(rows.length/2))},auto)"` : ""}>${items || `<li class="none">예약 없음</li>`}</ul>
+      <ul class="${hall?"two-col":""}"${hall ? ` style="grid-template-rows:repeat(${Math.max(1,Math.ceil(rows.length/2))},auto)"` : ""}>${items}</ul>
     </section>`;
   };
-  const cols = floors.map(fl => {
-    const rs = rooms.filter(r => (r.floor || "") === fl);
-    const roomCards = rs.map(room => {
-      /* 합쳐 쓰는 예약은 대표 방(roomId)에만 한 번 */
-      const rows = list.filter(r => r.roomId === room.id).sort((a,b)=>a.time.localeCompare(b.time));
-      return card(room.name, "", rows, false);   /* 정원 표시는 뺌(09-20 재아: 조잡) */
-    }).join("");
-    const tbls = floorTables(fl);
+  /* 09-20(재아): 층 기둥 없이 룸 8칸을 한 격자로, 그 아래 '1층 테이블'·'저층 테이블' 두 칸. 시계·'예약 없음'·다음 손님 강조는 뺌 */
+  const roomCards = rooms.map(room => {
+    const rows = list.filter(r => r.roomId === room.id).sort((a,b)=>a.time.localeCompare(b.time));
+    return card(room.name, "", rows, false);
+  }).join("");
+  const hallCards = tableFloors().map(fl => {
     const trows = list.filter(r => !r.roomId && resFloor(r) !== undefined && (resFloor(r)||"") === fl).sort((a,b)=>a.time.localeCompare(b.time));
-    const hall = tbls.length ? card(`${fl} 테이블`, "", trows, true) : "";
-    return `<div class="tv-col">
-      <div class="tv-col-h"><b>${esc(fl || "층 미정")}</b><span></span><em>${(()=>{ const n = list.filter(r => (r.roomId ? (rs.some(x => x.id === r.roomId)) : ((resFloor(r)||"") === fl)) && !isBlockPast(r, toMin(r.time), today, nowM)).length; return n ? `남은 예약 ${n}팀` : "남은 예약 없음"; })()}</em></div>
-      <div class="tv-cells" style="grid-template-columns:repeat(${Math.min(2, Math.max(1, rs.length))},1fr)">${roomCards}</div>
-      ${hall}
-    </div>`;
-  });
+    return card(`${fl} 테이블`, "", trows, true);
+  }).join("");
+  const cols = [`<div class="tv-cells tv-rooms" style="grid-template-columns:repeat(${Math.min(4, Math.max(1, rooms.length))},1fr)">${roomCards}</div><div class="tv-halls" style="grid-template-columns:repeat(${Math.max(1, tableFloors().length)},1fr)">${hallCards}</div>`];
 
   const d = new Date();
   const dateTxt = `${d.getMonth()+1}월 ${d.getDate()}일 ${["일","월","화","수","목","금","토"][d.getDay()]}요일`;
@@ -534,11 +527,11 @@ function renderTvGrid(){
       </div>
       <div class="tv-inner">
         <header class="tv-h">
-          <div class="tv-date">${dateTxt}<span class="tv-clock">${clock}</span></div>
+          <div class="tv-date">${dateTxt}</div>
           <h1>오늘의 예약 안내</h1>
           <div class="tv-line"></div>
         </header>
-        <div class="tv-grid tv-floors" style="grid-template-columns:repeat(${Math.max(1, cols.length)},1fr)">${cols.join("")}</div>
+        <div class="tv-grid tv-one">${cols.join("")}</div>
         <footer class="tv-f">찾아주셔서 감사합니다${DISP_FAIL >= 3 ? '<span class="tvl-off">연결 확인 중</span>' : ""}</footer>
       </div>`;
 }

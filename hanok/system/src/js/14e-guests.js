@@ -17,7 +17,7 @@ function custOf(phone){ var d = String(phone || "").replace(/\D/g, ""); return (
 
 async function openGuestsPage(){
   if(!supaOn()){ await uiAlert("서버 설정이 없는 빌드입니다", "손님 관리는 서버가 있어야 합니다.", "warn"); return; }
-  if(!view.adminOk){ if(!await adminGate("손님 관리 열기")) return; view.adminOk = true; }
+  if(!await adminGate("손님 관리 열기")) return;
   view.form = {type:"guests", page:true};
   if(!GS) GS = { q:"", sort:"recent", open:null, loading:true };
   render(); await gsLoadMemos(); GS.loading = false; render();

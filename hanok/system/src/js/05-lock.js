@@ -114,7 +114,7 @@ async function lockNow(){
   if(!await flushBeforeLeave()) return;
   resetOverlays();
   logEvent("잠금", "");
-  AUTHED=false; PIN_BUF=""; PIN_ERR=""; view.storeKey=null; view.draft=null; view.adminOk=false;
+  AUTHED=false; PIN_BUF=""; PIN_ERR=""; view.storeKey=null; view.draft=null; view.adminOk=false; ADMIN_UNTIL=0;
   DATA._session = {authed:false};
   sessionClear(); OFFLINE = null;
   saveData(); render();
@@ -127,7 +127,7 @@ async function exitApp(){
   if(!await flushBeforeLeave()) return;
   resetOverlays();
   logEvent("종료", "");
-  AUTHED=false; PIN_BUF=""; PIN_ERR=""; view.storeKey=null; view.draft=null; view.adminOk=false;
+  AUTHED=false; PIN_BUF=""; PIN_ERR=""; view.storeKey=null; view.draft=null; view.adminOk=false; ADMIN_UNTIL=0;
   DATA._session = {authed:false};
   sessionClear(); OFFLINE = null;
   try{ saveData(); }catch(e){}

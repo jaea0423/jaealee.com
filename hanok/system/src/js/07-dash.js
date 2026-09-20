@@ -112,7 +112,7 @@ function resRowMobile(r){
     <button class="mrow s-${r.status} ${late?'late':''}" onclick="openMark('${r.id}')">
       <div class="mr-1">
         <span class="mr-t">${esc(r.time)}</span>
-        <span class="mr-n">${esc(r.name)}${tierTag(r)}</span>
+        <span class="mr-n">${esc(r.name)}${tierTag(r)}${groupTag(r)}</span>
         ${late?`<span class="mr-bang">!</span>`:""}
         ${r.status!=="확정"?`<span class="tag ${r.status==="노쇼"?"rust":""}">${r.status}</span>`:""}
         ${warn?`<span class="tag rust">경고</span>`:""}
@@ -302,7 +302,7 @@ function resRow(r){
     <button class="rrow s-${r.status} ${late?'late':''} ${resWarn(r).length?'k-warn':''} ${changeTag(r)?'k-chg':''} ${!r.roomId && !isTablePref(r.seatPref)?'k-tent':''}" onclick="openMark('${r.id}')">
       <span class="rr-bang">${late?"!":""}</span>
       <span class="rr-t">${esc(r.time)}</span>
-      <span class="rr-n">${esc(r.name)}${tierTag(r)}</span>
+      <span class="rr-n">${esc(r.name)}${tierTag(r)}${groupTag(r)}</span>
       <span class="rr-p">${pplOf(r)}명${r.infants?`(어린이${r.infants})`:""}</span>
       <span class="rr-seat ${room||r.tentativeRoomId?'':'none'}">${esc(seat)}</span>
       <span class="rr-ph">${esc(r.phone||"-")}</span>

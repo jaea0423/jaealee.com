@@ -38,8 +38,10 @@ function uiChoose(title, options, msg){
 }
 /* 숫자 비밀번호 팝업(09-20 재아): PIN 화면과 같은 키패드 · 점 n개. 다 채우면 바로 답. 취소면 null.
    사장님 2차 비밀번호(6자리)에 씁니다 — 숫자 밖에는 칠 수 없음. 키보드 숫자·Backspace 도 받음(18-router keydown) */
-function uiPin(title, msg, digits){
-  return new Promise(res => { modalReplace({mode:"pin", title, msg, tone:"ok", digits:digits || 6, buf:"", cancel:"취소", res}); });
+function uiPin(title, msg, digits, opt){
+  opt = opt || {};
+  /* 답: {code, keep} — keep 은 '10분간 다시 묻지 않기' 체크(기본 꺼짐). 취소면 null */
+  return new Promise(res => { modalReplace({mode:"pin", title, msg, tone:"ok", digits:digits || 6, buf:"", keepLabel:opt.keep || "", keep:false, cancel:"취소", res}); });
 }
 function pinModalPush(n){
   const m = MODAL; if(!m || m.mode !== "pin") return;
@@ -47,7 +49,7 @@ function pinModalPush(n){
   if(n === "clear"){ m.buf = ""; render(); return; }
   if(m.buf.length >= m.digits) return;
   m.buf += String(n); render();
-  if(m.buf.length === m.digits){ const b = m.buf; setTimeout(function(){ if(MODAL === m){ MODAL = null; render(); m.res(b); } }, 120); }
+  if(m.buf.length === m.digits){ const b = m.buf, k = m.keep; setTimeout(function(){ if(MODAL === m){ MODAL = null; render(); m.res({code:b, keep:k}); } }, 120); }
 }
 function modalPromptAnswer(){ const el = document.getElementById("md-input"); const m = MODAL; MODAL = null; render(); if(m) m.res(el ? el.value : ""); }
 function renderModal(){
@@ -66,7 +68,8 @@ function renderModal(){
         <div class="md-h">${esc(m.title)}</div>
         <div class="md-b">${lines}${m.mode==="pin"?`
           <div class="pdots md">${Array.apply(null, Array(m.digits)).map((_, i)=>`<span class="pdot sm ${i<m.buf.length?'on':''}">${i<m.buf.length?'●':''}</span>`).join("")}</div>
-          <div class="pkeys md">${[1,2,3,4,5,6,7,8,9,"clear",0,"back"].map(k=>k==="clear"?`<button class="pkey sub" onclick="pinModalPush('clear')" title="다시 입력">↻</button>`:k==="back"?`<button class="pkey sub" onclick="pinModalPush('back')">←</button>`:`<button class="pkey" onclick="pinModalPush(${k})">${k}</button>`).join("")}</div>`:""}${m.mode==="prompt"?`<input id="md-input" type="${m.password?"password":"text"}" value="${esc(m.value||"")}" autofocus style="margin-top:8px; width:100%${m.numeric?"; font-size:24px; letter-spacing:.3em; text-align:center":""}"${m.numeric?' inputmode="numeric" pattern="[0-9]*"':""}${m.maxlen?` maxlength="${m.maxlen}"`:""} onkeydown="if(event.key==='Enter') modalPromptAnswer()">`:""}</div>
+          <div class="pkeys md">${[1,2,3,4,5,6,7,8,9,"clear",0,"back"].map(k=>k==="clear"?`<button class="pkey sub" onclick="pinModalPush('clear')" title="다시 입력">↻</button>`:k==="back"?`<button class="pkey sub" onclick="pinModalPush('back')">←</button>`:`<button class="pkey" onclick="pinModalPush(${k})">${k}</button>`).join("")}</div>
+          ${m.keepLabel?`<label class="chk pin-keep"><input type="checkbox" ${m.keep?"checked":""} onchange="MODAL.keep=this.checked"> ${esc(m.keepLabel)}</label>`:""}`:""}${m.mode==="prompt"?`<input id="md-input" type="${m.password?"password":"text"}" value="${esc(m.value||"")}" autofocus style="margin-top:8px; width:100%${m.numeric?"; font-size:24px; letter-spacing:.3em; text-align:center":""}"${m.numeric?' inputmode="numeric" pattern="[0-9]*"':""}${m.maxlen?` maxlength="${m.maxlen}"`:""} onkeydown="if(event.key==='Enter') modalPromptAnswer()">`:""}</div>
         <div class="md-f">
           ${m.mode==="confirm"||m.mode==="prompt"||m.mode==="choice"||m.mode==="pin"?`<button class="btn" onclick="modalAnswer(${m.mode==="confirm"?"false":"null"})">${esc(m.cancel)}</button>`:""}
           ${m.mode==="pin" ? "" : m.mode==="choice" ? (m.choices||[]).map(([lb,v],i)=>`<button class="btn ${m.tone==="warn"&&i===0?"danger-fill":"primary"}" onclick="modalAnswer(${JSON.stringify(v)})">${esc(lb)}</button>`).join("") :
@@ -121,7 +124,7 @@ async function setTab(t){
   }
   /* 설정은 관리자 비밀번호로만 들어갑니다(재아). 한 번 통과하면 잠글 때까지 다시 묻지 않고,
      PIN 변경·관리자 비밀번호 변경·접속 기록·PIN 관리·초기화·기록 복사는 그 안에서 한 번 더 묻습니다 */
-  if(t==="settings" && !view.adminOk){ if(!await adminGate("설정 열기")) return; view.adminOk = true; }
+  if(t==="settings"){ if(!await adminGate("설정 열기")) return; }
   /* 설정에서 나가면 관리자 확인도 풀립니다 — 다시 들어올 때 비밀번호를 또 묻게(재아). 홈페이지 관리도 설정 안에 있으니 같이 */
   if(view.tab==="settings" && t!=="settings") view.adminOk = false;
   if(t==="settings" && !view.draft) view.draft = deepClone(store().settings);
@@ -246,7 +249,7 @@ function renderStore(){
   const stt = shopState(s.settings);
   /* 8차-O(재아): 네이버 가져오기·빠른 입력은 팝업 시트가 아니라 화면 전체로 (view.form.page) */
   const pageForm = !!(view.form && view.form.page);
-  const pageTitle = pageForm ? ({naver:"네이버 예약 가져오기", site:"홈페이지 관리", staff:"워크시프트", guests:"손님 관리", owner:"사장님", thanks:"감사 문자", devreq:"개발자에게"}[view.form.type] || "빠른 입력") : "";
+  const pageTitle = pageForm ? ({naver:"네이버 예약 가져오기", site:"홈페이지 관리", staff:"워크시프트", guests:"손님 관리", owner:"사장님", thanks:"감사 문자", devreq:"개발자에게", closeday:"퇴근하기"}[view.form.type] || "빠른 입력") : "";
   const body = pageForm ? `<div class="page-wrap">${renderSheet()}</div>` : (view.tab==="settings" ? renderSettings : renderDash)();
 
   return `

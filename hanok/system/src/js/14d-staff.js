@@ -16,7 +16,7 @@ var HR_ROLES = ["주방", "홀"];   /* 묶는 순서. 다른 역할은 뒤에 '�
 
 async function openStaffPage(){
   if(!supaOn()){ await uiAlert("서버 설정이 없는 빌드입니다", "워크시프트는 서버가 있어야 합니다.", "warn"); return; }
-  if(!view.adminOk){ if(!await adminGate("워크시프트 열기")) return; view.adminOk = true; }
+  if(!await adminGate("워크시프트 열기")) return;
   view.form = {type:"staff", page:true};
   if(!HR) HR = { week: hrWeekStart(todayStr()), month: monthStr(), staff:[], att:{}, loaded:{}, cfg:null, loading:true, pop:null, edit:null, view:"week", slip:null, setup:false, retired:false };
   render(); await hrLoad(); render();
@@ -287,12 +287,14 @@ function sheetStaff(){
 /* 기간 옮기기(재아 09-20): 화살표 말고도 날짜를 바로 골라 뛸 수 있게 — 제목 옆 달력 입력 */
 async function hrJumpWeek(v){ if(!v) return; HR.week = hrWeekStart(v); HR.loading = true; render(); await hrLoadRange(); HR.loading = false; render(); }
 async function hrJumpMonth(v){ if(!/^\d{4}-\d{2}$/.test(v || "")) return; HR.month = v; HR.loading = true; render(); await hrLoadRange(); HR.loading = false; render(); }
+/* 기간 머리(09-20 재아): 가운데 제목·기간, 양옆 화살표. ‹ › 는 주(급여는 달), « » 는 달(급여는 해). 달력 입력은 뺌 */
 function hrPeriodHead(title, sub, onPrev, onToday, onNext, isNow){
-  var pick = HR.view === "pay"
-    ? '<input type="month" class="hr-jump" value="' + esc(HR.month) + '" onchange="hrJumpMonth(this.value)" title="달 바로 가기">'
-    : '<input type="date" class="hr-jump" value="' + esc(HR.week) + '" onchange="hrJumpWeek(this.value)" title="그 날짜가 든 주로 가기">';
-  return '<div class="hr-period"><div class="hr-period-t"><b>' + title + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</div>' + pick +
-    '<div class="hr-period-nav">' + (isNow ? '' : '<button class="btn sm ghost" onclick="' + onToday + '">' + (HR.view === "pay" ? "이번 달" : "이번 주") + '</button>') + '<button class="bnav" onclick="' + onPrev + '" aria-label="이전">&lsaquo;</button><button class="bnav" onclick="' + onNext + '" aria-label="다음">&rsaquo;</button></div></div>';
+  var pay = HR.view === "pay";
+  var big = pay ? ["hrMoveMonth(-12)", "hrMoveMonth(12)", "1년 전", "1년 뒤"] : ["hrMoveWeek(-4)", "hrMoveWeek(4)", "4주 전", "4주 뒤"];
+  return '<div class="hr-period center">' +
+    '<div class="hr-period-nav"><button class="bnav" onclick="' + big[0] + '" title="' + big[2] + '">&laquo;</button><button class="bnav" onclick="' + onPrev + '" aria-label="이전">&lsaquo;</button></div>' +
+    '<div class="hr-period-t"><b>' + title + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + (isNow ? '' : '<button class="btn sm ghost" onclick="' + onToday + '">' + (pay ? "이번 달" : "이번 주") + '</button>') + '</div>' +
+    '<div class="hr-period-nav"><button class="bnav" onclick="' + onNext + '" aria-label="다음">&rsaquo;</button><button class="bnav" onclick="' + big[1] + '" title="' + big[3] + '">&raquo;</button></div></div>';
 }
 function hrWeekView(){
   var days = hrWeekDays(HR.week), today = todayStr(), cfg = hrCfg();
