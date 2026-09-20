@@ -176,8 +176,12 @@ async function hrSeverance(s){
 }
 
 /* ---------- 칸 편집 ---------- */
-function hrCell(staffId, date){
+async function hrCell(staffId, date){
   var s = HR.staff.find(function(x){ return x.id === staffId; }); if(!s) return;
+  /* 아직 오지 않은 날은 막지 않고 한 번 되묻습니다(재아 09-20: 미래 근무는 미리 알 수 없으니) */
+  if(date > todayStr() && !HR.att[staffId + "|" + date]){
+    if(!await uiConfirm("아직 오지 않은 날입니다", dateLabel(date) + " 근무를 미리 찍을까요? 그날 실제와 다르면 다시 고쳐야 합니다.", {ok:"미리 찍기", cancel:"그만"})) return;
+  }
   var a = HR.att[staffId + "|" + date], c = hrSchedAt(s, date);
   /* 안 찍힌 칸은 상태 비움(기본 안 찍힘, 재아). 다른 시간 칸은 그 날짜 정규 시간표를 미리 넣어 둠 */
   HR.pop = a ? deepClone(a) : { id:"att_" + staffId + "_" + date, staff_id:staffId, date:date, status:"", spans:c.spans.map(function(sp){ return {start:sp.start, end:sp.end, break:Number(sp.break || 0)}; }), rate:1, memo:"", _new:true };
@@ -280,8 +284,14 @@ function sheetStaff(){
            : HR.view === "pay" ? hrPayView() : hrWeekView();
   return top + body + (HR.pop ? hrPopHtml() : "") + (HR.edit ? hrEditHtml() : "") + (HR.slip ? hrSlipHtml() : "") + (HR.setup ? hrSetupHtml() : "");
 }
+/* 기간 옮기기(재아 09-20): 화살표 말고도 날짜를 바로 골라 뛸 수 있게 — 제목 옆 달력 입력 */
+async function hrJumpWeek(v){ if(!v) return; HR.week = hrWeekStart(v); HR.loading = true; render(); await hrLoadRange(); HR.loading = false; render(); }
+async function hrJumpMonth(v){ if(!/^\d{4}-\d{2}$/.test(v || "")) return; HR.month = v; HR.loading = true; render(); await hrLoadRange(); HR.loading = false; render(); }
 function hrPeriodHead(title, sub, onPrev, onToday, onNext, isNow){
-  return '<div class="hr-period"><div class="hr-period-t"><b>' + title + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</div>' +
+  var pick = HR.view === "pay"
+    ? '<input type="month" class="hr-jump" value="' + esc(HR.month) + '" onchange="hrJumpMonth(this.value)" title="달 바로 가기">'
+    : '<input type="date" class="hr-jump" value="' + esc(HR.week) + '" onchange="hrJumpWeek(this.value)" title="그 날짜가 든 주로 가기">';
+  return '<div class="hr-period"><div class="hr-period-t"><b>' + title + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</div>' + pick +
     '<div class="hr-period-nav">' + (isNow ? '' : '<button class="btn sm ghost" onclick="' + onToday + '">' + (HR.view === "pay" ? "이번 달" : "이번 주") + '</button>') + '<button class="bnav" onclick="' + onPrev + '" aria-label="이전">&lsaquo;</button><button class="bnav" onclick="' + onNext + '" aria-label="다음">&rsaquo;</button></div></div>';
 }
 function hrWeekView(){
@@ -296,7 +306,8 @@ function hrWeekView(){
     var wk = hrWeekCalc(s, HR.week);
     var tds = days.map(function(d){
       var a = HR.att[s.id + "|" + d], duty = hrOnDuty(s, d), past = d <= today, sps = hrSpans(s, a), h = sps.reduce(function(x, sp){ return x + sp.hours; }, 0);
-      var cls = "hc" + (a ? " " + ({"정규":"reg","변형":"alt","결근":"abs","휴무":"off"}[a.status]) : (duty && past ? " due" : "")) + (d === today ? " today" : "");
+      /* 안 찍은 정규 근무일: 지난 날은 빨간 '정규', 오늘 이후는 검정 '정규' — 빗금은 화려하다는 평(재아 09-20)이라 글자만 */
+      var cls = "hc" + (a ? " " + ({"정규":"reg","변형":"alt","결근":"abs","휴무":"off"}[a.status]) : (duty ? (past ? " due" : " due-future") : "")) + (d === today ? " today" : "");
       var sub = sps.length ? hrRound(h) + "h" : (a ? "" : (duty ? "정규" : ""));
       return '<td class="' + cls + '" onclick="hrCell(\'' + s.id + '\',\'' + d + '\')"><span class="m">' + (a ? HR_STATUS[a.status] : "") + '</span><small>' + esc(sub) + '</small>' +
         (a && Number(a.rate) > 1 ? '<i class="r">' + a.rate + 'x</i>' : '') + (a && a.memo ? '<i class="dot" title="' + esc(a.memo) + '"></i>' : '') + '</td>';
@@ -308,7 +319,7 @@ function hrWeekView(){
   var trs = hrGroups(list).map(function(g){ return '<tr class="hr-grp"><th class="hr-name">' + esc(g.role) + '</th><td colspan="8"></td></tr>' + g.list.map(rowHtml).join(""); }).join("");
   if(!list.length) trs = '<tr><td colspan="9" class="empty">' + (HR.retired ? "퇴사한 직원이 없습니다." : "재직 중인 직원이 없습니다.") + '</td></tr>';
   return head + '<div class="hr-scroll"><table class="hr-grid week"><thead><tr><th class="hr-name"></th>' + ths + '<th class="hr-sum">이번 주</th></tr></thead><tbody>' + trs + '</tbody></table></div>' +
-    '<div class="hr-legend"><span><i class="hc reg">○</i>정규</span><span><i class="hc alt">△</i>다른 시간</span><span><i class="hc abs">×</i>결근</span><span><i class="hc off">–</i>휴무</span><span><i class="hc due"></i>안 찍은 근무일</span><span><i class="r-ex">1.5x</i>배율(휴일 등)</span><span><i class="dot-ex"></i>메모</span></div>' +
+    '<div class="hr-legend"><span><i class="hc reg">○</i>정규</span><span><i class="hc alt">△</i>다른 시간</span><span><i class="hc abs">×</i>결근</span><span><i class="hc off">–</i>휴무</span><span><i class="hc due">정규</i>안 찍은 근무일(지난 날은 빨강)</span><span><i class="r-ex">1.5x</i>배율(휴일 등)</span><span><i class="dot-ex"></i>메모</span></div>' +
     '<p class="f-note">칸을 누르면 찍습니다(안 찍힌 칸은 상태를 골라야 저장). 이름을 누르면 정규 근무·시급을 기간별로 고칩니다. 날짜를 누르면 공휴일 지정/해제. ' +
       hrOver5Note(HR.week.slice(0, 7)) + '</p>';
 }

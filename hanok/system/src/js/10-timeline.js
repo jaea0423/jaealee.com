@@ -71,7 +71,7 @@ function renderTimeline(date, compact){
       ${dh.bs&&dh.be&&part==="day"?`<span class="breakband" style="left:${pos(toMin(dh.bs))}%; width:${((toMin(dh.be)-toMin(dh.bs))/span)*100}%"></span>`:""}
       ${ext?`<span class="extband ${part==="dinner"?"l":""}" style="left:${pos(ext[0])}%; width:${((ext[1]-ext[0])/span)*100}%" title="${part==="lunch"?"저녁 시간대 — 이어지는 예약만 흐리게":"점심 시간대 — 이어지는 예약만 흐리게"}"></span>`:""}
     `}`;
-  const LANE = compact ? 26 : 21;   /* 층 하나의 높이(px). 폰 압축판은 손가락 크기로 조금 높게 */
+  const LANE = compact ? 30 : 32;   /* 층 하나의 높이(px). 09-20 재아: 21 → 32 — 카운터에서 보기에 너무 작았음(눈이 침침). 폰 압축판은 30 */
 
 
   const ticks = [];

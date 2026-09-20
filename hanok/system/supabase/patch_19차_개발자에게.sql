@@ -47,7 +47,7 @@ begin
   if tok is null or chat is null then return new; end if;   -- 아직 안 넣었으면 조용히 통과(글은 저장됨)
   body := '🔴 ' || case new.store when 'hanok' then '한옥반점' when 'anjip' then '안집' else new.store end || ' · 급함' || E'\n' || new.title   -- 봇 하나로 여러 가게(재아 09-20): 첫 줄에서 가게를 가름
         || E'\n' || left(coalesce(new.body, ''), 300)
-        || E'\n' || '— ' || case when new.by = 'admin' then '사장님' else '직원' end || ' · ' || to_char(new.created_at at time zone 'Asia/Seoul', 'MM/DD HH24:MI');
+        || E'\n' || '— ' || case when new."by" = 'admin' then '사장님' else '직원' end || ' · ' || to_char(new.created_at at time zone 'Asia/Seoul', 'MM/DD HH24:MI');   -- "by" 는 예약어라 따옴표 필수(09-20 재아가 잡음)
   perform net.http_post(
     url := 'https://api.telegram.org/bot' || tok || '/sendMessage',
     headers := '{"Content-Type":"application/json"}'::jsonb,

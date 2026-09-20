@@ -287,7 +287,6 @@ function renderStore(){
               <button onclick="closeMore(); openHours()">${ICON.clock}<span>영업시간</span></button>
               ${document.fullscreenEnabled ? `<button onclick="closeMore(); toggleFullscreen()">${document.fullscreenElement?ICON.shrink:ICON.expand}<span>${document.fullscreenElement?"전체화면 해제":"전체화면"}</span></button>` : ""}
               <button onclick="closeMore(); openZoomAdj()">${ICON.search}<span>화면 보정</span></button>
-              <button onclick="closeMore(); openDevPage()">${ICON.sms}<span>개발자에게</span></button>
               <button onclick="closeMore(); openOwnerPage()">${ICON.staff}<span>사장님</span></button>
               <button onclick="closeMore(); setTab('settings')">${ICON.set}<span>설정</span></button>
               <button onclick="closeMore(); lockNow()">${ICON.exit}<span>로그아웃</span></button>
