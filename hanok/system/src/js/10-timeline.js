@@ -167,7 +167,7 @@ function renderTimeline(date, compact){
       return `<button class="blk ${tent?'tent':''} ${it.r._req?'req':''} ${bad?'warned':''} ${past?'past':''} ${chg?'changed':''} ${it.joined?'joined':''} ${sp?'spanned':''} ${it.lane===null?'overlap':''}"${spanAttr} onclick="${it.r._req?`openRequest('${it.r._req.id}')`:`openMark('${it.r.id}')`}"
         style="left:${pos(it.s0)}%; width:${w}%; bottom:${lane*LANE}px; height:${LANE}px; line-height:${LANE-2}px"
         title="${esc(it.r.time)} ${esc(it.r.name)} ${pplText(it.r)}${it.joined?` · ${esc(it.r.roomId?resSeatLabel(it.r):resTentLabel(it.r))} 합침`:""}${tent?' · 잠정':''}${chg?` · 오늘 ${esc(chg.label)}`:""}${bad?` · 경고: ${esc(resWarn(it.r).join(", "))}`:""}">
-        ${it.joined?`<i class="jn">${(joinOf(seatsOf(it.r))||{}).split?"⊕":"⊞"}</i>`:''}${chg && !shortJ?`<span class="chg-chip">${blockLabel(it.r)}</span>`:blockLabel(it.r, shortJ)}</button>`;
+        <span class="blk-in">${it.joined?`<i class="jn">${(joinOf(seatsOf(it.r))||{}).split?"⊕":"⊞"}</i>`:''}${chg && !shortJ?`<span class="chg-chip">${blockLabel(it.r)}</span>`:blockLabel(it.r, shortJ)}</span></button>`;
     }).join("");
     const sub = isTable(room) ? `${roomMin(room)?roomMin(room)+"~":""}${seatMax(room)}인` : `${roomMin(room, date)}~${room.capacity}인`;   /* 그 날짜 기준(주말 최소) */
     const overBand = over ? `<div class="offband overlane" style="left:0; right:0; top:0; height:${over*LANE}px" title="같은 룸에 겹쳐 받은 예약이 놓이는 칸"></div>` : "";   /* '겹침 N팀' 글자는 뺌(재아 09-20) — 회색 칸이 곧 그 뜻 */
@@ -227,7 +227,7 @@ function renderTimeline(date, compact){
       return `<button class="blk ${it.r._req?'req':''} ${bad?'warned':''} ${past?'past':''} ${chg?'changed':''} ${it.need>1?'multi':''} ${split?'split':''}" onclick="${it.r._req?`openRequest('${it.r._req.id}')`:`openMark('${it.r.id}')`}"
         style="left:${pos(it.s0)}%; width:${w}%; bottom:${lane*LANE}px; height:${h}px; line-height:${LANE-2}px"
         title="${esc(it.r.time)} ${esc(it.r.name)} ${pplText(it.r)}${tn?` · ${esc(tn)} 테이블 지정`:""}${split?" · 나눠 앉음":""}${none?" · 자리 없음":""}${chg?` · 오늘 ${esc(chg.label)}`:""}">
-        ${split?'<i class="jn">↔</i>':''}${chg?`<span class="chg-chip">${blockLabel(it.r)}</span>`:blockLabel(it.r)}${it.part?` <small class="tn">${it.part}/${it.parts}</small>`:""}</button>`;   /* 테이블 번호(tn)는 칸에 안 씀(09-20) — 상세에서 */
+        <span class="blk-in">${split?'<i class="jn">↔</i>':''}${chg?`<span class="chg-chip">${blockLabel(it.r)}</span>`:blockLabel(it.r)}${it.part?` <small class="tn">${it.part}/${it.parts}</small>`:""}</span></button>`;   /* 테이블 번호(tn)는 칸에 안 씀(09-20) — 상세에서 */
     }).join("");
     const bands = (fl==null ? "" : floorTables(fl).map(blockBands).join(""))
       + (over ? `<div class="offband overlane" style="left:0; right:0; top:0; height:${over*LANE}px" title="테이블 수를 넘은 팀이 놓이는 칸"></div>` : "");

@@ -674,7 +674,10 @@ button.metric:hover{background:var(--surface-2)}
 .blk.joined .jn, .blk.split .jn{font-style:normal; font-size:13px; margin-right:3px; opacity:1; color:#BFE3FF}   /* 합침 ⊞ — 방마다 같은 표시가 있으면 한 팀(09-20) */
 .blk.joined{border-left:3px solid #7CC4FF}
 /* 누를 수 있는 블록은 button 입니다 — 글자 크기·여백을 .blk 과 같게 다시 적어 button 기본 스타일을 지웁니다 */
-button.blk{border:1px solid rgba(255,255,255,.3); box-sizing:border-box; cursor:pointer; font:inherit; font-family:inherit; font-size:16px; line-height:1; padding:0 var(--s12) 0 var(--s8); letter-spacing:-.01em; text-align:left; overflow:hidden; text-overflow:ellipsis; display:block; white-space:nowrap; border-radius:3px}   /* 칸보다 긴 글은 … 으로(09-20) — 오른쪽 여백을 조금 두어 일찍 끊음 */
+button.blk{border:1px solid rgba(255,255,255,.3); box-sizing:border-box; cursor:pointer; font:inherit; font-family:inherit; font-size:16px; line-height:1; padding:0 var(--s12) 0 var(--s8); letter-spacing:-.01em; text-align:left; overflow:hidden; display:flex; flex-direction:column; justify-content:flex-start; align-items:stretch; white-space:nowrap; border-radius:3px}
+/* button 은 내용을 세로 가운데에 놓는 게 기본이라, 여러 칸을 합친 큰 블록에서 글이 가운데로 갔음(09-20 재아: 글은 늘 첫 칸에).
+   안쪽 span(.blk-in)이 한 칸 높이(line-height)로 맨 위에 놓이고 말줄임(…)도 여기서 */
+.blk-in{display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0}   /* 칸보다 긴 글은 … 으로(09-20) — 오른쪽 여백을 조금 두어 일찍 끊음 */
 button.blk:hover{filter:brightness(1.15)}
 button.blk b{font-weight:700; font-size:16px}
 /* 그래프 칸 안의 VIP 알약 — 칸이 21px 이라 알약도 납작하게 */
@@ -6313,7 +6316,7 @@ function renderTimeline(date, compact){
       return `<button class="blk ${tent?'tent':''} ${it.r._req?'req':''} ${bad?'warned':''} ${past?'past':''} ${chg?'changed':''} ${it.joined?'joined':''} ${sp?'spanned':''} ${it.lane===null?'overlap':''}"${spanAttr} onclick="${it.r._req?`openRequest('${it.r._req.id}')`:`openMark('${it.r.id}')`}"
         style="left:${pos(it.s0)}%; width:${w}%; bottom:${lane*LANE}px; height:${LANE}px; line-height:${LANE-2}px"
         title="${esc(it.r.time)} ${esc(it.r.name)} ${pplText(it.r)}${it.joined?` · ${esc(it.r.roomId?resSeatLabel(it.r):resTentLabel(it.r))} 합침`:""}${tent?' · 잠정':''}${chg?` · 오늘 ${esc(chg.label)}`:""}${bad?` · 경고: ${esc(resWarn(it.r).join(", "))}`:""}">
-        ${it.joined?`<i class="jn">${(joinOf(seatsOf(it.r))||{}).split?"⊕":"⊞"}</i>`:''}${chg && !shortJ?`<span class="chg-chip">${blockLabel(it.r)}</span>`:blockLabel(it.r, shortJ)}</button>`;
+        <span class="blk-in">${it.joined?`<i class="jn">${(joinOf(seatsOf(it.r))||{}).split?"⊕":"⊞"}</i>`:''}${chg && !shortJ?`<span class="chg-chip">${blockLabel(it.r)}</span>`:blockLabel(it.r, shortJ)}</span></button>`;
     }).join("");
     const sub = isTable(room) ? `${roomMin(room)?roomMin(room)+"~":""}${seatMax(room)}인` : `${roomMin(room, date)}~${room.capacity}인`;   /* 그 날짜 기준(주말 최소) */
     const overBand = over ? `<div class="offband overlane" style="left:0; right:0; top:0; height:${over*LANE}px" title="같은 룸에 겹쳐 받은 예약이 놓이는 칸"></div>` : "";   /* '겹침 N팀' 글자는 뺌(재아 09-20) — 회색 칸이 곧 그 뜻 */
@@ -6373,7 +6376,7 @@ function renderTimeline(date, compact){
       return `<button class="blk ${it.r._req?'req':''} ${bad?'warned':''} ${past?'past':''} ${chg?'changed':''} ${it.need>1?'multi':''} ${split?'split':''}" onclick="${it.r._req?`openRequest('${it.r._req.id}')`:`openMark('${it.r.id}')`}"
         style="left:${pos(it.s0)}%; width:${w}%; bottom:${lane*LANE}px; height:${h}px; line-height:${LANE-2}px"
         title="${esc(it.r.time)} ${esc(it.r.name)} ${pplText(it.r)}${tn?` · ${esc(tn)} 테이블 지정`:""}${split?" · 나눠 앉음":""}${none?" · 자리 없음":""}${chg?` · 오늘 ${esc(chg.label)}`:""}">
-        ${split?'<i class="jn">↔</i>':''}${chg?`<span class="chg-chip">${blockLabel(it.r)}</span>`:blockLabel(it.r)}${it.part?` <small class="tn">${it.part}/${it.parts}</small>`:""}</button>`;   /* 테이블 번호(tn)는 칸에 안 씀(09-20) — 상세에서 */
+        <span class="blk-in">${split?'<i class="jn">↔</i>':''}${chg?`<span class="chg-chip">${blockLabel(it.r)}</span>`:blockLabel(it.r)}${it.part?` <small class="tn">${it.part}/${it.parts}</small>`:""}</span></button>`;   /* 테이블 번호(tn)는 칸에 안 씀(09-20) — 상세에서 */
     }).join("");
     const bands = (fl==null ? "" : floorTables(fl).map(blockBands).join(""))
       + (over ? `<div class="offband overlane" style="left:0; right:0; top:0; height:${over*LANE}px" title="테이블 수를 넘은 팀이 놓이는 칸"></div>` : "");
