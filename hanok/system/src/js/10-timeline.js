@@ -80,7 +80,7 @@ function renderTimeline(date, compact){
       ${dh.bs&&dh.be&&part==="day"?`<span class="breakband" style="left:${pos(toMin(dh.bs))}%; width:${((toMin(dh.be)-toMin(dh.bs))/span)*100}%"></span>`:""}
       ${ext?`<span class="extband ${part==="dinner"?"l":""}" style="left:${pos(ext[0])}%; width:${((ext[1]-ext[0])/span)*100}%" title="${part==="lunch"?"저녁 시간대 — 이어지는 예약만 흐리게":"점심 시간대 — 이어지는 예약만 흐리게"}"><i>${part==="lunch"?"저녁":"점심"}</i></span>`:""}
     `}`;
-  const LANE = compact ? 30 : 34;   /* 층 하나의 높이(px). 트랙은 border-box 라 높이에 테두리 2px 를 더함(09-20 — 위 칸이 테두리를 넘던 것). 09-20 재아: 21 → 32 — 카운터에서 보기에 너무 작았음(눈이 침침). 폰 압축판은 30 */
+  const LANE = compact ? 32 : 38;   /* 층 하나의 높이(px). 트랙은 border-box 라 높이에 테두리 2px 를 더함(09-20 — 위 칸이 테두리를 넘던 것). 09-20 재아: 21 → 32 — 카운터에서 보기에 너무 작았음(눈이 침침). 폰 압축판은 30 */
 
 
   const ticks = [];
