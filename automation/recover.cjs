@@ -35,14 +35,18 @@ function recover() {
   for(const marker of ['index.lock','MERGE_HEAD','rebase-merge','rebase-apply','CHERRY_PICK_HEAD']) assert(!fs.existsSync(path.join(common,marker)), 'Git operation in progress: '+marker);
   const stateText=fs.readFileSync(path.join(lock,'state.json'),'utf8');
   const state=JSON.parse(stateText);
-  if(state.phase==='committed'){resumePush(state,lock,common);return;}
+  if(state.phase!=='prepare-failed'){
+    assert(/^\d{4}-\d{2}-\d{2}$/.test(state.date),'Invalid lock date');
+    assert(Array.isArray(state.existing),'Invalid existing edition list');
+  }
+  if(state.phase==='committed' || (state.phase==='prepared' && git('rev-parse','HEAD')!==state.base && git('status','--porcelain')==='')){resumePush(state,lock,common);return;}
   assert(['prepared','prepare-failed'].includes(state.phase),'Committed run needs validated push recovery; no automatic discard');
-  assert.equal(git('diff','--cached','--name-only'),'','Staged changes require review');
+  const staged=git('diff','--cached','--name-only','-z').split('\0').filter(Boolean);
   git('fetch','origin','main');
   assert.equal(git('rev-list','--count','origin/main..HEAD'),'0','Unpublished commits require push recovery');
   const head=git('rev-parse','HEAD');
   if(state.phase==='prepared')assert.equal(head,state.base,'HEAD changed since prepare');
-  const files=[...new Set([...git('diff','--name-only','-z','HEAD').split('\0'),...git('ls-files','--others','--exclude-standard','-z').split('\0')].filter(Boolean))];
+  const files=[...new Set([...staged,...git('diff','--name-only','-z','HEAD').split('\0'),...git('ls-files','--others','--exclude-standard','-z').split('\0')].filter(Boolean))];
   const allowed=[`news/data/${state.date}.json`,'news/index.json',`knowledge/data/${state.date}.json`,'knowledge/index.json',`opportunities/${state.date}.json`,'opportunities/index.json'];
   if(state.phase==='prepare-failed')assert.equal(files.length,0,'Failed prepare must be clean');
   const remoteFiles=git('diff','--name-only','-z',head,'origin/main').split('\0');
@@ -52,10 +56,10 @@ function recover() {
     assert(allowed.includes(file),'Unrelated change: '+file);
     assert(!(state.existing||[]).includes(file),'Existing edition modified: '+file);
     assert(fs.lstatSync(file).isFile(),'Missing or nonregular file: '+file);
-    const tracked=!!git('ls-files','--',file);
+    const tracked=!!git('ls-tree','HEAD','--',file);
     assert(!tracked || file.endsWith('/index.json'),'Published JSON must remain immutable');
     const data=fs.readFileSync(file);
-    snapshots.push({file,tracked,data,original:tracked?rawGit('show',`HEAD:${file}`):null});
+    snapshots.push({file,tracked,data,staged:staged.includes(file)?rawGit('show',`:${file}`):null,original:tracked?rawGit('show',`HEAD:${file}`):null});
   }
   const guard=path.join(common,'daily-recovery.lock');
   fs.mkdirSync(guard);
@@ -64,11 +68,14 @@ function recover() {
     fs.mkdirSync(archive,{recursive:true,mode:0o700});
     fs.writeFileSync(path.join(archive,'state.json'),stateText,{mode:0o600});
     fs.writeFileSync(path.join(archive,'manifest.json'),JSON.stringify({head,origin:git('rev-parse','origin/main'),files:files,reason:'inactive interrupted generation',createdAt:new Date().toISOString()},null,2),{mode:0o600});
-    for(const s of snapshots){const target=path.join(archive,'draft',s.file);fs.mkdirSync(path.dirname(target),{recursive:true,mode:0o700});fs.writeFileSync(target,s.data,{mode:0o600});assert(fs.readFileSync(target).equals(s.data));}
+    for(const s of snapshots){for(const [kind,data] of [['draft',s.data],['staged',s.staged]]){if(data===null)continue;const target=path.join(archive,kind,s.file);fs.mkdirSync(path.dirname(target),{recursive:true,mode:0o700});fs.writeFileSync(target,data,{mode:0o600});assert(fs.readFileSync(target).equals(data));}}
     // Recheck every snapshot before touching any source. Backups remain on failure.
     assert.equal(fs.readFileSync(path.join(lock,'state.json'),'utf8'),stateText);
     assert.equal(git('rev-parse','HEAD'),head);
     for(const s of snapshots)assert(fs.readFileSync(s.file).equals(s.data),'Concurrent change: '+s.file);
+    assert.deepEqual(git('diff','--cached','--name-only','-z').split('\0').filter(Boolean),staged);
+    for(const s of snapshots)if(s.staged!==null)assert(rawGit('show',`:${s.file}`).equals(s.staged),'Concurrent staged change');
+    if(staged.length)git('restore','--staged','--source=HEAD','--',...staged);
     for(const s of snapshots){if(s.tracked)fs.writeFileSync(s.file,s.original);else fs.unlinkSync(s.file);}
     assert.equal(git('status','--porcelain'),'','Unexpected changes remain');
     fs.renameSync(lock,path.join(archive,'original-lock'));
