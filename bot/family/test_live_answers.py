@@ -7,6 +7,18 @@ from test_bots import action
 
 
 class LiveTests(unittest.TestCase):
+    def test_shared_sibling_facts_keep_speaker_identity(self):
+        from personas import CHARACTERS, instruction
+        self.assertEqual(CHARACTERS['relationship']['older'], 'black')
+        self.assertEqual(CHARACTERS['relationship']['younger'], 'white')
+        for role, own in [('white', '흰둥이'), ('black', '검둥이')]:
+            prompt = instruction(role)
+            self.assertIn('지금 답하는 본인은 ' + own, prompt)
+            self.assertIn('"age": 3', prompt)
+            self.assertIn('"age": 4', prompt)
+            self.assertIn('서로 모르는 척하지', prompt)
+            self.assertIn('비공개 기억', prompt)
+
     def test_family_conversation_does_not_search_or_require_grounding(self):
         history = [{'user': '오늘 날씨', 'assistant': '어느 지역인가요?'}]
         for text in ('흰둥아 누나 뭐해', '요즘 누나 뭐해', '엄마 지금 어디 있어', '누나 불러줘', '멍청하네', '바보'):
