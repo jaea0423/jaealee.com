@@ -228,15 +228,23 @@ def group_reply(role, config, store, message, me):
             or sender.get('is_bot') or message.get('sender_chat')):
         return None
     recent = [item for item in store.get('group-context', []) if now().timestamp() - item['at'] < 900]
-    if role == 'white':
-        store.put('group-context', (recent + [{'speaker': sender['id'], 'text': message.get('text', '')[:600],
-                                             'at': now().timestamp()}])[-10:])
+    store.put('group-context', (recent + [{'speaker': sender['id'], 'text': message.get('text', '')[:600],
+                                         'at': now().timestamp()}])[-10:])
+    # Only this group's recent messages are shared, never private-chat memories.
+    config = dict(config, conversation_scope='family_group', recent_group=[{
+        'speaker': (member_config(config, item['speaker'])['owner_address'] or '미등록 가족')
+                   if isinstance(item['speaker'], int) else item['speaker'],
+        'text': item['text'], 'at': item['at']} for item in recent])
     text, direct, mentioned = routed_text(message, me, role)
     if text is None:
         return None
     if role == 'black':
         context = message.get('reply_to_message', {}).get('text', '')
-        return black_answer(config, store, sender['id'], text, context) if direct else None
+        reply = black_answer(config, store, sender['id'], text, context) if direct else None
+        if reply:
+            store.put('group-context', (store.get('group-context', []) + [
+                {'speaker': 'black', 'text': reply[:600], 'at': now().timestamp()}])[-10:])
+        return reply
     local = member_config(config, sender['id'])
     scoped = MemberStore(store, sender['id'])
     if text.startswith('/family') or text.startswith('/connect'):

@@ -7,6 +7,12 @@ from personas import instruction
 
 
 def needs_live(text, history=None):
+    public = r'날씨|기온|강수|미세먼지|환율|주가|시세|뉴스|속보|정치|대통령|총리|선거|경기|교통|영업'
+    family = r'(?<![가-힣])(?:누나|엄마|아빠|언니|오빠|동생|형|흰둥[이아]?|검둥[이아]?)(?=$|[\s,.!?~]|은|는|이|가|을|를|한테|에게|의|도|랑|하고)'
+    if re.search(family, text) and not re.search(public, text):
+        return False
+    if re.search(r'멍청|바보|답답|못알아|못 알아|헛소리|엉뚱|뜬금', text) and not re.search(public, text):
+        return False
     if not re.search(r'[?？]|알려|검색|확인해|예보|몇 도|얼마', text) and re.search(
             r'춥|추워|덥|더워|신기|그렇구나|다행|그러게|맞네|놀랍', text):
         return False
@@ -17,10 +23,10 @@ def needs_live(text, history=None):
     pattern = r'날씨|기온|강수|미세먼지|환율|주가|시세|속보|최신|실시간|현재|요즘|최근|대통령|총리'
     if re.search(pattern, text):
         return True
-    # Short follow-ups such as a city name inherit the preceding live question.
+    # Only weather location clarifications inherit a preceding search request.
     previous = (history or [])[-1:]
     return bool(re.fullmatch(r'(?:그럼\s*)?[가-힣A-Za-z]+[?？.! ]*', text)) and any(
-        re.search(pattern, item.get('user', '')) and
+        re.search(r'날씨|기온|강수|미세먼지', item.get('user', '')) and
         (re.search(r'지역|도시|어디', item.get('assistant', '')) or re.search(r'내일|모레|주말', text))
         for item in previous)
 
@@ -28,6 +34,7 @@ def needs_live(text, history=None):
 def answer(config, text, history=None, context='', role='black'):
     clock = now()
     history = history or []
+    live = needs_live(text, history)
     prompt = (instruction(role) +
               '짧고 친근한 해요체로 질문에 바로 답하세요. 반말하지 마세요. 보통 2~4문장, 본문 400자 이내예요. '
               '멘션·호출 규칙, 작동 방식, 자기소개를 반복하지 마세요. 질문하지 않은 기능 안내를 붙이지 마세요. '
@@ -43,13 +50,15 @@ def answer(config, text, history=None, context='', role='black'):
               + json.dumps({'now': clock.isoformat(), 'address': config.get('addresses', {}).get(
                   str(config.get('owner_id')), config.get('owner_address', '')),
                   'family': config.get('family', []), 'history': history[-10:],
+                  'conversation_scope': config.get('conversation_scope', 'private'),
+                  'recent_group': config.get('recent_group', []),
                   'quoted_message': context[:6000]}, ensure_ascii=False))
     model = config['gemini_model']
     assert re.fullmatch(r'[a-zA-Z0-9._-]+', model)
     result = request_json('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent', {
         'systemInstruction': {'parts': [{'text': prompt}]},
         'contents': [{'role': 'user', 'parts': [{'text': text}]}],
-        'tools': [{'google_search': {}}],
+        **({'tools': [{'google_search': {}}]} if live else {}),
         'generationConfig': {'maxOutputTokens': 4096}
     }, {'x-goog-api-key': config['gemini_api_key']})
     candidate = result['candidates'][0]
@@ -60,6 +69,6 @@ def answer(config, text, history=None, context='', role='black'):
     sources = candidate.get('groundingMetadata', {}).get('groundingChunks', [])
     web = [item['web'] for item in sources if item.get('web', {}).get('uri', '').startswith('https://')]
     clarification = bool(re.search(r'어느 (지역|도시)|지역.{0,20}(알려|궁금|말씀)', reply))
-    if needs_live(text, history) and not web and not clarification:
+    if live and not web and not clarification:
         return '이번에는 최신 자료를 확인하지 못했어요. 확인되지 않은 내용을 추측해서 말씀드리지는 않을게요.'
     return reply[:700]

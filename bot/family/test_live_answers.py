@@ -7,6 +7,31 @@ from test_bots import action
 
 
 class LiveTests(unittest.TestCase):
+    def test_family_conversation_does_not_search_or_require_grounding(self):
+        history = [{'user': '오늘 날씨', 'assistant': '어느 지역인가요?'}]
+        for text in ('흰둥아 누나 뭐해', '요즘 누나 뭐해', '엄마 지금 어디 있어', '누나 불러줘', '멍청하네', '바보'):
+            self.assertFalse(live_answers.needs_live(text, history), text)
+            with patch('live_answers.request_json', return_value=self.response('누나, 잠깐 와 주세요!', False)) as request:
+                reply = live_answers.answer(self.config, text, history)
+                self.assertNotIn('최신 자료', reply)
+                self.assertNotIn('tools', request.call_args.args[1])
+        self.assertTrue(live_answers.needs_live('누나가 서울 날씨 알려달래'))
+        self.assertTrue(live_answers.needs_live('최근 인공지능 모델 유형'))
+
+    def test_family_group_context_reaches_both_answer_paths(self):
+        config = dict(self.config, conversation_scope='family_group', owner_address='엄마',
+                      recent_group=[{'speaker': '누나', 'text': '도서관 가요', 'at': 123}])
+        with patch('live_answers.request_json', return_value=self.response('누나, 엄마가 불러요!', False)) as request:
+            live_answers.answer(config, '누나 불러줘')
+            prompt = request.call_args.args[1]['systemInstruction']['parts'][0]['text']
+            self.assertIn('도서관 가요', prompt)
+            self.assertIn('family_group', prompt)
+        with patch('bots.request_json', return_value={'choices': [{'finish_reason': 'stop', 'message': {'content': __import__('json').dumps(action('chat'))}}]}) as request:
+            bots.AI(config).parse('누나 불러줘', [], [], [])
+            prompt = request.call_args.args[1]['messages'][0]['content']
+            self.assertIn('도서관 가요', prompt)
+            self.assertIn('family_group', prompt)
+
     def setUp(self):
         self.config = {'ai_provider': 'gemini', 'gemini_api_key': 'test', 'gemini_model': 'gemini-2.5-flash'}
 
