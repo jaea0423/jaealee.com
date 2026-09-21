@@ -9,7 +9,7 @@
   python work/seed_dev.py clear      demo 행만 지우기 (data.demo = true 인 행 — 앱의 '예시 데이터 지우기' 와 같은 기준)
 
 행 모양은 앱의 resToRow 와 같게 만듭니다 (phone 숫자만, people 총원, 나머지 data). data.demo = true 로 표시.
-이름은 재아 요청대로 한국 연예인 위주 + 가끔 외국인(영어/한글 표기) + 기업·단체명. 알러지·요청·메모·경고 케이스를 섞습니다."""
+이름은 만화·영화·애니메이션 인물(12차, 재아 09-21 — 연예인 실명 대신) + 가끔 영어 표기 + 작품 속 단체명. 요청·메모·경고 케이스를 섞고, 알러지는 요청사항에 씁니다(칸 없음)."""
 import io, json, os, sys, random, uuid, urllib.request, datetime
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -53,25 +53,47 @@ if "clear" in sys.argv[1:]:
 
 random.seed(20260914)
 # ---------- 이름 ----------
-KO = ["유재석","아이유","손흥민","김연아","봉준호","박보검","송혜교","이정재","정우성","전지현","공유","김태희","조인성","하정우","마동석","김혜수",
-      "배두나","이병헌","최민식","송강호","박서준","김고은","수지","이효리","강호동","신동엽","박나래","장도연","이서진","차은우","박은빈","김선호",
-      "임영웅","성시경","백지영","이승기","윤아","태연","제니","지수","로제","뷔","지민","정국","RM","박지성","류현진","김민재","이강인","황희찬",
-      "장원영","안유진","카리나","윈터","한소희","김유정","남주혁","박신혜","전도연","김윤석","황정민","라미란","염정아","김서형","장항준","김은희",
-      "나영석","김태호","유희열","이적","윤종신","하동균","박효신","김범수","거미","에일리","백예린","이문세","조용필","나훈아","심수봉","송가인",
-      "정동원","이찬원","장윤정","김호중","허경환","김준호","문세윤","이용진","이진호","양세형","양세찬","조세호","지석진","하하","김종국","송지효",
-      "전소민","이광수","김종민","은지원","이수근","규현","민호","윤두준","기안84","이말년","주호민","침착맨","김풍","박명수","정준하","노홍철","정형돈","길"]
-FOREIGN = ["Tom Cruise","톰 크루즈","Emma Watson","엠마 스톤","레오나르도 디카프리오","Brad Pitt","제이슨 모모아","Keanu Reeves","키아누 리브스",
-           "Anne Hathaway","앤 해서웨이","Timothée Chalamet","티모시 샬라메","Ryan Gosling","라이언 고슬링","Taylor Swift","테일러 스위프트",
-           "Sakurai Sho","기무라 타쿠야","Lisa","리사","Zendaya","젠데이아","Scarlett Johansson","Michael Jordan","마이클 조던"]
-COMPANY = ["SK하이닉스 개발팀","삼성전자 인사팀","춘천시청 총무과","강원대 컴공 동문회","네이버 클라우드 3팀","한림대병원 내과","카카오모빌리티",
-           "LG전자 H&A 사업부","현대자동차 남양연구소","춘천교대 92학번","강원도청 관광정책과","KBS 춘천방송총국","하나은행 춘천지점",
-           "춘천마임축제 사무국","강원FC 프런트","넥슨 데이터팀","토스 결제팀","춘천고 3학년 8반 학부모회","봄내로타리클럽","한국은행 강원본부"]
-LONGNAME = ["김수한무거북이와두루미삼천갑자동방삭","스티븐 스필버그 감독님 일행","크리스토퍼 놀란"]
+# 12차(2026-09-21, 재아): 연예인 대신 만화·영화·애니메이션 인물. 화면에서 실명처럼 보이지 않게
+KO = ["둘리","도우너","또치","마이콜","희동이","고길동","박영희","신짱구","신짱아","신형만","봉미선","김철수","한유리","맹구","이훈이","나미리",
+      "도라에몽","노진구","신이슬","만퉁퉁","왕비실","도라미","아가츠마 젠이츠","카마도 탄지로","카마도 네즈코","하시비라 이노스케","렌고쿠 쿄주로","토미오카 기유",
+      "코쵸우 시노부","고죠 사토루","이타도리 유지","후시구로 메구미","쿠기사키 노바라","나나미 켄토","게토 스구루","젠인 마키","토도 아오이",
+      "토니 스타크","스티브 로저스","피터 파커","브루스 배너","나타샤 로마노프","토르 오딘슨","완다 막시모프","스티븐 스트레인지","닉 퓨리","티찰라",
+      "몽키 D. 루피","롤로노아 조로","나미","상디","우솝","토니토니 쵸파","니코 로빈","우즈마키 나루토","우치하 사스케","하루노 사쿠라","하타케 카카시",
+      "손오공","베지터","부르마","크리링","피콜로","에드워드 엘릭","알폰스 엘릭","로이 머스탱","엘사","안나","우디","버즈","미키 마우스","도날드 덕",
+      "해리 포터","헤르미온느 그레인저","론 위즐리","덤블도어","프로도 배긴스","간달프","아라곤","레골라스","루크 스카이워커","한 솔로","레아 오르가나","요다",
+      "뽀로로","크롱","에디","포비","패티","남도일","유미란","괴도 키드","한지우","이슬","웅이","호빵맨","세균맨","토토로","치히로","하울","소피","키키",
+      "기영이","기철이","하니","홍두깨","브루스 웨인","클라크 켄트","다이애나","셜록 홈즈","존 왓슨","잭 스패로우","포레스트 검프","인디아나 존스",
+      "마리오","루이지","피치 공주","링크","젤다","김전일","에렌 예거","미카사 아커만","아르민","리바이","고죠 유타","킬루아","곤 프릭스","히소카",
+      "몬타나 존스","코난 에도가와","최강창민","아톰","우라라","루피","라이언","어피치","무지","콘","펭수","치이카와","하치와레","우사기"]
+FOREIGN = ["Tony Stark","Peter Parker","Bruce Wayne","Hermione Granger","Luke Skywalker","Jack Sparrow","Ellen Ripley","Sarah Connor","John Wick",
+           "Forrest Gump","Indiana Jones","James Bond","Sherlock Holmes","Elsa","Woody","Buzz Lightyear","Gojo Satoru","Monkey D. Luffy","Naruto",
+           "Son Goku","Doraemon","Totoro","Shrek","Fiona","Homer Simpson","Marge Simpson","SpongeBob","Patrick Star","Groot","Rocket"]
+COMPANY = ["스타크 인더스트리 총무팀","쉴드 본부 1팀","호그와트 그리핀도르 동문회","도쿄주술고전 교직원","귀살대 주(柱) 모임","떡잎마을 방범대",
+           "해바라기반 학부모회","밀짚모자 해적단","나뭇잎 마을 7반","웨인 엔터프라이즈 인사팀","캡슐 코퍼레이션","고길동 가족","지브리 작화팀",
+           "뽀롱뽀롱 숲속마을","몬스터 주식회사 총무과","우주비행사 협회(버즈)","카멜롯 원탁 기사단","셜록 베이커가 221B","엘프 왕국 사절단","크립톤 동문회"]
+LONGNAME = ["김수한무거북이와두루미삼천갑자동방삭","몽키 D. 루피 일행 (해적단 전원)","티라노사우르스 렉스 호이"]
 
-ALLERGY = ["갑각류 알러지 1명","땅콩 알러지 (아이)","밀가루 알러지 — 글루텐 주의","조개류 못 드심","견과류 전부 알러지 2명","계란 알러지 1명","우유 알러지 (유아)"]
-REQUEST = ["송별회","상견례 — 조용한 방으로","생일 케이크 반입","창가 자리","휠체어 손님 1분","회식 — 술 많이","돌잔치 뒤풀이","어르신 생신, 의자 등받이 있는 곳","촬영 있음 (조용히)","프로포즈 예정 — 케이크 타이밍 맞춰 주세요","단체 계산서 필요","코스 늦게 시작해 주세요 (30분 뒤 도착 손님 있음)"]
-MEMO = ["사장님 지인","단골 — 상석 준비","지난번 노쇼 이력 있음, 확인 전화","매니저가 대신 예약함","현금 결제 예정","방송국 — 카메라 들어옴","VIP","네이버 리뷰 이벤트 손님","술 취하면 시끄러움 주의","아이 둘, 유아의자 확인"]
+# 12차: 알러지 칸을 없앰 — 요청사항에 같이 적음(유아 의자와 같은 방식). 손님이 말한 것 = 요청사항, 직원끼리 보는 것 = 메모
+REQUEST = ["송별회 — 조용한 방이면 좋겠어요","상견례 — 조용한 방으로","생일 케이크 반입, 초 준비 부탁","창가 자리","휠체어 손님 1분 — 입구 가까운 자리",
+           "회식 — 술 많이 나갑니다","돌잔치 뒤풀이","어르신 생신 — 등받이 있는 의자","촬영 있음 (조용히 부탁드려요)","프로포즈 예정 — 디저트 때 케이크 부탁",
+           "단체 계산서 · 카드 나눠 결제","코스 30분 늦게 시작 (늦게 오는 분 있음)","유아용 의자 1개","유아용 의자 2개","갑각류 알러지 1명",
+           "땅콩 알러지 (아이)","밀가루 알러지 — 글루텐 주의","조개류 못 드심","견과류 알러지 2명 — 소스 확인","계란 알러지 1명","우유 알러지 (유아)",
+           "고수 빼 주세요","매운 거 못 드시는 분 2명","임산부 있음 — 날것 빼고","채식하시는 분 1명 — 고기 빼고 가능한지","5시 반까지는 나가야 해요",
+           "주차 발렛 부탁드려요","생일 — 양초 하나만","오래 앉아 있을 예정 — 후식 천천히","룸이면 어디든 괜찮아요","아이 셋 — 시끄러울 수 있어요",
+           "탕수육 소스 따로","짜장면 곱빼기 2개 미리","고량주 반입 가능한지","회사 법인카드 — 영수증 필요","반려견 동반 가능한지 (안 되면 괜찮아요)"]
+MEMO = ["사장님 지인","단골 — 상석 준비","지난번 노쇼 이력 있음, 전날 확인 전화","비서가 대신 예약함","현금 결제 예정","방송국 — 카메라 들어옴",
+        "네이버 리뷰 이벤트 손님","술 취하면 시끄러움 주의","아이 둘, 유아의자 확인","지난번 짜장 소스 짜다고 하심","옆 테이블과 떨어뜨려 주기",
+        "전화 안 받음 — 문자로 확인","사장님이 직접 받음","동창회 총무 — 계산은 총무가","이름 확인 필요 (전화로는 '두리' 라 함)","예약금 없음",
+        "룸 원했지만 없어서 테이블로 안내함","고량주 반입 문의 — 콜키지 안내함","늘 늦게 옴 (20분쯤)","전에 룸 바꿔 달라 한 적 있음",
+        "주차 자리 미리 빼 두기","손님이 사진 찍어 가도 되냐 함 — OK","단골 — 늘 유비 룸 원함","어린이 메뉴 문의함 — 없다고 안내"]
 SRC_DETAIL = ["지인 소개","인스타 DM","워크인 재방문","블로그 보고","카카오 채널"]
+def pick_request():
+    """요청사항 — 하나, 가끔 둘(알러지 + 유아 의자 같은 조합)"""
+    a = random.choice(REQUEST)
+    if random.random() < 0.25:
+        b = random.choice(REQUEST)
+        if b != a: return a + ", " + b
+    return a
 
 def pick_name():
     r = random.random()
@@ -208,9 +230,9 @@ def base_rec(date, dow, t, ppl, today, **kw):
         "tentativeRoomId": None, "tentativeExtra": [], "tentativeSplit": False,
         "source": src, "sourceDetail": "홈페이지 예약" if web else (random.choice(SRC_DETAIL) if src == "기타" else ""),
         "createdAt": created, "menuType": kw.get("menuType", "해당 없음"), "courses": kw.get("courses", {}), "courseUndecided": kw.get("courseUndecided", False),
-        "allergy": random.choice(ALLERGY) if random.random() < 0.12 else "", "allergyChecked": True,
-        "request": kw.get("request", random.choice(REQUEST) if random.random() < 0.22 else ""),
-        "memo": kw.get("memo", random.choice(MEMO) if random.random() < 0.15 else ""),
+        "allergy": "", "allergyChecked": True,   # 12차: 알러지 칸 없음 — 요청사항에
+        "request": kw.get("request", pick_request() if random.random() < 0.38 else ""),
+        "memo": kw.get("memo", random.choice(MEMO) if random.random() < 0.28 else ""),
         "status": status, "changes": changes, "sms": [], "demo": True,
     }
     if is_past and status == "방문" and random.random() < 0.5: rec["auto"] = True
@@ -362,8 +384,8 @@ def main():
         add(base_rec(D(1), dow_of(D(1)), t, 4, today, roomId=r_by_name["조조"]["id"], status="확정", menuType="코스", courses=make_courses(dow_of(D(1)), t, 4, "ok"), memo="같은 방 30분 차이 — 사장님이 알고 받음"))
     # 2) 사용 중지 좌석(주유, 내일 하루)에 잡힌 예약
     add(base_rec(D(1), dow_of(D(1)), 12*60, 5, today, roomId=r_by_name["주유"]["id"], status="확정", menuType="코스", courses=make_courses(dow_of(D(1)), 12*60, 5, "ok"), memo="주유 수리 전에 받은 예약 — 다른 방으로 옮겨야 함"))
-    # 3) 전화 없음 + 단체 12명 룸 합침(동탁) + 알러지
-    big = base_rec(D(2), dow_of(D(2)), 18*60, 12, today, roomId=r_by_name["동탁"]["id"], status="확정", menuType="코스", courses=make_courses(dow_of(D(2)), 18*60, 12, "ok"), request="단체 계산서 · 상석 준비"); big["phone"] = ""; big["allergy"] = "갑각류 알러지 2명"; add(big)
+    # 3) 전화 없음 + 단체 12명 룸 합침(동탁) + 알러지(요청사항에)
+    big = base_rec(D(2), dow_of(D(2)), 18*60, 12, today, roomId=r_by_name["동탁"]["id"], status="확정", menuType="코스", courses=make_courses(dow_of(D(2)), 18*60, 12, "ok"), request="단체 계산서 · 상석 준비, 갑각류 알러지 2명"); big["phone"] = ""; big["name"] = "스타크 인더스트리 총무팀"; add(big)
     # 4) 노쇼 이력 번호로 미래 확정 (REPEAT 첫 사람을 노쇼로 만들고 미래 예약)
     nsn, nsp = REPEAT[0]
     add(base_rec(D(-5), dow_of(D(-5)), 19*60, 3, today, seatPref="table:" + FLOORS[0], status="노쇼"))
@@ -389,6 +411,17 @@ def main():
 
     seed_reqs_and_settings(rows, today, T, D, r_by_name, yeopo_id, nsn, nsp)
 
+# ----- 손님 메모(customers) — 단골 몇 명에게 사장님이 적어 둔 메모. 감사 문자 AI 가 '손님 메모' 로 참고함 -----
+CUST_MEMO = ["사장님 대학 후배 — 늘 유비 룸","탕수육 소스 부먹 싫어하심","3월 생신 — 지난해 미역국 챙겨 드림","아이가 땅콩 알러지 — 주방에 꼭",
+             "회사 접대 자주 — 영수증 회사명으로","조용한 자리 원하심, 창가","고량주 좋아하심 — 재고 확인"]
+def seed_customers():
+    rows = []
+    for (name, ph), memo in zip(REPEAT[:len(CUST_MEMO)], CUST_MEMO):
+        digits = "".join(ch for ch in ph if ch.isdigit())
+        if digits: rows.append({"store": "hanok", "phone": digits, "name": "", "memo": memo, "by": "admin"})
+    if rows: call("/rest/v1/customers?on_conflict=store,phone", "POST", rows, token=tok, prefer="resolution=merge-duplicates,return=minimal")
+    print("손님 메모: %d 명" % len(rows))
+
 def seed_reqs_and_settings(rows, today, T, D, r_by_name, yeopo_id, nsn, nsp):
     now = datetime.datetime.utcnow()
     # ----- 홈페이지 예약(requests): 확정된 것은 예약과 짝, 대기 5·거절 1·만료 1 -----
@@ -410,21 +443,21 @@ def seed_reqs_and_settings(rows, today, T, D, r_by_name, yeopo_id, nsn, nsp):
         reqs.append({"id": rid, "store": "hanok", "date": date, "time": time, "adults": adults, "kids": kids, "people": adults + kids, "seat": seat, "course": course, "course_label": label,
                      "name": name, "phone": phone, "request": request, "status": "대기", "reason": "", "res_id": None,
                      "created_at": (now - datetime.timedelta(hours=24 - hours_left)).strftime("%Y-%m-%dT%H:%M:%SZ"), "expires_at": (now + datetime.timedelta(hours=hours_left)).strftime("%Y-%m-%dT%H:%M:%SZ")})
-    pending("rq_p1", D(2), "12:00", 6, 1, "room", "set:요리사 추천세트", "요리사 추천세트", "박보검", "01055551111", "아이 의자 하나 부탁드립니다", 21)
-    reqs[-1]["allergy"] = "아이 땅콩 알레르기"   # 11차: 알레르기 칸
-    pending("rq_p2", D(3), "18:30", 2, 0, "table", "none", "", "장원영", "01055552222", "", 15)
-    pending("rq_p3", D(1), "18:00", 5, 0, "room", "later", "미정", "손흥민", "01055553333", "룸이면 어디든 괜찮아요", 9)          # 내일 18:00 룸 — 조조 겹침 날이라 자리 없음 경고 가능
+    pending("rq_p1", D(2), "12:00", 6, 1, "room", "set:요리사 추천세트", "요리사 추천세트", "신형만", "01055551111", "아이 의자 하나 부탁드립니다. 아이가 땅콩 알러지 있어요", 21)   # 12차: 알러지는 요청사항에
+    pending("rq_p2", D(3), "18:30", 2, 0, "table", "none", "", "헤르미온느 그레인저", "01055552222", "", 15)
+    pending("rq_p3", D(1), "18:00", 5, 0, "room", "later", "미정", "토니 스타크", "01055553333", "룸이면 어디든 괜찮아요", 9)          # 내일 18:00 룸 — 조조 겹침 날이라 자리 없음 경고 가능
     # rq_p4(노쇼 이력 번호)·rq_p5(40분 남음)는 11차에서 뺐음 — 대기 3건이면 충분
     reqs.append({"id": "rq_rej1", "store": "hanok", "date": D(4), "time": "19:00", "adults": 3, "kids": 0, "people": 3, "seat": "room", "course": "later", "course_label": "미정",
-                 "name": "유재석", "phone": "01055556666", "request": "", "status": "거절", "reason": "룸은 성인 5명부터 받고 있습니다", "res_id": None,
+                 "name": "고길동", "phone": "01055556666", "request": "", "status": "거절", "reason": "룸은 성인 5명부터 받고 있습니다", "res_id": None,
                  "created_at": (now - datetime.timedelta(hours=30)).strftime("%Y-%m-%dT%H:%M:%SZ"), "expires_at": (now - datetime.timedelta(hours=6)).strftime("%Y-%m-%dT%H:%M:%SZ")})
     reqs.append({"id": "rq_exp1", "store": "hanok", "date": D(5), "time": "12:00", "adults": 2, "kids": 0, "people": 2, "seat": "table", "course": "none", "course_label": "",
-                 "name": "아이유", "phone": "01055557777", "request": "", "status": "만료", "reason": "24시간 안에 처리되지 않음", "res_id": None,
+                 "name": "도라에몽", "phone": "01055557777", "request": "", "status": "만료", "reason": "24시간 안에 처리되지 않음", "res_id": None,
                  "created_at": (now - datetime.timedelta(hours=40)).strftime("%Y-%m-%dT%H:%M:%SZ"), "expires_at": (now - datetime.timedelta(hours=16)).strftime("%Y-%m-%dT%H:%M:%SZ")})
     for x in reqs: x.setdefault("allergy", "")   # 한 번에 넣을 때 키가 전부 같아야 함(PGRST102)
     for i in range(0, len(reqs), 200):
-        call("/rest/v1/requests", "POST", reqs[i:i+200], token=tok, prefer="return=minimal")
-    print("홈페이지 예약: %d 건 (대기 5 · 거절 1 · 만료 1 · 확정 %d)" % (len(reqs), len(web_rows)))
+        call("/rest/v1/requests?on_conflict=id", "POST", reqs[i:i+200], token=tok, prefer="resolution=merge-duplicates,return=minimal")   # 같은 id 는 덮어씀(다시 돌릴 때)
+    print("홈페이지 예약: %d 건 (대기 3 · 거절 1 · 만료 1 · 확정 %d)" % (len(reqs), len(web_rows)))
+    seed_customers()
 
     # ----- 설정: 사용 중지 · 임시 휴무/운영시간 · 예정 설정(마초) -----
     def blk(room_name, frm, to, note, fromTime="", toTime="", openEnded=False):

@@ -278,10 +278,10 @@ function reqSeedDemo(){
   const now = Date.now();
   const mk = (o) => Object.assign({ id:"q" + Math.random().toString(36).slice(2,8), status:"대기", createdAt:new Date(now - Math.random()*3*3600e3).toISOString() }, o);
   const items = [
-    mk({ date:d1, time:"12:30", adults:5, kids:1, people:6, seat:"room", course:"set:요리사 추천세트", courseLabel:"요리사 추천세트", name:"김서연", phone:"010-2233-4455", request:"어린이 의자 하나 부탁드립니다." }),
-    mk({ date:d2, time:"18:00", adults:2, kids:0, people:2, seat:"table", course:"none", courseLabel:"단품 주문", name:"박도현", phone:"010-9876-1234", request:"" }),
-    mk({ date:d3, time:"19:00", adults:8, kids:0, people:8, seat:"room", course:"later", courseLabel:"메뉴 미정", name:"이준호", phone:"010-5555-0001", request:"회사 회식입니다. 창가 쪽 룸이면 좋겠습니다." }),
-    mk({ date:d1, time:"11:30", adults:3, kids:0, people:3, seat:"room", course:"course:위 코스", courseLabel:"위 코스", name:"최민아", phone:"010-4444-7777", request:"" })
+    mk({ date:d1, time:"12:30", adults:5, kids:1, people:6, seat:"room", course:"set:요리사 추천세트", courseLabel:"요리사 추천세트", name:"신형만", phone:"010-2233-4455", request:"어린이 의자 하나 부탁드립니다. 아이가 땅콩 알러지 있어요." }),
+    mk({ date:d2, time:"18:00", adults:2, kids:0, people:2, seat:"table", course:"none", courseLabel:"단품 주문", name:"헤르미온느 그레인저", phone:"010-9876-1234", request:"" }),
+    mk({ date:d3, time:"19:00", adults:8, kids:0, people:8, seat:"room", course:"later", courseLabel:"메뉴 미정", name:"토니 스타크", phone:"010-5555-0001", request:"회사 회식입니다. 창가 쪽 룸이면 좋겠습니다." }),
+    mk({ date:d1, time:"11:30", adults:3, kids:0, people:3, seat:"room", course:"course:위 코스", courseLabel:"위 코스", name:"카마도 탄지로", phone:"010-4444-7777", request:"" })
   ];
   /* 하나는 곧 만료되는 것으로 — 카운트다운 확인용 */
   items[1].createdAt = new Date(now - (REQ_RULE.expireH*3600e3 - 40*60000)).toISOString();
