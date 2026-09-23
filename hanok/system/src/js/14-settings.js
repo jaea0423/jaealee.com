@@ -46,12 +46,6 @@ function renderSettings(){
   const dirty = settingsDirty();
   const DOWN = ["일","월","화","수","목","금","토"];
 
-  /* ---------- 홈페이지 (손님이 보는 사이트) ---------- */
-  const siteBody = `
-    <p class="f-note" style="margin:0 0 12px">손님이 보는 홈페이지(jaealee.com/hanok)의 <b>예약 접수 켜고 끄기 · 팝업 공지 · 글 · 차림 · 사진 · 영업시간 표시</b>를 고칩니다.
-      여기 설정과 달리 '적용' 을 누르는 즉시(또는 정한 시각부터) 홈페이지에 나갑니다. 미리보기로 먼저 확인할 수 있습니다.</p>
-    <div class="btn-row"><button class="btn primary" onclick="openSiteAdmin()">홈페이지 관리 열기</button></div>`;
-
   /* ---------- 운영시간 ---------- */
   const schedBody = `
     ${(st.schedules||[]).slice().sort((a,b)=>b.from.localeCompare(a.from)).map(sc=>{
@@ -430,9 +424,8 @@ function renderSettings(){
       <button class="btn" onclick="openNoshow()">노쇼 관리</button>
     </div>`;
 
-  const back = view.setSec ? `<div class="set-back"><button class="btn sm ghost" onclick="setSecBack()">← 설정</button></div>` : "";
+  const back = view.setSec ? `<div class="set-back"><button class="btn sm ghost" onclick="closeSettingsToOwner()">← 사장님</button></div>` : "";
   return back + `<div class="${view.setSec ? "set-open" : "own-grid set-grid"}">
-    ${sec("site","홈페이지",`예약 접수 · 팝업 · 글 · 사진`, siteBody)}
     ${sec("hours","운영시간",`${hoursFor(todayStr()).open} ~ ${hoursFor(todayStr()).close}`, schedBody)}
     ${sec("rules","예약 규칙",`단체 ${st.groupSize||8}명${schedChip("rules")}`, ruleBody)}
     ${sec("seats","좌석",`룸 ${st.rooms.filter(isRoom).length} · 테이블 ${st.rooms.filter(isTable).length}${schedChip("seats")}`, seatBody)}
