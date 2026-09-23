@@ -309,12 +309,8 @@ function renderSettings(){
       <button class="btn" onclick="openPinManage()">PIN 번호 관리</button>
       ${supaOn() ? `<button class="btn" onclick="openAdminPw()">사장님 2차 비밀번호 변경</button>` : ""}
       <button class="btn" onclick="openLogs()">로그</button>
-      <button class="btn" onclick="openRate()">예약률 추이</button>
-      <button class="btn" onclick="openSmsFree()">문자 보내기</button>
       <button class="btn danger" onclick="resetSettingsAll()">설정 초기화</button>
-      <button class="btn" onclick="openSlip()">수기 예약지 인쇄</button>
     </div>
-    <p class="f-note">수기 예약지: 직원이 전화로 받은 예약을 손으로 적는 종이(A4 한 장에 2장). 사장님이 시스템에 넣습니다. 열리면 Ctrl+P 로 인쇄해 카운터에 두세요. 더보기(⋮) 메뉴에서도 열립니다 — 관리자 비밀번호 없이.</p>
     <p class="f-note">설정은 사장님 2차 비밀번호로 들어옵니다. PIN 관리·2차 비밀번호 변경·로그·초기화는 한 번 더 묻습니다. PIN 은 직원과 공유하는 번호, 관리자 비밀번호는 사장님만 아는 것입니다.</p>`;
 
   /* 화면 크기 — 기기마다 적당한 값이 달라 사장님이 직접 고르게 둡니다.
@@ -419,13 +415,7 @@ function renderSettings(){
     const text = kind === "접수" ? smsText(sample, "접수") : smsText(sample, "재안내", smNow.remindOffset);
     uiAlert(kind === "접수" ? "접수 문자 — 이렇게 나갑니다" : `재안내 문자 — ${offsetLabel(smNow.remindOffset)} ${hourLabel(smNow.remindHour)}`, text, "ok");
   };
-  const etcBody = `
-    <div class="btn-row">
-      <button class="btn" onclick="openNoshow()">노쇼 관리</button>
-    </div>`;
-
-  const back = view.setSec ? `<div class="set-back"><button class="btn sm ghost" onclick="closeSettingsToOwner()">← 사장님</button></div>` : "";
-  return back + `<div class="${view.setSec ? "set-open" : "own-grid set-grid"}">
+  return `<div class="${view.setSec ? "set-open" : "own-grid set-grid"}">
     ${sec("hours","운영시간",`${hoursFor(todayStr()).open} ~ ${hoursFor(todayStr()).close}`, schedBody)}
     ${sec("rules","예약 규칙",`단체 ${st.groupSize||8}명${schedChip("rules")}`, ruleBody)}
     ${sec("seats","좌석",`룸 ${st.rooms.filter(isRoom).length} · 테이블 ${st.rooms.filter(isTable).length}${schedChip("seats")}`, seatBody)}
@@ -442,8 +432,7 @@ function renderSettings(){
       policyBody)}
     ${sec("zoom","화면 크기",`${uiZoom()}%`, zoomBody)}
     ${view.setSec ? "" : `<div class="set-divider">관리</div>`}
-    ${sec("admin","관리자",`PIN · 로그 · 초기화`, adminBody)}
-    ${sec("etc","기타",`노쇼 관리`, etcBody)}
+    ${sec("admin","PIN·보안 관리",`직원 PIN · 사장님 비밀번호 · 로그`, adminBody)}
     </div>
 
     ${dirty ? `<div class="applybar on"><span class="ab-t">저장하지 않은 변경이 있습니다</span></div>` : ""}`;

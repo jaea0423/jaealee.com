@@ -1,6 +1,6 @@
 /* ---------- 사장님 메뉴 (18차, 재아) ----------
    더보기(⋮) → 사장님. 관리자 비밀번호 한 번 통과하면 그 안의 것들은 다시 안 묻습니다(설정과 같은 view.adminOk).
-   여기 모은 것: 디스플레이 모드 · 수기 예약지 · 워크시프트 · 손님 관리(노쇼 관리 포함) · 문자(기록·직접 보내기·감사 문자) · PIN 관리 · 홈페이지 관리.
+   여기 모은 것: 디스플레이 모드 · 수기 예약지 · 워크시프트 · 손님 관리(노쇼 관리 포함) · 문자 · PIN·보안 관리 · 홈페이지 관리.
    화면형(view.form={type:"owner", page:true}) — 큰 단추 격자. 폰에서는 두 줄. */
 async function openOwnerPage(){
   /* 09-20(재아): 메뉴 자체는 안 묻고, 안의 것을 누를 때마다 묻습니다(10분 유지 체크로 줄일 수 있음) */
@@ -16,6 +16,15 @@ async function openOwnerSetting(key){
 async function closeSettingsToOwner(){
   await setTab("dash");
   if(view.tab === "dash"){ view.form = {type:"owner", page:true}; render(); window.scrollTo(0,0); }
+}
+function openMessagesPage(){ view.form = {type:"messages", page:true, back:"owner"}; render(); window.scrollTo(0,0); }
+function sheetMessages(){
+  var item = function(fn, icon, title, sub){ return '<button class="own-it" onclick="' + fn + '">' + icon + '<b>' + title + '</b><small>' + sub + '</small></button>'; };
+  return '<div class="own-section"><h2>문자</h2><p class="own-lead">감사 문자 작성부터 직접 보내기와 기록 확인까지 한곳에서 관리합니다.</p><div class="own-grid">' +
+    item("openThanksPage()", ICON.spark, "감사 문자", "방문 손님 문안 작성 · 예약 발송") +
+    item("openSmsFree(true)", ICON.sms, "문자 보내기", "번호를 직접 입력해 보내기") +
+    item("openSmsLog(true)", ICON.inbox, "문자 기록", "작성·발송 기록 확인") +
+    '</div></div>';
 }
 /* ---------- 퇴근하기(09-20 재아) — 안내 겸 정리. 써도 되고 안 써도 되는 편의 기능 ----------
    1) 오늘 예약 중 아직 '확정' 인 것 → 방문/노쇼 한 번에   2) 근무 찍기(워크시프트)   3) 감사 문자 만들어 예약 발송   4) 끝 */
@@ -80,9 +89,7 @@ function sheetOwner(){
     item("openSiteAdmin()", ICON.site, "홈페이지 관리", "글·사진·팝업·소식·예약 접수" + (pend ? " · 대기 " + pend + "건" : "")) +
     item("openStaffPage()", ICON.staff, "워크시프트", "직원 근무표 · 급여") +
     item("openGuestsPage()", ICON.users, "손님 관리", "단골·메모 · 노쇼 관리") +
-    item("openThanksPage()", ICON.spark, "감사 문자", "다녀간 손님께 AI 문자 · 예약 발송") +
-    item("openSmsLog()", ICON.inbox, "문자 기록", "나간 문자 전부") +
-    item("openSmsFree()", ICON.sms, "문자 직접 보내기", "번호 넣고 바로") +
+    item("openMessagesPage()", ICON.sms, "문자", "감사 문자 · 직접 보내기 · 기록") +
     item("openCloseDay()", ICON.clock, "퇴근하기", "방문 처리 · 근무 · 감사 문자 차례로") +
     '</div></div><div class="own-section"><h2>설정</h2><div class="own-grid">' +
     item("openOwnerSetting('hours')", ICON.clock, "운영시간", hoursFor(todayStr()).open + " ~ " + hoursFor(todayStr()).close) +
@@ -100,8 +107,7 @@ function sheetOwner(){
     item("openSlip()", ICON.print, "수기 예약지", "전화 예약을 손으로 적는 종이") +
     item("openDevPage()", ICON.sms, "개발자에게", "고칠 것 · 급한 것 글로 남기기") +
     item("exportCsv()", ICON.print, "예약 내보내기", "엑셀로 여는 CSV") +
-    item("openPinManage()", ICON.key, "PIN 관리", "직원 PIN · 사장님 2차 비밀번호") +
-    item("openOwnerSetting('admin')", ICON.key, "관리자", "PIN · 로그 · 초기화") +
-    item("openNoshow()", ICON.users, "노쇼 관리", "경고 제외·복원") +
+    item("openRate('owner')", ICON.chart, "예약률 추이", "최근 예약률과 흐름") +
+    item("openOwnerSetting('admin')", ICON.key, "PIN·보안 관리", "직원 PIN · 사장님 비밀번호 · 로그") +
     '</div></div>';
 }

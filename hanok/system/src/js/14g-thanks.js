@@ -44,7 +44,8 @@ function thSaveCfg(patch){ var st = store().settings; st.ai = Object.assign({}, 
 async function openThanksPage(){
   if(!supaOn()){ await uiAlert("서버 설정이 없는 빌드입니다", "감사 문자는 서버가 있어야 합니다.", "warn"); return; }
   if(!await adminGate("감사 문자 열기")) return;
-  view.form = {type:"thanks", page:true, back:(view.form && (view.form.type === "owner" || view.form.back)) ? "owner" : ""};   /* 사장님 페이지에서 열었으면 닫을 때 거기로(09-20) */
+  var back = view.form && (view.form.type === "messages" || view.form.back === "messages") ? "messages" : ((view.form && (view.form.type === "owner" || view.form.back === "owner")) ? "owner" : "");
+  view.form = {type:"thanks", page:true, back:back};
   if(!TH) TH = { date: todayStr(), items:{}, queue:[], tab:"make", busy:{}, sendAt:"", adv:false, run:null, stop:false, qf:"all" };   /* 다녀간 날 기본 = 오늘(퇴근 때 만드니까, 09-20) · 발송 내일 */
   TH.sendAt = TH.sendAt || (shiftDate(todayStr(), 1) + "T" + thCfg().hour);   /* 기본 내일 11시(09-20) */
   render(); await thLoadQueue(); render();

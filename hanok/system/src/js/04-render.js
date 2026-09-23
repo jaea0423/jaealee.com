@@ -144,8 +144,9 @@ function renderApp(){
   app.innerHTML = (view.display ? renderDisplay()
                   : (view.storeKey ? renderStore() : renderSelect())) + renderModal() + renderLoadError();
   syncHash();      /* 주소를 지금 화면에 맞춥니다 — 새로고침해도 그 자리로 */
-  afterRender();   /* 화면을 그린 뒤 필요한 이벤트 연결 (분 조절 레일 등) */
+  /* 라벨 충돌로 타임라인 행이 늘어날 수 있으므로 먼저 행 높이를 확정한 뒤 현재 시각선 높이를 맞춥니다. */
   if(typeof tlPlaceLabels === "function") tlPlaceLabels();
+  afterRender();   /* 화면을 그린 뒤 필요한 이벤트 연결 (분 조절 레일 등) */
   if(typeof aiWaveStart === "function") aiWaveStart();   /* 감사 문자 AI 물결(14g) — 캔버스가 있을 때만 돎 */   /* 타임라인 라벨(사용 중지·자리 없음) 자리 — 실제 픽셀로 겹침을 보고 정함 */
 }
 

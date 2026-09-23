@@ -1729,6 +1729,7 @@ label.chk span{width:auto}
 .own-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:var(--s12)}
 .own-section + .own-section{margin-top:var(--s32)}
 .own-section>h2{margin:0 0 var(--s12); font-size:var(--fs-title); color:var(--text); font-weight:700}
+.own-lead{margin:-4px 0 var(--s16); color:var(--text-2); font-size:var(--fs-sub); line-height:1.6}
 .own-it small{display:none}   /* 단추 아래 설명은 뺌(09-20 재아: 정신없음) */
 .own-it{display:flex; flex-direction:column; align-items:flex-start; gap:var(--s4); padding:var(--s16); background:var(--surface); border:1px solid var(--border); border-radius:var(--r-md); text-align:left; font:inherit; color:var(--text); cursor:pointer; min-height:112px}
 .own-it:active{background:var(--surface-2)}
@@ -1924,10 +1925,7 @@ label.chk span{width:auto}
 .pkeys.md{max-width:260px; margin:var(--s8) auto 0}
 .pkeys.md .pkey{height:52px; font-size:var(--fs-head)}
 .pin-keep{display:flex; align-items:center; justify-content:center; gap:var(--s8); margin:var(--s12) 0 0; font-size:var(--fs-sub); color:var(--text-2)}
-.pin-keep input{appearance:none; -webkit-appearance:none; width:34px; height:20px; margin:0; border:1px solid var(--border-strong); border-radius:999px; background:var(--surface-2); position:relative}
-.pin-keep input:after{content:""; position:absolute; width:14px; height:14px; left:2px; top:2px; border-radius:50%; background:var(--text-3); transition:left .15s,background .15s}
-.pin-keep input:checked{background:var(--pine); border-color:var(--pine)}
-.pin-keep input:checked:after{left:16px; background:#fff}
+label.pin-keep input{appearance:auto; -webkit-appearance:checkbox; width:18px; height:18px; min-width:18px; min-height:18px; margin:0; border:0; border-radius:3px; accent-color:var(--pine); flex:none}
 /* 서버 설정이 없는 빌드에서만 뜹니다. 들어갈 수 없다는 사실이 눈에 보여야
    "잠긴 줄 알았는데 아니었다" 는 오해가 안 생깁니다. 지우지 마세요 */
 .lk-open{font-size:var(--fs-sub); color:#7A5C22; margin-top:var(--s12); line-height:1.6;
@@ -4909,8 +4907,9 @@ function renderApp(){
   app.innerHTML = (view.display ? renderDisplay()
                   : (view.storeKey ? renderStore() : renderSelect())) + renderModal() + renderLoadError();
   syncHash();      /* 주소를 지금 화면에 맞춥니다 — 새로고침해도 그 자리로 */
-  afterRender();   /* 화면을 그린 뒤 필요한 이벤트 연결 (분 조절 레일 등) */
+  /* 라벨 충돌로 타임라인 행이 늘어날 수 있으므로 먼저 행 높이를 확정한 뒤 현재 시각선 높이를 맞춥니다. */
   if(typeof tlPlaceLabels === "function") tlPlaceLabels();
+  afterRender();   /* 화면을 그린 뒤 필요한 이벤트 연결 (분 조절 레일 등) */
   if(typeof aiWaveStart === "function") aiWaveStart();   /* 감사 문자 AI 물결(14g) — 캔버스가 있을 때만 돎 */   /* 타임라인 라벨(사용 중지·자리 없음) 자리 — 실제 픽셀로 겹침을 보고 정함 */
 }
 
@@ -5394,7 +5393,7 @@ function renderStore(){
   const stt = shopState(s.settings);
   /* 8차-O(재아): 네이버 가져오기·빠른 입력은 팝업 시트가 아니라 화면 전체로 (view.form.page) */
   const pageForm = !!(view.form && view.form.page);
-  const pageTitle = pageForm ? ({naver:"네이버 예약 가져오기", site:"홈페이지 관리", staff:"워크시프트", guests:"손님 관리", owner:"사장님", thanks:"감사 문자", devreq:"개발자에게", closeday:"퇴근하기"}[view.form.type] || "빠른 입력") : "";
+  const pageTitle = pageForm ? ({naver:"네이버 예약 가져오기", site:"홈페이지 관리", staff:"워크시프트", guests:"손님 관리", owner:"사장님", messages:"문자", thanks:"감사 문자", smslog:"문자 기록", smsfree:"문자 보내기", noshow:"노쇼 관리", rate:"예약률 추이", devreq:"개발자에게", closeday:"퇴근하기"}[view.form.type] || "빠른 입력") : "";
   const body = pageForm ? `<div class="page-wrap">${renderSheet()}</div>` : (view.tab==="settings" ? renderSettings : renderDash)();
 
   return `
@@ -5402,7 +5401,7 @@ function renderStore(){
       ${pageForm ? `<header class="topbar page ${notodayView()?'notoday':''}"><div class="topbar-in">
         <button class="storename" onclick="goHomeScreen()" title="홈으로"><span class="sn-brand">HANOK</span></button>
         <div class="bar-mid"><span class="bdate static">${pageTitle}</span></div>
-        <div class="bar-right"><button class="tvbtn icon b-exit" onclick="closeSheet()" title="닫기" aria-label="닫기">✕</button></div>
+        <div class="bar-right">${view.form.back ? `<button class="tvbtn b-pageback" onclick="closeSheet()" title="${view.form.back==="owner"?"사장님":view.form.back==="messages"?"문자":"손님 관리"}으로" aria-label="${view.form.back==="owner"?"사장님":view.form.back==="messages"?"문자":"손님 관리"}으로">← ${view.form.back==="owner"?"사장님":view.form.back==="messages"?"문자":"손님 관리"}</button>` : `<button class="tvbtn icon b-exit" onclick="closeSheet()" title="닫기" aria-label="닫기">✕</button>`}</div>
       </div></header>` : `<header class="topbar ${notodayView()?'notoday':''} ${isMobile()?'mobile':''} ${view.tab==="settings"?'settings':''}"><div class="topbar-in">
         <!-- 매장 이름 = 예전 맨 왼쪽 버튼의 역할. 대시보드에서는 매장 선택으로, 설정에서는 대시보드로. 아이콘·화살표 없이 글자만(6차-K) -->
         <!-- 8차-P(재아): HANOK 은 홈(대시보드·오늘)으로, 이미 홈이면 새로고침. 매장 나가기·로그아웃은 더보기 -->
@@ -5429,7 +5428,7 @@ function renderStore(){
           <button class="tvbtn b-sched ${schedList().length?'has':''}" onclick="openScheduled()" title="예정된 설정">예정<i class="cnt">${schedList().length}</i></button>
           <button class="tvbtn b-revert" onclick="revertSettings()" ${settingsDirty()?"":"disabled"}>되돌리기</button>
           <button class="tvbtn amber b-apply" onclick="applySettings()" ${settingsDirty()?"":"disabled"}>적용하기</button>
-          <button class="tvbtn icon b-exit" onclick="closeSettingsToOwner()" title="사장님으로" aria-label="사장님으로">${ICON.exit}</button>` : isMobile() ? `
+          <button class="tvbtn b-pageback" onclick="closeSettingsToOwner()" title="사장님으로" aria-label="사장님으로">← 사장님</button>` : isMobile() ? `
           <!-- 폰: 아이콘만 한 줄. 날짜는 달력 아이콘으로(오늘이 아니면 상단바가 검정이라 티가 납니다), 등록은 오른쪽 아래 둥근 ＋ (7차-M)
                '오늘' 은 375px 에 안 들어가 더보기로 — 달력 아이콘의 점이 '오늘이 아님' 표시 -->
           <button class="tvbtn icon b-cal ${view.date===todayStr()?'':'dot'}" onclick="openCal()" title="날짜" aria-label="날짜 선택">${ICON.cal}</button>
@@ -7457,12 +7456,8 @@ function renderSettings(){
       <button class="btn" onclick="openPinManage()">PIN 번호 관리</button>
       ${supaOn() ? `<button class="btn" onclick="openAdminPw()">사장님 2차 비밀번호 변경</button>` : ""}
       <button class="btn" onclick="openLogs()">로그</button>
-      <button class="btn" onclick="openRate()">예약률 추이</button>
-      <button class="btn" onclick="openSmsFree()">문자 보내기</button>
       <button class="btn danger" onclick="resetSettingsAll()">설정 초기화</button>
-      <button class="btn" onclick="openSlip()">수기 예약지 인쇄</button>
     </div>
-    <p class="f-note">수기 예약지: 직원이 전화로 받은 예약을 손으로 적는 종이(A4 한 장에 2장). 사장님이 시스템에 넣습니다. 열리면 Ctrl+P 로 인쇄해 카운터에 두세요. 더보기(⋮) 메뉴에서도 열립니다 — 관리자 비밀번호 없이.</p>
     <p class="f-note">설정은 사장님 2차 비밀번호로 들어옵니다. PIN 관리·2차 비밀번호 변경·로그·초기화는 한 번 더 묻습니다. PIN 은 직원과 공유하는 번호, 관리자 비밀번호는 사장님만 아는 것입니다.</p>`;
 
   /* 화면 크기 — 기기마다 적당한 값이 달라 사장님이 직접 고르게 둡니다.
@@ -7567,13 +7562,7 @@ function renderSettings(){
     const text = kind === "접수" ? smsText(sample, "접수") : smsText(sample, "재안내", smNow.remindOffset);
     uiAlert(kind === "접수" ? "접수 문자 — 이렇게 나갑니다" : `재안내 문자 — ${offsetLabel(smNow.remindOffset)} ${hourLabel(smNow.remindHour)}`, text, "ok");
   };
-  const etcBody = `
-    <div class="btn-row">
-      <button class="btn" onclick="openNoshow()">노쇼 관리</button>
-    </div>`;
-
-  const back = view.setSec ? `<div class="set-back"><button class="btn sm ghost" onclick="closeSettingsToOwner()">← 사장님</button></div>` : "";
-  return back + `<div class="${view.setSec ? "set-open" : "own-grid set-grid"}">
+  return `<div class="${view.setSec ? "set-open" : "own-grid set-grid"}">
     ${sec("hours","운영시간",`${hoursFor(todayStr()).open} ~ ${hoursFor(todayStr()).close}`, schedBody)}
     ${sec("rules","예약 규칙",`단체 ${st.groupSize||8}명${schedChip("rules")}`, ruleBody)}
     ${sec("seats","좌석",`룸 ${st.rooms.filter(isRoom).length} · 테이블 ${st.rooms.filter(isTable).length}${schedChip("seats")}`, seatBody)}
@@ -7590,8 +7579,7 @@ function renderSettings(){
       policyBody)}
     ${sec("zoom","화면 크기",`${uiZoom()}%`, zoomBody)}
     ${view.setSec ? "" : `<div class="set-divider">관리</div>`}
-    ${sec("admin","관리자",`PIN · 로그 · 초기화`, adminBody)}
-    ${sec("etc","기타",`노쇼 관리`, etcBody)}
+    ${sec("admin","PIN·보안 관리",`직원 PIN · 사장님 비밀번호 · 로그`, adminBody)}
     </div>
 
     ${dirty ? `<div class="applybar on"><span class="ab-t">저장하지 않은 변경이 있습니다</span></div>` : ""}`;
@@ -9041,7 +9029,7 @@ function sheetGuests(){
   if(!GS || GS.loading) return '<p class="muted" style="padding:20px 0">불러오는 중…</p>';
   var seg = function(k, label){ return '<button class="' + (GS.sort === k ? "on" : "") + '" onclick="GS.sort=\'' + k + '\'; render()">' + label + '</button>'; };
   return '<div class="gs-top"><input id="gs-q" value="' + esc(GS.q || "") + '" placeholder="뒷자리 4자리 · 번호 · 이름 · 메모" oninput="gsSetQ(this.value)" autocomplete="off">' +
-    '<button class="btn sm ghost" onclick="openNoshow()">노쇼 관리</button><div class="seg">' + seg("recent", "최근 방문") + seg("visits", "많이 온 순") + seg("vip", "VIP 이상") + seg("noshow", "노쇼") + seg("memo", "메모 있음") + '</div></div>' +
+    '<button class="btn sm ghost" onclick="openNoshow(\'guests\')">노쇼 관리</button><div class="seg">' + seg("recent", "최근 방문") + seg("visits", "많이 온 순") + seg("vip", "VIP 이상") + seg("noshow", "노쇼") + seg("memo", "메모 있음") + '</div></div>' +
     '<div class="card searchbox" id="gs-list">' + gsRows() + '</div>' +
     '<p class="f-note">전화번호 하나 = 손님 하나. 이름은 그 번호로 가장 많이 적힌 이름이고, 열어서 고정 이름·메모를 적을 수 있습니다. 예약을 고치면 여기도 바로 바뀝니다.<br>등급: 방문 ' + TIER_VIP + '회 이상 <b>VIP</b>, ' + TIER_VVIP + '회 이상 <b>VVIP</b> — 노쇼 한 번에 방문 ' + TIER_NOSHOW + '회를 뺍니다.</p>' +
     (GS.open ? gsDetailHtml() : "");
@@ -9066,7 +9054,7 @@ function gsDetailHtml(){
 function gsEsc(){ if(GS && view.form && view.form.type === "guests" && GS.open){ GS.open = null; render(); return true; } return false; }
 /* ---------- 사장님 메뉴 (18차, 재아) ----------
    더보기(⋮) → 사장님. 관리자 비밀번호 한 번 통과하면 그 안의 것들은 다시 안 묻습니다(설정과 같은 view.adminOk).
-   여기 모은 것: 디스플레이 모드 · 수기 예약지 · 워크시프트 · 손님 관리(노쇼 관리 포함) · 문자(기록·직접 보내기·감사 문자) · PIN 관리 · 홈페이지 관리.
+   여기 모은 것: 디스플레이 모드 · 수기 예약지 · 워크시프트 · 손님 관리(노쇼 관리 포함) · 문자 · PIN·보안 관리 · 홈페이지 관리.
    화면형(view.form={type:"owner", page:true}) — 큰 단추 격자. 폰에서는 두 줄. */
 async function openOwnerPage(){
   /* 09-20(재아): 메뉴 자체는 안 묻고, 안의 것을 누를 때마다 묻습니다(10분 유지 체크로 줄일 수 있음) */
@@ -9082,6 +9070,15 @@ async function openOwnerSetting(key){
 async function closeSettingsToOwner(){
   await setTab("dash");
   if(view.tab === "dash"){ view.form = {type:"owner", page:true}; render(); window.scrollTo(0,0); }
+}
+function openMessagesPage(){ view.form = {type:"messages", page:true, back:"owner"}; render(); window.scrollTo(0,0); }
+function sheetMessages(){
+  var item = function(fn, icon, title, sub){ return '<button class="own-it" onclick="' + fn + '">' + icon + '<b>' + title + '</b><small>' + sub + '</small></button>'; };
+  return '<div class="own-section"><h2>문자</h2><p class="own-lead">감사 문자 작성부터 직접 보내기와 기록 확인까지 한곳에서 관리합니다.</p><div class="own-grid">' +
+    item("openThanksPage()", ICON.spark, "감사 문자", "방문 손님 문안 작성 · 예약 발송") +
+    item("openSmsFree(true)", ICON.sms, "문자 보내기", "번호를 직접 입력해 보내기") +
+    item("openSmsLog(true)", ICON.inbox, "문자 기록", "작성·발송 기록 확인") +
+    '</div></div>';
 }
 /* ---------- 퇴근하기(09-20 재아) — 안내 겸 정리. 써도 되고 안 써도 되는 편의 기능 ----------
    1) 오늘 예약 중 아직 '확정' 인 것 → 방문/노쇼 한 번에   2) 근무 찍기(워크시프트)   3) 감사 문자 만들어 예약 발송   4) 끝 */
@@ -9146,9 +9143,7 @@ function sheetOwner(){
     item("openSiteAdmin()", ICON.site, "홈페이지 관리", "글·사진·팝업·소식·예약 접수" + (pend ? " · 대기 " + pend + "건" : "")) +
     item("openStaffPage()", ICON.staff, "워크시프트", "직원 근무표 · 급여") +
     item("openGuestsPage()", ICON.users, "손님 관리", "단골·메모 · 노쇼 관리") +
-    item("openThanksPage()", ICON.spark, "감사 문자", "다녀간 손님께 AI 문자 · 예약 발송") +
-    item("openSmsLog()", ICON.inbox, "문자 기록", "나간 문자 전부") +
-    item("openSmsFree()", ICON.sms, "문자 직접 보내기", "번호 넣고 바로") +
+    item("openMessagesPage()", ICON.sms, "문자", "감사 문자 · 직접 보내기 · 기록") +
     item("openCloseDay()", ICON.clock, "퇴근하기", "방문 처리 · 근무 · 감사 문자 차례로") +
     '</div></div><div class="own-section"><h2>설정</h2><div class="own-grid">' +
     item("openOwnerSetting('hours')", ICON.clock, "운영시간", hoursFor(todayStr()).open + " ~ " + hoursFor(todayStr()).close) +
@@ -9166,9 +9161,8 @@ function sheetOwner(){
     item("openSlip()", ICON.print, "수기 예약지", "전화 예약을 손으로 적는 종이") +
     item("openDevPage()", ICON.sms, "개발자에게", "고칠 것 · 급한 것 글로 남기기") +
     item("exportCsv()", ICON.print, "예약 내보내기", "엑셀로 여는 CSV") +
-    item("openPinManage()", ICON.key, "PIN 관리", "직원 PIN · 사장님 2차 비밀번호") +
-    item("openOwnerSetting('admin')", ICON.key, "관리자", "PIN · 로그 · 초기화") +
-    item("openNoshow()", ICON.users, "노쇼 관리", "경고 제외·복원") +
+    item("openRate('owner')", ICON.chart, "예약률 추이", "최근 예약률과 흐름") +
+    item("openOwnerSetting('admin')", ICON.key, "PIN·보안 관리", "직원 PIN · 사장님 비밀번호 · 로그") +
     '</div></div>';
 }
 /* ---------- 감사 문자 (thanks_sms, 18차 재아) ----------
@@ -9217,7 +9211,8 @@ function thSaveCfg(patch){ var st = store().settings; st.ai = Object.assign({}, 
 async function openThanksPage(){
   if(!supaOn()){ await uiAlert("서버 설정이 없는 빌드입니다", "감사 문자는 서버가 있어야 합니다.", "warn"); return; }
   if(!await adminGate("감사 문자 열기")) return;
-  view.form = {type:"thanks", page:true, back:(view.form && (view.form.type === "owner" || view.form.back)) ? "owner" : ""};   /* 사장님 페이지에서 열었으면 닫을 때 거기로(09-20) */
+  var back = view.form && (view.form.type === "messages" || view.form.back === "messages") ? "messages" : ((view.form && (view.form.type === "owner" || view.form.back === "owner")) ? "owner" : "");
+  view.form = {type:"thanks", page:true, back:back};
   if(!TH) TH = { date: todayStr(), items:{}, queue:[], tab:"make", busy:{}, sendAt:"", adv:false, run:null, stop:false, qf:"all" };   /* 다녀간 날 기본 = 오늘(퇴근 때 만드니까, 09-20) · 발송 내일 */
   TH.sendAt = TH.sendAt || (shiftDate(todayStr(), 1) + "T" + thCfg().hour);   /* 기본 내일 11시(09-20) */
   render(); await thLoadQueue(); render();
@@ -9774,7 +9769,7 @@ async function naverApply(){
   uiAlert("네이버 예약 가져오기 완료", `신규 ${added}건, 수정 ${updated}건. 룸 예약은 '룸 미정' 으로 들어와 잠정 배정이 잡습니다 — 좌석 미정 목록에서 확정하세요.`, "ok");
 }
 
-function openNoshow(){ view.form={type:"noshow"}; render(); }
+function openNoshow(back){ view.form={type:"noshow", page:!!back, back:back||""}; render(); window.scrollTo(0,0); }
 function openSearch(){ view.form={type:"search"}; render(); }
 function openPin(){ view.form={type:"pin"}; render(); }
 async function openPinManage(){ if(!await adminGate("PIN 번호 관리")) return; view.form={type:"pinlist"}; render(); }
@@ -9789,10 +9784,10 @@ function sheetPinList(){
 }
 function openAdminPw(){ view.form={type:"apw"}; render(); }
 async function openLogs(){ if(!await adminGate("접속 기록")) return; view.form={type:"logs"}; render(); }
-function openSmsLog(){ view.form={type:"smslog"}; view.smsOpen = {}; render(); }
+function openSmsLog(fromMessages){ view.form={type:"smslog", page:!!fromMessages, back:fromMessages?"messages":""}; view.smsOpen = {}; render(); window.scrollTo(0,0); }
 /* 예약률 시트는 자기 커서(view.rateEnd)로 주를 옮깁니다. 6차 전에는 moveDate(±7) 로 메인 날짜를 밀어서
    시트를 닫으면 대시보드가 엉뚱한 주에 가 있었습니다. 열 때 view.date 로 시작하고 닫으면 view.date 는 그대로 */
-function openRate(){ view.rateEnd = view.date; view.form={type:"rate"}; render(); }
+function openRate(back){ view.rateEnd = view.date; view.form={type:"rate", page:!!back, back:back||""}; render(); window.scrollTo(0,0); }
 function rateMove(n){ view.rateEnd = shiftDate(view.rateEnd || view.date, n); render(); }
 function openSchedule(from){
   const st = store().settings;
@@ -9808,7 +9803,9 @@ function openSchedule(from){
 function openOverride(){ view.form={type:"ovr"}; view.ovrBulk = null; render(); }
 function closeSheet(){
   if(typeof thGuard === "function" && thGuard()) return;   /* 감사 문자 AI 진행 중엔 못 나감(09-20) */
-  if(view.form && view.form.page && view.form.back === "owner"){ view.form = {type:"owner", page:true}; render(); return; }   /* 사장님 페이지로 돌아감(09-20 재아: 홈으로 튀는 게 불편) */
+  if(view.form && view.form.page && view.form.back === "owner"){ view.form = {type:"owner", page:true}; render(); window.scrollTo(0,0); return; }
+  if(view.form && view.form.page && view.form.back === "messages"){ view.form = {type:"messages", page:true, back:"owner"}; render(); window.scrollTo(0,0); return; }
+  if(view.form && view.form.page && view.form.back === "guests"){ view.form = {type:"guests", page:true, back:"owner"}; render(); window.scrollTo(0,0); return; }
   var was = view.form && view.form.type === "res", wasNaver = view.form && view.form.type === "naver";
   view.form=null; tmpRes=null; view.pickAll=false; view.pickSeat=null; render(); if(was) histPop();
   if(wasNaver && view.fsWas){ view.fsWas = false; tryFullscreenForce(); }   /* 닫기 버튼 클릭이 손짓이라 여기서는 됩니다 */
@@ -9841,7 +9838,7 @@ function toastSaved(rec){
 }
 
 function renderSheet(){
-  const inner = { res:sheetRes, mark:sheetMark, unassigned:sheetUnassigned, pick:sheetPick, check:sheetCheck, search:sheetSearch, num:sheetNum, noshow:sheetNoshow, pin:sheetPin, apw:sheetAdminPw, hours:sheetHours, tedit:sheetTableEdit, naver:sheetNaver, setlog:sheetSetLog, pinlist:sheetPinList, zoomadj:sheetZoomAdj, logs:sheetLogs, smslog:sheetSmsLog, smsfree:sheetSmsFree, rate:sheetRate, sched:sheetSchedule, ovr:sheetOverride, blocks:sheetBlocks, reqs:sheetRequests, req:sheetRequest, reqrej:sheetReqReject, sched2:sheetScheduled, site:sheetSite, staff:sheetStaff, guests:sheetGuests, owner:sheetOwner, thanks:sheetThanks, devreq:sheetDevReq, closeday:sheetCloseDay }[view.form.type]();   /* staff·guests 는 14d·14e(15차) */
+  const inner = { res:sheetRes, mark:sheetMark, unassigned:sheetUnassigned, pick:sheetPick, check:sheetCheck, search:sheetSearch, num:sheetNum, noshow:sheetNoshow, pin:sheetPin, apw:sheetAdminPw, hours:sheetHours, tedit:sheetTableEdit, naver:sheetNaver, setlog:sheetSetLog, pinlist:sheetPinList, zoomadj:sheetZoomAdj, logs:sheetLogs, smslog:sheetSmsLog, smsfree:sheetSmsFree, rate:sheetRate, sched:sheetSchedule, ovr:sheetOverride, blocks:sheetBlocks, reqs:sheetRequests, req:sheetRequest, reqrej:sheetReqReject, sched2:sheetScheduled, site:sheetSite, staff:sheetStaff, guests:sheetGuests, owner:sheetOwner, messages:sheetMessages, thanks:sheetThanks, devreq:sheetDevReq, closeday:sheetCloseDay }[view.form.type]();   /* staff·guests 는 14d·14e(15차) */
   /* 검색은 창 높이를 고정해 두고 결과만 안에서 스크롤 — 칠 때마다 창이 늘었다 줄었다 하지 않게(재아) */
   const wide = view.form.type==="rate" ? " sheet-wide" : ((view.form.type==="search" || (view.form.type==="reqs" && reqPending().length >= 3)) ? " sheet-tall" : "");   /* 홈페이지 예약은 3건부터 높이를 고정하고 목록만 스크롤(재아 09-17). 0~2건이면 빈 상자를 길게 안 보임(검토 D3) */
   if(view.form.page) return `<div class="sheet page-sheet">${inner}</div>`;   /* 화면형: 덮개 없이 본문 자리에 */
@@ -11246,7 +11243,7 @@ function sheetSmsLog(){
 function toggleSmsRow(key){ view.smsOpen = view.smsOpen || {}; view.smsOpen[key] = !view.smsOpen[key]; render(); }
 /* ---------- 관리자 → 문자 보내기(흉내) — 예약과 무관한 임의 문자(재아) ----------
    기록은 매장 설정(smsFreeLog, 최근 50건)에 남겨 다른 기기에서도 '보낸 문자' 에 보입니다 */
-function openSmsFree(){ view.form = {type:"smsfree"}; view.smsFree = {to:"", name:"", text:""}; render(); }
+function openSmsFree(fromMessages){ view.form = {type:"smsfree", page:!!fromMessages, back:fromMessages?"messages":""}; view.smsFree = {to:"", name:"", text:""}; render(); window.scrollTo(0,0); }
 function sheetSmsFree(){
   const f = view.smsFree || {to:"", name:"", text:""};
   return `
@@ -11272,7 +11269,9 @@ async function sendSmsFree(){
   st.smsFreeLog = [{ at:new Date().toISOString(), to, name, text }].concat(st.smsFreeLog || []).slice(0, 50);
   mirrorDraft("smsFreeLog");
   logEvent("문자 보내기(흉내)", `${to} ${name} ${text.slice(0, 40)}`);
-  view.form = null; view.smsFree = null; saveData(); render();
+  var back = view.form && view.form.back;
+  view.form = back === "messages" ? {type:"messages", page:true, back:"owner"} : null;
+  view.smsFree = null; saveData(); render();
   uiAlert("문자를 보낸 것으로 기록했습니다", "실제 발송은 업체 연동 뒤에 붙습니다.", "ok");
 }
 function setLogQuery(v){

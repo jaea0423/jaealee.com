@@ -249,7 +249,7 @@ function renderStore(){
   const stt = shopState(s.settings);
   /* 8차-O(재아): 네이버 가져오기·빠른 입력은 팝업 시트가 아니라 화면 전체로 (view.form.page) */
   const pageForm = !!(view.form && view.form.page);
-  const pageTitle = pageForm ? ({naver:"네이버 예약 가져오기", site:"홈페이지 관리", staff:"워크시프트", guests:"손님 관리", owner:"사장님", thanks:"감사 문자", devreq:"개발자에게", closeday:"퇴근하기"}[view.form.type] || "빠른 입력") : "";
+  const pageTitle = pageForm ? ({naver:"네이버 예약 가져오기", site:"홈페이지 관리", staff:"워크시프트", guests:"손님 관리", owner:"사장님", messages:"문자", thanks:"감사 문자", smslog:"문자 기록", smsfree:"문자 보내기", noshow:"노쇼 관리", rate:"예약률 추이", devreq:"개발자에게", closeday:"퇴근하기"}[view.form.type] || "빠른 입력") : "";
   const body = pageForm ? `<div class="page-wrap">${renderSheet()}</div>` : (view.tab==="settings" ? renderSettings : renderDash)();
 
   return `
@@ -257,7 +257,7 @@ function renderStore(){
       ${pageForm ? `<header class="topbar page ${notodayView()?'notoday':''}"><div class="topbar-in">
         <button class="storename" onclick="goHomeScreen()" title="홈으로"><span class="sn-brand">HANOK</span></button>
         <div class="bar-mid"><span class="bdate static">${pageTitle}</span></div>
-        <div class="bar-right"><button class="tvbtn icon b-exit" onclick="closeSheet()" title="닫기" aria-label="닫기">✕</button></div>
+        <div class="bar-right">${view.form.back ? `<button class="tvbtn b-pageback" onclick="closeSheet()" title="${view.form.back==="owner"?"사장님":view.form.back==="messages"?"문자":"손님 관리"}으로" aria-label="${view.form.back==="owner"?"사장님":view.form.back==="messages"?"문자":"손님 관리"}으로">← ${view.form.back==="owner"?"사장님":view.form.back==="messages"?"문자":"손님 관리"}</button>` : `<button class="tvbtn icon b-exit" onclick="closeSheet()" title="닫기" aria-label="닫기">✕</button>`}</div>
       </div></header>` : `<header class="topbar ${notodayView()?'notoday':''} ${isMobile()?'mobile':''} ${view.tab==="settings"?'settings':''}"><div class="topbar-in">
         <!-- 매장 이름 = 예전 맨 왼쪽 버튼의 역할. 대시보드에서는 매장 선택으로, 설정에서는 대시보드로. 아이콘·화살표 없이 글자만(6차-K) -->
         <!-- 8차-P(재아): HANOK 은 홈(대시보드·오늘)으로, 이미 홈이면 새로고침. 매장 나가기·로그아웃은 더보기 -->
@@ -284,7 +284,7 @@ function renderStore(){
           <button class="tvbtn b-sched ${schedList().length?'has':''}" onclick="openScheduled()" title="예정된 설정">예정<i class="cnt">${schedList().length}</i></button>
           <button class="tvbtn b-revert" onclick="revertSettings()" ${settingsDirty()?"":"disabled"}>되돌리기</button>
           <button class="tvbtn amber b-apply" onclick="applySettings()" ${settingsDirty()?"":"disabled"}>적용하기</button>
-          <button class="tvbtn icon b-exit" onclick="closeSettingsToOwner()" title="사장님으로" aria-label="사장님으로">${ICON.exit}</button>` : isMobile() ? `
+          <button class="tvbtn b-pageback" onclick="closeSettingsToOwner()" title="사장님으로" aria-label="사장님으로">← 사장님</button>` : isMobile() ? `
           <!-- 폰: 아이콘만 한 줄. 날짜는 달력 아이콘으로(오늘이 아니면 상단바가 검정이라 티가 납니다), 등록은 오른쪽 아래 둥근 ＋ (7차-M)
                '오늘' 은 375px 에 안 들어가 더보기로 — 달력 아이콘의 점이 '오늘이 아님' 표시 -->
           <button class="tvbtn icon b-cal ${view.date===todayStr()?'':'dot'}" onclick="openCal()" title="날짜" aria-label="날짜 선택">${ICON.cal}</button>

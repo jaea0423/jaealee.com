@@ -196,7 +196,7 @@ async function naverApply(){
   uiAlert("네이버 예약 가져오기 완료", `신규 ${added}건, 수정 ${updated}건. 룸 예약은 '룸 미정' 으로 들어와 잠정 배정이 잡습니다 — 좌석 미정 목록에서 확정하세요.`, "ok");
 }
 
-function openNoshow(){ view.form={type:"noshow"}; render(); }
+function openNoshow(back){ view.form={type:"noshow", page:!!back, back:back||""}; render(); window.scrollTo(0,0); }
 function openSearch(){ view.form={type:"search"}; render(); }
 function openPin(){ view.form={type:"pin"}; render(); }
 async function openPinManage(){ if(!await adminGate("PIN 번호 관리")) return; view.form={type:"pinlist"}; render(); }
@@ -211,10 +211,10 @@ function sheetPinList(){
 }
 function openAdminPw(){ view.form={type:"apw"}; render(); }
 async function openLogs(){ if(!await adminGate("접속 기록")) return; view.form={type:"logs"}; render(); }
-function openSmsLog(){ view.form={type:"smslog"}; view.smsOpen = {}; render(); }
+function openSmsLog(fromMessages){ view.form={type:"smslog", page:!!fromMessages, back:fromMessages?"messages":""}; view.smsOpen = {}; render(); window.scrollTo(0,0); }
 /* 예약률 시트는 자기 커서(view.rateEnd)로 주를 옮깁니다. 6차 전에는 moveDate(±7) 로 메인 날짜를 밀어서
    시트를 닫으면 대시보드가 엉뚱한 주에 가 있었습니다. 열 때 view.date 로 시작하고 닫으면 view.date 는 그대로 */
-function openRate(){ view.rateEnd = view.date; view.form={type:"rate"}; render(); }
+function openRate(back){ view.rateEnd = view.date; view.form={type:"rate", page:!!back, back:back||""}; render(); window.scrollTo(0,0); }
 function rateMove(n){ view.rateEnd = shiftDate(view.rateEnd || view.date, n); render(); }
 function openSchedule(from){
   const st = store().settings;
@@ -230,7 +230,9 @@ function openSchedule(from){
 function openOverride(){ view.form={type:"ovr"}; view.ovrBulk = null; render(); }
 function closeSheet(){
   if(typeof thGuard === "function" && thGuard()) return;   /* 감사 문자 AI 진행 중엔 못 나감(09-20) */
-  if(view.form && view.form.page && view.form.back === "owner"){ view.form = {type:"owner", page:true}; render(); return; }   /* 사장님 페이지로 돌아감(09-20 재아: 홈으로 튀는 게 불편) */
+  if(view.form && view.form.page && view.form.back === "owner"){ view.form = {type:"owner", page:true}; render(); window.scrollTo(0,0); return; }
+  if(view.form && view.form.page && view.form.back === "messages"){ view.form = {type:"messages", page:true, back:"owner"}; render(); window.scrollTo(0,0); return; }
+  if(view.form && view.form.page && view.form.back === "guests"){ view.form = {type:"guests", page:true, back:"owner"}; render(); window.scrollTo(0,0); return; }
   var was = view.form && view.form.type === "res", wasNaver = view.form && view.form.type === "naver";
   view.form=null; tmpRes=null; view.pickAll=false; view.pickSeat=null; render(); if(was) histPop();
   if(wasNaver && view.fsWas){ view.fsWas = false; tryFullscreenForce(); }   /* 닫기 버튼 클릭이 손짓이라 여기서는 됩니다 */
@@ -263,7 +265,7 @@ function toastSaved(rec){
 }
 
 function renderSheet(){
-  const inner = { res:sheetRes, mark:sheetMark, unassigned:sheetUnassigned, pick:sheetPick, check:sheetCheck, search:sheetSearch, num:sheetNum, noshow:sheetNoshow, pin:sheetPin, apw:sheetAdminPw, hours:sheetHours, tedit:sheetTableEdit, naver:sheetNaver, setlog:sheetSetLog, pinlist:sheetPinList, zoomadj:sheetZoomAdj, logs:sheetLogs, smslog:sheetSmsLog, smsfree:sheetSmsFree, rate:sheetRate, sched:sheetSchedule, ovr:sheetOverride, blocks:sheetBlocks, reqs:sheetRequests, req:sheetRequest, reqrej:sheetReqReject, sched2:sheetScheduled, site:sheetSite, staff:sheetStaff, guests:sheetGuests, owner:sheetOwner, thanks:sheetThanks, devreq:sheetDevReq, closeday:sheetCloseDay }[view.form.type]();   /* staff·guests 는 14d·14e(15차) */
+  const inner = { res:sheetRes, mark:sheetMark, unassigned:sheetUnassigned, pick:sheetPick, check:sheetCheck, search:sheetSearch, num:sheetNum, noshow:sheetNoshow, pin:sheetPin, apw:sheetAdminPw, hours:sheetHours, tedit:sheetTableEdit, naver:sheetNaver, setlog:sheetSetLog, pinlist:sheetPinList, zoomadj:sheetZoomAdj, logs:sheetLogs, smslog:sheetSmsLog, smsfree:sheetSmsFree, rate:sheetRate, sched:sheetSchedule, ovr:sheetOverride, blocks:sheetBlocks, reqs:sheetRequests, req:sheetRequest, reqrej:sheetReqReject, sched2:sheetScheduled, site:sheetSite, staff:sheetStaff, guests:sheetGuests, owner:sheetOwner, messages:sheetMessages, thanks:sheetThanks, devreq:sheetDevReq, closeday:sheetCloseDay }[view.form.type]();   /* staff·guests 는 14d·14e(15차) */
   /* 검색은 창 높이를 고정해 두고 결과만 안에서 스크롤 — 칠 때마다 창이 늘었다 줄었다 하지 않게(재아) */
   const wide = view.form.type==="rate" ? " sheet-wide" : ((view.form.type==="search" || (view.form.type==="reqs" && reqPending().length >= 3)) ? " sheet-tall" : "");   /* 홈페이지 예약은 3건부터 높이를 고정하고 목록만 스크롤(재아 09-17). 0~2건이면 빈 상자를 길게 안 보임(검토 D3) */
   if(view.form.page) return `<div class="sheet page-sheet">${inner}</div>`;   /* 화면형: 덮개 없이 본문 자리에 */
@@ -1668,7 +1670,7 @@ function sheetSmsLog(){
 function toggleSmsRow(key){ view.smsOpen = view.smsOpen || {}; view.smsOpen[key] = !view.smsOpen[key]; render(); }
 /* ---------- 관리자 → 문자 보내기(흉내) — 예약과 무관한 임의 문자(재아) ----------
    기록은 매장 설정(smsFreeLog, 최근 50건)에 남겨 다른 기기에서도 '보낸 문자' 에 보입니다 */
-function openSmsFree(){ view.form = {type:"smsfree"}; view.smsFree = {to:"", name:"", text:""}; render(); }
+function openSmsFree(fromMessages){ view.form = {type:"smsfree", page:!!fromMessages, back:fromMessages?"messages":""}; view.smsFree = {to:"", name:"", text:""}; render(); window.scrollTo(0,0); }
 function sheetSmsFree(){
   const f = view.smsFree || {to:"", name:"", text:""};
   return `
@@ -1694,7 +1696,9 @@ async function sendSmsFree(){
   st.smsFreeLog = [{ at:new Date().toISOString(), to, name, text }].concat(st.smsFreeLog || []).slice(0, 50);
   mirrorDraft("smsFreeLog");
   logEvent("문자 보내기(흉내)", `${to} ${name} ${text.slice(0, 40)}`);
-  view.form = null; view.smsFree = null; saveData(); render();
+  var back = view.form && view.form.back;
+  view.form = back === "messages" ? {type:"messages", page:true, back:"owner"} : null;
+  view.smsFree = null; saveData(); render();
   uiAlert("문자를 보낸 것으로 기록했습니다", "실제 발송은 업체 연동 뒤에 붙습니다.", "ok");
 }
 function setLogQuery(v){
