@@ -15,12 +15,14 @@ function openUnassigned(){ view.form={type:"unassigned"}; render(); }
    · 전화번호는 뒷자리 4개만 오므로 phone 은 비우고 메모에 '네이버 ****1234' 를 남깁니다 — 노쇼 이력은 못 잇습니다
    · 상품에 '룸' 이 있으면 룸 미정(room-any), '테이블' 이면 테이블(층 미정, table-any). 자리는 잠정 배정이 잡습니다
    · 옵션 열(주말 A 세트·주말 B 세트·한코스 …)은 수량이 있으면 코스 구성으로. 이름이 코스 항목과 안 맞으면 요청사항에 적어 둡니다 */
+var NAVER_GUIDE = false;
 function openNaver(){
   /* 엑셀을 다녀와야 하므로 전체화면이면 잠시 풀고, 닫을 때 되돌립니다(재아) */
   view.fsWas = !!document.fullscreenElement;
   if(view.fsWas && document.exitFullscreen) document.exitFullscreen().catch(function(){});
-  view.form = {type:"naver", page:true}; view.naver = {text:"", result:null}; render(); window.scrollTo(0,0);
+  NAVER_GUIDE = false; view.form = {type:"naver", page:true}; view.naver = {text:"", result:null}; render(); window.scrollTo(0,0);
 }
+function toggleNaverGuide(){ NAVER_GUIDE = !NAVER_GUIDE; render(); }
 function sheetNaver(){
   const n = view.naver || {text:"", result:null};
   /* 행마다: 건너뛰기 · 좌석 고르기(룸 미정/특정 룸/테이블). 자리 경고가 있으면 붉은 줄 — 등록 전에 손볼 수 있게(재아) */
@@ -35,7 +37,7 @@ function sheetNaver(){
   const cnt = k => n.result ? n.result.filter(x=>x.ok && x.kind===k).length : 0;
   return `
     ${sheetHead("네이버 예약 가져오기")}
-    <button class="naver-help" onclick="this.nextElementSibling.classList.toggle('open')" aria-label="엑셀 다운로드 도움말">?</button><div class="naver-guide">
+    <button class="naver-help" onclick="toggleNaverGuide()" aria-label="엑셀 다운로드 도움말">?</button><div class="naver-guide ${NAVER_GUIDE?'open':''}">
       <b>네이버 예약 엑셀 받기</b>
       <p>네이버 파트너센터 → 예약자 관리 → 엑셀 다운로드</p>
       <p>다운로드한 파일의 비밀번호는 로그인한 네이버 아이디입니다.</p>
