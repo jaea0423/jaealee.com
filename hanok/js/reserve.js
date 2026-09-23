@@ -289,7 +289,7 @@
       for(let d = 1; d <= lastDay; d++){
         const key = ym+"-"+pad(d), wd = new Date(key+"T00:00:00").getDay();
         const out = key < min || key > max || !!lockedOf(key);
-        cells.push(`<button type="button" data-day="${key}" class="${wd===0||isHoliday(key)?'sun':(wd===6?'sat':'')}${key===S.date?' on':''}"${out?" disabled":""}>${d}</button>`);
+        cells.push(`<button type="button" data-day="${key}" aria-label="${view.getFullYear()}년 ${view.getMonth()+1}월 ${d}일${out?' 예약 불가':''}" class="${wd===0||isHoliday(key)?'sun':(wd===6?'sat':'')}${key===S.date?' on':''}"${out?" disabled":""}>${d}</button>`);
       }
       days.innerHTML = cells.join("");
       /* 이 달에 잠근 특별 기간이 있으면 달력 아래 한 줄 */
@@ -307,7 +307,12 @@
         days.classList.remove("loading");
       }
       const m = monthCache[ym];
-      days.querySelectorAll("[data-day]").forEach(el => { if(!el.disabled && m[el.dataset.day] === 0) el.disabled = true; });
+      days.querySelectorAll("[data-day]").forEach(el => {
+        if(!el.disabled && m[el.dataset.day] === 0){
+          el.disabled = true;
+          el.setAttribute("aria-label", el.getAttribute("aria-label") + " 예약 불가");
+        }
+      });
       if(S.date && m[S.date] === 0){ S.date = ""; foot(f, true, next, "다음", true); }
     }
     function next(){ if(S.date){ step = 3; render(); } }

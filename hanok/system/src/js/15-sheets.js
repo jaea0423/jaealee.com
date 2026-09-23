@@ -392,11 +392,11 @@ function miniCal(sel, pickFn){
     const n = s.reservations.filter(r=>r.date===ds && r.status==="확정").length;
     const dow = new Date(ds+"T00:00:00").getDay();
     const rt = n ? dayStat(ds).rate : 0;
-    cells += `<button class="bday btn-day ${sel===ds?'sel':''} ${ds===today?'today':''} ${ds<today?'past':''} ${dow===0?'sun':dow===6?'sat':''} ${hoursFor(ds).closed?'closed':''}" onclick="${pickFn}('${ds}')">
+    cells += `<button class="bday btn-day ${sel===ds?'sel':''} ${ds===today?'today':''} ${ds<today?'past':''} ${dow===0?'sun':dow===6?'sat':''} ${hoursFor(ds).closed?'closed':''}" aria-label="${dateLabel(ds)}${hoursFor(ds).closed?' 휴무':''}${n?' 예약 '+n+'건':''}" onclick="${pickFn}('${ds}')">
       <span class="d">${d}</span>${n?`<span class="b">${n}건</span><span class="obar"><i style="width:${rt}%" class="${rt>=70?'hi':rt>=40?'mid':''}"></i></span>`:""}</button>`;
   }
   return `<div class="wz-cal mini">
-      <div class="bnav-row"><button class="nav" onclick="resCalMove(-1)">‹</button><b>${y}년 ${m}월</b><button class="nav" onclick="resCalMove(1)">›</button></div>
+      <div class="bnav-row"><button class="nav" onclick="resCalMove(-1)" aria-label="이전 달">‹</button><b>${y}년 ${m}월</b><button class="nav" onclick="resCalMove(1)" aria-label="다음 달">›</button></div>
       <div class="bgrid bhead">${["일","월","화","수","목","금","토"].map((x,i)=>`<span class="${i===0?'sun':i===6?'sat':''}">${x}</span>`).join("")}</div>
       <div class="bgrid">${cells}</div>
     </div>`;

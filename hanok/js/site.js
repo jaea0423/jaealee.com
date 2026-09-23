@@ -23,18 +23,25 @@ window.SITE_READY.then(function(){
   header.innerHTML = `<div class="wrap">
       <a class="brand" href="index.html"><span class="brand-ko">한옥반점</span><span class="brand-en">BUNDANG</span></a>
       <nav class="links">${L.map(([h,k,l])=>`<a href="${h}" class="${page===k?'cur':''}">${l}</a>`).join("")}</nav>
-      <div class="nav-r"><button type="button" class="btn fill cta" data-reserve>예약하기</button><button class="burger" aria-label="메뉴 열기"><i></i><i></i></button></div>
+      <div class="nav-r"><button type="button" class="btn fill cta" data-reserve>예약하기</button><button type="button" class="burger" aria-label="메뉴 열기" aria-controls="mobile-navigation" aria-expanded="false"><i></i><i></i></button></div>
     </div>`;
   document.body.prepend(header);
+  const skip = document.createElement("a"); skip.className = "skip"; skip.href = "#main-content"; skip.textContent = "본문으로 건너뛰기";
+  document.body.prepend(skip);
   /* 첫 화면 위에서는 사진이 비치게, 내려가면 검정 */
   if(page === "home"){
     const onScroll = () => header.classList.toggle("solid", window.scrollY > 40);
     window.addEventListener("scroll", onScroll, {passive:true}); onScroll();
   }
-  const mnav = document.createElement("nav"); mnav.className = "mnav";
+  const mnav = document.createElement("nav"); mnav.className = "mnav"; mnav.id = "mobile-navigation";
   mnav.innerHTML = `<a href="index.html">홈</a>` + L.map(([h,k,l])=>`<a href="${h}">${l}</a>`).join("") + `<a href="#" data-reserve>예약</a><a href="tel:${INFO.tel}">전화 ${esc(INFO.tel)}</a>`;
   header.after(mnav);
-  header.querySelector(".burger").addEventListener("click", () => mnav.classList.toggle("open"));
+  const burger = header.querySelector(".burger");
+  burger.addEventListener("click", () => {
+    const open = mnav.classList.toggle("open");
+    burger.setAttribute("aria-expanded", open ? "true" : "false");
+    burger.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+  });
   /* 폰: 오른쪽 아래 동그란 '예약' 단추 (차림·오시는 길은 위 메뉴에) */
   const fab = document.createElement("button"); fab.type = "button"; fab.className = "fab"; fab.setAttribute("data-reserve", ""); fab.textContent = "예약";
   document.body.append(fab);

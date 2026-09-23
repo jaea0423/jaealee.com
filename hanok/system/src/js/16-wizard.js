@@ -190,7 +190,7 @@ function renderWizard(){
   const last = WZ.step===LAST_STEP;
 
   return `
-  <div class="wz">
+  <div class="wz" role="dialog" aria-modal="true" aria-labelledby="wz-title">
     <header class="wz-top">
       <button class="wz-back" onclick="closeWizard()">✕ 닫기</button>   <!-- '이전' 은 단계 점으로(재아). 입력이 있으면 닫을 때 확인창 -->
       <div class="wz-steps">${dots}</div>
@@ -199,7 +199,7 @@ function renderWizard(){
     <div class="wz-mid">
       <div class="wz-q">
         <button class="wz-side prev ${WZ.step===0?'off':''}" onclick="wzGo(${WZ.step-1})" ${WZ.step===0?"disabled":""} aria-label="이전">‹ 이전</button>
-        <h2>${WZ_STEPS[WZ.step]}</h2>
+        <h2 id="wz-title">${WZ_STEPS[WZ.step]}</h2>
         <button class="wz-side next ${canNext?'':'off'}" onclick="${last?'wzSubmit()':`wzGo(${WZ.step+1})`}" ${canNext?"":"disabled"} aria-label="다음">${last?"등록":"다음"} ›</button>
         <div class="wz-warn" id="wz-warn">${
         String(warn||"").split("\n").map(l=>`<div>${esc(l)}</div>`).join("")}</div></div>
@@ -521,7 +521,7 @@ function wzStepDate(){
     const cls = ["bday","btn-day", WZ.date===ds?"sel":"", ds===today?"today":"",
                  ds<today?"past":"", dow===0?"sun":dow===6?"sat":"", hoursFor(ds).closed?"closed":""].join(" ");
     const rt = list.length ? dayStat(ds).rate : 0;
-    cells += `<button class="${cls}" onclick="wzPickDate('${ds}')">
+    cells += `<button class="${cls}" aria-label="${dateLabel(ds)}${hoursFor(ds).closed?' 휴무':''}${list.length?' 예약 '+list.length+'건':''}" onclick="wzPickDate('${ds}')">
         <span class="d">${d}</span>
         ${list.length?`<span class="obar"><i style="width:${rt}%" class="${rt>=70?'hi':rt>=40?'mid':''}"></i></span>`:""}
       </button>`;
@@ -586,7 +586,7 @@ function wzStepDate(){
           `<span class="mnotch ${v%10===0?'big':''}" style="left:${pct(v)}%"></span>`).join("")}
         <div class="mknob" style="left:${pct(off)}%">${pad(base+off)}</div>
         ${[0,5,10,15,20,25].map(v=>
-          `<button class="mtick ${off===v?'on':''}" style="left:${pct(v)}%" onclick="wzPickMin(${v})">${pad(base+v)}</button>`).join("")}
+          `<button class="mtick ${off===v?'on':''}" style="left:${pct(v)}%" aria-label="${pad(base+v)}분" onclick="wzPickMin(${v})">${pad(base+v)}</button>`).join("")}
       </div>
       <div class="mfine">
         <button ${off<=0?"disabled":""} onclick="wzNudge(-5)">− 5분</button>
@@ -749,9 +749,9 @@ function wzStepPeople(){
     <div class="pgrid">${tiles}</div>
     <button class="pmore ${WZ.customPeople?'on':''}" onclick="wzCustom()">7명 이상</button>
       <div class="bigstep ${WZ.customPeople?'':'hold'}">
-        <button onclick="wzAdj('people',-1)" ${WZ.customPeople?'':'tabindex="-1"'}>−</button>
+        <button onclick="wzAdj('people',-1)" aria-label="총 인원 한 명 줄이기" ${WZ.customPeople?'':'tabindex="-1"'}>−</button>
         <div class="v"><span>${WZ.people||7}</span><small>명</small></div>
-        <button onclick="wzAdj('people',1)" ${WZ.customPeople?'':'tabindex="-1"'}>＋</button>
+        <button onclick="wzAdj('people',1)" aria-label="총 인원 한 명 늘리기" ${WZ.customPeople?'':'tabindex="-1"'}>＋</button>
       </div>
     <div class="infant ${WZ.infants>=(WZ.people||99)&&WZ.people?'bad':''}">
       <div><div class="t">어린이</div>
@@ -759,9 +759,9 @@ function wzStepPeople(){
           ? "성인이 없습니다"
           : "총 인원에 포함"}</div></div>
       <div class="bigstep sm">
-        <button onclick="wzAdj('infants',-1)">−</button>
+        <button onclick="wzAdj('infants',-1)" aria-label="어린이 한 명 줄이기">−</button>
         <div class="v"><span>${WZ.infants}</span><small>명</small></div>
-        <button onclick="wzAdj('infants',1)">＋</button>
+        <button onclick="wzAdj('infants',1)" aria-label="어린이 한 명 늘리기">＋</button>
       </div>
     </div>
     <div class="ptotal">${cur ? `총 <b>${cur}명</b>${WZ.infants?` (어린이 ${WZ.infants}명 포함)`:""}` : ""}</div>`;

@@ -64,8 +64,8 @@ function renderModal(){
     : `<div class="md-l">${esc(l)}</div>`).join("");
   return `
     <div class="overlay modal-ov" onclick="modalAnswer(false)">
-      <div class="modal ${m.tone}" onclick="event.stopPropagation()">
-        <div class="md-h">${esc(m.title)}</div>
+      <div class="modal ${m.tone}" role="${m.tone==="warn"?"alertdialog":"dialog"}" aria-modal="true" aria-labelledby="modal-title" onclick="event.stopPropagation()">
+        <div class="md-h" id="modal-title">${esc(m.title)}</div>
         <div class="md-b">${lines}${m.mode==="pin"?`
           <div class="pdots md">${Array.apply(null, Array(m.digits)).map((_, i)=>`<span class="pdot sm ${i<m.buf.length?'on':''}">${i<m.buf.length?'●':''}</span>`).join("")}</div>
           <div class="pkeys md">${[1,2,3,4,5,6,7,8,9,"clear",0,"back"].map(k=>k==="clear"?`<button class="pkey sub" onclick="pinModalPush('clear')" title="다시 입력">↻</button>`:k==="back"?`<button class="pkey sub" onclick="pinModalPush('back')">←</button>`:`<button class="pkey" onclick="pinModalPush(${k})">${k}</button>`).join("")}</div>
@@ -271,11 +271,11 @@ function renderStore(){
 
         ${view.tab==="settings" || isMobile() ? `` : `
         <div class="bar-mid">
-          <button class="bnav mo" onclick="moveMonthDate(-1)" title="이전 달">&laquo;</button>
-          <button class="bnav" onclick="moveDate(-1)" title="어제">&lsaquo;</button>
+          <button class="bnav mo" onclick="moveMonthDate(-1)" title="이전 달" aria-label="이전 달">&laquo;</button>
+          <button class="bnav" onclick="moveDate(-1)" title="어제" aria-label="어제">&lsaquo;</button>
           <button class="bdate" onclick="openCal()" title="달력 열기">${dateLabel(view.date)}</button>
-          <button class="bnav" onclick="moveDate(1)" title="내일">&rsaquo;</button>
-          <button class="bnav mo" onclick="moveMonthDate(1)" title="다음 달">&raquo;</button>
+          <button class="bnav" onclick="moveDate(1)" title="내일" aria-label="내일">&rsaquo;</button>
+          <button class="bnav mo" onclick="moveMonthDate(1)" title="다음 달" aria-label="다음 달">&raquo;</button>
         </div>`}
 
         <div class="bar-right">
