@@ -14,7 +14,7 @@ window.SITE_DEFAULT = {
     instagram: "https://www.instagram.com/hanok_banjeom",
     owner: "김지아", bizno: "533-35-00711",
     naverBooking: "#",   /* 네이버 예약 주소 — 재아가 채움 */
-    services: ["콜키지 가능 · 병당 20,000원", "단체 이용 가능", "포장 가능", "배달 가능"],   /* 홈·오시는 길에 한 줄로. 네이버 플레이스 정보와 같게 */
+    services: [],   /* 사장님이 별도 안내가 필요하다고 정한 항목만 홈페이지에 보입니다 */
     menuPdf: "menu.pdf"  /* 메뉴판 PDF — 파일명 또는 전체 주소 */
   },
 
@@ -62,14 +62,14 @@ window.SITE_DEFAULT = {
 
   /* 공간 — 룸 이름·인원은 예약 시스템 설정과 같게. 사진은 지금 임시 */
   rooms: [
-    { name: "조조", cap: "2 ~ 6인", img: "bg5.jpg", floor: "1층" },
-    { name: "유비", cap: "6 ~ 9인", img: "bg4.jpg", floor: "1층" },
-    { name: "장비", cap: "4 ~ 7인", img: "bg3.jpg", floor: "1층", join: "관우와 합쳐 12 ~ 14인" },
-    { name: "관우", cap: "4 ~ 7인", img: "bg1.jpg", floor: "1층", join: "장비와 합쳐 12 ~ 14인" },
-    { name: "공명", cap: "4 ~ 7인", img: "bg5.jpg", floor: "저층", join: "주유·초선과 합쳐 18 ~ 21인" },
-    { name: "주유", cap: "4 ~ 7인", img: "bg3.jpg", floor: "저층" },
-    { name: "초선", cap: "4 ~ 7인", img: "bg4.jpg", floor: "저층" },
-    { name: "동탁", cap: "10 ~ 14인", img: "bg1.jpg", floor: "저층", note: "원탁" }
+    { name: "조조", cap: "4인 (최대 6인)", img: "bg5.jpg", floor: "1층" },
+    { name: "유비", cap: "8인 (최대 9인)", img: "bg4.jpg", floor: "1층" },
+    { name: "장비", cap: "6인 (최대 7인)", img: "bg3.jpg", floor: "1층", join: "관우와 합쳐 12 ~ 14인" },
+    { name: "관우", cap: "6인 (최대 7인)", img: "bg1.jpg", floor: "1층", join: "장비와 합쳐 12 ~ 14인" },
+    { name: "공명", cap: "6인 (최대 7인)", img: "bg5.jpg", floor: "저층", join: "주유·초선과 합쳐 18 ~ 21인" },
+    { name: "주유", cap: "6인 (최대 7인)", img: "bg3.jpg", floor: "저층" },
+    { name: "초선", cap: "6인 (최대 7인)", img: "bg4.jpg", floor: "저층" },
+    { name: "동탁", cap: "12인 (최대 14인)", img: "bg1.jpg", floor: "저층", note: "원탁" }
   ],
   halls: [
     { name: "1층 테이블", cap: "테이블 6 · 18석", img: "bg6.jpg" },
@@ -94,8 +94,8 @@ window.SITE_DEFAULT = {
     menuSec: { title: "차림", lead: "우리 가족이 먹는다는 생각으로, 신선한 재료를 매일 직접 준비합니다", img: "bg1.jpg", imgAlt: "관우 룸의 원탁", more: "차림 전체" },
     spaceSec: { title: "공간", lead: "나무와 창호가 만드는 조용한 자리. 문을 닫으면 방 하나가 온전히 손님의 것이 됩니다", more: "공간 전체",
       tiles: [ { img: "bg2.jpg", alt: "저층 테이블", wide: true }, { img: "bg4.jpg", alt: "유비 룸" }, { img: "bg5.jpg", alt: "조조 룸" }, { img: "bg3.jpg", alt: "장비 룸" } ] },
-    infoSec: { visitMore: "오시는 길 전체", telNote: "예약과 문의는 영업시간 중 언제든 전화 주세요" },
-    band: { img: "bg6.jpg", title: "예약", lines: ["머무실 자리를 미리 준비해 두겠습니다.", "접수하신 내용은 확인 후 문자로 확정해 드립니다."], button: "예약하기" }
+    infoSec: { visitMore: "오시는 길 전체", telNote: "예약과 문의는 언제든 편하게 전화 주세요" },
+    band: { img: "bg6.jpg", title: "예약", lines: ["원하시는 날짜와 인원을 선택해 예약해 주세요."], button: "예약하기" }
   },
 
   about: {
@@ -117,7 +117,7 @@ window.SITE_DEFAULT = {
       para: "서른다섯 해 동안 중식 화구 앞에 섰습니다. 재료는 그날 들어온 것으로, 튀김은 주문을 받은 뒤에, 만두는 아침에 빚습니다. 손이 많이 가는 방법이 맛에서 티가 난다고 믿습니다."
     },
     story: {
-      title: "한옥을\n지었습니다", sub: "2020년부터",
+      title: "한옥을\n지었습니다", sub: "",
       paras: [
         "나무로 기둥과 보를 짜고 그 위에 기와를 올렸습니다. 벽은 회를 발라 마감하고, 창과 문에는 창호를 넣었습니다. 한옥은 못을 적게 쓰고 나무끼리 물려 세우는 집이라 짓는 데 시간이 걸립니다. 그 시간을 들일 만하다고 생각했습니다.",
         "한옥은 빛이 부드럽습니다. 창호를 통과한 빛은 한 번 걸러져 들어오고, 처마가 여름 볕을 막아 줍니다. 나무와 흙벽은 소리를 머금어 실내가 웅웅거리지 않습니다. 옆자리 이야기가 넘어오지 않으니 목소리를 높이지 않아도 됩니다.",

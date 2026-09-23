@@ -92,7 +92,7 @@ window.SITE_READY.then(function(){
   const two = arr => { /* 메뉴판처럼 두 단 */
     const h = Math.ceil(arr.length/2); return `<ul>${arr.slice(0,h).map(d=>`<li>${esc(d)}</li>`).join("")}</ul><ul>${arr.slice(h).map(d=>`<li>${esc(d)}</li>`).join("")}</ul>`; };
   const hoursList = () => HOURS.map(h=>`<div><b>${esc(h.day)}</b><span>${esc(h.open)}</span></div>`).join("") + HOURS_NOTE.map(n=>`<div class="note"><b></b><span>${esc(n)}</span></div>`).join("");
-  const roomCard = r => `<figure class="room"><img src="${esc(imgUrl(r.img))}" alt="${esc(r.name)} 룸" loading="lazy"><figcaption>${esc(r.name)}</figcaption></figure>`;
+  const roomCard = r => `<figure class="room"><img src="${esc(imgUrl(r.img))}" alt="${esc(r.name)} 룸" loading="lazy"><figcaption><b>${esc(r.name)}</b><span>${esc(r.cap||"")}</span></figcaption></figure>`;
   const hallCard = h => `<figure class="hall"><img src="${esc(imgUrl(h.img))}" alt="${esc(h.name)}" loading="lazy"><figcaption>${esc(h.name)}</figcaption></figure>`;
 
   /* ---------- 표시된 자리 채우기 (모든 장 공통) ----------

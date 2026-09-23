@@ -23,7 +23,7 @@
   /* 접수 규칙은 SITE.online(관리 화면에서 바꿈). 값이 없으면 아래 기본값. 서버 정책(성인 2~12·룸 성인 5·내일부터)이 최종이라 그 밖으로 넓힐 수는 없습니다 */
   const R = () => Object.assign({enabled:true, maxDays:30, minAdults:2, maxPeople:12, roomMinAdults:5, limitMin:5,
                                  offTitle:"지금은 온라인 예약을 받지 않습니다", offMsg:"예약은 전화로 부탁드립니다."}, (window.SITE && SITE.online) || {});
-  const MAX_SEAT = 40, LUNCH_END = 15*60+30, CODE_SEC = 60;
+  const MAX_SEAT = 40, LUNCH_END = 15*60+30, CODE_SEC = 120, RESEND_WAIT_SEC = 60;
   const LIMIT_SEC = () => Math.max(1, R().limitMin || 5) * 60;
 
   /* ---------- 흉내 API ---------- */
@@ -99,7 +99,7 @@
   const tooMany = () => total() > R().maxPeople;
   function reset(){
     S = {date:"", adults:0, kids:0, time:"", seat:"", course:"", courseLabel:"", name:"", phone:"",
-         sent:false, verified:false, req:"", allergy:"", agree:{rule:false, priv:false, age:false}};
+         sent:false, resendUsed:false, verified:false, req:"", allergy:"", agree:{rule:false, priv:false, age:false}};
     step = 1; monthCache = {};
     clearInterval(timer); timer = null; left = LIMIT_SEC(); extended = false;
   }
@@ -428,7 +428,7 @@
         <div class="rv-fld">
           <label for="rv-phone">전화번호</label>
           <div class="rv-inline">
-            <input id="rv-phone" type="tel" value="${esc(S.phone)}" placeholder="010-0000-0000" autocomplete="tel" inputmode="numeric"${S.verified?" disabled":""}>
+            <input id="rv-phone" type="tel" value="${esc(S.phone)}" placeholder="전화번호를 입력해 주세요" autocomplete="tel" inputmode="numeric"${S.verified?" disabled":""}>
             <button type="button" class="btn" id="rv-send"${S.verified?" disabled":""}>${S.verified ? "인증 완료" : "인증번호 요청"}</button>
           </div>
           <div class="rv-inline" id="rv-codebox"${S.sent && !S.verified ? "" : " hidden"}>
@@ -445,13 +445,16 @@
           codebox = $("#rv-codebox", b), code = $("#rv-code", b), verify = $("#rv-verify", b), hint = $("#rv-tel-hint", b), req = $("#rv-req", b), edit = $("#rv-tel-edit", b);
     if(S.sent && !S.verified) phone.disabled = true;
     edit.addEventListener("click", () => {
-      S.sent = false; phone.disabled = false; edit.hidden = true; codebox.hidden = true; send.textContent = "인증번호 요청";
+      S.sent = false; S.resendUsed = false; phone.disabled = false; edit.hidden = true; codebox.hidden = true; send.disabled = false; send.textContent = "인증번호 요청";
       clearInterval(codeTimer); codeTimer = null; hint.textContent = ""; hint.classList.remove("bad"); phone.focus();
     });
-    let codeTimer = null, codeLeft = 0;
+    let codeTimer = null, codeLeft = 0, resendLeft = 0;
     const codeTick = () => {
       if(codeLeft <= 0){ clearInterval(codeTimer); codeTimer = null; verify.disabled = true; hint.textContent = "인증번호가 만료되었습니다. 다시 요청해 주세요."; hint.classList.add("bad"); return; }
       hint.textContent = `문자로 보낸 인증번호를 입력해 주세요. (${pad(Math.floor(codeLeft/60))}:${pad(codeLeft%60)})`; codeLeft--;
+      /* 재요청은 성급한 중복 발송을 막되, 한 번은 받을 수 있게 1분 뒤에만 엽니다 */
+      if(S.sent && !S.resendUsed && resendLeft > 0){ send.disabled = true; send.textContent = `다시 요청 (${resendLeft}초)`; resendLeft--; }
+      else if(S.sent && !S.resendUsed){ send.disabled = false; send.textContent = "다시 요청"; }
     };
     const ok = () => S.name.trim().length >= 2 && S.verified;
     const refoot = () => foot(f, true, next, "다음", !ok());
@@ -466,9 +469,16 @@
       const d = S.phone.replace(/\D/g, "");
       if(!/^01\d{8,9}$/.test(d)){ hint.textContent = "휴대폰 번호를 확인해 주세요."; hint.classList.add("bad"); return; }
       /* 실제로는 여기서 문자를 보냅니다. 보낸 뒤에는 번호를 못 바꾸게 잠급니다(바꾸려면 '번호 수정') — 인증한 번호와 적힌 번호가 달라지는 것을 막음(재아) */
-      S.sent = true; codebox.hidden = false; send.textContent = "다시 요청"; verify.disabled = false; code.value = "";
+      const resend = S.sent;
+      if(resend){
+        if(S.resendUsed || resendLeft > 0) return;
+        S.resendUsed = true; codeLeft += 60; send.disabled = true; send.textContent = "다시 요청 완료";
+      }else{
+        S.sent = true; codeLeft = CODE_SEC; resendLeft = RESEND_WAIT_SEC; send.disabled = true;
+      }
+      codebox.hidden = false; verify.disabled = false; code.value = "";
       phone.disabled = true; edit.hidden = false;
-      hint.classList.remove("bad"); clearInterval(codeTimer); codeLeft = CODE_SEC; codeTick(); codeTimer = setInterval(codeTick, 1000);
+      hint.classList.remove("bad"); clearInterval(codeTimer); codeTick(); codeTimer = setInterval(codeTick, 1000);
       code.focus();
     });
     verify.addEventListener("click", () => {
