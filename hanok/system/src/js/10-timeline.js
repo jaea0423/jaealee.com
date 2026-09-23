@@ -23,7 +23,7 @@ function laneLayout(items, laneCount){
 }
 /* 층(lane)에 놓는 순서 = 먼저 들어온 예약이 아래, 늦게 들어온 예약이 위로 쌓임(재아 09-17) — 겹쳐 받았을 때 누가 원래 자리인지 한눈에.
    예전에는 시각 순이라 나중에 받은 예약이 먼저 시작하면 아래로 갔음. 홈페이지 대기 건은 접수 시각이 createdAt */
-function byCreated(a, b){ return String(a.createdAt||"").localeCompare(String(b.createdAt||"")) || a.time.localeCompare(b.time); }
+function byCreated(a, b){ return String(a.createdAt||"").localeCompare(String(b.createdAt||"")) || a.time.localeCompare(b.time) || String(a.id||"").localeCompare(String(b.id||"")); }
 /* 폰 압축판에서 층 테이블 줄 접기/펼치기 — 층별로 기억(새로 고침하면 다시 접힘) */
 function tlToggleFloor(key){ view.tlOpen = view.tlOpen || {}; view.tlOpen[key] = !view.tlOpen[key]; render(); }
 /* ---------- 점심 / 저녁 / 하루 판 (재아 09-20) ----------
@@ -88,20 +88,12 @@ function renderTimeline(date, compact){
   for(let m=Math.ceil(o/step)*step; m<=c; m+=step)
     ticks.push(`<span class="tk ${m>=c?'end':''} ${m%60?'half':''}" style="left:${pos(m)}%"><i></i><b>${m%60?"":Math.floor(m/60)}</b></span>`);   /* 맨 끝 눈금은 글자를 왼쪽으로 붙여 잘리지 않게 */
   const layers = ticks.join("") + shade;
-  /* 현재 시각 선.
-     예전에는 그래프 범위(o~c)를 벗어나면 선을 아예 안 그렸습니다.
-     그러면 개점 전이나 마감 후에 선이 사라져서 "지금이 어디쯤인지" 감이 끊깁니다.
-     범위를 벗어나면 가까운 쪽 끝에 붙여 두고, 붙어 있다는 걸 알 수 있게
-     점선으로 바꿉니다(.edge). 선이 있는 편이 없는 것보다 읽기 쉽습니다. */
+  /* 현재 시각이 이 판의 범위 안에 있을 때만 선을 보입니다.
+     점심 장사 중 저녁 판처럼 해당하지 않는 판의 가장자리에 점선이 붙으면 실제 시각으로 오해합니다. */
   const nowM = toMin(nowHM());
   const isToday = date===todayStr();
-  const nowClamped = Math.min(c, Math.max(o, nowM));
-  const nowLine = isToday
-    ? `<span class="nowline ${nowM<o?'edge before':nowM>c?'edge after':''}"
-             style="left:${pos(nowClamped)}%"
-             title="${nowM<o?`아직 그래프 시작(${hm(minToHM(o))}) 전입니다`
-                    :nowM>c?`그래프 끝(${hm(minToHM(c))})을 지났습니다`
-                    :`지금 ${hm(nowHM())}`}"></span>` : "";
+  const nowLine = isToday && nowM >= o && nowM <= c
+    ? `<span class="nowline" style="left:${pos(nowM)}%" title="지금 ${hm(nowHM())}"></span>` : "";
 
   /* 이름 뒤 VIP·VVIP 알약(tierTag) — 그래프에서도 단골이 보이게(재아 09-20). 칸이 좁으면 잘려도 시각·이름이 먼저 */
   const blockLabel = (r, short) => short
@@ -229,7 +221,13 @@ function renderTimeline(date, compact){
         title="${esc(it.r.time)} ${esc(it.r.name)} ${pplText(it.r)}${tn?` · ${esc(tn)} 테이블 지정`:""}${split?" · 나눠 앉음":""}${none?" · 자리 없음":""}${chg?` · 오늘 ${esc(chg.label)}`:""}">
         <span class="blk-in">${split?'<i class="jn">↔</i>':''}${chg?`<span class="chg-chip">${blockLabel(it.r)}</span>`:blockLabel(it.r)}${it.part?` <small class="tn">${it.part}/${it.parts}</small>`:""}</span></button>`;   /* 테이블 번호(tn)는 칸에 안 씀(09-20) — 상세에서 */
     }).join("");
-    const bands = (fl==null ? "" : floorTables(fl).map(blockBands).join(""))
+    /* 층 그래프의 각 세로 칸은 테이블 하나이므로 사용 중지도 그 테이블 칸에만 덮습니다 */
+    const floorBands = fl==null ? "" : floorTables(fl).map((t,i)=>blockSpans(t, date).map(sp=>{
+      const s0 = Math.max(o, sp.s), e0 = Math.min(c, sp.e); if(e0 <= s0) return "";
+      return `<span class="blockband" style="left:${pos(s0)}%; width:${((e0-s0)/span)*100}%; bottom:${i*LANE}px; top:auto; height:${LANE}px"
+        title="${esc(blockLabelText(sp.blk))}${sp.allDay?"":" · "+esc(spanLabel(sp))}"><i class="bb-l tl-lbl">${esc(blockLabelText(sp.blk))}</i></span>`;
+    }).join("")).join("");
+    const bands = floorBands
       + (over ? `<div class="offband overlane" style="left:0; right:0; top:0; height:${over*LANE}px" title="테이블 수를 넘은 팀이 놓이는 칸"></div>` : "");
     return `<div class="tl-row tbl floor">
       <div class="tl-name ${foldable?'foldable':''}" ${foldable?`onclick="tlToggleFloor('${esc(key)}')" role="button"`:`title="${fl==null?"":`테이블 ${tbls.length} · ${seats}석`}"`}><b>${fl==null?"층 미정":esc(floorLabel(fl))}</b>${
@@ -269,7 +267,7 @@ function renderTimeline(date, compact){
             .map(k=>`<button class="tag tapchip ${cls[k]}" onclick="${act[k]}">${nm[k]||k} ${cnt[k]}건</button>`).join("")
             + `<i class="chip-sep"></i><button class="tag tapchip ${chk?'amber':''}" onclick="openCheck()">확인 ${chk}건</button>`;
         })()}
-        ${dh.closed ? "" : `<span class="tl-part" role="group" aria-label="시간대">
+        ${dh.closed ? "" : `<span class="tl-part ${part==="day"?"all":""}" role="group" aria-label="시간대">
           <button class="pt ${part!=="dinner"?"on":""}" onclick="tlToggle('lunch')" title="점심">${ICON.sun}</button>
           <button class="pt ${part!=="lunch"?"on":""}" onclick="tlToggle('dinner')" title="저녁">${ICON.moon}</button>
         </span>`}

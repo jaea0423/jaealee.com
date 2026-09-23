@@ -918,30 +918,33 @@ function sheetSearch(){
   const s = store();
   /* 8차-K(재아): 구분 없이 한 글자부터 전부 찾습니다 — 이름·전화·메모·요청·알러지·경로·좌석. 많이 뜨면 더 치면 줄어듭니다 */
   const digits = q.replace(/\D/g,"");
-  const lower = q.toLowerCase();
+  const lower = q.toLowerCase().replace(/\s/g,"");
   const okNum = digits.length >= 1 && /^[\d\-\s]+$/.test(q);
   const okTxt = q.length >= 1 && !okNum;
   let rows = "";   /* 안내 문구는 입력칸 placeholder 하나로(재아 09-17) */
   if(okNum || okTxt){
     const hits = s.reservations.filter(r=>{
       if(okNum) return (r.phone||"").replace(/\D/g,"").includes(digits);
-      const bag = `${r.name} ${r.request||""} ${r.memo||""} ${r.allergy||""} ${r.sourceDetail||""} ${r.source||""} ${resSeatLabel(r)} ${r.phone||""}`.toLowerCase();
+      const bag = `${r.name} ${r.request||""} ${r.memo||""} ${r.allergy||""} ${r.sourceDetail||""} ${r.source||""} ${resSeatLabel(r)} ${r.phone||""}`.toLowerCase().replace(/\s/g,"");
       return bag.includes(lower);
-    }).sort((a,b)=> b.date.localeCompare(a.date) || b.time.localeCompare(a.time)).slice(0,80);
+    }).sort((a,b)=>{
+      const now = todayStr()+" "+nowHM(), ak = a.date+" "+a.time, bk = b.date+" "+b.time;
+      const af = ak >= now, bf = bk >= now;
+      if(af !== bf) return af ? -1 : 1;
+      return af ? ak.localeCompare(bk) : bk.localeCompare(ak);
+    }).slice(0,80);
     rows = hits.length ? hits.map(r=>`
-      <button class="rowitem tap" onclick="goRes('${r.id}','${r.date}')">
-        <span class="grow"><span class="t">${esc(r.name)}${tierTag(r)}
+      <button class="rowitem tap ${r.date < todayStr()?'search-past':''}" onclick="goRes('${r.id}','${r.date}')">
+        <span class="grow"><span class="t">${esc(r.name)}
           ${r.status!=="확정"?`<span class="tag ${r.status==="노쇼"?"rust":""}">${r.status}</span>`:""}</span>
-          <span class="s">${dateLabel(r.date)} ${esc(r.time)} · ${pplText(r)} · ${esc(r.phone||"연락처 없음")}${
-          r.request?` · ${esc(r.request)}`:""}${r.allergy?` · 알러지 ${esc(r.allergy)}`:""}</span></span>
-        ${seatTag(r)}
+          <span class="s">${dateLabel(r.date)} ${esc(r.time)} · ${pplText(r)} · ${esc(r.phone||"연락처 없음")} · ${esc(seatText(r))}</span></span>
       </button>`).join("")
       : `<div class="empty">찾은 예약이 없습니다.</div>`;
   }
   const hintTxt = "";
   return `
     ${sheetHead("예약 검색")}
-    <input id="search-q" value="${esc(q)}" placeholder="이름, 전화, 메모, 요청사항에서 검색합니다."
+    <input id="search-q" value="${esc(q)}" placeholder="이름, 전화, 메모, 요청사항 중 검색" autofocus
            oninput="setSearchQ(this.value)" autocomplete="off" style="margin-bottom:10px">
     ${hintTxt}
     <div class="card searchbox">${rows}</div>`;

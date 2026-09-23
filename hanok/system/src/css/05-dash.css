@@ -134,7 +134,7 @@ button.metric:hover{background:var(--surface-2)}
 button.blk{border:1px solid rgba(255,255,255,.3); box-sizing:border-box; cursor:pointer; font:inherit; font-family:inherit; font-size:18px; line-height:1; padding:0 var(--s12) 0 var(--s8); letter-spacing:-.01em; text-align:left; overflow:hidden; display:flex; flex-direction:column; justify-content:flex-start; align-items:stretch; white-space:nowrap; border-radius:3px}
 /* button 은 내용을 세로 가운데에 놓는 게 기본이라, 여러 칸을 합친 큰 블록에서 글이 가운데로 갔음(09-20 재아: 글은 늘 첫 칸에).
    안쪽 span(.blk-in)이 한 칸 높이(line-height)로 맨 위에 놓이고 말줄임(…)도 여기서 */
-.blk-in{display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0}   /* 칸보다 긴 글은 … 으로(09-20) — 오른쪽 여백을 조금 두어 일찍 끊음 */
+.blk-in{display:block; width:100%; max-width:100%; box-sizing:border-box; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0}   /* 딱지가 있어도 칸 너비 안에서 먼저 … 처리되어 마지막 글자가 잘리지 않습니다 */
 button.blk:hover{filter:brightness(1.15)}
 button.blk b{font-weight:700; font-size:18px}
 /* 그래프 칸 안의 VIP 알약 — 칸이 21px 이라 알약도 납작하게 */
@@ -191,7 +191,9 @@ button.blk.tent.warned.changed{background-image:linear-gradient(90deg, #3D8BD9 0
 .tl-part{margin-left:auto; display:inline-flex; gap:var(--s4); align-self:center}
 .tl-part .pt{width:38px; height:34px; border:1px solid var(--border); border-radius:var(--r-sm); background:var(--surface); color:var(--text-3); display:inline-flex; align-items:center; justify-content:center; cursor:pointer}
 .tl-part .pt svg{width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:1.7}
-.tl-part .pt.on{background:var(--text); border-color:var(--text); color:#fff}
+.tl-part .pt:first-child.on{background:#D9772C; border-color:#D9772C; color:#fff}
+.tl-part .pt:last-child.on{background:#25395A; border-color:#25395A; color:#fff}
+.tl-part.all .pt.on{background:#467C72; border-color:#467C72; color:#fff}   /* 둘 다 켜진 종일은 한 색으로 묶어 한 상태임을 보입니다 */
 .chip-sep{display:inline-block; width:4px; height:4px; border-radius:50%; background:var(--border-strong); margin:0 var(--s4); align-self:center}   /* 메모 · 확인 사이 점(09-20) */
 /* 칸(lane)이 여럿인 줄은 칸 선을 진하게 — 위 칸 예약이 '떠 있는' 게 아니라 위 칸에 있는 것으로 보이게(09-20) */
 .tl-track[style*="repeating-linear-gradient"]{background-color:#FAF8F3}
@@ -215,7 +217,7 @@ button.blk.tent.warned.changed{background-image:linear-gradient(90deg, #3D8BD9 0
 /* 한 줄 = grid. 느낌표 | 시각 | 이름 | 인원 | 룸 | 전화 | 나머지(꼬리표).
    6차 전에는 flex 로 흘러서 룸 이름 길이('동탁 룸' vs '저층 홀')에 따라 전화번호 자리가 밀렸습니다.
    앞 여섯 칸을 고정 폭으로 두면 전화 열이 세로로 맞습니다. 인원은 '4명(유아1)' 까지 들어가게 72px */
-.rrow{display:grid; grid-template-columns:12px 52px 150px 72px 88px 118px minmax(0,1fr);   /* 이름 칸 92 → 150 (VIP·단체 딱지까지 들어가게, 09-20) */ column-gap:var(--s8); align-items:center; width:100%; text-align:left; background:none; border:none; border-top:1px solid var(--border); font:inherit; color:inherit; white-space:nowrap; overflow:hidden; padding:var(--s12) var(--s8); padding-top:var(--s8); padding-bottom:var(--s8)}
+.rrow{display:grid; grid-template-columns:12px 64px 190px 132px 88px 118px minmax(0,1fr); column-gap:var(--s12); align-items:center; width:100%; text-align:left; background:none; border:none; border-top:1px solid var(--border); font:inherit; color:inherit; white-space:nowrap; overflow:hidden; padding:var(--s12) var(--s8); padding-top:var(--s8); padding-bottom:var(--s8)}
 .rrow:first-child{border-top:none}
 .rrow:hover{background:var(--surface-2)}
 /* 끝난 예약은 흐리게 — 노쇼는 확인할 일이 남아 조금 덜 흐리게 */
@@ -248,8 +250,8 @@ button.blk.tent.warned.changed{background-image:linear-gradient(90deg, #3D8BD9 0
 .rrow.k-warn{background:var(--rust-soft)}
 .rrow.k-chg{background-image:linear-gradient(90deg, #DCEBF9 0, #DCEBF9 42%, rgba(220,235,249,0) 52%)}
 .rrow.k-warn.k-chg{background-color:var(--rust-soft)}
-.rrow.k-tent{background-image:repeating-linear-gradient(-45deg, rgba(58,56,51,.07) 0 4px, transparent 4px 10px)}
-.rrow.k-tent.k-chg{background-image:linear-gradient(90deg, #DCEBF9 0, #DCEBF9 42%, rgba(220,235,249,0) 52%), repeating-linear-gradient(-45deg, rgba(58,56,51,.07) 0 4px, transparent 4px 10px)}
+.rrow.k-tent{background:#E7E7E7}
+.rrow.k-tent.k-chg{background-image:linear-gradient(90deg, #DCEBF9 0, #DCEBF9 42%, rgba(220,235,249,0) 52%); background-color:#E7E7E7}
 .rrow.s-방문, .rrow.s-노쇼{opacity:.6}
 /* 인원·룸·전화는 같은 무게(--text-2, 500). 룸만 색 있는 tag 였던 것을 내렸습니다 — 셋 다 '읽는 값'이지 강조가 아닙니다 */
 .rr-p, .rr-seat, .rr-ph{font-size:var(--fs-sub); color:var(--text-2); font-weight:500; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
@@ -282,13 +284,16 @@ button.blk.tent.warned.changed{background-image:linear-gradient(90deg, #3D8BD9 0
 
 /* ---------- 잠정(자리 안 정함) 표시를 빗금 대신 '속 빈 칸' 으로 (09-20 재아: 빗금은 글씨가 안 보이고 조잡) ----------
    확정 = 채운 칸, 잠정 = 흰 바탕 + 점선 테두리 + 짙은 글씨. 경고면 점선·글씨가 벽돌색, 지난 것은 회색. 파일 끝이라 위 빗금 규칙을 전부 덮음 */
-button.blk.tent, .blk.tent{background-image:none; background-color:#FFFFFF; color:var(--text); border:1.5px dashed #3A3833}
-button.blk.tent b, .blk.tent b{color:var(--text)}
+button.blk.tent, .blk.tent{background-image:none; background-color:#66666A; color:#fff; border:1px solid #55555A}
+button.blk.tent b, .blk.tent b{color:#fff}
 button.blk.tent .jn{color:#3F6C9E}
-button.blk.tent.warned{background-color:#FFF6F3; color:var(--rust); border-color:var(--rust)}
-button.blk.tent.warned b{color:var(--rust)}
+button.blk.tent.warned{background-color:#A65A4D; color:#fff; border-color:#8F493D}
+button.blk.tent.warned b{color:#fff}
 button.blk.tent.past, .blk.past.tent{background-color:#F3F1EC; color:var(--text-3); border-color:#B9B5AC}
 button.blk.tent.past b{color:var(--text-3)}
 button.blk.tent.changed{background-image:linear-gradient(90deg, rgba(61,139,217,.18) 0, rgba(61,139,217,.18) 48%, rgba(61,139,217,0) 56%)}
 button.blk.tent .tier{background:#FFF8E1}
-.lgsw.tent, .tl-legend i.tent{background-color:#FFFFFF; background-image:none; border:1.5px dashed #3A3833}
+.lgsw.tent, .tl-legend i.tent{background-color:#66666A; background-image:none; border:1px solid #55555A}
+.blk .tier.vvip{background:#E5C15C; color:#1B1B19; border-color:#F6D97E}   /* 어두운 예약 칸에서도 VVIP가 묻히지 않게 대비를 높입니다 */
+.searchbox > .empty{background:transparent; border-radius:0; padding:var(--s24) var(--s16)}
+.searchbox .search-past{background:var(--surface-2); color:var(--text-3); opacity:.58}

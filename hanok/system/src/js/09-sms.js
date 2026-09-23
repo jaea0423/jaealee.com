@@ -217,11 +217,10 @@ function resWarn(r){
   }
   /* 테이블 하나에 기본 좌석보다 많이 앉힘(여포 4인석에 5명 — 되긴 하지만 좁음, 누님 09-20) */
   if(tSeats.length === 1 && isTable(tSeats[0]) && pplOf(r) > (tSeats[0].seats||4) && pplOf(r) <= seatMax(tSeats[0]) && r.status !== "취소") out.push(`${tSeats[0].seats||4}인석에 ${pplOf(r)}명`);
-  /* 겹쳐 받은 룸은 접수 뒤에도 계속 보여야 합니다.
-     막지 않고 받는 대신(설계 5.2), 취소를 깜빡한 예약이 남아 있는 경우를
-     '확인 필요'에서 나중에라도 잡아낼 수 있게 합니다. */
+  /* 같은 자리를 겹쳐 받은 경우 먼저 접수한 예약은 정상, 뒤에 접수한 예약만 경고합니다.
+     진행은 막지 않고, 사장님이 뒤 예약만 옮기거나 확인할 수 있게 표시합니다. */
   if(seat && r.roomId && r.status!=="취소"){
-    if(ids.some(id=>roomStatus(r.date, r.time, id, r.id).hits.length)) out.push("좌석 겹침");
+    if(ids.some(id=>roomStatus(r.date, r.time, id, r.id).hits.some(x=>byCreated(x, r) < 0))) out.push("좌석 겹침");
   }
   return out;
 }

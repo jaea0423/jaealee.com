@@ -92,9 +92,9 @@ function renderAgenda(date){
   let marked = false;
   const rows = day.length ? day.map(r=>{
     let m = "";
-    if(isToday && !marked && toMin(r.time) > nowM){ marked = true; m = `<div class="now-sep"><span>지금 | ${hm(nowHM())}</span></div>`; }
+    if(isToday && !marked && toMin(r.time) >= nowM){ marked = true; m = `<div class="now-sep"><span>지금</span></div>`; }
     return m + resRowMobile(r);
-  }).join("") + (isToday && !marked ? `<div class="now-sep"><span>지금 | ${hm(nowHM())} · 오늘 남은 예약 없음</span></div>` : "")
+  }).join("") + (isToday && !marked ? `<div class="now-sep"><span>지금</span></div>` : "")
     : `<div class="empty">${eff === "예정" ? "앞으로 남은 예약이 없습니다. 지난 것은 '지난·방문' 또는 '전체'." : "해당 조건의 예약이 없습니다."}</div>`;
   return `<div class="filters">${filters}</div><div class="mlist">${rows}</div>`;
 }
@@ -270,9 +270,9 @@ function renderResList(date){
   let marked = false;
   const rows = day.length ? day.map(r=>{
     let m = "";
-    if(isToday && !marked && toMin(r.time) > nowM){ marked = true; m = `<div class="now-sep"><span>지금 | ${hm(nowHM())}</span></div>`; }
+    if(isToday && !marked && toMin(r.time) >= nowM){ marked = true; m = `<div class="now-sep"><span>지금</span></div>`; }
     return m + resRow(r);
-  }).join("") + (isToday && !marked ? `<div class="now-sep"><span>지금 | ${hm(nowHM())} · 오늘 남은 예약 없음</span></div>` : "")
+  }).join("") + (isToday && !marked ? `<div class="now-sep"><span>지금</span></div>` : "")
     : `<div class="empty">${eff === "예정" ? "앞으로 남은 예약이 없습니다. 지난 것은 '지난·방문' 또는 '전체'." : "해당 조건의 예약이 없습니다."}</div>`;
   return `<div class="filters">${filters}</div><div class="rlist">${rows}</div>`;
 }
