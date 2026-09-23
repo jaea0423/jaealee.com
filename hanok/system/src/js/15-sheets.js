@@ -35,11 +35,17 @@ function sheetNaver(){
   const cnt = k => n.result ? n.result.filter(x=>x.ok && x.kind===k).length : 0;
   return `
     ${sheetHead("네이버 예약 가져오기")}
-    <p class="f-note" style="margin:-6px 0 10px">네이버 파트너센터 → 예약자 관리 → 엑셀 다운로드 → 파일을 열어 <b>표 전체 복사(Ctrl+A, Ctrl+C)</b> → 아래에 붙여 넣기(Ctrl+V).</p>
-    <textarea id="naver-paste" rows="7" placeholder="여기에 붙여 넣으세요 (머리글 줄 포함, 안내 문장이 섞여 있어도 됩니다)" oninput="view.naver={text:this.value, result:null}">${esc(n.text)}</textarea>
+    <button class="naver-help" onclick="this.nextElementSibling.classList.toggle('open')" aria-label="엑셀 다운로드 도움말">?</button><div class="naver-guide">
+      <b>네이버 예약 엑셀 받기</b>
+      <p>네이버 파트너센터 → 예약자 관리 → 엑셀 다운로드</p>
+      <p>다운로드한 파일의 비밀번호는 로그인한 네이버 아이디입니다.</p>
+      <div class="naver-guide-photo">가이드 사진을 넣을 자리</div>
+    </div>
+    <p class="f-note" style="margin:-6px 0 10px">네이버 파트너센터 → 예약자 관리 → 엑셀 다운로드 → 파일을 열어 <b>표 전체 복사(Ctrl+A, Ctrl+C)</b> → 아래에 붙여 넣기(Ctrl+V).<br>다운로드한 파일의 비밀번호는 로그인한 네이버 아이디입니다.</p>
+    <textarea id="naver-paste" rows="7" placeholder="여기에 붙여 넣으세요 (예약 내용 외 다른 안내 문장 섞여 있어도 무관)" oninput="view.naver={text:this.value, result:null, guide:!!view.naver.guide}">${esc(n.text)}</textarea>
     <div class="btn-row" style="margin-top:8px">
       <button class="btn" data-enter onclick="naverPreview()">확인</button>
-      ${n.result ? `<button class="btn primary" data-enter onclick="naverApply()" ${cnt("new")+cnt("update")?"":"disabled"}>신규 ${cnt("new")}건 · 수정 ${cnt("update")}건 · 등록</button>` : ""}
+      ${n.result ? `<button class="btn primary" data-enter onclick="naverApply()" ${cnt("new")+cnt("update")?"":"disabled"}>등록(신규 ${cnt("new")}건 · 수정 ${cnt("update")}건)</button>` : ""}
       <button class="btn ghost" style="margin-left:auto" onclick="closeSheet()">닫기</button>
     </div>
     ${res}`;
@@ -1572,7 +1578,7 @@ var ADMIN_UNTIL = 0;   /* '10분간 다시 묻지 않기' 를 켜고 맞힌 시�
 async function adminGate(what){
   if(!supaOn()) return true;
   if(ADMIN_UNTIL > Date.now()) return true;
-  const r = await uiPin(what, "사장님 2차 비밀번호 6자리", 6, {keep:"10분간 다시 묻지 않기"});   /* PIN 화면과 같은 키패드(09-20) */
+  const r = await uiPin(what, "2차 비밀번호 6자리", 6, {keep:"10분간 다시 묻지 않기"});   /* PIN 화면과 같은 키패드(09-20) */
   if(r == null) return false;
   const pw = r.code;
   try{ await authToken(SUPA_CFG.adminEmail, /^\d{6}$/.test(pw) ? adminToPassword(pw) : pw); logEvent("관리자 확인", what + (r.keep ? " · 10분 유지" : "")); if(r.keep) ADMIN_UNTIL = Date.now() + 10 * 60000; return true; }

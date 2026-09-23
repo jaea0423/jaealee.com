@@ -9,7 +9,7 @@ let WZ = null;   /* 진행 중인 예약 입력 상태. null이면 닫힘 */
 const WZ_STEPS = [
   "어떤 경로로 온 예약인가요?",
   "\u201C날짜와 시간은 언제로 해 드릴까요?\u201D",
-  "\u201C몇 분이서 오세요?\u201D",
+  "몇 분이서 오시나요?",
   "\u201C룸과 테이블 중 어디로 해 드릴까요?\u201D",
   "\u201C식사는 코스나 세트로 준비해 드릴까요?\u201D",
   "\u201C예약자 성함과 연락처 부탁드립니다.\u201D",
@@ -87,7 +87,7 @@ function openWizard(date){
     date:date||null, time:null,
     people:null, infants:0, chairs:0, customPeople:false, phoneNone:false,
     menuType:null, courses:{}, courseOpen:false,
-    seat:null, seatExtra:[], seatKind:null,   /* 좌석 id | 'room-any' | 'table-any'. seatExtra = 합친 나머지 좌석 */
+    seat:null, seatExtra:[], seatKind:null, seatDetail:false, tableAdv:false,   /* 좌석 id | 'room-any' | 'table-any'. seatExtra = 합친 나머지 좌석 */
     name:"", phone:"", allergy:"", request:"", memo:"",
     done:null               /* 등록 완료 후 확인 메시지용 */
   };
@@ -310,6 +310,7 @@ function wzWarnReason(){
     }
   }
   if(WZ.step===2 && WZ.people && (WZ.infants||0) >= WZ.people) out.push(`성인이 없음 - 어린이만 ${WZ.infants}명`);
+  if(WZ.step===2 && WZ.customPeople && WZ.people===1) out.push("1명 예약 - 매장 확인 필요");
   if(WZ.step===5){
     if(WZ.phoneNone) out.push("전화번호 없음");
     else if(WZ.phone && WZ.phone.replace(/\D/g,"").length < 9)
@@ -430,7 +431,7 @@ function wzStepSource(){
     </div>
     <!-- 네이버를 고르면 나타나는 갈래 — 자리를 미리 잡아 두고 보이기만 바꿉니다(버튼 위치가 튀지 않게) -->
     <div class="naver-how" style="visibility:${isNaver?'visible':'hidden'}">
-      <div class="lbl" style="margin-top:14px">네이버 예약은 어떻게 넣을까요?</div>
+      <div class="lbl" style="margin-top:14px">네이버 예약은 어떻게 등록할까요?</div>
       <div class="sgrid any two">
         <button class="scell" onclick="wzAutoNext()"><span class="sn">직접 등록</span></button>
         <button class="scell" onclick="WZ=null; openNaver()"><span class="sn">Excel 등록</span></button>
@@ -496,9 +497,9 @@ function timeGrid(ctx){
     if(last % 30 !== 0 && !(cut != null && last >= cut)){
       const hmL = minToHM(last), goneL = isPastDate || (isToday && last <= nowM);
       cells.push(`<button class="hcell big last ${curT===last?'on':''} ${goneL?'gone':''}" onclick="${ctx.pick}(${last})">
-        <span class="hh">${hm(hmL).replace(/^(오전|오후) /,"")}</span><span class="ap">마지막</span><span class="hn">접수 마감 시각</span></button>`);
+        <span class="hh">${hm(hmL).replace(/^(오전|오후) /,"")}</span><span class="ap">${last<720?"오전":"오후"}</span><span class="hn">&nbsp;</span></button>`);
     }
-    return `<div class="sess-h2"><b>${esc(se.name)}</b><span class="lbl-note">${se.from}부터 · 접수 ${se.lastBook}까지 · ${stayLabel(se)}</span></div><div class="hgrid sess">${cells.join("")}</div>`;
+    return `<div class="sess-h2"><b>${esc(se.name)}</b></div><div class="hgrid sess">${cells.join("")}</div>`;
   }).join("");
 }
 function wzStepDate(){
@@ -522,7 +523,7 @@ function wzStepDate(){
     const rt = list.length ? dayStat(ds).rate : 0;
     cells += `<button class="${cls}" onclick="wzPickDate('${ds}')">
         <span class="d">${d}</span>
-        ${list.length?`<span class="b">${list.length}건</span><span class="obar"><i style="width:${rt}%" class="${rt>=70?'hi':rt>=40?'mid':''}"></i></span>`:""}
+        ${list.length?`<span class="obar"><i style="width:${rt}%" class="${rt>=70?'hi':rt>=40?'mid':''}"></i></span>`:""}
       </button>`;
   }
   for(let i=lead+lastDay; i<42; i++) cells += `<span class="bday"></span>`;
@@ -608,7 +609,7 @@ function wzStepDate(){
       ${WZ.date ? hoursLineHtml(dh) : `<div class="hours-line"><span class="hl-c"><i>영업시간</i>—</span><span class="hl-c"><i>브레이크</i>—</span><span class="hl-c"><i>라스트오더</i>—</span></div>`}
       <div class="lbl" style="margin-bottom:8px">${WZ.date?dateLabel(WZ.date):"날짜를 먼저 고르세요"} · 시각</div>
       ${WZ.date ? sessionGrid() : `<div class="empty">왼쪽 달력에서 날짜를 고르면 시각이 나옵니다.</div>`}
-      <details class="hmore" ${WZ.showAllSlots?"open":""} ontoggle="WZ.showAllSlots=this.open"><summary>접수 시간 밖 시각 보기 <span class="lbl-note">영업 전·브레이크·접수 마감 뒤 — 경고가 붙습니다</span></summary>
+      <details class="hmore" ${WZ.showAllSlots?"open":""} ontoggle="WZ.showAllSlots=this.open"><summary>접수 시간 외</summary>
       <div class="hgrid">${slotCells}</div></details>
       ${minuteRail}
     </div>
@@ -740,8 +741,8 @@ function afterRender(){
 
 /* ---------- 2단계: 인원 (어린이 포함 총원) ---------- */
 function wzStepPeople(){
-  const tiles = [1,2,3,4,5,6].map(n=>
-    `<button class="ptile ${WZ.people===n&&!WZ.customPeople?'on':''} ${n===1?'off':''}" onclick="wzPeople(${n})">
+  const tiles = [2,3,4,5,6].map(n=>
+    `<button class="ptile ${WZ.people===n&&!WZ.customPeople?'on':''}" onclick="wzPeople(${n})">
       <span class="pn">${n}</span><span class="pu">명</span></button>`).join("");
   const cur = WZ.people||0;
   return `
@@ -766,8 +767,6 @@ function wzStepPeople(){
     <div class="ptotal">${cur ? `총 <b>${cur}명</b>${WZ.infants?` (어린이 ${WZ.infants}명 포함)`:""}` : ""}</div>`;
 }
 function wzPeople(n){
-  /* 1명 예약은 받지 않습니다(재아: 타일은 보이되 누르면 안내). 1인 규칙은 누님 질문 2번 대기 */
-  if(n === 1) return uiAlert("1명 예약은 받지 않습니다", "2명부터 예약할 수 있습니다.", "warn");
   WZ.people=n; WZ.customPeople=false;
   render();
 }
@@ -805,7 +804,7 @@ function wzStepSeat(){
     const over = total > seatsMax(ids), under = adults < seatsMin(ids, WZ.date);
     /* 2명이 2인석에 — 좁아서 손님이 싫어합니다. 고르는 단계부터 알립니다(8차-Y 재아). 규칙은 누님 질문 1번 대기 */
     const two = ids.length === 1 && isTable(x) && total > 0 && total <= 2 && (x.seats||4) <= 2;
-    const txt = blocked ? "사용 중지" : state==="free" ? (over?"인원 초과":under?"인원 부족":two?"2인석 (좁음)":"이용 가능") : "이용 불가";
+    const txt = blocked ? "사용 중지" : state==="free" ? (over?"인원 초과":under?"인원 부족":two?"2인석 (좁음)":"") : "이용 불가";
     const cls = blocked ? "blocked" : state!=="free" ? state : (over||under||two ? "warn" : "free");
     const bad = blocked || state!=="free" || over || under || two;
     const mv = statuses.reduce((a,r)=>a+(r.movable?r.movable.length:0),0);
@@ -814,7 +813,7 @@ function wzStepSeat(){
     return `<button class="scell ${WZ.seat===key?'on':''} ${bad?'warned busy':''} ${extraCls||''}" onclick="wzSeat('${key}')" ${x.note&&ids.length>1?`title="${esc(x.note)}"`:""}>
       <span class="sn">${label}</span>
       <span class="sc">${sub}</span>
-      <span class="avail ${cls}">${txt}</span>
+      ${txt?`<span class="avail ${cls}">${txt}</span>`:""}
       ${mv?`<span class="movable">미정 ${mv}건 이동 가능</span>`:""}
     </button>`;
   };
@@ -823,9 +822,12 @@ function wzStepSeat(){
   if(kind === "room"){
     const rooms = roomsAt(WZ.date).filter(isRoom);   /* 예정 좌석 반영 */
     const joins = joinsAt(WZ.date);   /* 인원이 안 맞아도 다 보여 주고 '인원 부족/초과' 로 표시(재아: 합침이 안 보였음) */
+    const doorJoins = joins.filter(j=>!j.split), splitJoins = joins.filter(j=>j.split);
     body = `<div class="sgrid">${rooms.map(r=>cell([r.id], r)).join("")}</div>` +
       (joins.length ? `<div class="lbl" style="margin-top:16px">룸 합침 <span class="lbl-note">중문 탈거 · 자동 배정 안 됨</span></div>
-        <div class="sgrid">${joins.map(j=>cell(j.ids, {id:j.id, name:"", note:j.note}, "join")).join("")}</div>` : "");
+        <div class="sgrid">${doorJoins.map(j=>cell(j.ids, {id:j.id, name:"", note:j.note}, "join")).join("")}</div>
+        ${doorJoins.length&&splitJoins.length?`<div class="seat-join-divider"><span>공간을 나눠 쓰는 조합</span></div>`:""}
+        ${splitJoins.length?`<div class="sgrid">${splitJoins.map(j=>cell(j.ids, {id:j.id, name:"", note:j.note}, "join split")).join("")}</div>`:""}` : "");
   }else{
     /* 테이블은 층만 고릅니다 — 어느 테이블에 앉을지는 그날 현장에서. 남은 자리는 같은 시간대 겹치는 손님 수로 */
     const floors = tableFloors();
@@ -838,42 +840,42 @@ function wzStepSeat(){
       /* 2명인데 이 층에 남은 게 2인석뿐이면 미리 알립니다 */
       const twoOnly = fit && fit.state === "ok" && total <= 2 && fit.f && !(fit.f.extra||[]).length && ((seatById(fit.f.id)||{}).seats||4) <= 2;
       const bad = fit && (fit.state !== "ok" || twoOnly);
-      const txt = !fit ? "시간을 먼저" : fit.state === "ok" ? (twoOnly ? "2인석만 남음 (좁음)" : "자리 있음")
+      const txt = !fit ? "시간을 먼저" : fit.state === "ok" ? (twoOnly ? "2인석만 남음 (좁음)" : "")
                 : fit.state === "split" ? `붙일 테이블 없음 · 나눠 앉기 (한 자리 최대 ${floorMaxParty(fl, WZ.date, WZ.time)}명)`
                 : `자리 없음 (한 자리 최대 ${floorMaxParty(fl, WZ.date, WZ.time)}명)`;
       return `<button class="scell ${WZ.seat===key?'on':''} ${bad?'warned busy':''}" onclick="wzSeat('${key}')">
         <span class="sn">${esc(floorLabel(fl))}</span>
-        <span class="sc">테이블 ${tb.length} · ${tb.reduce((a,t)=>a+(t.seats||4),0)}석</span>
-        <span class="avail ${bad?'warn':'free'}">${txt}</span>
+        ${txt?`<span class="avail ${bad?'warn':'free'}">${txt}</span>`:""}
       </button>`; }).join("")}</div>
-      <button class="wz-adv ${WZ.tableAdv?'on':''}" onclick="WZ.tableAdv=!WZ.tableAdv; render()">${WZ.tableAdv?"▲":"▼"} 특정 테이블 지정 <span class="lbl-note">창가석·여포 같은 요청이 있을 때만. 보통은 층만 고르면 됩니다</span></button>
+      <button class="wz-adv ${WZ.tableAdv?'on':''}" onclick="WZ.tableAdv=!WZ.tableAdv; render()">${WZ.tableAdv?"▲":"▼"} 특정 테이블 지정</button>
       ${WZ.tableAdv ? floors.map(fl=>`<div class="lbl" style="margin-top:10px">${esc(floorLabel(fl))}</div>
         <div class="sgrid tables">${floorTables(fl).map(t=>cell([t.id], t)).join("")}</div>`).join("") : ""}`;
   }
-  const sess = WZ.time ? sessionAt(WZ.date, WZ.time) : null;
-  const stv = sess ? (kind === "table" && sess.stayTable != null ? sess.stayTable : sess.stay) : null;
-  const stayTxt = WZ.time ? (sess && stv==="end" ? `${sess.name} 세션 끝(${hm(minToHM(sessionEnd(WZ.date, sess)))})까지 한 팀` : `${hmDur(stayMinAt(WZ.date, WZ.time, kind === "table" ? "table-any" : null))} 머무는 기준`) : "";
   return `
-    <div class="seat-note">${WZ.time?`<b>${hm(WZ.time)}</b> 입장 · ${stayTxt}`:"시간을 먼저 선택하세요"}</div>
-    ${(()=>{ if(!WZ.time) return `<div class="seg seatkind"><button class="${kind==='room'?'on':''}" onclick="wzSeatKind('room')">룸 예약</button><button class="${kind==='table'?'on':''}" onclick="wzSeatKind('table')">테이블 예약</button></div>`;
+    ${(()=>{ if(!WZ.time) return `<div class="seat-main"><button class="${kind==='room'?'on':''}" onclick="wzSeatKind('room')">룸 예약</button><button class="${kind==='table'?'on':''}" onclick="wzSeatKind('table')">테이블 예약</button></div>`;
       /* 고르는 순간부터 자리 여부를 — 종류 버튼에 '자리 없음' 을 붙입니다(재아). 룸: 이 인원이 앉을 빈 룸 하나라도, 테이블: 층 무관 */
       const roomOk = !!findSeat({date:WZ.date, time:WZ.time, people:total, kind:"room-any"});
       const tf = floorFit(null, WZ.date, WZ.time, total);
-      return `<div class="seg seatkind">
+      return `<div class="seat-main">
         <button class="${kind==='room'?'on':''} ${roomOk?'':'warned'}" onclick="wzSeatKind('room')">룸 예약${roomOk?"":" · 빈 방 없음"}</button>
         <button class="${kind==='table'?'on':''} ${tf.state==='none'?'warned':''}" onclick="wzSeatKind('table')">테이블 예약${tf.state==='none'?" · 자리 없음":tf.state==='split'?" · 나눠 앉기":""}</button>
       </div>`; })()}
-    <div class="lbl-note" style="margin:6px 0 10px">${kind==='room' ? `정원은 ${seatCountsInfants()?"어린이 포함":"어린이 제외 성인"} 기준 · 순서는 사장님이 정한 배정 우선순위` : "그 시간에 비는 테이블(붙임 포함)로 앉힐 수 있는지 봅니다. 어느 테이블인지는 당일 현장에서"}</div>
-    ${body}
-    ${!kind ? `<div class="empty">룸 예약인지 테이블 예약인지 먼저 고르세요.</div>` : kind==='room' ? `<p class="f-note" style="margin-top:12px">방을 안 고르고 <b>다음</b>을 누르면 '룸 미정' 으로 접수돼 빈 방에 잠정 배정됩니다.</p>` : `<p class="f-note" style="margin-top:12px">층을 안 고르고 <b>다음</b>을 누르면 층 상관없이 사장님 순서로 잡습니다. 어느 테이블인지는 당일 현장에서.</p>`}`;
+    ${kind?`<button class="wz-adv seat-detail-toggle ${WZ.seatDetail?'on':''}" onclick="WZ.seatDetail=!WZ.seatDetail; render()">${WZ.seatDetail?"▲":"▼"} ${kind==='room'?"룸 지정":"테이블 지정"}</button>`:""}
+    ${kind&&WZ.seatDetail?body:""}`;
 }
-function wzSeatKind(k){ WZ.seatKind = k; if(WZ.seat){ const cur = seatById(WZ.seat) || (store().settings.joins||[]).find(j=>j.id===WZ.seat); const isT = cur ? isTable(cur) : isTablePref(WZ.seat); if((k==="room") === !!isT) WZ.seat = null; } render(); }   /* 갈래를 바꾸면 다른 갈래의 선택은 지움 */
+function wzSeatKind(k){
+  if(WZ.seatKind===k){ WZ.seatKind=null; WZ.seat=null; WZ.seatDetail=false; render(); return; }
+  WZ.seatKind = k; WZ.seat = null; WZ.seatExtra=[]; WZ.seatDetail=false; WZ.tableAdv=false; render();
+}   /* 같은 큰 카드를 다시 누르면 선택 해제, 갈래를 바꾸면 상세 선택도 지웁니다 */
 
 /* 좌석 선택 — 막을 것은 막고, 판단이 필요한 것은 물어봅니다 */
 /* 좌석 선택 — 막을 것은 막고, 판단이 필요한 것은 물어봅니다. v = 좌석 id / 합침 그룹 id / room-any / table-any */
 async function wzSeat(v){
   const st = store().settings;
   const people = WZ.people||0;
+  if((WZ.seat===v || WZ.seatJoin===v) && v!=="room-any" && v!=="table-any"){
+    WZ.seat=null; WZ.seatJoin=null; WZ.seatExtra=[]; render(); return;
+  }
   WZ.seatExtra = []; WZ.tentative = null; WZ.tentativeExtra = [];
   /* 테이블(층) — 테이블 단위로 앉힐 수 있는지 계산하되 이름은 안 보여 줍니다. 없거나 나눠 앉아도 알리기만 */
   if(/^table:/.test(v) || v === "table-any"){
@@ -885,7 +887,7 @@ async function wzSeat(v){
       `붙일 수 있는 테이블이 없습니다 (한 자리 최대 ${floorMaxParty(fl, WZ.date, WZ.time)}명). 옆 테이블에 나눠 앉는 것으로 접수합니다.\n손님께 안내하셨나요?`,
       {ok:"안내했음 · 접수", cancel:"다시 고르기"})) return;
     WZ.tentative = fit.f ? fit.f.id : null; WZ.tentativeExtra = fit.f ? fit.f.extra : []; WZ.tentativeSplit = fit.state === "split";
-    WZ.seat = v; wzAutoNext();
+    WZ.seat = v; render();
     return;
   }
   if(!["any","hall-any","table-any","room-any"].includes(v)){
@@ -930,7 +932,7 @@ async function wzSeat(v){
     }
     if(j && (j.split || j.note) && !await uiConfirm(`${label} — ${j.note || "공간이 나뉩니다"}`, j.split ? "테이블이 나뉘어 앉게 됩니다. 손님께 확인하셨나요?" : "손님께 확인하셨나요?", {ok:"확인했음", cancel:"다시 고르기"})) return;
     if(j) WZ.seatExtra = ids.slice(1);
-    WZ.seat = j ? ids[0] : v; WZ.seatJoin = j ? j.id : null; wzAutoNext();
+    WZ.seat = j ? ids[0] : v; WZ.seatJoin = j ? j.id : null; render();
     return;
   }
   /* 좌석 미정 — 잠정 배정 가능 여부를 먼저 확인 */
@@ -1191,16 +1193,16 @@ function renderCourse(){
 function wzStepExtra(){
   return `
     <label class="f big"><div class="lb">요청사항 <span class="lbl-note">선택</span></div>
-      <input id="wz-request" value="${esc(WZ.request)}" placeholder="예: 갑각류 알러지 1명, 유아용 의자, 송별회, 상견례">
+      <input id="wz-request" value="${esc(WZ.request)}" placeholder="예: 갑각류 알러지 1명, 유아용 의자, 송별회, 상견례 등">
     </label>
     <label class="f big"><div class="lb">메모 <span class="lbl-note">선택</span></div>
-      <input id="wz-memo" value="${esc(WZ.memo||"")}" placeholder="예: 사장님 지인, 상석 준비">
+      <input id="wz-memo" value="${esc(WZ.memo||"")}" placeholder="예: 사장님 지인, 상석 준비 등">
     </label>
     <div class="wz-review">
       <div class="rv"><span>일시</span><b>${WZ.date?dateLabel(WZ.date):"-"} ${WZ.time?hm(WZ.time):""}</b></div>
-      <div class="rv"><span>인원</span><b>총 ${WZ.people||0}명${WZ.infants?` (어린이 ${WZ.infants}명 포함)`:""}</b></div>
+      <div class="rv"><span>인원</span><b>총 ${WZ.people||0}명${WZ.infants?` (어린이 ${WZ.infants}명 포함)`:""} ${groupTag({people:WZ.people||0})}</b></div>
       <div class="rv"><span>좌석</span><b>${WZ.seat?(WZ.seatExtra&&WZ.seatExtra.length?seatLabelIds([WZ.seat].concat(WZ.seatExtra)):seatLabel(WZ.seat)):"-"}</b></div>
-      <div class="rv"><span>예약자</span><b>${esc(WZ.name)||"-"} ${esc(WZ.phone)}</b></div>
+      <div class="rv"><span>예약자</span><b>${esc(WZ.name)||"-"}${tierTag({phone:WZ.phone})}${WZ.phone?` · ${esc(WZ.phone)}`:""}</b></div>
       <div class="rv"><span>식사</span><b>${esc(WZ.menuType||"-")}${WZ.menuType==="코스"&&courseCount()?` · ${esc(courseSummary(WZ.courses))}`:""}</b></div>
     </div>`;
 }
@@ -1290,7 +1292,7 @@ function wzDone(){
         <p class="done-msg">
           <b>${d.getMonth()+1}월 ${d.getDate()}일 ${dow}요일, ${hm(WZ.done.time)}</b>,
           <b>${esc(seat)}</b> 좌석,
-          <b>${esc(r.name)}</b> 손님<br>예약이 접수됐습니다
+          <b>${esc(r.name)}</b>${tierTag(r)}${groupTag(r)} 손님<br>예약이 접수됐습니다
         </p>
         <div class="done-sub">${pplText(r)}${r.phone?` · ${esc(r.phone)}`:""}
           ${r.menuType?`<br>식사: ${esc(r.menuType)}${r.courses&&Object.keys(r.courses).length?` (${esc(courseSummary(r.courses))})`:""}`:""}
