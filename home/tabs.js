@@ -35,12 +35,6 @@
     });
   });
   addEventListener('hashchange', readRoute);
-  document.querySelectorAll('[data-project-filter]').forEach(button => button.addEventListener('click', () => {
-    document.querySelectorAll('[data-project-filter]').forEach(other => other.setAttribute('aria-pressed', String(other === button)));
-    const empty = button.dataset.projectFilter === 'design';
-    document.getElementById('project-list').hidden = empty;
-    document.getElementById('project-empty').hidden = !empty;
-  }));
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const safeURL = value => { try { const url = new URL(value); return ['http:','https:'].includes(url.protocol) ? url.href : ''; } catch { return ''; } };
   // 타임아웃은 본문을 읽을 때까지 적용하고, 이전 날짜 요청은 화면을 덮어쓰지 못하게 합니다.
