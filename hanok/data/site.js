@@ -23,7 +23,7 @@ window.SITE_DEFAULT = {
     { day: "월 – 토", open: "11:00 – 22:00" },
     { day: "일 · 공휴일", open: "11:00 – 20:30" }
   ],
-  hoursNote: ["브레이크 평일 15:30 – 17:00", "라스트오더 영업종료 1시간 20분 전", "코스 주문은 라스트오더 30분 전 마감"],
+  hoursNote: ["브레이크 평일 15:30 – 17:00", "라스트오더 영업종료 1시간 20분 전"],
   closed: [],          /* 홈페이지 예약을 안 받는 날 "YYYY-MM-DD" (추석 등) — 예약 창에 시각이 안 나옴. 전화는 그대로 */
 
   /* 홈페이지 예약 접수 규칙 — 관리 화면 '홈페이지 예약' 묶음에서 바꿉니다.
@@ -284,7 +284,10 @@ window.SITE_DEFAULT = {
 window.applySiteGlobals = function(S){
   window.SITE = S;
   window.MENU = S.menu; window.ROOMS = S.rooms; window.HALLS = S.halls;
-  window.HOURS = S.hours; window.HOURS_NOTE = S.hoursNote; window.CLOSED = S.closed; window.HOLIDAYS = S.holidays;
+  window.HOURS = S.hours;
+  /* 서버에 예전 값이 남아 있어도 손님 사이트에서는 코스 주문 마감 문구를 다시 노출하지 않습니다. */
+  window.HOURS_NOTE = (S.hoursNote || []).filter(function(n){ return !/코스\s*주문/.test(String(n)); });
+  window.CLOSED = S.closed; window.HOLIDAYS = S.holidays;
   window.SIGNATURE = S.signature; window.NOTICES = S.notices; window.INFO = S.info;
 };
 window.applySiteGlobals(window.SITE_DEFAULT);
