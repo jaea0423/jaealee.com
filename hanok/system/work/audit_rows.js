@@ -8,13 +8,18 @@ function auditRows(root){
     if(!el.offsetParent) return false;
     var r = el.getBoundingClientRect(); if(r.width < 4 || r.height < 4) return false;
     if(el.closest(".pkeys, .pk-grid, .tl, .tl-scroll, .sa-tabs, .seg, .rrow, .srow, .own-grid, .hr-grid, .cgrid, .modal .md-b, .tap-plain, .rowitem > .grow")) return false;   /* 격자·표·탭은 제외(칸 모양이 원래 다름) */
+    /* 스크롤 상자 안에서 가려진 칸은 뺌 — 목록 밖으로 밀려난 단추를 아래 칸과 같은 줄로 잘못 묶던 것 */
+    for(var p = el.parentElement; p && p !== document.body; p = p.parentElement){
+      var ov = getComputedStyle(p); if(ov.overflowY === "visible" && ov.overflowX === "visible") continue;
+      var q = p.getBoundingClientRect(); if(r.bottom <= q.top + 1 || r.top >= q.bottom - 1 || r.right <= q.left + 1 || r.left >= q.right - 1) return false;
+    }
     return true;
   });
   var groups = new Map();
   els.forEach(function(el){
     /* 5단계 위까지 올라가며 '가로 줄' 상자 중 가장 바깥 것을 씀 — 줄 안에 작은 줄이 또 있으면(사진 칸 + 화살표 묶음) 따로 재서 놓쳤음 */
     var p = el.parentElement, depth = 0, best = null;
-    while(p && depth < 5 && p !== root){ var cs = getComputedStyle(p); if((cs.display.indexOf("flex") >= 0 && cs.flexDirection.indexOf("row") === 0) || cs.display.indexOf("grid") >= 0) best = p; p = p.parentElement; depth++; }
+    while(p && depth < 5 && p !== root){ if(p.matches(".overlay, .sheet, .page-wrap, .modal-ov")) break; var cs = getComputedStyle(p); if((cs.display.indexOf("flex") >= 0 && cs.flexDirection.indexOf("row") === 0) || cs.display.indexOf("grid") >= 0) best = p; p = p.parentElement; depth++; }   /* 창 전체(덮개)는 한 줄이 아님 */
     p = best; if(!p) return;
     if(!groups.has(p)) groups.set(p, []);
     groups.get(p).push(el);

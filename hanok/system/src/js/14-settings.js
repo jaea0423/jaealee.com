@@ -54,7 +54,7 @@ function renderSettings(){
         <div class="sch-h">
           <b>${sc.from==="2000-01-01"?"기본":`${sc.from.slice(0,4)}. ${+sc.from.slice(5,7)}. ${+sc.from.slice(8)}. 부터`}</b>
           ${cur?`<span class="tag pine">현재 적용</span>`:""}
-          <button class="btn sm" style="margin-left:auto" onclick="openSchedule('${sc.from}')">수정</button>
+          <button class="btn sm" style="margin-left:auto" onclick="openSchedule('${sc.from}')">고치기</button>
         </div>
         <div class="sch-days">
           ${[1,2,3,4,5,6,0].map(i=>({d:(sc.days||[])[i], i})).filter(x=>x.d).map(({d,i})=>`<span class="sch-d"><b>${DOWN[i]}</b>
@@ -65,43 +65,15 @@ function renderSettings(){
       </div>`;
     }).join("")}
     <div class="btn-row" style="margin-top:12px">
-      <button class="btn" onclick="openSchedule(null)">운영시간 수정</button>
-      <button class="btn" onclick="openOverride()">임시 영업·휴무</button>
+      <button class="btn" onclick="openSchedule(null)">＋ 새 운영시간</button>
+      <button class="btn" onclick="openOverride()">휴무 · 공휴일 · 임시 영업</button>
     </div>
-    <p class="f-note">운영시간을 바꿀 때는 적용 시작일을 정합니다.
-      과거 기록은 그때의 시간으로 계산되므로 지난 예약률이 틀어지지 않습니다.</p>
-
-    <div class="subhead">공휴일</div>
-    <button class="togglebtn ${st.holidayMode!==false?'on':''}" onclick="toggleHoliday()">
-      ${st.holidayMode!==false?"공휴일 운영시간 사용":"공휴일 구분 안 함"}
-    </button>
-    ${st.holidayMode!==false?`
-      <label class="chk" style="margin-top:10px">
-        <input type="checkbox" ${st.holidayAsWeekend!==false?"checked":""} onchange="toggleHolidayWeekend()">
-        <span>코스 시간대에서 공휴일을 주말로 봅니다</span></label>
-      ${(()=>{ const y = view.holYear || new Date().getFullYear(); const gap = holidayTableGap(); return `
-      <div class="btn-row" style="margin-top:8px; align-items:center">
-        <button class="btn sm" onclick="view.holYear=${y-1}; render()">◀</button><b>${y}년</b><button class="btn sm" onclick="view.holYear=${y+1}; render()">▶</button>
-        <span class="muted" style="font-size:12px">${KR_HOLIDAYS[y]?"내장표 있음":"내장표 없음 — 직접 등록"}</span>
-      </div>
-      ${gap?`<div class="alert amber" style="margin:8px 0"><span class="ic">!</span><div><div class="a-t">${gap}년 공휴일이 등록되지 않았습니다</div><div class="a-s">내장표는 2026~2027년까지입니다. 아래에서 ${gap}년 공휴일을 직접 추가하세요(대체공휴일 포함). 안 하면 그날 평일 운영시간으로 계산됩니다.</div></div></div>`:""}
-      <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px">
-        ${holidaysOfYear(y, st).map(h=>`
-          <span class="tag ${h.src==="추가"?"blue":""}" style="padding:6px 10px" title="${h.src}">${h.date.slice(5).replace("-","/")}
-            <button onclick="delHoliday('${h.date}')" style="background:none;border:none;color:var(--rust);padding:0 0 0 5px" title="${h.src==="내장"?"이 날은 공휴일 아님으로":"삭제"}">×</button>
-          </span>`).join("") || `<span class="muted" style="font-size:13px">${y}년 공휴일이 없습니다.</span>`}
-        ${(st.holidaysOff||[]).filter(d=>d.slice(0,4)===String(y)).map(d=>`<span class="tag" style="padding:6px 10px; opacity:.55; text-decoration:line-through" title="제외됨">${d.slice(5).replace("-","/")}
-            <button onclick="restoreHoliday('${d}')" style="background:none;border:none;color:var(--pine);padding:0 0 0 5px" title="다시 공휴일로">↺</button></span>`).join("")}
-      </div>
-      <div class="btn-row" style="margin-top:10px">
-        <input id="hol-date" type="date" style="flex:1 1 160px">
-        <button class="btn" onclick="addHoliday()">공휴일 추가</button>
-      </div>
-      <p class="f-note">2026~2027년 공휴일(대체공휴일 포함)은 들어 있습니다. 임시공휴일·선거일은 미리 알 수 없으니 정해지면 추가하세요. × 는 그날을 공휴일에서 뺍니다.</p>`; })()}`:""}`;
+    <p class="f-note">'새 운영시간' 은 정한 날짜부터 바뀝니다(그 전 기록은 옛 시간 그대로). 이미 있는 기간을 통째로 고칠 때는 그 줄의 '고치기'.</p>`;
+    /* 09-24 재아: 임시 휴무·임시 영업시간·공휴일을 한 창(openOverride)으로 합침 — 공휴일 켜기·목록도 거기로 */
 
   /* ---------- 예약 규칙 ---------- */
   const ruleBody = `
-    <p class="f-note" style="margin:0 0 12px"><b>점유 시간·접수 마감</b>은 운영시간의 <b>세션</b>(점심/저녁)에서 요일마다 정합니다 (운영시간 → 수정).</p>
+    <p class="f-note" style="margin:0 0 12px"><b>점유 시간·접수 마감</b>은 운영시간의 <b>세션</b>(점심/저녁)에서 요일마다 정합니다 (운영시간 → 고치기).</p>
 
     <div class="subhead">인원</div>
     <label class="f"><div class="lb">룸 최소 인원 기준</div>

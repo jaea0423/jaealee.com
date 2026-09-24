@@ -907,6 +907,8 @@ button.blk.tent .tier{background:#FFF8E1}
 .offband:not(.overlane){background:repeating-linear-gradient(45deg, rgba(27,27,25,.26) 0 5px, rgba(255,255,255,.42) 5px 10px)}
 .closed-band{background:repeating-linear-gradient(45deg, rgba(27,27,25,.30) 0 6px, rgba(255,255,255,.42) 6px 12px)}
 .breakband{background:repeating-linear-gradient(45deg, rgba(156,59,39,.24) 0 6px, rgba(255,255,255,.30) 6px 12px)}
+/* 타임라인 위 칸 알약(31)과 점심/저녁 단추(34) 높이를 맞춤 — audit_rows */
+.tl-part .pt{height:31px}
 /* ============================================================
    6. 예약 — 시트 / 달력 / 마법사 / 모달
    ============================================================ */
@@ -1616,6 +1618,15 @@ label.chk span{width:auto}
 .rowitem.seat .numbtn, .rowitem.seat > .btn, .whenrow .btn, .btn-row > .btn{display:inline-flex; align-items:center; justify-content:center}
 .rowitem.seat{align-items:center}
 .whenrow .wbtn{height:38px; min-height:38px; padding-top:0; padding-bottom:0; display:inline-flex; align-items:center}
+
+/* 휴무 · 공휴일 · 임시 영업 창(09-24) */
+.hd-year{display:flex; align-items:center; justify-content:center; gap:var(--s16); margin:0 0 var(--s12)}
+.hd-year b{font-size:var(--fs-title)}
+.hd-list{max-height:320px; overflow:auto}
+.hd-row .hd-d{flex:none; width:84px; font-weight:700; font-size:var(--fs-sub)}
+.hd-row .t{display:flex; flex-wrap:wrap; gap:4px}
+.hd-row.past{opacity:.55}
+.hd-row .btn{height:34px; min-height:34px}
 /* ---------- 홈페이지 관리 (14b-site-admin.js) ----------
    설정 화면과 같은 부품(.f .lb .in-sm .btn .tag .card)을 쓰고, 여기서는 배치만. 태블릿(820)이 기준, 폰은 한 단으로 */
 .sa-top{display:flex; flex-wrap:wrap; align-items:center; gap:var(--s12); padding:var(--s12) var(--s16); margin:-8px 0 var(--s12); background:var(--surface-2); border-radius:var(--r-sm)}
@@ -1968,7 +1979,7 @@ button.sa-card:hover{border-color:var(--text-3)}
 .cd-n{width:32px; height:32px; border-radius:50%; background:var(--text); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700}
 .cd-step.done .cd-n{background:var(--pine)}
 .cd-row .cd-v.on{background:var(--text); border-color:var(--text); color:#fff}
-.cd-row .cd-n{color:var(--rust)} .cd-row .cd-n.on{background:var(--text); border-color:var(--text); color:#FF9A88}   /* 노쇼: 빨간 글씨, 누르면 검은 바탕 */
+.cd-row .cd-ns{color:var(--rust)} .cd-row .cd-ns.on{background:var(--text); border-color:var(--text); color:#FF9A88}   /* 노쇼: 빨간 글씨, 누르면 검은 바탕 */
 .cd-row.s-노쇼 .t{text-decoration:line-through}
 .cd-b b{display:block; font-size:var(--fs-title)} .cd-b small{display:block; color:var(--text-2); font-size:var(--fs-sub); margin-top:2px; line-height:1.5}
 /* ---------- 개발자에게 (14h) ---------- */
@@ -2052,6 +2063,28 @@ button.sa-card:hover{border-color:var(--text-3)}
 .hr-pay td.won small.pine{color:var(--pine)}
 @media (max-width:640px){ .hr-adj-row{grid-template-columns:1fr 1fr 44px} .hr-adj-row .seg{grid-column:1 / -1} }
 .hr-adj-row .sa-x{width:44px; height:44px}   /* 옆 칸(44)과 같게 — audit_rows */
+
+/* 퇴근하기(09-24): 단계 제목 오른쪽에 단추 · 방문/노쇼 같은 너비(노쇼가 단계 번호 동그라미 .cd-n 과 이름이 겹쳐 32px 로 줄었던 것 → .cd-ns) */
+.cd-bh{display:flex; align-items:center; gap:var(--s8); min-height:38px}
+.cd-bh .btn{margin-left:auto}
+.cd-row .cd-v, .cd-row .cd-ns{width:64px; min-width:64px; justify-content:center}
+.cd-sgrp{font-size:var(--fs-label); font-weight:700; color:var(--text-3); padding:10px 4px 4px}
+.cd-srow .btn-row{flex-wrap:nowrap; gap:4px}
+.cd-srow .cd-sb.on{background:var(--text); border-color:var(--text); color:#fff}
+@media (max-width:640px){ .cd-srow{flex-wrap:wrap} .cd-srow .grow{flex:1 1 100%} .cd-srow .btn-row{margin-left:auto} }
+/* 퇴근 인사 — 어두운 바탕에 폭죽, 3초 뒤 잠금 화면 */
+.cd-bye{position:fixed; top:0; right:0; bottom:0; left:0; z-index:200; background:#141311; display:flex; align-items:center; justify-content:center; opacity:1; transition:opacity .45s}
+.cd-bye.out{opacity:0}
+.cd-bye canvas{position:absolute; top:0; left:0; width:100%; height:100%}
+.cd-bye-t{position:relative; text-align:center; color:#fff; animation:cdBye .6s ease-out}
+.cd-bye-t b{display:block; font-size:34px; letter-spacing:.02em}
+.cd-bye-t small{display:block; margin-top:10px; font-size:15px; color:rgba(255,255,255,.7)}
+@keyframes cdBye{from{opacity:0; margin-top:16px} to{opacity:1; margin-top:0}}
+@media (prefers-reduced-motion: reduce){ .cd-bye-t{animation:none} }
+.cd-row .t .tier{margin:0 6px 0 0}   /* 딱지 뒤 이름과 띄움 */
+/* 감사 문자 위 줄(다녀간 날·공통 키워드·고급) 높이 하나로 — 47/45/44 로 달랐음(audit_rows) */
+.th-ctl input, .th-ctl .btn{height:44px; min-height:44px; box-sizing:border-box; padding-top:0; padding-bottom:0}
+.th-ctl .btn{display:inline-flex; align-items:center}
 /* ============================================================
    8. 잠금 · 매장 선택
    ============================================================ */
@@ -7678,7 +7711,7 @@ function renderSettings(){
         <div class="sch-h">
           <b>${sc.from==="2000-01-01"?"기본":`${sc.from.slice(0,4)}. ${+sc.from.slice(5,7)}. ${+sc.from.slice(8)}. 부터`}</b>
           ${cur?`<span class="tag pine">현재 적용</span>`:""}
-          <button class="btn sm" style="margin-left:auto" onclick="openSchedule('${sc.from}')">수정</button>
+          <button class="btn sm" style="margin-left:auto" onclick="openSchedule('${sc.from}')">고치기</button>
         </div>
         <div class="sch-days">
           ${[1,2,3,4,5,6,0].map(i=>({d:(sc.days||[])[i], i})).filter(x=>x.d).map(({d,i})=>`<span class="sch-d"><b>${DOWN[i]}</b>
@@ -7689,43 +7722,15 @@ function renderSettings(){
       </div>`;
     }).join("")}
     <div class="btn-row" style="margin-top:12px">
-      <button class="btn" onclick="openSchedule(null)">운영시간 수정</button>
-      <button class="btn" onclick="openOverride()">임시 영업·휴무</button>
+      <button class="btn" onclick="openSchedule(null)">＋ 새 운영시간</button>
+      <button class="btn" onclick="openOverride()">휴무 · 공휴일 · 임시 영업</button>
     </div>
-    <p class="f-note">운영시간을 바꿀 때는 적용 시작일을 정합니다.
-      과거 기록은 그때의 시간으로 계산되므로 지난 예약률이 틀어지지 않습니다.</p>
-
-    <div class="subhead">공휴일</div>
-    <button class="togglebtn ${st.holidayMode!==false?'on':''}" onclick="toggleHoliday()">
-      ${st.holidayMode!==false?"공휴일 운영시간 사용":"공휴일 구분 안 함"}
-    </button>
-    ${st.holidayMode!==false?`
-      <label class="chk" style="margin-top:10px">
-        <input type="checkbox" ${st.holidayAsWeekend!==false?"checked":""} onchange="toggleHolidayWeekend()">
-        <span>코스 시간대에서 공휴일을 주말로 봅니다</span></label>
-      ${(()=>{ const y = view.holYear || new Date().getFullYear(); const gap = holidayTableGap(); return `
-      <div class="btn-row" style="margin-top:8px; align-items:center">
-        <button class="btn sm" onclick="view.holYear=${y-1}; render()">◀</button><b>${y}년</b><button class="btn sm" onclick="view.holYear=${y+1}; render()">▶</button>
-        <span class="muted" style="font-size:12px">${KR_HOLIDAYS[y]?"내장표 있음":"내장표 없음 — 직접 등록"}</span>
-      </div>
-      ${gap?`<div class="alert amber" style="margin:8px 0"><span class="ic">!</span><div><div class="a-t">${gap}년 공휴일이 등록되지 않았습니다</div><div class="a-s">내장표는 2026~2027년까지입니다. 아래에서 ${gap}년 공휴일을 직접 추가하세요(대체공휴일 포함). 안 하면 그날 평일 운영시간으로 계산됩니다.</div></div></div>`:""}
-      <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px">
-        ${holidaysOfYear(y, st).map(h=>`
-          <span class="tag ${h.src==="추가"?"blue":""}" style="padding:6px 10px" title="${h.src}">${h.date.slice(5).replace("-","/")}
-            <button onclick="delHoliday('${h.date}')" style="background:none;border:none;color:var(--rust);padding:0 0 0 5px" title="${h.src==="내장"?"이 날은 공휴일 아님으로":"삭제"}">×</button>
-          </span>`).join("") || `<span class="muted" style="font-size:13px">${y}년 공휴일이 없습니다.</span>`}
-        ${(st.holidaysOff||[]).filter(d=>d.slice(0,4)===String(y)).map(d=>`<span class="tag" style="padding:6px 10px; opacity:.55; text-decoration:line-through" title="제외됨">${d.slice(5).replace("-","/")}
-            <button onclick="restoreHoliday('${d}')" style="background:none;border:none;color:var(--pine);padding:0 0 0 5px" title="다시 공휴일로">↺</button></span>`).join("")}
-      </div>
-      <div class="btn-row" style="margin-top:10px">
-        <input id="hol-date" type="date" style="flex:1 1 160px">
-        <button class="btn" onclick="addHoliday()">공휴일 추가</button>
-      </div>
-      <p class="f-note">2026~2027년 공휴일(대체공휴일 포함)은 들어 있습니다. 임시공휴일·선거일은 미리 알 수 없으니 정해지면 추가하세요. × 는 그날을 공휴일에서 뺍니다.</p>`; })()}`:""}`;
+    <p class="f-note">'새 운영시간' 은 정한 날짜부터 바뀝니다(그 전 기록은 옛 시간 그대로). 이미 있는 기간을 통째로 고칠 때는 그 줄의 '고치기'.</p>`;
+    /* 09-24 재아: 임시 휴무·임시 영업시간·공휴일을 한 창(openOverride)으로 합침 — 공휴일 켜기·목록도 거기로 */
 
   /* ---------- 예약 규칙 ---------- */
   const ruleBody = `
-    <p class="f-note" style="margin:0 0 12px"><b>점유 시간·접수 마감</b>은 운영시간의 <b>세션</b>(점심/저녁)에서 요일마다 정합니다 (운영시간 → 수정).</p>
+    <p class="f-note" style="margin:0 0 12px"><b>점유 시간·접수 마감</b>은 운영시간의 <b>세션</b>(점심/저녁)에서 요일마다 정합니다 (운영시간 → 고치기).</p>
 
     <div class="subhead">인원</div>
     <label class="f"><div class="lb">룸 최소 인원 기준</div>
@@ -9688,27 +9693,27 @@ async function openCloseDay(date){
 }
 function sheetCloseDay(){
   var today = (view.form && view.form.date) || todayStr();
-  /* 그날 예약 전부(확정·방문·노쇼) — 누른 건 사라지지 않고 검게 표시된 채 남음(재아 09-20) */
+  /* 그날 예약 전부(확정·방문·노쇼) — 누른 건 사라지지 않고 검게 표시된 채 남음. 한 번 더 누르면 풀림(09-24 재아) */
   var all = store().reservations.filter(function(r){ return r.date === today && (r.status === "확정" || r.status === "방문" || r.status === "노쇼"); }).sort(function(a,b){ return a.time.localeCompare(b.time); });
   var left = all.filter(function(r){ return r.status === "확정"; });
-  var rows = all.map(function(r){ return '<div class="rowitem cd-row s-' + r.status + '"><span class="time-col">' + esc(hm(r.time)) + '</span><span class="grow"><span class="t">' + esc(r.name) + tierTag(r) + groupTag(r) + '</span><span class="s">' + esc(pplText(r)) + ' · ' + esc(resSeatLabel(r)) + '</span></span>' +
-    '<span class="btn-row"><button class="btn sm cd-v ' + (r.status === "방문" ? "on" : "ghost") + '" onclick="cdMark(\'' + r.id + '\', \'방문\')">방문</button><button class="btn sm cd-n ' + (r.status === "노쇼" ? "on" : "ghost") + '" onclick="cdMark(\'' + r.id + '\', \'노쇼\')">노쇼</button></span></div>'; }).join("");
+  var rows = all.map(function(r){ return '<div class="rowitem cd-row s-' + r.status + '"><span class="time-col">' + esc(hm(r.time)) + '</span><span class="grow"><span class="t">' + tierTag(r) + groupTag(r) + esc(r.name) + '</span><span class="s">' + esc(pplText(r)) + ' · ' + seatKindText(r) + '</span></span>' +   /* 자리는 룸/테이블만(09-24) */
+    '<span class="btn-row"><button class="btn sm cd-v ' + (r.status === "방문" ? "on" : "ghost") + '" onclick="cdMark(\'' + r.id + '\', \'방문\')">방문</button><button class="btn sm cd-ns ' + (r.status === "노쇼" ? "on" : "ghost") + '" onclick="cdMark(\'' + r.id + '\', \'노쇼\')">노쇼</button></span></div>'; }).join("");
   var done = left.length === 0;
+  var step = function(n, ok, title, right, body){ return '<div class="cd-step' + (ok ? ' done' : '') + '"><div class="cd-n">' + n + '</div><div class="cd-b"><div class="cd-bh"><b>' + title + '</b>' + (right || '') + '</div>' + (body || '') + '</div></div>'; };
   return '<div class="cd-wrap">' +
-    '<div class="cd-hello"><b>' + (today === todayStr() ? "오늘도 고생 많으셨습니다." : dateLabel(today) + " 정리") + '</b><small>' + esc(dateLabel(today)) + ' · 문 닫기 전에 세 가지만 정리하면 내일 아침이 편합니다.</small></div>' +
-    '<div class="cd-step ' + (done ? "done" : "") + '"><div class="cd-n">1</div><div class="cd-b"><b>손님 방문 처리</b>' +
-      (all.length ? '<small>' + (done ? '예약이 모두 정리됐습니다.' : '아직 \'확정\' 으로 남은 ' + left.length + '건 — 온 손님은 방문, 안 온 손님은 노쇼. 감사 문자는 방문으로 표시한 손님께만 갑니다.') + '</small>' +
-        (done ? '' : '<div class="btn-row" style="margin-top:8px"><button class="btn sm primary" onclick="cdMarkAll()">남은 ' + left.length + '건 전부 방문</button></div>') +
-        '<div class="card searchbox" style="margin-top:8px">' + rows + '</div>' : '<small>이날 예약이 없습니다.</small>') + '</div></div>' +
-    '<div class="cd-step"><div class="cd-n">2</div><div class="cd-b"><b>근무 찍기</b><small>오늘 나온 직원의 근무를 워크시프트에 표시합니다. 정규대로면 ○ 한 번.</small><div class="btn-row" style="margin-top:8px"><button class="btn sm" onclick="openStaffPage()">워크시프트 열기</button></div></div></div>' +
-    '<div class="cd-step"><div class="cd-n">3</div><div class="cd-b"><b>감사 문자</b><small>방문 처리한 손님께 키워드를 넣고 \'AI 로 완성하기\' → \'예약발송하기\'. 내일 오전 11시에 나갑니다. 지금 안 해도 내일 아침 확인 목록에 남습니다.</small><div class="btn-row" style="margin-top:8px"><button class="btn sm" onclick="openThanksPage()">감사 문자 열기</button></div></div></div>' +
-    '<div class="cd-step"><div class="cd-n">4</div><div class="cd-b"><b>끝</b><small>다 했으면 닫고 퇴근하세요. 시스템은 켜 둬도 됩니다(TV 는 따로).</small><div class="btn-row" style="margin-top:8px"><button class="btn sm primary" onclick="closeSheet()">퇴근</button></div></div></div>' +
-    '</div>';
+    '<div class="cd-hello"><b>' + (today === todayStr() ? "오늘도 고생 많으셨습니다." : dateLabel(today) + " 정리") + '</b><small>' + esc(dateLabel(today)) + '</small></div>' +
+    step(1, done, "손님 방문 처리", done || !all.length ? '' : '<button class="btn sm primary" onclick="cdMarkAll()">남은 ' + left.length + '건 전부 방문</button>',
+      all.length ? '<div class="card searchbox" style="margin-top:8px">' + rows + '</div>' : '<small>이날 예약이 없습니다.</small>') +
+    step(2, false, "워크시프트", '<button class="btn sm" onclick="cdStaffOpen()">워크시프트 작성</button>') +
+    step(3, false, "감사 문자", '<button class="btn sm" onclick="cdThanksOpen()">감사 문자 작성</button>') +
+    step(4, false, "끝", '<button class="btn sm primary" onclick="cdLeave()">퇴근</button>') +
+    '</div>' + (view.cdStaff ? cdStaffHtml() : '') + (HR && HR.pop && view.cdStaff ? hrPopHtml() : '') + (view.cdThanks ? cdThanksHtml() : '');
 }
 async function cdMark(id, st){
-  var r = store().reservations.find(function(x){ return x.id === id; }); if(!r || r.status === st) return;
-  if(st === "노쇼" && !await uiConfirm("노쇼로 표시할까요?", r.name + " 손님 · " + hm(r.time), {ok:"노쇼", cancel:"취소", tone:"warn"})) return;
-  var before = deepClone(r); r.status = st; addChange(r, "상태", diffRes(before, r)); saveData(); render();
+  var r = store().reservations.find(function(x){ return x.id === id; }); if(!r) return;
+  var to = r.status === st ? "확정" : st;   /* 같은 걸 한 번 더 누르면 선택 해제 = 다시 '확정' */
+  if(to === "노쇼" && !await uiConfirm("노쇼로 표시할까요?", r.name + " 손님 · " + hm(r.time), {ok:"노쇼", cancel:"취소", tone:"warn"})) return;
+  var before = deepClone(r); r.status = to; addChange(r, "상태", diffRes(before, r)); saveData(); render();
 }
 async function cdMarkAll(){
   var today = (view.form && view.form.date) || todayStr();
@@ -9717,6 +9722,82 @@ async function cdMarkAll(){
   if(!await uiConfirm("남은 " + left.length + "건을 전부 방문으로 표시할까요?", "안 온 손님이 있으면 그 줄만 노쇼로 바꾸면 됩니다.", {ok:"전부 방문", cancel:"취소"})) return;
   left.forEach(function(r){ var before = deepClone(r); r.status = "방문"; addChange(r, "상태", diffRes(before, r)); });
   saveData(); render();
+}
+/* ---------- 퇴근하기 안의 '오늘 워크시프트' 팝업(09-24 재아) ----------
+   워크시프트 화면으로 넘어가지 않고 그 자리에서 오늘 줄만. 누르면 바로 저장(워크시프트 표와 같은 자료 attendance) */
+async function cdStaffOpen(){
+  if(!supaOn()){ await uiAlert("서버 설정이 없는 빌드입니다", "워크시프트는 서버가 있어야 합니다.", "warn"); return; }
+  if(!await adminGate("워크시프트")) return;
+  if(!HR) HR = { week: hrWeekStart(todayStr()), month: monthStr(), staff:[], att:{}, loaded:{}, cfg:null, loading:true, pop:null, edit:null, view:"week", slip:null, setup:false, retired:false };
+  view.cdStaff = true; HR.loading = true; render();
+  HR.week = hrWeekStart((view.form && view.form.date) || todayStr()); HR.month = ((view.form && view.form.date) || todayStr()).slice(0, 7);
+  await hrLoad(); render();
+}
+function cdStaffClose(){ view.cdStaff = false; if(HR) HR.pop = null; render(); }
+async function cdStaffQuick(id, status){
+  var d = (view.form && view.form.date) || todayStr(), s = HR.staff.find(function(x){ return x.id === id; }); if(!s) return;
+  var a = HR.att[id + "|" + d];
+  if(a && a.status === status){   /* 같은 걸 또 누르면 지움 */
+    try{ await sb("/rest/v1/attendance?id=eq." + encodeURIComponent(a.id), { method:"DELETE", prefer:"return=minimal" }); delete HR.att[id + "|" + d]; render(); }catch(e){ await uiAlert("지우지 못했습니다", e.message || String(e), "warn"); }
+    return;
+  }
+  var row = { id:"att_" + id + "_" + d, store:view.storeKey || "hanok", staff_id:id, date:d, status:status, start:"", end:"", break_min:0, spans:[], rate:1, memo:"", by:(SESSION && SESSION.who) || "" };
+  try{ await sb("/rest/v1/attendance?on_conflict=id", { method:"POST", body:row, prefer:"resolution=merge-duplicates,return=minimal" }); HR.att[id + "|" + d] = row; render(); }
+  catch(e){ await uiAlert("저장 실패", e.message || String(e), "warn"); }
+}
+function cdStaffHtml(){
+  var d = (view.form && view.form.date) || todayStr();
+  var body;
+  if(!HR || HR.loading) body = '<p class="muted" style="padding:16px 0">불러오는 중…</p>';
+  else if(HR.err) body = '<p class="f-note rust">불러오지 못했습니다: ' + esc(HR.err) + '</p>';
+  else {
+    var list = HR.staff.filter(function(s){ return s.active !== false; });
+    body = hrGroups(list).map(function(g){ return '<div class="cd-sgrp">' + esc(g.role) + '</div>' + g.list.map(function(s){
+      var a = HR.att[s.id + "|" + d], duty = hrOnDuty(s, d), st = a ? a.status : "", h = a ? hrRound(hrHours(s, a)) : 0;
+      var b = function(k, label){ return '<button class="btn sm cd-sb' + (st === k ? ' on' : '') + '" onclick="cdStaffQuick(\'' + s.id + '\', \'' + k + '\')">' + label + '</button>'; };
+      return '<div class="rowitem cd-srow"><span class="grow"><span class="t">' + esc(hrLabel(s)) + '</span><span class="s">' + (duty ? '정규 ' + esc(hrSchedAt(s, d).spans.map(hrSpanText).join(" · ")) : '오늘 정규 근무 없음') + (st ? ' · ' + (h ? h + '시간' : st) : '') + '</span></span>' +
+        '<span class="btn-row">' + b("정규", "○ 정규") + '<button class="btn sm cd-sb' + (st === "변형" ? ' on' : '') + '" onclick="hrCell(\'' + s.id + '\', \'' + d + '\')">△ 다른 시간</button>' + b("결근", "× 결근") + b("휴무", "– 휴무") + '</span></div>';
+    }).join(""); }).join("") || '<p class="muted">직원이 없습니다.</p>';
+  }
+  return '<div class="overlay" onclick="cdStaffClose()"><div class="sheet sheet-tall" onclick="event.stopPropagation()">' + sheetHead("워크시프트 · " + dateLabel(d)) +
+    '<div class="searchbox" style="flex:1; min-height:0; overflow:auto">' + body + '</div>' +
+    '<div class="sheet-actions"><button class="btn primary" onclick="cdStaffClose()">완료</button></div></div></div>';
+}
+/* ---------- 퇴근하기 안의 감사 문자 팝업 — 화면이 바뀌면 퇴근 순서를 잃어서(09-24 재아). 감사 문자 화면(14g)을 그대로 덮개 안에 ---------- */
+async function cdThanksOpen(){
+  if(!supaOn()){ await uiAlert("서버 설정이 없는 빌드입니다", "감사 문자는 서버가 있어야 합니다.", "warn"); return; }
+  if(!await adminGate("감사 문자")) return;
+  if(!TH) TH = { date: todayStr(), items:{}, queue:[], tab:"make", busy:{}, sendAt:"", adv:false, run:null, stop:false, qf:"all" };
+  TH.date = (view.form && view.form.date) || todayStr();
+  TH.sendAt = TH.sendAt || (shiftDate(todayStr(), 1) + "T" + thCfg().hour);
+  view.cdThanks = true; render(); await thLoadQueue(); render();
+}
+function cdThanksClose(){ if(thRunning()){ showToast("AI 가 글을 짓는 중입니다 — 끝나거나 중단한 뒤에 닫으세요"); return; } view.cdThanks = false; render(); }
+function cdThanksHtml(){
+  return '<div class="overlay" onclick="cdThanksClose()"><div class="sheet sheet-tall sheet-wide cd-th" onclick="event.stopPropagation()">' + sheetHead("감사 문자") +
+    '<div class="searchbox" style="flex:1; min-height:0; overflow:auto">' + sheetThanks() + '</div>' +
+    '<div class="sheet-actions"><button class="btn primary" onclick="cdThanksClose()">완료</button></div></div></div>';
+}
+/* ---------- 퇴근 — '수고하셨습니다' + 폭죽 뒤 잠금 화면으로(09-24 재아) ---------- */
+function cdLeave(){
+  view.cdStaff = false; view.cdThanks = false;
+  var ov = document.createElement("div"); ov.className = "cd-bye";
+  ov.innerHTML = '<canvas></canvas><div class="cd-bye-t"><b>수고하셨습니다</b><small>오늘도 고맙습니다. 푹 쉬세요.</small></div>';
+  document.body.appendChild(ov);
+  var c = ov.querySelector("canvas"), g = c.getContext("2d"), W = c.width = window.innerWidth, H = c.height = window.innerHeight, parts = [], t0 = Date.now();
+  var still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var cols = ["#E5C15C", "#F28C6B", "#8FC6E8", "#B5E39B", "#FFFFFF", "#F5A3C7"];
+  function burst(x, y){ for(var i = 0; i < 90; i++){ var a = Math.random() * Math.PI * 2, v = 2 + Math.random() * 5; parts.push({x:x, y:y, vx:Math.cos(a) * v, vy:Math.sin(a) * v, life:60 + Math.random() * 30, c:cols[i % cols.length]}); } }
+  if(!still){ burst(W * 0.3, H * 0.35); setTimeout(function(){ burst(W * 0.7, H * 0.3); }, 350); setTimeout(function(){ burst(W * 0.5, H * 0.2); }, 700); setTimeout(function(){ burst(W * 0.2, H * 0.25); }, 1050); setTimeout(function(){ burst(W * 0.8, H * 0.4); }, 1350); }
+  (function tick(){
+    if(!ov.parentNode) return;
+    g.fillStyle = "rgba(20,19,17,.18)"; g.fillRect(0, 0, W, H);   /* 옅은 덮기로 꼬리를 남김 */
+    parts.forEach(function(p){ p.x += p.vx; p.y += p.vy; p.vy += 0.06; p.vx *= 0.985; p.life--; g.globalAlpha = Math.min(1, Math.max(0, p.life / 45)); g.fillStyle = p.c; g.beginPath(); g.arc(p.x, p.y, 2.6, 0, Math.PI * 2); g.fill(); });   /* 3px 네모는 너무 옅었음 — 동그라미·끝까지 밝게 */
+    g.globalAlpha = 1; parts = parts.filter(function(p){ return p.life > 0; });
+    if(Date.now() - t0 < 3200) requestAnimationFrame(tick);
+  })();
+  logEvent("퇴근", (view.form && view.form.date) || todayStr());
+  setTimeout(function(){ ov.classList.add("out"); setTimeout(function(){ ov.remove(); view.form = null; lockNow(); }, 450); }, 3000);
 }
 /* ---------- 예약 내보내기(CSV, 09-20 재아) — 엑셀에서 바로 열림(UTF-8 BOM). 기간은 물어봄 ---------- */
 async function exportCsv(){
@@ -9760,6 +9841,8 @@ function sheetOwner(){
     item("openOwnerSetting('admin')", ICON.key, "PIN·보안 관리", "직원 PIN · 사장님 비밀번호 · 로그") +
     '</div></div>';
 }
+/* Esc: 퇴근하기 안의 작은 창부터 닫음(바로 퇴근하기 화면 전체가 닫히지 않게) */
+function cdEsc(){ if(HR && HR.pop && view.cdStaff){ HR.pop = null; render(); return true; } if(view.cdStaff){ cdStaffClose(); return true; } if(view.cdThanks){ cdThanksClose(); return true; } return false; }
 /* ---------- 감사 문자 (thanks_sms, 18차 재아) ----------
    다녀간 손님께 다음 날 보내는 짧은 감사 문자. **'방문' 으로 확인된 예약만** 대상(안 온 손님께는 안 감).
    글은 Gemini 가 예약 정보(이름·인원·룸/테이블·시간·요청·어린이·손님 메모)와 사장님 키워드(팔순·생일·회식·날씨…)로 만듭니다 —
@@ -10398,6 +10481,7 @@ function openSchedule(from){
 function openOverride(){ view.form={type:"ovr"}; view.ovrBulk = null; render(); }
 function closeSheet(){
   if(typeof thGuard === "function" && thGuard()) return;   /* 감사 문자 AI 진행 중엔 못 나감(09-20) */
+  view.cdStaff = false; view.cdThanks = false;
   if(view.form && view.form.page && view.form.back === "owner"){ view.form = {type:"owner", page:true}; render(); window.scrollTo(0,0); return; }
   if(view.form && view.form.page && view.form.back === "messages"){ view.form = {type:"messages", page:true, back:"owner"}; render(); window.scrollTo(0,0); return; }
   if(view.form && view.form.page && view.form.back === "guests"){ view.form = {type:"guests", page:true, back:"owner"}; render(); window.scrollTo(0,0); return; }
@@ -11323,7 +11407,7 @@ function sheetSchedule(){
   const rows = [1,2,3,4,5,6,0].map(i=>dayBlock(d.days[i], i, DOW[i], i===0?'sun':i===6?'sat':'')).join("")
              + dayBlock(d.holiday, 7, "공휴일", "sun");
   return `
-    ${sheetHead(d.isNew?"운영시간 수정":"운영시간 편집")}
+    ${sheetHead(d.isNew?"새 운영시간 (정한 날짜부터)":"운영시간 고치기")}
     <p class="f-note" style="margin:-6px 0 12px"><b>점심 경계</b>부터 저녁입니다(브레이크가 있으면 브레이크 시작). <b>접수 마감</b>은 마지막으로 입장을 받는 시각,
       <b>점유 '끝까지'</b>는 그 세션 끝까지 한 자리에 한 팀. 라스트오더는 주방 마감이라 별개입니다.</p>
     <label class="f"><div class="lb">적용 시작일</div>
@@ -11371,55 +11455,68 @@ async function delSchedule(from){
 }
 
 /* ---------- 임시 영업시간 · 휴무 ---------- */
+/* ---------- 휴무 · 공휴일 · 임시 영업 — 한 창(09-24 재아 '기능을 하나로') ----------
+   한 해의 특별한 날을 한 목록에: 공휴일(내장표·추가·제외), 임시 휴무, 임시 영업시간. 추가는 날짜(여러 날도) + 종류 하나.
+   저장은 모두 바로(예전에 공휴일만 설정 '적용하기' 를 거쳤던 것도 여기서는 바로) */
 function sheetOverride(){
-  const st = store().settings;
-  const list = (st.overrides||[]).slice().sort((a,b)=>a.date.localeCompare(b.date));
-  const rows = list.length ? list.map(o=>`
-    <div class="rowitem">
-      <span class="grow"><span class="t">${dateLabel(o.date)}
-        <span class="tag ${o.closed?'rust':'amber'}">${o.closed?"휴무":"임시 시간"}</span></span>
-        <span class="s">${o.closed?esc(o.note||"휴무")
-          :`${esc(o.open||"-")} ~ ${esc(o.close||"-")}${o.bs?` · 브레이크 ${esc(o.bs)} ~ ${esc(o.be)}`:""}${o.note?` · ${esc(o.note)}`:""}`}</span></span>
-      <button class="btn sm danger" onclick="delOverride('${o.date}')">삭제</button>
-    </div>`).join("") : `<div class="empty">등록된 임시 일정이 없습니다.</div>`;
-  const d = view.ovrDraft || {date:todayStr(), closed:true, open:"", close:"", bs:"", be:"", lo:"", note:""};
-  const base = hoursFor(d.date);
+  const st = store().settings, y = view.holYear || Number(todayStr().slice(0,4));
+  const ovr = {}; (st.overrides||[]).forEach(o=>{ if(o.date.slice(0,4)===String(y)) ovr[o.date] = o; });
+  const hol = {}; holidaysOfYear(y, st).forEach(h=>{ hol[h.date] = h.src; });
+  const off = (st.holidaysOff||[]).filter(d=>d.slice(0,4)===String(y));
+  const dates = Object.keys(Object.assign({}, ovr, hol)).concat(off).filter((d,i,a)=>a.indexOf(d)===i).sort();
+  const past = d => d < todayStr();
+  const rows = dates.length ? dates.map(d=>{
+    const o = ovr[d], h = hol[d], isOff = off.indexOf(d) >= 0 && !h;
+    const tags = (h ? `<span class="tag rust sm">공휴일</span>` : "") + (o ? (o.closed ? `<span class="tag sm">휴무</span>` : `<span class="tag amber sm">${esc(o.open||"-")}~${esc(o.close||"-")}</span>`) : "");
+    const note = o && o.note && !/^(임시 휴무|임시 운영시간)$/.test(o.note) ? esc(o.note) : (h === "내장" && !o ? "" : "");
+    return `<div class="rowitem hd-row ${past(d)?'past':''} ${isOff?'off':''}"><span class="hd-d">${esc(pkShort(d))}</span><span class="grow"><span class="t">${isOff?'<span class="tag sm">공휴일 해제됨</span>':tags}</span>${note?`<span class="s">${note}</span>`:""}</span>
+      ${isOff ? `<button class="btn sm ghost" onclick="restoreHolidayNow('${d}')">되돌리기</button>` : `<button class="btn sm ghost danger" onclick="delSpecialDay('${d}')">삭제</button>`}</div>`;
+  }).join("") : `<div class="empty">${y}년에 등록된 날이 없습니다.</div>`;
+  const d = view.ovrDraft || {from:todayStr(), to:todayStr(), kind:"closed"};
+  const base = hoursFor(d.from || todayStr());
+  const gap = holidayTableGap();
+  const kindBtn = (k, label) => `<button class="${d.kind===k?'on':''}" onclick="setOvr('kind','${k}')">${label}</button>`;
   return `
-    ${sheetHead("임시 영업시간 · 휴무")}
-    <div class="card" style="margin-bottom:14px">${rows}</div>
-    <div class="sect-title" style="margin-top:0">새로 추가</div>
-    <label class="f"><div class="lb">날짜</div>
-      <input type="date" value="${d.date}" onchange="setOvr('date',this.value)"></label>
-    <div class="seg" style="margin-bottom:12px">
-      <button class="${d.closed?'on':''}" onclick="setOvr('closed',true)">휴무</button>
-      <button class="${d.closed?'':'on'}" onclick="setOvr('closed',false)">시간 변경</button>
+    ${sheetHead("휴무 · 공휴일 · 임시 영업")}
+    <div class="hd-year"><button class="btn sm ghost" onclick="view.holYear=${y-1}; render()" aria-label="이전 해">‹</button><b>${y}년</b><button class="btn sm ghost" onclick="view.holYear=${y+1}; render()" aria-label="다음 해">›</button></div>
+    ${gap?`<div class="alert amber" style="margin:0 0 10px"><span class="ic">!</span><div><div class="a-t">${gap}년 공휴일이 아직 없습니다</div><div class="a-s">내장표는 2026~2027년까지입니다. 아래에서 '공휴일' 로 추가하세요(대체공휴일 포함).</div></div></div>`:""}
+    <div class="card hd-list" style="margin-bottom:14px">${rows}</div>
+    <div class="sect-title" style="margin-top:0">추가</div>
+    <div class="grid2">
+      <div class="f"><div class="lb">날짜</div><button type="button" class="sa-pick" onclick="uiRange('날짜 (여러 날이면 시작~끝)', view.ovrDraft ? view.ovrDraft.from : todayStr(), view.ovrDraft ? view.ovrDraft.to : todayStr(), {}).then(function(r){ if(r){ setOvr('from', r.from); setOvr('to', r.to || r.from); } })">${esc(pkRangeText(d.from, d.to))}</button></div>
+      <div class="f"><div class="lb">종류</div><div class="seg">${kindBtn("closed","휴무")}${kindBtn("hours","영업시간 변경")}${kindBtn("holiday","공휴일")}</div></div>
     </div>
-    ${d.closed?"":`
+    ${d.kind!=="hours"?"":`
       <div class="grid2">
-        <label class="f"><div class="lb">영업 시작</div>
-          <input type="time" value="${d.open||base.open}" onchange="setOvr('open',this.value)"></label>
-        <label class="f"><div class="lb">영업 종료</div>
-          <input type="time" value="${d.close||base.close}" onchange="setOvr('close',this.value)"></label>
-        <label class="f"><div class="lb">브레이크 시작</div>
-          <input type="time" value="${d.noBreak?"":(d.bs!==undefined&&d.bs!==""?d.bs:base.bs)}" ${d.noBreak?"disabled":""} onchange="setOvr('bs',this.value)"></label>
-        <label class="f"><div class="lb">브레이크 종료</div>
-          <input type="time" value="${d.noBreak?"":(d.be!==undefined&&d.be!==""?d.be:base.be)}" ${d.noBreak?"disabled":""} onchange="setOvr('be',this.value)"></label>
+        <label class="f"><div class="lb">영업 시작</div><input type="time" value="${d.open||base.open}" onchange="setOvr('open',this.value)"></label>
+        <label class="f"><div class="lb">영업 종료</div><input type="time" value="${d.close||base.close}" onchange="setOvr('close',this.value)"></label>
+        <label class="f"><div class="lb">브레이크 시작</div><input type="time" value="${d.noBreak?"":(d.bs!==undefined&&d.bs!==""?d.bs:base.bs)}" ${d.noBreak?"disabled":""} onchange="setOvr('bs',this.value)"></label>
+        <label class="f"><div class="lb">브레이크 종료</div><input type="time" value="${d.noBreak?"":(d.be!==undefined&&d.be!==""?d.be:base.be)}" ${d.noBreak?"disabled":""} onchange="setOvr('be',this.value)"></label>
       </div>
-      <label class="chk"><input type="checkbox" ${d.noBreak?"checked":""} onchange="setOvr('noBreak',this.checked)">
-        <span>브레이크타임 없음</span></label>
-      <label class="f"><div class="lb">라스트오더</div>
-        <input type="time" value="${d.noLo?"":(d.lo||base.lo)}" ${d.noLo?"disabled":""} onchange="setOvr('lo',this.value)"></label>
-      <label class="chk"><input type="checkbox" ${d.noLo?"checked":""} onchange="setOvr('noLo',this.checked)">
-        <span>라스트오더 없음</span></label>`}
-    <label class="f"><div class="lb">메모</div>
-      <input value="${esc(d.note||"")}" placeholder="예: 창립기념일 단축 영업" onchange="setOvr('note',this.value)"></label>
-    <label class="chk"><input type="checkbox" ${d.holiday || (d.holiday == null && isHoliday(d.date||todayStr())) ? "checked" : ""} onchange="setOvr('holiday',this.checked)">
-      <span>공휴일(빨간날)로도 표시 — 워크시프트 휴일 가산·달력 색에 반영</span></label>
+      <label class="chk"><input type="checkbox" ${d.noBreak?"checked":""} onchange="setOvr('noBreak',this.checked)"><span>브레이크타임 없음</span></label>
+      <label class="f"><div class="lb">라스트오더</div><input type="time" value="${d.noLo?"":(d.lo||base.lo)}" ${d.noLo?"disabled":""} onchange="setOvr('lo',this.value)"></label>
+      <label class="chk"><input type="checkbox" ${d.noLo?"checked":""} onchange="setOvr('noLo',this.checked)"><span>라스트오더 없음</span></label>`}
+    <label class="f"><div class="lb">메모</div><input value="${esc(d.note||"")}" placeholder="${d.kind==="holiday"?"예: 임시공휴일":"예: 창립기념일 단축 영업"}" onchange="setOvr('note',this.value)"></label>
+    ${d.kind==="holiday"?"":`<label class="chk"><input type="checkbox" ${d.holiday?"checked":""} onchange="setOvr('holiday',this.checked)"><span>공휴일(빨간날)로도 표시</span></label>`}
     <div class="sheet-actions">
       <button class="btn ghost" onclick="closeSheet()">닫기</button>
       <button class="btn primary" onclick="saveOverride()">추가</button>
     </div>
-    ${bulkOvrHtml()}`;
+    <div class="sect-title" style="margin-top:20px">공휴일 설정</div>
+    <label class="chk"><input type="checkbox" ${st.holidayMode!==false?"checked":""} onchange="hdSet('holidayMode', this.checked)"><span>공휴일은 공휴일 운영시간으로</span></label>
+    ${st.holidayMode!==false?`<label class="chk"><input type="checkbox" ${st.holidayAsWeekend!==false?"checked":""} onchange="hdSet('holidayAsWeekend', this.checked)"><span>코스 시간대에서 공휴일을 주말로</span></label>`:""}
+    <button type="button" class="sa-add" style="margin-top:16px" onclick="view.ovrBulkOpen=!view.ovrBulkOpen; render()">${view.ovrBulkOpen?"▲":"▼"} 여러 날 한 번에 넣기</button>
+    ${view.ovrBulkOpen ? bulkOvrHtml() : ""}`;
+}
+function hdSet(k, on){ const st = store().settings; st[k] = !!on; mirrorDraft(k); logEvent("설정 변경", k + " = " + !!on); saveData(); render(); }
+function restoreHolidayNow(d){ const st = store().settings; st.holidaysOff = (st.holidaysOff||[]).filter(x=>x!==d); mirrorDraft("holidaysOff"); saveData(); render(); }
+async function delSpecialDay(date){
+  const st = store().settings, o = (st.overrides||[]).find(x=>x.date===date), h = isHoliday(date);
+  if(!await uiConfirm("이 날을 삭제할까요?", pkShort(date) + " — " + [o ? (o.closed ? "휴무" : "임시 영업시간") : "", h ? "공휴일 표시" : ""].filter(Boolean).join(" · ") + " 을(를) 지웁니다", {ok:"삭제"})) return;
+  if(o){ st.overrides = st.overrides.filter(x=>x.date!==date); mirrorDraft("overrides"); }
+  if(h) setHolidayFlag(date, false);
+  logEvent("설정 변경", `특별한 날 삭제 ${date}`);
+  saveData(); render();
 }
 /* ---------- 임시 일정 일괄 등록 (8차-J, 재아 요청) ----------
    한 줄에 하나. `날짜 | 메모 | 내용`. 메모는 비워도 됩니다. 날짜는 2026-12-31 또는 2026-12-24~2026-12-26.
@@ -11651,24 +11748,29 @@ async function delBlock(bid){
   render();
 }
 function setOvr(k,v){
-  view.ovrDraft = {...(view.ovrDraft||{date:todayStr(),closed:true}), [k]:v};
+  view.ovrDraft = {...(view.ovrDraft||{from:todayStr(), to:todayStr(), kind:"closed"}), [k]:v};
   render();
 }
 async function saveOverride(){
   const st = store().settings;
-  const d = view.ovrDraft || {date:todayStr(), closed:true};
-  if(!d.date) return uiAlert("날짜를 정해주세요","","warn");
-  const base = hoursFor(d.date);
-  const rec = d.closed
-    ? {date:d.date, closed:true, note:d.note||"임시 휴무"}
-    : {date:d.date, closed:false, open:d.open||base.open, close:d.close||base.close,
-       bs:d.noBreak?"":(d.bs!==undefined?d.bs:base.bs), be:d.noBreak?"":(d.be!==undefined?d.be:base.be),
-       lo:d.noLo?"":(d.lo||base.lo), note:d.note||"임시 운영시간"};
-  st.overrides = [...(st.overrides||[]).filter(o=>o.date!==d.date), rec];
-  mirrorDraft("overrides");
-  if(d.holiday != null) setHolidayFlag(d.date, !!d.holiday);   /* 휴무 등록 때 공휴일 여부도 함께(재아 09-19) */
-  logEvent("설정 변경", `임시 일정 ${rec.date} ${rec.closed?"휴무":"시간변경"}`);
-  view.ovrDraft = null; saveData(); render();
+  const d = view.ovrDraft || {from:todayStr(), to:todayStr(), kind:"closed"};
+  const from = d.from || todayStr(), to = d.to || from;
+  const dates = []; for(let x = from; x <= to && dates.length < 62; x = shiftDate(x, 1)) dates.push(x);
+  if(d.kind === "holiday"){
+    dates.forEach(x=>setHolidayFlag(x, true));
+    if(d.note){ /* 공휴일 메모는 휴무 기록 없이 남길 곳이 없어 로그에만 */ logEvent("설정 변경", `공휴일 메모 ${from}~${to} ${d.note}`); }
+  }else{
+    const recs = dates.map(date=>{ const base = hoursFor(date); return d.kind === "closed"
+      ? {date, closed:true, note:d.note||"임시 휴무"}
+      : {date, closed:false, open:d.open||base.open, close:d.close||base.close,
+         bs:d.noBreak?"":(d.bs!==undefined?d.bs:base.bs), be:d.noBreak?"":(d.be!==undefined?d.be:base.be),
+         lo:d.noLo?"":(d.lo||base.lo), note:d.note||"임시 운영시간"}; });
+    st.overrides = (st.overrides||[]).filter(o=>dates.indexOf(o.date) < 0).concat(recs);
+    mirrorDraft("overrides");
+    if(d.holiday) dates.forEach(x=>setHolidayFlag(x, true));
+  }
+  logEvent("설정 변경", `특별한 날 ${from}${to!==from?"~"+to:""} ${d.kind==="closed"?"휴무":d.kind==="hours"?"시간변경":"공휴일"}`);
+  view.holYear = Number(from.slice(0,4)); view.ovrDraft = null; saveData(); render();
 }
 async function delOverride(date){
   if(!await uiConfirm("임시 일정을 삭제할까요?", dateLabel(date), {ok:"삭제"})) return;
@@ -13920,6 +14022,7 @@ document.addEventListener("keydown", function(e){
     if(WZ && !WZ.done){ e.preventDefault(); closeWizard(); return; }
     if((typeof hrEsc === "function" && hrEsc()) || (typeof gsEsc === "function" && gsEsc())){ e.preventDefault(); return; }   /* 워크시프트·손님 화면 안의 작은 창부터 */
     if(typeof thEsc === "function" && thEsc()){ e.preventDefault(); return; }
+    if(typeof cdEsc === "function" && cdEsc()){ e.preventDefault(); return; }   /* 퇴근하기 안의 워크시프트·감사 문자 팝업 */
     if(view.form && view.form.type === "site" && SA && (SA.postZoom != null || SA.postPreview)){ e.preventDefault(); SA.postZoom = null; SA.postPreview = null; render(); return; }
     if(view.form){ e.preventDefault(); closeSheet(); }
     else if(view.moreOpen){ closeMore(); }

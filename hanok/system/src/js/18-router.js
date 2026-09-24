@@ -549,6 +549,7 @@ document.addEventListener("keydown", function(e){
     if(WZ && !WZ.done){ e.preventDefault(); closeWizard(); return; }
     if((typeof hrEsc === "function" && hrEsc()) || (typeof gsEsc === "function" && gsEsc())){ e.preventDefault(); return; }   /* 워크시프트·손님 화면 안의 작은 창부터 */
     if(typeof thEsc === "function" && thEsc()){ e.preventDefault(); return; }
+    if(typeof cdEsc === "function" && cdEsc()){ e.preventDefault(); return; }   /* 퇴근하기 안의 워크시프트·감사 문자 팝업 */
     if(view.form && view.form.type === "site" && SA && (SA.postZoom != null || SA.postPreview)){ e.preventDefault(); SA.postZoom = null; SA.postPreview = null; render(); return; }
     if(view.form){ e.preventDefault(); closeSheet(); }
     else if(view.moreOpen){ closeMore(); }

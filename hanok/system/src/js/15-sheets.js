@@ -230,6 +230,7 @@ function openSchedule(from){
 function openOverride(){ view.form={type:"ovr"}; view.ovrBulk = null; render(); }
 function closeSheet(){
   if(typeof thGuard === "function" && thGuard()) return;   /* 감사 문자 AI 진행 중엔 못 나감(09-20) */
+  view.cdStaff = false; view.cdThanks = false;
   if(view.form && view.form.page && view.form.back === "owner"){ view.form = {type:"owner", page:true}; render(); window.scrollTo(0,0); return; }
   if(view.form && view.form.page && view.form.back === "messages"){ view.form = {type:"messages", page:true, back:"owner"}; render(); window.scrollTo(0,0); return; }
   if(view.form && view.form.page && view.form.back === "guests"){ view.form = {type:"guests", page:true, back:"owner"}; render(); window.scrollTo(0,0); return; }
@@ -1155,7 +1156,7 @@ function sheetSchedule(){
   const rows = [1,2,3,4,5,6,0].map(i=>dayBlock(d.days[i], i, DOW[i], i===0?'sun':i===6?'sat':'')).join("")
              + dayBlock(d.holiday, 7, "공휴일", "sun");
   return `
-    ${sheetHead(d.isNew?"운영시간 수정":"운영시간 편집")}
+    ${sheetHead(d.isNew?"새 운영시간 (정한 날짜부터)":"운영시간 고치기")}
     <p class="f-note" style="margin:-6px 0 12px"><b>점심 경계</b>부터 저녁입니다(브레이크가 있으면 브레이크 시작). <b>접수 마감</b>은 마지막으로 입장을 받는 시각,
       <b>점유 '끝까지'</b>는 그 세션 끝까지 한 자리에 한 팀. 라스트오더는 주방 마감이라 별개입니다.</p>
     <label class="f"><div class="lb">적용 시작일</div>
@@ -1203,55 +1204,68 @@ async function delSchedule(from){
 }
 
 /* ---------- 임시 영업시간 · 휴무 ---------- */
+/* ---------- 휴무 · 공휴일 · 임시 영업 — 한 창(09-24 재아 '기능을 하나로') ----------
+   한 해의 특별한 날을 한 목록에: 공휴일(내장표·추가·제외), 임시 휴무, 임시 영업시간. 추가는 날짜(여러 날도) + 종류 하나.
+   저장은 모두 바로(예전에 공휴일만 설정 '적용하기' 를 거쳤던 것도 여기서는 바로) */
 function sheetOverride(){
-  const st = store().settings;
-  const list = (st.overrides||[]).slice().sort((a,b)=>a.date.localeCompare(b.date));
-  const rows = list.length ? list.map(o=>`
-    <div class="rowitem">
-      <span class="grow"><span class="t">${dateLabel(o.date)}
-        <span class="tag ${o.closed?'rust':'amber'}">${o.closed?"휴무":"임시 시간"}</span></span>
-        <span class="s">${o.closed?esc(o.note||"휴무")
-          :`${esc(o.open||"-")} ~ ${esc(o.close||"-")}${o.bs?` · 브레이크 ${esc(o.bs)} ~ ${esc(o.be)}`:""}${o.note?` · ${esc(o.note)}`:""}`}</span></span>
-      <button class="btn sm danger" onclick="delOverride('${o.date}')">삭제</button>
-    </div>`).join("") : `<div class="empty">등록된 임시 일정이 없습니다.</div>`;
-  const d = view.ovrDraft || {date:todayStr(), closed:true, open:"", close:"", bs:"", be:"", lo:"", note:""};
-  const base = hoursFor(d.date);
+  const st = store().settings, y = view.holYear || Number(todayStr().slice(0,4));
+  const ovr = {}; (st.overrides||[]).forEach(o=>{ if(o.date.slice(0,4)===String(y)) ovr[o.date] = o; });
+  const hol = {}; holidaysOfYear(y, st).forEach(h=>{ hol[h.date] = h.src; });
+  const off = (st.holidaysOff||[]).filter(d=>d.slice(0,4)===String(y));
+  const dates = Object.keys(Object.assign({}, ovr, hol)).concat(off).filter((d,i,a)=>a.indexOf(d)===i).sort();
+  const past = d => d < todayStr();
+  const rows = dates.length ? dates.map(d=>{
+    const o = ovr[d], h = hol[d], isOff = off.indexOf(d) >= 0 && !h;
+    const tags = (h ? `<span class="tag rust sm">공휴일</span>` : "") + (o ? (o.closed ? `<span class="tag sm">휴무</span>` : `<span class="tag amber sm">${esc(o.open||"-")}~${esc(o.close||"-")}</span>`) : "");
+    const note = o && o.note && !/^(임시 휴무|임시 운영시간)$/.test(o.note) ? esc(o.note) : (h === "내장" && !o ? "" : "");
+    return `<div class="rowitem hd-row ${past(d)?'past':''} ${isOff?'off':''}"><span class="hd-d">${esc(pkShort(d))}</span><span class="grow"><span class="t">${isOff?'<span class="tag sm">공휴일 해제됨</span>':tags}</span>${note?`<span class="s">${note}</span>`:""}</span>
+      ${isOff ? `<button class="btn sm ghost" onclick="restoreHolidayNow('${d}')">되돌리기</button>` : `<button class="btn sm ghost danger" onclick="delSpecialDay('${d}')">삭제</button>`}</div>`;
+  }).join("") : `<div class="empty">${y}년에 등록된 날이 없습니다.</div>`;
+  const d = view.ovrDraft || {from:todayStr(), to:todayStr(), kind:"closed"};
+  const base = hoursFor(d.from || todayStr());
+  const gap = holidayTableGap();
+  const kindBtn = (k, label) => `<button class="${d.kind===k?'on':''}" onclick="setOvr('kind','${k}')">${label}</button>`;
   return `
-    ${sheetHead("임시 영업시간 · 휴무")}
-    <div class="card" style="margin-bottom:14px">${rows}</div>
-    <div class="sect-title" style="margin-top:0">새로 추가</div>
-    <label class="f"><div class="lb">날짜</div>
-      <input type="date" value="${d.date}" onchange="setOvr('date',this.value)"></label>
-    <div class="seg" style="margin-bottom:12px">
-      <button class="${d.closed?'on':''}" onclick="setOvr('closed',true)">휴무</button>
-      <button class="${d.closed?'':'on'}" onclick="setOvr('closed',false)">시간 변경</button>
+    ${sheetHead("휴무 · 공휴일 · 임시 영업")}
+    <div class="hd-year"><button class="btn sm ghost" onclick="view.holYear=${y-1}; render()" aria-label="이전 해">‹</button><b>${y}년</b><button class="btn sm ghost" onclick="view.holYear=${y+1}; render()" aria-label="다음 해">›</button></div>
+    ${gap?`<div class="alert amber" style="margin:0 0 10px"><span class="ic">!</span><div><div class="a-t">${gap}년 공휴일이 아직 없습니다</div><div class="a-s">내장표는 2026~2027년까지입니다. 아래에서 '공휴일' 로 추가하세요(대체공휴일 포함).</div></div></div>`:""}
+    <div class="card hd-list" style="margin-bottom:14px">${rows}</div>
+    <div class="sect-title" style="margin-top:0">추가</div>
+    <div class="grid2">
+      <div class="f"><div class="lb">날짜</div><button type="button" class="sa-pick" onclick="uiRange('날짜 (여러 날이면 시작~끝)', view.ovrDraft ? view.ovrDraft.from : todayStr(), view.ovrDraft ? view.ovrDraft.to : todayStr(), {}).then(function(r){ if(r){ setOvr('from', r.from); setOvr('to', r.to || r.from); } })">${esc(pkRangeText(d.from, d.to))}</button></div>
+      <div class="f"><div class="lb">종류</div><div class="seg">${kindBtn("closed","휴무")}${kindBtn("hours","영업시간 변경")}${kindBtn("holiday","공휴일")}</div></div>
     </div>
-    ${d.closed?"":`
+    ${d.kind!=="hours"?"":`
       <div class="grid2">
-        <label class="f"><div class="lb">영업 시작</div>
-          <input type="time" value="${d.open||base.open}" onchange="setOvr('open',this.value)"></label>
-        <label class="f"><div class="lb">영업 종료</div>
-          <input type="time" value="${d.close||base.close}" onchange="setOvr('close',this.value)"></label>
-        <label class="f"><div class="lb">브레이크 시작</div>
-          <input type="time" value="${d.noBreak?"":(d.bs!==undefined&&d.bs!==""?d.bs:base.bs)}" ${d.noBreak?"disabled":""} onchange="setOvr('bs',this.value)"></label>
-        <label class="f"><div class="lb">브레이크 종료</div>
-          <input type="time" value="${d.noBreak?"":(d.be!==undefined&&d.be!==""?d.be:base.be)}" ${d.noBreak?"disabled":""} onchange="setOvr('be',this.value)"></label>
+        <label class="f"><div class="lb">영업 시작</div><input type="time" value="${d.open||base.open}" onchange="setOvr('open',this.value)"></label>
+        <label class="f"><div class="lb">영업 종료</div><input type="time" value="${d.close||base.close}" onchange="setOvr('close',this.value)"></label>
+        <label class="f"><div class="lb">브레이크 시작</div><input type="time" value="${d.noBreak?"":(d.bs!==undefined&&d.bs!==""?d.bs:base.bs)}" ${d.noBreak?"disabled":""} onchange="setOvr('bs',this.value)"></label>
+        <label class="f"><div class="lb">브레이크 종료</div><input type="time" value="${d.noBreak?"":(d.be!==undefined&&d.be!==""?d.be:base.be)}" ${d.noBreak?"disabled":""} onchange="setOvr('be',this.value)"></label>
       </div>
-      <label class="chk"><input type="checkbox" ${d.noBreak?"checked":""} onchange="setOvr('noBreak',this.checked)">
-        <span>브레이크타임 없음</span></label>
-      <label class="f"><div class="lb">라스트오더</div>
-        <input type="time" value="${d.noLo?"":(d.lo||base.lo)}" ${d.noLo?"disabled":""} onchange="setOvr('lo',this.value)"></label>
-      <label class="chk"><input type="checkbox" ${d.noLo?"checked":""} onchange="setOvr('noLo',this.checked)">
-        <span>라스트오더 없음</span></label>`}
-    <label class="f"><div class="lb">메모</div>
-      <input value="${esc(d.note||"")}" placeholder="예: 창립기념일 단축 영업" onchange="setOvr('note',this.value)"></label>
-    <label class="chk"><input type="checkbox" ${d.holiday || (d.holiday == null && isHoliday(d.date||todayStr())) ? "checked" : ""} onchange="setOvr('holiday',this.checked)">
-      <span>공휴일(빨간날)로도 표시 — 워크시프트 휴일 가산·달력 색에 반영</span></label>
+      <label class="chk"><input type="checkbox" ${d.noBreak?"checked":""} onchange="setOvr('noBreak',this.checked)"><span>브레이크타임 없음</span></label>
+      <label class="f"><div class="lb">라스트오더</div><input type="time" value="${d.noLo?"":(d.lo||base.lo)}" ${d.noLo?"disabled":""} onchange="setOvr('lo',this.value)"></label>
+      <label class="chk"><input type="checkbox" ${d.noLo?"checked":""} onchange="setOvr('noLo',this.checked)"><span>라스트오더 없음</span></label>`}
+    <label class="f"><div class="lb">메모</div><input value="${esc(d.note||"")}" placeholder="${d.kind==="holiday"?"예: 임시공휴일":"예: 창립기념일 단축 영업"}" onchange="setOvr('note',this.value)"></label>
+    ${d.kind==="holiday"?"":`<label class="chk"><input type="checkbox" ${d.holiday?"checked":""} onchange="setOvr('holiday',this.checked)"><span>공휴일(빨간날)로도 표시</span></label>`}
     <div class="sheet-actions">
       <button class="btn ghost" onclick="closeSheet()">닫기</button>
       <button class="btn primary" onclick="saveOverride()">추가</button>
     </div>
-    ${bulkOvrHtml()}`;
+    <div class="sect-title" style="margin-top:20px">공휴일 설정</div>
+    <label class="chk"><input type="checkbox" ${st.holidayMode!==false?"checked":""} onchange="hdSet('holidayMode', this.checked)"><span>공휴일은 공휴일 운영시간으로</span></label>
+    ${st.holidayMode!==false?`<label class="chk"><input type="checkbox" ${st.holidayAsWeekend!==false?"checked":""} onchange="hdSet('holidayAsWeekend', this.checked)"><span>코스 시간대에서 공휴일을 주말로</span></label>`:""}
+    <button type="button" class="sa-add" style="margin-top:16px" onclick="view.ovrBulkOpen=!view.ovrBulkOpen; render()">${view.ovrBulkOpen?"▲":"▼"} 여러 날 한 번에 넣기</button>
+    ${view.ovrBulkOpen ? bulkOvrHtml() : ""}`;
+}
+function hdSet(k, on){ const st = store().settings; st[k] = !!on; mirrorDraft(k); logEvent("설정 변경", k + " = " + !!on); saveData(); render(); }
+function restoreHolidayNow(d){ const st = store().settings; st.holidaysOff = (st.holidaysOff||[]).filter(x=>x!==d); mirrorDraft("holidaysOff"); saveData(); render(); }
+async function delSpecialDay(date){
+  const st = store().settings, o = (st.overrides||[]).find(x=>x.date===date), h = isHoliday(date);
+  if(!await uiConfirm("이 날을 삭제할까요?", pkShort(date) + " — " + [o ? (o.closed ? "휴무" : "임시 영업시간") : "", h ? "공휴일 표시" : ""].filter(Boolean).join(" · ") + " 을(를) 지웁니다", {ok:"삭제"})) return;
+  if(o){ st.overrides = st.overrides.filter(x=>x.date!==date); mirrorDraft("overrides"); }
+  if(h) setHolidayFlag(date, false);
+  logEvent("설정 변경", `특별한 날 삭제 ${date}`);
+  saveData(); render();
 }
 /* ---------- 임시 일정 일괄 등록 (8차-J, 재아 요청) ----------
    한 줄에 하나. `날짜 | 메모 | 내용`. 메모는 비워도 됩니다. 날짜는 2026-12-31 또는 2026-12-24~2026-12-26.
@@ -1483,24 +1497,29 @@ async function delBlock(bid){
   render();
 }
 function setOvr(k,v){
-  view.ovrDraft = {...(view.ovrDraft||{date:todayStr(),closed:true}), [k]:v};
+  view.ovrDraft = {...(view.ovrDraft||{from:todayStr(), to:todayStr(), kind:"closed"}), [k]:v};
   render();
 }
 async function saveOverride(){
   const st = store().settings;
-  const d = view.ovrDraft || {date:todayStr(), closed:true};
-  if(!d.date) return uiAlert("날짜를 정해주세요","","warn");
-  const base = hoursFor(d.date);
-  const rec = d.closed
-    ? {date:d.date, closed:true, note:d.note||"임시 휴무"}
-    : {date:d.date, closed:false, open:d.open||base.open, close:d.close||base.close,
-       bs:d.noBreak?"":(d.bs!==undefined?d.bs:base.bs), be:d.noBreak?"":(d.be!==undefined?d.be:base.be),
-       lo:d.noLo?"":(d.lo||base.lo), note:d.note||"임시 운영시간"};
-  st.overrides = [...(st.overrides||[]).filter(o=>o.date!==d.date), rec];
-  mirrorDraft("overrides");
-  if(d.holiday != null) setHolidayFlag(d.date, !!d.holiday);   /* 휴무 등록 때 공휴일 여부도 함께(재아 09-19) */
-  logEvent("설정 변경", `임시 일정 ${rec.date} ${rec.closed?"휴무":"시간변경"}`);
-  view.ovrDraft = null; saveData(); render();
+  const d = view.ovrDraft || {from:todayStr(), to:todayStr(), kind:"closed"};
+  const from = d.from || todayStr(), to = d.to || from;
+  const dates = []; for(let x = from; x <= to && dates.length < 62; x = shiftDate(x, 1)) dates.push(x);
+  if(d.kind === "holiday"){
+    dates.forEach(x=>setHolidayFlag(x, true));
+    if(d.note){ /* 공휴일 메모는 휴무 기록 없이 남길 곳이 없어 로그에만 */ logEvent("설정 변경", `공휴일 메모 ${from}~${to} ${d.note}`); }
+  }else{
+    const recs = dates.map(date=>{ const base = hoursFor(date); return d.kind === "closed"
+      ? {date, closed:true, note:d.note||"임시 휴무"}
+      : {date, closed:false, open:d.open||base.open, close:d.close||base.close,
+         bs:d.noBreak?"":(d.bs!==undefined?d.bs:base.bs), be:d.noBreak?"":(d.be!==undefined?d.be:base.be),
+         lo:d.noLo?"":(d.lo||base.lo), note:d.note||"임시 운영시간"}; });
+    st.overrides = (st.overrides||[]).filter(o=>dates.indexOf(o.date) < 0).concat(recs);
+    mirrorDraft("overrides");
+    if(d.holiday) dates.forEach(x=>setHolidayFlag(x, true));
+  }
+  logEvent("설정 변경", `특별한 날 ${from}${to!==from?"~"+to:""} ${d.kind==="closed"?"휴무":d.kind==="hours"?"시간변경":"공휴일"}`);
+  view.holYear = Number(from.slice(0,4)); view.ovrDraft = null; saveData(); render();
 }
 async function delOverride(date){
   if(!await uiConfirm("임시 일정을 삭제할까요?", dateLabel(date), {ok:"삭제"})) return;

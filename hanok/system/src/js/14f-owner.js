@@ -39,27 +39,27 @@ async function openCloseDay(date){
 }
 function sheetCloseDay(){
   var today = (view.form && view.form.date) || todayStr();
-  /* 그날 예약 전부(확정·방문·노쇼) — 누른 건 사라지지 않고 검게 표시된 채 남음(재아 09-20) */
+  /* 그날 예약 전부(확정·방문·노쇼) — 누른 건 사라지지 않고 검게 표시된 채 남음. 한 번 더 누르면 풀림(09-24 재아) */
   var all = store().reservations.filter(function(r){ return r.date === today && (r.status === "확정" || r.status === "방문" || r.status === "노쇼"); }).sort(function(a,b){ return a.time.localeCompare(b.time); });
   var left = all.filter(function(r){ return r.status === "확정"; });
-  var rows = all.map(function(r){ return '<div class="rowitem cd-row s-' + r.status + '"><span class="time-col">' + esc(hm(r.time)) + '</span><span class="grow"><span class="t">' + esc(r.name) + tierTag(r) + groupTag(r) + '</span><span class="s">' + esc(pplText(r)) + ' · ' + esc(resSeatLabel(r)) + '</span></span>' +
-    '<span class="btn-row"><button class="btn sm cd-v ' + (r.status === "방문" ? "on" : "ghost") + '" onclick="cdMark(\'' + r.id + '\', \'방문\')">방문</button><button class="btn sm cd-n ' + (r.status === "노쇼" ? "on" : "ghost") + '" onclick="cdMark(\'' + r.id + '\', \'노쇼\')">노쇼</button></span></div>'; }).join("");
+  var rows = all.map(function(r){ return '<div class="rowitem cd-row s-' + r.status + '"><span class="time-col">' + esc(hm(r.time)) + '</span><span class="grow"><span class="t">' + tierTag(r) + groupTag(r) + esc(r.name) + '</span><span class="s">' + esc(pplText(r)) + ' · ' + seatKindText(r) + '</span></span>' +   /* 자리는 룸/테이블만(09-24) */
+    '<span class="btn-row"><button class="btn sm cd-v ' + (r.status === "방문" ? "on" : "ghost") + '" onclick="cdMark(\'' + r.id + '\', \'방문\')">방문</button><button class="btn sm cd-ns ' + (r.status === "노쇼" ? "on" : "ghost") + '" onclick="cdMark(\'' + r.id + '\', \'노쇼\')">노쇼</button></span></div>'; }).join("");
   var done = left.length === 0;
+  var step = function(n, ok, title, right, body){ return '<div class="cd-step' + (ok ? ' done' : '') + '"><div class="cd-n">' + n + '</div><div class="cd-b"><div class="cd-bh"><b>' + title + '</b>' + (right || '') + '</div>' + (body || '') + '</div></div>'; };
   return '<div class="cd-wrap">' +
-    '<div class="cd-hello"><b>' + (today === todayStr() ? "오늘도 고생 많으셨습니다." : dateLabel(today) + " 정리") + '</b><small>' + esc(dateLabel(today)) + ' · 문 닫기 전에 세 가지만 정리하면 내일 아침이 편합니다.</small></div>' +
-    '<div class="cd-step ' + (done ? "done" : "") + '"><div class="cd-n">1</div><div class="cd-b"><b>손님 방문 처리</b>' +
-      (all.length ? '<small>' + (done ? '예약이 모두 정리됐습니다.' : '아직 \'확정\' 으로 남은 ' + left.length + '건 — 온 손님은 방문, 안 온 손님은 노쇼. 감사 문자는 방문으로 표시한 손님께만 갑니다.') + '</small>' +
-        (done ? '' : '<div class="btn-row" style="margin-top:8px"><button class="btn sm primary" onclick="cdMarkAll()">남은 ' + left.length + '건 전부 방문</button></div>') +
-        '<div class="card searchbox" style="margin-top:8px">' + rows + '</div>' : '<small>이날 예약이 없습니다.</small>') + '</div></div>' +
-    '<div class="cd-step"><div class="cd-n">2</div><div class="cd-b"><b>근무 찍기</b><small>오늘 나온 직원의 근무를 워크시프트에 표시합니다. 정규대로면 ○ 한 번.</small><div class="btn-row" style="margin-top:8px"><button class="btn sm" onclick="openStaffPage()">워크시프트 열기</button></div></div></div>' +
-    '<div class="cd-step"><div class="cd-n">3</div><div class="cd-b"><b>감사 문자</b><small>방문 처리한 손님께 키워드를 넣고 \'AI 로 완성하기\' → \'예약발송하기\'. 내일 오전 11시에 나갑니다. 지금 안 해도 내일 아침 확인 목록에 남습니다.</small><div class="btn-row" style="margin-top:8px"><button class="btn sm" onclick="openThanksPage()">감사 문자 열기</button></div></div></div>' +
-    '<div class="cd-step"><div class="cd-n">4</div><div class="cd-b"><b>끝</b><small>다 했으면 닫고 퇴근하세요. 시스템은 켜 둬도 됩니다(TV 는 따로).</small><div class="btn-row" style="margin-top:8px"><button class="btn sm primary" onclick="closeSheet()">퇴근</button></div></div></div>' +
-    '</div>';
+    '<div class="cd-hello"><b>' + (today === todayStr() ? "오늘도 고생 많으셨습니다." : dateLabel(today) + " 정리") + '</b><small>' + esc(dateLabel(today)) + '</small></div>' +
+    step(1, done, "손님 방문 처리", done || !all.length ? '' : '<button class="btn sm primary" onclick="cdMarkAll()">남은 ' + left.length + '건 전부 방문</button>',
+      all.length ? '<div class="card searchbox" style="margin-top:8px">' + rows + '</div>' : '<small>이날 예약이 없습니다.</small>') +
+    step(2, false, "워크시프트", '<button class="btn sm" onclick="cdStaffOpen()">워크시프트 작성</button>') +
+    step(3, false, "감사 문자", '<button class="btn sm" onclick="cdThanksOpen()">감사 문자 작성</button>') +
+    step(4, false, "끝", '<button class="btn sm primary" onclick="cdLeave()">퇴근</button>') +
+    '</div>' + (view.cdStaff ? cdStaffHtml() : '') + (HR && HR.pop && view.cdStaff ? hrPopHtml() : '') + (view.cdThanks ? cdThanksHtml() : '');
 }
 async function cdMark(id, st){
-  var r = store().reservations.find(function(x){ return x.id === id; }); if(!r || r.status === st) return;
-  if(st === "노쇼" && !await uiConfirm("노쇼로 표시할까요?", r.name + " 손님 · " + hm(r.time), {ok:"노쇼", cancel:"취소", tone:"warn"})) return;
-  var before = deepClone(r); r.status = st; addChange(r, "상태", diffRes(before, r)); saveData(); render();
+  var r = store().reservations.find(function(x){ return x.id === id; }); if(!r) return;
+  var to = r.status === st ? "확정" : st;   /* 같은 걸 한 번 더 누르면 선택 해제 = 다시 '확정' */
+  if(to === "노쇼" && !await uiConfirm("노쇼로 표시할까요?", r.name + " 손님 · " + hm(r.time), {ok:"노쇼", cancel:"취소", tone:"warn"})) return;
+  var before = deepClone(r); r.status = to; addChange(r, "상태", diffRes(before, r)); saveData(); render();
 }
 async function cdMarkAll(){
   var today = (view.form && view.form.date) || todayStr();
@@ -68,6 +68,82 @@ async function cdMarkAll(){
   if(!await uiConfirm("남은 " + left.length + "건을 전부 방문으로 표시할까요?", "안 온 손님이 있으면 그 줄만 노쇼로 바꾸면 됩니다.", {ok:"전부 방문", cancel:"취소"})) return;
   left.forEach(function(r){ var before = deepClone(r); r.status = "방문"; addChange(r, "상태", diffRes(before, r)); });
   saveData(); render();
+}
+/* ---------- 퇴근하기 안의 '오늘 워크시프트' 팝업(09-24 재아) ----------
+   워크시프트 화면으로 넘어가지 않고 그 자리에서 오늘 줄만. 누르면 바로 저장(워크시프트 표와 같은 자료 attendance) */
+async function cdStaffOpen(){
+  if(!supaOn()){ await uiAlert("서버 설정이 없는 빌드입니다", "워크시프트는 서버가 있어야 합니다.", "warn"); return; }
+  if(!await adminGate("워크시프트")) return;
+  if(!HR) HR = { week: hrWeekStart(todayStr()), month: monthStr(), staff:[], att:{}, loaded:{}, cfg:null, loading:true, pop:null, edit:null, view:"week", slip:null, setup:false, retired:false };
+  view.cdStaff = true; HR.loading = true; render();
+  HR.week = hrWeekStart((view.form && view.form.date) || todayStr()); HR.month = ((view.form && view.form.date) || todayStr()).slice(0, 7);
+  await hrLoad(); render();
+}
+function cdStaffClose(){ view.cdStaff = false; if(HR) HR.pop = null; render(); }
+async function cdStaffQuick(id, status){
+  var d = (view.form && view.form.date) || todayStr(), s = HR.staff.find(function(x){ return x.id === id; }); if(!s) return;
+  var a = HR.att[id + "|" + d];
+  if(a && a.status === status){   /* 같은 걸 또 누르면 지움 */
+    try{ await sb("/rest/v1/attendance?id=eq." + encodeURIComponent(a.id), { method:"DELETE", prefer:"return=minimal" }); delete HR.att[id + "|" + d]; render(); }catch(e){ await uiAlert("지우지 못했습니다", e.message || String(e), "warn"); }
+    return;
+  }
+  var row = { id:"att_" + id + "_" + d, store:view.storeKey || "hanok", staff_id:id, date:d, status:status, start:"", end:"", break_min:0, spans:[], rate:1, memo:"", by:(SESSION && SESSION.who) || "" };
+  try{ await sb("/rest/v1/attendance?on_conflict=id", { method:"POST", body:row, prefer:"resolution=merge-duplicates,return=minimal" }); HR.att[id + "|" + d] = row; render(); }
+  catch(e){ await uiAlert("저장 실패", e.message || String(e), "warn"); }
+}
+function cdStaffHtml(){
+  var d = (view.form && view.form.date) || todayStr();
+  var body;
+  if(!HR || HR.loading) body = '<p class="muted" style="padding:16px 0">불러오는 중…</p>';
+  else if(HR.err) body = '<p class="f-note rust">불러오지 못했습니다: ' + esc(HR.err) + '</p>';
+  else {
+    var list = HR.staff.filter(function(s){ return s.active !== false; });
+    body = hrGroups(list).map(function(g){ return '<div class="cd-sgrp">' + esc(g.role) + '</div>' + g.list.map(function(s){
+      var a = HR.att[s.id + "|" + d], duty = hrOnDuty(s, d), st = a ? a.status : "", h = a ? hrRound(hrHours(s, a)) : 0;
+      var b = function(k, label){ return '<button class="btn sm cd-sb' + (st === k ? ' on' : '') + '" onclick="cdStaffQuick(\'' + s.id + '\', \'' + k + '\')">' + label + '</button>'; };
+      return '<div class="rowitem cd-srow"><span class="grow"><span class="t">' + esc(hrLabel(s)) + '</span><span class="s">' + (duty ? '정규 ' + esc(hrSchedAt(s, d).spans.map(hrSpanText).join(" · ")) : '오늘 정규 근무 없음') + (st ? ' · ' + (h ? h + '시간' : st) : '') + '</span></span>' +
+        '<span class="btn-row">' + b("정규", "○ 정규") + '<button class="btn sm cd-sb' + (st === "변형" ? ' on' : '') + '" onclick="hrCell(\'' + s.id + '\', \'' + d + '\')">△ 다른 시간</button>' + b("결근", "× 결근") + b("휴무", "– 휴무") + '</span></div>';
+    }).join(""); }).join("") || '<p class="muted">직원이 없습니다.</p>';
+  }
+  return '<div class="overlay" onclick="cdStaffClose()"><div class="sheet sheet-tall" onclick="event.stopPropagation()">' + sheetHead("워크시프트 · " + dateLabel(d)) +
+    '<div class="searchbox" style="flex:1; min-height:0; overflow:auto">' + body + '</div>' +
+    '<div class="sheet-actions"><button class="btn primary" onclick="cdStaffClose()">완료</button></div></div></div>';
+}
+/* ---------- 퇴근하기 안의 감사 문자 팝업 — 화면이 바뀌면 퇴근 순서를 잃어서(09-24 재아). 감사 문자 화면(14g)을 그대로 덮개 안에 ---------- */
+async function cdThanksOpen(){
+  if(!supaOn()){ await uiAlert("서버 설정이 없는 빌드입니다", "감사 문자는 서버가 있어야 합니다.", "warn"); return; }
+  if(!await adminGate("감사 문자")) return;
+  if(!TH) TH = { date: todayStr(), items:{}, queue:[], tab:"make", busy:{}, sendAt:"", adv:false, run:null, stop:false, qf:"all" };
+  TH.date = (view.form && view.form.date) || todayStr();
+  TH.sendAt = TH.sendAt || (shiftDate(todayStr(), 1) + "T" + thCfg().hour);
+  view.cdThanks = true; render(); await thLoadQueue(); render();
+}
+function cdThanksClose(){ if(thRunning()){ showToast("AI 가 글을 짓는 중입니다 — 끝나거나 중단한 뒤에 닫으세요"); return; } view.cdThanks = false; render(); }
+function cdThanksHtml(){
+  return '<div class="overlay" onclick="cdThanksClose()"><div class="sheet sheet-tall sheet-wide cd-th" onclick="event.stopPropagation()">' + sheetHead("감사 문자") +
+    '<div class="searchbox" style="flex:1; min-height:0; overflow:auto">' + sheetThanks() + '</div>' +
+    '<div class="sheet-actions"><button class="btn primary" onclick="cdThanksClose()">완료</button></div></div></div>';
+}
+/* ---------- 퇴근 — '수고하셨습니다' + 폭죽 뒤 잠금 화면으로(09-24 재아) ---------- */
+function cdLeave(){
+  view.cdStaff = false; view.cdThanks = false;
+  var ov = document.createElement("div"); ov.className = "cd-bye";
+  ov.innerHTML = '<canvas></canvas><div class="cd-bye-t"><b>수고하셨습니다</b><small>오늘도 고맙습니다. 푹 쉬세요.</small></div>';
+  document.body.appendChild(ov);
+  var c = ov.querySelector("canvas"), g = c.getContext("2d"), W = c.width = window.innerWidth, H = c.height = window.innerHeight, parts = [], t0 = Date.now();
+  var still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var cols = ["#E5C15C", "#F28C6B", "#8FC6E8", "#B5E39B", "#FFFFFF", "#F5A3C7"];
+  function burst(x, y){ for(var i = 0; i < 90; i++){ var a = Math.random() * Math.PI * 2, v = 2 + Math.random() * 5; parts.push({x:x, y:y, vx:Math.cos(a) * v, vy:Math.sin(a) * v, life:60 + Math.random() * 30, c:cols[i % cols.length]}); } }
+  if(!still){ burst(W * 0.3, H * 0.35); setTimeout(function(){ burst(W * 0.7, H * 0.3); }, 350); setTimeout(function(){ burst(W * 0.5, H * 0.2); }, 700); setTimeout(function(){ burst(W * 0.2, H * 0.25); }, 1050); setTimeout(function(){ burst(W * 0.8, H * 0.4); }, 1350); }
+  (function tick(){
+    if(!ov.parentNode) return;
+    g.fillStyle = "rgba(20,19,17,.18)"; g.fillRect(0, 0, W, H);   /* 옅은 덮기로 꼬리를 남김 */
+    parts.forEach(function(p){ p.x += p.vx; p.y += p.vy; p.vy += 0.06; p.vx *= 0.985; p.life--; g.globalAlpha = Math.min(1, Math.max(0, p.life / 45)); g.fillStyle = p.c; g.beginPath(); g.arc(p.x, p.y, 2.6, 0, Math.PI * 2); g.fill(); });   /* 3px 네모는 너무 옅었음 — 동그라미·끝까지 밝게 */
+    g.globalAlpha = 1; parts = parts.filter(function(p){ return p.life > 0; });
+    if(Date.now() - t0 < 3200) requestAnimationFrame(tick);
+  })();
+  logEvent("퇴근", (view.form && view.form.date) || todayStr());
+  setTimeout(function(){ ov.classList.add("out"); setTimeout(function(){ ov.remove(); view.form = null; lockNow(); }, 450); }, 3000);
 }
 /* ---------- 예약 내보내기(CSV, 09-20 재아) — 엑셀에서 바로 열림(UTF-8 BOM). 기간은 물어봄 ---------- */
 async function exportCsv(){
@@ -111,3 +187,5 @@ function sheetOwner(){
     item("openOwnerSetting('admin')", ICON.key, "PIN·보안 관리", "직원 PIN · 사장님 비밀번호 · 로그") +
     '</div></div>';
 }
+/* Esc: 퇴근하기 안의 작은 창부터 닫음(바로 퇴근하기 화면 전체가 닫히지 않게) */
+function cdEsc(){ if(HR && HR.pop && view.cdStaff){ HR.pop = null; render(); return true; } if(view.cdStaff){ cdStaffClose(); return true; } if(view.cdThanks){ cdThanksClose(); return true; } return false; }
