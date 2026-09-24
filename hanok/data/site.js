@@ -35,7 +35,8 @@ window.SITE_DEFAULT = {
     maxDays: 30,          /* 며칠 앞까지 */
     minAdults: 2,         /* 성인 몇 명부터 */
     maxPeople: 12,        /* 총 몇 명까지 (넘으면 전화 안내) */
-    roomMinAdults: 5,     /* 룸은 성인 몇 명부터 */
+    roomMinAdults: 5,     /* 룸 최소 인원 — 평일(성인) */
+    roomMinAdultsWeekend: 5,   /* 룸 최소 인원 — 주말·공휴일(성인) */
     limitMin: 5,          /* 시간 고른 뒤 몇 분 안에 마치기 */
     sameDay: false,       /* 당일 예약 — 켜면 오늘도 고름(서버는 patch_22차부터 오늘을 받음) */
     sameDayLeadH: 2       /* 당일이면 지금부터 몇 시간 뒤 시각부터 */

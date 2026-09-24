@@ -119,8 +119,29 @@ function renderLoadError(){
     <i>${esc(LOAD_ERROR)}</i>
   </div>`;
 }
+/* 팝업(MODAL)이 떠 있는 동안·닫힐 때도 화면 전체를 다시 그립니다. 그러면 아직 상태에 안 들어간 입력칸(예: 좌석 추가의 새 방 이름)이
+   기본값으로 돌아가 지워졌음(09-24, 숫자·날짜 팝업을 붙이며 발견). 그 동안만 id 있는 칸의 '친 값' 을 새 칸에 옮깁니다.
+   새로 그린 칸의 기본값이 전과 같을 때만 — 상태가 바뀌어 다른 값으로 그려진 칸은 건드리지 않음 */
+var LAST_MODAL_OPEN = false;
+function keepInputsSnap(){
+  var o = {}, list = document.querySelectorAll("#app input[id], #app textarea[id]");
+  for(var i = 0; i < list.length; i++){
+    var el = list[i];
+    if(el.type === "checkbox" || el.type === "radio") o[el.id] = {c:el.checked, dc:el.defaultChecked};
+    else o[el.id] = {v:el.value, dv:el.defaultValue};
+  }
+  return o;
+}
+function keepInputsRestore(o){
+  Object.keys(o).forEach(function(id){
+    var el = document.getElementById(id), k = o[id]; if(!el) return;
+    if("c" in k){ if(el.defaultChecked === k.dc && k.c !== k.dc) el.checked = k.c; }
+    else if(el.defaultValue === k.dv && k.v !== k.dv) el.value = k.v;
+  });
+}
 function renderApp(){
   saveScroll();
+  var keep = (MODAL || LAST_MODAL_OPEN) ? keepInputsSnap() : null; LAST_MODAL_OPEN = !!MODAL;
   /* 다시 그리기 전에 타이핑 중인 값을 상태로 옮깁니다. 마법사 6단계에서 요청사항을 치다가 유아의자 ± 를 누르면 입력이 사라졌고,
      1분 갱신·폰 회전에도 같은 일이 났습니다(점검 R1). 입력칸이 없는 화면에서는 아무 일도 안 합니다 */
   try{ if(WZ) wzSyncInputs(); if(!WZ && tmpRes && view.form && view.form.type === "res") syncRes(); }catch(e){}
@@ -147,6 +168,8 @@ function renderApp(){
   /* 라벨 충돌로 타임라인 행이 늘어날 수 있으므로 먼저 행 높이를 확정한 뒤 현재 시각선 높이를 맞춥니다. */
   if(typeof tlPlaceLabels === "function") tlPlaceLabels();
   afterRender();   /* 화면을 그린 뒤 필요한 이벤트 연결 (분 조절 레일 등) */
+  if(keep) keepInputsRestore(keep);
+  if(typeof pkArm === "function") pkArm();   /* 날짜·숫자 칸은 누르면 우리 팝업(06b, 09-24) */
   if(typeof aiWaveStart === "function") aiWaveStart();   /* 감사 문자 AI 물결(14g) — 캔버스가 있을 때만 돎 */   /* 타임라인 라벨(사용 중지·자리 없음) 자리 — 실제 픽셀로 겹침을 보고 정함 */
 }
 

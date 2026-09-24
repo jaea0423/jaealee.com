@@ -184,7 +184,7 @@
 
   /* ---------- 온라인으로 못 받는 조합은 전화로 ---------- */
   function phoneOnly(){
-    if(S.seat === "room" && S.adults < R().roomMinAdults) return `룸 예약은 성인 기준 ${R().roomMinAdults}명부터 받고 있습니다.`;
+    if(S.seat === "room" && S.adults < roomMin(S.date)) return `룸 예약은 성인 기준 ${roomMin(S.date)}명부터 받고 있습니다.`;
     return "";
   }
   const telBox = msg => `<div class="rv-note">${esc(msg)}<a class="rv-tel-lnk" href="tel:${INFO.tel}">${esc(INFO.tel)}</a></div>`;
@@ -228,6 +228,8 @@
     if(S.courseLabel) bits.push(S.courseLabel);
     return `<div class="rv-sum">${bits.map(x=>`<span>${esc(x)}</span>`).join("")}</div>`;
   };
+  /* 룸 최소 인원 — 평일 / 주말·공휴일 따로(09-24 재아). 주말 값이 없으면 평일 값 */
+  const roomMin = date => (date && isWeekend(date) && R().roomMinAdultsWeekend) ? R().roomMinAdultsWeekend : R().roomMinAdults;
   const dayRange = () => { const t = new Date(); return { min: ymd(R().sameDay ? t : new Date(t.getTime() + 864e5)), max: ymd(new Date(t.getTime() + R().maxDays*864e5)) }; };   /* 내일부터 — '당일 예약' 을 켜면 오늘부터 */
 
   /* ---------- ① 인원 ---------- */
@@ -300,7 +302,7 @@
       }
       days.innerHTML = cells.join("");
       /* 이 달에 잠근 특별 기간이 있으면 달력 아래 한 줄 */
-      const locks = (R().special || []).filter(sp => sp && sp.lock && sp.from && sp.to && sp.from.slice(0,7) <= ym && sp.to.slice(0,7) >= ym);
+      const locks = (R().special || []).filter(sp => sp && sp.from && sp.to && !spOpenNow(sp) && sp.from.slice(0,7) <= ym && sp.to.slice(0,7) >= ym);
       let ln = b.querySelector(".rv-lock"); if(!ln){ ln = document.createElement("p"); ln.className = "rv-fld-hint rv-lock"; days.after(ln); }
       ln.innerHTML = locks.length ? locks.map(sp => `${esc(sp.title || "특별 기간")} (${esc(sp.from.slice(5).replace("-", "/"))} ~ ${esc(sp.to.slice(5).replace("-", "/"))}) 예약은 준비 중입니다. 전화로 문의해 주세요. <a href="tel:${esc(INFO.tel)}" class="num">${esc(INFO.tel)}</a>`).join("<br>") : "";
       days.querySelectorAll("[data-day]").forEach(el => el.addEventListener("click", () => {
@@ -393,7 +395,14 @@
   /* 특별 기간(명절 등, 홈페이지 관리 → 홈페이지 예약 → 특별 기간 차림): 그 날짜면 그 코스만 */
   function specialOf(date){ return (R().special || []).find(sp => sp && sp.from && sp.to && date >= sp.from && date <= sp.to && (sp.courses || []).length) || null; }
   /* 잠근 특별 기간(방침·차림이 정해지기 전, 홈페이지 관리에서 '잠금') — 그 날짜는 온라인으로 안 받고 전화 안내 */
-  function lockedOf(date){ return (R().special || []).find(sp => sp && sp.lock && sp.from && sp.to && date >= sp.from && date <= sp.to) || null; }
+  /* 특별 기간의 날짜는 '홈페이지 예약 활성화' 가 켜져 있고 오늘이 '예약 받는 기간' 안일 때만 고를 수 있음(09-24 재아). 옛 저장본은 lock(잠금)만 있음 */
+  function spOpenNow(sp){
+    const on = sp.open != null ? !!sp.open : !sp.lock;
+    if(!on) return false;
+    const t = ymd(new Date());
+    return (!sp.openFrom || t >= sp.openFrom) && (!sp.openTo || t <= sp.openTo);
+  }
+  function lockedOf(date){ return (R().special || []).find(sp => sp && sp.from && sp.to && date >= sp.from && date <= sp.to && !spOpenNow(sp)) || null; }
   function menuGroups(){
     const sp = specialOf(S.date);
     if(sp) return [{ title: sp.title || "특별 코스", note: sp.note || "", items: sp.courses.map(x => { const m = String(x).split("|"); const name = m[0].trim(); return {key:"course:"+name, name, cn:(m[1]||"").trim()}; }) }];

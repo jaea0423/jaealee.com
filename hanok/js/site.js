@@ -74,7 +74,7 @@ window.SITE_READY.then(function(){
     const show = list.filter(n => (!n.from || ymd >= n.from) && (!n.until || ymd <= n.until) && (force || !hidden(n.id)));   /* 시작일 전·마감일 뒤는 안 뜸 */
     if(!show.length) return;
     const wrap = document.createElement("div"); wrap.className = "pops";
-    wrap.innerHTML = show.map((n, i) => `<div class="pop" style="left:${n.x||40}px; top:${n.y||110}px; width:${n.w||360}px; z-index:${10+i}" role="dialog" aria-label="${esc(n.title)}">
+    wrap.innerHTML = show.map((n, i) => `<div class="pop" style="left:${40 + 32*i}px; top:${110 + 32*i}px; width:${n.img ? 420 : 380}px; z-index:${10+i}" role="dialog" aria-label="${esc(n.title)}">
         <div class="pop-b">
           ${n.img ? `<img src="${esc(imgUrl(n.img))}" alt="${esc(n.title)}">` : `<h3>${esc(n.title)}</h3>${(n.lines||[]).map(l=>`<p>${esc(l)}</p>`).join("")}`}
           ${n.button ? `<button type="button" class="btn fill sm" data-reserve>${esc(n.button)}</button>` : ""}
