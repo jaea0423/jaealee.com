@@ -1032,14 +1032,17 @@ function sheetNoshow(){
   /* 8차-O(재아): 예약자 단위가 아니라 식사 날짜 단위 — 한 건씩 '되돌리기' 가 됩니다(잘못 누른 노쇼). 같은 번호의 횟수는 옆에 */
   const excluded = store().settings.noshowExcluded || [];
   const cnt = {}; store().reservations.forEach(r=>{ if(r.status==="노쇼" && r.phone){ const k=r.phone.replace(/\D/g,""); cnt[k]=(cnt[k]||0)+1; } });
-  const list = store().reservations.filter(r=>r.status==="노쇼").sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time)).slice(0,120);
+  /* 이름·전화 찾기(09-24 재아: '예약 검색' 단추 대신 입력칸) */
+  const nq = (view.nsQ||"").trim().toLowerCase().replace(/\s/g,""), nd = nq.replace(/\D/g,"");
+  const list = store().reservations.filter(r=>r.status==="노쇼" && (!nq || String(r.name||"").toLowerCase().replace(/\s/g,"").indexOf(nq) >= 0 || (nd.length >= 2 && String(r.phone||"").replace(/\D/g,"").indexOf(nd) >= 0)))
+    .sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time)).slice(0,120);
   const rows = list.length ? list.map(r=>{ const k=(r.phone||"").replace(/\D/g,""); const ex = k && excluded.includes(k); return `
     <div class="rowitem">
-      <button class="grow tap-plain" onclick="openMark('${r.id}')" title="예약 상세"><span class="t">${dateLabel(r.date)} ${esc(r.time)} · ${esc(r.name)}${k && cnt[k]>1?` <span class="tag rust">노쇼 ${cnt[k]}회</span>`:""}${ex?` <span class="tag">경고 제외</span>`:""}</span>
+      <button class="grow tap-plain" onclick="openMark('${r.id}')" title="예약 상세"><span class="t">${dateLabel(r.date)} ${esc(r.time)} · ${esc(r.name)}${k && cnt[k]>1?`<span class="ns-cnt"> · 노쇼 ${cnt[k]}회</span>`:""}${ex?` <span class="tag sm" title="이 번호는 새 예약 때 노쇼 경고를 띄우지 않음">경고 제외</span>`:""}</span>
         <span class="s">${pplText(r)} · ${esc(r.phone||(r.phoneTail?`***-****-${r.phoneTail} (네이버)`:"연락처 없음"))} · ${esc(resSeatLabel(r))}</span></button>
       <button class="btn sm" onclick="undoNoshow('${r.id}')">노쇼 취소</button>
       ${k ? (ex ? `<button class="btn sm ghost" onclick="unclearNoshow('${k}')" title="다시 노쇼 경고를 띄움">경고 제외 해제</button>` : `<button class="btn sm ghost" onclick="clearNoshow('${k}')" title="이 번호는 다음 예약 때 노쇼 경고를 띄우지 않음">경고 제외</button>`) : ""}
-    </div>`; }).join("") : `<div class="empty">노쇼 기록이 없습니다.</div>`;
+    </div>`; }).join("") : `<div class="empty">${nq ? "찾는 노쇼 기록이 없습니다." : "노쇼 기록이 없습니다."}</div>`;
   /* 노쇼율 — 이번 달·지난 달·최근 90일. 분모는 '올 손님'(방문+노쇼), 취소는 뺍니다 */
   const rate = (from, to) => { const all = store().reservations.filter(r=>r.date >= from && r.date <= to && r.date < todayStr() && (r.status==="방문"||r.status==="노쇼")); const ns = all.filter(r=>r.status==="노쇼").length; return {n:all.length, ns, pct: all.length ? Math.round(ns/all.length*1000)/10 : 0}; };
   const t = todayStr(), ym = t.slice(0,7), pm = shiftDate(ym + "-01", -1).slice(0,7);
@@ -1050,14 +1053,10 @@ function sheetNoshow(){
       <div class="ns-stat"><div class="v">${r90.pct}<span class="u">%</span></div><div class="k">최근 90일</div><div class="s">${r90.ns}건 / ${r90.n}팀</div></div>
     </div>`;
   return `
-    ${sheetHead("노쇼 관리")}
-    <div class="btn-row" style="margin:-4px 0 10px"><button class="btn sm" onclick="openSearch()">🔍 예약 검색</button></div>
+    ${view.form && view.form.page ? "" : sheetHead("노쇼 관리")}
     ${stat}
-    <div class="card" style="margin-bottom:12px">${rows}</div>
-    <p class="f-note">예약 상태를 ‘노쇼’로 바꾸면 자동으로 여기에 쌓입니다.
-      새 예약을 등록할 때 같은 번호가 있으면 확정 전에 알려드립니다.
-      ${excluded.length?`<br>경고 제외 번호 ${excluded.length}건 · <button class="linkbtn" onclick="restoreNoshow()">전부 해제</button>`:""}
-    </p>
+    <input id="ns-q" class="ns-q" value="${esc(view.nsQ||"")}" placeholder="손님 이름이나 전화번호로 찾기" autocomplete="off" oninput="view.nsQ=this.value; var b=document.getElementById('ns-list'); if(b) b.innerHTML=nsRowsOnly()">
+    <div class="card" id="ns-list" style="margin-bottom:12px">${rows}</div>
     <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">닫기</button></div>`;
 }
 /* 노쇼 되돌리기 — 지난 날짜면 '방문'(실제로 온 것), 오늘·앞날이면 '확정' */
@@ -1070,8 +1069,10 @@ async function undoNoshow(id){
   addChange(r, "변경", [{n:"상태", a:"노쇼", b:to}]); r.status = to; touch(r);
   reflowTentatives(r.date); saveData(); render();
 }
+/* 찾기 칸을 칠 때마다 목록만 다시(입력칸 포커스 유지) */
+function nsRowsOnly(){ var h = sheetNoshow(); var i = h.indexOf('<div class="card" id="ns-list"'); if(i < 0) return ""; i = h.indexOf(">", i) + 1; var j = h.indexOf('</div>\n    <div class="sheet-actions">', i); return j > i ? h.slice(i, j) : ""; }
 async function clearNoshow(key){
-  if(!await uiConfirm2("이 고객의 노쇼 기록을 목록에서 제외할까요?\n예약 기록 자체는 남습니다.")) return;
+  if(!await uiConfirm2("이 번호는 다음 예약 때 노쇼 경고를 띄우지 않을까요?\n노쇼 목록에는 그대로 남습니다.")) return;
   const st = store().settings;
   logEvent("노쇼 기록 제외", key);
   st.noshowExcluded = [...(st.noshowExcluded||[]), key];
@@ -1619,6 +1620,7 @@ async function adminGate(what){
   if(ADMIN_UNTIL > Date.now()) return true;
   const r = await uiPin(what, "2차 비밀번호 6자리", 6, {keep:"10분간 다시 묻지 않기"});   /* PIN 화면과 같은 키패드(09-20) */
   if(r == null) return false;
+  if(!r || !r.code) return false;   /* 바깥 누름·취소 */
   const pw = r.code;
   try{ await authToken(SUPA_CFG.adminEmail, /^\d{6}$/.test(pw) ? adminToPassword(pw) : pw); logEvent("관리자 확인", what + (r.keep ? " · 10분 유지" : "")); if(r.keep) ADMIN_UNTIL = Date.now() + 10 * 60000; return true; }
   catch(e){

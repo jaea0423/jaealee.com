@@ -427,6 +427,16 @@ button.rowitem:hover{background:var(--surface-2)}
 /* 단골 등급 알약(16차): 이름 옆. VIP 는 금색 테두리, VVIP 는 금색 채움 */
 .tier{display:inline-block; vertical-align:middle; margin-left:6px; padding:1px 6px; border-radius:999px; font-size:var(--fs-label); font-weight:700; letter-spacing:.04em; line-height:1.5; border:1px solid #B8860B; color:#8A6114; background:#FFF8E1}
 .tier.vvip{background:#B8860B; color:#fff; border-color:#B8860B}
+
+/* 노쇼 관리(09-24): 이름 옆 빨간 글자 '· 노쇼 N회', 찾기 칸 */
+.ns-cnt{color:var(--rust); font-weight:600}
+.ns-q{width:100%; margin:0 0 var(--s8)}
+/* 폰: 노쇼 줄은 글 한 줄 전체 + 단추는 그 아래 오른쪽(글이 세 줄로 접히던 것) */
+@media (max-width:640px){
+  #ns-list .rowitem{flex-wrap:wrap; row-gap:6px}
+  #ns-list .rowitem > .grow{flex:1 1 100%}
+  #ns-list .rowitem > .btn:first-of-type{margin-left:auto}
+}
 /* ============================================================
    4. 레이아웃 (상단바 / shell / content)
    ============================================================ */
@@ -1597,6 +1607,15 @@ label.chk span{width:auto}
 .fold-b .f.big{grid-template-columns:1fr; row-gap:var(--s4)}
 .fold-b .f.big > .lb:after{display:none}
 .fold-b .f.big textarea, .fold-b .f.big input{width:100%; box-sizing:border-box; font:inherit; font-size:var(--fs-sub); padding:var(--s8) var(--s12); border:1px solid var(--border); border-radius:var(--r-sm)}
+
+/* 같은 줄 높이 맞춤(09-24, work/audit_rows.js): 줄 안 칸·단추를 38px 하나로.
+   좌석 줄은 ▲▼·층 칸 44 / 숫자 36 / 단추 38 이 섞여 있었고, 코스 적용 줄은 고르기 44 와 '행 삭제' 38, 공휴일 추가는 날짜 칸 47 과 단추 38 */
+.rowitem.seat .ordbtns button, .rowitem.seat .numbtn, .rowitem.seat input, .rowitem.seat > .btn,
+.whenrow .seg button, .whenrow .btn, .whenrow input,
+.btn-row > input, .btn-row > .btn{height:38px; min-height:38px; padding-top:0; padding-bottom:0; box-sizing:border-box}
+.rowitem.seat .numbtn, .rowitem.seat > .btn, .whenrow .btn, .btn-row > .btn{display:inline-flex; align-items:center; justify-content:center}
+.rowitem.seat{align-items:center}
+.whenrow .wbtn{height:38px; min-height:38px; padding-top:0; padding-bottom:0; display:inline-flex; align-items:center}
 /* ---------- 홈페이지 관리 (14b-site-admin.js) ----------
    설정 화면과 같은 부품(.f .lb .in-sm .btn .tag .card)을 쓰고, 여기서는 배치만. 태블릿(820)이 기준, 폰은 한 단으로 */
 .sa-top{display:flex; flex-wrap:wrap; align-items:center; gap:var(--s12); padding:var(--s12) var(--s16); margin:-8px 0 var(--s12); background:var(--surface-2); border-radius:var(--r-sm)}
@@ -1769,6 +1788,25 @@ button.sa-card:hover{border-color:var(--text-3)}
 .sa-top-post{font-size:var(--fs-sub); color:var(--text-2)}
 @media (max-width:640px){ .sa-card-t{max-width:55%} .sa-card-s{display:none} }
 .sa-card-f .btn.sm{min-width:64px; border-radius:999px}
+
+/* 차림 접기(09-24): 묶음 머리 한 줄 — 누르면 펼침, 하나만 */
+.sa-fold{padding:0; overflow:hidden}
+.sa-fold-h{display:flex; align-items:center; gap:var(--s8); width:100%; padding:12px var(--s16); border:none; background:none; font:inherit; color:var(--text); text-align:left; cursor:pointer}
+.sa-fold-h b{font-size:15px}
+.sa-fold-h span{font-size:var(--fs-sub); color:var(--text-3)}
+.sa-fold-h i{margin-left:auto; font-style:normal; font-size:11px; color:var(--text-3)}
+.sa-fold-b{padding:0 var(--s16) var(--s16)}
+.sa-sub2 .sa-row{margin-bottom:6px}
+
+/* 같은 줄 높이 맞춤(09-24, work/audit_rows.js 로 찾음): 줄 안의 입력칸·단추는 전부 38px.
+   '올리기'(44)·줄 삭제 ×(32)·↑↓(44) 가 옆 칸과 달라 어긋나 보였음 */
+.sa-body .sa-row .btn, .sa-body .sa-imgrow .btn, .sa-body .sa-rowbtns .btn, .sa-body .sa-card-f .btn{height:38px; min-height:38px; padding-top:0; padding-bottom:0; display:inline-flex; align-items:center; justify-content:center; line-height:1}
+.sa-body .sa-rowbtns{display:flex; gap:4px; align-self:flex-end}
+.sa-body .sa-rowbtns .btn{width:38px; min-width:38px; padding:0}
+.sa-x{width:38px; height:38px}
+.sa-row > .sa-f{margin-bottom:0}
+/* 사진 줄의 ↑↓× 는 입력칸과 같은 높이에 — 사진 미리보기(54px) 가운데에 칸이 놓이므로 (54-38)/2 = 8px 올림 */
+.sa-body .sa-row > .sa-rowbtns{margin-bottom:8px}
 /* ============================================================
    07c. 직원 근태(14d) · 손님 관리(14e) — 15차
    ============================================================ */
@@ -1976,6 +2014,20 @@ button.sa-card:hover{border-color:var(--text-3)}
 .th-card.queued .th-h{gap:var(--s8)} .th-card.queued .th-h b{flex:none} .th-card.queued .th-h small{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .th-card.queued .th-lock svg{width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:1.6; color:var(--text-3)}
 .th-card.queued.sent{opacity:.55}
+
+/* 기간 머리(09-24 재아): 화살표는 마우스를 올렸을 때만(손가락 기기는 늘 보임), 이번 주·달이 아니면 검은 바탕 — 대시보드와 같은 규칙 */
+.hr-period.center{padding:var(--s8) var(--s12); border-radius:var(--r-md); transition:background .15s}
+@media (hover:hover){
+  .hr-period .hr-period-nav{opacity:0; transition:opacity .15s}
+  .hr-period:hover .hr-period-nav, .hr-period:focus-within .hr-period-nav{opacity:1}
+}
+.hr-period.notnow{background:var(--text); color:#fff}
+.hr-period.notnow .hr-period-t b{color:#fff}
+.hr-period.notnow .hr-period-t small{color:rgba(255,255,255,.7)}
+.hr-period.notnow .bnav{background:transparent; border-color:rgba(255,255,255,.35); color:#fff}
+.hr-period.notnow .hr-period-t .btn{background:#fff; color:var(--text); border-color:#fff}
+/* 근무 시간 줄(시작·종료·휴게) 칸 높이를 하나로 — 시각 칸(49)과 숫자 칸(45)이 달랐음(09-24 audit_rows) */
+.hr-spanrow input{height:44px; min-height:44px; box-sizing:border-box; padding-top:0; padding-bottom:0}
 /* ============================================================
    8. 잠금 · 매장 선택
    ============================================================ */
@@ -4694,6 +4746,7 @@ const ICON = {
   spark:'<svg viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8zM5 15l.6 1.6L7 17l-1.4.6L5 19l-.6-1.4L3 17l1.4-.4z"/></svg>',
   sms:'<svg viewBox="0 0 24 24"><path d="M4 5h16v11H8l-4 4z"/><path d="M8 9h8M8 12h5"/></svg>',
   key:'<svg viewBox="0 0 24 24"><circle cx="8" cy="12" r="4"/><path d="M12 12h9M18 12v3M15 12v2"/></svg>',
+  back:'<svg viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>',
   person:'<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20.5c0-4.1 3.4-6.6 7.5-6.6s7.5 2.5 7.5 6.6"/></svg>',
   users:'<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.4"/><path d="M2.5 20c0-3.3 2.9-5.5 6.5-5.5s6.5 2.2 6.5 5.5M16 14.5c3 0 5.5 1.8 5.5 4.5"/></svg>',
   print:'<svg viewBox="0 0 24 24"><path d="M7 8V4h10v4M7 16H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2M7 13h10v7H7z"/></svg>',
@@ -5413,7 +5466,7 @@ function renderModal(){
     : l.trim()==="" ? `<div class="md-gap"></div>`
     : `<div class="md-l">${esc(l)}</div>`).join("");
   return `
-    <div class="overlay modal-ov" onclick="modalAnswer(false)">
+    <div class="overlay modal-ov" onclick="modalAnswer(${m.mode==="confirm"?"false":"null"})">
       <div class="modal ${m.tone}" role="${m.tone==="warn"?"alertdialog":"dialog"}" aria-modal="true" aria-labelledby="modal-title" onclick="event.stopPropagation()">
         <div class="md-h" id="modal-title">${esc(m.title)}</div>
         <div class="md-b">${lines}${m.mode==="pin"?`
@@ -5607,7 +5660,7 @@ function renderStore(){
       ${pageForm ? `<header class="topbar page ${notodayView()?'notoday':''}"><div class="topbar-in">
         <button class="storename" onclick="goHomeScreen()" title="홈으로"><span class="sn-brand">HANOK</span></button>
         <div class="bar-mid"><span class="bdate static">${pageTitle}</span></div>
-        <div class="bar-right">${view.form.back ? `<button class="tvbtn b-pageback" onclick="closeSheet()" title="${view.form.back==="owner"?"사장님":view.form.back==="messages"?"문자":"손님 관리"}으로" aria-label="${view.form.back==="owner"?"사장님":view.form.back==="messages"?"문자":"손님 관리"}으로">← ${view.form.back==="owner"?"사장님":view.form.back==="messages"?"문자":"손님 관리"}</button>` : `<button class="tvbtn icon b-exit" onclick="closeSheet()" title="닫기" aria-label="닫기">✕</button>`}</div>
+        <div class="bar-right">${view.form.back ? `<button class="tvbtn icon b-pageback" onclick="closeSheet()" title="${view.form.back==="owner"?"사장님":view.form.back==="messages"?"문자":"손님 관리"}으로" aria-label="${view.form.back==="owner"?"사장님":view.form.back==="messages"?"문자":"손님 관리"}으로 돌아가기">${ICON.back}</button>` : `<button class="tvbtn icon b-exit" onclick="closeSheet()" title="닫기" aria-label="닫기">✕</button>`}</div>
       </div></header>` : `<header class="topbar ${notodayView()?'notoday':''} ${isMobile()?'mobile':''} ${view.tab==="settings"?'settings':''}"><div class="topbar-in">
         <!-- 매장 이름 = 예전 맨 왼쪽 버튼의 역할. 대시보드에서는 매장 선택으로, 설정에서는 대시보드로. 아이콘·화살표 없이 글자만(6차-K) -->
         <!-- 8차-P(재아): HANOK 은 홈(대시보드·오늘)으로, 이미 홈이면 새로고침. 매장 나가기·로그아웃은 더보기 -->
@@ -5634,7 +5687,7 @@ function renderStore(){
           <button class="tvbtn b-sched ${schedList().length?'has':''}" onclick="openScheduled()" title="예정된 설정">예정<i class="cnt">${schedList().length}</i></button>
           <button class="tvbtn b-revert" onclick="revertSettings()" ${settingsDirty()?"":"disabled"}>되돌리기</button>
           <button class="tvbtn amber b-apply" onclick="applySettings()" ${settingsDirty()?"":"disabled"}>적용하기</button>
-          <button class="tvbtn b-pageback" onclick="closeSettingsToOwner()" title="사장님으로" aria-label="사장님으로">← 사장님</button>` : isMobile() ? `
+          <button class="tvbtn icon b-pageback" onclick="closeSettingsToOwner()" title="사장님으로" aria-label="사장님으로 돌아가기">${ICON.back}</button>` : isMobile() ? `
           <!-- 폰: 아이콘만 한 줄. 날짜는 달력 아이콘으로(오늘이 아니면 상단바가 검정이라 티가 납니다), 등록은 오른쪽 아래 둥근 ＋ (7차-M)
                '오늘' 은 375px 에 안 들어가 더보기로 — 달력 아이콘의 점이 '오늘이 아님' 표시 -->
           <button class="tvbtn icon b-cal ${view.date===todayStr()?'':'dot'}" onclick="openCal()" title="날짜" aria-label="날짜 선택">${ICON.cal}</button>
@@ -8667,29 +8720,47 @@ function saTabTexts(){
       saF("visit.head.sub", "오시는 길 — 위 소개") + saL("visit.parking", "주차 안내", "", 3) + saL("visit.transit", "대중교통", "", 2));
 }
 /* 5. 차림 */
+/* 차림 — 09-24 재아 "스크롤이 너무 많다, 접을 수 있는 건 접고 하나씩만": 묶음(저녁 코스·점심 세트·요리·만두·주류)은 하나만 펼치고,
+   그 안의 코스·분류도 한 줄 요약 카드로 접어 둠(펼침은 하나만, SA.open) */
+function saFold(key, title, count, inner){
+  var on = (SA.menuSec || "courses") === key;
+  return '<section class="card sa-box sa-fold' + (on ? ' on' : '') + '"><button type="button" class="sa-fold-h" onclick="SA.menuSec=' + (on ? "'-'" : "'" + key + "'") + '; SA.open=null; render()"><b>' + esc(title) + '</b><span>' + esc(count) + '</span><i>' + (on ? '▲' : '▼') + '</i></button>' + (on ? '<div class="sa-fold-b">' + inner + '</div>' : '') + '</section>';
+}
+function saMoveBtns(path, i, n, key){
+  return n > 1 ? '<button class="btn sm ghost" onclick="saArrMove(\'' + path + '\', ' + i + ', -1); SA.open=\'' + key + (i - 1) + '\'; render()" aria-label="위로"' + (i === 0 ? ' disabled' : '') + '>↑</button><button class="btn sm ghost" onclick="saArrMove(\'' + path + '\', ' + i + ', 1); SA.open=\'' + key + (i + 1) + '\'; render()" aria-label="아래로"' + (i === n - 1 ? ' disabled' : '') + '>↓</button>' : '';
+}
 function saTabMenu(){
   var C = saGet("menu.courses.items") || [], L = saGet("menu.lunch") || [], D = saGet("menu.dishes") || [], DM = saGet("menu.dumplings.items") || [], DR = saGet("menu.drinks") || [];
   var itemLines = function(items, withTag){ return items.map(function(x){ return x.name + (withTag && x.tag ? " | " + x.tag : ""); }); };
-  return '<p class="f-note" style="margin:0 0 12px">가격은 홈페이지에 안 나옵니다. 주류는 <b>이름 | 설명</b> 으로 — 예: <code>소주 | 참이슬 · 처음처럼</code></p>' +
-    saBox("저녁 코스",
-      C.map(function(c, i){ var p = "menu.courses.items." + i + "."; return '<div class="sa-sub"><div class="grid2">' + saF(p + "name", "이름") + saF(p + "cn", "한자") + '</div>' + saL(p + "dishes", "구성", "", 4) + '<div class="btn-row"><button class="btn sm ghost" onclick="saArrMove(\'menu.courses.items\', ' + i + ', -1)">↑</button><button class="btn sm ghost" onclick="saArrMove(\'menu.courses.items\', ' + i + ', 1)">↓</button><button class="btn sm ghost" onclick="saArrDel(\'menu.courses.items\', ' + i + ', \'코스\')">삭제</button></div></div>'; }).join("") +
-      '' + saAdd("saArrAdd('menu.courses.items', {name:'', cn:'', dishes:[]})", "코스 추가") + '') +
-    saBox("점심 세트",
-      L.map(function(g, gi){ var gp = "menu.lunch." + gi + "."; return '<div class="sa-sub"><div class="grid2">' + saF(gp + "title", "묶음 이름") + saF(gp + "sub", "옆에 작게", "예: 토·일·공휴일") + '</div>' +
-        (g.items || []).map(function(x, i){ var p = gp + "items." + i + "."; return '<div class="sa-sub2">' + saF(p + "name", "세트 이름") + saL(p + "dishes", "구성", "", 3) + '<div class="btn-row"><button class="btn sm ghost" onclick="saArrDel(\'' + gp + 'items\', ' + i + ', \'세트\')">세트 삭제</button></div></div>'; }).join("") +
-        '<div class="btn-row"><button class="btn sm" onclick="saArrAdd(\'' + gp + 'items\', {name:\'\', dishes:[]})">세트 추가</button><button class="btn sm ghost" onclick="saArrDel(\'menu.lunch\', ' + gi + ', \'묶음\')">묶음 삭제</button></div></div>'; }).join("") +
-      '' + saAdd("saArrAdd('menu.lunch', {title:'', sub:'', items:[]})", "묶음 추가") + '') +
-    saBox("요리",
-      D.map(function(g, gi){ var gp = "menu.dishes." + gi + "."; return '<div class="sa-sub">' + saF(gp + "group", "분류") + saMenuLines(gp + "items", "메뉴", itemLines(g.items || []), false) + '<div class="btn-row"><button class="btn sm ghost" onclick="saArrMove(\'menu.dishes\', ' + gi + ', -1)">↑</button><button class="btn sm ghost" onclick="saArrMove(\'menu.dishes\', ' + gi + ', 1)">↓</button><button class="btn sm ghost" onclick="saArrDel(\'menu.dishes\', ' + gi + ', \'분류\')">분류 삭제</button></div></div>'; }).join("") +
-      '' + saAdd("saArrAdd('menu.dishes', {group:'', items:[]})", "분류 추가") + '') +
-    saBox("만두", saMenuLines("menu.dumplings.items", "메뉴", itemLines(DM), false)) +
-    saBox("주류",
-      DR.map(function(g, gi){ var gp = "menu.drinks." + gi + "."; return '<div class="sa-sub">' + saF(gp + "group", "분류") + saMenuLines(gp + "items", "메뉴", itemLines(g.items || [], true), true) + '<div class="btn-row"><button class="btn sm ghost" onclick="saArrDel(\'menu.drinks\', ' + gi + ', \'분류\')">분류 삭제</button></div></div>'; }).join("") +
-      '' + saAdd("saArrAdd('menu.drinks', {group:'', items:[]})", "분류 추가") + '');
+  var done = '<button class="btn sm primary" onclick="saCardDone()">완료</button>';
+  var courses = C.map(function(c, i){ var p = "menu.courses.items." + i + ".";
+    return saCard("mc" + i, '<span class="sa-card-t">' + esc(c.name || "(이름 없음)") + '</span><span class="sa-card-s">' + esc(c.cn || "") + ' · 구성 ' + (c.dishes || []).length + '</span>',
+      '<div class="grid2">' + saF(p + "name", "이름") + saF(p + "cn", "한자") + '</div>' + saL(p + "dishes", "구성", "", Math.max(4, (c.dishes || []).length + 1)) +
+      '<div class="sa-card-f"><button class="btn sm ghost danger" onclick="saArrDel(\'menu.courses.items\', ' + i + ', \'코스\'); SA.open=null">삭제</button>' + saMoveBtns("menu.courses.items", i, C.length, "mc") + done + '</div>'); }).join("");
+  var lunch = L.map(function(g, gi){ var gp = "menu.lunch." + gi + ".";
+    return saCard("ml" + gi, '<span class="sa-card-t">' + esc(g.title || "(묶음 이름 없음)") + '</span><span class="sa-card-s">' + esc(g.sub ? g.sub + " · " : "") + '세트 ' + (g.items || []).length + '</span>',
+      '<div class="grid2">' + saF(gp + "title", "묶음 이름") + saF(gp + "sub", "옆에 작게", "", {ph:"예: 토·일·공휴일"}) + '</div>' +
+      (g.items || []).map(function(x, i){ var p = gp + "items." + i + "."; return '<div class="sa-sub2"><div class="sa-row">' + '<input type="text" class="in-sm" value="' + esc(x.name || "") + '" placeholder="세트 이름" oninput="saSet(\'' + p + 'name\', this.value)"><button class="sa-x" onclick="saArrDel(\'' + gp + 'items\', ' + i + ', \'세트\')" aria-label="세트 삭제">×</button></div>' + saL(p + "dishes", "구성", "", Math.max(3, (x.dishes || []).length + 1)) + '</div>'; }).join("") +
+      saAdd("saArrAdd('" + gp + "items', {name:'', dishes:[]})", "세트 추가") +
+      '<div class="sa-card-f"><button class="btn sm ghost danger" onclick="saArrDel(\'menu.lunch\', ' + gi + ', \'묶음\'); SA.open=null">삭제</button>' + done + '</div>'); }).join("");
+  var dishes = D.map(function(g, gi){ var gp = "menu.dishes." + gi + ".";
+    return saCard("md" + gi, '<span class="sa-card-t">' + esc(g.group || "(분류 없음)") + '</span><span class="sa-card-s">메뉴 ' + (g.items || []).length + '</span>',
+      saF(gp + "group", "분류") + saMenuLines(gp + "items", "메뉴", itemLines(g.items || []), false) +
+      '<div class="sa-card-f"><button class="btn sm ghost danger" onclick="saArrDel(\'menu.dishes\', ' + gi + ', \'분류\'); SA.open=null">삭제</button>' + saMoveBtns("menu.dishes", gi, D.length, "md") + done + '</div>'); }).join("");
+  var drinks = DR.map(function(g, gi){ var gp = "menu.drinks." + gi + ".";
+    return saCard("mr" + gi, '<span class="sa-card-t">' + esc(g.group || "(분류 없음)") + '</span><span class="sa-card-s">메뉴 ' + (g.items || []).length + '</span>',
+      saF(gp + "group", "분류") + saMenuLines(gp + "items", "메뉴", itemLines(g.items || [], true), true) +
+      '<div class="sa-card-f"><button class="btn sm ghost danger" onclick="saArrDel(\'menu.drinks\', ' + gi + ', \'분류\'); SA.open=null">삭제</button>' + done + '</div>'); }).join("");
+  return '<p class="f-note" style="margin:0 0 12px">가격은 홈페이지에 안 나옵니다.</p>' +
+    saFold("courses", "저녁 코스", C.length + "개", courses + saAdd("saArrAdd('menu.courses.items', {name:'', cn:'', dishes:[]}); SA.open='mc" + C.length + "'; render()", "코스 추가")) +
+    saFold("lunch", "점심 세트", L.length + "묶음", lunch + saAdd("saArrAdd('menu.lunch', {title:'', sub:'', items:[]}); SA.open='ml" + L.length + "'; render()", "묶음 추가")) +
+    saFold("dishes", "요리", D.length + "분류", dishes + saAdd("saArrAdd('menu.dishes', {group:'', items:[]}); SA.open='md" + D.length + "'; render()", "분류 추가")) +
+    saFold("dump", "만두", DM.length + "가지", saMenuLines("menu.dumplings.items", "메뉴", itemLines(DM), false)) +
+    saFold("drinks", "주류", DR.length + "분류", drinks + saAdd("saArrAdd('menu.drinks', {group:'', items:[]}); SA.open='mr" + DR.length + "'; render()", "분류 추가"));
 }
 /* "이름 | 설명" 줄들 ↔ [{name, tag}] . 가격·용량(price·sizes)은 화면에 안 쓰지만 있던 항목은 이름이 같으면 그대로 붙여 둡니다 */
 function saMenuLines(path, label, lines, withTag){
-  return '<label class="f sa-f"><div class="lb">' + esc(label) + ' <span class="lbl-note">한 줄에 하나' + (withTag ? ' · 이름 | 설명' : '') + '</span></div><textarea class="in-sm" rows="' + Math.max(3, lines.length + 1) + '" oninput="saSetMenuLines(\'' + path + '\', this.value, ' + (withTag ? 'true' : 'false') + ')">' + esc(lines.join("\n")) + '</textarea></label>';
+  return '<label class="f sa-f"><div class="lb">' + esc(label) + ' ' + (withTag ? '<span class="lbl-note">이름 | 설명</span>' : '') + '</div><textarea class="in-sm" rows="' + Math.max(3, lines.length + 1) + '" oninput="saSetMenuLines(\'' + path + '\', this.value, ' + (withTag ? 'true' : 'false') + ')">' + esc(lines.join("\n")) + '</textarea></label>';
 }
 /* 줄 → 항목. withTag(주류)면 "이름 | 설명" 을 tag 로. 아니면(요리·만두) 이름만 받고, 있던 tag·price 는 이름이 같으면 그대로 둠(화면엔 안 나와도 자료로 남김) */
 function saSetMenuLines(path, text, withTag){
@@ -8994,17 +9065,22 @@ function hrWeekCalc(s, w){
 }
 /* 한 달 급여. 시급이 달 중간에 바뀌면 날마다 그날 시급으로 셉니다(basePay). 연장·야간·주휴·배율은 달의 마지막 날 시급 기준 */
 function hrCalc(s, month){
-  var cfg = hrCfg(); cfg.over5 = hrOver5(month); var days = hrMonthDays(month), t = { reg:0, alt:0, abs:0, off:0, days:0, hours:0, night:0, ot:0, weekly:0, bonusH:0, base:0, otPay:0, nightPay:0, weeklyPay:0, bonusPay:0, absentPay:0, extraH:0, extraPay:0, gross:0, ded:{}, dedTotal:0, net:0, employer:0, wage:0, log:[] };
+  var cfg = hrCfg(); cfg.over5 = hrOver5(month); var days = hrMonthDays(month), t = { probCut:0, offH:0, reg:0, alt:0, abs:0, off:0, days:0, hours:0, night:0, ot:0, weekly:0, bonusH:0, base:0, otPay:0, nightPay:0, weeklyPay:0, bonusPay:0, absentPay:0, extraH:0, extraPay:0, gross:0, ded:{}, dedTotal:0, net:0, employer:0, wage:0, log:[] };
   var hourly = s.pay_type !== "monthly", last = days[days.length - 1];
   var monthPay = hrPayAt(s, last);
   t.wage = hourly ? monthPay : Math.round(monthPay / 209);
+  /* 수습(09-24 재아 "실제로 주는 금액이니 수습도 넣자"): 정규 근무 자료(sched.probation = {on, to, rate})에 둠 — 표에 칸을 새로 안 만들려고.
+     수습 기간 날의 기본급만 rate% 로(시급제는 그날 시간 × 시급, 월급제는 달 안의 수습 날 비율). 가산·주휴는 그대로 */
+  var pb = s.sched && s.sched.probation, pbOn = !!(pb && pb.on && pb.to), pbR = pbOn ? Math.min(100, Math.max(0, Number(pb.rate || 90))) / 100 : 1;
   days.forEach(function(d){
     var a = HR.att[s.id + "|" + d]; if(!a) return;
     if(a.status === "정규") t.reg++; else if(a.status === "변형") t.alt++; else if(a.status === "결근") t.abs++; else if(a.status === "휴무") t.off++;
     var sps = hrSpans(s, a), h = sps.reduce(function(x, sp){ return x + sp.hours; }, 0), r = Number(a.rate || 1), w = hourly ? hrPayAt(s, d) : t.wage;
     t.log.push({ date:d, status:a.status, spans:sps, hours:h, rate:r, memo:a.memo || "", wage:w });
     if(!sps.length) return;
-    t.hours += h; t.night += hrNight(sps); if(hourly) t.base += h * w;
+    t.hours += h; t.night += hrNight(sps); if(hourly){ t.base += h * w; if(pbOn && d <= pb.to) t.probCut += h * w * (1 - pbR); }
+    var schedH = hrOnDuty(s, d) ? hrSchedAt(s, d).spans.reduce(function(a2, sp){ var s0 = toMin(sp.start), e0 = toMin(sp.end); if(e0 <= s0) e0 += 1440; return a2 + Math.max(0, (e0 - s0 - Number(sp.break || 0)) / 60); }, 0) : 0;
+    if(h > schedH) t.offH += h - schedH;   /* 급여 표에 '정규 외 N시간' 으로만 보여 줌(돈 계산은 아래 extraH) */
     /* 월급제: 월급은 '정규 근무 시간' 값입니다. 그날 정규 시간을 넘긴 만큼(휴무일 출근은 전부)은 통상시급 × 1.0 을 따로 줍니다(초과 기본분, 재아 09-20).
        그 위에 연장 0.5 가산(5인 이상)은 아래 otPay 에서. 포괄임금(월급에 연장 포함)이면 설정에서 끔 */
     if(!hourly && !cfg.inclusive){ var sh = hrOnDuty(s, d) ? hrSchedAt(s, d).spans.reduce(function(a2, sp){ var s0 = toMin(sp.start), e0 = toMin(sp.end); if(e0 <= s0) e0 += 1440; return a2 + Math.max(0, (e0 - s0 - Number(sp.break || 0)) / 60); }, 0) : 0; if(h > sh) t.extraH += h - sh; }
@@ -9014,9 +9090,11 @@ function hrCalc(s, month){
   var w0 = hrWeekStart(days[0]); if(hrWeekDays(w0)[6] < days[0]) w0 = shiftDate(w0, 7);
   for(; hrWeekDays(w0)[6] <= last; w0 = shiftDate(w0, 7)){ var wk = hrWeekCalc(s, w0); t.ot += wk.ot; t.weekly += wk.weeklyPay; }
   if(!cfg.over5) t.night = 0;
-  if(!hourly){ t.base = monthPay; if(s.absent_deduct && t.abs) t.absentPay = -Math.round(t.abs * t.wage * 8); }
+  if(!hourly){ t.base = monthPay; if(s.absent_deduct && t.abs) t.absentPay = -Math.round(t.abs * t.wage * 8);
+    if(pbOn){ var pd = days.filter(function(d){ return d <= pb.to; }).length; t.probCut = monthPay * (pd / days.length) * (1 - pbR); } }
+  t.probCut = Math.round(t.probCut); t.probRate = Math.round(pbR * 100); t.probTo = pbOn ? pb.to : "";
   t.otPay = t.ot * t.wage * 0.5; t.nightPay = t.night * t.wage * 0.5; t.weeklyPay = hourly ? t.weekly * t.wage : 0; t.bonusPay = t.bonusH * t.wage; t.extraPay = t.extraH * t.wage;
-  t.gross = Math.round(t.base + t.extraPay + t.otPay + t.nightPay + t.weeklyPay + t.bonusPay + t.absentPay);
+  t.gross = Math.round(t.base + t.extraPay + t.otPay + t.nightPay + t.weeklyPay + t.bonusPay + t.absentPay - t.probCut);
   var tax = s.tax || "4대보험", r = cfg.rates;
   if(tax === "4대보험"){
     var health = Math.round(t.gross * r.health / 100);
@@ -9025,7 +9103,7 @@ function hrCalc(s, month){
   }else if(tax === "3.3%"){ var inc = Math.round(t.gross * (cfg.taxRate / 1.1) / 100); t.ded = { "소득세(3%)": inc, "지방소득세(0.3%)": Math.round(inc / 10) }; }
   t.dedTotal = Object.keys(t.ded).reduce(function(a, k){ return a + t.ded[k]; }, 0);
   t.net = t.gross - t.dedTotal;
-  ["hours","night","ot","weekly","bonusH","extraH"].forEach(function(k){ t[k] = hrRound(t[k]); });
+  ["hours","night","ot","weekly","bonusH","extraH","offH"].forEach(function(k){ t[k] = hrRound(t[k]); });
   return t;
 }
 async function hrSeverance(s){
@@ -9089,8 +9167,8 @@ async function hrDayClick(date){
 }
 
 /* ---------- 직원 편집 ---------- */
-function hrStaffNew(){ HR.edit = { id:newId("stf"), name:"", nick:"", role:"홀", phone:"", pay_type:"hourly", pay:0, tax:"4대보험", weekly_pay:true, absent_deduct:false, sched_hist:[{from:"", days:[false,true,true,true,true,true,true], spans:[{start:"10:00", end:"22:00", break:60}]}], pay_hist:[{from:"", pay:0}], start_date:todayStr(), end_date:null, memo:"", active:true, sort:HR.staff.length, _new:true, tab:"sched" }; render(); }
-function hrStaffEdit(id){ var s = HR.staff.find(function(x){ return x.id === id; }); if(!s) return; HR.edit = deepClone(s); HR.edit.sched_hist = hrSchedHist(s).map(function(e){ return { from:e.from || "", days:(e.days || []).slice(), spans:(e.spans || []).map(function(x){ return Object.assign({}, x); }) }; }); HR.edit.pay_hist = hrPayHist(s).map(function(e){ return Object.assign({}, e); }); HR.edit.sev = null; HR.edit.tab = "sched"; render(); }
+function hrStaffNew(){ HR.edit = { probation:{on:false, to:"", rate:90}, id:newId("stf"), name:"", nick:"", role:"홀", phone:"", pay_type:"hourly", pay:0, tax:"4대보험", weekly_pay:true, absent_deduct:false, sched_hist:[{from:"", days:[false,true,true,true,true,true,true], spans:[{start:"10:00", end:"22:00", break:60}]}], pay_hist:[{from:"", pay:0}], start_date:todayStr(), end_date:null, memo:"", active:true, sort:HR.staff.length, _new:true, tab:"sched" }; render(); }
+function hrStaffEdit(id){ var s = HR.staff.find(function(x){ return x.id === id; }); if(!s) return; HR.edit = deepClone(s); HR.edit.probation = Object.assign({on:false, to:"", rate:90}, (s.sched && s.sched.probation) || {}); HR.edit.sched_hist = hrSchedHist(s).map(function(e){ return { from:e.from || "", days:(e.days || []).slice(), spans:(e.spans || []).map(function(x){ return Object.assign({}, x); }) }; }); HR.edit.pay_hist = hrPayHist(s).map(function(e){ return Object.assign({}, e); }); HR.edit.sev = null; HR.edit.tab = "sched"; render(); }
 function hrEditSet(k, v){ if(HR.edit) HR.edit[k] = v; }
 function hrEditDay(i, j){ HR.edit.sched_hist[i].days[j] = !HR.edit.sched_hist[i].days[j]; render(); }
 function hrEditSpan(i, j, k, v){ HR.edit.sched_hist[i].spans[j][k] = k === "break" ? Number(v || 0) : v; }
@@ -9108,7 +9186,7 @@ async function hrStaffSave(){
   var cur = sh[sh.length - 1], sp0 = cur.spans[0] || {start:"10:00", end:"22:00", break:0};
   var row = { id:e.id, store:view.storeKey || "hanok", name:(e.name || "").trim() || (e.nick || "").trim(), nick:(e.nick || "").trim(), role:(e.role || "").trim(), phone:phoneNorm(e.phone || ""),
               pay_type:e.pay_type || "hourly", pay:ph[ph.length - 1].pay, pay_hist:ph, tax:e.tax || "4대보험", weekly_pay:e.weekly_pay !== false, absent_deduct:!!e.absent_deduct,
-              sched:{ days:cur.days, start:sp0.start, end:sp0.end, break:sp0.break, spans:cur.spans }, sched_hist:sh,
+              sched:{ days:cur.days, start:sp0.start, end:sp0.end, break:sp0.break, spans:cur.spans, probation:e.probation || {on:false, to:"", rate:90} }, sched_hist:sh,
               start_date:e.start_date || null, end_date:e.end_date || null, memo:(e.memo || "").trim(), active:e.active !== false, sort:Number(e.sort || 0) };
   try{
     await sb("/rest/v1/staff?on_conflict=id", { method:"POST", body:row, prefer:"resolution=merge-duplicates,return=minimal" });
@@ -9156,7 +9234,7 @@ async function hrJumpMonth(v){ if(!/^\d{4}-\d{2}$/.test(v || "")) return; HR.mon
 function hrPeriodHead(title, sub, onPrev, onToday, onNext, isNow){
   var pay = HR.view === "pay";
   var big = pay ? ["hrMoveMonth(-12)", "hrMoveMonth(12)", "1년 전", "1년 뒤"] : ["hrMoveWeek(-4)", "hrMoveWeek(4)", "4주 전", "4주 뒤"];
-  return '<div class="hr-period center">' +
+  return '<div class="hr-period center' + (isNow ? '' : ' notnow') + '">' +
     '<div class="hr-period-nav"><button class="bnav" onclick="' + big[0] + '" title="' + big[2] + '">&laquo;</button><button class="bnav" onclick="' + onPrev + '" aria-label="이전">&lsaquo;</button></div>' +
     '<div class="hr-period-t"><b>' + title + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + (isNow ? '' : '<button class="btn sm ghost" onclick="' + onToday + '">' + (pay ? "이번 달" : "이번 주") + '</button>') + '</div>' +
     '<div class="hr-period-nav"><button class="bnav" onclick="' + onNext + '" aria-label="다음">&rsaquo;</button><button class="bnav" onclick="' + big[1] + '" title="' + big[3] + '">&raquo;</button></div></div>';
@@ -9168,7 +9246,7 @@ function hrWeekView(){
   var w0 = new Date(days[0] + "T00:00:00"), w6 = new Date(days[6] + "T00:00:00");
   var head = hrPeriodHead(hrWeekLabel(HR.week), (w0.getMonth() + 1) + "월 " + w0.getDate() + "일 – " + (w6.getMonth() + 1) + "월 " + w6.getDate() + "일", "hrMoveWeek(-1)", "hrMoveWeek(0)", "hrMoveWeek(1)", HR.week === hrWeekStart(today));
   var ths = days.map(function(d){ var dt = new Date(d + "T00:00:00"), dow = dt.getDay(), hol = isHoliday(d);
-    return '<th class="hd ' + (d === today ? "today " : "") + (dow === 0 || hol ? "sun" : dow === 6 ? "sat" : "") + '" onclick="hrDayClick(\'' + d + '\')" title="누르면 공휴일 지정/해제"><b>' + dt.getDate() + '</b><small>' + HR_DAYS[dow] + (hol && dow !== 0 ? ' · 공휴' : '') + '</small></th>'; }).join("");
+    return '<th class="hd ' + (d === today ? "today " : "") + (dow === 0 || hol ? "sun" : dow === 6 ? "sat" : "") + '" onclick="hrDayClick(\'' + d + '\')" title="누르면 공휴일 지정/해제"><b>' + dt.getDate() + '</b><small>' + HR_DAYS[dow] + '</small></th>'; }).join("");
   var rowHtml = function(s){
     var wk = hrWeekCalc(s, HR.week);
     var tds = days.map(function(d){
@@ -9197,8 +9275,7 @@ function hrPayView(){
   var tot = { gross:0, ded:0, net:0, employer:0 };
   var rowHtml = function(s){
     var t = hrCalc(s, m); tot.gross += t.gross; tot.ded += t.dedTotal; tot.net += t.net; tot.employer += t.employer;
-    var extra = [];
-    if(t.ot) extra.push("연장 " + t.ot + "h"); if(t.night) extra.push("야간 " + t.night + "h"); if(t.weekly) extra.push("주휴 " + t.weekly + "h"); if(t.bonusH) extra.push("가산 " + t.bonusH + "h");
+    var extra = t.offH ? ["정규 외 " + t.offH + "h"] : [];
     return '<tr' + (s.active === false ? ' class="gone"' : '') + '><td class="nm"><button class="hr-nm" onclick="hrStaffEdit(\'' + s.id + '\')"><b>' + esc(hrLabel(s)) + '</b><small>' + esc(s.nick && s.name !== s.nick ? s.name + " · " : "") + esc(s.role || "") + (s.active === false ? " · 퇴사" : "") + '</small></button></td>' +
       '<td class="won"><small>' + (s.pay_type === "monthly" ? "월급" : "시급") + '</small>' + hrWon(hrPayAt(s, last)) + '</td><td>' + t.days + '일' + (t.abs ? '<small class="rust">결근 ' + t.abs + '</small>' : '') + '</td><td>' + t.hours + 'h' + (extra.length ? '<small>' + extra.join(" · ") + '</small>' : '') + '</td>' +
       '<td class="won">' + hrWon(t.gross) + '</td><td class="won">' + (t.dedTotal ? '−' + hrWon(t.dedTotal) + '<small>' + esc(s.tax || "4대보험") + '</small>' : '<small class="muted">공제 없음</small>') + '</td><td class="won"><b>' + hrWon(t.net) + '</b></td>' +
@@ -9228,15 +9305,16 @@ function hrSlipData(s, m){
   if(t.weeklyPay) L.push({k:"row", a:"주휴수당", b:hrWon(t.weeklyPay), n:t.weekly + "h"});
   if(t.bonusPay) L.push({k:"row", a:"휴일·배율 가산", b:hrWon(t.bonusPay), n:t.bonusH + "h"});
   if(t.absentPay) L.push({k:"row", a:"결근 공제", b:hrWon(t.absentPay), n:t.abs + "일 × 8h"});
+  if(t.probCut) L.push({k:"row", a:"수습 감액", b:"−" + hrWon(t.probCut), n:t.probRate + "% 지급 · " + pkShort(t.probTo) + "까지"});
   L.push({k:"tot", a:"총지급", b:hrWon(t.gross)});
   L.push({k:"sec", a:"공제 · " + (s.tax || "4대보험")});
   if(Object.keys(t.ded).length) Object.keys(t.ded).forEach(function(k){ L.push({k:"row", a:k, b:"−" + hrWon(t.ded[k])}); }); else L.push({k:"row", a:"공제 없음", b:"0원"});
   L.push({k:"tot", a:"실지급액", b:hrWon(t.net), big:true});
   L.push({k:"dash"}); L.push({k:"sec", a:"근무 기록 " + t.log.length + "일"});
-  t.log.forEach(function(l){ var dt = new Date(l.date + "T00:00:00"); L.push({k:"log", a:(dt.getMonth() + 1) + "/" + dt.getDate() + "(" + HR_DAYS[dt.getDay()] + ")", b:HR_STATUS[l.status] + " " + (l.spans.length ? l.spans.map(function(sp){ return minToHM(sp.s0) + "-" + minToHM(sp.e0 % 1440); }).join("+") + " " + hrRound(l.hours) + "h" : l.status) + (l.rate > 1 ? " " + l.rate + "x" : ""), n:l.memo || ""}); });
+  t.log.forEach(function(l){ var dt = new Date(l.date + "T00:00:00"); L.push({k:"log", a:(dt.getMonth() + 1) + "/" + dt.getDate() + "(" + HR_DAYS[dt.getDay()] + ")", b:HR_STATUS[l.status] + " " + (l.spans.length ? l.spans.map(function(sp){ return minToHM(sp.s0) + "-" + minToHM(sp.e0 % 1440); }).join("+") + " " + hrRound(l.hours) + "h" : l.status) + (l.rate > 1 ? " " + l.rate + "x" : ""), n:""}); });   /* 메모(결근 사유 등)는 직원에게 가는 종이에 안 씀(09-24 재아) */
   L.push({k:"dash"});
   L.push({k:"note", a:"발행 " + todayStr() + " · " + shop});
-  L.push({k:"note", a:"참고용 계산서 — 소득세(간이세액)·비과세·수습 감액은 넣지 않았습니다"});
+  L.push({k:"note", a:"참고용 계산서 — 소득세(간이세액표)·비과세는 넣지 않았습니다"});
   return { lines:L, title:title, t:t, cfg:cfg, shop:shop };
 }
 function hrSlipHtml(){
@@ -9292,10 +9370,6 @@ async function hrSlipImage(){
   var name = d.title.replace(/\s/g, "") + "_급여계산서_" + hrLabel(s) + ".png";
   c.toBlob(async function(blob){
     if(!blob){ uiAlert("사진을 만들지 못했습니다", "", "warn"); return; }
-    try{
-      var file = new File([blob], name, {type:"image/png"});
-      if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:name}); return; }   /* 폰·태블릿: 카톡 등으로 바로 */
-    }catch(e){ if(e && e.name === "AbortError") return; }
     var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 2000);
     showToast("사진으로 저장했습니다 · " + name);
   }, "image/png");
@@ -9332,6 +9406,11 @@ function hrEditHtml(){
       '<div class="f"><div class="lb">공제</div><div class="seg">' + segv("tax", "4대보험", "4대보험") + segv("tax", "3.3%", "3.3%") + segv("tax", "없음", "없음") + '</div></div></div>' +
       e.pay_hist.map(function(h, i){ return '<div class="grid2 hr-spanrow"><label class="f"><div class="lb">' + (i === 0 && !h.from ? "처음부터" : "적용 시작일") + '</div>' + (i === 0 && !h.from ? '<span class="muted" style="display:block; padding:10px 0">입사 때부터</span>' : '<input type="date" value="' + esc(h.from) + '" onchange="HR.edit.pay_hist[' + i + '].from=this.value">') + '</label><label class="f"><div class="lb">' + (e.pay_type === "monthly" ? "월급(원)" : "시급(원)") + (e.pay_hist.length > 1 ? ' <button class="btn sm ghost" style="float:right; padding:0 6px; min-height:0" onclick="hrEditPayDel(' + i + ')">×</button>' : '') + '</div><input type="number" min="0" step="100" value="' + Number(h.pay || 0) + '" oninput="HR.edit.pay_hist[' + i + '].pay=Number(this.value)"></label></div>'; }).join("") +
       '<div class="btn-row"><button class="btn sm" onclick="hrEditPayAdd()">＋ 시급 변경 (다음 달 1일부터)</button></div>' +
+      (function(){ var pb = e.probation || (e.probation = {on:false, to:"", rate:90});
+        return '<div class="f"><div class="lb">수습 <span class="lbl-note">수습 기간의 기본급만 줄여서 계산</span></div><div class="seg">' +
+          '<button class="' + (pb.on ? "on" : "") + '" onclick="HR.edit.probation.on=true; render()">적용</button><button class="' + (!pb.on ? "on" : "") + '" onclick="HR.edit.probation.on=false; render()">안 함</button></div></div>' +
+          (pb.on ? '<div class="grid2"><label class="f"><div class="lb">수습 끝나는 날</div><input type="date" value="' + esc(pb.to || "") + '" onchange="HR.edit.probation.to=this.value"></label>' +
+            '<label class="f"><div class="lb">수습 지급률 (%)</div><input type="number" min="50" max="100" value="' + (pb.rate || 90) + '" onchange="HR.edit.probation.rate=Number(this.value)||90"></label></div>' : ''); })() +
       (e.pay_type !== "monthly" ? '<div class="f"><div class="lb">주휴수당 <span class="lbl-note">주 15h 이상 개근이면 자동</span></div><div class="seg">' + segv("weekly_pay", true, "계산") + segv("weekly_pay", false, "안 함") + '</div></div>'
         : '<div class="f"><div class="lb">결근 공제 <span class="lbl-note">월급제 — 결근일 × 8h 일할 공제</span></div><div class="seg">' + segv("absent_deduct", true, "공제") + segv("absent_deduct", false, "안 함") + '</div></div>') +
       (e._new ? '' : '<div class="hr-sev"><div class="hr-sev-h"><b>퇴직금</b><button class="btn sm" onclick="hrShowSeverance()">계산</button></div>' +
@@ -9386,7 +9465,7 @@ async function openGuestsPage(){
   if(!supaOn()){ await uiAlert("서버 설정이 없는 빌드입니다", "손님 관리는 서버가 있어야 합니다.", "warn"); return; }
   if(!await adminGate("손님 관리 열기")) return;
   view.form = {type:"guests", page:true, back:(view.form && (view.form.type === "owner" || view.form.back)) ? "owner" : ""};   /* 사장님 페이지에서 열었으면 닫을 때 거기로(09-20) */
-  if(!GS) GS = { q:"", sort:"recent", open:null, loading:true };
+  if(!GS) GS = { q:"", sort:"vip", open:null, loading:true };   /* 기본은 VIP 순(09-24 재아) */
   render(); await gsLoadMemos(); GS.loading = false; render();
 }
 /* 예약 전체를 번호별로 모음 — 화면 그릴 때마다 계산(2천 건에 수십 ms) */
@@ -9423,10 +9502,10 @@ function gsList(){
     /* 뒷자리가 딱 맞는 손님을 위로 */
     if(qd.length === 4) all.sort(function(a, b){ return (b.phone.slice(-4) === qd) - (a.phone.slice(-4) === qd); });
   }else{
-    if(GS.sort === "recent") all.sort(function(a, b){ return (b.last || "").localeCompare(a.last || "") || b.total - a.total; });
+    if(GS.sort === "vip") all.sort(function(a, b){ return (b.visit - TIER_NOSHOW * b.noshow) - (a.visit - TIER_NOSHOW * a.noshow) || (b.last || "").localeCompare(a.last || ""); });   /* VIP 점수 순 — 걸러 내지 않고 전부 */
+    else if(GS.sort === "recent") all.sort(function(a, b){ return (b.last || "").localeCompare(a.last || "") || b.total - a.total; });
     else if(GS.sort === "visits") all.sort(function(a, b){ return b.visit - a.visit || b.total - a.total; });
     else if(GS.sort === "noshow") all = all.filter(function(g){ return g.noshow; }).sort(function(a, b){ return b.noshow - a.noshow; });
-    else if(GS.sort === "vip") all = all.filter(function(g){ return tierOf(g.visit, g.noshow); }).sort(function(a, b){ return (b.visit - TIER_NOSHOW * b.noshow) - (a.visit - TIER_NOSHOW * a.noshow); });
     else if(GS.sort === "memo") all = all.filter(function(g){ return g.memo; }).sort(function(a, b){ return (b.last || "").localeCompare(a.last || ""); });
   }
   return all;
@@ -9456,7 +9535,7 @@ function sheetGuests(){
   if(!GS || GS.loading) return '<p class="muted" style="padding:20px 0">불러오는 중…</p>';
   var seg = function(k, label){ return '<button class="' + (GS.sort === k ? "on" : "") + '" onclick="GS.sort=\'' + k + '\'; render()">' + label + '</button>'; };
   return '<div class="gs-top"><input id="gs-q" value="' + esc(GS.q || "") + '" placeholder="뒷자리 4자리 · 번호 · 이름 · 메모" oninput="gsSetQ(this.value)" autocomplete="off">' +
-    '<button class="btn sm ghost" onclick="openNoshow(\'guests\')">노쇼 관리</button><div class="seg">' + seg("recent", "최근 방문") + seg("visits", "많이 온 순") + seg("vip", "VIP 이상") + seg("noshow", "노쇼") + seg("memo", "메모 있음") + '</div></div>' +
+    '<button class="btn sm ghost" onclick="openNoshow(\'guests\')">노쇼 관리</button><div class="seg">' + seg("vip", "VIP 순") + seg("recent", "최근 방문") + seg("visits", "방문 횟수 순") + '</div></div>' +
     '<div class="card searchbox" id="gs-list">' + gsRows() + '</div>' +
     '<p class="f-note">전화번호 하나 = 손님 하나. 이름은 그 번호로 가장 많이 적힌 이름이고, 열어서 고정 이름·메모를 적을 수 있습니다. 예약을 고치면 여기도 바로 바뀝니다.<br>등급: 방문 ' + TIER_VIP + '회 이상 <b>VIP</b>, ' + TIER_VVIP + '회 이상 <b>VVIP</b> — 노쇼 한 번에 방문 ' + TIER_NOSHOW + '회를 뺍니다.</p>' +
     (GS.open ? gsDetailHtml() : "");
@@ -11032,14 +11111,17 @@ function sheetNoshow(){
   /* 8차-O(재아): 예약자 단위가 아니라 식사 날짜 단위 — 한 건씩 '되돌리기' 가 됩니다(잘못 누른 노쇼). 같은 번호의 횟수는 옆에 */
   const excluded = store().settings.noshowExcluded || [];
   const cnt = {}; store().reservations.forEach(r=>{ if(r.status==="노쇼" && r.phone){ const k=r.phone.replace(/\D/g,""); cnt[k]=(cnt[k]||0)+1; } });
-  const list = store().reservations.filter(r=>r.status==="노쇼").sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time)).slice(0,120);
+  /* 이름·전화 찾기(09-24 재아: '예약 검색' 단추 대신 입력칸) */
+  const nq = (view.nsQ||"").trim().toLowerCase().replace(/\s/g,""), nd = nq.replace(/\D/g,"");
+  const list = store().reservations.filter(r=>r.status==="노쇼" && (!nq || String(r.name||"").toLowerCase().replace(/\s/g,"").indexOf(nq) >= 0 || (nd.length >= 2 && String(r.phone||"").replace(/\D/g,"").indexOf(nd) >= 0)))
+    .sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time)).slice(0,120);
   const rows = list.length ? list.map(r=>{ const k=(r.phone||"").replace(/\D/g,""); const ex = k && excluded.includes(k); return `
     <div class="rowitem">
-      <button class="grow tap-plain" onclick="openMark('${r.id}')" title="예약 상세"><span class="t">${dateLabel(r.date)} ${esc(r.time)} · ${esc(r.name)}${k && cnt[k]>1?` <span class="tag rust">노쇼 ${cnt[k]}회</span>`:""}${ex?` <span class="tag">경고 제외</span>`:""}</span>
+      <button class="grow tap-plain" onclick="openMark('${r.id}')" title="예약 상세"><span class="t">${dateLabel(r.date)} ${esc(r.time)} · ${esc(r.name)}${k && cnt[k]>1?`<span class="ns-cnt"> · 노쇼 ${cnt[k]}회</span>`:""}${ex?` <span class="tag sm" title="이 번호는 새 예약 때 노쇼 경고를 띄우지 않음">경고 제외</span>`:""}</span>
         <span class="s">${pplText(r)} · ${esc(r.phone||(r.phoneTail?`***-****-${r.phoneTail} (네이버)`:"연락처 없음"))} · ${esc(resSeatLabel(r))}</span></button>
       <button class="btn sm" onclick="undoNoshow('${r.id}')">노쇼 취소</button>
       ${k ? (ex ? `<button class="btn sm ghost" onclick="unclearNoshow('${k}')" title="다시 노쇼 경고를 띄움">경고 제외 해제</button>` : `<button class="btn sm ghost" onclick="clearNoshow('${k}')" title="이 번호는 다음 예약 때 노쇼 경고를 띄우지 않음">경고 제외</button>`) : ""}
-    </div>`; }).join("") : `<div class="empty">노쇼 기록이 없습니다.</div>`;
+    </div>`; }).join("") : `<div class="empty">${nq ? "찾는 노쇼 기록이 없습니다." : "노쇼 기록이 없습니다."}</div>`;
   /* 노쇼율 — 이번 달·지난 달·최근 90일. 분모는 '올 손님'(방문+노쇼), 취소는 뺍니다 */
   const rate = (from, to) => { const all = store().reservations.filter(r=>r.date >= from && r.date <= to && r.date < todayStr() && (r.status==="방문"||r.status==="노쇼")); const ns = all.filter(r=>r.status==="노쇼").length; return {n:all.length, ns, pct: all.length ? Math.round(ns/all.length*1000)/10 : 0}; };
   const t = todayStr(), ym = t.slice(0,7), pm = shiftDate(ym + "-01", -1).slice(0,7);
@@ -11050,14 +11132,10 @@ function sheetNoshow(){
       <div class="ns-stat"><div class="v">${r90.pct}<span class="u">%</span></div><div class="k">최근 90일</div><div class="s">${r90.ns}건 / ${r90.n}팀</div></div>
     </div>`;
   return `
-    ${sheetHead("노쇼 관리")}
-    <div class="btn-row" style="margin:-4px 0 10px"><button class="btn sm" onclick="openSearch()">🔍 예약 검색</button></div>
+    ${view.form && view.form.page ? "" : sheetHead("노쇼 관리")}
     ${stat}
-    <div class="card" style="margin-bottom:12px">${rows}</div>
-    <p class="f-note">예약 상태를 ‘노쇼’로 바꾸면 자동으로 여기에 쌓입니다.
-      새 예약을 등록할 때 같은 번호가 있으면 확정 전에 알려드립니다.
-      ${excluded.length?`<br>경고 제외 번호 ${excluded.length}건 · <button class="linkbtn" onclick="restoreNoshow()">전부 해제</button>`:""}
-    </p>
+    <input id="ns-q" class="ns-q" value="${esc(view.nsQ||"")}" placeholder="손님 이름이나 전화번호로 찾기" autocomplete="off" oninput="view.nsQ=this.value; var b=document.getElementById('ns-list'); if(b) b.innerHTML=nsRowsOnly()">
+    <div class="card" id="ns-list" style="margin-bottom:12px">${rows}</div>
     <div class="sheet-actions"><button class="btn primary" onclick="closeSheet()">닫기</button></div>`;
 }
 /* 노쇼 되돌리기 — 지난 날짜면 '방문'(실제로 온 것), 오늘·앞날이면 '확정' */
@@ -11070,8 +11148,10 @@ async function undoNoshow(id){
   addChange(r, "변경", [{n:"상태", a:"노쇼", b:to}]); r.status = to; touch(r);
   reflowTentatives(r.date); saveData(); render();
 }
+/* 찾기 칸을 칠 때마다 목록만 다시(입력칸 포커스 유지) */
+function nsRowsOnly(){ var h = sheetNoshow(); var i = h.indexOf('<div class="card" id="ns-list"'); if(i < 0) return ""; i = h.indexOf(">", i) + 1; var j = h.indexOf('</div>\n    <div class="sheet-actions">', i); return j > i ? h.slice(i, j) : ""; }
 async function clearNoshow(key){
-  if(!await uiConfirm2("이 고객의 노쇼 기록을 목록에서 제외할까요?\n예약 기록 자체는 남습니다.")) return;
+  if(!await uiConfirm2("이 번호는 다음 예약 때 노쇼 경고를 띄우지 않을까요?\n노쇼 목록에는 그대로 남습니다.")) return;
   const st = store().settings;
   logEvent("노쇼 기록 제외", key);
   st.noshowExcluded = [...(st.noshowExcluded||[]), key];
@@ -11619,6 +11699,7 @@ async function adminGate(what){
   if(ADMIN_UNTIL > Date.now()) return true;
   const r = await uiPin(what, "2차 비밀번호 6자리", 6, {keep:"10분간 다시 묻지 않기"});   /* PIN 화면과 같은 키패드(09-20) */
   if(r == null) return false;
+  if(!r || !r.code) return false;   /* 바깥 누름·취소 */
   const pw = r.code;
   try{ await authToken(SUPA_CFG.adminEmail, /^\d{6}$/.test(pw) ? adminToPassword(pw) : pw); logEvent("관리자 확인", what + (r.keep ? " · 10분 유지" : "")); if(r.keep) ADMIN_UNTIL = Date.now() + 10 * 60000; return true; }
   catch(e){

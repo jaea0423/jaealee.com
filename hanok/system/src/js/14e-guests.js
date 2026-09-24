@@ -19,7 +19,7 @@ async function openGuestsPage(){
   if(!supaOn()){ await uiAlert("서버 설정이 없는 빌드입니다", "손님 관리는 서버가 있어야 합니다.", "warn"); return; }
   if(!await adminGate("손님 관리 열기")) return;
   view.form = {type:"guests", page:true, back:(view.form && (view.form.type === "owner" || view.form.back)) ? "owner" : ""};   /* 사장님 페이지에서 열었으면 닫을 때 거기로(09-20) */
-  if(!GS) GS = { q:"", sort:"recent", open:null, loading:true };
+  if(!GS) GS = { q:"", sort:"vip", open:null, loading:true };   /* 기본은 VIP 순(09-24 재아) */
   render(); await gsLoadMemos(); GS.loading = false; render();
 }
 /* 예약 전체를 번호별로 모음 — 화면 그릴 때마다 계산(2천 건에 수십 ms) */
@@ -56,10 +56,10 @@ function gsList(){
     /* 뒷자리가 딱 맞는 손님을 위로 */
     if(qd.length === 4) all.sort(function(a, b){ return (b.phone.slice(-4) === qd) - (a.phone.slice(-4) === qd); });
   }else{
-    if(GS.sort === "recent") all.sort(function(a, b){ return (b.last || "").localeCompare(a.last || "") || b.total - a.total; });
+    if(GS.sort === "vip") all.sort(function(a, b){ return (b.visit - TIER_NOSHOW * b.noshow) - (a.visit - TIER_NOSHOW * a.noshow) || (b.last || "").localeCompare(a.last || ""); });   /* VIP 점수 순 — 걸러 내지 않고 전부 */
+    else if(GS.sort === "recent") all.sort(function(a, b){ return (b.last || "").localeCompare(a.last || "") || b.total - a.total; });
     else if(GS.sort === "visits") all.sort(function(a, b){ return b.visit - a.visit || b.total - a.total; });
     else if(GS.sort === "noshow") all = all.filter(function(g){ return g.noshow; }).sort(function(a, b){ return b.noshow - a.noshow; });
-    else if(GS.sort === "vip") all = all.filter(function(g){ return tierOf(g.visit, g.noshow); }).sort(function(a, b){ return (b.visit - TIER_NOSHOW * b.noshow) - (a.visit - TIER_NOSHOW * a.noshow); });
     else if(GS.sort === "memo") all = all.filter(function(g){ return g.memo; }).sort(function(a, b){ return (b.last || "").localeCompare(a.last || ""); });
   }
   return all;
@@ -89,7 +89,7 @@ function sheetGuests(){
   if(!GS || GS.loading) return '<p class="muted" style="padding:20px 0">불러오는 중…</p>';
   var seg = function(k, label){ return '<button class="' + (GS.sort === k ? "on" : "") + '" onclick="GS.sort=\'' + k + '\'; render()">' + label + '</button>'; };
   return '<div class="gs-top"><input id="gs-q" value="' + esc(GS.q || "") + '" placeholder="뒷자리 4자리 · 번호 · 이름 · 메모" oninput="gsSetQ(this.value)" autocomplete="off">' +
-    '<button class="btn sm ghost" onclick="openNoshow(\'guests\')">노쇼 관리</button><div class="seg">' + seg("recent", "최근 방문") + seg("visits", "많이 온 순") + seg("vip", "VIP 이상") + seg("noshow", "노쇼") + seg("memo", "메모 있음") + '</div></div>' +
+    '<button class="btn sm ghost" onclick="openNoshow(\'guests\')">노쇼 관리</button><div class="seg">' + seg("vip", "VIP 순") + seg("recent", "최근 방문") + seg("visits", "방문 횟수 순") + '</div></div>' +
     '<div class="card searchbox" id="gs-list">' + gsRows() + '</div>' +
     '<p class="f-note">전화번호 하나 = 손님 하나. 이름은 그 번호로 가장 많이 적힌 이름이고, 열어서 고정 이름·메모를 적을 수 있습니다. 예약을 고치면 여기도 바로 바뀝니다.<br>등급: 방문 ' + TIER_VIP + '회 이상 <b>VIP</b>, ' + TIER_VVIP + '회 이상 <b>VVIP</b> — 노쇼 한 번에 방문 ' + TIER_NOSHOW + '회를 뺍니다.</p>' +
     (GS.open ? gsDetailHtml() : "");

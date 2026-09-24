@@ -459,29 +459,47 @@ function saTabTexts(){
       saF("visit.head.sub", "오시는 길 — 위 소개") + saL("visit.parking", "주차 안내", "", 3) + saL("visit.transit", "대중교통", "", 2));
 }
 /* 5. 차림 */
+/* 차림 — 09-24 재아 "스크롤이 너무 많다, 접을 수 있는 건 접고 하나씩만": 묶음(저녁 코스·점심 세트·요리·만두·주류)은 하나만 펼치고,
+   그 안의 코스·분류도 한 줄 요약 카드로 접어 둠(펼침은 하나만, SA.open) */
+function saFold(key, title, count, inner){
+  var on = (SA.menuSec || "courses") === key;
+  return '<section class="card sa-box sa-fold' + (on ? ' on' : '') + '"><button type="button" class="sa-fold-h" onclick="SA.menuSec=' + (on ? "'-'" : "'" + key + "'") + '; SA.open=null; render()"><b>' + esc(title) + '</b><span>' + esc(count) + '</span><i>' + (on ? '▲' : '▼') + '</i></button>' + (on ? '<div class="sa-fold-b">' + inner + '</div>' : '') + '</section>';
+}
+function saMoveBtns(path, i, n, key){
+  return n > 1 ? '<button class="btn sm ghost" onclick="saArrMove(\'' + path + '\', ' + i + ', -1); SA.open=\'' + key + (i - 1) + '\'; render()" aria-label="위로"' + (i === 0 ? ' disabled' : '') + '>↑</button><button class="btn sm ghost" onclick="saArrMove(\'' + path + '\', ' + i + ', 1); SA.open=\'' + key + (i + 1) + '\'; render()" aria-label="아래로"' + (i === n - 1 ? ' disabled' : '') + '>↓</button>' : '';
+}
 function saTabMenu(){
   var C = saGet("menu.courses.items") || [], L = saGet("menu.lunch") || [], D = saGet("menu.dishes") || [], DM = saGet("menu.dumplings.items") || [], DR = saGet("menu.drinks") || [];
   var itemLines = function(items, withTag){ return items.map(function(x){ return x.name + (withTag && x.tag ? " | " + x.tag : ""); }); };
-  return '<p class="f-note" style="margin:0 0 12px">가격은 홈페이지에 안 나옵니다. 주류는 <b>이름 | 설명</b> 으로 — 예: <code>소주 | 참이슬 · 처음처럼</code></p>' +
-    saBox("저녁 코스",
-      C.map(function(c, i){ var p = "menu.courses.items." + i + "."; return '<div class="sa-sub"><div class="grid2">' + saF(p + "name", "이름") + saF(p + "cn", "한자") + '</div>' + saL(p + "dishes", "구성", "", 4) + '<div class="btn-row"><button class="btn sm ghost" onclick="saArrMove(\'menu.courses.items\', ' + i + ', -1)">↑</button><button class="btn sm ghost" onclick="saArrMove(\'menu.courses.items\', ' + i + ', 1)">↓</button><button class="btn sm ghost" onclick="saArrDel(\'menu.courses.items\', ' + i + ', \'코스\')">삭제</button></div></div>'; }).join("") +
-      '' + saAdd("saArrAdd('menu.courses.items', {name:'', cn:'', dishes:[]})", "코스 추가") + '') +
-    saBox("점심 세트",
-      L.map(function(g, gi){ var gp = "menu.lunch." + gi + "."; return '<div class="sa-sub"><div class="grid2">' + saF(gp + "title", "묶음 이름") + saF(gp + "sub", "옆에 작게", "예: 토·일·공휴일") + '</div>' +
-        (g.items || []).map(function(x, i){ var p = gp + "items." + i + "."; return '<div class="sa-sub2">' + saF(p + "name", "세트 이름") + saL(p + "dishes", "구성", "", 3) + '<div class="btn-row"><button class="btn sm ghost" onclick="saArrDel(\'' + gp + 'items\', ' + i + ', \'세트\')">세트 삭제</button></div></div>'; }).join("") +
-        '<div class="btn-row"><button class="btn sm" onclick="saArrAdd(\'' + gp + 'items\', {name:\'\', dishes:[]})">세트 추가</button><button class="btn sm ghost" onclick="saArrDel(\'menu.lunch\', ' + gi + ', \'묶음\')">묶음 삭제</button></div></div>'; }).join("") +
-      '' + saAdd("saArrAdd('menu.lunch', {title:'', sub:'', items:[]})", "묶음 추가") + '') +
-    saBox("요리",
-      D.map(function(g, gi){ var gp = "menu.dishes." + gi + "."; return '<div class="sa-sub">' + saF(gp + "group", "분류") + saMenuLines(gp + "items", "메뉴", itemLines(g.items || []), false) + '<div class="btn-row"><button class="btn sm ghost" onclick="saArrMove(\'menu.dishes\', ' + gi + ', -1)">↑</button><button class="btn sm ghost" onclick="saArrMove(\'menu.dishes\', ' + gi + ', 1)">↓</button><button class="btn sm ghost" onclick="saArrDel(\'menu.dishes\', ' + gi + ', \'분류\')">분류 삭제</button></div></div>'; }).join("") +
-      '' + saAdd("saArrAdd('menu.dishes', {group:'', items:[]})", "분류 추가") + '') +
-    saBox("만두", saMenuLines("menu.dumplings.items", "메뉴", itemLines(DM), false)) +
-    saBox("주류",
-      DR.map(function(g, gi){ var gp = "menu.drinks." + gi + "."; return '<div class="sa-sub">' + saF(gp + "group", "분류") + saMenuLines(gp + "items", "메뉴", itemLines(g.items || [], true), true) + '<div class="btn-row"><button class="btn sm ghost" onclick="saArrDel(\'menu.drinks\', ' + gi + ', \'분류\')">분류 삭제</button></div></div>'; }).join("") +
-      '' + saAdd("saArrAdd('menu.drinks', {group:'', items:[]})", "분류 추가") + '');
+  var done = '<button class="btn sm primary" onclick="saCardDone()">완료</button>';
+  var courses = C.map(function(c, i){ var p = "menu.courses.items." + i + ".";
+    return saCard("mc" + i, '<span class="sa-card-t">' + esc(c.name || "(이름 없음)") + '</span><span class="sa-card-s">' + esc(c.cn || "") + ' · 구성 ' + (c.dishes || []).length + '</span>',
+      '<div class="grid2">' + saF(p + "name", "이름") + saF(p + "cn", "한자") + '</div>' + saL(p + "dishes", "구성", "", Math.max(4, (c.dishes || []).length + 1)) +
+      '<div class="sa-card-f"><button class="btn sm ghost danger" onclick="saArrDel(\'menu.courses.items\', ' + i + ', \'코스\'); SA.open=null">삭제</button>' + saMoveBtns("menu.courses.items", i, C.length, "mc") + done + '</div>'); }).join("");
+  var lunch = L.map(function(g, gi){ var gp = "menu.lunch." + gi + ".";
+    return saCard("ml" + gi, '<span class="sa-card-t">' + esc(g.title || "(묶음 이름 없음)") + '</span><span class="sa-card-s">' + esc(g.sub ? g.sub + " · " : "") + '세트 ' + (g.items || []).length + '</span>',
+      '<div class="grid2">' + saF(gp + "title", "묶음 이름") + saF(gp + "sub", "옆에 작게", "", {ph:"예: 토·일·공휴일"}) + '</div>' +
+      (g.items || []).map(function(x, i){ var p = gp + "items." + i + "."; return '<div class="sa-sub2"><div class="sa-row">' + '<input type="text" class="in-sm" value="' + esc(x.name || "") + '" placeholder="세트 이름" oninput="saSet(\'' + p + 'name\', this.value)"><button class="sa-x" onclick="saArrDel(\'' + gp + 'items\', ' + i + ', \'세트\')" aria-label="세트 삭제">×</button></div>' + saL(p + "dishes", "구성", "", Math.max(3, (x.dishes || []).length + 1)) + '</div>'; }).join("") +
+      saAdd("saArrAdd('" + gp + "items', {name:'', dishes:[]})", "세트 추가") +
+      '<div class="sa-card-f"><button class="btn sm ghost danger" onclick="saArrDel(\'menu.lunch\', ' + gi + ', \'묶음\'); SA.open=null">삭제</button>' + done + '</div>'); }).join("");
+  var dishes = D.map(function(g, gi){ var gp = "menu.dishes." + gi + ".";
+    return saCard("md" + gi, '<span class="sa-card-t">' + esc(g.group || "(분류 없음)") + '</span><span class="sa-card-s">메뉴 ' + (g.items || []).length + '</span>',
+      saF(gp + "group", "분류") + saMenuLines(gp + "items", "메뉴", itemLines(g.items || []), false) +
+      '<div class="sa-card-f"><button class="btn sm ghost danger" onclick="saArrDel(\'menu.dishes\', ' + gi + ', \'분류\'); SA.open=null">삭제</button>' + saMoveBtns("menu.dishes", gi, D.length, "md") + done + '</div>'); }).join("");
+  var drinks = DR.map(function(g, gi){ var gp = "menu.drinks." + gi + ".";
+    return saCard("mr" + gi, '<span class="sa-card-t">' + esc(g.group || "(분류 없음)") + '</span><span class="sa-card-s">메뉴 ' + (g.items || []).length + '</span>',
+      saF(gp + "group", "분류") + saMenuLines(gp + "items", "메뉴", itemLines(g.items || [], true), true) +
+      '<div class="sa-card-f"><button class="btn sm ghost danger" onclick="saArrDel(\'menu.drinks\', ' + gi + ', \'분류\'); SA.open=null">삭제</button>' + done + '</div>'); }).join("");
+  return '<p class="f-note" style="margin:0 0 12px">가격은 홈페이지에 안 나옵니다.</p>' +
+    saFold("courses", "저녁 코스", C.length + "개", courses + saAdd("saArrAdd('menu.courses.items', {name:'', cn:'', dishes:[]}); SA.open='mc" + C.length + "'; render()", "코스 추가")) +
+    saFold("lunch", "점심 세트", L.length + "묶음", lunch + saAdd("saArrAdd('menu.lunch', {title:'', sub:'', items:[]}); SA.open='ml" + L.length + "'; render()", "묶음 추가")) +
+    saFold("dishes", "요리", D.length + "분류", dishes + saAdd("saArrAdd('menu.dishes', {group:'', items:[]}); SA.open='md" + D.length + "'; render()", "분류 추가")) +
+    saFold("dump", "만두", DM.length + "가지", saMenuLines("menu.dumplings.items", "메뉴", itemLines(DM), false)) +
+    saFold("drinks", "주류", DR.length + "분류", drinks + saAdd("saArrAdd('menu.drinks', {group:'', items:[]}); SA.open='mr" + DR.length + "'; render()", "분류 추가"));
 }
 /* "이름 | 설명" 줄들 ↔ [{name, tag}] . 가격·용량(price·sizes)은 화면에 안 쓰지만 있던 항목은 이름이 같으면 그대로 붙여 둡니다 */
 function saMenuLines(path, label, lines, withTag){
-  return '<label class="f sa-f"><div class="lb">' + esc(label) + ' <span class="lbl-note">한 줄에 하나' + (withTag ? ' · 이름 | 설명' : '') + '</span></div><textarea class="in-sm" rows="' + Math.max(3, lines.length + 1) + '" oninput="saSetMenuLines(\'' + path + '\', this.value, ' + (withTag ? 'true' : 'false') + ')">' + esc(lines.join("\n")) + '</textarea></label>';
+  return '<label class="f sa-f"><div class="lb">' + esc(label) + ' ' + (withTag ? '<span class="lbl-note">이름 | 설명</span>' : '') + '</div><textarea class="in-sm" rows="' + Math.max(3, lines.length + 1) + '" oninput="saSetMenuLines(\'' + path + '\', this.value, ' + (withTag ? 'true' : 'false') + ')">' + esc(lines.join("\n")) + '</textarea></label>';
 }
 /* 줄 → 항목. withTag(주류)면 "이름 | 설명" 을 tag 로. 아니면(요리·만두) 이름만 받고, 있던 tag·price 는 이름이 같으면 그대로 둠(화면엔 안 나와도 자료로 남김) */
 function saSetMenuLines(path, text, withTag){

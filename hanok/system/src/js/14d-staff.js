@@ -129,17 +129,22 @@ function hrWeekCalc(s, w){
 }
 /* 한 달 급여. 시급이 달 중간에 바뀌면 날마다 그날 시급으로 셉니다(basePay). 연장·야간·주휴·배율은 달의 마지막 날 시급 기준 */
 function hrCalc(s, month){
-  var cfg = hrCfg(); cfg.over5 = hrOver5(month); var days = hrMonthDays(month), t = { reg:0, alt:0, abs:0, off:0, days:0, hours:0, night:0, ot:0, weekly:0, bonusH:0, base:0, otPay:0, nightPay:0, weeklyPay:0, bonusPay:0, absentPay:0, extraH:0, extraPay:0, gross:0, ded:{}, dedTotal:0, net:0, employer:0, wage:0, log:[] };
+  var cfg = hrCfg(); cfg.over5 = hrOver5(month); var days = hrMonthDays(month), t = { probCut:0, offH:0, reg:0, alt:0, abs:0, off:0, days:0, hours:0, night:0, ot:0, weekly:0, bonusH:0, base:0, otPay:0, nightPay:0, weeklyPay:0, bonusPay:0, absentPay:0, extraH:0, extraPay:0, gross:0, ded:{}, dedTotal:0, net:0, employer:0, wage:0, log:[] };
   var hourly = s.pay_type !== "monthly", last = days[days.length - 1];
   var monthPay = hrPayAt(s, last);
   t.wage = hourly ? monthPay : Math.round(monthPay / 209);
+  /* 수습(09-24 재아 "실제로 주는 금액이니 수습도 넣자"): 정규 근무 자료(sched.probation = {on, to, rate})에 둠 — 표에 칸을 새로 안 만들려고.
+     수습 기간 날의 기본급만 rate% 로(시급제는 그날 시간 × 시급, 월급제는 달 안의 수습 날 비율). 가산·주휴는 그대로 */
+  var pb = s.sched && s.sched.probation, pbOn = !!(pb && pb.on && pb.to), pbR = pbOn ? Math.min(100, Math.max(0, Number(pb.rate || 90))) / 100 : 1;
   days.forEach(function(d){
     var a = HR.att[s.id + "|" + d]; if(!a) return;
     if(a.status === "정규") t.reg++; else if(a.status === "변형") t.alt++; else if(a.status === "결근") t.abs++; else if(a.status === "휴무") t.off++;
     var sps = hrSpans(s, a), h = sps.reduce(function(x, sp){ return x + sp.hours; }, 0), r = Number(a.rate || 1), w = hourly ? hrPayAt(s, d) : t.wage;
     t.log.push({ date:d, status:a.status, spans:sps, hours:h, rate:r, memo:a.memo || "", wage:w });
     if(!sps.length) return;
-    t.hours += h; t.night += hrNight(sps); if(hourly) t.base += h * w;
+    t.hours += h; t.night += hrNight(sps); if(hourly){ t.base += h * w; if(pbOn && d <= pb.to) t.probCut += h * w * (1 - pbR); }
+    var schedH = hrOnDuty(s, d) ? hrSchedAt(s, d).spans.reduce(function(a2, sp){ var s0 = toMin(sp.start), e0 = toMin(sp.end); if(e0 <= s0) e0 += 1440; return a2 + Math.max(0, (e0 - s0 - Number(sp.break || 0)) / 60); }, 0) : 0;
+    if(h > schedH) t.offH += h - schedH;   /* 급여 표에 '정규 외 N시간' 으로만 보여 줌(돈 계산은 아래 extraH) */
     /* 월급제: 월급은 '정규 근무 시간' 값입니다. 그날 정규 시간을 넘긴 만큼(휴무일 출근은 전부)은 통상시급 × 1.0 을 따로 줍니다(초과 기본분, 재아 09-20).
        그 위에 연장 0.5 가산(5인 이상)은 아래 otPay 에서. 포괄임금(월급에 연장 포함)이면 설정에서 끔 */
     if(!hourly && !cfg.inclusive){ var sh = hrOnDuty(s, d) ? hrSchedAt(s, d).spans.reduce(function(a2, sp){ var s0 = toMin(sp.start), e0 = toMin(sp.end); if(e0 <= s0) e0 += 1440; return a2 + Math.max(0, (e0 - s0 - Number(sp.break || 0)) / 60); }, 0) : 0; if(h > sh) t.extraH += h - sh; }
@@ -149,9 +154,11 @@ function hrCalc(s, month){
   var w0 = hrWeekStart(days[0]); if(hrWeekDays(w0)[6] < days[0]) w0 = shiftDate(w0, 7);
   for(; hrWeekDays(w0)[6] <= last; w0 = shiftDate(w0, 7)){ var wk = hrWeekCalc(s, w0); t.ot += wk.ot; t.weekly += wk.weeklyPay; }
   if(!cfg.over5) t.night = 0;
-  if(!hourly){ t.base = monthPay; if(s.absent_deduct && t.abs) t.absentPay = -Math.round(t.abs * t.wage * 8); }
+  if(!hourly){ t.base = monthPay; if(s.absent_deduct && t.abs) t.absentPay = -Math.round(t.abs * t.wage * 8);
+    if(pbOn){ var pd = days.filter(function(d){ return d <= pb.to; }).length; t.probCut = monthPay * (pd / days.length) * (1 - pbR); } }
+  t.probCut = Math.round(t.probCut); t.probRate = Math.round(pbR * 100); t.probTo = pbOn ? pb.to : "";
   t.otPay = t.ot * t.wage * 0.5; t.nightPay = t.night * t.wage * 0.5; t.weeklyPay = hourly ? t.weekly * t.wage : 0; t.bonusPay = t.bonusH * t.wage; t.extraPay = t.extraH * t.wage;
-  t.gross = Math.round(t.base + t.extraPay + t.otPay + t.nightPay + t.weeklyPay + t.bonusPay + t.absentPay);
+  t.gross = Math.round(t.base + t.extraPay + t.otPay + t.nightPay + t.weeklyPay + t.bonusPay + t.absentPay - t.probCut);
   var tax = s.tax || "4대보험", r = cfg.rates;
   if(tax === "4대보험"){
     var health = Math.round(t.gross * r.health / 100);
@@ -160,7 +167,7 @@ function hrCalc(s, month){
   }else if(tax === "3.3%"){ var inc = Math.round(t.gross * (cfg.taxRate / 1.1) / 100); t.ded = { "소득세(3%)": inc, "지방소득세(0.3%)": Math.round(inc / 10) }; }
   t.dedTotal = Object.keys(t.ded).reduce(function(a, k){ return a + t.ded[k]; }, 0);
   t.net = t.gross - t.dedTotal;
-  ["hours","night","ot","weekly","bonusH","extraH"].forEach(function(k){ t[k] = hrRound(t[k]); });
+  ["hours","night","ot","weekly","bonusH","extraH","offH"].forEach(function(k){ t[k] = hrRound(t[k]); });
   return t;
 }
 async function hrSeverance(s){
@@ -224,8 +231,8 @@ async function hrDayClick(date){
 }
 
 /* ---------- 직원 편집 ---------- */
-function hrStaffNew(){ HR.edit = { id:newId("stf"), name:"", nick:"", role:"홀", phone:"", pay_type:"hourly", pay:0, tax:"4대보험", weekly_pay:true, absent_deduct:false, sched_hist:[{from:"", days:[false,true,true,true,true,true,true], spans:[{start:"10:00", end:"22:00", break:60}]}], pay_hist:[{from:"", pay:0}], start_date:todayStr(), end_date:null, memo:"", active:true, sort:HR.staff.length, _new:true, tab:"sched" }; render(); }
-function hrStaffEdit(id){ var s = HR.staff.find(function(x){ return x.id === id; }); if(!s) return; HR.edit = deepClone(s); HR.edit.sched_hist = hrSchedHist(s).map(function(e){ return { from:e.from || "", days:(e.days || []).slice(), spans:(e.spans || []).map(function(x){ return Object.assign({}, x); }) }; }); HR.edit.pay_hist = hrPayHist(s).map(function(e){ return Object.assign({}, e); }); HR.edit.sev = null; HR.edit.tab = "sched"; render(); }
+function hrStaffNew(){ HR.edit = { probation:{on:false, to:"", rate:90}, id:newId("stf"), name:"", nick:"", role:"홀", phone:"", pay_type:"hourly", pay:0, tax:"4대보험", weekly_pay:true, absent_deduct:false, sched_hist:[{from:"", days:[false,true,true,true,true,true,true], spans:[{start:"10:00", end:"22:00", break:60}]}], pay_hist:[{from:"", pay:0}], start_date:todayStr(), end_date:null, memo:"", active:true, sort:HR.staff.length, _new:true, tab:"sched" }; render(); }
+function hrStaffEdit(id){ var s = HR.staff.find(function(x){ return x.id === id; }); if(!s) return; HR.edit = deepClone(s); HR.edit.probation = Object.assign({on:false, to:"", rate:90}, (s.sched && s.sched.probation) || {}); HR.edit.sched_hist = hrSchedHist(s).map(function(e){ return { from:e.from || "", days:(e.days || []).slice(), spans:(e.spans || []).map(function(x){ return Object.assign({}, x); }) }; }); HR.edit.pay_hist = hrPayHist(s).map(function(e){ return Object.assign({}, e); }); HR.edit.sev = null; HR.edit.tab = "sched"; render(); }
 function hrEditSet(k, v){ if(HR.edit) HR.edit[k] = v; }
 function hrEditDay(i, j){ HR.edit.sched_hist[i].days[j] = !HR.edit.sched_hist[i].days[j]; render(); }
 function hrEditSpan(i, j, k, v){ HR.edit.sched_hist[i].spans[j][k] = k === "break" ? Number(v || 0) : v; }
@@ -243,7 +250,7 @@ async function hrStaffSave(){
   var cur = sh[sh.length - 1], sp0 = cur.spans[0] || {start:"10:00", end:"22:00", break:0};
   var row = { id:e.id, store:view.storeKey || "hanok", name:(e.name || "").trim() || (e.nick || "").trim(), nick:(e.nick || "").trim(), role:(e.role || "").trim(), phone:phoneNorm(e.phone || ""),
               pay_type:e.pay_type || "hourly", pay:ph[ph.length - 1].pay, pay_hist:ph, tax:e.tax || "4대보험", weekly_pay:e.weekly_pay !== false, absent_deduct:!!e.absent_deduct,
-              sched:{ days:cur.days, start:sp0.start, end:sp0.end, break:sp0.break, spans:cur.spans }, sched_hist:sh,
+              sched:{ days:cur.days, start:sp0.start, end:sp0.end, break:sp0.break, spans:cur.spans, probation:e.probation || {on:false, to:"", rate:90} }, sched_hist:sh,
               start_date:e.start_date || null, end_date:e.end_date || null, memo:(e.memo || "").trim(), active:e.active !== false, sort:Number(e.sort || 0) };
   try{
     await sb("/rest/v1/staff?on_conflict=id", { method:"POST", body:row, prefer:"resolution=merge-duplicates,return=minimal" });
@@ -291,7 +298,7 @@ async function hrJumpMonth(v){ if(!/^\d{4}-\d{2}$/.test(v || "")) return; HR.mon
 function hrPeriodHead(title, sub, onPrev, onToday, onNext, isNow){
   var pay = HR.view === "pay";
   var big = pay ? ["hrMoveMonth(-12)", "hrMoveMonth(12)", "1년 전", "1년 뒤"] : ["hrMoveWeek(-4)", "hrMoveWeek(4)", "4주 전", "4주 뒤"];
-  return '<div class="hr-period center">' +
+  return '<div class="hr-period center' + (isNow ? '' : ' notnow') + '">' +
     '<div class="hr-period-nav"><button class="bnav" onclick="' + big[0] + '" title="' + big[2] + '">&laquo;</button><button class="bnav" onclick="' + onPrev + '" aria-label="이전">&lsaquo;</button></div>' +
     '<div class="hr-period-t"><b>' + title + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + (isNow ? '' : '<button class="btn sm ghost" onclick="' + onToday + '">' + (pay ? "이번 달" : "이번 주") + '</button>') + '</div>' +
     '<div class="hr-period-nav"><button class="bnav" onclick="' + onNext + '" aria-label="다음">&rsaquo;</button><button class="bnav" onclick="' + big[1] + '" title="' + big[3] + '">&raquo;</button></div></div>';
@@ -303,7 +310,7 @@ function hrWeekView(){
   var w0 = new Date(days[0] + "T00:00:00"), w6 = new Date(days[6] + "T00:00:00");
   var head = hrPeriodHead(hrWeekLabel(HR.week), (w0.getMonth() + 1) + "월 " + w0.getDate() + "일 – " + (w6.getMonth() + 1) + "월 " + w6.getDate() + "일", "hrMoveWeek(-1)", "hrMoveWeek(0)", "hrMoveWeek(1)", HR.week === hrWeekStart(today));
   var ths = days.map(function(d){ var dt = new Date(d + "T00:00:00"), dow = dt.getDay(), hol = isHoliday(d);
-    return '<th class="hd ' + (d === today ? "today " : "") + (dow === 0 || hol ? "sun" : dow === 6 ? "sat" : "") + '" onclick="hrDayClick(\'' + d + '\')" title="누르면 공휴일 지정/해제"><b>' + dt.getDate() + '</b><small>' + HR_DAYS[dow] + (hol && dow !== 0 ? ' · 공휴' : '') + '</small></th>'; }).join("");
+    return '<th class="hd ' + (d === today ? "today " : "") + (dow === 0 || hol ? "sun" : dow === 6 ? "sat" : "") + '" onclick="hrDayClick(\'' + d + '\')" title="누르면 공휴일 지정/해제"><b>' + dt.getDate() + '</b><small>' + HR_DAYS[dow] + '</small></th>'; }).join("");
   var rowHtml = function(s){
     var wk = hrWeekCalc(s, HR.week);
     var tds = days.map(function(d){
@@ -332,8 +339,7 @@ function hrPayView(){
   var tot = { gross:0, ded:0, net:0, employer:0 };
   var rowHtml = function(s){
     var t = hrCalc(s, m); tot.gross += t.gross; tot.ded += t.dedTotal; tot.net += t.net; tot.employer += t.employer;
-    var extra = [];
-    if(t.ot) extra.push("연장 " + t.ot + "h"); if(t.night) extra.push("야간 " + t.night + "h"); if(t.weekly) extra.push("주휴 " + t.weekly + "h"); if(t.bonusH) extra.push("가산 " + t.bonusH + "h");
+    var extra = t.offH ? ["정규 외 " + t.offH + "h"] : [];
     return '<tr' + (s.active === false ? ' class="gone"' : '') + '><td class="nm"><button class="hr-nm" onclick="hrStaffEdit(\'' + s.id + '\')"><b>' + esc(hrLabel(s)) + '</b><small>' + esc(s.nick && s.name !== s.nick ? s.name + " · " : "") + esc(s.role || "") + (s.active === false ? " · 퇴사" : "") + '</small></button></td>' +
       '<td class="won"><small>' + (s.pay_type === "monthly" ? "월급" : "시급") + '</small>' + hrWon(hrPayAt(s, last)) + '</td><td>' + t.days + '일' + (t.abs ? '<small class="rust">결근 ' + t.abs + '</small>' : '') + '</td><td>' + t.hours + 'h' + (extra.length ? '<small>' + extra.join(" · ") + '</small>' : '') + '</td>' +
       '<td class="won">' + hrWon(t.gross) + '</td><td class="won">' + (t.dedTotal ? '−' + hrWon(t.dedTotal) + '<small>' + esc(s.tax || "4대보험") + '</small>' : '<small class="muted">공제 없음</small>') + '</td><td class="won"><b>' + hrWon(t.net) + '</b></td>' +
@@ -363,15 +369,16 @@ function hrSlipData(s, m){
   if(t.weeklyPay) L.push({k:"row", a:"주휴수당", b:hrWon(t.weeklyPay), n:t.weekly + "h"});
   if(t.bonusPay) L.push({k:"row", a:"휴일·배율 가산", b:hrWon(t.bonusPay), n:t.bonusH + "h"});
   if(t.absentPay) L.push({k:"row", a:"결근 공제", b:hrWon(t.absentPay), n:t.abs + "일 × 8h"});
+  if(t.probCut) L.push({k:"row", a:"수습 감액", b:"−" + hrWon(t.probCut), n:t.probRate + "% 지급 · " + pkShort(t.probTo) + "까지"});
   L.push({k:"tot", a:"총지급", b:hrWon(t.gross)});
   L.push({k:"sec", a:"공제 · " + (s.tax || "4대보험")});
   if(Object.keys(t.ded).length) Object.keys(t.ded).forEach(function(k){ L.push({k:"row", a:k, b:"−" + hrWon(t.ded[k])}); }); else L.push({k:"row", a:"공제 없음", b:"0원"});
   L.push({k:"tot", a:"실지급액", b:hrWon(t.net), big:true});
   L.push({k:"dash"}); L.push({k:"sec", a:"근무 기록 " + t.log.length + "일"});
-  t.log.forEach(function(l){ var dt = new Date(l.date + "T00:00:00"); L.push({k:"log", a:(dt.getMonth() + 1) + "/" + dt.getDate() + "(" + HR_DAYS[dt.getDay()] + ")", b:HR_STATUS[l.status] + " " + (l.spans.length ? l.spans.map(function(sp){ return minToHM(sp.s0) + "-" + minToHM(sp.e0 % 1440); }).join("+") + " " + hrRound(l.hours) + "h" : l.status) + (l.rate > 1 ? " " + l.rate + "x" : ""), n:l.memo || ""}); });
+  t.log.forEach(function(l){ var dt = new Date(l.date + "T00:00:00"); L.push({k:"log", a:(dt.getMonth() + 1) + "/" + dt.getDate() + "(" + HR_DAYS[dt.getDay()] + ")", b:HR_STATUS[l.status] + " " + (l.spans.length ? l.spans.map(function(sp){ return minToHM(sp.s0) + "-" + minToHM(sp.e0 % 1440); }).join("+") + " " + hrRound(l.hours) + "h" : l.status) + (l.rate > 1 ? " " + l.rate + "x" : ""), n:""}); });   /* 메모(결근 사유 등)는 직원에게 가는 종이에 안 씀(09-24 재아) */
   L.push({k:"dash"});
   L.push({k:"note", a:"발행 " + todayStr() + " · " + shop});
-  L.push({k:"note", a:"참고용 계산서 — 소득세(간이세액)·비과세·수습 감액은 넣지 않았습니다"});
+  L.push({k:"note", a:"참고용 계산서 — 소득세(간이세액표)·비과세는 넣지 않았습니다"});
   return { lines:L, title:title, t:t, cfg:cfg, shop:shop };
 }
 function hrSlipHtml(){
@@ -427,10 +434,6 @@ async function hrSlipImage(){
   var name = d.title.replace(/\s/g, "") + "_급여계산서_" + hrLabel(s) + ".png";
   c.toBlob(async function(blob){
     if(!blob){ uiAlert("사진을 만들지 못했습니다", "", "warn"); return; }
-    try{
-      var file = new File([blob], name, {type:"image/png"});
-      if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:name}); return; }   /* 폰·태블릿: 카톡 등으로 바로 */
-    }catch(e){ if(e && e.name === "AbortError") return; }
     var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 2000);
     showToast("사진으로 저장했습니다 · " + name);
   }, "image/png");
@@ -467,6 +470,11 @@ function hrEditHtml(){
       '<div class="f"><div class="lb">공제</div><div class="seg">' + segv("tax", "4대보험", "4대보험") + segv("tax", "3.3%", "3.3%") + segv("tax", "없음", "없음") + '</div></div></div>' +
       e.pay_hist.map(function(h, i){ return '<div class="grid2 hr-spanrow"><label class="f"><div class="lb">' + (i === 0 && !h.from ? "처음부터" : "적용 시작일") + '</div>' + (i === 0 && !h.from ? '<span class="muted" style="display:block; padding:10px 0">입사 때부터</span>' : '<input type="date" value="' + esc(h.from) + '" onchange="HR.edit.pay_hist[' + i + '].from=this.value">') + '</label><label class="f"><div class="lb">' + (e.pay_type === "monthly" ? "월급(원)" : "시급(원)") + (e.pay_hist.length > 1 ? ' <button class="btn sm ghost" style="float:right; padding:0 6px; min-height:0" onclick="hrEditPayDel(' + i + ')">×</button>' : '') + '</div><input type="number" min="0" step="100" value="' + Number(h.pay || 0) + '" oninput="HR.edit.pay_hist[' + i + '].pay=Number(this.value)"></label></div>'; }).join("") +
       '<div class="btn-row"><button class="btn sm" onclick="hrEditPayAdd()">＋ 시급 변경 (다음 달 1일부터)</button></div>' +
+      (function(){ var pb = e.probation || (e.probation = {on:false, to:"", rate:90});
+        return '<div class="f"><div class="lb">수습 <span class="lbl-note">수습 기간의 기본급만 줄여서 계산</span></div><div class="seg">' +
+          '<button class="' + (pb.on ? "on" : "") + '" onclick="HR.edit.probation.on=true; render()">적용</button><button class="' + (!pb.on ? "on" : "") + '" onclick="HR.edit.probation.on=false; render()">안 함</button></div></div>' +
+          (pb.on ? '<div class="grid2"><label class="f"><div class="lb">수습 끝나는 날</div><input type="date" value="' + esc(pb.to || "") + '" onchange="HR.edit.probation.to=this.value"></label>' +
+            '<label class="f"><div class="lb">수습 지급률 (%)</div><input type="number" min="50" max="100" value="' + (pb.rate || 90) + '" onchange="HR.edit.probation.rate=Number(this.value)||90"></label></div>' : ''); })() +
       (e.pay_type !== "monthly" ? '<div class="f"><div class="lb">주휴수당 <span class="lbl-note">주 15h 이상 개근이면 자동</span></div><div class="seg">' + segv("weekly_pay", true, "계산") + segv("weekly_pay", false, "안 함") + '</div></div>'
         : '<div class="f"><div class="lb">결근 공제 <span class="lbl-note">월급제 — 결근일 × 8h 일할 공제</span></div><div class="seg">' + segv("absent_deduct", true, "공제") + segv("absent_deduct", false, "안 함") + '</div></div>') +
       (e._new ? '' : '<div class="hr-sev"><div class="hr-sev-h"><b>퇴직금</b><button class="btn sm" onclick="hrShowSeverance()">계산</button></div>' +
