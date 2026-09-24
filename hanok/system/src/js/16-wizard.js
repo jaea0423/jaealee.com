@@ -794,6 +794,8 @@ function wzStepSeat(){
     const cur = seatById(WZ.seat) || (st.joins||[]).find(j=>j.id===WZ.seat);
     WZ.seatKind = cur ? (isTable(cur) ? "table" : "room") : (isTablePref(WZ.seat) ? "table" : "room");
   }
+  /* 특정 방·층·테이블을 골라 둔 채 이 단계로 돌아오면 접힌 목록 때문에 무엇을 골랐는지 안 보입니다 — 그때는 펼쳐 둡니다 */
+  if(WZ.seat && ["any","hall-any","table-any","room-any"].indexOf(WZ.seat) < 0) WZ.seatDetail = true;
   const kind = WZ.seatKind;   /* 8차-W(재아): 기본값 없음 — 룸/테이블을 먼저 고르면 그때 좌석이 보입니다 */
 
   const cell = (ids, x, extraCls) => {
@@ -827,7 +829,7 @@ function wzStepSeat(){
       (joins.length ? `<div class="lbl" style="margin-top:16px">룸 합침 <span class="lbl-note">중문 탈거 · 자동 배정 안 됨</span></div>
         <div class="sgrid">${doorJoins.map(j=>cell(j.ids, {id:j.id, name:"", note:j.note}, "join")).join("")}</div>
         ${doorJoins.length&&splitJoins.length?`<div class="seat-join-divider"><span>공간을 나눠 쓰는 조합</span></div>`:""}
-        ${splitJoins.length?`<div class="sgrid">${splitJoins.map(j=>cell(j.ids, {id:j.id, name:"", note:j.note}, "join split")).join("")}</div>`:""}` : "");
+        ${splitJoins.length?`<div class="sgrid">${splitJoins.map(j=>cell(j.ids, {id:j.id, name:"", note:j.note}, "join jsplit")).join("")}</div>`:""}` : "");   /* 'split' 은 TV 화면 전체 틀(.split, 높이 100dvh)이 쓰는 이름이라 jsplit — 겹치면 칸이 화면 높이만큼 늘어남 */
   }else{
     /* 테이블은 층만 고릅니다 — 어느 테이블에 앉을지는 그날 현장에서. 남은 자리는 같은 시간대 겹치는 손님 수로 */
     const floors = tableFloors();
