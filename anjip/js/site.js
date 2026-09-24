@@ -42,7 +42,7 @@ window.SITE_READY.then(function(){
       <div class="fb"><div class="foot-brand"><b>안집</b><small>${esc(INFO.tagline || "")}</small></div><div><p>${esc(INFO.addr)}</p><a href="${telHref}">${esc(INFO.tel)}</a></div></div>
       <div><h5>영업시간</h5>${HOURS.map(h=>`<p>${esc(h.day)} ${esc(h.open)}</p>`).join("")}${HOURS_NOTE.map(n=>`<p class="mute">${esc(n)}</p>`).join("")}</div>
       <div><h5>주차</h5><p>${esc(INFO.parking)}</p></div>
-      <div><h5>이웃</h5><a href="../hanok/">한옥반점</a></div>
+      <div><h5>이웃</h5><a href="https://hanokbanjeom.com/">한옥반점</a></div>
     </div>
     <div class="foot-copy"><span>© ${new Date().getFullYear()} 안집</span><span>${INFO.owner ? `대표 ${esc(INFO.owner)}` : ""}${INFO.bizno ? ` · 사업자등록번호 ${esc(INFO.bizno)}` : ""}</span></div>`;
   document.body.append(foot);
