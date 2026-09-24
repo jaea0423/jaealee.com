@@ -165,7 +165,7 @@ window.SITE_READY.then(function(){
     $("#lnk-naver").href = INFO.naverMap; $("#lnk-kakao").href = INFO.kakaoMap;
   }
   if(page === "reserve"){
-    $("#rv-notes").innerHTML = S.reserve.notes.map(n => `<li><b>${esc(n.b)}</b><span>${rich(n.s)}${n.tel ? ` <a href="tel:${esc(INFO.tel)}" class="num">${esc(INFO.tel)}</a>` : ""}</span></li>`).join("");
+    $("#rv-notes").innerHTML = S.reserve.notes.filter(n => !(S.online && S.online.sameDay && String(n.b).trim() === "당일")).map(n => `<li><b>${esc(n.b)}</b><span>${rich(n.s)}${n.tel ? ` <a href="tel:${esc(INFO.tel)}" class="num">${esc(INFO.tel)}</a>` : ""}</span></li>`).join("");
     $("#rv-steps").innerHTML = S.reserve.go.steps.map(x => `<li>${esc(x)}</li>`).join("");
   }
   if(page === "menu") document.querySelectorAll("a.pdf").forEach(a => a.href = INFO.menuPdf);   /* 파일명(menu.pdf) 또는 올린 파일의 전체 주소 */

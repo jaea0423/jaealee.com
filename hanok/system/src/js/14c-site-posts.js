@@ -74,7 +74,7 @@ function saTabPosts(){
           '<span class="s">' + esc(dateLabel(p.date)) + (imgs ? ' · 사진 ' + imgs : '') + (files ? ' · 파일 ' + files : '') + (p.updated_at ? ' · 고침 ' + saPostWhen(p.updated_at) : '') + '</span></span></button>';
       }).join("");
   return saBox("소식 글", '<div class="card searchbox" style="margin-bottom:12px">' + rows + '</div>' +
-      '<div class="btn-row"><button class="btn primary" onclick="saPostNew()">새 글</button><a class="btn" href="' + saRoot() + 'news.html?v=' + Date.now() + '" target="_blank" rel="noopener">홈페이지 소식 보기</a></div>',
+      '<div class="btn-row"><button class="btn sm primary" onclick="saPostNew()">＋ 새 글</button><a class="btn sm" href="' + saRoot() + 'news.html?v=' + Date.now() + '" target="_blank" rel="noopener">홈페이지 소식 보기</a></div>',
       '<span class="muted" style="margin-left:auto; font-size:var(--fs-label)">저장하면 바로 홈페이지에 나옵니다 — 위의 초안·적용과 무관</span>') +
     '<p class="f-note">글은 최신 날짜가 위, "고정" 한 글은 맨 위. 본문은 줄바꿈 그대로, 빈 줄로 문단이 나뉘고 **굵게** 를 쓸 수 있습니다. 사진은 긴 변 1600px 로 줄여서 올라갑니다.</p>';
 }
@@ -91,21 +91,21 @@ function saPostEditor(){
       '<a class="btn sm ghost" href="' + esc(f.url) + '" target="_blank" rel="noopener">열기</a><button class="btn sm ghost" onclick="saPostFileDel(' + i + ')">×</button></div>';
   }).join("");
   return saBox(p._new ? "새 글" : "글 고치기",
-      '<label class="f big"><div class="lb">제목</div><input type="text" value="' + esc(p.title) + '" placeholder="예: 추석 연휴 정상 영업" oninput="saPostSet(\'title\', this.value)"></label>' +
+      '<label class="f sa-f"><div class="lb">제목</div><input type="text" class="in-sm" value="' + esc(p.title) + '" placeholder="예: 추석 연휴 정상 영업" oninput="saPostSet(\'title\', this.value)"></label>' +
       '<div class="grid2">' +
-        '<label class="f"><div class="lb">날짜 <span class="lbl-note">글에 보이는 날짜 · 정렬 기준</span></div><input type="date" value="' + esc(p.date) + '" onchange="saPostSet(\'date\', this.value)"></label>' +
-        '<div class="f"><div class="lb">맨 위 고정</div><div class="seg"><button class="' + (p.pinned ? "on" : "") + '" onclick="saPostSet(\'pinned\', true); render()">고정</button><button class="' + (!p.pinned ? "on" : "") + '" onclick="saPostSet(\'pinned\', false); render()">안 함</button></div></div>' +
+        '<label class="f sa-f"><div class="lb">날짜 <span class="lbl-note">글에 보이는 날짜 · 정렬 기준</span></div><input type="date" class="in-sm" value="' + esc(p.date) + '" onchange="saPostSet(\'date\', this.value)"></label>' +
+        '<div class="f">' + saSwHtml(!!p.pinned, "saPostSet('pinned', " + (p.pinned ? "false" : "true") + "); render()", "맨 위 고정", "소식 목록 맨 위에 둡니다") + '</div>' +
       '</div>' +
-      '<label class="f big"><div class="lb">본문 <span class="lbl-note">빈 줄로 문단 · **굵게**</span></div><textarea rows="10" placeholder="내용을 적어 주세요" oninput="saPostSet(\'body\', this.value)">' + esc(p.body || "") + '</textarea></label>' +
+      '<label class="f sa-f"><div class="lb">본문 <span class="lbl-note">빈 줄로 문단 · **굵게**</span></div><textarea class="in-sm" rows="10" placeholder="내용을 적어 주세요" oninput="saPostSet(\'body\', this.value)">' + esc(p.body || "") + '</textarea></label>' +
       '<div class="f"><div class="lb">사진 <span class="lbl-note">여러 장 · 순서는 화살표</span></div><div class="sa-pimgs">' + imgs + '<button class="sa-pimg add" onclick="saPostImgAdd()">＋ 사진 올리기</button></div></div>' +
       '<div class="f"><div class="lb">첨부 파일 <span class="lbl-note">PDF·한글·워드·엑셀·zip 등, 50MB 까지</span></div>' + files + '<div class="btn-row"><button class="btn sm" onclick="saPostFileAdd()">＋ 파일 올리기</button></div></div>' +
       '<div class="btn-row" style="margin-top:16px; align-items:center">' +
-        '<button class="btn ghost" onclick="saPostBack()">목록</button>' +
-        (p._new ? '' : '<button class="btn danger" onclick="saPostDelete()">지우기</button>') +
-        '<button class="btn ghost" onclick="SA.postPreview=true; render()">미리보기</button>' +
+        '<button class="btn sm ghost" onclick="saPostBack()">← 목록</button>' +
+        (p._new ? '' : '<button class="btn sm ghost danger" onclick="saPostDelete()">지우기</button>') +
+        '<button class="btn sm" onclick="SA.postPreview=true; render()">미리보기</button>' +
         '<span id="sa-post-state" class="muted" style="margin-left:auto; font-size:var(--fs-label)">' + (saPostDirty() ? "고친 내용이 있습니다" : "") + '</span>' +
-        '<button class="btn" onclick="saPostSave(\'초안\')">초안으로 저장</button>' +
-        '<button class="btn primary" onclick="saPostSave(\'게시\')">' + (p.status === "게시" && !p._new ? "고친 것 게시" : "게시") + '</button>' +
+        '<button class="btn sm" onclick="saPostSave(\'초안\')">초안으로 저장</button>' +
+        '<button class="btn sm primary" onclick="saPostSave(\'게시\')">' + (p.status === "게시" && !p._new ? "고친 것 게시" : "게시") + '</button>' +
       '</div>',
       p.status === "초안" ? '<span class="tag amber sm" style="margin-left:auto">초안 — 홈페이지에 안 보임</span>' : '') +
     (SA.postPreview ? saPostPreviewHtml() : '') + (SA.postZoom != null ? saPostZoomHtml() : '');

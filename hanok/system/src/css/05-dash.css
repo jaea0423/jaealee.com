@@ -138,7 +138,7 @@ button.blk{border:1px solid rgba(255,255,255,.3); box-sizing:border-box; cursor:
 button.blk:hover{filter:brightness(1.15)}
 button.blk b{font-weight:700; font-size:18px}
 /* 그래프 칸 안의 VIP 알약 — 칸이 21px 이라 알약도 납작하게 */
-.blk .tier{margin-left:4px; padding:0 6px; font-size:11px; line-height:1.5; vertical-align:middle}
+.blk .tier{margin-left:0; margin-right:4px; padding:0 6px; font-size:11px; line-height:1.5; vertical-align:middle}   /* 시각 뒤·이름 앞(09-24) */
 .blk .jn, .blk .chg-chip, .blk .rq, .blk small.tn{vertical-align:middle}
 /* 확정 / 잠정 / 경고를 구분해서 보여줍니다
    잠정 = 빗금 무늬 + 점선 테두리, 경고 = 붉은색, 둘 다면 붉은색 위에 빗금 */
@@ -177,6 +177,11 @@ button.blk.tent.warned.changed{background-image:linear-gradient(90deg, #3D8BD9 0
 /* 영업 외 시간(.offband) · 휴무(.closed-band) 는 회색 빗금, 브레이크타임(.breakband) 은 옅은 벽돌색 */
 .offband{position:absolute; top:0; bottom:0; z-index:1; pointer-events:none; background:repeating-linear-gradient(45deg, rgba(27,27,25,.24) 0 5px, rgba(27,27,25,.13) 5px 10px)}
 .breakband{position:absolute; top:0; bottom:0; border-left:1px dashed rgba(156,59,39,.45); border-right:1px dashed rgba(156,59,39,.45); z-index:1; pointer-events:none; background:rgba(156,59,39,.20)}
+/* ---- 한 줄(track) 안의 겹침 순서 (09-24 재아: 겹침·초과 칸의 회색이 브레이크·사용 중지 빗금을 덮어 보이던 것) ----
+   줄마다 쌓임 맥락을 따로 만들고(z-index:0), 안에서 아래 → 위 순서를 못 박습니다:
+   ① 초과 칸 회색(0) ② 예약 칸(auto, 문서 순서) ③ 영업 밖·브레이크·휴무·사용 중지 빗금(1) ④ 영업 끝 넘김 선(4) ⑤ 합침·겹침 예약(20·25)
+   현재 시각선은 축 줄(z 40)에 있어 모든 줄 위. 축 줄 트랙은 선이 아래로 삐져나가야 해서 제외 */
+.tl-row:not(.axis) .tl-track{z-index:0}
 .offband.overlane{z-index:0; background:rgba(27,27,25,.30)}   /* 09-20 재아: 티가 안 나서 .13 → .30 */   /* 테이블 수를 넘은 팀의 칸 — 빗금이 많으면 정신없다는 평(재아 09-20)이라 그냥 회색 */
 /* 점심/저녁 판에서 경계 너머 흐리게 덧붙인 구간 — 이어지는 예약만 보이라고. 위에 흰 막을 씌워 블록도 같이 흐려집니다 */
 .extband{position:absolute; top:0; bottom:0; z-index:4; pointer-events:none; border-left:2px dashed var(--border-strong);
@@ -241,7 +246,8 @@ button.blk.tent.warned.changed{background-image:linear-gradient(90deg, #3D8BD9 0
 .rr-bang{width:12px; flex:none; font-weight:700; color:var(--rust); font-size:var(--fs-body); text-align:center}
 .rr-t{font-size:var(--fs-body); font-weight:400; color:var(--text)}
 .rr-n{font-size:var(--fs-body); font-weight:400; min-width:0; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; gap:4px}
-.rr-n .tier{flex:none; margin-left:2px}   /* 딱지는 안 줄고, 긴 이름이 … 으로(09-20) */
+.rr-n .tier{flex:none; margin-left:0}   /* 딱지는 시각과 이름 사이(09-24) — 안 줄고, 긴 이름이 … 으로 */
+.rr-n .rr-nm, .mr-n .rr-nm{min-width:0; overflow:hidden; text-overflow:ellipsis}
 .rr-n{white-space:nowrap}
 .rr-n > .tier:first-child{margin-left:0}
 /* 8차-T(재아): 아직 안 온 확정 예약만 굵게(시간·이름). 왼쪽 띠는 타임라인 블록과 같은 색 규칙 — 먹=확정, 벽돌=경고, 파랑=오늘 변동, 빗금=룸 미정(잠정) */
@@ -297,3 +303,41 @@ button.blk.tent .tier{background:#FFF8E1}
 .blk .tier.vvip{background:#E5C15C; color:#1B1B19; border-color:#F6D97E}   /* 어두운 예약 칸에서도 VVIP가 묻히지 않게 대비를 높입니다 */
 .searchbox > .empty{background:transparent; border-radius:0; padding:var(--s24) var(--s16)}
 .searchbox .search-past{background:var(--surface-2); color:var(--text-3); opacity:.58}
+
+/* 초과(겹침) 칸 — 09-24: .30 은 너무 진해서 위에 그린 브레이크·빗금이 회색 밑에 깔린 것처럼 보였습니다.
+   옅게 깔고 정상 칸과의 경계에 선을 그어 '여기부터 넘친 칸' 이 보이게 합니다 */
+.offband.overlane{background:rgba(27,27,25,.10); box-shadow:inset 0 -2px 0 rgba(27,27,25,.28)}
+
+/* ---------- 검색 (09-24) — 입력칸 + 사람 단추, 결과는 한 줄 ---------- */
+.sq-row{display:flex; gap:var(--s8); margin-bottom:var(--s8)}
+.sq-row input{flex:1; min-width:0; margin:0}
+.sq-mode{flex:none; width:46px; border:1px solid var(--border-strong); border-radius:var(--r-sm); background:var(--surface); color:var(--text-2); display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0}
+.sq-mode svg{width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.7}
+.sq-mode.on{background:var(--text); border-color:var(--text); color:#fff}
+.srow{display:grid; grid-template-columns:104px minmax(0,1fr) 44px 52px 118px; column-gap:var(--s12); align-items:center; width:100%; padding:7px var(--s12); border:none; border-top:1px solid var(--border); background:none; font:inherit; color:var(--text); text-align:left; cursor:pointer; white-space:nowrap}
+.srow:first-child{border-top:none}
+.srow:hover{background:var(--surface-2)}
+.srow .sr-d{font-size:var(--fs-sub); font-weight:600}
+.srow .sr-n{display:flex; align-items:center; gap:4px; min-width:0; font-weight:600}
+.srow .sr-n .tier{flex:none; margin-left:0}
+.srow .sr-nm{min-width:0; overflow:hidden; text-overflow:ellipsis}
+.srow .sr-n .tag{flex:none}
+.srow .sr-p, .srow .sr-k, .srow .sr-ph{font-size:var(--fs-sub); color:var(--text-2)}
+/* 상태는 색으로 — 지난 예약·방문은 흐리게, 노쇼는 벽돌색, 취소는 줄 긋기 */
+.srow.past, .srow.s-방문{background:var(--surface-2); color:var(--text-3)}
+.srow.past .sr-p, .srow.past .sr-k, .srow.past .sr-ph, .srow.s-방문 .sr-p, .srow.s-방문 .sr-k, .srow.s-방문 .sr-ph{color:var(--text-3)}
+.srow.s-노쇼 .sr-nm, .srow.s-노쇼 .sr-d{color:var(--rust)}
+.srow.s-취소 .sr-nm{text-decoration:line-through; color:var(--text-3)}
+.sgwrap{border-top:1px solid var(--border)} .sgwrap:first-child{border-top:none}
+.sgrow{display:flex; flex-direction:column; gap:2px; width:100%; padding:8px var(--s12); border:none; background:none; font:inherit; color:var(--text); text-align:left; cursor:pointer}
+.sgrow:hover, .sgwrap.open .sgrow{background:var(--surface-2)}
+.sg-n{display:flex; align-items:center; gap:6px; min-width:0} .sg-n .tier{margin-left:0; flex:none}
+.sg-n small{color:var(--text-3); font-size:var(--fs-label); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.sg-s{font-size:var(--fs-sub); color:var(--text-2)}
+.sg-m{font-size:var(--fs-sub); color:var(--blue); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.sg-list{padding:0 0 6px var(--s16); background:var(--surface-2)}
+.sg-list .srow{background:var(--surface)} .sg-list .srow.past, .sg-list .srow.s-방문{background:transparent}
+@media (max-width:640px){
+  .srow{grid-template-columns:86px minmax(0,1fr) 38px 46px; row-gap:2px}
+  .srow .sr-ph{grid-column:2 / 5; font-size:var(--fs-label)}
+}

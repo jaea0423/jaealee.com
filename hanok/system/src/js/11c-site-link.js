@@ -39,7 +39,7 @@ async function publishAvail(force){
   AVAIL_BUSY = true;
   try{
     const key = view.storeKey || "hanok", today = todayStr(), rows = [];
-    for(let i = 1; i <= AVAIL_DAYS; i++){ const d = shiftDate(today, i); rows.push({ store:key, date:d, data:availOfDay(d) }); }
+    for(let i = 0; i <= AVAIL_DAYS; i++){ const d = shiftDate(today, i); rows.push({ store:key, date:d, data:availOfDay(d) }); }   /* 오늘(0)부터 — 홈페이지 '당일 예약' 을 켰을 때 쓰임(09-24). 끈 동안은 예약 창이 오늘을 안 고름 */
     await sb("/rest/v1/public_avail?on_conflict=store,date", { method:"POST", body:rows, prefer:"resolution=merge-duplicates,return=minimal" });
     AVAIL_LAST = Date.now(); AVAIL_DIRTY = false;
   }catch(e){ console.error("남은 자리 올리기 실패", e.message); }

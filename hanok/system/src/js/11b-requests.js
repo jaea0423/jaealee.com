@@ -219,7 +219,7 @@ function reqAfterRegister(rec){
 }
 /* 거절 — 사유를 고르거나 직접 적거나 생략. 문자에 사유가 들어갑니다 */
 /* 첫 선택지 '사유 생략' (재아 2026-09-17) — 문자에 사유가 안 붙습니다. 당일·연휴/단체 문구는 홈페이지가 애초에 안 받으니 뺐음 */
-const REQ_REASONS = ["", "접수해주신 시간에 예약이 마감되었습니다", "룸은 성인 5인부터 예약 가능합니다"];
+const REQ_REASONS = ["", "접수해주신 시간에 예약이 마감되었습니다", "룸은 성인 5명부터 예약 가능합니다"];
 const REQ_REASON_LABEL = r => r || "사유 생략";
 function openReqReject(id){ view.form = {type:"reqrej", id}; view.reqRej = {pick:0, text:""}; render(); }
 function sheetReqReject(){

@@ -201,10 +201,19 @@ function saL(path, label, note, rows){   /* 줄마다 하나 → 배열 */
   var v = saGet(path); if(!Array.isArray(v)) v = [];
   return '<label class="f sa-f"><div class="lb">' + esc(label) + ' <span class="lbl-note">한 줄에 하나</span></div><textarea class="in-sm" rows="' + (rows || Math.max(3, v.length + 1)) + '" oninput="saSetLines(\'' + path + '\', this.value)">' + esc(v.join("\n")) + '</textarea>' + (note ? '<div class="f-note">' + note + '</div>' : '') + '</label>';
 }
-function saN(path, label, min, max, unit, note){   /* 숫자 */
+/* 숫자 — 한 줄: 왼쪽 이름(아래 작은 설명), 오른쪽 칸+단위 (09-24 재아: 칸이 혼자 크고 말투가 길었음) */
+function saN(path, label, min, max, unit, note){
   var v = saGet(path); if(v == null) v = "";
-  return '<label class="f sa-f sa-num"><div class="lb">' + esc(label) + '</div><div class="sa-numrow"><input type="number" class="in-sm" value="' + esc(v) + '" min="' + min + '" max="' + max + '" onchange="saSetNum(\'' + path + '\', this.value, ' + min + ', ' + max + '); this.value = saGet(\'' + path + '\')">' + (unit ? '<span>' + esc(unit) + '</span>' : '') + '</div>' + (note ? '<div class="f-note">' + note + '</div>' : '') + '</label>';
+  return '<label class="sa-line sa-num"><span class="sa-line-l"><b>' + esc(label) + '</b>' + (note ? '<small>' + note + '</small>' : '') + '</span>' +
+    '<span class="sa-numrow"><input type="number" class="in-sm" value="' + esc(v) + '" min="' + min + '" max="' + max + '" onchange="saSetNum(\'' + path + '\', this.value, ' + min + ', ' + max + '); this.value = saGet(\'' + path + '\')">' + (unit ? '<span>' + esc(unit) + '</span>' : '') + '</span></label>';
 }
+/* 켜고 끄는 것 — 한 줄: 왼쪽 이름·설명, 오른쪽 스위치(09-24 재아). on 이 주어지면 그 값을, 아니면 path 의 참/거짓.
+   click 을 주면 그걸 부르고, 아니면 path 를 뒤집음 */
+function saSwHtml(on, click, label, note){
+  return '<div class="sa-line"><span class="sa-line-l"><b>' + esc(label) + '</b>' + (note ? '<small>' + note + '</small>' : '') + '</span>' +
+    '<button type="button" class="sa-sw' + (on ? ' on' : '') + '" role="switch" aria-checked="' + (on ? "true" : "false") + '" aria-label="' + esc(label) + '" onclick="' + click + '"><i></i></button></div>';
+}
+function saSw(path, label, note){ return saSwHtml(!!saGet(path), "saToggle('" + path + "')", label, note); }
 function saD(path, label, note){   /* 날짜 — 기기 달력으로 */
   var v = saGet(path); if(v == null) v = "";
   return '<label class="f sa-f"><div class="lb">' + esc(label) + '</div><input type="date" class="in-sm" value="' + esc(v) + '" onchange="saSet(\'' + path + '\', this.value); render()">' + (note ? '<div class="f-note">' + note + '</div>' : '') + '</label>';
@@ -283,11 +292,11 @@ function sheetSite(){
     '<div class="sa-top">' +
       '<div class="sa-status"><span id="sa-state">' + (saDirty() ? "고친 내용이 있습니다 — 초안 저장을 누르세요" : saSavedText()) + '</span>' +
         '<span class="muted">지금 홈페이지: ' + (SA.live ? saWhen(SA.live.apply_at) + " 판" + (SA.live.note ? ' · ' + esc(SA.live.note) : '') : "기본값(적용한 판 없음)") + (future.length ? ' · <b class="sa-fut">예약 ' + future.length + '건</b>' : '') + '</span></div>' +
-      '<div class="btn-row sa-acts">' +
-        '<button class="btn" id="sa-save" onclick="saSave()" ' + (saDirty() ? "" : "disabled") + '>초안 저장</button>' +
-        '<button class="btn" onclick="saPreview()">미리보기</button>' +
-        '<button class="btn primary" onclick="saApply()">적용…</button>' +
-        '<button class="btn ghost" onclick="saDiscard()" title="초안을 지금 보이는 판으로">고친 것 버리기</button>' +
+      '<div class="sa-acts">' +
+        '<button class="btn sm ghost" onclick="saDiscard()" title="초안을 지금 보이는 판으로">고친 것 버리기</button>' +
+        '<button class="btn sm" onclick="saPreview()">미리보기</button>' +
+        '<button class="btn sm" id="sa-save" onclick="saSave()" ' + (saDirty() ? "" : "disabled") + '>초안 저장</button>' +
+        '<button class="btn sm primary" onclick="saApply()">적용…</button>' +
       '</div>' +
     '</div>' +
     '<div class="sa-tabs">' + TABS.map(function(t){ return '<button class="' + (SA.tab === t[0] ? "on" : "") + '" onclick="saTab(\'' + t[0] + '\')">' + t[1] + (t[0] === "history" && future.length ? '<i class="cnt">' + future.length + '</i>' : '') + '</button>'; }).join("") + '</div>' +
@@ -302,41 +311,42 @@ function saPreviewHtml(){
     '<iframe src="' + saPreviewUrl(view.saPreview) + '" title="홈페이지 미리보기"></iframe></div>';
 }
 
-/* 1. 홈페이지 예약 */
+/* 1. 홈페이지 예약 — 09-24 재아: 켜고 끄는 것은 스위치, 중단 안내는 끈 때만, 말투는 '예약 가능 기간' 처럼 이름으로 */
 function saTabOnline(){
-  var on = saGet("online.enabled") !== false;
+  var on = saGet("online.enabled") !== false, same = !!saGet("online.sameDay");
   var closed = saGet("closed") || [];
   return saBox("접수",
-      '<button class="togglebtn ' + (on ? "on" : "sa-off") + '" onclick="saToggle(\'online.enabled\')">' + (on ? "홈페이지 예약을 받고 있습니다" : "홈페이지 예약 중단 — 전화 안내만") + '</button>' +
-      '<p class="f-note">끄면 홈페이지 예약 창이 아래 안내만 보여줍니다. 이미 접수된 요청은 그대로 남습니다. 적용해야 반영됩니다.</p>' +
-      saF("online.offTitle", "중단 안내 제목") + saT("online.offMsg", "중단 안내 문구", "", 2)) +
-    saBox("규칙",
-      '<div class="grid2">' +
-      saN("online.maxDays", "며칠 앞까지 받나", 1, 30, "일", "최대 30일 — 시스템이 남은 자리를 30일치만 올립니다. 당일은 항상 전화(서버 규칙)") +
-      saN("online.minAdults", "성인 몇 명부터", 2, 12, "명") +
-      saN("online.maxPeople", "총 몇 명까지", 2, 12, "명", "넘으면 전화 안내") +
-      saN("online.roomMinAdults", "룸은 성인 몇 명부터", 5, 12, "명") +
-      saN("online.limitMin", "시간 고른 뒤 몇 분 안에", 3, 15, "분") +
-      '</div><p class="f-note">서버가 성인 2~12명 · 룸 성인 5명 · 내일부터를 최종으로 확인합니다. 여기서는 그 안에서 좁히기만 됩니다. 더 넓히려면 재아에게(서버 정책).</p>') +
+      saSwHtml(on, "saToggle('online.enabled')", "홈페이지 예약 받기", on ? "손님이 홈페이지에서 예약을 넣을 수 있습니다." : "예약 창에 아래 안내만 보입니다. 이미 들어온 요청은 그대로 남습니다.") +
+      (on ? "" : '<div class="sa-sub-in">' + saF("online.offTitle", "중단 안내 제목") + saT("online.offMsg", "중단 안내 문구", "", 2) + '</div>') +
+      saSwHtml(same, "saToggle('online.sameDay')", "당일 예약", same ? "오늘 날짜도 고를 수 있습니다." : "오늘은 고를 수 없고 내일부터 받습니다. 당일은 전화로.") +
+      (same ? '<div class="sa-sub-in">' + saN("online.sameDayLeadH", "당일 최소 여유 시간", 1, 6, "시간", "지금부터 이 시간 뒤의 시각만 보입니다") + '</div>' : "")) +
+    saBox("예약 조건",
+      saN("online.maxDays", "예약 가능 기간", 1, 30, "일", "오늘부터 며칠 뒤까지 · 최대 30일") +
+      saN("online.minAdults", "최소 인원 (성인 기준)", 2, 12, "명") +
+      saN("online.maxPeople", "최대 인원 (어린이 포함)", 2, 12, "명", "넘으면 전화 안내") +
+      saN("online.roomMinAdults", "룸 최소 인원 (성인 기준)", 5, 12, "명") +
+      saN("online.limitMin", "입력 제한 시간", 3, 15, "분", "시각을 고른 뒤 이 안에 마쳐야 합니다") +
+      '<p class="f-note">서버가 성인 2~12명 · 룸 성인 5명을 한 번 더 확인합니다. 여기서는 그 안에서만 바꿀 수 있습니다.</p>') +
     saBox("홈페이지 예약 안 받는 날",
-      '<div class="sa-chips">' + closed.slice().sort().map(function(d, i){ return '<span class="tag">' + esc(d) + '<button onclick="saArrDel(\'closed\', ' + closed.indexOf(d) + ')" title="빼기">×</button></span>'; }).join("") + (closed.length ? "" : '<span class="muted">없음</span>') + '</div>' +
-      '<div class="btn-row" style="margin-top:8px"><input type="date" id="sa-closed-date" style="flex:1 1 160px"><button class="btn" onclick="(function(){ var el=document.getElementById(\'sa-closed-date\'); if(!el.value) return; var a=saGet(\'closed\')||[]; if(a.indexOf(el.value)<0) a.push(el.value); saSet(\'closed\', a); render(); })()">추가</button></div>' +
+      '<div class="sa-chips">' + closed.slice().sort().map(function(d){ return '<span class="tag">' + esc(d) + '<button onclick="saArrDel(\'closed\', ' + closed.indexOf(d) + ')" title="빼기">×</button></span>'; }).join("") + (closed.length ? "" : '<span class="muted">없음</span>') + '</div>' +
+      '<div class="sa-row" style="margin-top:8px"><input type="date" class="in-sm" id="sa-closed-date"><button class="btn sm" onclick="(function(){ var el=document.getElementById(\'sa-closed-date\'); if(!el.value) return; var a=saGet(\'closed\')||[]; if(a.indexOf(el.value)<0) a.push(el.value); saSet(\'closed\', a); render(); })()">추가</button></div>' +
       '<p class="f-note">그날은 예약 창에 시각이 안 나옵니다(전화는 그대로). 영업 자체를 쉬는 날은 설정 → 운영시간 → 임시 영업·휴무.</p>') +
     saBox("특별 기간 차림 (명절 등)",
       (saGet("online.special") || []).map(function(sp, i){ var p = "online.special." + i; return '<div class="sa-box-in">' +
-        '<div class="grid3"><label class="f"><div class="lb">이름</div><input type="text" class="in-sm" value="' + esc(sp.title || "") + '" placeholder="예: 추석 연휴 코스" oninput="saSet(\'' + p + '.title\', this.value)"></label>' +
-        '<label class="f"><div class="lb">시작일</div><input type="date" class="in-sm" value="' + esc(sp.from || "") + '" onchange="saSet(\'' + p + '.from\', this.value)"></label><label class="f"><div class="lb">마감일</div><input type="date" class="in-sm" value="' + esc(sp.to || "") + '" onchange="saSet(\'' + p + '.to\', this.value)"></label></div>' +
-        '<label class="f"><div class="lb">이 기간의 코스 <span class="lbl-note">한 줄에 하나 · "이름 | 한자" 가능 · 홈페이지 예약 창에는 이것만 나옴</span></div><textarea class="in-sm" rows="3" oninput="saSetLines(\'' + p + '.courses\', this.value)">' + esc((sp.courses || []).join("\n")) + '</textarea></label>' +
-        '<label class="f"><div class="lb">안내 한 줄 <span class="lbl-note">예약 창 메뉴 단계에 보임</span></div><input type="text" class="in-sm" value="' + esc(sp.note || "") + '" oninput="saSet(\'' + p + '.note\', this.value)"></label>' +
-        '<div class="f"><div class="lb">홈페이지 접수 <span class="lbl-note">차림·방침이 정해지기 전이면 잠가 두세요 — 그 기간 날짜를 못 고르고 "전화 문의" 안내</span></div><div class="seg"><button class="' + (!sp.lock ? "on" : "") + '" onclick="saSet(\'' + p + '.lock\', false); render()">받음</button><button class="' + (sp.lock ? "on rust" : "") + '" onclick="saSet(\'' + p + '.lock\', true); render()">잠금 (준비 중)</button></div></div>' +
-        '<div class="btn-row"><button class="btn sm ghost" onclick="saArrDel(\'online.special\', ' + i + ', \'특별 기간\')">삭제</button></div></div>'; }).join("") +
+        '<div class="grid3"><label class="f sa-f"><div class="lb">이름</div><input type="text" class="in-sm" value="' + esc(sp.title || "") + '" placeholder="예: 추석 연휴 코스" oninput="saSet(\'' + p + '.title\', this.value)"></label>' +
+        '<label class="f sa-f"><div class="lb">시작일</div><input type="date" class="in-sm" value="' + esc(sp.from || "") + '" onchange="saSet(\'' + p + '.from\', this.value)"></label><label class="f sa-f"><div class="lb">마감일</div><input type="date" class="in-sm" value="' + esc(sp.to || "") + '" onchange="saSet(\'' + p + '.to\', this.value)"></label></div>' +
+        '<label class="f sa-f"><div class="lb">이 기간의 코스 <span class="lbl-note">한 줄에 하나 · "이름 | 한자" 가능 · 예약 창에는 이것만 나옴</span></div><textarea class="in-sm" rows="3" oninput="saSetLines(\'' + p + '.courses\', this.value)">' + esc((sp.courses || []).join("\n")) + '</textarea></label>' +
+        '<label class="f sa-f"><div class="lb">안내 한 줄 <span class="lbl-note">예약 창 메뉴 단계에 보임</span></div><input type="text" class="in-sm" value="' + esc(sp.note || "") + '" oninput="saSet(\'' + p + '.note\', this.value)"></label>' +
+        saSwHtml(!sp.lock, "saSet('" + p + ".lock', " + (sp.lock ? "false" : "true") + "); render()", "이 기간 홈페이지 예약 받기", sp.lock ? "잠김 — 그 기간 날짜를 못 고르고 '전화 문의' 안내가 나옵니다." : "받는 중 — 위에 적은 코스로만 받습니다.") +
+        '<div class="btn-row" style="margin-top:8px"><button class="btn sm ghost danger" onclick="saArrDel(\'online.special\', ' + i + ', \'특별 기간\')">이 기간 삭제</button></div></div>'; }).join("") +
       '<div class="btn-row"><button class="btn sm" onclick="saArrAdd(\'online.special\', {title:\'\', from:\'\', to:\'\', courses:[], note:\'\', lock:true})">＋ 특별 기간</button></div>' +
-      '<p class="f-note"><b>명절이 다가오면 먼저 기간만 만들어 "잠금" 으로 두세요.</b> 차림과 방침(코스만 받을지, 최소 인원 등)을 정한 뒤 코스를 적고 "받음" 으로 바꾸면 그때부터 홈페이지 예약이 열립니다. 잠가 둔 사이 전화로 온 예약은 시스템에 그냥 넣으시면 됩니다(시스템은 막지 않습니다).</p>' +
-      '<p class="f-note">명절처럼 차림이 다른 기간. 그 기간 날짜를 고르면 홈페이지 예약 창의 메뉴 단계에 <b>여기 적은 코스만</b> 나오고(점심 세트·단품 없음) 안내 한 줄이 붙습니다. 시스템 쪽 코스 구성은 설정 → 코스·세트 구성에서 "날짜를 정해서(예정)" 로 같은 기간을 넣어 두세요.</p>') +
+      '<p class="f-note"><b>명절이 다가오면 기간만 먼저 만들어 두세요(처음엔 잠김).</b> 차림과 방침이 정해지면 코스를 적고 스위치를 켜면 그때부터 홈페이지 예약이 열립니다. 시스템 쪽 코스는 설정 → 코스·세트 구성에서 같은 기간으로 넣어 두세요.</p>') +
     saBox("예약 페이지 안내 문구",
       saF("reserve.head.sub", "위 소개 한 줄") +
-      (saGet("reserve.notes") || []).map(function(n, i){ return '<div class="sa-row"><input type="text" class="in-sm sa-k" value="' + esc(n.b) + '" oninput="saSet(\'reserve.notes.' + i + '.b\', this.value)"><input type="text" class="in-sm" value="' + esc(n.s) + '" oninput="saSet(\'reserve.notes.' + i + '.s\', this.value)"><button class="btn sm ghost" onclick="saArrDel(\'reserve.notes\', ' + i + ')">×</button></div>'; }).join("") +
-      '<div class="btn-row"><button class="btn sm" onclick="saArrAdd(\'reserve.notes\', {b:\'\', s:\'\'})">줄 추가</button></div>' +
+      '<div class="lb sa-lb">안내 목록 <span class="lbl-note">왼쪽 제목 · 오른쪽 내용</span></div>' +
+      (saGet("reserve.notes") || []).map(function(n, i){ return '<div class="sa-row"><input type="text" class="in-sm sa-k" value="' + esc(n.b) + '" oninput="saSet(\'reserve.notes.' + i + '.b\', this.value)"><input type="text" class="in-sm" value="' + esc(n.s) + '" oninput="saSet(\'reserve.notes.' + i + '.s\', this.value)"><button class="btn sm ghost" onclick="saArrDel(\'reserve.notes\', ' + i + ')" aria-label="줄 삭제">×</button></div>'; }).join("") +
+      '<div class="btn-row"><button class="btn sm" onclick="saArrAdd(\'reserve.notes\', {b:\'\', s:\'\'})">＋ 줄 추가</button></div>' +
+      (same ? '<p class="f-note">당일 예약을 켜 두면 제목이 <b>당일</b> 인 줄은 예약 페이지에 안 보입니다("당일은 전화로" 와 어긋나서).</p>' : '') +
       saF("reserve.go.lead", "'예약하기' 상자 안내") + saF("reserve.go.cap", "버튼 아래 작은 글"));
 }
 /* 2. 팝업 공지 */
@@ -350,10 +360,10 @@ function saTabNotices(){
         '<div class="grid2">' + saD(p + "from", "시작일", "비우면 바로") + saD(p + "until", "마감일", "비우면 계속. 이 날까지 뜸") + '</div>' +
         saL(p + "lines", "내용", "문단마다 한 줄", 4) +
         '<div class="grid2">' + saF(p + "button", "버튼 글", "비우면 버튼 없음. 버튼은 예약 창을 엽니다") + saI(p + "img", "그림 팝업", "적으면 글 대신 그림 한 장") + '</div>' +
-        '<div class="grid3">' + saN(p + "x", "왼쪽에서", 0, 1200, "px") + saN(p + "y", "위에서", 0, 800, "px") + saN(p + "w", "폭", 240, 640, "px") + '</div>',
+        '<div class="lb sa-lb" style="margin-top:4px">위치·크기 <span class="lbl-note">PC 화면 기준</span></div><div class="grid3 sa-pos">' + saN(p + "x", "왼쪽에서", 0, 1200, "px") + saN(p + "y", "위에서", 0, 800, "px") + saN(p + "w", "폭", 240, 640, "px") + '</div>',
         '<span class="sa-box-x"><button class="btn sm ghost" onclick="saArrMove(\'notices\', ' + i + ', -1)">↑</button><button class="btn sm ghost" onclick="saArrMove(\'notices\', ' + i + ', 1)">↓</button><button class="btn sm ghost" onclick="saArrDel(\'notices\', ' + i + ', \'팝업\')">삭제</button></span>');
     }).join("") +
-    '<div class="btn-row"><button class="btn" onclick="saArrAdd(\'notices\', {id:\'n\' + Date.now().toString(36), from:\'\', until:\'\', x:40 + 30 * ' + list.length + ', y:110 + 30 * ' + list.length + ', w:380, title:\'\', lines:[], button:\'예약하기\'})">팝업 추가</button></div>';
+    '<div class="btn-row"><button class="btn sm" onclick="saArrAdd(\'notices\', {id:\'n\' + Date.now().toString(36), from:\'\', until:\'\', x:40 + 30 * ' + list.length + ', y:110 + 30 * ' + list.length + ', w:380, title:\'\', lines:[], button:\'예약하기\'})">＋ 팝업 추가</button></div>';
 }
 /* 3. 영업시간·연락처 */
 function saTabHours(){

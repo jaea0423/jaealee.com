@@ -3,7 +3,7 @@
    흐름(한 화면에 하나씩) ① 인원 → ② 날짜 → ③ 시간 → ④ 자리 → ⑤ 메뉴 → ⑥ 예약자 정보 → ⑦ 예약 확인 → 접수
    접수는 바로 확정이 아닙니다. 가게에서 확인한 뒤 문자로 확정합니다(예약 시스템 '손님 요청' 칸으로 들어갈 예정).
    제한 시간 5분은 시간을 고른 다음(④)부터 흐릅니다.
-   당일 예약은 온라인으로 받지 않습니다(내일부터). 어린이는 유아를 포함합니다.
+   당일 예약은 관리 화면의 '당일 예약' 스위치(SITE.online.sameDay)를 켰을 때만 — 그때도 지금부터 sameDayLeadH 시간 뒤 시각만. 어린이는 유아를 포함합니다.
 
    입력은 브라우저 기본 위젯을 쓰지 않습니다. 달력·인원·시간 모두 직접 그립니다(기기마다 같은 모습이어야 해서).
 
@@ -21,7 +21,7 @@
   const WD = ["일","월","화","수","목","금","토"];
   const dateText = s => { const d = new Date(s+"T00:00:00"); return (d.getMonth()+1)+"월 "+d.getDate()+"일 ("+WD[d.getDay()]+")"; };
   /* 접수 규칙은 SITE.online(관리 화면에서 바꿈). 값이 없으면 아래 기본값. 서버 정책(성인 2~12·룸 성인 5·내일부터)이 최종이라 그 밖으로 넓힐 수는 없습니다 */
-  const R = () => Object.assign({enabled:true, maxDays:30, minAdults:2, maxPeople:12, roomMinAdults:5, limitMin:5,
+  const R = () => Object.assign({enabled:true, maxDays:30, minAdults:2, maxPeople:12, roomMinAdults:5, limitMin:5, sameDay:false, sameDayLeadH:2,
                                  offTitle:"지금은 온라인 예약을 받지 않습니다", offMsg:"예약은 전화로 부탁드립니다."}, (window.SITE && SITE.online) || {});
   const MAX_SEAT = 40, LUNCH_END = 15*60+30, CODE_SEC = 120, RESEND_WAIT_SEC = 60;
   const LIMIT_SEC = () => Math.max(1, R().limitMin || 5) * 60;
@@ -30,6 +30,13 @@
   const isHoliday = s => { const d = new Date(s+"T00:00:00"); return d.getDay() === 0 || (window.HOLIDAYS||[]).indexOf(s) >= 0; };
   const isWeekend = s => { const d = new Date(s+"T00:00:00"); return d.getDay() === 6 || isHoliday(s); };
   /* 가짜 만석: 금·토 저녁 18:00·18:30 룸은 찼다고 칩니다. 실제로는 예약 현황에서 옵니다 */
+  /* 당일이면 '지금 + 여유 시간' 이전 시각은 뺍니다(09-24). 당일을 끈 동안은 오늘을 달력에서 아예 못 고르니 여기 안 옴 */
+  const leadCut = (date, list) => {
+    const n = new Date(), today = n.getFullYear() + "-" + pad(n.getMonth()+1) + "-" + pad(n.getDate());
+    if(date !== today) return list;
+    const from = n.getHours()*60 + n.getMinutes() + Math.max(1, R().sameDayLeadH || 2)*60;
+    return list.filter(t => { const p = t.split(":"); return (+p[0])*60 + (+p[1]) >= from; });
+  };
   const stubFull = (date, time, seat) => { const wd = new Date(date+"T00:00:00").getDay(); return seat === "room" && (wd === 5 || wd === 6) && (time === "18:00" || time === "18:30"); };
   window.RES_API = window.RES_API || {
     slots: async (date, people, seat) => {
@@ -39,7 +46,7 @@
       if(isHoliday(date)) add(11*60, 18*60);
       else if(isWeekend(date)) add(11*60, 19*60+30);
       else { add(11*60, 14*60); add(17*60, 19*60+30); }
-      return out.filter(t => seat === "any" || !stubFull(date, t, seat));
+      return leadCut(date, out.filter(t => seat === "any" || !stubFull(date, t, seat)));
     },
     /* 기본 구현은 slots 를 날마다 불러 셉니다. 실제로는 한 번에 받아오게 바꾸세요 */
     month: async function(ym, people, seat){
@@ -69,12 +76,12 @@
     const dayData = async date => { if(!(date in availCache)){ const rows = await get(`/rest/v1/public_avail?store=eq.${SUPA.store}&date=eq.${date}&select=data`); availCache[date] = rows[0] ? rows[0].data : null; } return availCache[date]; };
     RES_API.slots = async (date, people, seat) => {
       const d = await dayData(date); if(!d) return [];
-      return Object.keys(d).sort().filter(t => okAt(d[t], people, seat));
+      return leadCut(date, Object.keys(d).sort().filter(t => okAt(d[t], people, seat)));
     };
     RES_API.seatOk = async (date, time, people, seat) => { const d = await dayData(date); return !!(d && okAt(d[time], people, seat)); };
     RES_API.month = async (ym, people, seat) => {
       const rows = await get(`/rest/v1/public_avail?store=eq.${SUPA.store}&date=like.${ym}%25&select=date,data`);
-      const out = {}; rows.forEach(r => { availCache[r.date] = r.data; out[r.date] = Object.keys(r.data||{}).filter(t => okAt(r.data[t], people, seat)).length; });
+      const out = {}; rows.forEach(r => { availCache[r.date] = r.data; out[r.date] = leadCut(r.date, Object.keys(r.data||{}).filter(t => okAt(r.data[t], people, seat))).length; });
       /* 표에 없는 날(태블릿이 아직 안 올린 날)은 0 = 고를 수 없음 */
       const first = new Date(ym + "-01T00:00:00"), last = new Date(first.getFullYear(), first.getMonth()+1, 0).getDate();
       for(let i = 1; i <= last; i++){ const k = ym + "-" + pad(i); if(!(k in out)) out[k] = 0; }
@@ -221,7 +228,7 @@
     if(S.courseLabel) bits.push(S.courseLabel);
     return `<div class="rv-sum">${bits.map(x=>`<span>${esc(x)}</span>`).join("")}</div>`;
   };
-  const dayRange = () => { const t = new Date(); return { min: ymd(new Date(t.getTime() + 864e5)), max: ymd(new Date(t.getTime() + R().maxDays*864e5)) }; };   /* 내일부터 */
+  const dayRange = () => { const t = new Date(); return { min: ymd(R().sameDay ? t : new Date(t.getTime() + 864e5)), max: ymd(new Date(t.getTime() + R().maxDays*864e5)) }; };   /* 내일부터 — '당일 예약' 을 켜면 오늘부터 */
 
   /* ---------- ① 인원 ---------- */
   function sPeople(b, f){
@@ -244,7 +251,7 @@
         y.disabled = (y.dataset.d === "-1" ? S[r.dataset.k] <= 0 : total() >= MAX_SEAT)));
       const warn = tooMany()
         ? `유선으로 예약 도와드리겠습니다. <a href="tel:${INFO.tel}">${esc(INFO.tel)}</a>`
-        : (S.adults < R().minAdults ? `성인 ${R().minAdults}인부터 접수 가능합니다.` : "");
+        : (S.adults < R().minAdults ? `성인 ${R().minAdults}명부터 접수 가능합니다.` : "");
       foot(f, false, next, "다음", !ok(), warn);
     }
     b.querySelectorAll(".rv-cnt").forEach(row => {

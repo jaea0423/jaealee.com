@@ -90,7 +90,7 @@ function renderCal(){
     cells += `<button class="${cls} ${closedDay?'closed':''}" onclick="pickCalDate('${ds}',true)">
       <span class="dn">${d}</span>
       ${closedDay?`<span class="cn none">휴무</span>`:`<span class="cbar"><i style="width:${st.rate}%"></i></span>
-        <span class="cn">${st.count}건 <small>(${st.rate}%)</small></span>`}
+        <span class="cn">${st.count}건<small>(${st.rate}%)</small></span>`}
     </button>`;
   }
   /* 항상 6줄(42칸) — 5줄짜리 달과 6줄짜리 달을 오갈 때 높이가 바뀌어 손이 헛나갔습니다 */
@@ -110,10 +110,6 @@ function renderCal(){
         <div class="cgrid chead">${["일","월","화","수","목","금","토"].map((x,i)=>
           `<span class="chd ${i===0?'sun':i===6?'sat':''}">${x}</span>`).join("")}</div>
         <div class="cgrid">${cells}</div>
-        <div class="sheet-actions">
-          <button class="btn" onclick="pickCalDate('${todayStr()}',true)">오늘로</button>
-          <button class="btn ghost" onclick="closeCal()">닫기</button>
-        </div>
       </div>
     </div>`;
 }

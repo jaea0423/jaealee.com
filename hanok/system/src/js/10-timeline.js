@@ -98,7 +98,7 @@ function renderTimeline(date, compact){
   /* 이름 뒤 VIP·VVIP 알약(tierTag) — 그래프에서도 단골이 보이게(재아 09-20). 칸이 좁으면 잘려도 시각·이름이 먼저 */
   const blockLabel = (r, short) => short
     ? `<b>${esc(r.time)}</b> ${esc(r.name)}`   /* 합침 예약의 아래 방 줄: 시각·이름만(09-20) — 위 방 줄이 본 칸 */
-    : `${r._req?`<i class="rq">홈페이지</i> `:""}<b>${esc(r.time)}</b> ${esc(r.name)}${tierTag(r)}${groupTag(r)} ${pplOf(r)}명${r.infants?`(어린이${r.infants})`:""}${r._req?" · 확정 전":""}`;
+    : `${r._req?`<i class="rq">홈페이지</i> `:""}<b>${esc(r.time)}</b> ${tierTag(r)}${groupTag(r)}${esc(r.name)} ${pplOf(r)}명${r.infants?`(어린이${r.infants})`:""}${r._req?" · 확정 전":""}`;
 
   /* (안 씀 — 사용 중지는 빗금 위에만 적습니다. 자리는 tlPlaceLabels 가 그린 뒤 정함) */
   const blockTag = (seat)=>{

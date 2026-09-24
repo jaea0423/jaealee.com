@@ -197,7 +197,7 @@ async function naverApply(){
 }
 
 function openNoshow(back){ view.form={type:"noshow", page:!!back, back:back||""}; render(); window.scrollTo(0,0); }
-function openSearch(){ view.form={type:"search"}; render(); }
+function openSearch(){ view.form={type:"search"}; view.searchGuest=false; view.searchOpen=null; render(); }   /* 열 때는 늘 예약 검색부터 */
 function openPin(){ view.form={type:"pin"}; render(); }
 async function openPinManage(){ if(!await adminGate("PIN 번호 관리")) return; view.form={type:"pinlist"}; render(); }
 function sheetPinList(){
@@ -923,46 +923,81 @@ function numSave(){
 
 /* ---------- 예약 검색 ----------
    전화 응대 중 "지난주에 예약한 OOO인데요"를 찾기 위한 화면입니다. */
+/* ---------- 검색 (09-24 재아 개편) ----------
+   입력칸 오른쪽 사람 단추를 켜면 예약 대신 손님(전화번호 하나 = 손님 하나)을 찾습니다 — 대표 이름·다른 이름·전화·손님 메모.
+   예약 결과는 한 줄: 날짜·시각 | 이름 | 인원 | 룸/테이블 | 전화. 방문은 흐린 색, 노쇼·취소만 글자 딱지(방문 딱지는 색으로 충분) */
+function srDate(ds){ var d = new Date(ds + "T00:00:00"); return (d.getMonth()+1) + "/" + d.getDate() + "(" + ["일","월","화","수","목","금","토"][d.getDay()] + ")"; }
+/* 자리는 '룸' / '테이블' 만 — 어느 방·어느 테이블인지는 눌러서 상세에서(09-24 재아) */
+function seatKindText(r){
+  var id = r.roomId || r.tentativeRoomId, x = id ? seatById(id) : null;
+  if(x) return isTable(x) ? "테이블" : "룸";
+  if(isTablePref(r.seatPref)) return "테이블";
+  if(r.seatPref === "room-any") return "룸";
+  return "미정";
+}
+function srRow(r){
+  var past = (r.date + " " + r.time) < (todayStr() + " " + nowHM());
+  return '<button class="srow s-' + r.status + (past ? ' past' : '') + '" onclick="goRes(\'' + r.id + '\',\'' + r.date + '\')">' +
+    '<span class="sr-d">' + srDate(r.date) + ' ' + esc(r.time) + '</span>' +
+    '<span class="sr-n">' + tierTag(r) + groupTag(r) + '<span class="sr-nm">' + esc(r.name) + '</span>' + (r.status === "노쇼" || r.status === "취소" ? '<span class="tag sm ' + (r.status === "노쇼" ? "rust" : "") + '">' + r.status + '</span>' : '') + '</span>' +
+    '<span class="sr-p">' + pplOf(r) + '명</span>' +
+    '<span class="sr-k">' + seatKindText(r) + '</span>' +
+    '<span class="sr-ph">' + esc(r.phone || "-") + '</span></button>';
+}
+function searchResHits(q){
+  var digits = q.replace(/\D/g,""), lower = q.toLowerCase().replace(/\s/g,"");
+  var okNum = digits.length >= 1 && /^[\d\-\s]+$/.test(q);
+  var now = todayStr() + " " + nowHM();
+  return store().reservations.filter(function(r){
+    if(okNum) return (r.phone||"").replace(/\D/g,"").indexOf(digits) >= 0;
+    var bag = (r.name + " " + (r.request||"") + " " + (r.memo||"") + " " + (r.allergy||"") + " " + (r.sourceDetail||"") + " " + (r.source||"") + " " + resSeatLabel(r) + " " + (r.phone||"")).toLowerCase().replace(/\s/g,"");
+    return bag.indexOf(lower) >= 0;
+  }).sort(function(a, b){   /* 앞으로 올 예약이 위(가까운 순), 지난 예약은 그 아래(최근 순) */
+    var ak = a.date + " " + a.time, bk = b.date + " " + b.time, af = ak >= now, bf = bk >= now;
+    if(af !== bf) return af ? -1 : 1;
+    return af ? ak.localeCompare(bk) : bk.localeCompare(ak);
+  }).slice(0, 80);
+}
+/* 손님 찾기 — 손님 관리(14e)의 gsBuild 를 그대로 씀. 뒷자리 4자리가 딱 맞으면 위로 */
+function searchGuestHits(q){
+  var map = gsBuild(), all = Object.keys(map).map(function(k){ return map[k]; });
+  var qd = q.replace(/\D/g, ""), lq = q.toLowerCase().replace(/\s/g, ""), onlyNum = /^[\d\-\s]+$/.test(q);
+  var low = function(x){ return String(x || "").toLowerCase().replace(/\s/g, ""); };
+  all = all.filter(function(g){
+    if(onlyNum) return g.phone.indexOf(qd) >= 0;
+    return low(g.name).indexOf(lq) >= 0 || g.aka.some(function(x){ return low(x).indexOf(lq) >= 0; }) || low(g.memo).indexOf(lq) >= 0;
+  });
+  all.sort(function(a, b){ return (onlyNum && qd.length === 4 ? (b.phone.slice(-4) === qd) - (a.phone.slice(-4) === qd) : 0) || (b.last || "").localeCompare(a.last || "") || b.total - a.total; });
+  return all.slice(0, 60);
+}
+function sgRow(g){
+  var open = view.searchOpen === g.phone;
+  var sub = [gsPhoneHtml(g.phone), "방문 " + g.visit + "회"].concat(g.upcoming ? ["예정 " + g.upcoming] : []).concat(g.noshow ? ['<span class="rust">노쇼 ' + g.noshow + '</span>'] : []);
+  return '<div class="sgwrap' + (open ? ' open' : '') + '"><button class="sgrow" onclick="view.searchOpen=view.searchOpen===\'' + g.phone + '\'?null:\'' + g.phone + '\'; setSearchQ(view.searchQ||\'\')">' +
+      '<span class="sg-n">' + tierTagOf(tierOf(g.visit, g.noshow)) + '<b>' + esc(g.name) + '</b>' + (g.aka.length ? '<small>' + esc(g.aka.slice(0, 3).join(", ")) + (g.aka.length > 3 ? " 외" : "") + '</small>' : '') + '</span>' +
+      '<span class="sg-s">' + sub.join(" · ") + '</span>' +
+      (g.memo ? '<span class="sg-m">' + esc(g.memo) + '</span>' : '') + '</button>' +
+    (open ? '<div class="sg-list">' + g.list.slice(0, 10).map(srRow).join("") + (g.list.length > 10 ? '<p class="f-note" style="margin:6px 8px">최근 10건만 — 전체는 사장님 → 손님 관리</p>' : '') + '</div>' : '') + '</div>';
+}
+function searchResults(){
+  var q = (view.searchQ || "").trim();
+  if(!q) return "";
+  if(view.searchGuest){ var gs = searchGuestHits(q); return gs.length ? gs.map(sgRow).join("") : '<div class="empty">찾은 손님이 없습니다.</div>'; }
+  var hits = searchResHits(q);
+  return hits.length ? hits.map(srRow).join("") : '<div class="empty">찾은 예약이 없습니다.</div>';
+}
+function toggleSearchGuest(){ view.searchGuest = !view.searchGuest; view.searchOpen = null; render(); setTimeout(function(){ var el = document.getElementById("search-q"); if(el){ el.focus(); var n = el.value.length; el.setSelectionRange(n, n); } }, 20); }
 function sheetSearch(){
-  const q = (view.searchQ||"").trim();
-  const s = store();
-  /* 8차-K(재아): 구분 없이 한 글자부터 전부 찾습니다 — 이름·전화·메모·요청·알러지·경로·좌석. 많이 뜨면 더 치면 줄어듭니다 */
-  const digits = q.replace(/\D/g,"");
-  const lower = q.toLowerCase().replace(/\s/g,"");
-  const okNum = digits.length >= 1 && /^[\d\-\s]+$/.test(q);
-  const okTxt = q.length >= 1 && !okNum;
-  let rows = "";   /* 안내 문구는 입력칸 placeholder 하나로(재아 09-17) */
-  if(okNum || okTxt){
-    const hits = s.reservations.filter(r=>{
-      if(okNum) return (r.phone||"").replace(/\D/g,"").includes(digits);
-      const bag = `${r.name} ${r.request||""} ${r.memo||""} ${r.allergy||""} ${r.sourceDetail||""} ${r.source||""} ${resSeatLabel(r)} ${r.phone||""}`.toLowerCase().replace(/\s/g,"");
-      return bag.includes(lower);
-    }).sort((a,b)=>{
-      const now = todayStr()+" "+nowHM(), ak = a.date+" "+a.time, bk = b.date+" "+b.time;
-      const af = ak >= now, bf = bk >= now;
-      if(af !== bf) return af ? -1 : 1;
-      return af ? ak.localeCompare(bk) : bk.localeCompare(ak);
-    }).slice(0,80);
-    rows = hits.length ? hits.map(r=>`
-      <button class="rowitem tap ${r.date < todayStr()?'search-past':''}" onclick="goRes('${r.id}','${r.date}')">
-        <span class="grow"><span class="t">${esc(r.name)}
-          ${r.status!=="확정"?`<span class="tag ${r.status==="노쇼"?"rust":""}">${r.status}</span>`:""}</span>
-          <span class="s">${dateLabel(r.date)} ${esc(r.time)} · ${pplText(r)} · ${esc(r.phone||"연락처 없음")} · ${esc(seatText(r))}</span></span>
-      </button>`).join("")
-      : `<div class="empty">찾은 예약이 없습니다.</div>`;
-  }
-  const hintTxt = "";
-  return `
-    ${sheetHead("예약 검색")}
-    <input id="search-q" value="${esc(q)}" placeholder="이름, 전화, 메모, 요청사항 중 검색" autofocus
-           oninput="setSearchQ(this.value)" autocomplete="off" style="margin-bottom:10px">
-    ${hintTxt}
-    <div class="card searchbox">${rows}</div>`;
+  var q = view.searchQ || "", guest = !!view.searchGuest;
+  return sheetHead(guest ? "손님 검색" : "예약 검색") +
+    '<div class="sq-row"><input id="search-q" value="' + esc(q) + '" placeholder="' + (guest ? "이름, 다른 이름, 전화번호, 손님 메모 중 검색" : "이름, 전화, 메모, 요청사항 중 검색") + '" autofocus oninput="setSearchQ(this.value)" autocomplete="off">' +
+    '<button class="sq-mode' + (guest ? ' on' : '') + '" onclick="toggleSearchGuest()" aria-pressed="' + guest + '" title="' + (guest ? "예약으로 찾기" : "손님으로 찾기") + '" aria-label="손님으로 찾기">' + ICON.person + '</button></div>' +
+    '<div class="card searchbox">' + searchResults() + '</div>';
 }
 function setSearchQ(v){
   view.searchQ = v;
-  const box = document.querySelector(".searchbox");
-  if(box) box.innerHTML = sheetSearch().split('<div class="card searchbox">')[1].split('</div>\n    <div class="sheet-actions"')[0];
+  var box = document.querySelector(".searchbox");
+  if(box) box.innerHTML = searchResults();
 }
 function goRes(id, date){
   view.date = date; view.calMonth = date.slice(0,7);

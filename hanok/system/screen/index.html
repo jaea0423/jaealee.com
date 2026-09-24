@@ -683,7 +683,7 @@ button.blk{border:1px solid rgba(255,255,255,.3); box-sizing:border-box; cursor:
 button.blk:hover{filter:brightness(1.15)}
 button.blk b{font-weight:700; font-size:18px}
 /* 그래프 칸 안의 VIP 알약 — 칸이 21px 이라 알약도 납작하게 */
-.blk .tier{margin-left:4px; padding:0 6px; font-size:11px; line-height:1.5; vertical-align:middle}
+.blk .tier{margin-left:0; margin-right:4px; padding:0 6px; font-size:11px; line-height:1.5; vertical-align:middle}   /* 시각 뒤·이름 앞(09-24) */
 .blk .jn, .blk .chg-chip, .blk .rq, .blk small.tn{vertical-align:middle}
 /* 확정 / 잠정 / 경고를 구분해서 보여줍니다
    잠정 = 빗금 무늬 + 점선 테두리, 경고 = 붉은색, 둘 다면 붉은색 위에 빗금 */
@@ -722,6 +722,11 @@ button.blk.tent.warned.changed{background-image:linear-gradient(90deg, #3D8BD9 0
 /* 영업 외 시간(.offband) · 휴무(.closed-band) 는 회색 빗금, 브레이크타임(.breakband) 은 옅은 벽돌색 */
 .offband{position:absolute; top:0; bottom:0; z-index:1; pointer-events:none; background:repeating-linear-gradient(45deg, rgba(27,27,25,.24) 0 5px, rgba(27,27,25,.13) 5px 10px)}
 .breakband{position:absolute; top:0; bottom:0; border-left:1px dashed rgba(156,59,39,.45); border-right:1px dashed rgba(156,59,39,.45); z-index:1; pointer-events:none; background:rgba(156,59,39,.20)}
+/* ---- 한 줄(track) 안의 겹침 순서 (09-24 재아: 겹침·초과 칸의 회색이 브레이크·사용 중지 빗금을 덮어 보이던 것) ----
+   줄마다 쌓임 맥락을 따로 만들고(z-index:0), 안에서 아래 → 위 순서를 못 박습니다:
+   ① 초과 칸 회색(0) ② 예약 칸(auto, 문서 순서) ③ 영업 밖·브레이크·휴무·사용 중지 빗금(1) ④ 영업 끝 넘김 선(4) ⑤ 합침·겹침 예약(20·25)
+   현재 시각선은 축 줄(z 40)에 있어 모든 줄 위. 축 줄 트랙은 선이 아래로 삐져나가야 해서 제외 */
+.tl-row:not(.axis) .tl-track{z-index:0}
 .offband.overlane{z-index:0; background:rgba(27,27,25,.30)}   /* 09-20 재아: 티가 안 나서 .13 → .30 */   /* 테이블 수를 넘은 팀의 칸 — 빗금이 많으면 정신없다는 평(재아 09-20)이라 그냥 회색 */
 /* 점심/저녁 판에서 경계 너머 흐리게 덧붙인 구간 — 이어지는 예약만 보이라고. 위에 흰 막을 씌워 블록도 같이 흐려집니다 */
 .extband{position:absolute; top:0; bottom:0; z-index:4; pointer-events:none; border-left:2px dashed var(--border-strong);
@@ -786,7 +791,8 @@ button.blk.tent.warned.changed{background-image:linear-gradient(90deg, #3D8BD9 0
 .rr-bang{width:12px; flex:none; font-weight:700; color:var(--rust); font-size:var(--fs-body); text-align:center}
 .rr-t{font-size:var(--fs-body); font-weight:400; color:var(--text)}
 .rr-n{font-size:var(--fs-body); font-weight:400; min-width:0; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; gap:4px}
-.rr-n .tier{flex:none; margin-left:2px}   /* 딱지는 안 줄고, 긴 이름이 … 으로(09-20) */
+.rr-n .tier{flex:none; margin-left:0}   /* 딱지는 시각과 이름 사이(09-24) — 안 줄고, 긴 이름이 … 으로 */
+.rr-n .rr-nm, .mr-n .rr-nm{min-width:0; overflow:hidden; text-overflow:ellipsis}
 .rr-n{white-space:nowrap}
 .rr-n > .tier:first-child{margin-left:0}
 /* 8차-T(재아): 아직 안 온 확정 예약만 굵게(시간·이름). 왼쪽 띠는 타임라인 블록과 같은 색 규칙 — 먹=확정, 벽돌=경고, 파랑=오늘 변동, 빗금=룸 미정(잠정) */
@@ -842,6 +848,44 @@ button.blk.tent .tier{background:#FFF8E1}
 .blk .tier.vvip{background:#E5C15C; color:#1B1B19; border-color:#F6D97E}   /* 어두운 예약 칸에서도 VVIP가 묻히지 않게 대비를 높입니다 */
 .searchbox > .empty{background:transparent; border-radius:0; padding:var(--s24) var(--s16)}
 .searchbox .search-past{background:var(--surface-2); color:var(--text-3); opacity:.58}
+
+/* 초과(겹침) 칸 — 09-24: .30 은 너무 진해서 위에 그린 브레이크·빗금이 회색 밑에 깔린 것처럼 보였습니다.
+   옅게 깔고 정상 칸과의 경계에 선을 그어 '여기부터 넘친 칸' 이 보이게 합니다 */
+.offband.overlane{background:rgba(27,27,25,.10); box-shadow:inset 0 -2px 0 rgba(27,27,25,.28)}
+
+/* ---------- 검색 (09-24) — 입력칸 + 사람 단추, 결과는 한 줄 ---------- */
+.sq-row{display:flex; gap:var(--s8); margin-bottom:var(--s8)}
+.sq-row input{flex:1; min-width:0; margin:0}
+.sq-mode{flex:none; width:46px; border:1px solid var(--border-strong); border-radius:var(--r-sm); background:var(--surface); color:var(--text-2); display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0}
+.sq-mode svg{width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.7}
+.sq-mode.on{background:var(--text); border-color:var(--text); color:#fff}
+.srow{display:grid; grid-template-columns:104px minmax(0,1fr) 44px 52px 118px; column-gap:var(--s12); align-items:center; width:100%; padding:7px var(--s12); border:none; border-top:1px solid var(--border); background:none; font:inherit; color:var(--text); text-align:left; cursor:pointer; white-space:nowrap}
+.srow:first-child{border-top:none}
+.srow:hover{background:var(--surface-2)}
+.srow .sr-d{font-size:var(--fs-sub); font-weight:600}
+.srow .sr-n{display:flex; align-items:center; gap:4px; min-width:0; font-weight:600}
+.srow .sr-n .tier{flex:none; margin-left:0}
+.srow .sr-nm{min-width:0; overflow:hidden; text-overflow:ellipsis}
+.srow .sr-n .tag{flex:none}
+.srow .sr-p, .srow .sr-k, .srow .sr-ph{font-size:var(--fs-sub); color:var(--text-2)}
+/* 상태는 색으로 — 지난 예약·방문은 흐리게, 노쇼는 벽돌색, 취소는 줄 긋기 */
+.srow.past, .srow.s-방문{background:var(--surface-2); color:var(--text-3)}
+.srow.past .sr-p, .srow.past .sr-k, .srow.past .sr-ph, .srow.s-방문 .sr-p, .srow.s-방문 .sr-k, .srow.s-방문 .sr-ph{color:var(--text-3)}
+.srow.s-노쇼 .sr-nm, .srow.s-노쇼 .sr-d{color:var(--rust)}
+.srow.s-취소 .sr-nm{text-decoration:line-through; color:var(--text-3)}
+.sgwrap{border-top:1px solid var(--border)} .sgwrap:first-child{border-top:none}
+.sgrow{display:flex; flex-direction:column; gap:2px; width:100%; padding:8px var(--s12); border:none; background:none; font:inherit; color:var(--text); text-align:left; cursor:pointer}
+.sgrow:hover, .sgwrap.open .sgrow{background:var(--surface-2)}
+.sg-n{display:flex; align-items:center; gap:6px; min-width:0} .sg-n .tier{margin-left:0; flex:none}
+.sg-n small{color:var(--text-3); font-size:var(--fs-label); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.sg-s{font-size:var(--fs-sub); color:var(--text-2)}
+.sg-m{font-size:var(--fs-sub); color:var(--blue); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.sg-list{padding:0 0 6px var(--s16); background:var(--surface-2)}
+.sg-list .srow{background:var(--surface)} .sg-list .srow.past, .sg-list .srow.s-방문{background:transparent}
+@media (max-width:640px){
+  .srow{grid-template-columns:86px minmax(0,1fr) 38px 46px; row-gap:2px}
+  .srow .sr-ph{grid-column:2 / 5; font-size:var(--fs-label)}
+}
 /* ============================================================
    6. 예약 — 시트 / 달력 / 마법사 / 모달
    ============================================================ */
@@ -902,7 +946,8 @@ button.blk.tent .tier{background:#FFF8E1}
 .cday.sel .cnt{color:#fff; background:transparent}
 .cday.sel .dots i{background:rgba(255,255,255,.9)}
 .cday.blank{border:none; background:none}   /* min-height 를 0 으로 두면 마지막 빈 줄이 접혀 5줄·6줄 높이가 달라집니다(7차-G) */
-.cday .cn{font-size:var(--fs-label); font-weight:700; color:var(--pine)}
+.cday .cn{font-size:var(--fs-label); font-weight:700; color:var(--pine); text-align:center; line-height:1.25}
+.cday .cn small{display:block; font-weight:500; opacity:.8}   /* 건수 아래 줄에 (예약률) — 한 줄이면 좁은 칸에서 잘렸음(09-24 재아) */
 .cday .cn.none{color:var(--text-3); font-weight:400}
 .cday .cbar{width:76%; height:4px; background:var(--border); border-radius:var(--r-sm); overflow:hidden}
 .cday .cbar i{display:block; height:100%; background:var(--pine)}
@@ -1625,6 +1670,60 @@ label.chk span{width:auto}
   .sa-acts .btn{flex:1 1 calc(50% - var(--s8)); min-width:0}
 }
 .sa-box-in{border:1px solid var(--border); border-radius:var(--r-sm); padding:var(--s12); margin-bottom:var(--s12)}
+
+/* ================= 09-24 홈페이지 관리 다듬기 (재아: 글자·단추·입력칸이 혼자 튀게 큼) =================
+   한 벌로: 상자 제목 15 · 이름 13 굵게 · 입력 14 · 설명 12. 입력칸 높이 38, 단추는 작은 단추(sm) */
+.sa-top{padding:var(--s8) var(--s12); gap:var(--s8)}
+.sa-acts{display:flex; flex-wrap:wrap; gap:var(--s4); margin-left:auto}
+.sa-tabs{overflow-y:hidden}   /* 가로로만 넘침 — 밑줄(-1px) 때문에 세로 스크롤 화살표가 생기던 것 */
+.sa-tabs button{padding:var(--s8) var(--s12)}
+.sa-box{padding:var(--s12) var(--s16) var(--s16)}
+.sa-box-h{margin-bottom:var(--s8)}
+.sa-box-h b{font-size:15px}
+.sa-body .f{margin-bottom:var(--s12)}
+.sa-body .lb, .sa-lb{font-size:var(--fs-sub); font-weight:600; color:var(--text-2); margin-bottom:4px}
+.sa-body .lbl-note{font-weight:400}
+.sa-body .f-note{font-size:12px; line-height:1.55}
+.sa-body input[type=text], .sa-body input[type=number], .sa-body input[type=date], .sa-body select{min-height:38px; height:38px; padding:0 11px; font-size:14px !important}
+.sa-body textarea{padding:8px 11px; font-size:14px !important; line-height:1.6}
+.sa-body .btn.sm{padding:6px 12px; font-size:var(--fs-sub); line-height:20px}
+.sa-top .btn.sm{padding:6px 14px}
+.sa-body .grid2, .sa-body .grid3{column-gap:var(--s12)}
+/* 한 줄 항목(스위치·숫자) — 줄 사이 가는 선 */
+.sa-line{display:flex; align-items:center; gap:var(--s12); padding:10px 0; border-top:1px solid var(--border); cursor:default}
+.sa-box .sa-line:first-of-type, .sa-box-h + .sa-line{border-top:none}
+.sa-line-l{flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:2px}
+.sa-line-l b{font-size:14px; font-weight:600; color:var(--text)}
+.sa-line-l small{font-size:12px; color:var(--text-3); line-height:1.45}
+.sa-line .sa-numrow{flex:none}
+.sa-line .sa-numrow input{width:76px; text-align:right}
+.sa-sub-in{margin:0 0 var(--s8); padding:var(--s12) var(--s12) 2px; background:var(--surface-2); border-radius:var(--r-sm)}
+.sa-sub-in .sa-line{border-top:none; padding:4px 0 8px}
+/* 스위치 — 켜짐 초록(pine), 꺼짐 회색. 손가락으로 누르기 좋게 46×28. 움직임은 left 로(구형 TV 도 됨) */
+.sa-sw{position:relative; flex:none; width:46px; height:28px; border-radius:14px; border:none; padding:0; background:#CFCBC3; cursor:pointer; transition:background .18s}
+.sa-sw i{position:absolute; top:3px; left:3px; width:22px; height:22px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.25); transition:left .18s}
+.sa-sw.on{background:var(--pine)}
+.sa-sw.on i{left:21px}
+.sa-sw:focus-visible{outline:2px solid var(--pine); outline-offset:2px}
+@media (prefers-reduced-motion: reduce){ .sa-sw, .sa-sw i{transition:none} }
+.sa-box-in{padding:var(--s12)}
+.sa-box-in .sa-line{border-top:1px solid var(--border); margin-top:4px}
+.sa-row{gap:var(--s8)}
+.sa-row input{height:38px}
+#sa-closed-date{flex:0 1 200px}
+@media (max-width:640px){
+  .sa-acts{width:100%; margin-left:0}
+  .sa-acts .btn{flex:1 1 calc(50% - 4px)}
+  .sa-line .sa-numrow input{width:64px}
+}
+.sa-box-x .btn.sm{padding:4px 10px}
+.grid2 > .sa-line, .grid3 > .sa-line{border-top:none}
+.sa-pos .sa-line{padding:2px 0}
+/* 폰: 네 단추를 한 줄로 — 두 줄 2×2 는 단추가 화면 절반을 차지해 너무 컸음(09-24) */
+@media (max-width:640px){
+  .sa-acts{flex-wrap:nowrap; gap:4px}
+  .sa-acts .btn, .sa-top .sa-acts .btn.sm{flex:1 1 auto; min-width:0; padding:6px 6px; font-size:12px; white-space:nowrap}
+}
 /* ============================================================
    07c. 직원 근태(14d) · 손님 관리(14e) — 15차
    ============================================================ */
@@ -4513,6 +4612,7 @@ const ICON = {
   spark:'<svg viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8zM5 15l.6 1.6L7 17l-1.4.6L5 19l-.6-1.4L3 17l1.4-.4z"/></svg>',
   sms:'<svg viewBox="0 0 24 24"><path d="M4 5h16v11H8l-4 4z"/><path d="M8 9h8M8 12h5"/></svg>',
   key:'<svg viewBox="0 0 24 24"><circle cx="8" cy="12" r="4"/><path d="M12 12h9M18 12v3M15 12v2"/></svg>',
+  person:'<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20.5c0-4.1 3.4-6.6 7.5-6.6s7.5 2.5 7.5 6.6"/></svg>',
   users:'<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.4"/><path d="M2.5 20c0-3.3 2.9-5.5 6.5-5.5s6.5 2.2 6.5 5.5M16 14.5c3 0 5.5 1.8 5.5 4.5"/></svg>',
   print:'<svg viewBox="0 0 24 24"><path d="M7 8V4h10v4M7 16H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2M7 13h10v7H7z"/></svg>',
   site:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>',
@@ -5580,7 +5680,7 @@ function resRowMobile(r){
     <button class="mrow s-${r.status} ${late?'late':''}" onclick="openMark('${r.id}')">
       <div class="mr-1">
         <span class="mr-t">${esc(r.time)}</span>
-        <span class="mr-n"><span class="rr-nm">${esc(r.name)}</span>${tierTag(r)}${groupTag(r)}</span>
+        <span class="mr-n">${tierTag(r)}${groupTag(r)}<span class="rr-nm">${esc(r.name)}</span></span>
         ${late?`<span class="mr-bang">!</span>`:""}
         ${r.status!=="확정"?`<span class="tag ${r.status==="노쇼"?"rust":""}">${r.status}</span>`:""}
         ${warn?`<span class="tag rust">경고</span>`:""}
@@ -5770,7 +5870,7 @@ function resRow(r){
     <button class="rrow s-${r.status} ${late?'late':''} ${resWarn(r).length?'k-warn':''} ${changeTag(r)?'k-chg':''} ${!r.roomId && !isTablePref(r.seatPref)?'k-tent':''}" onclick="openMark('${r.id}')">
       <span class="rr-bang">${late?"!":""}</span>
       <span class="rr-t">${esc(r.time)}</span>
-      <span class="rr-n"><span class="rr-nm">${esc(r.name)}</span>${tierTag(r)}${groupTag(r)}</span>
+      <span class="rr-n">${tierTag(r)}${groupTag(r)}<span class="rr-nm">${esc(r.name)}</span></span>
       <span class="rr-p">${pplOf(r)}명${r.infants?`(어린이${r.infants})`:""}</span>
       <span class="rr-seat ${room||r.tentativeRoomId?'':'none'}">${esc(seat)}</span>
       <span class="rr-ph">${esc(r.phone||"-")}</span>
@@ -6341,7 +6441,7 @@ function renderTimeline(date, compact){
   /* 이름 뒤 VIP·VVIP 알약(tierTag) — 그래프에서도 단골이 보이게(재아 09-20). 칸이 좁으면 잘려도 시각·이름이 먼저 */
   const blockLabel = (r, short) => short
     ? `<b>${esc(r.time)}</b> ${esc(r.name)}`   /* 합침 예약의 아래 방 줄: 시각·이름만(09-20) — 위 방 줄이 본 칸 */
-    : `${r._req?`<i class="rq">홈페이지</i> `:""}<b>${esc(r.time)}</b> ${esc(r.name)}${tierTag(r)}${groupTag(r)} ${pplOf(r)}명${r.infants?`(어린이${r.infants})`:""}${r._req?" · 확정 전":""}`;
+    : `${r._req?`<i class="rq">홈페이지</i> `:""}<b>${esc(r.time)}</b> ${tierTag(r)}${groupTag(r)}${esc(r.name)} ${pplOf(r)}명${r.infants?`(어린이${r.infants})`:""}${r._req?" · 확정 전":""}`;
 
   /* (안 씀 — 사용 중지는 빗금 위에만 적습니다. 자리는 tlPlaceLabels 가 그린 뒤 정함) */
   const blockTag = (seat)=>{
@@ -6675,7 +6775,7 @@ function renderCal(){
     cells += `<button class="${cls} ${closedDay?'closed':''}" onclick="pickCalDate('${ds}',true)">
       <span class="dn">${d}</span>
       ${closedDay?`<span class="cn none">휴무</span>`:`<span class="cbar"><i style="width:${st.rate}%"></i></span>
-        <span class="cn">${st.count}건 <small>(${st.rate}%)</small></span>`}
+        <span class="cn">${st.count}건<small>(${st.rate}%)</small></span>`}
     </button>`;
   }
   /* 항상 6줄(42칸) — 5줄짜리 달과 6줄짜리 달을 오갈 때 높이가 바뀌어 손이 헛나갔습니다 */
@@ -6695,10 +6795,6 @@ function renderCal(){
         <div class="cgrid chead">${["일","월","화","수","목","금","토"].map((x,i)=>
           `<span class="chd ${i===0?'sun':i===6?'sat':''}">${x}</span>`).join("")}</div>
         <div class="cgrid">${cells}</div>
-        <div class="sheet-actions">
-          <button class="btn" onclick="pickCalDate('${todayStr()}',true)">오늘로</button>
-          <button class="btn ghost" onclick="closeCal()">닫기</button>
-        </div>
       </div>
     </div>`;
 }
@@ -6970,7 +7066,7 @@ function reqAfterRegister(rec){
 }
 /* 거절 — 사유를 고르거나 직접 적거나 생략. 문자에 사유가 들어갑니다 */
 /* 첫 선택지 '사유 생략' (재아 2026-09-17) — 문자에 사유가 안 붙습니다. 당일·연휴/단체 문구는 홈페이지가 애초에 안 받으니 뺐음 */
-const REQ_REASONS = ["", "접수해주신 시간에 예약이 마감되었습니다", "룸은 성인 5인부터 예약 가능합니다"];
+const REQ_REASONS = ["", "접수해주신 시간에 예약이 마감되었습니다", "룸은 성인 5명부터 예약 가능합니다"];
 const REQ_REASON_LABEL = r => r || "사유 생략";
 function openReqReject(id){ view.form = {type:"reqrej", id}; view.reqRej = {pick:0, text:""}; render(); }
 function sheetReqReject(){
@@ -7089,7 +7185,7 @@ async function publishAvail(force){
   AVAIL_BUSY = true;
   try{
     const key = view.storeKey || "hanok", today = todayStr(), rows = [];
-    for(let i = 1; i <= AVAIL_DAYS; i++){ const d = shiftDate(today, i); rows.push({ store:key, date:d, data:availOfDay(d) }); }
+    for(let i = 0; i <= AVAIL_DAYS; i++){ const d = shiftDate(today, i); rows.push({ store:key, date:d, data:availOfDay(d) }); }   /* 오늘(0)부터 — 홈페이지 '당일 예약' 을 켰을 때 쓰임(09-24). 끈 동안은 예약 창이 오늘을 안 고름 */
     await sb("/rest/v1/public_avail?on_conflict=store,date", { method:"POST", body:rows, prefer:"resolution=merge-duplicates,return=minimal" });
     AVAIL_LAST = Date.now(); AVAIL_DIRTY = false;
   }catch(e){ console.error("남은 자리 올리기 실패", e.message); }
@@ -8043,10 +8139,19 @@ function saL(path, label, note, rows){   /* 줄마다 하나 → 배열 */
   var v = saGet(path); if(!Array.isArray(v)) v = [];
   return '<label class="f sa-f"><div class="lb">' + esc(label) + ' <span class="lbl-note">한 줄에 하나</span></div><textarea class="in-sm" rows="' + (rows || Math.max(3, v.length + 1)) + '" oninput="saSetLines(\'' + path + '\', this.value)">' + esc(v.join("\n")) + '</textarea>' + (note ? '<div class="f-note">' + note + '</div>' : '') + '</label>';
 }
-function saN(path, label, min, max, unit, note){   /* 숫자 */
+/* 숫자 — 한 줄: 왼쪽 이름(아래 작은 설명), 오른쪽 칸+단위 (09-24 재아: 칸이 혼자 크고 말투가 길었음) */
+function saN(path, label, min, max, unit, note){
   var v = saGet(path); if(v == null) v = "";
-  return '<label class="f sa-f sa-num"><div class="lb">' + esc(label) + '</div><div class="sa-numrow"><input type="number" class="in-sm" value="' + esc(v) + '" min="' + min + '" max="' + max + '" onchange="saSetNum(\'' + path + '\', this.value, ' + min + ', ' + max + '); this.value = saGet(\'' + path + '\')">' + (unit ? '<span>' + esc(unit) + '</span>' : '') + '</div>' + (note ? '<div class="f-note">' + note + '</div>' : '') + '</label>';
+  return '<label class="sa-line sa-num"><span class="sa-line-l"><b>' + esc(label) + '</b>' + (note ? '<small>' + note + '</small>' : '') + '</span>' +
+    '<span class="sa-numrow"><input type="number" class="in-sm" value="' + esc(v) + '" min="' + min + '" max="' + max + '" onchange="saSetNum(\'' + path + '\', this.value, ' + min + ', ' + max + '); this.value = saGet(\'' + path + '\')">' + (unit ? '<span>' + esc(unit) + '</span>' : '') + '</span></label>';
 }
+/* 켜고 끄는 것 — 한 줄: 왼쪽 이름·설명, 오른쪽 스위치(09-24 재아). on 이 주어지면 그 값을, 아니면 path 의 참/거짓.
+   click 을 주면 그걸 부르고, 아니면 path 를 뒤집음 */
+function saSwHtml(on, click, label, note){
+  return '<div class="sa-line"><span class="sa-line-l"><b>' + esc(label) + '</b>' + (note ? '<small>' + note + '</small>' : '') + '</span>' +
+    '<button type="button" class="sa-sw' + (on ? ' on' : '') + '" role="switch" aria-checked="' + (on ? "true" : "false") + '" aria-label="' + esc(label) + '" onclick="' + click + '"><i></i></button></div>';
+}
+function saSw(path, label, note){ return saSwHtml(!!saGet(path), "saToggle('" + path + "')", label, note); }
 function saD(path, label, note){   /* 날짜 — 기기 달력으로 */
   var v = saGet(path); if(v == null) v = "";
   return '<label class="f sa-f"><div class="lb">' + esc(label) + '</div><input type="date" class="in-sm" value="' + esc(v) + '" onchange="saSet(\'' + path + '\', this.value); render()">' + (note ? '<div class="f-note">' + note + '</div>' : '') + '</label>';
@@ -8125,11 +8230,11 @@ function sheetSite(){
     '<div class="sa-top">' +
       '<div class="sa-status"><span id="sa-state">' + (saDirty() ? "고친 내용이 있습니다 — 초안 저장을 누르세요" : saSavedText()) + '</span>' +
         '<span class="muted">지금 홈페이지: ' + (SA.live ? saWhen(SA.live.apply_at) + " 판" + (SA.live.note ? ' · ' + esc(SA.live.note) : '') : "기본값(적용한 판 없음)") + (future.length ? ' · <b class="sa-fut">예약 ' + future.length + '건</b>' : '') + '</span></div>' +
-      '<div class="btn-row sa-acts">' +
-        '<button class="btn" id="sa-save" onclick="saSave()" ' + (saDirty() ? "" : "disabled") + '>초안 저장</button>' +
-        '<button class="btn" onclick="saPreview()">미리보기</button>' +
-        '<button class="btn primary" onclick="saApply()">적용…</button>' +
-        '<button class="btn ghost" onclick="saDiscard()" title="초안을 지금 보이는 판으로">고친 것 버리기</button>' +
+      '<div class="sa-acts">' +
+        '<button class="btn sm ghost" onclick="saDiscard()" title="초안을 지금 보이는 판으로">고친 것 버리기</button>' +
+        '<button class="btn sm" onclick="saPreview()">미리보기</button>' +
+        '<button class="btn sm" id="sa-save" onclick="saSave()" ' + (saDirty() ? "" : "disabled") + '>초안 저장</button>' +
+        '<button class="btn sm primary" onclick="saApply()">적용…</button>' +
       '</div>' +
     '</div>' +
     '<div class="sa-tabs">' + TABS.map(function(t){ return '<button class="' + (SA.tab === t[0] ? "on" : "") + '" onclick="saTab(\'' + t[0] + '\')">' + t[1] + (t[0] === "history" && future.length ? '<i class="cnt">' + future.length + '</i>' : '') + '</button>'; }).join("") + '</div>' +
@@ -8144,41 +8249,42 @@ function saPreviewHtml(){
     '<iframe src="' + saPreviewUrl(view.saPreview) + '" title="홈페이지 미리보기"></iframe></div>';
 }
 
-/* 1. 홈페이지 예약 */
+/* 1. 홈페이지 예약 — 09-24 재아: 켜고 끄는 것은 스위치, 중단 안내는 끈 때만, 말투는 '예약 가능 기간' 처럼 이름으로 */
 function saTabOnline(){
-  var on = saGet("online.enabled") !== false;
+  var on = saGet("online.enabled") !== false, same = !!saGet("online.sameDay");
   var closed = saGet("closed") || [];
   return saBox("접수",
-      '<button class="togglebtn ' + (on ? "on" : "sa-off") + '" onclick="saToggle(\'online.enabled\')">' + (on ? "홈페이지 예약을 받고 있습니다" : "홈페이지 예약 중단 — 전화 안내만") + '</button>' +
-      '<p class="f-note">끄면 홈페이지 예약 창이 아래 안내만 보여줍니다. 이미 접수된 요청은 그대로 남습니다. 적용해야 반영됩니다.</p>' +
-      saF("online.offTitle", "중단 안내 제목") + saT("online.offMsg", "중단 안내 문구", "", 2)) +
-    saBox("규칙",
-      '<div class="grid2">' +
-      saN("online.maxDays", "며칠 앞까지 받나", 1, 30, "일", "최대 30일 — 시스템이 남은 자리를 30일치만 올립니다. 당일은 항상 전화(서버 규칙)") +
-      saN("online.minAdults", "성인 몇 명부터", 2, 12, "명") +
-      saN("online.maxPeople", "총 몇 명까지", 2, 12, "명", "넘으면 전화 안내") +
-      saN("online.roomMinAdults", "룸은 성인 몇 명부터", 5, 12, "명") +
-      saN("online.limitMin", "시간 고른 뒤 몇 분 안에", 3, 15, "분") +
-      '</div><p class="f-note">서버가 성인 2~12명 · 룸 성인 5명 · 내일부터를 최종으로 확인합니다. 여기서는 그 안에서 좁히기만 됩니다. 더 넓히려면 재아에게(서버 정책).</p>') +
+      saSwHtml(on, "saToggle('online.enabled')", "홈페이지 예약 받기", on ? "손님이 홈페이지에서 예약을 넣을 수 있습니다." : "예약 창에 아래 안내만 보입니다. 이미 들어온 요청은 그대로 남습니다.") +
+      (on ? "" : '<div class="sa-sub-in">' + saF("online.offTitle", "중단 안내 제목") + saT("online.offMsg", "중단 안내 문구", "", 2) + '</div>') +
+      saSwHtml(same, "saToggle('online.sameDay')", "당일 예약", same ? "오늘 날짜도 고를 수 있습니다." : "오늘은 고를 수 없고 내일부터 받습니다. 당일은 전화로.") +
+      (same ? '<div class="sa-sub-in">' + saN("online.sameDayLeadH", "당일 최소 여유 시간", 1, 6, "시간", "지금부터 이 시간 뒤의 시각만 보입니다") + '</div>' : "")) +
+    saBox("예약 조건",
+      saN("online.maxDays", "예약 가능 기간", 1, 30, "일", "오늘부터 며칠 뒤까지 · 최대 30일") +
+      saN("online.minAdults", "최소 인원 (성인 기준)", 2, 12, "명") +
+      saN("online.maxPeople", "최대 인원 (어린이 포함)", 2, 12, "명", "넘으면 전화 안내") +
+      saN("online.roomMinAdults", "룸 최소 인원 (성인 기준)", 5, 12, "명") +
+      saN("online.limitMin", "입력 제한 시간", 3, 15, "분", "시각을 고른 뒤 이 안에 마쳐야 합니다") +
+      '<p class="f-note">서버가 성인 2~12명 · 룸 성인 5명을 한 번 더 확인합니다. 여기서는 그 안에서만 바꿀 수 있습니다.</p>') +
     saBox("홈페이지 예약 안 받는 날",
-      '<div class="sa-chips">' + closed.slice().sort().map(function(d, i){ return '<span class="tag">' + esc(d) + '<button onclick="saArrDel(\'closed\', ' + closed.indexOf(d) + ')" title="빼기">×</button></span>'; }).join("") + (closed.length ? "" : '<span class="muted">없음</span>') + '</div>' +
-      '<div class="btn-row" style="margin-top:8px"><input type="date" id="sa-closed-date" style="flex:1 1 160px"><button class="btn" onclick="(function(){ var el=document.getElementById(\'sa-closed-date\'); if(!el.value) return; var a=saGet(\'closed\')||[]; if(a.indexOf(el.value)<0) a.push(el.value); saSet(\'closed\', a); render(); })()">추가</button></div>' +
+      '<div class="sa-chips">' + closed.slice().sort().map(function(d){ return '<span class="tag">' + esc(d) + '<button onclick="saArrDel(\'closed\', ' + closed.indexOf(d) + ')" title="빼기">×</button></span>'; }).join("") + (closed.length ? "" : '<span class="muted">없음</span>') + '</div>' +
+      '<div class="sa-row" style="margin-top:8px"><input type="date" class="in-sm" id="sa-closed-date"><button class="btn sm" onclick="(function(){ var el=document.getElementById(\'sa-closed-date\'); if(!el.value) return; var a=saGet(\'closed\')||[]; if(a.indexOf(el.value)<0) a.push(el.value); saSet(\'closed\', a); render(); })()">추가</button></div>' +
       '<p class="f-note">그날은 예약 창에 시각이 안 나옵니다(전화는 그대로). 영업 자체를 쉬는 날은 설정 → 운영시간 → 임시 영업·휴무.</p>') +
     saBox("특별 기간 차림 (명절 등)",
       (saGet("online.special") || []).map(function(sp, i){ var p = "online.special." + i; return '<div class="sa-box-in">' +
-        '<div class="grid3"><label class="f"><div class="lb">이름</div><input type="text" class="in-sm" value="' + esc(sp.title || "") + '" placeholder="예: 추석 연휴 코스" oninput="saSet(\'' + p + '.title\', this.value)"></label>' +
-        '<label class="f"><div class="lb">시작일</div><input type="date" class="in-sm" value="' + esc(sp.from || "") + '" onchange="saSet(\'' + p + '.from\', this.value)"></label><label class="f"><div class="lb">마감일</div><input type="date" class="in-sm" value="' + esc(sp.to || "") + '" onchange="saSet(\'' + p + '.to\', this.value)"></label></div>' +
-        '<label class="f"><div class="lb">이 기간의 코스 <span class="lbl-note">한 줄에 하나 · "이름 | 한자" 가능 · 홈페이지 예약 창에는 이것만 나옴</span></div><textarea class="in-sm" rows="3" oninput="saSetLines(\'' + p + '.courses\', this.value)">' + esc((sp.courses || []).join("\n")) + '</textarea></label>' +
-        '<label class="f"><div class="lb">안내 한 줄 <span class="lbl-note">예약 창 메뉴 단계에 보임</span></div><input type="text" class="in-sm" value="' + esc(sp.note || "") + '" oninput="saSet(\'' + p + '.note\', this.value)"></label>' +
-        '<div class="f"><div class="lb">홈페이지 접수 <span class="lbl-note">차림·방침이 정해지기 전이면 잠가 두세요 — 그 기간 날짜를 못 고르고 "전화 문의" 안내</span></div><div class="seg"><button class="' + (!sp.lock ? "on" : "") + '" onclick="saSet(\'' + p + '.lock\', false); render()">받음</button><button class="' + (sp.lock ? "on rust" : "") + '" onclick="saSet(\'' + p + '.lock\', true); render()">잠금 (준비 중)</button></div></div>' +
-        '<div class="btn-row"><button class="btn sm ghost" onclick="saArrDel(\'online.special\', ' + i + ', \'특별 기간\')">삭제</button></div></div>'; }).join("") +
+        '<div class="grid3"><label class="f sa-f"><div class="lb">이름</div><input type="text" class="in-sm" value="' + esc(sp.title || "") + '" placeholder="예: 추석 연휴 코스" oninput="saSet(\'' + p + '.title\', this.value)"></label>' +
+        '<label class="f sa-f"><div class="lb">시작일</div><input type="date" class="in-sm" value="' + esc(sp.from || "") + '" onchange="saSet(\'' + p + '.from\', this.value)"></label><label class="f sa-f"><div class="lb">마감일</div><input type="date" class="in-sm" value="' + esc(sp.to || "") + '" onchange="saSet(\'' + p + '.to\', this.value)"></label></div>' +
+        '<label class="f sa-f"><div class="lb">이 기간의 코스 <span class="lbl-note">한 줄에 하나 · "이름 | 한자" 가능 · 예약 창에는 이것만 나옴</span></div><textarea class="in-sm" rows="3" oninput="saSetLines(\'' + p + '.courses\', this.value)">' + esc((sp.courses || []).join("\n")) + '</textarea></label>' +
+        '<label class="f sa-f"><div class="lb">안내 한 줄 <span class="lbl-note">예약 창 메뉴 단계에 보임</span></div><input type="text" class="in-sm" value="' + esc(sp.note || "") + '" oninput="saSet(\'' + p + '.note\', this.value)"></label>' +
+        saSwHtml(!sp.lock, "saSet('" + p + ".lock', " + (sp.lock ? "false" : "true") + "); render()", "이 기간 홈페이지 예약 받기", sp.lock ? "잠김 — 그 기간 날짜를 못 고르고 '전화 문의' 안내가 나옵니다." : "받는 중 — 위에 적은 코스로만 받습니다.") +
+        '<div class="btn-row" style="margin-top:8px"><button class="btn sm ghost danger" onclick="saArrDel(\'online.special\', ' + i + ', \'특별 기간\')">이 기간 삭제</button></div></div>'; }).join("") +
       '<div class="btn-row"><button class="btn sm" onclick="saArrAdd(\'online.special\', {title:\'\', from:\'\', to:\'\', courses:[], note:\'\', lock:true})">＋ 특별 기간</button></div>' +
-      '<p class="f-note"><b>명절이 다가오면 먼저 기간만 만들어 "잠금" 으로 두세요.</b> 차림과 방침(코스만 받을지, 최소 인원 등)을 정한 뒤 코스를 적고 "받음" 으로 바꾸면 그때부터 홈페이지 예약이 열립니다. 잠가 둔 사이 전화로 온 예약은 시스템에 그냥 넣으시면 됩니다(시스템은 막지 않습니다).</p>' +
-      '<p class="f-note">명절처럼 차림이 다른 기간. 그 기간 날짜를 고르면 홈페이지 예약 창의 메뉴 단계에 <b>여기 적은 코스만</b> 나오고(점심 세트·단품 없음) 안내 한 줄이 붙습니다. 시스템 쪽 코스 구성은 설정 → 코스·세트 구성에서 "날짜를 정해서(예정)" 로 같은 기간을 넣어 두세요.</p>') +
+      '<p class="f-note"><b>명절이 다가오면 기간만 먼저 만들어 두세요(처음엔 잠김).</b> 차림과 방침이 정해지면 코스를 적고 스위치를 켜면 그때부터 홈페이지 예약이 열립니다. 시스템 쪽 코스는 설정 → 코스·세트 구성에서 같은 기간으로 넣어 두세요.</p>') +
     saBox("예약 페이지 안내 문구",
       saF("reserve.head.sub", "위 소개 한 줄") +
-      (saGet("reserve.notes") || []).map(function(n, i){ return '<div class="sa-row"><input type="text" class="in-sm sa-k" value="' + esc(n.b) + '" oninput="saSet(\'reserve.notes.' + i + '.b\', this.value)"><input type="text" class="in-sm" value="' + esc(n.s) + '" oninput="saSet(\'reserve.notes.' + i + '.s\', this.value)"><button class="btn sm ghost" onclick="saArrDel(\'reserve.notes\', ' + i + ')">×</button></div>'; }).join("") +
-      '<div class="btn-row"><button class="btn sm" onclick="saArrAdd(\'reserve.notes\', {b:\'\', s:\'\'})">줄 추가</button></div>' +
+      '<div class="lb sa-lb">안내 목록 <span class="lbl-note">왼쪽 제목 · 오른쪽 내용</span></div>' +
+      (saGet("reserve.notes") || []).map(function(n, i){ return '<div class="sa-row"><input type="text" class="in-sm sa-k" value="' + esc(n.b) + '" oninput="saSet(\'reserve.notes.' + i + '.b\', this.value)"><input type="text" class="in-sm" value="' + esc(n.s) + '" oninput="saSet(\'reserve.notes.' + i + '.s\', this.value)"><button class="btn sm ghost" onclick="saArrDel(\'reserve.notes\', ' + i + ')" aria-label="줄 삭제">×</button></div>'; }).join("") +
+      '<div class="btn-row"><button class="btn sm" onclick="saArrAdd(\'reserve.notes\', {b:\'\', s:\'\'})">＋ 줄 추가</button></div>' +
+      (same ? '<p class="f-note">당일 예약을 켜 두면 제목이 <b>당일</b> 인 줄은 예약 페이지에 안 보입니다("당일은 전화로" 와 어긋나서).</p>' : '') +
       saF("reserve.go.lead", "'예약하기' 상자 안내") + saF("reserve.go.cap", "버튼 아래 작은 글"));
 }
 /* 2. 팝업 공지 */
@@ -8192,10 +8298,10 @@ function saTabNotices(){
         '<div class="grid2">' + saD(p + "from", "시작일", "비우면 바로") + saD(p + "until", "마감일", "비우면 계속. 이 날까지 뜸") + '</div>' +
         saL(p + "lines", "내용", "문단마다 한 줄", 4) +
         '<div class="grid2">' + saF(p + "button", "버튼 글", "비우면 버튼 없음. 버튼은 예약 창을 엽니다") + saI(p + "img", "그림 팝업", "적으면 글 대신 그림 한 장") + '</div>' +
-        '<div class="grid3">' + saN(p + "x", "왼쪽에서", 0, 1200, "px") + saN(p + "y", "위에서", 0, 800, "px") + saN(p + "w", "폭", 240, 640, "px") + '</div>',
+        '<div class="lb sa-lb" style="margin-top:4px">위치·크기 <span class="lbl-note">PC 화면 기준</span></div><div class="grid3 sa-pos">' + saN(p + "x", "왼쪽에서", 0, 1200, "px") + saN(p + "y", "위에서", 0, 800, "px") + saN(p + "w", "폭", 240, 640, "px") + '</div>',
         '<span class="sa-box-x"><button class="btn sm ghost" onclick="saArrMove(\'notices\', ' + i + ', -1)">↑</button><button class="btn sm ghost" onclick="saArrMove(\'notices\', ' + i + ', 1)">↓</button><button class="btn sm ghost" onclick="saArrDel(\'notices\', ' + i + ', \'팝업\')">삭제</button></span>');
     }).join("") +
-    '<div class="btn-row"><button class="btn" onclick="saArrAdd(\'notices\', {id:\'n\' + Date.now().toString(36), from:\'\', until:\'\', x:40 + 30 * ' + list.length + ', y:110 + 30 * ' + list.length + ', w:380, title:\'\', lines:[], button:\'예약하기\'})">팝업 추가</button></div>';
+    '<div class="btn-row"><button class="btn sm" onclick="saArrAdd(\'notices\', {id:\'n\' + Date.now().toString(36), from:\'\', until:\'\', x:40 + 30 * ' + list.length + ', y:110 + 30 * ' + list.length + ', w:380, title:\'\', lines:[], button:\'예약하기\'})">＋ 팝업 추가</button></div>';
 }
 /* 3. 영업시간·연락처 */
 function saTabHours(){
@@ -8378,7 +8484,7 @@ function saTabPosts(){
           '<span class="s">' + esc(dateLabel(p.date)) + (imgs ? ' · 사진 ' + imgs : '') + (files ? ' · 파일 ' + files : '') + (p.updated_at ? ' · 고침 ' + saPostWhen(p.updated_at) : '') + '</span></span></button>';
       }).join("");
   return saBox("소식 글", '<div class="card searchbox" style="margin-bottom:12px">' + rows + '</div>' +
-      '<div class="btn-row"><button class="btn primary" onclick="saPostNew()">새 글</button><a class="btn" href="' + saRoot() + 'news.html?v=' + Date.now() + '" target="_blank" rel="noopener">홈페이지 소식 보기</a></div>',
+      '<div class="btn-row"><button class="btn sm primary" onclick="saPostNew()">＋ 새 글</button><a class="btn sm" href="' + saRoot() + 'news.html?v=' + Date.now() + '" target="_blank" rel="noopener">홈페이지 소식 보기</a></div>',
       '<span class="muted" style="margin-left:auto; font-size:var(--fs-label)">저장하면 바로 홈페이지에 나옵니다 — 위의 초안·적용과 무관</span>') +
     '<p class="f-note">글은 최신 날짜가 위, "고정" 한 글은 맨 위. 본문은 줄바꿈 그대로, 빈 줄로 문단이 나뉘고 **굵게** 를 쓸 수 있습니다. 사진은 긴 변 1600px 로 줄여서 올라갑니다.</p>';
 }
@@ -8395,21 +8501,21 @@ function saPostEditor(){
       '<a class="btn sm ghost" href="' + esc(f.url) + '" target="_blank" rel="noopener">열기</a><button class="btn sm ghost" onclick="saPostFileDel(' + i + ')">×</button></div>';
   }).join("");
   return saBox(p._new ? "새 글" : "글 고치기",
-      '<label class="f big"><div class="lb">제목</div><input type="text" value="' + esc(p.title) + '" placeholder="예: 추석 연휴 정상 영업" oninput="saPostSet(\'title\', this.value)"></label>' +
+      '<label class="f sa-f"><div class="lb">제목</div><input type="text" class="in-sm" value="' + esc(p.title) + '" placeholder="예: 추석 연휴 정상 영업" oninput="saPostSet(\'title\', this.value)"></label>' +
       '<div class="grid2">' +
-        '<label class="f"><div class="lb">날짜 <span class="lbl-note">글에 보이는 날짜 · 정렬 기준</span></div><input type="date" value="' + esc(p.date) + '" onchange="saPostSet(\'date\', this.value)"></label>' +
-        '<div class="f"><div class="lb">맨 위 고정</div><div class="seg"><button class="' + (p.pinned ? "on" : "") + '" onclick="saPostSet(\'pinned\', true); render()">고정</button><button class="' + (!p.pinned ? "on" : "") + '" onclick="saPostSet(\'pinned\', false); render()">안 함</button></div></div>' +
+        '<label class="f sa-f"><div class="lb">날짜 <span class="lbl-note">글에 보이는 날짜 · 정렬 기준</span></div><input type="date" class="in-sm" value="' + esc(p.date) + '" onchange="saPostSet(\'date\', this.value)"></label>' +
+        '<div class="f">' + saSwHtml(!!p.pinned, "saPostSet('pinned', " + (p.pinned ? "false" : "true") + "); render()", "맨 위 고정", "소식 목록 맨 위에 둡니다") + '</div>' +
       '</div>' +
-      '<label class="f big"><div class="lb">본문 <span class="lbl-note">빈 줄로 문단 · **굵게**</span></div><textarea rows="10" placeholder="내용을 적어 주세요" oninput="saPostSet(\'body\', this.value)">' + esc(p.body || "") + '</textarea></label>' +
+      '<label class="f sa-f"><div class="lb">본문 <span class="lbl-note">빈 줄로 문단 · **굵게**</span></div><textarea class="in-sm" rows="10" placeholder="내용을 적어 주세요" oninput="saPostSet(\'body\', this.value)">' + esc(p.body || "") + '</textarea></label>' +
       '<div class="f"><div class="lb">사진 <span class="lbl-note">여러 장 · 순서는 화살표</span></div><div class="sa-pimgs">' + imgs + '<button class="sa-pimg add" onclick="saPostImgAdd()">＋ 사진 올리기</button></div></div>' +
       '<div class="f"><div class="lb">첨부 파일 <span class="lbl-note">PDF·한글·워드·엑셀·zip 등, 50MB 까지</span></div>' + files + '<div class="btn-row"><button class="btn sm" onclick="saPostFileAdd()">＋ 파일 올리기</button></div></div>' +
       '<div class="btn-row" style="margin-top:16px; align-items:center">' +
-        '<button class="btn ghost" onclick="saPostBack()">목록</button>' +
-        (p._new ? '' : '<button class="btn danger" onclick="saPostDelete()">지우기</button>') +
-        '<button class="btn ghost" onclick="SA.postPreview=true; render()">미리보기</button>' +
+        '<button class="btn sm ghost" onclick="saPostBack()">← 목록</button>' +
+        (p._new ? '' : '<button class="btn sm ghost danger" onclick="saPostDelete()">지우기</button>') +
+        '<button class="btn sm" onclick="SA.postPreview=true; render()">미리보기</button>' +
         '<span id="sa-post-state" class="muted" style="margin-left:auto; font-size:var(--fs-label)">' + (saPostDirty() ? "고친 내용이 있습니다" : "") + '</span>' +
-        '<button class="btn" onclick="saPostSave(\'초안\')">초안으로 저장</button>' +
-        '<button class="btn primary" onclick="saPostSave(\'게시\')">' + (p.status === "게시" && !p._new ? "고친 것 게시" : "게시") + '</button>' +
+        '<button class="btn sm" onclick="saPostSave(\'초안\')">초안으로 저장</button>' +
+        '<button class="btn sm primary" onclick="saPostSave(\'게시\')">' + (p.status === "게시" && !p._new ? "고친 것 게시" : "게시") + '</button>' +
       '</div>',
       p.status === "초안" ? '<span class="tag amber sm" style="margin-left:auto">초안 — 홈페이지에 안 보임</span>' : '') +
     (SA.postPreview ? saPostPreviewHtml() : '') + (SA.postZoom != null ? saPostZoomHtml() : '');
@@ -9770,7 +9876,7 @@ async function naverApply(){
 }
 
 function openNoshow(back){ view.form={type:"noshow", page:!!back, back:back||""}; render(); window.scrollTo(0,0); }
-function openSearch(){ view.form={type:"search"}; render(); }
+function openSearch(){ view.form={type:"search"}; view.searchGuest=false; view.searchOpen=null; render(); }   /* 열 때는 늘 예약 검색부터 */
 function openPin(){ view.form={type:"pin"}; render(); }
 async function openPinManage(){ if(!await adminGate("PIN 번호 관리")) return; view.form={type:"pinlist"}; render(); }
 function sheetPinList(){
@@ -10496,46 +10602,81 @@ function numSave(){
 
 /* ---------- 예약 검색 ----------
    전화 응대 중 "지난주에 예약한 OOO인데요"를 찾기 위한 화면입니다. */
+/* ---------- 검색 (09-24 재아 개편) ----------
+   입력칸 오른쪽 사람 단추를 켜면 예약 대신 손님(전화번호 하나 = 손님 하나)을 찾습니다 — 대표 이름·다른 이름·전화·손님 메모.
+   예약 결과는 한 줄: 날짜·시각 | 이름 | 인원 | 룸/테이블 | 전화. 방문은 흐린 색, 노쇼·취소만 글자 딱지(방문 딱지는 색으로 충분) */
+function srDate(ds){ var d = new Date(ds + "T00:00:00"); return (d.getMonth()+1) + "/" + d.getDate() + "(" + ["일","월","화","수","목","금","토"][d.getDay()] + ")"; }
+/* 자리는 '룸' / '테이블' 만 — 어느 방·어느 테이블인지는 눌러서 상세에서(09-24 재아) */
+function seatKindText(r){
+  var id = r.roomId || r.tentativeRoomId, x = id ? seatById(id) : null;
+  if(x) return isTable(x) ? "테이블" : "룸";
+  if(isTablePref(r.seatPref)) return "테이블";
+  if(r.seatPref === "room-any") return "룸";
+  return "미정";
+}
+function srRow(r){
+  var past = (r.date + " " + r.time) < (todayStr() + " " + nowHM());
+  return '<button class="srow s-' + r.status + (past ? ' past' : '') + '" onclick="goRes(\'' + r.id + '\',\'' + r.date + '\')">' +
+    '<span class="sr-d">' + srDate(r.date) + ' ' + esc(r.time) + '</span>' +
+    '<span class="sr-n">' + tierTag(r) + groupTag(r) + '<span class="sr-nm">' + esc(r.name) + '</span>' + (r.status === "노쇼" || r.status === "취소" ? '<span class="tag sm ' + (r.status === "노쇼" ? "rust" : "") + '">' + r.status + '</span>' : '') + '</span>' +
+    '<span class="sr-p">' + pplOf(r) + '명</span>' +
+    '<span class="sr-k">' + seatKindText(r) + '</span>' +
+    '<span class="sr-ph">' + esc(r.phone || "-") + '</span></button>';
+}
+function searchResHits(q){
+  var digits = q.replace(/\D/g,""), lower = q.toLowerCase().replace(/\s/g,"");
+  var okNum = digits.length >= 1 && /^[\d\-\s]+$/.test(q);
+  var now = todayStr() + " " + nowHM();
+  return store().reservations.filter(function(r){
+    if(okNum) return (r.phone||"").replace(/\D/g,"").indexOf(digits) >= 0;
+    var bag = (r.name + " " + (r.request||"") + " " + (r.memo||"") + " " + (r.allergy||"") + " " + (r.sourceDetail||"") + " " + (r.source||"") + " " + resSeatLabel(r) + " " + (r.phone||"")).toLowerCase().replace(/\s/g,"");
+    return bag.indexOf(lower) >= 0;
+  }).sort(function(a, b){   /* 앞으로 올 예약이 위(가까운 순), 지난 예약은 그 아래(최근 순) */
+    var ak = a.date + " " + a.time, bk = b.date + " " + b.time, af = ak >= now, bf = bk >= now;
+    if(af !== bf) return af ? -1 : 1;
+    return af ? ak.localeCompare(bk) : bk.localeCompare(ak);
+  }).slice(0, 80);
+}
+/* 손님 찾기 — 손님 관리(14e)의 gsBuild 를 그대로 씀. 뒷자리 4자리가 딱 맞으면 위로 */
+function searchGuestHits(q){
+  var map = gsBuild(), all = Object.keys(map).map(function(k){ return map[k]; });
+  var qd = q.replace(/\D/g, ""), lq = q.toLowerCase().replace(/\s/g, ""), onlyNum = /^[\d\-\s]+$/.test(q);
+  var low = function(x){ return String(x || "").toLowerCase().replace(/\s/g, ""); };
+  all = all.filter(function(g){
+    if(onlyNum) return g.phone.indexOf(qd) >= 0;
+    return low(g.name).indexOf(lq) >= 0 || g.aka.some(function(x){ return low(x).indexOf(lq) >= 0; }) || low(g.memo).indexOf(lq) >= 0;
+  });
+  all.sort(function(a, b){ return (onlyNum && qd.length === 4 ? (b.phone.slice(-4) === qd) - (a.phone.slice(-4) === qd) : 0) || (b.last || "").localeCompare(a.last || "") || b.total - a.total; });
+  return all.slice(0, 60);
+}
+function sgRow(g){
+  var open = view.searchOpen === g.phone;
+  var sub = [gsPhoneHtml(g.phone), "방문 " + g.visit + "회"].concat(g.upcoming ? ["예정 " + g.upcoming] : []).concat(g.noshow ? ['<span class="rust">노쇼 ' + g.noshow + '</span>'] : []);
+  return '<div class="sgwrap' + (open ? ' open' : '') + '"><button class="sgrow" onclick="view.searchOpen=view.searchOpen===\'' + g.phone + '\'?null:\'' + g.phone + '\'; setSearchQ(view.searchQ||\'\')">' +
+      '<span class="sg-n">' + tierTagOf(tierOf(g.visit, g.noshow)) + '<b>' + esc(g.name) + '</b>' + (g.aka.length ? '<small>' + esc(g.aka.slice(0, 3).join(", ")) + (g.aka.length > 3 ? " 외" : "") + '</small>' : '') + '</span>' +
+      '<span class="sg-s">' + sub.join(" · ") + '</span>' +
+      (g.memo ? '<span class="sg-m">' + esc(g.memo) + '</span>' : '') + '</button>' +
+    (open ? '<div class="sg-list">' + g.list.slice(0, 10).map(srRow).join("") + (g.list.length > 10 ? '<p class="f-note" style="margin:6px 8px">최근 10건만 — 전체는 사장님 → 손님 관리</p>' : '') + '</div>' : '') + '</div>';
+}
+function searchResults(){
+  var q = (view.searchQ || "").trim();
+  if(!q) return "";
+  if(view.searchGuest){ var gs = searchGuestHits(q); return gs.length ? gs.map(sgRow).join("") : '<div class="empty">찾은 손님이 없습니다.</div>'; }
+  var hits = searchResHits(q);
+  return hits.length ? hits.map(srRow).join("") : '<div class="empty">찾은 예약이 없습니다.</div>';
+}
+function toggleSearchGuest(){ view.searchGuest = !view.searchGuest; view.searchOpen = null; render(); setTimeout(function(){ var el = document.getElementById("search-q"); if(el){ el.focus(); var n = el.value.length; el.setSelectionRange(n, n); } }, 20); }
 function sheetSearch(){
-  const q = (view.searchQ||"").trim();
-  const s = store();
-  /* 8차-K(재아): 구분 없이 한 글자부터 전부 찾습니다 — 이름·전화·메모·요청·알러지·경로·좌석. 많이 뜨면 더 치면 줄어듭니다 */
-  const digits = q.replace(/\D/g,"");
-  const lower = q.toLowerCase().replace(/\s/g,"");
-  const okNum = digits.length >= 1 && /^[\d\-\s]+$/.test(q);
-  const okTxt = q.length >= 1 && !okNum;
-  let rows = "";   /* 안내 문구는 입력칸 placeholder 하나로(재아 09-17) */
-  if(okNum || okTxt){
-    const hits = s.reservations.filter(r=>{
-      if(okNum) return (r.phone||"").replace(/\D/g,"").includes(digits);
-      const bag = `${r.name} ${r.request||""} ${r.memo||""} ${r.allergy||""} ${r.sourceDetail||""} ${r.source||""} ${resSeatLabel(r)} ${r.phone||""}`.toLowerCase().replace(/\s/g,"");
-      return bag.includes(lower);
-    }).sort((a,b)=>{
-      const now = todayStr()+" "+nowHM(), ak = a.date+" "+a.time, bk = b.date+" "+b.time;
-      const af = ak >= now, bf = bk >= now;
-      if(af !== bf) return af ? -1 : 1;
-      return af ? ak.localeCompare(bk) : bk.localeCompare(ak);
-    }).slice(0,80);
-    rows = hits.length ? hits.map(r=>`
-      <button class="rowitem tap ${r.date < todayStr()?'search-past':''}" onclick="goRes('${r.id}','${r.date}')">
-        <span class="grow"><span class="t">${esc(r.name)}
-          ${r.status!=="확정"?`<span class="tag ${r.status==="노쇼"?"rust":""}">${r.status}</span>`:""}</span>
-          <span class="s">${dateLabel(r.date)} ${esc(r.time)} · ${pplText(r)} · ${esc(r.phone||"연락처 없음")} · ${esc(seatText(r))}</span></span>
-      </button>`).join("")
-      : `<div class="empty">찾은 예약이 없습니다.</div>`;
-  }
-  const hintTxt = "";
-  return `
-    ${sheetHead("예약 검색")}
-    <input id="search-q" value="${esc(q)}" placeholder="이름, 전화, 메모, 요청사항 중 검색" autofocus
-           oninput="setSearchQ(this.value)" autocomplete="off" style="margin-bottom:10px">
-    ${hintTxt}
-    <div class="card searchbox">${rows}</div>`;
+  var q = view.searchQ || "", guest = !!view.searchGuest;
+  return sheetHead(guest ? "손님 검색" : "예약 검색") +
+    '<div class="sq-row"><input id="search-q" value="' + esc(q) + '" placeholder="' + (guest ? "이름, 다른 이름, 전화번호, 손님 메모 중 검색" : "이름, 전화, 메모, 요청사항 중 검색") + '" autofocus oninput="setSearchQ(this.value)" autocomplete="off">' +
+    '<button class="sq-mode' + (guest ? ' on' : '') + '" onclick="toggleSearchGuest()" aria-pressed="' + guest + '" title="' + (guest ? "예약으로 찾기" : "손님으로 찾기") + '" aria-label="손님으로 찾기">' + ICON.person + '</button></div>' +
+    '<div class="card searchbox">' + searchResults() + '</div>';
 }
 function setSearchQ(v){
   view.searchQ = v;
-  const box = document.querySelector(".searchbox");
-  if(box) box.innerHTML = sheetSearch().split('<div class="card searchbox">')[1].split('</div>\n    <div class="sheet-actions"')[0];
+  var box = document.querySelector(".searchbox");
+  if(box) box.innerHTML = searchResults();
 }
 function goRes(id, date){
   view.date = date; view.calMonth = date.slice(0,7);
