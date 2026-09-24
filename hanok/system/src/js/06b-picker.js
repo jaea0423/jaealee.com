@@ -3,6 +3,7 @@
    · uiNum(제목, 값, {min, max, unit})      → 숫자(문자열 아님) 또는 null(취소)
    · uiDate(제목, 'YYYY-MM-DD', {min, max, clear}) → 'YYYY-MM-DD' / ""(지움) / null(취소)
    · uiRange(제목, from, to, {openEnd, clear})     → {from, to} / null. openEnd 면 '끝 없음'(to:"") 가능
+   · uiTime(제목, 'HH:MM')                          → 'HH:MM' / null. 키패드로 네 자리(1830 → 18:30), 30분 단위 바로 고르기도(09-24 재아 '시각도 같은 팝업')
    · 앱 안의 <input type="date">·<input type="number"> 는 전부 누르면 위 팝업이 뜹니다(pkArm).
      칸 값을 바꾼 뒤 input·change 이벤트를 내 주므로 기존 onchange 가 그대로 돕니다 — 칸마다 고칠 필요 없음.
      기기 기본 달력·키보드는 기기마다 모양이 달라 사장님이 헷갈렸음. 키보드(숫자·Backspace·Enter)도 팝업에서 받습니다.
@@ -29,13 +30,28 @@ function uiRange(title, from, to, opt){
   return new Promise(function(res){ modalReplace({mode:"range", title:title, tone:"ok", a:from || "", b:to || "", pickB:!!from, month:m, min:opt.min || "", openEnd:!!opt.openEnd, clear:!!opt.clear, res:res}); });
 }
 
+function uiTime(title, value){
+  return new Promise(function(res){ modalReplace({mode:"time", title:title, tone:"ok", buf:String(value || "").replace(/\D/g, "").slice(0, 4), fresh:true, err:"", res:res}); });
+}
+/* 시각: 네 자리 숫자 → HH:MM. 두 자리만 치면 정시(18 → 18:00) */
+function pkTimeFmt(b){ var s = (b + "____").slice(0, 4); return s.slice(0, 2).replace(/_/g, "–") + ":" + s.slice(2).replace(/_/g, "–"); }
+function pkTimeOk(){
+  var m = MODAL; if(!m || m.mode !== "time") return;
+  var b = m.buf; if(b.length === 2) b += "00"; else if(b.length === 1) b = "0" + b + "00"; else if(b.length === 3) b = "0" + b;
+  var h = Number(b.slice(0, 2)), mi = Number(b.slice(2));
+  if(b.length !== 4 || h > 23 || mi > 59){ m.err = "00:00 ~ 23:59 사이로 넣어 주세요"; render(); return; }
+  MODAL = null; render(); m.res(b.slice(0, 2) + ":" + b.slice(2));
+}
+function pkTimePick(t){ var m = MODAL; if(!m || m.mode !== "time") return; MODAL = null; render(); m.res(t); }
+
 /* ---------- 숫자 ---------- */
 function pkNumPush(k){
-  var m = MODAL; if(!m || m.mode !== "num") return;
+  var m = MODAL; if(!m || (m.mode !== "num" && m.mode !== "time")) return;
   if(m.fresh && /^[0-9]$/.test(String(k))){ m.buf = ""; }   /* 처음 누르는 숫자는 새로 쓰기(값 뒤에 붙지 않게) */
   m.fresh = false; m.err = "";
   if(k === "back") m.buf = m.buf.slice(0, -1);
   else if(k === "clear") m.buf = "";
+  else if(m.mode === "time"){ if(m.buf.length < 4) m.buf += String(k); }
   else if(m.buf.length < 7) m.buf = (m.buf === "0" ? "" : m.buf) + String(k);
   render();
 }
@@ -88,6 +104,13 @@ function pkRender(m){
       '<div class="pk-err">' + esc(m.err || "") + '</div>' +
       '<div class="pkeys md">' + [1,2,3,4,5,6,7,8,9,"clear",0,"back"].map(function(k){ return k === "clear" ? '<button class="pkey sub" onclick="pkNumPush(\'clear\')" title="지우기">↻</button>' : k === "back" ? '<button class="pkey sub" onclick="pkNumPush(\'back\')" aria-label="한 글자 지우기">←</button>' : '<button class="pkey" onclick="pkNumPush(' + k + ')">' + k + '</button>'; }).join("") + '</div>';
     foot += '<button class="btn primary" onclick="pkNumOk()">확인</button>';
+  }else if(m.mode === "time"){
+    /* 자주 쓰는 시각은 한 번에(영업 시간대 30분 단위), 그 밖은 키패드 */
+    var quick = []; for(var hh = 10; hh <= 22; hh++){ quick.push(pad(hh) + ":00"); if(hh < 22) quick.push(pad(hh) + ":30"); }
+    body = '<div class="pk-num"><span class="pk-v">' + esc(pkTimeFmt(m.buf)) + '</span></div><div class="pk-err">' + esc(m.err || "") + '</div>' +
+      '<div class="pkeys md">' + [1,2,3,4,5,6,7,8,9,"clear",0,"back"].map(function(k){ return k === "clear" ? '<button class="pkey sub" onclick="pkNumPush(\'clear\')" title="지우기">↻</button>' : k === "back" ? '<button class="pkey sub" onclick="pkNumPush(\'back\')" aria-label="한 글자 지우기">←</button>' : '<button class="pkey" onclick="pkNumPush(' + k + ')">' + k + '</button>'; }).join("") + '</div>' +
+      '<div class="pk-quick">' + quick.map(function(t){ return '<button type="button" onclick="pkTimePick(\'' + t + '\')">' + t + '</button>'; }).join("") + '</div>';
+    foot += '<button class="btn primary" onclick="pkTimeOk()">확인</button>';
   }else if(m.mode === "date"){
     body = pkCalHtml(m);
     if(m.clear) foot = '<button class="btn ghost" onclick="pkClear()" style="margin-right:auto">지우기</button>' + foot;
@@ -104,7 +127,7 @@ function pkRender(m){
 /* ---------- 앱 안의 기본 날짜·숫자 칸을 팝업으로 ----------
    readOnly 로 기기 달력·키보드를 막고, 누르거나(마우스·손가락) 포커스 뒤 Enter·Space·숫자를 치면 팝업. 값이 정해지면 input·change 를 내 줌 */
 function pkArm(root){
-  var list = (root || document).querySelectorAll('input[type="date"], input[type="number"]');
+  var list = (root || document).querySelectorAll('input[type="date"], input[type="number"], input[type="time"]');
   for(var i = 0; i < list.length; i++){ var el = list[i]; if(el.dataset.pk) continue; el.dataset.pk = "1"; el.readOnly = true; el.setAttribute("inputmode", "none"); el.classList.add("pk-in"); }
 }
 function pkLabel(el){
@@ -127,7 +150,9 @@ function pkSet(el, v){
 function pkOpenFor(el, firstKey){
   if(el.disabled) return;
   var key = pkKey(el);
-  if(el.type === "date"){
+  if(el.type === "time"){
+    uiTime(pkLabel(el), el.value).then(function(v){ if(v != null) pkSet(pkLive(el, key), v); });
+  }else if(el.type === "date"){
     uiDate(pkLabel(el), el.value, {min:el.min, max:el.max, clear:!el.required}).then(function(v){ if(v != null) pkSet(pkLive(el, key), v); });
   }else{
     var mn = el.min !== "" ? Number(el.min) : null, mx = el.max !== "" ? Number(el.max) : null;
@@ -143,15 +168,15 @@ document.addEventListener("click", function(e){
 /* 아직 무장 안 된 칸(그리기 밖에서 생긴 것)에 손이 가면 그 자리에서 무장하고 팝업 */
 document.addEventListener("focusin", function(e){
   var el = e.target;
-  if(el && el.tagName === "INPUT" && (el.type === "date" || el.type === "number") && !el.dataset.pk){ pkArm(el.parentNode); }
+  if(el && el.tagName === "INPUT" && (el.type === "date" || el.type === "number" || el.type === "time") && !el.dataset.pk){ pkArm(el.parentNode); }
 }, true);
 document.addEventListener("keydown", function(e){
   var m = MODAL;
-  if(m && m.mode === "num"){
+  if(m && (m.mode === "num" || m.mode === "time")){
     if(/^[0-9]$/.test(e.key)){ e.preventDefault(); e.stopImmediatePropagation(); pkNumPush(e.key); }
     else if(e.key === "Backspace"){ e.preventDefault(); e.stopImmediatePropagation(); pkNumPush("back"); }
     else if(e.key === "Delete"){ e.preventDefault(); e.stopImmediatePropagation(); pkNumPush("clear"); }
-    else if(e.key === "Enter"){ e.preventDefault(); e.stopImmediatePropagation(); pkNumOk(); }
+    else if(e.key === "Enter"){ e.preventDefault(); e.stopImmediatePropagation(); if(m.mode === "time") pkTimeOk(); else pkNumOk(); }
     return;
   }
   if(m && m.mode === "range" && e.key === "Enter" && m.a){ e.preventDefault(); e.stopImmediatePropagation(); pkRangeOk(false); return; }
@@ -159,6 +184,6 @@ document.addEventListener("keydown", function(e){
   var el = e.target;
   if(!m && el && el.classList && el.classList.contains("pk-in")){
     if(e.key === "Enter" || e.key === " "){ e.preventDefault(); e.stopImmediatePropagation(); pkOpenFor(el); }
-    else if(el.type === "number" && /^[0-9]$/.test(e.key)){ e.preventDefault(); e.stopImmediatePropagation(); pkOpenFor(el, e.key); }
+    else if((el.type === "number" || el.type === "time") && /^[0-9]$/.test(e.key)){ e.preventDefault(); e.stopImmediatePropagation(); pkOpenFor(el, e.key); }
   }
 }, true);

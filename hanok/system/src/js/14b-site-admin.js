@@ -44,6 +44,7 @@ async function saLoad(){
     var draft = saMerge(defaults, base);
     SA = { draft: draft, saved: JSON.stringify(draft), savedAt: dr[0] ? dr[0].updated_at : null, savedBy: dr[0] ? dr[0].by : "",
            live: live, versions: vs, defaults: defaults, loading: false, err: null, tab: (SA && SA.tab) || "online" };
+    SA.liveStr = saStrip(saLiveObj());
   }catch(e){ SA = { loading:false, err:e.message || String(e), tab:"online" }; }
 }
 /* 사이트의 data/site.js 를 글로 받아 window 흉내 안에서 실행 → SITE_DEFAULT. 전역을 더럽히지 않게 */
@@ -86,15 +87,31 @@ function saSet(path, val){
 function saSetLines(path, text){ saSet(path, String(text).split("\n").map(function(x){ return x.replace(/\s+$/, ""); }).filter(function(x){ return x.length; })); }
 function saSetNum(path, v, min, max){ var n = parseInt(v, 10); if(isNaN(n)) return; if(min != null) n = Math.max(min, n); if(max != null) n = Math.min(max, n); saSet(path, n); }
 function saToggle(path){ saSet(path, !saGet(path)); render(); }
-/* 글자만 바꾸는 동안은 전체를 다시 그리지 않고(입력 포커스가 날아감) 위 띠의 버튼 상태만 갱신 */
+/* ---------- '수정사항' 판단과 자동 저장 (09-24 재아 2차) ----------
+   '초안 저장' 단추를 없앴습니다. 고친 내용은 1.2초 뒤 서버 초안에 저절로 저장(창을 닫아도 남고, 미리보기도 그 초안을 봄).
+   '수정사항이 있습니다' = 지금 홈페이지(적용된 판)와 초안이 다를 때. 팝업 공지는 따로 바로 올라가므로 비교에서 뺌 */
+function saLiveObj(){ return saMerge(SA.defaults || {}, SA.live ? SA.live.data : {}); }
+function saStrip(o){ var c = deepClone(o || {}); delete c.notices; return JSON.stringify(c); }
+function saPending(){ return !!(SA && SA.draft && SA.liveStr != null && saStrip(SA.draft) !== SA.liveStr); }
+var SA_AUTOSAVE = null;
+function saAutoSave(){ clearTimeout(SA_AUTOSAVE); SA_AUTOSAVE = setTimeout(function(){ if(saDirty()) saSave(true); }, 1200); }
+/* 글자만 바꾸는 동안은 전체를 다시 그리지 않고(입력 포커스가 날아감) 위 띠만 바꿔 끼움 */
 function saHeader(){
-  var d = saDirty();
-  var b = document.getElementById("sa-save"); if(b) b.disabled = !d;
-  var s = document.getElementById("sa-state"); if(s) s.textContent = d ? "고친 내용이 있습니다 — 초안 저장을 누르세요" : saSavedText();
+  saAutoSave();
+  var el = document.getElementById("sa-top"); if(!el) return;
+  var p = saPending(); if(el.dataset.p === (p ? "1" : "0")) return;
+  var tmp = document.createElement("div"); tmp.innerHTML = saTopHtml(); el.parentNode.replaceChild(tmp.firstChild, el);
 }
-function saSavedText(){
-  if(!SA.savedAt) return "저장한 초안 없음 (지금 보이는 판에서 시작)";
-  return "초안 저장됨 · " + saWhen(SA.savedAt) + (SA.savedBy ? " · " + SA.savedBy : "");
+function saFuture(){ return (SA.versions || []).filter(function(v){ return new Date(v.apply_at).getTime() > Date.now(); }).sort(function(a, b){ return a.apply_at.localeCompare(b.apply_at); }); }
+/* 위 띠: 수정사항이 있으면 노란 상자 + 되돌리기·미리보기·적용, 없으면 상자 없이 미리보기·적용(꺼짐)만 */
+function saTopHtml(){
+  var p = saPending(), fut = saFuture();
+  return '<div id="sa-top" data-p="' + (p ? "1" : "0") + '" class="sa-top2' + (p ? ' pending' : '') + '">' +
+    (p ? '<span class="sa-top-t">수정사항이 있습니다</span>' : '') +
+    fut.map(function(v){ return '<span class="tag sm amber sa-fut">' + esc(saWhen(v.apply_at)) + ' 적용 예약<button onclick="saCancelVersion(' + v.id + ')" aria-label="예약 취소" title="예약 취소">×</button></span>'; }).join("") +
+    '<div class="sa-acts">' + (p ? '<button class="btn sm ghost" onclick="saDiscard()">수정사항 되돌리기</button>' : '') +
+      '<button class="btn sm" onclick="saPreview()">미리보기</button>' +
+      '<button class="btn sm primary" onclick="saApply()"' + (p ? '' : ' disabled') + '>적용</button></div></div>';
 }
 function saWhen(iso){ var d = new Date(iso); return (d.getMonth()+1) + "/" + d.getDate() + " " + pad(d.getHours()) + ":" + pad(d.getMinutes()); }
 
@@ -105,8 +122,8 @@ async function saSave(quiet){
     var key = view.storeKey || "hanok";
     await sb("/rest/v1/site_draft?on_conflict=store", { method:"POST", body:{ store:key, data:saDiffData(), by:(SESSION && SESSION.who) || "" }, prefer:"resolution=merge-duplicates,return=minimal" });
     SA.saved = JSON.stringify(SA.draft); SA.savedAt = new Date().toISOString(); SA.savedBy = (SESSION && SESSION.who) || "";
-    if(!quiet) showToast("초안을 저장했습니다");
-    saHeader(); return true;
+    if(!quiet) showToast("저장했습니다");
+    return true;
   }catch(e){ await uiAlert("초안 저장 실패", e.message, "warn"); return false; }
 }
 /* 미리보기: 초안을 먼저 저장하고(사이트가 서버 초안을 읽으니까) 사이트를 덮개 안에 띄움 */
@@ -115,46 +132,44 @@ async function saPreview(page){
   view.saPreview = page || view.saPreview || "index";
   render();
 }
-function saPreviewClose(){ view.saPreview = null; render(); }
-function saPreviewUrl(page){ return saRoot() + (page || "index") + ".html?preview=1&v=" + Date.now(); }
-/* 적용: 지금 바로 / 날짜·시각 정해서 */
+function saPreviewClose(){ view.saPreview = null; view.saPreviewOnly = null; render(); }
+function saPreviewUrl(page){ return saRoot() + (page || "index") + ".html?preview=1" + (view.saPreviewOnly ? "&notice=1&only=" + encodeURIComponent(view.saPreviewOnly) : "") + "&v=" + Date.now(); }
+/* 적용 — 기본은 즉시. '적용 시점 설정' 을 켜면 날짜·시각(우리 팝업)을 정해 그때부터(09-24 재아) */
 async function saApply(){
-  if(!SA || !SA.draft) return;
-  if(saDirty() && !await saSave(true)) return;
-  view.saApply = { mode:"now", date:shiftDate(todayStr(), 1), time:"00:00", note:"" };
+  if(!SA || !SA.draft || !saPending()) return;
+  clearTimeout(SA_AUTOSAVE); if(saDirty() && !await saSave(true)) return;
+  view.saApply = { sched:false, date:shiftDate(todayStr(), 1), time:"10:00" };
   render();
 }
 function saApplyClose(){ view.saApply = null; render(); }
-function saApplySet(k, v){ if(view.saApply){ view.saApply[k] = v; if(k === "mode") render(); } }
-/* 적용 대화창 — 지금 바로 / 정한 시각부터(일괄). 팝업 하나만 나중에 띄우려면 팝업의 시작일을 쓰는 게 낫습니다(글 전체를 예약하는 것이 아니라) */
+function saApplySet(k, v){ if(view.saApply){ view.saApply[k] = v; render(); } }
 function saApplyHtml(){
-  var a = view.saApply, fut = (SA.versions || []).filter(function(v){ return new Date(v.apply_at).getTime() > Date.now(); });
-  return '<div class="overlay" onclick="saApplyClose()"><div class="sheet" onclick="event.stopPropagation()">' +
+  var a = view.saApply;
+  return '<div class="overlay" onclick="saApplyClose()"><div class="sheet sa-apply" onclick="event.stopPropagation()">' +
     '<div class="sheet-h"><h2>홈페이지에 적용</h2><button class="x" onclick="saApplyClose()" aria-label="닫기">×</button></div>' +
-    '<p class="f-note" style="margin:-8px 0 12px">지금 초안 전체(글·팝업·차림·사진·예약 규칙)가 한 판으로 나갑니다. 이전 판은 남아 있어 되돌릴 수 있습니다.</p>' +
-    '<div class="seg"><button class="' + (a.mode === "now" ? "on" : "") + '" onclick="saApplySet(\'mode\', \'now\')">지금 바로</button><button class="' + (a.mode === "at" ? "on" : "") + '" onclick="saApplySet(\'mode\', \'at\')">정한 시각부터</button></div>' +
-    (a.mode === "at" ? '<div class="grid2" style="margin-top:12px"><label class="f"><div class="lb">날짜</div><input type="date" value="' + esc(a.date) + '" onchange="saApplySet(\'date\', this.value)"></label><label class="f"><div class="lb">시각</div><input type="time" value="' + esc(a.time) + '" onchange="saApplySet(\'time\', this.value)"></label></div>' +
-      '<p class="f-note" style="margin:-4px 0 12px">그 시각까지는 지금 판이 그대로 보이고, 시각이 되면 이 판으로 바뀝니다. 팝업 하나만 나중에 띄우는 거면 팝업의 시작일로 하는 게 간단합니다.</p>' : '') +
-    (fut.length ? '<div class="alert amber" style="margin:8px 0"><span class="ic">!</span><div><div class="a-t">예약해 둔 판이 ' + fut.length + '건 있습니다</div><div class="a-s">' + fut.map(function(v){ return saWhen(v.apply_at) + (v.note ? " · " + esc(v.note) : ""); }).join(", ") + ' — 그 시각이 되면 그 판이 이 판을 덮습니다. 필요 없으면 적용 기록에서 취소하세요.</div></div></div>' : '') +
-    '<label class="f" style="margin-top:12px"><div class="lb">메모 (선택)</div><input type="text" class="in-sm" placeholder="예: 추석 팝업, 가을 메뉴" value="' + esc(a.note) + '" oninput="saApplySet(\'note\', this.value)"></label>' +
-    '<div class="sheet-actions btn-row"><button class="btn ghost" onclick="saApplyClose()">취소</button><button class="btn primary" data-enter onclick="saApplyDo()" style="margin-left:auto">' + (a.mode === "at" ? "이 시각에 적용" : "지금 적용") + '</button></div>' +
+    '<label class="chk sa-apply-chk"><input type="checkbox"' + (a.sched ? " checked" : "") + ' onchange="saApplySet(\'sched\', this.checked)"> 적용 시점 설정</label>' +
+    (a.sched ? '<div class="grid2 sa-apply-at">' +
+      saField("날짜", '<button type="button" class="sa-pick" onclick="uiDate(\'적용 날짜\', view.saApply.date, {min:todayStr()}).then(function(v){ if(v) saApplySet(\'date\', v); })">' + esc(pkShort(a.date) + " " + a.date.slice(0, 4)) + '</button>') +
+      saField("시각", '<button type="button" class="sa-pick" onclick="uiTime(\'적용 시각\', view.saApply.time).then(function(v){ if(v) saApplySet(\'time\', v); })">' + esc(a.time) + '</button>') + '</div>' : '') +
+    '<div class="sheet-actions btn-row"><button class="btn ghost" onclick="saApplyClose()">취소</button><button class="btn primary" data-enter onclick="saApplyDo()" style="margin-left:auto">' + (a.sched ? "이 시각에 적용" : "적용") + '</button></div>' +
     '</div></div>';
 }
+/* 팝업 공지는 따로 바로 올라가므로, 판을 만들 때는 '지금 보이는 팝업' 을 그대로 씀(초안에서 고치다 만 팝업이 섞여 나가지 않게) */
+function saDataWith(noticesFrom){ var o = deepClone(SA.draft); o.notices = deepClone((noticesFrom || {}).notices || []); return saDiff(SA.defaults || {}, o) || {}; }
 async function saApplyDo(){
   var a = view.saApply; if(!a) return;
-  var at = new Date(), when = a.mode === "at" ? 1 : 0, d = a.date, t = a.time, note = (a.note || "").trim();
-  if(when === 1){
-    if(!/^\d{4}-\d{2}-\d{2}$/.test(d || "") || !/^\d{2}:\d{2}$/.test(t || "")){ await uiAlert("날짜와 시각을 고르세요", "", "warn"); return; }
+  var at = new Date(), d = a.date, t = a.time;
+  if(a.sched){
     at = new Date(d + "T" + t + ":00");
     if(isNaN(at.getTime())){ await uiAlert("날짜·시각 오류", d + " " + t, "warn"); return; }
-    if(at.getTime() < Date.now()){ await uiAlert("지난 시각입니다", "지금 바로 적용하려면 '지금 바로' 를 고르세요.", "warn"); return; }
+    if(at.getTime() < Date.now()){ await uiAlert("지난 시각입니다", "즉시 적용하려면 '적용 시점 설정' 을 끄세요.", "warn"); return; }
   }
   view.saApply = null;
   try{
     var key = view.storeKey || "hanok";
-    await sb("/rest/v1/site_versions", { method:"POST", body:{ store:key, data:saDiffData(), apply_at:at.toISOString(), note:note, by:(SESSION && SESSION.who) || "" }, prefer:"return=minimal" });
-    logEvent("홈페이지 적용", (when === 1 ? "예약 " + d + " " + t : "지금") + (note ? " · " + note : ""));
-    showToast(when === 1 ? "예약해 두었습니다 · " + d + " " + t : "홈페이지에 적용했습니다");
+    await sb("/rest/v1/site_versions", { method:"POST", body:{ store:key, data:saDataWith(saLiveObj()), apply_at:at.toISOString(), note:"", by:(SESSION && SESSION.who) || "" }, prefer:"return=minimal" });
+    logEvent("홈페이지 적용", a.sched ? "예약 " + d + " " + t : "즉시");
+    showToast(a.sched ? "예약해 두었습니다 · " + pkShort(d) + " " + t : "홈페이지에 적용했습니다");
     SA.loading = true; render(); await saLoad(); render();
   }catch(e){ await uiAlert("적용 실패", e.message, "warn"); }
 }
@@ -165,20 +180,11 @@ async function saCancelVersion(id){
   try{ await sb("/rest/v1/site_versions?id=eq." + id, {method:"DELETE", prefer:"return=minimal"}); logEvent("홈페이지 예약 적용 취소", String(id)); SA.loading = true; render(); await saLoad(); render(); }
   catch(e){ await uiAlert("취소 실패", e.message, "warn"); }
 }
-/* 이전 판을 초안으로 가져오기 (되돌리기는 그 뒤 '적용') */
-async function saRestore(id){
-  try{
-    var rows = await sb("/rest/v1/site_versions?id=eq." + id + "&select=id,data,apply_at,note");
-    if(!rows[0]) return;
-    if(saDirty() && !await uiConfirm("고치던 초안을 버릴까요?", "이전 판을 가져오면 지금 초안은 사라집니다.", {ok:"버리고 가져오기", cancel:"그대로"})) return;
-    SA.draft = saMerge(SA.defaults, rows[0].data); render();
-    showToast("가져왔습니다 · 확인하고 '적용' 을 누르세요");
-  }catch(e){ await uiAlert("가져오기 실패", e.message, "warn"); }
-}
 /* 초안을 지금 보이는 판으로 되돌림 */
 async function saDiscard(){
-  if(!await uiConfirm("고친 내용을 버릴까요?", "지금 홈페이지에 보이는 판으로 초안을 되돌립니다.", {ok:"버리기", cancel:"계속 편집"})) return;
-  SA.draft = saMerge(SA.defaults, SA.live ? SA.live.data : {}); render(); saHeader();
+  if(!await uiConfirm("수정사항을 되돌릴까요?", "지금 홈페이지에 보이는 내용으로 돌아갑니다.", {ok:"되돌리기", cancel:"취소"})) return;
+  var nt = deepClone(SA.draft.notices || []);   /* 팝업은 따로 — 되돌리지 않음 */
+  SA.draft = saLiveObj(); SA.draft.notices = nt; render(); saHeader();
 }
 function saTab(t){ SA.tab = t; SA.open = null; render(); }
 /* 배열 항목 추가·삭제·이동 */
@@ -311,25 +317,13 @@ function saHead(){ return (view.form && view.form.page) ? "" : sheetHead("홈페
 function sheetSite(){
   if(!SA || SA.loading) return saHead() + '<p class="muted" style="padding:20px 0">불러오는 중…</p>';
   if(SA.err) return saHead() + '<div class="alert rust"><span class="ic">!</span><div><div class="a-t">불러오지 못했습니다</div><div class="a-s">' + esc(SA.err) + '</div></div></div><div class="btn-row" style="margin-top:12px"><button class="btn" onclick="openSiteAdmin()">다시 시도</button></div>';
-  /* 09-24 재아 "뭐는 바로 적용이고 뭐는 무관하고 헷갈린다": 소식만 '게시' 즉시 반영이라 맨 끝에 선을 긋고 따로 둡니다.
-     소식 탭에서는 위의 초안·미리보기·적용 띠를 숨겨 두 방식이 한 화면에 섞이지 않게 */
-  var TABS = [["online","홈페이지 예약"],["notices","팝업 공지"],["hours","영업시간·연락처"],["texts","글"],["menu","차림"],["images","사진"],["history","적용 기록"],["posts","소식"]];
-  var future = (SA.versions || []).filter(function(v){ return new Date(v.apply_at).getTime() > Date.now(); });
-  var body = ({online:saTabOnline, notices:saTabNotices, posts:saTabPosts, hours:saTabHours, texts:saTabTexts, menu:saTabMenu, images:saTabImages, history:saTabHistory}[SA.tab] || saTabOnline)();   /* posts 는 14c */
-  var isPost = SA.tab === "posts";
+  /* 09-24 재아: 적용 기록 탭 삭제. 팝업 공지·소식은 저장하면 바로 올라가는 것들이라 선 뒤에 따로 — 그 두 탭에서는 위의 적용 띠를 숨김 */
+  var TABS = [["online","홈페이지 예약"],["hours","영업시간·연락처"],["texts","글"],["menu","차림"],["images","사진"],["notices","팝업 공지"],["posts","소식"]];
+  var body = ({online:saTabOnline, notices:saTabNotices, posts:saTabPosts, hours:saTabHours, texts:saTabTexts, menu:saTabMenu, images:saTabImages}[SA.tab] || saTabOnline)();   /* posts 는 14c */
+  var instant = SA.tab === "posts" || SA.tab === "notices";
   return saHead() +
-    (isPost ? '<div class="sa-top sa-top-post"><span>소식은 <b>게시</b>를 누르면 바로 홈페이지에 올라갑니다.</span></div>' :
-    '<div class="sa-top">' +
-      '<div class="sa-status"><span id="sa-state">' + (saDirty() ? "고친 내용이 있습니다 — 초안 저장을 누르세요" : saSavedText()) + '</span>' +
-        '<span class="muted">지금 홈페이지: ' + (SA.live ? saWhen(SA.live.apply_at) + " 판" + (SA.live.note ? ' · ' + esc(SA.live.note) : '') : "기본값(적용한 판 없음)") + (future.length ? ' · <b class="sa-fut">예약 ' + future.length + '건</b>' : '') + '</span></div>' +
-      '<div class="sa-acts">' +
-        '<button class="btn sm ghost" onclick="saDiscard()" title="초안을 지금 보이는 판으로">고친 것 버리기</button>' +
-        '<button class="btn sm" onclick="saPreview()">미리보기</button>' +
-        '<button class="btn sm" id="sa-save" onclick="saSave()" ' + (saDirty() ? "" : "disabled") + '>초안 저장</button>' +
-        '<button class="btn sm primary" onclick="saApply()">적용…</button>' +
-      '</div>' +
-    '</div>') +
-    '<div class="sa-tabs">' + TABS.map(function(t){ return (t[0] === "posts" ? '<i class="sa-tab-sep"></i>' : '') + '<button class="' + (SA.tab === t[0] ? "on" : "") + '" onclick="saTab(\'' + t[0] + '\')">' + t[1] + (t[0] === "history" && future.length ? '<i class="cnt">' + future.length + '</i>' : '') + '</button>'; }).join("") + '</div>' +
+    (instant ? '<div class="sa-top2 sa-top-post"><span>' + (SA.tab === "posts" ? '소식은 <b>게시</b>' : '팝업은 <b>저장</b>') + '을 누르면 바로 홈페이지에 반영됩니다.</span></div>' : saTopHtml()) +
+    '<div class="sa-tabs">' + TABS.map(function(t){ return (t[0] === "notices" ? '<i class="sa-tab-sep"></i>' : '') + '<button class="' + (SA.tab === t[0] ? "on" : "") + '" onclick="saTab(\'' + t[0] + '\')">' + t[1] + '</button>'; }).join("") + '</div>' +
     '<div class="sa-body">' + body + '</div>' +
     (view.saPreview ? saPreviewHtml() : "") + (view.saApply ? saApplyHtml() : "");
 }
@@ -359,7 +353,7 @@ function saTabOnline(){
       saSwHtml(same, "saToggle('online.sameDay')", "당일 예약") +
       (same ? '<div class="sa-sub-in">' + saN("online.sameDayLeadH", "당일 최소 여유 시간", 1, 6, "시간") + '</div>' : "")) +
     saBox("예약 조건",
-      saN("online.maxDays", "예약 가능 기간", 1, 60, "일") +
+      saN("online.maxDays", "예약 가능 기간", 1, 90, "일") +
       saN("online.minAdults", "최소 인원 (성인 기준)", 2, 12, "명") +
       saN("online.maxPeople", "최대 인원 (어린이 포함)", 2, 12, "명") +
       saN("online.roomMinAdults", "룸 최소 인원 · 평일 (성인 기준)", 5, 12, "명") +
@@ -400,18 +394,34 @@ function saTabNotices(){
     saPast("nt", "지난 팝업", past);
 }
 function saNtAdd(){ var a = saGet("notices") || []; a.push({id:"n" + Date.now().toString(36), from:todayStr(), until:"", title:"", lines:[], button:""}); saSet("notices", a); SA.open = "nt:" + (a.length - 1); render(); }
+/* 팝업은 바로 올림(09-24 재아 '소식처럼 따로'): 지금 보이는 판 + 초안의 팝업 목록으로 새 판을 즉시 만듦 — 다른 탭의 적용 안 한 수정은 안 섞임 */
+function saNtLive(id){ var l = (saLiveObj().notices || []).filter(function(n){ return n.id === id; })[0]; return l ? JSON.stringify(l) : null; }
+async function saNtPublish(msg){
+  try{
+    clearTimeout(SA_AUTOSAVE); if(saDirty()) await saSave(true);
+    var o = saLiveObj(); o.notices = deepClone(SA.draft.notices || []);
+    await sb("/rest/v1/site_versions", { method:"POST", body:{ store:view.storeKey || "hanok", data:saDiff(SA.defaults || {}, o) || {}, apply_at:new Date().toISOString(), note:"팝업", by:(SESSION && SESSION.who) || "" }, prefer:"return=minimal" });
+    logEvent("홈페이지 팝업", msg || "저장");
+    var tab = SA.tab; SA.open = null; SA.loading = true; render(); await saLoad(); SA.tab = tab; render(); showToast(msg || "팝업을 저장했습니다");
+  }catch(e){ await uiAlert("저장 실패", e.message, "warn"); }
+}
+async function saNtDel(i){ if(!await uiConfirm("팝업 삭제", "지우면 홈페이지에서 바로 사라집니다.", {ok:"삭제", cancel:"취소"})) return; var a = saGet("notices") || []; a.splice(i, 1); saSet("notices", a); await saNtPublish("팝업을 지웠습니다"); }
+async function saNtMove(i, d){ saArrMove("notices", i, d); await saNtPublish("순서를 바꿨습니다"); }
+async function saNtPreview(id){ clearTimeout(SA_AUTOSAVE); if(saDirty() && !await saSave(true)) return; view.saPreviewOnly = id; view.saPreview = "index"; render(); }
 function saNtCard(n, i, total){
   var p = "notices." + i + ".", soon = n.from && n.from > todayStr();
+  var unsaved = saNtLive(n.id) !== JSON.stringify(n);
   var sum = '<span class="sa-card-t">' + esc(n.title || "(제목 없음)") + '</span><span class="sa-card-s">' + esc(pkRangeText(n.from, n.until) || "바로부터 계속") + '</span>' +
-    (soon ? '<span class="tag sm amber">예정</span>' : '') + (n.button ? '<span class="tag sm">예약 버튼</span>' : '') + (n.img ? '<span class="tag sm">그림</span>' : '');
+    (unsaved ? '<span class="tag sm rust">저장 안 됨</span>' : '') + (soon ? '<span class="tag sm amber">예정</span>' : '') + (n.button ? '<span class="tag sm">예약 버튼</span>' : '') + (n.img ? '<span class="tag sm">그림</span>' : '');
   var edit =
     '<div class="grid2">' + saF(p + "title", "제목") + saField("기간", saRangeBtn(p + "from", p + "until", "팝업 기간", {openEnd:true, ph:"바로부터 계속"})) + '</div>' +
     saL(p + "lines", "내용", "", 4) +
     saSwHtml(!!n.button, "saSet('" + p + "button', " + (n.button ? "''" : "'예약하기'") + "); render()", "예약 버튼 추가") +
     saI(p + "img", "그림 팝업", "그림을 넣으면 글 대신 그림 한 장이 뜹니다") +
     '<div class="sa-card-f">' +
-      (total > 1 ? '<button class="btn sm ghost" onclick="saArrMove(\'notices\', ' + i + ', -1); SA.open=\'nt:' + Math.max(0, i - 1) + '\'; render()" aria-label="위로">↑</button><button class="btn sm ghost" onclick="saArrMove(\'notices\', ' + i + ', 1); SA.open=\'nt:' + Math.min(total - 1, i + 1) + '\'; render()" aria-label="아래로">↓</button>' : '') +
-      '<button class="btn sm ghost danger" onclick="saArrDel(\'notices\', ' + i + ', \'팝업\'); SA.open=null">삭제</button><button class="btn sm primary" onclick="saCardDone()">완료</button></div>';
+      '<button class="btn sm ghost danger" onclick="saNtDel(' + i + ')">삭제</button>' +
+      (total > 1 ? '<button class="btn sm ghost" onclick="saNtMove(' + i + ', -1)" aria-label="위로"' + (i === 0 ? ' disabled' : '') + '>↑</button><button class="btn sm ghost" onclick="saNtMove(' + i + ', 1)" aria-label="아래로"' + (i === total - 1 ? ' disabled' : '') + '>↓</button>' : '') +
+      '<button class="btn sm" onclick="saNtPreview(\'' + esc(n.id) + '\')">미리보기</button><button class="btn sm primary" onclick="saNtPublish()">저장</button></div>';
   return saCard("nt:" + i, sum, edit);
 }
 /* 3. 영업시간·연락처 — 09-24: 추가 단추는 옅게, 공휴일은 달력 팝업으로 하나씩 */
@@ -530,14 +540,4 @@ function saTabImages(){
       '<div class="grid2">' + rooms.map(function(r, i){ return saI("rooms." + i + ".img", r.name + " 룸"); }).join("") + halls.map(function(h, i){ return saI("halls." + i + ".img", h.name); }).join("") + '</div>' +
 
       '<div class="grid2">' + rooms.map(function(r, i){ return saF("rooms." + i + ".cap", r.name + " 인원"); }).join("") + '</div>');
-}
-/* 7. 적용 기록 */
-function saTabHistory(){
-  var now = Date.now();
-  var rows = (SA.versions || []).map(function(v){
-    var fut = new Date(v.apply_at).getTime() > now, cur = SA.live && SA.live.id === v.id;
-    return '<div class="sa-ver ' + (fut ? "fut" : "") + (cur ? " cur" : "") + '"><div><b>' + saWhen(v.apply_at) + '</b>' + (fut ? ' <span class="tag amber">예약</span>' : cur ? ' <span class="tag pine">지금 보임</span>' : '') + (v.note ? ' <span>' + esc(v.note) + '</span>' : '') + '<div class="muted">' + saWhen(v.created_at) + ' 등록' + (v.by ? ' · ' + esc(v.by) : '') + '</div></div>' +
-      '<div class="btn-row">' + (fut ? '<button class="btn sm" onclick="saCancelVersion(' + v.id + ')">예약 취소</button>' : '') + (cur ? '' : '<button class="btn sm" onclick="saRestore(' + v.id + ')">이 판을 초안으로</button>') + '</div></div>';
-  }).join("");
-  return (rows || '<p class="muted">아직 적용한 판이 없습니다. 홈페이지는 기본값으로 보입니다.</p>');
 }

@@ -84,6 +84,7 @@ function hrNight(sps){
   sps.forEach(function(sp){ var hh = 0; [[ns, ne], [ns - 1440, ne - 1440], [ns + 1440, ne + 1440]].forEach(function(w){ var a = Math.max(sp.s0, w[0]), b = Math.min(sp.e0, w[1]); if(b > a) hh += (b - a) / 60; }); h += Math.min(hh, sp.hours); });
   return h;
 }
+function hrAdjList(staffId, month){ var a = (HR && HR.cfg && HR.cfg.adj) || {}; return ((a[month] || {})[staffId] || []).filter(function(x){ return Number(x.amount) > 0; }); }
 function hrRound(h){ return Math.round(h * 10) / 10; }
 function hrWon(n){ return Math.round(Number(n || 0)).toLocaleString("ko-KR") + "원"; }
 /* 상시 근로자 5인 이상인지 — 근로기준법 시행령 7조의2 방식(재아 09-20: "그날 몇 명 나왔느냐가 아니라 어떻게 세느냐").
@@ -158,7 +159,9 @@ function hrCalc(s, month){
     if(pbOn){ var pd = days.filter(function(d){ return d <= pb.to; }).length; t.probCut = monthPay * (pd / days.length) * (1 - pbR); } }
   t.probCut = Math.round(t.probCut); t.probRate = Math.round(pbR * 100); t.probTo = pbOn ? pb.to : "";
   t.otPay = t.ot * t.wage * 0.5; t.nightPay = t.night * t.wage * 0.5; t.weeklyPay = hourly ? t.weekly * t.wage : 0; t.bonusPay = t.bonusH * t.wage; t.extraPay = t.extraH * t.wage;
-  t.gross = Math.round(t.base + t.extraPay + t.otPay + t.nightPay + t.weeklyPay + t.bonusPay + t.absentPay - t.probCut);
+  /* 급여 조정(09-24 재아): 보너스를 더 주거나 어떤 이유로 깎은 것 — 사장님이 급여 표에서 적음. 총지급에 들어가 공제 계산에도 반영 */
+  t.adj = hrAdjList(s.id, month); t.adjSum = t.adj.reduce(function(a, x){ return a + (x.kind === "minus" ? -1 : 1) * Number(x.amount || 0); }, 0);
+  t.gross = Math.round(t.base + t.extraPay + t.otPay + t.nightPay + t.weeklyPay + t.bonusPay + t.absentPay - t.probCut + t.adjSum);
   var tax = s.tax || "4대보험", r = cfg.rates;
   if(tax === "4대보험"){
     var health = Math.round(t.gross * r.health / 100);
@@ -289,7 +292,7 @@ function sheetStaff(){
       '<button class="btn sm ghost" onclick="hrSetupOpen()">설정</button><button class="btn sm primary" onclick="hrStaffNew()">＋ 직원</button></div></div>';
   var body = !HR.staff.length ? '<div class="empty">직원이 없습니다. "＋ 직원" 으로 첫 사람을 넣고 정규 근무(요일·시간)를 정해 두면, 칸을 눌러 ○ 만 찍으면 됩니다.</div>'
            : HR.view === "pay" ? hrPayView() : hrWeekView();
-  return top + body + (HR.pop ? hrPopHtml() : "") + (HR.edit ? hrEditHtml() : "") + (HR.slip ? hrSlipHtml() : "") + (HR.setup ? hrSetupHtml() : "");
+  return top + body + (HR.pop ? hrPopHtml() : "") + (HR.edit ? hrEditHtml() : "") + (HR.slip ? hrSlipHtml() : "") + (HR.setup ? hrSetupHtml() : "") + (HR.adj ? hrAdjHtml() : "");
 }
 /* 기간 옮기기(재아 09-20): 화살표 말고도 날짜를 바로 골라 뛸 수 있게 — 제목 옆 달력 입력 */
 async function hrJumpWeek(v){ if(!v) return; HR.week = hrWeekStart(v); HR.loading = true; render(); await hrLoadRange(); HR.loading = false; render(); }
@@ -342,8 +345,8 @@ function hrPayView(){
     var extra = t.offH ? ["정규 외 " + t.offH + "h"] : [];
     return '<tr' + (s.active === false ? ' class="gone"' : '') + '><td class="nm"><button class="hr-nm" onclick="hrStaffEdit(\'' + s.id + '\')"><b>' + esc(hrLabel(s)) + '</b><small>' + esc(s.nick && s.name !== s.nick ? s.name + " · " : "") + esc(s.role || "") + (s.active === false ? " · 퇴사" : "") + '</small></button></td>' +
       '<td class="won"><small>' + (s.pay_type === "monthly" ? "월급" : "시급") + '</small>' + hrWon(hrPayAt(s, last)) + '</td><td>' + t.days + '일' + (t.abs ? '<small class="rust">결근 ' + t.abs + '</small>' : '') + '</td><td>' + t.hours + 'h' + (extra.length ? '<small>' + extra.join(" · ") + '</small>' : '') + '</td>' +
-      '<td class="won">' + hrWon(t.gross) + '</td><td class="won">' + (t.dedTotal ? '−' + hrWon(t.dedTotal) + '<small>' + esc(s.tax || "4대보험") + '</small>' : '<small class="muted">공제 없음</small>') + '</td><td class="won"><b>' + hrWon(t.net) + '</b></td>' +
-      '<td><button class="btn sm" onclick="HR.slip={id:\'' + s.id + '\', month:\'' + m + '\'}; render()">계산서</button></td></tr>';
+      '<td class="won">' + hrWon(t.gross) + (t.adjSum ? '<small class="' + (t.adjSum < 0 ? 'rust' : 'pine') + '">조정 ' + (t.adjSum > 0 ? "+" : "−") + hrWon(Math.abs(t.adjSum)) + '</small>' : '') + '</td><td class="won">' + (t.dedTotal ? '−' + hrWon(t.dedTotal) + '<small>' + esc(s.tax || "4대보험") + '</small>' : '<small class="muted">공제 없음</small>') + '</td><td class="won"><b>' + hrWon(t.net) + '</b></td>' +
+      '<td class="hr-acts"><button class="btn sm ghost" onclick="hrAdjOpen(\'' + s.id + '\', \'' + m + '\')">조정</button><button class="btn sm" onclick="HR.slip={id:\'' + s.id + '\', month:\'' + m + '\'}; render()">계산서</button></td></tr>';
   };
   var trs = hrGroups(list).map(function(g){ return '<tr class="hr-grp"><td colspan="8">' + esc(g.role) + '</td></tr>' + g.list.map(rowHtml).join(""); }).join("");
   return head + '<div class="card" style="padding:0; overflow:auto"><table class="hr-pay"><thead><tr><th>직원</th><th>시급·월급</th><th>근무</th><th>시간</th><th>총지급</th><th>공제</th><th>실지급</th><th></th></tr></thead><tbody>' + trs +
@@ -369,6 +372,7 @@ function hrSlipData(s, m){
   if(t.weeklyPay) L.push({k:"row", a:"주휴수당", b:hrWon(t.weeklyPay), n:t.weekly + "h"});
   if(t.bonusPay) L.push({k:"row", a:"휴일·배율 가산", b:hrWon(t.bonusPay), n:t.bonusH + "h"});
   if(t.absentPay) L.push({k:"row", a:"결근 공제", b:hrWon(t.absentPay), n:t.abs + "일 × 8h"});
+  t.adj.forEach(function(x){ var minus = x.kind === "minus"; L.push({k:"row", a:x.label || (minus ? "감액" : "추가 지급"), b:(minus ? "−" : "+") + hrWon(x.amount), n:minus ? "감액" : "추가 지급"}); });
   if(t.probCut) L.push({k:"row", a:"수습 감액", b:"−" + hrWon(t.probCut), n:t.probRate + "% 지급 · " + pkShort(t.probTo) + "까지"});
   L.push({k:"tot", a:"총지급", b:hrWon(t.gross)});
   L.push({k:"sec", a:"공제 · " + (s.tax || "4대보험")});
@@ -507,4 +511,31 @@ function hrSetupHtml(){
     '<div class="grid2">' + num("taxRate", "사업소득 원천징수(%)", "3.3 = 소득세 3 + 지방 0.3") + '<div class="f"><div class="lb">야간 시간대</div><div class="grid2"><input type="time" value="' + esc(d.night[0]) + '" onchange="HR.setup.night[0]=this.value"><input type="time" value="' + esc(d.night[1]) + '" onchange="HR.setup.night[1]=this.value"></div></div></div>' +
     '<div class="sheet-actions"><button class="btn ghost" onclick="HR.setup=null; render()">취소</button><button class="btn primary" onclick="hrSetupSave()">저장</button></div></div></div>';
 }
-function hrEsc(){ if(!HR || !(view.form && view.form.type === "staff")) return false; var k = ["pop","edit","slip","setup"].find(function(x){ return HR[x]; }); if(k){ HR[k] = null; render(); return true; } return false; }
+function hrEsc(){ if(!HR || !(view.form && view.form.type === "staff")) return false; var k = ["pop","edit","slip","setup","adj"].find(function(x){ return HR[x]; }); if(k){ HR[k] = null; render(); return true; } return false; }
+
+/* ---------- 급여 조정(09-24 재아) — 급여 표의 '조정' → 이 달 이 직원에게 더 주거나 깎을 항목. 계산서에 한 줄씩 나옴 ---------- */
+function hrAdjOpen(id, month){ HR.adj = { id:id, month:month, rows:deepClone(hrAdjList(id, month)) }; if(!HR.adj.rows.length) HR.adj.rows.push({kind:"plus", label:"", amount:0}); render(); }
+function hrAdjSet(i, k, v){ var r = HR.adj && HR.adj.rows[i]; if(!r) return; r[k] = k === "amount" ? Number(v || 0) : v; if(k !== "label") render(); }
+function hrAdjHtml(){
+  var a = HR.adj, s = HR.staff.find(function(x){ return x.id === a.id; }) || {}, mx = new Date(a.month + "-01T00:00:00");
+  var rows = a.rows.map(function(r, i){
+    return '<div class="hr-adj-row"><div class="seg"><button class="' + (r.kind !== "minus" ? "on" : "") + '" onclick="hrAdjSet(' + i + ', \'kind\', \'plus\')">추가 지급</button><button class="' + (r.kind === "minus" ? "on rust" : "") + '" onclick="hrAdjSet(' + i + ', \'kind\', \'minus\')">감액</button></div>' +
+      '<input type="text" value="' + esc(r.label || "") + '" placeholder="' + (r.kind === "minus" ? "예: 파손 변상" : "예: 명절 보너스") + '" oninput="hrAdjSet(' + i + ', \'label\', this.value)">' +
+      '<input type="number" min="0" max="99999999" value="' + (r.amount || "") + '" placeholder="금액" aria-label="금액(원)" onchange="hrAdjSet(' + i + ', \'amount\', this.value)">' +
+      '<button class="sa-x" onclick="HR.adj.rows.splice(' + i + ',1); render()" aria-label="항목 삭제">×</button></div>';
+  }).join("");
+  return '<div class="overlay" onclick="HR.adj=null; render()"><div class="sheet" onclick="event.stopPropagation()">' +
+    sheetHead("급여 조정 · " + esc(hrLabel(s)) + " · " + (mx.getMonth() + 1) + "월") +
+    rows + '<button type="button" class="sa-add" onclick="HR.adj.rows.push({kind:\'plus\', label:\'\', amount:0}); render()">＋ 항목 추가</button>' +
+    '<div class="sheet-actions"><button class="btn ghost" onclick="HR.adj=null; render()">취소</button><button class="btn primary" data-enter onclick="hrAdjSave()">저장</button></div></div></div>';
+}
+async function hrAdjSave(){
+  var a = HR.adj; if(!a) return;
+  var rows = a.rows.filter(function(r){ return Number(r.amount) > 0; }).map(function(r){ return { kind:r.kind === "minus" ? "minus" : "plus", label:(r.label || "").trim(), amount:Math.round(Number(r.amount)) }; });
+  var cfg = deepClone(HR.cfg || {}); cfg.adj = cfg.adj || {}; cfg.adj[a.month] = cfg.adj[a.month] || {};
+  if(rows.length) cfg.adj[a.month][a.id] = rows; else delete cfg.adj[a.month][a.id];
+  try{
+    await sb("/rest/v1/hr_settings?on_conflict=store", { method:"POST", body:{ store:view.storeKey || "hanok", data:cfg }, prefer:"resolution=merge-duplicates,return=minimal" });
+    HR.cfg = cfg; HR.adj = null; logEvent("급여 조정", a.month + " " + a.id + " " + rows.length + "건"); render(); showToast("저장했습니다");
+  }catch(e){ await uiAlert("저장 실패", e.message || String(e), "warn"); }
+}

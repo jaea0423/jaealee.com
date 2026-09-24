@@ -5,7 +5,7 @@
    ② 홈페이지 예약 읽기: requests 표에서 '대기' 를 가져와 REQUESTS 에 맞춥니다(11b 의 흉내 REQ_API 를 덮어씀).
       새로 보이는 것은 reqNotify 로 팝업. 24시간 지난 것은 '만료' 로 PATCH.
    supaOn() 이 아니면(로컬·데모) 아무것도 안 하고 11b 의 흉내가 그대로 돕니다. */
-var AVAIL_LAST = 0, AVAIL_BUSY = false, AVAIL_DIRTY = false, AVAIL_DAYS = 60;   /* 홈페이지 '예약 가능 기간' 최대 60일(09-24) */
+var AVAIL_LAST = 0, AVAIL_BUSY = false, AVAIL_DIRTY = false, AVAIL_DAYS = 90;   /* 홈페이지 '예약 가능 기간' 최대 90일(09-24 재아 — 기본은 30일) */
 
 /* 하루치 남은 자리 — {"11:00":{"rooms":[[min,max],…],"tableMax":n}, …} */
 function availOfDay(date){

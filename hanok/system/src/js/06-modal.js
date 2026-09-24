@@ -55,7 +55,7 @@ function modalPromptAnswer(){ const el = document.getElementById("md-input"); co
 function renderModal(){
   if(!MODAL) return "";
   const m = MODAL;
-  if(m.mode === "num" || m.mode === "date" || m.mode === "range") return pkRender(m);   /* 숫자·날짜·기간 팝업(06b) */
+  if(m.mode === "num" || m.mode === "date" || m.mode === "range" || m.mode === "time") return pkRender(m);   /* 숫자·날짜·기간 팝업(06b) */
   /* '---' 만 있는 줄은 가로선으로 그립니다.
      문자 미리보기에서 '어디부터 어디까지가 문자인지' 눈으로 끊어 주려고 만들었습니다.
      선은 화면에만 그려지고 실제 문자 내용에는 들어가지 않습니다. */
