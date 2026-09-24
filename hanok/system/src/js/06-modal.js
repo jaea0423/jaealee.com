@@ -250,7 +250,7 @@ function renderStore(){
   const stt = shopState(s.settings);
   /* 8차-O(재아): 네이버 가져오기·빠른 입력은 팝업 시트가 아니라 화면 전체로 (view.form.page) */
   const pageForm = !!(view.form && view.form.page);
-  const pageTitle = pageForm ? ({naver:"네이버 예약 가져오기", site:"홈페이지 관리", staff:"워크시프트", guests:"손님 관리", owner:"사장님", messages:"문자", thanks:"감사 문자", smslog:"문자 기록", smsfree:"문자 보내기", noshow:"노쇼 관리", rate:"예약률 추이", devreq:"개발자에게", closeday:"퇴근하기"}[view.form.type] || "빠른 입력") : "";
+  const pageTitle = pageForm ? ({naver:"네이버 예약 가져오기", site:"홈페이지 관리", staff:"워크시프트", guests:"손님 관리", owner:"사장님", messages:"문자 관리", thanks:"감사 문자", smslog:"문자 기록", smsfree:"문자 보내기", noshow:"노쇼 관리", rate:"예약률 추이", devreq:"개발자에게", closeday:"퇴근하기"}[view.form.type] || "빠른 입력") : "";
   const body = pageForm ? `<div class="page-wrap">${renderSheet()}</div>` : (view.tab==="settings" ? renderSettings : renderDash)();
 
   return `

@@ -29,7 +29,7 @@ function infoize(html){
 }
 /* 설정 화면의 구역 — 09-20(재아): 접이식 행 대신 사장님 메뉴처럼 큰 단추 목록. 하나를 누르면 그 구역만 펼쳐지고 '← 설정' 으로 돌아옵니다.
    (접힌 행만 죽 늘어선 화면은 내용이 안 보여 허전했음) */
-const SET_ICON = { thanks:"spark", site:"site", hours:"clock", rules:"res", seats:"dash", course:"chart", source:"inbox", sms:"sms", disp:"tv", policy:"set", zoom:"search", admin:"key", etc:"more" };
+const SET_ICON = { thanks:"spark", site:"site", hours:"clock", rules:"rules", seats:"dash", course:"bowl", source:"route", sms:"mail", disp:"tv", policy:"scale", zoom:"fontsize", admin:"key", etc:"more" };   /* 사장님 메뉴 타일과 같게(09-24) */
 function sec(key, title, extra, inner){
   if(view.setSec === key) return `
     <section class="card fold on set-one">
@@ -391,15 +391,14 @@ function renderSettings(){
     ${sec("hours","운영시간",`${hoursFor(todayStr()).open} ~ ${hoursFor(todayStr()).close}`, schedBody)}
     ${sec("rules","예약 규칙",`단체 ${st.groupSize||8}명${schedChip("rules")}`, ruleBody)}
     ${sec("seats","좌석",`룸 ${st.rooms.filter(isRoom).length} · 테이블 ${st.rooms.filter(isTable).length}${schedChip("seats")}`, seatBody)}
-    ${sec("course","코스·세트 구성",`${(st.courseGroups||[]).length}행${schedChip("course")}`, courseBody)}
+    ${sec("course","코스·세트",`${(st.courseGroups||[]).length}행${schedChip("course")}`, courseBody)}
     ${sec("source","예약경로",`${(st.sources||[]).length}개`, srcBody)}
-    ${sec("sms","문자 안내",
-      sm.on===false ? "안 보냄"
+    ${sec("sms","문자 설정",
+      sm.on===false ? "예약 문자 안 보냄"
         : `${offsetLabel(sm.remindOffset)} ${hm(pad(sm.remindHour)+":00")}`,
-      smsBodyUI)}
+      `<div class="set-part-h">예약 문자 안내</div>` + smsBodyUI + `<div class="set-part-h">감사 문자</div>` + (typeof thSettingsBody === "function" ? thSettingsBody(st) : ""))}   /* 문자 안내 + 감사 문자 AI 를 한 구역으로(09-24 재아) */
     ${sec("disp","디스플레이",`${tvType()==="grid"?"좌석표":"목록"} · 광고 영상`, dispBody)}
-    ${sec("thanks","감사 문자 AI",`프롬프트 · 기본 양식 · 한도`, typeof thSettingsBody === "function" ? thSettingsBody(st) : "")}
-    ${sec("policy","운영 판단 기준",
+    ${sec("policy","운영 판단",
       `정원 ${st.minCountAdultsOnly===false?"총원":"성인"} · 임박 ${st.loSoon!=null?st.loSoon:120}분`,
       policyBody)}
     ${sec("zoom","화면 크기",`${uiZoom()}%`, zoomBody)}
