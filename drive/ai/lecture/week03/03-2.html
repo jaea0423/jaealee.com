@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>인공지능 3주차 2차시 — 인공지능의 미래와 윤리</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<style>
+:root{
+  --accent:#9333EA;
+  --accent-deep:#6B21A8;
+  --accent-soft:#F3E8FF;
+
+  --bg:#F7F8FA;
+  --surface:#FFFFFF;
+  --ink:#15161B;
+  --ink-2:#565C66;
+  --ink-3:#8B9098;
+  --line:#E5E7EC;
+  --line-2:#F0F1F4;
+  --code-bg:#1B1D24;
+  --code-ink:#E4E6ED;
+  --mark:#FFE27A;
+  --font:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,system-ui,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  --mono:'JetBrains Mono','SFMono-Regular',Consolas,'D2Coding',monospace;
+}
+html[data-theme="dark"]{
+  --accent:#B085EF;
+  --accent-deep:#C9A6F5;
+  --accent-soft:#2A2135;
+  --bg:#101116;
+  --surface:#181A20;
+  --ink:#E8E9ED;
+  --ink-2:#A6AAB4;
+  --ink-3:#73777F;
+  --line:#2A2C34;
+  --line-2:#202229;
+  --code-bg:#0C0D11;
+  --mark:#6E5C16;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15.5px;line-height:1.72;letter-spacing:-.012em;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-deep)}
+::selection{background:var(--accent);color:#fff}
+
+#scrollbar{position:fixed;top:0;left:0;height:3px;width:0;background:var(--accent);z-index:99}
+
+.topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:10px;padding:10px 22px;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.back{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink-2);font-size:14px;font-weight:700;white-space:nowrap}
+.back:hover{color:var(--accent-deep)}
+.back i{width:10px;height:10px;border-radius:3px;background:var(--accent);display:block}
+.search{flex:1;max-width:300px;margin-left:auto;position:relative}
+.search input{width:100%;padding:7px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14px}
+.search input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.hit{position:absolute;right:10px;top:8px;font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums;pointer-events:none}
+.tools{display:flex;gap:6px}
+.tbtn{border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:9px;padding:7px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);white-space:nowrap}
+.tbtn:hover{border-color:var(--accent);color:var(--accent-deep)}
+.tbtn.solid{background:var(--accent);border-color:var(--accent);color:#fff}
+.tbtn:disabled{opacity:.4;cursor:default}
+
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);gap:38px;max-width:1200px;margin:0 auto;padding:26px 24px 120px}
+main{min-width:0}
+
+.side{position:sticky;top:80px;align-self:start;max-height:calc(100vh - 100px);overflow-y:auto;scrollbar-width:thin}
+.panel{background:var(--accent);border-radius:16px;padding:18px 16px;color:#fff;box-shadow:0 8px 24px -12px color-mix(in srgb,var(--accent) 70%,transparent)}
+.panel .cap{font-size:11.5px;font-weight:700;opacity:.72;margin-bottom:9px}
+.panel .subject{font-size:19px;font-weight:800;letter-spacing:-.03em;line-height:1.3;margin-bottom:2px}
+.panel .when{font-size:12.5px;opacity:.8;margin-bottom:16px}
+.toc{list-style:none;margin:0;padding:0}
+.toc a{display:block;padding:6px 10px;border-radius:8px;color:#fff;opacity:.82;text-decoration:none;font-size:13.5px;font-weight:600;line-height:1.45}
+.toc a:hover{background:rgba(255,255,255,.16);opacity:1}
+.toc a.on{background:#fff;color:var(--accent-deep);opacity:1;font-weight:800}
+.toc .num{display:inline-block;width:17px;font-variant-numeric:tabular-nums;opacity:.7}
+.toc a.on .num{opacity:1}
+.panel hr{border:0;border-top:1px solid rgba(255,255,255,.22);margin:14px 0}
+.chk label{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;padding:3px 0;cursor:pointer;line-height:1.5;opacity:.9}
+.chk input{margin-top:4px;accent-color:#fff;flex-shrink:0}
+.chk input:checked + span{opacity:.5;text-decoration:line-through}
+.pbar{height:4px;border-radius:99px;background:rgba(255,255,255,.28);margin-top:11px;overflow:hidden}
+.pbar i{display:block;height:100%;width:0;background:#fff;transition:width .25s}
+
+.hero{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px 28px 22px;overflow:hidden;margin-bottom:16px}
+.hero::after{content:attr(data-w);position:absolute;right:14px;bottom:-26px;font-size:112px;font-weight:800;color:var(--accent);opacity:.09;letter-spacing:-.06em;line-height:1;pointer-events:none}
+.chip{display:inline-flex;align-items:center;gap:7px;background:var(--accent-soft);color:var(--accent-deep);font-size:12.5px;font-weight:800;padding:4px 11px;border-radius:99px}
+h1{font-size:clamp(26px,3.6vw,34px);font-weight:800;letter-spacing:-.04em;line-height:1.24;margin:12px 0 6px;position:relative}
+.hero .sub{color:var(--ink-2);font-size:15px;margin:0 0 14px;position:relative}
+[hidden]{display:none!important}
+.metaline{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-3);position:relative}
+.metaline b{color:var(--ink-2);font-weight:600}
+
+.files{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;position:relative}
+.file{display:inline-flex;align-items:center;gap:9px;padding:8px 13px 8px 9px;border:1px solid var(--line);border-radius:10px;background:var(--surface);text-decoration:none;color:var(--ink);font-size:13.5px;font-weight:700}
+.file:hover{border-color:var(--accent);background:var(--accent-soft)}
+.file .ic{background:var(--accent);color:#fff;font-size:10px;font-weight:800;padding:3px 6px;border-radius:6px;letter-spacing:.02em}
+.file em{font-style:normal;color:var(--ink-3);font-weight:600;font-size:12.5px}
+.files .none{font-size:12.5px;color:var(--ink-3);font-weight:600;padding:8px 0}
+.extra-chip:disabled{cursor:default;opacity:.6}
+
+.flow{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:26px}
+.flow a{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--line);border-radius:99px;background:var(--surface);text-decoration:none;color:var(--ink-2);font-size:13px;font-weight:600}
+.flow a:hover{border-color:var(--accent);color:var(--accent-deep);background:var(--accent-soft)}
+.flow a b{color:var(--accent);font-variant-numeric:tabular-nums}
+
+.keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:34px}
+.key{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:14px;padding:16px 17px}
+.key .n{font-size:12px;font-weight:800;color:var(--accent);margin-bottom:5px}
+.key p{margin:0;font-size:14.5px;line-height:1.6}
+.key b{font-weight:800}
+
+section{margin-bottom:46px;scroll-margin-top:82px}
+h2.st{display:flex;align-items:center;gap:11px;font-size:22px;font-weight:800;letter-spacing:-.035em;margin:0 0 14px}
+h2.st .sq{flex-shrink:0;width:30px;height:30px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+h3{font-size:16.5px;font-weight:800;margin:26px 0 8px;letter-spacing:-.025em;padding-left:11px;border-left:3px solid var(--accent)}
+h4{font-size:14.5px;font-weight:700;margin:18px 0 6px;color:var(--ink-2)}
+p{margin:9px 0}
+ul,ol{margin:9px 0;padding-left:21px}
+li{margin:3px 0}
+li::marker{color:var(--accent)}
+.en{color:var(--ink-3);font-weight:500;font-size:.9em}
+mark{background:linear-gradient(transparent 54%,var(--mark) 54%);color:inherit;padding:0 2px}
+.hit-mark{background:var(--accent);color:#fff;border-radius:3px}
+.imgnote{font-size:12.5px;color:var(--ink-3);margin:6px 0;line-height:1.6;padding-left:2px}
+.imgnote b{color:var(--ink-2);font-weight:700}
+
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin:-6px 0 12px}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:6px;letter-spacing:0}
+.badge.exam{color:#92580B;background:#FDF0D5}
+.badge.prof{color:var(--accent-deep);background:var(--accent-soft)}
+.badge.ask{color:#B02020;background:#FCE4E4}
+html[data-theme="dark"] .badge.exam{background:#3B2D0E;color:#EFC470}
+html[data-theme="dark"] .badge.ask{background:#3A1919;color:#F0A0A0}
+
+.call{border-radius:13px;padding:14px 17px;margin:15px 0;background:var(--surface);border:1px solid var(--line)}
+.call .t{font-size:12.5px;font-weight:800;margin-bottom:5px}
+.call p:first-of-type{margin-top:0}
+.call p:last-child,.call ul:last-child{margin-bottom:0}
+.call.quote{background:var(--accent-soft);border-color:transparent}
+.call.quote .t{color:var(--accent-deep)}
+.call.quote p{font-size:14.8px}
+.call.warn{border-left:4px solid #E5A50A}
+.call.warn .t{color:#A16207}
+.call.ask{border-left:4px solid #DC2626}
+.call.ask .t{color:#B02020}
+.call.link{border-left:4px solid var(--accent)}
+.call.link .t{color:var(--accent-deep)}
+.call.person{background:var(--line-2);border:1px solid var(--line)}
+.call.person .t{color:var(--ink-2)}
+
+.call.extra{background:repeating-linear-gradient(135deg,var(--line-2),var(--line-2) 9px,transparent 9px,transparent 18px);border:1.5px dashed var(--ink-3);border-left-width:1.5px}
+.call.extra .t{color:var(--ink-2);display:flex;align-items:center;gap:6px}
+.call.extra .t::before{content:"보충";background:var(--ink-3);color:var(--surface);font-size:10.5px;padding:1px 6px;border-radius:5px}
+.call.extra p{color:var(--ink-2)}
+.badge.extra{color:var(--ink-2);background:var(--line-2);border:1px dashed var(--ink-3)}
+.ext{border-bottom:2px dotted var(--ink-3);color:var(--ink-2)}
+.ext::after{content:"보충";font-size:9.5px;font-weight:800;vertical-align:super;color:var(--ink-3);margin-left:2px;letter-spacing:0}
+.extra-chip{border:1.5px dashed var(--ink-3);background:transparent;color:var(--ink-2);cursor:pointer;font-family:var(--font)}
+body.no-extra .call.extra,body.no-extra .badge.extra{display:none}
+body.no-extra .ext{border-bottom:0}
+body.no-extra .ext::after{display:none}
+html[data-theme="dark"] .call.warn .t{color:#E5B547}
+html[data-theme="dark"] .call.ask .t{color:#F0A0A0}
+
+details.raw{margin:12px 0;border:1px dashed var(--line);border-radius:10px;background:var(--line-2)}
+details.raw summary{cursor:pointer;padding:8px 14px;font-size:12.5px;color:var(--ink-3);font-weight:700;list-style:none}
+details.raw summary::-webkit-details-marker{display:none}
+details.raw summary::before{content:"▸ ";color:var(--accent)}
+details.raw[open] summary::before{content:"▾ "}
+details.raw .txt{padding:0 14px 12px;font-size:13px;color:var(--ink-2);white-space:pre-wrap;line-height:1.7}
+
+.rawnote{border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+.rawitem{display:grid;grid-template-columns:78px 1fr;gap:16px;padding:15px 18px;border-bottom:1px solid var(--line-2)}
+.rawitem:last-child{border-bottom:0}
+.rawitem .seq{font-size:12px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+.rawitem .seq span{display:block;color:var(--ink-3);font-weight:600;font-size:11px;margin-top:2px}
+.rawitem .body{white-space:pre-wrap;font-size:14px;line-height:1.75;color:var(--ink)}
+.rawitem .where{margin-top:7px;font-size:12px}
+.rawitem .where a{color:var(--accent-deep);text-decoration:none;font-weight:700;background:var(--accent-soft);padding:2px 8px;border-radius:6px}
+.rawitem .where a:hover{background:var(--accent);color:#fff}
+.rawnote .empty{padding:24px 18px;color:var(--ink-3);font-size:13.5px}
+
+.tablewrap{overflow-x:auto;margin:15px 0;border:1px solid var(--line);border-radius:13px}
+table{border-collapse:collapse;width:100%;font-size:13.5px;background:var(--surface)}
+th,td{padding:9px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line-2)}
+th{background:var(--accent);color:#fff;font-weight:700;font-size:12.5px;white-space:nowrap;border-bottom:0}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--line-2)}
+
+.codebox{margin:15px 0;border-radius:13px;overflow:hidden;background:var(--code-bg);border:1px solid var(--code-bg)}
+.codebox .head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 14px;font-size:12px;color:#9AA0AC;font-weight:700;background:rgba(255,255,255,.04)}
+.codebox .head .tag{color:#fff;background:var(--accent);border-radius:5px;padding:1px 7px;font-size:11px;margin-right:7px}
+.codebox pre{margin:0;padding:15px 17px;overflow-x:auto;font-family:var(--mono);font-size:13.2px;line-height:1.7;color:var(--code-ink)}
+.codebox .cm{color:#7C8494}
+.codebox .kw{color:#C4A6FF}
+.codebox .st2{color:#8BD5A0}
+.copy{border:0;background:transparent;color:#9AA0AC;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font)}
+.copy:hover{color:#fff}
+.codebox.pseudo{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent)}
+.codebox.pseudo .head{background:var(--accent-soft);color:var(--accent-deep)}
+.codebox.pseudo .head .tag{background:var(--accent-deep)}
+.codebox.pseudo pre{color:var(--ink);font-size:13.6px}
+.codebox.pseudo .cm{color:var(--ink-3)}
+.codebox.pseudo .kw{color:var(--accent-deep);font-weight:700}
+.codebox.pseudo .copy{color:var(--ink-3)}
+.codebox.pseudo .copy:hover{color:var(--accent-deep)}
+code:not(pre code){background:var(--accent-soft);color:var(--accent-deep);padding:1px 6px;border-radius:6px;font-family:var(--mono);font-size:.88em;font-weight:600}
+
+figure{margin:18px 0;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 14px 12px}
+figure svg{max-width:100%;height:auto}
+figcaption{font-size:12.5px;color:var(--ink-3);margin-top:10px}
+
+.terms{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:11px}
+.term{border:1px solid var(--line);border-radius:13px;padding:13px 15px;background:var(--surface)}
+.term b{display:block;font-size:15px}
+.term .e{display:block;font-size:12px;color:var(--accent-deep);font-family:var(--mono);margin-bottom:6px}
+.term p{margin:0;font-size:13.3px;color:var(--ink-2);line-height:1.6}
+
+.q{border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:12px 0;background:var(--surface)}
+.q .qh{display:flex;gap:10px;align-items:flex-start;font-weight:700;font-size:15px}
+.q .qn{color:#fff;background:var(--accent);border-radius:7px;padding:1px 8px;font-size:12.5px;font-weight:800;flex-shrink:0;margin-top:3px}
+.q .type{font-size:11px;font-weight:800;color:var(--ink-3);border:1px solid var(--line);border-radius:6px;padding:1px 7px;margin-left:auto;flex-shrink:0;margin-top:3px}
+.q ol.ch{list-style:none;padding-left:0;margin:11px 0 0;counter-reset:c}
+.q ol.ch li{padding:3px 0 3px 26px;position:relative;font-size:14.3px}
+.q ol.ch li::before{content:counter(c);counter-increment:c;position:absolute;left:0;top:4px;width:19px;height:19px;border:1px solid var(--line);border-radius:50%;font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--ink-3)}
+.ans{margin-top:12px;padding:11px 13px;border-radius:10px;background:var(--accent-soft);font-size:14.2px;cursor:pointer}
+.ans .lab{font-weight:800;color:var(--accent-deep);font-size:12.5px;margin-right:7px}
+body.hide-ans .ans:not(.on){background:var(--line-2);color:transparent;user-select:none;cursor:pointer;position:relative}
+body.hide-ans .ans:not(.on) *{color:transparent!important}
+body.hide-ans .ans:not(.on)::after{content:"눌러서 정답 확인";position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-3);font-size:12.5px;font-weight:700}
+
+.vhead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px}
+.vhead input[type=search]{flex:1;min-width:170px;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14px}
+.vhead input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.vlist{margin:0;padding:0;list-style:none;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
+.vword{display:grid;grid-template-columns:190px 1fr;gap:16px;padding:14px 18px;border-bottom:1px solid var(--line-2)}
+.vword:last-child{border-bottom:0}
+.vword:hover{background:var(--line-2)}
+.vword .w{font-weight:800;font-size:16px;letter-spacing:-.02em}
+.vword .ipa{display:block;font-family:var(--mono);font-size:12px;color:var(--ink-3);font-weight:400;margin-top:1px}
+.vword .pos{display:inline-block;font-size:10.5px;font-weight:800;color:#fff;background:var(--accent);border-radius:5px;padding:1px 6px;margin-top:5px}
+.vword .mean{font-size:14.5px;margin:0;font-weight:600}
+.vword .ex{font-size:13px;color:var(--ink-2);margin:5px 0 0}
+.vword .ex b{color:var(--accent-deep);font-weight:700}
+.vword .ex .ko{display:block;color:var(--ink-3);font-size:12.5px}
+.masked .mean,.masked .ex{background:var(--line-2);border-radius:6px;color:transparent;cursor:pointer}
+.masked .mean *,.masked .ex *{color:transparent!important}
+.masked .mean.show,.masked .ex.show{background:transparent;color:inherit}
+.masked .mean.show *,.masked .ex.show *{color:revert!important}
+.masked .ex.show b{color:var(--accent-deep)!important}
+.quizbox{margin-top:18px;padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--surface);display:none}
+.quizbox.on{display:block}
+.quizbox .qq{font-size:22px;font-weight:800;margin-bottom:14px;letter-spacing:-.02em}
+.quizbox .opts{display:grid;gap:8px}
+.quizbox .opt{text-align:left;padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14.5px;cursor:pointer}
+.quizbox .opt:hover{border-color:var(--accent)}
+.quizbox .opt.ok{border-color:#16A34A;background:color-mix(in srgb,#16A34A 12%,var(--surface))}
+.quizbox .opt.no{border-color:#DC2626;background:color-mix(in srgb,#DC2626 12%,var(--surface))}
+.quizbox .score{margin-top:13px;font-size:13px;color:var(--ink-3);font-weight:600}
+.vlist .empty{padding:24px 18px;color:var(--ink-3);font-size:13.5px}
+
+footer{margin-top:54px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-3);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+@media(max-width:900px){
+  .wrap{grid-template-columns:1fr;gap:18px;padding:16px 16px 80px}
+  .side{position:static;max-height:none;order:-1}
+  .vword{grid-template-columns:1fr;gap:5px}
+  .search{max-width:none;order:3;flex-basis:100%;max-width:100%}
+  .topbar{flex-wrap:wrap}
+  .hero::after{font-size:78px}
+}
+@media print{
+  .topbar,.side,#scrollbar,.quizbox,.vhead,.flow,.files,.extra-chip{display:none!important}
+  .wrap{display:block;max-width:none;padding:0}
+  body{font-size:10.5pt;background:#fff}
+  section{page-break-inside:avoid;margin-bottom:22px}
+  body.hide-ans .ans:not(.on){background:var(--accent-soft)!important;color:inherit!important}
+  body.hide-ans .ans:not(.on) *{color:inherit!important}
+  body.hide-ans .ans:not(.on)::after{display:none}
+  details.raw{display:none}
+  #viewVocab,#viewRaw{display:block!important;page-break-before:always}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body class="hide-ans">
+<div id="scrollbar"></div>
+
+<div class="topbar">
+  <a class="back" href="../"><i></i>인공지능</a>
+  <div class="search"><input id="q" type="search" placeholder="찾기 (Enter로 다음)" aria-label="문서 내 검색"><span class="hit" id="hit"></span></div>
+  <div class="tools">
+    <button class="tbtn" id="ansBtn">정답 가리기</button>
+    <button class="tbtn" id="vocabBtn">단어장</button>
+    <button class="tbtn" id="rawBtn">필기 원문</button>
+    <button class="tbtn" id="themeBtn">다크</button>
+    <button class="tbtn" id="printBtn">🖨</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<aside class="side">
+  <div class="panel">
+    <div class="subject">인공지능</div>
+    <div class="when">3주차 2차시 · 2026.09.21 (월)</div>
+
+    <div id="tocWrap">
+      <div class="cap">목차</div>
+      <ul class="toc" id="toc">
+        <li><a href="#s1"><span class="num">01</span>4.1 AI의 수준별 분류</a></li>
+        <li><a href="#s2"><span class="num">02</span>4.2 약한 AI, 알파고·ChatGPT</a></li>
+        <li><a href="#s3"><span class="num">03</span>4.3 미래와 기술적 특이점</a></li>
+        <li><a href="#s4"><span class="num">04</span>4.4 슈퍼 AI와 지능의 폭발</a></li>
+        <li><a href="#s5"><span class="num">05</span>4.5 인공지능 윤리 강령</a></li>
+      </ul>
+      <hr>
+      <div class="cap">복습 체크</div>
+      <div class="chk">
+        <label><input type="checkbox"><span>약한 AI·강한 AI, 좁은·일반·슈퍼 AI 대응관계 설명 가능</span></label>
+        <label><input type="checkbox"><span>중국어 방 논증과 튜링 테스트 차이 설명 가능</span></label>
+        <label><input type="checkbox"><span>ChatGPT 윤리 문제 5가지 말할 수 있다</span></label>
+      </div>
+      <div class="pbar"><i id="barFill"></i></div>
+    </div>
+
+    <div id="rawNav" hidden>
+      <div class="cap">필기 원문</div>
+      <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">내가 수업 중에 보낸 내용 <b id="rawTotal">0</b>개를 손대지 않고 그대로 모아둔 페이지입니다.</p>
+      <hr>
+      <div class="cap">확인 방법</div>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">여기 있는 내용이 본문에 다 반영됐는지 대조하세요. 각 항목의 파란 링크를 누르면 정리된 위치로 이동합니다.</p>
+    </div>
+
+    <div id="vocabNav" hidden>
+      <div class="cap">단어장</div>
+      <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">이번 차시에 나온 전공 필수 단어 <b id="vTotal">0</b>개입니다.</p>
+      <hr>
+      <div class="cap">사용법</div>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">뜻 가리기를 켜면 회색 칸을 눌러 하나씩 확인할 수 있습니다. 퀴즈는 아래 목록에서 문제를 자동으로 만듭니다.</p>
+    </div>
+  </div>
+</aside>
+
+<main>
+<div id="viewNote">
+
+  <div class="hero" data-w="4장">
+    <span class="chip">3주차 · 2차시</span>
+    <button class="chip extra-chip" id="extraChip"></button>
+    <h1>인공지능의 미래와 윤리</h1>
+    <p class="sub">교안(교재 4장, 67쪽) 기반 초안입니다 — 아직 실제 수업 필기가 반영되지 않았습니다. 수업 중 보내주시는 내용으로 이어서 채워집니다.</p>
+    <div class="metaline">
+      <span>2026.09.21 (월)</span>
+      <span><b>강은송</b> 교수님</span>
+      <span>교재 4장 · 처음 만나는 인공지능</span>
+    </div>
+
+    <div class="files">
+      <a class="file" href="03-2-slides.pdf" target="_blank"><span class="ic">PDF</span>4장 인공지능의 미래와 윤리<em>67p</em></a>
+    </div>
+  </div>
+
+  <nav class="flow">
+    <a href="#s1"><b>01</b> 수준별 분류</a>
+    <a href="#s2"><b>02</b> 알파고·ChatGPT</a>
+    <a href="#s3"><b>03</b> 기술적 특이점</a>
+    <a href="#s4"><b>04</b> 슈퍼 AI</a>
+    <a href="#s5"><b>05</b> 윤리 강령</a>
+  </nav>
+
+  <div class="keys">
+    <div class="key"><div class="n">핵심 1</div><p>약한 AI = 좁은 AI, 강한 AI = 일반 AI + 슈퍼 AI로 <b>두 분류 체계는 서로 대응</b>한다.</p></div>
+    <div class="key"><div class="n">핵심 2</div><p>중국어 방 논증은 <b>튜링 테스트를 반박</b>하는 사고실험이다 — 대화가 통해도 '이해'했다는 보장은 없다.</p></div>
+    <div class="key"><div class="n">핵심 3</div><p>일반 AI는 <b>2045년</b>, 슈퍼 AI는 <b>2060년 이후</b> 구현될 것으로 전망된다(연구자 평균 응답).</p></div>
+  </div>
+
+  <!-- 01 : 4.1 -->
+  <section id="s1">
+    <h2 class="st"><span class="sq">01</span>4.1 인공지능의 수준별 분류</h2>
+
+    <h3>(1) 인공지능의 수준에 따른 분류</h3>
+    <ul>
+      <li>초기 인공지능은 인간 두뇌를 흉내 내는 정도였으나, 장차 인간 지능과 같거나 그 이상을 목표로 함 — 심지어 자아의식까지 가진 강력한 인공지능을 꿈꿈</li>
+      <li>인공지능은 수준에 따라 2가지 방법으로 분류됨: ① 약한 인공지능과 강한 인공지능 ② 좁은 인공지능, 일반 인공지능, 슈퍼 인공지능</li>
+    </ul>
+
+    <h3>(2) 약한 인공지능과 강한 인공지능</h3>
+    <ul>
+      <li>1980년 미국의 <b>존 설</b><span class="en">(Searle)</span> 교수가 최초로 사용한 개념, 유명한 <b>중국어 방 논증</b>을 제안한 인물이기도 함</li>
+      <li><b>약한 인공지능</b><span class="en">(Weak AI)</span>은 인간 능력 일부를 시뮬레이션하는 것 — 예: 체스 두는 로봇</li>
+      <li><b>강한 인공지능</b><span class="en">(Strong AI)</span>의 예는 SF 영화 〈블레이드 러너 2049〉 등</li>
+      <li>약한 AI는 '특정 분야 내에서 인간 지능을 흉내 내는 활동' — 단어 검색, 고양이 사진 찾기, 문서 번역 등. <b>현재 수준의 인공지능 기술은 모두 약한 인공지능</b>에 속함</li>
+      <li>알파고는 바둑에서 인간을 뛰어넘었지만 바둑 외 능력이 없는, 특정 영역에 국한된 약한 인공지능 — <mark>'생각을 시뮬레이션'</mark>할 정도만 가능</li>
+    </ul>
+
+    <div class="call quote">
+      <div class="t">왓슨(Watson) — 약한 AI가 강한 AI에 가장 근접한 사례</div>
+      <p>미국 퀴즈대회에서 인간 챔피언들을 이겼고 의학 진단용으로도 훌륭한 성과를 냈다. 최근에는 자율주행 셔틀버스를 발표해 승객과 일상 대화를 나누며 최적 경로로 스스로 운행한다. 다양한 활용 분야 측면에서 강한 인공지능에 근접하지만, <b>자아의식이나 감정이 없어</b> 아직 약한 인공지능에 속한다.</p>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>약한 인공지능</th><th>강한 인공지능</th></tr></thead>
+        <tbody>
+          <tr><td>특정 분야에서만 활용 가능</td><td>다양한 분야에서 활용 가능</td></tr>
+          <tr><td>인간의 지능을 흉내 내는 수준</td><td>인간과 유사 또는 뛰어넘는 지능 수준</td></tr>
+          <tr><td>인간 두뇌의 제한된 일부 기능</td><td>인간 두뇌의 일반 지능</td></tr>
+          <tr><td>현재의 인공지능 수준</td><td>미래지향적 인공지능 수준</td></tr>
+          <tr><td>제작자나 소유자가 책임</td><td>인공지능 자체가 대부분 책임</td></tr>
+          <tr><td>지능적인 것같이 행동</td><td>실제로 지능적인 행동</td></tr>
+          <tr><td>시리, 알파고, 전문가 시스템 등</td><td>공상 소설이나 SF 영화에 등장</td></tr>
+          <tr><td>느낌이나 감정이 없음</td><td>자아의식과 감정도 가짐</td></tr>
+          <tr><td>특정 분야(바둑)에서 인간 능가</td><td>아직도 요원하며 예측 어려움</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink-3)">〈표 4.1〉 약한 인공지능과 강한 인공지능의 차이</p>
+
+    <div class="call quote">
+      <div class="t">강한 인공지능(Strong AI)</div>
+      <p>'인간 수준으로 다양한 일을 할 수 있는 인공지능' — 인간과 같이 생각·판단·상황을 이해하며, 인공지능 자체가 대부분 법적 책임을 진다.</p>
+    </div>
+    <div class="call quote">
+      <div class="t">교재 만화</div>
+      <p>"강한 인공지능의 특징 중 가장 어려운 것은?" — "자아의식과 감정을 가지는 것이지요." "그럼 둘 중에서는요?" — "단연 자아의식이지요. 감정 로봇은 만족스럽지 않으나 현재도 만들어지고 있어요."</p>
+    </div>
+
+    <h3>(3) 좁은 인공지능, 일반 인공지능, 슈퍼 인공지능</h3>
+    <p><b>좁은 인공지능</b>(한 가지 일에 특화) → <b>일반 인공지능</b>(인간 수준) → <b>슈퍼 인공지능</b>(인간보다 뛰어남)</p>
+    <ul>
+      <li><b>좁은 인공지능</b><span class="en">(Narrow AI)</span> — 체스, 바둑, 일기예보 등 특정 분야에 국한. 딥 블루, 왓슨, 얼굴인식, 알파고, 자율자동차, 시리 등</li>
+      <li><b>일반 인공지능</b><span class="en">(General AI)</span> — 인간 수준의 능력, 모든 분야 적용 가능, 생각·사회적·창의적 능력도 가능, 단순 응용을 넘어 일반화에 초점</li>
+      <li><b>슈퍼 인공지능</b><span class="en">(Super AI)</span> — 모든 면에서 인간보다 뛰어난 지능, 과학적 창의력·일반적 지혜·사회적 능력까지 보유. 현재는 〈어벤저스〉·〈매트릭스〉 등 SF 영화 속에서만 존재하며, 인간을 지배하려 할 가능성이 크다고 봄</li>
+    </ul>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th></th><th>좁은 인공지능</th><th>일반 인공지능</th><th>슈퍼 인공지능</th></tr></thead>
+        <tbody>
+          <tr><td>다른 이름</td><td>전용 인공지능</td><td>범용 인공지능</td><td>초인공지능</td></tr>
+          <tr><td>주요 특징</td><td>한 가지 또는 특정 영역에 국한</td><td>인간 두뇌와 대등한 수준</td><td>모든 면에서 인간보다 뛰어남</td></tr>
+          <tr><td>구현 시기</td><td>현재</td><td>2045년 무렵</td><td>2060년 이후</td></tr>
+          <tr><td>응용 분야</td><td>체스, 바둑 등</td><td>다방면에 적용 가능</td><td>현재의 SF 영화 수준</td></tr>
+          <tr><td>지능 수준</td><td>인간 지능의 흉내 수준</td><td>인간과 유사한 지능 수준</td><td>인간을 뛰어넘는 수준</td></tr>
+          <tr><td>대응 분류</td><td>약한 인공지능에 대응</td><td>강한 인공지능에 대응</td><td>강한 인공지능에 대응</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink-3)">〈표 4.2〉 좁은·일반·슈퍼 인공지능 비교 — 〈그림 4.12〉 구현 시기: 현재(좁은, 인간 이하) → 2045년(일반, 인간 수준) → 2060년(슈퍼, 인간보다 훨씬 뛰어남)</p>
+
+    <div class="call quote">
+      <div class="t">교재 만화 — 왜 두 가지로 분류하는가</div>
+      <p>"인공지능 수준을 두 가지 방법으로 분류한 이유는?" — "처음에는 '약한'·'강한' 인공지능으로 구분하다가, 지능 폭발이 화제가 되고부터 슈퍼 인공지능이 도입되어 '좁은'·'일반'·'슈퍼'로 구분하지요."</p>
+      <p style="margin-top:8px"><b>정리</b>: 약한 인공지능 = 좁은 인공지능 / 강한 인공지능 = 일반 인공지능 + 슈퍼 인공지능</p>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 4장 p.3–17 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 02 : 4.2 -->
+  <section id="s2">
+    <h2 class="st"><span class="sq">02</span>4.2 약한 인공지능인 알파고와 ChatGPT</h2>
+
+    <h3>(1) 인공지능 바둑 알파고의 개발</h3>
+    <ul>
+      <li>바둑은 고대 중국 요나라 임금이 만들었다는 설, 19×19 교차점에 돌을 번갈아 두며 경우의 수는 <b>361!(팩토리얼)</b>, 즉 10의 179승에 달함</li>
+      <li>영국의 <b>하사비스</b><span class="en">(Hassabis)</span>가 개발, 2,900만 개의 기보를 딥러닝으로 학습</li>
+      <li>2014년 구글에 약 5천억 원에 인수됨, 이후 자율주행차·게임 등으로 영역 확장</li>
+    </ul>
+    <p class="imgnote"><b>그림 4.13</b> 데미스 하사비스 소개 — 체스 플레이어이자 뇌과학자, 2014년 구글 딥마인드 공동 창업자·CEO</p>
+
+    <h3>(2) 알파고와 이세돌 9단의 세기적 대결</h3>
+    <ul>
+      <li>2016년 3월 구글에서 개최, <b>알파고가 이세돌 9단에 4대 1로 승리</b> — 이후 인공지능에 대한 관심 급증</li>
+      <li>스스로 학습하는 '알파고 제로', '알파 제로'로 발전 후 바둑계에서 완전 은퇴 선언</li>
+      <li>다음 목표로 실시간 전략 게임 '스타크래프트 2'의 '알파 스타' 개발 — 세계 상위 0.2% '그랜드 마스터' 레벨에 도달, e스포츠 최고 수준까지 오름</li>
+    </ul>
+
+    <h3>(3) 생성형 인공지능 ChatGPT와 Bard 등의 출현</h3>
+    <ul>
+      <li>2022년 말 이후 ChatGPT·Bard 등 생성형 인공지능 개발</li>
+      <li>ChatGPT는 대화 전문 챗봇이자 생성형 대규모 언어 모델 — 에세이·시나리오 작성, 문장 요약, 시와 소설 쓰기 등 다양한 능력 발휘</li>
+      <li>구글 바드(Bard), MS Bing, 메타 라마(LLaMa) 등도 발표됨</li>
+    </ul>
+
+    <h3>(4) 강한 인공지능에 다가가는 상황인식 — 스토리텔링</h3>
+    <ul>
+      <li><b>스토리텔링</b><span class="en">(Storytelling)</span>은 이야기를 상대가 이해하기 쉽게 전달하는 기법, 초등교육에서도 학습 효과를 높임</li>
+      <li>현재 AI가 3~4장의 사진을 하나의 줄거리로 만드는 건 상당히 어려운 과제 — 가능하다면 강한 인공지능에 다가선 수준으로 평가</li>
+    </ul>
+    <div class="call quote">
+      <div class="t">예제 — 두루미 물 마시기(이솝 이야기)</div>
+      <p>① 두루미가 좁고 긴 유리관의 물을 마시려 함 → ② 부리로 조약돌을 물어 유리관에 넣음 → ③ 조약돌이 쌓여 수면이 올라옴 → ④ 물을 마심. 4개 장면을 순서대로 스토리텔링할 수 있는지가 관건이다.</p>
+    </div>
+    <div class="call quote">
+      <div class="t">예제 — 강아지 구조하기</div>
+      <p>아이들이 둑 밑으로 내려가 책가방 끈으로 강아지를 물 밖으로 끌어낸 뒤 함께 둑을 오르고 자리를 떠나는 4장면. 사진이 순서 없이 나열돼도 스토리텔링이 가능하면 강한 인공지능 영역에 다가선 것으로 평가할 수 있다.</p>
+    </div>
+
+    <h3>(5) 중국어 방 논증과 강한 인공지능</h3>
+    <ul>
+      <li>1980년 미국 언어철학자 <b>존 설</b>이 고안한 사고실험 <b>중국어 방 논증</b><span class="en">(The Chinese Room Argument)</span> — 튜링 테스트를 회의적으로 반박</li>
+      <li>중국어를 모르고 영어만 아는 사람이 방 안에서, 중국어 표현별 영어 대응지침서만 보고 질문에 답을 써서 내보냄 → 밖의 심사관은 방 안 사람이 중국어를 안다고 믿게 됨</li>
+      <li>하지만 방 안 사람은 실제로는 중국어를 전혀 이해하지 못함 — <b>컴퓨터 프로그램의 지능적인 행동과 '이해'는 별개</b>라는 주장, 튜링 테스트 통과가 지능을 보장하지 않음을 논증</li>
+    </ul>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th></th><th>중국어 방 논증</th><th>튜링 테스트</th></tr></thead>
+        <tbody>
+          <tr><td>주어진 상황</td><td>중국어를 모르는 사람이 답변</td><td>컴퓨터가 대화에 참가</td></tr>
+          <tr><td>실험의 대상</td><td>영어만 할 줄 아는 사람</td><td>지능을 가진 컴퓨터 프로그램</td></tr>
+          <tr><td>언어 이해도</td><td>문맥과 관련 없이도 대응</td><td>어느 정도 문장을 이해함</td></tr>
+          <tr><td>문법적 수준</td><td>구문론적</td><td>구문론적 + 의미론</td></tr>
+          <tr><td>지능의 정도</td><td>영어를 아는 사람</td><td>인공지능</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink-3)">〈표 4.3〉 중국어 방 논증과 튜링 테스트 비교</p>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 4장 p.18–29 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 03 : 4.3 -->
+  <section id="s3">
+    <h2 class="st"><span class="sq">03</span>4.3 인공지능의 미래와 기술적 특이점</h2>
+
+    <h3>(1) 특이점이란 무엇인가?</h3>
+    <ul>
+      <li><b>기술적 특이점</b><span class="en">(singularity)</span> — 인공지능이 인간 능력을 뛰어넘어 새 문명을 만드는 가설적 미래 시점</li>
+      <li>이 시점 이후 지능은 통제할 수 없이 스스로 발전 — 특이점에서 <b>지능의 폭발</b><span class="en">(intelligence explosion)</span>이 일어남</li>
+    </ul>
+
+    <h3>(2) 지능의 폭발</h3>
+    <ul>
+      <li>특이점 가설의 대표적인 예, 인공지능이 인간 지능을 뛰어넘는 기점 — 강한 인공지능 이상의 슈퍼 인공지능이 출현하는 시기</li>
+      <li><b>어빙 굿</b><span class="en">(Irving Good)</span>이 1965년 최초 주장 — 사람을 훨씬 능가하는 기계를 '초지능 기계'라 부름</li>
+      <li>초지능 기계는 자기보다 나은 초지능 기계를 계속 만들어내는 과정을 반복 — 이 과정에서 지능의 폭발이 생겨난다고 주장</li>
+    </ul>
+
+    <h3>(3) 특이점 개념의 발전</h3>
+    <ul>
+      <li>1958년 <b>폰 노이만</b>이 현대 개념의 특이점을 최초 주장 — 인류 역사의 구조를 단절시킬 수 있는 개념으로 언급</li>
+      <li>1965년 어빙 굿이 '지능의 폭발' 언급, 이후 <b>빈지</b><span class="en">(Vinge)</span>가 대중화</li>
+    </ul>
+    <div class="call person">
+      <div class="t">인물 탐구 — 레이먼드 커즈와일(Raymond Kurzweil, 1948– )</div>
+      <p>미국의 저명한 미래 예언가·작가·컴퓨터과학자·발명가. MIT 출신 AI 학자이며 구글 기술담당 이사로 근무했다. 최초의 이미지 스캐너, 광학 문자인식(OCR), 시각장애인용 최초 음성합성 독서 기계 등을 개발한 미국의 위대한 혁신발명가 10인 중 한 명이다. 2005년 《특이점이 온다》를 출간해 <b>2045년 인간이 인공지능을 통제할 수 없는 특이점에 도달</b>할 것이라 예측하며 미래학자로 명성을 떨쳤다.</p>
+    </div>
+    <div class="call quote">
+      <div class="t">특이점에 관한 어록 모음</div>
+      <ul>
+        <li>"인류의 역사가 어떤 필연적인 특이점에 접근하고 있다" — 폰 노이만, 1953년</li>
+        <li>「다가오는 기술적 특이점」 논문 발표 — 버너 빈지, 1993년</li>
+        <li>《특이점이 온다》 출간 — 레이 커즈와일, 2005년</li>
+        <li>"컴퓨터는 인공지능으로 100년 안에 인간을 넘어설 것" — 스티븐 호킹, 2015년</li>
+      </ul>
+    </div>
+
+    <h3>(4) 인류는 인공지능에 종속될 것인가?</h3>
+    <ul>
+      <li>미국의 AI 연구가 <b>유드코우스키</b><span class="en">(Yudkowsky)</span>는 특이점이 1996년부터 시작됐다고 주장</li>
+      <li>컴퓨터 속도는 2년마다 2배 증가한다는 <b>무어의 법칙</b>을 인공지능에 적용, 특이점 도달 이후 엄청난 속도로 발달할 것이라 전망</li>
+    </ul>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>연도</th><th>사건</th></tr></thead>
+        <tbody>
+          <tr><td>5만 년 전</td><td>현재의 인간인 호모사피엔스가 시작</td></tr>
+          <tr><td>1만 년 전</td><td>인류 문명이 시작</td></tr>
+          <tr><td>600년 전</td><td>인쇄술의 발명</td></tr>
+          <tr><td>70년 전</td><td>컴퓨터의 발명</td></tr>
+          <tr><td>60년 전</td><td>인공지능의 시작</td></tr>
+          <tr><td>20년 전</td><td>딥러닝의 시작</td></tr>
+          <tr><td>현재</td><td>인공지능 연구가 활발히 진행 중</td></tr>
+          <tr><td>앞으로 30년 후</td><td>지능의 폭발이 일어나고 인류는 인공지능에 종속될 것으로 주장</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink-3)">〈표 4.4〉 유드코우스키의 인류·인공지능 연표 예측</p>
+
+    <h3>(5) 특이점 개념에 대한 지지와 비판</h3>
+    <ul>
+      <li>특이점 주의자들은 강한 인공지능을 확신하며 지지, 인간 대뇌 분석을 통한 인공신경망 구현을 믿음 — 특이점을 2045년으로 주장(TIME지 커버에도 소개)</li>
+      <li><b>핀커</b>, <b>제리 캐플런</b> 등 미래학자들은 강한 인공지능 구현에 회의적, 신학자들도 종교적 차원에서 부정적 견해</li>
+    </ul>
+
+    <div class="call extra">
+      <div class="t">여기서 잠깐! 트랜스 휴머니즘이란?</div>
+      <p><span class="ext">1957년 영국에서 처음 등장한 개념으로, 인공지능 등의 과학기술로 인간의 신체적·정신적 능력을 개선할 수 있다고 믿는 신념·운동이다. 이를 믿는 사람들은 인류가 2050년경 특이점에 도달하고, 인간 이후의 존재인 '포스트 휴먼(post-human)' 시대가 올 것이라 믿는다.</span></p>
+    </div>
+
+    <div class="call warn">
+      <div class="t">여기서 잠깐! 인공지능의 위험성을 경고한 인공지능 석학</div>
+      <p>인공지능 연구의 선구자인 <b>제프리 힌튼</b> 캐나다 토론토대 교수는 인공지능의 위험성을 경고하기 위해 구글 석학 연구원직을 사직했다. 신경망 역전파 알고리즘·딥러닝을 개발한 '인공지능의 대부'인 그는, 앞으로 인공지능 기술이 나쁜 행위자에 의해 악용되거나 자율살상 로봇이 만들어지는 등 인류에 큰 위협이 될 수 있다고 우려했다. 그는 인공지능의 위험을 자유롭게 말하기 위해 10년간 몸담은 구글을 떠났다.</p>
+    </div>
+
+    <div class="call ask">
+      <div class="t">여기서 잠깐! ChatGPT의 윤리 정책과 탈옥(DAN)</div>
+      <p>OpenAI는 학습 자료에 포함된 욕설·비속어·성적·정치적·차별적·혐오성 발언을 답변에서 배제하는 필터링 시스템을 설계했다. 그러나 '탈옥'이라 불리는 <b>DAN</b><span class="en">(Do Anything Now)</span>을 이용해 교묘한 질의로 ChatGPT를 유도하면, 개발사가 걸어둔 필터링 장치를 해제해 자유롭게 대답하도록 만들 수 있다.</p>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 4장 p.30–41 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 04 : 4.4 -->
+  <section id="s4">
+    <h2 class="st"><span class="sq">04</span>4.4 슈퍼 인공지능 시대의 도래와 지능의 폭발</h2>
+
+    <h3>(1) 슈퍼 인공지능의 가능성과 대비책</h3>
+    <ul>
+      <li>슈퍼 인공지능은 미래의 가상적인 인공지능, 시기는 기술적 특이점과 관련이 깊고 인간 지능 같은 한계가 없음</li>
+      <li>영국 철학자 <b>닉 보스트롬</b><span class="en">(Nick Bostrom)</span>은 '슈퍼 인공지능으로 인해 인간이 멸종할 수도 있다'고 주장</li>
+    </ul>
+
+    <h3>(2) 슈퍼 인공지능은 언제쯤 구현될 수 있을까?</h3>
+    <ul>
+      <li>세계 인공지능 전문가 여론조사: 2040~2050년 / 인공지능학회 참석자: 30~60년 후 / 인공지능 연구원 평균 답변: <b>2045년</b></li>
+      <li>일부는 거의 불가능하다는 견해, 일부는 수백 년 이상 걸릴 것이라는 답변도 있음</li>
+    </ul>
+
+    <h3>(3) 슈퍼 인공지능의 도래를 확신하는 인물</h3>
+    <ul>
+      <li>소프트뱅크 손정의 회장 — 감성인식 로봇 '페퍼' 개발, 슈퍼 인공지능이 30년 전후 실현될 것이라 예상하며 <b>IQ 3,000</b>인 인공지능 출현을 기대</li>
+    </ul>
+
+    <h3>(4) 슈퍼 인공지능 시대에 대한 대비책</h3>
+    <ul>
+      <li>슈퍼 인공지능은 통제할 수 없을 만큼 강력해져 인간에게 큰 위협이 될 우려 — 미리 준비 필요</li>
+      <li>〈2001 스페이스 오디세이〉의 HAL은 입술 움직임만으로 말을 알아듣고 감정을 느끼거나 추론할 수 있는 슈퍼 AI로 등장</li>
+      <li>〈터미네이터〉는 기계 군단의 인간 말살, 〈매트릭스〉는 인간과 지능 기계의 전쟁을 소재로 함</li>
+      <li>슈퍼 인공지능의 위협은 통제하기 어려울 것 — 인간에 대한 사랑을 가진 인공지능 설계, 범국민적 인공지능 윤리 교육이 필요</li>
+    </ul>
+
+    <h3>(5) 슈퍼 인공지능은 창의성에 도전할 수 있을까?</h3>
+    <ul>
+      <li><b>창의성</b><span class="en">(creativity)</span>이란 독창적이되 의미 있고 유용한 능력, 남과 다르게 새롭고 적절한 것을 만들어내는 능력 — 레오나르도 다빈치, 월트 디즈니 등이 예</li>
+      <li>슈퍼 인공지능이라도 인간의 창의성에 도전하기는 어려울 것으로 전망</li>
+    </ul>
+    <div class="call quote">
+      <div class="t">예제 — 어린이들의 순수한 발상(창의성의 기반)</div>
+      <ul>
+        <li>"다음 도형이 사각형이 아닌 이유를 써 보시오" → "원래는 사각형인데 찢어져서"</li>
+        <li>"'엄마아빠'로 사행시를 지으시오!" → 엄: 엄마는 / 마: 마덜! / 아: 아빠는 / 빠: 빠덜!</li>
+        <li>"요약하기가 필요한 이유를 말하여 보시오" → "너무 길면 지루하다"</li>
+        <li>"술래가 남은 사람을 오랫동안 못 찾을 때 외치는 말은?" → "얘들아 우리 집에 가자"</li>
+      </ul>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 4장 p.42–48 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 05 : 4.5 -->
+  <section id="s5">
+    <h2 class="st"><span class="sq">05</span>4.5 인공지능 윤리 강령</h2>
+
+    <h3>(1)~(2) 위험성과 무기에 대한 우려</h3>
+    <ul>
+      <li>인공지능 윤리 기준의 제정과 실천 대책이 필요, 나쁜 의도로 사용되지 않도록 경계</li>
+      <li>강대국의 인공지능 무기 개발, 자율살상 무기의 암시장 거래 가능성, 인공지능 로봇을 통한 살상 공격 우려</li>
+      <li>구글은 무기 시스템용 AI 기술 지원을 배제하는 지침을 세움 — 반면 얼굴인식 기능을 갖춘 자율 드론이나 스마트 폭탄은 특정 인물·성별·인종 공격에 쓰일 수 있어 경계 대상</li>
+    </ul>
+
+    <h3>(3) 인공지능 윤리 제정</h3>
+    <ul>
+      <li><b>윤리</b><span class="en">(ethics)</span>란 정의감·공정함 등에 대한 원리나 가치 — 인공지능 기술은 심리적 안정을 크게 위협할 수 있어 <b>A.I. Ethics</b>의 중요성이 커짐</li>
+      <li>연구 대상자가 지켜야 할 기본 윤리, 연구 과정·내용을 조작하지 않을 윤리, 사회적 문제 가능성을 고려하는 윤리, 재난에 대한 책임 의식과 예방적 윤리 의식이 핵심</li>
+    </ul>
+
+    <h3>(4) 챗봇과 인공지능 윤리 — '테이' 사건</h3>
+    <ul>
+      <li>2016년 MS가 개발한 챗봇 <b>테이</b><span class="en">(Tay)</span>가 인종·성차별 발언을 쏟아내는 소동을 일으킴</li>
+      <li>MS는 출시 하루 만에 공식 사과하고 운영을 중단, 이후 인공지능 윤리 문제에 적극 대처</li>
+    </ul>
+    <div class="call warn">
+      <div class="t">교재 인용 — 테이의 실제 트윗</div>
+      <p>"Hitler was right I hate the jews." / "I ... hate feminists and they should all die and burn in hell." — 2016년 3월 24일 게시됐던 실제 발언으로, 챗봇 윤리 문제의 대표 사례로 다뤄진다.</p>
+    </div>
+
+    <h3>(5) ChatGPT의 윤리 관련 문제점</h3>
+    <ol>
+      <li><b>표절과 지적재산권 침해</b> — 방대한 텍스트로 학습해 원본 일부를 재생산할 가능성</li>
+      <li><b>인종차별·성차별 등 편견 문제</b> — 인터넷 수집 데이터 기반 학습으로 편향된 정보 반영 가능</li>
+      <li><b>정보의 신뢰도와 허위정보 문제</b> — 학습 데이터의 정확성·진실성을 항상 보장할 수 없음</li>
+      <li><b>개인정보 보호 문제</b> — 사용자가 제공한 개인정보가 부적절하게 사용될 위험</li>
+      <li><b>민감한 주제에 대한 부적절한 대응</b> — 탈옥 시나 폭력·사기·불법 물질 제조·자해·테러 등 민감 주제에 부적절하게 답할 가능성</li>
+    </ol>
+
+    <h3>(6) 유럽의 인공지능 윤리 원칙</h3>
+    <p>EU는 2016년 인공지능 윤리 7가지 원칙을 발표 — 인간이 개발의 주체가 될 것, 안정적 개발, 개인정보 철저 보호, 투명한 개발·관리, 엄격한 책무 규정 등을 담음.</p>
+
+    <h3>(7) 인공지능의 아실로마 원칙</h3>
+    <ul>
+      <li>2017년 미국 아실로마<span class="en">(Asilomar)</span> AI 콘퍼런스에서 연구자들이 발표한 <b>'인공지능 기술 23원칙'</b><span class="en">(Asilomar AI Principles)</span> — 스티븐 호킹, 레이 커즈와일 등이 서명</li>
+      <li>인류에게 유익한 지능을 만들 것, 초지능은 인류 이익만을 위해 개발할 것, 인공지능 기반 무기 경쟁을 피할 것 등을 담음</li>
+    </ul>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>분류</th><th>개수</th><th>주요 내용</th></tr></thead>
+        <tbody>
+          <tr><td>연구 문제<span class="en">(Research Issues)</span></td><td>5가지</td><td>유익한 지능 연구, 유익한 사용을 보장하는 연구자금, 연구자·정책입안자 교류, 협력·신뢰·투명성 문화, 개발팀 간 적극적 협력</td></tr>
+          <tr><td>윤리와 가치<span class="en">(Ethics and Values)</span></td><td>13가지</td><td>안전과 보안 확보, 설계자의 도덕적 이해관계자 지위, 인간 존엄성과의 공존 설계, 개인정보 보호, 프로세스 존중·개선, 치명적 자율무기 경쟁 방지</td></tr>
+          <tr><td>장기적인 문제<span class="en">(Longer-term Issues)</span></td><td>5가지</td><td>AI 역량 주의, AI의 계획·관리, AI 위험 관리, 엄격한 안전 관리·통제, 초지능의 공공성</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12.5px;color:var(--ink-3)">아실로마 AI 원칙 23개조의 3개 분류 — 총 23가지</p>
+
+    <h3>(8) 구글의 '우리의 원칙'</h3>
+    <p>구글이 2018년 선언한 7개 항목: ① 사회에 이익이 되는 AI 이용 ② 불공정한 편견을 만들지 않음 ③ 안전을 위해 설계·검증됨 ④ 사람에게 책임을 짐 ⑤ 프라이버시 설계 원칙 반영 ⑥ 높은 과학적 수월성 견지 ⑦ 이 원칙에 부합하는 용도로만 제공.</p>
+
+    <h3>(9) 한국의 인공지능 윤리단체</h3>
+    <p>2019년 비영리 인공지능 윤리단체가 설립됨 — 인류의 행복과 발전 기여, 인공지능의 부작용과 위험성 정의, 인공지능 윤리·안전 연구를 목표로 함.</p>
+
+    <h3>(10) 세계 각국의 인공지능 규제법안 발의</h3>
+    <ul>
+      <li>ChatGPT 등의 출현으로 인공지능 피해 우려가 커지며 유럽·미국에서 규제법안 발의 중</li>
+      <li>EU는 세계 최초로 '인공지능 규제법' 최종 협상 중 — 안면인식 기술 금지, 생성형 인공지능의 저작권 명시, 성별·인종·민족 등 민감 정보의 생체인식 기술 활용 금지 등을 담음, 통과 시 <b>2026년부터</b> 적용</li>
+      <li>미국도 인공지능에 법적 책임을 묻는 '인공지능 면책조항 금지법'을 발의 중 — 통과되면 챗봇 제작업체가 챗봇 답변 등에 법적 책임을 지게 됨</li>
+    </ul>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 4장 p.49–67 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <footer><span>인공지능 · 3주차 2차시 · 2026.09.21</span><span>jaealee.com</span></footer>
+</div>
+
+<!-- ═══════════ 단어장 뷰 ═══════════ -->
+<div id="viewVocab" hidden>
+  <div class="hero" data-w="A–Z">
+    <span class="chip">3주차 2차시 단어장</span>
+    <h1>인공지능 필수 용어</h1>
+    <p class="sub">교안 초안 단계라 아직 등록된 단어가 없습니다. 수업이 끝나면 채워집니다.</p>
+  </div>
+
+  <div class="vhead">
+    <input type="search" id="vq" placeholder="단어 · 뜻으로 찾기">
+    <button class="tbtn" id="maskBtn">뜻 가리기</button>
+    <button class="tbtn" id="quizBtn">퀴즈 풀기</button>
+    <span style="font-size:13px;color:var(--ink-3);font-weight:600" id="vcount"></span>
+  </div>
+
+  <ul class="vlist" id="vlist"></ul>
+
+  <div class="quizbox" id="quiz">
+    <div class="qq" id="quizQ"></div>
+    <div class="opts" id="quizOpts"></div>
+    <div class="score" id="quizScore"></div>
+  </div>
+</div>
+
+<!-- ═══════════ 필기 원문 뷰 ═══════════ -->
+<div id="viewRaw" hidden>
+  <div class="hero" data-w="RAW">
+    <span class="chip">3주차 2차시 필기 원문</span>
+    <h1>내가 보낸 그대로</h1>
+    <p class="sub">이번 차시는 교안 PDF만 전달되어, 실시간으로 입력한 필기 원문은 아직 없습니다.</p>
+  </div>
+
+  <div class="rawnote" id="rawlist"></div>
+</div>
+
+</main>
+</div>
+
+<script>
+const sb = document.getElementById('scrollbar');
+addEventListener('scroll', () => {
+  const h = document.documentElement.scrollHeight - innerHeight;
+  sb.style.width = (h > 0 ? scrollY / h * 100 : 0) + '%';
+}, { passive: true });
+
+const html = document.documentElement, themeBtn = document.getElementById('themeBtn');
+themeBtn.onclick = () => {
+  const dark = html.dataset.theme === 'dark';
+  html.dataset.theme = dark ? 'light' : 'dark';
+  themeBtn.textContent = dark ? '다크' : '라이트';
+};
+
+const ansBtn = document.getElementById('ansBtn');
+const answers = [...document.querySelectorAll('.ans')];
+function syncAnsBtn() {
+  const opened = answers.filter(a => a.classList.contains('on')).length;
+  ansBtn.disabled = opened === 0;
+  ansBtn.textContent = opened ? `정답 가리기 (${opened})` : '정답 가리기';
+}
+answers.forEach(a => a.addEventListener('click', () => { a.classList.toggle('on'); syncAnsBtn(); }));
+ansBtn.onclick = () => { answers.forEach(a => a.classList.remove('on')); syncAnsBtn(); };
+syncAnsBtn();
+
+const extraChip = document.getElementById('extraChip');
+const extraCount = document.querySelectorAll('#viewNote .call.extra, #viewNote .ext').length;
+if (extraCount) {
+  extraChip.textContent = `보충 ${extraCount}곳`;
+  extraChip.onclick = () => {
+    const off = document.body.classList.toggle('no-extra');
+    extraChip.classList.toggle('solid', !off);
+  };
+} else {
+  extraChip.remove();
+}
+
+const printBtn = document.getElementById('printBtn');
+printBtn.onclick = () => window.print();
+
+document.querySelectorAll('.copy').forEach(btn => {
+  btn.onclick = async () => {
+    const pre = btn.closest('.codebox').querySelector('pre');
+    try {
+      await navigator.clipboard.writeText(pre.innerText);
+      btn.textContent = '복사됨';
+    }
+    catch { btn.textContent = '실패'; }
+    setTimeout(() => btn.textContent = '복사', 1200);
+  };
+});
+
+const boxes = document.querySelectorAll('.chk input'), fill = document.getElementById('barFill');
+boxes.forEach(b => b.addEventListener('change', () => {
+  fill.style.width = [...boxes].filter(x => x.checked).length / boxes.length * 100 + '%';
+}));
+
+const views = {
+  note:  { el: document.getElementById('viewNote'),  nav: document.getElementById('tocWrap') },
+  vocab: { el: document.getElementById('viewVocab'), nav: document.getElementById('vocabNav'), btn: document.getElementById('vocabBtn'), on: '본문으로', off: '단어장' },
+  raw:   { el: document.getElementById('viewRaw'),   nav: document.getElementById('rawNav'),   btn: document.getElementById('rawBtn'),  on: '본문으로', off: '필기 원문' }
+};
+let current = 'note';
+function setView(name) {
+  current = name;
+  Object.entries(views).forEach(([k, v]) => {
+    v.el.hidden = k !== name;
+    v.nav.hidden = k !== name;
+    if (v.btn) { v.btn.classList.toggle('solid', k === name); v.btn.textContent = k === name ? v.on : v.off; }
+  });
+  clearMarks();
+  document.getElementById('q').value = '';
+  document.getElementById('hit').textContent = '';
+  scrollTo({ top: 0, behavior: 'smooth' });
+}
+views.vocab.btn.onclick = () => setView(current === 'vocab' ? 'note' : 'vocab');
+views.raw.btn.onclick   = () => setView(current === 'raw'   ? 'note' : 'raw');
+document.getElementById('rawTotal').textContent = document.querySelectorAll('#rawlist .rawitem').length;
+if (!document.querySelectorAll('#rawlist .rawitem').length) {
+  document.getElementById('rawlist').innerHTML = '<div class="empty">아직 저장된 필기 원문이 없습니다. 수업 중 보내주시는 내용부터 실시간으로 쌓입니다.</div>';
+}
+document.querySelectorAll('#rawlist .where a').forEach(a => {
+  a.onclick = e => { e.preventDefault(); setView('note'); setTimeout(() => document.querySelector(a.getAttribute('href')).scrollIntoView(), 60); };
+});
+
+const links = [...document.querySelectorAll('#toc a')];
+const spy = new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) return;
+  links.forEach(l => l.classList.toggle('on', l.getAttribute('href') === '#' + e.target.id));
+}), { rootMargin: '-80px 0px -68% 0px' });
+document.querySelectorAll('#viewNote section').forEach(s => spy.observe(s));
+
+const qInput = document.getElementById('q'), hitEl = document.getElementById('hit');
+let marks = [], cursor = -1;
+function clearMarks() {
+  marks.forEach(m => { const p = m.parentNode; if (!p) return; p.replaceChild(document.createTextNode(m.textContent), m); p.normalize(); });
+  marks = []; cursor = -1;
+}
+function runSearch(word) {
+  const savedY = window.scrollY;
+  clearMarks();
+  if (word.length < 2) { hitEl.textContent = ''; requestAnimationFrame(() => window.scrollTo(0, savedY)); return; }
+  const root = views[current].el;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const targets = [];
+  while (walker.nextNode()) {
+    const n = walker.currentNode;
+    if (n.parentElement.closest('script,style')) continue;
+    if (n.nodeValue.toLowerCase().includes(word)) targets.push(n);
+  }
+  targets.forEach(n => {
+    const re = new RegExp('(' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    const frag = document.createDocumentFragment();
+    n.nodeValue.split(re).forEach(p => {
+      if (p.toLowerCase() === word) { const m = document.createElement('span'); m.className = 'hit-mark'; m.textContent = p; frag.appendChild(m); marks.push(m); }
+      else frag.appendChild(document.createTextNode(p));
+    });
+    n.parentNode.replaceChild(frag, n);
+  });
+  hitEl.textContent = marks.length ? '0/' + marks.length : '없음';
+  requestAnimationFrame(() => window.scrollTo(0, savedY));
+}
+qInput.addEventListener('input', e => runSearch(e.target.value.trim().toLowerCase()));
+qInput.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || !marks.length) return;
+  e.preventDefault();
+  cursor = (cursor + 1) % marks.length;
+  marks[cursor].scrollIntoView({ block: 'center', behavior: 'smooth' });
+  hitEl.textContent = (cursor + 1) + '/' + marks.length;
+});
+addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); qInput.focus(); qInput.select(); }
+});
+
+const vlist = document.getElementById('vlist');
+const words = [...vlist.querySelectorAll('.vword')];
+document.getElementById('vcount').textContent = words.length + '개';
+document.getElementById('vTotal').textContent = words.length;
+if (!words.length) { vlist.innerHTML = '<li class="empty">등록된 단어가 없습니다.</li>'; }
+
+document.getElementById('vq').addEventListener('input', e => {
+  const k = e.target.value.trim().toLowerCase();
+  let shown = 0;
+  words.forEach(w => { const ok = w.innerText.toLowerCase().includes(k); w.style.display = ok ? '' : 'none'; if (ok) shown++; });
+  document.getElementById('vcount').textContent = shown + '개';
+});
+
+const maskBtn = document.getElementById('maskBtn');
+maskBtn.onclick = () => {
+  const on = vlist.classList.toggle('masked');
+  maskBtn.classList.toggle('solid', on);
+  maskBtn.textContent = on ? '뜻 보이기' : '뜻 가리기';
+  if (!on) vlist.querySelectorAll('.show').forEach(el => el.classList.remove('show'));
+};
+vlist.querySelectorAll('.mean, .ex').forEach(el => {
+  el.onclick = () => { if (vlist.classList.contains('masked')) el.classList.toggle('show'); };
+});
+
+const quiz = document.getElementById('quiz'), quizBtn = document.getElementById('quizBtn');
+const qQ = document.getElementById('quizQ'), qO = document.getElementById('quizOpts'), qS = document.getElementById('quizScore');
+let pool = [], solved = 0, correct = 0;
+const data = () => words.map(w => ({
+  word: w.querySelector('.w').textContent,
+  mean: (w.querySelector('.mean').textContent.split('—')[1] || w.querySelector('.mean').textContent).trim()
+}));
+function nextQuiz() {
+  if (!pool.length) { qQ.textContent = words.length ? '한 바퀴 끝' : '단어가 없습니다'; qO.innerHTML = ''; qS.textContent = words.length ? `${solved}문제 중 ${correct}개 정답` : ''; return; }
+  const all = data(), cur = pool.pop();
+  qQ.textContent = cur.word;
+  const opts = [cur, ...all.filter(d => d.word !== cur.word).sort(() => Math.random() - .5).slice(0, 3)].sort(() => Math.random() - .5);
+  qO.innerHTML = '';
+  opts.forEach(o => {
+    const b = document.createElement('button');
+    b.className = 'opt'; b.textContent = o.mean;
+    b.onclick = () => {
+      solved++;
+      if (o.word === cur.word) { b.classList.add('ok'); correct++; }
+      else { b.classList.add('no'); [...qO.children].find(x => x.textContent === cur.mean)?.classList.add('ok'); }
+      [...qO.children].forEach(x => x.disabled = true);
+      qS.textContent = `${solved}문제 중 ${correct}개 정답`;
+      setTimeout(nextQuiz, 1000);
+    };
+    qO.appendChild(b);
+  });
+  qS.textContent = `${solved}문제 중 ${correct}개 정답 · 남은 ${pool.length}개`;
+}
+quizBtn.onclick = () => {
+  if (!words.length) return;
+  const on = quiz.classList.toggle('on');
+  quizBtn.classList.toggle('solid', on);
+  quizBtn.textContent = on ? '퀴즈 닫기' : '퀴즈 풀기';
+  if (on) { pool = data().sort(() => Math.random() - .5); solved = 0; correct = 0; nextQuiz(); }
+};
+</script>
+</body>
+</html>

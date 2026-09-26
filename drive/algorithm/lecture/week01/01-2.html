@@ -207,6 +207,7 @@ details.raw .txt{padding:0 14px 12px;font-size:13px;color:var(--ink-2);white-spa
 
 /* ── 표 ─────────────────────────────────────────────── */
 .tablewrap{overflow-x:auto;margin:15px 0;border:1px solid var(--line);border-radius:13px}
+sup .frac,sub .frac{font-size:.9em;margin:0 1px}
 .frac{display:inline-flex;flex-direction:column;text-align:center;vertical-align:middle;line-height:1.15;margin:0 3px;font-size:.94em}
 .frac .num{border-bottom:1.4px solid currentColor;padding:0 4px}
 .frac .den{padding:0 4px}
@@ -732,7 +733,7 @@ T(n) = O(n)
     <h2 class="st"><span class="sq">05</span>재귀 · 예시2 Sum(a,b)</h2>
 
     <p>Sum(a, b) = a + (a+1) + ... + (b−1) + b <span class="en">(가정: a ≤ b)</span></p>
-    <p>Sum(3,8) = 3+4+5+6+7+8은 Sum(3,7)+8 처럼 하나씩 줄여도 풀 수 있지만, 절반으로 나눠서 <b>Sum(3,5) + Sum(6,8)</b>로도 풀 수 있습니다. (m = ⌊(3+8)/2⌋ = 5)</p>
+    <p>Sum(3,8) = 3+4+5+6+7+8은 Sum(3,7)+8 처럼 하나씩 줄여도 풀 수 있지만, 절반으로 나눠서 <b>Sum(3,5) + Sum(6,8)</b>로도 풀 수 있습니다. (m = ⌊<span class="frac"><span class="num">3+8</span><span class="den">2</span></span>⌋ = 5)</p>
 
     <div class="codebox">
       <div class="head"><span><span class="tag">Python</span>sum_range.py</span><button class="copy">복사</button></div>
@@ -743,14 +744,14 @@ T(n) = O(n)
     <span class="kw">return</span> Sum(a, m) + Sum(m<span class="st2">+1</span>, b)  <span class="cm"># 재귀 호출, T(n/2)+T(n/2)</span></code></pre>
     </div>
 
-    <p>점화식: <b>T(n) = 2T(n/2) + C</b>, T(1) = C</p>
+    <p>점화식: <b>T(n) = 2T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + C</b>, T(1) = C</p>
     <p>n = 2<sup>k</sup>라고 가정합니다 <span class="en">(정확한 값이 아닌 점근적 분석이라 문제없음)</span>.</p>
 
-    <pre style="white-space:pre-wrap;font-family:var(--mono);font-size:13.6px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 15px;line-height:1.6;margin:12px 0">T(n) = 2·T(n/2) + C
-     = 2·(2·T(n/2²) + C) + C = 2²T(n/2²) + 2C + C
-     = 2³T(n/2³) + 2²C + 2C + C
+    <pre style="white-space:pre-wrap;font-family:var(--mono);font-size:13.6px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 15px;line-height:1.6;margin:12px 0">T(n) = 2·T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + C
+     = 2·(2·T(<span class="frac"><span class="num">n</span><span class="den">2²</span></span>) + C) + C = 2²T(<span class="frac"><span class="num">n</span><span class="den">2²</span></span>) + 2C + C
+     = 2³T(<span class="frac"><span class="num">n</span><span class="den">2³</span></span>) + 2²C + 2C + C
      ...
-     = 2<sup>k</sup>·T(n/2<sup>k</sup>) + 2<sup>k-1</sup>C + 2<sup>k-2</sup>C + ... + 2C + C
+     = 2<sup>k</sup>·T(<span class="frac"><span class="num">n</span><span class="den">2<sup>k</sup></span></span>) + 2<sup>k-1</sup>C + 2<sup>k-2</sup>C + ... + 2C + C
      = 2<sup>k</sup>·C + C·(1 + 2 + ... + 2<sup>k-1</sup>)</pre>
 
     <p>등비수열의 합 — 초항 a, 공비 r, 항 개수 n개일 때 합 = <span class="frac"><span class="num">a(r<sup>n</sup> − 1)</span><span class="den">r − 1</span></span></p>
@@ -758,7 +759,7 @@ T(n) = O(n)
 
     <pre style="white-space:pre-wrap;font-family:var(--mono);font-size:13.6px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 15px;line-height:1.6;margin:12px 0">T(n) = 2<sup>k</sup>·C + (2<sup>k</sup> − 1)·C
      = 2<sup>k</sup>·C + 2<sup>k</sup>·C − C
-     = 2Cn − C   <span class="cm">(n = 2^k 이므로)</span></pre>
+     = 2Cn − C   <span class="cm">(n = 2<sup>k</sup> 이므로)</span></pre>
 
     <p>따라서 Sum(a, b) ⇒ <b>T(n) = 2Cn − C = O(n)</b></p>
 
@@ -869,8 +870,8 @@ T(n) = 2*T(n/2) + C = 2*(2*T(n/2^2)+C) + C = 2(2(2T(n/2^3)+C)+C)+C = (2^3) = 2^3
     <pre style="white-space:pre-wrap;font-family:var(--mono);font-size:13.6px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 15px;line-height:1.6;margin:12px 0">T(n) = T(n−2) + C   <span class="cm"># 재귀마다 앞뒤 한 개씩 총 2개 사라짐</span>
      = T(n−4) + C + C
      ...
-     = T(1) + (n/2)·C   <span class="cm"># n/2개가 빠져나갔을 때</span>
-     = C + (n/2)·C</pre>
+     = T(1) + <span class="frac"><span class="num">n</span><span class="den">2</span></span>·C   <span class="cm"># <span class="frac"><span class="num">n</span><span class="den">2</span></span>개가 빠져나갔을 때</span>
+     = C + <span class="frac"><span class="num">n</span><span class="den">2</span></span>·C</pre>
     <p><b>T(n) = O(n)</b></p>
 
     <details class="raw"><summary>필기 원문</summary><div class="txt">예시 3) reverse 함수. A = [1,2,3,4,5] → A = [5,4,3,2,1]
