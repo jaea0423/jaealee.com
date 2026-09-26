@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#7d0f12">
 <title>상하이 가족여행 2027</title>
@@ -28,6 +28,8 @@
     --serif:'Noto Serif KR','Apple SD Gothic Neo',serif;
   }
   *{box-sizing:border-box;margin:0;padding:0}
+  /* manipulation: 스크롤·핀치만 허용하고 "두 번 탭 확대"는 막음 (iOS Safari에서도 동작) */
+  html,body,button,input,textarea,label{touch-action:manipulation}
   body{
     font-family:'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;
     color:var(--ink);line-height:1.6;display:flex;justify-content:center;
@@ -44,7 +46,7 @@
   .phone{width:100%;max-width:480px;min-height:100vh;box-shadow:0 0 50px rgba(0,0,0,.5);padding-bottom:40px;position:relative}
 
   /* ================= 헤더: 노을 야경 + 홍등 ================= */
-  header{position:relative;overflow:hidden;color:#fff;padding:78px 22px 110px;text-align:center;
+  header{position:relative;overflow:hidden;color:#fff;padding:64px 22px 118px;text-align:center;
     background:linear-gradient(180deg,var(--night) 0%,var(--dusk-purple) 45%,var(--dusk-pink) 80%,var(--dusk-orange) 100%)}
   /* 하늘로 올라가는 풍등(天燈): 작은 주황 빛점. 위치·속도는 JS에서 무작위로 만듦 */
   .sky-lantern{position:absolute;width:6px;height:8px;border-radius:40% 40% 30% 30%;
@@ -98,7 +100,7 @@
   /* ================= 탭 ================= */
   .tabs{display:flex;background:var(--red-deep);position:sticky;top:0;z-index:20;
     border-top:2px solid var(--gold);border-bottom:2px solid var(--gold);overflow-x:auto;margin-top:0}
-  .tab{flex:1;min-width:62px;border:none;background:none;color:#f1c9a6;cursor:pointer;
+  .tab{flex:1;min-width:52px;border:none;background:none;color:#f1c9a6;cursor:pointer;
     padding:10px 4px 9px;font:inherit;font-size:.8rem;font-weight:700;line-height:1.2}
   .tab i{display:block;font-style:normal;font-size:1.1rem;margin-bottom:1px}
   .tab.active{color:var(--red-deep);background:linear-gradient(var(--gold-light),var(--gold))}
@@ -112,9 +114,6 @@
   h2.sec{font-family:var(--serif);font-weight:900;font-size:1.12rem;color:var(--gold-light);
     margin:22px 2px 10px;display:flex;align-items:center;gap:8px;text-shadow:0 1px 0 var(--red-deep)}
   h2.sec:first-child{margin-top:4px}
-  h2.sec::after{content:"";flex:1;height:10px;background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='10'%3E%3Cpath d='M2 8 C2 2 10 2 10 6 C10 9 6 9 6 6 M10 6 L42 6' fill='none' stroke='%23e8b64c' stroke-width='1.5'/%3E%3C/svg%3E") left center/44px 10px no-repeat,
-    linear-gradient(var(--gold),var(--gold)) 44px 50%/100% 1.5px no-repeat;opacity:.8}
 
   /* ================= 공통 카드: 상아색 종이 + 금색 테두리 ================= */
   .card{background:var(--ivory);border-radius:14px;padding:14px 16px;margin-bottom:10px;position:relative;
@@ -135,6 +134,7 @@
   .fact{background:var(--ivory);border-radius:12px;padding:10px 12px;border:1px solid var(--gold);box-shadow:0 3px 10px var(--shadow)}
   .fact small{display:block;color:var(--muted);font-size:.74rem}
   .fact b{font-size:.96rem;font-family:var(--serif)}
+  .fact .fxdate{display:block;font-style:normal;font-size:.68rem;color:var(--muted)}
   .sumrow{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line);font-size:.9rem}
   .sumrow:last-child{border-bottom:none}
   .sumrow .d{flex-shrink:0;width:74px;font-weight:800;color:var(--red)}
@@ -228,6 +228,35 @@
   .phrase .zh{font-weight:700;color:var(--red-deep);text-align:right}
   .phrase .zh small{display:block;font-weight:400;color:var(--muted);font-size:.75rem}
 
+  /* ================= 번역 ================= */
+  .tr-in{width:100%;min-height:92px;border:1px solid var(--gold);border-radius:12px;padding:11px 12px;
+    font:inherit;font-size:1rem;background:#fff;color:var(--ink);resize:vertical}
+  /* 16px 이상이어야 iOS가 입력칸을 누를 때 자동 확대하지 않음 */
+  .tr-in,.key-in{font-size:16px}
+  .btn{border:none;border-radius:10px;padding:10px 14px;font:inherit;font-weight:800;cursor:pointer}
+  .btn.main{width:100%;margin-top:8px;background:linear-gradient(var(--red-bright),var(--red));color:var(--gold-light);
+    border:1px solid var(--gold);font-size:1rem}
+  .btn.main:disabled{opacity:.6}
+  .btn.sub{background:var(--ivory-2);color:var(--red-deep);border:1px solid var(--gold);font-size:.85rem;padding:7px 11px}
+  .tr-out{text-align:center;padding:18px 14px}
+  .tr-out .zh{font-size:1.8rem;font-weight:800;color:var(--red-deep);line-height:1.35;word-break:keep-all}
+  .tr-out .py{font-size:1rem;color:var(--muted);margin-top:6px}
+  .tr-out .ko{font-size:.85rem;color:var(--muted);margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
+  .tr-actions{display:flex;gap:6px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+  .tr-msg{font-size:.85rem;color:var(--red);text-align:center}
+  .hist{padding:8px 0;border-bottom:1px dashed var(--line);cursor:pointer}
+  .hist:last-child{border-bottom:none}
+  .hist .z{font-weight:700;color:var(--red-deep)}
+  .hist small{display:block;color:var(--muted);font-size:.76rem}
+  .key-in{width:100%;border:1px solid var(--gold);border-radius:10px;padding:8px 10px;margin:6px 0;background:#fff}
+  /* 크게 보기: 가게 직원·기사님께 화면을 보여줄 때 전체 화면으로 */
+  .big{position:fixed;inset:0;z-index:100;background:var(--ivory);display:none;flex-direction:column;
+    align-items:center;justify-content:center;padding:24px;text-align:center}
+  .big.show{display:flex}
+  .big .zh{font-size:3rem;font-weight:900;color:var(--red-deep);line-height:1.3}
+  .big .py{font-size:1.2rem;color:var(--muted);margin-top:12px}
+  .big small{margin-top:30px;color:var(--muted)}
+
   /* 하단: 물결 위에 매화 가지 느낌 대신 단순 금색 문구 */
   footer{text-align:center;font-size:.76rem;color:var(--gold-light);margin-top:30px;opacity:.85;font-family:var(--serif)}
   footer .fu{font-family:'Ma Shan Zheng',serif;font-size:1.6rem;display:block;color:var(--gold)}
@@ -244,11 +273,9 @@
       <div class="lantern l"><div class="str"></div><div class="cap"></div><div class="body"><span>福</span></div><div class="cap"></div><div class="tas"></div></div>
       <div class="lantern r small"><div class="str"></div><div class="cap"></div><div class="body"></div><div class="cap"></div><div class="tas"></div></div>
 
-      <div class="kicker">FAMILY TRIP · 2027</div>
-      <div class="title"><span class="zh">上海</span><span class="ko">상하이</span></div>
-      <div class="subtitle">우리 가족 상하이 여행</div>
+      <div class="title"><span class="zh">上海</span></div>
+      <div class="subtitle">2027 상하이 가족여행</div>
       <div class="dates" id="dates"></div>
-      <div class="family" id="family"></div>
 
       <!-- 야경 실루엣: 일반적인 고층 빌딩 + 구슬 달린 방송탑 모양. 창문은 금색 작은 사각형 -->
       <svg class="skyline" viewBox="0 0 480 120" preserveAspectRatio="none" aria-hidden="true">
@@ -291,6 +318,7 @@
     <button class="tab" data-page="flight"><i>✈️</i>항공</button>
     <button class="tab" data-page="hotel"><i>🏨</i>호텔</button>
     <button class="tab" data-page="pack"><i>🧧</i>준비물</button>
+    <button class="tab" data-page="trans"><i>🀄</i>번역</button>
     <button class="tab" data-page="info"><i>📜</i>정보</button>
   </nav>
 
@@ -301,10 +329,12 @@
     <section class="page" id="flight"></section>
     <section class="page" id="hotel"></section>
     <section class="page" id="pack"></section>
+    <section class="page" id="trans"></section>
     <section class="page" id="info"></section>
   </main>
 
-  <footer><span class="fu">福</span>jaealee.com · 우리 가족 상하이 여행</footer>
+  <div class="big" id="big"><div class="zh" id="bigZh"></div><div class="py" id="bigPy"></div><small>화면을 누르면 닫힙니다</small></div>
+  <footer><span class="fu">福</span>jaealee.com · 2027 상하이 가족여행</footer>
 </div>
 
 <script>
@@ -323,10 +353,10 @@ const TRIP = {
   facts: [
     { label: "상하이",   value: "4박 5일" },
     { label: "인원",     value: "4명" },
-    { label: "시차",     value: "한국보다 1시간 느림" },
+    { label: "시차",     value: "1시간 느림" },
     { label: "통화",     value: "위안(CNY, ¥)" },
-    { label: "1월 날씨", value: TODO },
-    { label: "환율 기준", value: TODO },
+    { label: "날씨",     value: "서울의 3월과 비슷" },
+    { label: "환율 (1위안)", value: "202.13원", id: "fx" },   // 페이지를 열 때 실시간 환율로 자동 갱신 (실패하면 이 값 유지)
   ],
 
   // 예산 (4인 합계, 원 단위). amount가 null이면 더미로 표시
@@ -504,9 +534,7 @@ function renderHeader(){
   const s = toDate(TRIP.start), e = toDate(TRIP.end);
   const last = dayDate(TRIP.days.length - 1);          // 결혼식 날까지 포함한 마지막 날
   const p2 = (n) => String(n).padStart(2, "0");
-  $("dates").innerHTML = `<b>${s.getFullYear()}.${p2(s.getMonth()+1)}.${p2(s.getDate())}(${WEEK[s.getDay()]}) ~ ${p2(e.getMonth()+1)}.${p2(e.getDate())}(${WEEK[e.getDay()]})</b> 상하이`
-    + ` · ${fmt(last)} 대전`;
-  $("family").innerHTML = TRIP.family.map(f => `<span>${esc(f)}</span>`).join("");
+  $("dates").innerHTML = `<b>${s.getFullYear()}.${p2(s.getMonth()+1)}.${p2(s.getDate())}(${WEEK[s.getDay()]}) ~ ${p2(e.getMonth()+1)}.${p2(e.getDate())}(${WEEK[e.getDay()]})</b>`;
 
   // D-day: 오늘 0시 기준으로 날짜 차이만 계산 (시각 차이 때문에 하루 어긋나지 않게)
   const today = new Date(); today.setHours(0,0,0,0);
@@ -539,10 +567,8 @@ function renderOverview(){
   const won = (n) => n.toLocaleString("ko-KR") + "원";
   const w = TRIP.wedding;
   $("overview").innerHTML = `
-    <div class="banner">✏️ 지금은 <b>더미 내용</b>입니다. 점선 글씨(<span class="dummy">${TODO}</span>)를 채워 나가면 됩니다.</div>
-
     <h2 class="sec">한눈에 보기</h2>
-    <div class="facts">${TRIP.facts.map(f => `<div class="fact"><small>${esc(f.label)}</small><b>${val(f.value)}</b></div>`).join("")}</div>
+    <div class="facts">${TRIP.facts.map(f => `<div class="fact"${f.id?` id="${f.id}"`:""}><small>${esc(f.label)}</small><b>${val(f.value)}</b>${f.id==="fx"?`<em class="fxdate">직접 입력값</em>`:""}</div>`).join("")}</div>
 
     <h2 class="sec">날짜별 요약</h2>
     <div class="card">${TRIP.days.map((d,i) => `
@@ -696,6 +722,140 @@ function renderInfo(){
     <div class="card">${TRIP.phrases.map(p => `<div class="phrase"><span>${esc(p.ko)}</span><span class="zh">${esc(p.zh)}<small>${esc(p.py)}</small></span></div>`).join("")}</div>`;
 }
 
+/* ---------- 환율 자동 갱신 ---------- */
+// 무료·키 없는 공개 API 두 곳을 차례로 시도. 둘 다 실패하면 TRIP.facts에 적은 값(직접 입력값)을 그대로 둠
+//  1) Frankfurter: 유럽중앙은행(ECB) 기준환율, 평일 하루 1번 갱신
+//  2) ExchangeRate-API(open.er-api.com): 하루 1번 갱신
+async function loadFx(){
+  const box = $("fx"); if (!box) return;
+  const show = (rate, when) => {
+    box.querySelector("b").textContent = rate.toFixed(2) + "원";
+    box.querySelector(".fxdate").textContent = when + " 기준 · 자동";
+  };
+  try {
+    const j = await (await fetch("https://api.frankfurter.dev/v1/latest?from=CNY&to=KRW")).json();
+    if (j.rates && j.rates.KRW) return show(j.rates.KRW, j.date);
+  } catch(e) {}
+  try {
+    const j = await (await fetch("https://open.er-api.com/v6/latest/CNY")).json();
+    if (j.rates && j.rates.KRW) return show(j.rates.KRW, new Date(j.time_last_update_unix*1000).toISOString().slice(0,10));
+  } catch(e) {}
+}
+
+/* ---------- 번역 (Gemini) ---------- */
+// API 키는 소스코드에 넣지 않음: 이 저장소는 공개라 키를 넣으면 누구나 복사해 쓸 수 있기 때문.
+// 대신 각 휴대폰에서 한 번 입력하면 그 브라우저(localStorage)에만 저장됨.
+const GEMINI_MODEL = "gemini-3.5-flash-lite";   // 모델 이름이 바뀌면 여기만 수정
+const KEY_STORE = "gemini-key", HIST_STORE = "shanghai2027-trans";
+const store = {
+  get(k, d){ try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} },
+  del(k){ try { localStorage.removeItem(k); } catch(e){} },
+};
+let lastResult = null;   // 마지막 번역 결과 {ko, zh, py}
+
+function renderTrans(){
+  const hasKey = !!store.get(KEY_STORE, "");
+  const hist = store.get(HIST_STORE, []);
+  const r = lastResult;
+  $("trans").innerHTML = `
+    <h2 class="sec">한국어 → 중국어</h2>
+    <div class="card">
+      <textarea class="tr-in" id="trIn" placeholder="예) 이 근처에 약국 있나요?">${r ? esc(r.ko) : ""}</textarea>
+      <button class="btn main" id="trBtn" ${hasKey ? "" : "disabled"}>번역하기</button>
+      ${hasKey ? "" : `<p class="tr-msg" style="margin-top:8px">아래 설정에서 Gemini API 키를 먼저 넣어 주세요.</p>`}
+      <p class="tr-msg" id="trMsg"></p>
+    </div>
+
+    ${r ? `
+    <div class="card tr-out">
+      <div class="zh">${esc(r.zh)}</div>
+      <div class="py">${esc(r.py)}</div>
+      <div class="ko">${esc(r.ko)}</div>
+      <div class="tr-actions">
+        <button class="btn sub" id="trSpeak">🔊 듣기</button>
+        <button class="btn sub" id="trBig">🔍 크게 보기</button>
+        <button class="btn sub" id="trCopy">📋 복사</button>
+      </div>
+    </div>` : ""}
+
+    ${hist.length ? `
+    <h2 class="sec">최근 번역</h2>
+    <div class="card">${hist.map((h,i) => `<div class="hist" data-i="${i}"><div class="z">${esc(h.zh)}</div><small>${esc(h.py)}</small><small>${esc(h.ko)}</small></div>`).join("")}</div>
+    <button class="reset" id="histClear">기록 지우기</button>` : ""}
+
+    <h2 class="sec">설정</h2>
+    <div class="card">
+      ${hasKey
+        ? `<div class="row"><span class="k">Gemini API 키</span><span class="v">저장됨 ✅</span></div>
+           <button class="btn sub" id="keyDel" style="margin-top:6px">키 지우기</button>`
+        : `<div style="font-size:.88rem">Gemini API 키</div>
+           <input class="key-in" id="keyIn" type="password" placeholder="AIza..." autocomplete="off">
+           <button class="btn sub" id="keySave">저장</button>`}
+      <p class="note">키는 이 휴대폰(브라우저)에만 저장되고 페이지 코드에는 들어가지 않습니다. 모델: ${GEMINI_MODEL}</p>
+    </div>`;
+
+  // --- 이벤트 연결 (다시 그릴 때마다 새 요소가 생기므로 매번 연결) ---
+  const btn = $("trBtn");
+  if (btn) btn.onclick = translate;
+  $("trIn").onkeydown = (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) translate(); };
+  if ($("trSpeak")) $("trSpeak").onclick = () => speak(r.zh);
+  if ($("trBig")) $("trBig").onclick = () => showBig(r);
+  if ($("trCopy")) $("trCopy").onclick = () => navigator.clipboard && navigator.clipboard.writeText(r.zh).then(() => { $("trCopy").textContent = "✅ 복사됨"; });
+  document.querySelectorAll("#trans .hist").forEach(el => el.onclick = () => { lastResult = hist[+el.dataset.i]; renderTrans(); window.scrollTo(0, $("tabs").offsetTop); });
+  if ($("histClear")) $("histClear").onclick = () => { store.del(HIST_STORE); renderTrans(); };
+  if ($("keySave")) $("keySave").onclick = () => { const k = $("keyIn").value.trim(); if (k) { store.set(KEY_STORE, k); renderTrans(); } };
+  if ($("keyDel")) $("keyDel").onclick = () => { store.del(KEY_STORE); renderTrans(); };
+}
+
+async function translate(){
+  const ko = $("trIn").value.trim();
+  const key = store.get(KEY_STORE, "");
+  if (!ko || !key) return;
+  const btn = $("trBtn"), msg = $("trMsg");
+  btn.disabled = true; btn.textContent = "번역 중…"; msg.textContent = "";
+  // 결과를 JSON 형식으로 강제(responseSchema) → 중국어와 병음을 따로 받아서 화면에 나눠 표시하기 쉬움
+  const body = {
+    contents: [{ parts: [{ text:
+      "다음 한국어를 중국 본토(상하이)에서 자연스럽게 쓰는 간체 중국어로 번역해. " +
+      "여행 중 현지인에게 말하거나 보여주는 상황이니 짧고 공손하게. " +
+      "pinyin은 성조 부호를 붙이고 단어 단위로 띄어 써.\n\n한국어: " + ko }] }],
+    generationConfig: {
+      temperature: 0.2,
+      responseMimeType: "application/json",
+      responseSchema: { type: "OBJECT", properties: { zh: { type: "STRING" }, pinyin: { type: "STRING" } }, required: ["zh", "pinyin"] },
+    },
+  };
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": key },   // 키를 주소(URL)가 아니라 헤더로 보냄 → 방문 기록·로그에 덜 남음
+      body: JSON.stringify(body),
+    });
+    const j = await res.json();
+    if (!res.ok) throw new Error(j.error ? `${res.status} ${j.error.message}` : res.status);
+    const out = JSON.parse(j.candidates[0].content.parts[0].text);
+    lastResult = { ko, zh: out.zh, py: out.pinyin };
+    // 최근 기록: 같은 문장은 중복 저장하지 않고 맨 앞으로, 최대 15개
+    const hist = store.get(HIST_STORE, []).filter(h => h.ko !== ko);
+    hist.unshift(lastResult); store.set(HIST_STORE, hist.slice(0, 15));
+    renderTrans();
+  } catch(e) {
+    btn.disabled = false; btn.textContent = "번역하기";
+    msg.textContent = "번역 실패: " + e.message + (String(e.message).startsWith("400") ? " (키가 맞는지 확인)" : "");
+  }
+}
+
+// 중국어 음성: 휴대폰에 내장된 음성 합성 기능 사용 (별도 비용 없음)
+function speak(text){
+  if (!("speechSynthesis" in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text); u.lang = "zh-CN"; u.rate = .85;
+  speechSynthesis.speak(u);
+}
+function showBig(r){ $("bigZh").textContent = r.zh; $("bigPy").textContent = r.py; $("big").classList.add("show"); }
+$("big").onclick = () => $("big").classList.remove("show");
+
 /* ---------- 탭 전환 ---------- */
 // 보고 있는 탭을 주소 뒤 #으로 기억 → 새로고침·링크 공유 시 같은 탭이 열림
 function showTab(name){
@@ -709,7 +869,7 @@ document.querySelectorAll(".tab").forEach(t => t.onclick = () => {
   const top = $("tabs").offsetTop; if (window.scrollY > top) window.scrollTo(0, top);
 });
 
-renderHeader(); renderOverview(); renderPlan(); renderFlight(); renderHotel(); renderPack(); renderInfo();
+renderHeader(); renderOverview(); renderPlan(); renderFlight(); renderHotel(); renderPack(); renderTrans(); renderInfo(); loadFx();
 showTab(location.hash.slice(1));
 </script>
 </body>
