@@ -2,364 +2,330 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<!-- maximum-scale·user-scalable: 두 번 탭 확대 방지 (iOS는 아래 CSS touch-action으로 처리) -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="robots" content="noindex">
-<meta name="theme-color" content="#7d0f12">
-<title>상하이 가족여행 2027</title>
+<meta name="theme-color" content="#7a1114">
+<title>2027 상하이 가족여행</title>
 <!--
-  상하이 가족여행 페이지 (jaealee.com/family/trip/2027/shanghai/)
-  - 한 파일 구성: 이미지 파일 없이 CSS·SVG로 홍등·물결무늬·야경을 그림 (파일 하나만 관리하면 되게)
-  - 내용은 아래 TRIP 객체 한 곳에서만 수정하면 화면 전체가 바뀜
-  - 지금 들어 있는 값은 전부 더미(dummy)입니다. "추후 입력"으로 보이는 부분을 채우면 됩니다.
+  2027 상하이 가족여행 (jaealee.com/family/trip/2027/shanghai/)
+  - 한 파일 구성. 내용은 아래 <script>의 TRIP 객체만 고치면 화면 전체가 바뀜
+  - 글꼴: 한글은 Pretendard 하나로 통일(화면용으로 만든 글꼴이라 작은 글씨도 또렷함)
+          중국어는 Noto Sans SC(간체 전용) → 한글 글꼴로 중국어를 그리면 모양이 섞여 깨져 보이기 때문
+          '上海·福' 장식 글자만 붓글씨(Ma Shan Zheng)
+  - 아이콘: 이모지는 휴대폰·PC마다 모양이 달라 SVG로 직접 그림
 -->
-<!-- 글꼴: 제목용 명조(Noto Serif KR), '上海' 붓글씨(Ma Shan Zheng). text= 로 필요한 글자만 받아서 용량을 줄임 -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@600;900&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&text=%E4%B8%8A%E6%B5%B7%E7%A6%8F&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&text=%E4%B8%8A%E6%B5%B7%E7%A6%8F&display=swap">
 <style>
-  /* 색상 토큰: 중국 붉은색(주홍·진홍) + 금색 + 상아색 종이 + 노을 야경(남색→보라→분홍) */
+  /* =========================================================
+     디자인 토큰
+     - 본문 배경은 밝은 종이색: 붉은 무늬 위에 글자를 올리면 읽기 어려워서
+       빨강·금색은 헤더, 강조, 띠 장식에만 사용
+     - 글자색 3단계: ink(본문) / ink-2(보조) / ink-3(메타). 셋 다 흰 배경 대비 4.5:1 이상
+     ========================================================= */
   :root{
-    --red:#b3201f; --red-deep:#7d0f12; --red-bright:#d8322b;
-    --gold:#e8b64c; --gold-light:#f7dc95; --gold-deep:#b8862a;
-    --ivory:#fff8ea; --ivory-2:#fbeed3; --ink:#3a1a12; --muted:#8a6a55;
+    --bg:#f6efe3; --surface:#fffdf9; --line:#eadfcc; --line-2:#f1e8d8;
+    --ink:#2a1a16; --ink-2:#574640; --ink-3:#77655c;
+    --red:#b8231f; --red-deep:#7a1114; --red-soft:#fbe9e5;
+    --gold:#d9a441; --gold-deep:#9a6b12; --gold-soft:#f7ebcb;
     --night:#1a1446; --dusk-purple:#5b1f7a; --dusk-pink:#e2527a; --dusk-orange:#f08a4b;
-    --line:#ecd9b3; --shadow:rgba(80,10,10,.25); --dummy:#b89c78;
-    --serif:'Noto Serif KR','Apple SD Gothic Neo',serif;
+    --radius:16px; --shadow:0 1px 2px rgba(60,20,10,.06),0 4px 14px rgba(60,20,10,.06);
+    --sans:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    --zh:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;
+    --brush:'Ma Shan Zheng',serif;
+    --nav-h:64px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  /* manipulation: 스크롤·핀치만 허용하고 "두 번 탭 확대"는 막음 (iOS Safari에서도 동작) */
-  html,body,button,input,textarea,label{touch-action:manipulation}
-  body{
-    font-family:'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;
-    color:var(--ink);line-height:1.6;display:flex;justify-content:center;
-    background:var(--red-deep);
-  }
+  /* manipulation: 스크롤·핀치는 허용, '두 번 탭 확대'만 막음 */
+  html,body,button,a,input,textarea,label{touch-action:manipulation}
+  html{-webkit-text-size-adjust:100%}
+  body{font-family:var(--sans);color:var(--ink);background:#e9dfcf;font-size:16px;line-height:1.55;
+    letter-spacing:-.01em;word-break:keep-all;-webkit-font-smoothing:antialiased}
+  button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+  .zh{font-family:var(--zh)}
+  .num{font-variant-numeric:tabular-nums}   /* 숫자 폭을 같게 → 시간·금액 세로 줄이 맞음 */
+  svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 
-  /* 물결무늬(청해파, seigaiha): 겹친 동심원 SVG를 타일로 반복. 이미지 파일 대신 data URI로 넣어 파일 하나 유지 */
-  .wave-bg{
-    background-color:var(--red);
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='40'%3E%3Cdefs%3E%3Cg id='c'%3E%3Ccircle r='20' fill='%23b3201f'/%3E%3Ccircle r='17' fill='none' stroke='%23e8b64c' stroke-opacity='.28' stroke-width='1.4'/%3E%3Ccircle r='12' fill='none' stroke='%23e8b64c' stroke-opacity='.28' stroke-width='1.4'/%3E%3Ccircle r='7' fill='none' stroke='%23e8b64c' stroke-opacity='.28' stroke-width='1.4'/%3E%3Ccircle r='2.5' fill='%23e8b64c' fill-opacity='.28'/%3E%3C/g%3E%3C/defs%3E%3Cuse href='%23c' x='20' y='0'/%3E%3Cuse href='%23c' x='60' y='0'/%3E%3Cuse href='%23c' x='0' y='20'/%3E%3Cuse href='%23c' x='40' y='20'/%3E%3Cuse href='%23c' x='80' y='20'/%3E%3Cuse href='%23c' x='20' y='40'/%3E%3Cuse href='%23c' x='60' y='40'/%3E%3C/svg%3E");
-  }
+  .app{max-width:480px;margin:0 auto;min-height:100vh;background:var(--bg);position:relative;
+    padding-bottom:calc(var(--nav-h) + 28px + env(safe-area-inset-bottom))}
 
-  /* 휴대폰 폭 기준: 가족이 주로 휴대폰으로 보므로 최대 480px */
-  .phone{width:100%;max-width:480px;min-height:100vh;box-shadow:0 0 50px rgba(0,0,0,.5);padding-bottom:40px;position:relative}
+  /* 청해파(seigaiha) 물결무늬: 띠 장식용 */
+  .wave{background-color:var(--red);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='20'%3E%3Cdefs%3E%3Cg id='c'%3E%3Ccircle r='10' fill='%23b8231f'/%3E%3Ccircle r='8.5' fill='none' stroke='%23d9a441' stroke-opacity='.45'/%3E%3Ccircle r='6' fill='none' stroke='%23d9a441' stroke-opacity='.45'/%3E%3Ccircle r='3.5' fill='none' stroke='%23d9a441' stroke-opacity='.45'/%3E%3C/g%3E%3C/defs%3E%3Cuse href='%23c' x='10' y='0'/%3E%3Cuse href='%23c' x='30' y='0'/%3E%3Cuse href='%23c' x='0' y='10'/%3E%3Cuse href='%23c' x='20' y='10'/%3E%3Cuse href='%23c' x='40' y='10'/%3E%3Cuse href='%23c' x='10' y='20'/%3E%3Cuse href='%23c' x='30' y='20'/%3E%3C/svg%3E")}
+  .wave-band{height:18px}
 
-  /* ================= 헤더: 노을 야경 + 홍등 ================= */
-  header{position:relative;overflow:hidden;color:#fff;padding:64px 22px 118px;text-align:center;
-    background:linear-gradient(180deg,var(--night) 0%,var(--dusk-purple) 45%,var(--dusk-pink) 80%,var(--dusk-orange) 100%)}
-  /* 하늘로 올라가는 풍등(天燈): 작은 주황 빛점. 위치·속도는 JS에서 무작위로 만듦 */
-  .sky-lantern{position:absolute;width:6px;height:8px;border-radius:40% 40% 30% 30%;
-    background:#ffb35c;box-shadow:0 0 8px 3px rgba(255,160,70,.6);opacity:0;animation:rise linear infinite}
-  @keyframes rise{0%{transform:translateY(0);opacity:0}15%{opacity:.9}85%{opacity:.7}100%{transform:translateY(-260px);opacity:0}}
-
-  /* 홍등: 타원 몸통 + 금색 뚜껑 + 술(tassel). 윗부분을 축으로 살짝 흔들림 */
+  /* ================= 홈 히어로 ================= */
+  .hero{position:relative;overflow:hidden;color:#fff;text-align:center;
+    padding:calc(56px + env(safe-area-inset-top)) 20px 128px;
+    background:linear-gradient(180deg,var(--night) 0%,var(--dusk-purple) 46%,var(--dusk-pink) 82%,var(--dusk-orange) 100%)}
+  .hero .zh-title{font-family:var(--brush);font-size:76px;line-height:1;color:#f8e3a6;position:relative;z-index:2;
+    text-shadow:0 0 24px rgba(255,190,90,.45),0 3px 0 var(--red-deep)}
+  .hero .sub{position:relative;z-index:2;margin-top:10px;font-size:17px;font-weight:600;letter-spacing:.02em}
+  .hero .date{position:relative;z-index:2;display:inline-block;margin-top:12px;padding:6px 14px;border-radius:999px;
+    font-size:14px;font-weight:600;background:rgba(20,8,40,.35);border:1px solid rgba(248,227,166,.45);color:#f8e3a6}
+  .skyline{position:absolute;left:0;right:0;bottom:0;width:100%;height:118px;z-index:1}
+  .seal{position:absolute;right:16px;bottom:22px;z-index:3;width:80px;height:80px;border-radius:50%;transform:rotate(-8deg);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--red-deep);
+    background:radial-gradient(circle at 35% 30%,#fbe7b0,#d9a441 58%,#a87a22);
+    box-shadow:0 4px 14px rgba(0,0,0,.35),inset 0 0 0 3px rgba(122,17,20,.5),inset 0 0 0 6px #fbe7b0}
+  .seal b{font-size:21px;font-weight:800;line-height:1.05}
+  .seal small{font-size:11px;font-weight:700}
+  /* 홍등 */
   .lantern{position:absolute;top:-4px;transform-origin:50% 0;animation:swing 4s ease-in-out infinite;z-index:3}
-  .lantern.l{left:14px}
-  .lantern.r{right:14px;animation-delay:-2s}
-  .lantern .str{width:2px;height:22px;background:var(--gold-deep);margin:0 auto}
-  .lantern .cap{width:26px;height:7px;background:var(--gold);border-radius:3px;margin:0 auto}
-  .lantern .body{width:56px;height:46px;margin:-1px auto;border-radius:50%;position:relative;
-    background:radial-gradient(circle at 50% 45%,#ffcf7a 0%,#f0502e 38%,#b3201f 75%,#7d0f12 100%);
-    box-shadow:0 0 24px 6px rgba(255,90,40,.55)}
-  /* 등 몸통의 세로 살(骨): 얇은 금색 선 여러 개 */
-  .lantern .body::before{content:"";position:absolute;inset:0;border-radius:50%;
-    background:repeating-linear-gradient(90deg,transparent 0 9px,rgba(120,20,10,.35) 9px 10px)}
-  .lantern .body span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-    font-family:'Ma Shan Zheng',serif;color:var(--gold-light);font-size:22px;text-shadow:0 0 4px #7d0f12}
-  .lantern .tas{width:4px;height:20px;margin:0 auto;background:linear-gradient(var(--gold),var(--red-bright))}
-  .lantern.small{top:-10px}
-  .lantern.small .body{width:40px;height:33px}
-  .lantern.small .str{height:34px}
+  .lantern.l{left:16px}.lantern.r{right:18px;animation-delay:-2s}
+  .lantern .str{width:2px;height:20px;background:#a87a22;margin:0 auto}
+  .lantern .cap{width:24px;height:6px;background:var(--gold);border-radius:3px;margin:0 auto}
+  .lantern .body{width:52px;height:43px;margin:-1px auto;border-radius:50%;position:relative;
+    background:radial-gradient(circle at 50% 45%,#ffcf7a 0%,#f0502e 38%,#b8231f 75%,#7a1114 100%);box-shadow:0 0 22px 5px rgba(255,90,40,.5)}
+  .lantern .body::before{content:"";position:absolute;inset:0;border-radius:50%;background:repeating-linear-gradient(90deg,transparent 0 8px,rgba(120,20,10,.3) 8px 9px)}
+  .lantern .body span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--brush);color:#fbe7b0;font-size:21px}
+  .lantern .tas{width:4px;height:18px;margin:0 auto;background:linear-gradient(var(--gold),#d8322b)}
+  .lantern.r .body{width:38px;height:32px}.lantern.r .str{height:32px}
   @keyframes swing{0%,100%{transform:rotate(4deg)}50%{transform:rotate(-4deg)}}
+  .sky-lantern{position:absolute;width:5px;height:7px;border-radius:40% 40% 30% 30%;background:#ffb35c;
+    box-shadow:0 0 8px 3px rgba(255,160,70,.55);opacity:0;animation:rise linear infinite}
+  @keyframes rise{0%{transform:translateY(0);opacity:0}15%{opacity:.85}85%{opacity:.6}100%{transform:translateY(-240px);opacity:0}}
 
-  .kicker{font-size:.74rem;letter-spacing:4px;color:var(--gold-light);font-weight:700;position:relative;z-index:2}
-  .title{position:relative;z-index:2;display:flex;align-items:baseline;justify-content:center;gap:10px;margin-top:4px}
-  .title .zh{font-family:'Ma Shan Zheng',serif;font-size:4rem;line-height:1;color:var(--gold-light);
-    text-shadow:0 0 18px rgba(255,190,90,.6),2px 3px 0 var(--red-deep)}
-  .title .ko{font-family:var(--serif);font-weight:900;font-size:1.5rem;letter-spacing:1px}
-  .subtitle{font-family:var(--serif);font-size:.95rem;margin-top:4px;position:relative;z-index:2;opacity:.95}
-  .dates{display:inline-block;margin-top:12px;position:relative;z-index:2;font-size:.85rem;
-    background:rgba(30,10,40,.35);border:1px solid rgba(247,220,149,.45);border-radius:20px;padding:5px 14px}
-  .dates b{color:var(--gold-light)}
-  .family{display:flex;gap:6px;justify-content:center;margin-top:12px;flex-wrap:wrap;position:relative;z-index:2}
-  .family span{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);padding:2px 11px;border-radius:20px;font-size:.8rem}
+  /* ================= 상단 바 (홈 외 탭) ================= */
+  .topbar{position:sticky;top:0;z-index:30;display:none;align-items:center;gap:10px;color:#fff;
+    padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:var(--red-deep);border-bottom:2px solid var(--gold)}
+  .topbar.show{display:flex}
+  .topbar .mark{font-family:var(--brush);font-size:26px;line-height:1;color:#f8e3a6}
+  .topbar h1{font-size:18px;font-weight:700;flex:1}
+  .chip-dday{font-size:13px;font-weight:700;color:var(--red-deep);background:#f8e3a6;border-radius:999px;padding:3px 10px}
 
-  /* 야경 실루엣(SVG): 헤더 아래쪽에 깔림. 창문 불빛은 금색 점 */
-  .skyline{position:absolute;left:0;right:0;bottom:0;width:100%;height:120px;z-index:1}
+  /* ================= 하단 탭 ================= */
+  .nav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;z-index:40;width:100%;max-width:480px;
+    display:flex;background:var(--surface);border-top:1px solid var(--line);
+    padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -4px 16px rgba(60,20,10,.06)}
+  .nav button{flex:1;height:var(--nav-h);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    font-size:12px;font-weight:600;color:var(--ink-3);position:relative}
+  .nav button.on{color:var(--red)}
+  .nav button.on::before{content:"";position:absolute;top:0;left:30%;right:30%;height:3px;border-radius:0 0 3px 3px;background:var(--red)}
 
-  /* D-day: 금색 도장(印章) 모양 */
-  .dday{position:absolute;right:14px;bottom:18px;z-index:5;transform:rotate(-8deg);width:78px;height:78px;border-radius:50%;
-    background:radial-gradient(circle at 35% 30%,#f7dc95,#e8b64c 55%,#b8862a);color:var(--red-deep);
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    box-shadow:0 4px 14px rgba(0,0,0,.35),inset 0 0 0 3px rgba(125,15,18,.55),inset 0 0 0 6px var(--gold-light)}
-  .dday b{font-family:var(--serif);font-size:1.2rem;line-height:1.1;font-weight:900}
-  .dday small{font-size:.62rem;font-weight:700}
-  .header-wrap{position:relative}
+  /* ================= 페이지 공통 ================= */
+  .page{display:none}
+  .page.on{display:block;animation:fade .2s ease}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .pad{padding:20px 16px 0}
+  .sec{margin-top:28px}
+  .sec:first-child{margin-top:0}
+  .sec-h{display:flex;align-items:baseline;justify-content:space-between;margin:0 2px 10px}
+  .sec-h h2{font-size:19px;font-weight:700;letter-spacing:-.02em}
+  .sec-h span{font-size:13px;color:var(--ink-3)}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:4px 16px}
+  .card.p{padding:16px}
+  /* 목록 한 줄: 라벨(왼쪽) · 값(오른쪽) */
+  .li{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;padding:10px 0;border-bottom:1px solid var(--line-2)}
+  .li:last-child{border-bottom:none}
+  .li .k{color:var(--ink-2);font-size:15px;flex-shrink:0}
+  .li .v{font-size:15px;font-weight:600;text-align:right}
+  /* 채워야 할 칸: 흐린 글씨. 점선 밑줄은 없앰(글자가 깨져 보이는 원인) */
+  .todo{color:#b3a394;font-weight:500}
+  .note{font-size:13px;color:var(--ink-3);margin:8px 2px 0;line-height:1.5}
+  .tag{display:inline-flex;align-items:center;height:24px;padding:0 9px;border-radius:999px;font-size:12px;font-weight:700;background:var(--red-soft);color:var(--red)}
+  .tag.gold{background:var(--gold-soft);color:var(--gold-deep)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:44px;padding:0 16px;border-radius:12px;
+    font-size:15px;font-weight:700;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+  .btn.primary{background:var(--red);border-color:var(--red);color:#fff}
+  .btn.block{width:100%}
+  .btn:disabled{opacity:.45;cursor:default}
+  .icon-btn{width:44px;height:44px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;
+    border:1px solid var(--line);background:var(--surface);color:var(--ink-2)}
 
-  /* ================= 탭 ================= */
-  .tabs{display:flex;background:var(--red-deep);position:sticky;top:0;z-index:20;
-    border-top:2px solid var(--gold);border-bottom:2px solid var(--gold);overflow-x:auto;margin-top:0}
-  .tab{flex:1;min-width:52px;border:none;background:none;color:#f1c9a6;cursor:pointer;
-    padding:10px 4px 9px;font:inherit;font-size:.8rem;font-weight:700;line-height:1.2}
-  .tab i{display:block;font-style:normal;font-size:1.1rem;margin-bottom:1px}
-  .tab.active{color:var(--red-deep);background:linear-gradient(var(--gold-light),var(--gold))}
-
-  .content{padding-top:8px}
-  .page{display:none;padding:14px 14px 0}
-  .page.active{display:block;animation:fade .25s ease}
-  @keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1}}
-
-  /* 섹션 제목: 금색 글씨 + 양옆 구름 장식 */
-  h2.sec{font-family:var(--serif);font-weight:900;font-size:1.12rem;color:var(--gold-light);
-    margin:22px 2px 10px;display:flex;align-items:center;gap:8px;text-shadow:0 1px 0 var(--red-deep)}
-  h2.sec:first-child{margin-top:4px}
-
-  /* ================= 공통 카드: 상아색 종이 + 금색 테두리 ================= */
-  .card{background:var(--ivory);border-radius:14px;padding:14px 16px;margin-bottom:10px;position:relative;
-    box-shadow:0 4px 14px var(--shadow);border:1px solid var(--gold);outline:3px solid rgba(232,182,76,.25);outline-offset:-7px}
-  .row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:.92rem}
-  .row:last-child{border-bottom:none}
-  .row .k{color:var(--muted);flex-shrink:0}
-  .row .v{text-align:right;font-weight:600}
-  .dummy{color:var(--dummy);font-weight:500;border-bottom:1px dotted var(--dummy)}
-  .note{font-size:.8rem;color:var(--muted);margin-top:8px}
-  .page > .note{color:var(--gold-light);opacity:.9}
-  .banner{background:rgba(125,15,18,.55);border:1px dashed var(--gold);color:var(--gold-light);border-radius:12px;
-    padding:9px 13px;font-size:.83rem;margin-bottom:6px}
-  .banner .dummy{color:#e9cf9a;border-color:#e9cf9a}
-
-  /* ================= 개요 ================= */
-  .facts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  .fact{background:var(--ivory);border-radius:12px;padding:10px 12px;border:1px solid var(--gold);box-shadow:0 3px 10px var(--shadow)}
-  .fact small{display:block;color:var(--muted);font-size:.74rem}
-  .fact b{font-size:.96rem;font-family:var(--serif)}
-  .fact .fxdate{display:block;font-style:normal;font-size:.68rem;color:var(--muted)}
-  .sumrow{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line);font-size:.9rem}
-  .sumrow:last-child{border-bottom:none}
-  .sumrow .d{flex-shrink:0;width:74px;font-weight:800;color:var(--red)}
-  .sumrow .d small{display:block;font-weight:500;color:var(--muted);font-size:.74rem}
-  .sumrow .where{margin-left:auto;font-size:.72rem;padding:1px 8px;border-radius:9px;background:var(--red);color:var(--gold-light);white-space:nowrap}
-  .sumrow.extra .where{background:var(--gold);color:var(--red-deep)}
-  .budget{width:100%;border-collapse:collapse}
-  .budget td,.budget th{padding:7px 4px;font-size:.88rem;border-bottom:1px solid var(--line)}
-  .budget th{text-align:left;color:var(--muted);font-weight:600;font-size:.78rem}
-  .budget td:last-child,.budget th:last-child{text-align:right}
-  .budget tfoot td{font-weight:900;border-bottom:none;color:var(--red);font-family:var(--serif)}
-
-  /* 결혼식 카드: 빨강 바탕에 금색 글씨 + '囍'(쌍희) 대신 반지 이모지로 단순하게 */
-  .wedding{background:linear-gradient(135deg,var(--red-bright),var(--red-deep));color:var(--ivory);border-color:var(--gold-light)}
-  .wedding h3{font-family:var(--serif);font-size:1.08rem;color:var(--gold-light)}
-  .wedding .row{border-bottom-color:rgba(247,220,149,.3)}
-  .wedding .row .k{color:#f3cfb0}
-  .wedding .dummy{color:#f0c9a0;border-color:#f0c9a0}
-  .wedding .tag{display:inline-block;font-size:.7rem;background:var(--gold);color:var(--red-deep);border-radius:9px;padding:1px 8px;font-weight:800;margin-bottom:4px}
+  /* ================= 홈 ================= */
+  .facts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .fact{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow)}
+  .fact small{display:block;font-size:13px;color:var(--ink-3);font-weight:500}
+  .fact b{display:block;font-size:17px;font-weight:700;margin-top:2px;line-height:1.35}
+  .fact em{display:block;font-style:normal;font-size:12px;color:var(--ink-3);margin-top:2px}
+  .dayrow{display:flex;align-items:center;gap:12px;width:100%;min-height:60px;padding:10px 0;border-bottom:1px solid var(--line-2);text-align:left}
+  .dayrow:last-child{border-bottom:none}
+  .dayrow .dt{width:52px;flex-shrink:0;text-align:center;line-height:1.2}
+  .dayrow .dt b{display:block;font-size:17px;font-weight:800;color:var(--red)}
+  .dayrow .dt small{font-size:12px;color:var(--ink-3);font-weight:600}
+  .dayrow .tt{flex:1;min-width:0}
+  .dayrow .tt b{display:block;font-size:16px;font-weight:600}
+  .dayrow .tt small{font-size:13px;color:var(--ink-3)}
+  .dayrow svg{color:#c9b8a6;width:18px;height:18px}
+  .dayrow.extra .dt b{color:var(--gold-deep)}
+  .wedding{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);border:1px solid #e3c98f;background:var(--surface)}
+  .wedding .top{padding:14px 16px;color:#fff;background:linear-gradient(120deg,#c42a24,var(--red-deep))}
+  .wedding .top small{font-size:13px;font-weight:600;color:#f8e3a6}
+  .wedding .top b{display:block;font-size:19px;font-weight:700;margin-top:2px}
+  .wedding .body{padding:4px 16px}
+  .budget .li .v{font-variant-numeric:tabular-nums}
+  .budget .total .k,.budget .total .v{color:var(--red);font-weight:800;font-size:16px}
 
   /* ================= 일정 ================= */
-  .days{display:flex;gap:5px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px}
-  .dbtn{flex:1;min-width:54px;border:1px solid var(--gold);background:rgba(125,15,18,.6);border-radius:10px;
-    padding:6px 2px;cursor:pointer;font:inherit;color:var(--gold-light);text-align:center;line-height:1.2}
-  .dbtn b{display:block;font-size:.85rem}
-  .dbtn small{font-size:.68rem;opacity:.85}
-  .dbtn.active{background:linear-gradient(var(--gold-light),var(--gold));color:var(--red-deep)}
-  .dbtn.extra{border-style:dashed}
-  .dayhead{margin:0 2px 12px;color:var(--ivory)}
-  .dayhead .place{display:inline-block;font-size:.72rem;background:var(--gold);color:var(--red-deep);font-weight:800;border-radius:9px;padding:0 8px}
-  .dayhead h3{font-family:var(--serif);font-size:1.15rem;color:var(--gold-light);margin-top:3px}
-  .dayhead p{font-size:.85rem;opacity:.9}
-  .dayhead .dummy{color:#f0c9a0;border-color:#f0c9a0}
-  .timeline{position:relative;padding-left:22px}
-  .timeline::before{content:"";position:absolute;left:7px;top:8px;bottom:8px;width:2px;
-    background:repeating-linear-gradient(var(--gold) 0 6px,transparent 6px 10px)}
-  .stop{position:relative;background:var(--ivory);border-radius:12px;padding:10px 13px;margin-bottom:9px;
-    border:1px solid var(--gold);box-shadow:0 3px 10px var(--shadow)}
-  /* 타임라인 점: 작은 홍등 모양 (관광=빨강, 식사=주황, 이동=금색) */
-  .stop::before{content:"";position:absolute;left:-22px;top:13px;width:14px;height:12px;border-radius:50%;
-    background:var(--red-bright);box-shadow:0 0 8px rgba(255,120,60,.8),inset 0 -2px 0 rgba(0,0,0,.2)}
-  .stop.food::before{background:var(--dusk-orange)}
-  .stop.move::before{background:var(--gold)}
-  .stop .t{font-size:.76rem;font-weight:800;color:var(--red)}
-  .stop h4{font-size:.98rem;margin:1px 0;font-family:var(--serif)}
-  .stop p{font-size:.83rem;color:var(--muted)}
-  .legend{font-size:.78rem;color:var(--gold-light);margin-top:4px}
-  .legend i{display:inline-block;width:10px;height:9px;border-radius:50%;margin:0 3px 0 8px;vertical-align:-1px}
+  .daybar{position:sticky;top:calc(58px + env(safe-area-inset-top));z-index:20;background:var(--bg);
+    display:flex;gap:8px;overflow-x:auto;padding:12px 16px;scrollbar-width:none;border-bottom:1px solid var(--line)}
+  .daybar::-webkit-scrollbar{display:none}
+  .dchip{flex:0 0 auto;min-width:64px;height:52px;border-radius:12px;border:1px solid var(--line);background:var(--surface);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.2}
+  .dchip b{font-size:14px;font-weight:700}
+  .dchip small{font-size:12px;color:var(--ink-3)}
+  .dchip.on{background:var(--red);border-color:var(--red);color:#fff}
+  .dchip.on small{color:#fbd9d3}
+  .dchip.extra{border-style:dashed;border-color:var(--gold)}
+  .dchip.extra.on{background:var(--gold-deep);border-color:var(--gold-deep);border-style:solid}
+  .dayhead{margin:4px 2px 16px}
+  .dayhead h2{font-size:22px;font-weight:800;margin-top:8px;letter-spacing:-.02em}
+  .dayhead p{font-size:15px;color:var(--ink-2);margin-top:2px}
+  /* 타임라인: [시간] [점·선] [내용] 3열 */
+  .tl{position:relative}
+  .st{display:grid;grid-template-columns:48px 20px 1fr;align-items:start}
+  .st .tm{font-size:14px;font-weight:700;color:var(--ink-2);padding-top:14px;font-variant-numeric:tabular-nums}
+  .st .rail{position:relative;align-self:stretch}
+  .st .rail::before{content:"";position:absolute;left:9px;top:0;bottom:0;width:2px;background:var(--line)}
+  .st:first-child .rail::before{top:20px}.st:last-child .rail::before{bottom:calc(100% - 20px)}
+  .st .rail i{position:absolute;left:4px;top:15px;width:12px;height:12px;border-radius:50%;background:var(--red);box-shadow:0 0 0 3px var(--bg)}
+  .st.food .rail i{background:var(--dusk-orange)}
+  .st.move .rail i{background:var(--surface);border:2px solid var(--ink-3)}
+  .st .box{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:11px 14px;margin-bottom:10px;box-shadow:var(--shadow)}
+  .st .box b{display:block;font-size:16px;font-weight:700}
+  .st .box p{font-size:14px;color:var(--ink-2);margin-top:2px}
+  .st .kind{font-size:12px;font-weight:700;color:var(--ink-3)}
 
-  /* ================= 항공권 ================= */
-  .ticket{background:var(--ivory);border-radius:16px;overflow:hidden;margin-bottom:12px;box-shadow:0 4px 14px var(--shadow);border:1px solid var(--gold)}
-  .ticket .top{background:linear-gradient(90deg,var(--red-deep),var(--red));color:var(--ivory);padding:9px 16px;
-    display:flex;justify-content:space-between;font-size:.85rem;border-bottom:2px solid var(--gold)}
-  .ticket .top b{color:var(--gold-light);font-family:var(--serif)}
-  .ticket .top .dummy{color:#f0c9a0;border-color:#f0c9a0}
-  .route{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 6px}
-  .route .ap{text-align:center}
-  .route .ap b{font-family:var(--serif);font-size:1.7rem;letter-spacing:1px;color:var(--red-deep);display:block;line-height:1.1}
-  .route .ap small{font-size:.75rem;color:var(--muted)}
-  .route .ap .tm{font-size:.95rem;font-weight:700;margin-top:3px}
-  .route .mid{flex:1;text-align:center;color:var(--muted);font-size:.75rem;padding:0 8px;position:relative}
-  .route .mid::before{content:"✈";display:block;font-size:1.2rem;color:var(--red)}
-  /* 탑승권 절취선: 양쪽에 반원 홈 */
-  .ticket .bottom{border-top:2px dashed var(--gold);padding:8px 16px 12px;position:relative}
-  .ticket .bottom::before,.ticket .bottom::after{content:"";position:absolute;top:-10px;width:18px;height:18px;border-radius:50%;background:var(--red)}
-  .ticket .bottom::before{left:-10px}
-  .ticket .bottom::after{right:-10px}
-
-  /* ================= 호텔 택시 카드 ================= */
-  .taxi{text-align:center;padding:22px 16px}
-  .taxi .nm{font-size:1.4rem;font-weight:900;color:var(--red-deep);font-family:var(--serif)}
+  /* ================= 예약: 항공권 ================= */
+  .ticket{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:12px}
+  .ticket .hd{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line-2)}
+  .ticket .hd b{font-size:16px;font-weight:700}
+  .ticket .hd small{font-size:14px;color:var(--ink-3);font-weight:600}
+  .route{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:16px}
+  .route .ap b{display:block;font-size:30px;font-weight:800;letter-spacing:.02em;line-height:1.1}
+  .route .ap small{font-size:13px;color:var(--ink-3)}
+  .route .ap .t{font-size:17px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
+  .route .ap:last-child{text-align:right}
+  .route .mid{text-align:center;color:var(--ink-3);font-size:12px;padding:0 10px}
+  .route .mid svg{color:var(--red);display:block;margin:0 auto 2px}
+  .ticket .ft{position:relative;border-top:1px dashed var(--line);padding:2px 16px}
+  .ticket .ft::before,.ticket .ft::after{content:"";position:absolute;top:-9px;width:16px;height:16px;border-radius:50%;background:var(--bg);border:1px solid var(--line)}
+  .ticket .ft::before{left:-9px}.ticket .ft::after{right:-9px}
+  .taxi{text-align:center;padding:20px 16px}
+  .taxi .nm{font-size:24px;font-weight:700;line-height:1.35}
+  .taxi .ad{font-size:17px;margin-top:6px;color:var(--ink-2)}
 
   /* ================= 준비물 ================= */
-  .plabel{display:flex;justify-content:space-between;font-size:.82rem;color:var(--gold-light)}
-  .progress{height:10px;border-radius:6px;background:rgba(125,15,18,.7);border:1px solid var(--gold);overflow:hidden;margin:4px 0 6px}
-  .progress div{height:100%;background:linear-gradient(90deg,var(--gold-light),var(--gold));width:0;transition:width .3s}
-  .check{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line);cursor:pointer;font-size:.93rem}
-  .check:last-child{border-bottom:none}
-  .check input{width:18px;height:18px;margin-top:3px;accent-color:var(--red);flex-shrink:0}
-  .check.done span{text-decoration:line-through;color:var(--muted)}
-  .check small{display:block;font-size:.76rem;color:var(--muted)}
-  .who{font-size:.7rem;background:var(--red);color:var(--gold-light);border-radius:8px;padding:1px 7px;margin-left:4px;white-space:nowrap}
-  .reset{border:1px solid var(--gold);background:var(--red-deep);border-radius:10px;padding:7px 12px;font:inherit;
-    font-size:.82rem;color:var(--gold-light);cursor:pointer;margin-top:4px}
+  .prog{display:flex;align-items:center;gap:14px}
+  .prog .pct{font-size:30px;font-weight:800;color:var(--red);font-variant-numeric:tabular-nums;min-width:74px}
+  .prog .bar{flex:1}
+  .prog .bar div{height:10px;border-radius:5px;background:var(--line-2);overflow:hidden}
+  .prog .bar div i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--red));transition:width .3s}
+  .prog .bar small{display:block;font-size:13px;color:var(--ink-3);margin-top:6px}
+  .ck{display:flex;align-items:flex-start;gap:12px;min-height:52px;padding:13px 0;border-bottom:1px solid var(--line-2);cursor:pointer}
+  .ck:last-child{border-bottom:none}
+  .ck input{position:absolute;opacity:0;pointer-events:none}
+  /* 체크박스는 직접 그림: 기본 체크박스는 기기마다 크기·모양이 제각각이라 */
+  .ck .box{width:24px;height:24px;border-radius:7px;border:2px solid #cdbba6;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:-1px}
+  .ck .box svg{width:16px;height:16px;stroke:#fff;stroke-width:3;opacity:0}
+  .ck input:checked + .box{background:var(--red);border-color:var(--red)}
+  .ck input:checked + .box svg{opacity:1}
+  .ck input:focus-visible + .box{outline:2px solid var(--gold);outline-offset:2px}
+  .ck .tx{flex:1;font-size:16px;line-height:1.4}
+  .ck .tx small{display:block;font-size:13px;color:var(--ink-3);margin-top:2px}
+  .ck.done .tx > span{color:var(--ink-3);text-decoration:line-through}
+  .who{display:inline-block;font-size:12px;font-weight:700;color:var(--gold-deep);background:var(--gold-soft);border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:1px}
 
-  /* ================= 정보 ================= */
-  .info h4{font-size:.95rem;color:var(--red-deep);margin-bottom:4px;font-family:var(--serif)}
-  .info p{font-size:.88rem}
-  .phrase{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:.9rem}
-  .phrase:last-child{border-bottom:none}
-  .phrase .zh{font-weight:700;color:var(--red-deep);text-align:right}
-  .phrase .zh small{display:block;font-weight:400;color:var(--muted);font-size:.75rem}
+  /* ================= 현지(번역·회화·정보) ================= */
+  textarea{width:100%;min-height:96px;border:1px solid var(--line);border-radius:12px;padding:12px 14px;
+    font:inherit;font-size:16px;background:#fff;color:var(--ink);resize:vertical}   /* 16px 미만이면 iOS가 입력 시 자동 확대 */
+  textarea:focus,input:focus{outline:2px solid var(--gold);outline-offset:1px}
+  .soon{display:flex;gap:10px;align-items:flex-start;background:var(--gold-soft);color:#6b4b0e;border-radius:12px;padding:12px 14px;font-size:14px;margin-bottom:12px}
+  .result{text-align:center;padding:20px 16px}
+  .result .zh{font-size:28px;font-weight:700;line-height:1.35}
+  .result .py{font-size:16px;color:var(--ink-2);margin-top:6px}
+  .result .ko{font-size:14px;color:var(--ink-3);margin-top:10px}
+  .result .act{display:flex;gap:8px;justify-content:center;margin-top:14px}
+  .ph{display:flex;align-items:center;gap:10px;min-height:64px;padding:10px 0;border-bottom:1px solid var(--line-2)}
+  .ph:last-child{border-bottom:none}
+  .ph .tx{flex:1;min-width:0}
+  .ph .tx small{display:block;font-size:13px;color:var(--ink-3)}
+  .ph .tx .zh{display:block;font-size:19px;font-weight:700;line-height:1.35}
+  .ph .tx .py{display:block;font-size:14px;color:var(--ink-2)}
+  .field{width:100%;height:44px;border:1px solid var(--line);border-radius:12px;padding:0 12px;font:inherit;font-size:16px;background:#fff;margin:6px 0 8px}
+  a.tel{color:var(--red);font-weight:700;text-decoration:none}
 
-  /* ================= 번역 ================= */
-  .tr-in{width:100%;min-height:92px;border:1px solid var(--gold);border-radius:12px;padding:11px 12px;
-    font:inherit;font-size:1rem;background:#fff;color:var(--ink);resize:vertical}
-  /* 16px 이상이어야 iOS가 입력칸을 누를 때 자동 확대하지 않음 */
-  .tr-in,.key-in{font-size:16px}
-  .btn{border:none;border-radius:10px;padding:10px 14px;font:inherit;font-weight:800;cursor:pointer}
-  .btn.main{width:100%;margin-top:8px;background:linear-gradient(var(--red-bright),var(--red));color:var(--gold-light);
-    border:1px solid var(--gold);font-size:1rem}
-  .btn.main:disabled{opacity:.6}
-  .btn.sub{background:var(--ivory-2);color:var(--red-deep);border:1px solid var(--gold);font-size:.85rem;padding:7px 11px}
-  .tr-out{text-align:center;padding:18px 14px}
-  .tr-out .zh{font-size:1.8rem;font-weight:800;color:var(--red-deep);line-height:1.35;word-break:keep-all}
-  .tr-out .py{font-size:1rem;color:var(--muted);margin-top:6px}
-  .tr-out .ko{font-size:.85rem;color:var(--muted);margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
-  .tr-actions{display:flex;gap:6px;justify-content:center;margin-top:12px;flex-wrap:wrap}
-  .tr-msg{font-size:.85rem;color:var(--red);text-align:center}
-  .hist{padding:8px 0;border-bottom:1px dashed var(--line);cursor:pointer}
-  .hist:last-child{border-bottom:none}
-  .hist .z{font-weight:700;color:var(--red-deep)}
-  .hist small{display:block;color:var(--muted);font-size:.76rem}
-  .key-in{width:100%;border:1px solid var(--gold);border-radius:10px;padding:8px 10px;margin:6px 0;background:#fff}
-  /* 크게 보기: 가게 직원·기사님께 화면을 보여줄 때 전체 화면으로 */
-  .big{position:fixed;inset:0;z-index:100;background:var(--ivory);display:none;flex-direction:column;
-    align-items:center;justify-content:center;padding:24px;text-align:center}
+  /* 크게 보기: 직원·기사님께 화면을 보여줄 때 */
+  .big{position:fixed;inset:0;z-index:100;background:var(--surface);display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
   .big.show{display:flex}
-  .big .zh{font-size:3rem;font-weight:900;color:var(--red-deep);line-height:1.3}
-  .big .py{font-size:1.2rem;color:var(--muted);margin-top:12px}
-  .big small{margin-top:30px;color:var(--muted)}
+  .big .zh{font-size:44px;font-weight:700;line-height:1.3}
+  .big .py{font-size:20px;color:var(--ink-2);margin-top:14px}
+  .big small{position:absolute;bottom:calc(28px + env(safe-area-inset-bottom));font-size:14px;color:var(--ink-3)}
 
-  /* 하단: 물결 위에 매화 가지 느낌 대신 단순 금색 문구 */
-  footer{text-align:center;font-size:.76rem;color:var(--gold-light);margin-top:30px;opacity:.85;font-family:var(--serif)}
-  footer .fu{font-family:'Ma Shan Zheng',serif;font-size:1.6rem;display:block;color:var(--gold)}
+  footer{text-align:center;font-size:13px;color:var(--ink-3);margin-top:36px}
+  footer .fu{display:block;font-family:var(--brush);font-size:30px;color:var(--red);line-height:1.2}
 
-  /* 움직임 줄이기 설정을 켠 사람에게는 흔들림·풍등 애니메이션을 끔 */
-  @media (prefers-reduced-motion:reduce){.lantern,.sky-lantern{animation:none}.sky-lantern{display:none}}
+  @media (prefers-reduced-motion:reduce){.lantern,.sky-lantern{animation:none}.sky-lantern{display:none}.page.on{animation:none}}
 </style>
 </head>
 <body>
-<div class="phone wave-bg">
-  <div class="header-wrap">
-    <header id="hdr">
-      <!-- 양쪽 위에 매달린 홍등 -->
-      <div class="lantern l"><div class="str"></div><div class="cap"></div><div class="body"><span>福</span></div><div class="cap"></div><div class="tas"></div></div>
-      <div class="lantern r small"><div class="str"></div><div class="cap"></div><div class="body"></div><div class="cap"></div><div class="tas"></div></div>
+<!-- 아이콘 모음: <svg><use href="#i-..."></svg> 로 재사용 -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M3 7a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v3a2 2 0 0 0 0 4v3a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-3a2 2 0 0 0 0-4z"/><path d="M15 6v2m0 3v2m0 3v2"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="m8 12 3 3 5-6"/></symbol>
+  <symbol id="i-lang" viewBox="0 0 24 24"><path d="M3 5h10M8 3v2M5 5c.5 3.5 3 6.5 7 8M11 5c-.8 3.8-3.3 6.8-7 8"/><path d="m13 21 4-9 4 9M14.4 18h5.2"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+  <symbol id="i-plane" viewBox="0 0 24 24"><path d="M2 13.5 22 8l-3 5-13 2.5z"/><path d="m6 15.5-1 4 3-1 2.5-3.5M11 9.8 8 4l2.5-.5 5 5"/></symbol>
+  <symbol id="i-sound" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 9a4 4 0 0 1 0 6M19 6.5a8 8 0 0 1 0 11"/></symbol>
+  <symbol id="i-expand" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+  <symbol id="i-tick" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></symbol>
+</svg>
 
-      <div class="title"><span class="zh">上海</span></div>
-      <div class="subtitle">2027 상하이 가족여행</div>
-      <div class="dates" id="dates"></div>
+<div class="app">
+  <!-- 홈 외 탭에서만 보이는 상단 바 -->
+  <header class="topbar" id="topbar"><span class="mark">上海</span><h1 id="topTitle"></h1><span class="chip-dday" id="topDday"></span></header>
 
-      <!-- 야경 실루엣: 일반적인 고층 빌딩 + 구슬 달린 방송탑 모양. 창문은 금색 작은 사각형 -->
-      <svg class="skyline" viewBox="0 0 480 120" preserveAspectRatio="none" aria-hidden="true">
-        <defs>
-          <pattern id="win" width="8" height="10" patternUnits="userSpaceOnUse">
-            <rect x="2" y="3" width="3" height="3" fill="#f7dc95" opacity=".55"/>
-          </pattern>
-        </defs>
-        <g fill="#3a0d24">
-          <rect x="0" y="70" width="40" height="50"/><rect x="36" y="52" width="26" height="68"/>
-          <rect x="62" y="80" width="30" height="40"/><rect x="92" y="38" width="22" height="82"/>
-          <polygon points="114,120 114,30 124,18 134,30 134,120"/>
-          <rect x="140" y="62" width="30" height="58"/>
-          <!-- 방송탑: 기둥 + 구슬 두 개 + 첨탑 -->
-          <rect x="198" y="30" width="4" height="90"/><rect x="186" y="80" width="3" height="40" transform="rotate(-8 187 100)"/><rect x="211" y="80" width="3" height="40" transform="rotate(8 212 100)"/>
-          <circle cx="200" cy="82" r="13"/><circle cx="200" cy="46" r="9"/><rect x="199" y="4" width="2" height="30"/>
-          <rect x="228" y="50" width="24" height="70"/><polygon points="256,120 256,24 270,10 284,24 284,120"/>
-          <rect x="290" y="66" width="34" height="54"/><rect x="326" y="44" width="20" height="76"/>
-          <rect x="350" y="74" width="40" height="46"/><rect x="392" y="56" width="26" height="64"/>
-          <rect x="420" y="78" width="30" height="42"/><rect x="450" y="62" width="30" height="58"/>
-        </g>
-        <!-- 창문 불빛: 같은 건물 위치에 패턴을 덮음 -->
-        <g fill="url(#win)">
-          <rect x="36" y="56" width="26" height="60"/><rect x="92" y="42" width="22" height="74"/>
-          <rect x="116" y="34" width="16" height="82"/><rect x="228" y="54" width="24" height="62"/>
-          <rect x="258" y="28" width="24" height="88"/><rect x="326" y="48" width="20" height="68"/>
-          <rect x="392" y="60" width="26" height="56"/>
-        </g>
-        <circle cx="200" cy="82" r="5" fill="#ff6aa0" opacity=".85"/><circle cx="200" cy="46" r="3.5" fill="#ff6aa0" opacity=".85"/>
-        <!-- 강물 반사 -->
-        <rect x="0" y="112" width="480" height="8" fill="#7d0f12"/>
-      </svg>
-      <div class="dday" id="dday"><b>D-?</b><small>출발까지</small></div>
-    </header>
-  </div>
-
-  <nav class="tabs" id="tabs">
-    <button class="tab active" data-page="overview"><i>🏮</i>개요</button>
-    <button class="tab" data-page="plan"><i>🗓️</i>일정</button>
-    <button class="tab" data-page="flight"><i>✈️</i>항공</button>
-    <button class="tab" data-page="hotel"><i>🏨</i>호텔</button>
-    <button class="tab" data-page="pack"><i>🧧</i>준비물</button>
-    <button class="tab" data-page="trans"><i>🀄</i>번역</button>
-    <button class="tab" data-page="info"><i>📜</i>정보</button>
-  </nav>
-
-  <!-- 각 탭 내용은 아래 스크립트가 TRIP 데이터를 읽어서 채움 -->
-  <main class="content">
-    <section class="page active" id="overview"></section>
-    <section class="page" id="plan"></section>
-    <section class="page" id="flight"></section>
-    <section class="page" id="hotel"></section>
-    <section class="page" id="pack"></section>
-    <section class="page" id="trans"></section>
-    <section class="page" id="info"></section>
+  <main>
+    <section class="page" id="p-home"></section>
+    <section class="page" id="p-plan"></section>
+    <section class="page" id="p-book"></section>
+    <section class="page" id="p-pack"></section>
+    <section class="page" id="p-local"></section>
   </main>
 
-  <div class="big" id="big"><div class="zh" id="bigZh"></div><div class="py" id="bigPy"></div><small>화면을 누르면 닫힙니다</small></div>
   <footer><span class="fu">福</span>jaealee.com · 2027 상하이 가족여행</footer>
 </div>
+
+<nav class="nav" id="nav" aria-label="메뉴">
+  <button data-p="home"><svg class="i"><use href="#i-home"/></svg>홈</button>
+  <button data-p="plan"><svg class="i"><use href="#i-cal"/></svg>일정</button>
+  <button data-p="book"><svg class="i"><use href="#i-ticket"/></svg>예약</button>
+  <button data-p="pack"><svg class="i"><use href="#i-check"/></svg>준비물</button>
+  <button data-p="local"><svg class="i"><use href="#i-lang"/></svg>현지</button>
+</nav>
+
+<div class="big" id="big" role="dialog" aria-label="크게 보기"><div class="zh" id="bigZh" lang="zh-CN"></div><div class="py" id="bigPy"></div><small>화면을 누르면 닫힙니다</small></div>
 
 <script>
 /* =====================================================================
    여행 데이터 — 내용 수정은 여기만 하면 됨
-   - 값이 "추후 입력"(TODO)이거나 null 이면 화면에 흐린 점선 글씨(더미)로 표시됨
+   - TODO(= "추후 입력") 또는 null 인 값은 화면에 흐린 글씨로 표시됨
    ===================================================================== */
 const TODO = "추후 입력";
 
 const TRIP = {
-  start: "2027-01-18",   // 상하이 출발일 (D-day 계산 기준)
+  start: "2027-01-18",   // 상하이 출발일 (D-day 기준)
   end:   "2027-01-22",   // 상하이 귀국일
-  family: ["👨 아빠", "👩 엄마", "👧 누나", "🧑 재아"],
 
-  // 개요 탭 — 한눈에 보는 정보
   facts: [
-    { label: "상하이",   value: "4박 5일" },
-    { label: "인원",     value: "4명" },
-    { label: "시차",     value: "1시간 느림" },
-    { label: "통화",     value: "위안(CNY, ¥)" },
-    { label: "날씨",     value: "서울의 3월과 비슷" },
-    { label: "환율 (1위안)", value: "202.13원", id: "fx" },   // 페이지를 열 때 실시간 환율로 자동 갱신 (실패하면 이 값 유지)
+    { label: "상하이",       value: "4박 5일" },
+    { label: "인원",         value: "4명" },
+    { label: "시차",         value: "1시간 느림" },
+    { label: "통화",         value: "위안 (CNY)" },
+    { label: "날씨",         value: "서울의 3월과 비슷" },
+    { label: "환율 (1위안)", value: "202.13원", id: "fx" },   // 페이지를 열 때 실시간 환율로 자동 갱신, 실패하면 이 값
   ],
 
-  // 예산 (4인 합계, 원 단위). amount가 null이면 더미로 표시
+  // 예산 (4인 합계, 원). null이면 흐린 글씨
   budget: [
     { item: "항공권",      amount: null },
     { item: "호텔 (4박)",  amount: null },
@@ -370,7 +336,7 @@ const TRIP = {
   ],
 
   // 일정 — 날짜는 start부터 하루씩 자동 계산
-  //   place: 화면에 붙는 지역 표시 / extra:true = 상하이 이후 이어지는 가족 일정
+  //   place: 지역 표시 / extra:true = 상하이 이후 이어지는 가족 일정
   //   stop.type: move(이동) / food(식사) / 없으면 관광
   days: [
     { place: "상하이", title: "도착 · 와이탄 야경", summary: "인천 출발 → 상하이 도착, 체크인", stops: [
@@ -404,7 +370,7 @@ const TRIP = {
       { time: "00:00", name: "푸둥공항 출발", desc: TODO, type: "move" },
       { time: "00:00", name: "인천공항 도착", desc: TODO, type: "move" },
     ]},
-    { place: "대전", extra: true, title: "💍 사촌 김준혁 결혼식", summary: "상하이 다음 날 이어지는 가족 일정", stops: [
+    { place: "대전", extra: true, title: "사촌 김준혁 결혼식", summary: "상하이 다음 날 이어지는 가족 일정", stops: [
       { time: "00:00", name: "대전으로 출발", desc: TODO, type: "move" },
       { time: "00:00", name: "결혼식 참석", desc: TODO },
       { time: "00:00", name: "피로연 식사", desc: TODO, type: "food" },
@@ -412,94 +378,63 @@ const TRIP = {
     ]},
   ],
 
-  // 결혼식 상세 (개요 탭의 빨간 카드)
-  wedding: {
-    who: "사촌 김준혁",
-    date: "2027-01-23",
-    time: TODO,
-    venue: TODO,        // 예식장 이름
-    address: TODO,      // 대전 주소
-    transport: TODO,    // 가는 방법 (차 / KTX 등)
-    dress: TODO,        // 복장
-    gift: TODO,         // 축의금
-  },
+  wedding: { who: "사촌 김준혁", date: "2027-01-23",
+    time: TODO, venue: TODO, address: TODO, transport: TODO, dress: TODO, gift: TODO },
 
-  // 항공편 — 공항 코드: ICN(인천), PVG(상하이 푸둥), SHA(상하이 훙차오)
+  // 항공편 — ICN(인천), PVG(상하이 푸둥), SHA(상하이 훙차오)
   flights: [
     { dir: "가는 편", date: "2027-01-18", airline: TODO, no: "XX000",
-      from: { code: "ICN", name: "인천", time: "00:00" },
-      to:   { code: "PVG", name: "상하이 푸둥", time: "00:00" },
+      from: { code: "ICN", name: "인천", time: "00:00" }, to: { code: "PVG", name: "상하이 푸둥", time: "00:00" },
       duration: "약 2시간", terminal: TODO, booking: TODO, baggage: TODO },
     { dir: "오는 편", date: "2027-01-22", airline: TODO, no: "XX000",
-      from: { code: "PVG", name: "상하이 푸둥", time: "00:00" },
-      to:   { code: "ICN", name: "인천", time: "00:00" },
+      from: { code: "PVG", name: "상하이 푸둥", time: "00:00" }, to: { code: "ICN", name: "인천", time: "00:00" },
       duration: "약 2시간", terminal: TODO, booking: TODO, baggage: TODO },
   ],
 
-  // 호텔
   hotel: {
     name: "호텔 이름 (추후 입력)",
-    nameLocal: TODO,          // 중국어 이름 — 택시 기사에게 보여주기용
+    nameLocal: TODO,        // 중국어 호텔 이름 — 택시 기사에게 보여주기용
     address: TODO,
-    addressLocal: TODO,       // 중국어 주소 — 택시 기사에게 보여주기용
-    checkin: "2027-01-18 15:00",
-    checkout: "2027-01-22 11:00",
-    rooms: TODO,              // 예: 트윈 2개 (아빠·엄마 / 누나·재아)
-    breakfast: TODO,
-    booking: TODO,
-    phone: TODO,
-    nearby: TODO,             // 가까운 지하철역
+    addressLocal: TODO,     // 중국어 주소
+    checkin: "1/18(월) 15:00", checkout: "1/22(금) 11:00",
+    rooms: TODO, breakfast: TODO, booking: TODO, phone: TODO, nearby: TODO,
   },
 
   // 준비물 — who: 담당자(없으면 공용). id는 체크 상태 저장용이라 서로 겹치면 안 됨
   packing: [
-    { group: "📄 필수 서류", items: [
+    { group: "필수 서류", items: [
       { id: "passport", name: "여권 (4명)", note: "유효기간 6개월 이상 남았는지 확인" },
       { id: "visa", name: "비자 / 무비자 입국 여부 확인", note: TODO },
       { id: "eticket", name: "항공권 e-티켓", who: "재아" },
       { id: "hotelconf", name: "호텔 예약 확인서", who: "재아" },
       { id: "insurance", name: "여행자 보험", note: TODO },
     ]},
-    { group: "💳 돈 · 결제", items: [
+    { group: "돈 · 결제", items: [
       { id: "cash", name: "위안화 현금", note: TODO },
       { id: "card", name: "해외 결제 카드" },
       { id: "alipay", name: "알리페이 / 위챗페이 설정", note: TODO },
     ]},
-    { group: "📱 전자기기", items: [
+    { group: "전자기기", items: [
       { id: "esim", name: "eSIM / 유심 / 로밍", note: TODO },
       { id: "charger", name: "충전기 · 케이블" },
       { id: "battery", name: "보조배터리", note: "기내 반입만 가능 (위탁 수하물 X)" },
       { id: "adapter", name: "멀티 어댑터", note: TODO },
     ]},
-    { group: "👕 옷 · 생활", items: [
+    { group: "옷 · 생활", items: [
       { id: "coat", name: "겨울 외투" },
       { id: "clothes", name: "갈아입을 옷 (4일분)" },
       { id: "shoes", name: "편한 신발" },
       { id: "toiletry", name: "세면도구" },
       { id: "medicine", name: "상비약" },
     ]},
-    { group: "💍 결혼식 (1/23 대전)", items: [
+    { group: "결혼식 (1/23 대전)", items: [
       { id: "w-dress", name: "결혼식 복장", note: "상하이 짐과 따로 집에 준비" },
       { id: "w-gift", name: "축의금 · 봉투", note: TODO },
       { id: "w-route", name: "대전 이동 수단 확인", note: TODO },
     ]},
   ],
 
-  // 정보 탭
-  apps: [
-    { name: "알리페이 (Alipay)", why: TODO },
-    { name: "지도 앱", why: TODO },
-    { name: "번역 앱", why: TODO },
-    { name: "디디 (DiDi) 택시", why: TODO },
-  ],
-  contacts: [
-    { name: "아빠", phone: TODO },
-    { name: "엄마", phone: TODO },
-    { name: "누나", phone: TODO },
-    { name: "재아", phone: TODO },
-    { name: "주상하이 대한민국 총영사관", phone: TODO },
-    { name: "호텔 프런트", phone: TODO },
-  ],
+  // 현지 탭
   phrases: [
     { ko: "안녕하세요", zh: "你好", py: "nǐ hǎo" },
     { ko: "감사합니다", zh: "谢谢", py: "xièxie" },
@@ -507,370 +442,358 @@ const TRIP = {
     { ko: "화장실 어디예요?", zh: "洗手间在哪里？", py: "xǐshǒujiān zài nǎlǐ?" },
     { ko: "이 주소로 가 주세요", zh: "请带我去这个地址", py: "qǐng dài wǒ qù zhège dìzhǐ" },
   ],
+  pay: TODO,          // 결제·환전 메모
+  airport: TODO,      // 공항 ↔ 시내 이동
+  transit: TODO,      // 시내 이동
+  apps: [
+    { name: "알리페이 (Alipay)", why: TODO },
+    { name: "지도 앱", why: TODO },
+    { name: "번역 앱", why: TODO },
+    { name: "디디 (DiDi) 택시", why: TODO },
+  ],
+  contacts: [   // phone에 번호를 넣으면 누르면 바로 전화가 걸림
+    { name: "아빠", phone: TODO }, { name: "엄마", phone: TODO },
+    { name: "누나", phone: TODO }, { name: "재아", phone: TODO },
+    { name: "주상하이 총영사관", phone: TODO }, { name: "호텔 프런트", phone: TODO },
+  ],
+};
+
+/* 번역 설정 — Supabase Edge Function(supabase/functions/translate) 배포 후 채우면 번역이 켜짐
+   - Gemini 키는 Supabase 서버 비밀값(secret)에만 두고 이 파일에는 절대 넣지 않음 (공개 저장소라서)
+   - anonKey는 Supabase가 '공개해도 되는 키'로 만든 값이라 여기 넣어도 됨 */
+const TRANSLATE = {
+  url: "",          // 예: https://xxxx.supabase.co/functions/v1/translate
+  anonKey: "",      // Supabase 프로젝트의 anon(public) 키
+  needCode: true,   // 함수에 FAMILY_CODE를 설정했다면 true → 가족 암호를 한 번 입력받음
 };
 
 /* =====================================================================
-   아래부터는 화면을 그리는 코드 — 내용만 바꿀 때는 건드리지 않아도 됨
+   아래부터 화면 그리는 코드 — 내용만 바꿀 때는 건드리지 않아도 됨
    ===================================================================== */
 const WEEK = ["일","월","화","수","목","금","토"];
 const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));   // 데이터 속 < > 로 화면이 깨지지 않게
+const isTodo = (v) => v === null || v === undefined || v === "" || v === TODO;
+const val = (v) => isTodo(v) ? `<span class="todo">${TODO}</span>` : esc(v);
+const icon = (n) => `<svg class="i"><use href="#i-${n}"/></svg>`;
 
-// HTML 특수문자 치환: 데이터에 < > & 가 들어가도 화면이 깨지지 않게
-const esc = (s) => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-
-// 비었거나 "추후 입력"이면 더미 스타일로 감싸서 반환 → 채워야 할 곳이 눈에 띄게
-const val = (v) => (v === null || v === undefined || v === "" || v === TODO)
-  ? `<span class="dummy">${TODO}</span>` : esc(v);
-
-// "2027-01-18" → Date. new Date("YYYY-MM-DD")는 UTC로 해석돼 하루 어긋날 수 있으므로 로컬 시간으로 직접 생성
+// "2027-01-18" → 로컬 Date (new Date("YYYY-MM-DD")는 UTC 해석이라 하루 어긋날 수 있음)
 function toDate(s){ const [y,m,d] = s.split("-").map(Number); return new Date(y, m-1, d); }
-// fmt: 문자열과 Date 둘 다 받게 해서 호출하는 쪽에서 변환할 필요 없게 함
-function fmt(s){ const d = (s instanceof Date) ? s : toDate(s); return `${d.getMonth()+1}/${d.getDate()}(${WEEK[d.getDay()]})`; }
 function addDays(s, n){ const d = toDate(s); d.setDate(d.getDate()+n); return d; }
-const dayDate = (i) => addDays(TRIP.start, i);   // i번째 일정의 날짜
+const dayDate = (i) => addDays(TRIP.start, i);
+const md = (d) => `${d.getMonth()+1}/${d.getDate()}`;
+const fmt = (d) => { d = d instanceof Date ? d : toDate(d); return `${md(d)}(${WEEK[d.getDay()]})`; };
 
-/* ---------- 헤더 ---------- */
-function renderHeader(){
-  const s = toDate(TRIP.start), e = toDate(TRIP.end);
-  const last = dayDate(TRIP.days.length - 1);          // 결혼식 날까지 포함한 마지막 날
-  const p2 = (n) => String(n).padStart(2, "0");
-  $("dates").innerHTML = `<b>${s.getFullYear()}.${p2(s.getMonth()+1)}.${p2(s.getDate())}(${WEEK[s.getDay()]}) ~ ${p2(e.getMonth()+1)}.${p2(e.getDate())}(${WEEK[e.getDay()]})</b>`;
-
-  // D-day: 오늘 0시 기준으로 날짜 차이만 계산 (시각 차이 때문에 하루 어긋나지 않게)
-  const today = new Date(); today.setHours(0,0,0,0);
-  const diff = Math.round((s - today) / 86400000);
-  const lastDiff = Math.round((last - today) / 86400000);
-  let big, small;
-  if (diff > 0)          { big = `D-${diff}`; small = "출발까지"; }
-  else if (diff === 0)   { big = "D-DAY"; small = "출발!"; }
-  else if (lastDiff >= 0){ big = `${1 - diff}일차`; small = "여행 중"; }
-  else                   { big = "完"; small = "다녀왔어요"; }
-  $("dday").innerHTML = `<b>${big}</b><small>${small}</small>`;
-
-  // 풍등 14개를 무작위 위치·속도로 생성 (매번 같은 모양이 되지 않게)
-  const hdr = $("hdr");
-  for (let i = 0; i < 14; i++){
-    const el = document.createElement("div");
-    el.className = "sky-lantern";
-    el.style.left = (5 + Math.random() * 90) + "%";
-    el.style.bottom = (40 + Math.random() * 60) + "px";
-    el.style.animationDuration = (7 + Math.random() * 7) + "s";
-    el.style.animationDelay = (-Math.random() * 12) + "s";   // 음수 지연: 처음부터 여러 개가 떠 있게
-    const sc = .6 + Math.random() * .7; el.style.scale = sc;
-    hdr.appendChild(el);
-  }
-}
-
-/* ---------- 개요 ---------- */
-function renderOverview(){
-  const total = TRIP.budget.reduce((a,b) => a + (b.amount || 0), 0);
-  const won = (n) => n.toLocaleString("ko-KR") + "원";
-  const w = TRIP.wedding;
-  $("overview").innerHTML = `
-    <h2 class="sec">한눈에 보기</h2>
-    <div class="facts">${TRIP.facts.map(f => `<div class="fact"${f.id?` id="${f.id}"`:""}><small>${esc(f.label)}</small><b>${val(f.value)}</b>${f.id==="fx"?`<em class="fxdate">직접 입력값</em>`:""}</div>`).join("")}</div>
-
-    <h2 class="sec">날짜별 요약</h2>
-    <div class="card">${TRIP.days.map((d,i) => `
-      <div class="sumrow ${d.extra?"extra":""}">
-        <span class="d">${d.extra ? "+1" : "Day " + (i+1)}<small>${fmt(dayDate(i))}</small></span>
-        <span>${esc(d.title)}</span><span class="where">${esc(d.place)}</span>
-      </div>`).join("")}
-    </div>
-
-    <h2 class="sec">이어지는 가족 일정</h2>
-    <div class="card wedding">
-      <span class="tag">${fmt(w.date)} · 대전</span>
-      <h3>💍 ${esc(w.who)} 결혼식</h3>
-      <div style="margin-top:6px">
-        <div class="row"><span class="k">시간</span><span class="v">${val(w.time)}</span></div>
-        <div class="row"><span class="k">예식장</span><span class="v">${val(w.venue)}</span></div>
-        <div class="row"><span class="k">주소</span><span class="v">${val(w.address)}</span></div>
-        <div class="row"><span class="k">이동</span><span class="v">${val(w.transport)}</span></div>
-        <div class="row"><span class="k">복장</span><span class="v">${val(w.dress)}</span></div>
-        <div class="row"><span class="k">축의금</span><span class="v">${val(w.gift)}</span></div>
-      </div>
-    </div>
-
-    <h2 class="sec">예산 (4인 합계)</h2>
-    <div class="card">
-      <table class="budget">
-        <thead><tr><th>항목</th><th>금액</th></tr></thead>
-        <tbody>${TRIP.budget.map(b => `<tr><td>${esc(b.item)}</td><td>${b.amount ? won(b.amount) : val(null)}</td></tr>`).join("")}</tbody>
-        <tfoot><tr><td>합계</td><td>${total ? won(total) : val(null)}</td></tr></tfoot>
-      </table>
-      <p class="note">1인당 약 ${total ? won(Math.round(total/4)) : "—"}</p>
-    </div>`;
-}
-
-/* ---------- 일정 ---------- */
-let currentDay = 0;
-function renderPlan(){
-  const btns = TRIP.days.map((d,i) => {
-    const x = dayDate(i);
-    return `<button class="dbtn ${d.extra?"extra":""} ${i===currentDay?"active":""}" data-day="${i}">
-      <b>${d.extra ? d.place : "Day " + (i+1)}</b><small>${x.getMonth()+1}/${x.getDate()}(${WEEK[x.getDay()]})</small></button>`;
-  }).join("");
-  const d = TRIP.days[currentDay];
-  const stops = d.stops.map(s => `
-    <div class="stop ${s.type||""}">
-      <div class="t">${esc(s.time)}</div>
-      <h4>${esc(s.name)}</h4>
-      <p>${val(s.desc)}</p>
-    </div>`).join("");
-  $("plan").innerHTML = `
-    <div class="days">${btns}</div>
-    <div class="dayhead"><span class="place">${esc(d.place)} · ${fmt(dayDate(currentDay))}</span>
-      <h3>${esc(d.title)}</h3><p>${val(d.summary)}</p></div>
-    <div class="timeline">${stops}</div>
-    <p class="legend"><i style="background:var(--red-bright)"></i>관광<i style="background:var(--dusk-orange)"></i>식사<i style="background:var(--gold)"></i>이동</p>`;
-  // 다시 그릴 때마다 버튼이 새로 생기므로 매번 클릭 이벤트 연결
-  $("plan").querySelectorAll(".dbtn").forEach(b => b.onclick = () => { currentDay = +b.dataset.day; renderPlan(); });
-}
-
-/* ---------- 항공 ---------- */
-function renderFlight(){
-  $("flight").innerHTML = `<h2 class="sec">항공편</h2>` + TRIP.flights.map(f => `
-    <div class="ticket">
-      <div class="top"><span><b>${esc(f.dir)}</b> · ${fmt(f.date)}</span><span>${val(f.airline)} ${esc(f.no)}</span></div>
-      <div class="route">
-        <div class="ap"><b>${esc(f.from.code)}</b><small>${esc(f.from.name)}</small><div class="tm">${esc(f.from.time)}</div></div>
-        <div class="mid">${esc(f.duration)}</div>
-        <div class="ap"><b>${esc(f.to.code)}</b><small>${esc(f.to.name)}</small><div class="tm">${esc(f.to.time)}</div></div>
-      </div>
-      <div class="bottom">
-        <div class="row"><span class="k">터미널</span><span class="v">${val(f.terminal)}</span></div>
-        <div class="row"><span class="k">예약번호</span><span class="v">${val(f.booking)}</span></div>
-        <div class="row"><span class="k">수하물</span><span class="v">${val(f.baggage)}</span></div>
-      </div>
-    </div>`).join("") +
-    `<p class="note">시간은 모두 현지 시각 기준. 상하이는 한국보다 1시간 느립니다.</p>`;
-}
-
-/* ---------- 호텔 ---------- */
-function renderHotel(){
-  const h = TRIP.hotel;
-  const rows = [
-    ["체크인", h.checkin], ["체크아웃", h.checkout], ["객실", h.rooms],
-    ["조식", h.breakfast], ["예약번호", h.booking], ["전화", h.phone], ["가까운 역", h.nearby],
-  ];
-  $("hotel").innerHTML = `
-    <h2 class="sec">숙소</h2>
-    <div class="card">
-      <h3 style="font-size:1.1rem;color:var(--red-deep);font-family:var(--serif)">${esc(h.name)}</h3>
-      <p style="font-size:.85rem;color:var(--muted)">${val(h.address)}</p>
-      <div style="margin-top:8px">${rows.map(r => `<div class="row"><span class="k">${r[0]}</span><span class="v">${val(r[1])}</span></div>`).join("")}</div>
-    </div>
-    <h2 class="sec">택시 기사님께 보여주기</h2>
-    <div class="card taxi">
-      <div class="nm">${val(h.nameLocal)}</div>
-      <div style="font-size:1.05rem;margin-top:6px">${val(h.addressLocal)}</div>
-      <p class="note">请带我去这个地址 (이 주소로 가 주세요)</p>
-    </div>`;
-}
-
-/* ---------- 준비물 ---------- */
-// 체크 상태는 이 브라우저에만 저장(localStorage). 사생활 모드 등에서 막히면 저장 없이 동작
-const KEY = "shanghai2027-packing";
-function loadChecks(){ try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch(e){ return {}; } }
-function saveChecks(c){ try { localStorage.setItem(KEY, JSON.stringify(c)); } catch(e){} }
-let checks = loadChecks();
-
-function renderPack(){
-  const all = TRIP.packing.flatMap(g => g.items);
-  const done = all.filter(i => checks[i.id]).length;
-  const pct = all.length ? Math.round(done / all.length * 100) : 0;
-  $("pack").innerHTML = `
-    <div class="plabel"><span>준비 진행률</span><span>${done} / ${all.length} (${pct}%)</span></div>
-    <div class="progress"><div style="width:${pct}%"></div></div>
-    ${TRIP.packing.map(g => `
-      <h2 class="sec">${esc(g.group)}</h2>
-      <div class="card">${g.items.map(i => `
-        <label class="check ${checks[i.id]?"done":""}">
-          <input type="checkbox" data-id="${esc(i.id)}" ${checks[i.id]?"checked":""}>
-          <span>${esc(i.name)}${i.who?`<span class="who">${esc(i.who)}</span>`:""}
-            ${i.note!==undefined?`<small>${val(i.note)}</small>`:""}</span>
-        </label>`).join("")}
-      </div>`).join("")}
-    <button class="reset" id="resetChecks">체크 모두 해제</button>
-    <p class="note">체크 표시는 지금 보고 있는 휴대폰(브라우저)에만 저장됩니다.</p>`;
-  $("pack").querySelectorAll("input[type=checkbox]").forEach(cb => cb.onchange = () => {
-    checks[cb.dataset.id] = cb.checked; saveChecks(checks); renderPack();
-  });
-  $("resetChecks").onclick = () => { checks = {}; saveChecks(checks); renderPack(); };
-}
-
-/* ---------- 정보 ---------- */
-function renderInfo(){
-  $("info").innerHTML = `
-    <h2 class="sec">결제 · 환전</h2>
-    <div class="card info"><p>${val(TODO)}</p></div>
-
-    <h2 class="sec">교통</h2>
-    <div class="card info">
-      <h4>공항 ↔ 시내</h4><p>${val(TODO)}</p>
-      <h4 style="margin-top:10px">시내 이동</h4><p>${val(TODO)}</p>
-    </div>
-
-    <h2 class="sec">설치할 앱</h2>
-    <div class="card">${TRIP.apps.map(a => `<div class="row"><span class="k">${esc(a.name)}</span><span class="v">${val(a.why)}</span></div>`).join("")}</div>
-
-    <h2 class="sec">비상 연락처</h2>
-    <div class="card">${TRIP.contacts.map(c => `<div class="row"><span class="k">${esc(c.name)}</span><span class="v">${val(c.phone)}</span></div>`).join("")}</div>
-
-    <h2 class="sec">간단 중국어</h2>
-    <div class="card">${TRIP.phrases.map(p => `<div class="phrase"><span>${esc(p.ko)}</span><span class="zh">${esc(p.zh)}<small>${esc(p.py)}</small></span></div>`).join("")}</div>`;
-}
-
-/* ---------- 환율 자동 갱신 ---------- */
-// 무료·키 없는 공개 API 두 곳을 차례로 시도. 둘 다 실패하면 TRIP.facts에 적은 값(직접 입력값)을 그대로 둠
-//  1) Frankfurter: 유럽중앙은행(ECB) 기준환율, 평일 하루 1번 갱신
-//  2) ExchangeRate-API(open.er-api.com): 하루 1번 갱신
-async function loadFx(){
-  const box = $("fx"); if (!box) return;
-  const show = (rate, when) => {
-    box.querySelector("b").textContent = rate.toFixed(2) + "원";
-    box.querySelector(".fxdate").textContent = when + " 기준 · 자동";
-  };
-  try {
-    const j = await (await fetch("https://api.frankfurter.dev/v1/latest?from=CNY&to=KRW")).json();
-    if (j.rates && j.rates.KRW) return show(j.rates.KRW, j.date);
-  } catch(e) {}
-  try {
-    const j = await (await fetch("https://open.er-api.com/v6/latest/CNY")).json();
-    if (j.rates && j.rates.KRW) return show(j.rates.KRW, new Date(j.time_last_update_unix*1000).toISOString().slice(0,10));
-  } catch(e) {}
-}
-
-/* ---------- 번역 (Gemini) ---------- */
-// API 키는 소스코드에 넣지 않음: 이 저장소는 공개라 키를 넣으면 누구나 복사해 쓸 수 있기 때문.
-// 대신 각 휴대폰에서 한 번 입력하면 그 브라우저(localStorage)에만 저장됨.
-const GEMINI_MODEL = "gemini-3.5-flash-lite";   // 모델 이름이 바뀌면 여기만 수정
-const KEY_STORE = "gemini-key", HIST_STORE = "shanghai2027-trans";
+// localStorage는 사생활 모드 등에서 막힐 수 있어 항상 try/catch
 const store = {
   get(k, d){ try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch(e){ return d; } },
   set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} },
   del(k){ try { localStorage.removeItem(k); } catch(e){} },
 };
-let lastResult = null;   // 마지막 번역 결과 {ko, zh, py}
 
-function renderTrans(){
-  const hasKey = !!store.get(KEY_STORE, "");
-  const hist = store.get(HIST_STORE, []);
-  const r = lastResult;
-  $("trans").innerHTML = `
-    <h2 class="sec">한국어 → 중국어</h2>
-    <div class="card">
-      <textarea class="tr-in" id="trIn" placeholder="예) 이 근처에 약국 있나요?">${r ? esc(r.ko) : ""}</textarea>
-      <button class="btn main" id="trBtn" ${hasKey ? "" : "disabled"}>번역하기</button>
-      ${hasKey ? "" : `<p class="tr-msg" style="margin-top:8px">아래 설정에서 Gemini API 키를 먼저 넣어 주세요.</p>`}
-      <p class="tr-msg" id="trMsg"></p>
+function ddayText(){
+  const today = new Date(); today.setHours(0,0,0,0);
+  const diff = Math.round((toDate(TRIP.start) - today) / 86400000);
+  const lastDiff = Math.round((dayDate(TRIP.days.length - 1) - today) / 86400000);
+  if (diff > 0) return [`D-${diff}`, "출발까지"];
+  if (diff === 0) return ["D-DAY", "출발"];
+  if (lastDiff >= 0) return [`${1 - diff}일차`, "여행 중"];
+  return ["完", "다녀옴"];
+}
+const section = (title, body, side = "") =>
+  `<div class="sec"><div class="sec-h"><h2>${title}</h2>${side ? `<span>${side}</span>` : ""}</div>${body}</div>`;
+const li = (k, v) => `<div class="li"><span class="k">${k}</span><span class="v">${v}</span></div>`;
+
+/* ---------- 홈 ---------- */
+function renderHome(){
+  const s = toDate(TRIP.start), e = toDate(TRIP.end), p2 = (n) => String(n).padStart(2,"0");
+  const [dd, ddSub] = ddayText();
+  const total = TRIP.budget.reduce((a,b) => a + (b.amount || 0), 0);
+  const won = (n) => n.toLocaleString("ko-KR") + "원";
+  const w = TRIP.wedding;
+
+  $("p-home").innerHTML = `
+    <div class="hero" id="hero">
+      <div class="lantern l"><div class="str"></div><div class="cap"></div><div class="body"><span>福</span></div><div class="cap"></div><div class="tas"></div></div>
+      <div class="lantern r"><div class="str"></div><div class="cap"></div><div class="body"></div><div class="cap"></div><div class="tas"></div></div>
+      <div class="zh-title">上海</div>
+      <div class="sub">2027 상하이 가족여행</div>
+      <div class="date num">${s.getFullYear()}.${p2(s.getMonth()+1)}.${p2(s.getDate())}(${WEEK[s.getDay()]}) ~ ${p2(e.getMonth()+1)}.${p2(e.getDate())}(${WEEK[e.getDay()]})</div>
+      ${SKYLINE}
+      <div class="seal"><b>${dd}</b><small>${ddSub}</small></div>
     </div>
+    <div class="wave wave-band"></div>
 
-    ${r ? `
-    <div class="card tr-out">
-      <div class="zh">${esc(r.zh)}</div>
-      <div class="py">${esc(r.py)}</div>
-      <div class="ko">${esc(r.ko)}</div>
-      <div class="tr-actions">
-        <button class="btn sub" id="trSpeak">🔊 듣기</button>
-        <button class="btn sub" id="trBig">🔍 크게 보기</button>
-        <button class="btn sub" id="trCopy">📋 복사</button>
-      </div>
-    </div>` : ""}
+    <div class="pad">
+      ${section("한눈에 보기", `<div class="facts">${TRIP.facts.map(f => `
+        <div class="fact"${f.id ? ` id="${f.id}"` : ""}><small>${esc(f.label)}</small><b>${val(f.value)}</b>${f.id === "fx" ? `<em>직접 입력값</em>` : ""}</div>`).join("")}</div>`)}
 
-    ${hist.length ? `
-    <h2 class="sec">최근 번역</h2>
-    <div class="card">${hist.map((h,i) => `<div class="hist" data-i="${i}"><div class="z">${esc(h.zh)}</div><small>${esc(h.py)}</small><small>${esc(h.ko)}</small></div>`).join("")}</div>
-    <button class="reset" id="histClear">기록 지우기</button>` : ""}
+      ${section("일정", `<div class="card">${TRIP.days.map((d,i) => `
+        <button class="dayrow ${d.extra ? "extra" : ""}" data-day="${i}">
+          <span class="dt"><b class="num">${md(dayDate(i))}</b><small>${WEEK[dayDate(i).getDay()]}요일</small></span>
+          <span class="tt"><b>${esc(d.title)}</b><small>${d.extra ? "대전 · 가족 일정" : `Day ${i+1} · ${esc(d.place)}`}</small></span>
+          <svg class="i"><use href="#i-chev"/></svg>
+        </button>`).join("")}</div>`, "눌러서 자세히")}
 
-    <h2 class="sec">설정</h2>
-    <div class="card">
-      ${hasKey
-        ? `<div class="row"><span class="k">Gemini API 키</span><span class="v">저장됨 ✅</span></div>
-           <button class="btn sub" id="keyDel" style="margin-top:6px">키 지우기</button>`
-        : `<div style="font-size:.88rem">Gemini API 키</div>
-           <input class="key-in" id="keyIn" type="password" placeholder="AIza..." autocomplete="off">
-           <button class="btn sub" id="keySave">저장</button>`}
-      <p class="note">키는 이 휴대폰(브라우저)에만 저장되고 페이지 코드에는 들어가지 않습니다. 모델: ${GEMINI_MODEL}</p>
+      ${section("이어지는 가족 일정", `
+        <div class="wedding">
+          <div class="top"><small>${fmt(w.date)} · 대전</small><b>${esc(w.who)} 결혼식</b></div>
+          <div class="body">
+            ${li("시간", val(w.time))}${li("예식장", val(w.venue))}${li("주소", val(w.address))}
+            ${li("이동", val(w.transport))}${li("복장", val(w.dress))}${li("축의금", val(w.gift))}
+          </div>
+        </div>`)}
+
+      ${section("예산", `<div class="card budget">
+        ${TRIP.budget.map(b => li(esc(b.item), b.amount ? won(b.amount) : val(null))).join("")}
+        <div class="li total"><span class="k">합계</span><span class="v">${total ? won(total) : val(null)}</span></div>
+      </div><p class="note">4인 합계 기준${total ? ` · 1인당 약 ${won(Math.round(total/4))}` : ""}</p>`)}
     </div>`;
 
-  // --- 이벤트 연결 (다시 그릴 때마다 새 요소가 생기므로 매번 연결) ---
-  const btn = $("trBtn");
-  if (btn) btn.onclick = translate;
-  $("trIn").onkeydown = (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) translate(); };
-  if ($("trSpeak")) $("trSpeak").onclick = () => speak(r.zh);
-  if ($("trBig")) $("trBig").onclick = () => showBig(r);
-  if ($("trCopy")) $("trCopy").onclick = () => navigator.clipboard && navigator.clipboard.writeText(r.zh).then(() => { $("trCopy").textContent = "✅ 복사됨"; });
-  document.querySelectorAll("#trans .hist").forEach(el => el.onclick = () => { lastResult = hist[+el.dataset.i]; renderTrans(); window.scrollTo(0, $("tabs").offsetTop); });
-  if ($("histClear")) $("histClear").onclick = () => { store.del(HIST_STORE); renderTrans(); };
-  if ($("keySave")) $("keySave").onclick = () => { const k = $("keyIn").value.trim(); if (k) { store.set(KEY_STORE, k); renderTrans(); } };
-  if ($("keyDel")) $("keyDel").onclick = () => { store.del(KEY_STORE); renderTrans(); };
+  // 풍등: 무작위 위치·속도 (매번 조금씩 다르게)
+  const hero = $("hero");
+  for (let i = 0; i < 12; i++){
+    const el = document.createElement("div");
+    el.className = "sky-lantern";
+    el.style.left = (6 + Math.random() * 88) + "%";
+    el.style.bottom = (50 + Math.random() * 60) + "px";
+    el.style.animationDuration = (8 + Math.random() * 7) + "s";
+    el.style.animationDelay = (-Math.random() * 12) + "s";   // 음수: 처음부터 여러 개 떠 있게
+    hero.appendChild(el);
+  }
+  // 일정 줄을 누르면 일정 탭의 그 날짜로 이동
+  document.querySelectorAll("#p-home .dayrow").forEach(b => b.onclick = () => { currentDay = +b.dataset.day; renderPlan(); go("plan"); });
 }
 
+// 야경 실루엣 SVG (빌딩 + 구슬 달린 방송탑)
+const SKYLINE = `
+  <svg class="skyline" viewBox="0 0 480 118" preserveAspectRatio="none" aria-hidden="true">
+    <defs><pattern id="win" width="8" height="10" patternUnits="userSpaceOnUse"><rect x="2" y="3" width="3" height="3" fill="#f8e3a6" opacity=".5"/></pattern></defs>
+    <g fill="#3a0d24">
+      <rect x="0" y="70" width="40" height="48"/><rect x="36" y="52" width="26" height="66"/><rect x="62" y="80" width="30" height="38"/>
+      <rect x="92" y="38" width="22" height="80"/><polygon points="114,118 114,30 124,18 134,30 134,118"/><rect x="140" y="62" width="30" height="56"/>
+      <rect x="198" y="30" width="4" height="88"/><rect x="186" y="80" width="3" height="38" transform="rotate(-8 187 100)"/><rect x="211" y="80" width="3" height="38" transform="rotate(8 212 100)"/>
+      <circle cx="200" cy="82" r="13"/><circle cx="200" cy="46" r="9"/><rect x="199" y="4" width="2" height="30"/>
+      <rect x="228" y="50" width="24" height="68"/><polygon points="256,118 256,24 270,10 284,24 284,118"/><rect x="290" y="66" width="34" height="52"/>
+      <rect x="326" y="44" width="20" height="74"/><rect x="350" y="74" width="40" height="44"/><rect x="392" y="56" width="26" height="62"/>
+      <rect x="420" y="78" width="30" height="40"/><rect x="450" y="62" width="30" height="56"/>
+    </g>
+    <g fill="url(#win)"><rect x="36" y="56" width="26" height="58"/><rect x="92" y="42" width="22" height="72"/><rect x="116" y="34" width="16" height="80"/>
+      <rect x="228" y="54" width="24" height="60"/><rect x="258" y="28" width="24" height="86"/><rect x="326" y="48" width="20" height="66"/><rect x="392" y="60" width="26" height="54"/></g>
+    <circle cx="200" cy="82" r="5" fill="#ff6aa0" opacity=".85"/><circle cx="200" cy="46" r="3.5" fill="#ff6aa0" opacity=".85"/>
+  </svg>`;
+
+/* ---------- 일정 ---------- */
+let currentDay = 0;
+const KIND = { move: "이동", food: "식사" };
+function renderPlan(){
+  const d = TRIP.days[currentDay];
+  $("p-plan").innerHTML = `
+    <div class="daybar" id="daybar">${TRIP.days.map((x,i) => `
+      <button class="dchip ${x.extra ? "extra" : ""} ${i === currentDay ? "on" : ""}" data-day="${i}">
+        <b>${x.extra ? esc(x.place) : `Day ${i+1}`}</b><small class="num">${fmt(dayDate(i))}</small></button>`).join("")}
+    </div>
+    <div class="pad">
+      <div class="dayhead">
+        <span class="tag ${d.extra ? "gold" : ""}">${esc(d.place)} · ${fmt(dayDate(currentDay))}</span>
+        <h2>${esc(d.title)}</h2><p>${val(d.summary)}</p>
+      </div>
+      <div class="tl">${d.stops.map(s => `
+        <div class="st ${s.type || ""}">
+          <span class="tm">${esc(s.time)}</span><span class="rail"><i></i></span>
+          <div class="box">${s.type ? `<span class="kind">${KIND[s.type]}</span>` : ""}<b>${esc(s.name)}</b><p>${val(s.desc)}</p></div>
+        </div>`).join("")}
+      </div>
+    </div>`;
+  $("p-plan").querySelectorAll(".dchip").forEach(b => b.onclick = () => { currentDay = +b.dataset.day; renderPlan(); });
+  // 선택한 날짜 버튼이 가로 스크롤 밖에 있으면 보이는 위치로 (세로 스크롤은 건드리지 않음)
+  const bar = $("daybar"), on = bar.querySelector(".dchip.on");
+  if (on) bar.scrollLeft = on.offsetLeft - (bar.clientWidth - on.offsetWidth) / 2;
+}
+
+/* ---------- 예약 (항공 + 호텔) ---------- */
+function renderBook(){
+  const h = TRIP.hotel;
+  $("p-book").innerHTML = `<div class="pad">
+    ${section("항공편", TRIP.flights.map(f => `
+      <div class="ticket">
+        <div class="hd"><b>${esc(f.dir)} · ${fmt(f.date)}</b><small>${isTodo(f.airline) ? "" : esc(f.airline) + " "}${esc(f.no)}</small></div>
+        <div class="route">
+          <div class="ap"><b>${esc(f.from.code)}</b><small>${esc(f.from.name)}</small><div class="t">${esc(f.from.time)}</div></div>
+          <div class="mid">${icon("plane")}${esc(f.duration)}</div>
+          <div class="ap"><b>${esc(f.to.code)}</b><small>${esc(f.to.name)}</small><div class="t">${esc(f.to.time)}</div></div>
+        </div>
+        <div class="ft">${li("항공사", val(f.airline))}${li("터미널", val(f.terminal))}${li("예약번호", val(f.booking))}${li("수하물", val(f.baggage))}</div>
+      </div>`).join("") + `<p class="note">시간은 모두 현지 시각. 상하이는 한국보다 1시간 느립니다.</p>`)}
+
+    ${section("숙소", `<div class="card">
+      <div style="padding:14px 0 6px"><b style="font-size:18px">${esc(h.name)}</b><div class="note" style="margin:2px 0 0">${val(h.address)}</div></div>
+      ${li("체크인", esc(h.checkin))}${li("체크아웃", esc(h.checkout))}${li("객실", val(h.rooms))}${li("조식", val(h.breakfast))}
+      ${li("예약번호", val(h.booking))}${li("전화", val(h.phone))}${li("가까운 역", val(h.nearby))}
+    </div>`)}
+
+    ${section("택시 기사님께 보여주기", `<div class="card taxi">
+      <div class="nm zh" lang="zh-CN">${val(h.nameLocal)}</div>
+      <div class="ad zh" lang="zh-CN">${val(h.addressLocal)}</div>
+      <button class="btn block" id="taxiBig" style="margin-top:16px" ${isTodo(h.nameLocal) ? "disabled" : ""}>${icon("expand")}크게 보기</button>
+    </div>`)}
+  </div>`;
+  $("taxiBig").onclick = () => showBig(h.nameLocal, h.addressLocal);
+}
+
+/* ---------- 준비물 ---------- */
+const CHECK_KEY = "shanghai2027-packing";
+let checks = store.get(CHECK_KEY, {});
+function renderPack(){
+  const all = TRIP.packing.flatMap(g => g.items);
+  const done = all.filter(i => checks[i.id]).length;
+  const pct = all.length ? Math.round(done / all.length * 100) : 0;
+  $("p-pack").innerHTML = `<div class="pad">
+    <div class="card p prog"><span class="pct">${pct}%</span>
+      <div class="bar"><div><i style="width:${pct}%"></i></div><small>${done} / ${all.length}개 준비 완료</small></div></div>
+    ${TRIP.packing.map(g => section(esc(g.group), `<div class="card">${g.items.map(i => `
+      <label class="ck ${checks[i.id] ? "done" : ""}">
+        <input type="checkbox" data-id="${esc(i.id)}" ${checks[i.id] ? "checked" : ""}>
+        <span class="box"><svg class="i"><use href="#i-tick"/></svg></span>
+        <span class="tx"><span>${esc(i.name)}</span>${i.who ? `<span class="who">${esc(i.who)}</span>` : ""}
+          ${i.note !== undefined ? `<small>${val(i.note)}</small>` : ""}</span>
+      </label>`).join("")}</div>`, `${g.items.filter(i => checks[i.id]).length}/${g.items.length}`)).join("")}
+    <p class="note">체크 표시는 지금 보고 있는 휴대폰에만 저장됩니다.</p>
+    <button class="btn" id="ckReset" style="margin-top:10px">체크 모두 해제</button>
+  </div>`;
+  $("p-pack").querySelectorAll("input[type=checkbox]").forEach(cb => cb.onchange = () => {
+    checks[cb.dataset.id] = cb.checked; store.set(CHECK_KEY, checks);
+    const y = window.scrollY; renderPack(); window.scrollTo(0, y);   // 다시 그려도 스크롤 위치 유지
+  });
+  $("ckReset").onclick = () => { checks = {}; store.set(CHECK_KEY, checks); renderPack(); };
+}
+
+/* ---------- 현지: 번역 · 회화 · 정보 ---------- */
+const HIST_KEY = "shanghai2027-trans", CODE_KEY = "shanghai2027-family-code";
+let lastResult = null;
+function renderLocal(){
+  const ready = !!(TRANSLATE.url && TRANSLATE.anonKey);
+  const code = store.get(CODE_KEY, "");
+  const needCode = ready && TRANSLATE.needCode && !code;
+  const hist = store.get(HIST_KEY, []);
+  const r = lastResult;
+
+  $("p-local").innerHTML = `<div class="pad">
+    ${section("번역", `
+      ${ready ? "" : `<div class="soon">${icon("info")}<span>번역 기능은 준비 중입니다. 서버 연결 후 사용할 수 있어요.</span></div>`}
+      ${needCode ? `<div class="card p" style="margin-bottom:12px"><b style="font-size:15px">가족 암호</b>
+        <input class="field" id="codeIn" type="password" autocomplete="off" placeholder="처음 한 번만 입력">
+        <button class="btn" id="codeSave">저장</button></div>` : ""}
+      <div class="card p">
+        <textarea id="trIn" placeholder="한국어로 입력하세요&#10;예) 이 근처에 약국 있나요?">${r ? esc(r.ko) : ""}</textarea>
+        <button class="btn primary block" id="trBtn" style="margin-top:10px" ${ready && !needCode ? "" : "disabled"}>중국어로 번역</button>
+        <p class="note" id="trMsg" style="color:var(--red)"></p>
+      </div>
+      ${r ? `<div class="card result" style="margin-top:12px">
+        <div class="zh" lang="zh-CN">${esc(r.zh)}</div><div class="py">${esc(r.py)}</div><div class="ko">${esc(r.ko)}</div>
+        <div class="act">
+          <button class="btn" data-say="${esc(r.zh)}">${icon("sound")}듣기</button>
+          <button class="btn" id="trBig">${icon("expand")}크게</button>
+          <button class="btn" id="trCopy">${icon("copy")}복사</button>
+        </div></div>` : ""}`)}
+
+    ${hist.length ? section("최근 번역", `<div class="card">${hist.map(h => phrase(h)).join("")}</div>
+      <button class="btn" id="histClear" style="margin-top:10px">기록 지우기</button>`) : ""}
+
+    ${section("자주 쓰는 말", `<div class="card">${TRIP.phrases.map(p => phrase(p)).join("")}</div>`)}
+
+    ${section("결제 · 교통", `<div class="card">${li("결제·환전", val(TRIP.pay))}${li("공항 ↔ 시내", val(TRIP.airport))}${li("시내 이동", val(TRIP.transit))}</div>`)}
+    ${section("설치할 앱", `<div class="card">${TRIP.apps.map(a => li(esc(a.name), val(a.why))).join("")}</div>`)}
+    ${section("비상 연락처", `<div class="card">${TRIP.contacts.map(c => li(esc(c.name),
+      isTodo(c.phone) ? val(c.phone) : `<a class="tel" href="tel:${esc(c.phone.replace(/[^0-9+]/g, ""))}">${esc(c.phone)}</a>`)).join("")}</div>`)}
+  </div>`;
+
+  // --- 이벤트 ---
+  $("trBtn").onclick = translate;
+  $("trIn").onkeydown = (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) translate(); };
+  if ($("codeSave")) $("codeSave").onclick = () => { const c = $("codeIn").value.trim(); if (c) { store.set(CODE_KEY, c); renderLocal(); } };
+  if ($("trBig")) $("trBig").onclick = () => showBig(r.zh, r.py);
+  if ($("trCopy")) $("trCopy").onclick = () => navigator.clipboard && navigator.clipboard.writeText(r.zh).then(() => { $("trCopy").lastChild.textContent = "복사됨"; });
+  if ($("histClear")) $("histClear").onclick = () => { store.del(HIST_KEY); renderLocal(); };
+  $("p-local").querySelectorAll("[data-say]").forEach(b => b.onclick = () => speak(b.dataset.say));
+  $("p-local").querySelectorAll("[data-big]").forEach(b => b.onclick = () => { const [z, p] = b.dataset.big.split("|"); showBig(z, p); });
+}
+// 회화 한 줄: 한국어 / 중국어 / 병음 + 듣기·크게 버튼
+function phrase(p){
+  return `<div class="ph"><div class="tx"><small>${esc(p.ko)}</small><span class="zh" lang="zh-CN">${esc(p.zh)}</span><span class="py">${esc(p.py)}</span></div>
+    <button class="icon-btn" aria-label="듣기" data-say="${esc(p.zh)}">${icon("sound")}</button>
+    <button class="icon-btn" aria-label="크게 보기" data-big="${esc(p.zh)}|${esc(p.py)}">${icon("expand")}</button></div>`;
+}
+
+// Supabase Edge Function 호출 → { zh, pinyin }
 async function translate(){
   const ko = $("trIn").value.trim();
-  const key = store.get(KEY_STORE, "");
-  if (!ko || !key) return;
+  if (!ko || !TRANSLATE.url) return;
   const btn = $("trBtn"), msg = $("trMsg");
   btn.disabled = true; btn.textContent = "번역 중…"; msg.textContent = "";
-  // 결과를 JSON 형식으로 강제(responseSchema) → 중국어와 병음을 따로 받아서 화면에 나눠 표시하기 쉬움
-  const body = {
-    contents: [{ parts: [{ text:
-      "다음 한국어를 중국 본토(상하이)에서 자연스럽게 쓰는 간체 중국어로 번역해. " +
-      "여행 중 현지인에게 말하거나 보여주는 상황이니 짧고 공손하게. " +
-      "pinyin은 성조 부호를 붙이고 단어 단위로 띄어 써.\n\n한국어: " + ko }] }],
-    generationConfig: {
-      temperature: 0.2,
-      responseMimeType: "application/json",
-      responseSchema: { type: "OBJECT", properties: { zh: { type: "STRING" }, pinyin: { type: "STRING" } }, required: ["zh", "pinyin"] },
-    },
-  };
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`, {
+    const res = await fetch(TRANSLATE.url, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": key },   // 키를 주소(URL)가 아니라 헤더로 보냄 → 방문 기록·로그에 덜 남음
-      body: JSON.stringify(body),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + TRANSLATE.anonKey,   // Supabase 함수 호출에 필요한 공개 키
+        "x-family-code": store.get(CODE_KEY, ""),         // 가족만 쓰도록 하는 간단한 암호
+      },
+      body: JSON.stringify({ text: ko }),
     });
-    const j = await res.json();
-    if (!res.ok) throw new Error(j.error ? `${res.status} ${j.error.message}` : res.status);
-    const out = JSON.parse(j.candidates[0].content.parts[0].text);
-    lastResult = { ko, zh: out.zh, py: out.pinyin };
-    // 최근 기록: 같은 문장은 중복 저장하지 않고 맨 앞으로, 최대 15개
-    const hist = store.get(HIST_STORE, []).filter(h => h.ko !== ko);
-    hist.unshift(lastResult); store.set(HIST_STORE, hist.slice(0, 15));
-    renderTrans();
+    const j = await res.json().catch(() => ({}));
+    if (res.status === 403) { store.del(CODE_KEY); throw new Error("가족 암호가 틀렸어요. 다시 입력해 주세요."); }
+    if (!res.ok || !j.zh) throw new Error(j.error || "번역 서버 오류 (" + res.status + ")");
+    lastResult = { ko, zh: j.zh, py: j.pinyin || "" };
+    const hist = store.get(HIST_KEY, []).filter(h => h.ko !== ko);   // 같은 문장은 맨 앞으로만 이동
+    hist.unshift(lastResult); store.set(HIST_KEY, hist.slice(0, 15));
+    renderLocal();
   } catch(e) {
-    btn.disabled = false; btn.textContent = "번역하기";
-    msg.textContent = "번역 실패: " + e.message + (String(e.message).startsWith("400") ? " (키가 맞는지 확인)" : "");
+    btn.disabled = false; btn.textContent = "중국어로 번역"; msg.textContent = e.message;
+    if (!store.get(CODE_KEY, "")) { renderLocal(); $("trMsg").textContent = e.message; }
   }
 }
 
-// 중국어 음성: 휴대폰에 내장된 음성 합성 기능 사용 (별도 비용 없음)
+// 중국어 읽어주기: 휴대폰 내장 음성 (키·비용 없음)
 function speak(text){
   if (!("speechSynthesis" in window)) return;
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text); u.lang = "zh-CN"; u.rate = .85;
   speechSynthesis.speak(u);
 }
-function showBig(r){ $("bigZh").textContent = r.zh; $("bigPy").textContent = r.py; $("big").classList.add("show"); }
+function showBig(zh, sub){ $("bigZh").textContent = zh; $("bigPy").textContent = sub || ""; $("big").classList.add("show"); }
 $("big").onclick = () => $("big").classList.remove("show");
 
-/* ---------- 탭 전환 ---------- */
-// 보고 있는 탭을 주소 뒤 #으로 기억 → 새로고침·링크 공유 시 같은 탭이 열림
-function showTab(name){
-  if (!$(name) || !$(name).classList.contains("page")) name = "overview";
-  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.page === name));
-  document.querySelectorAll(".page").forEach(p => p.classList.toggle("active", p.id === name));
+/* ---------- 환율 자동 갱신 ---------- */
+// 키 없는 공개 API 두 곳을 차례로 시도. 둘 다 실패하면 직접 입력값 유지
+async function loadFx(){
+  const show = (rate, when) => {
+    const box = $("fx"); if (!box) return;
+    box.querySelector("b").textContent = rate.toFixed(2) + "원";
+    box.querySelector("em").textContent = when + " 기준 · 자동";
+  };
+  try { const j = await (await fetch("https://api.frankfurter.dev/v1/latest?from=CNY&to=KRW")).json();
+        if (j.rates && j.rates.KRW) return show(j.rates.KRW, j.date); } catch(e) {}
+  try { const j = await (await fetch("https://open.er-api.com/v6/latest/CNY")).json();
+        if (j.rates && j.rates.KRW) return show(j.rates.KRW, new Date(j.time_last_update_unix * 1000).toISOString().slice(0,10)); } catch(e) {}
 }
-document.querySelectorAll(".tab").forEach(t => t.onclick = () => {
-  history.replaceState(null, "", "#" + t.dataset.page); showTab(t.dataset.page);
-  // 탭을 누르면 헤더는 건너뛰고 탭 바로 아래부터 보이게 (긴 헤더를 매번 다시 스크롤하지 않게)
-  const top = $("tabs").offsetTop; if (window.scrollY > top) window.scrollTo(0, top);
-});
 
-renderHeader(); renderOverview(); renderPlan(); renderFlight(); renderHotel(); renderPack(); renderTrans(); renderInfo(); loadFx();
-showTab(location.hash.slice(1));
+/* ---------- 탭 이동 ---------- */
+const TITLES = { home: "", plan: "일정", book: "항공 · 숙소", pack: "준비물", local: "현지에서" };
+function go(name, keepScroll){
+  if (!TITLES.hasOwnProperty(name)) name = "home";
+  document.querySelectorAll(".page").forEach(p => p.classList.toggle("on", p.id === "p-" + name));
+  document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("on", b.dataset.p === name));
+  $("topbar").classList.toggle("show", name !== "home");   // 홈은 큰 헤더가 있으니 상단 바 숨김
+  $("topTitle").textContent = TITLES[name];
+  history.replaceState(null, "", "#" + name);             // 새로고침·공유 시 같은 탭이 열리게
+  if (!keepScroll) window.scrollTo(0, 0);
+}
+document.querySelectorAll("#nav button").forEach(b => b.onclick = () => go(b.dataset.p));
+
+$("topDday").textContent = ddayText()[0];
+renderHome(); renderPlan(); renderBook(); renderPack(); renderLocal(); loadFx();
+go(location.hash.slice(1), true);
 </script>
 </body>
 </html>
