@@ -1,0 +1,2049 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>알고리즘 3주차 1차시 — 분할 정복법</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   과목 테마 — 아래 3줄(--accent, --accent-deep, --accent-soft)만 교체
+   데이터분석프로그래밍 #0EA5E9 / #0369A1 / #E0F2FE
+   전공영어           #E08700 / #A55A00 / #FEF3DC
+   인공지능           #9333EA / #6B21A8 / #F3E8FF
+   알고리즘           #4F46E5 / #3730A3 / #E8E7FD
+   시큐어코딩         #DC2626 / #991B1B / #FDE7E7
+   개인정보보호암호기술 #DB2777 / #9D174D / #FCE7F3
+   개인정보보호법률이해 #059669 / #065F46 / #D8F5EA
+   ═══════════════════════════════════════════════════════════════ */
+:root{
+  --accent:#4F46E5;
+  --accent-deep:#3730A3;
+  --accent-soft:#E8E7FD;
+
+  --bg:#F7F8FA;
+  --surface:#FFFFFF;
+  --ink:#15161B;
+  --ink-2:#565C66;
+  --ink-3:#8B9098;
+  --line:#E5E7EC;
+  --line-2:#F0F1F4;
+  --code-bg:#1B1D24;
+  --code-ink:#E4E6ED;
+  --mark:#FFE27A;
+  --c1:#1D6FC4;
+  --c2:#0E8F72;
+  --c3:#C2410C;
+  --font:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,system-ui,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  --mono:'JetBrains Mono','SFMono-Regular',Consolas,'D2Coding',monospace;
+}
+html[data-theme="dark"]{
+  --accent:#7C78F0;
+  --accent-deep:#9C99F7;
+  --accent-soft:#22232E;
+  --bg:#101116;
+  --surface:#181A20;
+  --ink:#E8E9ED;
+  --ink-2:#A6AAB4;
+  --ink-3:#73777F;
+  --line:#2A2C34;
+  --line-2:#202229;
+  --code-bg:#0C0D11;
+  --mark:#6E5C16;
+  --c1:#6FB3F2;
+  --c2:#4FD9B0;
+  --c3:#F0955A;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15.5px;line-height:1.72;letter-spacing:-.012em;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-deep)}
+::selection{background:var(--accent);color:#fff}
+
+/* ── 스크롤 진행 바 ─────────────────────────────────── */
+#scrollbar{position:fixed;top:0;left:0;height:3px;width:0;background:var(--accent);z-index:99}
+
+/* ── 상단 바 ────────────────────────────────────────── */
+.topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:10px;padding:10px 22px;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.back{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink-2);font-size:14px;font-weight:700;white-space:nowrap}
+.back:hover{color:var(--accent-deep)}
+.back i{width:10px;height:10px;border-radius:3px;background:var(--accent);display:block}
+.search{flex:1;max-width:300px;margin-left:auto;position:relative}
+.search input{width:100%;padding:7px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14px}
+.search input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.hit{position:absolute;right:10px;top:8px;font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums;pointer-events:none}
+.tools{display:flex;gap:6px}
+.tbtn{border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:9px;padding:7px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);white-space:nowrap}
+.tbtn:hover{border-color:var(--accent);color:var(--accent-deep)}
+.tbtn.solid{background:var(--accent);border-color:var(--accent);color:#fff}
+.tbtn:disabled{opacity:.4;cursor:default}
+
+/* ── 레이아웃 ───────────────────────────────────────── */
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);gap:38px;max-width:1200px;margin:0 auto;padding:26px 24px 120px}
+main{min-width:0}
+
+/* ── 사이드 패널(포인트 컬러) ───────────────────────── */
+.side{position:sticky;top:80px;align-self:start;max-height:calc(100vh - 100px);overflow-y:auto;scrollbar-width:thin}
+.panel{background:var(--accent);border-radius:16px;padding:18px 16px;color:#fff;box-shadow:0 8px 24px -12px color-mix(in srgb,var(--accent) 70%,transparent)}
+.panel .cap{font-size:11.5px;font-weight:700;opacity:.72;margin-bottom:9px}
+.panel .subject{font-size:19px;font-weight:800;letter-spacing:-.03em;line-height:1.3;margin-bottom:2px}
+.panel .when{font-size:12.5px;opacity:.8;margin-bottom:16px}
+.toc{list-style:none;margin:0;padding:0}
+.toc a{display:block;padding:6px 10px;border-radius:8px;color:#fff;opacity:.82;text-decoration:none;font-size:13.5px;font-weight:600;line-height:1.45}
+.toc a:hover{background:rgba(255,255,255,.16);opacity:1}
+.toc a.on{background:#fff;color:var(--accent-deep);opacity:1;font-weight:800}
+.toc .num{display:inline-block;width:17px;font-variant-numeric:tabular-nums;opacity:.7}
+.toc a.on .num{opacity:1}
+.panel hr{border:0;border-top:1px solid rgba(255,255,255,.22);margin:14px 0}
+.chk label{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;padding:3px 0;cursor:pointer;line-height:1.5;opacity:.9}
+.chk input{margin-top:4px;accent-color:#fff;flex-shrink:0}
+.chk input:checked + span{opacity:.5;text-decoration:line-through}
+.pbar{height:4px;border-radius:99px;background:rgba(255,255,255,.28);margin-top:11px;overflow:hidden}
+.pbar i{display:block;height:100%;width:0;background:#fff;transition:width .25s}
+
+/* ── 히어로 ─────────────────────────────────────────── */
+.hero{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px 28px 22px;overflow:hidden;margin-bottom:16px}
+.hero::after{content:attr(data-w);position:absolute;right:14px;bottom:-26px;font-size:112px;font-weight:800;color:var(--accent);opacity:.09;letter-spacing:-.06em;line-height:1;pointer-events:none}
+.chip{display:inline-flex;align-items:center;gap:7px;background:var(--accent-soft);color:var(--accent-deep);font-size:12.5px;font-weight:800;padding:4px 11px;border-radius:99px}
+h1{font-size:clamp(26px,3.6vw,34px);font-weight:800;letter-spacing:-.04em;line-height:1.24;margin:12px 0 6px;position:relative}
+.hero .sub{color:var(--ink-2);font-size:15px;margin:0 0 14px;position:relative}
+[hidden]{display:none!important}
+.metaline{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-3);position:relative}
+.metaline b{color:var(--ink-2);font-weight:600}
+
+/* ── 수업 자료 (같은 폴더의 PDF) ────────────────────── */
+.files{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;position:relative}
+.file{display:inline-flex;align-items:center;gap:9px;padding:8px 13px 8px 9px;border:1px solid var(--line);border-radius:10px;background:var(--surface);text-decoration:none;color:var(--ink);font-size:13.5px;font-weight:700}
+.file:hover{border-color:var(--accent);background:var(--accent-soft)}
+.file .ic{background:var(--accent);color:#fff;font-size:10px;font-weight:800;padding:3px 6px;border-radius:6px;letter-spacing:.02em}
+.file em{font-style:normal;color:var(--ink-3);font-weight:600;font-size:12.5px}
+.files .none{font-size:12.5px;color:var(--ink-3);font-weight:600;padding:8px 0}
+.extra-chip:disabled{cursor:default;opacity:.6}
+
+/* ── 오늘의 흐름 ────────────────────────────────────── */
+.flow{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:26px}
+.flow a{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--line);border-radius:99px;background:var(--surface);text-decoration:none;color:var(--ink-2);font-size:13px;font-weight:600}
+.flow a:hover{border-color:var(--accent);color:var(--accent-deep);background:var(--accent-soft)}
+.flow a b{color:var(--accent);font-variant-numeric:tabular-nums}
+
+/* ── 핵심 카드 ──────────────────────────────────────── */
+.keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:34px}
+.key{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:14px;padding:16px 17px}
+.key .n{font-size:12px;font-weight:800;color:var(--accent);margin-bottom:5px}
+.key p{margin:0;font-size:14.5px;line-height:1.6}
+.key b{font-weight:800}
+
+/* ── 섹션 ───────────────────────────────────────────── */
+section{margin-bottom:46px;scroll-margin-top:82px}
+h2.st{display:flex;align-items:center;gap:11px;font-size:22px;font-weight:800;letter-spacing:-.035em;margin:0 0 14px}
+h2.st .sq{flex-shrink:0;width:30px;height:30px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+h3{font-size:16.5px;font-weight:800;margin:26px 0 8px;letter-spacing:-.025em;padding-left:11px;border-left:3px solid var(--accent)}
+h4{font-size:14.5px;font-weight:700;margin:18px 0 6px;color:var(--ink-2)}
+p{margin:9px 0}
+ul,ol{margin:9px 0;padding-left:21px}
+li{margin:3px 0}
+li::marker{color:var(--accent)}
+.en{color:var(--ink-3);font-weight:500;font-size:.9em}
+mark{background:linear-gradient(transparent 54%,var(--mark) 54%);color:inherit;padding:0 2px}
+.hit-mark{background:var(--accent);color:#fff;border-radius:3px}
+
+/* ── 배지 ───────────────────────────────────────────── */
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin:-6px 0 12px}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:6px;letter-spacing:0}
+.badge.exam{color:#92580B;background:#FDF0D5}
+.badge.prof{color:var(--accent-deep);background:var(--accent-soft)}
+.badge.ask{color:#B02020;background:#FCE4E4}
+html[data-theme="dark"] .badge.exam{background:#3B2D0E;color:#EFC470}
+html[data-theme="dark"] .badge.ask{background:#3A1919;color:#F0A0A0}
+
+/* ── 카드형 콜아웃 ──────────────────────────────────── */
+.call{border-radius:13px;padding:14px 17px;margin:15px 0;background:var(--surface);border:1px solid var(--line)}
+.call .t{font-size:12.5px;font-weight:800;margin-bottom:5px}
+.call p:first-of-type{margin-top:0}
+.call p:last-child,.call ul:last-child{margin-bottom:0}
+.call.quote{background:var(--accent-soft);border-color:transparent}
+.call.quote .t{color:var(--accent-deep)}
+.call.quote p{font-size:14.8px}
+.call.warn{border-left:4px solid #E5A50A}
+.call.warn .t{color:#A16207}
+.call.ask{border-left:4px solid #DC2626}
+.call.ask .t{color:#B02020}
+.call.link{border-left:4px solid var(--accent)}
+.call.link .t{color:var(--accent-deep)}
+
+/* 보충 — 교수님이 설명하지 않은 외부 자료. 회색 + 점선으로 본문과 확실히 구분 */
+.call.extra{background:repeating-linear-gradient(135deg,var(--line-2),var(--line-2) 9px,transparent 9px,transparent 18px);border:1.5px dashed var(--ink-3);border-left-width:1.5px}
+.call.extra .t{color:var(--ink-2);display:flex;align-items:center;gap:6px}
+.call.extra .t::before{content:"보충";background:var(--ink-3);color:var(--surface);font-size:10.5px;padding:1px 6px;border-radius:5px}
+.call.extra p{color:var(--ink-2)}
+.badge.extra{color:var(--ink-2);background:var(--line-2);border:1px dashed var(--ink-3)}
+.ext{border-bottom:2px dotted var(--ink-3);color:var(--ink-2)}
+.ext::after{content:"보충";font-size:9.5px;font-weight:800;vertical-align:super;color:var(--ink-3);margin-left:2px;letter-spacing:0}
+.extra-chip{border:1.5px dashed var(--ink-3);background:transparent;color:var(--ink-2);cursor:pointer;font-family:var(--font)}
+body.no-extra .call.extra,body.no-extra .badge.extra{display:none}
+body.no-extra .ext{border-bottom:0}
+body.no-extra .ext::after{display:none}
+html[data-theme="dark"] .call.warn .t{color:#E5B547}
+html[data-theme="dark"] .call.ask .t{color:#F0A0A0}
+
+/* ── 원문 보기 ──────────────────────────────────────── */
+details.raw{margin:12px 0;border:1px dashed var(--line);border-radius:10px;background:var(--line-2)}
+details.raw summary{cursor:pointer;padding:8px 14px;font-size:12.5px;color:var(--ink-3);font-weight:700;list-style:none}
+details.raw summary::-webkit-details-marker{display:none}
+details.raw summary::before{content:"▸ ";color:var(--accent)}
+details.raw[open] summary::before{content:"▾ "}
+details.raw .txt{padding:0 14px 12px;font-size:13px;color:var(--ink-2);white-space:pre-wrap;line-height:1.7}
+
+/* ── 필기 원문 페이지 ───────────────────────────────── */
+.rawnote{border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+.rawitem{display:grid;grid-template-columns:78px 1fr;gap:16px;padding:15px 18px;border-bottom:1px solid var(--line-2)}
+.rawitem:last-child{border-bottom:0}
+.rawitem .seq{font-size:12px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+.rawitem .seq span{display:block;color:var(--ink-3);font-weight:600;font-size:11px;margin-top:2px}
+.rawitem .body{white-space:pre-wrap;font-size:14px;line-height:1.75;color:var(--ink)}
+.rawitem .where{margin-top:7px;font-size:12px}
+.rawitem .where a{color:var(--accent-deep);text-decoration:none;font-weight:700;background:var(--accent-soft);padding:2px 8px;border-radius:6px}
+.rawitem .where a:hover{background:var(--accent);color:#fff}
+
+/* ── 표 ─────────────────────────────────────────────── */
+.tablewrap{overflow-x:auto;margin:15px 0;border:1px solid var(--line);border-radius:13px}
+.frac{display:inline-flex;flex-direction:column;text-align:center;vertical-align:middle;line-height:1.15;margin:0 3px;font-size:.94em}
+.frac .num{border-bottom:1.4px solid currentColor;padding:0 4px}
+.frac .den{padding:0 4px}
+.math{white-space:pre-wrap;font-family:var(--mono);font-size:13.6px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 15px;line-height:1.7;margin:12px 0;overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;background:var(--surface)}
+th,td{padding:10px 13px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line-2)}
+th{background:var(--accent);color:#fff;font-weight:700;font-size:13px;white-space:nowrap;border-bottom:0}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--line-2)}
+
+/* ── 코드 / 의사코드 ────────────────────────────────── */
+.codebox{margin:15px 0;border-radius:13px;overflow:hidden;background:var(--code-bg);border:1px solid var(--code-bg)}
+.codebox .head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 14px;font-size:12px;color:#9AA0AC;font-weight:700;background:rgba(255,255,255,.04)}
+.codebox .head .tag{color:#fff;background:var(--accent);border-radius:5px;padding:1px 7px;font-size:11px;margin-right:7px}
+.codebox pre{margin:0;padding:15px 17px;overflow-x:auto;font-family:var(--mono);font-size:13.2px;line-height:1.7;color:var(--code-ink)}
+.codebox .cm{color:#7C8494}
+.codebox .kw{color:#C4A6FF}
+.codebox .st2{color:#8BD5A0}
+.copy{border:0;background:transparent;color:#9AA0AC;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font)}
+.copy:hover{color:#fff}
+.codebox.pseudo{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent)}
+.codebox.pseudo .head{background:var(--accent-soft);color:var(--accent-deep)}
+.codebox.pseudo .head .tag{background:var(--accent-deep)}
+.codebox.pseudo pre{color:var(--ink);font-size:13.6px}
+.codebox.pseudo .cm{color:var(--ink-3)}
+.codebox.pseudo .kw{color:var(--accent-deep);font-weight:700}
+.codebox.pseudo .copy{color:var(--ink-3)}
+.codebox.pseudo .copy:hover{color:var(--accent-deep)}
+code:not(pre code){background:var(--accent-soft);color:var(--accent-deep);padding:1px 6px;border-radius:6px;font-family:var(--mono);font-size:.88em;font-weight:600}
+
+/* ── 도식 ───────────────────────────────────────────── */
+figure{margin:18px 0;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 14px 12px}
+figure svg{max-width:100%;height:auto}
+figcaption{font-size:12.5px;color:var(--ink-3);margin-top:10px}
+
+/* ── 용어 ───────────────────────────────────────────── */
+.terms{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:11px}
+.term{border:1px solid var(--line);border-radius:13px;padding:13px 15px;background:var(--surface)}
+.term b{display:block;font-size:15px}
+.term .e{display:block;font-size:12px;color:var(--accent-deep);font-family:var(--mono);margin-bottom:6px}
+.term p{margin:0;font-size:13.3px;color:var(--ink-2);line-height:1.6}
+
+/* ── 예상 문제 ──────────────────────────────────────── */
+.q{border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:12px 0;background:var(--surface)}
+.q .qh{display:flex;gap:10px;align-items:flex-start;font-weight:700;font-size:15px}
+.q .qn{color:#fff;background:var(--accent);border-radius:7px;padding:1px 8px;font-size:12.5px;font-weight:800;flex-shrink:0;margin-top:3px}
+.q .type{font-size:11px;font-weight:800;color:var(--ink-3);border:1px solid var(--line);border-radius:6px;padding:1px 7px;margin-left:auto;flex-shrink:0;margin-top:3px}
+.q ol.ch{list-style:none;padding-left:0;margin:11px 0 0;counter-reset:c}
+.q ol.ch li{padding:3px 0 3px 26px;position:relative;font-size:14.3px}
+.q ol.ch li::before{content:counter(c);counter-increment:c;position:absolute;left:0;top:4px;width:19px;height:19px;border:1px solid var(--line);border-radius:50%;font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--ink-3)}
+.ans{margin-top:12px;padding:11px 13px;border-radius:10px;background:var(--accent-soft);font-size:14.2px;cursor:pointer}
+.ans .lab{font-weight:800;color:var(--accent-deep);font-size:12.5px;margin-right:7px}
+body.hide-ans .ans:not(.on){background:var(--line-2);color:transparent;user-select:none;cursor:pointer;position:relative}
+body.hide-ans .ans:not(.on) *{color:transparent!important}
+body.hide-ans .ans:not(.on)::after{content:"눌러서 정답 확인";position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-3);font-size:12.5px;font-weight:700}
+
+/* ── 단어장 페이지 ──────────────────────────────────── */
+.vhead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px}
+.vhead input[type=search]{flex:1;min-width:170px;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14px}
+.vhead input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.vlist{margin:0;padding:0;list-style:none;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
+.vword{display:grid;grid-template-columns:190px 1fr;gap:16px;padding:14px 18px;border-bottom:1px solid var(--line-2)}
+.vword:last-child{border-bottom:0}
+.vword:hover{background:var(--line-2)}
+.vword .w{font-weight:800;font-size:16px;letter-spacing:-.02em}
+.vword .ipa{display:block;font-family:var(--mono);font-size:12px;color:var(--ink-3);font-weight:400;margin-top:1px}
+.vword .pos{display:inline-block;font-size:10.5px;font-weight:800;color:#fff;background:var(--accent);border-radius:5px;padding:1px 6px;margin-top:5px}
+.vword .mean{font-size:14.5px;margin:0;font-weight:600}
+.vword .ex{font-size:13px;color:var(--ink-2);margin:5px 0 0}
+.vword .ex b{color:var(--accent-deep);font-weight:700}
+.vword .ex .ko{display:block;color:var(--ink-3);font-size:12.5px}
+.masked .mean,.masked .ex{background:var(--line-2);border-radius:6px;color:transparent;cursor:pointer}
+.masked .mean *,.masked .ex *{color:transparent!important}
+.masked .mean.show,.masked .ex.show{background:transparent;color:inherit}
+.masked .mean.show *,.masked .ex.show *{color:revert!important}
+.masked .ex.show b{color:var(--accent-deep)!important}
+.quizbox{margin-top:18px;padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--surface);display:none}
+.quizbox.on{display:block}
+.quizbox .qq{font-size:22px;font-weight:800;margin-bottom:14px;letter-spacing:-.02em}
+.quizbox .opts{display:grid;gap:8px}
+.quizbox .opt{text-align:left;padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14.5px;cursor:pointer}
+.quizbox .opt:hover{border-color:var(--accent)}
+.quizbox .opt.ok{border-color:#16A34A;background:color-mix(in srgb,#16A34A 12%,var(--surface))}
+.quizbox .opt.no{border-color:#DC2626;background:color-mix(in srgb,#DC2626 12%,var(--surface))}
+.quizbox .score{margin-top:13px;font-size:13px;color:var(--ink-3);font-weight:600}
+
+footer{margin-top:54px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-3);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+@media(max-width:900px){
+  .wrap{grid-template-columns:1fr;gap:18px;padding:16px 16px 80px}
+  .side{position:static;max-height:none;order:-1}
+  .vword{grid-template-columns:1fr;gap:5px}
+  .search{max-width:none;order:3;flex-basis:100%;max-width:100%}
+  .topbar{flex-wrap:wrap}
+  .hero::after{font-size:78px}
+}
+@media print{
+  .topbar,.side,#scrollbar,.quizbox,.vhead,.flow,.files,.extra-chip{display:none!important}
+  .wrap{display:block;max-width:none;padding:0}
+  body{font-size:10.5pt;background:#fff}
+  section{page-break-inside:avoid;margin-bottom:22px}
+  body.hide-ans .ans:not(.on){background:var(--accent-soft)!important;color:inherit!important}
+  body.hide-ans .ans:not(.on) *{color:inherit!important}
+  body.hide-ans .ans:not(.on)::after{display:none}
+  details.raw{display:none}
+  #viewVocab,#viewRaw{display:block!important;page-break-before:always}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body class="hide-ans">
+<div id="scrollbar"></div>
+
+<div class="topbar">
+  <a class="back" href="../"><i></i>알고리즘</a>
+  <div class="search"><input id="q" type="search" placeholder="찾기 (Enter로 다음)" aria-label="문서 내 검색"><span class="hit" id="hit"></span></div>
+  <div class="tools">
+    <button class="tbtn" id="ansBtn">정답 가리기</button>
+    <button class="tbtn" id="vocabBtn">단어장</button>
+    <button class="tbtn" id="rawBtn">필기 원문</button>
+    <button class="tbtn" id="themeBtn">다크</button>
+    <button class="tbtn" id="printBtn">🖨</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ═══════════ 사이드 패널 ═══════════ -->
+<aside class="side">
+  <div class="panel">
+    <div class="subject">알고리즘</div>
+    <div class="when">3주차 1차시 · 2026.09.17 (목)</div>
+
+    <div id="tocWrap">
+      <div class="cap">목차</div>
+      <ul class="toc" id="toc">
+        <li><a href="#s1"><span class="num">01</span>분할 정복법</a></li>
+        <li><a href="#s2"><span class="num">02</span>max — 하나 vs 나머지</a></li>
+        <li><a href="#s3"><span class="num">03</span>max — 반씩 분할</a></li>
+        <li><a href="#s4"><span class="num">04</span>a<sup>n</sup> — power1</a></li>
+        <li><a href="#s5"><span class="num">05</span>a<sup>n</sup> — power2</a></li>
+        <li><a href="#s6"><span class="num">06</span>a<sup>n</sup> — power3</a></li>
+        <li><a href="#s7"><span class="num">07</span>피보나치 수</a></li>
+        <li><a href="#s8"><span class="num">08</span>증가 속도 비교</a></li>
+        <li><a href="#s9"><span class="num">09</span>잠시 — 행렬 곱</a></li>
+        <li><a href="#s10"><span class="num">10</span>피보나치를 행렬로</a></li>
+        <li><a href="#s11"><span class="num">11</span>A<sup>n</sup>으로 O(log n)</a></li>
+        <li><a href="#sg"><span class="num">12</span>용어 정리</a></li>
+        <li><a href="#sq"><span class="num">13</span>확인 필요</a></li>
+        <li><a href="#sx"><span class="num">14</span>예상 문제</a></li>
+      </ul>
+      <hr>
+      <div class="cap">복습 체크</div>
+      <div class="chk">
+        <label><input type="checkbox"><span>분할 정복의 정의 말로 설명</span></label>
+        <label><input type="checkbox"><span>2T(n/2)+C 전개해서 O(n) 도출</span></label>
+        <label><input type="checkbox"><span>등비수열 합 공식 외우기</span></label>
+        <label><input type="checkbox"><span>power1·2·3 비교표 채우기</span></label>
+        <label><input type="checkbox"><span>power2가 왜 O(n)인지 설명</span></label>
+        <label><input type="checkbox"><span>fibo1이 지수 시간인 이유 설명</span></label>
+        <label><input type="checkbox"><span>2×2 행렬 곱 직접 계산</span></label>
+        <label><input type="checkbox"><span>A^n 유도 과정 직접 써보기</span></label>
+        <label><input type="checkbox"><span>예상 문제 6개 풀기</span></label>
+      </div>
+      <div class="pbar"><i id="barFill"></i></div>
+    </div>
+
+    <div id="rawNav" hidden>
+      <div class="cap">필기 원문</div>
+      <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">내가 수업 중에 보낸 내용 <b id="rawTotal">0</b>개를 손대지 않고 그대로 모아둔 페이지입니다.</p>
+      <hr>
+      <div class="cap">확인 방법</div>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">여기 있는 내용이 본문에 다 반영됐는지 대조하세요. 각 항목의 파란 링크를 누르면 정리된 위치로 이동합니다.</p>
+    </div>
+
+    <div id="vocabNav" hidden>
+      <div class="cap">단어장</div>
+      <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">이번 차시에 나온 전공 필수 단어 <b id="vTotal">6</b>개입니다.</p>
+      <hr>
+      <div class="cap">사용법</div>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">뜻 가리기를 켜면 회색 칸을 눌러 하나씩 확인할 수 있습니다. 퀴즈는 아래 목록에서 문제를 자동으로 만듭니다.</p>
+    </div>
+  </div>
+</aside>
+
+<main>
+<!-- ═══════════ 본문 뷰 ═══════════ -->
+<div id="viewNote">
+
+  <div class="hero" data-w="03">
+    <span class="chip">3주차 · 1차시</span>
+    <button class="chip extra-chip" id="extraChip"></button>
+    <h1>분할 정복법</h1>
+    <p class="sub">큰 문제를 작은 문제로 쪼개 재귀적으로 푸는 방법</p>
+    <div class="metaline">
+      <span>2026.09.17 (목)</span>
+      <span><b>윤지현</b> 교수님</span>
+      <span>교재 범위 없음 (판서 수업)</span>
+      <span>과제 없음</span>
+    </div>
+  </div>
+
+  <nav class="flow">
+    <a href="#s1"><b>01</b> 분할 정복법</a>
+    <a href="#s2"><b>02</b> 하나 vs 나머지</a>
+    <a href="#s3"><b>03</b> 반씩 분할</a>
+    <a href="#s4"><b>04</b> power1</a>
+    <a href="#s5"><b>05</b> power2</a>
+    <a href="#s6"><b>06</b> power3</a>
+    <a href="#s7"><b>07</b> 피보나치</a>
+    <a href="#s8"><b>08</b> 증가 속도</a>
+    <a href="#s9"><b>09</b> 행렬 곱</a>
+    <a href="#s10"><b>10</b> 피보나치 행렬</a>
+    <a href="#s11"><b>11</b> O(log n) 달성</a>
+    <a href="#sx"><b>14</b> 예상 문제</a>
+  </nav>
+
+  <div class="keys">
+    <div class="key"><div class="n">핵심 1</div><p>분할 정복은 큰 문제를 같은 형태의 작은 문제로 쪼개 <b>재귀적</b>으로 푼다.</p></div>
+    <div class="key"><div class="n">핵심 2</div><p>재귀 호출을 <b>1번만</b> 하면 O(log n), 같은 값을 <b>2번</b> 부르면 O(n). power2 vs power3.</p></div>
+    <div class="key"><div class="n">핵심 3</div><p>피보나치를 행렬 거듭제곱으로 바꾸면 O(γ<sup>n</sup>) → <b>O(log n)</b>.</p></div>
+  </div>
+
+  <!-- 01 -->
+  <section id="s1">
+    <h2 class="st"><span class="sq">01</span>분할 정복법</h2>
+
+    <div class="call quote">
+      <div class="t">분할 정복법 (Divide &amp; Conquer)</div>
+      <p>큰 문제 ⇒ 작은 문제 &nbsp;→&nbsp; <b>재귀적</b></p>
+    </div>
+
+    <p>문제를 그대로 풀기 어려울 때, 같은 형태의 더 작은 문제로 쪼갠 뒤 그 답을 이용해 원래 답을 만드는 방법입니다. 쪼갠 문제가 원래 문제와 같은 형태이므로 자연스럽게 <b>재귀<span class="en">(recursion)</span></b>가 됩니다.</p>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">분할 정복법
+분할 정복법(Divide &amp; Conquer) (큰 문제 ⇒ 작은 문제) → 재귀적</div></details>
+  </section>
+
+  <!-- 02 -->
+  <section id="s2">
+    <h2 class="st"><span class="sq">02</span>max(A) — 하나 vs 나머지</h2>
+
+    <p>리스트 A가 다음과 같다고 합시다.</p>
+    <pre class="math">A :  3   0   -5   7   2   -4   6   9</pre>
+
+    <p>가장 큰 값을 구하는 알고리즘 <b>max(A)</b>를 분할해서 풀 수 있습니다. 맨 처음 수 <b>A[0]</b>와 <b>나머지 전체의 최댓값</b>을 비교하면 됩니다.</p>
+
+    <figure style="margin:20px 0">
+      <svg width="100%" viewBox="0 0 440 250" role="img" style="display:block">
+        <title>max(A)를 맨 앞 하나와 나머지로 쪼개는 과정</title>
+        <desc>리스트 A의 맨 앞 값 3과 나머지 일곱 개의 최댓값을 비교한다. 나머지 쪽이 더 크면 다시 그 나머지의 맨 앞 값 0과 그 뒤 여섯 개의 최댓값을 비교한다. 이렇게 앞에서 하나씩 떼어내며 같은 모양의 더 작은 문제로 계속 줄여 간다.</desc>
+
+        <text x="20" y="18" font-size="11" fill="var(--ink-3)">A[0] 와 나머지의 최댓값을 비교</text>
+        <rect x="20" y="28" width="46" height="34" rx="8" fill="var(--c2)" stroke="none"/>
+        <text x="43" y="45" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="#fff">3</text>
+        <text x="80" y="45" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="var(--ink-2)">vs</text>
+        <rect x="96" y="28" width="324" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/>
+        <text x="258" y="45" text-anchor="middle" dominant-baseline="central" font-size="12.5" fill="var(--ink)">max( 0  −5  7  2  −4  6  9 )</text>
+        <text x="43" y="74" text-anchor="middle" font-size="10.5" fill="var(--c2)">A[0]</text>
+        <text x="258" y="74" text-anchor="middle" font-size="10.5" fill="var(--ink-3)">max(A[1:])</text>
+
+        <line x1="220" y1="84" x2="220" y2="102" stroke="var(--c3)" stroke-width="1.4"/>
+        <path d="M215.5 102 L224.5 102 L220 109 Z" fill="var(--c3)"/>
+        <text x="234" y="96" font-size="10.5" fill="var(--ink-3)">나머지 쪽이 더 크면</text>
+
+        <rect x="66" y="118" width="46" height="34" rx="8" fill="var(--c2)" stroke="none"/>
+        <text x="89" y="135" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="#fff">0</text>
+        <text x="126" y="135" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="var(--ink-2)">vs</text>
+        <rect x="142" y="118" width="278" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/>
+        <text x="281" y="135" text-anchor="middle" dominant-baseline="central" font-size="12.5" fill="var(--ink)">max( −5  7  2  −4  6  9 )</text>
+        <text x="89" y="164" text-anchor="middle" font-size="10.5" fill="var(--c2)">A[1]</text>
+        <text x="281" y="164" text-anchor="middle" font-size="10.5" fill="var(--ink-3)">max(A[2:])</text>
+
+        <line x1="240" y1="174" x2="240" y2="192" stroke="var(--c3)" stroke-width="1.4" stroke-dasharray="4 3"/>
+        <path d="M235.5 192 L244.5 192 L240 199 Z" fill="var(--c3)"/>
+
+        <rect x="112" y="208" width="308" height="30" rx="8" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.3"/>
+        <text x="266" y="223" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="var(--accent-deep)">같은 모양의 더 작은 문제가 계속 반복</text>
+      </svg>
+      <figcaption>앞에서 하나씩 떼어내며 나머지에 대해 같은 문제를 다시 푼다</figcaption>
+    </figure>
+
+    <h3>재귀식</h3>
+    <pre class="math">max(A) = max( A[0] , max(A[1:]) )</pre>
+
+    <div class="call warn">
+      <div class="t">두 max는 서로 다른 것입니다 — 주의</div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>위치</th><th>무엇인가</th></tr></thead>
+          <tbody>
+            <tr><td><b>바깥쪽</b> max( … , … )</td><td><b>두 수 중 큰 값</b>을 고르는 연산. 인자가 두 개.</td></tr>
+            <tr><td><b>안쪽</b> max(A[1:])</td><td>우리가 만들고 있는 <b>알고리즘 함수</b>. 인자가 리스트 하나.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>이름만 같고 하는 일이 다릅니다. 헷갈리면 안쪽을 <code>maxOfList</code> 같은 다른 이름으로 바꿔 읽으면 구분이 쉽습니다.</p>
+    </div>
+
+    <h3>시간복잡도</h3>
+    <p>한 번 호출할 때마다 비교 1번(상수 C)을 하고, 크기가 1 작아진 문제로 넘어갑니다.</p>
+    <pre class="math">T(n) = T(n−1) + C ,   T(1) = C
+     = T(n−2) + C + C
+     = T(n−3) + C + C + C
+     ...
+     = T(1) + (n−1)·C
+     = C + (n−1)·C = Cn
+⇒ O(n)</pre>
+    <p>이 방식은 리스트를 <b>원소 하나 vs 나머지</b>로 분할한 경우입니다.</p>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">A : 3 0 -5 7 2 -4 6 9
+이런 리스트가 있다면
+가장 큰 값을 구하는 알고리즘 max(A)가 있다고 하자.
+우리는 이걸 분할해서 풀 수 있었음
+맨 처음 수 A[0]와 A[1:](나머지)를 비교해서 구할 수 있음(도식화)
+A[0] vs max(A[1:] )
+max(A[1:])이 더 크다면 다시 A[1] vs max(A[2:])
+max (A) = max(//max는 두 수 중 큰 값을 구하는 것임)(A[0], max(A[1:]))  다른 max는 알고리즘 함수임(두 수 중 큰 값을 구하는 max와 다름 주의)</div></details>
+  </section>
+
+  <!-- 03 -->
+  <section id="s3">
+    <h2 class="st"><span class="sq">03</span>max(A) — 반씩 분할</h2>
+
+    <p>이번에는 같은 문제를 <b>반반으로</b> 쪼갭니다. A가 8개이므로 앞 4개와 뒤 4개로 나눕니다.</p>
+
+    <figure style="margin:20px 0">
+      <svg width="100%" viewBox="0 0 440 214" role="img" style="display:block">
+        <title>리스트를 반씩 나누어 각각의 최댓값을 구한 뒤 둘을 비교</title>
+        <desc>여덟 개짜리 리스트를 앞 네 개와 뒤 네 개로 나눈다. 각 절반에서 최댓값을 구하고, 마지막에 그 두 값을 한 번 비교해 전체 최댓값을 정한다. 각 절반은 다시 같은 방식으로 반씩 나뉜다.</desc>
+
+        <rect x="20" y="24" width="400" height="34" rx="8" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.3"/>
+        <text x="220" y="41" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="700" fill="var(--accent-deep)">3　0　−5　7　2　−4　6　9</text>
+
+        <line x1="120" y1="60" x2="120" y2="82" stroke="var(--c3)" stroke-width="1.4"/>
+        <path d="M115.5 82 L124.5 82 L120 89 Z" fill="var(--c3)"/>
+        <line x1="320" y1="60" x2="320" y2="82" stroke="var(--c3)" stroke-width="1.4"/>
+        <path d="M315.5 82 L324.5 82 L320 89 Z" fill="var(--c3)"/>
+
+        <rect x="20" y="94" width="196" height="34" rx="8" fill="var(--c1)" fill-opacity="0.15" stroke="var(--c1)" stroke-width="1.3"/>
+        <text x="118" y="111" text-anchor="middle" dominant-baseline="central" font-size="13" fill="var(--ink)">3　0　−5　7</text>
+        <text x="118" y="140" text-anchor="middle" font-size="10.5" fill="var(--c1)">A[:4] — 인덱스 0~3</text>
+
+        <rect x="224" y="94" width="196" height="34" rx="8" fill="var(--c2)" fill-opacity="0.15" stroke="var(--c2)" stroke-width="1.3"/>
+        <text x="322" y="111" text-anchor="middle" dominant-baseline="central" font-size="13" fill="var(--ink)">2　−4　6　9</text>
+        <text x="322" y="140" text-anchor="middle" font-size="10.5" fill="var(--c2)">A[4:] — 인덱스 4~7</text>
+
+        <line x1="118" y1="150" x2="118" y2="168" stroke="var(--ink-3)" stroke-width="1.2" stroke-dasharray="4 3"/>
+        <line x1="322" y1="150" x2="322" y2="168" stroke="var(--ink-3)" stroke-width="1.2" stroke-dasharray="4 3"/>
+        <text x="118" y="178" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--ink-3)">각각 다시 반씩 분할</text>
+        <text x="322" y="178" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--ink-3)">각각 다시 반씩 분할</text>
+
+        <rect x="96" y="192" width="248" height="20" rx="10" fill="var(--c3)" fill-opacity="0.15" stroke="var(--c3)" stroke-width="1"/>
+        <text x="220" y="202" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="700" fill="var(--c3)">마지막에 두 결과를 1번 비교</text>
+      </svg>
+      <figcaption>앞 절반의 최댓값과 뒤 절반의 최댓값을 구한 뒤, 그 둘을 한 번 비교한다</figcaption>
+    </figure>
+
+    <div class="call warn">
+      <div class="t">인덱스 표기 주의</div>
+      <p><code>A[:4]</code>라고 써야 <b>인덱스 3까지 포함</b>(0~3)합니다. 파이썬 슬라이싱은 끝 번호를 포함하지 않습니다.</p>
+    </div>
+
+    <h3>재귀식</h3>
+    <pre class="math">max(A) = max( max(A[:4]) , max(A[4:]) )
+         ↑        ↑              ↑
+      알고리즘   알고리즘        알고리즘
+         └─ 이 자리의 max 만 "두 수 중 큰 값"을 고르는 비교 연산</pre>
+
+    <h3>시간복잡도</h3>
+    <p>절반으로 자르니 각각 T(n/2)이고, 마지막 비교 1번이 상수 C입니다.</p>
+    <pre class="math">T(n) = T(n/2) + T(n/2) + C
+     = 2T(n/2) + C ,   T(1) = C
+
+     = 2( 2T(n/4) + C ) + C            = 2²·T(n/4) + 2C + C
+     = 2²( 2T(n/8) + C ) + 2C + C      = 2³·T(n/2³) + 2²C + 2C + C
+     ...
+     = 2^k·T(n/2^k) + 2^(k−1)C + 2^(k−2)C + … + 2C + C     ← n = 2^k 로 가정
+     = n·T(1) + C(2^(k−1) + 2^(k−2) + … + 2 + 1)</pre>
+
+    <div class="call">
+      <div class="t">잠시 복습 — 등비수열의 합</div>
+      <p>초항 a, 공비 r, 항의 개수 n개일 때</p>
+      <pre class="math">a + ar + ar² + … + ar^(n−1) = <span style="display:inline-block;vertical-align:middle;text-align:center"><span style="border-bottom:1.4px solid currentColor;display:block;padding:0 6px">a(r^n − 1)</span><span style="display:block">r − 1</span></span>     (r &gt; 1 일 때 쓰기 편한 꼴)
+
+                              = <span style="display:inline-block;vertical-align:middle;text-align:center"><span style="border-bottom:1.4px solid currentColor;display:block;padding:0 6px">a(1 − r^n)</span><span style="display:block">1 − r</span></span>     (r &lt; 1 일 때 쓰기 편한 꼴)</pre>
+      <p>여기서는 초항 a = 1, 공비 r = 2, 항의 개수 k개이므로</p>
+      <pre class="math">1 + 2 + 2² + … + 2^(k−1) = <span style="display:inline-block;vertical-align:middle;text-align:center"><span style="border-bottom:1.4px solid currentColor;display:block;padding:0 6px">1·(2^k − 1)</span><span style="display:block">2 − 1</span></span> = 2^k − 1</pre>
+    </div>
+
+    <pre class="math">T(n) = Cn + C(2^k − 1)        ← T(1) = C 이므로 n·T(1) = Cn
+     = Cn + C(n − 1)          ← n = 2^k 이므로 2^k = n
+     = 2Cn − C
+⇒ O(n)</pre>
+
+    <div class="call quote">
+      <div class="t">비교</div>
+      <p>하나씩 떼든 반씩 자르든 <b>둘 다 O(n)</b>입니다. 나아가 반반이 아니라 <b>n/3과 2n/3</b>으로 쪼개도 똑같이 O(n)이 나옵니다.</p>
+    </div>
+
+    <div class="call warn">
+      <div class="t">필기 오타 3건 — 고쳐서 반영했습니다</div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>필기</th><th>맞는 것</th></tr></thead>
+          <tbody>
+            <tr><td>(a가 더 작으면 = a(1−r^n)/(1−r)</td><td><b>r</b>이 1보다 작을 때 쓰는 꼴입니다. a와는 관계없습니다.</td></tr>
+            <tr><td>공비가 2고 초항이 1이고 <b>항의 개수가 초항</b>이므로</td><td>항의 개수는 <b>k</b>입니다.</td></tr>
+            <tr><td>2Cn − C &nbsp;// <b>2^k을 C라고</b> 가정했기 때문</td><td><b>2^k = n</b> 이기 때문입니다. C는 상수이고 2^k와 무관합니다.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">T(n) = T(n-1) + C, T(1) = C
+
+   = T(n-2) + C + C  
+
+...
+⇒ O(n)
+(이 경우는 리스트를 하나의 원소 vs 나머지 분할)
+이번엔 다른 방식
+반씩 분할
+A : 3 0 -5 7 2 -4 6 9
+가 있다면 이걸 반반씩 분할(도식화)
+max(A[:4] //이렇게 적어야 인덱스 3까지 포함(0~3))
+max(A[4:])
+이렇게 분할 가능
+max(알고리즘 max)(A) = max(얘는 비교 수식 max)(max(얘는 알고리즘 max)(A[:4]), max(알고리즘 max)(A[4:))
+T(n) = T(n/2) + T(n/2) + C //T(n/2)인 이유는 절반으로 자르니까
+T(n) = 2T(n/2) + C , T(1) = C
+= 2(2T(n/4)+C) + C
+= 2^2 * T(n/4) + 2C + C
+= 2^2 (2 T(n/8) + C) + 2C + C
+= 2^3 T(n/(2^3)) + 2^2 C + 2C + C
+...
+가정 n = 2^k
+규칙을 찾아보면
+= 2^k T(n/2^k) + 2^(k-1) C + 2^(k-2) C + ... + 2^1 C + 2^0 C
+= nT(1) + C(2^(k-1) + 2^(k-2) + ... + 2^1 + 2^0)
+*잠시 복습 : 등비수열 합 : ar^0 + ar^1 + ar^2 + ... + ar^(n-1) (n개)
+= (ar^0(r^n - 1)) / (r-1) = (a(r^n -1)) / r - 1
+여기서 a는 초항 n은 항의 개수, r은 공비
+(a가 더 작으면 = a(1-r^n) / (1-r)
+그러면 공비가 2고 초항이 1이고 항의 개수가 초항이므로
+(1(2^k - 1)) / 2-1 = 2^k - 1
+= Cn + C(2^k - 1) // T(1) = C이기 때문
+= 2Cn - C // 2^k을 C라고 가정했기 때문
+= O(n)
+
+
+만약에 반반이 아니라 1n/3, 2n/3으로 쪼개도 동일하게 O(n)이 나옴</div></details>
+  </section>
+
+  <!-- 04 -->
+  <section id="s4">
+    <h2 class="st"><span class="sq">04</span>a<sup>n</sup> — power1 (하나씩 줄이기)</h2>
+
+    <p>예: a = 3, n = 4 → 3<sup>4</sup></p>
+    <p>거듭제곱도 같은 방식으로 쪼갤 수 있습니다.</p>
+    <pre class="math">a^n = a × a^(n−1)
+  ⇒  power1(a, n) = a × power1(a, n−1)</pre>
+
+    <div class="codebox pseudo">
+      <div class="head"><span><span class="tag">Python</span>power1</span><button class="copy">복사</button></div>
+<pre><code><span class="kw">def</span> power1(a, n):
+    <span class="kw">if</span> n == <span class="st2">1</span>: <span class="kw">return</span> a      <span class="cm"># 기저 조건 — 상수 시간</span>
+    <span class="kw">return</span> a * power1(a, n<span class="st2">-1</span>)  <span class="cm"># 곱셈 1번 + 크기 1 작은 문제</span></code></pre>
+    </div>
+
+    <h3>시간복잡도</h3>
+    <p>호출마다 곱셈 1번(상수 C)을 하고 n이 1씩 줄어듭니다. 앞의 "하나 vs 나머지" max와 똑같은 모양입니다.</p>
+    <pre class="math">T(n) = T(n−1) + C ,   T(1) = C
+⇒ O(n)</pre>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">a^n 구하기
+ex) a = 3, n = 4 → 3^4
+
+power1(a, n) ⇒ a^n = a * a^(n-1) = power1(a,n) = a * power1(a, n-1)
+
+power1(a, n):
+    if n==1 : return a
+    return a * power1(a,n-1)
+
+T(n) = T(n-1) + C , T(1) = C
+ ⇒ O(n)
+
+3주차 1차시가 맞아. 미안</div></details>
+  </section>
+
+  <!-- 05 -->
+  <section id="s5">
+    <h2 class="st"><span class="sq">05</span>a<sup>n</sup> — power2 (반씩 쪼개기)</h2>
+
+    <p>power1은 n을 1씩 줄였습니다. 이번에는 <b>반씩</b> 쪼갭니다. a<sup>n</sup> = a<sup>n/2</sup> × a<sup>n/2</sup> 이니까요. 다만 n이 홀수면 반으로 딱 안 나뉘어 1이 남습니다.</p>
+
+    <div class="codebox pseudo">
+      <div class="head"><span><span class="tag">Python</span>power2</span><button class="copy">복사</button></div>
+<pre><code><span class="kw">def</span> power2(a, n):
+    <span class="kw">if</span> n == <span class="st2">1</span>: <span class="kw">return</span> a
+    <span class="kw">if</span> n % <span class="st2">2</span> == <span class="st2">0</span>:                          <span class="cm"># n이 짝수이면</span>
+        <span class="kw">return</span> power2(a, n//<span class="st2">2</span>) * power2(a, n//<span class="st2">2</span>)
+    <span class="kw">else</span>:                                    <span class="cm"># n이 홀수이면</span>
+        <span class="kw">return</span> power2(a, n//<span class="st2">2</span>) * power2(a, n//<span class="st2">2</span>) * a   <span class="cm"># 나머지 1이 남아서 a를 한 번 더 곱함</span></code></pre>
+    </div>
+
+    <h3>시간복잡도</h3>
+    <p>재귀 호출이 <b>두 번</b> 일어나고 각각 크기가 n/2입니다. 곱셈은 상수 C입니다.</p>
+    <pre class="math">T(n) = T(n/2) + T(n/2) + C
+     = 2·T(n/2) + C
+⇒ O(n)</pre>
+
+    <div class="call warn">
+      <div class="t">반씩 쪼갰는데 왜 안 빨라졌나</div>
+      <p>앞의 max를 반씩 쪼갰을 때와 <b>완전히 같은 점화식</b>(2T(n/2) + C)이 나왔습니다. power1도 O(n)이었으니, <mark>power2는 power1보다 나아진 게 없습니다.</mark></p>
+      <p style="margin-top:8px">원인은 <code>power2(a, n//2)</code>를 <b>두 번 부른다</b>는 데 있습니다. 같은 인자로 같은 값을 구하는 계산을 두 번 하는 셈이라, 반으로 줄인 만큼을 호출 횟수가 두 배로 늘어 그대로 상쇄해 버립니다.</p>
+    </div>
+
+    <figure style="margin:20px 0">
+      <svg width="100%" viewBox="0 0 440 226" role="img" style="display:block">
+        <title>power2의 재귀 호출이 매 단계 두 배로 늘어나는 모습 (n = 8)</title>
+        <desc>power2에 n이 8로 주어지면 n이 4인 호출을 두 번 하고, 그 각각이 다시 n이 2인 호출을 두 번씩 해서 네 번이 되고, 다시 n이 1인 호출이 여덟 번이 된다. 크기는 절반씩 줄지만 호출 개수가 두 배씩 늘어 총 호출 수가 n에 비례한다.</desc>
+
+        <text x="20" y="16" font-size="11" fill="var(--ink-3)">n = 8 일 때 호출되는 모습</text>
+
+        <rect x="186" y="26" width="68" height="26" rx="7" fill="var(--accent)" stroke="none"/>
+        <text x="220" y="39" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="#fff">n=8</text>
+        <text x="380" y="39" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="700" fill="var(--ink-2)">호출 1개</text>
+
+        <line x1="205" y1="52" x2="140" y2="70" stroke="var(--c3)" stroke-width="1.3"/>
+        <line x1="235" y1="52" x2="300" y2="70" stroke="var(--c3)" stroke-width="1.3"/>
+        <rect x="106" y="72" width="68" height="26" rx="7" fill="var(--c3)" fill-opacity="0.22" stroke="var(--c3)" stroke-width="1.2"/>
+        <text x="140" y="85" text-anchor="middle" dominant-baseline="central" font-size="12" fill="var(--ink)">n=4</text>
+        <rect x="266" y="72" width="68" height="26" rx="7" fill="var(--c3)" fill-opacity="0.22" stroke="var(--c3)" stroke-width="1.2"/>
+        <text x="300" y="85" text-anchor="middle" dominant-baseline="central" font-size="12" fill="var(--ink)">n=4</text>
+        <text x="380" y="85" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="700" fill="var(--ink-2)">2개</text>
+
+        <line x1="126" y1="98" x2="92" y2="116" stroke="var(--c3)" stroke-width="1"/>
+        <line x1="154" y1="98" x2="188" y2="116" stroke="var(--c3)" stroke-width="1"/>
+        <line x1="286" y1="98" x2="252" y2="116" stroke="var(--c3)" stroke-width="1"/>
+        <line x1="314" y1="98" x2="348" y2="116" stroke="var(--c3)" stroke-width="1"/>
+        <rect x="64" y="118" width="56" height="24" rx="6" fill="var(--surface)" stroke="var(--line)" stroke-width="1.1"/>
+        <text x="92" y="130" text-anchor="middle" dominant-baseline="central" font-size="11.5" fill="var(--ink)">n=2</text>
+        <rect x="160" y="118" width="56" height="24" rx="6" fill="var(--surface)" stroke="var(--line)" stroke-width="1.1"/>
+        <text x="188" y="130" text-anchor="middle" dominant-baseline="central" font-size="11.5" fill="var(--ink)">n=2</text>
+        <rect x="224" y="118" width="56" height="24" rx="6" fill="var(--surface)" stroke="var(--line)" stroke-width="1.1"/>
+        <text x="252" y="130" text-anchor="middle" dominant-baseline="central" font-size="11.5" fill="var(--ink)">n=2</text>
+        <rect x="320" y="118" width="56" height="24" rx="6" fill="var(--surface)" stroke="var(--line)" stroke-width="1.1"/>
+        <text x="348" y="130" text-anchor="middle" dominant-baseline="central" font-size="11.5" fill="var(--ink)">n=2</text>
+        <text x="410" y="130" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="700" fill="var(--ink-2)">4개</text>
+
+        <line x1="82" y1="142" x2="66" y2="158" stroke="var(--line-2)" stroke-width="1"/>
+        <line x1="102" y1="142" x2="118" y2="158" stroke="var(--line-2)" stroke-width="1"/>
+        <line x1="178" y1="142" x2="162" y2="158" stroke="var(--line-2)" stroke-width="1"/>
+        <line x1="198" y1="142" x2="214" y2="158" stroke="var(--line-2)" stroke-width="1"/>
+        <line x1="242" y1="142" x2="226" y2="158" stroke="var(--line-2)" stroke-width="1"/>
+        <line x1="262" y1="142" x2="278" y2="158" stroke="var(--line-2)" stroke-width="1"/>
+        <line x1="338" y1="142" x2="322" y2="158" stroke="var(--line-2)" stroke-width="1"/>
+        <line x1="358" y1="142" x2="374" y2="158" stroke="var(--line-2)" stroke-width="1"/>
+
+        <rect x="48" y="160" width="36" height="22" rx="6" fill="var(--c2)" stroke="none"/><text x="66" y="171" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="700" fill="#fff">1</text>
+        <rect x="100" y="160" width="36" height="22" rx="6" fill="var(--c2)" stroke="none"/><text x="118" y="171" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="700" fill="#fff">1</text>
+        <rect x="144" y="160" width="36" height="22" rx="6" fill="var(--c2)" stroke="none"/><text x="162" y="171" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="700" fill="#fff">1</text>
+        <rect x="196" y="160" width="36" height="22" rx="6" fill="var(--c2)" stroke="none"/><text x="214" y="171" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="700" fill="#fff">1</text>
+        <rect x="208" y="160" width="36" height="22" rx="6" fill="var(--c2)" stroke="none" opacity="0"/>
+        <rect x="260" y="160" width="36" height="22" rx="6" fill="var(--c2)" stroke="none"/><text x="278" y="171" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="700" fill="#fff">1</text>
+        <rect x="304" y="160" width="36" height="22" rx="6" fill="var(--c2)" stroke="none"/><text x="322" y="171" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="700" fill="#fff">1</text>
+        <rect x="356" y="160" width="36" height="22" rx="6" fill="var(--c2)" stroke="none"/><text x="374" y="171" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="700" fill="#fff">1</text>
+        <text x="220" y="196" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="700" fill="var(--c2)">맨 아래 호출이 8개 = n개</text>
+
+        <rect x="76" y="206" width="288" height="20" rx="10" fill="var(--c3)" fill-opacity="0.15" stroke="var(--c3)" stroke-width="1"/>
+        <text x="220" y="216" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="700" fill="var(--c3)">크기는 반씩, 개수는 두 배씩 → 상쇄되어 O(n)</text>
+      </svg>
+      <figcaption>같은 인자의 호출이 좌우로 중복된다. 맨 아래 호출 수가 n개가 되어 전체가 O(n)</figcaption>
+    </figure>
+
+    <div class="call link">
+      <div class="t">앞 내용과의 연결</div>
+      <p><span class="ext">03번의 max를 반씩 쪼갠 경우와 점화식이 똑같습니다. 거기서는 왼쪽 절반과 오른쪽 절반이 <b>서로 다른 데이터</b>라 두 번 부르는 게 당연했지만, 여기 power2는 <b>완전히 같은 계산</b>을 두 번 합니다. 같은 점화식이라도 사정이 다릅니다.</span></p>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">power2(a, n) :  
+    if n==1 : return a
+    if n%2 == 0 //n이 짝수이면
+         return power2(a, n//2) * power2(a, n//2)
+    else :    //n이 홀수이면
+        return power2(a, n//2) * power2(a, n//2) * a    //*a를 하는 이유 : 나머지 1이 남기 때문
+
+
+T(n) = (n/2) + T(n/2) + C
+           = 2 * T(n/2) + C
+          ⇒ O(n)</div></details>
+  </section>
+
+  <!-- 06 -->
+  <section id="s6">
+    <h2 class="st"><span class="sq">06</span>a<sup>n</sup> — power3 (중복 호출 제거)</h2>
+    <div class="badges"><span class="badge exam">시험 ★★★</span></div>
+
+    <p>power2의 문제는 <code>power2(a, n//2)</code>를 두 번 부른 것이었습니다. <mark>한 번만 불러서 변수에 담아두고 재사용</mark>하면 됩니다.</p>
+
+    <div class="codebox pseudo">
+      <div class="head"><span><span class="tag">Python</span>power3</span><button class="copy">복사</button></div>
+<pre><code><span class="kw">def</span> power3(a, n):
+    <span class="kw">if</span> n == <span class="st2">1</span>:
+        <span class="kw">return</span> a
+    x = power3(a, n//<span class="st2">2</span>)      <span class="cm"># 재귀 호출은 딱 한 번만</span>
+    <span class="kw">if</span> n % <span class="st2">2</span> == <span class="st2">0</span>:
+        <span class="kw">return</span> x * x             <span class="cm"># 구해 둔 x 를 두 번 쓰기만 한다</span>
+    <span class="kw">else</span>:
+        <span class="kw">return</span> x * x * a         <span class="cm"># 홀수면 나머지 1 때문에 a 를 한 번 더</span></code></pre>
+    </div>
+
+    <h3>시간복잡도</h3>
+    <pre class="math">T(n) = T(n/2) + C ,   T(1) = C
+     = T(n/4) + C + C
+     = T(n/8) + C + C + C
+     ...
+     = T(n/2^k) + k·C          ← n = 2^k 로 가정
+     = T(1) + k·C              ← n = 2^k 이므로 n/2^k = 1
+     = C + k·C                 ← k = log₂ n
+     = C·log₂ n + C
+⇒ O(log n)</pre>
+
+    <figure style="margin:20px 0">
+      <svg width="100%" viewBox="0 0 440 174" role="img" style="display:block">
+        <title>power2와 power3의 호출 구조 비교 (n = 8)</title>
+        <desc>power2는 매 단계 호출이 두 배로 늘어나 전체 호출 수가 n에 비례한다. power3는 재귀 호출을 한 번만 하므로 호출이 한 줄로 이어지고 그 길이가 log n이다.</desc>
+
+        <text x="20" y="16" font-size="11.5" font-weight="700" fill="var(--c3)">power2 — 매 단계 두 배로 갈라짐</text>
+        <rect x="20" y="28" width="44" height="22" rx="6" fill="var(--c3)" fill-opacity="0.25" stroke="var(--c3)" stroke-width="1.1"/>
+        <text x="42" y="39" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--ink)">8</text>
+        <rect x="84" y="28" width="30" height="22" rx="6" fill="var(--c3)" fill-opacity="0.25" stroke="var(--c3)" stroke-width="1.1"/>
+        <text x="99" y="39" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--ink)">4</text>
+        <rect x="118" y="28" width="30" height="22" rx="6" fill="var(--c3)" fill-opacity="0.25" stroke="var(--c3)" stroke-width="1.1"/>
+        <text x="133" y="39" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--ink)">4</text>
+        <rect x="168" y="28" width="108" height="22" rx="6" fill="var(--c3)" fill-opacity="0.25" stroke="var(--c3)" stroke-width="1.1"/>
+        <text x="222" y="39" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--ink)">2 · 2 · 2 · 2</text>
+        <rect x="296" y="28" width="124" height="22" rx="6" fill="var(--c3)" fill-opacity="0.25" stroke="var(--c3)" stroke-width="1.1"/>
+        <text x="358" y="39" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--ink)">1·1·1·1·1·1·1·1</text>
+        <text x="20" y="62" font-size="11" font-weight="700" fill="var(--c3)">총 호출 1+2+4+8 = 15개 ≈ 2n &nbsp;→&nbsp; O(n)</text>
+
+        <line x1="20" y1="78" x2="420" y2="78" stroke="var(--line)" stroke-width="1" stroke-dasharray="5 4"/>
+
+        <text x="20" y="96" font-size="11.5" font-weight="700" fill="var(--c2)">power3 — 한 줄로만 내려감</text>
+        <rect x="20" y="108" width="52" height="26" rx="7" fill="var(--c2)" stroke="none"/>
+        <text x="46" y="121" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="#fff">n=8</text>
+        <line x1="72" y1="121" x2="92" y2="121" stroke="var(--c2)" stroke-width="1.4"/>
+        <path d="M92 116.5 L92 125.5 L99 121 Z" fill="var(--c2)"/>
+        <rect x="103" y="108" width="52" height="26" rx="7" fill="var(--c2)" stroke="none"/>
+        <text x="129" y="121" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="#fff">n=4</text>
+        <line x1="155" y1="121" x2="175" y2="121" stroke="var(--c2)" stroke-width="1.4"/>
+        <path d="M175 116.5 L175 125.5 L182 121 Z" fill="var(--c2)"/>
+        <rect x="186" y="108" width="52" height="26" rx="7" fill="var(--c2)" stroke="none"/>
+        <text x="212" y="121" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="#fff">n=2</text>
+        <line x1="238" y1="121" x2="258" y2="121" stroke="var(--c2)" stroke-width="1.4"/>
+        <path d="M258 116.5 L258 125.5 L265 121 Z" fill="var(--c2)"/>
+        <rect x="269" y="108" width="52" height="26" rx="7" fill="var(--c2)" stroke="none"/>
+        <text x="295" y="121" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="#fff">n=1</text>
+        <text x="390" y="121" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="700" fill="var(--c2)">3단계</text>
+        <text x="20" y="152" font-size="11" font-weight="700" fill="var(--c2)">총 호출 4개 = log₂8 + 1 &nbsp;→&nbsp; O(log n)</text>
+      </svg>
+      <figcaption>같은 "반씩 쪼개기"라도 호출을 한 번만 하면 갈라지지 않고 한 줄로 내려간다</figcaption>
+    </figure>
+
+    <h3>세 방법 비교</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th></th><th>쪼개는 방식</th><th>재귀 호출 횟수</th><th>점화식</th><th>시간복잡도</th></tr></thead>
+        <tbody>
+          <tr><td><b>power1</b></td><td>n → n−1</td><td>1번</td><td>T(n−1) + C</td><td>O(n)</td></tr>
+          <tr><td><b>power2</b></td><td>n → n/2</td><td><b>2번</b> (중복)</td><td>2T(n/2) + C</td><td>O(n)</td></tr>
+          <tr><td><b>power3</b></td><td>n → n/2</td><td><b>1번</b></td><td>T(n/2) + C</td><td><mark>O(log n)</mark></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="call quote">
+      <div class="t">핵심</div>
+      <p>power2와 power3는 <b>쪼개는 방식이 똑같습니다.</b> 차이는 오직 재귀 호출을 몇 번 하느냐뿐인데, 그것만으로 O(n)과 O(log n)이 갈립니다. 분할 정복에서 "어떻게 쪼개느냐"만큼 <b>"쪼갠 결과를 몇 번 계산하느냐"</b>가 중요합니다.</p>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">power3 (a, n) :
+    if n==1 : 
+        return a
+    x = power3(a, n//2)
+    if n%2 == 0 :
+        return x*x
+    else : return x*x*a
+
+⇒ T(n) = T(n/2) + C, T(1) = C
+              = T(n/4) + C    + C
+               = T(n/8) +C     +C +C
+...
+
+* 가정 n=2^k
+
+
+  = T(n/(2^k)) + k*C
+= T(1) + k*C    //2^k를 n이라고 가정했기 때문
+//k = log_2 n
+= C*log_2 n + C
+
+= O(log n)</div></details>
+  </section>
+
+  <!-- 07 -->
+  <section id="s7">
+    <h2 class="st"><span class="sq">07</span>피보나치 수 — fibo1</h2>
+
+    <p>처음 두 수가 주어지고(0, 1 — 꼭 0과 1이 아니어도 됩니다), 그다음 수는 <b>앞의 두 수를 더한</b> 값입니다.</p>
+    <pre class="math">0  1  1  2  3  5  8  13  21  …</pre>
+
+    <div class="call warn">
+      <div class="t">필기 오타 — 고쳐서 반영</div>
+      <p>필기에는 <code>… 5 8 <s>14</s> 21</code>로 되어 있었는데, 5 + 8 = <b>13</b>입니다. 그래야 8 + 13 = 21로 이어집니다.</p>
+    </div>
+
+    <p>이 피보나치 수도 점화식으로 나타낼 수 있는지 확인해 봅니다.</p>
+    <pre class="math">F₀, F₁, …
+
+F(n) = F(n−1) + F(n−2)</pre>
+
+    <div class="codebox pseudo">
+      <div class="head"><span><span class="tag">Python</span>fibo1 — F(n)을 반환</span><button class="copy">복사</button></div>
+<pre><code><span class="kw">def</span> fibo1(n):
+    <span class="kw">if</span> n == <span class="st2">0</span> <span class="kw">or</span> n == <span class="st2">1</span>:
+        <span class="kw">return</span> n            <span class="cm"># 이 예에서는 F(0)=0, F(1)=1 이라 n을 그대로 반환하면 된다</span>
+    <span class="kw">return</span> fibo1(n<span class="st2">-1</span>) + fibo1(n<span class="st2">-2</span>)</code></pre>
+    </div>
+
+    <h3>시간복잡도</h3>
+    <pre class="math">T(n) = T(n−1) + T(n−2) + C ,   T(0) = C ,  T(1) = C</pre>
+    <p>이 점화식을 직접 푸는 것은 <b>수업 범위를 넘어섭니다.</b> 결과만 말하면:</p>
+    <pre class="math">T(n) = O(γ^n) ,   γ = <span style="display:inline-block;vertical-align:middle;text-align:center"><span style="border-bottom:1.4px solid currentColor;display:block;padding:0 6px">1 + √5</span><span style="display:block">2</span></span> = 1.618…</pre>
+
+    <p>이렇게 시간복잡도가 <b>지수로 올라오면</b> exponential하게 걸린다고 하고, <mark>bad하다</mark>고 말합니다. 시간복잡도가 좋지 않다는 뜻입니다.</p>
+
+    <h3>왜 이렇게 오래 걸리나 — 역토너먼트 구조</h3>
+    <p>F(n)에서 시작해 F(n−1)·F(n−2)로, 다시 각각이 둘로 갈라집니다. 토너먼트가 위로 좁아지는 것과 반대로 <b>아래로 퍼져 나가는</b> 모양입니다.</p>
+    <figure style="margin:20px 0">
+      <svg width="100%" viewBox="0 0 440 206" role="img" style="display:block">
+        <title>fibo1의 호출이 갈라지며 같은 계산을 반복하는 모습</title>
+        <desc>F(5)를 구하려면 F(4)와 F(3)을 부르고, F(4)는 다시 F(3)과 F(2)를 부른다. 이렇게 갈라지는 과정에서 F(3)이 두 번, F(2)가 세 번 등장하는 등 같은 계산이 여러 번 반복된다. 호출 수가 단계마다 거의 두 배로 늘어나 전체가 지수 시간이 된다.</desc>
+
+        <rect x="196" y="22" width="48" height="24" rx="6" fill="var(--accent)" stroke="none"/><text x="220.0" y="34.0" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#fff" font-weight="800">F(5)</text>
+        <line x1="206" y1="46" x2="152" y2="66" stroke="var(--ink-3)" stroke-width="1.2"/>
+        <line x1="234" y1="46" x2="310" y2="66" stroke="var(--ink-3)" stroke-width="1.2"/>
+
+        <rect x="106" y="68" width="48" height="24" rx="6" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><text x="130.0" y="80.0" text-anchor="middle" dominant-baseline="central" font-size="11.5" fill="var(--ink)">F(4)</text>
+        <rect x="286" y="68" width="48" height="24" rx="6" fill="var(--c3)" stroke="none"/><text x="310.0" y="80.0" text-anchor="middle" dominant-baseline="central" font-size="11.5" fill="#fff" font-weight="800">F(3)</text>
+
+        <line x1="118" y1="92" x2="80" y2="112" stroke="var(--ink-3)" stroke-width="1"/>
+        <line x1="142" y1="92" x2="182" y2="112" stroke="var(--ink-3)" stroke-width="1"/>
+        <line x1="298" y1="92" x2="270" y2="112" stroke="var(--ink-3)" stroke-width="1"/>
+        <line x1="322" y1="92" x2="358" y2="112" stroke="var(--ink-3)" stroke-width="1"/>
+
+        <rect x="56" y="114" width="48" height="24" rx="6" fill="var(--c3)" stroke="none"/><text x="80.0" y="126.0" text-anchor="middle" dominant-baseline="central" font-size="11.5" fill="#fff" font-weight="800">F(3)</text>
+        <rect x="158" y="114" width="48" height="24" rx="6" fill="var(--c2)" stroke="none"/><text x="182.0" y="126.0" text-anchor="middle" dominant-baseline="central" font-size="11.5" fill="#fff" font-weight="800">F(2)</text>
+        <rect x="246" y="114" width="48" height="24" rx="6" fill="var(--c2)" stroke="none"/><text x="270.0" y="126.0" text-anchor="middle" dominant-baseline="central" font-size="11.5" fill="#fff" font-weight="800">F(2)</text>
+        <rect x="334" y="114" width="48" height="24" rx="6" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><text x="358.0" y="126.0" text-anchor="middle" dominant-baseline="central" font-size="11.5" fill="var(--ink)">F(1)</text>
+
+        <line x1="68" y1="138" x2="52" y2="156" stroke="var(--line-2)" stroke-width="1"/>
+        <line x1="92" y1="138" x2="112" y2="156" stroke="var(--line-2)" stroke-width="1"/>
+        <line x1="170" y1="138" x2="158" y2="156" stroke="var(--line-2)" stroke-width="1"/>
+        <line x1="194" y1="138" x2="206" y2="156" stroke="var(--line-2)" stroke-width="1"/>
+        <line x1="258" y1="138" x2="246" y2="156" stroke="var(--line-2)" stroke-width="1"/>
+        <line x1="282" y1="138" x2="294" y2="156" stroke="var(--line-2)" stroke-width="1"/>
+
+        <rect x="28" y="158" width="48" height="20" rx="6" fill="var(--c2)" stroke="none"/><text x="52.0" y="168.0" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#fff" font-weight="800">F(2)</text>
+        <rect x="88" y="158" width="48" height="20" rx="6" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><text x="112.0" y="168.0" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--ink)">F(1)</text>
+        <rect x="134" y="158" width="48" height="20" rx="6" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><text x="158.0" y="168.0" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--ink)">F(1)</text>
+        <rect x="186" y="158" width="44" height="20" rx="6" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><text x="208.0" y="168.0" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--ink)">F(0)</text>
+        <rect x="222" y="158" width="48" height="20" rx="6" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><text x="246.0" y="168.0" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--ink)">F(1)</text>
+        <rect x="274" y="158" width="44" height="20" rx="6" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><text x="296.0" y="168.0" text-anchor="middle" dominant-baseline="central" font-size="11" fill="var(--ink)">F(0)</text>
+        <text x="352" y="168" text-anchor="middle" dominant-baseline="central" font-size="13" fill="var(--ink-3)">···</text>
+
+        <text x="220" y="196" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="700" fill="var(--c3)">같은 색 = 똑같은 계산을 다시 하고 있는 것</text>
+      </svg>
+      <figcaption>F(3)이 2번, F(2)가 3번 중복 호출된다. 단계마다 거의 두 배로 늘어나 지수 시간이 된다</figcaption>
+    </figure>
+
+    <div class="call link">
+      <div class="t">power2에서 본 것과 같은 문제</div>
+      <p><span class="ext">05번의 power2가 같은 인자를 두 번 불러서 손해를 봤던 것과 구조가 같습니다. 다만 power2는 중복이 좌우 두 갈래뿐이라 O(n)에서 그쳤지만, 피보나치는 중복이 트리 전체에 퍼져 지수까지 올라갑니다.</span></p>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">power 3 알고리즘이 시간복잡도가 더 작아짐
+
+___
+
+피보나치수 Fibonacci
+
+처음 두 수가 주어짐
+0 1 (0 1 이 꼭 아니어도 됨)
+그 다음수는 앞 2 수를 더함
+0 1 1 2 3  5 8 14 21 ...
+
+이 피보나치수도 점화식으로 나타낼 수 있는지 없는지 확인을 해보자
+
+F_0, F_1, ...
+
+F_n = F_(n-1) + F_(n-2)
+
+def fibo1(n)   ← F_n을 반환하는 알고리즘
+    if n==0 or n==1 :
+        return n    (우리가 사용하는 예에서는 F_0 가 0이고 F_1이 1이기 때문
+    return fibo1(n-1) + fibo1(n-2)
+
+⇒ T(n) = T(n-1) + T(n-2) + C, T(0) = C, T(1) = C
+
+⇒ 실제로 구하지는 않을거임(우리가 배우는 범위를 넘어섬)
+결과만 얘기하면 T(n) = O(감마^n), 감마 = (1=루트5)/2 = 1.618...
+
+이런식으로 시간복잡도가 지수로 오면
+exponential하게 걸린다고 함. ⇒ bad하다고 할 수 있음
+시간복잡도가 좋지 않다.</div></details>
+  </section>
+
+  <!-- 08 -->
+  <section id="s8">
+    <h2 class="st"><span class="sq">08</span>증가 속도 비교</h2>
+
+    <p>가로축을 n, 세로축을 시간으로 두고 제1사분면에 그려 봅니다.</p>
+    <p>여기서 중요한 성질 하나 — <b>지수 형태는 로그함수와 y = x 에 대해 대칭</b>으로 그려집니다. 로그가 완만하게 누울수록 지수는 그만큼 가파르게 치솟습니다. <b>O(a<sup>n</sup>)은 좋지 않습니다.</b></p>
+
+    <figure style="margin:20px 0">
+      <svg width="100%" viewBox="0 0 440 300" role="img" style="display:block">
+        <title>로그함수와 지수함수는 y = x 에 대칭이다</title>
+        <desc>가로축은 입력 크기 n, 세로축은 시간이다. 로그함수는 처음에만 가파르게 오르다 금세 완만해져 대각선 아래에 머물고, 지수함수는 반대로 처음에는 낮게 깔리다가 급격히 치솟아 대각선 위로 올라간다. 두 곡선은 y 등호 x 직선을 사이에 두고 서로를 거울에 비춘 모양이다. 일차함수는 원점을 지나는 직선으로 그 사이에 놓인다.</desc>
+
+        <line x1="60" y1="240" x2="296" y2="240" stroke="var(--ink-3)" stroke-width="1.2"/>
+        <path d="M290 235 L298 240 L290 245 Z" fill="var(--ink-3)"/>
+        <line x1="60" y1="240" x2="60" y2="16" stroke="var(--ink-3)" stroke-width="1.2"/>
+        <path d="M55 22 L60 14 L65 22 Z" fill="var(--ink-3)"/>
+        <text x="292" y="258" text-anchor="end" font-size="11.5" fill="var(--ink-2)">입력 크기 n</text>
+        <text x="84" y="24" text-anchor="middle" font-size="11.5" fill="var(--ink-2)">시간</text>
+        <circle cx="60" cy="240" r="3" fill="var(--ink-3)"/>
+        <text x="48" y="254" text-anchor="middle" font-size="10.5" fill="var(--ink-3)">O</text>
+
+        <line x1="60" y1="240" x2="280" y2="20" stroke="var(--ink-3)" stroke-width="1.4" stroke-dasharray="6 4"/>
+
+        <path d="M60 240 Q120 200 160 20" fill="none" stroke="var(--c3)" stroke-width="2.6"/>
+        <path d="M60 240 L240 20" fill="none" stroke="var(--c1)" stroke-width="2.4"/>
+        <path d="M60 240 Q100 180 280 140" fill="none" stroke="var(--c2)" stroke-width="2.6"/>
+
+        <rect x="306" y="52" width="14" height="4" rx="2" fill="var(--c3)"/>
+        <text x="328" y="54" font-size="12" font-weight="800" fill="var(--c3)" dominant-baseline="central">γ^n</text>
+        <text x="328" y="70" font-size="10.5" fill="var(--ink-3)" dominant-baseline="central">지수 · 대각선 위</text>
+
+        <rect x="306" y="100" width="14" height="4" rx="2" fill="var(--c1)"/>
+        <text x="328" y="102" font-size="12" font-weight="800" fill="var(--c1)" dominant-baseline="central">a·n</text>
+        <text x="328" y="118" font-size="10.5" fill="var(--ink-3)" dominant-baseline="central">1차 · 원점 지남</text>
+
+        <rect x="306" y="148" width="14" height="4" rx="2" fill="var(--ink-3)"/>
+        <text x="328" y="150" font-size="12" font-weight="800" fill="var(--ink-2)" dominant-baseline="central">y = x</text>
+        <text x="328" y="166" font-size="10.5" fill="var(--ink-3)" dominant-baseline="central">대칭축</text>
+
+        <rect x="306" y="196" width="14" height="4" rx="2" fill="var(--c2)"/>
+        <text x="328" y="198" font-size="12" font-weight="800" fill="var(--c2)" dominant-baseline="central">log n</text>
+        <text x="328" y="214" font-size="10.5" fill="var(--ink-3)" dominant-baseline="central">로그 · 대각선 아래</text>
+
+        <text x="178" y="284" text-anchor="middle" font-size="11" fill="var(--ink-2)">아래에 있을수록 같은 n에서 시간이 적게 든다 = 더 좋다</text>
+      </svg>
+      <figcaption>γ^n 과 log n 은 <b>y = x 에 대해 서로 대칭</b>이다. 한쪽이 눕는 만큼 다른 쪽이 치솟는다</figcaption>
+    </figure>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>표기</th><th>함수 모양</th><th>평가</th></tr></thead>
+        <tbody>
+          <tr><td>O(log n)</td><td>로그함수 — 1차함수보다 아래</td><td>빠르다 · 더 좋다</td></tr>
+          <tr><td>O(n)</td><td>1차함수 — 원점을 지나는 직선</td><td>보통</td></tr>
+          <tr><td>O(γ<sup>n</sup>) · O(a<sup>n</sup>)</td><td>지수함수 — log n 을 y=x 에 대칭시킨 모양</td><td><span style="color:var(--c3);font-weight:800">bad</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">우리가 일반적으로 'a'가 있다고 하면
+
+제 1사분면 표 그려서 x축은 n, y는 시간
+
+an ⇒ o(n) (제 1차 함수), 원점을 지남
+log n ⇒ O(log n) (로그함수) (1차함수보다 아래 위치) ⇒ 빠르다. 더 좋다</div></details>
+  </section>
+
+  <!-- 09 -->
+  <section id="s9">
+    <h2 class="st"><span class="sq">09</span>잠시 — 행렬 곱</h2>
+    <div class="badges"><span class="badge prof">선수 개념</span></div>
+
+    <p>피보나치를 다르게 구하려면 행렬이 필요합니다. 선형대수를 안 들으셨으니 처음부터 짚고 갑니다.</p>
+
+    <div class="call">
+      <div class="t">행렬<span class="en">(matrix)</span>이란</div>
+      <p>숫자를 직사각형으로 늘어놓은 것입니다. 가로줄을 <b>행<span class="en">(row)</span></b>, 세로줄을 <b>열<span class="en">(column)</span></b>이라 합니다. 아래는 2행 2열, 줄여서 <b>2×2 행렬</b>입니다.</p>
+    </div>
+
+    <h3>2×2 × 2×2</h3>
+    <figure style="margin:20px 0">
+      <svg width="100%" viewBox="0 0 440 210" role="img" style="display:block">
+        <title>2 곱하기 2 행렬끼리의 곱셈에서 행과 열이 짝지어지는 방식</title>
+        <desc>왼쪽 행렬의 첫 번째 가로줄과 오른쪽 행렬의 첫 번째 세로줄을 짝지어 계산하면 결과의 왼쪽 위 칸이 나온다. 같은 방식으로 왼쪽의 몇 번째 가로줄과 오른쪽의 몇 번째 세로줄을 짝짓느냐에 따라 결과의 자리가 정해진다.</desc>
+
+        <path d="M28 34 L20 34 L20 132 L28 132" fill="none" stroke="var(--ink-3)" stroke-width="1.6"/>
+        <path d="M112 34 L120 34 L120 132 L112 132" fill="none" stroke="var(--ink-3)" stroke-width="1.6"/>
+        <rect x="26" y="40" width="88" height="40" rx="6" fill="var(--c1)" fill-opacity="0.18" stroke="var(--c1)" stroke-width="1.3"/>
+        <text x="48" y="60" text-anchor="middle" dominant-baseline="central" font-size="16" fill="var(--ink)">○</text>
+        <text x="92" y="60" text-anchor="middle" dominant-baseline="central" font-size="16" fill="var(--ink)">□</text>
+        <text x="48" y="106" text-anchor="middle" dominant-baseline="central" font-size="16" fill="var(--ink)">△</text>
+        <text x="92" y="106" text-anchor="middle" dominant-baseline="central" font-size="16" fill="var(--ink)">☆</text>
+        <text x="70" y="150" text-anchor="middle" font-size="10.5" fill="var(--c1)">1행을 통째로</text>
+
+        <text x="136" y="83" text-anchor="middle" dominant-baseline="central" font-size="16" fill="var(--ink-2)">×</text>
+
+        <path d="M168 34 L160 34 L160 132 L168 132" fill="none" stroke="var(--ink-3)" stroke-width="1.6"/>
+        <path d="M252 34 L260 34 L260 132 L252 132" fill="none" stroke="var(--ink-3)" stroke-width="1.6"/>
+        <rect x="170" y="38" width="40" height="88" rx="6" fill="var(--c2)" fill-opacity="0.18" stroke="var(--c2)" stroke-width="1.3"/>
+        <text x="190" y="60" text-anchor="middle" dominant-baseline="central" font-size="15" fill="var(--ink)">1</text>
+        <text x="232" y="60" text-anchor="middle" dominant-baseline="central" font-size="15" fill="var(--ink)">2</text>
+        <text x="190" y="106" text-anchor="middle" dominant-baseline="central" font-size="15" fill="var(--ink)">3</text>
+        <text x="232" y="106" text-anchor="middle" dominant-baseline="central" font-size="15" fill="var(--ink)">4</text>
+        <text x="190" y="150" text-anchor="middle" font-size="10.5" fill="var(--c2)">1열을 통째로</text>
+
+        <text x="278" y="83" text-anchor="middle" dominant-baseline="central" font-size="16" fill="var(--ink-2)">=</text>
+
+        <path d="M310 34 L302 34 L302 132 L310 132" fill="none" stroke="var(--ink-3)" stroke-width="1.6"/>
+        <path d="M400 34 L408 34 L408 132 L400 132" fill="none" stroke="var(--ink-3)" stroke-width="1.6"/>
+        <rect x="312" y="40" width="44" height="40" rx="6" fill="var(--accent)" stroke="none"/>
+        <text x="334" y="60" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="800" fill="#fff">a</text>
+        <text x="378" y="60" text-anchor="middle" dominant-baseline="central" font-size="15" fill="var(--ink)">b</text>
+        <text x="334" y="106" text-anchor="middle" dominant-baseline="central" font-size="15" fill="var(--ink)">c</text>
+        <text x="378" y="106" text-anchor="middle" dominant-baseline="central" font-size="15" fill="var(--ink)">d</text>
+        <text x="334" y="150" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--accent-deep)">1행 1열 자리</text>
+
+        <rect x="40" y="168" width="360" height="30" rx="8" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.2"/>
+        <text x="220" y="183" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="var(--accent-deep)">왼쪽의 i 행 × 오른쪽의 j 열 → 결과의 i 행 j 열</text>
+      </svg>
+      <figcaption>짝지은 숫자끼리 차례로 곱해서 전부 더한 값이 그 자리에 들어간다</figcaption>
+    </figure>
+
+    <p>짝지을 때는 <b>왼쪽 행의 왼쪽 것 × 오른쪽 열의 위쪽 것</b>, <b>왼쪽 행의 오른쪽 것 × 오른쪽 열의 아래쪽 것</b>을 곱해서 더합니다.</p>
+    <pre class="math">a = ○×1 + □×3      ← 1행 × 1열
+b = ○×2 + □×4      ← 1행 × 2열
+c = △×1 + ☆×3      ← 2행 × 1열
+d = △×2 + ☆×4      ← 2행 × 2열</pre>
+
+    <h3>2×2 × 2×1 (행렬 × 세로벡터)</h3>
+    <p>오른쪽이 세로로 한 줄뿐이면 열도 하나뿐이라 결과도 세로 한 줄이 됩니다. 피보나치에서 쓸 형태가 이것입니다.</p>
+    <pre class="math">( ○  □ )   ( p )     ( ○×p + □×q )
+(       ) × (   )  =  (           )
+( △  ☆ )   ( q )     ( △×p + ☆×q )</pre>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">잠시 행렬 개념
+
+(a b
+c d)
+= (2*2행렬에서 동그라미 네모 세모 별로 차있는거)*(2*2 행렬에서 숫자 1234가 차있는거)
+
+a = 
+b = 
+c = 
+d = 
+(행렬곱 공식을 너가 알아서 적어줘. 이해하기 쉽게)</div></details>
+  </section>
+
+  <!-- 10 -->
+  <section id="s10">
+    <h2 class="st"><span class="sq">10</span>피보나치를 행렬로</h2>
+    <div class="badges"><span class="badge exam">시험 ★★☆</span></div>
+
+    <p>fibo1은 지수 시간이라 성능이 나빴습니다. 다른 방법을 찾습니다 — <b>가까운 두 수를 묶어서 행렬로</b> 나타냅니다.</p>
+
+    <pre class="math">( F(n)   )   ( 1  1 )   ( F(n−1) )
+(        ) = (      ) × (        )
+( F(n−1) )   ( 1  0 )   ( F(n−2) )</pre>
+
+    <h3>정말 성립하는지 확인</h3>
+    <p>09번의 규칙(왼쪽 행 × 오른쪽 열)을 그대로 적용해 한 줄씩 풀어 봅니다.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>자리</th><th>계산</th><th>결과</th><th>맞는가</th></tr></thead>
+        <tbody>
+          <tr><td><b>위쪽</b></td><td>1×F(n−1) + 1×F(n−2)</td><td>F(n−1) + F(n−2)</td><td>= <b>F(n)</b> — 피보나치 정의 그대로 ✓</td></tr>
+          <tr><td><b>아래쪽</b></td><td>1×F(n−1) + 0×F(n−2)</td><td>F(n−1)</td><td>= <b>F(n−1)</b> — 당연히 참 ✓</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>두 줄 다 맞으므로 이 식은 성립합니다.</p>
+
+    <div class="call warn">
+      <div class="t">"성립하는 걸 봤으니 이 식을 쓸 수 있겠다"가 무슨 뜻인가</div>
+      <p>필기에 "뭔 개소리인지 모르겠음"이라고 적어두신 부분입니다. 왜 굳이 행렬로 바꾸는지가 빠져 있어서 그렇습니다.</p>
+      <p style="margin-top:8px">핵심은 이겁니다 — 이 식은 <b>"한 칸 전으로 가려면 정해진 행렬 하나를 곱하면 된다"</b>는 뜻입니다. 그러면 n 칸을 가려면 <b>같은 행렬을 n번 곱하면</b> 됩니다. 즉 피보나치 문제가 <mark>행렬의 거듭제곱 문제로 바뀝니다.</mark></p>
+      <p style="margin-top:8px">그리고 거듭제곱은 이미 06번에서 power3로 O(log n)에 푸는 법을 배웠습니다. 숫자 대신 행렬을 넣어도 같은 수법이 통하므로, 지수 시간이던 피보나치를 로그 시간으로 끌어내릴 수 있습니다. <b>바로 다음 11번이 그 내용입니다.</b></p>
+    </div>
+
+    <div class="call quote">
+      <div class="t">교수님 말씀</div>
+      <p>"어떻게 이 식을 찾았나요? <b>외울 필요 없음.</b>"</p>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">돌아와서 다시 보면
+
+(F_n
+F_(n-1)) =
+(1 1   
+1 0) *
+(F_(n-1)
+F_(n-2))
+
+이게 성립하는 이유
+F_n = F(n-1) + F_(n-2) ⇒ 피보나치 정의
+F_(n-1) = F(n-1)   ⇒ ok
+
+성립하는걸 봤으니 이 식을 쓸 수 있겠다.(뭔 개소리인지 모르겠음)
+(어떻게 이 식을 찾았나요? 외울 필요 없음.)</div></details>
+  </section>
+
+  <!-- 11 -->
+  <section id="s11">
+    <h2 class="st"><span class="sq">11</span>A<sup>n</sup>으로 피보나치를 O(log n)에</h2>
+    <div class="badges"><span class="badge exam">시험 ★★★</span></div>
+
+    <h3>오른쪽 벡터를 계속 풀어쓰기</h3>
+    <p>10번 식의 오른쪽에 있는 <code>(F(n−1), F(n−2))</code>도 <b>똑같은 꼴의 점화식</b>입니다. 그러니 같은 식을 한 번 더 대입할 수 있습니다.</p>
+
+    <pre class="math">( F(n)   )   ( 1 1 )   ( F(n−1) )
+(        ) = (     ) × (        )
+( F(n−1) )   ( 1 0 )   ( F(n−2) )
+
+             ( 1 1 )   ( 1 1 )   ( F(n−2) )
+           = (     ) × (     ) × (        )      ← 오른쪽을 한 번 더 풀어씀
+             ( 1 0 )   ( 1 0 )   ( F(n−3) )
+
+             ( 1 1 )²  ( F(n−2) )
+           = (     )  ×(        )
+             ( 1 0 )   ( F(n−3) )
+             ...
+             ( 1 1 )^(n−1)  ( F(1) )
+           = (     )      ×(      )            ← 끝까지 내려가면 F(1), F(0)
+             ( 1 0 )        ( F(0) )</pre>
+
+    <figure style="margin:20px 0">
+      <svg width="100%" viewBox="0 0 440 150" role="img" style="display:block">
+        <title>행렬을 반복해서 곱해 내려가면 거듭제곱이 된다</title>
+        <desc>같은 행렬을 한 번 곱할 때마다 피보나치 항이 한 칸씩 앞으로 내려간다. 끝까지 내려가면 이미 알고 있는 F(1)과 F(0)에 도달하고, 그동안 곱한 행렬의 개수가 n 빼기 1개이므로 행렬의 n 빼기 1 제곱이 된다.</desc>
+
+        <rect x="16" y="30" width="62" height="30" rx="7" fill="var(--accent)" stroke="none"/>
+        <text x="47" y="45" text-anchor="middle" dominant-baseline="central" font-size="11.5" font-weight="800" fill="#fff">F(n)</text>
+        <text x="94" y="45" text-anchor="middle" dominant-baseline="central" font-size="12" fill="var(--ink-2)">←A—</text>
+        <rect x="110" y="30" width="72" height="30" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/>
+        <text x="146" y="45" text-anchor="middle" dominant-baseline="central" font-size="11.5" fill="var(--ink)">F(n−1)</text>
+        <text x="198" y="45" text-anchor="middle" dominant-baseline="central" font-size="12" fill="var(--ink-2)">←A—</text>
+        <rect x="214" y="30" width="72" height="30" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/>
+        <text x="250" y="45" text-anchor="middle" dominant-baseline="central" font-size="11.5" fill="var(--ink)">F(n−2)</text>
+        <text x="302" y="45" text-anchor="middle" dominant-baseline="central" font-size="13" fill="var(--ink-3)">···</text>
+        <text x="330" y="45" text-anchor="middle" dominant-baseline="central" font-size="12" fill="var(--ink-2)">←A—</text>
+        <rect x="348" y="30" width="72" height="30" rx="7" fill="var(--c2)" stroke="none"/>
+        <text x="384" y="45" text-anchor="middle" dominant-baseline="central" font-size="11.5" font-weight="800" fill="#fff">F(1), F(0)</text>
+        <text x="384" y="72" text-anchor="middle" font-size="10.5" fill="var(--c2)">이미 아는 값</text>
+
+        <path d="M47 76 Q216 108 384 84" fill="none" stroke="var(--c3)" stroke-width="1.6" stroke-dasharray="6 4"/>
+        <text x="216" y="122" text-anchor="middle" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--c3)">A를 곱한 횟수 = n − 1 번  →  A^(n−1)</text>
+      </svg>
+      <figcaption>A를 한 번 곱을 때마다 한 칸씩 내려간다. 끝까지 가면 아는 값에 닿는다</figcaption>
+    </figure>
+
+    <pre class="math">( F(n)   )   ( 1 1 )^(n−1)  ( F(1) )
+(        ) = (     )      ×(      )
+( F(n−1) )   ( 1 0 )        ( F(0) )</pre>
+
+    <h3>더 예쁘게 — 지수를 n으로</h3>
+    <p>위 식에서 <b>n 대신 n+1을 대입</b>하면 지수가 깔끔하게 n이 됩니다.</p>
+    <pre class="math">( F(n+1) )   ( 1 1 )^n  ( F(1) )
+(        ) = (     )   ×(      )
+( F(n)   )   ( 1 0 )     ( F(0) )</pre>
+
+    <h3>정리</h3>
+    <p>이 행렬을 <b>A</b>라고 두면:</p>
+    <pre class="math">A = ( 1 1 )
+    ( 1 0 )</pre>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>필요한 것</th><th>상태</th></tr></thead>
+        <tbody>
+          <tr><td>(F(1), F(0))</td><td>이미 알고 있음 — (1, 0)</td></tr>
+          <tr><td><b>A<sup>n</sup></b></td><td>구해야 함 → 이게 곧 거듭제곱 문제</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>그런데 거듭제곱은 앞에서 <code>power(a, n)</code>으로 이미 다뤘습니다. 가장 빨랐던 것이 <b>power3</b>였으므로 그대로 쓰면 됩니다. 숫자 대신 행렬이 들어갈 뿐입니다.</p>
+    <pre class="math">A^n = power3(A, n)   ⇒   O(log n)</pre>
+
+    <div class="call quote">
+      <div class="t">최종 결론</div>
+      <p>F(n)을 구하는 데 <b>T(n) = O(log n)</b>. 처음 fibo1의 <b>O(γ<sup>n</sup>)</b>에서 여기까지 내려왔습니다.</p>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>방법</th><th>시간복잡도</th><th>핵심</th></tr></thead>
+        <tbody>
+          <tr><td>fibo1 (그대로 재귀)</td><td>O(γ<sup>n</sup>)</td><td>같은 값을 수없이 다시 계산</td></tr>
+          <tr><td>행렬 + power3</td><td><mark>O(log n)</mark></td><td>거듭제곱 문제로 바꾼 뒤 반씩 쪼개기</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(F_n
+F_(n-1)) =
+(1 1   
+1 0) *
+(F_(n-1)
+F_(n-2))
+
+에서 
+(F_(n-1)
+F_(n-2)) 를 점화식으로 다시 적어보면
+
+ =
+(1 1   
+1 0) *
+( 1 1
+1 0) *
+(F_(n-2)
+F_(n-3))
+ =
+( 1 1
+1 0)^2 *
+(F_(n-2)
+F_(n-3))
+...
+= ( 1 1
+1 0)^(n-1) *
+(F_1)
+F_0)
+
+즉
+(F_n
+F_(n-1)) =
+= ( 1 1
+1 0)^(n-1) *
+(F_1)
+F_0)
+인데 더 이쁘게 바꾸면
+
+(F_n+1
+F_(n)) =
+= ( 1 1
+1 0)^(n) *
+(F_1)
+F_0)
+// n 대신 n+1 대입해서 이렇게 된 거임
+
+(1 1
+1 0) 이 행렬을 A행렬이라고 하면
+우리는 A^n을 구하면 피보나치수열 F_n을 알 수 있음
+(F_1
+F_0)은 우리가 이미 알고 있음
+
+A^n은 power(A, n)이라는걸 앞에서 했었음
+
+가장 적게 걸렸던게 power3(A, n)라서 쓰면 됨 ⇒ O(log n)
+
+F_n에서
+T(n) = O(log n) 이 됨
+
+수업 끝</div></details>
+  </section>
+
+  <!-- 12 -->
+  <section id="sg">
+    <h2 class="st"><span class="sq">12</span>용어 정리</h2>
+    <div class="terms">
+      <div class="term"><b>분할 정복</b><span class="e">divide &amp; conquer</span><p>큰 문제를 같은 형태의 작은 문제로 쪼개 재귀적으로 푸는 방법.</p></div>
+      <div class="term"><b>점화식</b><span class="e">recurrence relation</span><p>T(n)을 더 작은 입력의 T로 나타낸 식. 전개해서 시간복잡도를 구한다.</p></div>
+      <div class="term"><b>중복 호출</b><span class="e">—</span><p>같은 인자로 같은 계산을 여러 번 하는 것. power2와 fibo1이 느린 원인.</p></div>
+      <div class="term"><b>지수 시간</b><span class="e">exponential time</span><p>O(a<sup>n</sup>) 꼴. 로그함수를 y=x에 대칭시킨 모양으로 급격히 치솟는다. 나쁘다.</p></div>
+      <div class="term"><b>γ (감마)</b><span class="e">—</span><p>(1+√5)/2 = 1.618… fibo1의 시간복잡도 O(γ<sup>n</sup>)에 나오는 값.</p></div>
+      <div class="term"><b>행렬</b><span class="e">matrix</span><p>숫자를 직사각형으로 늘어놓은 것. 가로줄이 행, 세로줄이 열.</p></div>
+      <div class="term"><b>행렬 곱</b><span class="e">matrix multiplication</span><p>왼쪽의 i행과 오른쪽의 j열을 짝지어 곱한 뒤 더한 값이 결과의 i행 j열에 들어간다.</p></div>
+      <div class="term"><b>A 행렬</b><span class="e">—</span><p>[[1,1],[1,0]]. A<sup>n</sup>을 구하면 F(n)을 알 수 있다.</p></div>
+    </div>
+  </section>
+
+  <!-- 13 -->
+  <section id="sq">
+    <h2 class="st"><span class="sq">13</span>확인 필요</h2>
+    <p style="color:var(--ink-3);font-size:13.5px">미해결 항목 없었습니다. 필기 오타 4건은 해당 섹션에서 바로 고쳐 표시했습니다 (등비수열 조건, 항의 개수, 2^k = n, 피보나치 13).</p>
+  </section>
+
+  <!-- 14 -->
+  <section id="sx">
+    <h2 class="st"><span class="sq">14</span>예상 문제</h2>
+    <p style="font-size:13px;color:var(--ink-3);margin-bottom:14px">난이도 — <b style="color:var(--c2)">기본</b> 수업에서 그대로 나온 것 · <b style="color:var(--accent-deep)">응용</b> 조합하거나 한 단계 더 가야 하는 것 · <b style="color:var(--c3)">심화</b> 수업 논리를 새 상황에 옮겨야 하는 것</p>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q1</span><span>다음 표의 빈칸에 점화식과 시간복잡도를 작성하시오.</span><span class="type">표</span><span class="lv b">기본</span></div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>알고리즘</th><th>재귀 호출 횟수</th><th>점화식</th><th>시간복잡도</th></tr></thead>
+          <tbody>
+            <tr><td>power1</td><td></td><td></td><td></td></tr>
+            <tr><td>power2</td><td></td><td></td><td></td></tr>
+            <tr><td>power3</td><td></td><td></td><td></td></tr>
+            <tr><td>fibo1</td><td></td><td></td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="ans"><span class="lab">정답</span>power1 — 1번 / T(n−1)+C / O(n)<br>power2 — <b>2번</b> / 2T(n/2)+C / O(n)<br>power3 — 1번 / T(n/2)+C / <b>O(log n)</b><br>fibo1 — 2번 / T(n−1)+T(n−2)+C / <b>O(γ<sup>n</sup>)</b></div>
+    </div>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q2</span><span>다음 행렬 곱을 계산하시오.</span><span class="type">계산</span><span class="lv b">기본</span></div>
+      <pre class="math">( 1  1 )   ( 2  1 )
+(      ) × (      ) = ?
+( 1  0 )   ( 1  1 )</pre>
+      <div class="ans"><span class="lab">정답</span>1행1열 = 1×2 + 1×1 = <b>3</b> · 1행2열 = 1×1 + 1×1 = <b>2</b><br>2행1열 = 1×2 + 0×1 = <b>2</b> · 2행2열 = 1×1 + 0×1 = <b>1</b><br>결과: [[3, 2], [2, 1]]. 참고로 이것은 A³이며, F(4)=3, F(3)=2, F(2)=1 이 그대로 들어 있다.</div>
+    </div>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q3</span><span>다음 두 코드는 쪼개는 방식이 같지만 시간복잡도가 다르다. 각각의 시간복잡도를 구하고, 차이가 생기는 이유를 한 문장으로 쓰시오.</span><span class="type">코드+서술</span><span class="lv m">응용</span></div>
+      <div class="codebox pseudo">
+        <div class="head"><span><span class="tag">Python</span>(a)</span><button class="copy">복사</button></div>
+<pre><code><span class="kw">def</span> f(a, n):
+    <span class="kw">if</span> n == <span class="st2">1</span>: <span class="kw">return</span> a
+    <span class="kw">return</span> f(a, n//<span class="st2">2</span>) * f(a, n//<span class="st2">2</span>)</code></pre>
+      </div>
+      <div class="codebox pseudo">
+        <div class="head"><span><span class="tag">Python</span>(b)</span><button class="copy">복사</button></div>
+<pre><code><span class="kw">def</span> g(a, n):
+    <span class="kw">if</span> n == <span class="st2">1</span>: <span class="kw">return</span> a
+    x = g(a, n//<span class="st2">2</span>)
+    <span class="kw">return</span> x * x</code></pre>
+      </div>
+      <div class="ans"><span class="lab">정답</span>(a) 2T(n/2)+C → <b>O(n)</b> · (b) T(n/2)+C → <b>O(log n)</b><br><b>이유</b> — (a)는 같은 인자로 같은 값을 구하는 재귀 호출을 두 번 하므로, 크기를 절반으로 줄인 만큼 호출 개수가 두 배로 늘어 상쇄된다. (b)는 한 번만 구해 변수에 담아 재사용한다.</div>
+    </div>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q4</span><span>T(n) = 2T(n/2) + C, T(1) = C 를 전개하여 시간복잡도를 구하시오. (n = 2<sup>k</sup>로 가정하고, 등비수열 합 공식을 사용할 것)</span><span class="type">계산</span><span class="lv m">응용</span></div>
+      <div class="ans"><span class="lab">풀이</span>T(n) = 2<sup>k</sup>T(n/2<sup>k</sup>) + 2<sup>k−1</sup>C + … + 2C + C = n·T(1) + C(2<sup>k−1</sup> + … + 2 + 1).<br>초항 1, 공비 2, 항 k개이므로 합은 1·(2<sup>k</sup>−1)/(2−1) = 2<sup>k</sup>−1 = n−1.<br>따라서 T(n) = Cn + C(n−1) = <b>2Cn − C = O(n)</b>.</div>
+    </div>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q5</span><span>피보나치 행렬식 (F(n), F(n−1))ᵀ = A × (F(n−1), F(n−2))ᵀ, A = [[1,1],[1,0]] 이 성립함을 두 줄로 확인하고, 이 식을 세우면 <b>무엇이 좋아지는지</b> 설명하시오.</span><span class="type">서술형</span><span class="lv m">응용</span></div>
+      <div class="ans"><span class="lab">모범답안</span><b>확인</b> — 위쪽: 1×F(n−1) + 1×F(n−2) = F(n−1)+F(n−2) = F(n) (피보나치 정의). 아래쪽: 1×F(n−1) + 0×F(n−2) = F(n−1). 두 줄 다 맞으므로 성립한다.<br>
+        <b>좋아지는 점</b> — 이 식은 "한 칸 내려가려면 A를 한 번 곱하면 된다"는 뜻이다. 따라서 끝까지 내려가면 (F(n+1), F(n))ᵀ = A<sup>n</sup>(F(1), F(0))ᵀ 가 되어 <b>피보나치가 거듭제곱 문제로 바뀐다</b>. 거듭제곱은 power3로 O(log n)에 풀 수 있으므로, 지수 시간이던 것이 로그 시간이 된다.</div>
+    </div>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q6</span><span>세 항을 더하는 수열 G(n) = G(n−1) + G(n−2) + G(n−3) 이 있다. (1) 이 수열을 행렬식으로 나타내려면 <b>몇 × 몇</b> 행렬이 필요한지 쓰고 그 행렬을 구하시오. (2) 그 행렬이 맞는지 각 줄을 확인하시오. (3) 이 방법으로 G(n)을 구할 때의 시간복잡도를 쓰고, 그대로 재귀로 구할 때와 비교하시오.</span><span class="type">유도+판단</span><span class="lv h">심화</span></div>
+      <div class="ans"><span class="lab">모범답안</span>
+        <b>(1)</b> 한 칸 내려갈 때 필요한 정보가 연속한 <b>세 항</b>이므로 벡터가 3칸이고, 행렬은 <b>3×3</b>이다.
+        <pre class="math">( G(n)   )   ( 1 1 1 )   ( G(n−1) )
+( G(n−1) ) = ( 1 0 0 ) × ( G(n−2) )
+( G(n−2) )   ( 0 1 0 )   ( G(n−3) )</pre>
+        <b>(2)</b> 1행: 1·G(n−1)+1·G(n−2)+1·G(n−3) = G(n) ✓ / 2행: 1·G(n−1)+0+0 = G(n−1) ✓ / 3행: 0+1·G(n−2)+0 = G(n−2) ✓<br>
+        <b>(3)</b> 같은 방식으로 M<sup>n</sup>을 power3로 구하면 <b>O(log n)</b>. 그대로 재귀로 구하면 T(n) = T(n−1)+T(n−2)+T(n−3)+C 로 <b>지수 시간</b>이 되므로, 행렬 쪽이 압도적으로 빠르다.<br>
+        <span style="color:var(--c3)">덧붙임</span> 행렬이 3×3이라 곱셈 한 번의 비용은 커지지만(2×2는 8번, 3×3은 27번의 곱셈), 항의 개수가 정해져 있으면 그 값도 상수이므로 차수에는 영향이 없다.</div>
+    </div>
+  </section>
+
+  <footer><span>알고리즘 · 3주차 1차시 · 2026.09.17</span><span>jaealee.com</span></footer>
+</div>
+
+<!-- ═══════════ 단어장 뷰 ═══════════ -->
+<div id="viewVocab" hidden>
+  <div class="hero" data-w="A–Z">
+    <span class="chip">3주차 1차시 단어장</span>
+    <h1>알고리즘 필수 용어</h1>
+    <p class="sub">이번 차시에 나온 단어 중 전공생이 원서·논문에서 다시 만날 것들만 골랐습니다.</p>
+  </div>
+
+  <div class="vhead">
+    <input type="search" id="vq" placeholder="단어 · 뜻으로 찾기">
+    <button class="tbtn" id="maskBtn">뜻 가리기</button>
+    <button class="tbtn" id="quizBtn">퀴즈 풀기</button>
+    <span style="font-size:13px;color:var(--ink-3);font-weight:600" id="vcount"></span>
+  </div>
+
+  <ul class="vlist" id="vlist">
+    <li class="vword">
+      <div><span class="w">divide</span><span class="ipa">/dɪˈvaɪd/</span><span class="pos">v.</span></div>
+      <div><p class="mean">나누다, 분할하다</p>
+      <p class="ex">We <b>divide</b> the list into two parts.<span class="ko">리스트를 두 부분으로 나눈다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">conquer</span><span class="ipa">/ˈkɒŋkər/</span><span class="pos">v.</span></div>
+      <div><p class="mean">정복하다 — 여기서는 작은 문제를 풀어낸다는 뜻</p>
+      <p class="ex">Divide and <b>conquer</b> is a common design method.<span class="ko">분할 정복은 흔히 쓰는 설계 방법이다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">recursive</span><span class="ipa">/rɪˈkɜːrsɪv/</span><span class="pos">adj.</span></div>
+      <div><p class="mean">재귀적인 — 자기 자신을 다시 부르는</p>
+      <p class="ex">This is a <b>recursive</b> definition of max.<span class="ko">이것은 max의 재귀적 정의다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">exponential</span><span class="ipa">/ˌekspəˈnenʃl/</span><span class="pos">adj.</span></div>
+      <div><p class="mean">지수적인 — 지수 꼴로 급격히 커지는</p>
+      <p class="ex">fibo1 takes <b>exponential</b> time.<span class="ko">fibo1은 지수 시간이 걸린다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">matrix</span><span class="ipa">/ˈmeɪtrɪks/</span><span class="pos">n.</span></div>
+      <div><p class="mean">행렬 — 숫자를 직사각형으로 늘어놓은 것 (복수형 matrices)</p>
+      <p class="ex">We write it as a 2 by 2 <b>matrix</b>.<span class="ko">이것을 2×2 행렬로 쓴다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">row</span><span class="ipa">/roʊ/</span><span class="pos">n.</span></div>
+      <div><p class="mean">행 — 행렬의 가로줄</p>
+      <p class="ex">Take the first <b>row</b> of the left matrix.<span class="ko">왼쪽 행렬의 첫 번째 행을 가져온다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">column</span><span class="ipa">/ˈkɒləm/</span><span class="pos">n.</span></div>
+      <div><p class="mean">열 — 행렬의 세로줄</p>
+      <p class="ex">Pair it with the first <b>column</b> on the right.<span class="ko">오른쪽의 첫 번째 열과 짝짓는다.</span></p></div>
+    </li>
+  </ul>
+
+  <div class="quizbox" id="quiz">
+    <div class="qq" id="quizQ"></div>
+    <div class="opts" id="quizOpts"></div>
+    <div class="score" id="quizScore"></div>
+  </div>
+</div>
+<!-- ═══════════ 필기 원문 뷰 ═══════════ -->
+<div id="viewRaw" hidden>
+  <div class="hero" data-w="RAW">
+    <span class="chip">3주차 1차시 필기 원문</span>
+    <h1>내가 보낸 그대로</h1>
+    <p class="sub">한 글자도 고치지 않았습니다. 본문에 빠진 게 없는지 여기서 대조하세요.</p>
+  </div>
+
+  <div class="rawnote" id="rawlist">
+    <div class="rawitem">
+      <div class="seq">01<span>&nbsp;</span></div>
+      <div>
+        <div class="body">9월 17일 목요일 3주차 1차시 수업 시작
+분할 정복법
+분할 정복법(Divide &amp; Conquer) (큰 문제 ⇒ 작은 문제) → 재귀적
+A : 3 0 -5 7 2 -4 6 9
+이런 리스트가 있다면
+가장 큰 값을 구하는 알고리즘 max(A)가 있다고 하자.
+우리는 이걸 분할해서 풀 수 있었음
+맨 처음 수 A[0]와 A[1:](나머지)를 비교해서 구할 수 있음(도식화)
+A[0] vs max(A[1:] )
+max(A[1:])이 더 크다면 다시 A[1] vs max(A[2:])
+max (A) = max(//max는 두 수 중 큰 값을 구하는 것임)(A[0], max(A[1:]))  다른 max는 알고리즘 함수임(두 수 중 큰 값을 구하는 max와 다름 주의)</div>
+        <div class="where"><a href="#s1">01. 분할 정복법</a> <a href="#s2">02. max(A)를 분할 정복으로</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">02<span>&nbsp;</span></div>
+      <div>
+        <div class="body">T(n) = T(n-1) + C, T(1) = C
+
+   = T(n-2) + C + C  
+
+...
+⇒ O(n)
+(이 경우는 리스트를 하나의 원소 vs 나머지 분할)
+이번엔 다른 방식
+반씩 분할
+A : 3 0 -5 7 2 -4 6 9
+가 있다면 이걸 반반씩 분할(도식화)
+max(A[:4] //이렇게 적어야 인덱스 3까지 포함(0~3))
+max(A[4:])
+이렇게 분할 가능
+max(알고리즘 max)(A) = max(얘는 비교 수식 max)(max(얘는 알고리즘 max)(A[:4]), max(알고리즘 max)(A[4:))
+T(n) = T(n/2) + T(n/2) + C //T(n/2)인 이유는 절반으로 자르니까
+T(n) = 2T(n/2) + C , T(1) = C
+= 2(2T(n/4)+C) + C
+= 2^2 * T(n/4) + 2C + C
+= 2^2 (2 T(n/8) + C) + 2C + C
+= 2^3 T(n/(2^3)) + 2^2 C + 2C + C
+...
+가정 n = 2^k
+규칙을 찾아보면
+= 2^k T(n/2^k) + 2^(k-1) C + 2^(k-2) C + ... + 2^1 C + 2^0 C
+= nT(1) + C(2^(k-1) + 2^(k-2) + ... + 2^1 + 2^0)
+*잠시 복습 : 등비수열 합 : ar^0 + ar^1 + ar^2 + ... + ar^(n-1) (n개)
+= (ar^0(r^n - 1)) / (r-1) = (a(r^n -1)) / r - 1
+여기서 a는 초항 n은 항의 개수, r은 공비
+(a가 더 작으면 = a(1-r^n) / (1-r)
+그러면 공비가 2고 초항이 1이고 항의 개수가 초항이므로
+(1(2^k - 1)) / 2-1 = 2^k - 1
+= Cn + C(2^k - 1) // T(1) = C이기 때문
+= 2Cn - C // 2^k을 C라고 가정했기 때문
+= O(n)
+
+
+만약에 반반이 아니라 1n/3, 2n/3으로 쪼개도 동일하게 O(n)이 나옴
+
+
+___
+
+a^n 구하기
+ex) a = 3, n = 4 → 3^4
+
+power1(a, n) ⇒ a^n = a * a^(n-1) = power1(a,n) = a * power1(a, n-1)
+
+power1(a, n):
+    if n==1 : return a
+    return a * power1(a,n-1)
+
+T(n) = T(n-1) + C , T(1) = C
+ ⇒ O(n)
+
+3주차 1차시가 맞아. 미안</div>
+        <div class="where"><a href="#s2">02. 하나 vs 나머지</a> <a href="#s3">03. 반씩 분할</a> <a href="#s4">04. a^n 구하기</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">03<span>&nbsp;</span></div>
+      <div>
+        <div class="body">power2(a, n) :  
+    if n==1 : return a
+    if n%2 == 0 //n이 짝수이면
+         return power2(a, n//2) * power2(a, n//2)
+    else :    //n이 홀수이면
+        return power2(a, n//2) * power2(a, n//2) * a    //*a를 하는 이유 : 나머지 1이 남기 때문
+
+
+T(n) = (n/2) + T(n/2) + C
+           = 2 * T(n/2) + C
+          ⇒ O(n)</div>
+        <div class="where"><a href="#s5">05. a^n — power2</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">04<span>&nbsp;</span></div>
+      <div>
+        <div class="body">power3 (a, n) :
+    if n==1 : 
+        return a
+    x = power3(a, n//2)
+    if n%2 == 0 :
+        return x*x
+    else : return x*x*a
+
+⇒ T(n) = T(n/2) + C, T(1) = C
+              = T(n/4) + C    + C
+               = T(n/8) +C     +C +C
+...
+
+* 가정 n=2^k
+
+
+  = T(n/(2^k)) + k*C
+= T(1) + k*C    //2^k를 n이라고 가정했기 때문
+//k = log_2 n
+= C*log_2 n + C
+
+= O(log n)</div>
+        <div class="where"><a href="#s6">06. a^n — power3</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">05<span>&nbsp;</span></div>
+      <div>
+        <div class="body">power 3 알고리즘이 시간복잡도가 더 작아짐
+
+___
+
+피보나치수 Fibonacci
+
+처음 두 수가 주어짐
+0 1 (0 1 이 꼭 아니어도 됨)
+그 다음수는 앞 2 수를 더함
+0 1 1 2 3  5 8 14 21 ...
+
+이 피보나치수도 점화식으로 나타낼 수 있는지 없는지 확인을 해보자
+
+F_0, F_1, ...
+
+F_n = F_(n-1) + F_(n-2)
+
+def fibo1(n)   ← F_n을 반환하는 알고리즘
+    if n==0 or n==1 :
+        return n    (우리가 사용하는 예에서는 F_0 가 0이고 F_1이 1이기 때문
+    return fibo1(n-1) + fibo1(n-2)
+
+⇒ T(n) = T(n-1) + T(n-2) + C, T(0) = C, T(1) = C
+
+⇒ 실제로 구하지는 않을거임(우리가 배우는 범위를 넘어섬)
+결과만 얘기하면 T(n) = O(감마^n), 감마 = (1=루트5)/2 = 1.618...
+
+이런식으로 시간복잡도가 지수로 오면
+exponential하게 걸린다고 함. ⇒ bad하다고 할 수 있음
+시간복잡도가 좋지 않다.
+
+우리가 일반적으로 'a'가 있다고 하면
+
+제 1사분면 표 그려서 x축은 n, y는 시간
+
+an ⇒ o(n) (제 1차 함수), 원점을 지남
+log n ⇒ O(log n) (로그함수) (1차함수보다 아래 위치) ⇒ 빠르다. 더 좋다</div>
+        <div class="where"><a href="#s7">07. 피보나치 수</a> <a href="#s8">08. 증가 속도 비교</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">06<span>&nbsp;</span></div>
+      <div>
+        <div class="body">그런데 지수 형태는 로그 함수랑 y=x에 대칭해서 그려짐
+O(a^n) ⇒ 좋지 않음. 시간 복잡도가
+
+그리고 내가 말한 감마 파이라고 하지 말고 감마라고 해줘. 감마 기호 써서(교수님과 통일)
+
+아무튼 아까 구한 피보나치수는 성능이 좋지 않음(지수형태로 나왔기 때문에)
+
+F_n부터 시작해서
+F_(n-1) , F(n-2)
+F_n-2, F_n-3, F_n-3 Fn-4
+... 이런식으로 역토너먼트 되는거 도식화
+
+근데 이 도식 보면 F_(n-2)도 그렇고 F(n-3)도 같은 값을 쓰는거 ㄹ볼 수 있음. 비효율적임(도식화)
+
+
+그렇다면 피보나치를 효율적으로 어떻게 구할 수 있을까?
+
+다른 방법
+가까운 2개를 묶어서 행렬로 나타낼거임
+
+잠시 행렬 개념
+
+(a b
+c d)
+= (2*2행렬에서 동그라미 네모 세모 별로 차있는거)*(2*2 행렬에서 숫자 1234가 차있는거)
+
+a = 
+b = 
+c = 
+d = 
+(행렬곱 공식을 너가 알아서 적어줘. 이해하기 쉽게)
+
+돌아와서 다시 보면
+
+(F_n
+F_(n-1)) =
+(1 1   
+1 0) *
+(F_(n-1)
+F_(n-2))
+
+이게 성립하는 이유
+F_n = F(n-1) + F_(n-2) ⇒ 피보나치 정의
+F_(n-1) = F(n-1)   ⇒ ok
+
+성립하는걸 봤으니 이 식을 쓸 수 있겠다.(뭔 개소리인지 모르겠음)
+(어떻게 이 식을 찾았나요? 외울 필요 없음.)</div>
+        <div class="where"><a href="#s7">07. 피보나치 수</a> <a href="#s8">08. 증가 속도 비교</a> <a href="#s9">09. 행렬 곱</a> <a href="#s10">10. 피보나치를 행렬로</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">07<span>&nbsp;</span></div>
+      <div>
+        <div class="body">(F_n
+F_(n-1)) =
+(1 1   
+1 0) *
+(F_(n-1)
+F_(n-2))
+
+에서 
+(F_(n-1)
+F_(n-2)) 를 점화식으로 다시 적어보면
+
+ =
+(1 1   
+1 0) *
+( 1 1
+1 0) *
+(F_(n-2)
+F_(n-3))
+ =
+( 1 1
+1 0)^2 *
+(F_(n-2)
+F_(n-3))
+...
+= ( 1 1
+1 0)^(n-1) *
+(F_1)
+F_0)
+
+즉
+(F_n
+F_(n-1)) =
+= ( 1 1
+1 0)^(n-1) *
+(F_1)
+F_0)
+인데 더 이쁘게 바꾸면
+
+(F_n+1
+F_(n)) =
+= ( 1 1
+1 0)^(n) *
+(F_1)
+F_0)
+// n 대신 n+1 대입해서 이렇게 된 거임
+
+(1 1
+1 0) 이 행렬을 A행렬이라고 하면
+우리는 A^n을 구하면 피보나치수열 F_n을 알 수 있음
+(F_1
+F_0)은 우리가 이미 알고 있음
+
+A^n은 power(A, n)이라는걸 앞에서 했었음
+
+가장 적게 걸렸던게 power3(A, n)라서 쓰면 됨 ⇒ O(log n)
+
+F_n에서
+T(n) = O(log n) 이 됨
+
+수업 끝</div>
+        <div class="where"><a href="#s11">11. A^n으로 O(log n)</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+/* ── 스크롤 진행 바 ─────────────────────────────── */
+const sb = document.getElementById('scrollbar');
+addEventListener('scroll', () => {
+  const h = document.documentElement.scrollHeight - innerHeight;
+  sb.style.width = (h > 0 ? scrollY / h * 100 : 0) + '%';
+}, { passive: true });
+
+/* ── 다크 모드 ──────────────────────────────────── */
+const html = document.documentElement, themeBtn = document.getElementById('themeBtn');
+themeBtn.onclick = () => {
+  const dark = html.dataset.theme === 'dark';
+  html.dataset.theme = dark ? 'light' : 'dark';
+  themeBtn.textContent = dark ? '다크' : '라이트';
+};
+
+/* ── 정답: 기본은 가려짐. 답을 누르면 그 문제만 열리고,
+      "정답 가리기" 버튼을 누르면 열린 것들을 전부 다시 덮는다 ── */
+const ansBtn = document.getElementById('ansBtn');
+const answers = [...document.querySelectorAll('.ans')];
+function syncAnsBtn() {
+  const opened = answers.filter(a => a.classList.contains('on')).length;
+  ansBtn.disabled = opened === 0;
+  ansBtn.textContent = opened ? `정답 가리기 (${opened})` : '정답 가리기';
+}
+answers.forEach(a => a.addEventListener('click', () => { a.classList.toggle('on'); syncAnsBtn(); }));
+ansBtn.onclick = () => { answers.forEach(a => a.classList.remove('on')); syncAnsBtn(); };
+syncAnsBtn();
+
+/* ── 보충(외부 자료) 개수 표시 + 숨기기 토글 ────── */
+const extraChip = document.getElementById('extraChip');
+const extraCount = document.querySelectorAll('#viewNote .call.extra, #viewNote .ext').length;
+if (extraCount) {
+  extraChip.textContent = `보충 ${extraCount}곳 — 교수님 설명 아님`;
+  extraChip.onclick = () => {
+    const off = document.body.classList.toggle('no-extra');
+    extraChip.textContent = off ? `보충 ${extraCount}곳 숨김 — 눌러서 보기` : `보충 ${extraCount}곳 — 교수님 설명 아님`;
+  };
+} else {
+  extraChip.textContent = '보충 0곳 — 전부 교수님 내용';
+  extraChip.disabled = true;
+}
+
+/* ── 인쇄 ───────────────────────────────────────── */
+document.getElementById('printBtn').onclick = () => window.print();
+
+/* ── 코드 복사 ──────────────────────────────────── */
+document.querySelectorAll('.copy').forEach(btn => {
+  btn.onclick = async () => {
+    try { await navigator.clipboard.writeText(btn.closest('.codebox').querySelector('code').innerText); btn.textContent = '복사됨'; }
+    catch { btn.textContent = '실패'; }
+    setTimeout(() => btn.textContent = '복사', 1200);
+  };
+});
+
+/* ── 복습 체크 진행률 (새로고침하면 초기화) ─────── */
+const boxes = document.querySelectorAll('.chk input'), fill = document.getElementById('barFill');
+boxes.forEach(b => b.addEventListener('change', () => {
+  fill.style.width = [...boxes].filter(x => x.checked).length / boxes.length * 100 + '%';
+}));
+
+/* ── 본문 / 단어장 / 필기 원문 전환 ─────────────── */
+const views = {
+  note:  { el: document.getElementById('viewNote'),  nav: document.getElementById('tocWrap') },
+  vocab: { el: document.getElementById('viewVocab'), nav: document.getElementById('vocabNav'), btn: document.getElementById('vocabBtn'), on: '본문으로', off: '단어장' },
+  raw:   { el: document.getElementById('viewRaw'),   nav: document.getElementById('rawNav'),   btn: document.getElementById('rawBtn'),  on: '본문으로', off: '필기 원문' }
+};
+let current = 'note';
+function setView(name) {
+  current = name;
+  Object.entries(views).forEach(([k, v]) => {
+    v.el.hidden = k !== name;
+    v.nav.hidden = k !== name;
+    if (v.btn) { v.btn.classList.toggle('solid', k === name); v.btn.textContent = k === name ? v.on : v.off; }
+  });
+  clearMarks();
+  document.getElementById('q').value = '';
+  document.getElementById('hit').textContent = '';
+  scrollTo({ top: 0, behavior: 'smooth' });
+}
+views.vocab.btn.onclick = () => setView(current === 'vocab' ? 'note' : 'vocab');
+views.raw.btn.onclick   = () => setView(current === 'raw'   ? 'note' : 'raw');
+document.getElementById('rawTotal').textContent = document.querySelectorAll('#rawlist .rawitem').length;
+// 원문 페이지의 링크를 누르면 본문으로 돌아가서 해당 위치로 이동
+document.querySelectorAll('#rawlist .where a').forEach(a => {
+  a.onclick = e => { e.preventDefault(); setView('note'); setTimeout(() => document.querySelector(a.getAttribute('href')).scrollIntoView(), 60); };
+});
+
+/* ── 목차 현재 위치 ─────────────────────────────── */
+const links = [...document.querySelectorAll('#toc a')];
+const spy = new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) return;
+  links.forEach(l => l.classList.toggle('on', l.getAttribute('href') === '#' + e.target.id));
+}), { rootMargin: '-80px 0px -68% 0px' });
+document.querySelectorAll('#viewNote section').forEach(s => spy.observe(s));
+
+/* ── 문서 내 검색 ───────────────────────────────── */
+const qInput = document.getElementById('q'), hitEl = document.getElementById('hit');
+let marks = [], cursor = -1;
+function clearMarks() {
+  marks.forEach(m => { const p = m.parentNode; if (!p) return; p.replaceChild(document.createTextNode(m.textContent), m); p.normalize(); });
+  marks = []; cursor = -1;
+}
+function runSearch(word) {
+  clearMarks();
+  if (word.length < 2) { hitEl.textContent = ''; return; }
+  const root = views[current].el;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const targets = [];
+  while (walker.nextNode()) {
+    const n = walker.currentNode;
+    if (n.parentElement.closest('script,style')) continue;
+    if (n.nodeValue.toLowerCase().includes(word)) targets.push(n);
+  }
+  targets.forEach(n => {
+    const re = new RegExp('(' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    const frag = document.createDocumentFragment();
+    n.nodeValue.split(re).forEach(p => {
+      if (p.toLowerCase() === word) { const m = document.createElement('span'); m.className = 'hit-mark'; m.textContent = p; frag.appendChild(m); marks.push(m); }
+      else frag.appendChild(document.createTextNode(p));
+    });
+    n.parentNode.replaceChild(frag, n);
+  });
+  hitEl.textContent = marks.length ? '0/' + marks.length : '없음';
+}
+/* 검색은 본문 텍스트 노드를 통째로 갈아끼우기 때문에 브라우저가 스크롤 기준점을 잃고
+   맨 위로 튄다. 바꾸기 직전 위치를 적어 두었다가 끝나고 바로 되돌린다.
+   html에 scroll-behavior:smooth 가 걸려 있어 되돌릴 때 애니메이션이 보이므로 잠깐 꺼 둔다. */
+function keepScroll(fn) {
+  const y = window.scrollY, root = document.documentElement, prev = root.style.scrollBehavior;
+  root.style.scrollBehavior = 'auto';
+  fn();
+  window.scrollTo(0, y);
+  root.style.scrollBehavior = prev;
+}
+qInput.addEventListener('input', e => {
+  const w = e.target.value.trim().toLowerCase();
+  keepScroll(() => runSearch(w));
+});
+qInput.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || !marks.length) return;
+  e.preventDefault();
+  cursor = (cursor + 1) % marks.length;
+  marks[cursor].scrollIntoView({ block: 'center', behavior: 'smooth' });
+  hitEl.textContent = (cursor + 1) + '/' + marks.length;
+});
+addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); qInput.focus(); qInput.select(); }
+});
+
+/* ── 단어장 ─────────────────────────────────────── */
+const vlist = document.getElementById('vlist');
+const words = [...vlist.querySelectorAll('.vword')];
+document.getElementById('vcount').textContent = words.length + '개';
+document.getElementById('vTotal').textContent = words.length;
+
+document.getElementById('vq').addEventListener('input', e => {
+  const k = e.target.value.trim().toLowerCase();
+  // 항목을 숨기면 문서 높이가 바뀌어 스크롤이 튄다. 여기도 위치를 고정해 둔다.
+  keepScroll(() => {
+    let shown = 0;
+    words.forEach(w => { const ok = w.innerText.toLowerCase().includes(k); w.style.display = ok ? '' : 'none'; if (ok) shown++; });
+    document.getElementById('vcount').textContent = shown + '개';
+  });
+});
+
+const maskBtn = document.getElementById('maskBtn');
+maskBtn.onclick = () => {
+  const on = vlist.classList.toggle('masked');
+  maskBtn.classList.toggle('solid', on);
+  maskBtn.textContent = on ? '뜻 보이기' : '뜻 가리기';
+  if (!on) vlist.querySelectorAll('.show').forEach(el => el.classList.remove('show'));
+};
+vlist.querySelectorAll('.mean, .ex').forEach(el => {
+  el.onclick = () => { if (vlist.classList.contains('masked')) el.classList.toggle('show'); };
+});
+
+/* 퀴즈 — 위 목록에서 문제를 자동 생성 */
+const quiz = document.getElementById('quiz'), quizBtn = document.getElementById('quizBtn');
+const qQ = document.getElementById('quizQ'), qO = document.getElementById('quizOpts'), qS = document.getElementById('quizScore');
+let pool = [], solved = 0, correct = 0;
+const data = () => words.map(w => ({
+  word: w.querySelector('.w').textContent,
+  mean: (w.querySelector('.mean').textContent.split('—')[1] || w.querySelector('.mean').textContent).trim()
+}));
+function nextQuiz() {
+  if (!pool.length) { qQ.textContent = '한 바퀴 끝'; qO.innerHTML = ''; qS.textContent = `${solved}문제 중 ${correct}개 정답`; return; }
+  const all = data(), cur = pool.pop();
+  qQ.textContent = cur.word;
+  const opts = [cur, ...all.filter(d => d.word !== cur.word).sort(() => Math.random() - .5).slice(0, 3)].sort(() => Math.random() - .5);
+  qO.innerHTML = '';
+  opts.forEach(o => {
+    const b = document.createElement('button');
+    b.className = 'opt'; b.textContent = o.mean;
+    b.onclick = () => {
+      solved++;
+      if (o.word === cur.word) { b.classList.add('ok'); correct++; }
+      else { b.classList.add('no'); [...qO.children].find(x => x.textContent === cur.mean)?.classList.add('ok'); }
+      [...qO.children].forEach(x => x.disabled = true);
+      qS.textContent = `${solved}문제 중 ${correct}개 정답`;
+      setTimeout(nextQuiz, 1000);
+    };
+    qO.appendChild(b);
+  });
+  qS.textContent = `${solved}문제 중 ${correct}개 정답 · 남은 ${pool.length}개`;
+}
+quizBtn.onclick = () => {
+  const on = quiz.classList.toggle('on');
+  quizBtn.classList.toggle('solid', on);
+  quizBtn.textContent = on ? '퀴즈 닫기' : '퀴즈 풀기';
+  if (on) { pool = data().sort(() => Math.random() - .5); solved = 0; correct = 0; nextQuiz(); }
+};
+</script>
+</body>
+</html>
