@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>상하이 가족여행 2027</title>
+<!--
+  상하이 가족여행 페이지 (jaealee.com/family/trip/2027/shanghai/)
+  - 한 파일 구성: 외부 라이브러리 없이 HTML/CSS/JS만 사용 (GitHub Pages에 그대로 올리기 위해)
+  - 내용은 아래 TRIP 객체 한 곳에서만 수정하면 화면 전체가 바뀜 (HTML을 직접 고치지 않아도 되게)
+  - 지금 들어있는 값은 전부 더미(dummy)입니다. "추후 입력"으로 표시된 부분을 채우면 됩니다.
+-->
+<style>
+  /* 색상 토큰: 상하이 야경(남색) + 와이탄 불빛(금색) + 포인트 빨강 */
+  :root{
+    --night:#15213d; --night-2:#22335c; --gold:#d8a943; --gold-soft:#f3e2b3;
+    --red:#c8372d; --paper:#f6f2ea; --card:#ffffff; --ink:#1f2433; --muted:#6b7285;
+    --line:#e3dccd; --shadow:rgba(21,33,61,.12); --dummy:#b3a58a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;
+    color:var(--ink);line-height:1.6;background:#0e1628;display:flex;justify-content:center;
+  }
+  /* 휴대폰 폭 기준 레이아웃: 가족이 주로 휴대폰으로 볼 것이므로 최대 폭 480px */
+  .phone{width:100%;max-width:480px;min-height:100vh;background:var(--paper);
+    box-shadow:0 0 40px rgba(0,0,0,.4);padding-bottom:60px}
+
+  /* ---------- 헤더 ---------- */
+  header{position:relative;color:#fff;padding:30px 20px 26px;overflow:hidden;
+    background:linear-gradient(180deg,#0b1430 0%,var(--night) 55%,var(--night-2) 100%)}
+  /* 스카이라인: 단순 사각형 그림자로 빌딩 느낌만 표현 (이미지 파일 없이) */
+  header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:46px;opacity:.55;
+    background:
+      linear-gradient(var(--gold) 0 0) 8% 100%/14px 30px no-repeat,
+      linear-gradient(var(--gold) 0 0) 16% 100%/10px 18px no-repeat,
+      linear-gradient(var(--gold) 0 0) 30% 100%/6px 44px no-repeat,
+      linear-gradient(var(--gold) 0 0) 36% 100%/18px 22px no-repeat,
+      linear-gradient(var(--gold) 0 0) 55% 100%/12px 38px no-repeat,
+      linear-gradient(var(--gold) 0 0) 63% 100%/20px 16px no-repeat,
+      linear-gradient(var(--gold) 0 0) 78% 100%/8px 34px no-repeat,
+      linear-gradient(var(--gold) 0 0) 88% 100%/16px 24px no-repeat;
+    filter:blur(.3px)}
+  .kicker{font-size:.78rem;letter-spacing:3px;color:var(--gold);font-weight:700}
+  header h1{font-size:1.9rem;letter-spacing:-.5px;margin-top:2px}
+  header h1 span{color:var(--gold)}
+  .dates{margin-top:6px;font-size:.95rem;opacity:.92}
+  .dday{position:absolute;right:18px;top:26px;text-align:center;background:var(--red);
+    border-radius:14px;padding:8px 12px;min-width:74px;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+  .dday b{display:block;font-size:1.35rem;line-height:1.1}
+  .dday small{font-size:.7rem;opacity:.9}
+  .family{display:flex;gap:6px;margin-top:14px;flex-wrap:wrap;position:relative;z-index:1}
+  .family span{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
+    padding:3px 11px;border-radius:20px;font-size:.82rem}
+
+  /* ---------- 탭 ---------- */
+  .tabs{display:flex;background:var(--night);position:sticky;top:0;z-index:20;
+    border-bottom:3px solid var(--gold);overflow-x:auto}
+  .tab{flex:1;min-width:66px;border:none;background:none;color:#aab3c8;cursor:pointer;
+    padding:11px 4px 10px;font:inherit;font-size:.82rem;font-weight:700;line-height:1.2}
+  .tab i{display:block;font-style:normal;font-size:1.15rem;margin-bottom:2px}
+  .tab.active{color:#fff;background:var(--night-2);box-shadow:inset 0 -3px 0 var(--gold)}
+
+  .page{display:none;padding:18px 14px 0}
+  .page.active{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1}}
+  h2.sec{font-size:1.15rem;color:var(--night);margin:6px 2px 10px;display:flex;align-items:center;gap:6px}
+  h2.sec:not(:first-child){margin-top:24px}
+
+  /* ---------- 공통 카드 ---------- */
+  .card{background:var(--card);border-radius:14px;padding:14px 16px;margin-bottom:10px;
+    box-shadow:0 2px 10px var(--shadow);border:1px solid var(--line)}
+  .row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:.92rem}
+  .row:last-child{border-bottom:none}
+  .row .k{color:var(--muted);flex-shrink:0}
+  .row .v{text-align:right;font-weight:600}
+  /* 더미 값 표시: 나중에 채워야 할 곳을 한눈에 찾도록 흐린 색 + 점선 밑줄 */
+  .dummy{color:var(--dummy);font-weight:500;border-bottom:1px dotted var(--dummy)}
+  .note{font-size:.8rem;color:var(--muted);margin-top:8px}
+  .banner{background:var(--gold-soft);border:1px solid #e6cf8f;color:#6d5316;border-radius:12px;
+    padding:10px 13px;font-size:.84rem;margin-bottom:14px}
+
+  /* ---------- 개요 ---------- */
+  .facts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .fact{background:var(--card);border-radius:12px;padding:11px 12px;border:1px solid var(--line);
+    box-shadow:0 2px 8px var(--shadow)}
+  .fact small{display:block;color:var(--muted);font-size:.75rem}
+  .fact b{font-size:.98rem}
+  .budget td,.budget th{padding:7px 4px;font-size:.88rem;border-bottom:1px solid var(--line)}
+  .budget{width:100%;border-collapse:collapse}
+  .budget th{text-align:left;color:var(--muted);font-weight:600;font-size:.78rem}
+  .budget td:last-child,.budget th:last-child{text-align:right}
+  .budget tfoot td{font-weight:800;border-bottom:none;color:var(--night)}
+
+  /* ---------- 일정 ---------- */
+  .days{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px}
+  .dbtn{flex:1;min-width:62px;border:1px solid var(--line);background:#fff;border-radius:12px;
+    padding:7px 4px;cursor:pointer;font:inherit;color:var(--ink);text-align:center;line-height:1.25}
+  .dbtn b{display:block;font-size:.95rem}
+  .dbtn small{font-size:.72rem;color:var(--muted)}
+  .dbtn.active{background:var(--night);color:#fff;border-color:var(--night)}
+  .dbtn.active small{color:var(--gold-soft)}
+  .dayhead{margin:0 2px 12px}
+  .dayhead h3{font-size:1.1rem;color:var(--night)}
+  .dayhead p{font-size:.85rem;color:var(--muted)}
+  .timeline{position:relative;padding-left:20px}
+  .timeline::before{content:"";position:absolute;left:6px;top:8px;bottom:8px;width:2px;background:var(--gold)}
+  .stop{position:relative;background:#fff;border-radius:12px;padding:10px 13px;margin-bottom:9px;
+    border:1px solid var(--line);box-shadow:0 2px 8px var(--shadow)}
+  .stop::before{content:"";position:absolute;left:-19px;top:14px;width:12px;height:12px;border-radius:50%;
+    background:#fff;border:3px solid var(--gold)}
+  .stop.move::before{border-color:var(--muted)}
+  .stop.food::before{border-color:var(--red)}
+  .stop .t{font-size:.78rem;font-weight:800;color:var(--red)}
+  .stop h4{font-size:.98rem;margin:1px 0}
+  .stop p{font-size:.83rem;color:var(--muted)}
+
+  /* ---------- 항공권(탑승권 모양) ---------- */
+  .ticket{background:#fff;border-radius:16px;overflow:hidden;margin-bottom:12px;box-shadow:0 3px 12px var(--shadow);border:1px solid var(--line)}
+  .ticket .top{background:var(--night);color:#fff;padding:9px 16px;display:flex;justify-content:space-between;font-size:.85rem}
+  .ticket .top b{color:var(--gold)}
+  .route{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 6px}
+  .route .ap{text-align:center}
+  .route .ap b{font-size:1.7rem;letter-spacing:1px;color:var(--night);display:block;line-height:1.1}
+  .route .ap small{font-size:.75rem;color:var(--muted)}
+  .route .ap .tm{font-size:.95rem;font-weight:700;margin-top:3px}
+  .route .mid{flex:1;text-align:center;color:var(--muted);font-size:.75rem;padding:0 8px}
+  .route .mid::before{content:"✈";display:block;font-size:1.2rem;color:var(--gold)}
+  .ticket .bottom{border-top:2px dashed var(--line);padding:8px 16px 12px}
+
+  /* ---------- 준비물 체크리스트 ---------- */
+  .progress{height:8px;border-radius:5px;background:var(--line);overflow:hidden;margin:4px 0 14px}
+  .progress div{height:100%;background:linear-gradient(90deg,var(--gold),var(--red));width:0;transition:width .3s}
+  .plabel{display:flex;justify-content:space-between;font-size:.82rem;color:var(--muted)}
+  .check{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line);cursor:pointer;font-size:.93rem}
+  .check:last-child{border-bottom:none}
+  .check input{width:18px;height:18px;margin-top:3px;accent-color:var(--red);flex-shrink:0}
+  .check.done span{text-decoration:line-through;color:var(--muted)}
+  .check small{display:block;font-size:.76rem;color:var(--muted)}
+  .who{font-size:.7rem;background:var(--gold-soft);color:#6d5316;border-radius:8px;padding:1px 7px;margin-left:4px;white-space:nowrap}
+  .reset{border:1px solid var(--line);background:#fff;border-radius:10px;padding:7px 12px;font:inherit;
+    font-size:.82rem;color:var(--muted);cursor:pointer;margin-top:4px}
+
+  /* ---------- 정보 ---------- */
+  .info h4{font-size:.95rem;color:var(--night);margin-bottom:4px}
+  .info p,.info li{font-size:.88rem}
+  .info ul{padding-left:18px}
+  .phrase{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:.9rem}
+  .phrase:last-child{border-bottom:none}
+  .phrase .zh{font-weight:700;color:var(--night);text-align:right}
+  .phrase .zh small{display:block;font-weight:400;color:var(--muted);font-size:.75rem}
+
+  footer{text-align:center;font-size:.75rem;color:var(--muted);margin-top:28px}
+</style>
+</head>
+<body>
+<div class="phone">
+  <header>
+    <div class="kicker">FAMILY TRIP 2027</div>
+    <h1>상하이 <span>上海</span></h1>
+    <div class="dates" id="dates"></div>
+    <div class="dday" id="dday"><b>D-?</b><small>출발까지</small></div>
+    <div class="family" id="family"></div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-page="overview"><i>🏮</i>개요</button>
+    <button class="tab" data-page="plan"><i>🗓️</i>일정</button>
+    <button class="tab" data-page="flight"><i>✈️</i>항공</button>
+    <button class="tab" data-page="hotel"><i>🏨</i>호텔</button>
+    <button class="tab" data-page="pack"><i>🧳</i>준비물</button>
+    <button class="tab" data-page="info"><i>📌</i>정보</button>
+  </nav>
+
+  <!-- 각 탭 내용은 아래 스크립트가 TRIP 데이터를 읽어서 채움 -->
+  <section class="page active" id="overview"></section>
+  <section class="page" id="plan"></section>
+  <section class="page" id="flight"></section>
+  <section class="page" id="hotel"></section>
+  <section class="page" id="pack"></section>
+  <section class="page" id="info"></section>
+
+  <footer>jaealee.com · 우리 가족 상하이 여행</footer>
+</div>
+
+<script>
+/* =====================================================================
+   여행 데이터 — 내용 수정은 여기만 하면 됨
+   - 값이 문자열 "추후 입력"이거나 dummy:true 인 항목은 화면에 흐리게(더미) 표시됨
+   ===================================================================== */
+const TODO = "추후 입력";
+
+const TRIP = {
+  start: "2027-01-16",   // 출발일 (D-day 계산에 사용)
+  end:   "2027-01-20",   // 귀국일
+  family: ["👨 아빠", "👩 엄마", "👧 누나", "🧑 재아"],
+
+  // 개요 탭 — 한눈에 보는 정보
+  facts: [
+    { label: "기간",   value: "4박 5일" },
+    { label: "인원",   value: "4명" },
+    { label: "시차",   value: "한국보다 1시간 느림" },
+    { label: "통화",   value: "위안(CNY, ¥)" },
+    { label: "1월 날씨", value: TODO },
+    { label: "환율 기준", value: TODO },
+  ],
+
+  // 예산 (4인 합계, 원 단위). amount가 null이면 더미로 표시
+  budget: [
+    { item: "항공권",   amount: null },
+    { item: "호텔 (4박)", amount: null },
+    { item: "식비",     amount: null },
+    { item: "교통",     amount: null },
+    { item: "관광·입장료", amount: null },
+    { item: "쇼핑·기타", amount: null },
+  ],
+
+  // 일정 — type: move(이동) / food(식사) / spot(관광, 기본값)
+  days: [
+    { title: "도착 · 와이탄 야경", summary: "인천 출발 → 상하이 도착, 체크인", stops: [
+      { time: "00:00", name: "인천공항 출발", desc: TODO, type: "move" },
+      { time: "00:00", name: "푸둥공항 도착", desc: TODO, type: "move" },
+      { time: "00:00", name: "호텔 체크인", desc: TODO },
+      { time: "00:00", name: "저녁 식사", desc: TODO, type: "food" },
+      { time: "00:00", name: "관광지 A", desc: TODO },
+    ]},
+    { title: "Day 2 일정 제목", summary: TODO, stops: [
+      { time: "00:00", name: "아침 식사", desc: TODO, type: "food" },
+      { time: "00:00", name: "관광지 A", desc: TODO },
+      { time: "00:00", name: "점심 식사", desc: TODO, type: "food" },
+      { time: "00:00", name: "관광지 B", desc: TODO },
+      { time: "00:00", name: "저녁 식사", desc: TODO, type: "food" },
+    ]},
+    { title: "Day 3 일정 제목", summary: TODO, stops: [
+      { time: "00:00", name: "관광지 A", desc: TODO },
+      { time: "00:00", name: "점심 식사", desc: TODO, type: "food" },
+      { time: "00:00", name: "관광지 B", desc: TODO },
+      { time: "00:00", name: "저녁 식사", desc: TODO, type: "food" },
+    ]},
+    { title: "Day 4 일정 제목", summary: TODO, stops: [
+      { time: "00:00", name: "관광지 A", desc: TODO },
+      { time: "00:00", name: "점심 식사", desc: TODO, type: "food" },
+      { time: "00:00", name: "관광지 B", desc: TODO },
+      { time: "00:00", name: "저녁 식사", desc: TODO, type: "food" },
+    ]},
+    { title: "귀국", summary: "체크아웃 → 공항 → 인천 도착", stops: [
+      { time: "00:00", name: "호텔 체크아웃", desc: TODO },
+      { time: "00:00", name: "푸둥공항 출발", desc: TODO, type: "move" },
+      { time: "00:00", name: "인천공항 도착", desc: TODO, type: "move" },
+    ]},
+  ],
+
+  // 항공편 — 공항 코드: ICN(인천), PVG(상하이 푸둥), SHA(상하이 훙차오)
+  flights: [
+    { dir: "가는 편", date: "2027-01-16", airline: TODO, no: "XX000",
+      from: { code: "ICN", name: "인천", time: "00:00" },
+      to:   { code: "PVG", name: "상하이 푸둥", time: "00:00" },
+      duration: "약 2시간", terminal: TODO, booking: TODO, baggage: TODO },
+    { dir: "오는 편", date: "2027-01-20", airline: TODO, no: "XX000",
+      from: { code: "PVG", name: "상하이 푸둥", time: "00:00" },
+      to:   { code: "ICN", name: "인천", time: "00:00" },
+      duration: "약 2시간", terminal: TODO, booking: TODO, baggage: TODO },
+  ],
+
+  // 호텔
+  hotel: {
+    name: "호텔 이름 (추후 입력)",
+    nameLocal: TODO,          // 중국어 이름 — 택시 기사에게 보여주기용
+    address: TODO,
+    addressLocal: TODO,       // 중국어 주소 — 택시 기사에게 보여주기용
+    checkin: "2027-01-16 15:00",
+    checkout: "2027-01-20 11:00",
+    rooms: TODO,              // 예: 트윈 2개 (아빠·엄마 / 누나·재아)
+    breakfast: TODO,
+    booking: TODO,
+    phone: TODO,
+    nearby: TODO,             // 가까운 지하철역
+  },
+
+  // 준비물 — who: 담당자(없으면 공용). id는 체크 상태 저장용이라 겹치면 안 됨
+  packing: [
+    { group: "📄 필수 서류", items: [
+      { id: "passport", name: "여권 (4명)", note: "유효기간 6개월 이상 남았는지 확인" },
+      { id: "visa", name: "비자 / 무비자 입국 여부 확인", note: TODO },
+      { id: "eticket", name: "항공권 e-티켓", who: "재아" },
+      { id: "hotelconf", name: "호텔 예약 확인서", who: "재아" },
+      { id: "insurance", name: "여행자 보험", note: TODO },
+    ]},
+    { group: "💳 돈 · 결제", items: [
+      { id: "cash", name: "위안화 현금", note: TODO },
+      { id: "card", name: "해외 결제 카드" },
+      { id: "alipay", name: "알리페이 / 위챗페이 설정", note: TODO },
+    ]},
+    { group: "📱 전자기기", items: [
+      { id: "esim", name: "eSIM / 유심 / 로밍", note: TODO },
+      { id: "charger", name: "충전기 · 케이블" },
+      { id: "battery", name: "보조배터리", note: "기내 반입만 가능 (위탁 수하물 X)" },
+      { id: "adapter", name: "멀티 어댑터", note: TODO },
+    ]},
+    { group: "👕 옷 · 생활", items: [
+      { id: "coat", name: "겨울 외투" },
+      { id: "clothes", name: "갈아입을 옷 (4일분)" },
+      { id: "shoes", name: "편한 신발" },
+      { id: "toiletry", name: "세면도구" },
+      { id: "medicine", name: "상비약" },
+    ]},
+  ],
+
+  // 정보 탭
+  apps: [
+    { name: "알리페이 (Alipay)", why: TODO },
+    { name: "지도 앱", why: TODO },
+    { name: "번역 앱", why: TODO },
+    { name: "디디 (DiDi) 택시", why: TODO },
+  ],
+  contacts: [
+    { name: "아빠", phone: TODO },
+    { name: "엄마", phone: TODO },
+    { name: "누나", phone: TODO },
+    { name: "재아", phone: TODO },
+    { name: "주상하이 대한민국 총영사관", phone: TODO },
+    { name: "호텔 프런트", phone: TODO },
+  ],
+  phrases: [
+    { ko: "안녕하세요", zh: "你好", py: "nǐ hǎo" },
+    { ko: "감사합니다", zh: "谢谢", py: "xièxie" },
+    { ko: "얼마예요?", zh: "多少钱？", py: "duōshao qián?" },
+    { ko: "화장실 어디예요?", zh: "洗手间在哪里？", py: "xǐshǒujiān zài nǎlǐ?" },
+    { ko: "이 주소로 가 주세요", zh: "请带我去这个地址", py: "qǐng dài wǒ qù zhège dìzhǐ" },
+  ],
+};
+
+/* =====================================================================
+   아래부터는 화면을 그리는 코드 — 내용만 바꿀 때는 건드리지 않아도 됨
+   ===================================================================== */
+const WEEK = ["일","월","화","수","목","금","토"];
+const $ = (id) => document.getElementById(id);
+
+// HTML 특수문자 치환: 데이터에 < > & 가 들어가도 화면이 깨지지 않게 하기 위해
+const esc = (s) => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+// 값이 비었거나 "추후 입력"이면 더미 스타일로 감싸서 반환 → 채워야 할 곳이 눈에 띄게
+const val = (v) => (v === null || v === undefined || v === "" || v === TODO)
+  ? `<span class="dummy">${TODO}</span>` : esc(v);
+
+// "2027-01-16" → Date. new Date("YYYY-MM-DD")는 UTC로 해석되므로 로컬 시간으로 직접 생성
+function toDate(s){ const [y,m,d] = s.split("-").map(Number); return new Date(y, m-1, d); }
+// fmt: 문자열("2027-01-16")과 Date 둘 다 받을 수 있게 → 호출하는 쪽에서 변환할 필요 없음
+function fmt(s){ const d = (s instanceof Date) ? s : toDate(s); return `${d.getMonth()+1}/${d.getDate()}(${WEEK[d.getDay()]})`; }
+function addDays(s, n){ const d = toDate(s); d.setDate(d.getDate()+n); return d; }
+
+/* ---------- 헤더 ---------- */
+function renderHeader(){
+  const s = toDate(TRIP.start), e = toDate(TRIP.end);
+  $("dates").textContent = `${s.getFullYear()}.${String(s.getMonth()+1).padStart(2,"0")}.${String(s.getDate()).padStart(2,"0")} (${WEEK[s.getDay()]}) ~ `
+    + `${String(e.getMonth()+1).padStart(2,"0")}.${String(e.getDate()).padStart(2,"0")} (${WEEK[e.getDay()]}) · 4박 5일`;
+  $("family").innerHTML = TRIP.family.map(f => `<span>${esc(f)}</span>`).join("");
+
+  // D-day: 오늘 0시 기준으로 날짜 차이만 계산 (시각 차이 때문에 하루 어긋나지 않게)
+  const today = new Date(); today.setHours(0,0,0,0);
+  const diff = Math.round((s - today) / 86400000);
+  const endDiff = Math.round((e - today) / 86400000);
+  let big, small;
+  if (diff > 0)        { big = `D-${diff}`; small = "출발까지"; }
+  else if (endDiff >= 0){ big = `Day ${1 - diff}`; small = "여행 중"; }
+  else                 { big = "완료"; small = "다녀왔어요"; }
+  $("dday").innerHTML = `<b>${big}</b><small>${small}</small>`;
+}
+
+/* ---------- 개요 ---------- */
+function renderOverview(){
+  const total = TRIP.budget.reduce((a,b) => a + (b.amount || 0), 0);
+  const won = (n) => n.toLocaleString("ko-KR") + "원";
+  $("overview").innerHTML = `
+    <div class="banner">✏️ 지금은 <b>더미 내용</b>입니다. 흐린 점선 글씨(<span class="dummy">${TODO}</span>)를 채워 나가면 됩니다.</div>
+    <h2 class="sec">🏮 한눈에 보기</h2>
+    <div class="facts">${TRIP.facts.map(f => `<div class="fact"><small>${esc(f.label)}</small><b>${val(f.value)}</b></div>`).join("")}</div>
+
+    <h2 class="sec">🗓️ 날짜별 요약</h2>
+    <div class="card">${TRIP.days.map((d,i) => `
+      <div class="row"><span class="k">Day ${i+1} · ${fmt(addDays(TRIP.start,i))}</span><span class="v">${esc(d.title)}</span></div>`).join("")}
+    </div>
+
+    <h2 class="sec">💰 예산 (4인 합계)</h2>
+    <div class="card">
+      <table class="budget">
+        <thead><tr><th>항목</th><th>금액</th></tr></thead>
+        <tbody>${TRIP.budget.map(b => `<tr><td>${esc(b.item)}</td><td>${b.amount ? won(b.amount) : val(null)}</td></tr>`).join("")}</tbody>
+        <tfoot><tr><td>합계</td><td>${total ? won(total) : val(null)}</td></tr></tfoot>
+      </table>
+      <p class="note">1인당 약 ${total ? won(Math.round(total/4)) : "—"}</p>
+    </div>`;
+}
+
+/* ---------- 일정 ---------- */
+let currentDay = 0;
+function renderPlan(){
+  const btns = TRIP.days.map((d,i) => {
+    const x = addDays(TRIP.start, i);
+    return `<button class="dbtn ${i===currentDay?"active":""}" data-day="${i}">
+      <b>Day ${i+1}</b><small>${x.getMonth()+1}/${x.getDate()}(${WEEK[x.getDay()]})</small></button>`;
+  }).join("");
+  const d = TRIP.days[currentDay];
+  const stops = d.stops.map(s => `
+    <div class="stop ${s.type||""}">
+      <div class="t">${esc(s.time)}</div>
+      <h4>${esc(s.name)}</h4>
+      <p>${val(s.desc)}</p>
+    </div>`).join("");
+  $("plan").innerHTML = `
+    <div class="days">${btns}</div>
+    <div class="dayhead"><h3>${esc(d.title)}</h3><p>${val(d.summary)}</p></div>
+    <div class="timeline">${stops}</div>
+    <p class="note"><span style="color:var(--gold)">●</span> 금색 관광 · <span style="color:var(--red)">●</span> 빨강 식사 · <span style="color:var(--muted)">●</span> 회색 이동</p>`;
+  // 날짜 버튼: 다시 그릴 때마다 새 버튼이 생기므로 매번 이벤트 연결
+  $("plan").querySelectorAll(".dbtn").forEach(b => b.onclick = () => { currentDay = +b.dataset.day; renderPlan(); });
+}
+
+/* ---------- 항공 ---------- */
+function renderFlight(){
+  $("flight").innerHTML = `<h2 class="sec">✈️ 항공편</h2>` + TRIP.flights.map(f => `
+    <div class="ticket">
+      <div class="top"><span><b>${esc(f.dir)}</b> · ${fmt(f.date)}</span><span>${val(f.airline)} ${esc(f.no)}</span></div>
+      <div class="route">
+        <div class="ap"><b>${esc(f.from.code)}</b><small>${esc(f.from.name)}</small><div class="tm">${esc(f.from.time)}</div></div>
+        <div class="mid">${esc(f.duration)}</div>
+        <div class="ap"><b>${esc(f.to.code)}</b><small>${esc(f.to.name)}</small><div class="tm">${esc(f.to.time)}</div></div>
+      </div>
+      <div class="bottom">
+        <div class="row"><span class="k">터미널</span><span class="v">${val(f.terminal)}</span></div>
+        <div class="row"><span class="k">예약번호</span><span class="v">${val(f.booking)}</span></div>
+        <div class="row"><span class="k">수하물</span><span class="v">${val(f.baggage)}</span></div>
+      </div>
+    </div>`).join("") +
+    `<p class="note">시간은 모두 현지 시각 기준. 상하이는 한국보다 1시간 느립니다.</p>`;
+}
+
+/* ---------- 호텔 ---------- */
+function renderHotel(){
+  const h = TRIP.hotel;
+  const rows = [
+    ["체크인", h.checkin], ["체크아웃", h.checkout], ["객실", h.rooms],
+    ["조식", h.breakfast], ["예약번호", h.booking], ["전화", h.phone], ["가까운 역", h.nearby],
+  ];
+  $("hotel").innerHTML = `
+    <h2 class="sec">🏨 숙소</h2>
+    <div class="card">
+      <h3 style="font-size:1.1rem;color:var(--night)">${esc(h.name)}</h3>
+      <p style="font-size:.85rem;color:var(--muted)">${val(h.address)}</p>
+      <div style="margin-top:8px">${rows.map(r => `<div class="row"><span class="k">${r[0]}</span><span class="v">${val(r[1])}</span></div>`).join("")}</div>
+    </div>
+    <h2 class="sec">🚕 택시 기사님께 보여주기</h2>
+    <div class="card" style="text-align:center;padding:20px 16px">
+      <div style="font-size:1.4rem;font-weight:800;color:var(--night)">${val(h.nameLocal)}</div>
+      <div style="font-size:1.05rem;margin-top:6px">${val(h.addressLocal)}</div>
+      <p class="note">请带我去这个地址 (이 주소로 가 주세요)</p>
+    </div>`;
+}
+
+/* ---------- 준비물 ---------- */
+// 체크 상태는 이 브라우저에만 저장 (localStorage). 사생활 모드 등에서 막히면 저장 없이 동작
+const KEY = "shanghai2027-packing";
+function loadChecks(){ try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch(e){ return {}; } }
+function saveChecks(c){ try { localStorage.setItem(KEY, JSON.stringify(c)); } catch(e){} }
+let checks = loadChecks();
+
+function renderPack(){
+  const all = TRIP.packing.flatMap(g => g.items);
+  const done = all.filter(i => checks[i.id]).length;
+  const pct = all.length ? Math.round(done / all.length * 100) : 0;
+  $("pack").innerHTML = `
+    <div class="plabel"><span>준비 진행률</span><span>${done} / ${all.length} (${pct}%)</span></div>
+    <div class="progress"><div style="width:${pct}%"></div></div>
+    ${TRIP.packing.map(g => `
+      <h2 class="sec">${esc(g.group)}</h2>
+      <div class="card">${g.items.map(i => `
+        <label class="check ${checks[i.id]?"done":""}">
+          <input type="checkbox" data-id="${esc(i.id)}" ${checks[i.id]?"checked":""}>
+          <span>${esc(i.name)}${i.who?`<span class="who">${esc(i.who)}</span>`:""}
+            ${i.note!==undefined?`<small>${val(i.note)}</small>`:""}</span>
+        </label>`).join("")}
+      </div>`).join("")}
+    <button class="reset" id="resetChecks">체크 모두 해제</button>
+    <p class="note">체크 표시는 지금 보고 있는 휴대폰(브라우저)에만 저장됩니다.</p>`;
+  $("pack").querySelectorAll("input[type=checkbox]").forEach(cb => cb.onchange = () => {
+    checks[cb.dataset.id] = cb.checked; saveChecks(checks); renderPack();
+  });
+  $("resetChecks").onclick = () => { checks = {}; saveChecks(checks); renderPack(); };
+}
+
+/* ---------- 정보 ---------- */
+function renderInfo(){
+  $("info").innerHTML = `
+    <h2 class="sec">💳 결제 · 환전</h2>
+    <div class="card info"><p>${val(TODO)}</p></div>
+
+    <h2 class="sec">🚇 교통</h2>
+    <div class="card info">
+      <h4>공항 ↔ 시내</h4><p>${val(TODO)}</p>
+      <h4 style="margin-top:10px">시내 이동</h4><p>${val(TODO)}</p>
+    </div>
+
+    <h2 class="sec">📱 설치할 앱</h2>
+    <div class="card">${TRIP.apps.map(a => `<div class="row"><span class="k">${esc(a.name)}</span><span class="v">${val(a.why)}</span></div>`).join("")}</div>
+
+    <h2 class="sec">☎️ 비상 연락처</h2>
+    <div class="card">${TRIP.contacts.map(c => `<div class="row"><span class="k">${esc(c.name)}</span><span class="v">${val(c.phone)}</span></div>`).join("")}</div>
+
+    <h2 class="sec">🗣️ 간단 중국어</h2>
+    <div class="card">${TRIP.phrases.map(p => `<div class="phrase"><span>${esc(p.ko)}</span><span class="zh">${esc(p.zh)}<small>${esc(p.py)}</small></span></div>`).join("")}</div>`;
+}
+
+/* ---------- 탭 전환 ---------- */
+// 마지막으로 본 탭을 주소 뒤 #으로 기억 → 새로고침·링크 공유 시 같은 탭이 열림
+function showTab(name){
+  if (!$(name)) name = "overview";
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.page === name));
+  document.querySelectorAll(".page").forEach(p => p.classList.toggle("active", p.id === name));
+}
+document.querySelectorAll(".tab").forEach(t => t.onclick = () => {
+  history.replaceState(null, "", "#" + t.dataset.page); showTab(t.dataset.page); window.scrollTo(0, 0);
+});
+
+renderHeader(); renderOverview(); renderPlan(); renderFlight(); renderHotel(); renderPack(); renderInfo();
+showTab(location.hash.slice(1));
+</script>
+</body>
+</html>
