@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>인공지능 4주차 2차시 — Introduction to Machine Learning</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<style>
+:root{
+  --accent:#9333EA;
+  --accent-deep:#6B21A8;
+  --accent-soft:#F3E8FF;
+
+  --bg:#F7F8FA;
+  --surface:#FFFFFF;
+  --ink:#15161B;
+  --ink-2:#565C66;
+  --ink-3:#8B9098;
+  --line:#E5E7EC;
+  --line-2:#F0F1F4;
+  --code-bg:#1B1D24;
+  --code-ink:#E4E6ED;
+  --mark:#FFE27A;
+  --font:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,system-ui,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  --mono:'JetBrains Mono','SFMono-Regular',Consolas,'D2Coding',monospace;
+}
+html[data-theme="dark"]{
+  --accent:#B085EF;
+  --accent-deep:#C9A6F5;
+  --accent-soft:#2A2135;
+  --bg:#101116;
+  --surface:#181A20;
+  --ink:#E8E9ED;
+  --ink-2:#A6AAB4;
+  --ink-3:#73777F;
+  --line:#2A2C34;
+  --line-2:#202229;
+  --code-bg:#0C0D11;
+  --mark:#6E5C16;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15.5px;line-height:1.72;letter-spacing:-.012em;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-deep)}
+::selection{background:var(--accent);color:#fff}
+
+#scrollbar{position:fixed;top:0;left:0;height:3px;width:0;background:var(--accent);z-index:99}
+
+.topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:10px;padding:10px 22px;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.back{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink-2);font-size:14px;font-weight:700;white-space:nowrap}
+.back:hover{color:var(--accent-deep)}
+.back i{width:10px;height:10px;border-radius:3px;background:var(--accent);display:block}
+.search{flex:1;max-width:300px;margin-left:auto;position:relative}
+.search input{width:100%;padding:7px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14px}
+.search input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.hit{position:absolute;right:10px;top:8px;font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums;pointer-events:none}
+.tools{display:flex;gap:6px}
+.tbtn{border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:9px;padding:7px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);white-space:nowrap}
+.tbtn:hover{border-color:var(--accent);color:var(--accent-deep)}
+.tbtn.solid{background:var(--accent);border-color:var(--accent);color:#fff}
+.tbtn:disabled{opacity:.4;cursor:default}
+
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);gap:38px;max-width:1200px;margin:0 auto;padding:26px 24px 120px}
+main{min-width:0}
+
+.side{position:sticky;top:80px;align-self:start;max-height:calc(100vh - 100px);overflow-y:auto;scrollbar-width:thin}
+.panel{background:var(--accent);border-radius:16px;padding:18px 16px;color:#fff;box-shadow:0 8px 24px -12px color-mix(in srgb,var(--accent) 70%,transparent)}
+.panel .cap{font-size:11.5px;font-weight:700;opacity:.72;margin-bottom:9px}
+.panel .subject{font-size:19px;font-weight:800;letter-spacing:-.03em;line-height:1.3;margin-bottom:2px}
+.panel .when{font-size:12.5px;opacity:.8;margin-bottom:16px}
+.toc{list-style:none;margin:0;padding:0}
+.toc a{display:block;padding:6px 10px;border-radius:8px;color:#fff;opacity:.82;text-decoration:none;font-size:13.5px;font-weight:600;line-height:1.45}
+.toc a:hover{background:rgba(255,255,255,.16);opacity:1}
+.toc a.on{background:#fff;color:var(--accent-deep);opacity:1;font-weight:800}
+.toc .num{display:inline-block;width:17px;font-variant-numeric:tabular-nums;opacity:.7}
+.toc a.on .num{opacity:1}
+.panel hr{border:0;border-top:1px solid rgba(255,255,255,.22);margin:14px 0}
+.chk label{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;padding:3px 0;cursor:pointer;line-height:1.5;opacity:.9}
+.chk input{margin-top:4px;accent-color:#fff;flex-shrink:0}
+.chk input:checked + span{opacity:.5;text-decoration:line-through}
+.pbar{height:4px;border-radius:99px;background:rgba(255,255,255,.28);margin-top:11px;overflow:hidden}
+.pbar i{display:block;height:100%;width:0;background:#fff;transition:width .25s}
+
+.hero{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px 28px 22px;overflow:hidden;margin-bottom:16px}
+.hero::after{content:attr(data-w);position:absolute;right:14px;bottom:-26px;font-size:112px;font-weight:800;color:var(--accent);opacity:.09;letter-spacing:-.06em;line-height:1;pointer-events:none}
+.chip{display:inline-flex;align-items:center;gap:7px;background:var(--accent-soft);color:var(--accent-deep);font-size:12.5px;font-weight:800;padding:4px 11px;border-radius:99px}
+h1{font-size:clamp(26px,3.6vw,34px);font-weight:800;letter-spacing:-.04em;line-height:1.24;margin:12px 0 6px;position:relative}
+.hero .sub{color:var(--ink-2);font-size:15px;margin:0 0 14px;position:relative}
+[hidden]{display:none!important}
+.metaline{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-3);position:relative}
+.metaline b{color:var(--ink-2);font-weight:600}
+
+.files{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;position:relative}
+.file{display:inline-flex;align-items:center;gap:9px;padding:8px 13px 8px 9px;border:1px solid var(--line);border-radius:10px;background:var(--surface);text-decoration:none;color:var(--ink);font-size:13.5px;font-weight:700}
+.file:hover{border-color:var(--accent);background:var(--accent-soft)}
+.file .ic{background:var(--accent);color:#fff;font-size:10px;font-weight:800;padding:3px 6px;border-radius:6px;letter-spacing:.02em}
+.file em{font-style:normal;color:var(--ink-3);font-weight:600;font-size:12.5px}
+.files .none{font-size:12.5px;color:var(--ink-3);font-weight:600;padding:8px 0}
+.extra-chip:disabled{cursor:default;opacity:.6}
+
+.flow{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:26px}
+.flow a{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--line);border-radius:99px;background:var(--surface);text-decoration:none;color:var(--ink-2);font-size:13px;font-weight:600}
+.flow a:hover{border-color:var(--accent);color:var(--accent-deep);background:var(--accent-soft)}
+.flow a b{color:var(--accent);font-variant-numeric:tabular-nums}
+
+.keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:34px}
+.key{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:14px;padding:16px 17px}
+.key .n{font-size:12px;font-weight:800;color:var(--accent);margin-bottom:5px}
+.key p{margin:0;font-size:14.5px;line-height:1.6}
+.key b{font-weight:800}
+
+section{margin-bottom:46px;scroll-margin-top:82px}
+h2.st{display:flex;align-items:center;gap:11px;font-size:22px;font-weight:800;letter-spacing:-.035em;margin:0 0 14px}
+h2.st .sq{flex-shrink:0;width:30px;height:30px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+h3{font-size:16.5px;font-weight:800;margin:26px 0 8px;letter-spacing:-.025em;padding-left:11px;border-left:3px solid var(--accent)}
+h4{font-size:14.5px;font-weight:700;margin:18px 0 6px;color:var(--ink-2)}
+p{margin:9px 0}
+ul,ol{margin:9px 0;padding-left:21px}
+li{margin:3px 0}
+li::marker{color:var(--accent)}
+.en{color:var(--ink-3);font-weight:500;font-size:.9em}
+mark{background:linear-gradient(transparent 54%,var(--mark) 54%);color:inherit;padding:0 2px}
+.hit-mark{background:var(--accent);color:#fff;border-radius:3px}
+.imgnote{font-size:12.5px;color:var(--ink-3);margin:6px 0;line-height:1.6;padding-left:2px}
+.imgnote b{color:var(--ink-2);font-weight:700}
+
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin:-6px 0 12px}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:6px;letter-spacing:0}
+.badge.exam{color:#92580B;background:#FDF0D5}
+.badge.prof{color:var(--accent-deep);background:var(--accent-soft)}
+.badge.ask{color:#B02020;background:#FCE4E4}
+html[data-theme="dark"] .badge.exam{background:#3B2D0E;color:#EFC470}
+html[data-theme="dark"] .badge.ask{background:#3A1919;color:#F0A0A0}
+
+.call{border-radius:13px;padding:14px 17px;margin:15px 0;background:var(--surface);border:1px solid var(--line)}
+.call .t{font-size:12.5px;font-weight:800;margin-bottom:5px}
+.call p:first-of-type{margin-top:0}
+.call p:last-child,.call ul:last-child{margin-bottom:0}
+.call.quote{background:var(--accent-soft);border-color:transparent}
+.call.quote .t{color:var(--accent-deep)}
+.call.quote p{font-size:14.8px}
+.call.warn{border-left:4px solid #E5A50A}
+.call.warn .t{color:#A16207}
+.call.ask{border-left:4px solid #DC2626}
+.call.ask .t{color:#B02020}
+.call.link{border-left:4px solid var(--accent)}
+.call.link .t{color:var(--accent-deep)}
+.call.person{background:var(--line-2);border:1px solid var(--line)}
+.call.person .t{color:var(--ink-2)}
+
+.call.extra{background:repeating-linear-gradient(135deg,var(--line-2),var(--line-2) 9px,transparent 9px,transparent 18px);border:1.5px dashed var(--ink-3);border-left-width:1.5px}
+.call.extra .t{color:var(--ink-2);display:flex;align-items:center;gap:6px}
+.call.extra .t::before{content:"보충";background:var(--ink-3);color:var(--surface);font-size:10.5px;padding:1px 6px;border-radius:5px}
+.call.extra p{color:var(--ink-2)}
+.badge.extra{color:var(--ink-2);background:var(--line-2);border:1px dashed var(--ink-3)}
+.ext{border-bottom:2px dotted var(--ink-3);color:var(--ink-2)}
+.ext::after{content:"보충";font-size:9.5px;font-weight:800;vertical-align:super;color:var(--ink-3);margin-left:2px;letter-spacing:0}
+.extra-chip{border:1.5px dashed var(--ink-3);background:transparent;color:var(--ink-2);cursor:pointer;font-family:var(--font)}
+body.no-extra .call.extra,body.no-extra .badge.extra{display:none}
+body.no-extra .ext{border-bottom:0}
+body.no-extra .ext::after{display:none}
+html[data-theme="dark"] .call.warn .t{color:#E5B547}
+html[data-theme="dark"] .call.ask .t{color:#F0A0A0}
+
+details.raw{margin:12px 0;border:1px dashed var(--line);border-radius:10px;background:var(--line-2)}
+details.raw summary{cursor:pointer;padding:8px 14px;font-size:12.5px;color:var(--ink-3);font-weight:700;list-style:none}
+details.raw summary::-webkit-details-marker{display:none}
+details.raw summary::before{content:"▸ ";color:var(--accent)}
+details.raw[open] summary::before{content:"▾ "}
+details.raw .txt{padding:0 14px 12px;font-size:13px;color:var(--ink-2);white-space:pre-wrap;line-height:1.7}
+
+.rawnote{border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+.rawitem{display:grid;grid-template-columns:78px 1fr;gap:16px;padding:15px 18px;border-bottom:1px solid var(--line-2)}
+.rawitem:last-child{border-bottom:0}
+.rawitem .seq{font-size:12px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+.rawitem .seq span{display:block;color:var(--ink-3);font-weight:600;font-size:11px;margin-top:2px}
+.rawitem .body{white-space:pre-wrap;font-size:14px;line-height:1.75;color:var(--ink)}
+.rawitem .where{margin-top:7px;font-size:12px}
+.rawitem .where a{color:var(--accent-deep);text-decoration:none;font-weight:700;background:var(--accent-soft);padding:2px 8px;border-radius:6px}
+.rawitem .where a:hover{background:var(--accent);color:#fff}
+.rawnote .empty{padding:24px 18px;color:var(--ink-3);font-size:13.5px}
+
+.tablewrap{overflow-x:auto;margin:15px 0;border:1px solid var(--line);border-radius:13px}
+table{border-collapse:collapse;width:100%;font-size:13.5px;background:var(--surface)}
+th,td{padding:9px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line-2)}
+th{background:var(--accent);color:#fff;font-weight:700;font-size:12.5px;white-space:nowrap;border-bottom:0}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--line-2)}
+
+.codebox{margin:15px 0;border-radius:13px;overflow:hidden;background:var(--code-bg);border:1px solid var(--code-bg)}
+.codebox .head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 14px;font-size:12px;color:#9AA0AC;font-weight:700;background:rgba(255,255,255,.04)}
+.codebox .head .tag{color:#fff;background:var(--accent);border-radius:5px;padding:1px 7px;font-size:11px;margin-right:7px}
+.codebox pre{margin:0;padding:15px 17px;overflow-x:auto;font-family:var(--mono);font-size:13.2px;line-height:1.7;color:var(--code-ink)}
+.codebox .cm{color:#7C8494}
+.codebox .kw{color:#C4A6FF}
+.codebox .st2{color:#8BD5A0}
+.copy{border:0;background:transparent;color:#9AA0AC;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font)}
+.copy:hover{color:#fff}
+.codebox.pseudo{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent)}
+.codebox.pseudo .head{background:var(--accent-soft);color:var(--accent-deep)}
+.codebox.pseudo .head .tag{background:var(--accent-deep)}
+.codebox.pseudo pre{color:var(--ink);font-size:13.6px}
+.codebox.pseudo .cm{color:var(--ink-3)}
+.codebox.pseudo .kw{color:var(--accent-deep);font-weight:700}
+.codebox.pseudo .copy{color:var(--ink-3)}
+.codebox.pseudo .copy:hover{color:var(--accent-deep)}
+code:not(pre code){background:var(--accent-soft);color:var(--accent-deep);padding:1px 6px;border-radius:6px;font-family:var(--mono);font-size:.88em;font-weight:600}
+
+figure{margin:18px 0;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 14px 12px}
+figure svg{max-width:100%;height:auto}
+figcaption{font-size:12.5px;color:var(--ink-3);margin-top:10px}
+
+.terms{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:11px}
+.term{border:1px solid var(--line);border-radius:13px;padding:13px 15px;background:var(--surface)}
+.term b{display:block;font-size:15px}
+.term .e{display:block;font-size:12px;color:var(--accent-deep);font-family:var(--mono);margin-bottom:6px}
+.term p{margin:0;font-size:13.3px;color:var(--ink-2);line-height:1.6}
+
+.q{border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:12px 0;background:var(--surface)}
+.q .qh{display:flex;gap:10px;align-items:flex-start;font-weight:700;font-size:15px}
+.q .qn{color:#fff;background:var(--accent);border-radius:7px;padding:1px 8px;font-size:12.5px;font-weight:800;flex-shrink:0;margin-top:3px}
+.q .type{font-size:11px;font-weight:800;color:var(--ink-3);border:1px solid var(--line);border-radius:6px;padding:1px 7px;margin-left:auto;flex-shrink:0;margin-top:3px}
+.q ol.ch{list-style:none;padding-left:0;margin:11px 0 0;counter-reset:c}
+.q ol.ch li{padding:3px 0 3px 26px;position:relative;font-size:14.3px}
+.q ol.ch li::before{content:counter(c);counter-increment:c;position:absolute;left:0;top:4px;width:19px;height:19px;border:1px solid var(--line);border-radius:50%;font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--ink-3)}
+.ans{margin-top:12px;padding:11px 13px;border-radius:10px;background:var(--accent-soft);font-size:14.2px;cursor:pointer}
+.ans .lab{font-weight:800;color:var(--accent-deep);font-size:12.5px;margin-right:7px}
+body.hide-ans .ans:not(.on){background:var(--line-2);color:transparent;user-select:none;cursor:pointer;position:relative}
+body.hide-ans .ans:not(.on) *{color:transparent!important}
+body.hide-ans .ans:not(.on)::after{content:"눌러서 정답 확인";position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-3);font-size:12.5px;font-weight:700}
+
+.vhead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px}
+.vhead input[type=search]{flex:1;min-width:170px;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14px}
+.vhead input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.vlist{margin:0;padding:0;list-style:none;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
+.vword{display:grid;grid-template-columns:190px 1fr;gap:16px;padding:14px 18px;border-bottom:1px solid var(--line-2)}
+.vword:last-child{border-bottom:0}
+.vword:hover{background:var(--line-2)}
+.vword .w{font-weight:800;font-size:16px;letter-spacing:-.02em}
+.vword .ipa{display:block;font-family:var(--mono);font-size:12px;color:var(--ink-3);font-weight:400;margin-top:1px}
+.vword .pos{display:inline-block;font-size:10.5px;font-weight:800;color:#fff;background:var(--accent);border-radius:5px;padding:1px 6px;margin-top:5px}
+.vword .mean{font-size:14.5px;margin:0;font-weight:600}
+.vword .ex{font-size:13px;color:var(--ink-2);margin:5px 0 0}
+.vword .ex b{color:var(--accent-deep);font-weight:700}
+.vword .ex .ko{display:block;color:var(--ink-3);font-size:12.5px}
+.masked .mean,.masked .ex{background:var(--line-2);border-radius:6px;color:transparent;cursor:pointer}
+.masked .mean *,.masked .ex *{color:transparent!important}
+.masked .mean.show,.masked .ex.show{background:transparent;color:inherit}
+.masked .mean.show *,.masked .ex.show *{color:revert!important}
+.masked .ex.show b{color:var(--accent-deep)!important}
+.quizbox{margin-top:18px;padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--surface);display:none}
+.quizbox.on{display:block}
+.quizbox .qq{font-size:22px;font-weight:800;margin-bottom:14px;letter-spacing:-.02em}
+.quizbox .opts{display:grid;gap:8px}
+.quizbox .opt{text-align:left;padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14.5px;cursor:pointer}
+.quizbox .opt:hover{border-color:var(--accent)}
+.quizbox .opt.ok{border-color:#16A34A;background:color-mix(in srgb,#16A34A 12%,var(--surface))}
+.quizbox .opt.no{border-color:#DC2626;background:color-mix(in srgb,#DC2626 12%,var(--surface))}
+.quizbox .score{margin-top:13px;font-size:13px;color:var(--ink-3);font-weight:600}
+.vlist .empty{padding:24px 18px;color:var(--ink-3);font-size:13.5px}
+
+footer{margin-top:54px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-3);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+@media(max-width:900px){
+  .wrap{grid-template-columns:1fr;gap:18px;padding:16px 16px 80px}
+  .side{position:static;max-height:none;order:-1}
+  .vword{grid-template-columns:1fr;gap:5px}
+  .search{max-width:none;order:3;flex-basis:100%;max-width:100%}
+  .topbar{flex-wrap:wrap}
+  .hero::after{font-size:78px}
+}
+@media print{
+  .topbar,.side,#scrollbar,.quizbox,.vhead,.flow,.files,.extra-chip{display:none!important}
+  .wrap{display:block;max-width:none;padding:0}
+  body{font-size:10.5pt;background:#fff}
+  section{page-break-inside:avoid;margin-bottom:22px}
+  body.hide-ans .ans:not(.on){background:var(--accent-soft)!important;color:inherit!important}
+  body.hide-ans .ans:not(.on) *{color:inherit!important}
+  body.hide-ans .ans:not(.on)::after{display:none}
+  details.raw{display:none}
+  #viewVocab,#viewRaw{display:block!important;page-break-before:always}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+
+.sv-box{fill:var(--surface);stroke:var(--ink-3);stroke-width:1.3}
+.sv-acc{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5}
+.sv-red{fill:color-mix(in srgb,#DC2626 12%,var(--surface));stroke:#DC2626;stroke-width:1.5}
+.sv-grn{fill:color-mix(in srgb,#16A34A 12%,var(--surface));stroke:#16A34A;stroke-width:1.5}
+.sv-t{fill:var(--ink);font-size:12.5px;font-weight:700;font-family:var(--font)}
+.sv-s{fill:var(--ink-2);font-size:11px;font-family:var(--font)}
+.sv-x{fill:var(--ink-3);font-size:10.5px;font-family:var(--font)}
+.sv-line{stroke:var(--ink-2);stroke-width:1.5;fill:none}
+.sv-dash{stroke-dasharray:5 4}
+.sv-axis{stroke:var(--ink-3);stroke-width:1.2;fill:none}
+.sv-ah{fill:var(--ink-2)}
+.eng{color:var(--ink-3);font-size:.9em}
+.orig{display:block;margin:4px 0 10px;padding:6px 11px;border-left:3px solid var(--line);color:var(--ink-3);font-size:13px;line-height:1.6}
+.orig b{color:var(--ink-2);font-weight:600}
+.figrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.figrow figure{margin:0}
+html{overflow-anchor:none}
+</style>
+</head>
+<body class="hide-ans">
+<div id="scrollbar"></div>
+
+<div class="topbar">
+  <a class="back" href="../"><i></i>인공지능</a>
+  <div class="search"><input id="q" type="search" placeholder="찾기 (Enter로 다음)" aria-label="문서 내 검색"><span class="hit" id="hit"></span></div>
+  <div class="tools">
+    <button class="tbtn" id="ansBtn">정답 가리기</button>
+    <button class="tbtn" id="vocabBtn">단어장</button>
+    <button class="tbtn" id="rawBtn">필기 원문</button>
+    <button class="tbtn" id="themeBtn">다크</button>
+    <button class="tbtn" id="printBtn">🖨</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<aside class="side">
+  <div class="panel">
+    <div class="subject">인공지능</div>
+    <div class="when">4주차 2차시 · 2026.09.28 (월)</div>
+
+    <div id="tocWrap">
+      <div class="cap">목차</div>
+      <ul class="toc" id="toc">
+        <li><a href="#s1"><span class="num">01</span>AI · ML · DL</a></li>
+        <li><a href="#s2"><span class="num">02</span>머신러닝이란 · 왜 쓰나</a></li>
+        <li><a href="#s3"><span class="num">03</span>전통적 방식 vs ML 방식</a></li>
+        <li><a href="#s4"><span class="num">04</span>ML에서 '학습'의 의미</a></li>
+        <li><a href="#s5"><span class="num">05</span>ML 시스템의 분류 기준</a></li>
+        <li><a href="#s6"><span class="num">06</span>지도 학습</a></li>
+        <li><a href="#s7"><span class="num">07</span>비지도 학습</a></li>
+        <li><a href="#s8"><span class="num">08</span>강화 학습</a></li>
+        <li><a href="#s9"><span class="num">09</span>배치 학습 vs 온라인 학습</a></li>
+        <li><a href="#s10"><span class="num">10</span>사례 기반 vs 모델 기반</a></li>
+        <li><a href="#s11"><span class="num">11</span>ML의 주요 과제</a></li>
+        <li><a href="#s12"><span class="num">12</span>테스트와 검증</a></li>
+        <li><a href="#s13"><span class="num">13</span>공짜 점심은 없다</a></li>
+        <li><a href="#s14"><span class="num">14</span>동영상 1 · 아틀라스 현장 학습</a></li>
+        <li><a href="#s15"><span class="num">15</span>확인 필요</a></li>
+      </ul>
+      <hr>
+      <div class="cap">복습 체크</div>
+      <div class="chk">
+        <label><input type="checkbox"><span>Mitchell의 E·T·P 정의를 예시로 설명 가능</span></label>
+        <label><input type="checkbox"><span>분류 기준 3가지와 각 유형을 짝지을 수 있다</span></label>
+        <label><input type="checkbox"><span>분류(classification)와 회귀(regression) 구분</span></label>
+        <label><input type="checkbox"><span>과적합·과소적합 원인과 해결책 말할 수 있다</span></label>
+        <label><input type="checkbox"><span>train / validation / test 역할 구분</span></label>
+      </div>
+      <div class="pbar"><i id="barFill"></i></div>
+    </div>
+
+    <div id="rawNav" hidden>
+      <div class="cap">필기 원문</div>
+      <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">내가 수업 중에 보낸 내용 <b id="rawTotal">0</b>개를 손대지 않고 그대로 모아둔 페이지입니다.</p>
+      <hr>
+      <div class="cap">확인 방법</div>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">여기 있는 내용이 본문에 다 반영됐는지 대조하세요. 각 항목의 파란 링크를 누르면 정리된 위치로 이동합니다.</p>
+    </div>
+
+    <div id="vocabNav" hidden>
+      <div class="cap">단어장</div>
+      <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">이번 차시에 나온 전공 필수 단어 <b id="vTotal">0</b>개입니다.</p>
+      <hr>
+      <div class="cap">사용법</div>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">뜻 가리기를 켜면 회색 칸을 눌러 하나씩 확인할 수 있습니다. 퀴즈는 아래 목록에서 문제를 자동으로 만듭니다.</p>
+    </div>
+  </div>
+</aside>
+
+<main>
+<div id="viewNote">
+
+  <div class="hero" data-w="ML">
+    <span class="chip">4주차 · 2차시</span>
+    <button class="chip extra-chip" id="extraChip"></button>
+    <h1>머신러닝 개론 <span class="en">Introduction to Machine Learning</span></h1>
+    <p class="sub">교안(30장)과 수업 영상 1편 기반 초안입니다 — 아직 실제 수업 필기가 반영되지 않았습니다. 회색 원문 줄은 영어 PPT를 따라가기 위한 슬라이드 원문입니다.</p>
+    <div class="metaline">
+      <span>2026.09.28 (월)</span>
+      <span><b>강은송</b> 교수님</span>
+      <span>참고: Géron, <i>Hands-on ML with Scikit-Learn, Keras &amp; TensorFlow</i></span>
+    </div>
+
+    <div class="files">
+      <a class="file" href="04-2-slides.pdf" target="_blank"><span class="ic">PDF</span>Introduction to Machine Learning<em>33p</em></a>
+      <a class="file" href="https://youtu.be/2I7r2X2uXR4" target="_blank"><span class="ic">YT</span>동영상 1 · 로보틱스 메타플랜트 응용 센터<em>1분</em></a>
+    </div>
+  </div>
+
+  <nav class="flow">
+    <a href="#s1"><b>01</b> AI·ML·DL</a>
+    <a href="#s2"><b>02</b> ML 정의</a>
+    <a href="#s3"><b>03</b> 전통 vs ML</a>
+    <a href="#s4"><b>04</b> 학습</a>
+    <a href="#s5"><b>05</b> 분류 기준</a>
+    <a href="#s6"><b>06</b> 지도</a>
+    <a href="#s7"><b>07</b> 비지도</a>
+    <a href="#s8"><b>08</b> 강화</a>
+    <a href="#s9"><b>09</b> 배치·온라인</a>
+    <a href="#s10"><b>10</b> 사례·모델</a>
+    <a href="#s11"><b>11</b> 주요 과제</a>
+    <a href="#s12"><b>12</b> 검증</a>
+    <a href="#s13"><b>13</b> NFL</a>
+    <a href="#s14"><b>14</b> 동영상 1</a>
+    <a href="#s15"><b>15</b> 확인 필요</a>
+  </nav>
+
+  <div class="keys">
+    <div class="key"><div class="n">핵심 1</div><p>ML은 규칙을 사람이 직접 짜지 않고 <b>데이터에서 패턴을 학습</b>한다. AI ⊃ ML ⊃ DL 포함 관계.</p></div>
+    <div class="key"><div class="n">핵심 2</div><p>ML 시스템은 <b>① 감독 여부 ② 점진적 학습 여부 ③ 일반화 방식</b> 세 기준으로 분류한다.</p></div>
+    <div class="key"><div class="n">핵심 3</div><p>모델이 너무 복잡하면 <b>과적합</b>, 너무 단순하면 <b>과소적합</b> — 테스트·검증으로 일반화 성능을 확인한다.</p></div>
+  </div>
+
+  <!-- 01 -->
+  <section id="s1">
+    <h2 class="st"><span class="sq">01</span>인공지능 vs 머신러닝 vs 딥러닝</h2>
+    <span class="orig">Artificial Intelligence vs. Machine Learning vs. Deep Learning</span>
+
+    <figure>
+      <svg viewBox="0 0 520 260" role="img" aria-label="AI, ML, DL 포함 관계">
+        <ellipse cx="260" cy="135" rx="240" ry="118" class="sv-box"/>
+        <ellipse cx="260" cy="155" rx="165" ry="88" class="sv-acc"/>
+        <ellipse cx="260" cy="178" rx="90" ry="50" style="fill:var(--accent);opacity:.85"/>
+        <text x="260" y="40" text-anchor="middle" class="sv-t">Artificial Intelligence</text>
+        <text x="260" y="56" text-anchor="middle" class="sv-x">인공지능</text>
+        <text x="260" y="95" text-anchor="middle" class="sv-t">Machine Learning</text>
+        <text x="260" y="111" text-anchor="middle" class="sv-x">머신러닝</text>
+        <text x="260" y="176" text-anchor="middle" class="sv-t" style="fill:#fff">Deep Learning</text>
+        <text x="260" y="193" text-anchor="middle" class="sv-x" style="fill:#fff">딥러닝</text>
+      </svg>
+      <figcaption>AI ⊃ Machine Learning ⊃ Deep Learning</figcaption>
+    </figure>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>영역</th><th>정의</th></tr></thead>
+        <tbody>
+          <tr><td><b>인공지능</b><span class="en">(Artificial Intelligence)</span></td><td>사람이 하던 일을 기계가 수행하는 모든 자동화<span class="orig">Any automation in which machines can perform tasks that humans would otherwise do</span></td></tr>
+          <tr><td><b>머신러닝</b><span class="en">(Machine Learning)</span></td><td>규칙을 명시적으로 프로그래밍하지 않아도, 기계가 데이터에서 의사결정용 패턴을 학습<span class="orig">Machines learn patterns for decision-making from data without being explicitly programmed with rules</span></td></tr>
+          <tr><td><b>딥러닝</b><span class="en">(Deep Learning)</span></td><td>신경망 기반 모델로, 비정형 데이터에서 특징 추출과 의사결정을 한 번에(end to end) 수행<span class="orig">Neural network-based models that can perform both feature extraction and decision-making end to end from unstructured data</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="call extra">
+      <div class="t">용어 보충 — 교수님이 설명하신 내용 아님</div>
+      <p><b>특징 추출</b><span class="en">(feature extraction)</span>은 원본 데이터에서 판단에 쓸 값을 뽑는 단계, <b>end to end</b>는 입력부터 출력까지 사람이 중간 단계를 따로 설계하지 않고 모델 하나가 처리한다는 뜻입니다. <b>비정형 데이터</b><span class="en">(unstructured data)</span>는 표 형태가 아닌 이미지·음성·텍스트 등을 말합니다.</p>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 p.2 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 02 -->
+  <section id="s2">
+    <h2 class="st"><span class="sq">02</span>머신러닝이란 · 왜 쓰는가</h2>
+    <span class="orig">What is Machine Learning? / Why Use Machine Learning?</span>
+
+    <h3>두 가지 정의</h3>
+    <div class="call quote">
+      <div class="t">Arthur Samuel, 1959</div>
+      <p>머신러닝은 컴퓨터가 <b>명시적으로 프로그래밍되지 않고도 학습하는 능력</b>을 갖게 하는 연구 분야다.</p>
+      <span class="orig">Machine learning (ML) is the field of study that gives computers the ability to learn without being explicitly programmed.</span>
+    </div>
+    <div class="call quote">
+      <div class="t">Tom Mitchell, 1997</div>
+      <p>어떤 작업 T에 대한 프로그램의 성능을 P로 측정했을 때, 경험 E로 인해 성능이 향상되면 그 프로그램은 <b>작업 T와 성능 지표 P에 대해 경험 E로부터 학습한다</b>고 말한다.</p>
+      <span class="orig">A computer program is said to learn from experience E with respect to some task T and some performance measure P, if its performance on T, as measured by P, improves with experience E.</span>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>기호</th><th>영어</th><th>의미</th></tr></thead>
+        <tbody>
+          <tr><td><b>E</b></td><td>experience</td><td>경험 — 학습에 쓰는 데이터</td></tr>
+          <tr><td><b>T</b></td><td>task</td><td>작업 — 모델이 수행할 일</td></tr>
+          <tr><td><b>P</b></td><td>performance measure</td><td>성능 지표 — 얼마나 잘했는지 재는 기준</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="call extra">
+      <div class="t">E·T·P 예시 — 교수님이 설명하신 내용 아님</div>
+      <p>참고 교재(Géron)의 스팸 필터 예: <b>T</b> = 새 메일이 스팸인지 판정, <b>E</b> = 스팸/정상 라벨이 붙은 과거 메일(training data), <b>P</b> = 올바르게 분류한 메일의 비율(정확도, accuracy).</p>
+    </div>
+
+    <h3>머신러닝을 쓰는 이유</h3>
+    <ol>
+      <li>기존 방식으로는 <b>수작업 조정이나 긴 규칙 목록</b>이 필요한 문제 — ML 알고리즘 하나로 코드를 단순화하고 성능도 더 좋게 만들 수 있음
+        <span class="orig">Problems for which existing solutions require a lot of hand-tuning or long lists of rules: one machine learning algorithm can often simplify code and perform better.</span></li>
+      <li>전통적 방식으로는 좋은 해법이 전혀 없는 <b>복잡한 문제</b> — 뛰어난 ML 기법은 해법을 찾을 수 있음
+        <span class="orig">Complex problems for which there is no good solution at all using a traditional approach: the best machine learning techniques can find a solution.</span></li>
+      <li><b>변화하는 환경</b> — ML 시스템은 새 데이터에 적응할 수 있음
+        <span class="orig">Fluctuating environments: a machine learning system can adapt to new data.</span></li>
+      <li>복잡한 문제와 대량의 데이터에서 <b>통찰</b>을 얻기
+        <span class="orig">Getting insights about complex problems and large amounts of data.</span></li>
+    </ol>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 p.3–4 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 03 -->
+  <section id="s3">
+    <h2 class="st"><span class="sq">03</span>전통적 방식 vs 머신러닝 방식</h2>
+    <span class="orig">Traditional Approach vs. ML Approach</span>
+
+    <figure>
+      <svg viewBox="0 0 680 270" role="img" aria-label="전통적 방식과 ML 방식 순서도">
+        <defs><marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ah"/></marker></defs>
+        <text x="10" y="22" class="sv-x">Traditional approach</text>
+        <rect x="10" y="36" width="118" height="34" rx="7" class="sv-box"/><text x="69" y="57" text-anchor="middle" class="sv-s">Study the problem</text>
+        <rect x="160" y="36" width="110" height="34" rx="7" class="sv-red"/><text x="215" y="57" text-anchor="middle" class="sv-t">Write rules</text>
+        <rect x="302" y="36" width="100" height="34" rx="7" class="sv-box"/><text x="352" y="57" text-anchor="middle" class="sv-s">Evaluate</text>
+        <rect x="560" y="36" width="100" height="34" rx="7" class="sv-grn"/><text x="610" y="57" text-anchor="middle" class="sv-t">Launch!</text>
+        <path d="M128 53 H158" class="sv-line" marker-end="url(#a3)"/>
+        <path d="M270 53 H300" class="sv-line" marker-end="url(#a3)"/>
+        <path d="M402 53 H558" class="sv-line" marker-end="url(#a3)"/><text x="480" y="47" text-anchor="middle" class="sv-x">😊 good</text>
+        <path d="M352 70 V98 H297" class="sv-line" marker-end="url(#a3)"/><text x="360" y="88" class="sv-x">☹ bad</text>
+        <rect x="165" y="84" width="130" height="28" rx="7" class="sv-box"/><text x="230" y="102" text-anchor="middle" class="sv-s">Analyze errors</text>
+        <path d="M165 98 H69 V72" class="sv-line" marker-end="url(#a3)"/>
+
+        <text x="10" y="146" class="sv-x">ML approach</text>
+        <rect x="190" y="130" width="80" height="24" rx="6" class="sv-box sv-dash"/><text x="230" y="146" text-anchor="middle" class="sv-s">Data</text>
+        <path d="M230 154 V173" class="sv-line sv-dash" marker-end="url(#a3)"/>
+        <rect x="10" y="175" width="118" height="34" rx="7" class="sv-box"/><text x="69" y="196" text-anchor="middle" class="sv-s">Study the problem</text>
+        <rect x="160" y="175" width="140" height="34" rx="7" class="sv-grn"/><text x="230" y="196" text-anchor="middle" class="sv-t">Train ML algorithm</text>
+        <rect x="330" y="175" width="120" height="34" rx="7" class="sv-box"/><text x="390" y="196" text-anchor="middle" class="sv-s">Evaluate solution</text>
+        <rect x="560" y="175" width="100" height="34" rx="7" class="sv-grn"/><text x="610" y="196" text-anchor="middle" class="sv-t">Launch!</text>
+        <path d="M128 192 H158" class="sv-line" marker-end="url(#a3)"/>
+        <path d="M300 192 H328" class="sv-line" marker-end="url(#a3)"/>
+        <path d="M450 192 H558" class="sv-line" marker-end="url(#a3)"/><text x="505" y="186" text-anchor="middle" class="sv-x">😊 good</text>
+        <path d="M390 209 V237 H312" class="sv-line" marker-end="url(#a3)"/><text x="398" y="227" class="sv-x">☹ bad</text>
+        <rect x="180" y="223" width="130" height="28" rx="7" class="sv-box"/><text x="245" y="241" text-anchor="middle" class="sv-s">Analyze errors</text>
+        <path d="M180 237 H69 V211" class="sv-line" marker-end="url(#a3)"/>
+      </svg>
+      <figcaption>핵심 차이 — 전통 방식은 사람이 규칙을 작성(Write rules), ML 방식은 데이터로 알고리즘을 학습(Train ML algorithm)</figcaption>
+    </figure>
+
+    <p>평가가 나쁘면 오류를 분석하고 처음 단계로 돌아가는 반복 구조<span class="en">(loop)</span>는 두 방식이 같습니다. 다른 점은 가운데 단계 하나입니다.</p>
+
+    <h3>변화에 자동으로 적응하기</h3>
+    <span class="orig">Automatically adapting to change</span>
+    <figure>
+      <svg viewBox="0 0 600 225" role="img" aria-label="변화에 자동으로 적응하는 순환">
+        <defs><marker id="a3b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-ah"/></marker></defs>
+        <polygon points="45,45 120,45 100,125 25,125" class="sv-box"/>
+        <path d="M50 105 V70 M50 105 H90" class="sv-axis"/>
+        <circle cx="60" cy="80" r="3" fill="#2563EB"/><circle cx="68" cy="75" r="3" fill="#2563EB"/><circle cx="78" cy="73" r="3" fill="#2563EB"/><circle cx="58" cy="92" r="3" fill="#2563EB"/>
+        <text x="70" y="120" text-anchor="middle" class="sv-s">Data</text>
+        <rect x="180" y="20" width="120" height="48" rx="4" class="sv-acc"/><text x="240" y="40" text-anchor="middle" class="sv-t">Update</text><text x="240" y="56" text-anchor="middle" class="sv-t">data</text>
+        <rect x="420" y="20" width="120" height="48" rx="4" class="sv-grn"/><text x="480" y="49" text-anchor="middle" class="sv-t">Launch!</text>
+        <rect x="180" y="150" width="120" height="48" rx="4" class="sv-grn"/><text x="240" y="170" text-anchor="middle" class="sv-t">Train ML</text><text x="240" y="186" text-anchor="middle" class="sv-t">algorithm</text>
+        <polygon points="405,174 480,140 555,174 480,208" class="sv-box"/><text x="480" y="170" text-anchor="middle" class="sv-s">Evaluate</text><text x="480" y="184" text-anchor="middle" class="sv-s">solution</text>
+        <ellipse cx="360" cy="110" rx="62" ry="30" class="sv-axis"/><text x="360" y="114" text-anchor="middle" class="sv-s">Can be automated</text>
+        <path d="M380 81 A62 30 0 0 0 345 80" class="sv-line" marker-end="url(#a3b)"/>
+        <path d="M420 44 H303" class="sv-line" marker-end="url(#a3b)"/>
+        <path d="M180 50 L118 78" class="sv-line sv-dash" marker-end="url(#a3b)"/>
+        <path d="M240 68 V147" class="sv-line" marker-end="url(#a3b)"/>
+        <path d="M100 118 L177 160" class="sv-line sv-dash" marker-end="url(#a3b)"/>
+        <path d="M300 174 H402" class="sv-line" marker-end="url(#a3b)"/>
+        <path d="M480 140 V71" class="sv-line" marker-end="url(#a3b)"/><text x="498" y="120" class="sv-t">😊</text>
+      </svg>
+      <figcaption>Train → Evaluate(😊) → Launch → Update data → Data(점선)·Train(실선)으로 다시 학습 — 가운데 순환 전체를 자동화할 수 있다 (슬라이드 5 배치 기준)</figcaption>
+    </figure>
+
+    <h3>문제에서 통찰 얻기</h3>
+    <span class="orig">Insights from Problems — ML can help humans learn</span>
+    <figure>
+      <svg viewBox="0 0 640 200" role="img" aria-label="ML이 사람의 학습을 돕는 흐름">
+        <defs><marker id="a3c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ah"/></marker></defs>
+        <rect x="10" y="28" width="120" height="34" rx="7" class="sv-box"/><text x="70" y="49" text-anchor="middle" class="sv-s">Study the problem</text>
+        <rect x="170" y="28" width="150" height="34" rx="7" class="sv-grn"/><text x="245" y="49" text-anchor="middle" class="sv-t">Train ML algorithm</text>
+        <rect x="370" y="28" width="100" height="34" rx="7" class="sv-box"/><text x="420" y="49" text-anchor="middle" class="sv-s">Solution</text>
+        <rect x="185" y="95" width="120" height="26" rx="6" class="sv-box sv-dash"/><text x="245" y="112" text-anchor="middle" class="sv-s">*Lots* of data</text>
+        <rect x="355" y="92" width="130" height="30" rx="7" class="sv-box"/><text x="420" y="111" text-anchor="middle" class="sv-s">Inspect the solution</text>
+        <rect x="300" y="150" width="240" height="32" rx="7" class="sv-acc"/><text x="420" y="170" text-anchor="middle" class="sv-t">💡 Understand the problem better</text>
+        <path d="M130 45 H168" class="sv-line" marker-end="url(#a3c)"/>
+        <path d="M320 45 H368" class="sv-line" marker-end="url(#a3c)"/>
+        <path d="M245 95 V64" class="sv-line sv-dash" marker-end="url(#a3c)"/>
+        <path d="M420 62 V90" class="sv-line" marker-end="url(#a3c)"/>
+        <path d="M420 122 V148" class="sv-line" marker-end="url(#a3c)"/>
+        <path d="M300 166 H70 V64" class="sv-line sv-dash" marker-end="url(#a3c)"/>
+        <text x="180" y="160" text-anchor="middle" class="sv-x">Iterate if needed</text>
+      </svg>
+      <figcaption>대량의 데이터로 학습한 모델의 해법을 들여다보면(Inspect) 사람이 문제를 더 잘 이해하게 된다</figcaption>
+    </figure>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 p.5–7 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 04 -->
+  <section id="s4">
+    <h2 class="st"><span class="sq">04</span>머신러닝에서 '학습'의 의미</h2>
+    <span class="orig">"Learning" in Machine Learning</span>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>용어</th><th>의미</th></tr></thead>
+        <tbody>
+          <tr><td><b>귀납</b><span class="en">(Induction)</span></td><td>특정한 예시들의 집합에서 일반적인 규칙을 뽑아내는 과정<span class="orig">process of extracting general rules from a set of particular examples</span></td></tr>
+          <tr><td><b>학습</b><span class="en">(Learning)</span></td><td>데이터를 분석하고 거기서 자동으로 정보를 추출하는 컴퓨터 모델을 만드는 것<span class="orig">build computer models that can analyze data and extract information automatically from them</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul>
+      <li>대부분의 경우 데이터는 싸고 풍부하지만, 지식은 비싸고 부족하다
+        <span class="orig">In most cases, data are cheap and abundant, but knowledge is expensive and scarce.</span></li>
+      <li>데이터에 대한 <b>좋고 쓸모 있는 근사</b><span class="en">(approximation)</span>인 모델을 만든다 — 모든 것을 설명하지 못하더라도 데이터의 일부는 설명할 수 있다
+        <span class="orig">Build a model that is a good and useful approximation to the data. ▶ May not explain everything, but may still be able to account for some part of the data.</span></li>
+    </ul>
+
+    <div class="call link">
+      <div class="t">이산수학과 연결 — 헷갈리기 쉬운 지점</div>
+      <p>여기서 말하는 <b>귀납</b>은 여러 사례에서 일반 규칙을 추정하는 <b>귀납적 추론</b><span class="en">(inductive reasoning)</span>입니다. 이산수학의 <b>수학적 귀납법</b><span class="en">(mathematical induction)</span>은 이름만 같을 뿐, 전제에서 결론을 반드시 끌어내는 <b>연역적 증명</b> 방법이라 성격이 다릅니다. ML의 귀납은 결론이 항상 참이라는 보장이 없습니다.</p>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 p.8 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 05 -->
+  <section id="s5">
+    <h2 class="st"><span class="sq">05</span>머신러닝 시스템의 분류 기준</h2>
+    <span class="orig">Types of Machine Learning Systems</span>
+
+    <p>ML 시스템은 종류가 매우 많아서 다음 세 기준으로 나눠 보면 편리합니다.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>기준</th><th>나뉘는 유형</th><th>다루는 곳</th></tr></thead>
+        <tbody>
+          <tr><td>사람의 감독<span class="en">(human supervision)</span>을 받으며 학습하는가<span class="orig">Whether or not they are trained with human supervision</span></td><td>지도 <span class="en">(supervised)</span> · 비지도 <span class="en">(unsupervised)</span> · 준지도 <span class="en">(semi-supervised)</span> · 강화 학습 <span class="en">(Reinforcement Learning)</span></td><td><a href="#s6">06</a> · <a href="#s7">07</a> · <a href="#s8">08</a></td></tr>
+          <tr><td>실시간으로 점진적 학습<span class="en">(learn incrementally on the fly)</span>이 가능한가</td><td>온라인 학습 <span class="en">(online)</span> vs 배치 학습 <span class="en">(batch learning)</span></td><td><a href="#s9">09</a></td></tr>
+          <tr><td>새 데이터를 알려진 데이터와 단순 비교하는가, 패턴을 찾아 예측 모델을 만드는가<span class="orig">simply compare new data points to known data points or detect patterns in training data and build a predictive model</span></td><td>사례 기반 <span class="en">(instance-based)</span> vs 모델 기반 <span class="en">(model-based learning)</span></td><td><a href="#s10">10</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>학습 유형 <span class="en">Types of Learning</span></h3>
+    <figure>
+      <svg viewBox="0 0 520 70" role="img" aria-label="관측 x가 시스템 g(x)를 거쳐 출력 y">
+        <defs><marker id="a5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-ah"/></marker></defs>
+        <rect x="10" y="18" width="130" height="34" rx="7" class="sv-box"/><text x="75" y="39" text-anchor="middle" class="sv-s">Observation (x)</text>
+        <rect x="195" y="18" width="130" height="34" rx="7" class="sv-acc"/><text x="260" y="39" text-anchor="middle" class="sv-t">System g(x)</text>
+        <rect x="380" y="18" width="130" height="34" rx="7" class="sv-box"/><text x="445" y="39" text-anchor="middle" class="sv-s">Output (y)</text>
+        <path d="M140 35 H193" class="sv-line" marker-end="url(#a5)"/><path d="M325 35 H378" class="sv-line" marker-end="url(#a5)"/>
+      </svg>
+      <figcaption>관측값 x를 받아 출력 y를 내는 시스템 g(x)를 학습한다</figcaption>
+    </figure>
+    <div class="codebox pseudo">
+      <div class="head"><span><span class="tag">표기</span>학습 데이터의 형태</span><button class="copy">복사</button></div>
+<pre><code><span class="kw">Supervised</span>    :  {(xᵗ, yᵗ)}     <span class="cm">// 관측 xᵗ 와 정답 출력 yᵗ 가 함께 주어짐</span>
+                 ├ Classification → yᵗ 는 이산적 라벨 (discrete label)
+                 └ Regression     → yᵗ 는 연속적인 수 (continuous number)
+<span class="kw">Unsupervised</span>  :  {xᵗ}           <span class="cm">// 정답 출력이 주어지지 않음</span>
+<span class="kw">Reinforcement</span> :  정답 출력 없음, 대신 지연된 보상 (delayed reward)</code></pre>
+    </div>
+    <span class="orig">Supervised Learning: target outputs {yᵗ} are provided along with the observations {xᵗ} ⇒ {(xᵗ, yᵗ)} / Unsupervised Learning: no target outputs are provided ⇒ {xᵗ} / Reinforcement Learning: no supervised output but delayed reward</span>
+    <div class="call extra">
+      <div class="t">표기 보충 — 교수님이 설명하신 내용 아님</div>
+      <p><span class="ext">위첨자 t는 t번째 데이터(샘플)를 뜻하는 인덱스로 보는 것이 일반적입니다. 즉 {(xᵗ, yᵗ)}는 "입력과 정답의 쌍들의 집합"입니다.</span></p>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 p.9–10 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 06 -->
+  <section id="s6">
+    <h2 class="st"><span class="sq">06</span>지도 학습 <span class="en" style="font-size:.6em">Supervised Learning</span></h2>
+
+    <p>지도 학습에서는 알고리즘에 넣는 훈련 데이터에 원하는 답, 즉 <b>레이블</b><span class="en">(label)</span>이 포함됩니다.</p>
+    <span class="orig">In supervised learning, the training data you feed the algorithm includes the desired solutions, known as labels.</span>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th></th><th>분류 <span class="en">(Classification)</span></th><th>회귀 <span class="en">(Regression)</span></th></tr></thead>
+        <tbody>
+          <tr><td>예측하는 것</td><td>이산적인 레이블 <span class="en">(discrete label)</span></td><td>연속적인 수치 <span class="en">(continuous number / target numeric value)</span></td></tr>
+          <tr><td>교안 예시</td><td>메일(instance)마다 정상✓ / 스팸🚫 레이블 → 새 메일(New instance)의 레이블 예측</td><td>Feature 1 값에 따른 Value 분포 → 새 입력의 Value 예측</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="figrow">
+      <figure>
+        <svg viewBox="0 0 300 190" role="img" aria-label="분류 예시: 라벨이 붙은 메일">
+          <rect x="10" y="20" width="185" height="140" rx="10" class="sv-box"/>
+          <text x="20" y="38" class="sv-x">Training set</text>
+          <g class="sv-s">
+            <rect x="25" y="52" width="40" height="28" rx="4" class="sv-box"/><text x="45" y="71" text-anchor="middle" style="fill:#16A34A;font-weight:800">✓</text>
+            <rect x="80" y="52" width="40" height="28" rx="4" class="sv-box"/><text x="100" y="71" text-anchor="middle" style="fill:#DC2626;font-weight:800">🚫</text>
+            <rect x="135" y="52" width="40" height="28" rx="4" class="sv-box"/><text x="155" y="71" text-anchor="middle" style="fill:#16A34A;font-weight:800">✓</text>
+            <rect x="25" y="100" width="40" height="28" rx="4" class="sv-box"/><text x="45" y="119" text-anchor="middle" style="fill:#DC2626;font-weight:800">🚫</text>
+            <rect x="80" y="100" width="40" height="28" rx="4" class="sv-box"/><text x="100" y="119" text-anchor="middle" style="fill:#16A34A;font-weight:800">✓</text>
+            <rect x="135" y="100" width="40" height="28" rx="4" class="sv-box"/><text x="155" y="119" text-anchor="middle" style="fill:#DC2626;font-weight:800">🚫</text>
+          </g>
+          <text x="100" y="152" text-anchor="middle" class="sv-x">Instance + Label</text>
+          <path d="M200 90 H235" class="sv-line"/>
+          <rect x="240" y="76" width="40" height="28" rx="4" class="sv-acc"/><text x="260" y="95" text-anchor="middle" class="sv-t">?</text>
+          <text x="260" y="122" text-anchor="middle" class="sv-x">New instance</text>
+        </svg>
+        <figcaption>분류 — A labeled training set</figcaption>
+      </figure>
+      <figure>
+        <svg viewBox="0 0 300 190" role="img" aria-label="회귀 예시">
+          <path d="M35 20 V160 H285" class="sv-axis"/>
+          <text x="160" y="182" text-anchor="middle" class="sv-x">Feature 1</text>
+          <text x="14" y="90" class="sv-x" transform="rotate(-90 14 90)" text-anchor="middle">Value</text>
+          <g style="fill:#E5A50A">
+            <circle cx="50" cy="140" r="3.5"/><circle cx="62" cy="130" r="3.5"/><circle cx="75" cy="118" r="3.5"/><circle cx="88" cy="104" r="3.5"/><circle cx="100" cy="96" r="3.5"/><circle cx="113" cy="92" r="3.5"/><circle cx="125" cy="96" r="3.5"/><circle cx="138" cy="106" r="3.5"/><circle cx="150" cy="112" r="3.5"/>
+            <circle cx="185" cy="104" r="3.5"/><circle cx="198" cy="92" r="3.5"/><circle cx="212" cy="76" r="3.5"/><circle cx="225" cy="62" r="3.5"/><circle cx="240" cy="50" r="3.5"/><circle cx="255" cy="42" r="3.5"/><circle cx="268" cy="36" r="3.5"/>
+          </g>
+          <text x="168" y="164" text-anchor="middle" style="fill:var(--accent);font-weight:800;font-size:15px">✖</text>
+          <path d="M168 150 V95" class="sv-line sv-dash"/>
+          <text x="168" y="88" text-anchor="middle" class="sv-t">Value?</text>
+          <text x="210" y="178" class="sv-x">New instance</text>
+        </svg>
+        <figcaption>회귀 — An illustration of a regression task</figcaption>
+      </figure>
+    </div>
+
+    <h3>대표적인 지도 학습 알고리즘</h3>
+    <span class="orig">Supervised Learning Algorithms</span>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>English</th><th>한국어</th></tr></thead>
+        <tbody>
+          <tr><td>Linear regression</td><td>선형 회귀</td></tr>
+          <tr><td>Logistic regression</td><td>로지스틱 회귀</td></tr>
+          <tr><td>k-Nearest neighbors</td><td>k-최근접 이웃</td></tr>
+          <tr><td>Decision trees and random forests</td><td>결정 트리와 랜덤 포레스트</td></tr>
+          <tr><td>Support vector machines</td><td>서포트 벡터 머신</td></tr>
+          <tr><td>Neural networks</td><td>신경망</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="call extra">
+      <div class="t">헷갈리는 지점 — 교수님이 설명하신 내용 아님</div>
+      <p><span class="ext">로지스틱 회귀(logistic regression)는 이름에 '회귀'가 붙지만 주로 <b>분류</b>에 쓰입니다. 클래스에 속할 확률을 출력하기 때문입니다.</span></p>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 p.11–13 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 07 -->
+  <section id="s7">
+    <h2 class="st"><span class="sq">07</span>비지도 학습 <span class="en" style="font-size:.6em">Unsupervised Learning</span></h2>
+
+    <p>비지도 학습의 훈련 데이터에는 <b>레이블이 없습니다</b>. 시스템은 교사나 감독 없이 학습하려고 합니다.</p>
+    <span class="orig">The training data in unsupervised learning is unlabeled. The system tries to learn without a teacher or any supervision.</span>
+
+    <h3>① 군집화 <span class="en">Clustering</span></h3>
+    <p><b>군집</b><span class="en">(cluster)</span>은 서로 '비슷한' 객체들의 모임이며, 다른 군집에 속한 객체와는 '비슷하지 않은' 집합입니다.</p>
+    <span class="orig">A cluster can be defined as a collection of objects which are "similar" between them and are "dissimilar" to the objects belonging to other clusters.</span>
+
+    <div class="figrow">
+      <figure>
+        <svg viewBox="0 0 300 200" role="img" aria-label="군집화 예시">
+          <path d="M30 15 V175 H285" class="sv-axis"/>
+          <text x="158" y="195" text-anchor="middle" class="sv-x">Feature 1</text>
+          <text x="12" y="95" class="sv-x" transform="rotate(-90 12 95)" text-anchor="middle">Feature 2</text>
+          <ellipse cx="140" cy="48" rx="48" ry="26" class="sv-box sv-dash" style="fill:none"/>
+          <ellipse cx="240" cy="62" rx="28" ry="22" class="sv-box sv-dash" style="fill:none"/>
+          <ellipse cx="70" cy="140" rx="30" ry="22" class="sv-box sv-dash" style="fill:none"/>
+          <ellipse cx="170" cy="138" rx="50" ry="26" class="sv-box sv-dash" style="fill:none"/>
+          <g style="fill:#16A34A">
+            <circle cx="112" cy="44" r="4"/><circle cx="125" cy="55" r="4"/><circle cx="138" cy="38" r="4"/><circle cx="150" cy="52" r="4"/><circle cx="162" cy="42" r="4"/><circle cx="170" cy="58" r="4"/><circle cx="130" cy="64" r="4"/><circle cx="118" cy="32" r="4"/><circle cx="155" cy="66" r="4"/>
+            <circle cx="232" cy="55" r="4"/><circle cx="248" cy="52" r="4"/><circle cx="236" cy="72" r="4"/><circle cx="252" cy="68" r="4"/>
+            <circle cx="60" cy="132" r="4"/><circle cx="78" cy="130" r="4"/><circle cx="64" cy="150" r="4"/><circle cx="82" cy="148" r="4"/>
+            <circle cx="140" cy="130" r="4"/><circle cx="155" cy="145" r="4"/><circle cx="168" cy="128" r="4"/><circle cx="180" cy="148" r="4"/><circle cx="195" cy="132" r="4"/><circle cx="205" cy="146" r="4"/><circle cx="150" cy="120" r="4"/><circle cx="188" cy="118" r="4"/><circle cx="170" cy="158" r="4"/>
+          </g>
+        </svg>
+        <figcaption>Clustering — 레이블 없이 4개 군집으로 나뉨</figcaption>
+      </figure>
+      <figure>
+        <svg viewBox="0 0 300 200" role="img" aria-label="이상치 탐지 예시">
+          <path d="M30 15 V175 H285" class="sv-axis"/>
+          <text x="158" y="195" text-anchor="middle" class="sv-x">Feature 1</text>
+          <text x="12" y="95" class="sv-x" transform="rotate(-90 12 95)" text-anchor="middle">Feature 2</text>
+          <g class="sv-dot" style="fill:var(--ink-3)">
+            <circle cx="90" cy="145" r="3"/><circle cx="105" cy="138" r="3"/><circle cx="118" cy="130" r="3"/><circle cx="130" cy="120" r="3"/><circle cx="142" cy="112" r="3"/><circle cx="155" cy="104" r="3"/><circle cx="168" cy="96" r="3"/><circle cx="180" cy="86" r="3"/><circle cx="195" cy="78" r="3"/><circle cx="208" cy="68" r="3"/><circle cx="222" cy="60" r="3"/>
+            <circle cx="112" cy="146" r="3"/><circle cx="128" cy="134" r="3"/><circle cx="148" cy="124" r="3"/><circle cx="160" cy="112" r="3"/><circle cx="175" cy="104" r="3"/><circle cx="190" cy="92" r="3"/><circle cx="205" cy="82" r="3"/><circle cx="100" cy="128" r="3"/><circle cx="138" cy="106" r="3"/><circle cx="170" cy="84" r="3"/><circle cx="215" cy="74" r="3"/>
+          </g>
+          <text x="160" y="104" text-anchor="middle" style="fill:#16A34A;font-weight:800;font-size:15px">✖</text>
+          <text x="172" y="128" class="sv-x" style="fill:#16A34A">Normal</text>
+          <text x="70" y="50" text-anchor="middle" style="fill:#DC2626;font-weight:800;font-size:15px">✖</text>
+          <text x="84" y="44" class="sv-x" style="fill:#DC2626">Anomaly</text>
+          <text x="210" y="160" class="sv-x">Training instances</text>
+        </svg>
+        <figcaption>Anomaly detection — 무리 안쪽은 정상, 멀리 떨어진 점은 이상치</figcaption>
+      </figure>
+    </div>
+
+    <h3>② 시각화 <span class="en">Visualization</span> — t-SNE</h3>
+    <p><b>t-SNE</b><span class="en">(t-distributed Stochastic Neighbor Embedding)</span>는 데이터의 <b>국소 구조</b><span class="en">(local structure)</span>를 보존하면서 고차원 데이터를 2차원이나 3차원으로 줄여 시각화하는 데 쓰입니다.</p>
+    <span class="orig">t-SNE is used for visualizing high-dimensional data by reducing its dimensionality to two or three dimensions while preserving the local structure of the data.</span>
+    <p>교안 예시는 이미지 10개 클래스(cat, automobile, truck, frog, ship, airplane, horse, bird, dog, deer)를 2차원으로 펼친 그림입니다. 비슷한 클래스끼리 가까이 모였고, <b>탈것</b>(automobile·truck·ship·airplane)과 <b>동물</b> 영역이 크게 나뉩니다.</p>
+    <figure>
+      <svg viewBox="0 0 600 385" role="img" aria-label="t-SNE 시각화 예시">
+        <g><circle cx="464.2" cy="305.6" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="554.5" cy="152.0" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="147.4" cy="191.6" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="185.4" cy="199.2" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="290.5" cy="120.0" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="190.6" cy="230.9" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="272.9" cy="100.9" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="541.4" cy="120.0" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="147.8" cy="339.6" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="114.2" cy="195.8" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="306.5" cy="85.5" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="507.7" cy="284.8" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="577.3" cy="154.4" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="107.2" cy="326.6" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="304.8" cy="310.0" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="121.9" cy="349.1" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="463.7" cy="304.1" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="561.6" cy="132.7" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="50.3" cy="214.1" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="486.1" cy="305.1" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="167.4" cy="329.0" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="544.5" cy="134.1" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="291.9" cy="126.8" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="430.5" cy="152.9" r="2.2" fill="#E53935" opacity=".8"/><circle cx="374.2" cy="34.2" r="2.2" fill="#43A047" opacity=".8"/><circle cx="609.2" cy="134.1" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="573.3" cy="132.8" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="485.9" cy="275.9" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="604.1" cy="102.0" r="2.2" fill="#E53935" opacity=".8"/><circle cx="482.8" cy="304.6" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="468.3" cy="221.5" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="347.8" cy="30.3" r="2.2" fill="#43A047" opacity=".8"/><circle cx="205.4" cy="182.8" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="535.7" cy="84.8" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="315.2" cy="336.8" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="335.8" cy="36.4" r="2.2" fill="#43A047" opacity=".8"/><circle cx="502.4" cy="275.2" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="278.9" cy="339.8" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="376.8" cy="34.6" r="2.2" fill="#43A047" opacity=".8"/><circle cx="451.4" cy="185.7" r="2.2" fill="#E53935" opacity=".8"/><circle cx="336.3" cy="83.0" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="80.3" cy="152.9" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="575.9" cy="262.5" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="516.3" cy="221.3" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="138.0" cy="368.7" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="140.5" cy="218.2" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="181.6" cy="193.6" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="171.6" cy="184.2" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="503.3" cy="132.5" r="2.2" fill="#E53935" opacity=".8"/><circle cx="199.5" cy="207.8" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="73.1" cy="211.9" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="171.1" cy="202.4" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="535.9" cy="237.6" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="147.4" cy="195.3" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="168.9" cy="205.3" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="59.4" cy="174.8" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="427.6" cy="140.8" r="2.2" fill="#E53935" opacity=".8"/><circle cx="180.2" cy="209.7" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="366.7" cy="47.7" r="2.2" fill="#43A047" opacity=".8"/><circle cx="206.7" cy="183.9" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="544.8" cy="228.4" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="511.4" cy="254.4" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="524.8" cy="208.4" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="514.1" cy="226.1" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="466.3" cy="212.0" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="31.8" cy="232.3" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="478.3" cy="298.4" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="399.3" cy="49.5" r="2.2" fill="#43A047" opacity=".8"/><circle cx="454.2" cy="165.8" r="2.2" fill="#E53935" opacity=".8"/><circle cx="80.5" cy="156.9" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="306.3" cy="34.3" r="2.2" fill="#43A047" opacity=".8"/><circle cx="482.1" cy="275.0" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="587.8" cy="115.2" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="578.3" cy="140.6" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="297.5" cy="310.1" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="270.3" cy="145.4" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="483.1" cy="192.3" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="318.6" cy="97.7" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="603.5" cy="155.6" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="488.3" cy="148.1" r="2.2" fill="#E53935" opacity=".8"/><circle cx="355.0" cy="55.0" r="2.2" fill="#43A047" opacity=".8"/><circle cx="167.7" cy="194.7" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="169.5" cy="340.0" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="615.0" cy="156.9" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="139.3" cy="345.3" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="512.3" cy="231.0" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="327.1" cy="122.5" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="464.7" cy="151.5" r="2.2" fill="#E53935" opacity=".8"/><circle cx="155.4" cy="320.7" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="500.6" cy="284.0" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="296.9" cy="308.6" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="126.5" cy="304.2" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="102.4" cy="201.8" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="495.5" cy="300.8" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="576.4" cy="154.2" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="440.2" cy="176.0" r="2.2" fill="#E53935" opacity=".8"/><circle cx="510.4" cy="220.2" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="388.2" cy="45.4" r="2.2" fill="#43A047" opacity=".8"/><circle cx="182.7" cy="198.2" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="291.0" cy="335.9" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="279.8" cy="334.4" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="306.0" cy="345.5" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="90.2" cy="194.5" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="532.9" cy="110.1" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="552.6" cy="117.3" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="161.3" cy="339.4" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="558.3" cy="216.4" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="87.6" cy="212.5" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="345.2" cy="133.6" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="461.3" cy="220.7" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="512.2" cy="195.8" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="279.0" cy="125.6" r="2.2" fill="#E53935" opacity=".8"/><circle cx="85.1" cy="193.5" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="60.1" cy="204.8" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="508.0" cy="173.7" r="2.2" fill="#E53935" opacity=".8"/><circle cx="207.4" cy="229.7" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="456.9" cy="295.1" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="184.4" cy="190.9" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="338.0" cy="45.3" r="2.2" fill="#43A047" opacity=".8"/><circle cx="245.8" cy="336.6" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="143.1" cy="344.6" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="454.1" cy="223.9" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="510.0" cy="297.4" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="286.2" cy="324.3" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="279.2" cy="109.6" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="105.5" cy="200.3" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="313.8" cy="302.7" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="373.5" cy="41.5" r="2.2" fill="#43A047" opacity=".8"/><circle cx="65.5" cy="186.7" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="500.9" cy="101.2" r="2.2" fill="#E53935" opacity=".8"/><circle cx="349.1" cy="110.1" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="273.5" cy="134.9" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="120.9" cy="345.2" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="167.0" cy="334.4" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="72.6" cy="208.3" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="524.4" cy="106.3" r="2.2" fill="#E53935" opacity=".8"/><circle cx="321.4" cy="109.5" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="105.3" cy="181.0" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="461.5" cy="148.1" r="2.2" fill="#E53935" opacity=".8"/><circle cx="301.2" cy="330.3" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="531.5" cy="281.2" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="543.6" cy="146.7" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="308.3" cy="10.7" r="2.2" fill="#43A047" opacity=".8"/><circle cx="164.3" cy="322.5" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="495.1" cy="200.1" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="457.8" cy="124.3" r="2.2" fill="#E53935" opacity=".8"/><circle cx="466.1" cy="205.6" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="177.1" cy="292.0" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="488.2" cy="216.5" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="186.5" cy="327.9" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="153.9" cy="161.2" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="504.8" cy="237.2" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="491.0" cy="299.1" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="380.0" cy="90.4" r="2.2" fill="#E53935" opacity=".8"/><circle cx="320.6" cy="356.6" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="550.1" cy="51.3" r="2.2" fill="#E53935" opacity=".8"/><circle cx="142.2" cy="338.6" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="225.7" cy="175.1" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="604.2" cy="144.9" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="288.0" cy="337.1" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="87.9" cy="196.5" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="332.1" cy="337.7" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="563.7" cy="120.3" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="369.7" cy="33.0" r="2.2" fill="#43A047" opacity=".8"/><circle cx="329.5" cy="54.5" r="2.2" fill="#43A047" opacity=".8"/><circle cx="196.7" cy="192.7" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="437.6" cy="266.4" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="595.3" cy="172.1" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="261.1" cy="320.5" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="374.1" cy="49.1" r="2.2" fill="#43A047" opacity=".8"/><circle cx="507.5" cy="229.8" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="486.4" cy="163.2" r="2.2" fill="#E53935" opacity=".8"/><circle cx="523.4" cy="292.9" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="94.4" cy="187.7" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="558.8" cy="150.9" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="481.6" cy="222.5" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="173.7" cy="318.4" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="564.7" cy="187.5" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="518.2" cy="228.7" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="485.7" cy="233.5" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="67.2" cy="184.1" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="302.0" cy="326.3" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="593.2" cy="132.3" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="357.0" cy="362.3" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="561.0" cy="146.8" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="80.2" cy="203.2" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="321.7" cy="343.2" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="272.3" cy="344.2" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="338.5" cy="138.1" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="394.2" cy="165.6" r="2.2" fill="#E53935" opacity=".8"/><circle cx="183.8" cy="343.4" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="306.7" cy="324.0" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="494.0" cy="208.8" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="505.9" cy="47.1" r="2.2" fill="#E53935" opacity=".8"/><circle cx="476.4" cy="229.1" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="528.9" cy="292.3" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="192.0" cy="221.8" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="475.0" cy="143.0" r="2.2" fill="#E53935" opacity=".8"/><circle cx="553.1" cy="109.6" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="488.4" cy="230.8" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="303.7" cy="138.5" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="97.0" cy="199.1" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="277.3" cy="353.5" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="218.9" cy="189.1" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="559.2" cy="111.8" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="259.7" cy="126.1" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="570.5" cy="122.7" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="55.6" cy="244.0" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="170.9" cy="209.3" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="515.9" cy="234.5" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="499.0" cy="201.3" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="360.3" cy="132.0" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="124.7" cy="156.0" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="314.0" cy="20.4" r="2.2" fill="#43A047" opacity=".8"/><circle cx="459.3" cy="213.8" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="323.3" cy="372.7" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="177.0" cy="324.9" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="81.2" cy="209.8" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="515.6" cy="137.7" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="330.7" cy="333.6" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="83.3" cy="217.2" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="44.8" cy="200.7" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="332.6" cy="109.3" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="515.9" cy="97.7" r="2.2" fill="#E53935" opacity=".8"/><circle cx="584.6" cy="138.5" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="350.3" cy="89.0" r="2.2" fill="#E53935" opacity=".8"/><circle cx="91.5" cy="164.5" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="372.8" cy="121.0" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="282.3" cy="118.2" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="474.5" cy="224.5" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="167.0" cy="339.9" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="408.1" cy="139.4" r="2.2" fill="#E53935" opacity=".8"/><circle cx="342.0" cy="37.1" r="2.2" fill="#43A047" opacity=".8"/><circle cx="206.9" cy="290.6" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="307.4" cy="328.7" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="577.9" cy="146.0" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="429.7" cy="321.2" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="204.6" cy="189.0" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="177.2" cy="324.4" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="572.9" cy="157.2" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="177.6" cy="343.3" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="443.3" cy="220.3" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="364.1" cy="103.5" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="492.8" cy="221.1" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="288.2" cy="326.0" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="465.2" cy="291.8" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="435.7" cy="197.8" r="2.2" fill="#E53935" opacity=".8"/><circle cx="339.9" cy="130.4" r="2.2" fill="#E53935" opacity=".8"/><circle cx="537.4" cy="129.4" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="128.3" cy="181.9" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="484.8" cy="210.4" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="343.7" cy="115.3" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="205.4" cy="332.8" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="107.5" cy="187.8" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="562.0" cy="148.2" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="478.8" cy="292.8" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="83.0" cy="215.3" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="359.0" cy="138.2" r="2.2" fill="#E53935" opacity=".8"/><circle cx="185.6" cy="333.4" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="464.7" cy="219.3" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="91.8" cy="226.1" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="364.8" cy="102.0" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="331.9" cy="112.1" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="58.2" cy="223.6" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="214.3" cy="316.2" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="503.8" cy="239.3" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="183.1" cy="318.8" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="475.3" cy="201.6" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="495.3" cy="133.5" r="2.2" fill="#E53935" opacity=".8"/><circle cx="285.2" cy="335.4" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="321.3" cy="321.7" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="491.1" cy="220.1" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="540.9" cy="141.6" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="282.0" cy="334.3" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="378.2" cy="54.1" r="2.2" fill="#43A047" opacity=".8"/><circle cx="484.4" cy="297.5" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="90.2" cy="176.2" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="494.0" cy="326.6" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="144.6" cy="333.8" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="484.1" cy="287.5" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="156.5" cy="163.2" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="501.0" cy="288.8" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="281.3" cy="307.3" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="354.9" cy="146.8" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="80.0" cy="181.9" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="78.6" cy="226.1" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="69.6" cy="204.8" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="607.6" cy="152.4" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="452.4" cy="302.6" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="156.6" cy="353.3" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="168.6" cy="195.3" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="483.7" cy="297.5" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="177.3" cy="332.5" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="152.2" cy="191.7" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="440.7" cy="292.0" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="295.5" cy="330.3" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="509.2" cy="215.1" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="578.3" cy="85.5" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="562.5" cy="140.0" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="66.7" cy="194.3" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="263.3" cy="104.6" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="308.9" cy="139.4" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="150.2" cy="332.1" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="368.3" cy="41.7" r="2.2" fill="#43A047" opacity=".8"/><circle cx="75.6" cy="174.3" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="500.6" cy="221.8" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="569.7" cy="140.1" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="628.5" cy="158.9" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="348.4" cy="143.7" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="294.1" cy="334.4" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="368.8" cy="50.4" r="2.2" fill="#43A047" opacity=".8"/><circle cx="560.4" cy="154.6" r="2.2" fill="#E53935" opacity=".8"/><circle cx="363.3" cy="56.6" r="2.2" fill="#43A047" opacity=".8"/><circle cx="163.4" cy="323.0" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="342.1" cy="126.1" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="386.0" cy="48.9" r="2.2" fill="#43A047" opacity=".8"/><circle cx="457.7" cy="302.8" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="377.2" cy="45.4" r="2.2" fill="#43A047" opacity=".8"/><circle cx="222.0" cy="188.8" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="322.0" cy="346.4" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="350.9" cy="117.1" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="318.8" cy="119.7" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="186.3" cy="207.1" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="536.8" cy="167.5" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="197.6" cy="203.8" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="320.5" cy="340.1" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="148.8" cy="322.7" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="547.0" cy="136.5" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="463.3" cy="292.7" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="395.1" cy="16.8" r="2.2" fill="#43A047" opacity=".8"/><circle cx="305.2" cy="38.2" r="2.2" fill="#43A047" opacity=".8"/><circle cx="288.5" cy="337.9" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="165.4" cy="312.0" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="206.8" cy="166.9" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="82.6" cy="187.2" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="421.0" cy="156.8" r="2.2" fill="#E53935" opacity=".8"/><circle cx="371.6" cy="23.6" r="2.2" fill="#43A047" opacity=".8"/><circle cx="343.1" cy="33.0" r="2.2" fill="#43A047" opacity=".8"/><circle cx="375.2" cy="57.2" r="2.2" fill="#43A047" opacity=".8"/><circle cx="151.3" cy="322.2" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="604.7" cy="155.9" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="491.9" cy="196.3" r="2.2" fill="#E53935" opacity=".8"/><circle cx="196.3" cy="169.8" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="306.5" cy="327.5" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="432.1" cy="132.3" r="2.2" fill="#E53935" opacity=".8"/><circle cx="188.8" cy="211.5" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="350.6" cy="40.9" r="2.2" fill="#43A047" opacity=".8"/><circle cx="278.7" cy="324.2" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="481.6" cy="89.7" r="2.2" fill="#E53935" opacity=".8"/><circle cx="523.8" cy="285.1" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="390.0" cy="44.2" r="2.2" fill="#43A047" opacity=".8"/><circle cx="455.8" cy="286.8" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="545.9" cy="283.6" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="599.2" cy="150.4" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="334.9" cy="127.6" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="540.1" cy="134.7" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="486.8" cy="269.4" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="326.1" cy="144.0" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="74.5" cy="209.4" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="342.0" cy="63.7" r="2.2" fill="#43A047" opacity=".8"/><circle cx="63.5" cy="187.2" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="167.5" cy="233.1" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="460.0" cy="296.7" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="493.3" cy="210.1" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="489.6" cy="216.5" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="539.6" cy="292.8" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="301.8" cy="330.8" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="205.5" cy="192.4" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="184.1" cy="194.8" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="539.5" cy="151.0" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="305.7" cy="136.0" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="487.7" cy="304.9" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="514.4" cy="156.8" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="574.8" cy="140.0" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="477.5" cy="108.6" r="2.2" fill="#E53935" opacity=".8"/><circle cx="560.8" cy="146.8" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="146.5" cy="350.7" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="344.9" cy="148.7" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="322.3" cy="138.8" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="81.1" cy="202.2" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="505.7" cy="91.3" r="2.2" fill="#E53935" opacity=".8"/><circle cx="317.8" cy="345.7" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="132.0" cy="318.8" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="317.3" cy="58.3" r="2.2" fill="#43A047" opacity=".8"/><circle cx="363.5" cy="117.0" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="155.1" cy="359.3" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="315.9" cy="111.9" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="162.0" cy="347.4" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="315.7" cy="327.8" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="177.7" cy="185.3" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="135.7" cy="329.7" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="167.8" cy="201.0" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="469.3" cy="329.2" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="202.9" cy="192.9" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="281.4" cy="108.8" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="320.1" cy="52.6" r="2.2" fill="#43A047" opacity=".8"/><circle cx="207.5" cy="200.9" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="324.2" cy="134.6" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="192.1" cy="184.5" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="81.6" cy="189.4" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="527.8" cy="123.4" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="450.1" cy="163.6" r="2.2" fill="#E53935" opacity=".8"/><circle cx="345.8" cy="57.5" r="2.2" fill="#43A047" opacity=".8"/><circle cx="161.8" cy="346.6" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="323.7" cy="135.1" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="351.4" cy="134.4" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="175.2" cy="352.7" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="261.5" cy="113.3" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="90.4" cy="203.7" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="477.9" cy="200.9" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="159.4" cy="176.2" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="50.0" cy="226.7" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="403.4" cy="50.0" r="2.2" fill="#43A047" opacity=".8"/><circle cx="508.3" cy="198.3" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="84.9" cy="192.1" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="488.7" cy="200.7" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="573.5" cy="117.5" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="390.3" cy="47.6" r="2.2" fill="#43A047" opacity=".8"/><circle cx="494.6" cy="285.6" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="175.2" cy="139.6" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="490.3" cy="182.1" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="329.2" cy="339.4" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="172.1" cy="181.5" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="357.1" cy="32.0" r="2.2" fill="#43A047" opacity=".8"/><circle cx="308.7" cy="324.8" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="336.8" cy="163.6" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="275.7" cy="343.8" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="569.7" cy="152.7" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="525.4" cy="187.0" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="432.1" cy="149.8" r="2.2" fill="#E53935" opacity=".8"/><circle cx="135.2" cy="343.9" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="89.9" cy="181.2" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="463.2" cy="223.7" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="221.4" cy="185.8" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="226.4" cy="201.9" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="525.0" cy="222.7" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="159.2" cy="173.1" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="251.5" cy="334.3" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="168.6" cy="341.9" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="324.0" cy="99.9" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="313.1" cy="330.4" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="374.2" cy="151.7" r="2.2" fill="#E53935" opacity=".8"/><circle cx="358.5" cy="133.6" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="191.7" cy="199.0" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="535.0" cy="310.7" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="502.3" cy="290.8" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="314.6" cy="53.0" r="2.2" fill="#43A047" opacity=".8"/><circle cx="388.4" cy="42.6" r="2.2" fill="#43A047" opacity=".8"/><circle cx="92.3" cy="189.5" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="363.2" cy="26.0" r="2.2" fill="#43A047" opacity=".8"/><circle cx="295.1" cy="334.5" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="364.6" cy="149.0" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="448.9" cy="168.2" r="2.2" fill="#E53935" opacity=".8"/><circle cx="557.2" cy="186.6" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="368.4" cy="47.2" r="2.2" fill="#43A047" opacity=".8"/><circle cx="504.7" cy="303.9" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="347.7" cy="26.4" r="2.2" fill="#43A047" opacity=".8"/><circle cx="329.2" cy="363.2" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="353.0" cy="48.6" r="2.2" fill="#43A047" opacity=".8"/><circle cx="420.7" cy="165.3" r="2.2" fill="#E53935" opacity=".8"/><circle cx="307.9" cy="124.4" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="515.0" cy="225.2" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="94.2" cy="192.0" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="502.4" cy="290.0" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="425.1" cy="278.3" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="516.2" cy="234.4" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="470.4" cy="317.7" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="161.0" cy="320.4" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="469.2" cy="295.2" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="509.0" cy="121.8" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="119.2" cy="350.0" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="529.9" cy="272.9" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="104.5" cy="228.5" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="154.3" cy="200.4" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="399.2" cy="46.8" r="2.2" fill="#43A047" opacity=".8"/><circle cx="370.7" cy="44.6" r="2.2" fill="#43A047" opacity=".8"/><circle cx="287.7" cy="324.5" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="75.8" cy="186.4" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="555.2" cy="157.5" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="299.4" cy="106.5" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="96.0" cy="164.6" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="175.8" cy="211.9" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="151.3" cy="326.1" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="415.4" cy="166.4" r="2.2" fill="#E53935" opacity=".8"/><circle cx="195.6" cy="200.9" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="333.7" cy="35.6" r="2.2" fill="#43A047" opacity=".8"/><circle cx="375.0" cy="40.4" r="2.2" fill="#43A047" opacity=".8"/><circle cx="445.3" cy="205.8" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="585.3" cy="155.7" r="2.2" fill="#E53935" opacity=".8"/><circle cx="199.9" cy="237.3" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="270.6" cy="139.4" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="100.1" cy="208.2" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="150.0" cy="297.6" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="373.8" cy="48.5" r="2.2" fill="#43A047" opacity=".8"/><circle cx="347.8" cy="297.5" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="437.0" cy="177.1" r="2.2" fill="#E53935" opacity=".8"/><circle cx="492.6" cy="211.4" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="91.3" cy="168.3" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="490.7" cy="290.1" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="559.8" cy="139.6" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="299.8" cy="148.1" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="415.6" cy="129.7" r="2.2" fill="#E53935" opacity=".8"/><circle cx="504.3" cy="326.3" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="298.7" cy="132.6" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="470.8" cy="281.2" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="521.7" cy="221.1" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="362.8" cy="115.5" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="461.1" cy="320.7" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="573.8" cy="143.9" r="2.2" fill="#C026D3" opacity=".8"/><circle cx="524.0" cy="276.1" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="336.0" cy="54.1" r="2.2" fill="#43A047" opacity=".8"/><circle cx="465.1" cy="302.7" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="189.6" cy="199.1" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="334.7" cy="39.6" r="2.2" fill="#43A047" opacity=".8"/><circle cx="528.1" cy="127.1" r="2.2" fill="#E53935" opacity=".8"/><circle cx="361.3" cy="58.6" r="2.2" fill="#43A047" opacity=".8"/><circle cx="382.9" cy="19.6" r="2.2" fill="#43A047" opacity=".8"/><circle cx="495.9" cy="224.6" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="313.0" cy="332.4" r="2.2" fill="#06B6D4" opacity=".8"/><circle cx="328.5" cy="99.2" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="324.3" cy="62.4" r="2.2" fill="#43A047" opacity=".8"/><circle cx="185.4" cy="196.1" r="2.2" fill="#B7C21A" opacity=".8"/><circle cx="104.7" cy="158.3" r="2.2" fill="#F57C00" opacity=".8"/><circle cx="151.8" cy="341.5" r="2.2" fill="#2E9E5B" opacity=".8"/><circle cx="510.7" cy="290.6" r="2.2" fill="#1E63E0" opacity=".8"/><circle cx="376.8" cy="88.8" r="2.2" fill="#5B3FD6" opacity=".8"/><circle cx="490.0" cy="195.0" r="2.2" fill="#EC4899" opacity=".8"/><circle cx="320.3" cy="45.2" r="2.2" fill="#43A047" opacity=".8"/><circle cx="353.8" cy="38.3" r="2.2" fill="#43A047" opacity=".8"/><circle cx="222.6" cy="200.1" r="2.2" fill="#B7C21A" opacity=".8"/></g>
+        <g><rect x="360.0" y="13.8" width="34.8" height="14" rx="2" fill="#CFEBD7" stroke="#2F6F45" stroke-width=".6"/><text x="365.0" y="24.8" style="font-size:10px;fill:#1B3B26;font-family:var(--font)">frog</text><rect x="540.0" y="67.7" width="28.6" height="14" rx="2" fill="#CFEBD7" stroke="#2F6F45" stroke-width=".6"/><text x="545.0" y="78.7" style="font-size:10px;fill:#1B3B26;font-family:var(--font)">cat</text><rect x="306.0" y="95.0" width="34.8" height="14" rx="2" fill="#CFEBD7" stroke="#2F6F45" stroke-width=".6"/><text x="311.0" y="106.0" style="font-size:10px;fill:#1B3B26;font-family:var(--font)">bird</text><rect x="548.0" y="108.0" width="28.6" height="14" rx="2" fill="#CFEBD7" stroke="#2F6F45" stroke-width=".6"/><text x="553.0" y="119.0" style="font-size:10px;fill:#1B3B26;font-family:var(--font)">dog</text><rect x="477.0" y="221.8" width="34.8" height="14" rx="2" fill="#CFEBD7" stroke="#2F6F45" stroke-width=".6"/><text x="482.0" y="232.8" style="font-size:10px;fill:#1B3B26;font-family:var(--font)">deer</text><rect x="522.0" y="306.2" width="41.0" height="14" rx="2" fill="#CFEBD7" stroke="#2F6F45" stroke-width=".6"/><text x="527.0" y="317.2" style="font-size:10px;fill:#1B3B26;font-family:var(--font)">horse</text><rect x="189.0" y="119.69999999999999" width="41.0" height="14" rx="2" fill="#CFEBD7" stroke="#2F6F45" stroke-width=".6"/><text x="194.0" y="130.7" style="font-size:10px;fill:#1B3B26;font-family:var(--font)">truck</text><rect x="72.0" y="165.2" width="72.0" height="14" rx="2" fill="#CFEBD7" stroke="#2F6F45" stroke-width=".6"/><text x="77.0" y="176.2" style="font-size:10px;fill:#1B3B26;font-family:var(--font)">automobile</text><rect x="130.5" y="353.1" width="34.8" height="14" rx="2" fill="#CFEBD7" stroke="#2F6F45" stroke-width=".6"/><text x="135.5" y="364.1" style="font-size:10px;fill:#1B3B26;font-family:var(--font)">ship</text><rect x="324.0" y="355.0" width="59.6" height="14" rx="2" fill="#CFEBD7" stroke="#2F6F45" stroke-width=".6"/><text x="329.0" y="366.0" style="font-size:10px;fill:#1B3B26;font-family:var(--font)">airplane</text></g>
+        <g><circle cx="8" cy="12" r="3.5" fill="#43A047"/><text x="16" y="16" class="sv-x">frog</text><circle cx="8" cy="25" r="3.5" fill="#E53935"/><text x="16" y="29" class="sv-x">cat</text><circle cx="8" cy="38" r="3.5" fill="#5B3FD6"/><text x="16" y="42" class="sv-x">bird</text><circle cx="8" cy="51" r="3.5" fill="#C026D3"/><text x="16" y="55" class="sv-x">dog</text><circle cx="8" cy="64" r="3.5" fill="#EC4899"/><text x="16" y="68" class="sv-x">deer</text><circle cx="8" cy="77" r="3.5" fill="#1E63E0"/><text x="16" y="81" class="sv-x">horse</text><circle cx="8" cy="90" r="3.5" fill="#B7C21A"/><text x="16" y="94" class="sv-x">truck</text><circle cx="8" cy="103" r="3.5" fill="#F57C00"/><text x="16" y="107" class="sv-x">automobile</text><circle cx="8" cy="116" r="3.5" fill="#2E9E5B"/><text x="16" y="120" class="sv-x">ship</text><circle cx="8" cy="129" r="3.5" fill="#06B6D4"/><text x="16" y="133" class="sv-x">airplane</text></g>
+      </svg>
+      <figcaption>Example of a t-SNE visualization — 슬라이드 15 배치 기준 재구성 (점 위치는 개략, 기호 모양은 색으로 단순화)</figcaption>
+    </figure>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>위치</th><th>클래스</th></tr></thead>
+        <tbody>
+          <tr><td>왼쪽</td><td>automobile · truck — 서로 붙어 있음</td></tr>
+          <tr><td>아래</td><td>ship · airplane — 서로 인접</td></tr>
+          <tr><td>위</td><td>frog (맨 위), bird (위 가운데)</td></tr>
+          <tr><td>오른쪽</td><td>dog (오른쪽 위), deer (오른쪽 가운데), horse (오른쪽 아래)</td></tr>
+          <tr><td>넓게 퍼짐</td><td>cat — 위·가운데에 흩어져 bird·dog·deer 영역과 겹침</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="call extra">
+      <div class="t">그림에서 읽을 수 있는 점 — 교수님이 설명하신 내용 아님</div>
+      <p><span class="ext">탈것 4개는 왼쪽·아래, 동물 6개는 위·오른쪽으로 크게 나뉩니다. 다만 cat은 한곳에 모이지 않고 다른 동물 클래스와 섞여 있어, 이 2차원 공간에서는 다른 클래스와 구분이 가장 어려운 클래스로 보입니다.</span></p>
+    </div>
+
+    <h3>③ 차원 축소 <span class="en">Dimension Reduction</span></h3>
+    <p>고차원 데이터를 다룰 때는, 데이터의 본질을 담는 <b>더 낮은 차원의 부분공간</b><span class="en">(lower dimensional subspace)</span>으로 <b>투영</b><span class="en">(projecting)</span>해 차원을 줄이는 것이 유용한 경우가 많습니다.</p>
+    <span class="orig">When dealing with high dimensional data, it is often useful to reduce the dimensionality by projecting the data to a lower dimensional subspace which captures the essence of the data. — Kevin P. Murphy, Machine Learning: A Probabilistic Perspective</span>
+    <figure>
+      <svg viewBox="0 0 620 175" role="img" aria-label="3차원에서 2차원, 1차원으로 차원 축소">
+        <defs><marker id="a7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-ah"/></marker></defs>
+        <path d="M30 55 L115 55 L115 140 L30 140 Z M30 55 L60 28 L145 28 L115 55 M145 28 L145 113 L115 140" class="sv-axis"/><path d="M30 140 V40" class="sv-line" marker-end="url(#a7)"/><path d="M30 140 H125" class="sv-line" marker-end="url(#a7)"/><path d="M30 140 L52 120" class="sv-line" marker-end="url(#a7)"/><text x="22" y="44" class="sv-x">y</text><text x="128" y="152" class="sv-x">x</text><text x="18" y="152" class="sv-x">z</text><circle cx="62" cy="92" r="4.2" fill="#2563EB" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="55" cy="100" r="4.2" fill="#2563EB" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="68" cy="104" r="4.2" fill="#2563EB" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="60" cy="112" r="4.2" fill="#2563EB" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="82" cy="78" r="4.2" fill="#E11D48" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="92" cy="76" r="4.2" fill="#E11D48" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="88" cy="86" r="4.2" fill="#E11D48" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="98" cy="84" r="4.2" fill="#E11D48" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="96" cy="94" r="4.2" fill="#10B981" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="104" cy="92" r="4.2" fill="#10B981" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="100" cy="104" r="4.2" fill="#10B981" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="110" cy="108" r="4.2" fill="#10B981" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="66" cy="120" r="4.2" fill="#F2B634" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="76" cy="118" r="4.2" fill="#F2B634" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="72" cy="128" r="4.2" fill="#F2B634" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="82" cy="126" r="4.2" fill="#F2B634" stroke="var(--ink-3)" stroke-width=".8"/>
+        <text x="85" y="170" text-anchor="middle" class="sv-x">3D — 4색이 뒤섞임</text>
+        <path d="M160 85 H200" class="sv-line" marker-end="url(#a7)"/>
+        <path d="M218 132 H355" class="sv-line sv-dash" marker-end="url(#a7)"/><path d="M218 132 V28" class="sv-line sv-dash" marker-end="url(#a7)"/><circle cx="232" cy="42" r="4.2" fill="#2563EB" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="244" cy="50" r="4.2" fill="#2563EB" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="236" cy="58" r="4.2" fill="#2563EB" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="250" cy="62" r="4.2" fill="#2563EB" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="240" cy="70" r="4.2" fill="#2563EB" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="318" cy="42" r="4.2" fill="#E11D48" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="330" cy="48" r="4.2" fill="#E11D48" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="322" cy="56" r="4.2" fill="#E11D48" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="336" cy="60" r="4.2" fill="#E11D48" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="326" cy="68" r="4.2" fill="#E11D48" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="262" cy="98" r="4.2" fill="#F2B634" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="274" cy="94" r="4.2" fill="#F2B634" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="268" cy="106" r="4.2" fill="#F2B634" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="280" cy="110" r="4.2" fill="#F2B634" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="270" cy="116" r="4.2" fill="#F2B634" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="300" cy="94" r="4.2" fill="#10B981" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="312" cy="98" r="4.2" fill="#10B981" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="304" cy="106" r="4.2" fill="#10B981" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="316" cy="112" r="4.2" fill="#10B981" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="308" cy="120" r="4.2" fill="#10B981" stroke="var(--ink-3)" stroke-width=".8"/>
+        <text x="285" y="170" text-anchor="middle" class="sv-x">2D — 4색이 각각 무리로 분리</text>
+        <path d="M370 85 H410" class="sv-line" marker-end="url(#a7)"/>
+        <path d="M430 80 H605" class="sv-line sv-dash"/><circle cx="445" cy="80" r="4.2" fill="#2563EB" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="455" cy="80" r="4.2" fill="#2563EB" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="465" cy="80" r="4.2" fill="#2563EB" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="478" cy="80" r="4.2" fill="#F2B634" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="488" cy="80" r="4.2" fill="#F2B634" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="498" cy="80" r="4.2" fill="#F2B634" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="528" cy="80" r="4.2" fill="#10B981" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="546" cy="80" r="4.2" fill="#10B981" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="566" cy="80" r="4.2" fill="#10B981" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="537" cy="80" r="4.2" fill="#E11D48" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="556" cy="80" r="4.2" fill="#E11D48" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="575" cy="80" r="4.2" fill="#E11D48" stroke="var(--ink-3)" stroke-width=".8"/><circle cx="586" cy="80" r="4.2" fill="#E11D48" stroke="var(--ink-3)" stroke-width=".8"/>
+        <text x="518" y="170" text-anchor="middle" class="sv-x">1D — 한 줄로 투영</text>
+      </svg>
+      <figcaption>Dimensionality Reduction — 슬라이드 16 배치 기준 (2D: 파랑 왼쪽 위 · 빨강 오른쪽 위 · 노랑 아래 왼쪽 · 초록 아래 오른쪽)</figcaption>
+    </figure>
+    <div class="call extra">
+      <div class="t">그림에서 읽을 수 있는 점 — 교수님이 설명하신 내용 아님</div>
+      <p><span class="ext">3D에서 섞여 있던 점들이 2D로 투영하자 4개 무리로 뚜렷이 나뉩니다. 반면 1D까지 줄이면 파랑·노랑은 구분되지만 <b>초록과 빨강은 서로 겹칩니다</b>. 차원을 너무 많이 줄이면 구분에 필요한 정보까지 잃을 수 있다는 뜻으로 읽힙니다.</span></p>
+    </div>
+
+    <h3>④ 이상치 탐지 <span class="en">Outlier (Anomaly) Detection</span></h3>
+    <p>대다수 데이터에서 크게 벗어난 관측값이나 데이터 포인트를 찾아내는 과정입니다. (위 오른쪽 그림)</p>
+    <span class="orig">Outlier (anomaly) detection is a process of identifying observations or data points that significantly deviate from the majority of the data.</span>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 p.14–18 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 08 -->
+  <section id="s8">
+    <h2 class="st"><span class="sq">08</span>강화 학습 <span class="en" style="font-size:.6em">Reinforcement Learning</span></h2>
+
+    <p>학습하는 시스템을 <b>에이전트</b><span class="en">(agent)</span>라고 부릅니다. 에이전트는 <b>환경</b><span class="en">(environment)</span>을 관찰하고, <b>행동</b><span class="en">(action)</span>을 골라 수행하며, 그 결과로 <b>보상</b><span class="en">(reward)</span>이나 <b>벌점</b><span class="en">(penalty)</span>을 받습니다. 시간이 지나면서 보상을 최대화하는 최선의 전략, 즉 <b>정책</b><span class="en">(policy)</span>을 스스로 학습해야 합니다.</p>
+    <span class="orig">The learning system, referred to as an agent, can observe the environment, select and perform actions, and receive rewards/penalties in return. It must then learn for itself the best strategy, known as a policy, to maximize reward over time.</span>
+
+    <figure>
+      <svg viewBox="0 0 460 170" role="img" aria-label="강화학습 구조">
+        <defs><marker id="a8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-ah"/></marker></defs>
+        <rect x="20" y="62" width="130" height="44" rx="8" class="sv-box"/><text x="85" y="89" text-anchor="middle" class="sv-t">Environment</text>
+        <rect x="310" y="62" width="130" height="44" rx="8" class="sv-acc"/><text x="375" y="89" text-anchor="middle" class="sv-t">Agent</text>
+        <path d="M85 62 V25 H375 V60" class="sv-line" marker-end="url(#a8)"/><text x="230" y="19" text-anchor="middle" class="sv-s">Observation</text>
+        <path d="M150 84 H308" class="sv-line" marker-end="url(#a8)"/><text x="230" y="78" text-anchor="middle" class="sv-s">Reward</text>
+        <path d="M375 106 V145 H85 V108" class="sv-line" marker-end="url(#a8)"/><text x="230" y="160" text-anchor="middle" class="sv-s">Action</text>
+      </svg>
+      <figcaption>환경 → 관찰·보상 → 에이전트 → 행동 → 환경</figcaption>
+    </figure>
+
+    <h4>교안 예시 — 불과 물통 (6단계)</h4>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>단계</th><th>영어</th><th>장면</th></tr></thead>
+        <tbody>
+          <tr><td>①</td><td>Observe</td><td>로봇이 환경을 관찰 — 왼쪽에 불, 오른쪽에 물통과 수도꼭지</td></tr>
+          <tr><td>②</td><td>Select action using policy</td><td>정책에 따라 행동 선택</td></tr>
+          <tr><td>③</td><td>Action!</td><td>불 쪽으로 이동 → "Ouch!"</td></tr>
+          <tr><td>④</td><td>Get reward or penalty</td><td>−50 points 벌점</td></tr>
+          <tr><td>⑤</td><td>Update policy (learning step)</td><td>"불 = bad! 다음엔 피하자"로 정책 갱신</td></tr>
+          <tr><td>⑥</td><td>Iterate until an optimal policy is found</td><td>최적 정책을 찾을 때까지 반복</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="call link">
+      <div class="t">이전 차시와 연결</div>
+      <p>3주차에 나온 <b>알파고</b>와 스타크래프트2의 <b>알파 스타</b>가 강화 학습을 활용한 대표 사례입니다. 3장의 <b>지능형 에이전트</b>(센서로 인지 → 행위자로 행동) 구조도 같은 틀입니다.</p>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 p.19 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 09 -->
+  <section id="s9">
+    <h2 class="st"><span class="sq">09</span>배치 학습 vs 온라인 학습</h2>
+    <span class="orig">Batch Learning / Online Learning — whether the system can learn incrementally from a stream of incoming data</span>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th></th><th>배치 학습 <span class="en">(Batch Learning)</span></th><th>온라인 학습 <span class="en">(Online Learning)</span></th></tr></thead>
+        <tbody>
+          <tr><td>점진적 학습</td><td>불가 — <b>가용한 데이터 전부</b>로 학습해야 함<span class="orig">cannot learn incrementally: It must be trained using all available data</span></td><td>가능 — 데이터를 <b>미니배치</b><span class="en">(mini batches)</span>로 나눠 순차적으로 모델에 공급<span class="orig">Data is generally divided into mini batches and served as chunks or sequentially to the model.</span></td></tr>
+          <tr><td>비용</td><td>시간과 컴퓨팅 자원이 많이 들어 보통 <b>오프라인</b>에서 수행</td><td>학습 단계 하나가 빠르고 저렴 → 새 데이터를 반영해 모델을 <b>점진적으로</b> 갱신</td></tr>
+          <tr><td>배포 후</td><td>먼저 학습시킨 뒤 운영<span class="en">(production)</span>에 투입, 이후엔 <b>더 학습하지 않고</b> 배운 것만 적용 = <b>오프라인 학습</b><span class="en">(offline learning)</span></td><td>운영 중에도 새 데이터로 계속 학습<span class="en">(Run and learn, on the fly)</span></td></tr>
+          <tr><td>적합한 경우</td><td>—</td><td>데이터가 <b>연속적으로 흘러들어오고</b> 변화에 빨리 적응해야 하는 시스템</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <figure>
+      <svg viewBox="0 0 620 175" role="img" aria-label="온라인 학습 흐름">
+        <defs><marker id="a9" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-ah"/></marker></defs>
+        <rect x="20" y="110" width="70" height="30" rx="7" class="sv-box sv-dash"/><text x="55" y="129" text-anchor="middle" class="sv-s">Data</text>
+        <rect x="120" y="110" width="150" height="30" rx="7" class="sv-grn"/><text x="195" y="129" text-anchor="middle" class="sv-t">Train ML algorithm</text>
+        <rect x="300" y="110" width="130" height="30" rx="7" class="sv-box"/><text x="365" y="129" text-anchor="middle" class="sv-s">Evaluate solution</text>
+        <rect x="300" y="55" width="130" height="30" rx="7" class="sv-grn"/><text x="365" y="74" text-anchor="middle" class="sv-t">Launch!</text>
+        <rect x="300" y="8" width="130" height="30" rx="7" class="sv-acc"/><text x="365" y="27" text-anchor="middle" class="sv-t">Run and learn</text>
+        <path d="M90 125 H118" class="sv-line sv-dash" marker-end="url(#a9)"/>
+        <path d="M270 125 H298" class="sv-line" marker-end="url(#a9)"/>
+        <path d="M365 110 V87" class="sv-line" marker-end="url(#a9)"/><text x="375" y="102" class="sv-x">😊</text>
+        <path d="M365 55 V40" class="sv-line" marker-end="url(#a9)"/>
+        <path d="M365 140 V160 H195 V142" class="sv-line sv-dash" marker-end="url(#a9)"/><text x="280" y="170" text-anchor="middle" class="sv-x">☹ 다시 학습</text>
+        <g><rect x="480" y="10" width="22" height="26" rx="3" class="sv-box"/><rect x="510" y="10" width="22" height="26" rx="3" class="sv-box"/><rect x="540" y="10" width="22" height="26" rx="3" class="sv-box"/><text x="580" y="28" class="sv-x">…</text></g>
+        <path d="M478 23 H432" class="sv-line sv-dash" marker-end="url(#a9)"/>
+        <text x="530" y="54" text-anchor="middle" class="sv-x">New data (on the fly)</text>
+      </svg>
+      <figcaption>Online learning — 배포 후에도 새로 들어오는 데이터로 계속 학습</figcaption>
+    </figure>
+
+    <h3>대용량 데이터와 외부 메모리 학습</h3>
+    <p>온라인 학습 알고리즘은 <b>한 대의 컴퓨터 주기억장치에 다 들어가지 않는</b> 거대한 데이터셋을 학습할 때도 쓸 수 있습니다. 이것을 <b>외부 메모리 학습</b><span class="en">(out-of-core learning)</span>이라 합니다. 알고리즘은 데이터 일부를 불러와 학습 단계를 수행하고, 전체 데이터를 다 돌 때까지 이를 반복합니다 = <b>점진적 학습</b><span class="en">(incremental learning)</span>.</p>
+    <span class="orig">Online learning algorithms can also be used to train systems on huge datasets that cannot fit in one machine's main memory (out-of-core learning). The algorithm loads part of the data, runs a training step on that data, and repeats the process until it has run on all of the data (incremental learning).</span>
+    <div class="codebox pseudo">
+      <div class="head"><span><span class="tag">흐름</span>Using online learning to handle huge datasets</span><button class="copy">복사</button></div>
+<pre><code>*Lots* of data  →  Chop into pieces  →  [조각] [조각] [조각] …
+                                          ↓ (하나씩 투입)
+Study the problem → Train <span class="kw">online</span> ML algorithm → Evaluate solution → Launch!
+        ↑                                           │ ☹
+        └──────────── Analyze errors ←──────────────┘</code></pre>
+    </div>
+
+    <div class="call link">
+      <div class="t">자료구조·운영체제 개념과 연결</div>
+      <p><b>main memory</b>(주기억장치, RAM)에 한 번에 올릴 수 없는 데이터를 조각으로 나눠 순서대로 처리한다는 점에서, 대용량 파일을 버퍼 단위로 읽는 방식과 같은 발상입니다.</p>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 p.20–22 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 10 -->
+  <section id="s10">
+    <h2 class="st"><span class="sq">10</span>사례 기반 학습 vs 모델 기반 학습</h2>
+    <span class="orig">Instance-based Learning / Model-based Learning</span>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th></th><th>사례 기반 <span class="en">(Instance-based)</span></th><th>모델 기반 <span class="en">(Model-based)</span></th></tr></thead>
+        <tbody>
+          <tr><td>방식</td><td>예시들을 <b>통째로 기억</b>한 뒤, <b>유사도 측정</b><span class="en">(similarity measure)</span>으로 새 사례에 일반화<span class="orig">The system learns the examples by heart, then generalizes to new cases using a similarity measure.</span></td><td>예시들로 <b>모델을 만든</b> 뒤, 그 모델로 예측<span class="orig">build a model of examples, then use that model to make predictions</span></td></tr>
+          <tr><td>대표 알고리즘</td><td>k-nearest neighbors 등</td><td>Linear regression 등</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <figure>
+      <svg viewBox="0 0 620 220" role="img" aria-label="사례 기반과 모델 기반 비교">
+        <g>
+          <path d="M20 15 V190 H295" class="sv-axis"/>
+          <text x="158" y="210" text-anchor="middle" class="sv-x">Instance-based learning</text>
+          <g style="fill:#16A34A">
+            <path d="M50 60 l7 12 h-14z"/><path d="M75 45 l7 12 h-14z"/><path d="M60 95 l7 12 h-14z"/><path d="M90 80 l7 12 h-14z"/><path d="M45 130 l7 12 h-14z"/><path d="M105 115 l7 12 h-14z"/><path d="M80 145 l7 12 h-14z"/>
+          </g>
+          <g style="fill:#E5A50A">
+            <rect x="200" y="50" width="12" height="12"/><rect x="230" y="70" width="12" height="12"/><rect x="215" y="100" width="12" height="12"/><rect x="250" y="110" width="12" height="12"/><rect x="195" y="130" width="12" height="12"/><rect x="160" y="100" width="12" height="12"/><rect x="240" y="145" width="12" height="12"/>
+          </g>
+          <text x="135" y="112" text-anchor="middle" style="fill:var(--accent);font-weight:800;font-size:15px">✖</text>
+          <path d="M131 105 L110 124" class="sv-line"/><path d="M129 102 L96 90" class="sv-line"/><path d="M142 104 L159 106" class="sv-line"/>
+          <text x="135" y="175" text-anchor="middle" class="sv-x">가장 가까운 3개: △2 + □1 → △</text>
+        </g>
+        <g transform="translate(320 0)">
+          <path d="M20 15 V190 H295" class="sv-axis"/>
+          <text x="158" y="210" text-anchor="middle" class="sv-x">Model-based learning</text>
+          <g style="fill:#16A34A"><path d="M60.7 40.6 l6 11 h-12z"/><path d="M89.2 57.6 l6 11 h-12z"/><path d="M125.8 50.3 l6 11 h-12z"/><path d="M150.2 33.3 l6 11 h-12z"/><path d="M46.5 79.5 l6 11 h-12z"/><path d="M105.5 74.6 l6 11 h-12z"/><path d="M97.3 90.6 l6 11 h-12z"/><path d="M74.9 98.9 l6 11 h-12z"/><path d="M162.4 69.8 l6 11 h-12z"/><path d="M178.7 72.2 l6 11 h-12z"/><path d="M190.9 85.8 l6 11 h-12z"/><path d="M205.2 108.6 l6 11 h-12z"/><path d="M46.5 119.8 l6 11 h-12z"/><path d="M101.4 123.19999999999999 l6 11 h-12z"/><path d="M150.2 123.19999999999999 l6 11 h-12z"/></g>
+          <g style="fill:#E5A50A"><rect x="216.0" y="33.8" width="11" height="11"/><rect x="193.6" y="60.5" width="11" height="11"/><rect x="242.4" y="55.7" width="11" height="11"/><rect x="211.1" y="84.8" width="11" height="11"/><rect x="259.9" y="89.7" width="11" height="11"/><rect x="275.0" y="109.1" width="11" height="11"/><rect x="237.5" y="118.8" width="11" height="11"/><rect x="258.7" y="132.0" width="11" height="11"/><rect x="232.2" y="162.6" width="11" height="11"/><rect x="260.7" y="164.0" width="11" height="11"/><rect x="199.7" y="143.2" width="11" height="11"/><rect x="181.4" y="146.6" width="11" height="11"/><rect x="124.4" y="157.7" width="11" height="11"/><rect x="89.8" y="170.9" width="11" height="11"/><rect x="64.6" y="146.6" width="11" height="11"/></g>
+          <path d="M144 15 C175 40, 205 70, 215 124 C212 135, 200 141, 180 144 C140 147, 70 146, 20 136" class="sv-line sv-dash" style="stroke:var(--accent)"/>
+          <text x="138" y="20" text-anchor="end" class="sv-x" style="fill:var(--accent)">Model</text>
+          <text x="188.9" y="136.6" text-anchor="middle" style="fill:#DC2626;font-weight:800;font-size:15px">✖</text>
+          <text x="184.9" y="122.6" text-anchor="end" class="sv-x">New instance</text>
+          <text x="245" y="182" text-anchor="middle" class="sv-x">경계 안쪽 → △</text>
+        </g>
+      </svg>
+      <figcaption>왼쪽: 새 사례를 가까운 기존 사례와 비교(재구성한 개념도) / 오른쪽: 슬라이드 23 — 새 샘플은 모델 경계의 삼각형 쪽 안에 있어 △로 판단</figcaption>
+    </figure>
+
+    <div class="call extra">
+      <div class="t">k-NN 보충 — 교수님이 설명하신 내용 아님</div>
+      <p><span class="ext">k-최근접 이웃(k-nearest neighbors)은 새 샘플과 가장 가까운 훈련 샘플 k개를 찾아 <b>다수결</b>로 클래스를 정합니다. 교안 그림은 k=3에 해당합니다. 거리는 보통 유클리드 거리로 잽니다.</span></p>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 p.23–24 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 11 -->
+  <section id="s11">
+    <h2 class="st"><span class="sq">11</span>머신러닝의 주요 과제</h2>
+    <span class="orig">Main Challenges of Machine Learning</span>
+
+    <h3>데이터 문제</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>English</th><th>한국어</th><th>세부</th></tr></thead>
+        <tbody>
+          <tr><td>Insufficient quantity of training data</td><td>훈련 데이터 양 부족</td><td>—</td></tr>
+          <tr><td>Nonrepresentative training data</td><td>대표성 없는 훈련 데이터</td><td>샘플링 잡음<span class="en">(sampling noise)</span>, 샘플링 편향<span class="en">(sampling bias)</span></td></tr>
+          <tr><td>Poor quality data</td><td>낮은 품질의 데이터</td><td>오류·이상치·잡음이 가득한 데이터<span class="en">(errors, outliers and noise)</span></td></tr>
+          <tr><td>Irrelevant features</td><td>관련 없는 특성</td><td><b>특성 선택</b><span class="en">(Feature selection)</span>: 찾으려는 패턴에 실제로 기여하는 특성만 고르기<br><b>특성 추출</b><span class="en">(Feature extraction)</span>: 기존 특성을 결합해 더 유용한 특성을 만들기</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="call extra">
+      <div class="t">용어 보충 — 교수님이 설명하신 내용 아님</div>
+      <p><span class="ext">샘플링 잡음은 표본이 너무 작아 우연히 대표성이 없어지는 것, 샘플링 편향은 표본을 뽑는 방법 자체가 한쪽으로 치우쳐 표본이 커도 대표성이 없는 것을 말합니다.</span></p>
+    </div>
+
+    <h3>과적합 <span class="en">Overfitting</span></h3>
+    <p>모델이 훈련 데이터의 <b>양과 잡음에 비해 너무 복잡</b>할 때 일어납니다.</p>
+    <span class="orig">Overfitting happens when the model is too complex relative to the amount and noise of the training data.</span>
+    <p>해결책 <span class="en">(The possible solutions are)</span>:</p>
+    <ul>
+      <li>모델 단순화 — 파라미터 수가 더 적은 모델 선택, 훈련 데이터의 속성 수 줄이기, 모델에 제약 걸기<span class="en">(regularization, 규제)</span>
+        <span class="orig">To simplify the model by selecting one with fewer parameters, by reducing the number of attributes in the training data, or by constraining the model (regularization).</span></li>
+      <li>훈련 데이터 더 모으기 <span class="en">(To gather more training data)</span></li>
+      <li>훈련 데이터의 잡음 줄이기 <span class="en">(To reduce the noise in the training data)</span></li>
+    </ul>
+
+    <h3>과소적합 <span class="en">Underfitting</span></h3>
+    <p>과적합의 반대로, 모델이 <b>너무 단순해서</b> 데이터의 내재된 구조를 학습하지 못할 때 일어납니다.</p>
+    <span class="orig">Underfitting is the opposite of overfitting: it occurs when your model is too simple to learn the underlying structure of the data.</span>
+    <p>해결책 <span class="en">(The main options to fix this problem are)</span>:</p>
+    <ul>
+      <li>파라미터가 더 많은 강력한 모델 선택 <span class="en">(Selecting a more powerful model, with more parameters)</span></li>
+      <li>더 좋은 특성을 제공 = <b>특성 공학</b> <span class="en">(Feeding better features to the learning algorithm — feature engineering)</span></li>
+      <li>모델의 제약 줄이기 <span class="en">(Reducing the constraints on the model)</span></li>
+    </ul>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th></th><th>과적합 (Overfitting)</th><th>과소적합 (Underfitting)</th></tr></thead>
+        <tbody>
+          <tr><td>원인</td><td>모델이 너무 복잡</td><td>모델이 너무 단순</td></tr>
+          <tr><td>모델</td><td>파라미터 줄이기 · 규제 걸기</td><td>파라미터 늘리기 · 제약 줄이기</td></tr>
+          <tr><td>데이터</td><td>데이터 더 모으기 · 잡음 줄이기</td><td>더 좋은 특성 제공(feature engineering)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <figure>
+      <svg viewBox="0 0 460 240" role="img" aria-label="학습 시간에 따른 훈련 손실과 테스트 손실">
+        <rect x="50" y="15" width="165" height="185" style="fill:#2563EB;opacity:.08"/>
+        <rect x="215" y="15" width="225" height="185" style="fill:#E5A50A;opacity:.12"/>
+        <path d="M50 15 V200 H440" class="sv-axis"/>
+        <path d="M55 40 C110 120, 160 160, 250 178 S390 188, 435 190" style="fill:none;stroke:var(--ink);stroke-width:2.2"/>
+        <path d="M55 48 C110 120, 170 150, 215 150 S320 120, 435 60" style="fill:none;stroke:#DC2626;stroke-width:2.2"/>
+        <path d="M215 20 V200" class="sv-line sv-dash"/>
+        <text x="132" y="32" text-anchor="middle" class="sv-t" style="fill:#2563EB">Underfitting</text>
+        <text x="328" y="32" text-anchor="middle" class="sv-t" style="fill:#B45309">Overfitting</text>
+        <text x="330" y="176" class="sv-x">Training loss</text>
+        <text x="392" y="112" class="sv-x" style="fill:#DC2626">Test loss</text>
+        <text x="245" y="225" text-anchor="middle" class="sv-x">Training time</text>
+        <text x="22" y="108" class="sv-x" transform="rotate(-90 22 108)" text-anchor="middle">Measured loss</text>
+      </svg>
+      <figcaption>훈련 손실은 계속 줄지만, 테스트 손실은 최저점 이후 다시 오름 → 그 이후가 과적합</figcaption>
+    </figure>
+    <div class="call extra">
+      <div class="t">손실 보충 — 교수님이 설명하신 내용 아님</div>
+      <p><span class="ext">손실(loss)은 모델 예측과 정답의 차이를 수치로 나타낸 값으로, 작을수록 좋습니다. 테스트 손실이 최저인 지점이 새 데이터에 가장 잘 일반화된 시점입니다.</span></p>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 p.25–28 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 12 -->
+  <section id="s12">
+    <h2 class="st"><span class="sq">12</span>테스트와 검증</h2>
+    <span class="orig">Testing and Validation</span>
+
+    <p>모델이 새로운 사례에 얼마나 잘 <b>일반화</b><span class="en">(generalize)</span>될지 아는 방법은 실제로 새로운 사례에 적용해 보는 것입니다.</p>
+    <span class="orig">How well a model will generalize to new cases is to actually try it out on new cases.</span>
+    <ul>
+      <li>데이터셋을 <b>훈련 세트</b><span class="en">(training set)</span>와 <b>테스트 세트</b><span class="en">(test set)</span> 두 개로 나눈다
+        <span class="orig">Split a dataset into two sets: the training set and the test set</span></li>
+      <li>보통 데이터의 <b>80%를 훈련</b>에, <b>20%를 테스트</b>용으로 떼어 둔다<span class="en">(holdout)</span>
+        <span class="orig">Common to use 80% of the data for training and holdout 20% for testing.</span></li>
+    </ul>
+
+    <figure>
+      <svg viewBox="0 0 520 120" role="img" aria-label="원본 데이터를 훈련, 검증, 테스트로 분할">
+        <defs><marker id="a12" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-ah"/></marker></defs>
+        <rect x="10" y="10" width="500" height="30" rx="6" class="sv-box"/><text x="260" y="30" text-anchor="middle" class="sv-t">Original labeled data</text>
+        <path d="M260 40 V58" class="sv-line" marker-end="url(#a12)"/><text x="270" y="54" class="sv-x">Split</text>
+        <rect x="10" y="62" width="285" height="30" rx="6" class="sv-grn"/><text x="152" y="82" text-anchor="middle" class="sv-t">Training set</text>
+        <rect x="300" y="62" width="112" height="30" rx="6" class="sv-acc"/><text x="356" y="82" text-anchor="middle" class="sv-t">Validation set</text>
+        <rect x="417" y="62" width="93" height="30" rx="6" class="sv-red"/><text x="463" y="82" text-anchor="middle" class="sv-t">Test set</text>
+        <text x="260" y="112" text-anchor="middle" class="sv-x">비율은 교안 그림의 상대적 크기만 반영 (정확한 수치는 교안에 없음)</text>
+      </svg>
+      <figcaption>Train, validation, and test</figcaption>
+    </figure>
+
+    <div class="call extra">
+      <div class="t">검증 세트의 역할 — 교수님이 설명하신 내용 아님</div>
+      <p><span class="ext">검증 세트는 여러 모델이나 하이퍼파라미터 중 무엇이 나은지 고르는 데 씁니다. 테스트 세트로 고르면 테스트 세트에 맞춰진 모델을 고르게 되어, 최종 성능을 부풀려 추정하게 됩니다. 그래서 테스트 세트는 마지막 평가에 한 번만 씁니다.</span></p>
+    </div>
+
+    <h3>교차 검증 <span class="en">Cross Validation</span></h3>
+    <p>훈련 세트를 서로 겹치지 않는 <b>여러 부분집합</b><span class="en">(complementary subsets)</span>으로 나눈 뒤, 각 모델을 서로 다른 부분집합 조합으로 학습시키고 <b>나머지 부분</b>으로 검증합니다.</p>
+    <span class="orig">The training set is split into complementary subsets, and each model is trained against a different combination of these subsets and validated against the remaining parts.</span>
+
+    <figure>
+      <svg viewBox="0 0 560 250" role="img" aria-label="5겹 교차 검증">
+        <rect x="80" y="8" width="360" height="24" rx="5" class="sv-grn"/><text x="260" y="25" text-anchor="middle" class="sv-t">Training data</text>
+        <rect x="445" y="8" width="95" height="24" rx="5" class="sv-red"/><text x="492" y="25" text-anchor="middle" class="sv-t">Test data</text>
+        <text x="10" y="25" class="sv-x">All Data</text>
+        <g class="sv-x">
+          <text x="116" y="52" text-anchor="middle">Fold 1</text><text x="188" y="52" text-anchor="middle">Fold 2</text><text x="260" y="52" text-anchor="middle">Fold 3</text><text x="332" y="52" text-anchor="middle">Fold 4</text><text x="404" y="52" text-anchor="middle">Fold 5</text>
+        </g>
+        <text x="10" y="78" class="sv-x">Split 1</text><text x="10" y="106" class="sv-x">Split 2</text><text x="10" y="134" class="sv-x">Split 3</text><text x="10" y="162" class="sv-x">Split 4</text><text x="10" y="190" class="sv-x">Split 5</text>
+        <!-- row 1 -->
+        <rect x="82" y="62" width="68" height="22" rx="4" fill="#2563EB" opacity=".75"/><rect x="154" y="62" width="68" height="22" rx="4" class="sv-grn"/><rect x="226" y="62" width="68" height="22" rx="4" class="sv-grn"/><rect x="298" y="62" width="68" height="22" rx="4" class="sv-grn"/><rect x="370" y="62" width="68" height="22" rx="4" class="sv-grn"/>
+        <!-- row 2 -->
+        <rect x="82" y="90" width="68" height="22" rx="4" class="sv-grn"/><rect x="154" y="90" width="68" height="22" rx="4" fill="#2563EB" opacity=".75"/><rect x="226" y="90" width="68" height="22" rx="4" class="sv-grn"/><rect x="298" y="90" width="68" height="22" rx="4" class="sv-grn"/><rect x="370" y="90" width="68" height="22" rx="4" class="sv-grn"/>
+        <!-- row 3 -->
+        <rect x="82" y="118" width="68" height="22" rx="4" class="sv-grn"/><rect x="154" y="118" width="68" height="22" rx="4" class="sv-grn"/><rect x="226" y="118" width="68" height="22" rx="4" fill="#2563EB" opacity=".75"/><rect x="298" y="118" width="68" height="22" rx="4" class="sv-grn"/><rect x="370" y="118" width="68" height="22" rx="4" class="sv-grn"/>
+        <!-- row 4 -->
+        <rect x="82" y="146" width="68" height="22" rx="4" class="sv-grn"/><rect x="154" y="146" width="68" height="22" rx="4" class="sv-grn"/><rect x="226" y="146" width="68" height="22" rx="4" class="sv-grn"/><rect x="298" y="146" width="68" height="22" rx="4" fill="#2563EB" opacity=".75"/><rect x="370" y="146" width="68" height="22" rx="4" class="sv-grn"/>
+        <!-- row 5 -->
+        <rect x="82" y="174" width="68" height="22" rx="4" class="sv-grn"/><rect x="154" y="174" width="68" height="22" rx="4" class="sv-grn"/><rect x="226" y="174" width="68" height="22" rx="4" class="sv-grn"/><rect x="298" y="174" width="68" height="22" rx="4" class="sv-grn"/><rect x="370" y="174" width="68" height="22" rx="4" fill="#2563EB" opacity=".75"/>
+        <path d="M448 64 h8 v130 h-8" class="sv-axis"/><text x="462" y="134" class="sv-s">Finding</text><text x="462" y="148" class="sv-s">Parameters</text>
+        <text x="260" y="222" text-anchor="middle" class="sv-s">Final evaluation → Test data</text>
+        <rect x="82" y="232" width="14" height="10" fill="#2563EB" opacity=".75"/><text x="100" y="241" class="sv-x">검증용 fold</text>
+        <rect x="180" y="232" width="14" height="10" class="sv-grn"/><text x="198" y="241" class="sv-x">학습용 fold</text>
+      </svg>
+      <figcaption>5-fold cross validation — 매 split마다 fold 하나를 검증, 나머지 4개로 학습 → 파라미터를 찾은 뒤 따로 둔 Test data로 최종 평가</figcaption>
+    </figure>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 p.29–30 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 13 -->
+  <section id="s13">
+    <h2 class="st"><span class="sq">13</span>공짜 점심은 없다 정리 <span class="en" style="font-size:.6em">No Free Lunch Theorem</span></h2>
+
+    <div class="call quote">
+      <div class="t">David Wolpert (1996)</div>
+      <p>데이터에 대해 <b>아무런 가정도 하지 않는다면</b>, 어떤 모델을 다른 모델보다 선호할 이유가 없다.</p>
+      <span class="orig">If you make absolutely no assumption about the data, then there is no reason to prefer one model over any other.</span>
+    </div>
+    <ul>
+      <li>경험하기 전부터<span class="en">(a priori)</span> 더 잘 작동한다고 보장된 모델은 없다
+        <span class="orig">There is no model that is a priori guaranteed to work better.</span></li>
+      <li>어떤 모델이 최선인지 확실히 아는 유일한 방법은 <b>모두 평가해 보는 것</b>이다
+        <span class="orig">The only way to know for sure which model is best is to evaluate them all.</span></li>
+    </ul>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 p.31 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 14 -->
+  <section id="s14">
+    <h2 class="st"><span class="sq">14</span>동영상 1 · 로보틱스 메타플랜트 응용 센터 가동</h2>
+    <p style="font-size:13px;color:var(--ink-3)">"백덤블링 하던 로봇, 이젠 현대차 조립"…아틀라스, 현장 학습 돌입 · JTBC 뉴스 · 1분 24초</p>
+
+    <p>현대차그룹의 로봇 계열사 <b>보스턴 다이내믹스</b><span class="en">(Boston Dynamics)</span>가 휴머노이드 로봇 <b>아틀라스</b><span class="en">(Atlas)</span>의 제조 현장 투입을 앞두고 본격적인 학습에 들어갔다는 뉴스입니다.</p>
+    <span class="orig">Boston Dynamics announced that Atlas has begun full-scale training ahead of its deployment on manufacturing lines.</span>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>항목</th><th>내용</th></tr></thead>
+        <tbody>
+          <tr><td>장소</td><td>미국 조지아주 현대차그룹 메타플랜트 아메리카 안의 <b>로보틱스 메타플랜트 응용 센터</b><span class="en">(Robotics Meta-Plant Application Center)</span> — 실제 공장과 똑같이 꾸민 공간</td></tr>
+          <tr><td>익히는 작업</td><td>물류 작업 준비<span class="en">(logistics preparation)</span>, 부품을 조립 순서대로 놓는 <b>서열 작업</b><span class="en">(kitting tasks, arranging parts in the order of assembly)</span></td></tr>
+          <tr><td>학습 데이터</td><td>고글을 쓴 작업자가 로봇을 <b>원격 조종</b><span class="en">(remote control)</span>하고, 이렇게 쌓인 동작들이 <b>학습 데이터</b><span class="en">(training data)</span>가 됨</td></tr>
+          <tr><td>2030년까지</td><td>역할을 <b>부품 조립</b><span class="en">(part assembly)</span>으로 확대, 이후 무거운 물건을 다루는 고강도 작업<span class="en">(high-intensity tasks involving heavy objects)</span>에 투입</td></tr>
+          <tr><td>배치 계획</td><td>향후 수년 안에 현대차·기아 전 세계 사업장에 아틀라스 <b>2만 5천 대</b> 차례로 배치, 미국에 연간 <b>3만 대</b> 규모 로봇 생산 시설 신설</td></tr>
+          <tr><td>확장 계획</td><td>내년에 훈련 시설을 약 <b>10배</b>로 확대, 항공우주·반도체·물류<span class="en">(aerospace, semiconductors, logistics)</span> 등 다른 산업 활용 모색</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <span class="orig">The movements accumulated through remote control become training data.</span>
+
+    <div class="call link">
+      <div class="t">이번 차시 내용과 연결</div>
+      <p>사람이 원격 조종한 동작을 정답 예시로 모아 학습시킨다는 점에서, 입력과 원하는 출력을 함께 주는 <a href="#s6">지도 학습</a>의 틀과 가깝습니다. 또 실제 공장과 같은 환경에서 데이터를 모으는 것은 <a href="#s11">대표성 있는 훈련 데이터</a>(representative training data) 확보와 연결됩니다.</p>
+    </div>
+    <div class="call link">
+      <div class="t">이전 차시와 연결</div>
+      <p>2주차 2차시에서 인공지능 로봇 예시로 언급된 <b>보스턴 다이내믹스</b>입니다.</p>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">(수업 링크 영상 기반 — 실시간 필기 없음)</div></details>
+  </section>
+
+  <!-- 15 -->
+  <section id="s15">
+    <h2 class="st"><span class="sq">15</span>확인 필요</h2>
+    <p>마크다운 변환본을 읽으면서 확인이 필요하거나 원본을 봐야 정확해지는 부분입니다.</p>
+
+    <div class="call quote"><div class="t">1. 주차 표기 — 해결</div><p>교안 파일명의 "5주차"는 업로드 요일 기준 표기이고, 실제 수업은 <b>4주차 2차시(9/28 월)</b>가 맞습니다.</p></div>
+
+    <div class="call ask"><div class="t">2. 준지도 학습(semi-supervised) — 미해결</div><p>p.9 분류 기준에는 <b>semi-supervised</b>가 나오지만 설명 슬라이드가 없습니다. 수업에서 설명하시면 보내주세요.</p></div>
+
+    <div class="call quote"><div class="t">3. t-SNE 그림(슬라이드 15) — 해결</div><p>보내주신 이미지로 t-SNE 도식과 클래스 위치 표를 추가했습니다.</p></div>
+
+    <div class="call quote"><div class="t">4. 모델 기반 학습 그림(슬라이드 23) — 해결</div><p>보내주신 이미지(p.24 Model-based learning)로 확인했습니다. 새 샘플은 점선 모델 경계의 <b>삼각형 쪽 안</b>에 있어 삼각형으로 판단됩니다. 도식을 원본 배치대로 다시 그렸습니다. 슬라이드 22(Instance-based) 그림은 받지 못해 왼쪽 도식은 변환본 설명 기준 그대로입니다.</p></div>
+
+    <div class="call quote"><div class="t">5. 순서도 화살표(슬라이드 5) — 해결</div><p>원본 확인 결과 Update data → Data(점선), Update data → Train(실선)이 맞았고, Evaluate는 마름모로 아래 오른쪽, Launch는 그 위에 있습니다. 원본 배치대로 다시 그렸습니다.</p></div>
+  </section>
+
+  <footer><span>인공지능 · 4주차 2차시 · 2026.09.28</span><span>jaealee.com</span></footer>
+</div>
+
+<!-- ═══════════ 단어장 뷰 ═══════════ -->
+<div id="viewVocab" hidden>
+  <div class="hero" data-w="A–Z">
+    <span class="chip">4주차 2차시 단어장</span>
+    <h1>인공지능 필수 용어</h1>
+    <p class="sub">교안 초안 단계라 아직 등록된 단어가 없습니다. 수업이 끝나면 채워집니다.</p>
+  </div>
+
+  <div class="vhead">
+    <input type="search" id="vq" placeholder="단어 · 뜻으로 찾기">
+    <button class="tbtn" id="maskBtn">뜻 가리기</button>
+    <button class="tbtn" id="quizBtn">퀴즈 풀기</button>
+    <span style="font-size:13px;color:var(--ink-3);font-weight:600" id="vcount"></span>
+  </div>
+
+  <ul class="vlist" id="vlist"></ul>
+
+  <div class="quizbox" id="quiz">
+    <div class="qq" id="quizQ"></div>
+    <div class="opts" id="quizOpts"></div>
+    <div class="score" id="quizScore"></div>
+  </div>
+</div>
+
+<!-- ═══════════ 필기 원문 뷰 ═══════════ -->
+<div id="viewRaw" hidden>
+  <div class="hero" data-w="RAW">
+    <span class="chip">4주차 2차시 필기 원문</span>
+    <h1>내가 보낸 그대로</h1>
+    <p class="sub">이번 차시는 교안만 전달되어, 실시간으로 입력한 필기 원문은 아직 없습니다.</p>
+  </div>
+
+  <div class="rawnote" id="rawlist"></div>
+</div>
+
+</main>
+</div>
+
+<script>
+const sb = document.getElementById('scrollbar');
+addEventListener('scroll', () => {
+  const h = document.documentElement.scrollHeight - innerHeight;
+  sb.style.width = (h > 0 ? scrollY / h * 100 : 0) + '%';
+}, { passive: true });
+
+const html = document.documentElement, themeBtn = document.getElementById('themeBtn');
+themeBtn.onclick = () => {
+  const dark = html.dataset.theme === 'dark';
+  html.dataset.theme = dark ? 'light' : 'dark';
+  themeBtn.textContent = dark ? '다크' : '라이트';
+};
+
+const ansBtn = document.getElementById('ansBtn');
+const answers = [...document.querySelectorAll('.ans')];
+function syncAnsBtn() {
+  const opened = answers.filter(a => a.classList.contains('on')).length;
+  ansBtn.disabled = opened === 0;
+  ansBtn.textContent = opened ? `정답 가리기 (${opened})` : '정답 가리기';
+}
+answers.forEach(a => a.addEventListener('click', () => { a.classList.toggle('on'); syncAnsBtn(); }));
+ansBtn.onclick = () => { answers.forEach(a => a.classList.remove('on')); syncAnsBtn(); };
+syncAnsBtn();
+
+const extraChip = document.getElementById('extraChip');
+const extraCount = document.querySelectorAll('#viewNote .call.extra, #viewNote .ext').length;
+if (extraCount) {
+  extraChip.textContent = `보충 ${extraCount}곳`;
+  extraChip.onclick = () => {
+    const off = document.body.classList.toggle('no-extra');
+    extraChip.classList.toggle('solid', !off);
+  };
+} else {
+  extraChip.remove();
+}
+
+const printBtn = document.getElementById('printBtn');
+printBtn.onclick = () => window.print();
+
+document.querySelectorAll('.copy').forEach(btn => {
+  btn.onclick = async () => {
+    const pre = btn.closest('.codebox').querySelector('pre');
+    try {
+      await navigator.clipboard.writeText(pre.innerText);
+      btn.textContent = '복사됨';
+    }
+    catch { btn.textContent = '실패'; }
+    setTimeout(() => btn.textContent = '복사', 1200);
+  };
+});
+
+const boxes = document.querySelectorAll('.chk input'), fill = document.getElementById('barFill');
+boxes.forEach(b => b.addEventListener('change', () => {
+  fill.style.width = [...boxes].filter(x => x.checked).length / boxes.length * 100 + '%';
+}));
+
+const views = {
+  note:  { el: document.getElementById('viewNote'),  nav: document.getElementById('tocWrap') },
+  vocab: { el: document.getElementById('viewVocab'), nav: document.getElementById('vocabNav'), btn: document.getElementById('vocabBtn'), on: '본문으로', off: '단어장' },
+  raw:   { el: document.getElementById('viewRaw'),   nav: document.getElementById('rawNav'),   btn: document.getElementById('rawBtn'),  on: '본문으로', off: '필기 원문' }
+};
+let current = 'note';
+function setView(name) {
+  current = name;
+  Object.entries(views).forEach(([k, v]) => {
+    v.el.hidden = k !== name;
+    v.nav.hidden = k !== name;
+    if (v.btn) { v.btn.classList.toggle('solid', k === name); v.btn.textContent = k === name ? v.on : v.off; }
+  });
+  clearMarks();
+  document.getElementById('q').value = '';
+  document.getElementById('hit').textContent = '';
+  scrollTo({ top: 0, behavior: 'smooth' });
+}
+views.vocab.btn.onclick = () => setView(current === 'vocab' ? 'note' : 'vocab');
+views.raw.btn.onclick   = () => setView(current === 'raw'   ? 'note' : 'raw');
+document.getElementById('rawTotal').textContent = document.querySelectorAll('#rawlist .rawitem').length;
+if (!document.querySelectorAll('#rawlist .rawitem').length) {
+  document.getElementById('rawlist').innerHTML = '<div class="empty">아직 저장된 필기 원문이 없습니다. 수업 중 보내주시는 내용부터 실시간으로 쌓입니다.</div>';
+}
+document.querySelectorAll('#rawlist .where a').forEach(a => {
+  a.onclick = e => { e.preventDefault(); setView('note'); setTimeout(() => document.querySelector(a.getAttribute('href')).scrollIntoView(), 60); };
+});
+
+const links = [...document.querySelectorAll('#toc a')];
+const spy = new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) return;
+  links.forEach(l => l.classList.toggle('on', l.getAttribute('href') === '#' + e.target.id));
+}), { rootMargin: '-80px 0px -68% 0px' });
+document.querySelectorAll('#viewNote section').forEach(s => spy.observe(s));
+
+const qInput = document.getElementById('q'), hitEl = document.getElementById('hit');
+let marks = [], cursor = -1;
+function clearMarks() {
+  marks.forEach(m => { const p = m.parentNode; if (!p) return; p.replaceChild(document.createTextNode(m.textContent), m); p.normalize(); });
+  marks = []; cursor = -1;
+}
+function runSearch(word) {
+  const savedY = window.scrollY;
+  clearMarks();
+  if (word.length < 2) { hitEl.textContent = ''; window.scrollTo(0, savedY); requestAnimationFrame(() => window.scrollTo(0, savedY)); return; }
+  const root = views[current].el;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const targets = [];
+  while (walker.nextNode()) {
+    const n = walker.currentNode;
+    if (n.parentElement.closest('script,style')) continue;
+    if (n.nodeValue.toLowerCase().includes(word)) targets.push(n);
+  }
+  targets.forEach(n => {
+    const re = new RegExp('(' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    const frag = document.createDocumentFragment();
+    n.nodeValue.split(re).forEach(p => {
+      if (p.toLowerCase() === word) { const m = document.createElement('span'); m.className = 'hit-mark'; m.textContent = p; frag.appendChild(m); marks.push(m); }
+      else frag.appendChild(document.createTextNode(p));
+    });
+    n.parentNode.replaceChild(frag, n);
+  });
+  hitEl.textContent = marks.length ? '0/' + marks.length : '없음';
+  window.scrollTo(0, savedY); requestAnimationFrame(() => window.scrollTo(0, savedY));
+}
+qInput.addEventListener('input', e => runSearch(e.target.value.trim().toLowerCase()));
+qInput.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || !marks.length) return;
+  e.preventDefault();
+  cursor = (cursor + 1) % marks.length;
+  marks[cursor].scrollIntoView({ block: 'center', behavior: 'smooth' });
+  hitEl.textContent = (cursor + 1) + '/' + marks.length;
+});
+addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); qInput.focus(); qInput.select(); }
+});
+
+const vlist = document.getElementById('vlist');
+const words = [...vlist.querySelectorAll('.vword')];
+document.getElementById('vcount').textContent = words.length + '개';
+document.getElementById('vTotal').textContent = words.length;
+if (!words.length) { vlist.innerHTML = '<li class="empty">등록된 단어가 없습니다.</li>'; }
+
+document.getElementById('vq').addEventListener('input', e => {
+  const k = e.target.value.trim().toLowerCase();
+  let shown = 0;
+  words.forEach(w => { const ok = w.innerText.toLowerCase().includes(k); w.style.display = ok ? '' : 'none'; if (ok) shown++; });
+  document.getElementById('vcount').textContent = shown + '개';
+});
+
+const maskBtn = document.getElementById('maskBtn');
+maskBtn.onclick = () => {
+  const on = vlist.classList.toggle('masked');
+  maskBtn.classList.toggle('solid', on);
+  maskBtn.textContent = on ? '뜻 보이기' : '뜻 가리기';
+  if (!on) vlist.querySelectorAll('.show').forEach(el => el.classList.remove('show'));
+};
+vlist.querySelectorAll('.mean, .ex').forEach(el => {
+  el.onclick = () => { if (vlist.classList.contains('masked')) el.classList.toggle('show'); };
+});
+
+const quiz = document.getElementById('quiz'), quizBtn = document.getElementById('quizBtn');
+const qQ = document.getElementById('quizQ'), qO = document.getElementById('quizOpts'), qS = document.getElementById('quizScore');
+let pool = [], solved = 0, correct = 0;
+const data = () => words.map(w => ({
+  word: w.querySelector('.w').textContent,
+  mean: (w.querySelector('.mean').textContent.split('—')[1] || w.querySelector('.mean').textContent).trim()
+}));
+function nextQuiz() {
+  if (!pool.length) { qQ.textContent = words.length ? '한 바퀴 끝' : '단어가 없습니다'; qO.innerHTML = ''; qS.textContent = words.length ? `${solved}문제 중 ${correct}개 정답` : ''; return; }
+  const all = data(), cur = pool.pop();
+  qQ.textContent = cur.word;
+  const opts = [cur, ...all.filter(d => d.word !== cur.word).sort(() => Math.random() - .5).slice(0, 3)].sort(() => Math.random() - .5);
+  qO.innerHTML = '';
+  opts.forEach(o => {
+    const b = document.createElement('button');
+    b.className = 'opt'; b.textContent = o.mean;
+    b.onclick = () => {
+      solved++;
+      if (o.word === cur.word) { b.classList.add('ok'); correct++; }
+      else { b.classList.add('no'); [...qO.children].find(x => x.textContent === cur.mean)?.classList.add('ok'); }
+      [...qO.children].forEach(x => x.disabled = true);
+      qS.textContent = `${solved}문제 중 ${correct}개 정답`;
+      setTimeout(nextQuiz, 1000);
+    };
+    qO.appendChild(b);
+  });
+  qS.textContent = `${solved}문제 중 ${correct}개 정답 · 남은 ${pool.length}개`;
+}
+quizBtn.onclick = () => {
+  if (!words.length) return;
+  const on = quiz.classList.toggle('on');
+  quizBtn.classList.toggle('solid', on);
+  quizBtn.textContent = on ? '퀴즈 닫기' : '퀴즈 풀기';
+  if (on) { pool = data().sort(() => Math.random() - .5); solved = 0; correct = 0; nextQuiz(); }
+};
+</script>
+</body>
+</html>
