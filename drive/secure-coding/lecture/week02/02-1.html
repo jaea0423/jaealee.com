@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시큐어코딩 2주차 — SW개발보안 방법론과 위협모델링</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   과목 테마 — 아래 3줄(--accent, --accent-deep, --accent-soft)만 교체
+   데이터분석프로그래밍 #0EA5E9 / #0369A1 / #E0F2FE
+   전공영어           #E08700 / #A55A00 / #FEF3DC
+   인공지능           #9333EA / #6B21A8 / #F3E8FF
+   알고리즘           #4F46E5 / #3730A3 / #E8E7FD
+   시큐어코딩         #DC2626 / #991B1B / #FDE7E7
+   개인정보보호암호기술 #DB2777 / #9D174D / #FCE7F3
+   개인정보보호법률이해 #059669 / #065F46 / #D8F5EA
+   ═══════════════════════════════════════════════════════════════ */
+:root{
+  --accent:#DC2626;
+  --accent-deep:#991B1B;
+  --accent-soft:#FDE7E7;
+
+  --bg:#F7F8FA;
+  --surface:#FFFFFF;
+  --ink:#15161B;
+  --ink-2:#565C66;
+  --ink-3:#8B9098;
+  --line:#E5E7EC;
+  --line-2:#F0F1F4;
+  --code-bg:#1B1D24;
+  --code-ink:#E4E6ED;
+  --mark:#FFE27A;
+  --font:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,system-ui,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  --mono:'JetBrains Mono','SFMono-Regular',Consolas,'D2Coding',monospace;
+}
+html[data-theme="dark"]{
+  --accent:#F87171;
+  --accent-deep:#FCA5A5;
+  --accent-soft:#3A1F1F;
+  --bg:#101116;
+  --surface:#181A20;
+  --ink:#E8E9ED;
+  --ink-2:#A6AAB4;
+  --ink-3:#73777F;
+  --line:#2A2C34;
+  --line-2:#202229;
+  --code-bg:#0C0D11;
+  --mark:#6E5C16;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15.5px;line-height:1.72;letter-spacing:-.012em;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-deep)}
+::selection{background:var(--accent);color:#fff}
+
+/* ── 스크롤 진행 바 ─────────────────────────────────── */
+#scrollbar{position:fixed;top:0;left:0;height:3px;width:0;background:var(--accent);z-index:99}
+
+/* ── 상단 바 ────────────────────────────────────────── */
+.topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:10px;padding:10px 22px;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.back{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink-2);font-size:14px;font-weight:700;white-space:nowrap}
+.back:hover{color:var(--accent-deep)}
+.back i{width:10px;height:10px;border-radius:3px;background:var(--accent);display:block}
+.search{flex:1;max-width:300px;margin-left:auto;position:relative}
+.search input{width:100%;padding:7px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14px}
+.search input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.hit{position:absolute;right:10px;top:8px;font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums;pointer-events:none}
+.tools{display:flex;gap:6px}
+.tbtn{border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:9px;padding:7px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);white-space:nowrap}
+.tbtn:hover{border-color:var(--accent);color:var(--accent-deep)}
+.tbtn.solid{background:var(--accent);border-color:var(--accent);color:#fff}
+.tbtn:disabled{opacity:.4;cursor:default}
+
+/* ── 레이아웃 ───────────────────────────────────────── */
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);gap:38px;max-width:1200px;margin:0 auto;padding:26px 24px 120px}
+main{min-width:0}
+
+/* ── 사이드 패널(포인트 컬러) ───────────────────────── */
+.side{position:sticky;top:80px;align-self:start;max-height:calc(100vh - 100px);overflow-y:auto;scrollbar-width:thin}
+.panel{background:var(--accent);border-radius:16px;padding:18px 16px;color:#fff;box-shadow:0 8px 24px -12px color-mix(in srgb,var(--accent) 70%,transparent)}
+.panel .cap{font-size:11.5px;font-weight:700;opacity:.72;margin-bottom:9px}
+.panel .subject{font-size:19px;font-weight:800;letter-spacing:-.03em;line-height:1.3;margin-bottom:2px}
+.panel .when{font-size:12.5px;opacity:.8;margin-bottom:16px}
+.toc{list-style:none;margin:0;padding:0}
+.toc a{display:block;padding:6px 10px;border-radius:8px;color:#fff;opacity:.82;text-decoration:none;font-size:13.5px;font-weight:600;line-height:1.45}
+.toc a:hover{background:rgba(255,255,255,.16);opacity:1}
+.toc a.on{background:#fff;color:var(--accent-deep);opacity:1;font-weight:800}
+.toc .num{display:inline-block;width:17px;font-variant-numeric:tabular-nums;opacity:.7}
+.toc a.on .num{opacity:1}
+.panel hr{border:0;border-top:1px solid rgba(255,255,255,.22);margin:14px 0}
+.chk label{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;padding:3px 0;cursor:pointer;line-height:1.5;opacity:.9}
+.chk input{margin-top:4px;accent-color:#fff;flex-shrink:0}
+.chk input:checked + span{opacity:.5;text-decoration:line-through}
+.pbar{height:4px;border-radius:99px;background:rgba(255,255,255,.28);margin-top:11px;overflow:hidden}
+.pbar i{display:block;height:100%;width:0;background:#fff;transition:width .25s}
+
+/* ── 히어로 ─────────────────────────────────────────── */
+.hero{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px 28px 22px;overflow:hidden;margin-bottom:16px}
+.hero::after{content:attr(data-w);position:absolute;right:14px;bottom:-26px;font-size:112px;font-weight:800;color:var(--accent);opacity:.09;letter-spacing:-.06em;line-height:1;pointer-events:none}
+.chip{display:inline-flex;align-items:center;gap:7px;background:var(--accent-soft);color:var(--accent-deep);font-size:12.5px;font-weight:800;padding:4px 11px;border-radius:99px}
+h1{font-size:clamp(26px,3.6vw,34px);font-weight:800;letter-spacing:-.04em;line-height:1.24;margin:12px 0 6px;position:relative}
+.hero .sub{color:var(--ink-2);font-size:15px;margin:0 0 14px;position:relative}
+[hidden]{display:none!important}
+.metaline{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-3);position:relative}
+.metaline b{color:var(--ink-2);font-weight:600}
+
+/* ── 수업 자료 (같은 폴더의 PDF) ────────────────────── */
+.files{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;position:relative}
+.file{display:inline-flex;align-items:center;gap:9px;padding:8px 13px 8px 9px;border:1px solid var(--line);border-radius:10px;background:var(--surface);text-decoration:none;color:var(--ink);font-size:13.5px;font-weight:700}
+.file:hover{border-color:var(--accent);background:var(--accent-soft)}
+.file .ic{background:var(--accent);color:#fff;font-size:10px;font-weight:800;padding:3px 6px;border-radius:6px;letter-spacing:.02em}
+.file em{font-style:normal;color:var(--ink-3);font-weight:600;font-size:12.5px}
+.files .none{font-size:12.5px;color:var(--ink-3);font-weight:600;padding:8px 0}
+.extra-chip:disabled{cursor:default;opacity:.6}
+
+/* ── 오늘의 흐름 ────────────────────────────────────── */
+.flow{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:26px}
+.flow a{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--line);border-radius:99px;background:var(--surface);text-decoration:none;color:var(--ink-2);font-size:13px;font-weight:600}
+.flow a:hover{border-color:var(--accent);color:var(--accent-deep);background:var(--accent-soft)}
+.flow a b{color:var(--accent);font-variant-numeric:tabular-nums}
+
+/* ── 핵심 카드 ──────────────────────────────────────── */
+.keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:34px}
+.key{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:14px;padding:16px 17px}
+.key .n{font-size:12px;font-weight:800;color:var(--accent);margin-bottom:5px}
+.key p{margin:0;font-size:14.5px;line-height:1.6}
+.key b{font-weight:800}
+
+/* ── 섹션 ───────────────────────────────────────────── */
+section{margin-bottom:46px;scroll-margin-top:82px}
+h2.st{display:flex;align-items:center;gap:11px;font-size:22px;font-weight:800;letter-spacing:-.035em;margin:0 0 14px}
+h2.st .sq{flex-shrink:0;width:30px;height:30px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+h3{font-size:16.5px;font-weight:800;margin:26px 0 8px;letter-spacing:-.025em;padding-left:11px;border-left:3px solid var(--accent)}
+h4{font-size:14.5px;font-weight:700;margin:18px 0 6px;color:var(--ink-2)}
+p{margin:9px 0}
+ul,ol{margin:9px 0;padding-left:21px}
+li{margin:3px 0}
+li::marker{color:var(--accent)}
+.en{color:var(--ink-3);font-weight:500;font-size:.9em}
+mark{background:linear-gradient(transparent 54%,var(--mark) 54%);color:inherit;padding:0 2px}
+.hit-mark{background:var(--accent);color:#fff;border-radius:3px}
+
+/* ── 배지 ───────────────────────────────────────────── */
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin:-6px 0 12px}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:6px;letter-spacing:0}
+.badge.exam{color:#92580B;background:#FDF0D5}
+.badge.prof{color:var(--accent-deep);background:var(--accent-soft)}
+.badge.ask{color:#B02020;background:#FCE4E4}
+html[data-theme="dark"] .badge.exam{background:#3B2D0E;color:#EFC470}
+html[data-theme="dark"] .badge.ask{background:#3A1919;color:#F0A0A0}
+
+/* ── 카드형 콜아웃 ──────────────────────────────────── */
+.call{border-radius:13px;padding:14px 17px;margin:15px 0;background:var(--surface);border:1px solid var(--line)}
+.call .t{font-size:12.5px;font-weight:800;margin-bottom:5px}
+.call p:first-of-type{margin-top:0}
+.call p:last-child,.call ul:last-child{margin-bottom:0}
+.call.quote{background:var(--accent-soft);border-color:transparent}
+.call.quote .t{color:var(--accent-deep)}
+.call.quote p{font-size:14.8px}
+.call.warn{border-left:4px solid #E5A50A}
+.call.warn .t{color:#A16207}
+.call.ask{border-left:4px solid #DC2626}
+.call.ask .t{color:#B02020}
+.call.link{border-left:4px solid var(--accent)}
+.call.link .t{color:var(--accent-deep)}
+
+/* 보충 — 교수님이 설명하지 않은 외부 자료. 회색 + 점선으로 본문과 확실히 구분 */
+.call.extra{background:repeating-linear-gradient(135deg,var(--line-2),var(--line-2) 9px,transparent 9px,transparent 18px);border:1.5px dashed var(--ink-3);border-left-width:1.5px}
+.call.extra .t{color:var(--ink-2);display:flex;align-items:center;gap:6px}
+.call.extra .t::before{content:"보충";background:var(--ink-3);color:var(--surface);font-size:10.5px;padding:1px 6px;border-radius:5px}
+.call.extra p{color:var(--ink-2)}
+.badge.extra{color:var(--ink-2);background:var(--line-2);border:1px dashed var(--ink-3)}
+.ext{border-bottom:2px dotted var(--ink-3);color:var(--ink-2)}
+.ext::after{content:"보충";font-size:9.5px;font-weight:800;vertical-align:super;color:var(--ink-3);margin-left:2px;letter-spacing:0}
+.extra-chip{border:1.5px dashed var(--ink-3);background:transparent;color:var(--ink-2);cursor:pointer;font-family:var(--font)}
+body.no-extra .call.extra,body.no-extra .badge.extra{display:none}
+body.no-extra .ext{border-bottom:0}
+body.no-extra .ext::after{display:none}
+html[data-theme="dark"] .call.warn .t{color:#E5B547}
+html[data-theme="dark"] .call.ask .t{color:#F0A0A0}
+
+/* ── 원문 보기 ──────────────────────────────────────── */
+details.raw{margin:12px 0;border:1px dashed var(--line);border-radius:10px;background:var(--line-2)}
+details.raw summary{cursor:pointer;padding:8px 14px;font-size:12.5px;color:var(--ink-3);font-weight:700;list-style:none}
+details.raw summary::-webkit-details-marker{display:none}
+details.raw summary::before{content:"▸ ";color:var(--accent)}
+details.raw[open] summary::before{content:"▾ "}
+details.raw .txt{padding:0 14px 12px;font-size:13px;color:var(--ink-2);white-space:pre-wrap;line-height:1.7}
+
+/* ── 필기 원문 페이지 ───────────────────────────────── */
+.rawnote{border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+.rawitem{display:grid;grid-template-columns:78px 1fr;gap:16px;padding:15px 18px;border-bottom:1px solid var(--line-2)}
+.rawitem:last-child{border-bottom:0}
+.rawitem .seq{font-size:12px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+.rawitem .seq span{display:block;color:var(--ink-3);font-weight:600;font-size:11px;margin-top:2px}
+.rawitem .body{white-space:pre-wrap;font-size:14px;line-height:1.75;color:var(--ink)}
+.rawitem .where{margin-top:7px;font-size:12px}
+.rawitem .where a{color:var(--accent-deep);text-decoration:none;font-weight:700;background:var(--accent-soft);padding:2px 8px;border-radius:6px}
+.rawitem .where a:hover{background:var(--accent);color:#fff}
+
+/* ── 표 ─────────────────────────────────────────────── */
+.tablewrap{overflow-x:auto;margin:15px 0;border:1px solid var(--line);border-radius:13px}
+table{border-collapse:collapse;width:100%;font-size:14px;background:var(--surface)}
+th,td{padding:10px 13px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line-2)}
+th{background:var(--accent);color:#fff;font-weight:700;font-size:13px;white-space:nowrap;border-bottom:0}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--line-2)}
+
+/* ── 코드 / 의사코드 ────────────────────────────────── */
+.codebox{margin:15px 0;border-radius:13px;overflow:hidden;background:var(--code-bg);border:1px solid var(--code-bg)}
+.codebox .head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 14px;font-size:12px;color:#9AA0AC;font-weight:700;background:rgba(255,255,255,.04)}
+.codebox .head .tag{color:#fff;background:var(--accent);border-radius:5px;padding:1px 7px;font-size:11px;margin-right:7px}
+.codebox pre{margin:0;padding:15px 17px;overflow-x:auto;font-family:var(--mono);font-size:13.2px;line-height:1.7;color:var(--code-ink)}
+.codebox .cm{color:#7C8494}
+.codebox .kw{color:#C4A6FF}
+.codebox .st2{color:#8BD5A0}
+.copy{border:0;background:transparent;color:#9AA0AC;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font)}
+.copy:hover{color:#fff}
+.codebox.pseudo{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent)}
+.codebox.pseudo .head{background:var(--accent-soft);color:var(--accent-deep)}
+.codebox.pseudo .head .tag{background:var(--accent-deep)}
+.codebox.pseudo pre{color:var(--ink);font-size:13.6px}
+.codebox.pseudo .cm{color:var(--ink-3)}
+.codebox.pseudo .kw{color:var(--accent-deep);font-weight:700}
+.codebox.pseudo .copy{color:var(--ink-3)}
+.codebox.pseudo .copy:hover{color:var(--accent-deep)}
+code:not(pre code){background:var(--accent-soft);color:var(--accent-deep);padding:1px 6px;border-radius:6px;font-family:var(--mono);font-size:.88em;font-weight:600}
+
+/* ── 도식 ───────────────────────────────────────────── */
+figure{margin:18px 0;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 14px 12px}
+figure svg{max-width:100%;height:auto}
+figcaption{font-size:12.5px;color:var(--ink-3);margin-top:10px}
+
+/* ── 용어 ───────────────────────────────────────────── */
+.terms{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:11px}
+.term{border:1px solid var(--line);border-radius:13px;padding:13px 15px;background:var(--surface)}
+.term b{display:block;font-size:15px}
+.term .e{display:block;font-size:12px;color:var(--accent-deep);font-family:var(--mono);margin-bottom:6px}
+.term p{margin:0;font-size:13.3px;color:var(--ink-2);line-height:1.6}
+
+/* ── 예상 문제 ──────────────────────────────────────── */
+.q{border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:12px 0;background:var(--surface)}
+.q .qh{display:flex;gap:10px;align-items:flex-start;font-weight:700;font-size:15px}
+.q .qn{color:#fff;background:var(--accent);border-radius:7px;padding:1px 8px;font-size:12.5px;font-weight:800;flex-shrink:0;margin-top:3px}
+.q .type{font-size:11px;font-weight:800;color:var(--ink-3);border:1px solid var(--line);border-radius:6px;padding:1px 7px;margin-left:auto;flex-shrink:0;margin-top:3px}
+.q ol.ch{list-style:none;padding-left:0;margin:11px 0 0;counter-reset:c}
+.q ol.ch li{padding:3px 0 3px 26px;position:relative;font-size:14.3px}
+.q ol.ch li::before{content:counter(c);counter-increment:c;position:absolute;left:0;top:4px;width:19px;height:19px;border:1px solid var(--line);border-radius:50%;font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--ink-3)}
+.ans{margin-top:12px;padding:11px 13px;border-radius:10px;background:var(--accent-soft);font-size:14.2px;cursor:pointer}
+.ans .lab{font-weight:800;color:var(--accent-deep);font-size:12.5px;margin-right:7px}
+body.hide-ans .ans:not(.on){background:var(--line-2);color:transparent;user-select:none;cursor:pointer;position:relative}
+body.hide-ans .ans:not(.on) *{color:transparent!important}
+body.hide-ans .ans:not(.on)::after{content:"눌러서 정답 확인";position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-3);font-size:12.5px;font-weight:700}
+
+/* ── 단어장 페이지 ──────────────────────────────────── */
+.vhead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px}
+.vhead input[type=search]{flex:1;min-width:170px;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14px}
+.vhead input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.vlist{margin:0;padding:0;list-style:none;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
+.vword{display:grid;grid-template-columns:190px 1fr;gap:16px;padding:14px 18px;border-bottom:1px solid var(--line-2)}
+.vword:last-child{border-bottom:0}
+.vword:hover{background:var(--line-2)}
+.vword .w{font-weight:800;font-size:16px;letter-spacing:-.02em}
+.vword .ipa{display:block;font-family:var(--mono);font-size:12px;color:var(--ink-3);font-weight:400;margin-top:1px}
+.vword .pos{display:inline-block;font-size:10.5px;font-weight:800;color:#fff;background:var(--accent);border-radius:5px;padding:1px 6px;margin-top:5px}
+.vword .mean{font-size:14.5px;margin:0;font-weight:600}
+.vword .ex{font-size:13px;color:var(--ink-2);margin:5px 0 0}
+.vword .ex b{color:var(--accent-deep);font-weight:700}
+.vword .ex .ko{display:block;color:var(--ink-3);font-size:12.5px}
+.masked .mean,.masked .ex{background:var(--line-2);border-radius:6px;color:transparent;cursor:pointer}
+.masked .mean *,.masked .ex *{color:transparent!important}
+.masked .mean.show,.masked .ex.show{background:transparent;color:inherit}
+.masked .mean.show *,.masked .ex.show *{color:revert!important}
+.masked .ex.show b{color:var(--accent-deep)!important}
+.quizbox{margin-top:18px;padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--surface);display:none}
+.quizbox.on{display:block}
+.quizbox .qq{font-size:22px;font-weight:800;margin-bottom:14px;letter-spacing:-.02em}
+.quizbox .opts{display:grid;gap:8px}
+.quizbox .opt{text-align:left;padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14.5px;cursor:pointer}
+.quizbox .opt:hover{border-color:var(--accent)}
+.quizbox .opt.ok{border-color:#16A34A;background:color-mix(in srgb,#16A34A 12%,var(--surface))}
+.quizbox .opt.no{border-color:#DC2626;background:color-mix(in srgb,#DC2626 12%,var(--surface))}
+.quizbox .score{margin-top:13px;font-size:13px;color:var(--ink-3);font-weight:600}
+
+footer{margin-top:54px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-3);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+@media(max-width:900px){
+  .wrap{grid-template-columns:1fr;gap:18px;padding:16px 16px 80px}
+  .side{position:static;max-height:none;order:-1}
+  .vword{grid-template-columns:1fr;gap:5px}
+  .search{max-width:none;order:3;flex-basis:100%;max-width:100%}
+  .topbar{flex-wrap:wrap}
+  .hero::after{font-size:78px}
+}
+@media print{
+  .topbar,.side,#scrollbar,.quizbox,.vhead,.flow,.files,.extra-chip{display:none!important}
+  .wrap{display:block;max-width:none;padding:0}
+  body{font-size:10.5pt;background:#fff}
+  section{page-break-inside:avoid;margin-bottom:22px}
+  body.hide-ans .ans:not(.on){background:var(--accent-soft)!important;color:inherit!important}
+  body.hide-ans .ans:not(.on) *{color:inherit!important}
+  body.hide-ans .ans:not(.on)::after{display:none}
+  details.raw{display:none}
+  #viewVocab,#viewRaw{display:block!important;page-break-before:always}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+.toc .num{width:23px}
+.term p,.q .qh span,.call p,td,li,p{overflow-wrap:anywhere}
+</style>
+</head>
+<body class="hide-ans">
+<div id="scrollbar"></div>
+
+<div class="topbar">
+  <a class="back" href="../"><i></i>시큐어코딩</a>
+  <div class="search"><input id="q" type="search" placeholder="찾기 (Enter로 다음)" aria-label="문서 내 검색"><span class="hit" id="hit"></span></div>
+  <div class="tools">
+    <button class="tbtn" id="ansBtn">정답 가리기</button>
+    <button class="tbtn" id="vocabBtn">단어장</button>
+    <button class="tbtn" id="rawBtn">필기 원문</button>
+    <button class="tbtn" id="themeBtn">다크</button>
+    <button class="tbtn" id="printBtn">🖨</button>
+  </div>
+</div>
+
+<div class="wrap">
+<aside class="side">
+  <div class="panel">
+    <div class="subject">시큐어코딩</div>
+    <div class="when">2주차 · 09.08(화) ~ 09.14(월)</div>
+    <div id="tocWrap">
+      <div class="cap">목차</div>
+      <ul class="toc" id="toc"><li><a href="#s1"><span class="num">01</span>개발보안 방법론</a></li><li><a href="#s2"><span class="num">02</span>비용 효과</a></li><li><a href="#s3"><span class="num">03</span>MS-SDL</a></li><li><a href="#s4"><span class="num">04</span>위협모델링 개요</a></li><li><a href="#s5"><span class="num">05</span>STRIDE · DREAD</a></li><li><a href="#s6"><span class="num">06</span>프로세스 4단계</a></li><li><a href="#s7"><span class="num">07</span>도구 · MTMT</a></li><li><a href="#s8"><span class="num">08</span>실무 적용</a></li><li><a href="#sp"><span class="num">09</span>교안 퀴즈</a></li><li><a href="#sg"><span class="num">10</span>용어 정리</a></li><li><a href="#sq"><span class="num">11</span>확인 필요</a></li><li><a href="#sx"><span class="num">12</span>예상 문제</a></li></ul>
+      <hr>
+      <div class="cap">복습 체크</div>
+      <div class="chk"><label><input type="checkbox"><span>개발보안 방법론 주요 개념 3가지</span></label><label><input type="checkbox"><span>NIST 수정비용 표 재현</span></label><label><input type="checkbox"><span>MS-SDL 7단계 · 단계별 활동</span></label><label><input type="checkbox"><span>STRIDE 6개 + 깨지는 속성</span></label><label><input type="checkbox"><span>DREAD 5항목 · 총점 구간</span></label><label><input type="checkbox"><span>위협모델링 4단계 (Diagram→Validate)</span></label><label><input type="checkbox"><span>DFD 구성요소 4개 · 신뢰 경계</span></label><label><input type="checkbox"><span>게시글 실습 STRIDE→DREAD→대응 따라가기</span></label><label><input type="checkbox"><span>교안 퀴즈 9문제 다시 풀기</span></label></div>
+      <div class="pbar"><i id="barFill"></i></div>
+    </div>
+    <div id="rawNav" hidden>
+      <div class="cap">필기 원문</div>
+      <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">내가 수업 중에 보낸 내용 <b id="rawTotal">0</b>개를 손대지 않고 그대로 모아둔 페이지입니다.</p>
+      <hr>
+      <div class="cap">확인 방법</div>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">여기 있는 내용이 본문에 다 반영됐는지 대조하세요. 각 항목의 링크를 누르면 정리된 위치로 이동합니다.</p>
+    </div>
+    <div id="vocabNav" hidden>
+      <div class="cap">단어장</div>
+      <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">이번 주차에 나온 전공 필수 단어 <b id="vTotal">0</b>개입니다.</p>
+      <hr>
+      <div class="cap">사용법</div>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">뜻 가리기를 켜면 회색 칸을 눌러 하나씩 확인할 수 있습니다. 퀴즈는 아래 목록에서 문제를 자동으로 만듭니다.</p>
+    </div>
+  </div>
+</aside>
+
+<main>
+<div id="viewNote">
+  <div class="hero" data-w="02">
+    <span class="chip">2주차 · 이러닝</span>
+    <button class="chip extra-chip" id="extraChip"></button>
+    <h1>SW개발보안 방법론과 위협모델링</h1>
+    <p class="sub">1차시 SW개발보안 방법론·MS-SDL · 2차시 위협모델링 개요 · 3차시 위협모델링 실무 적용 (이러닝 교안 3편)</p>
+    <div class="metaline"><span>09.08(화) ~ 09.14(월)</span><span><b>이동재</b> 교수님</span><span>교안 PDF 3편 (1~3차시)</span><span>과제: 없음 · 개별 실습 1건</span></div>
+    <div class="files"><a class="file" href="02-1-slides1.pdf" target="_blank"><span class="ic">PDF</span>1차시 교안 · SW개발보안 방법론<em>23p</em></a><a class="file" href="02-2-slides1.pdf" target="_blank"><span class="ic">PDF</span>2차시 교안 · 위협모델링 개요<em>29p</em></a><a class="file" href="02-3-slides1.pdf" target="_blank"><span class="ic">PDF</span>3차시 교안 · 위협모델링 실무<em>22p</em></a></div>
+  </div>
+
+  <nav class="flow"><a href="#s2"><b>02</b> 비용 효과</a><a href="#s3"><b>03</b> MS-SDL</a><a href="#s5"><b>05</b> STRIDE·DREAD</a><a href="#s8"><b>08</b> 게시글 실습</a><a href="#sp"><b>09</b> 교안 퀴즈</a><a href="#sx"><b>12</b> 예상 문제</a></nav>
+  <div class="keys"><div class="key"><div class="n">핵심 1</div><p>결함은 <b>늦게 발견할수록</b> 비싸다 — 설계 결함을 출시 후 찾으면 <b>30배</b>.</p></div><div class="key"><div class="n">핵심 2</div><p>MS-SDL 7단계 중 위협 모델링 <b>수행은 설계(Design)</b>, SAST는 구현, SAST·DAST·침투테스트는 검증.</p></div><div class="key"><div class="n">핵심 3</div><p><b>STRIDE</b>로 위협을 찾고, <b>DREAD</b>로 점수를 매기고(총점 31↑ Critical / 평균 7.0↑ 높음), 대응 방안을 세운다.</p></div></div>
+
+
+  <section id="s1">
+    <h2 class="st"><span class="sq">01</span>SW 개발보안 방법론</h2>
+    <div class="badges"><span class="badge exam">교안 퀴즈 출제</span><span class="badge prof">1차시 · 교안 6~9쪽</span></div>
+    <p><b>SW 개발보안 방법론</b>: SW 개발 과정에서 보안성을 강화하기 위해 적용하는 <b>체계적인 접근 방식</b>. <b>SDLC</b>(Software Development Life Cycle, 소프트웨어 개발 생명주기) 전반에 보안 요구사항을 반영하고 취약점을 예방하는 것이 목표입니다.</p>
+    <h3>주요 개념 3가지</h3>
+    <div class="tablewrap"><table><thead><tr><th>개념</th><th>영어</th><th>내용</th></tr></thead><tbody><tr><td><b>보안 내재화</b></td><td>Security by Design</td><td>개발 초기부터 보안을 고려해 설계</td></tr><tr><td><b>취약점 최소화</b></td><td>Minimization of Vulnerabilities</td><td>코드·시스템의 보안 결함을 줄이는 방식 적용</td></tr><tr><td><b>지속적인 보안 점검</b></td><td>Continuous Security Assessment</td><td>주기적인 테스트 및 검증 수행</td></tr></tbody></table></div>
+    <div class="call quote"><div class="t">SW 개발보안이란? (교안 7쪽)</div><p>안전한 SW 개발을 위해 소스코드 등에 존재할 수 있는 <b>잠재적인 보안약점을 제거</b>하고, 보안을 고려하여 기능을 설계·구현하는 등 SW 개발 과정에서 실행되는 <b>일련의 보안활동</b>.</p></div>
+    <figure><svg viewBox="0 0 640 92" role="img" aria-label="개발보안 4단계" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arp4" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" style="fill:var(--ink-3)"/></marker></defs><rect x="4.0" y="8" width="144.5" height="58" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="76.25" y="41.0" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:700;fill:var(--accent-deep)">분석</text><text x="76.25" y="84" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">보안요구사항 식별</text><path d="M150.5 37.0 L163.5 37.0" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arp4)"/><rect x="166.5" y="8" width="144.5" height="58" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="238.75" y="41.0" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:700;fill:var(--accent-deep)">설계</text><text x="238.75" y="84" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">위협원 도출·보안통제 수립</text><path d="M313.0 37.0 L326.0 37.0" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arp4)"/><rect x="329.0" y="8" width="144.5" height="58" rx="8" style="fill:var(--accent);stroke:var(--accent);stroke-width:1.5"/><text x="401.25" y="41.0" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:700;fill:#fff">구현</text><text x="401.25" y="84" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">가이드 준수·보안약점 진단</text><path d="M475.5 37.0 L488.5 37.0" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arp4)"/><rect x="491.5" y="8" width="144.5" height="58" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="563.75" y="41.0" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:700;fill:var(--accent-deep)">테스트</text><text x="563.75" y="84" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">실행코드 취약점 진단(동적분석)</text></svg><figcaption>1주차 “SW개발보안 프로세스”와 같은 표 (1주차는 첫 단계를 “요구사항분석”이라 씀). 현재는 구현단계 중심 적용</figcaption></figure>
+    <p style="font-size:13px;color:var(--ink-2)">보안취약점(Vulnerability)·보안약점(Weakness) 정의도 1주차와 동일하게 다시 나옵니다 — 1주차 04번 섹션 참고.</p>
+    <h3>SW 개발보안 방법론 적용의 중요성</h3>
+    <ul><li>해킹, 데이터 유출 등 <b>보안 사고 예방</b></li><li><b>법적 규제 준수</b> (개인정보 보호법, GDPR, ISO 27001 등)</li><li><b>개발 비용 절감</b> — 초기 단계에서 보안 문제를 해결하면 비용이 줄어듦</li><li>신뢰할 수 있는 SW 제공으로 <b>기업 이미지·서비스 경쟁력 강화</b></li></ul>
+  </section>
+
+  <section id="s2">
+    <h2 class="st"><span class="sq">02</span>SW 개발보안 적용 시 비용 효과</h2>
+    <div class="badges"><span class="badge exam">교안 퀴즈 출제</span><span class="badge prof">1차시 · 교안 8쪽</span></div>
+    <h3>SW 개발 단계별 결함 수정비용 <span class="en">(NIST, 2002.5)</span></h3>
+    <p>같은 결함이라도 <b>늦게 발견될수록</b> 고치는 비용이 커집니다. 각 행은 결함이 생긴 단계, 각 열은 결함을 발견한 단계입니다.</p>
+    <figure><svg viewBox="0 0 640 290" role="img" aria-label="단계별 결함 수정비용" xmlns="http://www.w3.org/2000/svg"><path d="M50 250.0 L490 250.0" fill="none" style="fill:none;stroke:var(--line-2);stroke-width:1"/><text x="42" y="254.0" text-anchor="end" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">0배</text><path d="M50 173.3 L490 173.3" fill="none" style="fill:none;stroke:var(--line-2);stroke-width:1"/><text x="42" y="177.33333333333331" text-anchor="end" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">10배</text><path d="M50 96.7 L490 96.7" fill="none" style="fill:none;stroke:var(--line-2);stroke-width:1"/><text x="42" y="100.66666666666666" text-anchor="end" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">20배</text><path d="M50 20.0 L490 20.0" fill="none" style="fill:none;stroke:var(--line-2);stroke-width:1"/><text x="42" y="24.0" text-anchor="end" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">30배</text><text x="50.0" y="274" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--ink-2)">설계단계</text><text x="160.0" y="274" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--ink-2)">코딩단계</text><text x="270.0" y="274" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--ink-2)">통합단계</text><text x="380.0" y="274" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--ink-2)">베타제품</text><text x="490.0" y="274" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--ink-2)">제품출시</text><path d="M50.0 242.3 L160.0 211.7 L270.0 173.3 L380.0 135.0 L490.0 20.0" fill="none" style="fill:none;stroke:var(--accent);stroke-width:2.4"/><circle cx="50.0" cy="242.3" r="4" style="fill:var(--accent)"/><text x="37.0" y="234.33333333333334" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:800;fill:var(--accent)">1</text><circle cx="160.0" cy="211.7" r="4" style="fill:var(--accent)"/><text x="147.0" y="203.66666666666666" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:800;fill:var(--accent)">5</text><circle cx="270.0" cy="173.3" r="4" style="fill:var(--accent)"/><text x="257.0" y="165.33333333333331" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:800;fill:var(--accent)">10</text><circle cx="380.0" cy="135.0" r="4" style="fill:var(--accent)"/><text x="367.0" y="127.0" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:800;fill:var(--accent)">15</text><circle cx="490.0" cy="20.0" r="4" style="fill:var(--accent)"/><text x="477.0" y="12.0" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:800;fill:var(--accent)">30</text><path d="M508 40 L530 40" fill="none" style="fill:none;stroke:var(--accent);stroke-width:2.4"/><text x="536" y="44" text-anchor="start" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--ink)">설계과정 결함</text><path d="M160.0 242.3 L270.0 173.3 L380.0 96.7 L490.0 20.0" fill="none" style="fill:none;stroke:var(--ink-2);stroke-width:2.4;stroke-dasharray:6 4"/><circle cx="160.0" cy="242.3" r="4" style="fill:var(--ink-2)"/><text x="173.0" y="234.33333333333334" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:800;fill:var(--ink-2)">1</text><circle cx="270.0" cy="173.3" r="4" style="fill:var(--ink-2)"/><text x="283.0" y="165.33333333333331" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:800;fill:var(--ink-2)">10</text><circle cx="380.0" cy="96.7" r="4" style="fill:var(--ink-2)"/><text x="393.0" y="88.66666666666666" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:800;fill:var(--ink-2)">20</text><circle cx="490.0" cy="20.0" r="4" style="fill:var(--ink-2)"/><text x="503.0" y="12.0" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:800;fill:var(--ink-2)">30</text><path d="M508 62 L530 62" fill="none" style="fill:none;stroke:var(--ink-2);stroke-width:2.4;stroke-dasharray:6 4"/><text x="536" y="66" text-anchor="start" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--ink)">코딩과정 결함</text><path d="M270.0 242.3 L380.0 173.3 L490.0 96.7" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:2.4;stroke-dasharray:2 3"/><circle cx="270.0" cy="242.3" r="4" style="fill:var(--ink-3)"/><text x="270.0" y="259.33333333333337" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:800;fill:var(--ink-3)">1</text><circle cx="380.0" cy="173.3" r="4" style="fill:var(--ink-3)"/><text x="380.0" y="190.33333333333331" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:800;fill:var(--ink-3)">10</text><circle cx="490.0" cy="96.7" r="4" style="fill:var(--ink-3)"/><text x="490.0" y="113.66666666666666" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:800;fill:var(--ink-3)">20</text><path d="M508 84 L530 84" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:2.4;stroke-dasharray:2 3"/><text x="536" y="88" text-anchor="start" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--ink)">통합과정 결함</text></svg><figcaption>결함이 생긴 단계에서 바로 찾으면 1배. 설계 결함을 제품 출시 후에 찾으면 30배</figcaption></figure>
+    <div class="tablewrap"><table><thead><tr><th>결함 발생 → 발견 시점</th><th>설계단계</th><th>코딩단계</th><th>통합단계</th><th>베타제품</th><th>제품출시</th></tr></thead><tbody><tr><td><b>설계과정 결함</b></td><td>1배</td><td>5배</td><td>10배</td><td>15배</td><td><mark>30배</mark></td></tr><tr><td><b>코딩과정 결함</b></td><td>—</td><td>1배</td><td>10배</td><td>20배</td><td>30배</td></tr><tr><td><b>통합과정 결함</b></td><td>—</td><td>—</td><td>1배</td><td>10배</td><td>20배</td></tr></tbody></table></div>
+    <p style="font-size:13px;color:var(--ink-3)">출처: The Economic Impacts of Inadequate Infrastructure for SW Testing, 2002.5, NIST</p>
+    <h3>정보보호 투자수익률 <span class="en">(IBM 연구보고서)</span></h3>
+    <figure><svg viewBox="0 0 640 210" role="img" aria-label="정보보호 투자수익률" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="640" height="210" rx="8" style="fill:transparent;stroke:transparent;stroke-width:1.5"/><path d="M46 166.0 L626 166.0" fill="none" style="fill:none;stroke:var(--line-2);stroke-width:1"/><text x="40" y="170.0" text-anchor="end" style="font-family:var(--font);font-size:10px;font-weight:500;fill:var(--ink-3)">0</text><path d="M46 119.3 L626 119.3" fill="none" style="fill:none;stroke:var(--line-2);stroke-width:1"/><text x="40" y="123.33333333333334" text-anchor="end" style="font-family:var(--font);font-size:10px;font-weight:500;fill:var(--ink-3)">10</text><path d="M46 72.7 L626 72.7" fill="none" style="fill:none;stroke:var(--line-2);stroke-width:1"/><text x="40" y="76.66666666666667" text-anchor="end" style="font-family:var(--font);font-size:10px;font-weight:500;fill:var(--ink-3)">20</text><path d="M46 26.0 L626 26.0" fill="none" style="fill:none;stroke:var(--line-2);stroke-width:1"/><text x="40" y="30.0" text-anchor="end" style="font-family:var(--font);font-size:10px;font-weight:500;fill:var(--ink-3)">30</text><rect x="114.7" y="54.0" width="56.0" height="112.0" rx="4" style="fill:var(--accent)"/><text x="142.66666666666669" y="48.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--ink)">24%</text><text x="142.66666666666669" y="184" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:600;fill:var(--ink-2)">설계</text><rect x="308.0" y="96.0" width="56.0" height="70.0" rx="4" style="fill:color-mix(in srgb,var(--accent) 45%,var(--surface))"/><text x="336.0" y="90.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--ink)">15%</text><text x="336.0" y="184" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:600;fill:var(--ink-2)">구현</text><rect x="501.3" y="110.0" width="56.0" height="56.0" rx="4" style="fill:color-mix(in srgb,var(--accent) 45%,var(--surface))"/><text x="529.3333333333334" y="104.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--ink)">12%</text><text x="529.3333333333334" y="184" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:600;fill:var(--ink-2)">테스팅</text><path d="M46 166 L626 166" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.2"/></svg><figcaption>같은 보안 투자라도 설계 단계에 할 때 수익률이 가장 높음 (24%)</figcaption></figure>
+    <h3>정보보호 취약성 수정비용 <span class="en">(마이크로소프트, 설계 = 1 기준)</span></h3>
+    <figure><svg viewBox="0 0 640 240" role="img" aria-label="정보보호 취약성 수정비용" xmlns="http://www.w3.org/2000/svg"><path d="M46 200.0 L626 200.0" fill="none" style="fill:none;stroke:var(--line-2);stroke-width:1"/><text x="40" y="204.0" text-anchor="end" style="font-family:var(--font);font-size:10px;font-weight:500;fill:var(--ink-3)">0</text><path d="M46 156.0 L626 156.0" fill="none" style="fill:none;stroke:var(--line-2);stroke-width:1"/><text x="40" y="160.0" text-anchor="end" style="font-family:var(--font);font-size:10px;font-weight:500;fill:var(--ink-3)">25</text><path d="M46 112.0 L626 112.0" fill="none" style="fill:none;stroke:var(--line-2);stroke-width:1"/><text x="40" y="116.0" text-anchor="end" style="font-family:var(--font);font-size:10px;font-weight:500;fill:var(--ink-3)">50</text><path d="M46 68.0 L626 68.0" fill="none" style="fill:none;stroke:var(--line-2);stroke-width:1"/><text x="40" y="72.0" text-anchor="end" style="font-family:var(--font);font-size:10px;font-weight:500;fill:var(--ink-3)">75</text><path d="M46 24.0 L626 24.0" fill="none" style="fill:none;stroke:var(--line-2);stroke-width:1"/><text x="40" y="28.0" text-anchor="end" style="font-family:var(--font);font-size:10px;font-weight:500;fill:var(--ink-3)">100</text><rect x="73.5" y="198.2" width="89.9" height="1.8" rx="4" style="fill:var(--accent)"/><text x="118.5" y="192.24" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:800;fill:var(--ink)">1</text><text x="118.5" y="218" text-anchor="middle" style="font-family:var(--font);font-size:11.5px;font-weight:700;fill:var(--ink-2)">설계</text><rect x="218.6" y="188.6" width="89.9" height="11.4" rx="4" style="fill:var(--accent)"/><text x="263.5" y="182.56" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:800;fill:var(--ink)">6.5</text><text x="263.5" y="218" text-anchor="middle" style="font-family:var(--font);font-size:11.5px;font-weight:700;fill:var(--ink-2)">구현</text><rect x="363.6" y="173.6" width="89.9" height="26.4" rx="4" style="fill:var(--accent)"/><text x="408.5" y="167.6" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:800;fill:var(--ink)">15</text><text x="408.5" y="218" text-anchor="middle" style="font-family:var(--font);font-size:11.5px;font-weight:700;fill:var(--ink-2)">테스팅</text><rect x="508.6" y="24.0" width="89.9" height="70.4" rx="4" style="fill:color-mix(in srgb,var(--accent) 30%,var(--surface));stroke:var(--accent);stroke-dasharray:4 3"/><text x="553.5" y="18.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:800;fill:var(--ink)">60 ~ 100</text><rect x="508.6" y="94.4" width="89.9" height="105.6" rx="4" style="fill:var(--accent)"/><text x="553.5" y="218" text-anchor="middle" style="font-family:var(--font);font-size:11.5px;font-weight:700;fill:var(--ink-2)">유지보수</text></svg><figcaption>설계 1 → 구현 6.5 → 테스팅 15 → 유지보수 60~100 (유지보수는 범위로 제시됨)</figcaption></figure>
+  </section>
+
+  <section id="s3">
+    <h2 class="st"><span class="sq">03</span>MS-SDL — 개발보안 적용 우수사례</h2>
+    <div class="badges"><span class="badge exam">교안 퀴즈 출제</span><span class="badge prof">1차시 · 교안 11~18쪽</span></div>
+    <p><b>MS-SDL</b>(Microsoft Security Development Lifecycle): 마이크로소프트가 개발한 SW 보안 개발 방법론. SDLC 전반에 <b>보안을 내재화</b>하는 것이 목표이며, 취약점 최소화·사고 예방·강력한 보안 정책을 개발 과정에 적용합니다. 자체 개발한 생명주기를 제품 개발 전 과정에 적용해 <b>보안취약점의 원인을 제거</b>했습니다.</p>
+    <h4>MS-SDL의 주요 목표</h4>
+    <div class="tablewrap"><table><thead><tr><th>목표</th><th>내용</th></tr></thead><tbody><tr><td>1. 보안 취약점 예방</td><td>개발 초기부터 보안 요구사항을 반영해 보안 문제를 <b>사전에 차단</b></td></tr><tr><td>2. 위험 감소</td><td>보안 테스트와 코드 검토로 공격 노출 최소화</td></tr><tr><td>3. 법규·규제 준수</td><td>개인정보 보호, 보안 표준(ISO/IEC 27001, GDPR 등) 준수</td></tr><tr><td>4. 비용 절감</td><td>개발 후반이 아닌 <b>초기에</b> 보안 문제를 해결해 유지보수 비용 절감</td></tr></tbody></table></div>
+    <h3>MS-SDL 7단계</h3>
+    <figure><svg viewBox="0 0 660 88" role="img" aria-label="MS-SDL 7단계" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arsdl" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" style="fill:var(--ink-3)"/></marker></defs><rect x="4.0" y="8" width="84.57142857142857" height="54" rx="8" style="fill:var(--accent);stroke:var(--accent);stroke-width:1.5"/><text x="46.285714285714285" y="39.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:#fff">Training</text><text x="46.285714285714285" y="80" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">교육</text><path d="M90.57142857142857 35.0 L95.57142857142857 35.0" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arsdl)"/><rect x="98.57142857142857" y="8" width="84.57142857142857" height="54" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="140.85714285714286" y="32.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--accent-deep)">Require-</text><text x="140.85714285714286" y="46.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--accent-deep)">ments</text><text x="140.85714285714286" y="80" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">요구사항</text><path d="M185.14285714285714 35.0 L190.14285714285714 35.0" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arsdl)"/><rect x="193.14285714285714" y="8" width="84.57142857142857" height="54" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="235.42857142857142" y="39.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--accent-deep)">Design</text><text x="235.42857142857142" y="80" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">설계</text><path d="M279.7142857142857 35.0 L284.7142857142857 35.0" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arsdl)"/><rect x="287.7142857142857" y="8" width="84.57142857142857" height="54" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="330.0" y="32.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--accent-deep)">Imple-</text><text x="330.0" y="46.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--accent-deep)">mentation</text><text x="330.0" y="80" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">구현</text><path d="M374.2857142857143 35.0 L379.2857142857143 35.0" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arsdl)"/><rect x="382.2857142857143" y="8" width="84.57142857142857" height="54" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="424.57142857142856" y="32.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--accent-deep)">Verifi-</text><text x="424.57142857142856" y="46.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--accent-deep)">cation</text><text x="424.57142857142856" y="80" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">검증</text><path d="M468.85714285714283 35.0 L473.85714285714283 35.0" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arsdl)"/><rect x="476.85714285714283" y="8" width="84.57142857142857" height="54" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="519.1428571428571" y="39.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--accent-deep)">Release</text><text x="519.1428571428571" y="80" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">배포</text><path d="M563.4285714285714 35.0 L568.4285714285714 35.0" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arsdl)"/><rect x="571.4285714285714" y="8" width="84.57142857142857" height="54" rx="8" style="fill:var(--accent);stroke:var(--accent);stroke-width:1.5"/><text x="613.7142857142858" y="39.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:#fff">Response</text><text x="613.7142857142858" y="80" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">대응</text></svg><figcaption>교안 단계 바: Training·Response는 파란색, 가운데 5단계는 초록색 (이 그림에선 앞뒤 두 단계를 진하게 표시)</figcaption></figure>
+    <div class="tablewrap"><table><thead><tr><th>단계</th><th>보안 활동</th></tr></thead><tbody><tr><td><b>Training</b><br>교육 및 보안인식</td><td>개발팀 구성원 대상 <b>매년 한 번</b> 보안 기초와 최신 동향 교육 · 내용: 안전설계, 위협모델링, 시큐어코딩, 보안테스팅, 프라이버시</td></tr><tr><td><b>Requirements</b><br>요구사항 정의</td><td>보안 및 개인정보 보호 요구사항 정의 · 법적·규제 요건(GDPR, HIPAA, ISO 27001) 검토 · 위협 모델링 <b>수행 필요성 확인</b></td></tr><tr><td><b>Design</b><br>설계</td><td><mark>위협 모델링(Threat Modeling) 수행</mark> — 공격 표면(Attack Surface) 분석, 보안 위험 평가 및 설계 개선 · 안전한 SW 아키텍처 설계 · 데이터 보호·암호화 정책 정의</td></tr><tr><td><b>Implementation</b><br>구현</td><td>안전한 코딩 원칙 적용 — OWASP Secure Coding Guide 준수, 보안 API 활용(인증·접근제어·암호화) · <b>정적 분석(SAST)</b>으로 코드 내 취약점 자동 탐지(SQL Injection, XSS) · 취약한 라이브러리·구성요소 제거 — 최신 패치, 서드파티 취약점 관리</td></tr><tr><td><b>Verification</b><br>검증</td><td>보안 테스트 — SAST 및 <b>DAST</b>, <b>침투 테스트(Penetration Testing)</b> · 위험 기반 보안 점검 — 인증·접근제어·암호화 검증, 코드 리뷰 및 취약점 제거</td></tr><tr><td><b>Release</b><br>배포</td><td>최종 보안 점검(Security Review) — 남은 이슈 해결 · <b>디지털 서명 및 무결성 검증</b> — 배포 패키지 검증 · <b>보안 가이드 문서 제공</b> — 사용자용 정책·설정 안내</td></tr><tr><td><b>Response</b><br>운영 및 유지보수</td><td>보안 모니터링·로그 분석(이상 징후 탐지·대응 체계) · 보안 패치·업데이트 관리 · 보안 사고 대응 프로세스(침해사고 대응 계획 실행)</td></tr></tbody></table></div>
+    <div class="call warn"><div class="t">시험 함정 — 위협 모델링은 어느 단계?</div><p>요구사항 단계는 위협 모델링 <b>필요성 확인</b>까지, 실제 <b>수행은 설계(Design) 단계</b>입니다. 교안 퀴즈 1-3이 바로 이 구분을 묻습니다.</p></div>
+    <div class="call quote"><div class="t">1차시 요약 (교안)</div><p>SW 개발보안은 개발 전 과정에서 보안을 적용하는 방법론 · 분석~테스트 단계별 보안 활동 · 조기 보안 적용은 사고 예방과 비용 절감에 효과적 · MS-SDL은 마이크로소프트의 대표적 보안 개발 방법 · 교육부터 운영까지 모든 단계에 보안 반영.</p></div>
+  </section>
+
+  <section id="s4">
+    <h2 class="st"><span class="sq">04</span>위협모델링 개요</h2>
+    <div class="badges"><span class="badge exam">교안 퀴즈 출제</span><span class="badge prof">2차시 · 교안 6~11쪽</span></div>
+    <div class="call quote"><div class="t">정의 (교안)</div><p><b>위협 모델링(Threat Modeling)</b>은 SW·시스템·네트워크의 보안 취약점을 <b>사전에 식별</b>하고, 이를 <b>평가</b>하여 적절한 <b>보안 대책을 수립</b>하는 과정.</p></div>
+    <div class="tablewrap"><table><thead><tr><th>주요 개념</th><th>내용</th></tr></thead><tbody><tr><td>사전 예방적 보안 접근법</td><td><b>설계 단계</b>에서 보안 위협을 예측하고 방어책 마련</td></tr><tr><td>공격자 관점의 분석</td><td>공격자가 시스템을 어떻게 악용할지 분석해 취약점 최소화</td></tr><tr><td>개발 프로세스 내 통합</td><td>보안이 SDLC에서 자연스럽게 반영되도록 구조화된 방법론 적용</td></tr></tbody></table></div>
+    <h3>핵심 목표 4가지</h3>
+    <figure><svg viewBox="0 0 640 92" role="img" aria-label="위협 모델링 핵심 목표" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arg4" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" style="fill:var(--ink-3)"/></marker></defs><rect x="4.0" y="8" width="144.5" height="58" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="76.25" y="41.0" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:700;fill:var(--accent-deep)">시스템 이해</text><text x="76.25" y="84" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">보호할 자산·환경 분석</text><path d="M150.5 37.0 L163.5 37.0" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arg4)"/><rect x="166.5" y="8" width="144.5" height="58" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="238.75" y="41.0" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:700;fill:var(--accent-deep)">위협 식별</text><text x="238.75" y="84" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">악용 가능한 취약점 분석</text><path d="M313.0 37.0 L326.0 37.0" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arg4)"/><rect x="329.0" y="8" width="144.5" height="58" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="401.25" y="41.0" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:700;fill:var(--accent-deep)">위험 평가</text><text x="401.25" y="84" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">심각도·가능성 → 우선순위</text><path d="M475.5 37.0 L488.5 37.0" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arg4)"/><rect x="491.5" y="8" width="144.5" height="58" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="563.75" y="41.0" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:700;fill:var(--accent-deep)">보안 조치 적용</text><text x="563.75" y="84" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">암호화·접근제어 등 적용</text></svg><figcaption>교안 퀴즈 2-1: 핵심 목표가 아닌 것 = “SW 구조 이해”</figcaption></figure>
+    <h3>위협 모델링이 중요한 이유</h3>
+    <ol><li><b>사전 보안 강화</b> — 개발 초기에 보안을 고려해 비용 절감·보안성 향상</li><li><b>보안 사고 예방</b> — 공격자 시각에서 취약점 분석</li><li><b>법규 및 표준 준수</b> — 금융·의료 등 특정 산업에서는 필수 절차</li><li><b>DevSecOps 연계</b> — 개발·운영 과정에 보안이 지속 반영되도록 지원</li></ol>
+    <h3>참가자 및 역할</h3>
+    <div class="tablewrap"><table><thead><tr><th>직무</th><th>역할</th><th>참여 이유</th></tr></thead><tbody><tr><td><b>개발팀</b><br><span class="en">Developers</span></td><td>시스템 구조를 이해하고 보안 요구사항을 코드에 반영</td><td>앱의 동작·구현을 가장 잘 앎 · 취약점이 생기기 쉬운 코드 영역 식별 · 제안된 보안 개선을 직접 구현</td></tr><tr><td><b>보안 전문가</b><br><span class="en">Security Engineers / Architects</span></td><td>보안 위협 식별, 취약점 분석·대응책 수립</td><td>공격자 관점에서 위협 예측·방어 전략 제안 · 최신 위협 동향 제공 · STRIDE·DREAD 등 프레임워크로 체계적 분석</td></tr><tr><td><b>시스템 아키텍트</b><br><span class="en">System Architects</span></td><td>시스템 설계 담당, 보안을 고려한 설계 구조 반영</td><td>앱·인프라 전반 구조 설계 · 보안 요구사항에 맞춰 아키텍처 조정 · 보안 설계 원칙 적용</td></tr><tr><td><b>제품 관리자</b><br><span class="en">Product Owners / PM</span></td><td>보안 요구사항을 개발 프로세스에 반영, 일정 관리</td><td>보안이 제품 기능에 주는 영향 조율 · 보안과 비즈니스 요구의 균형 · 결과를 제품 라이프사이클에 반영</td></tr><tr><td><b>운영팀</b><br><span class="en">DevOps / IT Operations</span></td><td>배포된 앱의 보안 운영과 지속적 모니터링</td><td>운영 환경 위협 파악 · 로그·모니터링 데이터로 결과 보완 · DevSecOps 자동 점검·대응 전략</td></tr><tr><td><b>QA 및 테스터</b><br><span class="en">QA Engineers / Penetration Testers</span></td><td>보안 테스트·취약점 점검으로 위협 모델링 검증</td><td>정의된 시나리오 기반 테스트 · 침투 테스트로 실제 공격 가능성 평가 · 보안 요구사항 충족 확인</td></tr></tbody></table></div>
+    <h3>위협 모델링 흐름</h3>
+    <figure><svg viewBox="0 0 640 92" role="img" aria-label="위협 모델링 흐름" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arwf" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" style="fill:var(--ink-3)"/></marker></defs><rect x="4.0" y="8" width="198.66666666666666" height="58" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="103.33333333333333" y="41.0" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:700;fill:var(--accent-deep)">워크숍 진행</text><text x="103.33333333333333" y="84" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">DFD·Sequence Diagram 기반 분석</text><path d="M204.66666666666666 37.0 L217.66666666666666 37.0" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arwf)"/><rect x="220.66666666666666" y="8" width="198.66666666666666" height="58" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="320.0" y="41.0" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:700;fill:var(--accent-deep)">위협 분석 및 평가</text><text x="320.0" y="84" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">STRIDE·DREAD·PASTA 적용, 우선순위</text><path d="M421.3333333333333 37.0 L434.3333333333333 37.0" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arwf)"/><rect x="437.3333333333333" y="8" width="198.66666666666666" height="58" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="536.6666666666666" y="41.0" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:700;fill:var(--accent-deep)">보안 설계 개선 및 구현</text><text x="536.6666666666666" y="84" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">개발팀 코드 반영 · 운영팀 모니터링</text></svg><figcaption>Threat Modeling Workshops: 개발자·보안 전문가·아키텍트가 함께 수행</figcaption></figure>
+  </section>
+
+  <section id="s5">
+    <h2 class="st"><span class="sq">05</span>위협모델링 프레임워크 — STRIDE · DREAD</h2>
+    <div class="badges"><span class="badge exam">교안 퀴즈 출제</span><span class="badge prof">교안 ★ 표시</span><span class="badge prof">2차시 · 교안 12~17쪽</span></div>
+    <p>위협 모델링 프레임워크는 보안 위협을 체계적으로 식별·분석하는 방법론이며, 환경과 목적에 따라 알맞은 것을 골라야 합니다.</p>
+    <div class="tablewrap"><table><thead><tr><th>프레임워크</th><th>주요 특징</th><th>적용 분야</th></tr></thead><tbody><tr><td><b>STRIDE ★</b></td><td>가장 널리 쓰이는 기법, <b>6가지 보안 위협 유형</b> 정의</td><td>애플리케이션 보안, MS-SDL, 클라우드 보안</td></tr><tr><td>PASTA</td><td>공격자 관점 분석 + <b>비즈니스 영향도</b> 평가</td><td>금융, 의료, 대규모 엔터프라이즈</td></tr><tr><td><b>DREAD ★</b></td><td>위협을 <b>정량적으로</b> 평가, 위험도를 수치화해 우선순위 결정</td><td>침투테스트, 보안 리스크 평가</td></tr><tr><td>Attack Tree</td><td>공격 목표 중심으로 공격 경로를 <b>트리로 시각화</b></td><td>IoT, 산업제어시스템(ICS), 네트워크 보안</td></tr><tr><td>OCTAVE</td><td>조직 전반의 보안 위험을 <b>거버넌스 중심</b>으로 평가</td><td>기업 보안, IT 리스크 관리</td></tr></tbody></table></div>
+    <h3>STRIDE <span class="en">(Microsoft 개발)</span></h3>
+    <div class="tablewrap"><table><thead><tr><th>위협 유형</th><th>설명</th><th>깨지는 보안 속성</th><th>보안 대응책</th></tr></thead><tbody><tr><td><b>S</b>poofing<br>신원 위조</td><td>공격자가 허가 없이 <b>허가된 사용자로 가장</b></td><td>인증 (Authentication)</td><td>강력한 인증 (MFA, OAuth)</td></tr><tr><td><b>T</b>ampering<br>데이터 변조</td><td>데이터가 불법적으로 변경·조작됨</td><td>무결성 (Integrity)</td><td>무결성 검사 (Hash, 디지털 서명)</td></tr><tr><td><b>R</b>epudiation<br>부인</td><td>공격자가 악의적 행동을 <b>부인</b> 가능</td><td>감사 (Audit) — 부인 방지</td><td>로깅·감사로 책임 추적 (Audit Logs)</td></tr><tr><td><b>I</b>nformation Disclosure<br>정보 노출</td><td>기밀 데이터가 외부에 노출</td><td>기밀성 (Confidentiality)</td><td>데이터 암호화 (AES, TLS, SSL)</td></tr><tr><td><b>D</b>enial of Service<br>서비스 거부</td><td>시스템을 <b>사용할 수 없게</b> 하는 공격</td><td>가용성 (Availability)</td><td>트래픽 제한, WAF, DDoS 보호</td></tr><tr><td><b>E</b>levation of Privilege<br>권한 상승</td><td>공격자가 권한을 올려 관리자 권한 획득</td><td>접근 제어 (Access Control)</td><td>최소 권한 원칙, 권한 검증 강화</td></tr></tbody></table></div>
+    <p style="font-size:13px;color:var(--ink-2)">“깨지는 보안 속성” 열은 3단계 설명(교안 21쪽)의 STRIDE → 보안 위협 대응표를 합친 것입니다.</p>
+    <h3>DREAD — 정량 평가</h3>
+    <p>각 항목을 <b>0~10점</b>으로 평가하고 <b>합산</b>해 위험 순위를 정합니다.</p>
+    <div class="tablewrap"><table><thead><tr><th>항목</th><th>뜻</th><th>0점</th><th>5점</th><th>10점</th></tr></thead><tbody><tr><td><b>D</b>amage</td><td>피해 규모</td><td>전혀 피해 없음</td><td>성능 저하, 무결성 손상 가능</td><td>시스템 전체 다운, 기밀 유출</td></tr><tr><td><b>R</b>eproducibility</td><td>재현 가능성</td><td>재현 불가능</td><td>특정 조건 충족 시 재현</td><td>언제든 쉽게 재현</td></tr><tr><td><b>E</b>xploitability</td><td>공격 가능성(쉬움)</td><td>공격 불가능</td><td>일반 보안 전문가가 공격 가능</td><td>누구나 몇 초 만에 공격</td></tr><tr><td><b>A</b>ffected Users</td><td>영향 받는 사용자 수</td><td>특정 내부 테스트 사용자만</td><td>일부 외부 사용자</td><td>모든 사용자·전체 네트워크</td></tr><tr><td><b>D</b>iscoverability</td><td>발견 가능성</td><td>비공개 코드라 알기 어려움</td><td>OWASP Top 10 수준의 흔한 취약점</td><td>구글 검색·일반인도 발견</td></tr></tbody></table></div>
+    <details class="raw" open><summary>2~3점 · 7~8점 기준도 보기</summary><div class="txt">2~3점 — D: 일부 기능 오류 / R: 매우 특수한 조건에서만 재현 / E: 고급 공격 기술 필요 / A: 일부 내부 사용자 / D: 전문 보안 연구자가 분석해야 발견
+7~8점 — D: 주요 기능 장애, 데이터 유출 위험 / R: 거의 모든 환경에서 재현 / E: 기본 해킹 지식만 있어도 가능 / A: 광범위한 사용자 / D: 자동화 도구(Nmap, Metasploit)로 쉽게 탐지
+※ 실무에서는 세부 차이를 위해 4·6·9점도 정의해 사용 가능</div></details>
+    <h4>총점에 따른 위협 수준</h4>
+    <figure><svg viewBox="0 0 640 110" role="img" aria-label="DREAD 총점 구간" xmlns="http://www.w3.org/2000/svg"><rect x="20.0" y="34" width="120.0" height="30" style="fill:color-mix(in srgb,var(--accent) 12%,var(--surface));stroke:var(--surface);stroke-width:2"/><text x="80.0" y="54" text-anchor="middle" style="font-family:var(--font);font-size:11.5px;font-weight:800;fill:var(--ink)">낮음 Low</text><rect x="140.0" y="34" width="120.0" height="30" style="fill:color-mix(in srgb,var(--accent) 28%,var(--surface));stroke:var(--surface);stroke-width:2"/><text x="200.0" y="54" text-anchor="middle" style="font-family:var(--font);font-size:11.5px;font-weight:800;fill:var(--ink)">보통 Medium</text><rect x="260.0" y="34" width="120.0" height="30" style="fill:color-mix(in srgb,var(--accent) 55%,var(--surface));stroke:var(--surface);stroke-width:2"/><text x="320.0" y="54" text-anchor="middle" style="font-family:var(--font);font-size:11.5px;font-weight:800;fill:#fff">높음 High</text><rect x="380.0" y="34" width="240.0" height="30" style="fill:color-mix(in srgb,var(--accent) 100%,var(--surface));stroke:var(--surface);stroke-width:2"/><text x="440.0" y="54" text-anchor="middle" style="font-family:var(--font);font-size:11.5px;font-weight:800;fill:#fff">치명적 Critical</text><text x="20.0" y="80" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">0</text><text x="140.0" y="80" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">10</text><text x="260.0" y="80" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">20</text><text x="380.0" y="80" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">30</text><text x="500.0" y="80" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">40</text><text x="620.0" y="80" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">50</text><path d="M536.0 22 L536.0 66" fill="none" style="fill:none;stroke:var(--ink);stroke-width:2"/><text x="536.0" y="16" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:800;fill:var(--ink)">약한 패스워드 예시 43점</text><text x="320.0" y="102" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">0~10 · 11~20 · 21~30 · 31~50 (경계값은 교안 표 기준)</text></svg><figcaption>DREAD 총점(D+R+E+A+D, 0~50) 구간</figcaption></figure>
+    <div class="tablewrap"><table><thead><tr><th>총점</th><th>위협 수준</th><th>대응 우선순위</th></tr></thead><tbody><tr><td>0~10점</td><td>낮음 (Low)</td><td>모니터링 필요, 즉각 조치는 불필요</td></tr><tr><td>11~20점</td><td>보통 (Medium)</td><td>보안 패치 적용 고려, 필요 시 수정</td></tr><tr><td>21~30점</td><td>높음 (High)</td><td>보안 조치 필수, 공격 가능성 높음</td></tr><tr><td>31~50점</td><td>치명적 (Critical)</td><td><b>즉시 대응</b>, 긴급 패치 또는 보안 조치</td></tr></tbody></table></div>
+    <h4>DREAD 평가 예시 — 약한 패스워드 정책 (4자리 숫자 비밀번호)</h4>
+    <div class="tablewrap"><table><thead><tr><th>항목</th><th>점수</th><th>근거</th></tr></thead><tbody><tr><td>Damage</td><td>5</td><td>유출 시 계정 탈취 가능하지만 전체 시스템은 영향 없음</td></tr><tr><td>Reproducibility</td><td>10</td><td>누구나 여러 번 시도해 쉽게 크랙</td></tr><tr><td>Exploitability</td><td>10</td><td>간단한 스크립트·도구로 공격</td></tr><tr><td>Affected Users</td><td>8</td><td>많은 사용자가 영향 받을 가능성</td></tr><tr><td>Discoverability</td><td>10</td><td>자동화 도구(Brute-force)로 쉽게 탐지</td></tr><tr><td><b>총점</b></td><td><b>43</b> <span class="en">(교안 표기 42)</span></td><td><b>Critical</b> — 긴급 패치 필요 (MFA 적용, 복잡한 패스워드 요구)</td></tr></tbody></table></div>
+    <div class="call warn"><div class="t">교안 계산 오류</div><p>5 + 10 + 10 + 8 + 10 = <b>43</b>입니다. 교안은 42로 적었지만 어느 쪽이든 31~50 구간이라 <b>Critical</b> 판정은 같습니다. → <a href="#sq">확인 필요 1</a></p></div>
+  </section>
+
+  <section id="s6">
+    <h2 class="st"><span class="sq">06</span>MS-SDL 위협모델링 프로세스 4단계</h2>
+    <div class="badges"><span class="badge exam">교안 퀴즈 출제</span><span class="badge prof">2차시 · 교안 19~24쪽</span></div>
+    <figure><svg viewBox="0 0 640 340" role="img" aria-label="위협모델링 프로세스" xmlns="http://www.w3.org/2000/svg"><defs><marker id="artmp" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" style="fill:var(--ink-3)"/></marker></defs><circle cx="320.0" cy="170.0" r="125" fill="none" style="fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:5 5"/><path d="M398.6 72.8 A125 125 0 0 1 440.4 136.4" fill="none" style="fill:none;stroke:var(--accent);stroke-width:2" marker-end="url(#artmp)"/><path d="M440.4 203.6 A125 125 0 0 1 398.6 267.2" fill="none" style="fill:none;stroke:var(--accent);stroke-width:2" marker-end="url(#artmp)"/><path d="M241.4 267.2 A125 125 0 0 1 199.6 203.6" fill="none" style="fill:none;stroke:var(--accent);stroke-width:2" marker-end="url(#artmp)"/><path d="M199.6 136.4 A125 125 0 0 1 241.4 72.8" fill="none" style="fill:none;stroke:var(--accent);stroke-width:2" marker-end="url(#artmp)"/><rect x="245.0" y="23.0" width="150" height="44" rx="10" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5"/><text x="320.0" y="42.0" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:800;fill:var(--accent-deep)">Diagram</text><text x="320.0" y="58.0" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">1 시스템 정의</text><rect x="370.0" y="148.0" width="150" height="44" rx="10" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5"/><text x="445.0" y="167.0" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:800;fill:var(--accent-deep)">Identify Threats</text><text x="445.0" y="183.0" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">2 위협 식별</text><rect x="245.0" y="273.0" width="150" height="44" rx="10" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5"/><text x="320.0" y="292.0" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:800;fill:var(--accent-deep)">Mitigate</text><text x="320.0" y="308.0" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">3 완화 계획 수립</text><rect x="120.0" y="148.00000000000003" width="150" height="44" rx="10" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5"/><text x="195.0" y="167.00000000000003" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:800;fill:var(--accent-deep)">Validate</text><text x="195.0" y="183.00000000000003" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">4 검토 및 개선</text></svg><figcaption>교안 그림: Diagram(파랑) → Identify Threats(노랑) → Mitigate(초록) → Validate(주황) → 다시 Diagram</figcaption></figure>
+    <div class="tablewrap"><table><thead><tr><th>단계</th><th>목표</th><th>주요 활동</th><th>활용 기법</th></tr></thead><tbody><tr><td><b>1. 시스템 정의</b><br>Define the System · Diagram</td><td>보호할 대상(앱·데이터·시스템)을 명확히 정의</td><td>아키텍처·구성요소 파악 · <b>DFD 작성</b> · <b>신뢰 경계(Trust Boundaries)</b> 설정 · 보호할 주요 자산 식별</td><td>DFD(데이터 이동 경로 시각화), 아키텍처 다이어그램</td></tr><tr><td><b>2. 위협 식별</b><br>Identify Threats</td><td>STRIDE로 잠재 위협 식별</td><td>STRIDE 기반 시나리오 분석 · 공격자 관점 분석 · 위협 목록 작성·우선순위 지정</td><td>STRIDE, 공격 트리(Attack Tree), 공격 경로 분석, OWASP Top 10·CVE 참고</td></tr><tr><td><b>3. 완화 계획 수립</b><br>Mitigate Threats</td><td>보안 조치 설계·구현</td><td>위협별 완화 전략 · 보안 코딩 원칙 · 접근제어·암호화 · 보안 테스트 계획</td><td>설계 원칙(최소 권한 Least Privilege, 보안 강화된 기본 설정 Secure Defaults, 방어적 코딩 Defensive Coding) · 기술(MFA·AES 등 안전한 인증·암호화, 입력 검증 Input Validation과 보안 필터링, 로깅·감사 모니터링 도구) · 테스트(SAST, DAST, 침투 테스트)</td></tr><tr><td><b>4. 검토 및 개선</b><br>Validate &amp; Review</td><td>결과 검토·지속 개선</td><td>위협 모델 검토·보안 점검 · 조치 효과 검증 · 새 위협 업데이트</td><td>Threat Model Review(최신 아키텍처 반영·해결 여부 확인) · DevSecOps 자동 점검 · 최신 위협 정보로 정책 갱신</td></tr></tbody></table></div>
+    <div class="call warn"><div class="t">교안 퀴즈 2-2 함정</div><p>시스템 정의는 “구성원 간 협업 시스템”이 아니라 <b>보호할 대상</b>을 정의하는 단계입니다.</p></div>
+    <h4>MS-SDL 위협 모델링 요약표</h4>
+    <div class="tablewrap"><table><thead><tr><th>단계</th><th>주요 활동</th><th>활용 기법</th></tr></thead><tbody><tr><td>1. 시스템 정의</td><td>보호할 자산 및 데이터 흐름 분석</td><td>DFD, 아키텍처 다이어그램</td></tr><tr><td>2. 위협 식별</td><td>STRIDE로 보안 위협 분석</td><td>STRIDE, 공격트리, OWASP Top 10</td></tr><tr><td>3. 완화 계획 수립</td><td>위협별 보안 조치 적용</td><td>최소 권한 원칙, 암호화, 접근제어, 보안코딩</td></tr><tr><td>4. 검토 및 개선</td><td>보안 검토·지속 업데이트</td><td>정적 분석, 동적 분석, 보안 테스트</td></tr></tbody></table></div>
+    <ul><li>개발 초기(<b>설계 단계</b>)에 보안 위협을 사전 분석</li><li>STRIDE로 체계적으로 위협 식별</li><li>보안 요구사항을 개발 프로세스에 반영해 자동화 가능</li><li>DevSecOps와 연계해 지속적 검증·개선</li></ul>
+    <div class="call quote"><div class="t">2차시 요약 (교안)</div><p>위협모델링은 보안 위협을 사전에 식별·대응하는 구조화된 분석 기법 · 설계 단계에서 보안을 내재화하고 공격자 관점에서 분석 · 핵심 목표: 시스템 이해, 위협 식별, 위험 평가, 보안 조치 적용 · 다양한 직무가 협업 · 대표 프레임워크: STRIDE, DREAD, PASTA, Attack Tree · MS-SDL 위협모델링을 SDLC에 통합해 사고 예방.</p></div>
+  </section>
+
+  <section id="s7">
+    <h2 class="st"><span class="sq">07</span>위협모델링 도구와 MTMT</h2>
+    <div class="badges"><span class="badge exam">교안 퀴즈 출제</span><span class="badge prof">3차시 · 교안 5~8쪽</span></div>
+    <h3>도구 선정 기준</h3>
+    <div class="tablewrap"><table><thead><tr><th>기준</th><th>내용</th></tr></thead><tbody><tr><td>자동화 지원 여부</td><td>위협 모델 자동 생성·분석 기능</td></tr><tr><td>UI 및 사용 편의성</td><td>직관적 인터페이스와 시각화</td></tr><tr><td>보안 프레임워크 지원</td><td>STRIDE, PASTA, CVSS 등과 연계 가능 여부</td></tr><tr><td>협업 기능</td><td>여러 팀 동시 작업 (DevSecOps 환경 지원)</td></tr><tr><td>무료/유료 여부</td><td>비용 및 라이선스 정책</td></tr></tbody></table></div>
+    <p style="font-size:13px;color:var(--ink-2)">교안 퀴즈 3-1: “CWE/CVE 연계 분석 여부”는 선정 기준이 <b>아님</b>.</p>
+    <h3>대표 도구</h3>
+    <div class="tablewrap"><table><thead><tr><th>도구</th><th>주요 특징</th><th>지원 플랫폼</th><th>가격</th></tr></thead><tbody><tr><td><b>Microsoft Threat Modeling Tool</b></td><td>STRIDE 기반, 자동화된 위협 분석, DFD 지원</td><td>Windows</td><td>무료</td></tr><tr><td>OWASP Threat Dragon</td><td>웹 기반, 협업 지원, STRIDE 기반</td><td>Windows, Mac, Linux</td><td>무료</td></tr><tr><td>IriusRisk</td><td>PASTA 기반, 자동화, 보안 요구사항 생성</td><td>클라우드, 온프레미스</td><td>유료</td></tr><tr><td>ThreatModeler</td><td>DevSecOps 연계, 위협 시뮬레이션, API 연동</td><td>클라우드, 온프레미스</td><td>유료</td></tr><tr><td>SecuriCAD</td><td>네트워크 모델링 및 공격 시뮬레이션</td><td>클라우드, 온프레미스</td><td>유료</td></tr><tr><td>CAIRIS</td><td>UX 설계와 보안 분석 통합, CVSS 기반 평가</td><td>Linux, Docker</td><td>무료</td></tr></tbody></table></div>
+    <div class="tablewrap"><table><thead><tr><th>상황</th><th>추천 도구</th></tr></thead><tbody><tr><td>무료 도구가 필요할 때</td><td>MTMT (MS-SDL 기반, STRIDE) · OWASP Threat Dragon (웹 협업) · CAIRIS (UX·보안 요구사항 통합)</td></tr><tr><td>DevSecOps 파이프라인에서</td><td>ThreatModeler (CI/CD 연계, 클라우드) · IriusRisk (자동 모델링·요구사항 생성) · OWASP Threat Dragon (GitHub 연동)</td></tr><tr><td>네트워크·인프라 보안 강화</td><td>SecuriCAD (공격 시뮬레이션·네트워크 평가) · ThreatModeler (AWS, Azure 지원)</td></tr></tbody></table></div>
+    <h3>MTMT 설치 및 실습 영상 (교안 8쪽)</h3>
+    <figure><svg viewBox="0 0 640 130" role="img" aria-label="MTMT 샘플 DFD" xmlns="http://www.w3.org/2000/svg"><defs><marker id="armt" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" style="fill:var(--ink-3)"/></marker></defs><rect x="14" y="40" width="130" height="50" rx="2" style="fill:var(--surface);stroke:var(--line);stroke-width:1.5"/><text x="79" y="70" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:800;fill:var(--ink)">Human User</text><circle cx="320" cy="65" r="42" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:2"/><text x="320" y="70" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:800;fill:var(--accent-deep)">Web Server</text><path d="M490 42 L626 42 M490 88 L626 88" fill="none" style="fill:none;stroke:var(--ink);stroke-width:2"/><text x="558" y="70" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:800;fill:var(--ink)">SQL Database</text><path d="M146 65 L276 65" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#armt)"/><text x="211" y="57" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--ink-2)">HTTPS</text><path d="M364 65 L486 65" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#armt)"/><text x="425" y="57" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--ink-2)">Binary</text><text x="320" y="124" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">사각형 = External Interactor · 원 = Process · 평행선 = Data Store · 화살표 = Data Flow</text></svg><figcaption>MTMT “Sample Web” 모델 — 그림을 그리면 위협 목록이 자동 생성됨</figcaption></figure>
+    <div class="tablewrap"><table><thead><tr><th>ID</th><th>State</th><th>Title</th><th>Category (STRIDE)</th><th>Interaction</th><th>Priority</th></tr></thead><tbody><tr><td>0</td><td>Not Started</td><td>Spoofing the Human User …</td><td>Spoofing</td><td>HTTPS</td><td>High</td></tr><tr><td>1</td><td>Not Started</td><td>Cross Site Scripting …</td><td>Tampering</td><td>HTTPS</td><td>High</td></tr><tr><td>2</td><td>Not Started</td><td>Elevation Using …</td><td>Elevation Of Privilege</td><td>HTTPS</td><td>High</td></tr><tr><td>3</td><td>Not Started</td><td>Spoofing of De…</td><td>Spoofing</td><td>Binary</td><td>High</td></tr></tbody></table></div>
+    <p style="font-size:13px;color:var(--ink-3)">화면에 “6 Threats Displayed, 6 Total”로 표시되며 나머지 2건은 캡처 밖. 영상 자체는 PDF에 없음.</p>
+  </section>
+
+  <section id="s8">
+    <h2 class="st"><span class="sq">08</span>실무 적용 — 게시글 작성 기능 위협모델링</h2>
+    <div class="badges"><span class="badge exam">교안 퀴즈 출제</span><span class="badge prof">3차시 · 교안 10~17쪽</span></div>
+    <p>시스템 전체가 아니라 <b>웹 게시판 기능 일부</b>(게시글 작성, 댓글 작성은 개별 실습)를 대상으로 단계별 실습합니다.</p>
+    <figure><svg viewBox="0 0 640 72" role="img" aria-label="실무 분석 5단계" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arpr5" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" style="fill:var(--ink-3)"/></marker></defs><rect x="4.0" y="8" width="116.8" height="56" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="62.4" y="32.75" text-anchor="middle" style="font-family:var(--font);font-size:11.5px;font-weight:700;fill:var(--accent-deep)">시스템 이해</text><text x="62.4" y="47.25" text-anchor="middle" style="font-family:var(--font);font-size:11.5px;font-weight:700;fill:var(--accent-deep)">범위 정의</text><path d="M122.8 36.0 L129.8 36.0" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arpr5)"/><rect x="132.8" y="8" width="116.8" height="56" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="191.20000000000002" y="32.75" text-anchor="middle" style="font-family:var(--font);font-size:11.5px;font-weight:700;fill:var(--accent-deep)">STRIDE</text><text x="191.20000000000002" y="47.25" text-anchor="middle" style="font-family:var(--font);font-size:11.5px;font-weight:700;fill:var(--accent-deep)">위협 도출</text><path d="M251.60000000000002 36.0 L258.6 36.0" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arpr5)"/><rect x="261.6" y="8" width="116.8" height="56" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="320.0" y="32.75" text-anchor="middle" style="font-family:var(--font);font-size:11.5px;font-weight:700;fill:var(--accent-deep)">DREAD</text><text x="320.0" y="47.25" text-anchor="middle" style="font-family:var(--font);font-size:11.5px;font-weight:700;fill:var(--accent-deep)">위험도 평가</text><path d="M380.40000000000003 36.0 L387.40000000000003 36.0" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arpr5)"/><rect x="390.40000000000003" y="8" width="116.8" height="56" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="448.8" y="32.75" text-anchor="middle" style="font-family:var(--font);font-size:11.5px;font-weight:700;fill:var(--accent-deep)">위협 완화·</text><text x="448.8" y="47.25" text-anchor="middle" style="font-family:var(--font);font-size:11.5px;font-weight:700;fill:var(--accent-deep)">대응 전략</text><path d="M509.20000000000005 36.0 L516.2 36.0" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arpr5)"/><rect x="519.2" y="8" width="116.8" height="56" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="577.6" y="32.75" text-anchor="middle" style="font-family:var(--font);font-size:11.5px;font-weight:700;fill:var(--accent-deep)">보안 검증·</text><text x="577.6" y="47.25" text-anchor="middle" style="font-family:var(--font);font-size:11.5px;font-weight:700;fill:var(--accent-deep)">지속 개선</text></svg><figcaption>실무 분석 절차 5단계 (앞 차시의 4단계에 DREAD 평가를 별도 단계로 뺀 구성)</figcaption></figure>
+    <h3>1단계 · 시스템 이해 및 범위 정의</h3>
+    <div class="tablewrap"><table><thead><tr><th>게시글 작성 시나리오</th><th>관련 구성 요소</th></tr></thead><tbody><tr><td>1. 로그인한 사용자가 작성 페이지로 이동<br>2. 제목·내용·첨부파일 입력<br>3. 작성 버튼 클릭<br>4. 서버가 <b>세션 기반 인증</b> 확인<br>5. <b>입력값 검증</b> 수행<br>6. 게시글 내용을 DB에 저장<br>7. 첨부파일은 파일 저장소에 저장</td><td>사용자 (로그인 상태)<br>게시글 작성 요청 처리 서버<br>게시글 DB<br>파일 저장소</td></tr></tbody></table></div>
+    <figure><svg viewBox="0 0 640 250" role="img" aria-label="게시글 작성 DFD" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ardfd" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" style="fill:var(--ink-3)"/></marker></defs><rect x="14" y="90" width="120" height="60" rx="2" style="fill:var(--surface);stroke:var(--line);stroke-width:1.5"/><text x="74" y="116" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:800;fill:var(--ink)">사용자</text><text x="74" y="134" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-2)">(로그인 상태)</text><path d="M160 20 C146 90 146 160 160 232" fill="none" style="fill:none;stroke:#DC2626;stroke-width:2;stroke-dasharray:6 5"/><text x="166" y="30" text-anchor="start" style="font-family:var(--font);font-size:10.5px;font-weight:800;fill:#DC2626">Internet Boundary</text><circle cx="330" cy="120" r="54" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:2"/><text x="330" y="125" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:800;fill:var(--accent-deep)">Web Server</text><path d="M136 104 L274 104" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#ardfd)"/><text x="214" y="96" text-anchor="middle" style="font-family:var(--font);font-size:10px;font-weight:700;fill:var(--ink-2)">게시글 작성 (HTTPS)</text><path d="M274 138 L138 138" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#ardfd)"/><text x="214" y="156" text-anchor="middle" style="font-family:var(--font);font-size:10px;font-weight:700;fill:var(--ink-2)">작성 결과 (HTTPS)</text><path d="M500 48 L630 48 M500 86 L630 86" fill="none" style="fill:none;stroke:var(--ink);stroke-width:2"/><text x="565" y="72" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:800;fill:var(--ink)">게시글 DB</text><path d="M500 176 L630 176 M500 214 L630 214" fill="none" style="fill:none;stroke:var(--ink);stroke-width:2"/><text x="565" y="200" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:800;fill:var(--ink)">파일 저장소</text><path d="M376 94 L498 67" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#ardfd)"/><text x="430" y="70" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:700;fill:var(--ink-2)">제목·내용 (Binary)</text><path d="M376 148 L498 195" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#ardfd)"/><text x="428" y="216" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:700;fill:var(--ink-2)">첨부 파일 (HTTPS)</text></svg><figcaption>게시글 작성 기능 DFD (MTMT로 작성) — 빨간 점선이 신뢰 경계</figcaption></figure>
+    <div class="tablewrap"><table><thead><tr><th>요소</th><th>DFD 기호</th><th>종류</th></tr></thead><tbody><tr><td>사용자(로그인 상태)</td><td>사각형</td><td><b>External Interactor</b> (외부 개체)</td></tr><tr><td>Web Server</td><td>원</td><td><b>Process</b> (프로세스)</td></tr><tr><td>게시글 DB, 파일 저장소</td><td>위아래 평행선</td><td><b>Data Store</b> (데이터 저장소)</td></tr><tr><td>게시글 작성·작성 결과·제목/내용·첨부 파일</td><td>화살표</td><td><b>Data Flow</b> (데이터 흐름)</td></tr><tr><td>Internet Boundary</td><td>빨간 점선</td><td><b>Trust Boundary</b> (신뢰 경계) — 사용자와 서버 사이</td></tr></tbody></table></div>
+    <div class="call warn"><div class="t">교안 퀴즈 3-2, 3-3</div><p>DFD 구성요소는 External Interactor · Process · Data Store · Data Flow (Module 아님). DFD는 <b>1단계(시스템 이해 및 범위 정의)</b>에서 그림.</p></div>
+    <h3>2단계 · STRIDE 위협 도출</h3>
+    <div class="tablewrap"><table><thead><tr><th>STRIDE</th><th>적용 대상</th><th>위협 예시</th></tr></thead><tbody><tr><td><b>S</b> 신원 위조</td><td>게시글 작성 API</td><td>로그인하지 않은 사용자가 API를 직접 호출해 게시글 작성</td></tr><tr><td></td><td>세션 쿠키</td><td>세션 탈취로 타인 계정으로 게시글 작성</td></tr><tr><td><b>T</b> 데이터 변조</td><td>게시글 입력값</td><td>제목·내용에 악성 스크립트 삽입</td></tr><tr><td></td><td>파일 업로드 경로</td><td>경로 조작으로 시스템 파일 덮어쓰기 시도</td></tr><tr><td><b>R</b> 행위 부인</td><td>로그 기록</td><td>작성자 정보가 기록되지 않으면 작성 사실 부인 가능</td></tr><tr><td></td><td>DB 트랜잭션</td><td>감사 기록이 저장되지 않아 조작 가능</td></tr><tr><td><b>I</b> 정보 노출</td><td>파일 저장소 경로</td><td>첨부파일이 인증 없이 접근 가능한 경로에 저장되면 외부 노출</td></tr><tr><td></td><td>오류 메시지</td><td>서버 경로 정보가 노출되어 내부 구조 노출</td></tr><tr><td><b>D</b> 서비스 거부</td><td>게시글 작성 프로세스</td><td>봇으로 대량 게시글 등록해 서비스 방해</td></tr><tr><td></td><td>본문 입력 필드</td><td>과도한 텍스트 입력으로 렌더링 지연</td></tr><tr><td><b>E</b> 권한 상승</td><td>관리자 API</td><td>일반 사용자가 관리자 권한으로 공지사항 등록</td></tr><tr><td></td><td>권한 검증 로직</td><td>API 요청에 관리자 플래그를 넣어 권한 상승</td></tr></tbody></table></div>
+    <h3>3단계 · DREAD 위험도 평가</h3>
+    <p>이 실습은 앞 차시의 <b>총점(0~50)</b>이 아니라 <b>5개 항목 평균(0~10)</b>으로 평가합니다. 기준: <b>7.0 이상 높음</b> · 4.0~6.9 중간 · 4.0 미만 낮음.</p>
+    <figure><svg viewBox="0 0 640 346" role="img" aria-label="DREAD 평균 점수" xmlns="http://www.w3.org/2000/svg"><text x="162" y="29.0" text-anchor="end" style="font-family:var(--font);font-size:11.5px;font-weight:600;fill:var(--ink-2)">S 비인증 API 호출</text><rect x="170" y="16" width="319.8" height="18" rx="4" style="fill:var(--accent)"/><text x="495.8" y="29.0" text-anchor="start" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--ink)">7.8</text><text x="162" y="55.0" text-anchor="end" style="font-family:var(--font);font-size:11.5px;font-weight:600;fill:var(--ink-2)">S 세션 탈취 후 게시</text><rect x="170" y="42" width="319.8" height="18" rx="4" style="fill:var(--accent)"/><text x="495.8" y="55.0" text-anchor="start" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--ink)">7.8</text><text x="162" y="81.0" text-anchor="end" style="font-family:var(--font);font-size:11.5px;font-weight:600;fill:var(--ink-2)">T XSS 게시</text><rect x="170" y="68" width="270.6" height="18" rx="4" style="fill:color-mix(in srgb,var(--accent) 40%,var(--surface))"/><text x="446.6" y="81.0" text-anchor="start" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--ink)">6.6</text><text x="162" y="107.0" text-anchor="end" style="font-family:var(--font);font-size:11.5px;font-weight:600;fill:var(--ink-2)">T 파일경로 조작</text><rect x="170" y="94" width="295.2" height="18" rx="4" style="fill:var(--accent)"/><text x="471.2" y="107.0" text-anchor="start" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--ink)">7.2</text><text x="162" y="133.0" text-anchor="end" style="font-family:var(--font);font-size:11.5px;font-weight:600;fill:var(--ink-2)">R 사용자ID 미기록</text><rect x="170" y="120" width="229.6" height="18" rx="4" style="fill:color-mix(in srgb,var(--accent) 40%,var(--surface))"/><text x="405.6" y="133.0" text-anchor="start" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--ink)">5.6</text><text x="162" y="159.0" text-anchor="end" style="font-family:var(--font);font-size:11.5px;font-weight:600;fill:var(--ink-2)">R 감사 로그 없음</text><rect x="170" y="146" width="254.2" height="18" rx="4" style="fill:color-mix(in srgb,var(--accent) 40%,var(--surface))"/><text x="430.2" y="159.0" text-anchor="start" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--ink)">6.2</text><text x="162" y="185.0" text-anchor="end" style="font-family:var(--font);font-size:11.5px;font-weight:600;fill:var(--ink-2)">I 첨부파일 노출</text><rect x="170" y="172" width="303.4" height="18" rx="4" style="fill:var(--accent)"/><text x="479.4" y="185.0" text-anchor="start" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--ink)">7.4</text><text x="162" y="211.0" text-anchor="end" style="font-family:var(--font);font-size:11.5px;font-weight:600;fill:var(--ink-2)">I 에러에 경로 노출</text><rect x="170" y="198" width="188.6" height="18" rx="4" style="fill:color-mix(in srgb,var(--accent) 40%,var(--surface))"/><text x="364.59999999999997" y="211.0" text-anchor="start" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--ink)">4.6</text><text x="162" y="237.0" text-anchor="end" style="font-family:var(--font);font-size:11.5px;font-weight:600;fill:var(--ink-2)">D 게시글 폭주 등록</text><rect x="170" y="224" width="303.4" height="18" rx="4" style="fill:var(--accent)"/><text x="479.4" y="237.0" text-anchor="start" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--ink)">7.4</text><text x="162" y="263.0" text-anchor="end" style="font-family:var(--font);font-size:11.5px;font-weight:600;fill:var(--ink-2)">D 긴 본문 처리 지연</text><rect x="170" y="250" width="229.6" height="18" rx="4" style="fill:color-mix(in srgb,var(--accent) 40%,var(--surface))"/><text x="405.6" y="263.0" text-anchor="start" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--ink)">5.6</text><text x="162" y="289.0" text-anchor="end" style="font-family:var(--font);font-size:11.5px;font-weight:600;fill:var(--ink-2)">E 관리자 API 호출</text><rect x="170" y="276" width="319.8" height="18" rx="4" style="fill:var(--accent)"/><text x="495.8" y="289.0" text-anchor="start" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--ink)">7.8</text><text x="162" y="315.0" text-anchor="end" style="font-family:var(--font);font-size:11.5px;font-weight:600;fill:var(--ink-2)">E 권한 필드 조작</text><rect x="170" y="302" width="295.2" height="18" rx="4" style="fill:var(--accent)"/><text x="471.2" y="315.0" text-anchor="start" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--ink)">7.2</text><path d="M457.0 6 L457.0 326" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.3;stroke-dasharray:4 3"/><text x="457.0" y="340" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:700;fill:var(--ink-2)">7.0 높음</text><path d="M334.0 6 L334.0 326" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.3;stroke-dasharray:4 3"/><text x="334.0" y="340" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:700;fill:var(--ink-2)">4.0</text></svg><figcaption>진한 막대 7개가 “높음” — 합계를 5로 나눈 값이 교안 평균과 모두 일치 (검산 완료)</figcaption></figure>
+    <div class="tablewrap"><table><thead><tr><th>STRIDE</th><th>위협</th><th>D</th><th>R</th><th>E</th><th>A</th><th>D</th><th>평균</th></tr></thead><tbody><tr><td>S</td><td>비인증 API 호출</td><td>8</td><td>9</td><td>7</td><td>7</td><td>8</td><td><b>7.8</b></td></tr><tr><td>S</td><td>세션 탈취 후 게시</td><td>9</td><td>9</td><td>6</td><td>8</td><td>7</td><td><b>7.8</b></td></tr><tr><td>T</td><td>XSS 게시</td><td>7</td><td>8</td><td>5</td><td>6</td><td>7</td><td>6.6</td></tr><tr><td>T</td><td>파일경로 조작</td><td>9</td><td>6</td><td>6</td><td>7</td><td>8</td><td><b>7.2</b></td></tr><tr><td>R</td><td>사용자ID 미기록</td><td>6</td><td>7</td><td>4</td><td>6</td><td>5</td><td>5.6</td></tr><tr><td>R</td><td>감사 로그 없음</td><td>7</td><td>7</td><td>5</td><td>6</td><td>6</td><td>6.2</td></tr><tr><td>I</td><td>첨부파일 노출</td><td>8</td><td>9</td><td>5</td><td>8</td><td>7</td><td><b>7.4</b></td></tr><tr><td>I</td><td>에러에 경로 노출</td><td>5</td><td>5</td><td>3</td><td>4</td><td>6</td><td>4.6</td></tr><tr><td>D</td><td>게시글 폭주 등록</td><td>7</td><td>8</td><td>6</td><td>9</td><td>7</td><td><b>7.4</b></td></tr><tr><td>D</td><td>긴 본문 처리 지연</td><td>6</td><td>7</td><td>4</td><td>6</td><td>5</td><td>5.6</td></tr><tr><td>E</td><td>관리자 API 호출</td><td>9</td><td>9</td><td>6</td><td>7</td><td>8</td><td><b>7.8</b></td></tr><tr><td>E</td><td>권한 필드 조작</td><td>8</td><td>8</td><td>6</td><td>7</td><td>7</td><td><b>7.2</b></td></tr></tbody></table></div>
+    <h3>4단계 · 위협 완화 및 대응 전략</h3>
+    <div class="tablewrap"><table><thead><tr><th>STRIDE</th><th>위협</th><th>대응 방안</th></tr></thead><tbody><tr><td>S</td><td>비인증 API 호출</td><td>모든 요청에 <b>세션 또는 액세스 토큰 기반 인증</b> 필수 확인</td></tr><tr><td>S</td><td>세션 탈취 후 게시</td><td>세션 쿠키에 <b>Secure/HttpOnly</b> 플래그, 만료시간 단축 및 재생성 정책</td></tr><tr><td>T</td><td>XSS 게시</td><td>입력값 <b>HTML 인코딩</b> 처리, XSS 필터 적용</td></tr><tr><td>T</td><td>파일경로 조작</td><td>업로드 경로는 <b>서버 측에서 생성</b>, 사용자 입력값을 경로로 직접 사용 금지</td></tr><tr><td>R</td><td>사용자ID 미기록</td><td>게시글 등록 시 사용자 ID·타임스탬프 강제 로깅</td></tr><tr><td>R</td><td>감사 로그 없음</td><td>DB 레벨 감사 로그 활성화 (INSERT/UPDATE 추적)</td></tr><tr><td>I</td><td>첨부파일 노출</td><td>업로드 경로에 접근 제어(ACL) 설정 및 인증 체크</td></tr><tr><td>I</td><td>에러에 경로 노출</td><td>클라이언트 에러 메시지는 최소화, 상세 내용은 내부 로그에만</td></tr><tr><td>D</td><td>게시글 폭주 등록</td><td>CAPTCHA, 요청 속도 제한(Rate Limit), IP 기반 필터링</td></tr><tr><td>D</td><td>긴 본문 처리 지연</td><td>입력 글자 수 제한, 입력 크기 검증 후 오류 반환</td></tr><tr><td>E</td><td>관리자 API 호출</td><td>관리자 API는 별도 관리자 인증·권한 확인 로직 분리</td></tr><tr><td>E</td><td>권한 필드 조작</td><td>서버 측 권한 검증은 <b>사용자 세션 기준으로만</b> 수행 (요청 입력값 무시)</td></tr></tbody></table></div>
+    <h3>5단계 · 보안 검증 및 지속적인 개선</h3>
+    <ul><li>수립한 대응 전략을 실제로 적용하고 <b>사후 테스트로 검증</b></li><li>변경이 생기면 위협모델링 과정을 <b>다시 반복</b></li><li>로그·모니터링 시스템을 구축해 지속 감시</li></ul>
+    <h3>[개별 실습] 댓글 작성 기능 위협모델링</h3>
+    <div class="call link"><div class="t">개별 실습 — 제출 과제 아님</div><p>교안 17쪽에 “최종 산출물” 4종이 적혀 있지만, 교안·배포 자료·LMS에 제출 공지가 없어 <b>제출 과제가 아닌 개별 실습</b>으로 정리합니다. 산출물 구성은 시험에 나올 수 있으니 알아 두세요.</p></div>
+    <div class="tablewrap"><table><thead><tr><th>항목</th><th>내용</th></tr></thead><tbody><tr><td>분석 대상 흐름</td><td>1. 게시글 상세 페이지에서 댓글 작성 → 2. 댓글 내용 + <b>게시글 ID</b>를 서버로 전송 → 3. 서버가 로그인 확인 후 <b>게시글 ID 유효성 검증</b> → 4. 댓글 DB에 저장</td></tr><tr><td>구성 요소</td><td>사용자(로그인 상태) · 댓글 처리 웹 서버 · 게시글 DB(게시글 ID 존재 확인) · 댓글 DB</td></tr><tr><td>주의할 점</td><td>게시글 ID를 참조하는 흐름 필요 · <b>첨부파일은 사용되지 않음</b> · 입력값 처리·DB 저장·권한 확인은 게시글과 동일</td></tr><tr><td>최종 산출물</td><td>① 시스템 개요서 (분석 대상 기초 내용, DFD) ② STRIDE 위협 분석표 ③ DREAD 위험도 평가표 ④ 보안 대책 문서 (완화·대응 방안)</td></tr></tbody></table></div>
+    <div class="call quote"><div class="t">3차시 요약 (교안)</div><p>STRIDE로 보안 위협 식별 · MTMT로 모델 작성·위협 분석·보고서 생성 · 기능과 데이터 흐름을 DFD로 시각화 · 위험도를 고려해 대응 우선순위 설정 · 보안 조치 반영 여부 점검과 로그·모니터링 체계 검토.</p></div>
+  </section>
+
+  <section id="sp">
+    <h2 class="st"><span class="sq">09</span>교안 퀴즈 (2주차 1~3차시)</h2>
+    <div class="badges"><span class="badge exam">시험 참고 1순위</span></div>
+    <p style="font-size:13px;color:var(--ink-3)">각 교안 마지막의 퀴즈를 그대로 옮겼습니다. 아래 “예상 문제”와 별개입니다.</p>
+    <h4>1차시</h4>
+    <div class="q"><div class="qh"><span class="qn">1-1</span><span>다음 중 SW개발보안 방법론의 주요 개념이 아닌 것은?</span><span class="type">객관식</span></div><ol class="ch"><li>지속적인 보안 점검</li><li>보안 내재화</li><li>SBOM 다중화</li><li>취약점 최소화</li></ol><div class="ans"><span class="lab">정답 ③ SBOM 다중화</span>주요 개념은 보안 내재화, 취약점 최소화, 지속적인 보안 점검입니다.</div></div>
+    <div class="q"><div class="qh"><span class="qn">1-2</span><span>다음 중 SW 결함 수정비용이 가장 많이 필요한 경우는?</span><span class="type">객관식</span></div><ol class="ch"><li>코딩과정 발생한 결함이 통합 단계에서 발견된 경우</li><li>설계과정 발생한 결함이 제품 출시 단계에서 발견된 경우</li><li>설계과정 발생한 결함이 코딩 단계에서 발견된 경우</li><li>통합과정 발생한 결함이 제품출시 단계에서 발견된 경우</li></ol><div class="ans"><span class="lab">정답 ②</span>최초 과정의 결함을 최종 출시 단계에서 알게 되면 가장 비쌉니다 (표 기준 30배. ①10배 ③5배 ④20배).</div></div>
+    <div class="q"><div class="qh"><span class="qn">1-3</span><span>다음 중 MS-SDL 보안개발 방법론에 대한 설명 중 틀린 것은?</span><span class="type">객관식</span></div><ol class="ch"><li>보안 문제를 사전에 차단한다.</li><li>요구사항 정의 단계에 위협 모델링을 수행한다.</li><li>구현 단계에서 정적 분석을 수행한다.</li><li>배포 단계에서 보안 가이드 문서를 제공한다.</li></ol><div class="ans"><span class="lab">정답 ②</span>위협 모델링은 <b>설계 단계</b>에 수행합니다. 요구사항 단계는 필요성 확인까지.</div></div>
+    <h4>2차시</h4>
+    <div class="q"><div class="qh"><span class="qn">2-1</span><span>다음 중 위협모델링의 핵심 목표가 아닌 것은?</span><span class="type">객관식</span></div><ol class="ch"><li>위험 평가</li><li>보안 조치 적용</li><li>시스템 이해</li><li>SW 구조 이해</li></ol><div class="ans"><span class="lab">정답 ④</span>핵심 목표는 시스템 이해, 위협 식별, 위험 평가, 보안 조치 적용입니다.</div></div>
+    <div class="q"><div class="qh"><span class="qn">2-2</span><span>다음 중 위협모델링 프로세스 단계에 대한 내용이 틀린 것은?</span><span class="type">객관식</span></div><ol class="ch"><li>시스템 정의 - 구성원간 상호 협업 시스템을 명확히 정의</li><li>위협 식별 - 발생할 수 있는 잠재적 위협을 식별</li><li>완화 계획 수립 - 보안조치를 설계하고 구현</li><li>검토 및 개선 - 결과를 검토하고 지속적으로 개선</li></ol><div class="ans"><span class="lab">정답 ①</span>시스템 정의 단계는 위협 모델링을 위해 <b>보호할 대상</b>을 명확히 정의하는 단계입니다.</div></div>
+    <div class="q"><div class="qh"><span class="qn">2-3</span><span>다음 중 STRIDE 프레임워크에서 정의한 주요 위협요소에 대한 설명으로 올바른 것은?</span><span class="type">객관식</span></div><ol class="ch"><li>신원 위조 - 사용자가 악의적인 행동을 부인 가능</li><li>권한 상승 - 기밀 데이터가 외부에 노출</li><li>서비스 거부 - 시스템을 사용할 수 없도록 하는 공격</li><li>정보 노출 - 데이터가 불법적으로 변경되거나 조작됨</li></ol><div class="ans"><span class="lab">정답 ③</span>①은 부인(Repudiation), ②는 정보 노출, ④는 변조(Tampering)의 설명입니다. 서비스 거부 대응: 트래픽 제한, WAF, DDoS 보호.</div></div>
+    <h4>3차시</h4>
+    <div class="q"><div class="qh"><span class="qn">3-1</span><span>다음 중 위협모델링 도구 선정 기준으로 가장 적합하지 않은 것은?</span><span class="type">객관식</span></div><ol class="ch"><li>자동화 지원 여부</li><li>보안 프레임워크 지원 여부</li><li>무료/유료 여부</li><li>CWE/CVE 연계 분석 여부</li></ol><div class="ans"><span class="lab">정답 ④</span>위협모델링 도구는 SW 약점·취약점 목록과 직접 연관될 필요가 없습니다.</div></div>
+    <div class="q"><div class="qh"><span class="qn">3-2</span><span>다음 중 데이터 흐름 다이어그램(DFD)의 주요 구성요소가 아닌 것은?</span><span class="type">객관식</span></div><ol class="ch"><li>Process</li><li>Data Flow</li><li>External Interactor</li><li>Module</li></ol><div class="ans"><span class="lab">정답 ④ Module</span>DFD 구성요소: External Interactor, Process, Data Store, Data Flow.</div></div>
+    <div class="q"><div class="qh"><span class="qn">3-3</span><span>다음 중 데이터 흐름 다이어그램(DFD)을 작성하는 단계는?</span><span class="type">객관식</span></div><ol class="ch"><li>시스템 이해 및 범위 정의</li><li>위협 식별</li><li>위협 평가 및 대응 우선 순위 결정</li><li>위협 완화 및 대응 전략 수립</li></ol><div class="ans"><span class="lab">정답 ①</span>데이터 흐름을 그리는 것은 전체 시스템의 정보 흐름을 이해하기 위해서입니다.</div></div>
+  </section>
+
+  <section id="sg">
+    <h2 class="st"><span class="sq">10</span>용어 정리</h2>
+    <div class="terms">
+      <div class="term"><b>SDLC</b><span class="e">Software Development Life Cycle</span><p>소프트웨어 개발 생명주기. 분석→설계→구현→테스트→배포·운영.</p></div>
+      <div class="term"><b>MS-SDL</b><span class="e">Microsoft Security Development Lifecycle</span><p>Training → Requirements → Design → Implementation → Verification → Release → Response 7단계 보안 개발 방법론.</p></div>
+      <div class="term"><b>위협 모델링</b><span class="e">Threat Modeling</span><p>취약점을 사전에 식별·평가해 보안 대책을 세우는 과정. MS-SDL에선 설계 단계에서 수행.</p></div>
+      <div class="term"><b>공격 표면</b><span class="e">Attack Surface</span><p>공격자가 시스템에 접근·입력할 수 있는 지점 전체. 설계 단계에서 분석.</p></div>
+      <div class="term"><b>STRIDE</b><span class="e">Spoofing · Tampering · Repudiation · Info Disclosure · DoS · Elevation</span><p>6가지 위협 유형 분류. 각각 인증·무결성·감사·기밀성·가용성·접근제어를 깨뜨림.</p></div>
+      <div class="term"><b>DREAD</b><span class="e">Damage · Reproducibility · Exploitability · Affected users · Discoverability</span><p>5개 항목을 0~10점으로 매겨 위험도를 수치화하는 평가 모델.</p></div>
+      <div class="term"><b>PASTA</b><span class="e">Process for Attack Simulation and Threat Analysis</span><p>공격자 관점 분석과 비즈니스 영향도 평가를 결합한 프레임워크.</p></div>
+      <div class="term"><b>DFD</b><span class="e">Data Flow Diagram</span><p>데이터 흐름도. External Interactor, Process, Data Store, Data Flow로 구성.</p></div>
+      <div class="term"><b>신뢰 경계</b><span class="e">Trust Boundary</span><p>신뢰 수준이 달라지는 경계선. 경계를 넘는 데이터 흐름에서 위협이 주로 생김.</p></div>
+      <div class="term"><b>MTMT</b><span class="e">Microsoft Threat Modeling Tool</span><p>STRIDE 기반 무료 위협모델링 도구. DFD를 그리면 위협 목록을 자동 생성(Windows).</p></div>
+      <div class="term"><b>침투 테스트</b><span class="e">Penetration Testing</span><p>실제 공격처럼 시스템을 공격해 취약점을 확인하는 테스트.</p></div>
+    </div>
+  </section>
+
+  <section id="sq">
+    <h2 class="st"><span class="sq">11</span>확인 필요</h2>
+    <div class="call warn"><div class="t">1. DREAD 예시 총점 42 → 43 — 교안 계산 오류 (원본 PDF도 42로 인쇄, 확인 완료)</div><p>5+10+10+8+10 = 43. 위협 수준(Critical)은 같습니다. 시험에서 합계를 계산하라고 하면 43이 맞습니다.</p></div>
+    <div class="call link"><div class="t">2. 개별 실습(댓글 작성 위협모델링) 제출 여부 — 해결</div><p>과제 공지가 없어 제출 과제가 아닌 것으로 정리했습니다.</p></div>
+    <div class="call quote"><div class="t">3. DREAD 척도 차이 — 해결</div><p>2차시는 총점(0~50) 기준, 3차시 실습은 평균(0~10) 기준입니다. 교안이 두 기준을 모두 쓰고 있어 본문에 나눠 적었습니다.</p></div>
+  </section>
+
+  <section id="sx">
+    <h2 class="st"><span class="sq">12</span>예상 문제</h2>
+    <div class="q"><div class="qh"><span class="qn">Q1</span><span>MS-SDL 7단계를 순서대로 쓰고, 위협 모델링과 정적 분석(SAST)이 각각 처음 수행되는 단계를 쓰시오.</span><span class="type">단답</span></div><div class="ans"><span class="lab">정답</span>Training → Requirements → Design → Implementation → Verification → Release → Response. 위협 모델링 수행 = Design, SAST = Implementation (Verification에서도 SAST·DAST 수행).</div></div>
+    <div class="q"><div class="qh"><span class="qn">Q2</span><span>다음 DREAD 점수의 총점과 위협 수준을 쓰시오. D=7, R=8, E=6, A=9, D=7</span><span class="type">계산</span></div><div class="ans"><span class="lab">정답</span>총점 37 → 31~50 구간이므로 <b>치명적(Critical)</b>. 평균으로 보면 7.4 → 3차시 기준 “높음”. (교안 실습의 “게시글 폭주 등록”과 같은 점수)</div></div>
+    <div class="q"><div class="qh"><span class="qn">Q3</span><span>STRIDE의 각 위협이 깨뜨리는 보안 속성을 짝지으시오. (Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege)</span><span class="type">단답</span></div><div class="ans"><span class="lab">정답</span>인증 · 무결성 · 감사(부인 방지) · 기밀성 · 가용성 · 접근 제어(권한)</div></div>
+    <div class="q"><div class="qh"><span class="qn">Q4</span><span>게시글 작성 기능에서 “API 요청에 관리자 플래그를 넣어 권한 상승”이 가능한 이유와 대응 방안을 설명하시오.</span><span class="type">서술형</span></div><div class="ans"><span class="lab">모범답안</span>서버가 권한 판단에 <b>클라이언트가 보낸 값</b>을 그대로 믿기 때문이다. 요청 본문은 사용자가 마음대로 바꿀 수 있으므로, 권한 검증은 서버가 가진 <b>사용자 세션 정보 기준으로만</b> 하고 요청의 권한 필드는 무시해야 한다.</div></div>
+    <div class="q"><div class="qh"><span class="qn">Q5</span><span>NIST 결함 수정비용 표에서 수정비용 배수가 서로 같은 것을 모두 고르시오.</span><span class="type">객관식</span></div><ol class="ch"><li>설계 결함을 통합단계에서 발견</li><li>코딩 결함을 통합단계에서 발견</li><li>통합 결함을 베타제품에서 발견</li><li>코딩 결함을 제품출시에서 발견</li></ol><div class="ans"><span class="lab">정답 ①②③ (모두 10배)</span>① 10배, ② 10배, ③ 10배, ④ 30배. “늦을수록 비싸다”만 외우면 헷갈리고, 표 숫자를 정확히 기억해야 풀리는 문제.</div></div>
+    <div class="q"><div class="qh"><span class="qn">Q6</span><span>데이터 흐름도(DFD)에서 신뢰 경계(Trust Boundary)를 표시하는 이유를 게시글 작성 DFD를 예로 설명하시오.</span><span class="type">서술형</span></div><div class="ans"><span class="lab">모범답안</span>신뢰 수준이 다른 영역(인터넷의 사용자 ↔ 서버) 사이를 데이터가 지나는 지점에서 위조·변조 같은 위협이 주로 생기기 때문이다. 게시글 DFD에서는 Internet Boundary를 넘는 “게시글 작성” 흐름에 대해 인증 확인(S)과 입력값 검증(T)이 필요하다.</div></div>
+  </section>
+
+  <footer><span>시큐어코딩 · 2주차 · 09.08(화) ~ 09.14(월)</span><span>jaealee.com</span></footer>
+</div>
+
+<div id="viewVocab" hidden>
+  <div class="hero" data-w="A–Z">
+    <span class="chip">2주차 단어장</span>
+    <h1>시큐어코딩 필수 용어</h1>
+    <p class="sub">이번 주차 교안에 나온 단어 중 원서·공식 문서에서 다시 만날 것들만 골랐습니다.</p>
+  </div>
+  <div class="vhead">
+    <input type="search" id="vq" placeholder="단어 · 뜻으로 찾기">
+    <button class="tbtn" id="maskBtn">뜻 가리기</button>
+    <button class="tbtn" id="quizBtn">퀴즈 풀기</button>
+    <span style="font-size:13px;color:var(--ink-3);font-weight:600" id="vcount"></span>
+  </div>
+  <ul class="vlist" id="vlist"><li class="vword"><div><span class="w">threat</span><span class="ipa">/θret/</span><span class="pos">n.</span></div><div><p class="mean">위협 — 자산에 피해를 줄 수 있는 잠재적 사건·공격</p><p class="ex">We list every <b>threat</b> in the design step.<span class="ko">우리는 설계 단계에서 모든 위협을 나열한다.</span></p></div></li><li class="vword"><div><span class="w">spoofing</span><span class="ipa">/ˈspuːfɪŋ/</span><span class="pos">n.</span></div><div><p class="mean">위장·신원 위조 — 다른 사용자인 척하는 것</p><p class="ex"><b>Spoofing</b> is stopped by strong authentication.<span class="ko">신원 위조는 강한 인증으로 막는다.</span></p></div></li><li class="vword"><div><span class="w">tampering</span><span class="ipa">/ˈtæmpərɪŋ/</span><span class="pos">n.</span></div><div><p class="mean">변조 — 데이터를 허가 없이 바꾸는 것</p><p class="ex">A hash can detect data <b>tampering</b>.<span class="ko">해시로 데이터 변조를 탐지할 수 있다.</span></p></div></li><li class="vword"><div><span class="w">repudiation</span><span class="ipa">/rɪˌpjuːdiˈeɪʃn/</span><span class="pos">n.</span></div><div><p class="mean">부인 — 자신이 한 행동을 하지 않았다고 주장하는 것</p><p class="ex">Audit logs help prevent <b>repudiation</b>.<span class="ko">감사 로그는 부인을 막는 데 도움이 된다.</span></p></div></li><li class="vword"><div><span class="w">privilege</span><span class="ipa">/ˈprɪvəlɪdʒ/</span><span class="pos">n.</span></div><div><p class="mean">권한 — 시스템에서 할 수 있는 일의 범위</p><p class="ex">Give each user the least <b>privilege</b>.<span class="ko">각 사용자에게 최소 권한을 주어라.</span></p></div></li><li class="vword"><div><span class="w">reproducibility</span><span class="ipa">/ˌriːprəˌduːsəˈbɪləti/</span><span class="pos">n.</span></div><div><p class="mean">재현 가능성 — 같은 공격을 다시 성공시킬 수 있는 정도</p><p class="ex">High <b>reproducibility</b> raises the DREAD score.<span class="ko">재현 가능성이 높으면 DREAD 점수가 올라간다.</span></p></div></li><li class="vword"><div><span class="w">boundary</span><span class="ipa">/ˈbaʊndri/</span><span class="pos">n.</span></div><div><p class="mean">경계 — 신뢰 수준이 바뀌는 선</p><p class="ex">Data crosses the trust <b>boundary</b> here.<span class="ko">데이터가 여기서 신뢰 경계를 넘는다.</span></p></div></li><li class="vword"><div><span class="w">lifecycle</span><span class="ipa">/ˈlaɪfsaɪkl/</span><span class="pos">n.</span></div><div><p class="mean">생명주기 — 만들어져 사라질 때까지의 전체 단계</p><p class="ex">MS-SDL covers the whole software <b>lifecycle</b>.<span class="ko">MS-SDL은 소프트웨어 생명주기 전체를 다룬다.</span></p></div></li></ul>
+  <div class="quizbox" id="quiz"><div class="qq" id="quizQ"></div><div class="opts" id="quizOpts"></div><div class="score" id="quizScore"></div></div>
+</div>
+
+<div id="viewRaw" hidden>
+  <div class="hero" data-w="RAW">
+    <span class="chip">2주차 필기 원문</span>
+    <h1>내가 보낸 그대로</h1>
+    <p class="sub">이번 주차는 이러닝 교안(PDF 변환본)만 받았고, 따로 보낸 필기 메시지는 없습니다. 필기를 보내주시면 이곳에 보낸 순서대로 쌓입니다.</p>
+  </div>
+  <div class="rawnote" id="rawlist"></div>
+</div>
+</main>
+</div>
+
+<script>
+/* ── 스크롤 진행 바 ─────────────────────────────── */
+const sb = document.getElementById('scrollbar');
+addEventListener('scroll', () => {
+  const h = document.documentElement.scrollHeight - innerHeight;
+  sb.style.width = (h > 0 ? scrollY / h * 100 : 0) + '%';
+}, { passive: true });
+
+/* ── 다크 모드 ──────────────────────────────────── */
+const html = document.documentElement, themeBtn = document.getElementById('themeBtn');
+themeBtn.onclick = () => {
+  const dark = html.dataset.theme === 'dark';
+  html.dataset.theme = dark ? 'light' : 'dark';
+  themeBtn.textContent = dark ? '다크' : '라이트';
+};
+
+/* ── 정답: 기본은 가려짐. 답을 누르면 그 문제만 열리고,
+      "정답 가리기" 버튼을 누르면 열린 것들을 전부 다시 덮는다 ── */
+const ansBtn = document.getElementById('ansBtn');
+const answers = [...document.querySelectorAll('.ans')];
+function syncAnsBtn() {
+  const opened = answers.filter(a => a.classList.contains('on')).length;
+  ansBtn.disabled = opened === 0;
+  ansBtn.textContent = opened ? `정답 가리기 (${opened})` : '정답 가리기';
+}
+answers.forEach(a => a.addEventListener('click', () => { a.classList.toggle('on'); syncAnsBtn(); }));
+ansBtn.onclick = () => { answers.forEach(a => a.classList.remove('on')); syncAnsBtn(); };
+syncAnsBtn();
+
+/* ── 보충(외부 자료) 개수 표시 + 숨기기 토글 ────── */
+const extraChip = document.getElementById('extraChip');
+const extraCount = document.querySelectorAll('#viewNote .call.extra, #viewNote .ext').length;
+if (extraCount) {
+  extraChip.textContent = `보충 ${extraCount}곳 — 교수님 설명 아님`;
+  extraChip.onclick = () => {
+    const off = document.body.classList.toggle('no-extra');
+    extraChip.textContent = off ? `보충 ${extraCount}곳 숨김 — 눌러서 보기` : `보충 ${extraCount}곳 — 교수님 설명 아님`;
+  };
+} else {
+  extraChip.textContent = '보충 0곳 — 전부 교수님 내용';
+  extraChip.disabled = true;
+}
+
+/* ── 인쇄 ───────────────────────────────────────── */
+document.getElementById('printBtn').onclick = () => window.print();
+
+/* ── 코드 복사 ──────────────────────────────────── */
+document.querySelectorAll('.copy').forEach(btn => {
+  btn.onclick = async () => {
+    try { await navigator.clipboard.writeText(btn.closest('.codebox').querySelector('code').innerText); btn.textContent = '복사됨'; }
+    catch { btn.textContent = '실패'; }
+    setTimeout(() => btn.textContent = '복사', 1200);
+  };
+});
+
+/* ── 복습 체크 진행률 (새로고침하면 초기화) ─────── */
+const boxes = document.querySelectorAll('.chk input'), fill = document.getElementById('barFill');
+boxes.forEach(b => b.addEventListener('change', () => {
+  fill.style.width = [...boxes].filter(x => x.checked).length / boxes.length * 100 + '%';
+}));
+
+/* ── 본문 / 단어장 / 필기 원문 전환 ─────────────── */
+const views = {
+  note:  { el: document.getElementById('viewNote'),  nav: document.getElementById('tocWrap') },
+  vocab: { el: document.getElementById('viewVocab'), nav: document.getElementById('vocabNav'), btn: document.getElementById('vocabBtn'), on: '본문으로', off: '단어장' },
+  raw:   { el: document.getElementById('viewRaw'),   nav: document.getElementById('rawNav'),   btn: document.getElementById('rawBtn'),  on: '본문으로', off: '필기 원문' }
+};
+let current = 'note';
+function setView(name) {
+  current = name;
+  Object.entries(views).forEach(([k, v]) => {
+    v.el.hidden = k !== name;
+    v.nav.hidden = k !== name;
+    if (v.btn) { v.btn.classList.toggle('solid', k === name); v.btn.textContent = k === name ? v.on : v.off; }
+  });
+  clearMarks();
+  document.getElementById('q').value = '';
+  document.getElementById('hit').textContent = '';
+  scrollTo({ top: 0, behavior: 'smooth' });
+}
+views.vocab.btn.onclick = () => setView(current === 'vocab' ? 'note' : 'vocab');
+views.raw.btn.onclick   = () => setView(current === 'raw'   ? 'note' : 'raw');
+document.getElementById('rawTotal').textContent = document.querySelectorAll('#rawlist .rawitem').length;
+// 원문 페이지의 링크를 누르면 본문으로 돌아가서 해당 위치로 이동
+document.querySelectorAll('#rawlist .where a').forEach(a => {
+  a.onclick = e => { e.preventDefault(); setView('note'); setTimeout(() => document.querySelector(a.getAttribute('href')).scrollIntoView(), 60); };
+});
+
+/* ── 목차 현재 위치 ─────────────────────────────── */
+const links = [...document.querySelectorAll('#toc a')];
+const spy = new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) return;
+  links.forEach(l => l.classList.toggle('on', l.getAttribute('href') === '#' + e.target.id));
+}), { rootMargin: '-80px 0px -68% 0px' });
+document.querySelectorAll('#viewNote section').forEach(s => spy.observe(s));
+
+/* ── 문서 내 검색 ───────────────────────────────── */
+const qInput = document.getElementById('q'), hitEl = document.getElementById('hit');
+let marks = [], cursor = -1;
+function clearMarks() {
+  marks.forEach(m => { const p = m.parentNode; if (!p) return; p.replaceChild(document.createTextNode(m.textContent), m); p.normalize(); });
+  marks = []; cursor = -1;
+}
+function runSearch(word) {
+  clearMarks();
+  if (word.length < 2) { hitEl.textContent = ''; return; }
+  const root = views[current].el;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const targets = [];
+  while (walker.nextNode()) {
+    const n = walker.currentNode;
+    if (n.parentElement.closest('script,style')) continue;
+    if (n.nodeValue.toLowerCase().includes(word)) targets.push(n);
+  }
+  targets.forEach(n => {
+    const re = new RegExp('(' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    const frag = document.createDocumentFragment();
+    n.nodeValue.split(re).forEach(p => {
+      if (p.toLowerCase() === word) { const m = document.createElement('span'); m.className = 'hit-mark'; m.textContent = p; frag.appendChild(m); marks.push(m); }
+      else frag.appendChild(document.createTextNode(p));
+    });
+    n.parentNode.replaceChild(frag, n);
+  });
+  hitEl.textContent = marks.length ? '0/' + marks.length : '없음';
+}
+qInput.addEventListener('input', e => runSearch(e.target.value.trim().toLowerCase()));
+qInput.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || !marks.length) return;
+  e.preventDefault();
+  cursor = (cursor + 1) % marks.length;
+  marks[cursor].scrollIntoView({ block: 'center', behavior: 'smooth' });
+  hitEl.textContent = (cursor + 1) + '/' + marks.length;
+});
+addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); qInput.focus(); qInput.select(); }
+});
+
+/* ── 단어장 ─────────────────────────────────────── */
+const vlist = document.getElementById('vlist');
+const words = [...vlist.querySelectorAll('.vword')];
+document.getElementById('vcount').textContent = words.length + '개';
+document.getElementById('vTotal').textContent = words.length;
+
+document.getElementById('vq').addEventListener('input', e => {
+  const k = e.target.value.trim().toLowerCase();
+  let shown = 0;
+  words.forEach(w => { const ok = w.innerText.toLowerCase().includes(k); w.style.display = ok ? '' : 'none'; if (ok) shown++; });
+  document.getElementById('vcount').textContent = shown + '개';
+});
+
+const maskBtn = document.getElementById('maskBtn');
+maskBtn.onclick = () => {
+  const on = vlist.classList.toggle('masked');
+  maskBtn.classList.toggle('solid', on);
+  maskBtn.textContent = on ? '뜻 보이기' : '뜻 가리기';
+  if (!on) vlist.querySelectorAll('.show').forEach(el => el.classList.remove('show'));
+};
+vlist.querySelectorAll('.mean, .ex').forEach(el => {
+  el.onclick = () => { if (vlist.classList.contains('masked')) el.classList.toggle('show'); };
+});
+
+/* 퀴즈 — 위 목록에서 문제를 자동 생성 */
+const quiz = document.getElementById('quiz'), quizBtn = document.getElementById('quizBtn');
+const qQ = document.getElementById('quizQ'), qO = document.getElementById('quizOpts'), qS = document.getElementById('quizScore');
+let pool = [], solved = 0, correct = 0;
+const data = () => words.map(w => ({
+  word: w.querySelector('.w').textContent,
+  mean: (w.querySelector('.mean').textContent.split('—')[1] || w.querySelector('.mean').textContent).trim()
+}));
+function nextQuiz() {
+  if (!pool.length) { qQ.textContent = '한 바퀴 끝'; qO.innerHTML = ''; qS.textContent = `${solved}문제 중 ${correct}개 정답`; return; }
+  const all = data(), cur = pool.pop();
+  qQ.textContent = cur.word;
+  const opts = [cur, ...all.filter(d => d.word !== cur.word).sort(() => Math.random() - .5).slice(0, 3)].sort(() => Math.random() - .5);
+  qO.innerHTML = '';
+  opts.forEach(o => {
+    const b = document.createElement('button');
+    b.className = 'opt'; b.textContent = o.mean;
+    b.onclick = () => {
+      solved++;
+      if (o.word === cur.word) { b.classList.add('ok'); correct++; }
+      else { b.classList.add('no'); [...qO.children].find(x => x.textContent === cur.mean)?.classList.add('ok'); }
+      [...qO.children].forEach(x => x.disabled = true);
+      qS.textContent = `${solved}문제 중 ${correct}개 정답`;
+      setTimeout(nextQuiz, 1000);
+    };
+    qO.appendChild(b);
+  });
+  qS.textContent = `${solved}문제 중 ${correct}개 정답 · 남은 ${pool.length}개`;
+}
+quizBtn.onclick = () => {
+  const on = quiz.classList.toggle('on');
+  quizBtn.classList.toggle('solid', on);
+  quizBtn.textContent = on ? '퀴즈 닫기' : '퀴즈 풀기';
+  if (on) { pool = data().sort(() => Math.random() - .5); solved = 0; correct = 0; nextQuiz(); }
+};
+</script>
+</body>
+</html>

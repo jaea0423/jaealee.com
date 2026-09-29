@@ -227,6 +227,25 @@ tbody tr:last-child td{border-bottom:0}
 tbody tr:hover{background:var(--line-2)}
 
 /* ── 코드 / 의사코드 ────────────────────────────────── */
+.bsv{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:14px 14px 12px;margin:16px 0}
+.bsv .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.bsv .tabs button,.bsv .nav button{font:inherit;font-size:13px;font-weight:700;padding:6px 12px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink-2);cursor:pointer}
+.bsv .tabs button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.bsv .nav{display:flex;align-items:center;gap:8px;margin-top:10px}
+.bsv .nav .cnt{flex:1;text-align:center;font-size:13px;font-weight:700;color:var(--ink-2)}
+.bsv .nav button:disabled{opacity:.35;cursor:default}
+.bsv .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+@media (max-width:640px){.bsv .grid{grid-template-columns:1fr}}
+.bsv .code{font-family:var(--mono);font-size:12.4px;line-height:1.65;background:var(--code-bg);color:var(--code-ink);border-radius:10px;padding:10px 0;overflow-x:auto}
+.bsv .code div{padding:0 12px;white-space:pre;border-left:3px solid transparent}
+.bsv .code div.hl{background:color-mix(in srgb,var(--accent) 38%,transparent);border-left-color:#fff}
+.bsv .code .ln{display:inline-block;width:18px;opacity:.45}
+.bsv .stack{font-family:var(--mono);font-size:12.4px;line-height:1.6}
+.bsv .stack .fr{padding:5px 9px;border:1px solid var(--line);border-radius:8px;margin-bottom:5px;background:var(--bg)}
+.bsv .stack .fr.cur{border-color:var(--accent);background:var(--accent-soft);font-weight:700}
+.bsv .stack .fr .rv{color:var(--c2);font-weight:800}
+.bsv .lab{font-size:11.5px;font-weight:800;color:var(--ink-3);margin:0 0 5px;letter-spacing:.02em}
+.bsv .msg{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--accent-soft);font-size:14px;line-height:1.6}
 .codebox{margin:15px 0;border-radius:13px;overflow:hidden;background:var(--code-bg);border:1px solid var(--code-bg)}
 .codebox .head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 14px;font-size:12px;color:#9AA0AC;font-weight:700;background:rgba(255,255,255,.04)}
 .codebox .head .tag{color:#fff;background:var(--accent);border-radius:5px;padding:1px 7px;font-size:11px;margin-right:7px}
@@ -249,6 +268,7 @@ code:not(pre code){background:var(--accent-soft);color:var(--accent-deep);paddin
 /* ── 도식 ───────────────────────────────────────────── */
 figure{margin:18px 0;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 14px 12px}
 figure svg{max-width:100%;height:auto}
+figure svg[viewBox^="0 0 440"],figure svg[viewBox^="0 0 380"]{max-width:560px;margin:0 auto}
 figcaption{font-size:12.5px;color:var(--ink-3);margin-top:10px}
 
 /* ── 용어 ───────────────────────────────────────────── */
@@ -1452,6 +1472,24 @@ a=7, b=7 → m=7 : A[7]=44 &gt; 40 → b=6
         <span class="kw">return</span> bs(A, m<span class="st2">+1</span>, b, k)  <span class="cm"># 찾는 값이 더 큼 → 오른쪽 절반만</span></code></pre>
     </div>
 
+    <h3>코드가 돌아가는 절차 — 스텝별로 따라가기</h3>
+    <p>위 <code>bs</code> 함수를 한 줄씩 실행해 봅니다. <b>다음 ▶</b> 을 누를 때마다 한 단계씩 진행합니다. 왼쪽은 지금 실행 중인 줄, 오른쪽은 지금까지 쌓인 재귀 호출입니다.</p>
+    <div class="bsv" id="bsv">
+      <div class="tabs"><button data-k="32" class="on">k = 32 (찾는 경우)</button><button data-k="40">k = 40 (없는 경우)</button></div>
+      <div class="lab">리스트 A — 흐린 칸은 버린 범위</div>
+      <div class="arr"></div>
+      <div class="grid" style="margin-top:10px">
+        <div><div class="lab">실행 중인 줄</div><div class="code"></div></div>
+        <div><div class="lab">재귀 호출 (아래가 가장 최근)</div><div class="stack"></div></div>
+      </div>
+      <div class="msg"></div>
+      <div class="nav"><button class="prev">◀ 이전</button><span class="cnt"></span><button class="next">다음 ▶</button></div>
+    </div>
+    <div class="call extra">
+      <div class="t">k = 40 추적은 수업 설명이 아님</div>
+      <p>k = 32 는 수업 예시 그대로이고, k = 40 은 교수님이 다음 수업에 설명하신다고 한 부분이라 <b>의사코드를 그대로 실행해서</b> 만든 것입니다.</p>
+    </div>
+
     <details class="raw"><summary>필기 원문</summary><div class="txt">이제는 이진탐색 알고리즘(Binary Search)
 
 이진탐색 = up-down 게임과 유사(1~100 중 숫자 말하면 업다운해서 그 숫자를 찾아가는 과정)
@@ -2290,6 +2328,88 @@ quizBtn.onclick = () => {
   quizBtn.textContent = on ? '퀴즈 닫기' : '퀴즈 풀기';
   if (on) { pool = data().sort(() => Math.random() - .5); solved = 0; correct = 0; nextQuiz(); }
 };
+
+/* ── 이진탐색 스텝 시각화 ─────────────────────────── */
+(function(){
+  const root=document.getElementById('bsv'); if(!root) return;
+  const A=[2,5,7,8,15,20,32,44];
+  const CODE=['def bs(A, a, b, k):','    if a > b:','        return -1','    m = (a + b) // 2','    if A[m] == k:','        return m','    elif A[m] > k:','        return bs(A, a, m-1, k)','    else:','        return bs(A, m+1, b, k)'];
+  // 실제 의사코드를 실행하면서 스텝 기록
+  function trace(k){
+    const st=[]; const stack=[];
+    function snap(o){ st.push(Object.assign({stack:stack.map(x=>Object.assign({},x))},o)); }
+    function bs(a,b){
+      stack.push({a,b,ret:null}); const me=stack.length-1;
+      snap({a,b,m:null,line:[0],msg: a>b ? `<b>bs(A, ${a}, ${b}, ${k})</b> 호출 — 시작(a = ${a})이 끝(b = ${b})보다 뒤라서 <b>볼 칸이 없습니다.</b>` : `<b>bs(A, ${a}, ${b}, ${k})</b> 호출 — 이번에 볼 범위는 A[${a}] ~ A[${b}] 입니다.`});
+      if(a>b){
+        snap({a,b,m:null,line:[1,2],msg:`a = ${a} &gt; b = ${b} — <b>범위가 뒤집혔습니다.</b> 볼 칸이 하나도 없으니 리스트에 k 가 없다는 뜻이고, <b>−1 을 반환</b>합니다.`});
+        stack[me].ret=-1; return -1;
+      }
+      snap({a,b,m:null,line:[1],msg:`a = ${a} &gt; b = ${b} 인가? → 아니오. 아직 볼 칸이 남아 있으니 계속합니다.`});
+      const m=Math.floor((a+b)/2);
+      snap({a,b,m,line:[3],msg:`가운데 자리 m = (${a} + ${b}) // 2 = <b>${m}</b>. A[${m}] = <b>${A[m]}</b> 입니다.`});
+      if(A[m]===k){
+        snap({a,b,m,line:[4,5],found:true,msg:`A[${m}] = ${A[m]} == k = ${k} → <b>찾았습니다.</b> 값 ${A[m]} 이 아니라 <b>자리 번호 ${m}</b> 을 반환합니다.`});
+        stack[me].ret=m; return m;
+      }
+      let r;
+      if(A[m]>k){
+        snap({a,b,m,line:[4,6,7],msg:`A[${m}] = ${A[m]} &gt; k = ${k} → k 는 <b>왼쪽</b>에 있습니다. m 과 그 오른쪽은 버리고 <b>bs(A, ${a}, ${m-1}, ${k})</b> 를 호출합니다.`});
+        r=bs(a,m-1);
+      }else{
+        snap({a,b,m,line:[4,6,8,9],msg:`A[${m}] = ${A[m]} &lt; k = ${k} → k 는 <b>오른쪽</b>에 있습니다. m 과 그 왼쪽은 버리고 <b>bs(A, ${m+1}, ${b}, ${k})</b> 를 호출합니다.`});
+        r=bs(m+1,b);
+      }
+      stack[me].ret=r;
+      snap({a,b,m,line:[A[m]>k?7:9],back:true,msg:`안쪽 호출이 <b>${r}</b> 을 돌려줬습니다. 이 호출(bs(A, ${a}, ${b}, ${k}))도 받은 값을 그대로 <b>${r}</b> 로 반환합니다. (값을 가공하지 않고 전달만 함)`});
+      stack.pop(); return r;
+    }
+    const res=bs(0,7);
+    st.push({stack:[],a:null,b:null,m:null,line:[],done:res,msg:res>=0?`최종 결과 <b>${res}</b> — A[${res}] = ${A[res]}. 비교는 <b>${st.filter(x=>x.line.includes(3)).length}번</b>, 볼 범위는 8 → 4 → 2 로 매번 절반이 됐습니다.`:`최종 결과 <b>−1</b> — 리스트에 ${k}이(가) 없습니다. 비교는 <b>${st.filter(x=>x.line.includes(3)).length}번</b>, 범위가 8 → 4 → 2 → 1 → 0 으로 줄다가 뒤집혀서 끝났습니다.`});
+    return st;
+  }
+  const arr=root.querySelector('.arr'), code=root.querySelector('.code'), stackEl=root.querySelector('.stack'), msg=root.querySelector('.msg'), cnt=root.querySelector('.cnt'), prev=root.querySelector('.prev'), next=root.querySelector('.next');
+  let k=32, steps=trace(32), i=0;
+  function svg(s){
+    const W=46,G=49,X0=24; let o='<svg width="100%" viewBox="0 0 440 112" role="img" style="display:block"><title>현재 단계의 탐색 범위</title>';
+    for(let j=0;j<8;j++){
+      const x=X0+j*G, cx=x+W/2;
+      const inR = s.a!==null && j>=s.a && j<=s.b;
+      const isM = s.m===j;
+      let fill='var(--bg)', stroke='var(--line)', tc='var(--ink)', fw=700, op=1;
+      if(!inR){ tc='var(--ink-3)'; fw=400; op=0.4; }
+      if(isM){ fill = s.found? 'var(--c2)':'var(--accent)'; stroke='none'; tc='#fff'; fw=800; op=1; }
+      if(s.done!==undefined && s.done===j){ fill='var(--c2)'; stroke='none'; tc='#fff'; fw=800; op=1; }
+      o+=`<text x="${cx}" y="12" text-anchor="middle" dominant-baseline="central" font-size="10" fill="var(--ink-3)">${j}</text>`;
+      o+=`<rect x="${x}" y="22" width="${W}" height="30" rx="7" fill="${fill}" stroke="${stroke}" stroke-width="1.2" opacity="${op}"/>`;
+      o+=`<text x="${cx}" y="37" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="${fw}" fill="${tc}" opacity="${op}">${A[j]}</text>`;
+    }
+    const lab=(j,t,y,c)=>{ if(j===null||j<0||j>7) return ''; const cx=X0+j*G+W/2; return `<path d="M${cx-5} ${y-8} L${cx+5} ${y-8} L${cx} ${y-15} Z" fill="${c}"/><text x="${cx}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="11.5" font-weight="800" fill="${c}">${t}</text>`; };
+    if(s.m!==null) o+=lab(s.m,'m',70,s.found?'var(--c2)':'var(--accent)');
+    if(s.a!==null){
+      if(s.a===s.b) o+=lab(s.a,'a = b',94,'var(--c3)');
+      else { o+=lab(s.a,'a',94,'var(--c3)'); o+=lab(s.b,'b',94,'var(--c3)'); }
+      if(s.a>s.b){ o+=`<text x="${X0+8*G-3}" y="108" text-anchor="end" font-size="10.5" font-weight="700" fill="var(--c3)">a &gt; b : 범위 없음</text>`; }
+    }
+    return o+'</svg>';
+  }
+  function render(){
+    const s=steps[i];
+    arr.innerHTML=svg(s);
+    code.innerHTML=CODE.map((t,j)=>`<div class="${s.line.includes(j)?'hl':''}"><span class="ln">${j+1}</span>${t.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`).join('');
+    stackEl.innerHTML = s.stack.length ? s.stack.map((f,j)=>`<div class="fr ${j===s.stack.length-1?'cur':''}">bs(A, ${f.a}, ${f.b}, ${k})${f.ret!==null?` <span class="rv">→ ${f.ret}</span>`:''}</div>`).join('') : `<div class="fr">모든 호출 종료 — 결과 <span class="rv">${s.done}</span></div>`;
+    msg.innerHTML=s.msg;
+    cnt.textContent=`${i+1} / ${steps.length}`;
+    prev.disabled=i===0; next.disabled=i===steps.length-1;
+  }
+  prev.onclick=()=>{ if(i>0){i--;render();} };
+  next.onclick=()=>{ if(i<steps.length-1){i++;render();} };
+  root.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
+    root.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));
+    k=+b.dataset.k; steps=trace(k); i=0; render();
+  });
+  render();
+})();
 </script>
 </body>
 </html>

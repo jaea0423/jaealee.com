@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시큐어코딩 3주차 — 실습환경 구축과 웹·HTTP·Spring Boot 기초</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   과목 테마 — 아래 3줄(--accent, --accent-deep, --accent-soft)만 교체
+   데이터분석프로그래밍 #0EA5E9 / #0369A1 / #E0F2FE
+   전공영어           #E08700 / #A55A00 / #FEF3DC
+   인공지능           #9333EA / #6B21A8 / #F3E8FF
+   알고리즘           #4F46E5 / #3730A3 / #E8E7FD
+   시큐어코딩         #DC2626 / #991B1B / #FDE7E7
+   개인정보보호암호기술 #DB2777 / #9D174D / #FCE7F3
+   개인정보보호법률이해 #059669 / #065F46 / #D8F5EA
+   ═══════════════════════════════════════════════════════════════ */
+:root{
+  --accent:#DC2626;
+  --accent-deep:#991B1B;
+  --accent-soft:#FDE7E7;
+
+  --bg:#F7F8FA;
+  --surface:#FFFFFF;
+  --ink:#15161B;
+  --ink-2:#565C66;
+  --ink-3:#8B9098;
+  --line:#E5E7EC;
+  --line-2:#F0F1F4;
+  --code-bg:#1B1D24;
+  --code-ink:#E4E6ED;
+  --mark:#FFE27A;
+  --font:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,system-ui,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  --mono:'JetBrains Mono','SFMono-Regular',Consolas,'D2Coding',monospace;
+}
+html[data-theme="dark"]{
+  --accent:#F87171;
+  --accent-deep:#FCA5A5;
+  --accent-soft:#3A1F1F;
+  --bg:#101116;
+  --surface:#181A20;
+  --ink:#E8E9ED;
+  --ink-2:#A6AAB4;
+  --ink-3:#73777F;
+  --line:#2A2C34;
+  --line-2:#202229;
+  --code-bg:#0C0D11;
+  --mark:#6E5C16;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15.5px;line-height:1.72;letter-spacing:-.012em;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-deep)}
+::selection{background:var(--accent);color:#fff}
+
+/* ── 스크롤 진행 바 ─────────────────────────────────── */
+#scrollbar{position:fixed;top:0;left:0;height:3px;width:0;background:var(--accent);z-index:99}
+
+/* ── 상단 바 ────────────────────────────────────────── */
+.topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:10px;padding:10px 22px;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.back{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink-2);font-size:14px;font-weight:700;white-space:nowrap}
+.back:hover{color:var(--accent-deep)}
+.back i{width:10px;height:10px;border-radius:3px;background:var(--accent);display:block}
+.search{flex:1;max-width:300px;margin-left:auto;position:relative}
+.search input{width:100%;padding:7px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14px}
+.search input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.hit{position:absolute;right:10px;top:8px;font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums;pointer-events:none}
+.tools{display:flex;gap:6px}
+.tbtn{border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:9px;padding:7px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);white-space:nowrap}
+.tbtn:hover{border-color:var(--accent);color:var(--accent-deep)}
+.tbtn.solid{background:var(--accent);border-color:var(--accent);color:#fff}
+.tbtn:disabled{opacity:.4;cursor:default}
+
+/* ── 레이아웃 ───────────────────────────────────────── */
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);gap:38px;max-width:1200px;margin:0 auto;padding:26px 24px 120px}
+main{min-width:0}
+
+/* ── 사이드 패널(포인트 컬러) ───────────────────────── */
+.side{position:sticky;top:80px;align-self:start;max-height:calc(100vh - 100px);overflow-y:auto;scrollbar-width:thin}
+.panel{background:var(--accent);border-radius:16px;padding:18px 16px;color:#fff;box-shadow:0 8px 24px -12px color-mix(in srgb,var(--accent) 70%,transparent)}
+.panel .cap{font-size:11.5px;font-weight:700;opacity:.72;margin-bottom:9px}
+.panel .subject{font-size:19px;font-weight:800;letter-spacing:-.03em;line-height:1.3;margin-bottom:2px}
+.panel .when{font-size:12.5px;opacity:.8;margin-bottom:16px}
+.toc{list-style:none;margin:0;padding:0}
+.toc a{display:block;padding:6px 10px;border-radius:8px;color:#fff;opacity:.82;text-decoration:none;font-size:13.5px;font-weight:600;line-height:1.45}
+.toc a:hover{background:rgba(255,255,255,.16);opacity:1}
+.toc a.on{background:#fff;color:var(--accent-deep);opacity:1;font-weight:800}
+.toc .num{display:inline-block;width:17px;font-variant-numeric:tabular-nums;opacity:.7}
+.toc a.on .num{opacity:1}
+.panel hr{border:0;border-top:1px solid rgba(255,255,255,.22);margin:14px 0}
+.chk label{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;padding:3px 0;cursor:pointer;line-height:1.5;opacity:.9}
+.chk input{margin-top:4px;accent-color:#fff;flex-shrink:0}
+.chk input:checked + span{opacity:.5;text-decoration:line-through}
+.pbar{height:4px;border-radius:99px;background:rgba(255,255,255,.28);margin-top:11px;overflow:hidden}
+.pbar i{display:block;height:100%;width:0;background:#fff;transition:width .25s}
+
+/* ── 히어로 ─────────────────────────────────────────── */
+.hero{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px 28px 22px;overflow:hidden;margin-bottom:16px}
+.hero::after{content:attr(data-w);position:absolute;right:14px;bottom:-26px;font-size:112px;font-weight:800;color:var(--accent);opacity:.09;letter-spacing:-.06em;line-height:1;pointer-events:none}
+.chip{display:inline-flex;align-items:center;gap:7px;background:var(--accent-soft);color:var(--accent-deep);font-size:12.5px;font-weight:800;padding:4px 11px;border-radius:99px}
+h1{font-size:clamp(26px,3.6vw,34px);font-weight:800;letter-spacing:-.04em;line-height:1.24;margin:12px 0 6px;position:relative}
+.hero .sub{color:var(--ink-2);font-size:15px;margin:0 0 14px;position:relative}
+[hidden]{display:none!important}
+.metaline{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-3);position:relative}
+.metaline b{color:var(--ink-2);font-weight:600}
+
+/* ── 수업 자료 (같은 폴더의 PDF) ────────────────────── */
+.files{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;position:relative}
+.file{display:inline-flex;align-items:center;gap:9px;padding:8px 13px 8px 9px;border:1px solid var(--line);border-radius:10px;background:var(--surface);text-decoration:none;color:var(--ink);font-size:13.5px;font-weight:700}
+.file:hover{border-color:var(--accent);background:var(--accent-soft)}
+.file .ic{background:var(--accent);color:#fff;font-size:10px;font-weight:800;padding:3px 6px;border-radius:6px;letter-spacing:.02em}
+.file em{font-style:normal;color:var(--ink-3);font-weight:600;font-size:12.5px}
+.files .none{font-size:12.5px;color:var(--ink-3);font-weight:600;padding:8px 0}
+.extra-chip:disabled{cursor:default;opacity:.6}
+
+/* ── 오늘의 흐름 ────────────────────────────────────── */
+.flow{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:26px}
+.flow a{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--line);border-radius:99px;background:var(--surface);text-decoration:none;color:var(--ink-2);font-size:13px;font-weight:600}
+.flow a:hover{border-color:var(--accent);color:var(--accent-deep);background:var(--accent-soft)}
+.flow a b{color:var(--accent);font-variant-numeric:tabular-nums}
+
+/* ── 핵심 카드 ──────────────────────────────────────── */
+.keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:34px}
+.key{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:14px;padding:16px 17px}
+.key .n{font-size:12px;font-weight:800;color:var(--accent);margin-bottom:5px}
+.key p{margin:0;font-size:14.5px;line-height:1.6}
+.key b{font-weight:800}
+
+/* ── 섹션 ───────────────────────────────────────────── */
+section{margin-bottom:46px;scroll-margin-top:82px}
+h2.st{display:flex;align-items:center;gap:11px;font-size:22px;font-weight:800;letter-spacing:-.035em;margin:0 0 14px}
+h2.st .sq{flex-shrink:0;width:30px;height:30px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+h3{font-size:16.5px;font-weight:800;margin:26px 0 8px;letter-spacing:-.025em;padding-left:11px;border-left:3px solid var(--accent)}
+h4{font-size:14.5px;font-weight:700;margin:18px 0 6px;color:var(--ink-2)}
+p{margin:9px 0}
+ul,ol{margin:9px 0;padding-left:21px}
+li{margin:3px 0}
+li::marker{color:var(--accent)}
+.en{color:var(--ink-3);font-weight:500;font-size:.9em}
+mark{background:linear-gradient(transparent 54%,var(--mark) 54%);color:inherit;padding:0 2px}
+.hit-mark{background:var(--accent);color:#fff;border-radius:3px}
+
+/* ── 배지 ───────────────────────────────────────────── */
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin:-6px 0 12px}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:6px;letter-spacing:0}
+.badge.exam{color:#92580B;background:#FDF0D5}
+.badge.prof{color:var(--accent-deep);background:var(--accent-soft)}
+.badge.ask{color:#B02020;background:#FCE4E4}
+html[data-theme="dark"] .badge.exam{background:#3B2D0E;color:#EFC470}
+html[data-theme="dark"] .badge.ask{background:#3A1919;color:#F0A0A0}
+
+/* ── 카드형 콜아웃 ──────────────────────────────────── */
+.call{border-radius:13px;padding:14px 17px;margin:15px 0;background:var(--surface);border:1px solid var(--line)}
+.call .t{font-size:12.5px;font-weight:800;margin-bottom:5px}
+.call p:first-of-type{margin-top:0}
+.call p:last-child,.call ul:last-child{margin-bottom:0}
+.call.quote{background:var(--accent-soft);border-color:transparent}
+.call.quote .t{color:var(--accent-deep)}
+.call.quote p{font-size:14.8px}
+.call.warn{border-left:4px solid #E5A50A}
+.call.warn .t{color:#A16207}
+.call.ask{border-left:4px solid #DC2626}
+.call.ask .t{color:#B02020}
+.call.link{border-left:4px solid var(--accent)}
+.call.link .t{color:var(--accent-deep)}
+
+/* 보충 — 교수님이 설명하지 않은 외부 자료. 회색 + 점선으로 본문과 확실히 구분 */
+.call.extra{background:repeating-linear-gradient(135deg,var(--line-2),var(--line-2) 9px,transparent 9px,transparent 18px);border:1.5px dashed var(--ink-3);border-left-width:1.5px}
+.call.extra .t{color:var(--ink-2);display:flex;align-items:center;gap:6px}
+.call.extra .t::before{content:"보충";background:var(--ink-3);color:var(--surface);font-size:10.5px;padding:1px 6px;border-radius:5px}
+.call.extra p{color:var(--ink-2)}
+.badge.extra{color:var(--ink-2);background:var(--line-2);border:1px dashed var(--ink-3)}
+.ext{border-bottom:2px dotted var(--ink-3);color:var(--ink-2)}
+.ext::after{content:"보충";font-size:9.5px;font-weight:800;vertical-align:super;color:var(--ink-3);margin-left:2px;letter-spacing:0}
+.extra-chip{border:1.5px dashed var(--ink-3);background:transparent;color:var(--ink-2);cursor:pointer;font-family:var(--font)}
+body.no-extra .call.extra,body.no-extra .badge.extra{display:none}
+body.no-extra .ext{border-bottom:0}
+body.no-extra .ext::after{display:none}
+html[data-theme="dark"] .call.warn .t{color:#E5B547}
+html[data-theme="dark"] .call.ask .t{color:#F0A0A0}
+
+/* ── 원문 보기 ──────────────────────────────────────── */
+details.raw{margin:12px 0;border:1px dashed var(--line);border-radius:10px;background:var(--line-2)}
+details.raw summary{cursor:pointer;padding:8px 14px;font-size:12.5px;color:var(--ink-3);font-weight:700;list-style:none}
+details.raw summary::-webkit-details-marker{display:none}
+details.raw summary::before{content:"▸ ";color:var(--accent)}
+details.raw[open] summary::before{content:"▾ "}
+details.raw .txt{padding:0 14px 12px;font-size:13px;color:var(--ink-2);white-space:pre-wrap;line-height:1.7}
+
+/* ── 필기 원문 페이지 ───────────────────────────────── */
+.rawnote{border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+.rawitem{display:grid;grid-template-columns:78px 1fr;gap:16px;padding:15px 18px;border-bottom:1px solid var(--line-2)}
+.rawitem:last-child{border-bottom:0}
+.rawitem .seq{font-size:12px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+.rawitem .seq span{display:block;color:var(--ink-3);font-weight:600;font-size:11px;margin-top:2px}
+.rawitem .body{white-space:pre-wrap;font-size:14px;line-height:1.75;color:var(--ink)}
+.rawitem .where{margin-top:7px;font-size:12px}
+.rawitem .where a{color:var(--accent-deep);text-decoration:none;font-weight:700;background:var(--accent-soft);padding:2px 8px;border-radius:6px}
+.rawitem .where a:hover{background:var(--accent);color:#fff}
+
+/* ── 표 ─────────────────────────────────────────────── */
+.tablewrap{overflow-x:auto;margin:15px 0;border:1px solid var(--line);border-radius:13px}
+table{border-collapse:collapse;width:100%;font-size:14px;background:var(--surface)}
+th,td{padding:10px 13px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line-2)}
+th{background:var(--accent);color:#fff;font-weight:700;font-size:13px;white-space:nowrap;border-bottom:0}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--line-2)}
+
+/* ── 코드 / 의사코드 ────────────────────────────────── */
+.codebox{margin:15px 0;border-radius:13px;overflow:hidden;background:var(--code-bg);border:1px solid var(--code-bg)}
+.codebox .head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 14px;font-size:12px;color:#9AA0AC;font-weight:700;background:rgba(255,255,255,.04)}
+.codebox .head .tag{color:#fff;background:var(--accent);border-radius:5px;padding:1px 7px;font-size:11px;margin-right:7px}
+.codebox pre{margin:0;padding:15px 17px;overflow-x:auto;font-family:var(--mono);font-size:13.2px;line-height:1.7;color:var(--code-ink)}
+.codebox .cm{color:#7C8494}
+.codebox .kw{color:#C4A6FF}
+.codebox .st2{color:#8BD5A0}
+.copy{border:0;background:transparent;color:#9AA0AC;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font)}
+.copy:hover{color:#fff}
+.codebox.pseudo{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent)}
+.codebox.pseudo .head{background:var(--accent-soft);color:var(--accent-deep)}
+.codebox.pseudo .head .tag{background:var(--accent-deep)}
+.codebox.pseudo pre{color:var(--ink);font-size:13.6px}
+.codebox.pseudo .cm{color:var(--ink-3)}
+.codebox.pseudo .kw{color:var(--accent-deep);font-weight:700}
+.codebox.pseudo .copy{color:var(--ink-3)}
+.codebox.pseudo .copy:hover{color:var(--accent-deep)}
+code:not(pre code){background:var(--accent-soft);color:var(--accent-deep);padding:1px 6px;border-radius:6px;font-family:var(--mono);font-size:.88em;font-weight:600}
+
+/* ── 도식 ───────────────────────────────────────────── */
+figure{margin:18px 0;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 14px 12px}
+figure svg{max-width:100%;height:auto}
+figcaption{font-size:12.5px;color:var(--ink-3);margin-top:10px}
+
+/* ── 용어 ───────────────────────────────────────────── */
+.terms{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:11px}
+.term{border:1px solid var(--line);border-radius:13px;padding:13px 15px;background:var(--surface)}
+.term b{display:block;font-size:15px}
+.term .e{display:block;font-size:12px;color:var(--accent-deep);font-family:var(--mono);margin-bottom:6px}
+.term p{margin:0;font-size:13.3px;color:var(--ink-2);line-height:1.6}
+
+/* ── 예상 문제 ──────────────────────────────────────── */
+.q{border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:12px 0;background:var(--surface)}
+.q .qh{display:flex;gap:10px;align-items:flex-start;font-weight:700;font-size:15px}
+.q .qn{color:#fff;background:var(--accent);border-radius:7px;padding:1px 8px;font-size:12.5px;font-weight:800;flex-shrink:0;margin-top:3px}
+.q .type{font-size:11px;font-weight:800;color:var(--ink-3);border:1px solid var(--line);border-radius:6px;padding:1px 7px;margin-left:auto;flex-shrink:0;margin-top:3px}
+.q ol.ch{list-style:none;padding-left:0;margin:11px 0 0;counter-reset:c}
+.q ol.ch li{padding:3px 0 3px 26px;position:relative;font-size:14.3px}
+.q ol.ch li::before{content:counter(c);counter-increment:c;position:absolute;left:0;top:4px;width:19px;height:19px;border:1px solid var(--line);border-radius:50%;font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--ink-3)}
+.ans{margin-top:12px;padding:11px 13px;border-radius:10px;background:var(--accent-soft);font-size:14.2px;cursor:pointer}
+.ans .lab{font-weight:800;color:var(--accent-deep);font-size:12.5px;margin-right:7px}
+body.hide-ans .ans:not(.on){background:var(--line-2);color:transparent;user-select:none;cursor:pointer;position:relative}
+body.hide-ans .ans:not(.on) *{color:transparent!important}
+body.hide-ans .ans:not(.on)::after{content:"눌러서 정답 확인";position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-3);font-size:12.5px;font-weight:700}
+
+/* ── 단어장 페이지 ──────────────────────────────────── */
+.vhead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px}
+.vhead input[type=search]{flex:1;min-width:170px;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14px}
+.vhead input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.vlist{margin:0;padding:0;list-style:none;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
+.vword{display:grid;grid-template-columns:190px 1fr;gap:16px;padding:14px 18px;border-bottom:1px solid var(--line-2)}
+.vword:last-child{border-bottom:0}
+.vword:hover{background:var(--line-2)}
+.vword .w{font-weight:800;font-size:16px;letter-spacing:-.02em}
+.vword .ipa{display:block;font-family:var(--mono);font-size:12px;color:var(--ink-3);font-weight:400;margin-top:1px}
+.vword .pos{display:inline-block;font-size:10.5px;font-weight:800;color:#fff;background:var(--accent);border-radius:5px;padding:1px 6px;margin-top:5px}
+.vword .mean{font-size:14.5px;margin:0;font-weight:600}
+.vword .ex{font-size:13px;color:var(--ink-2);margin:5px 0 0}
+.vword .ex b{color:var(--accent-deep);font-weight:700}
+.vword .ex .ko{display:block;color:var(--ink-3);font-size:12.5px}
+.masked .mean,.masked .ex{background:var(--line-2);border-radius:6px;color:transparent;cursor:pointer}
+.masked .mean *,.masked .ex *{color:transparent!important}
+.masked .mean.show,.masked .ex.show{background:transparent;color:inherit}
+.masked .mean.show *,.masked .ex.show *{color:revert!important}
+.masked .ex.show b{color:var(--accent-deep)!important}
+.quizbox{margin-top:18px;padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--surface);display:none}
+.quizbox.on{display:block}
+.quizbox .qq{font-size:22px;font-weight:800;margin-bottom:14px;letter-spacing:-.02em}
+.quizbox .opts{display:grid;gap:8px}
+.quizbox .opt{text-align:left;padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14.5px;cursor:pointer}
+.quizbox .opt:hover{border-color:var(--accent)}
+.quizbox .opt.ok{border-color:#16A34A;background:color-mix(in srgb,#16A34A 12%,var(--surface))}
+.quizbox .opt.no{border-color:#DC2626;background:color-mix(in srgb,#DC2626 12%,var(--surface))}
+.quizbox .score{margin-top:13px;font-size:13px;color:var(--ink-3);font-weight:600}
+
+footer{margin-top:54px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-3);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+@media(max-width:900px){
+  .wrap{grid-template-columns:1fr;gap:18px;padding:16px 16px 80px}
+  .side{position:static;max-height:none;order:-1}
+  .vword{grid-template-columns:1fr;gap:5px}
+  .search{max-width:none;order:3;flex-basis:100%;max-width:100%}
+  .topbar{flex-wrap:wrap}
+  .hero::after{font-size:78px}
+}
+@media print{
+  .topbar,.side,#scrollbar,.quizbox,.vhead,.flow,.files,.extra-chip{display:none!important}
+  .wrap{display:block;max-width:none;padding:0}
+  body{font-size:10.5pt;background:#fff}
+  section{page-break-inside:avoid;margin-bottom:22px}
+  body.hide-ans .ans:not(.on){background:var(--accent-soft)!important;color:inherit!important}
+  body.hide-ans .ans:not(.on) *{color:inherit!important}
+  body.hide-ans .ans:not(.on)::after{display:none}
+  details.raw{display:none}
+  #viewVocab,#viewRaw{display:block!important;page-break-before:always}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+.toc .num{width:23px}
+.term p,.q .qh span,.call p,td,li,p{overflow-wrap:anywhere}
+</style>
+</head>
+<body class="hide-ans">
+<div id="scrollbar"></div>
+
+<div class="topbar">
+  <a class="back" href="../"><i></i>시큐어코딩</a>
+  <div class="search"><input id="q" type="search" placeholder="찾기 (Enter로 다음)" aria-label="문서 내 검색"><span class="hit" id="hit"></span></div>
+  <div class="tools">
+    <button class="tbtn" id="ansBtn">정답 가리기</button>
+    <button class="tbtn" id="vocabBtn">단어장</button>
+    <button class="tbtn" id="rawBtn">필기 원문</button>
+    <button class="tbtn" id="themeBtn">다크</button>
+    <button class="tbtn" id="printBtn">🖨</button>
+  </div>
+</div>
+
+<div class="wrap">
+<aside class="side">
+  <div class="panel">
+    <div class="subject">시큐어코딩</div>
+    <div class="when">3주차 · 09.15(화) ~ 09.21(월)</div>
+    <div id="tocWrap">
+      <div class="cap">목차</div>
+      <ul class="toc" id="toc"><li><a href="#s1"><span class="num">01</span>실습환경 구조</a></li><li><a href="#s2"><span class="num">02</span>LAB 서버 설정</a></li><li><a href="#s3"><span class="num">03</span>프록시 설정</a></li><li><a href="#s4"><span class="num">04</span>웹 구조·흐름</a></li><li><a href="#s5"><span class="num">05</span>HTTP</a></li><li><a href="#s6"><span class="num">06</span>BASE64 · URL 인코딩</a></li><li><a href="#s7"><span class="num">07</span>프레임워크 vs 플랫폼</a></li><li><a href="#s8"><span class="num">08</span>Spring Boot</a></li><li><a href="#s9"><span class="num">09</span>Hello 프로젝트</a></li><li><a href="#s10"><span class="num">10</span>게시판 CRUD</a></li><li><a href="#sp"><span class="num">11</span>교안 퀴즈</a></li><li><a href="#sg"><span class="num">12</span>용어 정리</a></li><li><a href="#sq"><span class="num">13</span>확인 필요</a></li><li><a href="#sx"><span class="num">14</span>예상 문제</a></li></ul>
+      <hr>
+      <div class="cap">복습 체크</div>
+      <div class="chk"><label><input type="checkbox"><span>실습 아키텍처 두 연결 방식 설명</span></label><label><input type="checkbox"><span>LAB 설정 8단계 · 포트 6개</span></label><label><input type="checkbox"><span>BurpSuite·파이어폭스 설정 이유</span></label><label><input type="checkbox"><span>웹 3계층 · 웹 서비스 흐름 7단계</span></label><label><input type="checkbox"><span>TCP 3-way/4-way · HTTP 요청·응답 구조</span></label><label><input type="checkbox"><span>Method 7개 · 상태코드 분류</span></label><label><input type="checkbox"><span>BASE64 직접 인코딩 해보기</span></label><label><input type="checkbox"><span>Spring vs Spring Boot 표</span></label><label><input type="checkbox"><span>게시판 5계층 · API 설계표</span></label><label><input type="checkbox"><span>교안 퀴즈 9문제 다시 풀기</span></label></div>
+      <div class="pbar"><i id="barFill"></i></div>
+    </div>
+    <div id="rawNav" hidden>
+      <div class="cap">필기 원문</div>
+      <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">내가 수업 중에 보낸 내용 <b id="rawTotal">0</b>개를 손대지 않고 그대로 모아둔 페이지입니다.</p>
+      <hr>
+      <div class="cap">확인 방법</div>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">여기 있는 내용이 본문에 다 반영됐는지 대조하세요. 각 항목의 링크를 누르면 정리된 위치로 이동합니다.</p>
+    </div>
+    <div id="vocabNav" hidden>
+      <div class="cap">단어장</div>
+      <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">이번 주차에 나온 전공 필수 단어 <b id="vTotal">0</b>개입니다.</p>
+      <hr>
+      <div class="cap">사용법</div>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">뜻 가리기를 켜면 회색 칸을 눌러 하나씩 확인할 수 있습니다. 퀴즈는 아래 목록에서 문제를 자동으로 만듭니다.</p>
+    </div>
+  </div>
+</aside>
+
+<main>
+<div id="viewNote">
+  <div class="hero" data-w="03">
+    <span class="chip">3주차 · 이러닝</span>
+    <button class="chip extra-chip" id="extraChip"></button>
+    <h1>실습환경 구축과 웹·HTTP·Spring Boot 기초</h1>
+    <p class="sub">1차시 LAB·BurpSuite·HTTP·인코딩 · 2차시 Spring Boot 기본 · 3차시 Spring Boot 게시판 CRUD (이러닝 교안 3편)</p>
+    <div class="metaline"><span>09.15(화) ~ 09.21(월)</span><span><b>이동재</b> 교수님</span><span>교안 PDF 3편 (1~3차시)</span><span>과제: 교안에 없음 · 실습환경 구축 필요</span></div>
+    <div class="files"><a class="file" href="03-1-slides1.pdf" target="_blank"><span class="ic">PDF</span>1차시 교안 · 실습환경·HTTP·인코딩<em>49p</em></a><a class="file" href="03-2-slides1.pdf" target="_blank"><span class="ic">PDF</span>2차시 교안 · Spring Boot 기본<em>23p</em></a><a class="file" href="03-3-slides1.pdf" target="_blank"><span class="ic">PDF</span>3차시 교안 · 게시판 CRUD<em>21p</em></a><a class="file" href="SecureCoding2025.z01" target="_blank"><span class="ic">Z01</span>LAB 환경 · 분할 1/3<em>922MB</em></a><a class="file" href="SecureCoding2025.z02" target="_blank"><span class="ic">Z02</span>LAB 환경 · 분할 2/3<em>922MB</em></a><a class="file" href="SecureCoding2025.zip" target="_blank"><span class="ic">ZIP</span>LAB 환경 · 분할 3/3 (이 파일로 열기)<em>830MB</em></a></div>
+  </div>
+
+  <nav class="flow"><a href="#s1"><b>01</b> 실습환경</a><a href="#s5"><b>05</b> HTTP</a><a href="#s6"><b>06</b> 인코딩</a><a href="#s8"><b>08</b> Spring Boot</a><a href="#s10"><b>10</b> 게시판</a><a href="#sp"><b>11</b> 교안 퀴즈</a><a href="#sx"><b>14</b> 예상 문제</a></nav>
+  <div class="keys"><div class="key"><div class="n">핵심 1</div><p>실습 = <b>시큐어코딩랩(8000)</b> + <b>BurpSuite 프록시(8081)</b>. 브라우저 요청을 가로채 HTTP를 직접 본다.</p></div><div class="key"><div class="n">핵심 2</div><p>HTTP는 <b>요청–응답·무상태</b>, TCP 위에서 동작. 상태코드 2xx 성공 · <b>401 인증 실패 / 403 인가 실패</b>.</p></div><div class="key"><div class="n">핵심 3</div><p>인코딩은 <b>누구나 되돌릴 수 있다</b> — BASE64는 <b>6비트</b> 단위. Spring Boot는 자동설정·내장 Tomcat·<b>JAR</b>.</p></div></div>
+
+
+  <section id="s1">
+    <h2 class="st"><span class="sq">01</span>실습환경 아키텍처</h2>
+    <div class="badges"><span class="badge prof">1차시 · 교안 5쪽</span></div>
+    <p>실습 PC 한 대 안에 <b>웹 서비스(시큐어코딩랩)</b>와 <b>로컬 프록시(BurpSuite)</b>를 함께 띄우고, 브라우저 요청을 프록시로 가로채 보면서 실습합니다.</p>
+    <figure><svg viewBox="0 0 700 250" role="img" aria-label="실습환경 아키텍처" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arlab" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" style="fill:var(--ink-3)"/></marker></defs><rect x="6" y="6" width="688" height="238" rx="14" style="fill:transparent;stroke:var(--ink-3);stroke-width:1.2;stroke-dasharray:5 4"/><text x="18" y="26" text-anchor="start" style="font-family:var(--font);font-size:11.5px;font-weight:800;fill:var(--ink-3)">실습 PC — MS Windows (192.168.0.10)</text><rect x="20" y="58" width="160" height="70" rx="8" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5"/><text x="100.0" y="88" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:800;fill:var(--ink)">시큐어코딩랩</text><text x="100.0" y="108" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-2)">SpringBoot + DB(MariaDB)</text><text x="100.0" y="146" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">웹 서비스 포트</text><text x="100.0" y="162" text-anchor="middle" style="font-family:var(--font);font-size:11.5px;font-weight:800;fill:var(--accent-deep)">192.168.0.10:8000</text><rect x="270" y="58" width="160" height="70" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="350.0" y="88" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:800;fill:var(--ink)">Local Proxy Server</text><text x="350.0" y="108" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-2)">BurpSuite</text><text x="350.0" y="146" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">프록시 서비스 포트</text><text x="350.0" y="162" text-anchor="middle" style="font-family:var(--font);font-size:11.5px;font-weight:800;fill:var(--accent-deep)">127.0.0.1:8081</text><rect x="520" y="58" width="160" height="70" rx="8" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5"/><text x="600.0" y="88" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:800;fill:var(--ink)">사용자</text><text x="600.0" y="108" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-2)">Web Browser</text><path d="M518 80 L434 80" fill="none" style="fill:none;stroke:var(--accent);stroke-width:2" marker-end="url(#arlab)"/><text x="475.0" y="73" text-anchor="middle" style="font-family:var(--font);font-size:10px;font-weight:700;fill:var(--accent-deep)">Request</text><path d="M432 108 L516 108" fill="none" style="fill:none;stroke:var(--accent);stroke-width:2" marker-end="url(#arlab)"/><text x="475.0" y="123" text-anchor="middle" style="font-family:var(--font);font-size:10px;font-weight:700;fill:var(--accent-deep)">Response</text><path d="M268 80 L184 80" fill="none" style="fill:none;stroke:var(--accent);stroke-width:2" marker-end="url(#arlab)"/><text x="225.0" y="73" text-anchor="middle" style="font-family:var(--font);font-size:10px;font-weight:700;fill:var(--accent-deep)">Request</text><path d="M182 108 L266 108" fill="none" style="fill:none;stroke:var(--accent);stroke-width:2" marker-end="url(#arlab)"/><text x="225.0" y="123" text-anchor="middle" style="font-family:var(--font);font-size:10px;font-weight:700;fill:var(--accent-deep)">Response</text><path d="M600 128 L600 206 L100 206 L100 172" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;stroke-dasharray:5 4" marker-end="url(#arlab)"/><text x="350" y="226" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--ink-2)">점선 = ① 프록시 없이 직접 연결 / 실선 = ② BurpSuite 프록시 경유 (HTTP Request·Response)</text></svg><figcaption>실습환경 아키텍처 — 웹 서비스 8000번 포트, 프록시 8081번 포트</figcaption></figure>
+    <div class="tablewrap"><table><thead><tr><th>연결 방식</th><th>설정</th><th>설명</th></tr></thead><tbody><tr><td><b>① 웹 서비스 직접 연결</b> (점선)</td><td>브라우저에 <code>192.168.0.10:8000</code> 또는 <code>127.0.0.1:8000</code></td><td>브라우저에서 웹 서비스 포트에 직접 접속</td></tr><tr><td><b>② Local Proxy 설정</b> (실선)</td><td>브라우저 프록시를 <code>127.0.0.1:8081</code>로 설정한 뒤 <code>192.168.0.10:8000</code> 접속</td><td>BurpSuite를 켜고 브라우저에 프록시로 등록하면 <b>모든 HTTP 요청·응답이 프록시를 거침</b></td></tr></tbody></table></div>
+  </section>
+
+  <section id="s2">
+    <h2 class="st"><span class="sq">02</span>LAB 웹 서비스 서버 설정 (8단계)</h2>
+    <div class="badges"><span class="badge prof">1차시 · 교안 6~13쪽</span><span class="badge ask">실습 준비물</span></div>
+    <div class="call warn"><div class="t">먼저 필요한 것</div><p>교수님이 배포한 <b>SecureCoding2025.zip</b> 파일이 있어야 합니다. 배포본은 <b>분할 압축 3개</b>(<code>.zip</code>·<code>.z01</code>·<code>.z02</code>, 합계 약 2.7GB)라서 세 파일을 한 폴더에 두고 마지막 조각인 <code>.zip</code>을 열어야 풀립니다. 풀면 안에 다시 <code>SecureCoding2025.zip</code>(약 2.8GB) 하나가 나오고, 이것을 Step 1대로 <code>C:&#92;</code>에 풀면 됩니다(배포 파일 구조를 직접 확인).</p></div>
+    <div class="tablewrap"><table><thead><tr><th>Step</th><th>할 일</th><th>확인 방법</th></tr></thead><tbody><tr><td>1</td><td><code>SecureCoding2025.zip</code>을 <code>C:&#92;</code>에 압축 해제</td><td>폴더: download · JNDI-Exploit-Kit · logs · sts4 · webgoat · workspace, 파일: README.md · set_env.txt · start_lab.bat</td></tr><tr><td>2</td><td><b>환경변수</b> 설정: 시스템 변수 3개 추가 + Path 맨 앞에 3개 추가</td><td>cmd에서 <code>java -version</code> · <code>mvn -version</code> · <code>mysql --version</code> 버전 출력</td></tr><tr><td>3</td><td>실습 포트 사용 여부 확인: <b>3306, 8000, 8100, 8200, 8080, 8081</b></td><td><code>netstat -ano | more</code>에서 LISTENING이면 PID로 작업 관리자에서 해당 프로세스 종료</td></tr><tr><td>4</td><td><code>C:&#92;SecureCoding2025&gt; start_lab</code> 실행 — MariaDB + STS4 구동</td><td>cmd에 <code>[Note] mysqld.exe: ready for connections.</code> · STS 왼쪽에 SecureCoding 프로젝트 · <b>cmd 창은 최소화만, 종료 금지</b></td></tr><tr><td>5</td><td>프로젝트 우클릭 → Maven → <b>Update Project</b> (Alt+F5) → Available Maven Codebases에서 SecureCoding 체크 → OK · 의존성과 설정을 최신 상태로 동기화</td><td>오른쪽 아래 진행표시(Updating Maven Project)가 사라지면 완료</td></tr><tr><td>6</td><td>프로젝트 우클릭 → Run As → <b>Spring Boot App</b> (Alt+Shift+X, B) → Select Java Application에서 <code>SecureCodingLabTestApplication - kr.co.openeg.lab</code> 선택 (다른 후보 BuildExploit, EncodingMaker는 선택하지 않음)</td><td>콘솔에 <code>Tomcat started on port(s): 8000 (http)</code></td></tr><tr><td>7</td><td>콘솔 성능 경고(CONSOLE PERFORMANCE WARNING — “Console buffer size too low (80,000). About 2 times slower.”) 시: Window → Preferences → Run/Debug → Console. 경고창은 ‘Limit console output’ 해제도 대안으로 제시</td><td>Console buffer size를 <b>1,000,000</b>으로 → Apply and Close</td></tr><tr><td>8</td><td>크롬·파이어폭스에서 <code>localhost:8000</code> 접속 (탭 제목 ‘시큐어코딩랩 - 홈’, 메뉴 메인·게시판·시큐어코딩 테스트·DB 초기화)</td><td>ID <b>test</b> / PW <b>qqq111</b> 로 로그인 → <code>/board/main</code> 화면 (오른쪽 위 [test 님] 로그아웃·정보수정)</td></tr></tbody></table></div>
+    <div class="codebox"><div class="head"><span><span class="tag">cmd</span>Step 2 · 환경변수 값</span><button class="copy">복사</button></div>
+<pre><code><span class="cm">:: 시스템 변수 3개 — 실습용 JDK·Maven·MariaDB가 압축 폴더 안에 들어 있음</span>
+JAVA_HOME   C:\SecureCoding2025\download\jdk-15.0.2\
+MAVEN_HOME  C:\SecureCoding2025\download\apache-maven-3.8.1\
+MYSQL_HOME  C:\SecureCoding2025\download\mariadb-10.5.10-winx64\
+
+<span class="cm">:: Path 맨 앞에 추가 — 이미 설치된 다른 버전보다 먼저 찾게 하려고 맨 위에 둠</span>
+%JAVA_HOME%\bin\
+%MAVEN_HOME%\bin\
+%MYSQL_HOME%\bin\
+
+<span class="cm">:: 확인 — 정상이면 java 15.0.2 / Maven 3.8.1 / MariaDB 10.5.10 출력</span>
+java -version
+mvn -version
+mysql --version
+
+<span class="cm">:: Step 3 — 실습 포트를 이미 쓰는 프로그램이 있는지 확인</span>
+netstat -ano | more</code></pre></div>
+    <p style="font-size:13px;color:var(--ink-2)">왜 이렇게 적었나: 교안의 <code>java –version</code>처럼 긴 대시(–)를 그대로 복사하면 명령이 실패하므로, 실제로 입력할 수 있는 <code>-</code>로 바꿔 적었습니다.</p>
+  </section>
+
+  <section id="s3">
+    <h2 class="st"><span class="sq">03</span>프록시(BurpSuite)·파이어폭스 설정</h2>
+    <div class="badges"><span class="badge prof">1차시 · 교안 14~21쪽</span></div>
+    <h3>BurpSuite 프록시 설정 (4단계)</h3>
+    <figure><svg viewBox="0 0 640 86" role="img" aria-label="BurpSuite 설정" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arbp" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" style="fill:var(--ink-3)"/></marker></defs><rect x="4.0" y="8" width="147.5" height="70" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="77.75" y="40.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--accent-deep)">BurpSuite</text><text x="77.75" y="54.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--accent-deep)">Community.exe 실행</text><path d="M153.5 43.0 L162.5 43.0" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arbp)"/><rect x="165.5" y="8" width="147.5" height="70" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="239.25" y="40.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--accent-deep)">Temporary project</text><text x="239.25" y="54.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--accent-deep)">→ Use Burp defaults</text><path d="M315.0 43.0 L324.0 43.0" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arbp)"/><rect x="327.0" y="8" width="147.5" height="70" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="400.75" y="33.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--accent-deep)">Proxy › Options</text><text x="400.75" y="47.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--accent-deep)">127.0.0.1:8080 선택</text><text x="400.75" y="61.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--accent-deep)">→ Edit</text><path d="M476.5 43.0 L485.5 43.0" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arbp)"/><rect x="488.5" y="8" width="147.5" height="70" rx="8" style="fill:var(--accent);stroke:var(--accent);stroke-width:1.5"/><text x="562.25" y="40.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:#fff">Bind to port</text><text x="562.25" y="54.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:#fff">8080 → 8081</text></svg><figcaption>C:&#92;SecureCoding2025&#92;download&#92;BurpSuiteCommunity 폴더 · 설치 없이 실행 · 약관 I Accept</figcaption></figure>
+    <p style="font-size:13px;color:var(--ink-2)">화면 세부: 시작 창은 Burp Suite Community Edition v2021.10 · Disk-based project는 Professional 전용이라 Temporary project 선택 · Proxy Listeners 표(Running ☑ · Interface 127.0.0.1:8080 · Certificate Per-host)에서 행을 선택하면 주황색 표시 → 왼쪽 Edit</p>
+    <div class="call"><div class="t">왜 8081로 바꾸나</div><p>BurpSuite 기본 포트는 8080인데, 실습 포트 목록(3306, 8000, 8100, 8200, 8080, 8081)에 8080도 들어 있어 교안은 프록시를 8081로 옮깁니다. Bind to address는 <b>Loopback only</b>(127.0.0.1)입니다.</p></div>
+    <h3>파이어폭스 설정 (3단계)</h3>
+    <div class="tablewrap"><table><thead><tr><th>Step</th><th>할 일</th></tr></thead><tbody><tr><td>1</td><td>오른쪽 위 ≡ 메뉴 → <b>설정</b> → ‘일반’ 맨 아래 <b>네트워크 설정</b> → 설정 버튼</td></tr><tr><td>2</td><td><b>수동 프록시 설정</b> → HTTP 프록시 <code>127.0.0.1</code>, 포트 <code>8081</code> → 확인 (HTTPS에도 사용은 체크 안 함)</td></tr><tr><td>3</td><td>주소창 <code>about:config</code> → ‘위험을 감수하고 계속’ → <code>network.proxy.allow_hijacking_localhost</code> 값을 <b>true</b>로</td></tr></tbody></table></div>
+    <div class="call warn"><div class="t">Step 3을 하는 이유</div><p>파이어폭스는 기본적으로 “localhost, 127.0.0.1/8, ::1에 대한 연결은 프록시를 사용하지 않습니다”. 실습 서버가 localhost라서, 이 제한을 풀어야 BurpSuite가 요청을 가로챌 수 있습니다.</p></div>
+    <h3>BurpSuite 프록시 동작</h3>
+    <p>이후 그 브라우저의 <b>모든 HTTP 요청을 BurpSuite가 가로챕니다</b>(intercept). 주소를 입력해도 BurpSuite가 붙잡고 있어 화면이 안 나오고, Proxy › Intercept에서 <b>‘Intercept is on’을 눌러 off</b>하면 대기하던 요청이 전달되어 화면이 나타납니다. (Forward = 한 건 보내기, Drop = 버리기)</p>
+    <div class="codebox"><div class="head"><span><span class="tag">HTTP</span>붙잡혀 있는 요청 (교안 21쪽)</span></div>
+<pre><code>GET /login HTTP/1.1
+Host: localhost:8000
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) Gecko/20100101 Fi…
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: ko-KR,ko;q=0.8,en-US;q=0.5,en;q=0.3
+Accept-Encoding: gzip, deflate
+Connection: close
+Cookie: JSESSIONID=EC82962C430C2679DF183C7AC123763A
+Upgrade-Insecure-Requests: 1
+Priority: u=0, i</code></pre></div>
+  </section>
+
+  <section id="s4">
+    <h2 class="st"><span class="sq">04</span>웹 구조와 웹 서비스 흐름</h2>
+    <div class="badges"><span class="badge exam">교안 퀴즈 출제</span><span class="badge prof">1차시 · 교안 23~24쪽</span></div>
+    <figure><svg viewBox="0 0 640 300" role="img" aria-label="웹 애플리케이션 계층 구조" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arwl" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" style="fill:var(--ink-3)"/></marker></defs><text x="280" y="22" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:800;fill:var(--ink-2)">Users · Clients</text><rect x="90" y="40" width="380" height="44" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="280" y="60" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:800;fill:var(--accent-deep)">Presentation Layer</text><text x="280" y="76" text-anchor="middle" style="font-family:var(--font);font-size:10px;font-weight:600;fill:var(--ink-3)">UI Components · UI Process · Service Interface</text><rect x="90" y="98" width="380" height="44" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="280" y="118" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:800;fill:var(--accent-deep)">Business Layer</text><text x="280" y="134" text-anchor="middle" style="font-family:var(--font);font-size:10px;font-weight:600;fill:var(--ink-3)">Application Facade · Business Components · Workflows · Entities</text><rect x="90" y="156" width="380" height="44" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="280" y="176" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:800;fill:var(--accent-deep)">Data Layer</text><text x="280" y="192" text-anchor="middle" style="font-family:var(--font);font-size:10px;font-weight:600;fill:var(--ink-3)">Data Access Logic · Data Helper/Utilities · Service Agents</text><text x="280" y="234" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:800;fill:var(--ink-2)">Data Sources · Services</text><path d="M280 28 L280 38" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arwl)"/><path d="M280 86 L280 96" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arwl)"/><path d="M280 144 L280 154" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arwl)"/><path d="M280 202 L280 220" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arwl)"/><rect x="490" y="40" width="130" height="160" rx="8" style="fill:var(--line-2);stroke:var(--line);stroke-width:1.5"/><text x="555" y="64" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:800;fill:var(--ink)">Cross-Cutting</text><text x="555" y="96" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:600;fill:var(--ink-2)">Security</text><text x="555" y="118" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:600;fill:var(--ink-2)">Operational</text><text x="555" y="140" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:600;fill:var(--ink-2)">Management</text><text x="555" y="162" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:600;fill:var(--ink-2)">Communication</text><text x="320" y="270" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--accent-deep)">웹 애플리케이션 서버 로직 3대 계층 = Presentation · Business · Data (교안 퀴즈 1)</text><text x="320" y="290" text-anchor="middle" style="font-family:var(--font);font-size:10px;font-weight:500;fill:var(--ink-3)">확장 구조 출처: medium.com/@iyuroch · 단순 구조 출처: 위키피디아</text></svg><figcaption>웹 애플리케이션 계층 — 오른쪽 Cross-Cutting은 모든 계층에 걸치는 공통 관심사</figcaption></figure>
+    <p style="font-size:13px;color:var(--ink-2)">단순화된 구조(위키피디아): Users → Presentation → Business → Data → Data Sources / Services, 외부 호출 서비스(Calling Services)는 Business Layer로 바로 연결(점선).</p>
+    <h3>웹 서비스 흐름</h3>
+    <figure><svg viewBox="0 0 700 250" role="img" aria-label="웹 서비스 흐름" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arwf" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" style="fill:var(--ink-3)"/></marker></defs><rect x="4" y="150" width="132" height="52" rx="8" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5"/><text x="70.0" y="174" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:800;fill:var(--ink)">Web Browser</text><text x="70.0" y="191" text-anchor="middle" style="font-family:var(--font);font-size:9px;font-weight:600;fill:var(--ink-3)"></text><rect x="150" y="16" width="132" height="52" rx="8" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5"/><text x="216.0" y="40" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:800;fill:var(--ink)">DNS Server</text><text x="216.0" y="57" text-anchor="middle" style="font-family:var(--font);font-size:9px;font-weight:600;fill:var(--ink-3)"></text><rect x="222" y="150" width="132" height="52" rx="8" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5"/><text x="288.0" y="174" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:800;fill:var(--ink)">Web Server</text><text x="288.0" y="191" text-anchor="middle" style="font-family:var(--font);font-size:9px;font-weight:600;fill:var(--ink-3)"></text><rect x="406" y="150" width="132" height="52" rx="8" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5"/><text x="472.0" y="174" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:800;fill:var(--ink)">WAS</text><text x="472.0" y="191" text-anchor="middle" style="font-family:var(--font);font-size:9px;font-weight:600;fill:var(--ink-3)"></text><rect x="566" y="150" width="132" height="52" rx="8" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5"/><text x="632.0" y="174" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:800;fill:var(--ink)">Database</text><text x="632.0" y="191" text-anchor="middle" style="font-family:var(--font);font-size:9px;font-weight:600;fill:var(--ink-3)"></text><path d="M60 148 L180 70" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arwf)"/><circle cx="114" cy="110" r="10" style="fill:var(--accent)"/><text x="114" y="114" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:800;fill:#fff">1</text><text x="8" y="104" text-anchor="start" style="font-family:var(--font);font-size:10px;font-weight:700;fill:var(--ink-2)">URL 요청</text><path d="M208 70 L96 148" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arwf)"/><circle cx="166" cy="110" r="10" style="fill:var(--accent)"/><text x="166" y="114" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:800;fill:#fff">2</text><text x="290" y="50" text-anchor="start" style="font-family:var(--font);font-size:10px;font-weight:700;fill:var(--ink-2)">② IP 응답 (123.123.123.123)</text><path d="M138 166 L218 166" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arwf)"/><circle cx="179.0" cy="166" r="10" style="fill:var(--accent)"/><text x="179.0" y="170" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:800;fill:#fff">3</text><path d="M356 166 L402 166" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arwf)"/><circle cx="380.0" cy="150" r="10" style="fill:var(--accent)"/><text x="380.0" y="154" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:800;fill:#fff">4</text><path d="M540 168 L562 168" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arwf)"/><path d="M564 186 L542 186" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arwf)"/><circle cx="552.0" cy="140" r="10" style="fill:var(--accent)"/><text x="552.0" y="144" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:800;fill:#fff">5</text><path d="M404 188 L358 188" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arwf)"/><circle cx="380.0" cy="208" r="10" style="fill:var(--accent)"/><text x="380.0" y="212" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:800;fill:#fff">6</text><path d="M220 190 L140 190" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arwf)"/><circle cx="179.0" cy="190" r="10" style="fill:var(--accent)"/><text x="179.0" y="194" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:800;fill:#fff">7</text><text x="179.0" y="146" text-anchor="middle" style="font-family:var(--font);font-size:9.5px;font-weight:700;fill:var(--ink-2)">index.html 요청</text><text x="179.0" y="222" text-anchor="middle" style="font-family:var(--font);font-size:9.5px;font-weight:700;fill:var(--ink-2)">index.html 응답</text><text x="552.0" y="222" text-anchor="middle" style="font-family:var(--font);font-size:9.5px;font-weight:700;fill:var(--ink-3)">JDBC · ODBC</text><text x="472.0" y="194" text-anchor="middle" style="font-family:var(--font);font-size:9.5px;font-weight:700;fill:var(--accent-deep)">Business Logic</text><text x="350" y="244" text-anchor="middle" style="font-family:var(--font);font-size:10px;font-weight:600;fill:var(--ink-3)">④·⑥ 웹서버 ↔ WAS 중계 · ⑤ WAS ↔ DB 조회 · ⑦ html·css·javascript 응답</text></svg><figcaption>① DNS에 주소 요청 → ② IP 응답 → ③ 웹서버에 index.html 요청 → ④ WAS로 중계 → ⑤ DB 조회 → ⑥ 응답 중계 → ⑦ 브라우저로 응답</figcaption></figure>
+    <div class="tablewrap"><table><thead><tr><th>구성 요소</th><th>역할</th><th>예시 제품</th></tr></thead><tbody><tr><td>Web Browser</td><td>요청을 보내고 HTML·CSS·JS를 받아 화면 표시</td><td>Chrome, Firefox, Internet Explorer</td></tr><tr><td>DNS Server</td><td>도메인 → IP 주소 변환</td><td></td></tr><tr><td>Web Server</td><td>정적 파일 응답, 동적 요청은 WAS로 중계</td><td>Apache, nginx, webtob</td></tr><tr><td>WAS</td><td>Web Application Server — 비즈니스 로직 실행</td><td>tomcat, WebLogic, JBoss, jeus</td></tr><tr><td>Database</td><td>데이터 저장 (WAS와 JDBC·ODBC 커넥터로 연결)</td><td>Oracle, MySQL, MSSQL</td></tr></tbody></table></div>
+  </section>
+
+  <section id="s5">
+    <h2 class="st"><span class="sq">05</span>HTTP 구조 — 요청·응답·메서드·상태코드</h2>
+    <div class="badges"><span class="badge exam">교안 퀴즈 출제</span><span class="badge prof">1차시 · 교안 25~33쪽</span></div>
+    <div class="call quote"><div class="t">정의 (교안)</div><p><b>HTTP</b>(HyperText Transfer Protocol): WWW에서 HTML 문서 같은 리소스를 가져올 수 있게 해 주는 프로토콜. <b>요청(Request)–응답(Response) 구조</b>, <b>무상태 방식(Stateless)</b>.</p></div>
+    <figure><svg viewBox="0 0 640 200" role="img" aria-label="웹 문서를 여러 요청으로 가져오는 모습" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arhd" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" style="fill:var(--ink-3)"/></marker></defs><rect x="10" y="40" width="150" height="120" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="85" y="64" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:800;fill:var(--accent-deep)">Web document</text><text x="85" y="86" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-2)">page.html</text><text x="85" y="101" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-2)">layout.css</text><text x="85" y="116" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-2)">image.png</text><text x="85" y="131" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-2)">video.mp4</text><text x="85" y="146" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-2)">ads.jpg</text><rect x="480" y="43" width="150" height="34" rx="8" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5"/><text x="555" y="65" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:800;fill:var(--ink)">Web server</text><path d="M162 60 L476 60" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arhd)"/><text x="318" y="54" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:700;fill:var(--ink-2)">GET page.html · layout.css · image.png</text><rect x="480" y="83" width="150" height="34" rx="8" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5"/><text x="555" y="105" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:800;fill:var(--ink)">Video server</text><path d="M162 100 L476 100" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arhd)"/><text x="318" y="94" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:700;fill:var(--ink-2)">GET video.mp4</text><rect x="480" y="123" width="150" height="34" rx="8" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5"/><text x="555" y="145" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:800;fill:var(--ink)">Ads server</text><path d="M162 140 L476 140" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arhd)"/><text x="318" y="134" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:700;fill:var(--ink-2)">GET ads.jpg</text><text x="320" y="196" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">문서 하나 = 요소마다 별도의 HTTP 요청, 서로 다른 서버로 갈 수 있음 (The Internet 경유)</text></svg><figcaption>웹 문서 하나를 여러 HTTP 요청으로 가져오는 모습</figcaption></figure>
+    <figure><svg viewBox="0 0 640 250" role="img" aria-label="HTTP 프로토콜 계층" xmlns="http://www.w3.org/2000/svg"><rect x="170" y="10" width="100" height="70" rx="4" style="fill:var(--surface);stroke:var(--line);stroke-width:1.5"/><text x="220.0" y="49.5" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:800;fill:var(--ink)">HTML</text><rect x="270" y="10" width="100" height="70" rx="4" style="fill:var(--surface);stroke:var(--line);stroke-width:1.5"/><text x="320.0" y="49.5" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:800;fill:var(--ink)">CSS</text><rect x="370" y="10" width="100" height="35" rx="4" style="fill:var(--surface);stroke:var(--line);stroke-width:1.5"/><text x="420.0" y="32.0" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:800;fill:var(--ink)">Web APIs</text><rect x="370" y="45" width="100" height="35" rx="4" style="fill:var(--surface);stroke:var(--line);stroke-width:1.5"/><text x="420.0" y="67.0" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:800;fill:var(--ink)">JavaScript</text><rect x="170" y="84" width="300" height="34" rx="4" style="fill:var(--accent);stroke:var(--accent);stroke-width:1.5"/><text x="320.0" y="105.5" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:800;fill:#fff">HTTP</text><rect x="170" y="122" width="80" height="34" rx="4" style="fill:var(--surface);stroke:var(--line);stroke-width:1.5"/><text x="210.0" y="143.5" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:800;fill:var(--ink)">DNS</text><rect x="390" y="122" width="80" height="34" rx="4" style="fill:var(--surface);stroke:var(--line);stroke-width:1.5"/><text x="430.0" y="143.5" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:800;fill:var(--ink)">TLS</text><rect x="250" y="122" width="140" height="72" rx="4" style="fill:var(--surface);stroke:var(--line);stroke-width:1.5"/><text x="320.0" y="162.5" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:800;fill:var(--ink)">TCP</text><rect x="170" y="160" width="80" height="34" rx="4" style="fill:var(--surface);stroke:var(--line);stroke-width:1.5"/><text x="210.0" y="181.5" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:800;fill:var(--ink)">UDP</text><rect x="390" y="160" width="80" height="34" rx="4" style="fill:var(--surface);stroke:var(--line);stroke-width:1.5"/><text x="430.0" y="181.5" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:800;fill:var(--ink)"></text><rect x="170" y="198" width="300" height="34" rx="4" style="fill:var(--surface);stroke:var(--line);stroke-width:1.5"/><text x="320.0" y="219.5" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:800;fill:var(--ink)">IP</text><path d="M156 10 L148 10 L148 118 L156 118" fill="none" style="fill:none;stroke:var(--accent);stroke-width:2"/><text x="142" y="68" text-anchor="end" style="font-family:var(--font);font-size:12px;font-weight:800;fill:var(--accent-deep)">The Web</text><text x="486" y="105" text-anchor="start" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--accent-deep)">← 이번 차시의 중심</text></svg><figcaption>웹 기술 계층도 — HTTP는 TCP 위에서, HTML·CSS·JS 아래에서 동작 (TLS·DNS·UDP·IP 포함)</figcaption></figure>
+    <div class="call link"><div class="t">왜 “무상태”인데 로그인이 유지되나</div><p>HTTP 자체는 이전 요청을 기억하지 않아서, 서버가 발급한 <b>세션 ID를 쿠키(Cookie: JSESSIONID=…)</b>로 매 요청마다 함께 보내 상태를 흉내 냅니다. 교안 21·28쪽 요청의 Cookie 헤더가 바로 그것입니다. 2주차 STRIDE 실습의 “세션 탈취”가 노리는 값도 이 쿠키입니다.</p></div>
+    <h3>HTTP 흐름 — TCP 위에서</h3>
+    <figure><svg viewBox="0 0 640 410" role="img" aria-label="HTTP 통신의 TCP 흐름" xmlns="http://www.w3.org/2000/svg"><defs><marker id="artcp" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" style="fill:var(--ink-3)"/></marker></defs><rect x="110" y="12" width="140" height="32" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="180" y="33" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:800;fill:var(--ink)">웹 브라우저</text><rect x="400" y="12" width="140" height="32" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="470" y="33" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:800;fill:var(--ink)">웹 서버</text><path d="M180 44 L180 402" fill="none" style="fill:none;stroke:var(--line);stroke-width:2"/><path d="M470 44 L470 402" fill="none" style="fill:none;stroke:var(--line);stroke-width:2"/><path d="M500 48 L508 48 L508 130 L500 130" fill="none" style="fill:none;stroke:var(--accent);stroke-width:1.8"/><text x="516" y="93.0" text-anchor="start" style="font-family:var(--font);font-size:11.5px;font-weight:800;fill:var(--accent-deep)">연결설정 (3-way)</text><path d="M500 138 L508 138 L508 250 L500 250" fill="none" style="fill:none;stroke:var(--accent);stroke-width:1.8"/><text x="516" y="198.0" text-anchor="start" style="font-family:var(--font);font-size:11.5px;font-weight:800;fill:var(--accent-deep)">데이터 전송</text><path d="M500 258 L508 258 L508 370 L500 370" fill="none" style="fill:none;stroke:var(--accent);stroke-width:1.8"/><text x="516" y="318.0" text-anchor="start" style="font-family:var(--font);font-size:11.5px;font-weight:800;fill:var(--accent-deep)">연결해제 (4-way)</text><path d="M182 60 L466 60" fill="none" style="fill:none;stroke:var(--accent);stroke-width:2" marker-end="url(#artcp)"/><text x="325.0" y="55" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:800;fill:var(--ink)">SYN</text><path d="M468 90 L184 90" fill="none" style="fill:none;stroke:var(--accent);stroke-width:2" marker-end="url(#artcp)"/><text x="325.0" y="85" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:800;fill:var(--ink)">SYN/ACK</text><path d="M182 120 L466 120" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.4" marker-end="url(#artcp)"/><text x="325.0" y="115" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:600;fill:var(--ink-2)">ACK</text><path d="M182 150 L466 150" fill="none" style="fill:none;stroke:var(--accent);stroke-width:2" marker-end="url(#artcp)"/><text x="325.0" y="145" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:800;fill:var(--ink)">DATA (Request)</text><path d="M468 180 L184 180" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.4" marker-end="url(#artcp)"/><text x="325.0" y="175" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:600;fill:var(--ink-2)">ACK</text><path d="M468 210 L184 210" fill="none" style="fill:none;stroke:var(--accent);stroke-width:2" marker-end="url(#artcp)"/><text x="325.0" y="205" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:800;fill:var(--ink)">DATA (Response)</text><path d="M182 240 L466 240" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.4" marker-end="url(#artcp)"/><text x="325.0" y="235" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:600;fill:var(--ink-2)">ACK</text><path d="M182 270 L466 270" fill="none" style="fill:none;stroke:var(--accent);stroke-width:2" marker-end="url(#artcp)"/><text x="325.0" y="265" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:800;fill:var(--ink)">FIN</text><path d="M468 300 L184 300" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.4" marker-end="url(#artcp)"/><text x="325.0" y="295" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:600;fill:var(--ink-2)">ACK</text><path d="M468 330 L184 330" fill="none" style="fill:none;stroke:var(--accent);stroke-width:2" marker-end="url(#artcp)"/><text x="325.0" y="325" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:800;fill:var(--ink)">FIN</text><path d="M182 360 L466 360" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.4" marker-end="url(#artcp)"/><text x="325.0" y="355" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:600;fill:var(--ink-2)">ACK</text></svg><figcaption>TCP 3-way handshake로 연결 → HTTP 요청·응답 → 4-way handshake로 해제</figcaption></figure>
+    <div class="tablewrap"><table><thead><tr><th>번호</th><th>위치</th><th>동작</th></tr></thead><tbody><tr><td>1</td><td>서버 HTTP 부모 프로세스 → TCP</td><td>연결대기</td></tr><tr><td>2</td><td>브라우저 HTTP → TCP</td><td>연결요청</td></tr><tr><td>3~5</td><td>브라우저 ↔ 서버</td><td><b>SYN → SYN/ACK → ACK</b> (3-way handshake, TCP 연결설정)</td></tr><tr><td>6·7</td><td>양쪽 TCP → HTTP</td><td>연결확인 / 연결승락</td></tr><tr><td>8</td><td>서버</td><td>HTTP 부모 프로세스가 <b>자식 프로세스 생성</b></td></tr><tr><td>9~12</td><td>브라우저 → 서버</td><td>HTTP요청 → <b>DATA(Request)</b> → ACK → 자식 프로세스로 전달</td></tr><tr><td>13</td><td>자식 프로세스 ↔ 저장소</td><td>웹 페이지 읽기</td></tr><tr><td>14~17</td><td>서버 → 브라우저</td><td>HTTP응답 → <b>DATA(Response)</b> → ACK → 브라우저 HTTP로 전달</td></tr><tr><td>18~21</td><td>브라우저 ↔ 서버</td><td><b>FIN → ACK → FIN → ACK</b> (4-way handshake, TCP 연결해제)</td></tr></tbody></table></div>
+    <h3>BurpSuite로 HTTP 보기</h3>
+    <p>프록시를 거치도록 설정하면 <b>Proxy › HTTP history</b>에서 모든 요청·응답을 조회할 수 있습니다.</p>
+    <div class="tablewrap"><table><thead><tr><th>#</th><th>Host</th><th>Method</th><th>URL</th><th>Status</th><th>Length</th><th>MIME</th></tr></thead><tbody><tr><td>197</td><td>http://localhost:8000</td><td>GET</td><td>/board/main</td><td>200</td><td>3589</td><td>HTML</td></tr><tr><td>202</td><td>http://detectportal.firefox.com</td><td>GET</td><td>/canonical.html</td><td>200</td><td>317</td><td>XML</td></tr><tr><td>203</td><td>http://detectportal.firefox.com</td><td>GET</td><td>/success.txt?ipv4</td><td>200</td><td>235</td><td>text</td></tr><tr><td>204</td><td>http://detectportal.firefox.com</td><td>GET</td><td>/success.txt?ipv6</td><td>200</td><td>235</td><td>text</td></tr></tbody></table></div>
+    <h3>HTTP Request 메시지 구조</h3>
+    <div class="codebox"><div class="head"><span><span class="tag">HTTP</span>Request (교안 28쪽)</span></div>
+<pre><code>GET /board/main HTTP/1.1                 <span class="cm">← 요청 라인: 메서드 · 경로 · 버전</span>
+Host: localhost:8000                     <span class="cm">← 여기부터 헤더</span>
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) Gecko/20100101 Firefox/135.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: ko-KR,ko;q=0.8,en-US;q=0.5,en;q=0.3
+Accept-Encoding: gzip, deflate
+Referer: http://localhost:8000/login     <span class="cm">← 직전에 있던 페이지</span>
+Connection: close
+Cookie: JSESSIONID=C84105A85AC5C292FEE00982DB9EA846   <span class="cm">← 세션 식별자</span>
+Upgrade-Insecure-Requests: 1
+Priority: u=0, i
+                                         <span class="cm">← 빈 줄 뒤가 바디 (GET이라 비어 있음)</span></code></pre></div>
+    <h3>HTTP Request Method</h3>
+    <div class="tablewrap"><table><thead><tr><th>Method</th><th>설명</th></tr></thead><tbody><tr><td><b>GET</b></td><td>자원 요청(기본값). 파라미터를 <b>URL에 붙여</b> 전송 → 보안이 필요 없는 짧은 데이터, 북마크가 필요한 경우. 예: <code>test.jsp?id=kim&amp;pass=1234</code></td></tr><tr><td><b>POST</b></td><td>자원 요청. 파라미터를 <b>Body에 붙여</b> 전송 → 데이터가 많거나 비밀 정보를 보낼 때. 예: <code>&lt;form method="post"&gt;</code></td></tr><tr><td><b>HEAD</b></td><td>HTTP Header 정보만 요청 — 메타 정보 획득, 링크 유효성 검사</td></tr><tr><td><b>PUT</b></td><td>URL 자원을 생성하도록 요청 — 파일 업로드 가능</td></tr><tr><td><b>DELETE</b></td><td>URL 자원을 삭제하도록 요청 — 파일 삭제 가능</td></tr><tr><td><b>TRACE</b></td><td>진단 목적 — 서버가 받은 요청을 응답 바디에 그대로 돌려보냄</td></tr><tr><td><b>OPTIONS</b></td><td>응답 가능한 HTTP Method를 요청</td></tr></tbody></table></div>
+    <div class="call warn"><div class="t">GET 예시가 보여주는 것</div><p>교안의 GET 예시 <code>test.jsp?id=kim&amp;pass=1234</code>는 비밀번호가 URL에 그대로 드러나는 형태입니다. 그래서 비밀 정보는 POST로 보내라는 것이 교안의 기준입니다.</p></div>
+    <h3>HTTP Response 메시지 구조</h3>
+    <div class="codebox"><div class="head"><span><span class="tag">HTTP</span>Response (교안 30쪽)</span></div>
+<pre><code>HTTP/1.1 200                             <span class="cm">← 상태 라인: 버전 · 상태코드</span>
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+X-Content-Type-Options: nosniff          <span class="cm">← 여기까지·아래 모두 헤더</span>
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+Content-Type: text/html;charset=UTF-8
+Content-Language: ko-KR
+Date: Sun, 16 Feb 2025 05:15:10 GMT
+Connection: close
+Content-Length: 3182
+                                         <span class="cm">← 빈 줄 뒤 HTML 바디</span>
+&lt;!DOCTYPE html&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+&lt;head&gt;
+  &lt;meta charset="utf-8" /&gt;
+  &lt;title&gt;□□□□□□ - □□&lt;/title&gt;           <span class="cm">← 캡처에서 한글이 깨져 보임</span></code></pre></div>
+    <h3>HTTP Response Status Code</h3>
+    <figure><svg viewBox="0 0 640 92" role="img" aria-label="상태코드 분류" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arsc" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" style="fill:var(--ink-3)"/></marker></defs><rect x="4.0" y="8" width="118.4" height="58" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="63.2" y="41.0" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:700;fill:var(--accent-deep)">1xx</text><text x="63.2" y="84" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">정보 제공</text><rect x="132.4" y="8" width="118.4" height="58" rx="8" style="fill:var(--accent);stroke:var(--accent);stroke-width:1.5"/><text x="191.60000000000002" y="41.0" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:700;fill:#fff">2xx</text><text x="191.60000000000002" y="84" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">요청 성공</text><rect x="260.8" y="8" width="118.4" height="58" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="320.0" y="41.0" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:700;fill:var(--accent-deep)">3xx</text><text x="320.0" y="84" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">자원이 다른 곳에</text><rect x="389.20000000000005" y="8" width="118.4" height="58" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="448.40000000000003" y="41.0" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:700;fill:var(--accent-deep)">4xx</text><text x="448.40000000000003" y="84" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">요청에 문제</text><rect x="517.6" y="8" width="118.4" height="58" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="576.8000000000001" y="41.0" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:700;fill:var(--accent-deep)">5xx</text><text x="576.8000000000001" y="84" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">서버에 에러</text></svg><figcaption>앞자리로 분류 — 교안 퀴즈: 2xx는 “성공”(서버 에러 아님)</figcaption></figure>
+    <div class="call warn"><div class="t">401 vs 403 (교안 강조)</div><p><b>401 = 인증 실패</b>(누구인지 모름, 로그인 필요) · <b>403 = 인가 실패</b>(누구인지는 알지만 권한 없음).</p></div>
+    <div class="tablewrap"><table><thead><tr><th>코드</th><th>이름</th><th>설명</th></tr></thead><tbody><tr><td><b>100</b></td><td>계속</td><td>요청의 첫 부분을 받았고 나머지를 기다림</td></tr><tr><td><b>101</b></td><td>프로토콜 전환</td><td>요청한 프로토콜 전환을 승인 중</td></tr><tr><td><b>200</b></td><td>성공</td><td>요청을 정상 처리</td></tr><tr><td><b>201</b></td><td>작성됨</td><td>요청 성공, 새 리소스 작성</td></tr><tr><td><b>202</b></td><td>허용됨</td><td>접수했지만 아직 처리 안 함</td></tr><tr><td><b>203</b></td><td>신뢰할 수 없는 정보</td><td>처리했지만 다른 소스에서 받은 정보 제공</td></tr><tr><td><b>204</b></td><td>콘텐츠 없음</td><td>처리했지만 콘텐츠 없음</td></tr><tr><td><b>205</b></td><td>콘텐츠 재설정</td><td>처리했고 요청자에게 문서 보기 재설정 요구 (예: 입력 양식 비우기)</td></tr><tr><td><b>206</b></td><td>일부 콘텐츠</td><td>GET 요청의 일부만 처리</td></tr><tr><td><b>300</b></td><td>복수 응답</td><td>여러 조치 중 선택 / 선택 목록 제공</td></tr><tr><td><b>301</b></td><td>영구 이동</td><td>페이지가 새 위치로 영구 이동</td></tr><tr><td><b>302</b></td><td>임시 이동</td><td>다른 위치로 응답 중이지만 이후에도 원래 위치 사용</td></tr><tr><td><b>303</b></td><td>기타 위치 보기</td><td>HEAD 외 요청을 다른 위치로 자동 전달</td></tr><tr><td><b>304</b></td><td>수정되지 않음</td><td>마지막 요청 이후 수정 없음</td></tr><tr><td><b>305</b></td><td>프록시 사용</td><td>프록시를 통해서만 접근 가능</td></tr><tr><td><b>307</b></td><td>임시 리다이렉션</td><td>302와 같은 의미</td></tr><tr><td><b>308</b></td><td>영구 리다이렉션</td><td>교안: “RFC에서 실험적으로 승인됨”</td></tr><tr><td><b>400</b></td><td>잘못된 요청</td><td>요청 구문을 인식 못 함</td></tr><tr><td><b>401</b></td><td>권한 없음</td><td><b>인증 필요</b> (로그인 필요 페이지)</td></tr><tr><td><b>402</b></td><td>결제 필요</td><td>결제가 필요함</td></tr><tr><td><b>403</b></td><td>Forbidden</td><td><b>요청 거부</b> — 필요 권한 없음</td></tr><tr><td><b>404</b></td><td>Not Found</td><td>요청한 리소스를 찾을 수 없음</td></tr><tr><td><b>405</b></td><td>허용되지 않는 방법</td><td>지정한 메서드 사용 불가 (예: POST만 받는 곳에 GET, 읽기 전용 리소스에 PUT)</td></tr><tr><td><b>406</b></td><td>허용되지 않음</td><td>요청한 콘텐츠 특성으로 응답 불가</td></tr><tr><td><b>407</b></td><td>프록시 인증 필요</td><td>401과 비슷하나 프록시로 인증해야 함</td></tr><tr><td><b>408</b></td><td>요청 시간초과</td><td>요청 대기 시간 초과</td></tr><tr><td><b>409</b></td><td>충돌</td><td>요청 수행 중 충돌 (PUT 충돌 시 차이점 목록과 함께)</td></tr><tr><td><b>410</b></td><td>사라짐</td><td>리소스가 영구 삭제됨</td></tr><tr><td><b>411</b></td><td>길이 필요</td><td>유효한 Content-Length 헤더 필요</td></tr><tr><td><b>412</b></td><td>사전조건 실패</td><td>요청에 붙은 사전조건 불충족</td></tr><tr><td><b>413</b></td><td>요청 속성이 너무 큼</td><td>요청이 너무 커서 처리 불가</td></tr><tr><td><b>414</b></td><td>요청 URI가 너무 김</td><td>URI(보통 URL)가 너무 김</td></tr><tr><td><b>415</b></td><td>지원되지 않는 미디어 유형</td><td>지원하지 않는 형식의 요청</td></tr><tr><td><b>416</b></td><td>처리할 수 없는 요청범위</td><td>처리할 수 없는 범위 요청</td></tr><tr><td><b>417</b></td><td>예상 실패</td><td>Expect 헤더 요구사항 불충족</td></tr><tr><td><b>500</b></td><td>내부 서버 오류</td><td>서버 오류로 요청 수행 불가</td></tr><tr><td><b>501</b></td><td>구현되지 않음</td><td>요청을 수행할 기능 없음 (예: 메서드를 인식 못 함)</td></tr><tr><td><b>502</b></td><td>Bad Gateway</td><td>게이트웨이·프록시가 업스트림에서 잘못된 응답 받음</td></tr><tr><td><b>503</b></td><td>서비스를 사용할 수 없음</td><td>과부하·유지관리로 현재 사용 불가</td></tr><tr><td><b>504</b></td><td>게이트웨이 시간초과</td><td>게이트웨이·프록시가 업스트림 응답을 제때 못 받음</td></tr><tr><td><b>505</b></td><td>HTTP 버전 미지원</td><td>요청의 HTTP 버전을 지원하지 않음</td></tr><tr><td><b>506~511</b></td><td>기타</td><td>506 Variant Also Negotiates · 507 용량 부족(WebDAV) · 508 루프 감지(WebDAV) · 509 대역폭 제한 초과 · 510 확장되지 않음 · 511 네트워크 인증 필요</td></tr></tbody></table></div>
+    <div class="call extra"><div class="t">308 — 교수님이 설명하신 내용 아님</div><p>교안은 308을 “RFC에서 실험적으로 승인됨”이라고 적었는데, 308 Permanent Redirect는 현재 HTTP 표준(RFC 9110)에 정식으로 들어 있습니다. 301과 같은 영구 이동이지만 요청 메서드를 바꾸지 않는 점이 다릅니다. 시험에서는 교안 표현을 우선 기억하세요.</p></div>
+  </section>
+
+  <section id="s6">
+    <h2 class="st"><span class="sq">06</span>데이터 인코딩 — BASE64 · URL</h2>
+    <div class="badges"><span class="badge exam">교안 퀴즈 출제</span><span class="badge prof">1차시 · 교안 35~44쪽</span></div>
+    <p><b>인코딩(Encoding)</b>: 데이터를 특정 규칙에 따라 다른 형식으로 변환하는 과정.</p>
+    <div class="tablewrap"><table><thead><tr><th>필요한 이유</th><th>내용</th></tr></thead><tbody><tr><td>데이터 전송</td><td>다양한 환경에서 데이터가 올바르게 해석되도록 보장</td></tr><tr><td>보안 강화</td><td>입력값을 안전하게 처리해 XSS, HTML 인젝션 등 취약점 예방</td></tr><tr><td>호환성</td><td>서로 다른 시스템 간 데이터 포맷 차이로 인한 오류 방지</td></tr></tbody></table></div>
+    <div class="call warn"><div class="t">인코딩 vs 암호화</div><p><b>인코딩</b>: 형태만 바꾼 것이라 <b>누구나 디코딩(역변환) 가능</b> · <b>암호화</b>: 보안 목적으로 변환하며 <b>복호화에 키가 필요</b>. 뒤의 Basic 인증 실습이 이 차이를 보여줍니다.</p></div>
+    <h3>BASE64 인코딩</h3>
+    <p><b>이진 데이터를 텍스트 형식으로 변환</b>하는 방식.</p>
+    <ul>
+      <li>데이터를 <b>6비트 단위</b>로 나눠 <b>64개 문자</b>(A–Z, a–z, 0–9, +, /)로 표현 (2<sup>6</sup> = 64)</li>
+      <li>6비트씩 처리하므로 모자란 비트는 <b>0으로 패딩</b>하고, <b>=</b>로 표현</li>
+      <li>사용 이유: 이메일·JSON·XML 같은 텍스트 전송 환경에서 안전하게 사용, 전송 중 데이터 손상·인코딩 문제 방지</li>
+      <li>교안 예: <code>Hello, World!</code> → <code>SGVsbG8sIFdvcmxkIQ==</code></li>
+    </ul>
+    <div class="call extra"><div class="t">변환 과정 직접 따라가기 — 교수님이 설명하신 내용 아님</div><p>교안 예시 문자열을 제가 비트 단위로 계산해 그린 것입니다. 결과는 교안 값과 같습니다.</p>
+    <figure><svg viewBox="0 0 660 240" role="img" aria-label="Base64 인코딩 과정" xmlns="http://www.w3.org/2000/svg"><text x="10" y="20" text-anchor="start" style="font-family:var(--font);font-size:12px;font-weight:800;fill:var(--ink)">‘Hel’ (3바이트 = 24비트) → 6비트 4묶음</text><text x="110" y="44" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--ink-2)">&#x27;H&#x27; = 72</text><rect x="10" y="52" width="22" height="24" rx="3" style="fill:var(--surface);stroke:var(--line);stroke-width:1"/><text x="21" y="69" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:var(--ink)">0</text><rect x="35" y="52" width="22" height="24" rx="3" style="fill:var(--surface);stroke:var(--line);stroke-width:1"/><text x="46" y="69" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:var(--ink)">1</text><rect x="60" y="52" width="22" height="24" rx="3" style="fill:var(--surface);stroke:var(--line);stroke-width:1"/><text x="71" y="69" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:var(--ink)">0</text><rect x="85" y="52" width="22" height="24" rx="3" style="fill:var(--surface);stroke:var(--line);stroke-width:1"/><text x="96" y="69" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:var(--ink)">0</text><rect x="110" y="52" width="22" height="24" rx="3" style="fill:var(--surface);stroke:var(--line);stroke-width:1"/><text x="121" y="69" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:var(--ink)">1</text><rect x="135" y="52" width="22" height="24" rx="3" style="fill:var(--surface);stroke:var(--line);stroke-width:1"/><text x="146" y="69" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:var(--ink)">0</text><rect x="160" y="52" width="22" height="24" rx="3" style="fill:var(--surface);stroke:var(--line);stroke-width:1"/><text x="171" y="69" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:var(--ink)">0</text><rect x="185" y="52" width="22" height="24" rx="3" style="fill:var(--surface);stroke:var(--line);stroke-width:1"/><text x="196" y="69" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:var(--ink)">0</text><text x="318" y="44" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--ink-2)">&#x27;e&#x27; = 101</text><rect x="218" y="52" width="22" height="24" rx="3" style="fill:var(--surface);stroke:var(--line);stroke-width:1"/><text x="229" y="69" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:var(--ink)">0</text><rect x="243" y="52" width="22" height="24" rx="3" style="fill:var(--surface);stroke:var(--line);stroke-width:1"/><text x="254" y="69" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:var(--ink)">1</text><rect x="268" y="52" width="22" height="24" rx="3" style="fill:var(--surface);stroke:var(--line);stroke-width:1"/><text x="279" y="69" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:var(--ink)">1</text><rect x="293" y="52" width="22" height="24" rx="3" style="fill:var(--surface);stroke:var(--line);stroke-width:1"/><text x="304" y="69" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:var(--ink)">0</text><rect x="318" y="52" width="22" height="24" rx="3" style="fill:var(--surface);stroke:var(--line);stroke-width:1"/><text x="329" y="69" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:var(--ink)">0</text><rect x="343" y="52" width="22" height="24" rx="3" style="fill:var(--surface);stroke:var(--line);stroke-width:1"/><text x="354" y="69" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:var(--ink)">1</text><rect x="368" y="52" width="22" height="24" rx="3" style="fill:var(--surface);stroke:var(--line);stroke-width:1"/><text x="379" y="69" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:var(--ink)">0</text><rect x="393" y="52" width="22" height="24" rx="3" style="fill:var(--surface);stroke:var(--line);stroke-width:1"/><text x="404" y="69" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:var(--ink)">1</text><text x="526" y="44" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--ink-2)">&#x27;l&#x27; = 108</text><rect x="426" y="52" width="22" height="24" rx="3" style="fill:var(--surface);stroke:var(--line);stroke-width:1"/><text x="437" y="69" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:var(--ink)">0</text><rect x="451" y="52" width="22" height="24" rx="3" style="fill:var(--surface);stroke:var(--line);stroke-width:1"/><text x="462" y="69" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:var(--ink)">1</text><rect x="476" y="52" width="22" height="24" rx="3" style="fill:var(--surface);stroke:var(--line);stroke-width:1"/><text x="487" y="69" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:var(--ink)">1</text><rect x="501" y="52" width="22" height="24" rx="3" style="fill:var(--surface);stroke:var(--line);stroke-width:1"/><text x="512" y="69" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:var(--ink)">0</text><rect x="526" y="52" width="22" height="24" rx="3" style="fill:var(--surface);stroke:var(--line);stroke-width:1"/><text x="537" y="69" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:var(--ink)">1</text><rect x="551" y="52" width="22" height="24" rx="3" style="fill:var(--surface);stroke:var(--line);stroke-width:1"/><text x="562" y="69" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:var(--ink)">1</text><rect x="576" y="52" width="22" height="24" rx="3" style="fill:var(--surface);stroke:var(--line);stroke-width:1"/><text x="587" y="69" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:var(--ink)">0</text><rect x="601" y="52" width="22" height="24" rx="3" style="fill:var(--surface);stroke:var(--line);stroke-width:1"/><text x="612" y="69" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:var(--ink)">0</text><rect x="10" y="96" width="150" height="28" rx="4" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="85" y="115" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:800;fill:var(--accent-deep)">010010</text><text x="85" y="142" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:800;fill:var(--ink)">18 → S</text><rect x="166" y="96" width="150" height="28" rx="4" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="241" y="115" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:800;fill:var(--accent-deep)">000110</text><text x="241" y="142" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:800;fill:var(--ink)">6 → G</text><rect x="322" y="96" width="150" height="28" rx="4" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="397" y="115" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:800;fill:var(--accent-deep)">010101</text><text x="397" y="142" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:800;fill:var(--ink)">21 → V</text><rect x="478" y="96" width="150" height="28" rx="4" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="553" y="115" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:800;fill:var(--accent-deep)">101100</text><text x="553" y="142" text-anchor="middle" style="font-family:var(--font);font-size:12.5px;font-weight:800;fill:var(--ink)">44 → s</text><text x="10" y="178" text-anchor="start" style="font-family:var(--font);font-size:11.5px;font-weight:700;fill:var(--ink)">끝부분 ‘!’ (1바이트 = 8비트) → 00100001 + 0000(0 패딩) → 001000 · 010000 → 8·16 → I · Q</text><text x="10" y="200" text-anchor="start" style="font-family:var(--font);font-size:11.5px;font-weight:700;fill:var(--accent-deep)">3바이트 묶음을 채우지 못한 자리만큼 출력 끝에 ‘=’ 를 붙임 → IQ==</text><text x="10" y="226" text-anchor="start" style="font-family:var(--font);font-size:11.5px;font-weight:800;fill:var(--ink-2)">Hello, World! (13바이트 = 3×4 + 1) → SGVs bG8s IFdv cmxk IQ==</text></svg><figcaption>3바이트(24비트)를 6비트 4묶음으로 나눠 표의 순번 문자로 바꿈 — 8비트가 아니라 6비트 단위가 핵심 (교안 퀴즈 3)</figcaption></figure></div>
+    <h3>URL 인코딩 (퍼센트 인코딩)</h3>
+    <p>URL에서 쓸 수 없는 문자를 안전하게 표현하려고 특정 문자를 <b>% + ASCII 16진수 코드</b>로 바꾸는 방식.</p>
+    <div class="tablewrap"><table><thead><tr><th>이유</th><th>예</th></tr></thead><tbody><tr><td>URL에서 특별한 의미를 가진 문자 처리 (공백, ?, &amp;, #, /, : 등)</td><td><code>…?query=hello world</code> → <code>…?query=hello%20world</code></td></tr><tr><td>비 ASCII 문자(한글·일본어 등) 처리 — URL은 ASCII만 허용</td><td><code>한글</code> → <code>%ED%95%9C%EA%B8%80</code> (UTF-8 한 글자 = 3바이트)</td></tr><tr><td>보안·일관성 — &lt;, &gt;, " 등은 보안 문제 유발 가능</td><td><code>&lt;script&gt;alert(1);&lt;script&gt;</code> → <code>%3Cscript%3Ealert%281%29%3B%3Cscript%3E</code></td></tr></tbody></table></div>
+    <div class="tablewrap"><table><thead><tr><th>문자 유형</th><th>예</th><th>인코딩 값</th></tr></thead><tbody><tr><td>공백</td><td>(공백)</td><td><code>%20</code></td></tr><tr><td>예약문자 (URL 구조에서 사용)</td><td>? &amp; # / :</td><td><code>%3F %26 %23 %2F %3A</code></td></tr><tr><td>특수문자</td><td>! @ $ + =</td><td><code>%21 %40 %24 %2B %3D</code></td></tr><tr><td>비 ASCII 문자</td><td>한 · 日</td><td><code>%ED%95%9C · %E6%97%A5</code></td></tr><tr><td><b>인코딩 불필요</b></td><td>영문 대소문자, 숫자, - _ . ~</td><td>그대로</td></tr></tbody></table></div>
+    <h3>BurpSuite로 BASE64 디코딩 실습</h3>
+    <figure><svg viewBox="0 0 640 220" role="img" aria-label="BASE64 디코딩 실습" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arb64" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" style="fill:var(--ink-3)"/></marker></defs><rect x="40" y="4" width="596" height="40" rx="8" style="fill:var(--surface);stroke:var(--line);stroke-width:1.5"/><circle cx="18" cy="24.0" r="14" style="fill:var(--accent)"/><text x="18" y="28.5" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:800;fill:#fff">1</text><text x="54" y="28.5" text-anchor="start" style="font-family:var(--font);font-size:12.5px;font-weight:800;fill:var(--ink)">사이트 접속</text><text x="184" y="28.5" text-anchor="start" style="font-family:var(--font);font-size:11.5px;font-weight:500;fill:var(--ink-2)">httpbin.org/basic-auth/user/passwd → 로그인 창, Intercept on 후 아무 값 입력</text><path d="M18 39.0 L18 62.0" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arb64)"/><rect x="40" y="58" width="596" height="40" rx="8" style="fill:var(--surface);stroke:var(--line);stroke-width:1.5"/><circle cx="18" cy="78.0" r="14" style="fill:var(--accent)"/><text x="18" y="82.5" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:800;fill:#fff">2</text><text x="54" y="82.5" text-anchor="start" style="font-family:var(--font);font-size:12.5px;font-weight:800;fill:var(--ink)">요청 확인</text><text x="184" y="82.5" text-anchor="start" style="font-family:var(--font);font-size:11.5px;font-weight:500;fill:var(--ink-2)">Authorization 헤더에 BASE64 값: Basic dXNlcnRlc3Q6cGFzc3Rlc3Q=</text><path d="M18 93.0 L18 116.0" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arb64)"/><rect x="40" y="112" width="596" height="40" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><circle cx="18" cy="132.0" r="14" style="fill:var(--accent)"/><text x="18" y="136.5" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:800;fill:#fff">3</text><text x="54" y="136.5" text-anchor="start" style="font-family:var(--font);font-size:12.5px;font-weight:800;fill:var(--ink)">Inspector 디코딩</text><text x="184" y="136.5" text-anchor="start" style="font-family:var(--font);font-size:11.5px;font-weight:500;fill:var(--ink-2)">값을 더블클릭 → 오른쪽 Inspector에 usertest:passtest</text><path d="M18 147.0 L18 170.0" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arb64)"/><rect x="40" y="166" width="596" height="40" rx="8" style="fill:var(--surface);stroke:var(--line);stroke-width:1.5"/><circle cx="18" cy="186.0" r="14" style="fill:var(--accent)"/><text x="18" y="190.5" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:800;fill:#fff">4</text><text x="54" y="190.5" text-anchor="start" style="font-family:var(--font);font-size:12.5px;font-weight:800;fill:var(--ink)">Decoder 탭</text><text x="184" y="190.5" text-anchor="start" style="font-family:var(--font);font-size:11.5px;font-weight:500;fill:var(--ink-2)">복사한 문자열을 붙여넣고 Decode as → Base64</text></svg><figcaption>Basic 인증은 암호화가 아니라 인코딩이라 “아이디:비밀번호”가 그대로 드러남 (검산: usertest:passtest → dXNlcnRlc3Q6cGFzc3Rlc3Q=)</figcaption></figure>
+    <div class="call"><div class="t">교안 42쪽 캡처 결과가 다른 이유</div><p>Decoder 결과가 <code>usertest:passtec3Q</code>처럼 보이는 것은 복사한 문자열에서 끝의 <code>=</code>가 빠지는 등 입력 차이 때문으로 보입니다. 올바른 결과는 <code>usertest:passtest</code>입니다.</p></div>
+    <h3>BurpSuite로 URL 인코딩/디코딩</h3>
+    <ol><li>Decoder 입력창에 <code>http://httpbin.org/basic-auth/user/passwd</code> → Encode as → <b>URL</b> → <code>%68%74%74%70%3a%2f%2f…</code> (BurpSuite는 영문자까지 <b>모든 글자</b>를 %16진수로 바꿈)</li>
+    <li>인코딩된 문자열 → Decode as → <b>URL</b> → 원래 주소로 복원</li></ol>
+    <p style="font-size:13px;color:var(--ink-3)">교안 44쪽 설명문은 “Encode as … 선택”이라고 적혀 있지만 그림은 <b>Decode as → URL</b>을 가리킵니다. 디코딩 단계이므로 Decode as가 맞습니다.</p>
+    <div class="call quote"><div class="t">1차시 요약 (교안)</div><p>실습환경 = Spring Boot 웹앱 + BurpSuite 프록시 · 웹 서비스 = 브라우저·웹서버·WAS·DB 통신 흐름 · HTTP는 요청·응답으로 통신하며 상태를 유지하지 않음 · 요청에는 메서드·경로·쿠키·파라미터 등 헤더 · 응답에는 상태코드 · BASE64·URL 인코딩은 특수문자·바이너리를 안전하게 전달하기 위해 사용.</p></div>
+  </section>
+
+  <section id="s7">
+    <h2 class="st"><span class="sq">07</span>프레임워크 vs 플랫폼</h2>
+    <div class="badges"><span class="badge exam">교안 퀴즈 출제 2문항</span><span class="badge prof">2차시 · 교안 5~7쪽</span></div>
+    <div class="tablewrap"><table><thead><tr><th>구분</th><th>프레임워크 (Framework)</th><th>플랫폼 (Platform)</th></tr></thead><tbody><tr><td>정의</td><td>SW 개발을 위한 <b>구조(틀)와 규칙</b>을 제공하는 재사용 가능한 코드 라이브러리</td><td>애플리케이션이 <b>실행될 수 있는 환경</b>. HW·SW 조합을 포함, 서비스를 만들고 운영하도록 지원</td></tr><tr><td>역할</td><td>개발을 위한 기본 구조 제공</td><td>애플리케이션이 실행되는 환경 제공</td></tr><tr><td>범위</td><td>제한적 (특정 도구·기능)</td><td>넓음 (HW, SW, 서비스 포함)</td></tr><tr><td>강제성</td><td><b>특정 패턴을 강제</b> (예: MVC)</td><td>실행환경만 제공 (개발방식 강제 안 함)</td></tr><tr><td>특징</td><td>기본 구조 제공(아키텍처·디자인 패턴) · 반복 작업 자동화(인증, DB 연결) · 핵심 로직에 집중</td><td>실행 기반 · 개발자에게 API·서비스 제공(AWS, Android) · HW·SW 서비스 생태계 형성</td></tr><tr><td>예시</td><td>Spring(Java, 엔터프라이즈 웹) · Django(Python, MVC 기반 웹) · React(JavaScript, UI 컴포넌트 프론트엔드) · Flutter</td><td>Windows·macOS·Linux(실행 환경) · AWS·Azure·GCP(클라우드) · Android·iOS(모바일) · Unity·Unreal Engine(게임)</td></tr></tbody></table></div>
+  </section>
+
+  <section id="s8">
+    <h2 class="st"><span class="sq">08</span>Spring Boot 프레임워크</h2>
+    <div class="badges"><span class="badge exam">교안 퀴즈 출제</span><span class="badge prof">2차시 · 교안 8~9쪽</span></div>
+    <p><b>Spring Boot</b>: 자바 웹 애플리케이션 프레임워크인 Spring을 기반으로, <b>설정(Configuration) 없이 빠르게</b> Spring 애플리케이션을 개발하도록 지원하는 프레임워크. <b>내장 웹서버, 자동설정(Auto Configuration), 의존성 관리</b>로 생산성을 높입니다.</p>
+    <figure><svg viewBox="0 0 660 230" role="img" aria-label="Spring Boot 계층과 Spring 모듈" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arsp" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" style="fill:var(--ink-3)"/></marker></defs><rect x="20" y="14" width="170" height="46" rx="8" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5"/><text x="105" y="42" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:800;fill:var(--ink)">User</text><path d="M105 62 L105 84" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arsp)"/><rect x="20" y="86" width="170" height="46" rx="8" style="fill:var(--accent);stroke:var(--accent);stroke-width:1.5"/><text x="105" y="114" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:800;fill:#fff">Spring Boot</text><path d="M105 134 L105 156" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arsp)"/><rect x="20" y="158" width="170" height="46" rx="8" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5"/><text x="105" y="186" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:800;fill:var(--ink)">Spring</text><text x="105" y="226" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:700;fill:var(--ink-3)">설정은 Spring Boot가 대신</text><rect x="230" y="10" width="420" height="36" rx="5" style="fill:var(--surface);stroke:var(--line);stroke-width:1.5"/><text x="240" y="33" text-anchor="start" style="font-family:var(--font);font-size:11.5px;font-weight:800;fill:var(--ink)">Data Access / Integration</text><text x="522" y="33" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:600;fill:var(--ink-2)">JDBC · ORM · OXM · JMS · Transaction</text><rect x="230" y="52" width="420" height="36" rx="5" style="fill:var(--surface);stroke:var(--line);stroke-width:1.5"/><text x="240" y="75" text-anchor="start" style="font-family:var(--font);font-size:11.5px;font-weight:800;fill:var(--ink)">Web</text><text x="522" y="75" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:600;fill:var(--ink-2)">WebSocket · Servlet · Web · Portlet</text><rect x="230" y="94" width="420" height="36" rx="5" style="fill:var(--surface);stroke:var(--line);stroke-width:1.5"/><text x="440" y="117" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:600;fill:var(--ink-2)">AOP · Aspects · Instrumentation · Message</text><rect x="230" y="136" width="420" height="36" rx="5" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="240" y="159" text-anchor="start" style="font-family:var(--font);font-size:11.5px;font-weight:800;fill:var(--ink)">Core Container</text><text x="522" y="159" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:600;fill:var(--ink-2)">Beans · Core · Context · SpEL</text><rect x="230" y="178" width="420" height="36" rx="5" style="fill:var(--surface);stroke:var(--line);stroke-width:1.5"/><text x="440" y="201" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:600;fill:var(--ink-2)">TEST</text><text x="440" y="226" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:700;fill:var(--ink-3)">Spring Framework 모듈 구성</text></svg><figcaption>왼쪽: 사용자와 Spring 사이에서 Spring Boot가 설정을 대신 / 오른쪽: Spring Framework 모듈</figcaption></figure>
+    <div class="tablewrap"><table><thead><tr><th>비교항목</th><th>Spring Framework</th><th>Spring Boot</th></tr></thead><tbody><tr><td>설정방식</td><td>XML 또는 자바 설정 필요</td><td><b>자동 설정</b>(Auto Configuration)</td></tr><tr><td>의존성 관리</td><td>수동으로 라이브러리 추가</td><td><b>spring-boot-starter</b>로 간편 관리</td></tr><tr><td>내장 서버</td><td>별도 WAS 필요</td><td><b>내장 서버</b> (Tomcat 기본 포함)</td></tr><tr><td>배포 방식</td><td><b>WAR</b> 패키징 (WAS 필요)</td><td><b>JAR</b> 패키징 (독립 실행 가능)</td></tr><tr><td>학습 난이도</td><td>상대적으로 복잡</td><td>쉬운 시작 가능</td></tr></tbody></table></div>
+  </section>
+
+  <section id="s9">
+    <h2 class="st"><span class="sq">09</span>Spring Boot 기본 사용법 — Hello 프로젝트</h2>
+    <div class="badges"><span class="badge prof">2차시 · 교안 10~18쪽</span></div>
+    <div class="tablewrap"><table><thead><tr><th>Step</th><th>할 일</th></tr></thead><tbody><tr><td>1</td><td><b>STS</b>(Spring Tool Suite) 설치 — spring.io/tools에서 운영체제에 맞는 파일(4.28.1, Windows x86_64 등)</td></tr><tr><td>2-1</td><td>STS에서 직접 생성: File → New → <b>Spring Starter Project</b> · Name <code>hello-spring-boot</code> · Type Maven · Java 17 · Packaging <b>Jar</b>(단독 실행) · Group <code>com.example</code> · Package <code>com.example.hellospringboot</code> · 의존성 <b>Spring Web</b></td></tr><tr><td>2-2</td><td>또는 <b>Spring Initializr</b>(start.spring.io)에서 같은 설정으로 Generate → STS에서 File → Import → Existing Maven Projects</td></tr><tr><td>3</td><td><code>HelloSpringBootApplication.java</code> 작성</td></tr><tr><td>4</td><td><code>HelloController.java</code> 작성</td></tr><tr><td>5</td><td>실행: ① STS에서 Run As → Spring Boot App ② <code>mvn spring-boot:run</code> ③ <code>mvn clean package</code> 후 <code>java -jar …</code></td></tr><tr><td>6</td><td>브라우저나 <b>Postman</b>으로 <code>http://localhost:8080/api/hello</code> GET 요청</td></tr><tr><td>7</td><td>종료: 콘솔에서 Ctrl+C 또는 빨간 사각 Stop 버튼 · 재시작: 메인 클래스 우클릭 → Run As → Spring Boot App</td></tr></tbody></table></div>
+    <p style="font-size:13px;color:var(--ink-2)">Initializr 캡처: Project(Gradle-Groovy · Gradle-Kotlin · <b>Maven</b>) · Language(<b>Java</b> · Kotlin · Groovy) · Spring Boot <b>3.4.3</b> 선택(3.5.0 SNAPSHOT·M2 등은 미정식 버전) · Metadata: Group com.example, Artifact/Name hello-spring-boot, Description “Demo project for Spring Boot” · Dependency <b>Spring Web</b> — RESTful 앱을 Spring MVC로 만들고 기본 내장 컨테이너로 Apache Tomcat 사용 · 하단 GENERATE 버튼</p>
+    <div class="codebox"><div class="head"><span><span class="tag">Java</span>HelloSpringBootApplication.java</span><button class="copy">복사</button></div>
+<pre><code><span class="kw">package</span> com.example.hellospringboot;
+
+<span class="kw">import</span> org.springframework.boot.SpringApplication;
+<span class="kw">import</span> org.springframework.boot.autoconfigure.SpringBootApplication;
+
+<span class="cm">// 기본 설정(자동설정 + 컴포넌트 스캔)을 한 번에 켜는 어노테이션</span>
+@SpringBootApplication
+<span class="kw">public class</span> HelloSpringBootApplication {
+    <span class="kw">public static void</span> main(String[] args) {
+        <span class="cm">// 내장 Tomcat을 띄우고 애플리케이션 실행</span>
+        SpringApplication.run(HelloSpringBootApplication.<span class="kw">class</span>, args);
+    }
+}</code></pre></div>
+    <div class="codebox"><div class="head"><span><span class="tag">Java</span>HelloController.java</span><button class="copy">복사</button></div>
+<pre><code><span class="kw">package</span> com.example.hellospringboot.controller;
+
+<span class="kw">import</span> org.springframework.web.bind.annotation.GetMapping;
+<span class="kw">import</span> org.springframework.web.bind.annotation.RequestMapping;
+<span class="kw">import</span> org.springframework.web.bind.annotation.RestController;
+
+@RestController              <span class="cm">// REST API용 컨트롤러: 반환값을 화면이 아니라 응답 바디로 보냄</span>
+@RequestMapping(<span class="st2">"/api"</span>)      <span class="cm">// 이 클래스의 기본 URL 경로 = /api</span>
+<span class="kw">public class</span> HelloController {
+    @GetMapping(<span class="st2">"/hello"</span>)     <span class="cm">// GET /api/hello 요청을 이 메서드가 처리</span>
+    <span class="kw">public</span> String sayHello() {
+        <span class="kw">return</span> <span class="st2">"Hello, Spring Boot"</span>;   <span class="cm">// 실제 응답 문자열 (느낌표 없음 — 확인 필요 참고)</span>
+    }
+}</code></pre></div>
+    <p style="font-size:13px;color:var(--ink-2)">주석을 이렇게 단 이유: 어노테이션 세 개가 합쳐져 최종 주소 <code>/api/hello</code>가 만들어지는 과정을 줄마다 보이게 하려고.</p>
+    <div class="codebox"><div class="head"><span><span class="tag">cmd</span>실행 방법 2·3</span><button class="copy">복사</button></div>
+<pre><code><span class="cm">:: 방법2 — Maven이 빌드와 실행을 한 번에</span>
+mvn spring-boot:run
+
+<span class="cm">:: 방법3 — JAR로 빌드한 뒤 단독 실행 (Spring Boot가 JAR 배포인 이유)</span>
+mvn clean package
+java -jar target/hello-spring-boot-0.0.1-SNAPSHOT.jar</code></pre></div>
+    <p>성공 표시: 콘솔에 <code>Tomcat started on port 8080</code> → 브라우저·Postman 응답에 문자열 표시.</p>
+    <div class="call quote"><div class="t">2차시 요약 (교안)</div><p>프레임워크는 개발을 위한 구조·규칙을 제공하는 코드 라이브러리 · 플랫폼은 앱이 실행되는 환경 전체 · Spring Boot는 Spring 기반으로 자바 웹 앱을 빠르게 만들게 지원 · Spring Initializr로 신규 프로젝트 생성 가능.</p></div>
+  </section>
+
+  <section id="s10">
+    <h2 class="st"><span class="sq">10</span>Spring Boot 게시판 만들기 — CRUD</h2>
+    <div class="badges"><span class="badge exam">교안 퀴즈 출제</span><span class="badge prof">3차시 · 교안 5~15쪽</span></div>
+    <h3>Step 1 · 설계</h3>
+    <div class="tablewrap"><table><thead><tr><th>기능</th><th>CRUD</th><th>HTTP Method</th><th>URL</th><th>요청 데이터</th><th>응답 데이터</th></tr></thead><tbody><tr><td>게시글 작성</td><td>Create</td><td><b>POST</b></td><td>/posts</td><td>{title, content}</td><td>{id, title, content, createAt}</td></tr><tr><td>모든 게시글 조회</td><td>Read</td><td>GET</td><td>/posts</td><td>-</td><td>{id, title, content, createAt}</td></tr><tr><td>게시글 상세 조회</td><td>Read</td><td>GET</td><td>/posts/{id}</td><td>-</td><td>{id, title, content, createAt}</td></tr><tr><td>게시글 수정</td><td>Update</td><td><b>PUT</b></td><td>/posts/{id}</td><td>{title, content}</td><td>{id, title, content, createAt}</td></tr><tr><td>게시글 삭제</td><td>Delete</td><td>DELETE</td><td>/posts/{id}</td><td>-</td><td>성공/실패 메시지</td></tr></tbody></table></div>
+    <div class="tablewrap"><table><thead><tr><th>필드명</th><th>데이터 타입</th><th>설명</th></tr></thead><tbody><tr><td>id</td><td>Long (PK)</td><td>게시글 ID</td></tr><tr><td>title</td><td>String</td><td>제목</td></tr><tr><td>content</td><td>String</td><td>내용</td></tr><tr><td>createAt → 코드는 <b>createdAt</b></td><td>LocalDateTime</td><td>생성 날짜</td></tr></tbody></table></div>
+    <h3>Step 2 · 환경설정</h3>
+    <p>Spring Initializr 또는 STS(New → Spring Starter Project)로 생성 · Maven · Java · 최신 안정 버전. 의존성:</p>
+    <div class="tablewrap"><table><thead><tr><th>Dependency</th><th>용도</th></tr></thead><tbody><tr><td>Spring Web</td><td>REST API 개발</td></tr><tr><td>Spring Data JPA</td><td>DB 연동</td></tr><tr><td><b>H2 Database</b></td><td>테스트용 <b>인메모리 DB</b> (교안 퀴즈 2)</td></tr><tr><td>Lombok</td><td>코드 간소화 (getter·setter·생성자 자동 생성)</td></tr></tbody></table></div>
+    <h3>Step 3 · 프로젝트 구조와 계층</h3>
+    <div class="tablewrap"><table><thead><tr><th>패키지</th><th>역할</th><th>파일</th></tr></thead><tbody><tr><td>controller</td><td>사용자 <b>요청을 받아들임</b></td><td>PostController.java</td></tr><tr><td>service</td><td><b>비즈니스 로직</b> 수행</td><td>PostService.java</td></tr><tr><td>repository</td><td>DB와 <b>직접 통신</b></td><td>PostRepository.java</td></tr><tr><td>dto</td><td>Data Transfer Object — <b>요청·응답 데이터</b>를 담는 클래스</td><td>PostRequestDto · PostResponseDto</td></tr><tr><td>entity</td><td><b>DB 테이블과 연결</b>되는 클래스</td><td>Post.java</td></tr></tbody></table></div>
+    <div class="codebox pseudo"><div class="head"><span><span class="tag">구조</span>src/main/java/com/example/board</span></div>
+<pre><code>board
+├─ controller / PostController.java
+├─ dto        / PostRequestDto.java, PostResponseDto.java
+├─ entity     / Post.java
+├─ repository / PostRepository.java
+├─ service    / PostService.java
+└─ MainApplication.java</code></pre></div>
+    <div class="call extra"><div class="t">요청이 계층을 지나는 순서 — 교수님이 설명하신 내용 아님</div><p>교안의 패키지 역할을 요청 흐름 순서로 이어 그린 것입니다.</p><figure><svg viewBox="0 0 640 92" role="img" aria-label="게시판 요청 흐름" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arbd" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" style="fill:var(--ink-3)"/></marker></defs><rect x="4.0" y="8" width="113.6" height="58" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="60.8" y="34.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--accent-deep)">Client</text><text x="60.8" y="48.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--accent-deep)">Postman·브라우저</text><text x="60.8" y="84" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">JSON 요청/응답</text><path d="M119.6 37.0 L130.6 37.0" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arbd)"/><rect x="133.6" y="8" width="113.6" height="58" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="190.39999999999998" y="34.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--accent-deep)">Controller</text><text x="190.39999999999998" y="48.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--accent-deep)">PostController</text><text x="190.39999999999998" y="84" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">RequestDto 받음</text><path d="M249.2 37.0 L260.2 37.0" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arbd)"/><rect x="263.2" y="8" width="113.6" height="58" rx="8" style="fill:var(--accent);stroke:var(--accent);stroke-width:1.5"/><text x="320.0" y="34.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:#fff">Service</text><text x="320.0" y="48.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:#fff">PostService</text><text x="320.0" y="84" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">Entity ↔ Dto 변환</text><path d="M378.79999999999995 37.0 L389.79999999999995 37.0" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arbd)"/><rect x="392.79999999999995" y="8" width="113.6" height="58" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="449.59999999999997" y="34.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--accent-deep)">Repository</text><text x="449.59999999999997" y="48.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--accent-deep)">PostRepository</text><text x="449.59999999999997" y="84" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">JpaRepository 상속</text><path d="M508.4 37.0 L519.4 37.0" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6" marker-end="url(#arbd)"/><rect x="522.4" y="8" width="113.6" height="58" rx="8" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5"/><text x="579.1999999999999" y="34.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--accent-deep)">DB</text><text x="579.1999999999999" y="48.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--accent-deep)">H2 (메모리)</text><text x="579.1999999999999" y="84" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:600;fill:var(--ink-3)">post 테이블</text></svg><figcaption>요청: Controller → Service → Repository → DB, 응답은 역순</figcaption></figure></div>
+
+    <h4>Entity — Post.java</h4>
+    <div class="codebox"><div class="head"><span><span class="tag">Java</span>entity/Post.java</span><button class="copy">복사</button></div>
+<pre><code><span class="kw">package</span> com.example.board.entity;
+
+<span class="kw">import</span> jakarta.persistence.*;
+<span class="kw">import</span> lombok.Getter;
+<span class="kw">import</span> lombok.NoArgsConstructor;
+<span class="kw">import</span> lombok.Setter;
+<span class="kw">import</span> java.time.LocalDateTime;
+
+@Entity                 <span class="cm">// 이 클래스 = DB 테이블 하나 (JPA가 테이블과 연결)</span>
+@Getter @Setter         <span class="cm">// Lombok: getter/setter 자동 생성</span>
+@NoArgsConstructor      <span class="cm">// JPA가 객체를 만들 때 필요한 기본 생성자</span>
+<span class="kw">public class</span> Post {
+    @Id                                                   <span class="cm">// 기본 키(PK)</span>
+    @GeneratedValue(strategy = GenerationType.IDENTITY)   <span class="cm">// 값은 DB가 자동 증가로 채움</span>
+    <span class="kw">private</span> Long id;
+
+    <span class="kw">private</span> String title;
+    <span class="kw">private</span> String content;
+    <span class="kw">private</span> LocalDateTime createdAt = LocalDateTime.now();  <span class="cm">// 객체 생성 시각을 저장</span>
+}</code></pre></div>
+    <h4>Repository — PostRepository.java</h4>
+    <div class="codebox"><div class="head"><span><span class="tag">Java</span>repository/PostRepository.java</span><button class="copy">복사</button></div>
+<pre><code><span class="kw">package</span> com.example.board.repository;
+
+<span class="kw">import</span> com.example.board.entity.Post;
+<span class="kw">import</span> org.springframework.data.jpa.repository.JpaRepository;
+
+<span class="cm">// JpaRepository&lt;엔티티, PK 타입&gt;을 상속만 하면 save·findAll·findById·deleteById가 자동 구현됨</span>
+<span class="kw">public interface</span> PostRepository <span class="kw">extends</span> JpaRepository&lt;Post, Long&gt; {
+}</code></pre></div>
+    <h4>DTO — PostRequestDto.java / PostResponseDto.java</h4>
+    <div class="codebox"><div class="head"><span><span class="tag">Java</span>dto/PostRequestDto.java · PostResponseDto.java</span><button class="copy">복사</button></div>
+<pre><code><span class="cm">// ── 요청 DTO: 클라이언트가 보내는 값만 담음 (id·createdAt은 받지 않음)</span>
+@Getter
+<span class="kw">public class</span> PostRequestDto {
+    <span class="kw">private</span> String title;
+    <span class="kw">private</span> String content;
+}
+
+<span class="cm">// ── 응답 DTO: 엔티티를 그대로 내보내지 않고 필요한 값만 복사해서 응답</span>
+@Getter
+<span class="kw">public class</span> PostResponseDto {
+    <span class="kw">private</span> Long id;
+    <span class="kw">private</span> String title;
+    <span class="kw">private</span> String content;
+    <span class="kw">private</span> LocalDateTime createdAt;
+
+    <span class="kw">public</span> PostResponseDto(Post post) {     <span class="cm">// Entity → DTO 변환</span>
+        <span class="kw">this</span>.id = post.getId();
+        <span class="kw">this</span>.title = post.getTitle();
+        <span class="kw">this</span>.content = post.getContent();
+        <span class="kw">this</span>.createdAt = post.getCreatedAt();
+    }
+}</code></pre></div>
+    <p style="font-size:13px;color:var(--ink-2)">두 파일을 한 상자에 합친 이유: 요청용·응답용이 어떤 필드를 받고 내보내는지 나란히 비교하려고. (실제로는 각각 별도 파일, 패키지 <code>com.example.board.dto</code>)</p>
+    <h4>Service — PostService.java</h4>
+    <div class="codebox"><div class="head"><span><span class="tag">Java</span>service/PostService.java</span><button class="copy">복사</button></div>
+<pre><code>@Service                                   <span class="cm">// 비즈니스 로직 계층으로 등록</span>
+<span class="kw">public class</span> PostService {
+    <span class="kw">private final</span> PostRepository postRepository;
+
+    <span class="kw">public</span> PostService(PostRepository postRepository) {   <span class="cm">// 생성자 주입: 스프링이 Repository를 넣어 줌</span>
+        <span class="kw">this</span>.postRepository = postRepository;
+    }
+
+    <span class="kw">public</span> List&lt;PostResponseDto&gt; getAllPosts() {         <span class="cm">// 목록 조회</span>
+        <span class="kw">return</span> postRepository.findAll().stream()
+                .map(PostResponseDto::<span class="kw">new</span>)             <span class="cm">// Entity 하나씩 DTO로 변환</span>
+                .collect(Collectors.toList());
+    }
+
+    <span class="kw">public</span> PostResponseDto getPostById(Long id) {          <span class="cm">// 상세 조회</span>
+        Post post = postRepository.findById(id).orElseThrow();   <span class="cm">// 없으면 예외</span>
+        <span class="kw">return new</span> PostResponseDto(post);
+    }
+
+    <span class="kw">public</span> PostResponseDto createPost(PostRequestDto requestDto) {   <span class="cm">// 작성</span>
+        Post post = <span class="kw">new</span> Post();
+        post.setTitle(requestDto.getTitle());
+        post.setContent(requestDto.getContent());
+        postRepository.save(post);                         <span class="cm">// INSERT → id 자동 부여</span>
+        <span class="kw">return new</span> PostResponseDto(post);
+    }
+
+    @Transactional                                         <span class="cm">// 메서드 끝에 변경 내용이 DB에 반영됨</span>
+    <span class="kw">public</span> PostResponseDto updatePost(Long id, PostRequestDto requestDto) {   <span class="cm">// 수정</span>
+        Post post = postRepository.findById(id).orElseThrow();
+        post.setTitle(requestDto.getTitle());             <span class="cm">// save() 호출 없이 값만 바꿔도 반영</span>
+        post.setContent(requestDto.getContent());
+        <span class="kw">return new</span> PostResponseDto(post);
+    }
+
+    <span class="kw">public void</span> deletePost(Long id) {                   <span class="cm">// 삭제</span>
+        postRepository.deleteById(id);
+    }
+}</code></pre></div>
+    <p style="font-size:13px;color:var(--ink-2)">import 줄(dto·entity·repository·Service·Transactional·List·Collectors)은 교안 13쪽과 같아 생략했습니다. updatePost에 save()가 없는 이유를 주석으로 남긴 것은, 수정 메서드만 <code>@Transactional</code>이 붙은 까닭이 거기에 있어서입니다. <span class="ext">(@Transactional 안에서 조회한 엔티티의 값이 바뀌면 트랜잭션이 끝날 때 JPA가 UPDATE를 자동 실행 — 변경 감지)</span></p>
+    <h4>Controller — PostController.java</h4>
+    <div class="codebox"><div class="head"><span><span class="tag">Java</span>controller/PostController.java</span><button class="copy">복사</button></div>
+<pre><code>@RestController
+@RequestMapping(<span class="st2">"/posts"</span>)                 <span class="cm">// 모든 URL이 /posts로 시작</span>
+<span class="kw">public class</span> PostController {
+    <span class="kw">private final</span> PostService postService;
+    <span class="kw">public</span> PostController(PostService postService) { <span class="kw">this</span>.postService = postService; }
+
+    @GetMapping                             <span class="cm">// GET /posts → 목록</span>
+    <span class="kw">public</span> List&lt;PostResponseDto&gt; getAllPosts() { <span class="kw">return</span> postService.getAllPosts(); }
+
+    @GetMapping(<span class="st2">"/{id}"</span>)                    <span class="cm">// GET /posts/3 → 3번 글 (@PathVariable = URL의 {id} 값)</span>
+    <span class="kw">public</span> PostResponseDto getPost(@PathVariable Long id) { <span class="kw">return</span> postService.getPostById(id); }
+
+    @PostMapping                            <span class="cm">// POST /posts → 작성 (@RequestBody = JSON 바디를 DTO로 변환)</span>
+    <span class="kw">public</span> PostResponseDto createPost(@RequestBody PostRequestDto requestDto) {
+        <span class="kw">return</span> postService.createPost(requestDto);
+    }
+
+    @PutMapping(<span class="st2">"/{id}"</span>)                    <span class="cm">// PUT /posts/3 → 수정</span>
+    <span class="kw">public</span> PostResponseDto updatePost(@PathVariable Long id, @RequestBody PostRequestDto requestDto) {
+        <span class="kw">return</span> postService.updatePost(id, requestDto);
+    }
+
+    @DeleteMapping(<span class="st2">"/{id}"</span>)                 <span class="cm">// DELETE /posts/3 → 삭제</span>
+    <span class="kw">public void</span> deletePost(@PathVariable Long id) { postService.deletePost(id); }
+}</code></pre></div>
+    <p style="font-size:13px;color:var(--ink-2)">짧은 메서드는 한 줄로 줄였고 import는 생략했습니다(교안 14쪽 코드와 동작 동일). 어노테이션 옆에 실제 요청 예시를 적은 이유: Step 1의 API 설계표와 코드를 바로 대응시키기 위해서.</p>
+    <h3>Step 4 · 실행 및 테스트</h3>
+    <p><code>MainApplication.java</code> 실행 → <code>http://localhost:8080/posts</code>에서 테스트. <b>Postman</b>으로 POST·GET·GET{id}·PUT·DELETE를 순서대로 보내 CRUD 확인.</p>
+    <div class="call extra"><div class="t">실습할 때 막힐 수 있는 부분 — 교수님이 설명하신 내용 아님</div><p>게시판 코드는 <code>jakarta.persistence</code>를 쓰므로 <b>Spring Boot 3</b> 기준이고, Spring Boot 3은 <b>Java 17 이상</b>이 필요합니다. 1차시 LAB 환경변수의 JDK는 15.0.2라서, 게시판 프로젝트는 Java 17로 만들어야 합니다(2차시 설정대로).</p></div>
+    <div class="call quote"><div class="t">3차시 요약 (교안)</div><p>게시판 API를 CRUD 중심으로 설계 · Entity에 JPA 어노테이션으로 테이블 매핑 · Repository 기본 기능은 JpaRepository 상속으로 자동 구현 · 서비스 계층에서 DTO로 비즈니스 로직 처리 · Postman으로 API 직접 테스트.</p></div>
+  </section>
+
+  <section id="sp">
+    <h2 class="st"><span class="sq">11</span>교안 퀴즈 (3주차 1~3차시)</h2>
+    <div class="badges"><span class="badge exam">시험 참고 1순위</span></div>
+    <p style="font-size:13px;color:var(--ink-3)">각 교안 마지막의 퀴즈를 그대로 옮겼습니다. 아래 “예상 문제”와 별개입니다.</p>
+    <h4>1차시</h4>
+    <div class="q"><div class="qh"><span class="qn">1-1</span><span>다음 중 웹 애플리케이션 서버 로직의 3대 계층에 속하지 않는 것은?</span><span class="type">객관식</span></div><ol class="ch"><li>데이터 계층</li><li>네트워크 계층</li><li>비즈니스 계층</li><li>프레젠테이션 계층</li></ol><div class="ans"><span class="lab">정답 ② 네트워크 계층</span>3대 계층은 프레젠테이션, 비즈니스, 데이터 계층입니다.</div></div>
+    <div class="q"><div class="qh"><span class="qn">1-2</span><span>다음 중 HTTP에 대한 설명으로 옳은 것은?</span><span class="type">객관식</span></div><ol class="ch"><li>무상태 방식</li><li>UDP를 기본적으로 사용</li><li>Request Method로 GET, POST, PUT, REMOVE 등이 있음</li><li>Response Status Code로 2xx는 서버에 에러가 있다는 의미</li></ol><div class="ans"><span class="lab">정답 ① 무상태 방식</span>HTTP는 주로 TCP 기반 무상태 방식입니다. 메서드는 REMOVE가 아니라 DELETE, 2xx는 성공(서버 에러는 5xx).</div></div>
+    <div class="q"><div class="qh"><span class="qn">1-3</span><span>다음 중 BASE64 인코딩에 대한 내용으로 틀린 것은?</span><span class="type">객관식</span></div><ol class="ch"><li>이메일, JSON, XML 등 텍스트 전송 환경에서 안전하게 사용</li><li>부족한 비트는 0으로 패딩 처리되며, =로 표현</li><li>데이터 손상 및 인코딩 문제를 방지함</li><li>데이터를 8비트 단위로 분할하며, 총 64개의 문자 집합으로 표현</li></ol><div class="ans"><span class="lab">정답 ④</span>BASE64는 <b>6비트</b> 단위로 분할합니다 (2<sup>6</sup> = 64).</div></div>
+    <h4>2차시</h4>
+    <div class="q"><div class="qh"><span class="qn">2-1</span><span>다음 중 프레임워크와 플랫폼에 대한 설명 중 옳은 것은?</span><span class="type">객관식</span></div><ol class="ch"><li>플랫폼은 재사용 가능한 코드 라이브러리이다.</li><li>Spring(Java)는 가장 대표적인 운영 플랫폼 중 하나이다.</li><li>프레임워크는 특정한 개발방식(패턴)을 강제한다.</li><li>프레임워크는 하드웨어와 소프트웨어의 조합을 포함한다.</li></ol><div class="ans"><span class="lab">정답 ③</span>프레임워크 = 개발 패턴을 강제하는 코드 라이브러리 모음, 플랫폼 = 앱이 실행되는 HW·SW 기반. ①④는 설명이 서로 바뀌었고 ② Spring은 프레임워크.</div></div>
+    <div class="q"><div class="qh"><span class="qn">2-2</span><span>다음 중 프레임워크별 지원 언어에 대한 설명이 잘못된 것은?</span><span class="type">객관식</span></div><ol class="ch"><li>Django - Python</li><li>Spring - Java</li><li>React - Javascript</li><li>Ruby on Rails - C/C++</li></ol><div class="ans"><span class="lab">정답 ④</span>Ruby on Rails는 Ruby 언어 기반 웹 프레임워크입니다.</div></div>
+    <div class="q"><div class="qh"><span class="qn">2-3</span><span>다음 중 Spring Framework와 비교하여 Spring Boot의 장점이 아닌 것은?</span><span class="type">객관식</span></div><ol class="ch"><li>Tomcat이 내장되어 있음</li><li>WAR 패키징</li><li>자동 설정 지원</li><li>간편하게 의존성 관리</li></ol><div class="ans"><span class="lab">정답 ② WAR 패키징</span>Spring Boot는 <b>JAR</b> 패키징으로 독립 실행이 가능합니다. WAR는 Spring Framework 쪽 방식.</div></div>
+    <h4>3차시</h4>
+    <div class="q"><div class="qh"><span class="qn">3-1</span><span>다음 중 Spring Boot 개발 방법론에서 계층별 설명이 잘못된 것은?</span><span class="type">객관식</span></div><ol class="ch"><li>Controller - Request에 대한 처리 로직</li><li>DTO - 데이터 엔티티 모델링</li><li>Repository - 데이터베이스와 상호작용 담당</li><li>Service - 화면 UI 처리 로직</li></ol><div class="ans"><span class="lab">정답 ④ (교안 정답)</span>서비스 계층은 <b>비즈니스 로직</b>을 처리합니다. ※ ②도 교안 8쪽 정의(DTO = 요청·응답 데이터를 담는 클래스, DB 테이블 연결은 Entity)와 맞지 않아 논란 여지가 있습니다 → 확인 필요 2</div></div>
+    <div class="q"><div class="qh"><span class="qn">3-2</span><span>게시판 만들기 실습에서 사용한 테스트용 In-Memory DB의 이름은? (2글자)</span><span class="type">단답</span></div><div class="ans"><span class="lab">정답 H2</span>Dependencies에 추가한 H2 Database — 메모리에서 동작하는 테스트용 DB.</div></div>
+    <div class="q"><div class="qh"><span class="qn">3-3</span><span>다음 중 게시판 만들기 실습 내용에 대한 설명 중 잘못된 것은?</span><span class="type">객관식</span></div><ol class="ch"><li>PUT /posts - 게시글 생성</li><li>DELETE /posts/{id} - 게시글 삭제</li><li>GET /posts/{id} - 특정 게시물 조회</li><li>GET /posts - 게시글 목록 조회</li></ol><div class="ans"><span class="lab">정답 ①</span>생성은 <b>POST</b>, PUT은 수정에 사용합니다.</div></div>
+  </section>
+
+  <section id="sg">
+    <h2 class="st"><span class="sq">12</span>용어 정리</h2>
+    <div class="terms">
+      <div class="term"><b>프록시</b><span class="e">Proxy</span><p>브라우저와 서버 사이에서 요청·응답을 대신 주고받는 중계 서버. BurpSuite는 이를 이용해 요청을 가로채고 수정.</p></div>
+      <div class="term"><b>WAS</b><span class="e">Web Application Server</span><p>비즈니스 로직을 실행하는 서버. 예: Tomcat, WebLogic, JBoss, JEUS.</p></div>
+      <div class="term"><b>무상태</b><span class="e">Stateless</span><p>서버가 이전 요청을 기억하지 않는 방식. 상태 유지는 쿠키·세션으로 보완.</p></div>
+      <div class="term"><b>3-way / 4-way handshake</b><span class="e">TCP</span><p>연결설정 SYN→SYN/ACK→ACK / 연결해제 FIN→ACK→FIN→ACK.</p></div>
+      <div class="term"><b>상태코드</b><span class="e">Status Code</span><p>1xx 정보 · 2xx 성공 · 3xx 리다이렉션 · 4xx 요청 오류 · 5xx 서버 오류. 401 인증 실패, 403 인가 실패.</p></div>
+      <div class="term"><b>인코딩 vs 암호화</b><span class="e">Encoding vs Encryption</span><p>인코딩은 누구나 되돌릴 수 있음, 암호화는 키가 있어야 복호화.</p></div>
+      <div class="term"><b>BASE64</b><span class="e">Base64</span><p>6비트씩 64개 문자로 표현하는 이진→텍스트 인코딩. 모자란 자리는 =.</p></div>
+      <div class="term"><b>URL 인코딩</b><span class="e">Percent-Encoding</span><p>URL에 못 쓰는 문자를 %+16진수로 표현. 공백 %20.</p></div>
+      <div class="term"><b>프레임워크 / 플랫폼</b><span class="e">Framework / Platform</span><p>개발 구조·규칙을 강제하는 라이브러리 / 앱이 실행되는 환경.</p></div>
+      <div class="term"><b>자동 설정</b><span class="e">Auto Configuration</span><p>Spring Boot가 추가한 의존성을 보고 필요한 설정을 자동으로 해 주는 기능.</p></div>
+      <div class="term"><b>CRUD</b><span class="e">Create · Read · Update · Delete</span><p>POST · GET · PUT · DELETE에 대응하는 기본 데이터 조작.</p></div>
+      <div class="term"><b>Entity / DTO</b><span class="e">Entity / Data Transfer Object</span><p>DB 테이블과 연결되는 클래스 / 요청·응답 데이터를 담는 클래스.</p></div>
+      <div class="term"><b>JPA</b><span class="e">Java Persistence API</span><p>자바 객체와 DB 테이블을 연결(ORM)하는 표준. Spring Data JPA가 Repository를 자동 구현.</p></div>
+    </div>
+  </section>
+
+  <section id="sq">
+    <h2 class="st"><span class="sq">13</span>확인 필요</h2>
+    <div class="call link"><div class="t">1. LAB 파일(SecureCoding2025.zip) 배포 위치 — 해결</div><p>배포 자료로 받은 분할 압축 3개(<code>SecureCoding2025.zip/.z01/.z02</code>)입니다. 파일 목록을 확인한 결과 교안 Step 1의 구성(download · JNDI-Exploit-Kit · logs · sts4 · webgoat · workspace · README.md · set_env.txt · start_lab.bat)과 같고, <code>download</code> 안에 jdk-15.0.2 · apache-maven-3.8.1 · mariadb-10.5.10-winx64 · BurpSuiteCommunity · firefox가 있어 환경변수 값과도 맞습니다. 교안에 없는 것으로 <code>.git</code> 폴더, <code>JNDI-Exploit-Kit 실행방법.txt</code>, <code>download/lab-files/shell.jsp</code>, <code>download/lucy-xss</code>(XSS 필터 라이브러리)가 더 들어 있습니다 — 뒤 주차 실습용으로 보입니다(추측).</p></div>
+    <div class="call ask"><div class="t">2. 교안 퀴즈 3차시 1번 — 복수 정답 가능성, 미해결 (강의 수강 후 확인)</div><p>교안 정답은 ④(Service – 화면 UI 처리)입니다. 그런데 ②“DTO – 데이터 엔티티 모델링”도 교안 8쪽 정의(DTO는 요청·응답 데이터 전달, DB 테이블 연결은 Entity)와 맞지 않습니다. 시험에 나오면 ④를 고르되, 교수님께 문의해 볼 만한 지점입니다.</p></div>
+    <div class="call warn"><div class="t">3. 교안 내부 불일치 — 코드 기준으로 정리 (해결)</div><p>① Hello 응답: 설명은 “Hello, Spring Boot!”(16쪽은 소문자 hello), 코드는 <code>"Hello, Spring Boot"</code> → 실제 출력은 <b>코드 그대로</b>. ② Step7 재시작 대상 “MainApplication.java” → 이 프로젝트의 메인 클래스는 <code>HelloSpringBootApplication</code>(MainApplication은 3차시 게시판 쪽 이름). ③ 게시판 설계표 <code>createAt</code> vs 코드 <code>createdAt</code> → 코드 기준. ④ Initializr 캡처의 패키지명 <code>com.example.hello-spring-boot</code>는 하이픈이 들어가 자바 패키지명으로 쓸 수 없고, STS 단계의 <code>com.example.hellospringboot</code>가 맞습니다.</p></div>
+    <div class="call warn"><div class="t">5. URL 인코딩 예시의 태그 — 해결</div><p>교안 예 <code>&lt;script&gt;alert(1);&lt;script&gt;</code>의 두 번째 태그는 닫는 태그(<code>&lt;/script&gt;</code>)의 오타로 보입니다. 인코딩 결과 자체는 적힌 문자열 기준으로 정확합니다(검산 완료).</p></div>
+  </section>
+
+  <section id="sx">
+    <h2 class="st"><span class="sq">14</span>예상 문제</h2>
+    <div class="q"><div class="qh"><span class="qn">Q1</span><span>실습환경에서 BurpSuite 프록시 포트를 8081로 바꾸는 이유와, 파이어폭스에서 <code>network.proxy.allow_hijacking_localhost</code>를 true로 바꾸는 이유를 각각 쓰시오.</span><span class="type">서술형</span></div><div class="ans"><span class="lab">모범답안</span>① 기본 포트 8080이 실습 포트 목록(3306, 8000, 8100, 8200, 8080, 8081)과 겹치므로 8081로 분리. ② 파이어폭스는 기본적으로 localhost·127.0.0.1 연결에 프록시를 쓰지 않아, 실습 서버(localhost:8000) 요청을 BurpSuite가 가로채려면 이 제한을 풀어야 한다.</div></div>
+    <div class="q"><div class="qh"><span class="qn">Q2</span><span><code>Authorization: Basic dXNlcnRlc3Q6cGFzc3Rlc3Q=</code>를 디코딩한 값을 쓰고, 이 방식이 안전하지 않은 이유를 인코딩과 암호화의 차이로 설명하시오.</span><span class="type">서술형</span></div><div class="ans"><span class="lab">모범답안</span><code>usertest:passtest</code> (아이디:비밀번호). BASE64는 인코딩이라 키 없이 누구나 되돌릴 수 있으므로, 요청을 가로채면 계정 정보가 그대로 노출된다. 암호화는 복호화에 키가 필요하다.</div></div>
+    <div class="q"><div class="qh"><span class="qn">Q3</span><span>문자열 <code>Man</code>(M=77, a=97, n=110)을 BASE64로 인코딩한 결과를 쓰시오.</span><span class="type">계산</span></div><div class="ans"><span class="lab">정답 TWFu</span>01001101 01100001 01101110 → 010011 010110 000101 101110 → 19, 22, 5, 46 → T, W, F, u. 3바이트라 패딩(=) 없음.</div></div>
+    <div class="q"><div class="qh"><span class="qn">Q4</span><span>다음 상태코드의 의미를 쓰고, 401과 403의 차이를 설명하시오: 200, 302, 404, 500</span><span class="type">단답</span></div><div class="ans"><span class="lab">정답</span>200 성공 · 302 임시 이동 · 404 리소스 없음 · 500 내부 서버 오류. 401은 인증 실패(누구인지 확인 안 됨, 로그인 필요), 403은 인가 실패(누구인지는 알지만 권한 없음).</div></div>
+    <div class="q"><div class="qh"><span class="qn">Q5</span><span>게시판 코드에서 <code>PUT /posts/3</code> 요청이 처리되는 순서를 클래스·메서드 이름으로 쓰고, updatePost에만 @Transactional이 붙은 이유를 쓰시오.</span><span class="type">코드</span></div><div class="ans"><span class="lab">모범답안</span>PostController.updatePost(@PathVariable 3, @RequestBody DTO) → PostService.updatePost → PostRepository.findById(3) → 엔티티 값 변경 → PostResponseDto로 응답. save()를 호출하지 않고 조회한 엔티티의 값만 바꾸므로, 트랜잭션 안에서 변경 내용이 끝날 때 DB에 반영되도록 @Transactional이 필요하다.</div></div>
+    <div class="q"><div class="qh"><span class="qn">Q6</span><span>Spring Boot가 Spring Framework보다 편한 점 3가지와, 그중 배포 방식의 차이를 쓰시오.</span><span class="type">서술형</span></div><div class="ans"><span class="lab">모범답안</span>자동 설정(Auto Configuration), spring-boot-starter로 의존성 관리, Tomcat 내장 서버. 배포: Spring은 WAR로 만들어 별도 WAS에 올려야 하지만, Spring Boot는 JAR 하나로 <code>java -jar</code> 단독 실행이 가능하다.</div></div>
+  </section>
+
+  <footer><span>시큐어코딩 · 3주차 · 09.15(화) ~ 09.21(월)</span><span>jaealee.com</span></footer>
+</div>
+
+<div id="viewVocab" hidden>
+  <div class="hero" data-w="A–Z">
+    <span class="chip">3주차 단어장</span>
+    <h1>시큐어코딩 필수 용어</h1>
+    <p class="sub">이번 주차 교안에 나온 단어 중 원서·공식 문서에서 다시 만날 것들만 골랐습니다.</p>
+  </div>
+  <div class="vhead">
+    <input type="search" id="vq" placeholder="단어 · 뜻으로 찾기">
+    <button class="tbtn" id="maskBtn">뜻 가리기</button>
+    <button class="tbtn" id="quizBtn">퀴즈 풀기</button>
+    <span style="font-size:13px;color:var(--ink-3);font-weight:600" id="vcount"></span>
+  </div>
+  <ul class="vlist" id="vlist"><li class="vword"><div><span class="w">stateless</span><span class="ipa">/ˈsteɪtləs/</span><span class="pos">adj.</span></div><div><p class="mean">무상태의 — 이전 요청을 기억하지 않는</p><p class="ex">HTTP is a <b>stateless</b> protocol.<span class="ko">HTTP는 무상태 프로토콜이다.</span></p></div></li><li class="vword"><div><span class="w">intercept</span><span class="ipa">/ˌɪntərˈsept/</span><span class="pos">v.</span></div><div><p class="mean">가로채다 — 중간에서 붙잡다</p><p class="ex">Burp can <b>intercept</b> every request.<span class="ko">Burp는 모든 요청을 가로챌 수 있다.</span></p></div></li><li class="vword"><div><span class="w">encode</span><span class="ipa">/ɪnˈkoʊd/</span><span class="pos">v.</span></div><div><p class="mean">인코딩하다 — 규칙에 따라 다른 형식으로 바꾸다</p><p class="ex">We <b>encode</b> spaces as %20 in a URL.<span class="ko">URL에서 공백은 %20으로 인코딩한다.</span></p></div></li><li class="vword"><div><span class="w">dependency</span><span class="ipa">/dɪˈpendənsi/</span><span class="pos">n.</span></div><div><p class="mean">의존성 — 프로젝트가 필요로 하는 외부 라이브러리</p><p class="ex">Add Spring Web as a <b>dependency</b>.<span class="ko">Spring Web을 의존성으로 추가하라.</span></p></div></li><li class="vword"><div><span class="w">annotation</span><span class="ipa">/ˌænəˈteɪʃn/</span><span class="pos">n.</span></div><div><p class="mean">어노테이션 — 코드에 붙이는 @ 표시(설정 정보)</p><p class="ex">The <b>annotation</b> @GetMapping handles GET requests.<span class="ko">@GetMapping 어노테이션은 GET 요청을 처리한다.</span></p></div></li><li class="vword"><div><span class="w">entity</span><span class="ipa">/ˈentəti/</span><span class="pos">n.</span></div><div><p class="mean">엔티티 — DB 테이블과 연결되는 클래스</p><p class="ex">Post is an <b>entity</b> class.<span class="ko">Post는 엔티티 클래스다.</span></p></div></li><li class="vword"><div><span class="w">embedded</span><span class="ipa">/ɪmˈbedɪd/</span><span class="pos">adj.</span></div><div><p class="mean">내장된 — 안에 포함되어 있는</p><p class="ex">Spring Boot has an <b>embedded</b> Tomcat server.<span class="ko">스프링 부트에는 내장 톰캣 서버가 있다.</span></p></div></li></ul>
+  <div class="quizbox" id="quiz"><div class="qq" id="quizQ"></div><div class="opts" id="quizOpts"></div><div class="score" id="quizScore"></div></div>
+</div>
+
+<div id="viewRaw" hidden>
+  <div class="hero" data-w="RAW">
+    <span class="chip">3주차 필기 원문</span>
+    <h1>내가 보낸 그대로</h1>
+    <p class="sub">이번 주차는 이러닝 교안(PDF 변환본)만 받았고, 따로 보낸 필기 메시지는 없습니다. 필기를 보내주시면 이곳에 보낸 순서대로 쌓입니다.</p>
+  </div>
+  <div class="rawnote" id="rawlist"></div>
+</div>
+</main>
+</div>
+
+<script>
+/* ── 스크롤 진행 바 ─────────────────────────────── */
+const sb = document.getElementById('scrollbar');
+addEventListener('scroll', () => {
+  const h = document.documentElement.scrollHeight - innerHeight;
+  sb.style.width = (h > 0 ? scrollY / h * 100 : 0) + '%';
+}, { passive: true });
+
+/* ── 다크 모드 ──────────────────────────────────── */
+const html = document.documentElement, themeBtn = document.getElementById('themeBtn');
+themeBtn.onclick = () => {
+  const dark = html.dataset.theme === 'dark';
+  html.dataset.theme = dark ? 'light' : 'dark';
+  themeBtn.textContent = dark ? '다크' : '라이트';
+};
+
+/* ── 정답: 기본은 가려짐. 답을 누르면 그 문제만 열리고,
+      "정답 가리기" 버튼을 누르면 열린 것들을 전부 다시 덮는다 ── */
+const ansBtn = document.getElementById('ansBtn');
+const answers = [...document.querySelectorAll('.ans')];
+function syncAnsBtn() {
+  const opened = answers.filter(a => a.classList.contains('on')).length;
+  ansBtn.disabled = opened === 0;
+  ansBtn.textContent = opened ? `정답 가리기 (${opened})` : '정답 가리기';
+}
+answers.forEach(a => a.addEventListener('click', () => { a.classList.toggle('on'); syncAnsBtn(); }));
+ansBtn.onclick = () => { answers.forEach(a => a.classList.remove('on')); syncAnsBtn(); };
+syncAnsBtn();
+
+/* ── 보충(외부 자료) 개수 표시 + 숨기기 토글 ────── */
+const extraChip = document.getElementById('extraChip');
+const extraCount = document.querySelectorAll('#viewNote .call.extra, #viewNote .ext').length;
+if (extraCount) {
+  extraChip.textContent = `보충 ${extraCount}곳 — 교수님 설명 아님`;
+  extraChip.onclick = () => {
+    const off = document.body.classList.toggle('no-extra');
+    extraChip.textContent = off ? `보충 ${extraCount}곳 숨김 — 눌러서 보기` : `보충 ${extraCount}곳 — 교수님 설명 아님`;
+  };
+} else {
+  extraChip.textContent = '보충 0곳 — 전부 교수님 내용';
+  extraChip.disabled = true;
+}
+
+/* ── 인쇄 ───────────────────────────────────────── */
+document.getElementById('printBtn').onclick = () => window.print();
+
+/* ── 코드 복사 ──────────────────────────────────── */
+document.querySelectorAll('.copy').forEach(btn => {
+  btn.onclick = async () => {
+    try { await navigator.clipboard.writeText(btn.closest('.codebox').querySelector('code').innerText); btn.textContent = '복사됨'; }
+    catch { btn.textContent = '실패'; }
+    setTimeout(() => btn.textContent = '복사', 1200);
+  };
+});
+
+/* ── 복습 체크 진행률 (새로고침하면 초기화) ─────── */
+const boxes = document.querySelectorAll('.chk input'), fill = document.getElementById('barFill');
+boxes.forEach(b => b.addEventListener('change', () => {
+  fill.style.width = [...boxes].filter(x => x.checked).length / boxes.length * 100 + '%';
+}));
+
+/* ── 본문 / 단어장 / 필기 원문 전환 ─────────────── */
+const views = {
+  note:  { el: document.getElementById('viewNote'),  nav: document.getElementById('tocWrap') },
+  vocab: { el: document.getElementById('viewVocab'), nav: document.getElementById('vocabNav'), btn: document.getElementById('vocabBtn'), on: '본문으로', off: '단어장' },
+  raw:   { el: document.getElementById('viewRaw'),   nav: document.getElementById('rawNav'),   btn: document.getElementById('rawBtn'),  on: '본문으로', off: '필기 원문' }
+};
+let current = 'note';
+function setView(name) {
+  current = name;
+  Object.entries(views).forEach(([k, v]) => {
+    v.el.hidden = k !== name;
+    v.nav.hidden = k !== name;
+    if (v.btn) { v.btn.classList.toggle('solid', k === name); v.btn.textContent = k === name ? v.on : v.off; }
+  });
+  clearMarks();
+  document.getElementById('q').value = '';
+  document.getElementById('hit').textContent = '';
+  scrollTo({ top: 0, behavior: 'smooth' });
+}
+views.vocab.btn.onclick = () => setView(current === 'vocab' ? 'note' : 'vocab');
+views.raw.btn.onclick   = () => setView(current === 'raw'   ? 'note' : 'raw');
+document.getElementById('rawTotal').textContent = document.querySelectorAll('#rawlist .rawitem').length;
+// 원문 페이지의 링크를 누르면 본문으로 돌아가서 해당 위치로 이동
+document.querySelectorAll('#rawlist .where a').forEach(a => {
+  a.onclick = e => { e.preventDefault(); setView('note'); setTimeout(() => document.querySelector(a.getAttribute('href')).scrollIntoView(), 60); };
+});
+
+/* ── 목차 현재 위치 ─────────────────────────────── */
+const links = [...document.querySelectorAll('#toc a')];
+const spy = new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) return;
+  links.forEach(l => l.classList.toggle('on', l.getAttribute('href') === '#' + e.target.id));
+}), { rootMargin: '-80px 0px -68% 0px' });
+document.querySelectorAll('#viewNote section').forEach(s => spy.observe(s));
+
+/* ── 문서 내 검색 ───────────────────────────────── */
+const qInput = document.getElementById('q'), hitEl = document.getElementById('hit');
+let marks = [], cursor = -1;
+function clearMarks() {
+  marks.forEach(m => { const p = m.parentNode; if (!p) return; p.replaceChild(document.createTextNode(m.textContent), m); p.normalize(); });
+  marks = []; cursor = -1;
+}
+function runSearch(word) {
+  clearMarks();
+  if (word.length < 2) { hitEl.textContent = ''; return; }
+  const root = views[current].el;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const targets = [];
+  while (walker.nextNode()) {
+    const n = walker.currentNode;
+    if (n.parentElement.closest('script,style')) continue;
+    if (n.nodeValue.toLowerCase().includes(word)) targets.push(n);
+  }
+  targets.forEach(n => {
+    const re = new RegExp('(' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    const frag = document.createDocumentFragment();
+    n.nodeValue.split(re).forEach(p => {
+      if (p.toLowerCase() === word) { const m = document.createElement('span'); m.className = 'hit-mark'; m.textContent = p; frag.appendChild(m); marks.push(m); }
+      else frag.appendChild(document.createTextNode(p));
+    });
+    n.parentNode.replaceChild(frag, n);
+  });
+  hitEl.textContent = marks.length ? '0/' + marks.length : '없음';
+}
+qInput.addEventListener('input', e => runSearch(e.target.value.trim().toLowerCase()));
+qInput.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || !marks.length) return;
+  e.preventDefault();
+  cursor = (cursor + 1) % marks.length;
+  marks[cursor].scrollIntoView({ block: 'center', behavior: 'smooth' });
+  hitEl.textContent = (cursor + 1) + '/' + marks.length;
+});
+addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); qInput.focus(); qInput.select(); }
+});
+
+/* ── 단어장 ─────────────────────────────────────── */
+const vlist = document.getElementById('vlist');
+const words = [...vlist.querySelectorAll('.vword')];
+document.getElementById('vcount').textContent = words.length + '개';
+document.getElementById('vTotal').textContent = words.length;
+
+document.getElementById('vq').addEventListener('input', e => {
+  const k = e.target.value.trim().toLowerCase();
+  let shown = 0;
+  words.forEach(w => { const ok = w.innerText.toLowerCase().includes(k); w.style.display = ok ? '' : 'none'; if (ok) shown++; });
+  document.getElementById('vcount').textContent = shown + '개';
+});
+
+const maskBtn = document.getElementById('maskBtn');
+maskBtn.onclick = () => {
+  const on = vlist.classList.toggle('masked');
+  maskBtn.classList.toggle('solid', on);
+  maskBtn.textContent = on ? '뜻 보이기' : '뜻 가리기';
+  if (!on) vlist.querySelectorAll('.show').forEach(el => el.classList.remove('show'));
+};
+vlist.querySelectorAll('.mean, .ex').forEach(el => {
+  el.onclick = () => { if (vlist.classList.contains('masked')) el.classList.toggle('show'); };
+});
+
+/* 퀴즈 — 위 목록에서 문제를 자동 생성 */
+const quiz = document.getElementById('quiz'), quizBtn = document.getElementById('quizBtn');
+const qQ = document.getElementById('quizQ'), qO = document.getElementById('quizOpts'), qS = document.getElementById('quizScore');
+let pool = [], solved = 0, correct = 0;
+const data = () => words.map(w => ({
+  word: w.querySelector('.w').textContent,
+  mean: (w.querySelector('.mean').textContent.split('—')[1] || w.querySelector('.mean').textContent).trim()
+}));
+function nextQuiz() {
+  if (!pool.length) { qQ.textContent = '한 바퀴 끝'; qO.innerHTML = ''; qS.textContent = `${solved}문제 중 ${correct}개 정답`; return; }
+  const all = data(), cur = pool.pop();
+  qQ.textContent = cur.word;
+  const opts = [cur, ...all.filter(d => d.word !== cur.word).sort(() => Math.random() - .5).slice(0, 3)].sort(() => Math.random() - .5);
+  qO.innerHTML = '';
+  opts.forEach(o => {
+    const b = document.createElement('button');
+    b.className = 'opt'; b.textContent = o.mean;
+    b.onclick = () => {
+      solved++;
+      if (o.word === cur.word) { b.classList.add('ok'); correct++; }
+      else { b.classList.add('no'); [...qO.children].find(x => x.textContent === cur.mean)?.classList.add('ok'); }
+      [...qO.children].forEach(x => x.disabled = true);
+      qS.textContent = `${solved}문제 중 ${correct}개 정답`;
+      setTimeout(nextQuiz, 1000);
+    };
+    qO.appendChild(b);
+  });
+  qS.textContent = `${solved}문제 중 ${correct}개 정답 · 남은 ${pool.length}개`;
+}
+quizBtn.onclick = () => {
+  const on = quiz.classList.toggle('on');
+  quizBtn.classList.toggle('solid', on);
+  quizBtn.textContent = on ? '퀴즈 닫기' : '퀴즈 풀기';
+  if (on) { pool = data().sort(() => Math.random() - .5); solved = 0; correct = 0; nextQuiz(); }
+};
+</script>
+</body>
+</html>

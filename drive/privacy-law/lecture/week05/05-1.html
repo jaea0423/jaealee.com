@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>개인정보보호법률이해 5주차 1차시 — 개인정보 라이프사이클 관리 ①</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   과목 테마 — 아래 3줄(--accent, --accent-deep, --accent-soft)만 교체
+   데이터분석프로그래밍 #0EA5E9 / #0369A1 / #E0F2FE
+   전공영어           #E08700 / #A55A00 / #FEF3DC
+   인공지능           #9333EA / #6B21A8 / #F3E8FF
+   알고리즘           #4F46E5 / #3730A3 / #E8E7FD
+   시큐어코딩         #DC2626 / #991B1B / #FDE7E7
+   개인정보보호암호기술 #DB2777 / #9D174D / #FCE7F3
+   개인정보보호법률이해 #059669 / #065F46 / #D8F5EA
+   ═══════════════════════════════════════════════════════════════ */
+:root{
+  --accent:#059669;
+  --accent-deep:#065F46;
+  --accent-soft:#D8F5EA;
+
+  --bg:#F7F8FA;
+  --surface:#FFFFFF;
+  --ink:#15161B;
+  --ink-2:#565C66;
+  --ink-3:#8B9098;
+  --line:#E5E7EC;
+  --line-2:#F0F1F4;
+  --code-bg:#1B1D24;
+  --code-ink:#E4E6ED;
+  --mark:#FFE27A;
+  --font:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,system-ui,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  --mono:'JetBrains Mono','SFMono-Regular',Consolas,'D2Coding',monospace;
+}
+html[data-theme="dark"]{
+  --accent:#10A37F;
+  --accent-deep:#6EE7B7;
+  --accent-soft:#12302A;
+  --bg:#101116;
+  --surface:#181A20;
+  --ink:#E8E9ED;
+  --ink-2:#A6AAB4;
+  --ink-3:#73777F;
+  --line:#2A2C34;
+  --line-2:#202229;
+  --code-bg:#0C0D11;
+  --mark:#6E5C16;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15.5px;line-height:1.72;letter-spacing:-.012em;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-deep)}
+::selection{background:var(--accent);color:#fff}
+
+/* ── 스크롤 진행 바 ─────────────────────────────────── */
+#scrollbar{position:fixed;top:0;left:0;height:3px;width:0;background:var(--accent);z-index:99}
+
+/* ── 상단 바 ────────────────────────────────────────── */
+.topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:10px;padding:10px 22px;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.back{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink-2);font-size:14px;font-weight:700;white-space:nowrap}
+.back:hover{color:var(--accent-deep)}
+.back i{width:10px;height:10px;border-radius:3px;background:var(--accent);display:block}
+.search{flex:1;max-width:300px;margin-left:auto;position:relative}
+.search input{width:100%;padding:7px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14px}
+.search input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.hit{position:absolute;right:10px;top:8px;font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums;pointer-events:none}
+.tools{display:flex;gap:6px}
+.tbtn{border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:9px;padding:7px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);white-space:nowrap}
+.tbtn:hover{border-color:var(--accent);color:var(--accent-deep)}
+.tbtn.solid{background:var(--accent);border-color:var(--accent);color:#fff}
+.tbtn:disabled{opacity:.4;cursor:default}
+
+/* ── 레이아웃 ───────────────────────────────────────── */
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);gap:38px;max-width:1200px;margin:0 auto;padding:26px 24px 120px}
+main{min-width:0}
+
+/* ── 사이드 패널(포인트 컬러) ───────────────────────── */
+.side{position:sticky;top:80px;align-self:start;max-height:calc(100vh - 100px);overflow-y:auto;scrollbar-width:thin}
+.panel{background:var(--accent);border-radius:16px;padding:18px 16px;color:#fff;box-shadow:0 8px 24px -12px color-mix(in srgb,var(--accent) 70%,transparent)}
+.panel .cap{font-size:11.5px;font-weight:700;opacity:.72;margin-bottom:9px}
+.panel .subject{font-size:19px;font-weight:800;letter-spacing:-.03em;line-height:1.3;margin-bottom:2px}
+.panel .when{font-size:12.5px;opacity:.8;margin-bottom:16px}
+.toc{list-style:none;margin:0;padding:0}
+.toc a{display:block;padding:6px 10px;border-radius:8px;color:#fff;opacity:.82;text-decoration:none;font-size:13.5px;font-weight:600;line-height:1.45}
+.toc a:hover{background:rgba(255,255,255,.16);opacity:1}
+.toc a.on{background:#fff;color:var(--accent-deep);opacity:1;font-weight:800}
+.toc .num{display:inline-block;width:17px;font-variant-numeric:tabular-nums;opacity:.7}
+.toc a.on .num{opacity:1}
+.panel hr{border:0;border-top:1px solid rgba(255,255,255,.22);margin:14px 0}
+.chk label{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;padding:3px 0;cursor:pointer;line-height:1.5;opacity:.9}
+.chk input{margin-top:4px;accent-color:#fff;flex-shrink:0}
+.chk input:checked + span{opacity:.5;text-decoration:line-through}
+.pbar{height:4px;border-radius:99px;background:rgba(255,255,255,.28);margin-top:11px;overflow:hidden}
+.pbar i{display:block;height:100%;width:0;background:#fff;transition:width .25s}
+
+/* ── 히어로 ─────────────────────────────────────────── */
+.hero{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px 28px 22px;overflow:hidden;margin-bottom:16px}
+.hero::after{content:attr(data-w);position:absolute;right:14px;bottom:-26px;font-size:112px;font-weight:800;color:var(--accent);opacity:.09;letter-spacing:-.06em;line-height:1;pointer-events:none}
+.chip{display:inline-flex;align-items:center;gap:7px;background:var(--accent-soft);color:var(--accent-deep);font-size:12.5px;font-weight:800;padding:4px 11px;border-radius:99px}
+h1{font-size:clamp(26px,3.6vw,34px);font-weight:800;letter-spacing:-.04em;line-height:1.24;margin:12px 0 6px;position:relative}
+.hero .sub{color:var(--ink-2);font-size:15px;margin:0 0 14px;position:relative}
+[hidden]{display:none!important}
+.metaline{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-3);position:relative}
+.metaline b{color:var(--ink-2);font-weight:600}
+
+/* ── 수업 자료 (같은 폴더의 PDF) ────────────────────── */
+.files{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;position:relative}
+.file{display:inline-flex;align-items:center;gap:9px;padding:8px 13px 8px 9px;border:1px solid var(--line);border-radius:10px;background:var(--surface);text-decoration:none;color:var(--ink);font-size:13.5px;font-weight:700}
+.file:hover{border-color:var(--accent);background:var(--accent-soft)}
+.file .ic{background:var(--accent);color:#fff;font-size:10px;font-weight:800;padding:3px 6px;border-radius:6px;letter-spacing:.02em}
+.file em{font-style:normal;color:var(--ink-3);font-weight:600;font-size:12.5px}
+.files .none{font-size:12.5px;color:var(--ink-3);font-weight:600;padding:8px 0}
+.extra-chip:disabled{cursor:default;opacity:.6}
+
+/* ── 오늘의 흐름 ────────────────────────────────────── */
+.flow{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:26px}
+.flow a{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--line);border-radius:99px;background:var(--surface);text-decoration:none;color:var(--ink-2);font-size:13px;font-weight:600}
+.flow a:hover{border-color:var(--accent);color:var(--accent-deep);background:var(--accent-soft)}
+.flow a b{color:var(--accent);font-variant-numeric:tabular-nums}
+
+/* ── 핵심 카드 ──────────────────────────────────────── */
+.keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:34px}
+.key{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:14px;padding:16px 17px}
+.key .n{font-size:12px;font-weight:800;color:var(--accent);margin-bottom:5px}
+.key p{margin:0;font-size:14.5px;line-height:1.6}
+.key b{font-weight:800}
+
+/* ── 섹션 ───────────────────────────────────────────── */
+section{margin-bottom:46px;scroll-margin-top:82px}
+h2.st{display:flex;align-items:center;gap:11px;font-size:22px;font-weight:800;letter-spacing:-.035em;margin:0 0 14px}
+h2.st .sq{flex-shrink:0;width:30px;height:30px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+h3{font-size:16.5px;font-weight:800;margin:26px 0 8px;letter-spacing:-.025em;padding-left:11px;border-left:3px solid var(--accent)}
+h4{font-size:14.5px;font-weight:700;margin:18px 0 6px;color:var(--ink-2)}
+p{margin:9px 0}
+ul,ol{margin:9px 0;padding-left:21px}
+li{margin:3px 0}
+li::marker{color:var(--accent)}
+.en{color:var(--ink-3);font-weight:500;font-size:.9em}
+mark{background:linear-gradient(transparent 54%,var(--mark) 54%);color:inherit;padding:0 2px}
+.hit-mark{background:var(--accent);color:#fff;border-radius:3px}
+
+/* ── 배지 ───────────────────────────────────────────── */
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin:-6px 0 12px}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:6px;letter-spacing:0}
+.badge.exam{color:#92580B;background:#FDF0D5}
+.badge.prof{color:var(--accent-deep);background:var(--accent-soft)}
+.badge.ask{color:#B02020;background:#FCE4E4}
+html[data-theme="dark"] .badge.exam{background:#3B2D0E;color:#EFC470}
+html[data-theme="dark"] .badge.ask{background:#3A1919;color:#F0A0A0}
+
+/* ── 카드형 콜아웃 ──────────────────────────────────── */
+.call{border-radius:13px;padding:14px 17px;margin:15px 0;background:var(--surface);border:1px solid var(--line)}
+.call .t{font-size:12.5px;font-weight:800;margin-bottom:5px}
+.call p:first-of-type{margin-top:0}
+.call p:last-child,.call ul:last-child{margin-bottom:0}
+.call.quote{background:var(--accent-soft);border-color:transparent}
+.call.quote .t{color:var(--accent-deep)}
+.call.quote p{font-size:14.8px}
+.call.warn{border-left:4px solid #E5A50A}
+.call.warn .t{color:#A16207}
+.call.ask{border-left:4px solid #DC2626}
+.call.ask .t{color:#B02020}
+.call.link{border-left:4px solid var(--accent)}
+.call.link .t{color:var(--accent-deep)}
+
+/* 보충 — 교수님이 설명하지 않은 외부 자료. 회색 + 점선으로 본문과 확실히 구분 */
+.call.extra{background:repeating-linear-gradient(135deg,var(--line-2),var(--line-2) 9px,transparent 9px,transparent 18px);border:1.5px dashed var(--ink-3);border-left-width:1.5px}
+.call.extra .t{color:var(--ink-2);display:flex;align-items:center;gap:6px}
+.call.extra .t::before{content:"보충";background:var(--ink-3);color:var(--surface);font-size:10.5px;padding:1px 6px;border-radius:5px}
+.call.extra p{color:var(--ink-2)}
+.badge.extra{color:var(--ink-2);background:var(--line-2);border:1px dashed var(--ink-3)}
+.ext{border-bottom:2px dotted var(--ink-3);color:var(--ink-2)}
+.ext::after{content:"보충";font-size:9.5px;font-weight:800;vertical-align:super;color:var(--ink-3);margin-left:2px;letter-spacing:0}
+.extra-chip{border:1.5px dashed var(--ink-3);background:transparent;color:var(--ink-2);cursor:pointer;font-family:var(--font)}
+body.no-extra .call.extra,body.no-extra .badge.extra{display:none}
+body.no-extra .ext{border-bottom:0}
+body.no-extra .ext::after{display:none}
+html[data-theme="dark"] .call.warn .t{color:#E5B547}
+html[data-theme="dark"] .call.ask .t{color:#F0A0A0}
+
+/* ── 원문 보기 ──────────────────────────────────────── */
+details.raw{margin:12px 0;border:1px dashed var(--line);border-radius:10px;background:var(--line-2)}
+details.raw summary{cursor:pointer;padding:8px 14px;font-size:12.5px;color:var(--ink-3);font-weight:700;list-style:none}
+details.raw summary::-webkit-details-marker{display:none}
+details.raw summary::before{content:"▸ ";color:var(--accent)}
+details.raw[open] summary::before{content:"▾ "}
+details.raw .txt{padding:0 14px 12px;font-size:13px;color:var(--ink-2);white-space:pre-wrap;line-height:1.7}
+
+/* ── 필기 원문 페이지 ───────────────────────────────── */
+.rawnote{border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+.rawitem{display:grid;grid-template-columns:78px 1fr;gap:16px;padding:15px 18px;border-bottom:1px solid var(--line-2)}
+.rawitem:last-child{border-bottom:0}
+.rawitem .seq{font-size:12px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+.rawitem .seq span{display:block;color:var(--ink-3);font-weight:600;font-size:11px;margin-top:2px}
+.rawitem .body{white-space:pre-wrap;font-size:14px;line-height:1.75;color:var(--ink)}
+.rawitem .where{margin-top:7px;font-size:12px}
+.rawitem .where a{color:var(--accent-deep);text-decoration:none;font-weight:700;background:var(--accent-soft);padding:2px 8px;border-radius:6px}
+.rawitem .where a:hover{background:var(--accent);color:#fff}
+
+/* ── 표 ─────────────────────────────────────────────── */
+.tablewrap{overflow-x:auto;margin:15px 0;border:1px solid var(--line);border-radius:13px}
+table{border-collapse:collapse;width:100%;font-size:14px;background:var(--surface)}
+th,td{padding:10px 13px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line-2)}
+th{background:var(--accent);color:#fff;font-weight:700;font-size:13px;white-space:nowrap;border-bottom:0}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--line-2)}
+
+/* ── 코드 / 의사코드 ────────────────────────────────── */
+.codebox{margin:15px 0;border-radius:13px;overflow:hidden;background:var(--code-bg);border:1px solid var(--code-bg)}
+.codebox .head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 14px;font-size:12px;color:#9AA0AC;font-weight:700;background:rgba(255,255,255,.04)}
+.codebox .head .tag{color:#fff;background:var(--accent);border-radius:5px;padding:1px 7px;font-size:11px;margin-right:7px}
+.codebox pre{margin:0;padding:15px 17px;overflow-x:auto;font-family:var(--mono);font-size:13.2px;line-height:1.7;color:var(--code-ink)}
+.codebox .cm{color:#7C8494}
+.codebox .kw{color:#C4A6FF}
+.codebox .st2{color:#8BD5A0}
+.copy{border:0;background:transparent;color:#9AA0AC;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font)}
+.copy:hover{color:#fff}
+.codebox.pseudo{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent)}
+.codebox.pseudo .head{background:var(--accent-soft);color:var(--accent-deep)}
+.codebox.pseudo .head .tag{background:var(--accent-deep)}
+.codebox.pseudo pre{color:var(--ink);font-size:13.6px}
+.codebox.pseudo .cm{color:var(--ink-3)}
+.codebox.pseudo .kw{color:var(--accent-deep);font-weight:700}
+.codebox.pseudo .copy{color:var(--ink-3)}
+.codebox.pseudo .copy:hover{color:var(--accent-deep)}
+code:not(pre code){background:var(--accent-soft);color:var(--accent-deep);padding:1px 6px;border-radius:6px;font-family:var(--mono);font-size:.88em;font-weight:600}
+
+/* ── 도식 ───────────────────────────────────────────── */
+figure{margin:18px 0;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 14px 12px}
+figure svg{max-width:100%;height:auto}
+figcaption{font-size:12.5px;color:var(--ink-3);margin-top:10px}
+
+/* ── 용어 ───────────────────────────────────────────── */
+.terms{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:11px}
+.term{border:1px solid var(--line);border-radius:13px;padding:13px 15px;background:var(--surface)}
+.term b{display:block;font-size:15px}
+.term .e{display:block;font-size:12px;color:var(--accent-deep);font-family:var(--mono);margin-bottom:6px}
+.term p{margin:0;font-size:13.3px;color:var(--ink-2);line-height:1.6}
+
+/* ── 예상 문제 ──────────────────────────────────────── */
+.q{border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:12px 0;background:var(--surface)}
+.q .qh{display:flex;gap:10px;align-items:flex-start;font-weight:700;font-size:15px}
+.q .qn{color:#fff;background:var(--accent);border-radius:7px;padding:1px 8px;font-size:12.5px;font-weight:800;flex-shrink:0;margin-top:3px}
+.q .type{font-size:11px;font-weight:800;color:var(--ink-3);border:1px solid var(--line);border-radius:6px;padding:1px 7px;margin-left:auto;flex-shrink:0;margin-top:3px}
+.q ol.ch{list-style:none;padding-left:0;margin:11px 0 0;counter-reset:c}
+.q ol.ch li{padding:3px 0 3px 26px;position:relative;font-size:14.3px}
+.q ol.ch li::before{content:counter(c);counter-increment:c;position:absolute;left:0;top:4px;width:19px;height:19px;border:1px solid var(--line);border-radius:50%;font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--ink-3)}
+.ans{margin-top:12px;padding:11px 13px;border-radius:10px;background:var(--accent-soft);font-size:14.2px;cursor:pointer}
+.ans .lab{font-weight:800;color:var(--accent-deep);font-size:12.5px;margin-right:7px}
+body.hide-ans .ans:not(.on){background:var(--line-2);color:transparent;user-select:none;cursor:pointer;position:relative}
+body.hide-ans .ans:not(.on) *{color:transparent!important}
+body.hide-ans .ans:not(.on)::after{content:"눌러서 정답 확인";position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-3);font-size:12.5px;font-weight:700}
+
+/* ── 단어장 페이지 ──────────────────────────────────── */
+.vhead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px}
+.vhead input[type=search]{flex:1;min-width:170px;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14px}
+.vhead input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.vlist{margin:0;padding:0;list-style:none;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
+.vword{display:grid;grid-template-columns:190px 1fr;gap:16px;padding:14px 18px;border-bottom:1px solid var(--line-2)}
+.vword:last-child{border-bottom:0}
+.vword:hover{background:var(--line-2)}
+.vword .w{font-weight:800;font-size:16px;letter-spacing:-.02em}
+.vword .ipa{display:block;font-family:var(--mono);font-size:12px;color:var(--ink-3);font-weight:400;margin-top:1px}
+.vword .pos{display:inline-block;font-size:10.5px;font-weight:800;color:#fff;background:var(--accent);border-radius:5px;padding:1px 6px;margin-top:5px}
+.vword .mean{font-size:14.5px;margin:0;font-weight:600}
+.vword .ex{font-size:13px;color:var(--ink-2);margin:5px 0 0}
+.vword .ex b{color:var(--accent-deep);font-weight:700}
+.vword .ex .ko{display:block;color:var(--ink-3);font-size:12.5px}
+.masked .mean,.masked .ex{background:var(--line-2);border-radius:6px;color:transparent;cursor:pointer}
+.masked .mean *,.masked .ex *{color:transparent!important}
+.masked .mean.show,.masked .ex.show{background:transparent;color:inherit}
+.masked .mean.show *,.masked .ex.show *{color:revert!important}
+.masked .ex.show b{color:var(--accent-deep)!important}
+.quizbox{margin-top:18px;padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--surface);display:none}
+.quizbox.on{display:block}
+.quizbox .qq{font-size:22px;font-weight:800;margin-bottom:14px;letter-spacing:-.02em}
+.quizbox .opts{display:grid;gap:8px}
+.quizbox .opt{text-align:left;padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14.5px;cursor:pointer}
+.quizbox .opt:hover{border-color:var(--accent)}
+.quizbox .opt.ok{border-color:#16A34A;background:color-mix(in srgb,#16A34A 12%,var(--surface))}
+.quizbox .opt.no{border-color:#DC2626;background:color-mix(in srgb,#DC2626 12%,var(--surface))}
+.quizbox .score{margin-top:13px;font-size:13px;color:var(--ink-3);font-weight:600}
+
+footer{margin-top:54px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-3);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+@media(max-width:900px){
+  .wrap{grid-template-columns:1fr;gap:18px;padding:16px 16px 80px}
+  .side{position:static;max-height:none;order:-1}
+  .vword{grid-template-columns:1fr;gap:5px}
+  .search{max-width:none;order:3;flex-basis:100%;max-width:100%}
+  .topbar{flex-wrap:wrap}
+  .hero::after{font-size:78px}
+}
+@media print{
+  .topbar,.side,#scrollbar,.quizbox,.vhead,.flow,.files,.extra-chip{display:none!important}
+  .wrap{display:block;max-width:none;padding:0}
+  body{font-size:10.5pt;background:#fff}
+  section{page-break-inside:avoid;margin-bottom:22px}
+  body.hide-ans .ans:not(.on){background:var(--accent-soft)!important;color:inherit!important}
+  body.hide-ans .ans:not(.on) *{color:inherit!important}
+  body.hide-ans .ans:not(.on)::after{display:none}
+  details.raw{display:none}
+  #viewVocab,#viewRaw{display:block!important;page-break-before:always}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body class="hide-ans">
+<div id="scrollbar"></div>
+
+<div class="topbar">
+  <a class="back" href="../"><i></i>개인정보보호법률이해</a>
+  <div class="search"><input id="q" type="search" placeholder="찾기 (Enter로 다음)" aria-label="문서 내 검색"><span class="hit" id="hit"></span></div>
+  <div class="tools">
+    <button class="tbtn" id="ansBtn">정답 가리기</button>
+    <button class="tbtn" id="vocabBtn">단어장</button>
+    <button class="tbtn" id="rawBtn">필기 원문</button>
+    <button class="tbtn" id="themeBtn">다크</button>
+    <button class="tbtn" id="printBtn">🖨</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ═══════════ 사이드 패널 ═══════════ -->
+<aside class="side">
+  <div class="panel">
+    <div class="subject">개인정보보호법률이해</div>
+    <div class="when">5주차 1차시 · 2026.09.29 (화)</div>
+
+    <div id="tocWrap">
+      <div class="cap">목차</div>
+      <ul class="toc" id="toc"><li><a href="#s1"><span class="num">01</span>분쟁조정 제도</a></li><li><a href="#s2"><span class="num">02</span>제척·기피·회피</a></li><li><a href="#s3"><span class="num">03</span>분쟁조정 절차</a></li><li><a href="#s4"><span class="num">04</span>집단분쟁조정</a></li><li><a href="#s5"><span class="num">05</span>단체소송</a></li><li><a href="#s6"><span class="num">06</span>수집·이용 근거</a></li><li><a href="#s7"><span class="num">07</span>고지사항·추가 이용</a></li><li><a href="#s8"><span class="num">08</span>동의 받는 방법</a></li><li><a href="#s9"><span class="num">09</span>아동 개인정보</a></li><li><a href="#s10"><span class="num">10</span>간접 수집</a></li><li><a href="#sg"><span class="num">11</span>용어 정리</a></li><li><a href="#sq"><span class="num">12</span>확인 필요</a></li><li><a href="#sx"><span class="num">13</span>예상 문제</a></li></ul>
+      <hr>
+      <div class="cap">복습 체크</div>
+      <div class="chk"><label><input type="checkbox"><span>분쟁조정 순서도 보지 않고 그리기</span></label><label><input type="checkbox"><span>제척·기피·회피 구분</span></label><label><input type="checkbox"><span>집단분쟁조정 숫자 (50·14·60·15)</span></label><label><input type="checkbox"><span>단체소송 요건 (1천·3년 / 100·3년·5천)</span></label><label><input type="checkbox"><span>단체소송 vs 집단소송 표</span></label><label><input type="checkbox"><span>제15조 ① 각 호 사례와 ‘법률’ vs ‘법령’</span></label><label><input type="checkbox"><span>제22조 ① 구분 동의 8가지·시행령 제17조 조건 4가지</span></label><label><input type="checkbox"><span>아동 동의 확인 7가지</span></label><label><input type="checkbox"><span>간접 수집 통지 (즉시 / 5만·100만 / 3개월)</span></label><label><input type="checkbox"><span>예상 문제 6개 풀기</span></label></div>
+      <div class="pbar"><i id="barFill"></i></div>
+    </div>
+
+    <div id="rawNav" hidden>
+      <div class="cap">필기 원문</div>
+      <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">내가 수업 중에 보낸 내용 <b id="rawTotal">0</b>개를 손대지 않고 그대로 모아둔 페이지입니다.</p>
+      <hr>
+      <div class="cap">확인 방법</div>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">여기 있는 내용이 본문에 다 반영됐는지 대조하세요. 각 항목의 링크를 누르면 정리된 위치로 이동합니다.</p>
+    </div>
+
+    <div id="vocabNav" hidden>
+      <div class="cap">단어장</div>
+      <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">이번 차시에 나온 전공 필수 단어 <b id="vTotal">0</b>개입니다.</p>
+      <hr>
+      <div class="cap">사용법</div>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">뜻 가리기를 켜면 회색 칸을 눌러 하나씩 확인할 수 있습니다. 퀴즈는 아래 목록에서 문제를 자동으로 만듭니다.</p>
+    </div>
+  </div>
+</aside>
+
+<main>
+<!-- ═══════════ 본문 뷰 ═══════════ -->
+<div id="viewNote">
+
+  <div class="hero" data-w="05">
+    <span class="chip">5주차 · 1차시</span>
+    <button class="chip extra-chip" id="extraChip"></button>
+    <h1>분쟁조정 · 단체소송과 개인정보의 수집 · 동의</h1>
+    <p class="sub">개인정보 분쟁조정·집단분쟁조정 절차, 단체소송, 라이프사이클 1단계인 수집·이용 근거와 동의 받는 방법, 아동 개인정보, 간접 수집</p>
+    <div class="metaline"><span>2026.09.29 (화) · 이러닝</span><span><b>이동재</b> 교수님</span><span>교안 「개인정보 라이프사이클 관리」 p.1–32</span><span>과제: 교안 안내 없음</span><span>강의 필기 반영 전 (교안 기준)</span></div>
+    <!-- 수업 자료: 같은 폴더에 둔 PDF. 없으면 이 블록 전체를 지운다 -->
+    <div class="files"><a class="file" href="05-1-material.pdf" target="_blank"><span class="ic">PDF</span>강의 교안<em>32p</em></a></div>
+  </div>
+
+  <nav class="flow"><a href="#s1"><b>01</b> 분쟁조정 제도</a><a href="#s2"><b>02</b> 제척·기피·회피</a><a href="#s3"><b>03</b> 분쟁조정 절차</a><a href="#s4"><b>04</b> 집단분쟁조정</a><a href="#s5"><b>05</b> 단체소송</a><a href="#s6"><b>06</b> 수집·이용 근거</a><a href="#s7"><b>07</b> 고지사항·추가 이용</a><a href="#s8"><b>08</b> 동의 받는 방법</a><a href="#s9"><b>09</b> 아동 개인정보</a><a href="#s10"><b>10</b> 간접 수집</a><a href="#sx"><b>13</b> 예상 문제</a></nav>
+
+  <div class="keys"><div class="key"><div class="n">핵심 1</div><p>분쟁조정이 성립하면 <b>재판상 화해</b> 효력 → 강제집행 가능. 조정안은 <b>15일</b> 안에 답하지 않으면 수락 간주.</p></div><div class="key"><div class="n">핵심 2</div><p>집단분쟁조정 = 정보주체 <b>50명</b> 이상 + 쟁점 공통. 공고 <b>14일</b> 이상, 공고 종료 다음 날부터 <b>60일</b> 이내 완료. 거부·불수락이면 단체소송.</p></div><div class="key"><div class="n">핵심 3</div><p>동의는 사항별로 <b>구분해 각각</b> 받고, 선택 동의 거부를 이유로 서비스 거부 금지. 만 14세 미만은 <b>법정대리인</b> 동의 + 확인.</p></div></div>
+
+  <!-- 01 -->
+  <section id="s1">
+    <h2 class="st"><span class="sq">01</span>개인정보 분쟁조정 제도</h2>
+    <div class="badges"><span class="badge prof">교안 p.2–3</span></div>
+    
+<p><b>개인정보 분쟁조정 제도</b><span class="en">(personal information dispute mediation)</span>: 개인정보 권리를 침해받았다고 주장하는 자가 <b>개인정보 분쟁조정위원회</b>에 분쟁조정을 신청하여 권리를 구제받는 제도</p>
+<ul><li>비용과 시간이 많이 드는 소송제도와 달리 <b>비용이 들지 않고</b> 개인정보에 관한 분쟁을 <b>신속하게</b> 해결할 수 있음</li><li>개인정보 분쟁조정위원회를 통해 공정한 결과를 얻을 수 있음</li><li><mark>“재판상 화해”의 효력</mark>이 부여되며, 조정성립 후 당사자가 결정내용을 이행하지 않으면 법원으로부터 <b>집행문</b>을 부여받아 <b>강제집행</b>을 할 수 있는 강력한 효력이 있음</li></ul>
+<h3>분쟁조정 제도 유형 <span class="en">(교안 p.3)</span></h3>
+<div class="tablewrap"><table><thead><tr><th>구분</th><th>분쟁 유형</th><th>요건</th></tr></thead><tbody><tr><td><b>개인정보 분쟁조정</b></td><td>당사자 사이에 분쟁이 있는 경우</td><td><b>누구든지</b> 신청 가능</td></tr><tr><td><b>집단 분쟁조정</b></td><td>분쟁이 집단성을 띠고, 오남용 개인정보 항목이나 피해의 유형이 같거나 비슷한 경우</td><td>권리침해를 입은 정보주체의 수가 <mark>50인 이상</mark>이고, 사건의 중요한 쟁점이 <b>사실상 또는 법률상 공통</b>되어야 함</td></tr></tbody></table></div>
+
+  </section>
+  <!-- 02 -->
+  <section id="s2">
+    <h2 class="st"><span class="sq">02</span>위원의 제척 · 기피 · 회피</h2>
+    <div class="badges"><span class="badge prof">교안 p.4</span></div>
+    
+<p>분쟁조정의 <b>공정성</b>을 위한 장치입니다.</p>
+<div class="tablewrap"><table><thead><tr><th>용어</th><th>정의</th><th>비고</th></tr></thead><tbody><tr><td><b>제척</b></td><td>분쟁조정사건의 심의·의결에서 <b>배제되는 것</b></td><td>위원이 사건 당사자의 배우자이거나, 친족이거나, 해당 사건의 자문을 한 적이 있는 등 제척사유에 해당하면 심의·의결에 포함시켜서는 안 됨</td></tr><tr><td><b>기피</b></td><td>당사자의 일방 또는 쌍방이 특정 위원을 배제시켜 달라고 <b>요구하는 것</b></td><td>공정한 심의·의결을 기대하기 어려운 사정이 있으면 위원장에게 기피신청을 할 수 있음. 기피신청에 대한 결정은 <mark>위원장이 단독으로</mark> 함</td></tr><tr><td><b>회피</b></td><td>위원이 공정한 결정을 내리기 곤란한 사유가 있어 특정 사건에서 <b>스스로 빠지는 것</b></td><td>제척사유나 기피사유가 있는 경우 스스로 심의·의결에서 회피할 수 있음</td></tr></tbody></table></div>
+<div class="call warn"><div class="t">헷갈리는 지점 — 누가 배제를 일으키나</div><p><b>제척</b>은 사유가 있으면 <b>자동으로</b> 배제, <b>기피</b>는 <b>당사자가 신청</b>해서 배제, <b>회피</b>는 <b>위원 본인이</b> 스스로 빠지는 것입니다.</p></div>
+
+  </section>
+  <!-- 03 -->
+  <section id="s3">
+    <h2 class="st"><span class="sq">03</span>개인정보 분쟁조정 절차</h2>
+    <div class="badges"><span class="badge prof">교안 p.5–7</span></div>
+    
+<figure><svg viewBox="0 0 700 640" role="img" aria-label="개인정보 분쟁조정 절차 순서도" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah-w5a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--ink-3)" style="fill:var(--ink-3)"/></marker></defs><rect x="160" y="10" width="280" height="44" rx="8" ry="8" fill="var(--line-2)" style="fill:var(--line-2);stroke:var(--line);stroke-width:1.5;"/><text x="300.0" y="27.7" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:600;fill:var(--ink-2)">신청: 온라인 (www.kopico.go.kr)</text><text x="300.0" y="45.7" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:600;fill:var(--ink-2)">또는 서면 (우편 · 방문)</text><polyline points="300.0,54 300.0,80" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w5a)"/><rect x="180" y="80" width="240" height="40" rx="8" ry="8" fill="var(--surface)" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5;"/><text x="300.0" y="104.7" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:700;fill:var(--ink)">분쟁조정 신청 및 접수</text><rect x="460" y="80" width="220" height="40" rx="8" ry="8" fill="var(--line-2)" style="fill:var(--line-2);stroke:var(--line);stroke-width:1.5;"/><text x="570.0" y="104.7" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:600;fill:var(--ink-2)">피신청인에게 접수 통보</text><polyline points="420,100 460,100" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w5a)"/><polyline points="300.0,120 300.0,150" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w5a)"/><rect x="180" y="150" width="240" height="40" rx="8" ry="8" fill="var(--surface)" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5;"/><text x="300.0" y="174.7" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:700;fill:var(--ink)">요건 심사</text><polyline points="300.0,190 300.0,220" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w5a)"/><rect x="180" y="220" width="240" height="40" rx="8" ry="8" fill="var(--surface)" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5;"/><text x="300.0" y="244.7" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:700;fill:var(--ink)">사실조사</text><rect x="460" y="212" width="220" height="56" rx="8" ry="8" fill="var(--line-2)" style="fill:var(--line-2);stroke:var(--line);stroke-width:1.5;"/><text x="570.0" y="235.7" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:600;fill:var(--ink-2)">증거수집 · 당사자 진술</text><text x="570.0" y="253.7" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:600;fill:var(--ink-2)">전문가 자문 · 현장 확인 조사</text><polyline points="460,240 420,240" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w5a)"/><polyline points="300.0,260 300.0,290" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w5a)"/><rect x="180" y="290" width="240" height="40" rx="8" ry="8" fill="var(--surface)" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5;"/><text x="300.0" y="314.7" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:700;fill:var(--ink)">조정 전 합의 권고</text><rect x="460" y="290" width="220" height="40" rx="8" ry="8" fill="var(--accent-soft)" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5;stroke-dasharray:4 3;"/><text x="570.0" y="314.7" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:700;fill:var(--accent-deep)">합의 성립 → 사건 종결</text><polyline points="420,310 460,310" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w5a)"/><text x="440" y="304" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:800;fill:var(--accent-deep)">YES</text><polyline points="300.0,330 300.0,360" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w5a)"/><text x="308.0" y="349" text-anchor="start" style="font-family:var(--font);font-size:11px;font-weight:800;fill:var(--accent-deep)">NO</text><rect x="180" y="360" width="240" height="40" rx="8" ry="8" fill="var(--surface)" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5;"/><text x="300.0" y="384.7" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:700;fill:var(--ink)">분쟁조정위원회 심의 · 의결</text><rect x="460" y="360" width="220" height="40" rx="8" ry="8" fill="var(--accent-soft)" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5;stroke-dasharray:4 3;"/><text x="570.0" y="384.7" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:700;fill:var(--accent-deep)">기각 · 각하 → 종결</text><polyline points="420,380 460,380" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w5a)"/><polyline points="300.0,400 300.0,430" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w5a)"/><rect x="180" y="430" width="240" height="40" rx="8" ry="8" fill="var(--surface)" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5;"/><text x="300.0" y="454.7" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:700;fill:var(--ink)">조정안 제시</text><rect x="460" y="422" width="220" height="56" rx="8" ry="8" fill="var(--line-2)" style="fill:var(--line-2);stroke:var(--line);stroke-width:1.5;"/><text x="570.0" y="445.7" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:600;fill:var(--ink-2)">15일 이내 수락 여부 회신</text><text x="570.0" y="463.7" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:600;fill:var(--ink-2)">회신 없으면 수락 간주</text><line x1="420" y1="450" x2="460" y2="450" style="stroke:var(--ink-3);stroke-width:1.2;stroke-dasharray:3 3;"/><polyline points="300.0,470 300.0,490 200,490 200,520" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w5a)"/><polyline points="300.0,490 400,490 400,520" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w5a)"/><text x="192" y="510" text-anchor="end" style="font-family:var(--font);font-size:11px;font-weight:800;fill:var(--accent-deep)">YES · 양 당사자 수락</text><text x="408" y="510" text-anchor="start" style="font-family:var(--font);font-size:11px;font-weight:800;fill:var(--accent-deep)">NO · 당사자 불수락</text><rect x="120" y="520" width="160" height="40" rx="8" ry="8" fill="var(--accent)" style="fill:var(--accent);stroke:var(--accent);stroke-width:1.5;"/><text x="200.0" y="544.7" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:700;fill:#fff">조정 성립</text><rect x="320" y="520" width="160" height="40" rx="8" ry="8" fill="var(--surface)" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5;"/><text x="400.0" y="544.7" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:700;fill:var(--ink)">조정 불성립</text><polyline points="200,560 200,590" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w5a)"/><polyline points="400,560 400,590" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w5a)"/><rect x="120" y="590" width="160" height="40" rx="8" ry="8" fill="var(--accent-soft)" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5;stroke-dasharray:4 3;"/><text x="200.0" y="614.7" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:700;fill:var(--accent-deep)">이행 (강제집행)</text><rect x="320" y="590" width="160" height="40" rx="8" ry="8" fill="var(--accent-soft)" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5;stroke-dasharray:4 3;"/><text x="400.0" y="614.7" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:700;fill:var(--accent-deep)">민사소송 등</text></svg><figcaption>교안 p.5 우측 순서도 재현 — 개인정보 분쟁조정 절차</figcaption></figure>
+<div class="tablewrap"><table><thead><tr><th>단계</th><th>설명 (교안 p.5–7, 개인정보분쟁조정위원회 사이트 공개 내용)</th></tr></thead><tbody><tr><td>1. 신청사건의 접수 및 통보</td><td>분쟁조정은 웹사이트, 우편 등을 통해 신청인이 <b>직접 또는 대리로</b> 신청할 수 있으며, 사건이 접수되면 <b>신청자와 상대방에게</b> 접수사실이 통보됨</td></tr><tr><td>2. 사실확인 및 당사자 의견청취</td><td>사건담당자는 전화, 우편, 전자우편 등 다양한 수단으로 자료를 수집해 <b>사실조사</b>를 실시하고, 완료되면 <b>사실조사보고서</b>를 작성하여 사건을 위원회에 회부함</td></tr><tr><td>3. 조정 전 합의권고</td><td>위원회는 조정에 들어가기 앞서 당사자 간 자율적인 노력으로 분쟁이 해결될 수 있도록 <b>합의를 권고</b>할 수 있으며, 합의가 성립하면 사건이 <b>종결</b>됨</td></tr><tr><td>4. 위원회의 조정절차 개시</td><td>당사자 의견 청취, 증거수집, 전문가 자문, 현장조사 등 필요한 절차를 거쳐 쌍방에게 합당한 <b>조정안을 제시</b>하고 수락을 권고함. 신청자나 상대방은 위원회 회의에 참석해 <b>의견을 개진</b>할 수 있음</td></tr><tr><td>5. 조정의 성립</td><td>조정안을 제시받은 날부터 <mark>15일 이내</mark>에 신청인과 상대방이 수락하면 조정 성립<br>수락 여부를 <b>알리지 않으면 수락한 것으로 봄</b><br>수락하려면 위원회가 송부한 <b>조정서에 기명날인</b>하여 제출<br>양 당사자가 모두 수락하면 조정이 성립되어 조정서가 작성되고 절차 종료<br>일방이 수락하지 않으면 <b>민사소송</b> 제기 등 다른 구제절차 진행 가능</td></tr><tr><td>6. 효력의 발생</td><td>조정이 성립되면 「개인정보 보호법」 <b>제47조제5항</b>에 따라 양 당사자 간 조정서는 <mark>재판상 화해와 같은 효력</mark>을 가짐</td></tr></tbody></table></div>
+
+  </section>
+  <!-- 04 -->
+  <section id="s4">
+    <h2 class="st"><span class="sq">04</span>집단 분쟁조정 절차</h2>
+    <div class="badges"><span class="badge prof">교안 p.8–10</span></div>
+    
+<figure><svg viewBox="0 0 760 830" role="img" aria-label="집단 분쟁조정 절차 순서도" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah-w5b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--ink-3)" style="fill:var(--ink-3)"/></marker></defs><rect x="110" y="10" width="500" height="44" rx="8" ry="8" fill="var(--line-2)" style="fill:var(--line-2);stroke:var(--line);stroke-width:1.5;"/><text x="360.0" y="27.7" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:600;fill:var(--ink-2)">신청: 국가 · 지방자치단체 · 개인정보보호단체 및 기관</text><text x="360.0" y="45.7" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:600;fill:var(--ink-2)">· 정보주체 · 개인정보처리자</text><polyline points="360.0,54 360.0,84" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w5b)"/><rect x="240" y="84" width="240" height="40" rx="8" ry="8" fill="var(--surface)" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5;"/><text x="360.0" y="108.7" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:700;fill:var(--ink)">분쟁조정 신청 및 접수</text><polyline points="360.0,124 360.0,154" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w5b)"/><rect x="240" y="154" width="240" height="40" rx="8" ry="8" fill="var(--surface)" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5;"/><text x="360.0" y="178.7" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:700;fill:var(--ink)">요건 심사</text><rect x="515" y="146" width="235" height="56" rx="8" ry="8" fill="var(--line-2)" style="fill:var(--line-2);stroke:var(--line);stroke-width:1.5;"/><text x="632.5" y="169.7" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:600;fill:var(--ink-2)">〈요건〉 ① 정보주체 50인 이상</text><text x="632.5" y="187.7" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:600;fill:var(--ink-2)">② 사건 쟁점이 사실상·법률상 공통</text><line x1="480" y1="174" x2="515" y2="174" style="stroke:var(--ink-3);stroke-width:1.2;stroke-dasharray:3 3;"/><polyline points="240,174 200,174" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w5b)"/><text x="220" y="166" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:800;fill:var(--accent-deep)">NO</text><rect x="40" y="154" width="160" height="40" rx="8" ry="8" fill="var(--surface)" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5;"/><text x="120.0" y="178.7" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:700;fill:var(--ink)">보정 요구</text><polyline points="120,194 120,234" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w5b)"/><text x="126" y="220" text-anchor="start" style="font-family:var(--font);font-size:10.5px;font-weight:800;fill:var(--accent-deep)">보정 안 됨</text><rect x="40" y="234" width="160" height="40" rx="8" ry="8" fill="var(--accent-soft)" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5;stroke-dasharray:4 3;"/><text x="120.0" y="258.7" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:700;fill:var(--accent-deep)">취하 간주 (종결)</text><polyline points="190,194 240,248" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w5b)"/><text x="222" y="212" text-anchor="start" style="font-family:var(--font);font-size:10.5px;font-weight:800;fill:var(--accent-deep)">보정 시</text><polyline points="360.0,194 360.0,234" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w5b)"/><text x="368.0" y="220" text-anchor="start" style="font-family:var(--font);font-size:11px;font-weight:800;fill:var(--accent-deep)">YES</text><rect x="240" y="234" width="240" height="40" rx="8" ry="8" fill="var(--surface)" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5;"/><text x="360.0" y="258.7" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:700;fill:var(--ink)">절차 개시 의결 (위원회)</text><polyline points="360.0,274 360.0,304" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w5b)"/><rect x="240" y="304" width="240" height="52" rx="8" ry="8" fill="var(--surface)" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5;"/><text x="360.0" y="325.7" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:700;fill:var(--ink)">집단분쟁조정절차 개시 공고</text><text x="360.0" y="343.7" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:700;fill:var(--ink)">일간지 · 홈페이지 등 14일 이상</text><rect x="515" y="304" width="235" height="52" rx="8" ry="8" fill="var(--line-2)" style="fill:var(--line-2);stroke:var(--line);stroke-width:1.5;"/><text x="632.5" y="325.7" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:600;fill:var(--ink-2)">추가 당사자 접수</text><text x="632.5" y="343.7" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:600;fill:var(--ink-2)">대표당사자 선임 (위원회 의결)</text><line x1="480" y1="330" x2="515" y2="330" style="stroke:var(--ink-3);stroke-width:1.2;stroke-dasharray:3 3;"/><text x="497.5" y="322" text-anchor="middle" style="font-family:var(--font);font-size:10.5px;font-weight:800;fill:var(--accent-deep)">병행</text><polyline points="360.0,356 360.0,386" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w5b)"/><rect x="240" y="386" width="240" height="40" rx="8" ry="8" fill="var(--surface)" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5;"/><text x="360.0" y="410.7" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:700;fill:var(--ink)">사실조사</text><rect x="515" y="378" width="235" height="56" rx="8" ry="8" fill="var(--line-2)" style="fill:var(--line-2);stroke:var(--line);stroke-width:1.5;"/><text x="632.5" y="401.7" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:600;fill:var(--ink-2)">증거수집 · 당사자 진술</text><text x="632.5" y="419.7" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:600;fill:var(--ink-2)">전문가 자문 · 현장 확인 조사</text><polyline points="515,406 480,406" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w5b)"/><polyline points="360.0,426 360.0,456" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w5b)"/><rect x="240" y="456" width="240" height="40" rx="8" ry="8" fill="var(--surface)" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5;"/><text x="360.0" y="480.7" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:700;fill:var(--ink)">분쟁조정위원회 심의 · 의결</text><rect x="515" y="456" width="235" height="40" rx="8" ry="8" fill="var(--accent-soft)" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5;stroke-dasharray:4 3;"/><text x="632.5" y="480.7" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:700;fill:var(--accent-deep)">기각 · 각하 → 종결</text><polyline points="480,476 515,476" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w5b)"/><polyline points="360.0,496 360.0,526" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w5b)"/><rect x="240" y="526" width="240" height="40" rx="8" ry="8" fill="var(--surface)" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5;"/><text x="360.0" y="550.7" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:700;fill:var(--ink)">조정안 제시</text><rect x="515" y="518" width="235" height="56" rx="8" ry="8" fill="var(--line-2)" style="fill:var(--line-2);stroke:var(--line);stroke-width:1.5;"/><text x="632.5" y="541.7" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:600;fill:var(--ink-2)">15일 이내 수락 여부 회신</text><text x="632.5" y="559.7" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:600;fill:var(--ink-2)">회신 없으면 수락 간주</text><line x1="480" y1="546" x2="515" y2="546" style="stroke:var(--ink-3);stroke-width:1.2;stroke-dasharray:3 3;"/><polyline points="360.0,566 360.0,586 200,586 200,616" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w5b)"/><polyline points="360.0,586 520,586 520,616" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w5b)"/><text x="192" y="606" text-anchor="end" style="font-family:var(--font);font-size:11px;font-weight:800;fill:var(--accent-deep)">YES · 양 당사자 수락</text><text x="528" y="606" text-anchor="start" style="font-family:var(--font);font-size:11px;font-weight:800;fill:var(--accent-deep)">NO · 당사자 불수락</text><rect x="110" y="616" width="180" height="40" rx="8" ry="8" fill="var(--accent)" style="fill:var(--accent);stroke:var(--accent);stroke-width:1.5;"/><text x="200.0" y="640.7" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:700;fill:#fff">조정 성립</text><rect x="430" y="616" width="180" height="40" rx="8" ry="8" fill="var(--surface)" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5;"/><text x="520.0" y="640.7" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:700;fill:var(--ink)">조정 불성립</text><polyline points="200,656 200,686" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w5b)"/><polyline points="520,656 520,686" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w5b)"/><rect x="110" y="686" width="180" height="40" rx="8" ry="8" fill="var(--accent-soft)" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5;stroke-dasharray:4 3;"/><text x="200.0" y="710.7" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:700;fill:var(--accent-deep)">이행 (강제집행)</text><rect x="430" y="686" width="180" height="40" rx="8" ry="8" fill="var(--accent-soft)" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5;stroke-dasharray:4 3;"/><text x="520.0" y="710.7" text-anchor="middle" style="font-family:var(--font);font-size:13px;font-weight:700;fill:var(--accent-deep)">단체소송 등</text><line x1="200" y1="726" x2="200" y2="746" style="stroke:var(--ink-3);stroke-width:1.2;stroke-dasharray:3 3;"/><line x1="520" y1="726" x2="520" y2="746" style="stroke:var(--ink-3);stroke-width:1.2;stroke-dasharray:3 3;"/><rect x="50" y="746" width="300" height="72" rx="8" ry="8" fill="var(--line-2)" style="fill:var(--line-2);stroke:var(--line);stroke-width:1.5;"/><text x="200.0" y="769.3" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:600;fill:var(--ink-2)">당사자 아닌 자에 대한 보상 권고</text><text x="200.0" y="786.3" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:600;fill:var(--ink-2)">처리자가 권고 수락 시 15일 이내 보상계획서 제출</text><text x="200.0" y="803.3" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:600;fill:var(--ink-2)">위원회는 홈페이지에 공고</text><rect x="370" y="746" width="300" height="72" rx="8" ry="8" fill="var(--line-2)" style="fill:var(--line-2);stroke:var(--line);stroke-width:1.5;"/><text x="520.0" y="769.3" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:600;fill:var(--ink-2)">단체소송: 권리침해행위 금지·중지 요구</text><text x="520.0" y="786.3" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:600;fill:var(--ink-2)">소비자기본법의 소비자단체 (공정위 등록)</text><text x="520.0" y="803.3" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:600;fill:var(--ink-2)">비영리민간단체 (100명 이상 요청)</text></svg><figcaption>교안 p.8 우측 순서도 재현 — 집단 분쟁조정 절차</figcaption></figure>
+<div class="tablewrap"><table><thead><tr><th>단계</th><th>설명 (교안 p.8–10)</th></tr></thead><tbody><tr><td>1. 집단 분쟁조정 신청</td><td>(의뢰·신청기관) <b>국가, 지방자치단체, 한국소비자원 또는 소비자단체, 사업자</b>가 위원회에 <b>서면</b>(집단분쟁조정의뢰·신청서)으로 의뢰 또는 신청<br>(신청요건) 피해 또는 권리침해를 입은 정보주체의 수가 <mark>50명 이상</mark>이고, 사건의 중요한 쟁점(피해의 원인이나 결과)이 사실상 또는 법률상 <b>공통</b></td></tr><tr><td>2. 절차의 개시 및 공고</td><td>위원회는 의결로 집단분쟁조정 절차를 개시할 수 있고, 이 경우 <b>인터넷 홈페이지 또는 일간지</b>에 <mark>14일 이상</mark> 절차 개시를 공고해야 함</td></tr><tr><td>3. 참가신청</td><td>당사자가 아닌 정보주체 또는 개인정보처리자가 추가로 당사자로 참가하려면, 공고에서 정하는 <b>기간 내에 문서로</b> 신청</td></tr><tr><td>4. 조정결정</td><td>위원회는 당사자 중 공동의 이익을 대표하기에 적합한 <b>1인 또는 수인</b>을 <b>대표당사자</b>로 선임할 수 있고, 대표당사자를 상대로 조정절차 진행<br>개시 <b>공고가 종료된 날의 다음 날부터 <mark>60일 이내</mark></b>에 분쟁조정을 마쳐야 하며, 부득이한 사정이 있으면 기한 연장 가능<br>당사자는 조정안을 제시받은 날부터 <mark>15일 이내</mark>에 수락 여부를 알려야 하며, 알리지 않으면 <b>수락한 것으로 봄</b></td></tr><tr><td>5. 조정의 효력</td><td>조정이 성립되면 <b>재판상 화해와 동일한 효력</b> (일반 분쟁조정과 동일)</td></tr><tr><td>6. 보상권고</td><td>피신청인이 집단분쟁조정 내용을 수락한 경우, 위원회는 <b>당사자가 아닌 자로서 피해를 입은 정보주체</b>에 대한 <b>보상계획서</b>를 작성·제출하도록 권고할 수 있음<br>권고를 받은 처리자는 권고를 받은 날부터 <mark>15일 이내</mark>에 수락 여부를 위원회에 알려야 함<br>위원장은 절차에 참가하지 못한 정보주체가 보상받을 수 있도록 보상계획서를 일정 기간 인터넷 홈페이지 등으로 알릴 수 있음</td></tr></tbody></table></div>
+<div class="tablewrap"><table><thead><tr><th>숫자</th><th>의미</th></tr></thead><tbody><tr><td><b>50명</b> 이상</td><td>집단분쟁조정 신청 요건 — 권리침해를 입은 정보주체 수</td></tr><tr><td><b>14일</b> 이상</td><td>절차 개시 공고 기간</td></tr><tr><td><b>60일</b> 이내</td><td>공고 종료 다음 날부터 조정 완료 기한 (연장 가능)</td></tr><tr><td><b>15일</b> 이내</td><td>조정안 수락 여부 회신 (무회신 = 수락 간주) / 보상권고 수락 여부 회신</td></tr><tr><td><b>100명</b> 이상</td><td>비영리민간단체가 단체소송을 제기하려면 요청받아야 하는 정보주체 수 (다음 섹션)</td></tr></tbody></table></div>
+<div class="call ask"><div class="t">교안 내 불일치 — 집단분쟁조정을 신청할 수 있는 주체</div><p>교안 p.8 <b>표</b>는 “국가, 지방자치단체, 한국소비자원 또는 소비자단체, 사업자”라고 적었고, 같은 쪽 <b>순서도</b>는 “국가·지방자치단체·개인정보보호단체 및 기관·정보주체·개인정보처리자”라고 적었습니다. <span class="ext">개인정보보호법 제49조 ①의 문언은 순서도 쪽(국가 및 지방자치단체, 개인정보 보호단체 및 기관, 정보주체, 개인정보처리자)과 같습니다 — 제 법령 지식이며 교안에는 제49조 원문이 없습니다.</span> 시험에서는 교수님이 어느 쪽으로 설명했는지 확인이 필요합니다.</p></div>
+
+  </section>
+  <!-- 05 -->
+  <section id="s5">
+    <h2 class="st"><span class="sq">05</span>개인정보 단체소송 (제51조~제53조)</h2>
+    <div class="badges"><span class="badge prof">교안 p.11–14</span></div>
+    
+<div class="call"><div class="t">개인정보보호법 제51조(단체소송의 대상 등)</div><p>다음 각 호의 어느 하나에 해당하는 단체는 개인정보처리자가 제49조에 따른 <mark>집단분쟁조정을 거부하거나 집단분쟁조정의 결과를 수락하지 아니한 경우</mark>에는 법원에 <b>권리침해 행위의 금지ㆍ중지</b>를 구하는 소송(이하 “<b>단체소송</b>”)을 제기할 수 있다.</p><ul style="list-style:none;padding-left:6px"><li><b>1.</b> 「소비자기본법」 제29조에 따라 <b>공정거래위원회에 등록한 소비자단체</b>로서 다음 각 목의 요건을 모두 갖춘 단체</li><li>　가. 정관에 따라 상시적으로 정보주체의 권익증진을 주된 목적으로 하는 단체일 것</li><li>　나. 단체의 <b>정회원수가 1천명 이상</b>일 것</li><li>　다. 「소비자기본법」 제29조에 따른 <b>등록 후 3년</b>이 경과하였을 것</li><li><b>2.</b> 「비영리민간단체 지원법」 제2조에 따른 <b>비영리민간단체</b>로서 다음 각 목의 요건을 모두 갖춘 단체</li><li>　가. 법률상 또는 사실상 동일한 침해를 입은 <b>100명 이상</b>의 정보주체로부터 단체소송의 제기를 요청받을 것</li><li>　나. 정관에 개인정보 보호를 단체의 목적으로 명시한 후 <b>최근 3년 이상</b> 이를 위한 활동실적이 있을 것</li><li>　다. 단체의 <b>상시 구성원수가 5천명 이상</b>일 것</li><li>　라. <b>중앙행정기관에 등록</b>되어 있을 것</li></ul><p style="font-size:13px;color:var(--ink-3)">정관: 법인의 조직과 활동을 규율하는 근본규칙 (교안 p.11)</p></div>
+<div class="tablewrap"><table><thead><tr><th>요건</th><th>소비자단체 (1호)</th><th>비영리민간단체 (2호)</th></tr></thead><tbody><tr><td>근거·등록</td><td>소비자기본법 제29조, <b>공정거래위원회</b> 등록</td><td>비영리민간단체 지원법 제2조, <b>중앙행정기관</b> 등록</td></tr><tr><td>목적</td><td>정관상 상시적으로 정보주체 권익증진이 주된 목적</td><td>정관에 개인정보 보호 목적 명시 + 최근 3년 이상 활동실적</td></tr><tr><td>규모</td><td>정회원 <mark>1천명</mark> 이상</td><td>상시 구성원 <mark>5천명</mark> 이상</td></tr><tr><td>기간</td><td>등록 후 <b>3년</b> 경과</td><td>(활동실적 3년 이상)</td></tr><tr><td>피해자 요청</td><td>—</td><td>동일 침해 정보주체 <mark>100명</mark> 이상의 요청</td></tr></tbody></table></div>
+<div class="call"><div class="t">개인정보보호법 제52조(전속관할)</div><p>① 단체소송의 소는 피고의 <b>주된 사무소 또는 영업소</b>가 있는 곳, 주된 사무소나 영업소가 없는 경우에는 주된 업무담당자의 주소가 있는 곳의 <mark>지방법원 본원 합의부</mark>의 관할에 전속한다.</p><p>② 제1항을 외국사업자에 적용하는 경우 대한민국에 있는 이들의 주된 사무소ㆍ영업소 또는 업무담당자의 주소에 따라 정한다.</p></div>
+<div class="call"><div class="t">개인정보보호법 제53조(소송대리인의 선임)</div><p>단체소송의 원고는 <mark>변호사를 소송대리인으로 선임</mark>하여야 한다.</p></div>
+<div class="call"><div class="t">개인정보 단체소송규칙 제11조(소송대리인의 사임 등)</div><p>① 원고의 소송대리인 전원이 사망 또는 사임하거나 해임된 때에는 원고가 새로운 소송대리인을 선임할 때까지 <b>소송절차가 중지</b>된다.</p><p>② 제1항에 따라 소송절차가 중지된 경우 법원은 원고에게 <b>1개월 이상</b>의 기간을 정하여 변호사를 선임할 것을 명하여야 한다.</p><p>③ 원고가 제2항에 따른 명령을 받고도 정해진 기간 내에 변호사를 선임하지 아니한 때에는 법원은 결정으로 소를 <b>각하</b>하여야 한다.</p><p>④ 제3항의 결정에 대하여는 <b>즉시항고</b>를 할 수 있다.</p></div>
+<h3>단체소송과 집단소송의 차이 <span class="en">(교안 p.13 · p.14 동일 슬라이드)</span></h3>
+<div class="tablewrap"><table><thead><tr><th>구분</th><th>단체소송</th><th>집단소송</th></tr></thead><tbody><tr><td>개념</td><td>일정 자격을 갖춘 <b>‘단체’</b>가 전체 피해자들의 이익을 위해 소송을 제기하는 제도</td><td>여러 명의 피해자가 발생했을 때 <b>일부의 피해자</b>가 모든 피해자를 대표해서 제기하는 소송. 집단소송이 가능한 소송의 종류가 정해져 있음</td></tr><tr><td>청구권자</td><td>소비자단체, 비영리단체</td><td>이해관계가 밀접한 다수의 피해자집단 (대표당사자가 소송수행)</td></tr><tr><td>소송목적</td><td>위법행위의 <mark>금지·중지</mark></td><td>금전적 피해구제 (<mark>손해배상청구</mark>)</td></tr><tr><td>기대효과</td><td>피해의 <b>확산방지 및 예방</b></td><td>피해의 <b>사후적 구제</b></td></tr><tr><td>판결의 효과</td><td>· 다른 단체에게도 판결의 효력이 미침<br>· 패소하면 같은 일로 다른 단체도 단체소송을 할 수 없지만, 소비자 개인 또는 정보주체는 별도의 소송을 제기할 수 있음<br>· 참가신청을 하지 않은 피해자들은 승소하더라도 배상을 받을 수 없음</td><td>모든 피해자에게 판결의 효과가 미침 (단, <b>제외 신청</b>을 한 사람은 제외)</td></tr></tbody></table></div>
+
+  </section>
+  <!-- 06 -->
+  <section id="s6">
+    <h2 class="st"><span class="sq">06</span>개인정보 라이프사이클과 수집·이용 근거 (제15조 ①)</h2>
+    <div class="badges"><span class="badge prof">교안 p.15–19</span></div>
+    
+<p>교안 p.15 이후는 <b>개인정보 라이프사이클</b><span class="en">(lifecycle)</span> 관리입니다. 이번 교안은 그 첫 단계를 다룹니다.</p>
+<div class="tablewrap"><table><thead><tr><th>단계</th><th>교안 p.15 목록</th></tr></thead><tbody><tr><td>1</td><td><b>개인정보 수집 및 이용</b> ← 이번 교안 범위</td></tr><tr><td>2</td><td>개인정보 저장 및 관리</td></tr><tr><td>3</td><td>개인정보 제공</td></tr></tbody></table></div>
+<div class="call"><div class="t">개인정보보호법 제15조(개인정보의 수집ㆍ이용) 제1항</div><p>① 개인정보처리자는 다음 각 호의 어느 하나에 해당하는 경우에는 개인정보를 수집할 수 있으며 그 수집 목적의 범위에서 이용할 수 있다.</p><ul style="list-style:none;padding-left:6px"><li>1. 정보주체의 동의를 받은 경우</li><li>2. 법률에 특별한 규정이 있거나 법령상 의무를 준수하기 위하여 불가피한 경우</li><li>3. 공공기관이 법령 등에서 정하는 소관 업무의 수행을 위하여 불가피한 경우</li><li>4. 정보주체와 체결한 계약을 이행하거나 계약을 체결하는 과정에서 정보주체의 요청에 따른 조치를 이행하기 위하여 필요한 경우</li><li>5. 명백히 정보주체 또는 제3자의 급박한 생명, 신체, 재산의 이익을 위하여 필요하다고 인정되는 경우</li><li>6. 개인정보처리자의 정당한 이익을 달성하기 위하여 필요한 경우로서 명백하게 정보주체의 권리보다 우선하는 경우. 이 경우 개인정보처리자의 정당한 이익과 상당한 관련이 있고 합리적인 범위를 초과하지 아니하는 경우에 한한다.</li><li>7. 공중위생 등 공공의 안전과 안녕을 위하여 긴급히 필요한 경우</li></ul></div>
+
+<h3>① 법률에 특별한 규정 <span class="en">(교안 p.17)</span></h3>
+<ul><li>법률에서 개인정보의 수집·이용을 <b>구체적으로</b> 요구하거나 허용하고 있어야 함</li><li><mark>시행령, 시행규칙에서 규정하는 것은 포함되지 않음</mark></li></ul>
+<div class="tablewrap"><table><thead><tr><th>관련업무</th><th>근거</th></tr></thead><tbody><tr><td>채권추심</td><td>신용정보법 제40조</td></tr><tr><td>순보험요율 산출</td><td>보험업법 제176조</td></tr><tr><td>진료기록의 열람</td><td>자동차손해배상 보장법 제14조</td></tr><tr><td>병역판정검사</td><td>병역법 제11조의2</td></tr><tr><td>진료기록의 송부</td><td>의료법 제21조의2</td></tr></tbody></table></div>
+<ul><li><b>채권</b>: 금전에 대한 일정한 행위를 할 것을 요구할 수 있는 권리</li><li><b>채무</b>: 이에 대응하여 금전에 대한 일정한 행위를 해야 하는 의무</li><li><b>채권추심</b>: 채무자에 대한 소재파악 및 재산조사, 채권에 대한 변제 요구, 채무자로부터 변제 수령 등 채권의 만족을 얻기 위한 일체의 행위</li></ul>
+<div class="call"><div class="t">신용정보법 제40조(신용정보회사의 금지사항) 제1항 제4호</div><p>① 신용정보회사등은 다음 각 호의 행위를 하여서는 아니 된다.</p><ul style="list-style:none;padding-left:6px"><li>4. 특정인의 소재 및 연락처(이하 “소재등”)를 알아내는 행위. 다만, <b>채권추심회사가 그 업무를 하기 위하여</b> 특정인의 소재등을 알아내는 경우 또는 다른 법령에 따라 특정인의 소재등을 알아내는 것이 허용되는 경우에는 그러하지 아니하다.</li></ul></div>
+
+<h3>② 법령상 의무 준수 <span class="en">(교안 p.18)</span></h3>
+<ul><li>법령에서 개인정보처리자에게 일정한 의무를 부과하고 있는 경우로서 의무 이행을 위해 <b>불가피한</b> 경우</li><li><mark>시행령, 시행규칙에 따른 의무도 포함</mark></li></ul>
+<div class="tablewrap"><table><thead><tr><th>관련업무</th><th>근거</th></tr></thead><tbody><tr><td rowspan="1">본인확인 · 연령확인</td><td>정보통신망법 제44조의5 / 공직선거법 제82조의6 / 청소년보호법 제16조 · 제26조 · 제29조</td></tr></tbody></table></div>
+<div class="call"><div class="t">정보통신망법 제44조의5(게시판 이용자의 본인 확인) 제1항</div><p>① 다음 각 호의 어느 하나에 해당하는 자가 게시판을 설치ㆍ운영하려면 그 게시판 이용자의 본인 확인을 위한 방법 및 절차의 마련 등 대통령령으로 정하는 필요한 조치(이하 “본인확인조치”)를 하여야 한다.</p></div>
+<div class="call"><div class="t">청소년보호법 제16조(판매 금지 등) 제1항</div><p>① 청소년유해매체물로서 대통령령으로 정하는 매체물을 판매ㆍ대여ㆍ배포하거나 시청ㆍ관람ㆍ이용하도록 제공하려는 자는 그 상대방의 <b>나이 및 본인 여부를 확인</b>하여야 하고, 청소년에게 판매ㆍ대여ㆍ배포하거나 시청ㆍ관람ㆍ이용하도록 제공하여서는 아니 된다.</p></div>
+<div class="call warn"><div class="t">헷갈리는 지점 — ‘법률’과 ‘법령’</div><p>제15조 ①2호 앞부분 <b>“법률에 특별한 규정”</b>은 국회가 만든 <b>법률만</b> 해당하고 시행령·시행규칙은 포함되지 않습니다. 뒷부분 <b>“법령상 의무”</b>는 <b>시행령·시행규칙상 의무도 포함</b>합니다.</p></div>
+
+<h3>③ 계약 · 급박한 이익 · 정당한 이익 <span class="en">(교안 p.19)</span></h3>
+<div class="tablewrap"><table><thead><tr><th>근거</th><th>설명·예시</th></tr></thead><tbody><tr><td><b>정보주체와의 계약 체결·이행</b> (4호)</td><td>· 계약 체결·이행을 위해 동의를 받도록 하면 경제적 활동에 막대한 지장을 초래하고 동의 획득 비용만 증가시킴<br>· ‘계약체결’에는 <b>준비단계도 포함</b><br>· ‘계약이행’은 물건의 배송·전달·서비스 이행 같은 <b>주된 의무</b>뿐 아니라 경품배달, 포인트 관리, 애프터서비스 등 <b>부수의무</b>도 포함</td></tr><tr><td><b>급박한 생명·신체·재산상 이익</b> (5호)</td><td>· 조난, 홍수 등으로 실종되거나 고립된 사람을 구조<br>· 아파트에 화재가 발생한 경우 집안에 있는 사람 구조<br>· 의식불명에 빠진 환자의 수술 등 의료조치<br>· 보이스피싱에 걸린 것으로 보여 은행이 임시로 자금이체 중단</td></tr><tr><td><b>개인정보처리자의 정당한 이익 달성</b> (6호)</td><td>· 요금 징수, 정산, 채권추심, 소 제기 및 진행하는 경우<br>· 도난방지, 시설안전 등을 위해 CCTV를 설치·운영하는 경우</td></tr></tbody></table></div>
+<div class="call"><div class="t">개인정보보호법 제58조(적용의 일부 제외) 제3항</div><p>③ 개인정보처리자가 <b>동창회, 동호회 등 친목 도모</b>를 위한 단체를 운영하기 위하여 개인정보를 처리하는 경우에는 <mark>제15조, 제30조 및 제31조를 적용하지 아니한다</mark>.</p><p style="font-size:13px;color:var(--ink-3)">제15조 = 수집·이용 근거, 제30조 = 처리방침, 제31조 = 보호책임자 (4주차).</p></div>
+
+  </section>
+  <!-- 07 -->
+  <section id="s7">
+    <h2 class="st"><span class="sq">07</span>동의 시 고지사항과 추가적 이용 (제15조 ②③)</h2>
+    <div class="badges"><span class="badge prof">교안 p.20–21</span></div>
+    
+<div class="call"><div class="t">개인정보보호법 제15조 제2항·제3항</div><p>② 개인정보처리자는 제1항제1호에 따른 동의를 받을 때에는 다음 각 호의 사항을 정보주체에게 알려야 한다. 다음 각 호의 어느 하나의 사항을 <b>변경하는 경우에도</b> 이를 알리고 동의를 받아야 한다.</p><ul style="list-style:none;padding-left:6px"><li>1. 개인정보의 수집ㆍ이용 <b>목적</b></li><li>2. 수집하려는 개인정보의 <b>항목</b></li><li>3. 개인정보의 <b>보유 및 이용 기간</b></li><li>4. <b>동의를 거부할 권리</b>가 있다는 사실 및 동의 거부에 따른 불이익이 있는 경우에는 그 불이익의 내용</li></ul><p>③ 개인정보처리자는 <b>당초 수집 목적과 합리적으로 관련된 범위</b>에서 정보주체에게 불이익이 발생하는지 여부, 암호화 등 안전성 확보에 필요한 조치를 하였는지 여부 등을 고려하여 대통령령으로 정하는 바에 따라 <mark>정보주체의 동의 없이 개인정보를 이용</mark>할 수 있다.</p></div>
+<div class="call"><div class="t">개인정보보호법 시행령 제14조의2(개인정보의 추가적인 이용ㆍ제공의 기준 등)</div><p>① 개인정보처리자는 법 제15조제3항 또는 제17조제4항에 따라 정보주체의 동의 없이 개인정보를 이용 또는 제공(이하 “<b>개인정보의 추가적인 이용 또는 제공</b>”)하려는 경우에는 다음 각 호의 사항을 고려해야 한다.</p><ul style="list-style:none;padding-left:6px"><li>1. 당초 수집 목적과 <b>관련성</b>이 있는지 여부</li><li>2. 개인정보를 수집한 정황 또는 처리 관행에 비추어 볼 때 추가적인 이용 또는 제공에 대한 <b>예측 가능성</b>이 있는지 여부</li><li>3. 정보주체의 이익을 <b>부당하게 침해</b>하는지 여부</li><li>4. <b>가명처리 또는 암호화</b> 등 안전성 확보에 필요한 조치를 하였는지 여부</li></ul><p>② 개인정보처리자는 개인정보의 추가적인 이용 또는 제공이 <b>지속적으로 발생</b>하는 경우에는 제1항 각 호의 고려사항에 대한 판단 기준을 법 제30조제1항에 따른 <b>개인정보 처리방침에 공개</b>하고, 법 제31조제1항에 따른 <b>개인정보 보호책임자</b>가 해당 기준에 따라 추가적인 이용 또는 제공을 하고 있는지 여부를 점검해야 한다.</p></div>
+<h3>추가적인 제공 예시 <span class="en">(교안 p.21)</span></h3>
+<ul><li>택시 중개서비스 앱을 이용하기 위해 정보주체의 개인정보를 제3자인 <b>택시기사</b>에게 제공하는 경우</li><li>인터넷 쇼핑몰 사업자가 정보주체의 개인정보를 쇼핑몰에 입점한 제3자인 <b>상품 판매자</b>에게 배송 등 계약 이행을 목적으로 제공하는 경우</li><li>화장품을 판매한 소매점이 소비자 보호 목적의 <b>리콜</b> 실시를 위해 <b>제조회사</b>에 제공하는 경우</li></ul>
+
+  </section>
+  <!-- 08 -->
+  <section id="s8">
+    <h2 class="st"><span class="sq">08</span>동의를 받는 방법 (제22조 · 시행령 제17조)</h2>
+    <div class="badges"><span class="badge prof">교안 p.22–27</span></div>
+    
+<div class="call"><div class="t">개인정보보호법 제22조(동의를 받는 방법) 제1항</div><p>① 개인정보처리자는 이 법에 따른 개인정보의 처리에 대하여 정보주체(제22조의2제1항에 따른 법정대리인을 포함)의 동의를 받을 때에는 각각의 동의 사항을 <b>구분</b>하여 정보주체가 이를 명확하게 인지할 수 있도록 알리고 동의를 받아야 한다. 이 경우 다음 각 호의 경우에는 동의 사항을 구분하여 <mark>각각 동의</mark>를 받아야 한다.</p><ul style="list-style:none;padding-left:6px"><li>1. 제15조제1항제1호에 따라 동의를 받는 경우 (개인정보의 <b>수집·이용</b>)</li><li>2. 제17조제1항제1호에 따라 동의를 받는 경우 (개인정보의 <b>제공</b>)</li><li>3. 제18조제2항제1호에 따라 동의를 받는 경우 (개인정보의 <b>목적 외 이용·제공</b> 제한)</li><li>4. 제19조제1호에 따라 동의를 받는 경우 (개인정보를 <b>제공받은 자의 이용·제공</b> 제한)</li><li>5. 제23조제1항제1호에 따라 동의를 받는 경우 (<b>민감정보</b>의 처리 제한)</li><li>6. 제24조제1항제1호에 따라 동의를 받는 경우 (<b>고유식별정보</b>의 처리 제한)</li><li>7. 재화나 서비스를 <b>홍보하거나 판매를 권유</b>하기 위하여 개인정보의 처리에 대한 동의를 받으려는 경우</li><li>8. 그 밖에 정보주체를 보호하기 위하여 동의 사항을 구분하여 동의를 받아야 할 필요가 있는 경우로서 대통령령으로 정하는 경우</li></ul></div>
+<div class="call"><div class="t">개인정보보호법 시행령 제17조(동의를 받는 방법) 제1항·제2항</div><p>① 개인정보처리자는 법 제22조에 따라 정보주체의 동의를 받을 때에는 다음 각 호의 조건을 <b>모두</b> 충족해야 한다.</p><ul style="list-style:none;padding-left:6px"><li>1. 정보주체가 <b>자유로운 의사</b>에 따라 동의 여부를 결정할 수 있을 것</li><li>2. 동의를 받으려는 내용이 <b>구체적이고 명확</b>할 것</li><li>3. 그 내용을 <b>쉽게 읽고 이해</b>할 수 있는 문구를 사용할 것</li><li>4. 동의 여부를 <b>명확하게 표시</b>할 수 있는 방법을 정보주체에게 제공할 것</li></ul><p>② 개인정보처리자는 다음 각 호의 어느 하나에 해당하는 방법으로 정보주체의 동의를 받아야 한다.</p><ul style="list-style:none;padding-left:6px"><li>1. 동의 내용이 적힌 서면을 정보주체에게 직접 발급하거나 우편 또는 팩스 등의 방법으로 전달하고, 정보주체가 서명하거나 날인한 동의서를 받는 방법</li><li>2. 전화를 통하여 동의 내용을 정보주체에게 알리고 동의의 의사표시를 확인하는 방법</li><li>3. 전화를 통하여 동의 내용을 알리고 인터넷주소 등을 통하여 동의 사항을 확인하도록 한 후 다시 전화를 통하여 동의의 의사표시를 확인하는 방법</li><li>4. 인터넷 홈페이지 등에 동의 내용을 게재하고 정보주체가 동의 여부를 표시하도록 하는 방법</li><li>5. 동의 내용이 적힌 전자우편을 발송하여 정보주체로부터 동의의 의사표시가 적힌 전자우편을 받는 방법</li><li>6. 그 밖에 제1호부터 제5호까지의 규정에 따른 방법에 준하는 방법으로 동의 내용을 알리고 동의의 의사표시를 확인하는 방법</li></ul></div>
+<h3>5가지 방법과 준하는 방법 추가 설명 <span class="en">(교안 p.24)</span></h3>
+<div class="tablewrap"><table><thead><tr><th>방법</th><th>설명</th></tr></thead><tbody><tr><td>서면</td><td>가입신청서 등의 서면에 직접 성명을 기재하고 인장을 찍거나 자필 서명</td></tr><tr><td>인터넷 화면</td><td>인터넷 웹사이트 화면에서 ‘동의’ 클릭</td></tr><tr><td>전화 통화</td><td>전화상으로 개인정보 수집에 대한 정보주체의 동의</td></tr><tr><td>문자 메시지</td><td>SMS, 알림톡 등을 통한 수집 동의</td></tr><tr><td>ARS</td><td>전화 ARS를 통해 개인정보를 수집</td></tr><tr><td>전자우편</td><td>동의 내용이 기재된 전자우편을 발송한 다음 동의 의사가 표시된 전자우편을 받는 방법</td></tr><tr><td>공개정보</td><td><b>사회통념상 동의 의사가 있었다고 판단</b>되는 경우 — 명함을 주고받는 행위, 공공기관 홈페이지에 담당직원의 연락처를 기재한 경우 등</td></tr></tbody></table></div>
+<div class="call"><div class="t">개인정보보호법 제22조 제2항~제7항</div><p>② 개인정보처리자는 제1항의 동의를 <b>서면</b>(「전자문서 및 전자거래 기본법」 제2조제1호에 따른 <b>전자문서를 포함</b>)으로 받을 때에는 개인정보의 수집ㆍ이용 목적, 수집ㆍ이용하려는 개인정보의 항목 등 대통령령으로 정하는 <b>중요한 내용</b>을 보호위원회가 고시로 정하는 방법에 따라 <b>명확히 표시</b>하여 알아보기 쉽게 하여야 한다.</p><p>③ 개인정보처리자는 정보주체의 <b>동의 없이 처리할 수 있는</b> 개인정보에 대해서는 그 항목과 처리의 법적 근거를 동의를 받아 처리하는 개인정보와 <b>구분</b>하여 제30조제2항에 따라 공개하거나 전자우편 등 대통령령으로 정하는 방법에 따라 정보주체에게 알려야 한다. 이 경우 동의 없이 처리할 수 있는 개인정보라는 <mark>입증책임은 개인정보처리자</mark>가 부담한다.</p><p>④ 삭제</p><p>⑤ 개인정보처리자는 정보주체가 <b>선택적으로 동의</b>할 수 있는 사항을 동의하지 아니하거나 제1항제3호(목적 외 이용·제공) 및 제7호(홍보·판매권유)에 따른 동의를 하지 아니한다는 이유로 정보주체에게 재화 또는 서비스의 <mark>제공을 거부하여서는 아니 된다</mark>.</p><p>⑥ 삭제</p><p>⑦ 제1항부터 제5항까지에서 규정한 사항 외에 정보주체의 동의를 받는 세부적인 방법에 관하여 필요한 사항은 개인정보의 수집매체 등을 고려하여 대통령령으로 정한다.</p></div>
+<div class="call"><div class="t">개인정보보호법 시행령 제17조 제3항 (서면 동의 시 “중요한 내용”)</div><p>③ 법 제22조제2항에서 “대통령령으로 정하는 중요한 내용”이란 다음 각 호의 사항을 말한다.</p><ul style="list-style:none;padding-left:6px"><li>1. 개인정보의 수집ㆍ이용 목적 중 재화나 서비스의 <b>홍보 또는 판매 권유</b> 등을 위하여 해당 개인정보를 이용하여 정보주체에게 연락할 수 있다는 사실</li><li>2. 처리하려는 개인정보의 항목 중 다음 각 목의 사항</li><li>　가. <b>민감정보</b></li><li>　나. 제19조제2호부터 제4호까지의 규정에 따른 <b>여권번호, 운전면허의 면허번호 및 외국인등록번호</b></li><li>3. 개인정보의 <b>보유 및 이용 기간</b>(제공 시에는 제공받는 자의 보유 및 이용 기간)</li><li>4. 개인정보를 <b>제공받는 자</b> 및 제공받는 자의 개인정보 이용 목적</li></ul></div>
+<div class="call"><div class="t">개인정보 처리 방법에 관한 고시 제4조(서면 동의 시 중요한 내용의 표시 방법)</div><p>법 제22조제2항에서 “보호위원회가 고시로 정하는 방법”이란 다음 각 호의 방법을 통해 종이 인쇄물, 컴퓨터 표시화면 등 서면 동의를 요구하는 매체의 특성과 정보주체의 이용환경 등을 고려하여 정보주체가 쉽게 알아볼 수 있도록 표시하는 방법을 말한다.</p><ul style="list-style:none;padding-left:6px"><li>1. <b>글씨의 크기, 색깔, 굵기 또는 밑줄</b> 등을 통하여 그 내용이 명확히 표시되도록 할 것</li><li>2. 동의 사항이 많아 중요한 내용이 명확히 구분되기 어려운 경우에는 중요한 내용이 쉽게 확인될 수 있도록 그 밖의 내용과 <b>별도로 구분</b>하여 표시할 것</li></ul></div>
+<div class="call"><div class="t">개인정보보호법 시행령 제17조 제5항</div><p>⑤ 법 제22조제3항 전단에서 “대통령령으로 정하는 방법”이란 서면, 전자우편, 팩스, 전화, 문자전송 또는 이에 상당하는 방법(이하 “<b>서면등의 방법</b>”)을 말한다.</p></div>
+<p style="font-size:13px;color:var(--ink-3)">시행령 제17조 ③2호 나목은 제19조 <b>제2~4호</b>만 적고 제1호(주민등록번호)는 뺐습니다. <span class="ext">주민등록번호는 동의만으로는 처리할 수 없기 때문(3주차 제24조의2)으로 보입니다 — 제 추론입니다.</span></p>
+
+  </section>
+  <!-- 09 -->
+  <section id="s9">
+    <h2 class="st"><span class="sq">09</span>아동의 개인정보 보호 (제22조의2)</h2>
+    <div class="badges"><span class="badge prof">교안 p.28–29</span></div>
+    
+<div class="call"><div class="t">개인정보보호법 제22조의2(아동의 개인정보 보호)</div><p>① 개인정보처리자는 <mark>만 14세 미만 아동</mark>의 개인정보를 처리하기 위하여 이 법에 따른 동의를 받아야 할 때에는 그 <b>법정대리인의 동의</b>를 받아야 하며, 법정대리인이 동의하였는지를 <b>확인</b>하여야 한다.</p><p>② 제1항에도 불구하고 법정대리인의 동의를 받기 위하여 필요한 최소한의 정보로서 대통령령으로 정하는 정보는 법정대리인의 동의 없이 <b>해당 아동으로부터 직접 수집</b>할 수 있다.</p><p>③ 개인정보처리자는 만 14세 미만의 아동에게 개인정보 처리와 관련한 사항의 고지 등을 할 때에는 <b>이해하기 쉬운 양식과 명확하고 알기 쉬운 언어</b>를 사용하여야 한다.</p><p>④ 제1항부터 제3항까지에서 규정한 사항 외에 동의 및 동의 확인 방법 등에 필요한 사항은 대통령령으로 정한다.</p></div>
+<div class="call"><div class="t">개인정보보호법 시행령 제17조의2(아동의 개인정보 보호) 제1항 — 법정대리인 동의 확인 방법</div><p>① 개인정보처리자는 법 제22조의2제1항에 따라 법정대리인이 동의했는지를 확인하는 경우에는 다음 각 호의 어느 하나에 해당하는 방법으로 해야 한다.</p><ul style="list-style:none;padding-left:6px"><li>1. 동의 내용을 게재한 인터넷 사이트에 법정대리인이 동의 여부를 표시하도록 하고, 처리자가 그 동의 표시를 확인했음을 <b>법정대리인의 휴대전화 문자메시지</b>로 알리는 방법</li><li>2. 동의 내용을 게재한 인터넷 사이트에 법정대리인이 동의 여부를 표시하도록 하고 <b>법정대리인의 신용카드ㆍ직불카드 등의 카드정보</b>를 제공받는 방법</li><li>3. 동의 내용을 게재한 인터넷 사이트에 법정대리인이 동의 여부를 표시하도록 하고 <b>법정대리인의 휴대전화 본인인증</b> 등을 통하여 본인 여부를 확인하는 방법</li><li>4. 동의 내용이 적힌 <b>서면</b>을 법정대리인에게 직접 발급하거나 우편 또는 팩스를 통하여 전달하고, 법정대리인이 서명날인 후 제출하도록 하는 방법</li><li>5. 동의 내용이 적힌 <b>전자우편</b>을 발송하고 법정대리인으로부터 동의의 의사표시가 적힌 전자우편을 전송받는 방법</li><li>6. <b>전화</b>를 통하여 동의 내용을 법정대리인에게 알리고 동의를 받거나 인터넷주소 등 동의 내용을 확인할 수 있는 방법을 안내하고 재차 전화 통화를 통하여 동의를 받는 방법</li><li>7. 그 밖에 제1호부터 제6호까지의 규정에 준하는 방법으로서 법정대리인에게 동의 내용을 알리고 동의의 의사표시를 확인하는 방법</li></ul></div>
+<p>7가지 방법 모두 <b>아동이 아니라 법정대리인</b>의 휴대전화·카드·서명·이메일·전화로 확인합니다.</p>
+
+  </section>
+  <!-- 10 -->
+  <section id="s10">
+    <h2 class="st"><span class="sq">10</span>개인정보 간접 수집 — 수집 출처 통지 (제20조)</h2>
+    <div class="badges"><span class="badge prof">교안 p.30–31</span></div>
+    
+<div class="call"><div class="t">개인정보보호법 제20조(정보주체 이외로부터 수집한 개인정보의 수집 출처 등 통지)</div><p>① 개인정보처리자가 <b>정보주체 이외로부터</b> 수집한 개인정보를 처리하는 때에는 <mark>정보주체의 요구가 있으면 즉시</mark> 다음 각 호의 모든 사항을 정보주체에게 알려야 한다.</p><ul style="list-style:none;padding-left:6px"><li>1. 개인정보의 <b>수집 출처</b></li><li>2. 개인정보의 <b>처리 목적</b></li><li>3. 제37조에 따른 개인정보 <b>처리의 정지를 요구하거나 동의를 철회할 권리</b>가 있다는 사실</li></ul><p>② 제1항에도 불구하고 처리하는 개인정보의 종류ㆍ규모, 종업원 수 및 매출액 규모 등을 고려하여 대통령령으로 정하는 기준에 해당하는 개인정보처리자가 제17조제1항제1호에 따라 정보주체 이외로부터 개인정보를 수집하여 처리하는 때에는 제1항 각 호의 모든 사항을 정보주체에게 <mark>알려야 한다</mark>. 다만, 수집한 정보에 연락처 등 정보주체에게 알릴 수 있는 개인정보가 포함되지 아니한 경우에는 그러하지 아니하다.</p><p>③ 제2항 본문에 따라 알리는 경우 정보주체에게 알리는 시기ㆍ방법 및 절차 등 필요한 사항은 대통령령으로 정한다.</p><p>④ 제1항과 제2항 본문은 다음 각 호의 어느 하나에 해당하는 경우에는 적용하지 아니한다. 다만, 이 법에 따른 정보주체의 권리보다 명백히 우선하는 경우에 한한다.</p><ul style="list-style:none;padding-left:6px"><li>1. 통지를 요구하는 대상이 되는 개인정보가 제32조제2항 각 호의 어느 하나에 해당하는 개인정보파일에 포함되어 있는 경우</li><li>2. 통지로 인하여 다른 사람의 생명ㆍ신체를 해할 우려가 있거나 다른 사람의 재산과 그 밖의 이익을 부당하게 침해할 우려가 있는 경우</li></ul></div>
+<div class="call"><div class="t">개인정보보호법 시행령 제15조의2(개인정보 수집 출처 등 통지 대상ㆍ방법ㆍ절차)</div><p>① 법 제20조제2항 본문에서 “대통령령으로 정하는 기준에 해당하는 개인정보처리자”란 다음 각 호의 어느 하나에 해당하는 개인정보처리자를 말한다. 이 경우 정보주체의 수는 <b>전년도 말 기준 직전 3개월 간 일일평균</b>을 기준으로 산정한다.</p><ul style="list-style:none;padding-left:6px"><li>1. <mark>5만명 이상</mark>의 정보주체에 관하여 <b>민감정보 또는 고유식별정보</b>를 처리하는 자</li><li>2. <mark>100만명 이상</mark>의 정보주체에 관하여 개인정보를 처리하는 자</li></ul><p>② 제1항 각 호의 어느 하나에 해당하는 개인정보처리자는 법 제20조제1항 각 호의 사항을 다음 각 호의 어느 하나에 해당하는 방법으로 개인정보를 제공받은 날부터 <mark>3개월 이내</mark>에 정보주체에게 알려야 한다. 다만, 법 제17조제2항제1호부터 제4호까지의 사항에 대하여 같은 조 제1항제1호에 따라 정보주체의 동의를 받은 범위에서 <b>연 2회 이상 주기적으로</b> 개인정보를 제공받아 처리하는 경우에는 개인정보를 제공받은 날부터 3개월 이내에 알리거나 그 동의를 받은 날부터 기산하여 <b>연 1회 이상</b> 정보주체에게 알려야 한다.</p><ul style="list-style:none;padding-left:6px"><li>1. 서면ㆍ전자우편ㆍ전화ㆍ문자전송 등 정보주체가 통지 내용을 쉽게 확인할 수 있는 방법</li><li>2. 재화 및 서비스를 제공하는 과정에서 정보주체가 쉽게 알 수 있도록 <b>알림창</b>을 통해 알리는 방법</li></ul></div>
+<div class="tablewrap"><table><thead><tr><th>구분</th><th>제20조 ① 요구 시 통지</th><th>제20조 ② 의무 통지</th></tr></thead><tbody><tr><td>대상 처리자</td><td>모든 처리자</td><td>민감·고유식별정보 5만명 이상 또는 개인정보 100만명 이상 (직전 3개월 일일평균)</td></tr><tr><td>계기</td><td>정보주체의 <b>요구</b></td><td>요구 없이 (제17조 ①1 동의로 제공받은 경우)</td></tr><tr><td>시기</td><td><b>즉시</b></td><td>제공받은 날부터 <b>3개월 이내</b> (주기적 제공이면 연 1회 이상도 가능)</td></tr><tr><td>알릴 내용</td><td>수집 출처 · 처리 목적 · 처리정지 요구/동의 철회 권리</td><td>같음</td></tr></tbody></table></div>
+
+  </section>
+  <!-- 11 -->
+  <section id="sg">
+    <h2 class="st"><span class="sq">11</span>용어 정리</h2>
+    
+    <div class="terms"><div class="term"><b>분쟁조정</b><span class="e">dispute mediation</span><p>분쟁조정위원회가 조정안을 제시해 분쟁을 해결. 성립 시 재판상 화해 효력.</p></div><div class="term"><b>재판상 화해</b><span class="e">judicial settlement</span><p>확정판결과 같은 효력. 이행하지 않으면 집행문을 받아 강제집행 가능.</p></div><div class="term"><b>제척·기피·회피</b><span class="e">exclusion · challenge · recusal</span><p>사유가 있으면 자동 배제 / 당사자 신청으로 배제 / 위원 스스로 빠짐.</p></div><div class="term"><b>집단분쟁조정</b><span class="e">collective dispute mediation</span><p>정보주체 50명 이상 + 쟁점 공통. 14일 공고, 60일 이내 완료.</p></div><div class="term"><b>단체소송</b><span class="e">organizational action</span><p>자격 있는 단체가 권리침해 행위의 금지·중지를 구하는 소송. 집단분쟁조정 거부·불수락이 전제.</p></div><div class="term"><b>집단소송</b><span class="e">class action</span><p>일부 피해자가 전체를 대표해 손해배상을 청구. 제외신청자 외 모두에게 효력.</p></div><div class="term"><b>법정대리인</b><span class="e">legal guardian</span><p>만 14세 미만 아동의 개인정보 처리 동의 주체.</p></div><div class="term"><b>간접 수집</b><span class="e">indirect collection</span><p>정보주체 이외로부터 수집. 출처·목적·처리정지권을 통지해야 함.</p></div></div>
+  </section>
+  <!-- 12 -->
+  <section id="sq">
+    <h2 class="st"><span class="sq">12</span>확인 필요</h2>
+    
+    
+<div class="call ask"><div class="t">1. 집단분쟁조정 신청 주체 — 미해결</div><p>교안 p.8의 표와 순서도가 서로 다릅니다(04번 섹션). 교수님이 어느 쪽으로 설명했는지 강의에서 확인이 필요합니다.</p></div>
+<div class="call ask"><div class="t">2. 단체소송 “판결의 효과” 셋째 항목 — 미해결</div><p>교안 p.13은 단체소송 칸에 “참가신청을 하지 않은 피해자들은 승소하더라도 배상을 받을 수 없음”이라고 적었습니다. 그런데 같은 표에서 단체소송의 목적은 손해배상이 아니라 <b>금지·중지</b>입니다. 이 문장이 “단체소송으로는 개인 배상을 받지 못한다”는 뜻인지, 교수님 설명을 확인해야 합니다. 본문은 교안 그대로 두었습니다.</p></div>
+<div class="call quote"><div class="t">3. 교안 구성 — 참고</div><p>이번 교안 표지는 「개인정보 라이프사이클 관리」이지만 p.2–14는 분쟁조정·단체소송(보호 제도)입니다. 수업계획서 5주차(정보통신망법 특례)와도 다릅니다. p.14는 p.13과 같은 슬라이드입니다.</p></div>
+
+  </section>
+  <!-- 13 -->
+  <section id="sx">
+    <h2 class="st"><span class="sq">13</span>예상 문제</h2>
+    
+    <div class="q"><div class="qh"><span class="qn">Q1</span><span>집단분쟁조정 개시 공고가 10월 1일부터 10월 14일까지(14일간) 이루어졌다. 위원회가 분쟁조정을 마쳐야 하는 기한은? (연장 없음, 공고 종료 다음 날을 1일째로 계산)</span><span class="type">계산</span></div><div class="ans"><span class="lab">정답 12월 13일</span>공고 종료일 10/14의 다음 날인 10/15가 1일째입니다. 10월 15~31일 = 17일, 11월 = 30일(누적 47일), 12월 13일이 60일째입니다.</div></div><div class="q"><div class="qh"><span class="qn">Q2</span><span>분쟁조정 당사자가 “위원 A는 상대방 회사의 자문을 했으니 빼 달라”고 위원장에게 신청했다. 이 제도와, 이에 대한 결정 주체는?</span><span class="type">객관식</span></div><ol class="ch"><li>제척 — 위원회 의결</li><li>기피 — 위원장 단독</li><li>회피 — 위원 본인</li><li>기피 — 위원회 의결</li></ol><div class="ans"><span class="lab">정답 ②</span>당사자가 특정 위원의 배제를 요구하는 것은 기피이며, 기피신청에 대한 결정은 위원장이 단독으로 합니다. 제척은 사유가 있으면 당연히 배제, 회피는 위원 본인이 스스로 빠지는 것입니다.</div></div><div class="q"><div class="qh"><span class="qn">Q3</span><span>단체소송과 집단소송을 소송목적, 기대효과, 판결의 효과 측면에서 비교하시오.</span><span class="type">서술형</span></div><div class="ans"><span class="lab">모범답안</span>단체소송은 자격을 갖춘 단체가 위법행위의 금지·중지를 구하며 피해 확산 방지와 예방을 기대하고, 판결 효력이 다른 단체에도 미친다(패소 시 다른 단체도 같은 일로 단체소송 불가, 개인은 별도 소송 가능). 집단소송은 일부 피해자가 전체를 대표해 손해배상을 청구하며 피해의 사후적 구제를 기대하고, 제외신청자를 제외한 모든 피해자에게 판결 효과가 미친다.</div></div><div class="q"><div class="qh"><span class="qn">Q4</span><span>비영리민간단체가 개인정보 단체소송을 제기하기 위한 요건으로 <b>틀린</b> 것은?</span><span class="type">객관식</span></div><ol class="ch"><li>동일한 침해를 입은 100명 이상의 정보주체로부터 제기를 요청받을 것</li><li>정관에 개인정보 보호 목적을 명시한 후 최근 3년 이상 활동실적</li><li>상시 구성원수 1천명 이상</li><li>중앙행정기관에 등록되어 있을 것</li></ol><div class="ans"><span class="lab">정답 ③</span>비영리민간단체의 요건은 상시 구성원수 5천명 이상입니다. 1천명 이상은 소비자단체(정회원수) 요건입니다.</div></div><div class="q"><div class="qh"><span class="qn">Q5</span><span>정보주체의 동의를 받아 개인정보를 수집할 때 알려야 할 사항 4가지를 쓰시오.</span><span class="type">서술형</span></div><div class="ans"><span class="lab">모범답안</span>① 수집·이용 목적 ② 수집하려는 항목 ③ 보유 및 이용 기간 ④ 동의를 거부할 권리가 있다는 사실 및 거부에 따른 불이익이 있으면 그 내용 (제15조 ②). 이 중 하나를 변경할 때도 알리고 다시 동의를 받아야 한다.</div></div><div class="q"><div class="qh"><span class="qn">Q6</span><span>만 14세 미만 아동의 법정대리인 동의를 확인하는 방법으로 시행령 제17조의2에 <b>없는</b> 것은?</span><span class="type">객관식</span></div><ol class="ch"><li>사이트에 법정대리인이 동의 표시 + 법정대리인 휴대전화 문자로 확인 사실 통지</li><li>사이트에 동의 표시 + 법정대리인의 신용카드 정보 제공</li><li>서면 발급 후 법정대리인이 서명날인하여 제출</li><li>사이트에 동의 표시 + 아동 본인의 휴대전화 문자로 확인 사실 통지</li></ol><div class="ans"><span class="lab">정답 ④</span>확인 수단은 모두 법정대리인의 것(휴대전화 문자·본인인증, 카드정보, 서면, 전자우편, 전화)이어야 합니다. 아동 본인의 휴대전화로 알리는 방법은 없습니다.</div></div>
+  </section>
+
+  <footer><span>개인정보보호법률이해 · 5주차 1차시 · 2026.09.29</span><span>jaealee.com</span></footer>
+</div>
+
+<!-- ═══════════ 단어장 뷰 ═══════════ -->
+<div id="viewVocab" hidden>
+  <div class="hero" data-w="A–Z">
+    <span class="chip">5주차 1차시 단어장</span>
+    <h1>개인정보보호법률이해 필수 용어</h1>
+    <p class="sub">이번 차시 교안에 나온 개념 중 영문 법령·가이드라인·논문에서 다시 만날 단어만 골랐습니다.</p>
+  </div>
+
+  <div class="vhead">
+    <input type="search" id="vq" placeholder="단어 · 뜻으로 찾기">
+    <button class="tbtn" id="maskBtn">뜻 가리기</button>
+    <button class="tbtn" id="quizBtn">퀴즈 풀기</button>
+    <span style="font-size:13px;color:var(--ink-3);font-weight:600" id="vcount"></span>
+  </div>
+
+  <ul class="vlist" id="vlist">
+    <li class="vword">
+      <div><span class="w">dispute</span><span class="ipa">/dɪˈspjuːt/</span><span class="pos">n.</span></div>
+      <div><p class="mean">분쟁 — 서로 권리를 다투는 일</p>
+      <p class="ex">They sent the <b>dispute</b> to the committee.<span class="ko">그들은 그 분쟁을 위원회에 보냈다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">mediation</span><span class="ipa">/ˌmiːdiˈeɪʃn/</span><span class="pos">n.</span></div>
+      <div><p class="mean">조정 — 제3자가 합의를 도와 분쟁을 푸는 것</p>
+      <p class="ex"><b>Mediation</b> is faster and cheaper than a lawsuit.<span class="ko">조정은 소송보다 빠르고 싸다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">litigation</span><span class="ipa">/ˌlɪtɪˈɡeɪʃn/</span><span class="pos">n.</span></div>
+      <div><p class="mean">소송 — 법원에서 다투는 절차</p>
+      <p class="ex">The group started <b>litigation</b> against the company.<span class="ko">그 단체는 회사를 상대로 소송을 시작했다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">plaintiff</span><span class="ipa">/ˈpleɪntɪf/</span><span class="pos">n.</span></div>
+      <div><p class="mean">원고 — 소송을 제기한 사람</p>
+      <p class="ex">The <b>plaintiff</b> must hire a lawyer.<span class="ko">원고는 변호사를 선임해야 한다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">jurisdiction</span><span class="ipa">/ˌdʒʊrɪsˈdɪkʃn/</span><span class="pos">n.</span></div>
+      <div><p class="mean">관할 — 어느 법원이 사건을 맡는지</p>
+      <p class="ex">The district court has <b>jurisdiction</b> over the case.<span class="ko">그 사건은 지방법원이 관할한다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">consent</span><span class="ipa">/kənˈsent/</span><span class="pos">n.</span></div>
+      <div><p class="mean">동의 — 정보 처리를 허락하는 것</p>
+      <p class="ex">You must ask for <b>consent</b> for each item separately.<span class="ko">항목마다 따로 동의를 받아야 한다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">legal guardian</span><span class="ipa">/ˈliːɡl ˈɡɑːrdiən/</span><span class="pos">n.</span></div>
+      <div><p class="mean">법정대리인 — 아동을 대신해 법적 결정을 하는 사람</p>
+      <p class="ex">A <b>legal guardian</b> must agree for children under 14.<span class="ko">14세 미만 아동은 법정대리인이 동의해야 한다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">withdraw</span><span class="ipa">/wɪðˈdrɔː/</span><span class="pos">v.</span></div>
+      <div><p class="mean">철회하다 — 했던 동의를 거두어들이다</p>
+      <p class="ex">You can <b>withdraw</b> your consent at any time.<span class="ko">동의는 언제든 철회할 수 있다.</span></p></div>
+    </li>
+  </ul>
+
+  <div class="quizbox" id="quiz">
+    <div class="qq" id="quizQ"></div>
+    <div class="opts" id="quizOpts"></div>
+    <div class="score" id="quizScore"></div>
+  </div>
+</div>
+<!-- ═══════════ 필기 원문 뷰 ═══════════ -->
+<div id="viewRaw" hidden>
+  <div class="hero" data-w="RAW">
+    <span class="chip">5주차 1차시 필기 원문</span>
+    <h1>내가 보낸 그대로</h1>
+    <p class="sub">아직 보낸 필기가 없습니다. 이 파일은 교안 PDF만으로 만든 정리본입니다. 강의를 들으며 필기를 보내면 여기에 보낸 순서대로, 한 글자도 고치지 않고 쌓입니다.</p>
+  </div>
+
+  <div class="rawnote" id="rawlist">
+    <div style="padding:16px 18px;font-size:14px;color:var(--ink-3)">보낸 필기 0개 — 강의 필기를 보내면 이 자리에 번호와 함께 추가됩니다.</div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+/* ── 스크롤 진행 바 ─────────────────────────────── */
+const sb = document.getElementById('scrollbar');
+addEventListener('scroll', () => {
+  const h = document.documentElement.scrollHeight - innerHeight;
+  sb.style.width = (h > 0 ? scrollY / h * 100 : 0) + '%';
+}, { passive: true });
+
+/* ── 다크 모드 ──────────────────────────────────── */
+const html = document.documentElement, themeBtn = document.getElementById('themeBtn');
+themeBtn.onclick = () => {
+  const dark = html.dataset.theme === 'dark';
+  html.dataset.theme = dark ? 'light' : 'dark';
+  themeBtn.textContent = dark ? '다크' : '라이트';
+};
+
+/* ── 정답: 기본은 가려짐. 답을 누르면 그 문제만 열리고,
+      "정답 가리기" 버튼을 누르면 열린 것들을 전부 다시 덮는다 ── */
+const ansBtn = document.getElementById('ansBtn');
+const answers = [...document.querySelectorAll('.ans')];
+function syncAnsBtn() {
+  const opened = answers.filter(a => a.classList.contains('on')).length;
+  ansBtn.disabled = opened === 0;
+  ansBtn.textContent = opened ? `정답 가리기 (${opened})` : '정답 가리기';
+}
+answers.forEach(a => a.addEventListener('click', () => { a.classList.toggle('on'); syncAnsBtn(); }));
+ansBtn.onclick = () => { answers.forEach(a => a.classList.remove('on')); syncAnsBtn(); };
+syncAnsBtn();
+
+/* ── 보충(외부 자료) 개수 표시 + 숨기기 토글 ────── */
+const extraChip = document.getElementById('extraChip');
+const extraCount = document.querySelectorAll('#viewNote .call.extra, #viewNote .ext').length;
+if (extraCount) {
+  extraChip.textContent = `보충 ${extraCount}곳 — 교수님 설명 아님`;
+  extraChip.onclick = () => {
+    const off = document.body.classList.toggle('no-extra');
+    extraChip.textContent = off ? `보충 ${extraCount}곳 숨김 — 눌러서 보기` : `보충 ${extraCount}곳 — 교수님 설명 아님`;
+  };
+} else {
+  extraChip.textContent = '보충 0곳 — 전부 교수님 내용';
+  extraChip.disabled = true;
+}
+
+/* ── 인쇄 ───────────────────────────────────────── */
+document.getElementById('printBtn').onclick = () => window.print();
+
+/* ── 코드 복사 ──────────────────────────────────── */
+document.querySelectorAll('.copy').forEach(btn => {
+  btn.onclick = async () => {
+    try { await navigator.clipboard.writeText(btn.closest('.codebox').querySelector('code').innerText); btn.textContent = '복사됨'; }
+    catch { btn.textContent = '실패'; }
+    setTimeout(() => btn.textContent = '복사', 1200);
+  };
+});
+
+/* ── 복습 체크 진행률 (새로고침하면 초기화) ─────── */
+const boxes = document.querySelectorAll('.chk input'), fill = document.getElementById('barFill');
+boxes.forEach(b => b.addEventListener('change', () => {
+  fill.style.width = [...boxes].filter(x => x.checked).length / boxes.length * 100 + '%';
+}));
+
+/* ── 본문 / 단어장 / 필기 원문 전환 ─────────────── */
+const views = {
+  note:  { el: document.getElementById('viewNote'),  nav: document.getElementById('tocWrap') },
+  vocab: { el: document.getElementById('viewVocab'), nav: document.getElementById('vocabNav'), btn: document.getElementById('vocabBtn'), on: '본문으로', off: '단어장' },
+  raw:   { el: document.getElementById('viewRaw'),   nav: document.getElementById('rawNav'),   btn: document.getElementById('rawBtn'),  on: '본문으로', off: '필기 원문' }
+};
+let current = 'note';
+function setView(name) {
+  current = name;
+  Object.entries(views).forEach(([k, v]) => {
+    v.el.hidden = k !== name;
+    v.nav.hidden = k !== name;
+    if (v.btn) { v.btn.classList.toggle('solid', k === name); v.btn.textContent = k === name ? v.on : v.off; }
+  });
+  clearMarks();
+  document.getElementById('q').value = '';
+  document.getElementById('hit').textContent = '';
+  scrollTo({ top: 0, behavior: 'smooth' });
+}
+views.vocab.btn.onclick = () => setView(current === 'vocab' ? 'note' : 'vocab');
+views.raw.btn.onclick   = () => setView(current === 'raw'   ? 'note' : 'raw');
+document.getElementById('rawTotal').textContent = document.querySelectorAll('#rawlist .rawitem').length;
+// 원문 페이지의 링크를 누르면 본문으로 돌아가서 해당 위치로 이동
+document.querySelectorAll('#rawlist .where a').forEach(a => {
+  a.onclick = e => { e.preventDefault(); setView('note'); setTimeout(() => document.querySelector(a.getAttribute('href')).scrollIntoView(), 60); };
+});
+
+/* ── 목차 현재 위치 ─────────────────────────────── */
+const links = [...document.querySelectorAll('#toc a')];
+const spy = new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) return;
+  links.forEach(l => l.classList.toggle('on', l.getAttribute('href') === '#' + e.target.id));
+}), { rootMargin: '-80px 0px -68% 0px' });
+document.querySelectorAll('#viewNote section').forEach(s => spy.observe(s));
+
+/* ── 문서 내 검색 ───────────────────────────────── */
+const qInput = document.getElementById('q'), hitEl = document.getElementById('hit');
+let marks = [], cursor = -1;
+function clearMarks() {
+  marks.forEach(m => { const p = m.parentNode; if (!p) return; p.replaceChild(document.createTextNode(m.textContent), m); p.normalize(); });
+  marks = []; cursor = -1;
+}
+function runSearch(word) {
+  clearMarks();
+  if (word.length < 2) { hitEl.textContent = ''; return; }
+  const root = views[current].el;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const targets = [];
+  while (walker.nextNode()) {
+    const n = walker.currentNode;
+    if (n.parentElement.closest('script,style')) continue;
+    if (n.nodeValue.toLowerCase().includes(word)) targets.push(n);
+  }
+  targets.forEach(n => {
+    const re = new RegExp('(' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    const frag = document.createDocumentFragment();
+    n.nodeValue.split(re).forEach(p => {
+      if (p.toLowerCase() === word) { const m = document.createElement('span'); m.className = 'hit-mark'; m.textContent = p; frag.appendChild(m); marks.push(m); }
+      else frag.appendChild(document.createTextNode(p));
+    });
+    n.parentNode.replaceChild(frag, n);
+  });
+  hitEl.textContent = marks.length ? '0/' + marks.length : '없음';
+}
+qInput.addEventListener('input', e => runSearch(e.target.value.trim().toLowerCase()));
+qInput.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || !marks.length) return;
+  e.preventDefault();
+  cursor = (cursor + 1) % marks.length;
+  marks[cursor].scrollIntoView({ block: 'center', behavior: 'smooth' });
+  hitEl.textContent = (cursor + 1) + '/' + marks.length;
+});
+addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); qInput.focus(); qInput.select(); }
+});
+
+/* ── 단어장 ─────────────────────────────────────── */
+const vlist = document.getElementById('vlist');
+const words = [...vlist.querySelectorAll('.vword')];
+document.getElementById('vcount').textContent = words.length + '개';
+document.getElementById('vTotal').textContent = words.length;
+
+document.getElementById('vq').addEventListener('input', e => {
+  const k = e.target.value.trim().toLowerCase();
+  let shown = 0;
+  words.forEach(w => { const ok = w.innerText.toLowerCase().includes(k); w.style.display = ok ? '' : 'none'; if (ok) shown++; });
+  document.getElementById('vcount').textContent = shown + '개';
+});
+
+const maskBtn = document.getElementById('maskBtn');
+maskBtn.onclick = () => {
+  const on = vlist.classList.toggle('masked');
+  maskBtn.classList.toggle('solid', on);
+  maskBtn.textContent = on ? '뜻 보이기' : '뜻 가리기';
+  if (!on) vlist.querySelectorAll('.show').forEach(el => el.classList.remove('show'));
+};
+vlist.querySelectorAll('.mean, .ex').forEach(el => {
+  el.onclick = () => { if (vlist.classList.contains('masked')) el.classList.toggle('show'); };
+});
+
+/* 퀴즈 — 위 목록에서 문제를 자동 생성 */
+const quiz = document.getElementById('quiz'), quizBtn = document.getElementById('quizBtn');
+const qQ = document.getElementById('quizQ'), qO = document.getElementById('quizOpts'), qS = document.getElementById('quizScore');
+let pool = [], solved = 0, correct = 0;
+const data = () => words.map(w => ({
+  word: w.querySelector('.w').textContent,
+  mean: (w.querySelector('.mean').textContent.split('—')[1] || w.querySelector('.mean').textContent).trim()
+}));
+function nextQuiz() {
+  if (!pool.length) { qQ.textContent = '한 바퀴 끝'; qO.innerHTML = ''; qS.textContent = `${solved}문제 중 ${correct}개 정답`; return; }
+  const all = data(), cur = pool.pop();
+  qQ.textContent = cur.word;
+  const opts = [cur, ...all.filter(d => d.word !== cur.word).sort(() => Math.random() - .5).slice(0, 3)].sort(() => Math.random() - .5);
+  qO.innerHTML = '';
+  opts.forEach(o => {
+    const b = document.createElement('button');
+    b.className = 'opt'; b.textContent = o.mean;
+    b.onclick = () => {
+      solved++;
+      if (o.word === cur.word) { b.classList.add('ok'); correct++; }
+      else { b.classList.add('no'); [...qO.children].find(x => x.textContent === cur.mean)?.classList.add('ok'); }
+      [...qO.children].forEach(x => x.disabled = true);
+      qS.textContent = `${solved}문제 중 ${correct}개 정답`;
+      setTimeout(nextQuiz, 1000);
+    };
+    qO.appendChild(b);
+  });
+  qS.textContent = `${solved}문제 중 ${correct}개 정답 · 남은 ${pool.length}개`;
+}
+quizBtn.onclick = () => {
+  const on = quiz.classList.toggle('on');
+  quizBtn.classList.toggle('solid', on);
+  quizBtn.textContent = on ? '퀴즈 닫기' : '퀴즈 풀기';
+  if (on) { pool = data().sort(() => Math.random() - .5); solved = 0; correct = 0; nextQuiz(); }
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>알고리즘 4주차 2차시 — 점화식 연습</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   과목 테마 — 아래 3줄(--accent, --accent-deep, --accent-soft)만 교체
+   데이터분석프로그래밍 #0EA5E9 / #0369A1 / #E0F2FE
+   전공영어           #E08700 / #A55A00 / #FEF3DC
+   인공지능           #9333EA / #6B21A8 / #F3E8FF
+   알고리즘           #4F46E5 / #3730A3 / #E8E7FD
+   시큐어코딩         #DC2626 / #991B1B / #FDE7E7
+   개인정보보호암호기술 #DB2777 / #9D174D / #FCE7F3
+   개인정보보호법률이해 #059669 / #065F46 / #D8F5EA
+   ═══════════════════════════════════════════════════════════════ */
+:root{
+  --accent:#4F46E5;
+  --accent-deep:#3730A3;
+  --accent-soft:#E8E7FD;
+
+  --bg:#F7F8FA;
+  --surface:#FFFFFF;
+  --ink:#15161B;
+  --ink-2:#565C66;
+  --ink-3:#8B9098;
+  --line:#E5E7EC;
+  --line-2:#F0F1F4;
+  --code-bg:#1B1D24;
+  --code-ink:#E4E6ED;
+  --mark:#FFE27A;
+  --c1:#1D6FC4;
+  --c2:#0E8F72;
+  --c3:#C2410C;
+  --font:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,system-ui,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  --mono:'JetBrains Mono','SFMono-Regular',Consolas,'D2Coding',monospace;
+}
+html[data-theme="dark"]{
+  --accent:#7C78F0;
+  --accent-deep:#9C99F7;
+  --accent-soft:#22232E;
+  --bg:#101116;
+  --surface:#181A20;
+  --ink:#E8E9ED;
+  --ink-2:#A6AAB4;
+  --ink-3:#73777F;
+  --line:#2A2C34;
+  --line-2:#202229;
+  --code-bg:#0C0D11;
+  --mark:#6E5C16;
+  --c1:#6FB3F2;
+  --c2:#4FD9B0;
+  --c3:#F0955A;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15.5px;line-height:1.72;letter-spacing:-.012em;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-deep)}
+::selection{background:var(--accent);color:#fff}
+
+/* ── 스크롤 진행 바 ─────────────────────────────────── */
+#scrollbar{position:fixed;top:0;left:0;height:3px;width:0;background:var(--accent);z-index:99}
+
+/* ── 상단 바 ────────────────────────────────────────── */
+.topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:10px;padding:10px 22px;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.back{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink-2);font-size:14px;font-weight:700;white-space:nowrap}
+.back:hover{color:var(--accent-deep)}
+.back i{width:10px;height:10px;border-radius:3px;background:var(--accent);display:block}
+.search{flex:1;max-width:300px;margin-left:auto;position:relative}
+.search input{width:100%;padding:7px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14px}
+.search input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.hit{position:absolute;right:10px;top:8px;font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums;pointer-events:none}
+.tools{display:flex;gap:6px}
+.tbtn{border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:9px;padding:7px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);white-space:nowrap}
+.tbtn:hover{border-color:var(--accent);color:var(--accent-deep)}
+.tbtn.solid{background:var(--accent);border-color:var(--accent);color:#fff}
+.tbtn:disabled{opacity:.4;cursor:default}
+
+/* ── 레이아웃 ───────────────────────────────────────── */
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);gap:38px;max-width:1200px;margin:0 auto;padding:26px 24px 120px}
+main{min-width:0}
+
+/* ── 사이드 패널(포인트 컬러) ───────────────────────── */
+.side{position:sticky;top:80px;align-self:start;max-height:calc(100vh - 100px);overflow-y:auto;scrollbar-width:thin}
+.panel{background:var(--accent);border-radius:16px;padding:18px 16px;color:#fff;box-shadow:0 8px 24px -12px color-mix(in srgb,var(--accent) 70%,transparent)}
+.panel .cap{font-size:11.5px;font-weight:700;opacity:.72;margin-bottom:9px}
+.panel .subject{font-size:19px;font-weight:800;letter-spacing:-.03em;line-height:1.3;margin-bottom:2px}
+.panel .when{font-size:12.5px;opacity:.8;margin-bottom:16px}
+.toc{list-style:none;margin:0;padding:0}
+.toc a{display:block;padding:6px 10px;border-radius:8px;color:#fff;opacity:.82;text-decoration:none;font-size:13.5px;font-weight:600;line-height:1.45}
+.toc a:hover{background:rgba(255,255,255,.16);opacity:1}
+.toc a.on{background:#fff;color:var(--accent-deep);opacity:1;font-weight:800}
+.toc .num{display:inline-block;width:17px;font-variant-numeric:tabular-nums;opacity:.7}
+.toc a.on .num{opacity:1}
+.panel hr{border:0;border-top:1px solid rgba(255,255,255,.22);margin:14px 0}
+.chk label{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;padding:3px 0;cursor:pointer;line-height:1.5;opacity:.9}
+.chk input{margin-top:4px;accent-color:#fff;flex-shrink:0}
+.chk input:checked + span{opacity:.5;text-decoration:line-through}
+.pbar{height:4px;border-radius:99px;background:rgba(255,255,255,.28);margin-top:11px;overflow:hidden}
+.pbar i{display:block;height:100%;width:0;background:#fff;transition:width .25s}
+
+/* ── 히어로 ─────────────────────────────────────────── */
+.hero{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px 28px 22px;overflow:hidden;margin-bottom:16px}
+.hero::after{content:attr(data-w);position:absolute;right:14px;bottom:-26px;font-size:112px;font-weight:800;color:var(--accent);opacity:.09;letter-spacing:-.06em;line-height:1;pointer-events:none}
+.chip{display:inline-flex;align-items:center;gap:7px;background:var(--accent-soft);color:var(--accent-deep);font-size:12.5px;font-weight:800;padding:4px 11px;border-radius:99px}
+h1{font-size:clamp(26px,3.6vw,34px);font-weight:800;letter-spacing:-.04em;line-height:1.24;margin:12px 0 6px;position:relative}
+.hero .sub{color:var(--ink-2);font-size:15px;margin:0 0 14px;position:relative}
+[hidden]{display:none!important}
+.metaline{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-3);position:relative}
+.metaline b{color:var(--ink-2);font-weight:600}
+
+/* ── 수업 자료 (같은 폴더의 PDF) ────────────────────── */
+.files{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;position:relative}
+.file{display:inline-flex;align-items:center;gap:9px;padding:8px 13px 8px 9px;border:1px solid var(--line);border-radius:10px;background:var(--surface);text-decoration:none;color:var(--ink);font-size:13.5px;font-weight:700}
+.file:hover{border-color:var(--accent);background:var(--accent-soft)}
+.file .ic{background:var(--accent);color:#fff;font-size:10px;font-weight:800;padding:3px 6px;border-radius:6px;letter-spacing:.02em}
+.file em{font-style:normal;color:var(--ink-3);font-weight:600;font-size:12.5px}
+.files .none{font-size:12.5px;color:var(--ink-3);font-weight:600;padding:8px 0}
+.extra-chip:disabled{cursor:default;opacity:.6}
+
+/* ── 오늘의 흐름 ────────────────────────────────────── */
+.flow{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:26px}
+.flow a{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--line);border-radius:99px;background:var(--surface);text-decoration:none;color:var(--ink-2);font-size:13px;font-weight:600}
+.flow a:hover{border-color:var(--accent);color:var(--accent-deep);background:var(--accent-soft)}
+.flow a b{color:var(--accent);font-variant-numeric:tabular-nums}
+
+/* ── 핵심 카드 ──────────────────────────────────────── */
+.keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:34px}
+.key{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:14px;padding:16px 17px}
+.key .n{font-size:12px;font-weight:800;color:var(--accent);margin-bottom:5px}
+.key p{margin:0;font-size:14.5px;line-height:1.6}
+.key b{font-weight:800}
+
+/* ── 섹션 ───────────────────────────────────────────── */
+section{margin-bottom:46px;scroll-margin-top:82px}
+h2.st{display:flex;align-items:center;gap:11px;font-size:22px;font-weight:800;letter-spacing:-.035em;margin:0 0 14px}
+h2.st .sq{flex-shrink:0;width:30px;height:30px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+h3{font-size:16.5px;font-weight:800;margin:26px 0 8px;letter-spacing:-.025em;padding-left:11px;border-left:3px solid var(--accent)}
+h4{font-size:14.5px;font-weight:700;margin:18px 0 6px;color:var(--ink-2)}
+p{margin:9px 0}
+ul,ol{margin:9px 0;padding-left:21px}
+li{margin:3px 0}
+li::marker{color:var(--accent)}
+.en{color:var(--ink-3);font-weight:500;font-size:.9em}
+mark{background:linear-gradient(transparent 54%,var(--mark) 54%);color:inherit;padding:0 2px}
+.hit-mark{background:var(--accent);color:#fff;border-radius:3px}
+
+/* ── 배지 ───────────────────────────────────────────── */
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin:-6px 0 12px}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:6px;letter-spacing:0}
+.badge.exam{color:#92580B;background:#FDF0D5}
+.badge.prof{color:var(--accent-deep);background:var(--accent-soft)}
+.badge.ask{color:#B02020;background:#FCE4E4}
+html[data-theme="dark"] .badge.exam{background:#3B2D0E;color:#EFC470}
+html[data-theme="dark"] .badge.ask{background:#3A1919;color:#F0A0A0}
+
+/* ── 카드형 콜아웃 ──────────────────────────────────── */
+.call{border-radius:13px;padding:14px 17px;margin:15px 0;background:var(--surface);border:1px solid var(--line)}
+.call .t{font-size:12.5px;font-weight:800;margin-bottom:5px}
+.call p:first-of-type{margin-top:0}
+.call p:last-child,.call ul:last-child{margin-bottom:0}
+.call.quote{background:var(--accent-soft);border-color:transparent}
+.call.quote .t{color:var(--accent-deep)}
+.call.quote p{font-size:14.8px}
+.call.warn{border-left:4px solid #E5A50A}
+.call.warn .t{color:#A16207}
+.call.ask{border-left:4px solid #DC2626}
+.call.ask .t{color:#B02020}
+.call.link{border-left:4px solid var(--accent)}
+.call.link .t{color:var(--accent-deep)}
+
+/* 보충 — 교수님이 설명하지 않은 외부 자료. 회색 + 점선으로 본문과 확실히 구분 */
+.call.extra{background:repeating-linear-gradient(135deg,var(--line-2),var(--line-2) 9px,transparent 9px,transparent 18px);border:1.5px dashed var(--ink-3);border-left-width:1.5px}
+.call.extra .t{color:var(--ink-2);display:flex;align-items:center;gap:6px}
+.call.extra .t::before{content:"보충";background:var(--ink-3);color:var(--surface);font-size:10.5px;padding:1px 6px;border-radius:5px}
+.call.extra p{color:var(--ink-2)}
+.badge.extra{color:var(--ink-2);background:var(--line-2);border:1px dashed var(--ink-3)}
+.ext{border-bottom:2px dotted var(--ink-3);color:var(--ink-2)}
+.ext::after{content:"보충";font-size:9.5px;font-weight:800;vertical-align:super;color:var(--ink-3);margin-left:2px;letter-spacing:0}
+.extra-chip{border:1.5px dashed var(--ink-3);background:transparent;color:var(--ink-2);cursor:pointer;font-family:var(--font)}
+body.no-extra .call.extra,body.no-extra .badge.extra{display:none}
+body.no-extra .ext{border-bottom:0}
+body.no-extra .ext::after{display:none}
+html[data-theme="dark"] .call.warn .t{color:#E5B547}
+html[data-theme="dark"] .call.ask .t{color:#F0A0A0}
+
+/* ── 원문 보기 ──────────────────────────────────────── */
+details.raw{margin:12px 0;border:1px dashed var(--line);border-radius:10px;background:var(--line-2)}
+details.raw summary{cursor:pointer;padding:8px 14px;font-size:12.5px;color:var(--ink-3);font-weight:700;list-style:none}
+details.raw summary::-webkit-details-marker{display:none}
+details.raw summary::before{content:"▸ ";color:var(--accent)}
+details.raw[open] summary::before{content:"▾ "}
+details.raw .txt{padding:0 14px 12px;font-size:13px;color:var(--ink-2);white-space:pre-wrap;line-height:1.7}
+
+/* ── 필기 원문 페이지 ───────────────────────────────── */
+.rawnote{border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+.rawitem{display:grid;grid-template-columns:78px 1fr;gap:16px;padding:15px 18px;border-bottom:1px solid var(--line-2)}
+.rawitem:last-child{border-bottom:0}
+.rawitem .seq{font-size:12px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+.rawitem .seq span{display:block;color:var(--ink-3);font-weight:600;font-size:11px;margin-top:2px}
+.rawitem .body{white-space:pre-wrap;font-size:14px;line-height:1.75;color:var(--ink)}
+.rawitem .where{margin-top:7px;font-size:12px}
+.rawitem .where a{color:var(--accent-deep);text-decoration:none;font-weight:700;background:var(--accent-soft);padding:2px 8px;border-radius:6px}
+.rawitem .where a:hover{background:var(--accent);color:#fff}
+
+/* ── 표 ─────────────────────────────────────────────── */
+.tablewrap{overflow-x:auto;margin:15px 0;border:1px solid var(--line);border-radius:13px}
+.digits{white-space:normal;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:flex-start}.dgu{padding-top:2px}
+.dg{display:inline-flex;flex-direction:column;align-items:center}
+.dgs{padding:0 8px 6px;border-bottom:1.6px solid var(--accent);border-left:1.6px solid var(--accent);border-right:1.6px solid var(--accent);border-radius:0 0 8px 8px}
+.dgl{font-size:.9em;font-weight:700;color:var(--accent-deep);margin-top:4px}
+sup .frac,sub .frac{font-size:.9em;margin:0 1px}
+.frac{display:inline-flex;flex-direction:column;text-align:center;vertical-align:middle;line-height:1.15;margin:0 3px;font-size:.94em}
+.frac .num{border-bottom:1.4px solid currentColor;padding:0 4px}
+.frac .den{padding:0 4px}
+.math{white-space:pre-wrap;font-family:var(--mono);font-size:13.6px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 15px;line-height:1.7;margin:12px 0;overflow-x:auto}
+.q .lv{font-size:10.5px;font-weight:800;border-radius:6px;padding:1px 7px;flex-shrink:0;margin-top:3px;margin-left:6px}
+.q .lv.b{color:var(--c2);border:1px solid var(--c2)}
+.q .lv.m{color:var(--accent-deep);border:1px solid var(--accent)}
+.q .lv.h{color:var(--c3);border:1px solid var(--c3)}
+table{border-collapse:collapse;width:100%;font-size:14px;background:var(--surface)}
+th,td{padding:10px 13px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line-2)}
+th{background:var(--accent);color:#fff;font-weight:700;font-size:13px;white-space:nowrap;border-bottom:0}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--line-2)}
+
+/* ── 코드 / 의사코드 ────────────────────────────────── */
+.bsv{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:14px 14px 12px;margin:16px 0}
+.bsv .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.bsv .tabs button,.bsv .nav button{font:inherit;font-size:13px;font-weight:700;padding:6px 12px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink-2);cursor:pointer}
+.bsv .tabs button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.bsv .nav{display:flex;align-items:center;gap:8px;margin-top:10px}
+.bsv .nav .cnt{flex:1;text-align:center;font-size:13px;font-weight:700;color:var(--ink-2)}
+.bsv .nav button:disabled{opacity:.35;cursor:default}
+.bsv .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+@media (max-width:640px){.bsv .grid{grid-template-columns:1fr}}
+.bsv .code{font-family:var(--mono);font-size:12.4px;line-height:1.65;background:var(--code-bg);color:var(--code-ink);border-radius:10px;padding:10px 0;overflow-x:auto}
+.bsv .code div{padding:0 12px;white-space:pre;border-left:3px solid transparent}
+.bsv .code div.hl{background:color-mix(in srgb,var(--accent) 38%,transparent);border-left-color:#fff}
+.bsv .code .ln{display:inline-block;width:18px;opacity:.45}
+.bsv .stack{font-family:var(--mono);font-size:12.4px;line-height:1.6}
+.bsv .stack .fr{padding:5px 9px;border:1px solid var(--line);border-radius:8px;margin-bottom:5px;background:var(--bg)}
+.bsv .stack .fr.cur{border-color:var(--accent);background:var(--accent-soft);font-weight:700}
+.bsv .stack .fr .rv{color:var(--c2);font-weight:800}
+.bsv .lab{font-size:11.5px;font-weight:800;color:var(--ink-3);margin:0 0 5px;letter-spacing:.02em}
+.bsv .msg{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--accent-soft);font-size:14px;line-height:1.6}
+.codebox{margin:15px 0;border-radius:13px;overflow:hidden;background:var(--code-bg);border:1px solid var(--code-bg)}
+.codebox .head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 14px;font-size:12px;color:#9AA0AC;font-weight:700;background:rgba(255,255,255,.04)}
+.codebox .head .tag{color:#fff;background:var(--accent);border-radius:5px;padding:1px 7px;font-size:11px;margin-right:7px}
+.codebox pre{margin:0;padding:15px 17px;overflow-x:auto;font-family:var(--mono);font-size:13.2px;line-height:1.7;color:var(--code-ink)}
+.codebox .cm{color:#7C8494}
+.codebox .kw{color:#C4A6FF}
+.codebox .st2{color:#8BD5A0}
+.copy{border:0;background:transparent;color:#9AA0AC;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font)}
+.copy:hover{color:#fff}
+.codebox.pseudo{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent)}
+.codebox.pseudo .head{background:var(--accent-soft);color:var(--accent-deep)}
+.codebox.pseudo .head .tag{background:var(--accent-deep)}
+.codebox.pseudo pre{color:var(--ink);font-size:13.6px}
+.codebox.pseudo .cm{color:var(--ink-3)}
+.codebox.pseudo .kw{color:var(--accent-deep);font-weight:700}
+.codebox.pseudo .copy{color:var(--ink-3)}
+.codebox.pseudo .copy:hover{color:var(--accent-deep)}
+code:not(pre code){background:var(--accent-soft);color:var(--accent-deep);padding:1px 6px;border-radius:6px;font-family:var(--mono);font-size:.88em;font-weight:600}
+
+/* ── 도식 ───────────────────────────────────────────── */
+figure{margin:18px 0;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 14px 12px}
+figure svg{max-width:100%;height:auto}
+figure svg[viewBox^="0 0 440"],figure svg[viewBox^="0 0 380"]{max-width:560px;margin:0 auto}
+figcaption{font-size:12.5px;color:var(--ink-3);margin-top:10px}
+
+/* ── 용어 ───────────────────────────────────────────── */
+.terms{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:11px}
+.term{border:1px solid var(--line);border-radius:13px;padding:13px 15px;background:var(--surface)}
+.term b{display:block;font-size:15px}
+.term .e{display:block;font-size:12px;color:var(--accent-deep);font-family:var(--mono);margin-bottom:6px}
+.term p{margin:0;font-size:13.3px;color:var(--ink-2);line-height:1.6}
+
+/* ── 예상 문제 ──────────────────────────────────────── */
+.q{border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:12px 0;background:var(--surface)}
+.q .qh{display:flex;gap:10px;align-items:flex-start;font-weight:700;font-size:15px}
+.q .qn{color:#fff;background:var(--accent);border-radius:7px;padding:1px 8px;font-size:12.5px;font-weight:800;flex-shrink:0;margin-top:3px}
+.q .type{font-size:11px;font-weight:800;color:var(--ink-3);border:1px solid var(--line);border-radius:6px;padding:1px 7px;margin-left:auto;flex-shrink:0;margin-top:3px}
+.q ol.ch{list-style:none;padding-left:0;margin:11px 0 0;counter-reset:c}
+.q ol.ch li{padding:3px 0 3px 26px;position:relative;font-size:14.3px}
+.q ol.ch li::before{content:counter(c);counter-increment:c;position:absolute;left:0;top:4px;width:19px;height:19px;border:1px solid var(--line);border-radius:50%;font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--ink-3)}
+.ans{margin-top:12px;padding:11px 13px;border-radius:10px;background:var(--accent-soft);font-size:14.2px;cursor:pointer}
+.ans .lab{font-weight:800;color:var(--accent-deep);font-size:12.5px;margin-right:7px}
+body.hide-ans .ans:not(.on){background:var(--line-2);color:transparent;user-select:none;cursor:pointer;position:relative}
+body.hide-ans .ans:not(.on) *{color:transparent!important}
+body.hide-ans .ans:not(.on)::after{content:"눌러서 정답 확인";position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-3);font-size:12.5px;font-weight:700}
+
+/* ── 단어장 페이지 ──────────────────────────────────── */
+.vhead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px}
+.vhead input[type=search]{flex:1;min-width:170px;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14px}
+.vhead input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.vlist{margin:0;padding:0;list-style:none;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
+.vword{display:grid;grid-template-columns:190px 1fr;gap:16px;padding:14px 18px;border-bottom:1px solid var(--line-2)}
+.vword:last-child{border-bottom:0}
+.vword:hover{background:var(--line-2)}
+.vword .w{font-weight:800;font-size:16px;letter-spacing:-.02em}
+.vword .ipa{display:block;font-family:var(--mono);font-size:12px;color:var(--ink-3);font-weight:400;margin-top:1px}
+.vword .pos{display:inline-block;font-size:10.5px;font-weight:800;color:#fff;background:var(--accent);border-radius:5px;padding:1px 6px;margin-top:5px}
+.vword .mean{font-size:14.5px;margin:0;font-weight:600}
+.vword .ex{font-size:13px;color:var(--ink-2);margin:5px 0 0}
+.vword .ex b{color:var(--accent-deep);font-weight:700}
+.vword .ex .ko{display:block;color:var(--ink-3);font-size:12.5px}
+.masked .mean,.masked .ex{background:var(--line-2);border-radius:6px;color:transparent;cursor:pointer}
+.masked .mean *,.masked .ex *{color:transparent!important}
+.masked .mean.show,.masked .ex.show{background:transparent;color:inherit}
+.masked .mean.show *,.masked .ex.show *{color:revert!important}
+.masked .ex.show b{color:var(--accent-deep)!important}
+.quizbox{margin-top:18px;padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--surface);display:none}
+.quizbox.on{display:block}
+.quizbox .qq{font-size:22px;font-weight:800;margin-bottom:14px;letter-spacing:-.02em}
+.quizbox .opts{display:grid;gap:8px}
+.quizbox .opt{text-align:left;padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14.5px;cursor:pointer}
+.quizbox .opt:hover{border-color:var(--accent)}
+.quizbox .opt.ok{border-color:#16A34A;background:color-mix(in srgb,#16A34A 12%,var(--surface))}
+.quizbox .opt.no{border-color:#DC2626;background:color-mix(in srgb,#DC2626 12%,var(--surface))}
+.quizbox .score{margin-top:13px;font-size:13px;color:var(--ink-3);font-weight:600}
+
+footer{margin-top:54px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-3);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+@media(max-width:900px){
+  .wrap{grid-template-columns:1fr;gap:18px;padding:16px 16px 80px}
+  .side{position:static;max-height:none;order:-1}
+  .vword{grid-template-columns:1fr;gap:5px}
+  .search{max-width:none;order:3;flex-basis:100%;max-width:100%}
+  .topbar{flex-wrap:wrap}
+  .hero::after{font-size:78px}
+}
+@media print{
+  .topbar,.side,#scrollbar,.quizbox,.vhead,.flow,.files,.extra-chip{display:none!important}
+  .wrap{display:block;max-width:none;padding:0}
+  body{font-size:10.5pt;background:#fff}
+  section{page-break-inside:avoid;margin-bottom:22px}
+  body.hide-ans .ans:not(.on){background:var(--accent-soft)!important;color:inherit!important}
+  body.hide-ans .ans:not(.on) *{color:inherit!important}
+  body.hide-ans .ans:not(.on)::after{display:none}
+  details.raw{display:none}
+  #viewVocab,#viewRaw{display:block!important;page-break-before:always}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body class="hide-ans">
+<div id="scrollbar"></div>
+
+<div class="topbar">
+  <a class="back" href="../"><i></i>알고리즘</a>
+  <div class="search"><input id="q" type="search" placeholder="찾기 (Enter로 다음)" aria-label="문서 내 검색"><span class="hit" id="hit"></span></div>
+  <div class="tools">
+    <button class="tbtn" id="ansBtn">정답 가리기</button>
+    <button class="tbtn" id="vocabBtn">단어장</button>
+    <button class="tbtn" id="rawBtn">필기 원문</button>
+    <button class="tbtn" id="themeBtn">다크</button>
+    <button class="tbtn" id="printBtn">🖨</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ═══════════ 사이드 패널 ═══════════ -->
+<aside class="side">
+  <div class="panel">
+    <div class="subject">알고리즘</div>
+    <div class="when">4주차 2차시 · 2026.09.28 (월)</div>
+
+    <div id="tocWrap">
+      <div class="cap">목차</div>
+      <ul class="toc" id="toc">
+        <li><a href="#s1"><span class="num">01</span>이진탐색 — 세로식</a></li>
+        <li><a href="#s2"><span class="num">02</span>Quick Select 최선</a></li>
+        <li><a href="#s3"><span class="num">03</span>정렬 — 두 갈래</a></li>
+        <li><a href="#s4"><span class="num">04</span>카라츠바 — 세 갈래</a></li>
+        <li><a href="#sg"><span class="num">05</span>용어 정리</a></li>
+        <li><a href="#sq"><span class="num">06</span>확인 필요</a></li>
+        <li><a href="#sx"><span class="num">07</span>예상 문제</a></li>
+      </ul>
+      <hr>
+      <div class="cap">복습 체크</div>
+      <div class="chk">
+        <label><input type="checkbox"><span>T(n/2)+C 세로식 직접 그리기</span></label>
+        <label><input type="checkbox"><span>오른쪽 C 가 k개인 이유 설명</span></label>
+        <label><input type="checkbox"><span>n = 2<sup>k</sup> → k = log₂n 대입</span></label>
+        <label><input type="checkbox"><span>T(n/2)+Cn 세로식 그리기</span></label>
+        <label><input type="checkbox"><span>등비수열 합으로 2Cn − C 유도</span></label>
+        <label><input type="checkbox"><span>합이 2 를 넘지 않는 이유 설명</span></label>
+        <label><input type="checkbox"><span>2T(n/2)+Cn 양갈래 나무 그리기</span></label>
+        <label><input type="checkbox"><span>층마다 Cn 이 되는 이유 설명</span></label>
+        <label><input type="checkbox"><span>3T(n/2)+Cn 세 갈래 나무 그리기</span></label>
+        <label><input type="checkbox"><span>층 합이 3/2배씩 커지는 이유 설명</span></label>
+        <label><input type="checkbox"><span>n·n<sup>log₂(3/2)</sup> = n<sup>log₂3</sup> 변환</span></label>
+        <label><input type="checkbox"><span>예상 문제 7개 풀기</span></label>
+      </div>
+      <div class="pbar"><i id="barFill"></i></div>
+    </div>
+
+    <div id="rawNav" hidden>
+      <div class="cap">필기 원문</div>
+      <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">내가 수업 중에 보낸 내용 <b id="rawTotal">0</b>개를 손대지 않고 그대로 모아둔 페이지입니다.</p>
+      <hr>
+      <div class="cap">확인 방법</div>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">여기 있는 내용이 본문에 다 반영됐는지 대조하세요. 각 항목의 파란 링크를 누르면 정리된 위치로 이동합니다.</p>
+    </div>
+
+    <div id="vocabNav" hidden>
+      <div class="cap">단어장</div>
+      <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">이번 차시에 나온 전공 필수 단어 <b id="vTotal">6</b>개입니다.</p>
+      <hr>
+      <div class="cap">사용법</div>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">뜻 가리기를 켜면 회색 칸을 눌러 하나씩 확인할 수 있습니다. 퀴즈는 아래 목록에서 문제를 자동으로 만듭니다.</p>
+    </div>
+  </div>
+</aside>
+
+<main>
+<!-- ═══════════ 본문 뷰 ═══════════ -->
+<div id="viewNote">
+
+  <div class="hero" data-w="04">
+    <span class="chip">4주차 · 2차시</span>
+    <button class="chip extra-chip" id="extraChip"></button>
+    <h1>점화식 연습</h1>
+    <p class="sub">전개 대신 그림으로 — 줄어드는 크기와 드는 연산을 세어 T(n) 구하기</p>
+    <div class="metaline">
+      <span>2026.09.28 (월)</span>
+      <span><b>윤지현</b> 교수님</span>
+      <span>교재 범위 없음 (판서 수업)</span>
+      <span>점화식 연습</span>
+    </div>
+  </div>
+
+  <nav class="flow">
+    <a href="#s1"><b>01</b> 이진탐색 T(n/2)+C</a>
+    <a href="#s2"><b>02</b> QS T(n/2)+Cn</a>
+    <a href="#s3"><b>03</b> 정렬 2T(n/2)+Cn</a>
+    <a href="#s4"><b>04</b> 카라츠바 3T(n/2)+Cn</a>
+    <a href="#sx"><b>07</b> 예상 문제</a>
+  </nav>
+
+  <div class="keys">
+    <div class="key"><div class="n">핵심 1</div><p>T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>)의 <span class="frac"><span class="num">n</span><span class="den">2</span></span> 는 <b>연산이 아니라 줄어든 입력의 크기</b>. 연산은 옆에 붙은 C, Cn.</p></div>
+    <div class="key"><div class="n">핵심 2</div><p>점화식을 <b>그림으로 그려</b> 층마다 드는 연산을 더해도 Big-O 를 구할 수 있다.</p></div>
+    <div class="key"><div class="n">핵심 3</div><p>T(n/2)+C → <b>O(log n)</b> · T(n/2)+Cn → <b>O(n)</b> · 2T(n/2)+Cn → <b>O(n log n)</b> · 3T(n/2)+Cn → <b>O(n<sup>log₂3</sup>)</b>.</p></div>
+  </div>
+
+  <!-- 01 -->
+  <section id="s1">
+    <h2 class="st"><span class="sq">01</span>점화식 연습 ① — 이진탐색을 직관으로 풀기</h2>
+    <div class="badges"><span class="badge exam">시험 ★★★</span></div>
+
+    <p>오늘은 점화식 연습입니다. 첫 번째는 이진탐색의 <b>T(n) = T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + C</b> 입니다. 이번에는 식을 한 줄씩 전개하지 않고, <b>문제가 줄어드는 과정을 세로로 그려서 드는 연산을 세는 방식</b>으로 풉니다.</p>
+
+    <h3>식을 읽는 법</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>기호</th><th>뜻</th></tr></thead>
+        <tbody>
+          <tr><td>T(n)</td><td>입력이 n개일 때 걸리는 전체 시간</td></tr>
+          <tr><td>T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>)</td><td>반으로 줄어든 문제를 푸는 시간. <b><span class="frac"><span class="num">n</span><span class="den">2</span></span> 은 연산이 아니라 줄어든 문제(입력)의 크기</b></td></tr>
+          <tr><td>C</td><td>n개를 <span class="frac"><span class="num">n</span><span class="den">2</span></span>개로 <b>한 번 줄이는 과정에서 드는 연산</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:8px"><span class="ext">이진탐색에서 C 는 가운데 자리 m 을 계산하고 A[m] 과 k 를 비교하는 일입니다. 입력 크기와 상관없이 몇 번으로 끝나서 상수입니다.</span></p>
+
+    <h3>세로식 — 줄어드는 크기와 그때마다 드는 연산</h3>
+    <figure style="margin:16px 0">
+      <svg width="100%" viewBox="0 0 640 434" role="img" style="display:block;max-width:640px;margin:0 auto"><title>이진탐색 점화식을 세로로 펼친 그림</title><desc>왼쪽 줄은 입력 크기가 n에서 절반씩 줄어 n분의 2의 k제곱, 즉 1이 되는 과정이다. 한 번 줄일 때마다 오른쪽에 상수 C가 하나씩 생기고 k번 줄이므로 C가 k개다. 더 쪼갤 수 없는 크기 1의 문제는 아래에서 T(1) 즉 C가 든다.</desc><text x="210" y="18" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="var(--ink-2)">입력 크기</text><text x="440" y="18" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="var(--accent-deep)">드는 연산</text><rect x="370" y="104" width="140" height="252" rx="16" fill="var(--accent)" fill-opacity="0.06"/><text x="52" y="60" text-anchor="start" dominant-baseline="central" font-size="11.5" font-weight="600" fill="var(--ink-3)">처음</text><rect x="150" y="37" width="120" height="46" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><foreignObject x="150" y="37" width="120" height="46"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:15px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span>n</span></div></foreignObject><text x="52" y="140" text-anchor="start" dominant-baseline="central" font-size="11.5" font-weight="600" fill="var(--ink-3)">1번 줄임</text><rect x="150" y="117" width="120" height="46" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><foreignObject x="150" y="117" width="120" height="46"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:15px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span><span class="frac"><span class="num">n</span><span class="den">2</span></span></span></div></foreignObject><text x="52" y="220" text-anchor="start" dominant-baseline="central" font-size="11.5" font-weight="600" fill="var(--ink-3)">2번 줄임</text><rect x="150" y="197" width="120" height="46" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><foreignObject x="150" y="197" width="120" height="46"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:15px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span><span class="frac"><span class="num">n</span><span class="den">2²</span></span></span></div></foreignObject><text x="52" y="320" text-anchor="start" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-2)">k번 줄임</text><rect x="142" y="297" width="136" height="46" rx="10" fill="var(--surface)" stroke="var(--c2)" stroke-width="1.2"/><foreignObject x="142" y="297" width="136" height="46"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:15px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span><span class="frac"><span class="num">n</span><span class="den">2<sup>k</sup></span></span>&nbsp;= 1</span></div></foreignObject><line x1="210" y1="83" x2="210" y2="110" stroke="var(--line-strong, var(--ink-3))" stroke-width="1.4"/><path d="M205.5 109 L214.5 109 L210 117 Z" fill="var(--line-strong, var(--ink-3))"/><line x1="210" y1="163" x2="210" y2="190" stroke="var(--line-strong, var(--ink-3))" stroke-width="1.4"/><path d="M205.5 189 L214.5 189 L210 197 Z" fill="var(--line-strong, var(--ink-3))"/><line x1="210" y1="243" x2="210" y2="256" stroke="var(--ink-3)" stroke-width="1.4"/><text x="210" y="272" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="800" fill="var(--ink-3)">⋮</text><line x1="210" y1="284" x2="210" y2="290" stroke="var(--line-strong, var(--ink-3))" stroke-width="1.4"/><path d="M205.5 289 L214.5 289 L210 297 Z" fill="var(--line-strong, var(--ink-3))"/><line x1="274" y1="140" x2="386" y2="140" stroke="var(--accent)" stroke-opacity="0.5" stroke-width="1.2" stroke-dasharray="3 5"/><foreignObject x="374" y="116" width="132" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:15px;font-weight:800;color:var(--accent-deep);line-height:1.2;white-space:nowrap"><span>C</span></div></foreignObject><line x1="274" y1="220" x2="386" y2="220" stroke="var(--accent)" stroke-opacity="0.5" stroke-width="1.2" stroke-dasharray="3 5"/><foreignObject x="374" y="196" width="132" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:15px;font-weight:800;color:var(--accent-deep);line-height:1.2;white-space:nowrap"><span>C</span></div></foreignObject><line x1="274" y1="320" x2="386" y2="320" stroke="var(--accent)" stroke-opacity="0.5" stroke-width="1.2" stroke-dasharray="3 5"/><foreignObject x="374" y="296" width="132" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:15px;font-weight:800;color:var(--accent-deep);line-height:1.2;white-space:nowrap"><span>C</span></div></foreignObject><text x="440" y="272" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="800" fill="var(--accent-deep)">⋮</text><path d="M520 112 L526 112 L526 348 L520 348" fill="none" stroke="var(--accent)" stroke-opacity="0.6" stroke-width="1.3"/><foreignObject x="534" y="200" width="110" height="60"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:column;align-items:center;justify-content:flex-start;height:100%;font-size:12.5px;font-weight:800;color:var(--accent-deep);line-height:1.2;white-space:nowrap"><span>C 가 k개<br>= C·k</span></div></foreignObject><line x1="210" y1="343" x2="210" y2="365" stroke="var(--c2)" stroke-width="1.4"/><path d="M205.5 364 L214.5 364 L210 372 Z" fill="var(--c2)"/><rect x="150" y="376" width="120" height="36" rx="10" fill="color-mix(in srgb,var(--c2) 12%,var(--surface))" stroke="var(--c2)" stroke-width="1.2"/><foreignObject x="150" y="376" width="120" height="36"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:14px;font-weight:800;color:var(--c2);line-height:1.2;white-space:nowrap"><span>T(1) = C</span></div></foreignObject><text x="284" y="394" text-anchor="start" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--c2)">← 더 쪼갤 수 없는 크기 1 을 푸는 시간</text></svg>
+      <figcaption>왼쪽 줄은 문제의 크기, 오른쪽 점선 칸은 한 번 줄일 때마다 드는 연산 C. 오른쪽 영역과 아래 영역을 모두 더한 것이 전체 시간이다</figcaption>
+    </figure>
+
+    <h3>다 더하기</h3>
+    <pre class="math">오른쪽 영역 :  C 가 k 개               →  C·k
+아래 영역   :  T(1) = C
+
+T(n) = C·k + C
+
+가정 : n = 2<sup>k</sup>   →   k = log₂ n
+
+T(n) = C·log₂ n + C
+     = O(log₂ n) = O(log n)</pre>
+
+    <div class="call warn">
+      <div class="t">필기 오타 — 고쳐서 반영</div>
+      <p>필기에 <code>n/2^k = T(1) = C</code> 로 되어 있었는데, 왼쪽의 <span class="frac"><span class="num">n</span><span class="den">2<sup>k</sup></span></span> 은 <b>크기</b>이고 T(1) 은 <b>시간</b>이라 등호로 바로 이을 수 없습니다. 정확히는 두 줄입니다.</p>
+      <pre class="math" style="margin:8px 0 0">크기 :  <span class="frac"><span class="num">n</span><span class="den">2<sup>k</sup></span></span> = 1
+시간 :  T(<span class="frac"><span class="num">n</span><span class="den">2<sup>k</sup></span></span>) = T(1) = C</pre>
+    </div>
+
+    <div class="call extra">
+      <div class="t">지난 시간의 전개 풀이와 비교</div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th></th><th>전개 (지난 과제 대비)</th><th>세로식 (오늘)</th></tr></thead>
+          <tbody>
+            <tr><td>하는 일</td><td>T( ) 안에 식을 계속 대입</td><td>줄어드는 크기를 세로로 적고 옆에 드는 연산을 적음</td></tr>
+            <tr><td>C·k 가 나오는 곳</td><td>일반항 T(<span class="frac"><span class="num">n</span><span class="den">2<sup>k</sup></span></span>) + k·C</td><td>오른쪽 영역의 C 개수</td></tr>
+            <tr><td>마지막 C 가 나오는 곳</td><td>T(<span class="frac"><span class="num">n</span><span class="den">2<sup>k</sup></span></span>) = T(1) = C 대입</td><td>아래 영역</td></tr>
+            <tr><td>결과</td><td colspan="2" style="text-align:center"><b>C·log₂ n + C = O(log n)</b> — 같음</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:8px">세로식은 같은 계산을 그림으로 본 것입니다. 오른쪽 한 칸 = 전개에서 한 번 대입할 때 붙는 C 하나입니다.</p>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">오늘 수업 시작(4-2)
+4-1 은 추석 연휴 휴강
+9월 28일 월요일 4주차 2차시
+
+___
+
+점화식 연습
+
+1. 이진탐색 T(n) = T(n/2) + C
+
+
+→ n개의 입력을 n/2개로 줄이는 과정에서 C 만큼 발생하는 거임
+n/2는 연산이 아닌 줄어든 문제(입력)의 크기
+
+→ n/2^2로 줄어드는 과정에서 다시 C만큼 연산 발생
+
+→ ... n/2^k까지 줄어들게 되고 그 때도 C가 나옴
+더이상 쪼개질 수 없는데 전체적으로 소요된 계산을 생각해보면
+
+n
+아래화살표
+n/2    ---- C
+아래화살표
+n/2^2     ---- C
+아래화살표
+...
+아래화살표
+n/2^k   ------C
+
+여기서 n/2^k = T(1) = C
+
+저 옆에 있는 C는 k만큼 소요
+
+즉 저기 오른쪽과 아래 영역이 연산시간이 되는거고
+다 더하면 T(n) = C*k + C
+
+n=2^k로 가정하기 때문에 k = log_2 n
+
+T(n) = C*log_2 n + C
+   = O(log_2 n) = O(log n)
+
+이렇게 되는거임(전개해서 푸는게 아니라 직관적으로 푸는걸 보는거임)
+
+내가 말한거 시각화 잘 해줘야해 특히 새로식</div></details>
+  </section>
+
+  <!-- 02 -->
+  <section id="s2">
+    <h2 class="st"><span class="sq">02</span>점화식 연습 ② — Quick Select 최선의 경우</h2>
+    <div class="badges"><span class="badge exam">시험 ★★★</span></div>
+
+    <p>Quick Select 의 best case 는 <b>T(n) = T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn</b> 입니다. 이진탐색과 모양이 같은데, 뒤에 붙는 것이 상수 C 가 아니라 <b>Cn</b> 입니다. 한 번 줄일 때 리스트 전체를 한 번씩 훑어 A/M/B 로 나누기 때문에, 드는 연산이 <b>그때의 크기에 비례</b>합니다.</p>
+
+    <h3>세로식</h3>
+    <figure style="margin:16px 0">
+      <svg width="100%" viewBox="0 0 640 434" role="img" style="display:block;max-width:640px;margin:0 auto"><title>Quick Select 최선 점화식을 세로로 펼친 그림</title><desc>왼쪽 줄은 입력 크기가 n에서 절반씩 줄어 1이 되는 과정이다. 오른쪽에는 줄일 때마다 드는 연산이 줄이기 전 크기에 비례해 Cn, C 곱하기 n분의 2, 마지막에 C 곱하기 n분의 2의 k 빼기 1 제곱으로 적혀 있다. 아래는 크기 1의 문제를 푸는 T(1) 즉 C이다.</desc><text x="210" y="18" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="var(--ink-2)">입력 크기</text><text x="440" y="18" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="var(--accent-deep)">드는 연산 (크기에 비례)</text><rect x="370" y="104" width="140" height="252" rx="16" fill="var(--accent)" fill-opacity="0.06"/><text x="52" y="60" text-anchor="start" dominant-baseline="central" font-size="11.5" font-weight="600" fill="var(--ink-3)">처음</text><rect x="150" y="37" width="120" height="46" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><foreignObject x="150" y="37" width="120" height="46"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:15px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span>n</span></div></foreignObject><text x="52" y="140" text-anchor="start" dominant-baseline="central" font-size="11.5" font-weight="600" fill="var(--ink-3)">1번 줄임</text><rect x="150" y="117" width="120" height="46" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><foreignObject x="150" y="117" width="120" height="46"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:15px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span><span class="frac"><span class="num">n</span><span class="den">2</span></span></span></div></foreignObject><text x="52" y="220" text-anchor="start" dominant-baseline="central" font-size="11.5" font-weight="600" fill="var(--ink-3)">2번 줄임</text><rect x="150" y="197" width="120" height="46" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><foreignObject x="150" y="197" width="120" height="46"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:15px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span><span class="frac"><span class="num">n</span><span class="den">2²</span></span></span></div></foreignObject><text x="52" y="320" text-anchor="start" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-2)">k번 줄임</text><rect x="142" y="297" width="136" height="46" rx="10" fill="var(--surface)" stroke="var(--c2)" stroke-width="1.2"/><foreignObject x="142" y="297" width="136" height="46"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:15px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span><span class="frac"><span class="num">n</span><span class="den">2<sup>k</sup></span></span>&nbsp;= 1</span></div></foreignObject><line x1="210" y1="83" x2="210" y2="110" stroke="var(--line-strong, var(--ink-3))" stroke-width="1.4"/><path d="M205.5 109 L214.5 109 L210 117 Z" fill="var(--line-strong, var(--ink-3))"/><line x1="210" y1="163" x2="210" y2="190" stroke="var(--line-strong, var(--ink-3))" stroke-width="1.4"/><path d="M205.5 189 L214.5 189 L210 197 Z" fill="var(--line-strong, var(--ink-3))"/><line x1="210" y1="243" x2="210" y2="256" stroke="var(--ink-3)" stroke-width="1.4"/><text x="210" y="272" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="800" fill="var(--ink-3)">⋮</text><line x1="210" y1="284" x2="210" y2="290" stroke="var(--line-strong, var(--ink-3))" stroke-width="1.4"/><path d="M205.5 289 L214.5 289 L210 297 Z" fill="var(--line-strong, var(--ink-3))"/><line x1="274" y1="140" x2="386" y2="140" stroke="var(--accent)" stroke-opacity="0.5" stroke-width="1.2" stroke-dasharray="3 5"/><foreignObject x="374" y="116" width="132" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:15px;font-weight:800;color:var(--accent-deep);line-height:1.2;white-space:nowrap"><span>Cn</span></div></foreignObject><line x1="274" y1="220" x2="386" y2="220" stroke="var(--accent)" stroke-opacity="0.5" stroke-width="1.2" stroke-dasharray="3 5"/><foreignObject x="374" y="196" width="132" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:15px;font-weight:800;color:var(--accent-deep);line-height:1.2;white-space:nowrap"><span>C·<span class="frac"><span class="num">n</span><span class="den">2</span></span></span></div></foreignObject><line x1="274" y1="320" x2="386" y2="320" stroke="var(--accent)" stroke-opacity="0.5" stroke-width="1.2" stroke-dasharray="3 5"/><foreignObject x="374" y="296" width="132" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:15px;font-weight:800;color:var(--accent-deep);line-height:1.2;white-space:nowrap"><span>C·<span class="frac"><span class="num">n</span><span class="den">2<sup>k−1</sup></span></span></span></div></foreignObject><text x="440" y="272" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="800" fill="var(--accent-deep)">⋮</text><path d="M520 112 L526 112 L526 348 L520 348" fill="none" stroke="var(--accent)" stroke-opacity="0.6" stroke-width="1.3"/><foreignObject x="534" y="200" width="110" height="60"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:column;align-items:center;justify-content:flex-start;height:100%;font-size:12.5px;font-weight:800;color:var(--accent-deep);line-height:1.2;white-space:nowrap"><span>k개</span></div></foreignObject><line x1="210" y1="343" x2="210" y2="365" stroke="var(--c2)" stroke-width="1.4"/><path d="M205.5 364 L214.5 364 L210 372 Z" fill="var(--c2)"/><rect x="150" y="376" width="120" height="36" rx="10" fill="color-mix(in srgb,var(--c2) 12%,var(--surface))" stroke="var(--c2)" stroke-width="1.2"/><foreignObject x="150" y="376" width="120" height="36"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:14px;font-weight:800;color:var(--c2);line-height:1.2;white-space:nowrap"><span>T(1) = C</span></div></foreignObject><text x="284" y="394" text-anchor="start" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--c2)">← 더 쪼갤 수 없는 크기 1 을 푸는 시간</text></svg>
+      <figcaption>이진탐색과 달리 오른쪽 칸의 값이 매번 절반으로 작아진다. 오른쪽을 Cn 으로 묶으면 괄호 안이 등비수열이 된다</figcaption>
+    </figure>
+
+    <div class="call">
+      <div class="t">이진탐색(01)과 무엇이 다른가</div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th></th><th>01 이진탐색</th><th>02 Quick Select 최선</th></tr></thead>
+          <tbody>
+            <tr><td>점화식</td><td>T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + C</td><td>T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn</td></tr>
+            <tr><td>오른쪽 칸</td><td>C, C, …, C (모두 같음)</td><td>Cn, C·<span class="frac"><span class="num">n</span><span class="den">2</span></span>, …, C·<span class="frac"><span class="num">n</span><span class="den">2<sup>k−1</sup></span></span> (절반씩 작아짐)</td></tr>
+            <tr><td>오른쪽 합</td><td>C·k — <b>개수</b>를 셈</td><td>Cn × 등비수열 — <b>등비수열 합</b>을 구함</td></tr>
+            <tr><td>결과</td><td>O(log n)</td><td>O(n)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <h3>풀이 ① — 등비수열 합 공식으로 정확히</h3>
+    <pre class="math">T(n) = Cn·( <u>1 + <span class="frac"><span class="num">1</span><span class="den">2</span></span> + <span class="frac"><span class="num">1</span><span class="den">2²</span></span> + … + <span class="frac"><span class="num">1</span><span class="den">2<sup>k−1</sup></span></span></u> ) + C
+
+밑줄 : 초항 a = 1 ,  공비 r = <span class="frac"><span class="num">1</span><span class="den">2</span></span> ,  항 k 개인 등비수열의 합
+
+등비수열의 합 = <span class="frac"><span class="num">a(1 − r<sup>k</sup>)</span><span class="den">1 − r</span></span>          ← r &lt; 1 일 때 쓰는 꼴
+
+     = <span class="frac"><span class="num">1·(1 − (<span class="frac"><span class="num">1</span><span class="den">2</span></span>)<sup>k</sup>)</span><span class="den">1 − <span class="frac"><span class="num">1</span><span class="den">2</span></span></span></span> = 2·(1 − <span class="frac"><span class="num">1</span><span class="den">2<sup>k</sup></span></span>)
+
+가정 : n = 2<sup>k</sup>   →   2·(1 − <span class="frac"><span class="num">1</span><span class="den">n</span></span>)
+
+T(n) = Cn · 2·(1 − <span class="frac"><span class="num">1</span><span class="den">n</span></span>) + C
+     = 2Cn − 2C + C
+     = 2Cn − C
+
+⇒ O(n)</pre>
+
+    <div class="call warn">
+      <div class="t">공식의 n 과 입력 크기 n 을 섞지 않기</div>
+      <p>필기에는 등비수열 합이 <code>a(1-r^n)/(1-r)</code> 로 적혀 있습니다. 공식 자체는 맞지만 여기서 <b>항의 개수는 k</b> 이므로 r<sup>k</sup> 로 써야 합니다. 이 문제에는 입력 크기 n 이 따로 있어서, 공식에 n 을 그대로 쓰면 두 n 이 섞입니다. 위 풀이에는 k 로 바꿔 적었습니다.</p>
+    </div>
+
+    <h3>풀이 ② — 아무리 더해도 2 를 넘지 않는다</h3>
+    <p>괄호 안 1 + <span class="frac"><span class="num">1</span><span class="den">2</span></span> + <span class="frac"><span class="num">1</span><span class="den">4</span></span> + … 는 넓이로 보면 <b>가로 2, 세로 1 인 직사각형을 채우는 것</b>과 같습니다.</p>
+    <figure style="margin:16px 0">
+      <svg width="100%" viewBox="0 0 640 300" role="img" style="display:block;max-width:640px;margin:0 auto"><title>가로 2 세로 1 직사각형을 1, 2분의 1, 4분의 1 순으로 채우는 그림</title><desc>넓이 2인 직사각형에 넓이 1을 먼저 채우고, 남은 부분의 절반인 2분의 1, 다시 남은 부분의 절반인 4분의 1, 8분의 1, 16분의 1, 32분의 1을 채운다. 매번 남은 칸의 절반만 채우므로 아무리 더해도 넓이 2를 넘지 못한다.</desc><rect x="120.0" y="24" width="400" height="200" rx="4" fill="none" stroke="var(--ink-3)" stroke-width="1.5"/><rect x="121.5" y="25.5" width="197" height="197" rx="3" fill="var(--accent)" fill-opacity="0.42"/><foreignObject x="120" y="24" width="200" height="200"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:22px;font-weight:800;color:var(--accent-deep);line-height:1.2;white-space:nowrap"><span>1</span></div></foreignObject><rect x="321.5" y="25.5" width="197" height="97" rx="3" fill="var(--accent)" fill-opacity="0.34"/><foreignObject x="320" y="24" width="200" height="100"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:18px;font-weight:800;color:var(--accent-deep);line-height:1.2;white-space:nowrap"><span><span class="frac"><span class="num">1</span><span class="den">2</span></span></span></div></foreignObject><rect x="321.5" y="125.5" width="97" height="97" rx="3" fill="var(--accent)" fill-opacity="0.27"/><foreignObject x="320" y="124" width="100" height="100"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:16px;font-weight:800;color:var(--accent-deep);line-height:1.2;white-space:nowrap"><span><span class="frac"><span class="num">1</span><span class="den">4</span></span></span></div></foreignObject><rect x="421.5" y="125.5" width="97" height="47" rx="3" fill="var(--accent)" fill-opacity="0.21"/><foreignObject x="420" y="124" width="100" height="50"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:13px;font-weight:800;color:var(--accent-deep);line-height:1.2;white-space:nowrap"><span><span class="frac"><span class="num">1</span><span class="den">8</span></span></span></div></foreignObject><rect x="421.5" y="175.5" width="47" height="47" rx="3" fill="var(--accent)" fill-opacity="0.16"/><foreignObject x="420" y="174" width="50" height="50"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:11px;font-weight:800;color:var(--accent-deep);line-height:1.2;white-space:nowrap"><span><span class="frac"><span class="num">1</span><span class="den">16</span></span></span></div></foreignObject><rect x="471.5" y="175.5" width="47" height="22" rx="3" fill="var(--accent)" fill-opacity="0.12"/><foreignObject x="470" y="174" width="50" height="25"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:8px;font-weight:800;color:var(--accent-deep);line-height:1.2;white-space:nowrap"><span><span class="frac"><span class="num">1</span><span class="den">32</span></span></span></div></foreignObject><rect x="471.5" y="200.5" width="47" height="22" rx="3" fill="var(--line)"/><text x="495" y="211.5" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="800" fill="var(--ink-3)">…</text><text x="120" y="242" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="var(--ink-3)">0</text><text x="320" y="242" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="var(--ink-3)">1</text><text x="520" y="242" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="var(--ink-3)">2</text><text x="320" y="276" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="var(--accent-deep)">매번 남은 칸의 절반만 채운다 → 전체 넓이 2 를 넘지 못한다</text></svg>
+      <figcaption>1 을 채우면 남은 넓이가 1, 그 절반 <span class="frac"><span class="num">1</span><span class="den">2</span></span> 을 채우면 남은 넓이가 <span class="frac"><span class="num">1</span><span class="den">2</span></span>, 또 그 절반 … 남은 칸이 0 이 되지는 않으므로 합은 언제나 2 보다 작다</figcaption>
+    </figure>
+    <pre class="math">1 + <span class="frac"><span class="num">1</span><span class="den">2</span></span> + <span class="frac"><span class="num">1</span><span class="den">2²</span></span> + … + <span class="frac"><span class="num">1</span><span class="den">2<sup>k−1</sup></span></span>  ≤  2
+
+T(n) ≤ Cn · 2 + C = 2Cn + C
+
+⇒ O(n)</pre>
+
+    <div class="call extra">
+      <div class="t">두 풀이의 관계</div>
+      <p>① 은 정확한 값(<b>2Cn − C</b>), ② 는 위로 막은 값(<b>2Cn + C 이하</b>)입니다. Big-O 는 상한이라 ② 만으로도 O(n) 이 됩니다. 실제로 ① 의 2Cn − C 는 ② 의 2Cn + C 보다 작아서 두 결과가 맞습니다. n = 2 ~ 128 을 직접 넣어 보면 T(n) = 2n − 1 (C = 1) 로 ① 과 일치합니다.</p>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">2. quickSelect best case 분석할 때
+
+T(n) = T(n/2) + Cn
+
+다시 또 시각화 직관적으로
+
+n
+아래화살표
+n/2    ----- Cn
+아래화살표
+n/2^2    -----C*n/2
+아래화살표
+...
+아래화살표
+n/2^k   ---- C*(n/(2^(k-1))
+
+n/2^k = 1  (T(1) = C)
+
+즉 마지막엔 C
+
+저기 연산 영역들을 묶으면
+T(n) = Cn(1+1/2+1/2^2+ ... + 1/2^(k-1)) + C
+
+여기서 저 식은(저 식에 밑줄) 공비 r = 1/2, 초항 a= 1, k개 등비수열의 합임
+
+* 등비수열의 합 = a(1-r^n)/(1-r)
+
+
+즉 저 식은 1(1-(1/2)^k)  / 1-1/2 이고
+= 2(1-(1/2)^k) = 2(1-1/2^k)
+
+n = 2^k로 가정하기 때문에
+2(1-1/n)이 됨
+
+T(n) = Cn * 2(1-1/n) + C
+
+= 2Cn - 2C + C
+= 2Cn - C
+
+O(n)
+
+
+알고리즘 수업은 가산점 질문 필요 없어. 앞으로 안해줘도 돼
+
+
+또는 잘 살펴보면 방금 본 그 등비수열의 합 식이 아무리 더해도 2를 넘을 수 없음(전체 식 &lt;= 2)(직사각형 채우는 도식화 해주면 좋을듯)
+
+즉 T(n) &lt;= 2Cn +C
+
+O(n)
+
+
+이렇게도 풀 수 있음</div></details>
+  </section>
+
+  <!-- 03 -->
+  <section id="s3">
+    <h2 class="st"><span class="sq">03</span>점화식 연습 ③ — 정렬: T(n) = 2T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn</h2>
+    <div class="badges"><span class="badge exam">시험 ★★★</span><span class="badge prof">식만 먼저 — 정렬 내용은 뒤에서</span></div>
+
+    <p>quick sort / merge sort 의 점화식입니다. 정렬 자체는 뒤에서 배우고, 오늘은 <b>식만 먼저 가져와서</b> 풉니다. 01·02 와 달리 재귀 호출이 <b>2번</b>이라 한 줄로 내려가지 않고 <b>양갈래로 갈라지는 나무</b>가 됩니다.</p>
+    <p style="margin-top:6px"><span class="ext">퀵 정렬이 이 식이 되는 것은 피벗이 매번 정확히 반으로 나눌 때(최선)입니다. 합병 정렬은 항상 반으로 나누므로 늘 이 식입니다.</span></p>
+
+    <h3>양갈래 나무 — 색칠한 곳이 연산 시간</h3>
+    <figure style="margin:16px 0">
+      <svg width="100%" viewBox="0 0 660 432" role="img" style="display:block;max-width:660px;margin:0 auto"><title>합병 정렬과 퀵 정렬 점화식의 두 갈래 나무 그림</title><desc>크기 n이 두 갈래로 나뉘어 n분의 2 두 개, 다시 n분의 4 네 개가 되고, 마지막에 크기 1인 칸 n개가 된다. 갈라지는 자리마다 보라색 연산이 들며, 오른쪽에 층마다 더한 값과 그 크기를 막대로 표시했다. 모든 층의 합이 Cn으로 같아 막대 길이가 같다. 맨 아래 초록색 칸 n개는 각각 C가 든다.</desc><text x="232" y="16" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="var(--ink-2)">두 갈래 나무</text><text x="560" y="16" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="var(--ink-2)">층마다 합</text><rect x="200" y="32" width="64" height="40" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><foreignObject x="200" y="32" width="64" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:15px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span>n</span></div></foreignObject><line x1="232" y1="72" x2="127" y2="122" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><line x1="232" y1="72" x2="337" y2="122" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="208" y="84" width="48" height="24" rx="10" fill="var(--accent)" stroke="none" stroke-width="1.2"/><foreignObject x="208" y="84" width="48" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:12px;font-weight:800;color:#fff;line-height:1.2;white-space:nowrap"><span>Cn</span></div></foreignObject><rect x="97" y="121" width="60" height="42" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><foreignObject x="97" y="121" width="60" height="42"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:14px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span><span class="frac"><span class="num">n</span><span class="den">2</span></span></span></div></foreignObject><rect x="307" y="121" width="60" height="42" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><foreignObject x="307" y="121" width="60" height="42"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:14px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span><span class="frac"><span class="num">n</span><span class="den">2</span></span></span></div></foreignObject><line x1="127" y1="163" x2="75" y2="212" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><line x1="127" y1="163" x2="179" y2="212" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="95" y="172" width="64" height="30" rx="10" fill="var(--accent)" stroke="none" stroke-width="1.2"/><foreignObject x="95" y="172" width="64" height="30"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:11.5px;font-weight:800;color:#fff;line-height:1.2;white-space:nowrap"><span>C·<span class="frac"><span class="num">n</span><span class="den">2</span></span></span></div></foreignObject><line x1="337" y1="163" x2="285" y2="212" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><line x1="337" y1="163" x2="389" y2="212" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="305" y="172" width="64" height="30" rx="10" fill="var(--accent)" stroke="none" stroke-width="1.2"/><foreignObject x="305" y="172" width="64" height="30"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:11.5px;font-weight:800;color:#fff;line-height:1.2;white-space:nowrap"><span>C·<span class="frac"><span class="num">n</span><span class="den">2</span></span></span></div></foreignObject><rect x="45" y="212" width="60" height="40" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><foreignObject x="45" y="212" width="60" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:13px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span><span class="frac"><span class="num">n</span><span class="den">2²</span></span></span></div></foreignObject><rect x="149" y="212" width="60" height="40" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><foreignObject x="149" y="212" width="60" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:13px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span><span class="frac"><span class="num">n</span><span class="den">2²</span></span></span></div></foreignObject><rect x="255" y="212" width="60" height="40" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><foreignObject x="255" y="212" width="60" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:13px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span><span class="frac"><span class="num">n</span><span class="den">2²</span></span></span></div></foreignObject><rect x="359" y="212" width="60" height="40" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><foreignObject x="359" y="212" width="60" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:13px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span><span class="frac"><span class="num">n</span><span class="den">2²</span></span></span></div></foreignObject><text x="232" y="292" text-anchor="middle" dominant-baseline="central" font-size="18" font-weight="800" fill="var(--ink-3)">⋮</text><line x1="83.5" y1="326" x2="58.75" y2="355" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><line x1="83.5" y1="326" x2="108.25" y2="355" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><circle cx="83.5" cy="326" r="5" fill="var(--accent)"/><line x1="182.5" y1="326" x2="157.75" y2="355" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><line x1="182.5" y1="326" x2="207.25" y2="355" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><circle cx="182.5" cy="326" r="5" fill="var(--accent)"/><line x1="281.5" y1="326" x2="256.75" y2="355" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><line x1="281.5" y1="326" x2="306.25" y2="355" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><circle cx="281.5" cy="326" r="5" fill="var(--accent)"/><line x1="380.5" y1="326" x2="355.75" y2="355" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><line x1="380.5" y1="326" x2="405.25" y2="355" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><circle cx="380.5" cy="326" r="5" fill="var(--accent)"/><rect x="43.75" y="355" width="30" height="26" rx="10" fill="color-mix(in srgb,var(--c2) 14%,var(--surface))" stroke="var(--c2)" stroke-width="1.2"/><foreignObject x="43.75" y="355" width="30" height="26"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:12px;font-weight:800;color:var(--c2);line-height:1.2;white-space:nowrap"><span>1</span></div></foreignObject><rect x="93.25" y="355" width="30" height="26" rx="10" fill="color-mix(in srgb,var(--c2) 14%,var(--surface))" stroke="var(--c2)" stroke-width="1.2"/><foreignObject x="93.25" y="355" width="30" height="26"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:12px;font-weight:800;color:var(--c2);line-height:1.2;white-space:nowrap"><span>1</span></div></foreignObject><rect x="142.75" y="355" width="30" height="26" rx="10" fill="color-mix(in srgb,var(--c2) 14%,var(--surface))" stroke="var(--c2)" stroke-width="1.2"/><foreignObject x="142.75" y="355" width="30" height="26"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:12px;font-weight:800;color:var(--c2);line-height:1.2;white-space:nowrap"><span>1</span></div></foreignObject><rect x="192.25" y="355" width="30" height="26" rx="10" fill="color-mix(in srgb,var(--c2) 14%,var(--surface))" stroke="var(--c2)" stroke-width="1.2"/><foreignObject x="192.25" y="355" width="30" height="26"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:12px;font-weight:800;color:var(--c2);line-height:1.2;white-space:nowrap"><span>1</span></div></foreignObject><rect x="241.75" y="355" width="30" height="26" rx="10" fill="color-mix(in srgb,var(--c2) 14%,var(--surface))" stroke="var(--c2)" stroke-width="1.2"/><foreignObject x="241.75" y="355" width="30" height="26"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:12px;font-weight:800;color:var(--c2);line-height:1.2;white-space:nowrap"><span>1</span></div></foreignObject><rect x="291.25" y="355" width="30" height="26" rx="10" fill="color-mix(in srgb,var(--c2) 14%,var(--surface))" stroke="var(--c2)" stroke-width="1.2"/><foreignObject x="291.25" y="355" width="30" height="26"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:12px;font-weight:800;color:var(--c2);line-height:1.2;white-space:nowrap"><span>1</span></div></foreignObject><rect x="340.75" y="355" width="30" height="26" rx="10" fill="color-mix(in srgb,var(--c2) 14%,var(--surface))" stroke="var(--c2)" stroke-width="1.2"/><foreignObject x="340.75" y="355" width="30" height="26"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:12px;font-weight:800;color:var(--c2);line-height:1.2;white-space:nowrap"><span>1</span></div></foreignObject><rect x="390.25" y="355" width="30" height="26" rx="10" fill="color-mix(in srgb,var(--c2) 14%,var(--surface))" stroke="var(--c2)" stroke-width="1.2"/><foreignObject x="390.25" y="355" width="30" height="26"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:12px;font-weight:800;color:var(--c2);line-height:1.2;white-space:nowrap"><span>1</span></div></foreignObject><foreignObject x="24" y="386" width="416" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:11.5px;font-weight:700;color:var(--c2);line-height:1.2;white-space:nowrap"><span>맨 아래 : 크기 1 인 칸이 n 개, 각각 T(1) = C</span></div></foreignObject><rect x="468" y="72" width="184" height="282" rx="14" fill="var(--accent)" fill-opacity="0.05"/><line x1="444" y1="96" x2="464" y2="96" stroke="var(--accent)" stroke-opacity="0.5" stroke-width="1.2" stroke-dasharray="3 5"/><foreignObject x="470" y="70" width="180" height="32"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:13px;font-weight:800;color:var(--accent-deep);line-height:1.2;white-space:nowrap"><span>Cn</span></div></foreignObject><rect x="536" y="104" width="48" height="6" rx="3" fill="var(--accent)" fill-opacity="0.55"/><line x1="444" y1="187" x2="464" y2="187" stroke="var(--accent)" stroke-opacity="0.5" stroke-width="1.2" stroke-dasharray="3 5"/><foreignObject x="470" y="161" width="180" height="32"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:13px;font-weight:800;color:var(--accent-deep);line-height:1.2;white-space:nowrap"><span>C·<span class="frac"><span class="num">n</span><span class="den">2</span></span> × 2&nbsp; = &nbsp;Cn</span></div></foreignObject><rect x="536" y="195" width="48" height="6" rx="3" fill="var(--accent)" fill-opacity="0.55"/><line x1="444" y1="326" x2="464" y2="326" stroke="var(--accent)" stroke-opacity="0.5" stroke-width="1.2" stroke-dasharray="3 5"/><foreignObject x="470" y="300" width="180" height="32"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:13px;font-weight:800;color:var(--accent-deep);line-height:1.2;white-space:nowrap"><span>Cn</span></div></foreignObject><rect x="536" y="334" width="48" height="6" rx="3" fill="var(--accent)" fill-opacity="0.55"/><text x="560" y="250.5" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="800" fill="var(--accent-deep)">⋮</text><line x1="444" y1="368" x2="464" y2="368" stroke="var(--c2)" stroke-opacity="0.5" stroke-width="1.2" stroke-dasharray="3 5"/><foreignObject x="470" y="352" width="180" height="32"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:13px;font-weight:800;color:var(--c2);line-height:1.2;white-space:nowrap"><span>n × C = Cn</span></div></foreignObject><foreignObject x="468" y="384" width="184" height="44"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;font-size:10.5px;font-weight:700;color:var(--ink-3);line-height:1.2;white-space:nowrap"><span><div>막대 길이 = 층 합</div><div>모든 층이 Cn 으로 같다</div></span></div></foreignObject></svg>
+      <figcaption><b style="color:var(--accent-deep)">보라색</b> = 갈래가 나뉘는 자리에서 드는 연산 (모든 가지에 있지만 몇 개만 글자로 표시), <b style="color:var(--c2)">초록색</b> = 맨 마지막에 남은 크기 1 짜리들. 오른쪽은 층마다 더한 값과 그 크기(막대)</figcaption>
+    </figure>
+
+    <h3>층마다 더하기</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>층</th><th>갈래 수</th><th>갈래 하나의 연산</th><th>층 합계</th></tr></thead>
+        <tbody>
+          <tr><td>첫 층</td><td>1</td><td>Cn</td><td><b>Cn</b></td></tr>
+          <tr><td>두 번째 층</td><td>2</td><td>C·<span class="frac"><span class="num">n</span><span class="den">2</span></span></td><td>C·<span class="frac"><span class="num">n</span><span class="den">2</span></span> × 2 = <b>Cn</b></td></tr>
+          <tr><td>⋮</td><td>⋮</td><td>⋮</td><td>⋮</td></tr>
+          <tr><td>마지막 층 (k번째)</td><td>2<sup>k−1</sup></td><td>C·<span class="frac"><span class="num">n</span><span class="den">2<sup>k−1</sup></span></span></td><td>C·<span class="frac"><span class="num">n</span><span class="den">2<sup>k−1</sup></span></span> × 2<sup>k−1</sup> = <b>Cn</b></td></tr>
+          <tr style="background:color-mix(in srgb,var(--c2) 10%,transparent)"><td>맨 아래 (크기 1)</td><td>n 개</td><td>T(1) = C</td><td>n × C = <b>Cn</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:8px">갈래 수가 2배가 되면 갈래 하나의 크기는 절반이 되어서, <b>곱하면 층마다 항상 Cn</b> 으로 같습니다.</p>
+
+    <pre class="math">갈래에서 나오는 Cn 묶음 :  k 층  →  Cn·k
+맨 아래 칸들            :  n 개 × C  →  Cn
+
+T(n) = Cn·k + Cn
+
+가정 : n = 2<sup>k</sup>   →   k = log₂ n
+
+T(n) = Cn·log₂ n + Cn
+
+⇒ O(n log₂ n) = O(n log n)</pre>
+
+    <div class="call warn">
+      <div class="t">필기 오타 — 고쳐서 반영</div>
+      <p>마지막 줄 <code>O(n log_n)</code> 은 <b>O(n log n)</b> 입니다. log 아래첨자 자리에 n 이 들어가면 "밑이 n 인 로그"가 되어 뜻이 달라집니다.</p>
+    </div>
+
+    <div class="call quote">
+      <div class="t">교수님 말씀</div>
+      <p>"점화식을 수식으로 계산해도 되지만, <b>개념적으로 그려봐도 빅오 표현법 계산을 찾을 수 있다.</b>"</p>
+    </div>
+
+    <h3>오늘 세 문제 한눈에</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th></th><th>01 이진탐색</th><th>02 Quick Select 최선</th><th>03 정렬</th></tr></thead>
+        <tbody>
+          <tr><td>점화식</td><td>T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + C</td><td>T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn</td><td>2T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn</td></tr>
+          <tr><td>그림 모양</td><td>한 줄</td><td>한 줄</td><td>양갈래 나무</td></tr>
+          <tr><td>층마다 드는 연산</td><td>C (같음)</td><td>Cn, C·<span class="frac"><span class="num">n</span><span class="den">2</span></span>, … (절반씩 감소)</td><td>Cn (같음)</td></tr>
+          <tr><td>층 수</td><td>k = log₂ n</td><td>k = log₂ n</td><td>k = log₂ n</td></tr>
+          <tr><td>합</td><td>C·k + C</td><td>Cn·(등비수열) + C ≤ 2Cn + C</td><td>Cn·k + Cn</td></tr>
+          <tr><td>결과</td><td><b>O(log n)</b></td><td><b>O(n)</b></td><td><b>O(n log n)</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">3. (뒤에 가서 할 내용. 뒤에서는 정렬 할 예정. 우선 식만 먼저 가져와서 풀어봄. 내용은 나중에. 식만 지금)
+
+
+quick sort / merge sort
+T(n) = 2*T(n/2) + Cn
+
+n
+양갈래로 나눠짐
+n/2    n/2    ----- Cn(양갈래 안에)
+다시 더 더 갈라짐
+n/2^2   n/2^2    n/2^2    n/2^2        -----C*n/2  C*n/2  (각각 양갈래 안에)
+더더 양갈래
+...
+더더더더ㄷ 양갈래
+n/2^k  n/2^k .... n/2^k         ------ C*(n/(2^(k-1)))  가지마다(모든 가지에 표시하라는건 아니야)
+
+그럼 연산 시간은 맨 마지막에 남은 녀석들과 갈래 사이에 있는 것들인데(알아보기 쉽게 색칠 등)
+
+이것들을 다 더하면 연산시간
+
+첫 층 양갈래   ---→ Cn
+두번째 층 양갈래  ----→ Cn/2 * 2 = Cn
+...
+마지막층 양갈래  ------→ C * n/2^(k-1)  * 2^(k-1)  = Cn
+
+마지막 층에 있는 값들도 =⇒ n개   ----_&gt; C*n
+
+(이것도 시각화로 표현해줘)
+
+여기서 양갈래에서 나오는 연산 Cn들의 묶음이 k개라서 Cn*k가 되고
+마지막 층에 있는 애들은 Cn
+
+T(n) = Cn*k + Cn
+ = Cn*log_2 n + Cn
+ 
+O(nlog_2 n) 또는 O(n log_n)
+
+색칠 잘 해서 잘 나타내줘
+
+== 점화식을 수식으로 계산해도 되지만 개념적으로 그려봐도 빅오표현법 계산을 찾을 수 있다.</div></details>
+  </section>
+
+  <!-- 04 -->
+  <section id="s4">
+    <h2 class="st"><span class="sq">04</span>점화식 연습 ④ — 카라츠바: T(n) = 3T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn</h2>
+    <div class="badges"><span class="badge exam">시험 ★★★</span></div>
+
+    <div class="call quote">
+      <div class="t">교수님 말씀</div>
+      <p>"n 크기를 반으로 줄이는데 그 가지가 <b>3개씩</b> 생기면서, 그때마다 <b>Cn 만큼의 계산</b>이 계속해서 발생한다."</p>
+    </div>
+
+    <h3>세 갈래 나무</h3>
+    <figure style="margin:16px 0">
+      <svg width="100%" viewBox="0 0 660 432" role="img" style="display:block;max-width:660px;margin:0 auto"><title>카라츠바 점화식의 세 갈래 나무 그림</title><desc>크기 n이 세 갈래로 나뉘어 n분의 2 세 개, 다시 n분의 4 아홉 개가 되고, 마지막에 크기 1인 칸 3의 k제곱 개가 된다. 오른쪽에 층마다 더한 값과 그 크기를 막대로 표시했는데, 한 층 내려갈 때마다 2분의 3배씩 길어진다. 맨 아래 초록색 칸은 각각 C가 든다.</desc><text x="232" y="16" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="var(--ink-2)">세 갈래 나무</text><text x="560" y="16" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="var(--ink-2)">층마다 합</text><rect x="200" y="32" width="64" height="40" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><foreignObject x="200" y="32" width="64" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:15px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span>n</span></div></foreignObject><line x1="232" y1="72" x2="82" y2="122" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><line x1="232" y1="72" x2="232" y2="122" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><line x1="232" y1="72" x2="382" y2="122" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="208" y="84" width="48" height="24" rx="10" fill="var(--accent)" stroke="none" stroke-width="1.2"/><foreignObject x="208" y="84" width="48" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:12px;font-weight:800;color:#fff;line-height:1.2;white-space:nowrap"><span>Cn</span></div></foreignObject><rect x="52" y="121" width="60" height="42" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><foreignObject x="52" y="121" width="60" height="42"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:14px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span><span class="frac"><span class="num">n</span><span class="den">2</span></span></span></div></foreignObject><rect x="202" y="121" width="60" height="42" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><foreignObject x="202" y="121" width="60" height="42"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:14px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span><span class="frac"><span class="num">n</span><span class="den">2</span></span></span></div></foreignObject><rect x="352" y="121" width="60" height="42" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><foreignObject x="352" y="121" width="60" height="42"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:14px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span><span class="frac"><span class="num">n</span><span class="den">2</span></span></span></div></foreignObject><line x1="82" y1="163" x2="34" y2="212" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><line x1="82" y1="163" x2="82" y2="212" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><line x1="82" y1="163" x2="130" y2="212" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="50" y="172" width="64" height="30" rx="10" fill="var(--accent)" stroke="none" stroke-width="1.2"/><foreignObject x="50" y="172" width="64" height="30"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:11.5px;font-weight:800;color:#fff;line-height:1.2;white-space:nowrap"><span>C·<span class="frac"><span class="num">n</span><span class="den">2</span></span></span></div></foreignObject><line x1="232" y1="163" x2="184" y2="212" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><line x1="232" y1="163" x2="232" y2="212" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><line x1="232" y1="163" x2="280" y2="212" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="200" y="172" width="64" height="30" rx="10" fill="var(--accent)" stroke="none" stroke-width="1.2"/><foreignObject x="200" y="172" width="64" height="30"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:11.5px;font-weight:800;color:#fff;line-height:1.2;white-space:nowrap"><span>C·<span class="frac"><span class="num">n</span><span class="den">2</span></span></span></div></foreignObject><line x1="382" y1="163" x2="334" y2="212" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><line x1="382" y1="163" x2="382" y2="212" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><line x1="382" y1="163" x2="430" y2="212" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="350" y="172" width="64" height="30" rx="10" fill="var(--accent)" stroke="none" stroke-width="1.2"/><foreignObject x="350" y="172" width="64" height="30"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:11.5px;font-weight:800;color:#fff;line-height:1.2;white-space:nowrap"><span>C·<span class="frac"><span class="num">n</span><span class="den">2</span></span></span></div></foreignObject><rect x="14" y="212" width="40" height="40" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><foreignObject x="14" y="212" width="40" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:12px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span><span class="frac"><span class="num">n</span><span class="den">2²</span></span></span></div></foreignObject><rect x="62" y="212" width="40" height="40" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><foreignObject x="62" y="212" width="40" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:12px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span><span class="frac"><span class="num">n</span><span class="den">2²</span></span></span></div></foreignObject><rect x="110" y="212" width="40" height="40" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><foreignObject x="110" y="212" width="40" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:12px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span><span class="frac"><span class="num">n</span><span class="den">2²</span></span></span></div></foreignObject><rect x="164" y="212" width="40" height="40" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><foreignObject x="164" y="212" width="40" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:12px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span><span class="frac"><span class="num">n</span><span class="den">2²</span></span></span></div></foreignObject><rect x="212" y="212" width="40" height="40" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><foreignObject x="212" y="212" width="40" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:12px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span><span class="frac"><span class="num">n</span><span class="den">2²</span></span></span></div></foreignObject><rect x="260" y="212" width="40" height="40" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><foreignObject x="260" y="212" width="40" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:12px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span><span class="frac"><span class="num">n</span><span class="den">2²</span></span></span></div></foreignObject><rect x="314" y="212" width="40" height="40" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><foreignObject x="314" y="212" width="40" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:12px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span><span class="frac"><span class="num">n</span><span class="den">2²</span></span></span></div></foreignObject><rect x="362" y="212" width="40" height="40" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><foreignObject x="362" y="212" width="40" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:12px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span><span class="frac"><span class="num">n</span><span class="den">2²</span></span></span></div></foreignObject><rect x="410" y="212" width="40" height="40" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2"/><foreignObject x="410" y="212" width="40" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:12px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span><span class="frac"><span class="num">n</span><span class="den">2²</span></span></span></div></foreignObject><text x="232" y="292" text-anchor="middle" dominant-baseline="central" font-size="18" font-weight="800" fill="var(--ink-3)">⋮</text><circle cx="51.5556" cy="326" r="5" fill="var(--accent)"/><line x1="51.5556" y1="326" x2="37.5556" y2="360" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="32.5556" y="360" width="10" height="16" rx="3" fill="var(--c2)" fill-opacity="0.35" stroke="var(--c2)" stroke-width="0.9"/><line x1="51.5556" y1="326" x2="51.5556" y2="360" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="46.5556" y="360" width="10" height="16" rx="3" fill="var(--c2)" fill-opacity="0.35" stroke="var(--c2)" stroke-width="0.9"/><line x1="51.5556" y1="326" x2="65.5556" y2="360" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="60.5556" y="360" width="10" height="16" rx="3" fill="var(--c2)" fill-opacity="0.35" stroke="var(--c2)" stroke-width="0.9"/><circle cx="96.6667" cy="326" r="5" fill="var(--accent)"/><line x1="96.6667" y1="326" x2="82.6667" y2="360" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="77.6667" y="360" width="10" height="16" rx="3" fill="var(--c2)" fill-opacity="0.35" stroke="var(--c2)" stroke-width="0.9"/><line x1="96.6667" y1="326" x2="96.6667" y2="360" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="91.6667" y="360" width="10" height="16" rx="3" fill="var(--c2)" fill-opacity="0.35" stroke="var(--c2)" stroke-width="0.9"/><line x1="96.6667" y1="326" x2="110.667" y2="360" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="105.667" y="360" width="10" height="16" rx="3" fill="var(--c2)" fill-opacity="0.35" stroke="var(--c2)" stroke-width="0.9"/><circle cx="141.778" cy="326" r="5" fill="var(--accent)"/><line x1="141.778" y1="326" x2="127.778" y2="360" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="122.778" y="360" width="10" height="16" rx="3" fill="var(--c2)" fill-opacity="0.35" stroke="var(--c2)" stroke-width="0.9"/><line x1="141.778" y1="326" x2="141.778" y2="360" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="136.778" y="360" width="10" height="16" rx="3" fill="var(--c2)" fill-opacity="0.35" stroke="var(--c2)" stroke-width="0.9"/><line x1="141.778" y1="326" x2="155.778" y2="360" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="150.778" y="360" width="10" height="16" rx="3" fill="var(--c2)" fill-opacity="0.35" stroke="var(--c2)" stroke-width="0.9"/><circle cx="186.889" cy="326" r="5" fill="var(--accent)"/><line x1="186.889" y1="326" x2="172.889" y2="360" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="167.889" y="360" width="10" height="16" rx="3" fill="var(--c2)" fill-opacity="0.35" stroke="var(--c2)" stroke-width="0.9"/><line x1="186.889" y1="326" x2="186.889" y2="360" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="181.889" y="360" width="10" height="16" rx="3" fill="var(--c2)" fill-opacity="0.35" stroke="var(--c2)" stroke-width="0.9"/><line x1="186.889" y1="326" x2="200.889" y2="360" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="195.889" y="360" width="10" height="16" rx="3" fill="var(--c2)" fill-opacity="0.35" stroke="var(--c2)" stroke-width="0.9"/><circle cx="232" cy="326" r="5" fill="var(--accent)"/><line x1="232" y1="326" x2="218" y2="360" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="213" y="360" width="10" height="16" rx="3" fill="var(--c2)" fill-opacity="0.35" stroke="var(--c2)" stroke-width="0.9"/><line x1="232" y1="326" x2="232" y2="360" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="227" y="360" width="10" height="16" rx="3" fill="var(--c2)" fill-opacity="0.35" stroke="var(--c2)" stroke-width="0.9"/><line x1="232" y1="326" x2="246" y2="360" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="241" y="360" width="10" height="16" rx="3" fill="var(--c2)" fill-opacity="0.35" stroke="var(--c2)" stroke-width="0.9"/><circle cx="277.111" cy="326" r="5" fill="var(--accent)"/><line x1="277.111" y1="326" x2="263.111" y2="360" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="258.111" y="360" width="10" height="16" rx="3" fill="var(--c2)" fill-opacity="0.35" stroke="var(--c2)" stroke-width="0.9"/><line x1="277.111" y1="326" x2="277.111" y2="360" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="272.111" y="360" width="10" height="16" rx="3" fill="var(--c2)" fill-opacity="0.35" stroke="var(--c2)" stroke-width="0.9"/><line x1="277.111" y1="326" x2="291.111" y2="360" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="286.111" y="360" width="10" height="16" rx="3" fill="var(--c2)" fill-opacity="0.35" stroke="var(--c2)" stroke-width="0.9"/><circle cx="322.222" cy="326" r="5" fill="var(--accent)"/><line x1="322.222" y1="326" x2="308.222" y2="360" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="303.222" y="360" width="10" height="16" rx="3" fill="var(--c2)" fill-opacity="0.35" stroke="var(--c2)" stroke-width="0.9"/><line x1="322.222" y1="326" x2="322.222" y2="360" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="317.222" y="360" width="10" height="16" rx="3" fill="var(--c2)" fill-opacity="0.35" stroke="var(--c2)" stroke-width="0.9"/><line x1="322.222" y1="326" x2="336.222" y2="360" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="331.222" y="360" width="10" height="16" rx="3" fill="var(--c2)" fill-opacity="0.35" stroke="var(--c2)" stroke-width="0.9"/><circle cx="367.333" cy="326" r="5" fill="var(--accent)"/><line x1="367.333" y1="326" x2="353.333" y2="360" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="348.333" y="360" width="10" height="16" rx="3" fill="var(--c2)" fill-opacity="0.35" stroke="var(--c2)" stroke-width="0.9"/><line x1="367.333" y1="326" x2="367.333" y2="360" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="362.333" y="360" width="10" height="16" rx="3" fill="var(--c2)" fill-opacity="0.35" stroke="var(--c2)" stroke-width="0.9"/><line x1="367.333" y1="326" x2="381.333" y2="360" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="376.333" y="360" width="10" height="16" rx="3" fill="var(--c2)" fill-opacity="0.35" stroke="var(--c2)" stroke-width="0.9"/><circle cx="412.444" cy="326" r="5" fill="var(--accent)"/><line x1="412.444" y1="326" x2="398.444" y2="360" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="393.444" y="360" width="10" height="16" rx="3" fill="var(--c2)" fill-opacity="0.35" stroke="var(--c2)" stroke-width="0.9"/><line x1="412.444" y1="326" x2="412.444" y2="360" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="407.444" y="360" width="10" height="16" rx="3" fill="var(--c2)" fill-opacity="0.35" stroke="var(--c2)" stroke-width="0.9"/><line x1="412.444" y1="326" x2="426.444" y2="360" stroke="var(--ink-3)" stroke-opacity="0.55" stroke-width="1.2"/><rect x="421.444" y="360" width="10" height="16" rx="3" fill="var(--c2)" fill-opacity="0.35" stroke="var(--c2)" stroke-width="0.9"/><foreignObject x="24" y="386" width="416" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:11.5px;font-weight:700;color:var(--c2);line-height:1.2;white-space:nowrap"><span>맨 아래 : 크기 1 인 칸이 3<sup>k</sup> 개, 각각 T(1) = C</span></div></foreignObject><rect x="468" y="72" width="184" height="282" rx="14" fill="var(--accent)" fill-opacity="0.05"/><line x1="444" y1="96" x2="464" y2="96" stroke="var(--accent)" stroke-opacity="0.5" stroke-width="1.2" stroke-dasharray="3 5"/><foreignObject x="470" y="70" width="180" height="32"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:13px;font-weight:800;color:var(--accent-deep);line-height:1.2;white-space:nowrap"><span>Cn</span></div></foreignObject><rect x="536" y="104" width="48" height="6" rx="3" fill="var(--accent)" fill-opacity="0.55"/><line x1="444" y1="187" x2="464" y2="187" stroke="var(--accent)" stroke-opacity="0.5" stroke-width="1.2" stroke-dasharray="3 5"/><foreignObject x="470" y="161" width="180" height="32"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:13px;font-weight:800;color:var(--accent-deep);line-height:1.2;white-space:nowrap"><span>C·<span class="frac"><span class="num">n</span><span class="den">2</span></span> × 3&nbsp; = &nbsp;<span class="frac"><span class="num">3</span><span class="den">2</span></span>·Cn</span></div></foreignObject><rect x="524" y="195" width="72" height="6" rx="3" fill="var(--accent)" fill-opacity="0.55"/><line x1="444" y1="250" x2="464" y2="250" stroke="var(--accent)" stroke-opacity="0.5" stroke-width="1.2" stroke-dasharray="3 5"/><foreignObject x="470" y="224" width="180" height="32"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:13px;font-weight:800;color:var(--accent-deep);line-height:1.2;white-space:nowrap"><span>(<span class="frac"><span class="num">3</span><span class="den">2</span></span>)²·Cn</span></div></foreignObject><rect x="506" y="258" width="108" height="6" rx="3" fill="var(--accent)" fill-opacity="0.55"/><line x1="444" y1="326" x2="464" y2="326" stroke="var(--accent)" stroke-opacity="0.5" stroke-width="1.2" stroke-dasharray="3 5"/><foreignObject x="470" y="300" width="180" height="32"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:13px;font-weight:800;color:var(--accent-deep);line-height:1.2;white-space:nowrap"><span>(<span class="frac"><span class="num">3</span><span class="den">2</span></span>)<sup>k−1</sup>·Cn</span></div></foreignObject><rect x="478.4" y="334" width="163.2" height="6" rx="3" fill="var(--accent)" fill-opacity="0.55"/><text x="560" y="282" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="800" fill="var(--accent-deep)">⋮</text><line x1="444" y1="368" x2="464" y2="368" stroke="var(--c2)" stroke-opacity="0.5" stroke-width="1.2" stroke-dasharray="3 5"/><foreignObject x="470" y="352" width="180" height="32"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:13px;font-weight:800;color:var(--c2);line-height:1.2;white-space:nowrap"><span>3<sup>k</sup> × C</span></div></foreignObject><foreignObject x="468" y="384" width="184" height="44"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;font-size:10.5px;font-weight:700;color:var(--ink-3);line-height:1.2;white-space:nowrap"><span><div>막대 길이 = 층 합</div><div>한 층 내려갈 때마다 <span class="frac"><span class="num">3</span><span class="den">2</span></span>배</div></span></div></foreignObject></svg>
+      <figcaption><b style="color:var(--accent-deep)">보라색</b> = 세 갈래로 나뉠 때 드는 연산, <b style="color:var(--c2)">초록색</b> = 맨 아래 크기 1 짜리. 오른쪽 막대가 점점 길어지는 것은 <b>층 합이 <span class="frac"><span class="num">3</span><span class="den">2</span></span>배씩 커진다</b>는 뜻</figcaption>
+    </figure>
+
+    <h3>층마다 더하기</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>층</th><th>갈래 묶음 수</th><th>묶음 하나의 연산</th><th>층 합계</th></tr></thead>
+        <tbody>
+          <tr><td>첫 층</td><td>1</td><td>Cn</td><td><b>Cn</b></td></tr>
+          <tr><td>두 번째 층</td><td>3</td><td>C·<span class="frac"><span class="num">n</span><span class="den">2</span></span></td><td>C·<span class="frac"><span class="num">n</span><span class="den">2</span></span> × 3 = <b><span class="frac"><span class="num">3</span><span class="den">2</span></span>·Cn</b></td></tr>
+          <tr><td>세 번째 층</td><td>3²</td><td>C·<span class="frac"><span class="num">n</span><span class="den">2²</span></span></td><td>C·<span class="frac"><span class="num">n</span><span class="den">2²</span></span> × 3² = <b>(<span class="frac"><span class="num">3</span><span class="den">2</span></span>)²·Cn</b></td></tr>
+          <tr><td>⋮</td><td>⋮</td><td>⋮</td><td>⋮</td></tr>
+          <tr><td>마지막 층 (k번째)</td><td>3<sup>k−1</sup></td><td>C·<span class="frac"><span class="num">n</span><span class="den">2<sup>k−1</sup></span></span></td><td>C·<span class="frac"><span class="num">n</span><span class="den">2<sup>k−1</sup></span></span> × 3<sup>k−1</sup> = <b>(<span class="frac"><span class="num">3</span><span class="den">2</span></span>)<sup>k−1</sup>·Cn</b></td></tr>
+          <tr style="background:color-mix(in srgb,var(--c2) 10%,transparent)"><td>맨 아래 (크기 1)</td><td>3<sup>k</sup> 개</td><td>T(1) = C</td><td><b>3<sup>k</sup>·C</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:8px">갈래 수는 <b>3배</b>, 크기는 <b><span class="frac"><span class="num">1</span><span class="den">2</span></span>배</b>라서 층 합은 매 층 <b><span class="frac"><span class="num">3</span><span class="den">2</span></span>배</b>가 됩니다. 정렬(03)은 갈래 2배 × 크기 <span class="frac"><span class="num">1</span><span class="den">2</span></span>배 = 1배라 층 합이 Cn 으로 같았던 것과 다른 점입니다.</p>
+
+    <h3>다 더하고 정리하기</h3>
+    <pre class="math">T(n) = Cn·( <u>1 + <span class="frac"><span class="num">3</span><span class="den">2</span></span> + (<span class="frac"><span class="num">3</span><span class="den">2</span></span>)² + … + (<span class="frac"><span class="num">3</span><span class="den">2</span></span>)<sup>k−1</sup></u> ) + 3<sup>k</sup>·C
+
+밑줄 : 초항 1 ,  공비 <span class="frac"><span class="num">3</span><span class="den">2</span></span> ,  항 k 개  →  <span class="frac"><span class="num">1·((<span class="frac"><span class="num">3</span><span class="den">2</span></span>)<sup>k</sup> − 1)</span><span class="den"><span class="frac"><span class="num">3</span><span class="den">2</span></span> − 1</span></span> = 2·( (<span class="frac"><span class="num">3</span><span class="den">2</span></span>)<sup>k</sup> − 1 )
+
+T(n) = 2Cn·( (<span class="frac"><span class="num">3</span><span class="den">2</span></span>)<sup>k</sup> − 1 ) + 3<sup>k</sup>·C
+
+가정 : n = 2<sup>k</sup>   →   k = log₂ n
+
+T(n) = 2Cn·( (<span class="frac"><span class="num">3</span><span class="den">2</span></span>)<sup>log₂ n</sup> − 1 ) + C·3<sup>log₂ n</sup></pre>
+
+    <div class="call extra">
+      <div class="t">놓친 전개 — 채워 넣은 부분</div>
+      <p>필기에서 "전개 전개(놓쳤어)" 라고 한 구간입니다. 03-2 에서 배운 로그·지수 성질 두 개로 이어집니다.</p>
+      <pre class="math" style="margin:8px 0 0">① a<sup>log<sub>b</sub> c</sup> = c<sup>log<sub>b</sub> a</sup> 로 n 을 밑으로 옮긴다
+     (<span class="frac"><span class="num">3</span><span class="den">2</span></span>)<sup>log₂ n</sup> = n<sup>log₂ (<span class="frac"><span class="num">3</span><span class="den">2</span></span>)</sup>        3<sup>log₂ n</sup> = n<sup>log₂ 3</sup>
+
+T(n) = 2Cn·( n<sup>log₂ (<span class="frac"><span class="num">3</span><span class="den">2</span></span>)</sup> − 1 ) + C·n<sup>log₂ 3</sup>
+     = 2C·n·n<sup>log₂ (<span class="frac"><span class="num">3</span><span class="den">2</span></span>)</sup> − 2Cn + C·n<sup>log₂ 3</sup>
+
+② n = n<sup>1</sup> = n<sup>log₂ 2</sup> 이고, 지수끼리 더하면 로그 안은 곱해진다
+     n · n<sup>log₂ (<span class="frac"><span class="num">3</span><span class="den">2</span></span>)</sup> = n<sup>log₂ 2 + log₂ (<span class="frac"><span class="num">3</span><span class="den">2</span></span>)</sup> = n<sup>log₂ (2 × <span class="frac"><span class="num">3</span><span class="den">2</span></span>)</sup> = n<sup>log₂ 3</sup>
+
+T(n) = 2C·n<sup>log₂ 3</sup> − 2Cn + C·n<sup>log₂ 3</sup>
+     = 3C·n<sup>log₂ 3</sup> − 2Cn
+
+⇒ O(n<sup>log₂ 3</sup>)        ( log₂ 3 ≈ 1.585 )</pre>
+      <p style="margin-top:8px">n = 2 ~ 128 을 직접 넣어 계산하면 T(n) = 3·n<sup>log₂3</sup> − 2n (C = 1) 과 모두 일치합니다.</p>
+    </div>
+
+    <div class="call warn">
+      <div class="t">필기 오류 — 고쳐서 반영</div>
+      <p><b>1.</b> <code>= Cn(2*(3/2)^k  -1)</code> → <b>Cn·2·((<span class="frac"><span class="num">3</span><span class="den">2</span></span>)<sup>k</sup> − 1) = Cn·(2·(<span class="frac"><span class="num">3</span><span class="den">2</span></span>)<sup>k</sup> − 2)</b>. 2 를 괄호 안 전체에 곱해야 하는데 앞 항에만 곱해져 <b>−1 이 −2 가 되어야 합니다</b>. 바로 다음 줄 <code>2Cn(n^(log_2 3/2) - 1)</code> 은 2 로 묶은 올바른 형태라 이후 결과는 맞습니다.</p>
+      <p style="margin-top:6px"><b>2.</b> <code>n^(log_2 3/2)</code> → <b>n<sup>log₂ (3/2)</sup></b>. 괄호가 없으면 (log₂3) ÷ 2 로 읽힙니다.</p>
+      <p style="margin-top:6px"><b>3.</b> <code>Cn((1*((3/2)^k - 1)/(3/2-1)</code> 은 여는 괄호가 하나 더 많습니다. 위 풀이에 정리해 두었습니다.</p>
+    </div>
+
+    <div class="call">
+      <div class="t">맨 아래 칸 개수 — 03 정렬과 비교</div>
+      <p>갈래가 2개면 맨 아래는 2<sup>k</sup> = <b>n</b> 개, 갈래가 3개면 <b>3<sup>k</sup> = n<sup>log₂3</sup></b> 개입니다. 카라츠바는 맨 아래 칸만 세도 이미 n<sup>log₂3</sup> 이라 결과가 O(n<sup>log₂3</sup>) 이 됩니다.</p>
+    </div>
+
+    <h3>오늘 네 문제 한눈에</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th></th><th>01 이진탐색</th><th>02 QS 최선</th><th>03 정렬</th><th>04 카라츠바</th></tr></thead>
+        <tbody>
+          <tr><td>점화식</td><td>T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + C</td><td>T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn</td><td>2T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn</td><td>3T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn</td></tr>
+          <tr><td>그림</td><td>한 줄</td><td>한 줄</td><td>두 갈래</td><td>세 갈래</td></tr>
+          <tr><td>층 합의 변화</td><td>C 그대로</td><td><span class="frac"><span class="num">1</span><span class="den">2</span></span>배씩 감소</td><td>Cn 그대로</td><td><span class="frac"><span class="num">3</span><span class="den">2</span></span>배씩 증가</td></tr>
+          <tr><td>맨 아래</td><td>C</td><td>C</td><td>n·C</td><td>3<sup>k</sup>·C</td></tr>
+          <tr><td>T(n)</td><td>C·log₂n + C</td><td>2Cn − C</td><td>Cn·log₂n + Cn</td><td>3C·n<sup>log₂3</sup> − 2Cn</td></tr>
+          <tr><td>결과</td><td><b>O(log n)</b></td><td><b>O(n)</b></td><td><b>O(n log n)</b></td><td><b>O(n<sup>log₂3</sup>)</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <details class="raw"><summary>필기 원문</summary><div class="txt">4. Karatsuba (카라츠바였나)
+
+
+T(n) = 3*T(n/2) + Cn
+
+"n 크기를 반으로 줄이는데 그 가지가 3개씩 생기면서 그때마다 Cn만큼의 계산이 계속해서 발생한다."
+
+n
+세갈래   → 이 3갈래에서 Cn만큼 발생
+n/2 n/2 n/2
+세갈래 세갈래 세갈래  → 각 3갈래마다 C*n/2 발생
+n/2^2 n/2^2 n/2^2 n/2^2 n/2^2 n/2^2 n/2^2 n/2^2 n/2^2 
+세갈래 쭉
+...
+세갈래 쭈루룩 --- 각 3갈래마다 C*n/2^(k-1)
+n/2^k ...
+
+이제 이것들을 더하면
+
+첫번째 3갈래 층에서는  ---→ Cn
+두번째 3갈래 층에서는 _----→ C*n/2 * 3
+세번째 3갈래 층에서는 -----→ C*n/2^2 * 3^2
+...
+마지막 세갈래 층에서는 ----→ C*n/2^(k-1) * 3^(k-1)
+
+이만큼이 과정에서 나온 계산
+
+마지막 각각은
+T(1) = C 만큼 소모하는데 이게 몇개냐
+각 개수마다 3개씩 가지치기 했을거니까
+결국 3^k개의 T(1)이 존재 = 3^k * C
+
+이것들을 더하면 전체 수행시간 T(n)
+
+(시각화 잘해줘야해..)
+
+T(n) = Cn(1+3/2+(3/2)^2 + ... + (3/2)^(k-1)) + 3^k * C
+
+등비수열의 합 적용
+
+T(n) = Cn((1*((3/2)^k - 1)/(3/2-1) + 3^k * C
+   = Cn(2*(3/2)^k  -1) + 3^k*C
+
+n=2^k로 가정하므로 k = log_2 n
+
+그러면
+T(n) = Cn(2*(3/2)^(log_2 n) - 1) + 3^(log_2 n) * C
+     = 2Cn(n^(log_2 3/2) - 1) +C*n^(log_2 3)
+~~~전개 전개(놓쳤어)
+
+= 2Cn^(log_2 3) - 2Cn + C*n^(log_2 3)
+= 3Cn^(log_2 3) - 2Cn
+
+여기서 log_2 3은 1.xxx
+
+즉 최고차항은 n^(log_2 3)
+
+따라서 O(n^(log_2 3))
+
+수업 끝
+
+개같이 썼는데 오류 있어?</div></details>
+  </section>
+
+  <!-- 05 -->
+  <section id="sg">
+    <h2 class="st"><span class="sq">05</span>용어 정리</h2>
+    <div class="terms">
+      <div class="term"><b>세로식 · 나무 그림 풀이</b><span class="e">recursion tree</span><p>입력이 줄어드는 과정을 그리고, 층마다 드는 연산을 더해 T(n) 을 구하는 방식. 전개와 결과가 같다.</p></div>
+      <div class="term"><b>입력 크기</b><span class="e">input size</span><p>T( ) 안에 들어가는 값. 연산이 아니다.</p></div>
+      <div class="term"><b>층 합</b><span class="e">—</span><p>나무의 한 층에서 드는 연산을 모두 더한 것. 갈래 수 × 갈래 하나의 연산.</p></div>
+      <div class="term"><b>등비수열의 합</b><span class="e">geometric series</span><p>초항 a, 공비 r, 항 k개. r &gt; 1 이면 <span class="frac"><span class="num">a(r<sup>k</sup> − 1)</span><span class="den">r − 1</span></span>, r &lt; 1 이면 <span class="frac"><span class="num">a(1 − r<sup>k</sup>)</span><span class="den">1 − r</span></span>. 둘은 같은 식이다.</p></div>
+      <div class="term"><b>T(1)</b><span class="e">base case</span><p>더 쪼갤 수 없는 가장 작은 문제를 푸는 시간. 보통 상수 C.</p></div>
+    </div>
+  </section>
+
+  <!-- 06 -->
+  <section id="sq">
+    <h2 class="st"><span class="sq">06</span>확인 필요</h2>
+    <div class="call ask">
+      <div class="t">1. 카라츠바 전개 중 놓친 구간 — <span style="color:var(--c2)">보충으로 채움</span></div>
+      <p>04번 섹션의 "놓친 전개" 박스는 교수님 판서가 아니라 03-2 에서 배운 성질로 채운 것입니다. 결과(3C·n<sup>log₂3</sup> − 2Cn)는 필기와 같고 숫자로도 확인했지만, 판서의 중간 과정이 같은지 한 번 대조해 보세요.</p>
+    </div>
+  </section>
+
+  <!-- 07 -->
+  <section id="sx">
+    <h2 class="st"><span class="sq">07</span>예상 문제</h2>
+    <p style="font-size:13px;color:var(--ink-3);margin-bottom:14px">난이도 — <b style="color:var(--c2)">기본</b> 수업에서 그대로 나온 것 · <b style="color:var(--accent-deep)">응용</b> 조합하거나 한 단계 더 가야 하는 것 · <b style="color:var(--c3)">심화</b> 수업 논리를 새 상황에 옮겨야 하는 것</p>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q1</span><span>다음 점화식의 시간복잡도를 쓰시오. (T(1) = C)<br>(가) T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + C &nbsp; (나) T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn &nbsp; (다) 2T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn &nbsp; (라) 3T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn</span><span class="type">단답</span><span class="lv b">기본</span></div>
+      <div class="ans"><span class="lab">정답</span>(가) O(log n) · (나) O(n) · (다) O(n log n) · (라) O(n<sup>log₂3</sup>)</div>
+    </div>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q2</span><span>T(n) = T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + C, T(1) = C 를 <b>세로식 그림</b>으로 나타내고, 그림에서 T(n) 을 구하시오.</span><span class="type">그림+계산</span><span class="lv b">기본</span></div>
+      <div class="ans"><span class="lab">모범답안</span>n → <span class="frac"><span class="num">n</span><span class="den">2</span></span> → <span class="frac"><span class="num">n</span><span class="den">2²</span></span> → … → <span class="frac"><span class="num">n</span><span class="den">2<sup>k</sup></span></span> = 1 로 세로로 적고, 한 번 줄일 때마다 옆에 C 를 적는다. 줄이는 횟수가 k 번이라 오른쪽은 C·k, 맨 아래 T(1) = C. T(n) = C·k + C, n = 2<sup>k</sup> 이므로 k = log₂n → T(n) = C·log₂n + C = <b>O(log n)</b>.</div>
+    </div>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q3</span><span>T(n) = T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn 에서 (1) 등비수열 합 공식으로 T(n) 을 정확히 구하고, (2) 공식 없이 O(n) 임을 보이시오.</span><span class="type">계산+서술</span><span class="lv m">응용</span></div>
+      <div class="ans"><span class="lab">모범답안</span><b>(1)</b> T(n) = Cn(1 + <span class="frac"><span class="num">1</span><span class="den">2</span></span> + … + <span class="frac"><span class="num">1</span><span class="den">2<sup>k−1</sup></span></span>) + C. 초항 1, 공비 <span class="frac"><span class="num">1</span><span class="den">2</span></span>, 항 k개 → 합 = 2(1 − <span class="frac"><span class="num">1</span><span class="den">2<sup>k</sup></span></span>) = 2(1 − <span class="frac"><span class="num">1</span><span class="den">n</span></span>). T(n) = 2Cn − 2C + C = <b>2Cn − C</b>.<br><b>(2)</b> 1 + <span class="frac"><span class="num">1</span><span class="den">2</span></span> + <span class="frac"><span class="num">1</span><span class="den">4</span></span> + … 는 매번 남은 부분의 절반만 더하므로 2 를 넘지 못한다. 따라서 T(n) ≤ 2Cn + C → <b>O(n)</b>.</div>
+    </div>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q4</span><span>T(n) = 2T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn 을 나무 그림으로 풀 때, <b>모든 층의 합이 Cn 으로 같은 이유</b>를 쓰고 T(n) 을 구하시오.</span><span class="type">서술+계산</span><span class="lv m">응용</span></div>
+      <div class="ans"><span class="lab">모범답안</span>i 번째 층에는 갈래가 2<sup>i−1</sup> 개, 갈래 하나의 연산은 C·<span class="frac"><span class="num">n</span><span class="den">2<sup>i−1</sup></span></span>. 갈래 수가 2배가 되는 만큼 크기가 절반이 되어 곱이 항상 Cn. 이런 층이 k 개 → Cn·k, 맨 아래 크기 1 이 n 개 → Cn. T(n) = Cn·log₂n + Cn = <b>O(n log n)</b>.</div>
+    </div>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q5</span><span>T(n) = 3T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn 의 나무 그림에서 (1) 맨 아래 크기 1 인 칸은 몇 개인가 (n 으로 표현) (2) 층 합은 한 층 내려갈 때마다 몇 배가 되는가 (3) 최종 T(n) 과 Big-O 를 쓰시오.</span><span class="type">계산</span><span class="lv m">응용</span></div>
+      <div class="ans"><span class="lab">정답</span>(1) 3<sup>k</sup> = 3<sup>log₂n</sup> = <b>n<sup>log₂3</sup></b> 개 (2) 갈래 3배 × 크기 <span class="frac"><span class="num">1</span><span class="den">2</span></span>배 = <b><span class="frac"><span class="num">3</span><span class="den">2</span></span>배</b> (3) T(n) = 3C·n<sup>log₂3</sup> − 2Cn → <b>O(n<sup>log₂3</sup>)</b></div>
+    </div>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q6</span><span>수업에서 나무 그림으로 풀지 않은 T(n) = 4T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn, T(1) = C 를 같은 방식으로 풀어 (1) 층 합의 변화 (2) 맨 아래 칸 수 (3) T(n) 을 구하시오.</span><span class="type">응용 풀이</span><span class="lv h">심화</span></div>
+      <div class="ans"><span class="lab">모범답안</span>(1) 갈래 4배 × 크기 <span class="frac"><span class="num">1</span><span class="den">2</span></span>배 = 층 합이 <b>2배</b>씩: Cn, 2Cn, 2²Cn, …, 2<sup>k−1</sup>Cn → 합 Cn(2<sup>k</sup> − 1) = Cn(n − 1)<br>(2) 4<sup>k</sup> = (2<sup>k</sup>)² = <b>n²</b> 개 → n²·C<br>(3) T(n) = Cn² − Cn + Cn² = <b>2Cn² − Cn = O(n²)</b>. (03-2 의 전개 결과와 같다)</div>
+    </div>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q7</span><span>T(n) = 2T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + C 는 03 정렬과 갈래 수가 같은데 결과가 O(n) 이다. 나무 그림의 층 합을 이용해 03 과 결과가 달라지는 이유를 설명하시오.</span><span class="type">비교 서술</span><span class="lv h">심화</span></div>
+      <div class="ans"><span class="lab">모범답안</span>이 식은 갈래 하나의 연산이 크기와 무관한 C 라서, 층 합이 갈래 수만큼 C, 2C, 2²C, … 로 <b>2배씩 늘어난다</b>. 합 C(2<sup>k</sup> − 1) = C(n − 1), 맨 아래 n·C → T(n) = 2Cn − C = O(n). 03 은 갈래 하나의 연산이 크기에 비례(Cn)해서 층 합이 Cn 으로 <b>일정</b>했고, 그 Cn 이 log₂n 층 쌓여 n log n 이 되었다. 즉 차이는 <b>뒤에 붙는 항이 C 인지 Cn 인지</b>에서 온다.</div>
+    </div>
+  </section>
+
+  <footer><span>알고리즘 · 4주차 2차시 · 2026.09.28</span><span>jaealee.com</span></footer>
+</div>
+
+<!-- ═══════════ 단어장 뷰 ═══════════ -->
+<div id="viewVocab" hidden>
+  <div class="hero" data-w="A–Z">
+    <span class="chip">4주차 2차시 단어장</span>
+    <h1>알고리즘 필수 용어</h1>
+    <p class="sub">이번 차시에 나온 단어 중 전공생이 원서·논문에서 다시 만날 것들만 골랐습니다.</p>
+  </div>
+
+  <div class="vhead">
+    <input type="search" id="vq" placeholder="단어 · 뜻으로 찾기">
+    <button class="tbtn" id="maskBtn">뜻 가리기</button>
+    <button class="tbtn" id="quizBtn">퀴즈 풀기</button>
+    <span style="font-size:13px;color:var(--ink-3);font-weight:600" id="vcount"></span>
+  </div>
+
+  <ul class="vlist" id="vlist">
+    <li class="vword">
+      <div><span class="w">recurrence</span><span class="ipa">/rɪˈkɜːrəns/</span><span class="pos">n.</span></div>
+      <div><p class="mean">점화식, 재귀 관계</p>
+      <p class="ex">A <b>recurrence</b> describes T(n) using smaller inputs.<span class="ko">점화식은 T(n)을 더 작은 입력으로 나타낸다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">input size</span><span class="ipa">/ˈɪnpʊt saɪz/</span><span class="pos">n.</span></div>
+      <div><p class="mean">입력 크기 — 문제에 들어오는 데이터의 개수</p>
+      <p class="ex">The <b>input size</b> halves at each step.<span class="ko">입력 크기가 단계마다 반이 된다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">halve</span><span class="ipa">/hæv/</span><span class="pos">v.</span></div>
+      <div><p class="mean">반으로 줄이다</p>
+      <p class="ex">Binary search <b>halves</b> the range.<span class="ko">이진탐색은 범위를 반으로 줄인다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">intuition</span><span class="ipa">/ˌɪntuˈɪʃn/</span><span class="pos">n.</span></div>
+      <div><p class="mean">직관 — 계산을 다 하지 않고 구조로 바로 파악하는 것</p>
+      <p class="ex">Solve it by <b>intuition</b>, not expansion.<span class="ko">전개가 아니라 직관으로 푼다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">branch</span><span class="ipa">/bræntʃ/</span><span class="pos">n.</span></div>
+      <div><p class="mean">가지, 갈래 — 나무 그림에서 갈라져 나온 한 줄기</p>
+      <p class="ex">Each node splits into three <b>branches</b>.<span class="ko">각 칸은 세 갈래로 나뉜다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">level</span><span class="ipa">/ˈlevl/</span><span class="pos">n.</span></div>
+      <div><p class="mean">층, 단계 — 나무 그림에서 같은 깊이에 있는 칸들</p>
+      <p class="ex">The cost of each <b>level</b> is Cn.<span class="ko">각 층의 비용은 Cn 이다.</span></p></div>
+    </li>
+  </ul>
+
+  <div class="quizbox" id="quiz">
+    <div class="qq" id="quizQ"></div>
+    <div class="opts" id="quizOpts"></div>
+    <div class="score" id="quizScore"></div>
+  </div>
+</div>
+<!-- ═══════════ 필기 원문 뷰 ═══════════ -->
+<div id="viewRaw" hidden>
+  <div class="hero" data-w="RAW">
+    <span class="chip">4주차 2차시 필기 원문</span>
+    <h1>내가 보낸 그대로</h1>
+    <p class="sub">한 글자도 고치지 않았습니다. 본문에 빠진 게 없는지 여기서 대조하세요.</p>
+  </div>
+
+  <div class="rawnote" id="rawlist">
+    <div class="rawitem">
+      <div class="seq">01<span>&nbsp;</span></div>
+      <div>
+        <div class="body">오늘 수업 시작(4-2)
+4-1 은 추석 연휴 휴강
+9월 28일 월요일 4주차 2차시
+
+___
+
+점화식 연습
+
+1. 이진탐색 T(n) = T(n/2) + C
+
+
+→ n개의 입력을 n/2개로 줄이는 과정에서 C 만큼 발생하는 거임
+n/2는 연산이 아닌 줄어든 문제(입력)의 크기
+
+→ n/2^2로 줄어드는 과정에서 다시 C만큼 연산 발생
+
+→ ... n/2^k까지 줄어들게 되고 그 때도 C가 나옴
+더이상 쪼개질 수 없는데 전체적으로 소요된 계산을 생각해보면
+
+n
+아래화살표
+n/2    ---- C
+아래화살표
+n/2^2     ---- C
+아래화살표
+...
+아래화살표
+n/2^k   ------C
+
+여기서 n/2^k = T(1) = C
+
+저 옆에 있는 C는 k만큼 소요
+
+즉 저기 오른쪽과 아래 영역이 연산시간이 되는거고
+다 더하면 T(n) = C*k + C
+
+n=2^k로 가정하기 때문에 k = log_2 n
+
+T(n) = C*log_2 n + C
+   = O(log_2 n) = O(log n)
+
+이렇게 되는거임(전개해서 푸는게 아니라 직관적으로 푸는걸 보는거임)
+
+내가 말한거 시각화 잘 해줘야해 특히 새로식</div>
+        <div class="where"><a href="#s1">01. 이진탐색 세로식</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">02<span>&nbsp;</span></div>
+      <div>
+        <div class="body">2. quickSelect best case 분석할 때
+
+T(n) = T(n/2) + Cn
+
+다시 또 시각화 직관적으로
+
+n
+아래화살표
+n/2    ----- Cn
+아래화살표
+n/2^2    -----C*n/2
+아래화살표
+...
+아래화살표
+n/2^k   ---- C*(n/(2^(k-1))
+
+n/2^k = 1  (T(1) = C)
+
+즉 마지막엔 C
+
+저기 연산 영역들을 묶으면
+T(n) = Cn(1+1/2+1/2^2+ ... + 1/2^(k-1)) + C
+
+여기서 저 식은(저 식에 밑줄) 공비 r = 1/2, 초항 a= 1, k개 등비수열의 합임
+
+* 등비수열의 합 = a(1-r^n)/(1-r)
+
+
+즉 저 식은 1(1-(1/2)^k)  / 1-1/2 이고
+= 2(1-(1/2)^k) = 2(1-1/2^k)
+
+n = 2^k로 가정하기 때문에
+2(1-1/n)이 됨
+
+T(n) = Cn * 2(1-1/n) + C
+
+= 2Cn - 2C + C
+= 2Cn - C
+
+O(n)
+
+
+알고리즘 수업은 가산점 질문 필요 없어. 앞으로 안해줘도 돼
+
+
+또는 잘 살펴보면 방금 본 그 등비수열의 합 식이 아무리 더해도 2를 넘을 수 없음(전체 식 &lt;= 2)(직사각형 채우는 도식화 해주면 좋을듯)
+
+즉 T(n) &lt;= 2Cn +C
+
+O(n)
+
+
+이렇게도 풀 수 있음</div>
+        <div class="where"><a href="#s2">02. Quick Select 최선</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">03<span>&nbsp;</span></div>
+      <div>
+        <div class="body">3. (뒤에 가서 할 내용. 뒤에서는 정렬 할 예정. 우선 식만 먼저 가져와서 풀어봄. 내용은 나중에. 식만 지금)
+
+
+quick sort / merge sort
+T(n) = 2*T(n/2) + Cn
+
+n
+양갈래로 나눠짐
+n/2    n/2    ----- Cn(양갈래 안에)
+다시 더 더 갈라짐
+n/2^2   n/2^2    n/2^2    n/2^2        -----C*n/2  C*n/2  (각각 양갈래 안에)
+더더 양갈래
+...
+더더더더ㄷ 양갈래
+n/2^k  n/2^k .... n/2^k         ------ C*(n/(2^(k-1)))  가지마다(모든 가지에 표시하라는건 아니야)
+
+그럼 연산 시간은 맨 마지막에 남은 녀석들과 갈래 사이에 있는 것들인데(알아보기 쉽게 색칠 등)
+
+이것들을 다 더하면 연산시간
+
+첫 층 양갈래   ---→ Cn
+두번째 층 양갈래  ----→ Cn/2 * 2 = Cn
+...
+마지막층 양갈래  ------→ C * n/2^(k-1)  * 2^(k-1)  = Cn
+
+마지막 층에 있는 값들도 =⇒ n개   ----_&gt; C*n
+
+(이것도 시각화로 표현해줘)
+
+여기서 양갈래에서 나오는 연산 Cn들의 묶음이 k개라서 Cn*k가 되고
+마지막 층에 있는 애들은 Cn
+
+T(n) = Cn*k + Cn
+ = Cn*log_2 n + Cn
+ 
+O(nlog_2 n) 또는 O(n log_n)
+
+색칠 잘 해서 잘 나타내줘
+
+== 점화식을 수식으로 계산해도 되지만 개념적으로 그려봐도 빅오표현법 계산을 찾을 수 있다.</div>
+        <div class="where"><a href="#s3">03. 정렬 — 양갈래 나무</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">04<span>&nbsp;</span></div>
+      <div>
+        <div class="body">4. Karatsuba (카라츠바였나)
+
+
+T(n) = 3*T(n/2) + Cn
+
+"n 크기를 반으로 줄이는데 그 가지가 3개씩 생기면서 그때마다 Cn만큼의 계산이 계속해서 발생한다."
+
+n
+세갈래   → 이 3갈래에서 Cn만큼 발생
+n/2 n/2 n/2
+세갈래 세갈래 세갈래  → 각 3갈래마다 C*n/2 발생
+n/2^2 n/2^2 n/2^2 n/2^2 n/2^2 n/2^2 n/2^2 n/2^2 n/2^2 
+세갈래 쭉
+...
+세갈래 쭈루룩 --- 각 3갈래마다 C*n/2^(k-1)
+n/2^k ...
+
+이제 이것들을 더하면
+
+첫번째 3갈래 층에서는  ---→ Cn
+두번째 3갈래 층에서는 _----→ C*n/2 * 3
+세번째 3갈래 층에서는 -----→ C*n/2^2 * 3^2
+...
+마지막 세갈래 층에서는 ----→ C*n/2^(k-1) * 3^(k-1)
+
+이만큼이 과정에서 나온 계산
+
+마지막 각각은
+T(1) = C 만큼 소모하는데 이게 몇개냐
+각 개수마다 3개씩 가지치기 했을거니까
+결국 3^k개의 T(1)이 존재 = 3^k * C
+
+이것들을 더하면 전체 수행시간 T(n)
+
+(시각화 잘해줘야해..)
+
+T(n) = Cn(1+3/2+(3/2)^2 + ... + (3/2)^(k-1)) + 3^k * C
+
+등비수열의 합 적용
+
+T(n) = Cn((1*((3/2)^k - 1)/(3/2-1) + 3^k * C
+   = Cn(2*(3/2)^k  -1) + 3^k*C
+
+n=2^k로 가정하므로 k = log_2 n
+
+그러면
+T(n) = Cn(2*(3/2)^(log_2 n) - 1) + 3^(log_2 n) * C
+     = 2Cn(n^(log_2 3/2) - 1) +C*n^(log_2 3)
+~~~전개 전개(놓쳤어)
+
+= 2Cn^(log_2 3) - 2Cn + C*n^(log_2 3)
+= 3Cn^(log_2 3) - 2Cn
+
+여기서 log_2 3은 1.xxx
+
+즉 최고차항은 n^(log_2 3)
+
+따라서 O(n^(log_2 3))
+
+수업 끝
+
+개같이 썼는데 오류 있어?</div>
+        <div class="where"><a href="#s4">04. 카라츠바 — 세 갈래</a> <a href="#sq">06. 확인 필요</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+/* ── 스크롤 진행 바 ─────────────────────────────── */
+const sb = document.getElementById('scrollbar');
+addEventListener('scroll', () => {
+  const h = document.documentElement.scrollHeight - innerHeight;
+  sb.style.width = (h > 0 ? scrollY / h * 100 : 0) + '%';
+}, { passive: true });
+
+/* ── 다크 모드 ──────────────────────────────────── */
+const html = document.documentElement, themeBtn = document.getElementById('themeBtn');
+themeBtn.onclick = () => {
+  const dark = html.dataset.theme === 'dark';
+  html.dataset.theme = dark ? 'light' : 'dark';
+  themeBtn.textContent = dark ? '다크' : '라이트';
+};
+
+/* ── 정답: 기본은 가려짐. 답을 누르면 그 문제만 열리고,
+      "정답 가리기" 버튼을 누르면 열린 것들을 전부 다시 덮는다 ── */
+const ansBtn = document.getElementById('ansBtn');
+const answers = [...document.querySelectorAll('.ans')];
+function syncAnsBtn() {
+  const opened = answers.filter(a => a.classList.contains('on')).length;
+  ansBtn.disabled = opened === 0;
+  ansBtn.textContent = opened ? `정답 가리기 (${opened})` : '정답 가리기';
+}
+answers.forEach(a => a.addEventListener('click', () => { a.classList.toggle('on'); syncAnsBtn(); }));
+ansBtn.onclick = () => { answers.forEach(a => a.classList.remove('on')); syncAnsBtn(); };
+syncAnsBtn();
+
+/* ── 보충(외부 자료) 개수 표시 + 숨기기 토글 ────── */
+const extraChip = document.getElementById('extraChip');
+const extraCount = document.querySelectorAll('#viewNote .call.extra, #viewNote .ext').length;
+if (extraCount) {
+  extraChip.textContent = `보충 ${extraCount}곳 — 교수님 설명 아님`;
+  extraChip.onclick = () => {
+    const off = document.body.classList.toggle('no-extra');
+    extraChip.textContent = off ? `보충 ${extraCount}곳 숨김 — 눌러서 보기` : `보충 ${extraCount}곳 — 교수님 설명 아님`;
+  };
+} else {
+  extraChip.textContent = '보충 0곳 — 전부 교수님 내용';
+  extraChip.disabled = true;
+}
+
+/* ── 인쇄 ───────────────────────────────────────── */
+document.getElementById('printBtn').onclick = () => window.print();
+
+/* ── 코드 복사 ──────────────────────────────────── */
+document.querySelectorAll('.copy').forEach(btn => {
+  btn.onclick = async () => {
+    try { await navigator.clipboard.writeText(btn.closest('.codebox').querySelector('code').innerText); btn.textContent = '복사됨'; }
+    catch { btn.textContent = '실패'; }
+    setTimeout(() => btn.textContent = '복사', 1200);
+  };
+});
+
+/* ── 복습 체크 진행률 (새로고침하면 초기화) ─────── */
+const boxes = document.querySelectorAll('.chk input'), fill = document.getElementById('barFill');
+boxes.forEach(b => b.addEventListener('change', () => {
+  fill.style.width = [...boxes].filter(x => x.checked).length / boxes.length * 100 + '%';
+}));
+
+/* ── 본문 / 단어장 / 필기 원문 전환 ─────────────── */
+const views = {
+  note:  { el: document.getElementById('viewNote'),  nav: document.getElementById('tocWrap') },
+  vocab: { el: document.getElementById('viewVocab'), nav: document.getElementById('vocabNav'), btn: document.getElementById('vocabBtn'), on: '본문으로', off: '단어장' },
+  raw:   { el: document.getElementById('viewRaw'),   nav: document.getElementById('rawNav'),   btn: document.getElementById('rawBtn'),  on: '본문으로', off: '필기 원문' }
+};
+let current = 'note';
+function setView(name) {
+  current = name;
+  Object.entries(views).forEach(([k, v]) => {
+    v.el.hidden = k !== name;
+    v.nav.hidden = k !== name;
+    if (v.btn) { v.btn.classList.toggle('solid', k === name); v.btn.textContent = k === name ? v.on : v.off; }
+  });
+  clearMarks();
+  document.getElementById('q').value = '';
+  document.getElementById('hit').textContent = '';
+  scrollTo({ top: 0, behavior: 'smooth' });
+}
+views.vocab.btn.onclick = () => setView(current === 'vocab' ? 'note' : 'vocab');
+views.raw.btn.onclick   = () => setView(current === 'raw'   ? 'note' : 'raw');
+document.getElementById('rawTotal').textContent = document.querySelectorAll('#rawlist .rawitem').length;
+// 원문 페이지의 링크를 누르면 본문으로 돌아가서 해당 위치로 이동
+document.querySelectorAll('#rawlist .where a').forEach(a => {
+  a.onclick = e => { e.preventDefault(); setView('note'); setTimeout(() => document.querySelector(a.getAttribute('href')).scrollIntoView(), 60); };
+});
+
+/* ── 목차 현재 위치 ─────────────────────────────── */
+const links = [...document.querySelectorAll('#toc a')];
+const spy = new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) return;
+  links.forEach(l => l.classList.toggle('on', l.getAttribute('href') === '#' + e.target.id));
+}), { rootMargin: '-80px 0px -68% 0px' });
+document.querySelectorAll('#viewNote section').forEach(s => spy.observe(s));
+
+/* ── 문서 내 검색 ───────────────────────────────── */
+const qInput = document.getElementById('q'), hitEl = document.getElementById('hit');
+let marks = [], cursor = -1;
+function clearMarks() {
+  marks.forEach(m => { const p = m.parentNode; if (!p) return; p.replaceChild(document.createTextNode(m.textContent), m); p.normalize(); });
+  marks = []; cursor = -1;
+}
+function runSearch(word) {
+  clearMarks();
+  if (word.length < 2) { hitEl.textContent = ''; return; }
+  const root = views[current].el;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const targets = [];
+  while (walker.nextNode()) {
+    const n = walker.currentNode;
+    if (n.parentElement.closest('script,style')) continue;
+    if (n.nodeValue.toLowerCase().includes(word)) targets.push(n);
+  }
+  targets.forEach(n => {
+    const re = new RegExp('(' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    const frag = document.createDocumentFragment();
+    n.nodeValue.split(re).forEach(p => {
+      if (p.toLowerCase() === word) { const m = document.createElement('span'); m.className = 'hit-mark'; m.textContent = p; frag.appendChild(m); marks.push(m); }
+      else frag.appendChild(document.createTextNode(p));
+    });
+    n.parentNode.replaceChild(frag, n);
+  });
+  hitEl.textContent = marks.length ? '0/' + marks.length : '없음';
+}
+/* 검색은 본문 텍스트 노드를 통째로 갈아끼우기 때문에 브라우저가 스크롤 기준점을 잃고
+   맨 위로 튄다. 바꾸기 직전 위치를 적어 두었다가 끝나고 바로 되돌린다. */
+function keepScroll(fn) {
+  const y = window.scrollY, root = document.documentElement, prev = root.style.scrollBehavior;
+  root.style.scrollBehavior = 'auto';
+  fn();
+  window.scrollTo(0, y);
+  root.style.scrollBehavior = prev;
+}
+qInput.addEventListener('input', e => {
+  const w = e.target.value.trim().toLowerCase();
+  keepScroll(() => runSearch(w));
+});
+qInput.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || !marks.length) return;
+  e.preventDefault();
+  cursor = (cursor + 1) % marks.length;
+  marks[cursor].scrollIntoView({ block: 'center', behavior: 'smooth' });
+  hitEl.textContent = (cursor + 1) + '/' + marks.length;
+});
+addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); qInput.focus(); qInput.select(); }
+});
+
+/* ── 단어장 ─────────────────────────────────────── */
+const vlist = document.getElementById('vlist');
+const words = [...vlist.querySelectorAll('.vword')];
+document.getElementById('vcount').textContent = words.length + '개';
+document.getElementById('vTotal').textContent = words.length;
+
+document.getElementById('vq').addEventListener('input', e => {
+  const k = e.target.value.trim().toLowerCase();
+  keepScroll(() => {   // 항목을 숨기면 높이가 바뀌어 스크롤이 튄다
+    let shown = 0;
+    words.forEach(w => { const ok = w.innerText.toLowerCase().includes(k); w.style.display = ok ? '' : 'none'; if (ok) shown++; });
+    document.getElementById('vcount').textContent = shown + '개';
+  });
+});
+
+const maskBtn = document.getElementById('maskBtn');
+maskBtn.onclick = () => {
+  const on = vlist.classList.toggle('masked');
+  maskBtn.classList.toggle('solid', on);
+  maskBtn.textContent = on ? '뜻 보이기' : '뜻 가리기';
+  if (!on) vlist.querySelectorAll('.show').forEach(el => el.classList.remove('show'));
+};
+vlist.querySelectorAll('.mean, .ex').forEach(el => {
+  el.onclick = () => { if (vlist.classList.contains('masked')) el.classList.toggle('show'); };
+});
+
+/* 퀴즈 — 위 목록에서 문제를 자동 생성 */
+const quiz = document.getElementById('quiz'), quizBtn = document.getElementById('quizBtn');
+const qQ = document.getElementById('quizQ'), qO = document.getElementById('quizOpts'), qS = document.getElementById('quizScore');
+let pool = [], solved = 0, correct = 0;
+const data = () => words.map(w => ({
+  word: w.querySelector('.w').textContent,
+  mean: (w.querySelector('.mean').textContent.split('—')[1] || w.querySelector('.mean').textContent).trim()
+}));
+function nextQuiz() {
+  if (!pool.length) { qQ.textContent = '한 바퀴 끝'; qO.innerHTML = ''; qS.textContent = `${solved}문제 중 ${correct}개 정답`; return; }
+  const all = data(), cur = pool.pop();
+  qQ.textContent = cur.word;
+  const opts = [cur, ...all.filter(d => d.word !== cur.word).sort(() => Math.random() - .5).slice(0, 3)].sort(() => Math.random() - .5);
+  qO.innerHTML = '';
+  opts.forEach(o => {
+    const b = document.createElement('button');
+    b.className = 'opt'; b.textContent = o.mean;
+    b.onclick = () => {
+      solved++;
+      if (o.word === cur.word) { b.classList.add('ok'); correct++; }
+      else { b.classList.add('no'); [...qO.children].find(x => x.textContent === cur.mean)?.classList.add('ok'); }
+      [...qO.children].forEach(x => x.disabled = true);
+      qS.textContent = `${solved}문제 중 ${correct}개 정답`;
+      setTimeout(nextQuiz, 1000);
+    };
+    qO.appendChild(b);
+  });
+  qS.textContent = `${solved}문제 중 ${correct}개 정답 · 남은 ${pool.length}개`;
+}
+quizBtn.onclick = () => {
+  const on = quiz.classList.toggle('on');
+  quizBtn.classList.toggle('solid', on);
+  quizBtn.textContent = on ? '퀴즈 닫기' : '퀴즈 풀기';
+  if (on) { pool = data().sort(() => Math.random() - .5); solved = 0; correct = 0; nextQuiz(); }
+};
+
+/* ── 이진탐색 스텝 시각화 ─────────────────────────── */
+(function(){
+  const root=document.getElementById('bsv'); if(!root) return;
+  const A=[2,5,7,8,15,20,32,44];
+  const CODE=['def bs(A, a, b, k):','    if a > b:','        return -1','    m = (a + b) // 2','    if A[m] == k:','        return m','    elif A[m] > k:','        return bs(A, a, m-1, k)','    else:','        return bs(A, m+1, b, k)'];
+  // 실제 의사코드를 실행하면서 스텝 기록
+  function trace(k){
+    const st=[]; const stack=[];
+    function snap(o){ st.push(Object.assign({stack:stack.map(x=>Object.assign({},x))},o)); }
+    function bs(a,b){
+      stack.push({a,b,ret:null}); const me=stack.length-1;
+      snap({a,b,m:null,line:[0],msg: a>b ? `<b>bs(A, ${a}, ${b}, ${k})</b> 호출 — 시작(a = ${a})이 끝(b = ${b})보다 뒤라서 <b>볼 칸이 없습니다.</b>` : `<b>bs(A, ${a}, ${b}, ${k})</b> 호출 — 이번에 볼 범위는 A[${a}] ~ A[${b}] 입니다.`});
+      if(a>b){
+        snap({a,b,m:null,line:[1,2],msg:`a = ${a} &gt; b = ${b} — <b>범위가 뒤집혔습니다.</b> 볼 칸이 하나도 없으니 리스트에 k 가 없다는 뜻이고, <b>−1 을 반환</b>합니다.`});
+        stack[me].ret=-1; return -1;
+      }
+      snap({a,b,m:null,line:[1],msg:`a = ${a} &gt; b = ${b} 인가? → 아니오. 아직 볼 칸이 남아 있으니 계속합니다.`});
+      const m=Math.floor((a+b)/2);
+      snap({a,b,m,line:[3],msg:`가운데 자리 m = (${a} + ${b}) // 2 = <b>${m}</b>. A[${m}] = <b>${A[m]}</b> 입니다.`});
+      if(A[m]===k){
+        snap({a,b,m,line:[4,5],found:true,msg:`A[${m}] = ${A[m]} == k = ${k} → <b>찾았습니다.</b> 값 ${A[m]} 이 아니라 <b>자리 번호 ${m}</b> 을 반환합니다.`});
+        stack[me].ret=m; return m;
+      }
+      let r;
+      if(A[m]>k){
+        snap({a,b,m,line:[4,6,7],msg:`A[${m}] = ${A[m]} &gt; k = ${k} → k 는 <b>왼쪽</b>에 있습니다. m 과 그 오른쪽은 버리고 <b>bs(A, ${a}, ${m-1}, ${k})</b> 를 호출합니다.`});
+        r=bs(a,m-1);
+      }else{
+        snap({a,b,m,line:[4,6,8,9],msg:`A[${m}] = ${A[m]} &lt; k = ${k} → k 는 <b>오른쪽</b>에 있습니다. m 과 그 왼쪽은 버리고 <b>bs(A, ${m+1}, ${b}, ${k})</b> 를 호출합니다.`});
+        r=bs(m+1,b);
+      }
+      stack[me].ret=r;
+      snap({a,b,m,line:[A[m]>k?7:9],back:true,msg:`안쪽 호출이 <b>${r}</b> 을 돌려줬습니다. 이 호출(bs(A, ${a}, ${b}, ${k}))도 받은 값을 그대로 <b>${r}</b> 로 반환합니다. (값을 가공하지 않고 전달만 함)`});
+      stack.pop(); return r;
+    }
+    const res=bs(0,7);
+    st.push({stack:[],a:null,b:null,m:null,line:[],done:res,msg:res>=0?`최종 결과 <b>${res}</b> — A[${res}] = ${A[res]}. 비교는 <b>${st.filter(x=>x.line.includes(3)).length}번</b>, 볼 범위는 8 → 4 → 2 로 매번 절반이 됐습니다.`:`최종 결과 <b>−1</b> — 리스트에 ${k}이(가) 없습니다. 비교는 <b>${st.filter(x=>x.line.includes(3)).length}번</b>, 범위가 8 → 4 → 2 → 1 → 0 으로 줄다가 뒤집혀서 끝났습니다.`});
+    return st;
+  }
+  const arr=root.querySelector('.arr'), code=root.querySelector('.code'), stackEl=root.querySelector('.stack'), msg=root.querySelector('.msg'), cnt=root.querySelector('.cnt'), prev=root.querySelector('.prev'), next=root.querySelector('.next');
+  let k=32, steps=trace(32), i=0;
+  function svg(s){
+    const W=46,G=49,X0=24; let o='<svg width="100%" viewBox="0 0 440 112" role="img" style="display:block"><title>현재 단계의 탐색 범위</title>';
+    for(let j=0;j<8;j++){
+      const x=X0+j*G, cx=x+W/2;
+      const inR = s.a!==null && j>=s.a && j<=s.b;
+      const isM = s.m===j;
+      let fill='var(--bg)', stroke='var(--line)', tc='var(--ink)', fw=700, op=1;
+      if(!inR){ tc='var(--ink-3)'; fw=400; op=0.4; }
+      if(isM){ fill = s.found? 'var(--c2)':'var(--accent)'; stroke='none'; tc='#fff'; fw=800; op=1; }
+      if(s.done!==undefined && s.done===j){ fill='var(--c2)'; stroke='none'; tc='#fff'; fw=800; op=1; }
+      o+=`<text x="${cx}" y="12" text-anchor="middle" dominant-baseline="central" font-size="10" fill="var(--ink-3)">${j}</text>`;
+      o+=`<rect x="${x}" y="22" width="${W}" height="30" rx="7" fill="${fill}" stroke="${stroke}" stroke-width="1.2" opacity="${op}"/>`;
+      o+=`<text x="${cx}" y="37" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="${fw}" fill="${tc}" opacity="${op}">${A[j]}</text>`;
+    }
+    const lab=(j,t,y,c)=>{ if(j===null||j<0||j>7) return ''; const cx=X0+j*G+W/2; return `<path d="M${cx-5} ${y-8} L${cx+5} ${y-8} L${cx} ${y-15} Z" fill="${c}"/><text x="${cx}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="11.5" font-weight="800" fill="${c}">${t}</text>`; };
+    if(s.m!==null) o+=lab(s.m,'m',70,s.found?'var(--c2)':'var(--accent)');
+    if(s.a!==null){
+      if(s.a===s.b) o+=lab(s.a,'a = b',94,'var(--c3)');
+      else { o+=lab(s.a,'a',94,'var(--c3)'); o+=lab(s.b,'b',94,'var(--c3)'); }
+      if(s.a>s.b){ o+=`<text x="${X0+8*G-3}" y="108" text-anchor="end" font-size="10.5" font-weight="700" fill="var(--c3)">a &gt; b : 범위 없음</text>`; }
+    }
+    return o+'</svg>';
+  }
+  function render(){
+    const s=steps[i];
+    arr.innerHTML=svg(s);
+    code.innerHTML=CODE.map((t,j)=>`<div class="${s.line.includes(j)?'hl':''}"><span class="ln">${j+1}</span>${t.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`).join('');
+    stackEl.innerHTML = s.stack.length ? s.stack.map((f,j)=>`<div class="fr ${j===s.stack.length-1?'cur':''}">bs(A, ${f.a}, ${f.b}, ${k})${f.ret!==null?` <span class="rv">→ ${f.ret}</span>`:''}</div>`).join('') : `<div class="fr">모든 호출 종료 — 결과 <span class="rv">${s.done}</span></div>`;
+    msg.innerHTML=s.msg;
+    cnt.textContent=`${i+1} / ${steps.length}`;
+    prev.disabled=i===0; next.disabled=i===steps.length-1;
+  }
+  prev.onclick=()=>{ if(i>0){i--;render();} };
+  next.onclick=()=>{ if(i<steps.length-1){i++;render();} };
+  root.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
+    root.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));
+    k=+b.dataset.k; steps=trace(k); i=0; render();
+  });
+  render();
+})();
+</script>
+</body>
+</html>
