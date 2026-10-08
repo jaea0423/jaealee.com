@@ -1,0 +1,235 @@
+/* ═══════════════════════════════════════════════════════════════
+   시험지 공통 스타일 — drive/_exam/exam.css
+   모든 과목이 같이 쓴다. 과목 색은 시험지 HTML 에서 --subject 만 바꾼다.
+   ═══════════════════════════════════════════════════════════════ */
+:root{
+  --subject:#4F46E5;
+  --ink:#141414; --ink-2:#3C3C3C; --ink-3:#808080; --line:#141414; --line-2:#B8B8B8; --line-3:#E2E2E2;
+  --red:#D42A2A;
+  --myeongjo:"Nanum Myeongjo","Batang","바탕","AppleMyungjo","Noto Serif CJK KR","Noto Serif KR",serif;
+  --gothic:"Nanum Gothic","Malgun Gothic","Apple SD Gothic Neo","Noto Sans CJK KR",sans-serif;
+  --mono:"Nanum Gothic Coding","D2Coding",monospace;
+  --pen:"Nanum Pen Script",cursive;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:#D9D8D3;color:var(--ink);font-family:var(--myeongjo);font-size:14.6px;line-height:1.72;word-break:keep-all;-webkit-font-smoothing:antialiased}
+button,input,textarea{font:inherit;color:inherit}
+sup,sub{line-height:0}
+[hidden]{display:none!important}
+
+/* ── 바깥 도구 막대 ── */
+.toolbar{position:sticky;top:0;z-index:30;display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:9px 16px;background:#2B2B2B;color:#EEE;font-family:var(--gothic);font-size:12.5px}
+.toolbar button{border:1px solid #6A6A6A;background:transparent;color:#EEE;border-radius:4px;padding:5px 13px;cursor:pointer}
+.toolbar button.primary{background:#F2F2F2;color:#111;border-color:#F2F2F2;font-weight:700}
+.toolbar button:disabled{opacity:.35;cursor:default}
+.toolbar .sep{width:1px;height:18px;background:#555;margin:0 2px}
+.toolbar .clock{margin-left:auto;display:flex;align-items:center;gap:8px}
+.toolbar .timer{font-variant-numeric:tabular-nums;letter-spacing:.06em;color:#DADADA;font-size:14px}
+.toolbar .clock button{padding:3px 9px;font-size:11.5px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#2B2B2B;color:#fff;font-family:var(--gothic);font-size:12.5px;padding:8px 16px;border-radius:4px;z-index:60;display:none}
+.toast.on{display:block}
+
+/* ── 쪽 (A4 비율) ── */
+.page{width:min(860px,calc(100% - 20px));min-height:1180px;margin:22px auto;background:#fff;box-shadow:0 2px 14px rgba(0,0,0,.18);padding:40px 44px 70px;position:relative;display:flex;flex-direction:column}
+.page .pno{position:absolute;left:0;right:0;bottom:24px;text-align:center;font-family:var(--gothic);font-size:12px;color:var(--ink-2);letter-spacing:.04em}
+.page .running{display:flex;justify-content:space-between;font-family:var(--gothic);font-size:11.5px;color:var(--ink-3);border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:18px}
+.page .running b{color:var(--ink);font-weight:800}
+.page.measure{position:absolute;left:-9999px;top:0;visibility:hidden}
+
+/* ── 첫 쪽 머리 ── */
+.masthead{border-bottom:3px double var(--line);padding-bottom:12px;margin-bottom:18px;position:relative}
+.mh-top{display:flex;justify-content:space-between;align-items:center;gap:10px;font-family:var(--gothic)}
+/* 과목 상자 = 왼쪽 학교 상자와 같은 모양. 과목 색은 작은 네모 하나만 */
+.mh-top .org,.mh-top .subj{display:inline-flex;align-items:center;gap:7px;border:1.5px solid var(--line);padding:3px 11px;font-weight:700;font-size:11.5px;letter-spacing:.04em;color:var(--ink)}
+.mh-top .subj::before{content:"";width:6px;height:6px;background:var(--subject)}
+.mh-title{text-align:center;margin:14px 0 14px;position:relative}
+.mh-title .y{font-family:var(--gothic);font-size:12.5px;letter-spacing:.06em;color:var(--ink-2)}
+.mh-title h1{margin:2px 0 0;font-size:31px;font-weight:800;letter-spacing:.32em;padding-left:.32em}
+.total-pen{position:absolute;right:-6px;top:50%;transform:translateY(-50%) rotate(-6deg);display:none;align-items:flex-end;gap:4px;color:var(--red);font-family:var(--pen);line-height:.8}
+.done .total-pen{display:flex}
+.total-pen .n{font-size:74px;border-bottom:2.5px solid var(--red);padding:0 6px 2px}
+.total-pen .of{font-size:26px;padding-bottom:6px}
+.idrow{display:grid;grid-template-columns:auto 1.1fr auto 1fr auto 1.3fr;border:1.5px solid var(--line);font-family:var(--gothic);font-size:12.5px}
+.idrow>*{border-right:1px solid var(--line);padding:6px 10px;display:flex;align-items:center;min-height:38px;min-width:0}
+.idrow>*:last-child{border-right:0}
+.idrow .h{background:#F1F1EE;font-weight:700;justify-content:center;letter-spacing:.2em;padding-right:calc(10px - .2em);white-space:nowrap}
+.idrow input{width:100%;min-width:0;border:0;outline:0;background:transparent;font-family:var(--myeongjo);font-size:15px}
+.scope{margin-top:10px;border:1px solid var(--line);display:grid;grid-template-columns:auto 1fr;font-size:12.6px;line-height:1.62}
+.scope .h{font-family:var(--gothic);font-weight:700;background:#F1F1EE;border-right:1px solid var(--line);padding:6px 12px;display:flex;align-items:center;letter-spacing:.12em;white-space:nowrap}
+.scope .b{padding:6px 12px;color:var(--ink-2)}
+.scope .b b{color:var(--ink)}
+
+/* ── 2단 ── */
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 44px;flex:1;position:relative;align-items:start}
+.cols::before{content:"";position:absolute;top:0;bottom:0;left:50%;border-left:1px solid var(--line)}
+.col{min-width:0}
+@media(max-width:720px){
+  .cols{grid-template-columns:minmax(0,1fr)}.cols::before{display:none}.page{padding:26px 18px 60px;min-height:0}
+  .idrow{grid-template-columns:auto minmax(0,1fr)}.idrow>*{border-bottom:1px solid var(--line)}.idrow>*:nth-child(2n){border-right:0}
+  .mh-title h1{font-size:23px;letter-spacing:.14em;padding-left:.14em}
+  .total-pen{position:static;transform:rotate(-4deg);justify-content:center;margin-top:8px}.total-pen .n{font-size:64px}
+  .scope{grid-template-columns:1fr}.scope .h{border-right:0;border-bottom:1px solid var(--line)}
+}
+
+/* ── 문항 ── */
+.q{position:relative;padding-bottom:30px}
+.q .stem{display:grid;grid-template-columns:auto minmax(0,1fr);gap:0 7px}
+.q .no{font-weight:800;font-size:15.5px;position:relative}
+.q .text p{margin:0 0 4px;text-align:justify}
+.q .pts{font-family:var(--gothic);font-size:12px;white-space:nowrap}
+.q pre{font-family:var(--mono);font-size:11.4px;line-height:1.55;border:1px solid var(--line);padding:8px 10px;margin:8px 0;white-space:pre;overflow-x:auto}
+.q code{font-family:var(--mono);font-size:.9em}
+.q u{text-underline-offset:3px}
+.q b{font-weight:800}
+
+/* 객관식 보기 */
+.choices{display:flex;flex-wrap:wrap;gap:3px 0;margin:8px 0 0 2px}
+.choices label{flex:0 0 50%;display:flex;gap:5px;align-items:baseline;cursor:pointer;padding-right:8px;min-width:0}
+.choices.one label{flex-basis:100%}
+.choices input,.ox input,.lines input{position:absolute;opacity:0;pointer-events:none}
+.mk{flex:none;position:relative;display:inline-flex;align-items:center;justify-content:center;width:1.32em;height:1.32em;border:1px solid var(--ink);border-radius:50%;font-family:var(--gothic);font-size:.8em;transform:translateY(-1px)}
+input:checked + .mk{background:var(--ink);color:#fff}
+input:focus-visible + .mk{outline:2px solid var(--ink-3);outline-offset:2px}
+
+/* O/X */
+.ox{width:100%;border-collapse:collapse;margin:8px 0 0;font-size:13.6px}
+.ox td{border-top:1px solid var(--line-3);border-bottom:1px solid var(--line-3);padding:5px 4px;vertical-align:top}
+.ox td.s{width:100%}
+.ox td.k{font-family:var(--gothic);font-weight:700;padding-right:6px;white-space:nowrap}
+.ox td.c{white-space:nowrap;text-align:center;padding:4px 3px}
+.ox label{cursor:pointer;display:inline-flex}
+.ox .mk{width:1.7em;height:1.7em;font-size:.82em;font-weight:700;border-radius:3px;border-color:transparent}   /* 고르기 전에는 윤곽 없음 */
+
+/* 표 빈칸 */
+.tbl-wrap{overflow-x:auto;margin:8px 0 0}
+table.tbl{border-collapse:collapse;width:100%;font-size:13px;min-width:0}
+table.tbl th,table.tbl td{border:1px solid var(--line);padding:4px 6px;text-align:center;vertical-align:middle}
+table.tbl th{background:#F1F1EE;font-family:var(--gothic);font-size:12px;font-weight:700}
+table.tbl td.given{color:var(--ink-2)}
+table.tbl td.blank{padding:2px 3px;position:relative}
+table.tbl input{width:100%;min-width:42px;border:0;border-bottom:1px dashed var(--ink-3);outline:0;background:transparent;text-align:center;font-family:var(--myeongjo);font-size:14px;padding:2px 0}
+table.tbl .fix{display:none;font-family:var(--pen);color:var(--red);font-size:20px;line-height:1}
+.graded table.tbl td.wrong .fix{display:block}
+.graded table.tbl td.wrong input{text-decoration:line-through;text-decoration-color:var(--red)}
+
+/* 코드 줄 고르기 */
+.lines{border:1px solid var(--line);margin:8px 0;font-family:var(--mono);font-size:10.9px;line-height:1.55;overflow-x:auto;padding:4px 0}
+.lines label{display:flex;cursor:pointer;white-space:pre;padding:0 8px 0 0}
+.lines .ln{flex:none;width:2.3em;text-align:right;padding-right:6px;color:var(--ink-3);user-select:none;border-right:1px solid var(--line-3);margin-right:6px}
+.lines input:checked ~ .ln{color:#fff;background:var(--ink);font-weight:700}
+.lines input:checked ~ .cd{background:#EFEFEC}
+.lines input:focus-visible ~ .ln{outline:2px solid var(--ink-3)}
+.graded .lines label.correct .ln{box-shadow:inset 0 0 0 2px var(--red);color:var(--red)}
+.graded .lines label.correct input:checked ~ .ln{color:#fff;background:var(--red)}
+
+/* 답란 */
+.ansline{display:flex;align-items:baseline;gap:6px;margin:8px 0 0 2px;font-family:var(--gothic);font-size:12.5px}
+.ansline input{flex:1;min-width:0;border:0;border-bottom:1px solid var(--ink);outline:0;background:transparent;padding:0 4px 1px;font-family:var(--myeongjo);font-size:15px}
+.essay{margin-top:8px;border:1px solid var(--line)}
+.essay .eh{font-family:var(--gothic);font-size:11px;padding:2px 8px;border-bottom:1px solid var(--line);background:#F7F7F5}
+.essay textarea{display:block;width:100%;min-height:210px;border:0;outline:0;resize:vertical;padding:6px 10px;font-family:var(--myeongjo);font-size:13.2px;line-height:1.7;background:transparent}
+.essay.tall textarea{min-height:300px}
+
+/* ── 채점 (빨간펜) ── */
+.pen{position:absolute;pointer-events:none;display:none}
+.graded .pen{display:block}
+.pen.mark{left:-21px;top:-11px;width:46px;height:46px}
+/* 정답 표시 고리 — 이미지 저장(html2canvas)에서도 보이도록 box-shadow 대신 ::after 테두리 */
+.graded label.correct > .mk::after{content:"";position:absolute;inset:-4px;border:1.6px solid var(--red);border-radius:50%}
+.graded .ox label.correct > .mk::after{border-radius:5px}
+.graded input[type=text]:disabled,.graded input:not([type]):disabled,.graded textarea:disabled{color:var(--ink);-webkit-text-fill-color:var(--ink);opacity:1}
+.exp{display:none;margin-top:10px;border-left:2px solid var(--red);padding:2px 0 2px 10px;font-size:13px;line-height:1.66;color:var(--ink-2)}
+.graded .exp{display:block}
+.exp .a{font-family:var(--gothic);font-weight:800;font-size:12.4px;color:var(--red)}
+.exp .hit{margin-top:4px;font-family:var(--gothic);font-size:11.8px}
+.exp .hit span{display:block}
+.exp .hit .miss{color:var(--ink-3);text-decoration:line-through}
+.exp .src{margin-top:4px;font-family:var(--gothic);font-size:11.5px;color:var(--ink-3)}
+.exp .src a{color:var(--ink-2)}
+.exp .lv{font-family:var(--gothic);font-size:11px;border:1px solid var(--ink-3);color:var(--ink-3);padding:0 4px;margin-left:4px;vertical-align:1px}
+
+/* ── 모달 ── */
+.modal{position:fixed;inset:0;z-index:50;background:rgba(20,20,20,.48);display:none;align-items:center;justify-content:center;padding:16px}
+.modal.open{display:flex}
+.dlg{background:#fff;width:min(560px,100%);max-height:calc(100vh - 32px);display:flex;flex-direction:column;border:1.5px solid var(--line);box-shadow:0 8px 30px rgba(0,0,0,.3)}
+.dlg.wide{width:min(760px,100%)}
+.dh{font-family:var(--gothic);font-weight:800;font-size:14px;padding:10px 16px;border-bottom:1.5px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}
+.dh .step{font-weight:400;font-size:12px;color:var(--ink-2)}
+.db{padding:14px 16px;overflow:auto;font-size:13.8px}
+.db .box{border:1px solid var(--line-2);padding:8px 10px;margin:8px 0;font-size:13.2px}
+.db .box .t{font-family:var(--gothic);font-weight:700;font-size:11.5px;color:var(--ink-3);margin-bottom:2px}
+.db .box.key{border-color:var(--red)}
+.db .box.key .t{color:var(--red)}
+.db .alt{margin-top:4px;font-family:var(--gothic);font-size:12px;color:var(--ink-2)}
+.db .mine{white-space:pre-wrap;font-family:var(--myeongjo)}
+.db pre{font-family:var(--mono);font-size:11.8px;border:1px solid var(--line-3);padding:6px 8px;overflow-x:auto;margin:6px 0}
+.db table.tbl td.blank{padding:4px 6px;text-align:left}
+.db .cell{display:flex;gap:6px;align-items:flex-start;cursor:pointer;font-size:12.6px}
+.db .cell input{accent-color:var(--red);margin-top:3px}
+.db .cell .my{display:block;font-family:var(--myeongjo)}
+.db .cell .ky{display:block;font-family:var(--gothic);font-size:11.4px;color:var(--red)}
+.df{border-top:1px solid var(--line-2);padding:10px 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-family:var(--gothic);font-size:12.5px}
+.df .sp{flex:1}
+.btn{border:1px solid var(--line);background:#fff;border-radius:3px;padding:6px 14px;cursor:pointer;font-family:var(--gothic);font-size:12.5px}
+.btn.dark{background:var(--ink);color:#fff}
+.btn.ghost{border-color:var(--line-2);color:var(--ink-2)}
+.btn:disabled{opacity:.35;cursor:default}
+.verdict{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px;font-family:var(--gothic);font-size:12.5px}
+.verdict button.sel{background:var(--red);border-color:var(--red);color:#fff}
+.verdict input{width:62px;border:1px solid var(--line);padding:4px 6px;font-family:var(--gothic)}
+.rub{margin-top:10px;border:1px solid var(--line);font-family:var(--gothic);font-size:12.5px}
+.rub .rt{font-weight:800;padding:4px 10px;border-bottom:1px solid var(--line);background:#F7F7F5;display:flex;justify-content:space-between;align-items:center}
+.rub label{display:flex;gap:8px;align-items:flex-start;cursor:pointer;padding:5px 10px;border-bottom:1px solid var(--line-3)}
+.rub label:last-child{border-bottom:0}
+.rub input{margin-top:3px;accent-color:var(--red)}
+.rub .pt{padding:4px 10px;border-bottom:1px solid var(--line-3)}
+.rub .pt:last-child{border-bottom:0}
+.rub .pp{margin-left:auto;white-space:nowrap}
+.now{font-family:var(--pen);color:var(--red);font-size:28px;line-height:1}
+.note{font-family:var(--gothic);font-size:11.8px;color:var(--ink-3);margin-top:6px}
+
+/* ── 성적표 쪽 ── */
+.after{display:none}
+.done .after{display:flex}
+table.grid{width:100%;border-collapse:collapse;font-family:var(--gothic);font-size:12.6px;margin:6px 0 16px}
+table.grid th,table.grid td{border:1px solid var(--line);padding:4px 2px;text-align:center}
+table.grid th{background:#F1F1EE;font-weight:700}
+table.grid td.r{font-family:var(--pen);color:var(--red);font-size:21px;line-height:1.1}
+.report-head{text-align:center;border-bottom:3px double var(--line);padding-bottom:10px;margin-bottom:16px}
+.report-head h2{margin:0;font-size:26px;font-weight:800;letter-spacing:.5em;padding-left:.5em}
+.report-head div{font-family:var(--gothic);font-size:12px;color:var(--ink-2);margin-top:4px}
+.total{display:flex;justify-content:center;align-items:flex-end;gap:16px;margin:4px 0 18px}
+.total .n{font-family:var(--pen);color:var(--red);font-size:88px;line-height:.8}
+.total .of{font-family:var(--gothic);font-size:14px;color:var(--ink-2);padding-bottom:6px}
+.total .g{font-family:var(--pen);color:var(--red);font-size:42px;border:2.5px solid var(--red);border-radius:50%;width:66px;height:66px;display:flex;align-items:center;justify-content:center;transform:rotate(-8deg);margin-left:6px}
+table.rep{width:100%;border-collapse:collapse;font-size:13.4px;margin-bottom:14px}
+table.rep th,table.rep td{border:1px solid var(--line);padding:6px 8px}
+table.rep th{background:#F1F1EE;font-family:var(--gothic);font-size:12.2px;font-weight:700}
+table.rep td{text-align:center}
+table.rep td.l{text-align:left}
+.bar{height:7px;border:1px solid var(--line);background:#fff}
+.bar i{display:block;height:100%;background:var(--ink-2)}
+.review{font-family:var(--gothic);font-size:12.6px;line-height:1.75;color:var(--ink-2)}
+.review a{color:var(--ink)}
+.frac{display:inline-flex;flex-direction:column;text-align:center;vertical-align:middle;line-height:1.05;margin:0 1px;font-size:.88em}
+.frac .num{border-bottom:1px solid currentColor;padding:0 2px}.frac .den{padding:0 2px}
+
+/* 이미지로 저장할 때: 그림자·여백 정리 */
+.snap .page{box-shadow:none;margin:0 auto}
+
+/* ── 인쇄 · PDF ──
+   화면에서 보는 860px 쪽을 그대로 A4 한 장에 맞춘다 (쪽마다 zoom 은 exam.js 의 preparePrint 가 계산).
+   글자 크기·2단 배치·줄바꿈이 화면과 똑같이 유지된다. */
+body.printing .page{width:860px!important}
+@media print{
+  @page{size:A4;margin:0}
+  html,body{background:#fff}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .toolbar,.modal,.toast{display:none!important}
+  #book{margin:0}
+  .page{width:860px;min-height:0;margin:0 auto;box-shadow:none;break-after:page;break-inside:avoid;overflow:hidden}
+  .page.lastprint{break-after:auto}
+  .essay textarea{resize:none}
+}

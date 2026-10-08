@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>알고리즘 중간고사 대비 모의평가</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../_exam/exam.css">
+<style>:root{ --subject:#4F46E5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../_exam/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다.<br>이 파일은 <b>drive/_exam/exam.css · exam.js</b> 와 함께 있어야 열립니다.
+(<code>drive/algorithm/exam/midterm-1.html</code> 위치에서 열어 주세요.)</div>
+<script>
+/* ════════ 시험지 정보 ════════ */
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'알고리즘',
+  title:'중간고사 대비 모의평가',
+  written:'2026년 10월 4일 작성',
+  slug:'algorithm-midterm-1',            // 저장 파일 이름 (영문)
+  lectureBase:'../lecture',              // 출처 링크 기준 (이 파일 기준 상대경로)
+  mcMax:0.3,                             // 같은 교수님 자료구조 족보가 객관식 1/10 → 30% 이하
+  scope:'<b>중간고사 범위 · 2주차 1차시 ~ 5주차 1차시</b> (1주차 2차시는 시험 범위 아님)<br>선택 문제(토너먼트·quick_select·MoM·귀납법), 분할 정복(거듭제곱·피보나치 행렬·카라츠바), 이진탐색, 점화식 계산(전개·세로식·나무 그림), 정렬(선택·버블·삽입·퀵·stable·in-place)'
+};
+
+/* ════════ 문항 ════════
+   type  : mc 객관식 · ox O/X · short 단답 · table 표 빈칸 · line 코드 줄 고르기 · essay 서술
+   lv    : 하 / 중 / 상        src : [['주차-차시','섹션 id','제목'], …]
+   채점  : 부분 점수 없음(정답 또는 오답). mc · ox · line 자동 / short · table · essay 직접, 빈 답은 자동 오답 */
+const EXAM = [
+ { type:'ox', lv:'하', unit:'종합', pts:5,
+   q:`<p>다음 설명이 옳으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[
+     ['이진탐색은 리스트가 정렬되어 있어야 올바르게 동작한다.', true],
+     ['카라츠바 알고리즘은 곱셈 4번을 3번으로 줄여 O(n log n) 이 된다.', false],
+     ['토너먼트 방식으로 최댓값을 찾아도 비교 횟수는 n − 1 번이다.', true],
+     ['버블 정렬에서 이웃한 두 값이 <b>같을 때도</b> 교환하도록 바꾸면 stable 이 깨진다.', true]],
+   exp:`ㄴ. T(n) = 3T(${F('n','2')}) + Cn 이라 O(n<sup>log₂3</sup>) (≈ n<sup>1.585</sup>). n log n 은 2T(${F('n','2')}) + Cn 의 결과다. ㄹ. 같은 값끼리 자리를 바꾸면 원래 순서가 뒤집힌다. 네 문장이 모두 맞아야 정답이다.`,
+   src:[['03-2','s13','이진탐색'],['03-2','s11','카라츠바 전개'],['02-1','s2','토너먼트'],['05-1','s5','버블 정렬']] },
+
+ { type:'mc', lv:'하', unit:'점화식', pts:5,
+   q:`<p>T(1) = C 일 때, 다음 점화식 중 T(n) 이 <b>O(n log n)</b> 인 것은?</p>`,
+   choices:[`T(n) = T(${F('n','2')}) + Cn`,`T(n) = 2T(${F('n','2')}) + Cn`,`T(n) = 2T(${F('n','2')}) + C`,`T(n) = 4T(${F('n','2')}) + Cn`], answer:[2],
+   exp:`① 층의 합이 Cn, ${F('Cn','2')}, … 로 줄어 O(n) (quick_select 최선). ② 층마다 합이 Cn, 층이 log n 개 → O(n log n). ③ C(1 + 2 + … + n) → O(n). ④ 층의 합이 Cn, 2Cn, 4Cn, … 로 늘어 O(n<sup>2</sup>).`,
+   src:[['04-2','s2','Quick Select 최선'],['04-2','s3','2T(n/2)+Cn']] },
+
+ { type:'short', lv:'하', unit:'정렬', pts:5,
+   q:`<p>수업의 insertion_sort 로 A = [4, 2, 5, 1, 3] 을 정렬한다. 바깥 반복문이 <b>i = 3 까지 끝난 직후</b>의 A 를 쓰시오.</p>`,
+   show:'[1, 2, 4, 5, 3]', alt:['1 2 4 5 3'],
+   exp:`i = 1 : 2 를 끼움 → [2, 4, 5, 1, 3]. i = 2 : 5 는 그대로 → [2, 4, 5, 1, 3]. i = 3 : 1 을 맨 앞까지 → [1, 2, 4, 5, 3]. 3 은 아직 처리 전이다.`,
+   src:[['05-1','s6','삽입 정렬']] },
+
+ { type:'table', lv:'중', unit:'정렬', pts:6,
+   q:`<p>수업에서 다룬 코드 기준으로 표의 빈칸에 O 또는 X 를 쓰시오.</p>`,
+   head:['정렬','stable','in-place'],
+   rows:[
+     ['선택 정렬', B('X'), B('O')],
+     ['삽입 정렬', B('O'), B('O')],
+     ['S/M/L 퀵 정렬', B('O'), B('X')],
+     ['제자리 퀵 정렬', B('X'), B('O')]],
+   exp:`선택·제자리 퀵은 <b>멀리 떨어진 칸끼리</b> 교환해 같은 값의 순서가 바뀔 수 있다 → stable X. 삽입은 '더 클 때만' 한 칸씩 밀어 stable. S/M/L 퀵은 A 를 앞에서부터 순서대로 나눠 담아 stable 이지만, 새 리스트를 만들어 in-place X.`,
+   src:[['05-1','s8','4가지 판정'],['05-1','s15','제자리 퀵 성질']] },
+
+ { type:'short', lv:'중', unit:'선택 문제', pts:5,
+   q:`<p>원소가 12개인 리스트에서 토너먼트 방식으로 <b>가장 작은 값과 두 번째로 작은 값</b>을 모두 찾을 때 필요한 최소 비교 횟수를 쓰시오.</p>`,
+   show:'14', alt:['14번','14회'],
+   exp:`최솟값 n − 1 = 11 번. 두 번째로 작은 값은 최솟값에게 직접 진 원소(= 라운드 수 ⌈log₂12⌉ = 4 개) 중에 있으므로 4 − 1 = 3 번. 합 11 + 3 = 14 (= n + ⌈log₂n⌉ − 2). 올림을 빼먹고 log₂12 ≈ 3.6 으로 계산하면 틀린다.`,
+   src:[['02-1','s4','최소·두 번째로 작은 값']] },
+
+ { type:'line', lv:'중', unit:'이진탐색', pts:6,
+   q:`<p>다음 bs 는 수업 코드에서 <b>한 줄</b>이 바뀌어, k 가 A 에 없을 때 재귀가 끝나지 않는 경우가 생긴다. 바뀐 줄의 번호를 고르시오.</p>`,
+   code:`
+def bs(A, a, b, k):
+    if a > b:
+        return -1
+    m = (a + b) // 2
+    if A[m] == k:
+        return m
+    elif A[m] > k:
+        return bs(A, a, m, k)
+    else:
+        return bs(A, m+1, b, k)`,
+   answer:[8],
+   exp:`8번 줄은 bs(A, a, m-1, k) 여야 한다. a = b = m 이고 A[m] &gt; k 이면 bs(A, a, m, k) 는 <b>같은 인자</b>로 다시 호출된다. 예: A = [3, 8, 12, 17, 25, 31, 40], k = 20 → (0,6) → (4,6) → (4,5) → (4,4) → (4,4) → … 10번 줄은 m+1 이라 구간이 반드시 줄어든다.`,
+   src:[['03-2','s13','이진탐색']] },
+
+ { type:'essay', lv:'중', unit:'점화식', pts:12,
+   q:`<p>T(n) = 3T(${F('n','2')}) + Cn, T(1) = C 를 전개하여 T(n) 을 n 의 식으로 나타내고, Big-O 로 쓰시오.</p>`,
+   model:`가정 : n = 2<sup>k</sup><br>T(n) = 3T(${F('n','2')}) + Cn = 3<sup>2</sup>T(${F('n','2<sup>2</sup>')}) + Cn(1 + ${F('3','2')}) = … = 3<sup>k</sup>T(1) + Cn(1 + ${F('3','2')} + … + (${F('3','2')})<sup>k−1</sup>)<br>= 3<sup>k</sup>C + 2Cn((${F('3','2')})<sup>k</sup> − 1)<br>k = log₂n 이고 3<sup>log₂n</sup> = n<sup>log₂3</sup>, n·(${F('3','2')})<sup>log₂n</sup> = n<sup>log₂3</sup><br>= 3C·n<sup>log₂3</sup> − 2Cn &nbsp;⇒&nbsp; <b>O(n<sup>log₂3</sup>)</b>`,
+   rubric:['n = 2<sup>k</sup> 가정을 명시함','2~3단계 전개 후 일반항(등비수열 꼴)을 씀','등비수열 합을 바르게 계산함','로그·지수 성질로 n 의 식으로 바꿈','결론 O(n<sup>log₂3</sup>)'],
+   src:[['04-2','s4','카라츠바 점화식'],['03-2','s11','O(n^log₂3) 전개']] },
+
+ { type:'short', lv:'중', unit:'분할 정복', pts:5,
+   q:`<p>다음은 a<sup>n</sup> 을 O(log n) 에 구하는 함수이다. 빈칸에 알맞은 식을 쓰시오.</p>
+<pre>def power3(a, n):
+    if n == 1:
+        return a
+    x = power3(a, n // 2)
+    if n % 2 == 0:
+        return x * x
+    else:
+        return ________</pre>`,
+   show:'x * x * a', alt:['a * x * x','x * a * x'],
+   exp:`n 이 홀수면 n // 2 를 두 번 더해도 n − 1 이므로 남은 a 하나를 더 곱한다. power3(a, n // 2) 를 두 번 호출하면 power2 와 같아져 O(n) 이 된다.`,
+   src:[['03-1','s6','power3']] },
+
+ { type:'table', lv:'중', unit:'점화식', pts:7,
+   q:`<p>T(n) = 2T(${F('n','2')}) + Cn, T(1) = C 를 n = 8 일 때 나무 그림으로 펼쳤다. 표의 빈칸을 채우시오. (노드 하나의 비용은 그 노드에서 하는 일의 양)</p>`,
+   head:['층','노드 수','노드 하나의 비용','층의 합'],
+   rows:[
+     ['0','1','8C','8C'],
+     ['1', B('2'), blank('4C'), blank('8C')],
+     ['2', B('4'), blank('2C'), blank('8C')],
+     ['3', B('8'), blank('C',['1C']), blank('8C')]],
+   exp:`한 층 내려갈 때마다 노드 수는 2배, 크기는 반이라 층의 합은 늘 8C = Cn. 층은 log₂8 + 1 = 4 개 → 전체 32C = Cn(log₂n + 1) → O(n log n). 마지막 층은 T(1) = C 가 8개.`,
+   src:[['04-2','s3','두 갈래 나무']] },
+
+ { type:'mc', lv:'상', unit:'분할 정복', pts:5,
+   q:`<p>두 수를 x·10<sup>m</sup> + y, w·10<sup>m</sup> + z 로 나눌 때, 카라츠바 알고리즘이 재귀로 계산하는 <b>곱셈 3개</b>로 옳은 것은?</p>`,
+   choices:['xw, yz, (x + y)(w + z)','xw, yz, xz + yw','xw, xz, (x + y)(w + z)','xz, yw, (x − y)(w − z)'], answer:[1],
+   exp:`가운데 항 xz + yw = (x + y)(w + z) − xw − yz. ② xz + yw 는 그 자체로 곱셈 2번이라 모두 4번. ③ yz 가 없으면 맨 끝자리 항을 못 만든다. ④ xw 와 yz(맨 앞·맨 뒤 항)가 없다.`,
+   src:[['03-2','s9','카라츠바']] },
+
+ { type:'short', lv:'상', unit:'정렬', pts:8,
+   q:`<p>수업의 제자리 퀵 정렬로 A = [5, 3, 8, 1, 9, 2, 7] 을 정렬할 때, <b>첫 번째 분할에서 피벗 교환까지 끝난 직후</b>의 A 를 쓰시오.</p>`,
+   show:'[1, 3, 2, 5, 9, 8, 7]', alt:['1 3 2 5 9 8 7'],
+   exp:`P = 5. left 는 3 을 지나 8 에서, right 는 7 을 지나 2 에서 멈춤 → 8 ↔ 2 → [5, 3, 2, 1, 9, 8, 7], left = 3, right = 4. left 는 1 을 지나 9 에서, right 는 9 를 지나 1 에서 멈춤 → left &gt; right 라 끝. 피벗 ↔ A[right = 3] → [1, 3, 2, 5, 9, 8, 7].`,
+   src:[['05-1','s13','한 단계씩 예시'],['05-1','s14','제자리 퀵 코드']] },
+
+ { type:'line', lv:'상', unit:'정렬', pts:8,
+   q:`<p>제자리 퀵 정렬의 분할 부분을 옮겨 적다 <b>한 줄</b>을 잘못 적었다. 이 코드로 [5, 3, 8, 1, 9, 2, 7] 을 분할하면 [1, 3, 7, 5, 9, 2, 8] 이 되어 피벗 5 의 왼쪽에 7, 오른쪽에 2 가 남는다. 잘못 적은 줄을 고르시오.</p>`,
+   code:`
+P = A[first]
+left = first + 1
+right = last
+while left <= right:
+    while left <= last and A[left] < P:
+        left += 1
+    while right > first and A[right] < P:
+        right -= 1
+    if left <= right:
+        A[left], A[right] = A[right], A[left]
+        left += 1
+        right -= 1
+A[first], A[right] = A[right], A[first]`,
+   answer:[7],
+   exp:`right 는 'P 보다 큰 값'을 지나가고 P 이하에서 멈춰야 하므로 A[right] &gt; P 가 맞다. &lt; 로 쓰면 오른쪽 끝의 작은 값(2)을 지나쳐 버리고, 큰 값(7)에서 멈춰 엉뚱한 교환이 일어난다. 5번 줄(A[left] &lt; P)은 맞는 줄이다.`,
+   src:[['05-1','s14','제자리 퀵 코드']] },
+
+ { type:'essay', lv:'상', unit:'선택 문제', pts:12,
+   q:`<p>MoM 의 점화식 T(n) = T(${F('3n','4')}) + T(${F('n','5')}) + ${F('11n','5')}, T(1) = 1 에 대해 T(n) ≤ 44n 임을 수학적 귀납법으로 보이고, T(n) 을 Big-O 로 쓰시오.</p>`,
+   model:`기저 : T(1) = 1 ≤ 44·1.<br>가정 : n 보다 작은 모든 k 에서 T(k) ≤ 44k.<br>귀납 : ${F('3n','4')}, ${F('n','5')} &lt; n 이므로<br>T(n) ≤ 44·${F('3n','4')} + 44·${F('n','5')} + ${F('11n','5')} = 33n + ${F('44n','5')} + ${F('11n','5')} = 33n + 11n = 44n.<br>따라서 모든 n 에서 T(n) ≤ 44n 이고 <b>O(n)</b>.`,
+   rubric:['기저 단계 (n = 1)','귀납 가정을 n 보다 작은 모든 k 로 세움','가정을 대입해 44n 까지 정확히 계산','결론 O(n)'],
+   src:[['02-2','s9','귀납법으로 MoM 풀기']] },
+
+ { type:'essay', lv:'상', unit:'정렬', pts:11,
+   q:`<p>제자리 퀵 정렬이 <b>stable 인지</b> O/X 로 답하고, 그 이유를 같은 값 두 개가 들어 있는 반례와 함께 쓰시오. (원소 3개 이하의 반례면 충분하다)</p>`,
+   model:`<b>X</b>. left·right 교환과 마지막 피벗 교환이 <b>멀리 떨어진 칸끼리</b> 일어나, 같은 값이 다른 같은 값을 건너뛸 수 있다.<br>반례 : [3, 2₁, 2₂] (P = 3) → left 는 끝까지 지나가고 right 는 2₂ 에서 멈춤 → 피벗 ↔ 2₂ → [2₂, 2₁, 3]. 2₁ 과 2₂ 의 순서가 뒤바뀐다.`,
+   rubric:['O/X 를 X 로 답함','멀리 떨어진 칸끼리 교환한다는 근거','같은 값의 순서가 뒤바뀌는 반례를 제시하고 과정을 보임'],
+   src:[['05-1','s15','제자리 퀵 성질']] },
+];
+</script>
+</body>
+</html>
