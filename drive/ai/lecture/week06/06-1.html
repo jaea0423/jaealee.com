@@ -267,6 +267,7 @@ footer{margin-top:54px;padding-top:18px;border-top:1px solid var(--line);font-si
   .vword{grid-template-columns:1fr;gap:5px}
   .search{max-width:none;order:3;flex-basis:100%;max-width:100%}
   .topbar{flex-wrap:wrap}
+  #navBtn{display:none}
   .hero::after{font-size:78px}
 }
 @media print{
@@ -341,6 +342,7 @@ body.nav-closed .wrap{grid-template-columns:minmax(0,1fr)}body.nav-closed .side{
     <div id="tocWrap">
       <div class="cap">목차</div>
       <ul class="toc" id="toc">
+        <li><a href="#intro"><span class="num">00</span>한눈에 보기 (전체 흐름)<span class="tpg"></span></a></li>
         <li><a href="#s1"><span class="num">01</span>광고 데이터와 회귀 분석<span class="tpg">1–2</span></a></li>
         <li><a href="#s2"><span class="num">02</span>용어 정리<span class="tpg">3</span></a></li>
         <li><a href="#s3"><span class="num">03</span>회귀란 · 분류<span class="tpg">4–5</span></a></li>
@@ -358,7 +360,9 @@ body.nav-closed .wrap{grid-template-columns:minmax(0,1fr)}body.nav-closed .side{
         <li><a href="#s15"><span class="num">15</span>로지스틱 회귀<span class="tpg">24–25</span></a></li>
         <li><a href="#s16"><span class="num">16</span>최대우도 추정<span class="tpg">26</span></a></li>
         <li><a href="#s17"><span class="num">17</span>로지스틱으로 분류<span class="tpg">27</span></a></li>
-        <li><a href="#s18"><span class="num">18</span>확인 필요<span class="tpg"></span></a></li>
+        <li><a href="#s18"><span class="num">18</span>용어 정리<span class="tpg"></span></a></li>
+        <li><a href="#s19"><span class="num">19</span>확인 필요<span class="tpg"></span></a></li>
+        <li><a href="#s20"><span class="num">20</span>예상 문제<span class="tpg"></span></a></li>
       </ul>
       <hr>
       <div class="cap">복습 체크</div>
@@ -370,6 +374,9 @@ body.nav-closed .wrap{grid-template-columns:minmax(0,1fr)}body.nav-closed .side{
         <label><input type="checkbox"><span>Adjusted R²가 필요한 이유</span></label>
         <label><input type="checkbox"><span>분류에 선형 회귀 대신 로지스틱을 쓰는 이유</span></label>
         <label><input type="checkbox"><span>로지스틱 확률 계산과 0.5 분류 규칙</span></label>
+        <label><input type="checkbox"><span>p(x)·1−p(x)·오즈·로그 오즈가 각각 무엇인지 말하기</span></label>
+        <label><input type="checkbox"><span>회귀계수를 인과가 아닌 상관관계로 해석하기</span></label>
+        <label><input type="checkbox"><span>예상 문제 6개 풀기</span></label>
       </div>
       <div class="pbar"><i id="barFill"></i></div>
     </div>
@@ -423,6 +430,7 @@ body.nav-closed .wrap{grid-template-columns:minmax(0,1fr)}body.nav-closed .side{
     <a href="#s15"><b>15</b> 로지스틱</a>
     <a href="#s16"><b>16</b> 최대우도</a>
     <a href="#s17"><b>17</b> 분류 규칙</a>
+    <a href="#s20"><b>20</b> 예상 문제</a>
   </nav>
 
   <div class="keys">
@@ -430,6 +438,55 @@ body.nav-closed .wrap{grid-template-columns:minmax(0,1fr)}body.nav-closed .side{
     <div class="key"><div class="n">핵심 2</div><p><b>R² = SSR/SST</b>: 모델이 설명한 변동 비율. 변수가 많으면 <b>Adjusted R²</b>로 벌점.</p></div>
     <div class="key"><div class="n">핵심 3</div><p>분류에는 <b>로지스틱 회귀</b> — 직선을 시그모이드에 넣어 0~1 확률, 0.5 기준으로 분류. 계수는 최대우도.</p></div>
   </div>
+
+  <!-- 00 -->
+  <section id="intro">
+    <h2 class="st"><span class="sq">00</span>오늘 수업 한눈에 — 처음부터 끝까지 한 줄로 잇기</h2>
+    <p>오늘 내용은 양이 많아 보이지만, 실제로는 <b>"데이터(점)만 가지고 x와 y의 관계를 식으로 찾는다"</b>는 하나의 질문을 끝까지 따라간 것입니다. 아래 순서대로 읽고, 막히는 단계만 해당 섹션으로 들어가서 보세요.</p>
+
+    <h3>1부. 선형 회귀 — 숫자를 예측</h3>
+    <ol class="steps">
+      <li><b>문제</b>: 손에 있는 것은 점들 (x₁, y₁), …, (xₙ, yₙ)뿐입니다. 이 점들을 <b>가장 잘 설명하는 직선</b>을 찾는 것이 목표입니다. x는 입력(독립변수·특징), y는 출력(종속변수)입니다. → <a href="#s1">01</a>, <a href="#s2">02</a></li>
+      <li><b>모델 정하기</b>: 직선이므로 ŷ = β̂₀ + β̂₁x로 둡니다. β₀(절편)·β₁(기울기)이 바로 <b>찾아야 할 값</b>(파라미터·가중치·회귀계수)입니다. 모자(^)는 "데이터로 추정한 값"이라는 표시입니다. → <a href="#s5">05</a></li>
+      <li><b>"잘 맞는다"를 숫자로 정의</b>: 점마다 실제값과 예측값의 차이 eᵢ = yᵢ − ŷᵢ(잔차)를 구합니다. 오차는 +2도 −2도 나오므로 그냥 더하면 서로 지워집니다. 그래서 <b>제곱해서 더한 RSS</b>를 씁니다. 이 RSS가 목적함수(=손실함수=비용함수)입니다. → <a href="#s6">06</a></li>
+      <li><b>RSS를 가장 작게 만드는 β₀, β₁ 찾기</b>: RSS를 β₀, β₁로 각각 미분해서 0으로 두고 풀면 공식이 나옵니다. β̂₁ = ∑(x−x̄)(y−ȳ)/∑(x−x̄)², β̂₀ = ȳ − β̂₁x̄. 교수님 말씀대로 <b>직접 푸는 문제보다 "이런 흐름으로 구한다"를 이해</b>하는 것이 목표입니다. → <a href="#s6">06</a></li>
+      <li><b>얼마나 잘 맞나 평가</b>: R² = 1 − SSE/SST. "평균 ȳ 하나로 찍었을 때의 오차(SST) 중 몇 %를 직선이 줄였나"입니다. 1에 가까울수록 좋습니다. → <a href="#s7">07</a></li>
+      <li><b>입력을 늘리기</b>: x가 여러 개면 다중 회귀 ŷ = β̂₀ + β̂₁x₁ + … + β̂ₚxₚ. 그림은 선 → 면 → 초평면으로 바뀌지만 원리(RSS 최소)는 같습니다. 변수를 늘리면 R²가 무조건 오르므로 <b>Adjusted R²</b>로 벌점을 줍니다. → <a href="#s8">08</a>, <a href="#s9">09</a></li>
+      <li><b>계수 읽기 주의</b>: "β₁ = 0.05이면 x가 1 늘 때 y가 0.05 늘어나는 <b>경향</b>"입니다. x가 y를 <b>일으킨다(인과)</b>고 단정하면 안 되고 <b>상관관계</b>로 읽어야 합니다. → <a href="#s10">10</a></li>
+    </ol>
+
+    <h3>2부. 로지스틱 회귀 — Yes/No를 예측</h3>
+    <ol class="steps">
+      <li><b>새 문제</b>: 이번에는 y가 0(No) 또는 1(Yes)입니다. 직선을 그대로 쓰면 예측값이 0보다 작거나 1보다 커져서 <b>확률로 읽을 수 없습니다</b>. → <a href="#s13">13</a>, <a href="#s14">14</a></li>
+      <li><b>해결</b>: 직선 값 z = β₀ + β₁X를 <b>시그모이드</b> 1 / (1 + e<sup>−z</sup>)에 넣습니다. 결과는 항상 0~1이고, 이것을 p(X) = P(y = 1 | X), 즉 <b>"y가 1일 확률"</b>로 읽습니다. → <a href="#s15">15</a></li>
+      <li><b>로그 오즈</b>: p(x)는 y가 1일 확률, 1 − p(x)는 y가 0일 확률입니다. 둘을 나눈 p/(1−p)가 <b>오즈</b>, 거기에 log를 씌운 것이 <b>로그 오즈</b>이고, 이것이 다시 직선 β₀ + β₁X와 같아집니다. 즉 로지스틱 회귀 안에도 직선이 숨어 있습니다. → <a href="#s15">15</a></li>
+      <li><b>계수 찾기</b>: 이번에는 RSS가 아니라 <b>최대우도</b>를 씁니다. "실제 Yes인 사람에게는 높은 p, 실제 No인 사람에게는 높은 1 − p"를 주는 계수일수록 우도가 큽니다. → <a href="#s16">16</a></li>
+      <li><b>분류</b>: p̂(X) &gt; 0.5면 1(Yes), 아니면 0(No). 예: balance 2000 → 0.586 → Default. → <a href="#s17">17</a></li>
+    </ol>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th></th><th>선형 회귀</th><th>로지스틱 회귀</th></tr></thead>
+        <tbody>
+          <tr><td>y의 종류</td><td>숫자 (판매량 등)</td><td>0 / 1 (Yes / No)</td></tr>
+          <tr><td>출력</td><td>ŷ = β̂₀ + β̂₁x (범위 제한 없음)</td><td>p̂(X) = 1 / (1 + e<sup>−(β̂₀+β̂₁X)</sup>) (0~1 확률)</td></tr>
+          <tr><td>직선이 있는 곳</td><td>출력 그 자체</td><td>로그 오즈 log(p/(1−p))</td></tr>
+          <tr><td>계수 찾는 기준</td><td>RSS 최소 (최소제곱)</td><td>우도 최대 (최대우도)</td></tr>
+          <tr><td>평가·결정</td><td>R², Adjusted R²</td><td>0.5 기준으로 분류</td></tr>
+          <tr><td>과제 종류</td><td>회귀</td><td>분류 (이름만 회귀)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="call sum">
+      <div class="t">정리 — 이것만은 외우기</div>
+      <ul>
+        <li>회귀 = 데이터만 보고 β(회귀계수)를 찾는 일. 선형은 <b>RSS 최소</b>, 로지스틱은 <b>우도 최대</b>.</li>
+        <li>R² = 1 − SSE/SST, 변수가 많으면 Adjusted R².</li>
+        <li>p(x) = P(y = 1), 1 − p(x) = P(y = 0), 로그 오즈 = log(p/(1−p)) = β₀ + β₁X, 0.5 넘으면 1.</li>
+        <li>회귀계수는 <b>상관관계</b>로 해석. 비선형·다항은 "구불구불해질 수 있다"까지만.</li>
+      </ul>
+    </div>
+  </section>
 
 
   <!-- 01 -->
@@ -981,6 +1038,22 @@ body.nav-closed .wrap{grid-template-columns:minmax(0,1fr)}body.nav-closed .side{
     <p>식을 조금 정리하면:</p>
     <div class="eq">log( <span class="frac"><span>p(X)</span><span>1 − p(X)</span></span> ) = β₀ + β₁X</div>
     <p>이 변환을 p(X)의 <b>로그 오즈</b><span class="en">(log odds)</span> 또는 <b>로짓</b><span class="en">(logit)</span> 변환이라 합니다.</p>
+    <div class="call quote">
+      <div class="t">교수님 말씀 — 로그 오즈의 분자·분모</div>
+      <p><b>p(x)는 y가 1일 확률</b>, <b>1 − p(x)는 y가 0일 확률</b>입니다.</p>
+      <p>그래서 분수 p(x) / (1 − p(x))는 <b>"y = 1일 확률 ÷ y = 0일 확률"</b>입니다. Default 예제로 읽으면 "채무불이행(Yes)일 확률 ÷ 채무불이행이 아닐(No) 확률"입니다.</p>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>p(x) = P(y = 1)</th><th>1 − p(x) = P(y = 0)</th><th>오즈 p/(1−p)</th><th>로그 오즈 log(오즈)</th><th>뜻</th></tr></thead>
+        <tbody>
+          <tr><td>0.5</td><td>0.5</td><td>1</td><td>0</td><td>1과 0이 반반</td></tr>
+          <tr><td>0.8</td><td>0.2</td><td>4</td><td>≈ 1.39 (양수)</td><td>1일 가능성이 0의 4배</td></tr>
+          <tr><td>0.2</td><td>0.8</td><td>0.25</td><td>≈ −1.39 (음수)</td><td>0일 가능성이 1의 4배</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>표에서 보이듯 <b>로그 오즈가 0이면 p = 0.5</b>, 양수면 p &gt; 0.5(1 쪽), 음수면 p &lt; 0.5(0 쪽)입니다. 17의 "0.5 기준 분류"는 결국 "로그 오즈 β₀ + β₁X가 0보다 큰가"와 같은 말입니다.</p>
     <ul>
       <li><b>오즈</b><span class="en">(odds)</span> = p / (1 − p): "일어날 확률 ÷ 일어나지 않을 확률". p = 0.8이면 오즈 = 0.8/0.2 = 4 (4배 더 일어나기 쉬움).</li>
       <li>확률 p는 0~1이지만 오즈는 0~∞, <b>로그 오즈는 −∞~+∞</b>입니다. 그래서 범위 제한이 없는 직선 β₀ + β₁X와 같다고 놓을 수 있습니다.</li>
@@ -990,8 +1063,8 @@ body.nav-closed .wrap{grid-template-columns:minmax(0,1fr)}body.nav-closed .side{
       <div class="t">식 변형 과정 — 교수님이 설명하신 내용 아님</div>
       <p><span class="ext">z = β₀ + β₁X로 두면 p = eᶻ / (1 + eᶻ). 1 − p = 1 / (1 + eᶻ)이므로 p / (1 − p) = eᶻ. 양변에 자연로그를 취하면 log(p / (1 − p)) = z = β₀ + β₁X. 여기서 log는 자연로그(ln, 밑 e)입니다.</span></p>
     </div>
-    <div class="call sum"><div class="t">정리</div><ul><li>p(X) = e^(β₀+β₁X) / (1 + e^(β₀+β₁X)) = 1 / (1 + e^−(β₀+β₁X)) — 직선을 시그모이드에 넣음, 항상 0~1</li><li>로그 오즈(logit): log(p/(1−p)) = β₀ + β₁X</li></ul></div>
-    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 24–25쪽 기반 — 실시간 필기 없음)</div></details>
+    <div class="call sum"><div class="t">정리</div><ul><li>p(X) = e^(β₀+β₁X) / (1 + e^(β₀+β₁X)) = 1 / (1 + e^−(β₀+β₁X)) — 직선을 시그모이드에 넣음, 항상 0~1</li><li>로그 오즈(logit): log(p/(1−p)) = β₀ + β₁X</li><li>p(x) = y가 1일 확률, 1 − p(x) = y가 0일 확률 → 오즈 = P(y=1)/P(y=0)</li></ul></div>
+    <details class="raw"><summary>필기 원문</summary><div class="txt">로그 오즈에서<br>p(x)는 y가 1일 확률<br>1 - p(x)는 y가 0일 확률</div></details>
   </section>
 
   <!-- 16 -->
@@ -1048,13 +1121,70 @@ body.nav-closed .wrap{grid-template-columns:minmax(0,1fr)}body.nav-closed .side{
 
   <!-- 18 -->
   <section id="s18">
-    <h2 class="st"><span class="sq">18</span>확인 필요</h2>
+    <h2 class="st"><span class="sq">18</span>용어 정리</h2>
+    <div class="terms">
+      <div class="term"><b>독립변수 · 종속변수</b><span class="e">independent · dependent variable</span><p>입력 x(특징, 설명변수) / 출력 y(반응변수, 목표). x → model → y.</p></div>
+      <div class="term"><b>회귀계수</b><span class="e">coefficient (β₀, β₁)</span><p>데이터로 찾아야 하는 값. 파라미터·learnable parameter·가중치로도 부른다.</p></div>
+      <div class="term"><b>추정값 (햇)</b><span class="e">estimate, ŷ · β̂</span><p>모자(^)는 데이터에서 추정·예측한 값이라는 표시.</p></div>
+      <div class="term"><b>잔차 · 에러텀</b><span class="e">residual eᵢ · error term ε</span><p>eᵢ = yᵢ − ŷᵢ (실제 − 예측). ε는 모델로 설명 못 하는 오차.</p></div>
+      <div class="term"><b>잔차 제곱합</b><span class="e">RSS (= SSE)</span><p>∑(yᵢ − ŷᵢ)². 부호 상쇄를 막으려고 제곱. 선형 회귀는 이것을 최소화.</p></div>
+      <div class="term"><b>목적·손실·비용함수</b><span class="e">objective · loss · cost function</span><p>줄이고자 하는 함수를 부르는 여러 이름. 오늘은 RSS.</p></div>
+      <div class="term"><b>최소제곱법</b><span class="e">least squares</span><p>RSS를 최소로 하는 계수를 미분 = 0으로 직접 풀어 구하는 방법.</p></div>
+      <div class="term"><b>결정계수</b><span class="e">R², coefficient of determination</span><p>1 − SSE/SST = SSR/SST. y 변동 중 모델이 설명하는 비율.</p></div>
+      <div class="term"><b>수정된 결정계수</b><span class="e">Adjusted R²</span><p>변수 개수 p로 벌점을 준 R². 쓸모없는 변수를 넣으면 내려간다.</p></div>
+      <div class="term"><b>다변수 · 다변량</b><span class="e">multivariable · multivariate</span><p>입력 x가 여러 개 / 출력 y가 여러 개. 수업은 variable 위주.</p></div>
+      <div class="term"><b>초평면</b><span class="e">hyperplane</span><p>입력이 3개 이상일 때의 회귀 "직선". 선 → 면 → 초평면.</p></div>
+      <div class="term"><b>시그모이드</b><span class="e">sigmoid</span><p>1 / (1 + e<sup>−z</sup>). 어떤 실수든 0~1로 바꾼다.</p></div>
+      <div class="term"><b>오즈 · 로그 오즈</b><span class="e">odds · log odds (logit)</span><p>p/(1−p) = P(y=1)/P(y=0). 로그 오즈 = log(p/(1−p)) = β₀ + β₁X.</p></div>
+      <div class="term"><b>최대우도 추정</b><span class="e">maximum likelihood</span><p>관찰된 결과가 나올 확률(우도)을 최대로 하는 계수를 고르는 방법.</p></div>
+    </div>
+  </section>
+
+  <!-- 19 -->
+  <section id="s19">
+    <h2 class="st"><span class="sq">19</span>확인 필요</h2>
     <p>아직 답이 필요한 질문만 남겨 둡니다. 현재 남은 질문은 없습니다.</p>
 
 
     <div class="call quote"><div class="t">고친 것 (교안)</div><ul>
       <li>교안 5쪽 다항 모델 식 y = b₀ + b₁x + b₂x₁² → b₂<b>x²</b> (첨자 1은 오타로 보임)</li>
     </ul></div>
+  </section>
+  <!-- 20 -->
+  <section id="s20">
+    <h2 class="st"><span class="sq">20</span>예상 문제</h2>
+    <p>교수님이 "푸는 문제는 안 나올 것 같다"고 하셔서, 계산보다는 <b>개념·흐름</b>을 묻는 문제 위주로 만들었습니다(문제는 예상이며 실제 출제와 다를 수 있습니다).</p>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q1</span><span>광고비 TV·Radio·Newspaper 3개로 판매량 1개를 예측하는 회귀는 무엇에 해당하는가?</span><span class="type">객관식</span></div>
+      <ol class="ch"><li>Univariable</li><li>Multivariable</li><li>Multivariate</li><li>Univariate이면서 Multivariate</li></ol>
+      <div class="ans"><span class="lab">정답 ②</span>variable은 입력(x)의 개수, variate는 출력(y)의 개수를 센다. 입력이 3개, 출력이 1개이므로 multivariable(다변수). Multivariate는 y가 여러 개일 때다.</div>
+    </div>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q2</span><span>RSS를 계산할 때 잔차를 그냥 더하지 않고 제곱해서 더하는 이유를 쓰시오.</span><span class="type">서술형</span></div>
+      <div class="ans"><span class="lab">모범답안</span>잔차는 +와 −가 모두 나오므로 그대로 더하면 서로 상쇄되어, 오차가 큰데도 합이 0에 가까워져 오차가 없는 것처럼 계산될 수 있다. 제곱하면 모든 값이 양수가 되어 상쇄가 사라진다. (절댓값이나 루트를 쓰기도 하며, 공통점은 양수로 만든다는 것이다.)</div>
+    </div>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q3</span><span>어떤 회귀 모델에서 SST = 50, SSE = 10이다. R²를 구하고 의미를 쓰시오.</span><span class="type">계산</span></div>
+      <div class="ans"><span class="lab">풀이</span>R² = 1 − SSE/SST = 1 − 10/50 = <b>0.8</b>. y의 전체 변동 중 80%를 모델이 설명한다는 뜻이다. (SSR = SST − SSE = 40이므로 SSR/SST = 0.8로도 같다.)</div>
+    </div>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q4</span><span>다중 회귀에서 R² 대신 Adjusted R²를 쓰는 이유는?</span><span class="type">서술형</span></div>
+      <div class="ans"><span class="lab">모범답안</span>R²는 변수를 추가하면 그 변수가 쓸모없어도 내려가지 않으므로, 변수가 많은 모델을 과대평가한다. Adjusted R² = 1 − [SSE/(n−p−1)] / [SST/(n−1)]은 변수 개수 p에 벌점을 주어, SSE가 충분히 줄지 않는 변수를 넣으면 값이 떨어진다.</div>
+    </div>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q5</span><span>로지스틱 회귀에서 p(x)와 1 − p(x)는 각각 무엇이며, log(p(x) / (1 − p(x)))는 무엇이라 부르는가? 이 값이 0이면 p(x)는 얼마인가?</span><span class="type">서술형</span></div>
+      <div class="ans"><span class="lab">모범답안</span>p(x)는 y가 1일 확률, 1 − p(x)는 y가 0일 확률이다. 둘의 비 p/(1−p)는 오즈, 여기에 로그를 취한 log(p/(1−p))는 <b>로그 오즈(로짓)</b>이며 β₀ + β₁X와 같다. 로그 오즈 = 0이면 오즈 = 1, 즉 p = 1 − p이므로 <b>p(x) = 0.5</b>.</div>
+    </div>
+
+    <div class="q">
+      <div class="qh"><span class="qn">Q6</span><span>Default 데이터에서 β̂₀ = −10.6513, β̂₁ = 0.0055일 때 balance = 2000의 p̂(X) ≈ 0.586이다. 이 사람을 어떻게 분류하는가? 또 "balance가 커지면 채무불이행이 일어난다"는 해석이 왜 부정확한지 쓰시오.</span><span class="type">서술형</span></div>
+      <div class="ans"><span class="lab">모범답안</span>p̂(X) = 0.586 &gt; 0.5이므로 <b>Default(1)</b>로 분류한다. 회귀계수는 x와 y가 함께 변하는 <b>상관관계</b>를 나타낼 뿐, x가 y의 원인이라는 <b>인과관계</b>를 보여 주지 않는다. 따라서 "balance가 클수록 채무불이행 확률이 높은 경향이 있다"로 해석해야 한다.</div>
+    </div>
   </section>
 
   <footer><span>인공지능 · 6주차 1차시 · 2026.10.08</span><span>jaealee.com</span></footer>
@@ -1064,8 +1194,8 @@ body.nav-closed .wrap{grid-template-columns:minmax(0,1fr)}body.nav-closed .side{
 <div id="viewVocab" hidden>
   <div class="hero" data-w="A–Z">
     <span class="chip">6주차 1차시 단어장</span>
-    <h1>인공지능 필수 용어</h1>
-    <p class="sub">교안 초안 단계라 아직 등록된 단어가 없습니다. 수업이 끝나면 채워집니다.</p>
+    <h1>회귀 필수 영단어</h1>
+    <p class="sub">교안(영어)에 자주 나오는 단어 8개입니다. 뜻 가리기·퀴즈로 복습하세요.</p>
   </div>
 
   <div class="vhead">
@@ -1075,7 +1205,49 @@ body.nav-closed .wrap{grid-template-columns:minmax(0,1fr)}body.nav-closed .side{
     <span style="font-size:13px;color:var(--ink-3);font-weight:600" id="vcount"></span>
   </div>
 
-  <ul class="vlist" id="vlist"></ul>
+  <ul class="vlist" id="vlist">
+    <li class="vword">
+      <div><span class="w">regression</span><span class="ipa">/rɪˈɡreʃn/</span><span class="pos">n.</span></div>
+      <div><p class="mean">회귀 — 입력과 출력의 관계를 식으로 추정해 숫자를 예측하는 방법</p>
+      <p class="ex">We use linear <b>regression</b> to predict sales.<span class="ko">판매량을 예측하려고 선형 회귀를 쓴다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">coefficient</span><span class="ipa">/ˌkoʊɪˈfɪʃnt/</span><span class="pos">n.</span></div>
+      <div><p class="mean">회귀계수, 계수 — 변수 앞에 곱해지는 수 (β₀, β₁)</p>
+      <p class="ex">The <b>coefficient</b> of TV is 0.05.<span class="ko">TV의 회귀계수는 0.05이다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">intercept</span><span class="ipa">/ˈɪntərsept/</span><span class="pos">n.</span></div>
+      <div><p class="mean">절편 — x = 0일 때 y의 값 (β₀)</p>
+      <p class="ex">The line has an <b>intercept</b> of 7.<span class="ko">이 직선의 절편은 7이다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">slope</span><span class="ipa">/sloʊp/</span><span class="pos">n.</span></div>
+      <div><p class="mean">기울기 — x가 1 늘 때 y가 변하는 양 (β₁)</p>
+      <p class="ex">A positive <b>slope</b> means y goes up with x.<span class="ko">기울기가 양수면 x가 커질 때 y도 커진다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">residual</span><span class="ipa">/rɪˈzɪdʒuəl/</span><span class="pos">n.</span></div>
+      <div><p class="mean">잔차 — 실제값에서 예측값을 뺀 나머지 (yᵢ − ŷᵢ)</p>
+      <p class="ex">We square each <b>residual</b> and add them.<span class="ko">각 잔차를 제곱해서 더한다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">estimate</span><span class="ipa">/ˈestɪmeɪt/ (v.) · /ˈestɪmət/ (n.)</span><span class="pos">v. / n.</span></div>
+      <div><p class="mean">추정하다, 추정값 — 데이터로 모르는 값을 계산해 내다 (햇 ^ 표시)</p>
+      <p class="ex">We <b>estimate</b> β₀ and β₁ from the data.<span class="ko">데이터로 β₀와 β₁을 추정한다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">odds</span><span class="ipa">/ɑːdz/</span><span class="pos">n. (복수형)</span></div>
+      <div><p class="mean">오즈 — 일어날 확률 ÷ 일어나지 않을 확률, p / (1 − p)</p>
+      <p class="ex">If p is 0.8, the <b>odds</b> are 4.<span class="ko">p가 0.8이면 오즈는 4이다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">likelihood</span><span class="ipa">/ˈlaɪklihʊd/</span><span class="pos">n.</span></div>
+      <div><p class="mean">우도, 가능성 — 현재 계수로 실제 관찰된 결과가 나올 확률</p>
+      <p class="ex">We choose β to maximize the <b>likelihood</b>.<span class="ko">우도를 최대로 만드는 β를 고른다.</span></p></div>
+    </li>
+  </ul>
+
 
   <div class="quizbox" id="quiz">
     <div class="qq" id="quizQ"></div>
@@ -1224,6 +1396,17 @@ Non-linear 할 수도 있구나 정도. degree 2, degree 5 이렇게 되면 구�
 그래서 이 페이지에서는 그냥 잠깐 다뤄본 정도.
 편하게 들으라고 하심</div>
         <div class="where"><a href="#s10">10. 회귀계수 해석</a> · <a href="#s11">11. 다항 회귀</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">07<span>16:14</span></div>
+      <div>
+        <div class="body">로그 오즈에서
+p(x)는 y가 1일 확률
+1 - p(x)는 y가 0일 확률
+
+수업 끝. 이해하기 쉽게 정리해줘. 진짜 내가 잘 못하는 분야라서 선생님이 말해주듯이 정리가 필요해</div>
+        <div class="where"><a href="#s15">15. 로지스틱 회귀 · 로그 오즈</a> · <a href="#intro">00. 한눈에 보기</a> · <a href="#s18">18. 용어 정리</a> · <a href="#s20">20. 예상 문제</a> · 단어장</div>
       </div>
     </div>
   </div>
