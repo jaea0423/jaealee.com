@@ -4,7 +4,7 @@ from pages import COUPLE_CAP, BRAND_CAP, flow
 
 # ---------------------------------------------------------------- 1. 등록
 REGISTER = dict(title='축의지기 화면 시안', cap=BRAND_CAP, body='''
-    <div class="top"><span class="sp"></span><button type="button" class="btn2" data-shop="../shop/">축의대 용품</button>''' + flow(0) + '''</div>
+    <div class="top"><span class="sp"></span><button type="button" class="btn2 shopbtn" data-shop="../shop/">축의대 용품</button>''' + flow(0) + '''</div>
 
     <section class="card hero">
       <div class="eb">FOR NEWLYWEDS</div>
@@ -41,6 +41,11 @@ REGISTER = dict(title='축의지기 화면 시안', cap=BRAND_CAP, body='''
         </div>
       </section>
     </div>
+    <section class="card shoppromo">
+      <div class="spimgs" aria-hidden="true"><i style="background-image:url(../shop/1.webp)"></i><i style="background-image:url(../shop/2.webp)"></i><i style="background-image:url(../shop/4.webp)"></i><i style="background-image:url(../shop/7.webp)"></i></div>
+      <div><div class="eb">SHOP</div><h3>축의대 용품도 함께 준비하세요</h3><p>안내판 · 고급 봉투 · 현금 띠지 · 현금 가방 · 싸인펜 · 방명록. 2만 원 이상 무료배송.</p></div>
+      <button type="button" class="btn2 rose" data-shop="../shop/">용품 보기</button>
+    </section>
 ''', script='''
   $('#reqForm').addEventListener('submit', function (e) {
     e.preventDefault();
@@ -59,7 +64,7 @@ def tbdlab(f, text, for_=None):
     return '<div class="lab"><%s>%s <span class="chg" data-f="%s" hidden title="요청서를 보낸 뒤 바뀜">변동</span></%s><button type="button" class="tbd" data-f="%s" aria-pressed="false">미정</button></div>' % (tag, text, f, close, f)
 
 SETUP = dict(title='축의지기 설정', cap=COUPLE_CAP, body='''
-    <div class="top"><span class="role">신랑신부</span><span class="chip">요청서 보냄 · 10월 1일</span><span class="sp"></span><button type="button" class="btn2" data-shop="../shop/">축의대 용품</button>''' + flow(1) + '''</div>
+    <div class="top"><span class="role">신랑신부</span><span class="chip">요청서 보냄 · 10월 1일</span><span class="sp"></span><button type="button" class="btn2 shopbtn" data-shop="../shop/">축의대 용품</button>''' + flow(1) + '''</div>
 
     <section class="card">
       <div class="ch"><div><h3>예식 전 준비</h3><p>아직 정해지지 않은 것은 미정으로 두어도 됩니다. 축의대를 열기 전까지만 채우면 됩니다.</p></div><span class="pill wait" id="readyPill"></span></div>
@@ -114,6 +119,11 @@ SETUP = dict(title='축의지기 설정', cap=COUPLE_CAP, body='''
       </section>
     </div>
 
+    <section class="card shoppromo">
+      <div class="spimgs" aria-hidden="true"><i style="background-image:url(../shop/1.webp)"></i><i style="background-image:url(../shop/2.webp)"></i><i style="background-image:url(../shop/4.webp)"></i><i style="background-image:url(../shop/7.webp)"></i></div>
+      <div><div class="eb">SHOP</div><h3>축의대 용품도 함께 준비하세요</h3><p>안내판 · 고급 봉투 · 현금 띠지 · 현금 가방 · 싸인펜 · 방명록. 2만 원 이상 무료배송.</p></div>
+      <button type="button" class="btn2 rose" data-shop="../shop/">용품 보기</button>
+    </section>
     <section class="card">
       <div class="ch"><div><h3>축의대 열기</h3><p>예식 당일 축의대 화면을 쓰려면 결제가 필요합니다. 미정을 모두 채운 뒤 열 수 있습니다.</p></div><span class="pill wait" id="payPill">결제 전</span></div>
       <div class="payrow">

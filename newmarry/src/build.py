@@ -23,6 +23,7 @@ FONTS = '''<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,500&family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700;800&display=swap">'''
 HEAD_STANDALONE = '<!doctype html>\n<html lang="ko">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
+VERSION = '10.1'  # 개발 중 버전. 게시(커밋·아티팩트)할 때마다 올림: 10.1 → 10.2 …
 NAV = [('register', '등록'), ('setup', '설정'), ('request', '요청'), ('guide', '준비'), ('desk', '진행'), ('status', '현황'), ('result', '결과')]
 
 def nav(cur):
@@ -41,7 +42,7 @@ def page(p, cur):
     top, body = (m.group(1), p['body'][:m.start()] + p['body'][m.end():]) if m else ('', p['body'])
     out += '''<div class="bg" aria-hidden="true"><div class="art"></div></div>
 %s
-<header class="gnav"><div class="gin"><a class="brand" href="%sindex.html">축의지기</a>%s</div></header>
+<header class="gnav"><div class="gin"><a class="brand" href="%sindex.html">축의지기<small class="ver">v%s</small></a>%s</div></header>
 <div class="app">
   <aside class="photo" aria-label="배경 사진"><div class="cap">%s
   </div></aside>
@@ -57,7 +58,7 @@ def page(p, cur):
 %s
 })();
 </script>
-''' % (nav(cur), '' if cur is None else '../', top, p['cap'], body, common_js, p['script'])
+''' % (nav(cur), '' if cur is None else '../', VERSION, top, p['cap'], body, common_js, p['script'])
     if standalone: out += '</body>\n</html>\n'
     return out.replace('__IMG__', img_url(cur))
 
@@ -95,7 +96,7 @@ def desk():
 })();
 </script>"""
     j = j.replace('</script>', '</script>\n' + CHG_JS, 1)
-    j = j.replace('<a class="brand" href="#">', '<a class="brand" href="../index.html">', 1)
+    j = j.replace('<a class="brand" href="#">', '<a class="brand" href="../index.html">', 1).replace('축의지기</a>', '축의지기<small class="ver">v' + VERSION + '</small></a>', 1)
     j = HEAD_STANDALONE + j
     j = j.replace('</style>\n', '</style>\n</head>\n<body>\n', 1) + '\n</body>\n</html>\n'
     return j.replace('__IMG__', img_url('desk'))
