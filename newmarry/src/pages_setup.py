@@ -43,7 +43,7 @@ REGISTER = dict(title='축의지기 화면 시안', cap=BRAND_CAP, body='''
     </div>
     <section class="card shoppromo">
       <div class="spimgs" aria-hidden="true"><i style="background-image:url(../shop/1.webp)"></i><i style="background-image:url(../shop/2.webp)"></i><i style="background-image:url(../shop/4.webp)"></i><i style="background-image:url(../shop/7.webp)"></i></div>
-      <div><div class="eb">SHOP</div><h3>축의대 용품도 함께 준비하세요</h3><p>안내판 · 고급 봉투 · 현금 띠지 · 현금 가방 · 싸인펜 · 방명록. 2만 원 이상 무료배송.</p></div>
+      <div><div class="eb">SHOP</div><h3>한 번뿐인 결혼식, 축의대에도 정성을 더해 보세요</h3><p>안내판 · 고급 봉투 · 현금 띠지 · 현금 가방 · 싸인펜 · 방명록. 2만 원 이상 무료배송.</p></div>
       <button type="button" class="btn2 rose" data-shop="../shop/">용품 보기</button>
     </section>
 ''', script='''
@@ -121,7 +121,7 @@ SETUP = dict(title='축의지기 설정', cap=COUPLE_CAP, body='''
 
     <section class="card shoppromo">
       <div class="spimgs" aria-hidden="true"><i style="background-image:url(../shop/1.webp)"></i><i style="background-image:url(../shop/2.webp)"></i><i style="background-image:url(../shop/4.webp)"></i><i style="background-image:url(../shop/7.webp)"></i></div>
-      <div><div class="eb">SHOP</div><h3>축의대 용품도 함께 준비하세요</h3><p>안내판 · 고급 봉투 · 현금 띠지 · 현금 가방 · 싸인펜 · 방명록. 2만 원 이상 무료배송.</p></div>
+      <div><div class="eb">SHOP</div><h3>한 번뿐인 결혼식, 축의대에도 정성을 더해 보세요</h3><p>안내판 · 고급 봉투 · 현금 띠지 · 현금 가방 · 싸인펜 · 방명록. 2만 원 이상 무료배송.</p></div>
       <button type="button" class="btn2 rose" data-shop="../shop/">용품 보기</button>
     </section>
     <section class="card">

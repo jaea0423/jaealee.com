@@ -23,7 +23,7 @@ FONTS = '''<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,500&family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700;800&display=swap">'''
 HEAD_STANDALONE = '<!doctype html>\n<html lang="ko">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
-VERSION = '10.1'  # 개발 중 버전. 게시(커밋·아티팩트)할 때마다 올림: 10.1 → 10.2 …
+VERSION = '10.2'  # 개발 중 버전. 게시(커밋·아티팩트)할 때마다 올림: 10.1 → 10.2 …
 NAV = [('register', '등록'), ('setup', '설정'), ('request', '요청'), ('guide', '준비'), ('desk', '진행'), ('status', '현황'), ('result', '결과')]
 
 def nav(cur):
