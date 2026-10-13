@@ -4,7 +4,7 @@ from pages import COUPLE_CAP, BRAND_CAP, flow
 
 # ---------------------------------------------------------------- 1. 등록
 REGISTER = dict(title='축의지기 화면 시안', cap=BRAND_CAP, body='''
-    <div class="top"><span class="side">축의지기</span><span class="sp"></span>''' + flow(0) + '''</div>
+    <div class="top"><span class="sp"></span>''' + flow(0) + '''</div>
 
     <section class="card hero">
       <div class="eb">FOR NEWLYWEDS</div>

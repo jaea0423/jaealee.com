@@ -112,7 +112,7 @@ TODO = [
     ('만료 · 오류 안내', '3개월이 지나 지워진 예식, 잘못된 링크 등.'),
 ]
 NAV_BODY = '''
-    <div class="top"><span class="side">축의지기</span><span class="chip">개발용 화면 목록</span></div>
+    <div class="top"><span class="chip">개발용 화면 목록</span></div>
     <section class="card">
       <div class="ch"><div><h3>만든 화면</h3><p>예식 흐름 순서입니다. 각 화면은 폴더 하나에 index.html로 들어 있습니다.</p></div></div>
       <div class="navlist">''' + ''.join('''

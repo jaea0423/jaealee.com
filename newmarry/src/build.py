@@ -36,8 +36,12 @@ def page(p, cur):
     standalone = cur is not None or not ARTIFACT
     out = '<title>%s</title>\n%s\n<style>%s\n%s</style>\n' % (p['title'], FONTS, base_css, extra)
     if standalone: out = HEAD_STANDALONE + out + '</head>\n<body>\n'
+    # 각 화면의 위쪽 줄(.top)은 맨 위 막대(.gnav) 안으로 옮긴다
+    m = re.search(r'^[ \t]*(<div class="top">.*</div>)[ \t]*\n', p['body'], re.M)
+    top, body = (m.group(1), p['body'][:m.start()] + p['body'][m.end():]) if m else ('', p['body'])
     out += '''<div class="bg" aria-hidden="true"><div class="art"></div></div>
 %s
+<header class="gnav"><div class="gin"><a class="brand" href="%sindex.html">축의지기</a>%s</div></header>
 <div class="app">
   <aside class="photo" aria-label="배경 사진"><div class="cap">%s
   </div></aside>
@@ -53,7 +57,7 @@ def page(p, cur):
 %s
 })();
 </script>
-''' % (nav(cur), p['cap'], p['body'], common_js, p['script'])
+''' % (nav(cur), '' if cur is None else '../', top, p['cap'], body, common_js, p['script'])
     if standalone: out += '</body>\n</html>\n'
     return out.replace('__IMG__', img_url(cur))
 
@@ -91,6 +95,7 @@ def desk():
 })();
 </script>"""
     j = j.replace('</script>', '</script>\n' + CHG_JS, 1)
+    j = j.replace('<a class="brand" href="#">', '<a class="brand" href="../index.html">', 1)
     j = HEAD_STANDALONE + j
     j = j.replace('</style>\n', '</style>\n</head>\n<body>\n', 1) + '\n</body>\n</html>\n'
     return j.replace('__IMG__', img_url('desk'))
