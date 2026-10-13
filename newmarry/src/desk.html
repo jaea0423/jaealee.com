@@ -1,0 +1,866 @@
+<title>축의지기 진행 시안</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,500&family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700;800&display=swap">
+<style>
+/* Layout: 노트북 기준. 화면 전체가 낮의 꽃밭 그림(가로형 배경, 신랑신부는 왼쪽). 왼쪽엔 신랑신부가 비치고, 오른쪽 일하는 자리는 반투명 유리 카드.
+   곡률: 애플식 연속 곡률(squircle). 지원 브라우저는 corner-shape: squircle, 미지원은 작은 반경으로 대체. 안쪽 반경 = 바깥 반경 − 여백(동심). */
+:root {
+  color-scheme: light;
+  --night: #F3F7FB;            /* 맑은 하늘빛 흰색 */
+  --glass: rgba(255, 255, 255, .74);
+  --glass-hi: rgba(46, 42, 74, .045);
+  --glass-hi2: rgba(46, 42, 74, .08);
+  --line: rgba(46, 42, 74, .11);
+  --ink: #2B2940;              /* 턱시도 남색 */
+  --sub: #5D5973;
+  --muted: #9A96AE;
+  --gold: #D65F7D;             /* 장미 분홍 (강조) */
+  --gold-d: #BC4866;
+  --blossom: #BC4866;
+  --sky: #5B9BD5;
+  --leaf: #D65F7D;
+  --warn-bg: #FFF4E0; --warn: #8F5E0E;
+  --err-bg: #FDECEE; --err: #B23B4E;
+  --ok-bg: #E9F6EA; --ok: #3F7A48;
+  --shadow: 0 22px 44px -26px rgba(60, 70, 120, .45);
+  --img: url(__IMG__);
+  /* 곡률 토큰: 미지원 기본값 */
+  --r-card: 18px; --r-ctl: 11px; --r-btn: 13px; --r-chip: 9px; --r-pill: 12px;
+  --ko: "Gowun Batang", "Noto Serif KR", serif;
+  --en: "Cormorant Garamond", "Times New Roman", serif;
+  --sans: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+}
+@supports (corner-shape: squircle) {
+  :root { --r-card: 30px; --r-ctl: 18px; --r-btn: 20px; --r-chip: 14px; --r-pill: 18px; }
+  .card, .stats, .modal, .gbox, .inp, .search, .memo, .save, .adds button, .tkrow, .stepper button, .stepper input, .tbtn, .side, .sync,
+  .item .ed, .tag, .close-day, .seg, .seg button, .reasons button, .danger, .total, .bill, .cmp, .verdict, .confirm-box, .confirm-box button,
+  .pick button, .toast, kbd, .sample, .mh .x, .note { corner-shape: squircle; }
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--night); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.55; -webkit-font-smoothing: antialiased; word-break: keep-all; }
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.n { font-family: var(--sans); font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+kbd { display: inline-block; min-width: 22px; padding: 1px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--glass-hi); font-family: var(--sans); font-size: 12px; font-weight: 700; color: var(--sub); text-align: center; }
+
+/* ---------- 배경: 밤 정원 ---------- */
+.bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; background: var(--night); }
+/* 화면 비율이 달라도 신랑신부가 왼쪽 칸에 들어오도록: 왼쪽 칸 폭을 화면 높이에 맞추고(60vh),
+   앞 그림(.art)은 높이 기준으로 맞춰 신랑신부를 왼쪽 칸에 두고, 뒤 그림은 꽃밭이 오른쪽을 채운다. */
+:root { --col: min(max(60vh, 300px), 42vw); }
+/* 뒤 그림: 왼쪽 칸 바깥(오른쪽)만 채우고, 그림의 오른쪽 55%(꽃밭·하늘)만 보이게 키워서 신랑신부가 두 번 보이지 않게 한다 */
+.bg::before { content: ""; position: absolute; inset: 0 0 0 var(--col); background: var(--img) right 62% / max(182%, 150vh) auto no-repeat; }
+.bg .art { position: absolute; left: 0; top: 0; bottom: 0; width: calc(var(--col) + 180px); background: var(--img) calc(-7vh) 0 / auto 100% no-repeat;
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 200px), transparent 100%); mask-image: linear-gradient(90deg, #000 calc(100% - 200px), transparent 100%); }
+.bg::after { content: ""; position: absolute; inset: 0;
+  background: linear-gradient(90deg, rgba(243,247,251,0) 0%, rgba(243,247,251,0) calc(var(--col) - 80px), rgba(243,247,251,.34) calc(var(--col) + 260px), rgba(243,247,251,.42) 100%); }
+.glow { position: absolute; border-radius: 50%; mix-blend-mode: screen; background: radial-gradient(circle, rgba(255,255,255,.9), rgba(255,255,255,0) 70%); animation: tw ease-in-out infinite alternate; }
+@keyframes tw { from { opacity: .15; } to { opacity: .8; } }
+
+/* ---------- 틀 ---------- */
+.app { position: relative; z-index: 1; display: grid; grid-template-columns: var(--col) 1fr; height: 100%; }
+.photo { position: relative; }
+.photo .cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 80px 30px 30px; background: radial-gradient(50% 80% at 50% 100%, rgba(255,255,255,.92) 0%, rgba(255,255,255,.78) 45%, rgba(255,255,255,0) 100%); text-align: center; text-shadow: 0 0 18px rgba(255,255,255,.95), 0 0 4px rgba(255,255,255,.9); }
+.eb { font-family: var(--en); font-size: 13px; letter-spacing: .42em; color: var(--gold); }
+.couple { display: flex; align-items: flex-end; justify-content: center; gap: 14px; margin: 10px 0 8px; }
+.couple div { display: grid; }
+.couple small { font-size: 12px; color: var(--sub); letter-spacing: .2em; }
+.couple b { font-family: var(--ko); font-size: 28px; font-weight: 700; letter-spacing: .08em; line-height: 1.2; }
+.couple .amp { font-family: var(--en); font-style: italic; font-size: 30px; color: var(--gold); line-height: 1.1; }
+.when { font-size: 14px; color: var(--sub); }
+.when b { color: var(--ink); font-weight: 700; }
+.sample { display: inline-block; margin-top: 12px; font-size: 11.5px; color: var(--sub); border: 1px dashed rgba(46,42,74,.25); background: rgba(243,247,251,.4); padding: 2px 10px; border-radius: var(--r-pill); text-shadow: none; }
+
+.work { min-width: 0; overflow: auto; padding: 22px 36px 24px; display: flex; flex-direction: column; justify-content: safe center; gap: 16px; }
+
+/* 유리 카드 공통 */
+.card, .stats { background: var(--glass); border: 1px solid var(--line); box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,.08); backdrop-filter: blur(18px) saturate(1.2); -webkit-backdrop-filter: blur(18px) saturate(1.2); }
+
+/* ---------- 위쪽 막대 ---------- */
+.top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.side { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 16px; border-radius: var(--r-pill); background: linear-gradient(120deg, #EC8DA5, var(--gold-d)); color: #fff; font-weight: 800; font-size: 14.5px; }
+.side::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #fff; opacity: .55; }
+.sync { display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 14px; border: 1px solid var(--line); border-radius: var(--r-pill); background: var(--glass); font-size: 13px; color: var(--sub); backdrop-filter: blur(10px); }
+.sync i { width: 8px; height: 8px; border-radius: 50%; background: #4FAF66; box-shadow: 0 0 6px rgba(79,175,102,.6); }
+.sync.off i { background: #F2A54A; box-shadow: 0 0 8px #F2A54A; }
+.top .sp { flex: 1; }
+.tbtn { height: 36px; padding: 0 14px; border-radius: var(--r-chip); border: 1px solid var(--line); background: var(--glass); font-size: 13.5px; font-weight: 500; color: var(--sub); backdrop-filter: blur(10px); }
+.tbtn:hover { border-color: rgba(214,95,125,.6); color: var(--ink); }
+
+/* ---------- 현황 숫자 ---------- */
+.stats { display: grid; grid-template-columns: repeat(2, 1fr); border-radius: var(--r-card); }
+.stats > div { padding: 12px 22px; }
+.stats > div + div { border-left: 1px solid var(--line); }
+.stats small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; font-size: 13px; color: var(--sub); font-weight: 500; }
+.stats small .meta { font-weight: 400; color: var(--muted); font-size: 12px; }
+.stats .n { font-size: 32px; line-height: 1.15; }
+.stats .n span { font-size: 16px; font-weight: 700; color: var(--sub); margin-left: 2px; }
+.stats .low .n { color: var(--err); }
+
+/* ---------- 본문 2단 ---------- */
+.desk { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.card { border-radius: var(--r-card); padding: 22px 24px; }
+.ord { display: flex; align-items: baseline; gap: 6px; margin-bottom: 14px; }
+.ord .n { font-size: 40px; line-height: 1; color: var(--gold); text-shadow: 0 0 18px rgba(214,95,125,.35); }
+.ord .t { font-family: var(--ko); font-size: 18px; font-weight: 700; white-space: nowrap; }
+@media (max-width: 1360px) { .ord .keys { display: none !important; } }
+.ord .keys { margin-left: auto; font-size: 12px; color: var(--muted); display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+
+.field { display: grid; gap: 8px; }
+.field + .field { margin-top: 15px; }
+.lab { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 700; color: var(--sub); }
+.lab .hint { font-weight: 400; color: var(--muted); font-size: 12.5px; }
+.inp { width: 100%; height: 54px; border: 1px solid var(--line); border-radius: var(--r-ctl); background: rgba(255,255,255,.88); padding: 0 16px; font-size: 20px; transition: border-color .15s, background .15s; }
+.inp::placeholder { color: #ADA9BF; font-weight: 400; }
+.inp:focus { outline: none; border-color: var(--gold); background: rgba(255,255,255,.88); box-shadow: 0 0 0 3px rgba(214,95,125,.15); }
+.inp:disabled { opacity: .45; }
+.anon { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 500; cursor: pointer; }
+.anon input { width: 17px; height: 17px; accent-color: var(--gold-d); }
+
+.amtrow { display: grid; gap: 8px; }
+.amtbox { position: relative; }
+.amtbox .inp { padding-right: 64px; font-weight: 800; font-size: 24px; font-variant-numeric: tabular-nums; }
+@supports (corner-shape: squircle) { .amtbox .clr { corner-shape: squircle; } }
+.amtbox .clr { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); height: 36px; padding: 0 12px; border-radius: var(--r-chip); border: 1px solid var(--line); background: var(--glass-hi); color: var(--sub); font-size: 13px; font-weight: 500; }
+.amtbox .clr:hover { color: var(--ink); border-color: rgba(214,95,125,.6); }
+#amt { padding-right: 150px; }
+#amt + .unit { right: 92px; }
+.amtbox .unit { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-size: 15px; color: var(--sub); }
+.readout { font-size: 14.5px; font-weight: 700; color: var(--gold); }
+.readout { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.readout.empty { color: var(--muted); font-weight: 400; font-size: 12.5px; }
+.adds { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.adds button { height: 44px; padding: 0 6px; border-radius: var(--r-chip); border: 1px solid rgba(214,95,125,.32); background: rgba(214,95,125,.1); font-weight: 800; font-size: 15px; color: var(--gold); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.adds button:hover { background: rgba(214,95,125,.18); }
+.adds .reset { border-color: var(--line); background: var(--glass-hi); color: var(--sub); font-weight: 500; }
+
+.tkrow { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px; padding: 10px 10px 10px 18px; border-radius: var(--r-btn); background: var(--glass-hi); border: 1px solid var(--line); }
+.tkrow .l { font-size: 14.5px; font-weight: 700; }
+.tkrow .l small { display: block; font-weight: 400; font-size: 12.5px; color: var(--sub); }
+.stepper { display: flex; align-items: center; gap: 6px; }
+.stepper button { width: 44px; height: 44px; border-radius: var(--r-chip); border: 1px solid var(--line); background: #fff; font-size: 22px; font-weight: 700; color: var(--ink); }
+.stepper button:hover { border-color: rgba(214,95,125,.6); }
+.stepper input { width: 72px; height: 44px; text-align: center; border: 1px solid transparent; border-radius: var(--r-chip); background: rgba(255,255,255,.88); font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.stepper input:focus { outline: none; border-color: var(--gold); }
+
+.memo-link { margin-top: 10px; border: 0; background: none; padding: 2px 0; font-size: 13px; color: var(--sub); text-decoration: underline; text-underline-offset: 3px; }
+.memo { width: 100%; margin-top: 8px; border: 1px solid var(--line); border-radius: var(--r-ctl); padding: 10px 14px; font-size: 15px; resize: none; background: rgba(255,255,255,.88); }
+.memo:focus { outline: none; border-color: var(--gold); }
+.note { margin-top: 14px; padding: 10px 14px; border-radius: var(--r-ctl); font-size: 14px; }
+.note.warn { background: var(--warn-bg); color: var(--warn); }
+.note.err { background: var(--err-bg); color: var(--err); }
+.save { margin-top: 16px; width: 100%; height: 58px; border: 0; border-radius: var(--r-btn); font-size: 18px; font-weight: 800; letter-spacing: .08em; color: #fff;
+  background: linear-gradient(115deg, #F29AB1 0%, var(--gold) 50%, var(--gold-d) 100%); box-shadow: 0 14px 30px -14px rgba(214,95,125,.75), inset 0 1px 0 rgba(255,255,255,.4); }
+.save:hover { filter: brightness(1.05); }
+.save:active { transform: translateY(1px); }
+.save.confirm { background: linear-gradient(115deg, #FFC0CF, var(--blossom) 50%, #E58DA5); box-shadow: 0 14px 30px -14px rgba(240,150,180,.9); }
+
+/* ---------- 최근 봉투 ---------- */
+.sechead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.sechead h2 { margin: 0; font-family: var(--ko); font-size: 17px; }
+.linkbtn { border: 0; background: none; padding: 4px 2px; font-size: 13.5px; font-weight: 700; color: var(--gold); }
+.item { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto auto; align-items: center; gap: 12px; padding: 8px 0; }
+.item + .item { border-top: 1px solid var(--line); }
+.item .no { font-weight: 800; font-size: 16px; color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; }
+.item .who b { font-weight: 700; font-size: 16px; }
+.item .who small { display: block; font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.item .amt { font-weight: 800; font-size: 16px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.item .ed { height: 32px; padding: 0 12px; border-radius: var(--r-chip); border: 1px solid var(--line); background: var(--glass-hi); font-size: 13px; font-weight: 500; color: var(--sub); }
+.item .ed:hover { border-color: rgba(214,95,125,.6); color: var(--ink); }
+.item.x .who b, .item.x .amt { text-decoration: line-through; color: var(--muted); }
+.tag { display: inline-block; margin-left: 6px; padding: 0 7px; border-radius: 7px; font-size: 11px; font-weight: 700; vertical-align: 2px; background: rgba(246,186,203,.16); color: var(--blossom); }
+.tag.x { background: var(--glass-hi2); color: var(--sub); }
+.rsearch { position: relative; margin: 4px 0 6px; }
+.rsearch svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+.rsearch input { width: 100%; height: 42px; border: 1px solid var(--line); border-radius: var(--r-ctl); background: rgba(255,255,255,.7); padding: 0 38px 0 38px; font-size: 14.5px; }
+.rsearch input:focus { outline: none; border-color: var(--gold); background: #fff; }
+.rsearch button { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border: 0; border-radius: 50%; background: var(--glass-hi2); color: var(--sub); font-size: 16px; }
+#recent { min-height: 372px; }
+#recent.searching { max-height: 372px; overflow: auto; }
+@supports (corner-shape: squircle) { .rsearch input { corner-shape: squircle; } }
+/* 방금 저장한 봉투: 깜빡이고 순번을 크게 */
+.item.just { animation: justIn 1.6s ease-out; border-radius: var(--r-ctl); }
+@keyframes justIn { 0%, 30%, 60% { background: rgba(214,95,125,.2); } 15%, 45% { background: rgba(214,95,125,.04); } 100% { background: transparent; } }
+.item.just .no { color: #fff; background: var(--gold); border-radius: 10px; height: 34px; line-height: 34px; font-size: 17px; }
+.wnote { display: inline-block; margin-left: 6px; padding: 0 8px; border-radius: 7px; font-size: 11.5px; font-weight: 800; vertical-align: 2px; background: var(--gold); color: #fff; }
+.emptyl { padding: 20px 0; text-align: center; color: var(--muted); font-size: 14px; }
+.close-day { margin-top: 16px; width: 100%; height: 52px; border-radius: var(--r-btn); border: 1px solid rgba(214,95,125,.5); background: rgba(214,95,125,.08); color: var(--gold); font-weight: 800; font-size: 15.5px; }
+.close-day:hover { background: rgba(214,95,125,.16); }
+
+/* ---------- 모달 ---------- */
+.scrim { position: fixed; inset: 0; z-index: 40; background: rgba(43,41,64,.28); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
+.modal { width: 100%; max-width: 560px; max-height: 100%; overflow: auto; background: rgba(255,255,255,.97); border: 1px solid var(--line); border-radius: var(--r-card); padding: 24px 26px; box-shadow: 0 40px 80px -30px rgba(0,0,0,.8); animation: pop .18s ease-out; }
+.modal.wide { max-width: 860px; }
+@keyframes pop { from { transform: translateY(8px); opacity: .6; } }
+.mh { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.mh h3 { margin: 0; font-family: var(--ko); font-size: 20px; }
+.mh p { margin: 2px 0 0; font-size: 13.5px; color: var(--sub); }
+.mh .x { margin-left: auto; border: 1px solid var(--line); background: var(--glass-hi); width: 36px; height: 36px; border-radius: var(--r-chip); font-size: 18px; color: var(--sub); flex: none; }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; border-radius: var(--r-btn); background: rgba(255,255,255,.88); margin-bottom: 16px; }
+.seg button { height: 42px; border: 0; border-radius: calc(var(--r-btn) - 4px); background: transparent; font-weight: 700; font-size: 14px; color: var(--sub); }
+.seg button[aria-pressed="true"] { background: #fff; color: var(--gold); box-shadow: inset 0 1px 0 rgba(255,255,255,.08); }
+.reasons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 14px 0 16px; }
+.reasons button { min-height: 48px; border-radius: var(--r-ctl); border: 1px solid var(--line); background: var(--glass-hi); font-size: 14px; font-weight: 500; color: var(--sub); }
+.reasons button[aria-pressed="true"] { border-color: var(--gold); background: rgba(214,95,125,.12); color: var(--gold); font-weight: 700; }
+.log { margin-top: 18px; }
+.tsum { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 18px; }
+.tsum div { padding: 10px 12px; border-radius: var(--r-ctl); background: var(--glass-hi); }
+.tsum small { display: block; font-size: 12px; color: var(--sub); }
+.tsum b { font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.tsum em { display: block; font-style: normal; font-size: 11.5px; color: var(--muted); }
+.log h4 { margin: 0 0 4px; font-size: 13px; color: var(--sub); }
+.log div { display: flex; justify-content: space-between; gap: 8px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 14px; }
+.log b { font-variant-numeric: tabular-nums; }
+.mbtns { display: flex; gap: 10px; margin-top: 18px; }
+.modal.alert { max-width: 440px; }
+.amsg { margin: 0; font-size: 15.5px; color: var(--sub); line-height: 1.65; }
+.ghost2 { height: 58px; padding: 0 18px; border-radius: var(--r-btn); border: 1px solid var(--line); background: var(--glass-hi); color: var(--sub); font-weight: 700; }
+@supports (corner-shape: squircle) { .ghost2 { corner-shape: squircle; } }
+.mbtns .save { margin-top: 0; flex: 1; }
+.danger { height: 58px; padding: 0 18px; border-radius: var(--r-btn); border: 1px solid rgba(255,168,153,.4); background: var(--err-bg); color: var(--err); font-weight: 700; }
+.hist { margin-top: 16px; font-size: 13.5px; color: var(--sub); }
+.hist div { padding: 6px 0; border-top: 1px solid var(--line); }
+.total { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; border-radius: var(--r-btn); background: var(--glass-hi); margin-bottom: 12px; }
+.veil { border: 0; background: none; padding: 0; text-align: right; }
+.veil .n { font-size: 26px; }
+.veil.hide .n { filter: blur(10px); }
+.veil em { display: block; font-style: normal; font-size: 12px; color: var(--gold); font-weight: 700; }
+.search { width: 100%; height: 46px; border: 1px solid var(--line); border-radius: var(--r-ctl); padding: 0 14px; font-size: 15px; background: rgba(255,255,255,.88); }
+.search:focus { outline: none; border-color: var(--gold); }
+.tbl { overflow-x: auto; margin-top: 10px; }
+table { width: 100%; border-collapse: collapse; min-width: 640px; }
+th { text-align: left; font-size: 12.5px; font-weight: 700; color: var(--sub); padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 10px; border-bottom: 1px solid var(--line); font-size: 14.5px; vertical-align: middle; }
+td.r, th.r { text-align: right; }
+td.num { font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+tr.x td:not(:last-child) { text-decoration: line-through; color: var(--muted); }
+
+/* ---------- 정산 ---------- */
+.stitle { padding: 14px 20px; border-radius: var(--r-btn); background: rgba(255,255,255,.58); border: 1px solid var(--line); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+@supports (corner-shape: squircle) { .stitle { corner-shape: squircle; } }
+.stitle h2 { margin: 2px 0 0; font-family: var(--ko); font-size: 24px; }
+.stitle p { margin: 4px 0 0; color: var(--sub); font-size: 14px; }
+.settle { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+.denom { display: grid; grid-template-columns: 84px minmax(0, 1fr) 110px; align-items: center; gap: 12px; }
+.denom + .denom { margin-top: 10px; }
+.bill { height: 44px; border-radius: var(--r-chip); display: grid; place-items: center; font-size: 14px; font-weight: 800; }
+.b50 { background: #F7ECD2; color: #7C5A18; } .b10 { background: #E3F0DE; color: #3F6B36; } .b5 { background: #F8E1DB; color: #93493A; } .b1 { background: #E1EAF5; color: #3E5C82; }
+.x-old-bills { background: rgba(214,95,125,.18); color: #F7D394; } .b10 { background: rgba(160,214,150,.16); color: #B5E2AA; } .b5 { background: rgba(246,170,150,.18); color: #F8BCA9; } .b1 { background: rgba(150,180,240,.18); color: #B9CCF4; }
+.denom .inp { height: 48px; font-size: 20px; text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
+.denom .sub { text-align: right; font-size: 14.5px; font-weight: 700; color: var(--sub); font-variant-numeric: tabular-nums; }
+.cmp { margin-top: 16px; border-radius: var(--r-btn); padding: 14px 16px; background: var(--glass-hi); }
+.cmp .r { display: flex; justify-content: space-between; gap: 8px; font-size: 14.5px; padding: 3px 0; }
+.cmp .r b { font-weight: 800; font-variant-numeric: tabular-nums; }
+.verdict { margin-top: 8px; padding: 9px 12px; border-radius: var(--r-chip); font-weight: 800; font-size: 14.5px; text-align: center; }
+.verdict.ok { background: var(--ok-bg); color: var(--ok); }
+.verdict.bad { background: var(--err-bg); color: var(--err); }
+.verdict.wait { background: rgba(255,255,255,.88); color: var(--muted); font-weight: 500; }
+.sfoot { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 18px; align-items: end; }
+.confirm-box { padding: 14px 16px; border-radius: var(--r-btn); background: #FFF6E6; border: 1px solid rgba(214,95,125,.4); color: var(--warn); font-size: 14px; }
+.confirm-box .btns { display: grid; grid-template-columns: 1fr 2fr; gap: 8px; margin-top: 10px; }
+.confirm-box button { height: 46px; border-radius: var(--r-chip); border: 0; font-weight: 800; }
+.confirm-box .no { background: var(--glass-hi2); color: var(--sub); }
+.confirm-box .yes { background: var(--gold); color: #fff; }
+
+/* ---------- 완료 ---------- */
+.done { max-width: 560px; margin: 20px auto 0; text-align: center; }
+.seal { width: 78px; height: 78px; margin: 0 auto; border-radius: 50%; display: grid; place-items: center; color: #fff; background: radial-gradient(circle at 35% 30%, #FFD6E0, var(--gold-d)); box-shadow: 0 0 40px rgba(214,95,125,.5); }
+.done h2 { font-family: var(--ko); font-size: 24px; margin: 16px 0 4px; }
+.done p { margin: 0; color: var(--sub); }
+.handover { margin-top: 20px; text-align: left; }
+.handover div { display: flex; justify-content: space-between; gap: 8px; padding: 11px 0; border-top: 1px solid var(--line); font-size: 15px; }
+.handover span { color: var(--sub); }
+.handover b { font-variant-numeric: tabular-nums; }
+
+/* ---------- PIN ---------- */
+.gate { position: fixed; inset: 0; z-index: 60; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 24px 16px; background: var(--night); }
+.gate::before { content: ""; position: absolute; inset: 0; background: var(--img) center 25% / cover no-repeat; filter: none; }
+.gate::after { content: ""; position: absolute; inset: 0; background: radial-gradient(45% 60% at 50% 50%, rgba(255,255,255,.45), rgba(255,255,255,0)); }
+.gbox { position: relative; z-index: 2; width: 100%; max-width: 380px; text-align: center; background: rgba(255,255,255,.72); border: 1px solid var(--line); border-radius: var(--r-card); padding: 30px 26px; box-shadow: 0 40px 80px -30px rgba(0,0,0,.8); backdrop-filter: blur(20px) saturate(1.2); -webkit-backdrop-filter: blur(20px) saturate(1.2); }
+.gmsg { margin: 18px 0 14px; font-size: 14.5px; color: var(--sub); min-height: 22px; }
+.pins { display: flex; justify-content: center; gap: 12px; margin-bottom: 20px; }
+.pins i { width: 13px; height: 13px; border-radius: 50%; border: 1.5px solid var(--gold); }
+.pins i.on { background: var(--gold); box-shadow: 0 0 10px var(--gold); }
+.pad { display: grid; grid-template-columns: repeat(3, 66px); justify-content: center; gap: 12px 22px; }
+.pad button { width: 66px; height: 66px; border-radius: 50%; border: 1px solid var(--line); background: rgba(255,255,255,.9); font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.pad button:active { background: rgba(214,95,125,.2); }
+.pad .fn { background: transparent; border: 0; font-size: 13.5px; color: var(--sub); font-weight: 500; }
+.gskip { margin-top: 18px; border: 0; background: none; font-size: 13px; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
+.pick { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; }
+.pick button { height: 120px; border-radius: var(--r-btn); border: 1px solid var(--line); background: rgba(255,255,255,.85); display: grid; place-content: center; gap: 4px; }
+.pick button:hover { border-color: var(--gold); background: rgba(214,95,125,.1); }
+.pick b { font-family: var(--ko); font-size: 21px; color: var(--gold); }
+.pick small { font-size: 13px; color: var(--sub); }
+.gnote { margin-top: 14px; font-size: 12.5px; color: var(--muted); }
+
+.toast { position: fixed; left: 65%; bottom: 24px; transform: translateX(-50%); z-index: 80; max-width: min(560px, calc(100% - 32px)); padding: 12px 22px; border-radius: var(--r-pill); background: var(--ink); color: #fff; font-size: 14.5px; font-weight: 700; text-align: center; box-shadow: 0 10px 30px -10px rgba(0,0,0,.6); }
+
+/* 노트북보다 좁은 화면: 임시로 한 줄 쌓기 (태블릿·모바일 최적화는 다음 단계) */
+@media (max-width: 1000px) {
+  html, body { height: auto; }
+  .app { grid-template-columns: 1fr; height: auto; }
+  .photo { height: 380px; }
+  .bg .art { width: 100%; background-size: cover; background-position: 20% 40%; height: 420px; bottom: auto; -webkit-mask-image: linear-gradient(180deg, #000 30%, transparent 60%); mask-image: linear-gradient(180deg, #000 30%, transparent 60%); }
+  .bg::after { background: linear-gradient(180deg, rgba(243,247,251,0) 0%, rgba(243,247,251,.8) 50%, rgba(243,247,251,.85) 100%); }
+  .work { overflow: visible; padding: 20px 16px 28px; }
+  .desk, .settle, .sfoot { grid-template-columns: 1fr; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .toast { left: 50%; }
+  .ord .keys { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="bg" id="bg" aria-hidden="true"><div class="art"></div></div>
+
+<!-- PIN 진입 -->
+<div class="gate" id="gate">
+  <div class="gbox">
+    <div class="eb">WEDDING RECEPTION</div>
+    <div class="couple"><div><small>신랑</small><b>이용범</b></div><span class="amp">&amp;</span><div><small>신부</small><b>김홍매</b></div></div>
+    <div class="when">2000. 4. 16. 일요일 오후 1시 · 신라호텔 영빈관</div>
+    <div id="g1">
+      <div class="gmsg" id="gmsg">축의대 PIN 6자리를 눌러 주세요</div>
+      <div class="pins" id="pins"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="pad" id="pad">
+        <button type="button" data-k="1">1</button><button type="button" data-k="2">2</button><button type="button" data-k="3">3</button>
+        <button type="button" data-k="4">4</button><button type="button" data-k="5">5</button><button type="button" data-k="6">6</button>
+        <button type="button" data-k="7">7</button><button type="button" data-k="8">8</button><button type="button" data-k="9">9</button>
+        <button type="button" class="fn" data-k="c">지우기</button><button type="button" data-k="0">0</button><button type="button" class="fn" data-k="b" aria-label="한 자리 지우기">←</button>
+      </div>
+      <button type="button" class="gskip" id="gskip">시안이라 PIN 없이 보기</button>
+    </div>
+    <div id="g2" hidden>
+      <div class="gmsg">이 노트북에서 받을 쪽을 골라 주세요</div>
+      <div class="pick">
+        <button type="button" data-side="groom"><b>신랑측</b><small>이용범 측 하객 · <kbd>1</kbd></small></button>
+        <button type="button" data-side="bride"><b>신부측</b><small>김홍매 측 하객 · <kbd>2</kbd></small></button>
+      </div>
+      <p class="gnote">한 번 고르면 이 기기는 그쪽 명부만 씁니다.</p>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+  <aside class="photo" aria-label="신랑신부 사진">
+    <div class="cap">
+      <div class="eb">WEDDING RECEPTION</div>
+      <div class="couple"><div><small>신랑</small><b>이용범</b></div><span class="amp">&amp;</span><div><small>신부</small><b>김홍매</b></div></div>
+      <div class="when"><b>2000. 4. 16. 일요일 오후 1시</b><br>신라호텔 영빈관</div>
+      <span class="sample">시안 · 예시 데이터</span>
+    </div>
+  </aside>
+
+  <div class="work">
+    <div class="top">
+      <span class="side" id="side">신랑측 축의대</span>
+      <button type="button" class="sync" id="sync" title="눌러서 오프라인 상황을 시험해 볼 수 있습니다"><i></i><span id="syncText">저장됨</span></button>
+      <span class="sp"></span>
+      <span id="topBtns">
+        <button type="button" class="tbtn" id="openTicket">식권 추가·따로 지급</button>
+        <button type="button" class="tbtn" id="swap">입력자 교체</button>
+        <button type="button" class="tbtn" id="fullBtn">전체화면</button>
+      </span>
+      <button type="button" class="tbtn" id="back" hidden>← 접수로 돌아가기</button>
+    </div>
+
+    <!-- 1. 접수 -->
+    <div id="vEntry" style="display:contents">
+      <section class="stats" aria-label="현황">
+        <div><small>접수 <span class="meta" id="stX"></span></small><b class="n" id="stCount">0</b></div>
+        <div id="stLeftBox"><small>식권 남음</small><b class="n" id="stLeft">0</b></div>
+      </section>
+
+      <div class="desk">
+        <form class="card" id="form" autocomplete="off" novalidate>
+          <div class="ord"><b class="n" id="ordNo">1</b><span class="t">번째 봉투</span>
+            <span class="keys"><span><kbd>Tab</kbd> 다음</span><span><kbd>Enter</kbd> 저장</span><span><kbd>+</kbd><kbd>−</kbd> 식권</span></span></div>
+
+          <div class="field">
+            <div class="lab"><label for="name">성함</label><label class="anon"><input type="checkbox" id="anon">무기명</label></div>
+            <input class="inp" id="name" placeholder="봉투에 적힌 이름">
+          </div>
+
+          <div class="field">
+            <div class="lab"><label for="amt">축의금</label><span class="readout empty" id="readout">5 → 5만 · 3.5 → 3만 5천</span></div>
+            <div class="amtrow">
+              <div class="amtbox"><input class="inp" id="amt" inputmode="decimal" placeholder="0" autocomplete="off"><span class="unit">만 원</span><button type="button" class="clr" id="amtClr" tabindex="-1">초기화</button></div>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="tkrow">
+              <div class="l">식권<small>봉투와 함께 드림</small></div>
+              <div class="stepper"><button type="button" id="tkM" aria-label="식권 한 장 빼기">−</button><input id="tk" inputmode="numeric" value="0" aria-label="식권 장수"><button type="button" id="tkP" aria-label="식권 한 장 더하기">+</button></div>
+            </div>
+          </div>
+
+          <button type="button" class="memo-link" id="memoLink">메모 남기기</button>
+          <textarea class="memo" id="memo" rows="2" placeholder="예: 봉투 두 개, 부모님 회사 동료" hidden></textarea>
+          <div class="note err" id="nErr" hidden></div>
+          <div class="note warn" id="nWarn" hidden></div>
+          <button type="submit" class="save" id="saveBtn">저장</button>
+        </form>
+
+        <section class="card">
+          <div class="sechead"><h2 id="recentTitle">최근 봉투</h2><button type="button" class="linkbtn" id="openBook">명부 전체 보기 →</button></div>
+          <div class="rsearch"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="rq" placeholder="이름이나 순번으로 찾기" autocomplete="off" aria-label="명부 검색"><button type="button" id="rqx" aria-label="검색 지우기" hidden>×</button></div>
+          <div id="recent"></div>
+          <button type="button" class="close-day" id="toSettle">명부 마감하고 정산하기</button>
+        </section>
+      </div>
+    </div>
+
+    <!-- 2. 정산 -->
+    <div id="vSettle" style="display:contents" hidden>
+      <div class="stitle"><div class="eb">SETTLEMENT</div><h2>정산</h2><p>현금을 권종별로 세고, 남은 식권을 세어 넣어 주세요. 맞는지 바로 비교합니다.</p></div>
+      <div class="settle">
+        <section class="card">
+          <div class="lab" style="margin-bottom:12px">현금 장수</div>
+          <div id="denoms"></div>
+          <div class="cmp">
+            <div class="r"><span>센 현금</span><b id="cCounted">0원</b></div>
+            <div class="r"><span>명부 합계</span><b id="cBook">0원</b></div>
+            <div class="verdict wait" id="cVerdict">장수를 넣으면 비교합니다</div>
+          </div>
+        </section>
+        <section class="card">
+          <div class="field">
+            <div class="lab"><label for="left">남은 식권</label><span class="hint" id="tHave"></span></div>
+            <div class="amtbox"><input class="inp" id="left" inputmode="numeric" placeholder="세어 본 장수" style="font-weight:800;font-size:24px"><span class="unit">장</span></div>
+          </div>
+          <div class="cmp">
+            <div class="r"><span>실제 나간 식권</span><b id="tUsed">-</b></div>
+            <div class="r"><span>기록된 식권</span><b id="tRec">0장</b></div>
+            <div class="verdict wait" id="tVerdict">남은 장수를 넣으면 비교합니다</div>
+          </div>
+          <div class="field" id="reasonBox" style="margin-top:16px" hidden>
+            <div class="lab"><label for="reason">차이 사유</label><span class="hint">차이가 있으면 꼭 적어 주세요</span></div>
+            <textarea class="memo" id="reason" rows="2" placeholder="예: 식권 2장 분실, 1천 원권 미확인" style="margin-top:0"></textarea>
+          </div>
+        </section>
+      </div>
+      <div class="sfoot">
+        <div><div class="confirm-box" id="confirmBox" hidden>제출하면 이 기기에서는 더 고칠 수 없습니다. 잘못된 점은 신랑신부 계정에서 잠금을 풀어 고칠 수 있습니다.
+          <div class="btns"><button type="button" class="no" id="cNo">다시 보기</button><button type="button" class="yes" id="cYes">제출합니다</button></div></div></div>
+        <button type="button" class="save" id="submitBtn" style="margin-top:0">최종 제출</button>
+      </div>
+    </div>
+
+    <!-- 3. 완료 -->
+    <div id="vDone" hidden>
+      <section class="card done">
+        <div class="seal"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+        <h2>제출했습니다</h2>
+        <p>오늘 수고 많으셨습니다. 결과는 신랑신부가 확인합니다.</p>
+        <div class="handover" id="handover"></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim" hidden><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (s) { return document.querySelector(s); };
+  /* 전구 불빛처럼 반짝이는 점 (오른쪽 위 배경) */
+  (function () {
+    var bg = $('#bg');
+    for (var i = 0; i < 16; i++) {
+      var g = document.createElement('span'); g.className = 'glow';
+      var sz = 4 + Math.random() * 10;
+      g.style.cssText = 'width:' + sz + 'px;height:' + sz + 'px;left:' + (35 + Math.random() * 63) + '%;top:' + (Math.random() * 45) + '%;animation-duration:' + (2 + Math.random() * 3) + 's;animation-delay:' + (-Math.random() * 4) + 's;z-index:1';
+      bg.appendChild(g);
+    }
+  })();
+  var won = function (n) { return n.toLocaleString('ko-KR') + '원'; };
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function hms() { var d = new Date(); return [d.getHours(), d.getMinutes(), d.getSeconds()].map(function (x) { return ('0' + x).slice(-2); }).join(':'); }
+  function hhmm() { var d = new Date(); return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); }
+
+  /* 50000 → "5만 원", 35000 → "3만 5천 원" */
+  function kor(n) {
+    if (!n) return '0원';
+    var eok = Math.floor(n / 100000000), man = Math.floor(n % 100000000 / 10000), rest = n % 10000, s = '';
+    if (eok) s += eok.toLocaleString('ko-KR') + '억';
+    if (man) s += ' ' + man.toLocaleString('ko-KR') + '만';
+    if (rest) { var ch = Math.floor(rest / 1000), r2 = rest % 1000; if (ch) s += ' ' + ch + '천'; if (r2) s += ' ' + r2; }
+    return s.trim() + ' 원';
+  }
+  /* 입력 칸은 항상 만 원 단위. 소수점 첫째 자리가 천 원(3.5 → 3만 5천 원), 1000 → 1,000만 원, 10000 → 1억 원 */
+  function parseAmt(v) {
+    v = String(v).replace(/[^0-9.]/g, '').replace(/^(\d*\.\d?).*$/, '$1');
+    if (!v) return 0;
+    var x = parseFloat(v);
+    if (!isFinite(x) || x <= 0) return 0;
+    return Math.round(x * 10) * 1000;
+  }
+  var toMan = function (n) { return n ? String(Math.round(n / 1000) / 10) : ''; };
+
+  /* ---------- 상태 (예시 데이터, 새로고침하면 처음으로) ---------- */
+  var SEED = {
+    groom: [['박준혁',50000,1],['최성민',100000,2],['정태윤',50000,1],['한지훈',30000,0],['',50000,1],['오세진',100000,2],['서민호',50000,1],['신동현',200000,2],['권재우',50000,1],['문하늘',100000,1],['송유진',50000,1],['백승호',50000,2]],
+    bride: [['이서연',50000,1],['박지유',100000,2],['최수아',50000,1],['정하린',30000,1],['강예린',100000,0],['',50000,1],['조윤서',50000,1],['윤채원',200000,2],['장소율',50000,1],['임다은',100000,2],['한가을',50000,1],['오나래',50000,1]]
+  };
+  var S = { last: null, side: 'groom', start: 200, thr: 1000000, rows: [], ledger: [], online: true, pending: 0, ack: null, view: 'entry' };
+  function load(side) {
+    S.side = side;
+    S.rows = SEED[side].map(function (r, i) { return { no: i + 1, name: r[0], anon: !r[0], amt: r[1], tk: r[2], memo: '', x: false, hist: [] }; });
+    S.rows[3].x = true; S.rows[3].hist.push('12:41 금액 잘못 받아 취소');
+    S.rows[6].hist.push('12:52 식권 1장 → 2장'); S.rows[6].tk = 2;
+    S.ledger = [{ kind: 'in', q: 30, why: '혼주가 전달', t: '12:35' }, { kind: 'out', q: 3, why: '진행팀', t: '12:20' }];
+  }
+  var live = function () { return S.rows.filter(function (r) { return !r.x; }); };
+  var cashSum = function () { return live().reduce(function (a, r) { return a + r.amt; }, 0); };
+  var issued = function () { return live().reduce(function (a, r) { return a + r.tk; }, 0); };
+  var sumL = function (k) { return S.ledger.reduce(function (a, l) { return a + (l.kind === k ? l.q : 0); }, 0); };
+  var added = function () { return sumL('in'); };
+  var have = function () { return S.start + added(); };                    // 받은 식권 전체
+  var out = function () { return issued() + sumL('out') - sumL('back'); }; // 나간 식권
+  var left = function () { return have() - out(); };
+
+  /* ---------- PIN ---------- */
+  var pin = '', swapMode = false;
+  function drawPins() { document.querySelectorAll('#pins i').forEach(function (d, i) { d.classList.toggle('on', i < pin.length); }); }
+  function press(k) {
+    if (k === 'c') pin = ''; else if (k === 'b') pin = pin.slice(0, -1); else if (pin.length < 6) pin += k;
+    drawPins();
+    if (pin.length === 6) setTimeout(function () {
+      pin = ''; drawPins();
+      if (swapMode) { goFull(); $('#gate').hidden = true; toast('입력자를 바꿨습니다. 교체 시각이 기록됩니다'); $('#name').focus(); return; }
+      $('#g1').hidden = true; $('#g2').hidden = false;
+    }, 160);
+  }
+  document.addEventListener('keydown', function (e) {
+    if ($('#gate').hidden || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (!$('#g1').hidden) {
+      if (/^[0-9]$/.test(e.key)) { e.preventDefault(); press(e.key); }
+      else if (e.key === 'Backspace') { e.preventDefault(); press('b'); }
+      else if (e.key === 'Escape' || e.key === 'Delete') { e.preventDefault(); press('c'); }
+    } else if (!$('#g2').hidden) {
+      if (e.key === '1') { e.preventDefault(); pickSide('groom'); } else if (e.key === '2') { e.preventDefault(); pickSide('bride'); }
+    }
+  });
+  /* 전체화면: 브라우저는 사용자 동작 없이는 막으므로, PIN 입력·구분 선택 순간에 켠다 */
+  function goFull() {
+    var el = document.documentElement;
+    if (document.fullscreenElement || !el.requestFullscreen) return;
+    try { var p = el.requestFullscreen(); if (p && p.catch) p.catch(function () {}); } catch (x) {}
+  }
+  function pickSide(side) { goFull(); load(side); render(); $('#gate').hidden = true; nameEl.focus(); }
+  $('#pad').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) press(b.dataset.k); });
+  $('#gskip').addEventListener('click', function () { $('#g1').hidden = true; $('#g2').hidden = false; });
+  document.querySelectorAll('.pick button').forEach(function (b) {
+    b.addEventListener('click', function () { pickSide(b.dataset.side); });
+  });
+  $('#fullBtn').addEventListener('click', function () { if (document.fullscreenElement) document.exitFullscreen(); else goFull(); });
+  document.addEventListener('fullscreenchange', function () { $('#fullBtn').textContent = document.fullscreenElement ? '전체화면 끄기' : '전체화면'; });
+  $('#swap').addEventListener('click', function () {
+    swapMode = true; pin = ''; drawPins(); $('#g1').hidden = false; $('#g2').hidden = true;
+    $('#gmsg').textContent = '새 입력자의 축의대 PIN을 눌러 주세요'; $('#gskip').hidden = true; $('#gate').hidden = false;
+  });
+
+  /* ---------- 동기화 시뮬레이션 ---------- */
+  function saved() { S.last = hms(); drawSync(); }
+  function drawSync() {
+    $('#sync').classList.toggle('off', !S.online);
+    var t = S.last ? ' · ' + S.last : '';
+    $('#syncText').textContent = S.online ? '저장됨' + t : '오프라인 · 이 기기에 ' + S.pending + '건 보관' + t;
+  }
+  $('#sync').addEventListener('click', function () {
+    S.online = !S.online;
+    if (S.online && S.pending) { toast('다시 연결됐습니다. ' + S.pending + '건을 올렸습니다'); S.pending = 0; }
+    else if (!S.online) toast('오프라인 상황(시험): 입력은 이 기기에 계속 저장됩니다');
+    drawSync();
+  });
+
+  /* ---------- 접수 화면 ---------- */
+  function render() {
+    $('#side').textContent = (S.side === 'groom' ? '신랑측' : '신부측') + ' 축의대';
+    var xs = S.rows.length - live().length;
+    $('#stCount').innerHTML = live().length + '<span>건</span>';
+    $('#stX').textContent = xs ? '· 취소 ' + xs : '';
+    $('#stLeft').innerHTML = left() + '<span>장</span>';
+    $('#stLeftBox').classList.toggle('low', left() <= 30);
+    $('#ordNo').textContent = S.rows.length + 1;
+    drawRecent();
+    drawSync();
+  }
+  /* 최근 봉투 6건, 검색어가 있으면 전체 명부에서 찾아 순번 오름차순으로 */
+  var justNo = null, justT;
+  function drawRecent() {
+    var q = ($('#rq').value || '').trim(), box = $('#recent'), rs;
+    $('#rqx').hidden = !q;
+    if (q) {
+      rs = S.rows.filter(function (r) { return String(r.no) === q || (r.anon ? '무기명' : r.name).indexOf(q) > -1; });
+      $('#recentTitle').textContent = '찾은 봉투 ' + rs.length + '건';
+      box.classList.add('searching');
+      box.innerHTML = rs.length ? rs.map(itemHTML).join('') : '<div class="emptyl">"' + esc(q) + '"(으)로 찾은 봉투가 없습니다</div>';
+    } else {
+      rs = S.rows.slice(-6).reverse();
+      $('#recentTitle').textContent = '최근 봉투';
+      box.classList.remove('searching');
+      box.innerHTML = rs.length ? rs.map(itemHTML).join('') : '<div class="emptyl">아직 받은 봉투가 없습니다</div>';
+    }
+  }
+  function itemHTML(r) {
+    var bits = ['식권 ' + r.tk + '장'];
+    if (r.memo) bits.push(esc(r.memo));
+    if (r.hist.length) bits.push(esc(r.hist[r.hist.length - 1]));
+    var tag = r.x ? '<span class="tag x">취소</span>' : (r.hist.length ? '<span class="tag">수정 ' + r.hist.length + '</span>' : '');
+    if (r.no === justNo) tag += '<span class="wnote">봉투에 ' + r.no + ' 적기</span>';
+    return '<div class="item' + (r.x ? ' x' : '') + (r.no === justNo ? ' just' : '') + '"><span class="no">' + r.no + '</span>' +
+      '<div class="who" style="min-width:0"><b>' + (r.anon ? '무기명' : esc(r.name)) + '</b>' + tag + '<small>' + bits.join(' · ') + '</small></div>' +
+      '<span class="amt">' + kor(r.amt) + '</span><button type="button" class="ed" data-edit="' + r.no + '">수정</button></div>';
+  }
+
+  /* 입력 */
+  var nameEl = $('#name'), amtEl = $('#amt'), tkEl = $('#tk');
+  function drawReadout() {
+    var v = parseAmt(amtEl.value), el = $('#readout');
+    if (!amtEl.value) { el.textContent = '5 → 5만 · 3.5 → 3만 5천'; el.classList.add('empty'); return; }
+    el.classList.remove('empty');
+    el.textContent = v ? kor(v) + ' (' + won(v) + ')' : '금액을 숫자로 넣어 주세요';
+  }
+  function dirty() { S.ack = null; $('#saveBtn').textContent = '저장'; $('#saveBtn').classList.remove('confirm'); $('#nWarn').hidden = true; $('#nErr').hidden = true; }
+  $('#anon').addEventListener('change', function () { nameEl.disabled = this.checked; if (this.checked) { nameEl.value = ''; amtEl.focus(); } else nameEl.focus(); dirty(); });
+  nameEl.addEventListener('input', dirty);
+  amtEl.addEventListener('input', function () { drawReadout(); dirty(); });
+  nameEl.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); amtEl.focus(); } });
+  $('#amtClr').addEventListener('click', function () { amtEl.value = ''; drawReadout(); dirty(); amtEl.focus(); });
+
+  /* 식권: 직접 입력 + 버튼 + 단축키(=/+ 올림, -/_ 내림) */
+  function getTk() { return Math.max(0, Math.min(99, parseInt(tkEl.value, 10) || 0)); }
+  function setTk(v) { tkEl.value = Math.max(0, Math.min(99, v)); }
+  $('#tkM').addEventListener('click', function () { setTk(getTk() - 1); });
+  $('#tkP').addEventListener('click', function () { setTk(getTk() + 1); });
+  tkEl.addEventListener('input', function () { tkEl.value = tkEl.value.replace(/[^0-9]/g, '').slice(0, 2); });
+  tkEl.addEventListener('focus', function () { tkEl.select(); });
+  tkEl.addEventListener('blur', function () { setTk(getTk()); });
+  document.addEventListener('keydown', function (e) {
+    if (S.view !== 'entry' || !$('#gate').hidden || !$('#scrim').hidden || e.isComposing || e.ctrlKey || e.metaKey || e.altKey) return;
+    var a = document.activeElement;
+    if (a && (a.tagName === 'TEXTAREA' || a.id === 'rq')) return;
+    if (e.key === '=' || e.key === '+') { e.preventDefault(); setTk(getTk() + 1); flash(); }
+    else if (e.key === '-' || e.key === '_') { e.preventDefault(); setTk(getTk() - 1); flash(); }
+  });
+  function flash() { tkEl.style.borderColor = 'var(--leaf)'; setTimeout(function () { tkEl.style.borderColor = ''; }, 250); }
+  tkEl.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); $('#form').requestSubmit(); } });
+
+  $('#rq').addEventListener('input', drawRecent);
+  $('#rq').addEventListener('keydown', function (e) { if (e.key === 'Escape') { this.value = ''; drawRecent(); nameEl.focus(); } });
+  $('#rqx').addEventListener('click', function () { $('#rq').value = ''; drawRecent(); $('#rq').focus(); });
+  /* Tab은 입력칸끼리만 오간다 (버튼·체크박스는 건너뜀) */
+  document.querySelectorAll('#form button, #form input[type=checkbox]').forEach(function (b) { b.tabIndex = -1; });
+  $('#form').addEventListener('keydown', function (e) {
+    if (e.key !== 'Tab') return;
+    var list = [nameEl, amtEl, tkEl, $('#memo')].filter(function (el) { return !el.disabled && !el.hidden; });
+    var i = list.indexOf(document.activeElement);
+    e.preventDefault();
+    var next = list[(i + (e.shiftKey ? -1 : 1) + list.length) % list.length] || list[0];
+    next.focus();
+  });
+  $('#memoLink').addEventListener('click', function () { var m = $('#memo'); m.hidden = !m.hidden; this.textContent = m.hidden ? '메모 남기기' : '메모 닫기'; if (!m.hidden) m.focus(); });
+
+  /* 저장할 수 없을 때: 팝업으로 알리고, 닫으면 고칠 칸으로 이동 */
+  var after = null;
+  function err(title, msg, el) {
+    openModal('alert', title, '', '<p class="amsg">' + msg + '</p><div class="mbtns"><button type="button" class="save" id="aOk">확인 (Enter)</button></div>');
+    after = el; $('#modal').classList.add('alert');
+    $('#aOk').onclick = closeModal; $('#aOk').focus();
+  }
+  function warn(msg, key) {
+    openModal('alert', '같은 이름이 있습니다', '', '<p class="amsg">' + msg + '</p><div class="mbtns"><button type="button" class="ghost2" id="aNo">다시 확인</button><button type="button" class="save" id="aYes">다른 분입니다, 저장 (Enter)</button></div>');
+    $('#modal').classList.add('alert'); after = nameEl;
+    $('#aNo').onclick = closeModal;
+    $('#aYes').onclick = function () { S.ack = key; after = null; $('#scrim').hidden = true; mKind = null; $('#form').requestSubmit(); };
+    $('#aYes').focus();
+  }
+
+  $('#form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var anon = $('#anon').checked, name = nameEl.value.trim(), amt = parseAmt(amtEl.value), tk = getTk();
+    $('#nErr').hidden = true;
+    if (!anon && !name) return err('성함이 비어 있습니다', '봉투에 적힌 이름을 넣어 주세요. 이름이 없는 봉투는 무기명에 체크합니다.', nameEl);
+    if (!amt) return err('금액이 비어 있습니다', '축의금을 만 원 단위로 넣어 주세요. 5를 넣으면 5만 원입니다.', amtEl);
+    var key = name + '|' + amt;
+    if (S.ack !== key && !anon && live().some(function (r) { return r.name === name; }))
+      return warn(esc(name) + ' 님이 이미 명부에 있습니다. 다른 분이면 저장하고, 메모에 구분(예: 회사 동료)을 남겨 두면 나중에 헷갈리지 않습니다.', key);
+    var r = { no: S.rows.length + 1, name: anon ? '' : name, anon: anon, amt: amt, tk: tk, memo: $('#memo').value.trim(), x: false, hist: [] };
+    S.rows.push(r);
+    if (!S.online) S.pending++;
+    saved();
+    toast(r.no + '번 저장됨 · 봉투에 ' + r.no + ' 적어 주세요');
+    justNo = r.no; clearTimeout(justT); justT = setTimeout(function () { justNo = null; drawRecent(); }, 8000);
+    $('#rq').value = '';
+    nameEl.value = ''; amtEl.value = ''; setTk(0); $('#memo').value = ''; $('#memo').hidden = true; $('#memoLink').textContent = '메모 남기기';
+    $('#anon').checked = false; nameEl.disabled = false;
+    dirty(); drawReadout(); render(); nameEl.focus();
+  });
+  amtEl.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); $('#form').requestSubmit(); } });
+
+  /* ---------- 모달 ---------- */
+  var mKind = null;
+  function openModal(kind, title, desc, body, wide) {
+    mKind = kind;
+    $('#modal').className = 'modal' + (wide ? ' wide' : '');
+    $('#modal').innerHTML = '<div class="mh"><div><h3>' + title + '</h3>' + (desc ? '<p>' + desc + '</p>' : '') + '</div><button type="button" class="x" data-close aria-label="닫기">×</button></div>' + body;
+    $('#scrim').hidden = false;
+  }
+  function closeModal() { $('#scrim').hidden = true; mKind = null; var t = after; after = null; if (t) t.focus(); else if (S.view === 'entry') nameEl.focus(); }
+  $('#scrim').addEventListener('click', function (e) { if (e.target === this || e.target.closest('[data-close]')) closeModal(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('#scrim').hidden) closeModal(); });
+
+  /* 받은 봉투 수정: 고친 내용은 기록으로 남고, 취소도 여기서 */
+  document.addEventListener('click', function (e) { var b = e.target.closest('[data-edit]'); if (b) openEdit(+b.dataset.edit); });
+  function openEdit(no) {
+    var r = S.rows[no - 1], et = r.tk;
+    openModal('edit', no + '번 봉투 수정', '고친 내용은 시각과 함께 기록으로 남습니다.',
+      '<div class="field"><div class="lab"><label for="eName">성함</label><label class="anon"><input type="checkbox" id="eAnon"' + (r.anon ? ' checked' : '') + '>무기명</label></div><input class="inp" id="eName" value="' + esc(r.name) + '"' + (r.anon ? ' disabled' : '') + '></div>' +
+      '<div class="field"><div class="lab"><label for="eAmt">축의금</label><span class="hint" id="eRead">' + kor(r.amt) + '</span></div><div class="amtbox"><input class="inp" id="eAmt" inputmode="decimal" value="' + toMan(r.amt) + '"><span class="unit">만 원</span></div></div>' +
+      '<div class="field"><div class="tkrow"><div class="l">식권<small>추가로 드렸다면 늘려 주세요</small></div><div class="stepper"><button type="button" id="eM">−</button><input id="eTk" inputmode="numeric" value="' + et + '" aria-label="식권 장수"><button type="button" id="eP">+</button></div></div></div>' +
+      '<div class="field"><div class="lab"><label for="eMemo">메모</label></div><textarea class="memo" id="eMemo" rows="2" style="margin-top:0">' + esc(r.memo) + '</textarea></div>' +
+      '<div class="mbtns"><button type="button" class="danger" id="eX">' + (r.x ? '취소 되돌리기' : '봉투 취소') + '</button><button type="button" class="save" id="eSave">수정 저장</button></div>' +
+      (r.hist.length ? '<div class="hist"><b>기록</b>' + r.hist.slice().reverse().map(function (h) { return '<div>' + esc(h) + '</div>'; }).join('') + '</div>' : ''));
+    var tkv = function () { return Math.max(0, Math.min(99, parseInt($('#eTk').value, 10) || 0)); };
+    $('#eM').onclick = function () { $('#eTk').value = Math.max(0, tkv() - 1); };
+    $('#eP').onclick = function () { $('#eTk').value = Math.min(99, tkv() + 1); };
+    $('#eAnon').onchange = function () { $('#eName').disabled = this.checked; };
+    $('#eAmt').oninput = function () { var v = parseAmt(this.value); $('#eRead').textContent = v ? kor(v) : '금액을 넣어 주세요'; };
+    $('#eX').onclick = function () {
+      r.x = !r.x; r.hist.push(hhmm() + (r.x ? ' 봉투 취소' : ' 취소 되돌림')); saved();
+      toast(no + '번 ' + (r.x ? '취소했습니다. 기록은 남습니다' : '되돌렸습니다')); closeModal(); render(); if (mKind === 'book') drawBook();
+    };
+    $('#eSave').onclick = function () {
+      var anon = $('#eAnon').checked, nm = anon ? '' : $('#eName').value.trim(), amt = parseAmt($('#eAmt').value), tk = tkv(), memo = $('#eMemo').value.trim();
+      if (!anon && !nm) { $('#eName').focus(); return; }
+      if (!amt) { $('#eAmt').focus(); return; }
+      var ch = [];
+      if (anon !== r.anon || nm !== r.name) ch.push('성함 ' + (r.anon ? '무기명' : r.name) + ' → ' + (anon ? '무기명' : nm));
+      if (amt !== r.amt) ch.push('금액 ' + kor(r.amt) + ' → ' + kor(amt));
+      if (tk !== r.tk) ch.push('식권 ' + r.tk + '장 → ' + tk + '장');
+      if (memo !== r.memo) ch.push('메모 수정');
+      if (!ch.length) { closeModal(); return; }
+      r.anon = anon; r.name = nm; r.amt = amt; r.tk = tk; r.memo = memo;
+      r.hist.push(hhmm() + ' ' + ch.join(', ')); saved();
+      toast(no + '번 수정했습니다 · ' + ch.join(', ')); closeModal(); render();
+    };
+  }
+
+  /* 명부 전체 */
+  var veilT;
+  $('#openBook').addEventListener('click', function () {
+    openModal('book', '명부', (S.side === 'groom' ? '신랑측' : '신부측') + ' · 취소한 봉투도 줄을 그어 남겨 둡니다.',
+      '<div class="total"><span>현금 합계 <small style="color:var(--muted)">(취소 제외)</small></span><button type="button" class="veil hide" id="veil"><b class="n">' + won(cashSum()) + '</b><em>눌러서 보기</em></button></div>' +
+      '<input class="search" id="q" placeholder="이름으로 찾기"><div class="tbl"><table><thead><tr><th>순번</th><th>성함</th><th class="r">축의금</th><th class="r">식권</th><th>메모·기록</th><th></th></tr></thead><tbody id="book"></tbody></table></div>', true);
+    drawBook();
+    $('#q').oninput = drawBook;
+    $('#veil').onclick = function () {
+      var v = this, hid = v.classList.toggle('hide');
+      v.querySelector('em').textContent = hid ? '눌러서 보기' : kor(cashSum());
+      clearTimeout(veilT);
+      if (!hid) veilT = setTimeout(function () { v.classList.add('hide'); v.querySelector('em').textContent = '눌러서 보기'; }, 15000);
+    };
+  });
+  function drawBook() {
+    var q = ($('#q') && $('#q').value.trim()) || '';
+    var rs = S.rows.slice().filter(function (r) { return !q || (r.anon ? '무기명' : r.name).indexOf(q) > -1; });
+    $('#book').innerHTML = rs.length ? rs.map(function (r) {
+      var note = [r.memo, r.hist.length ? r.hist[r.hist.length - 1] : ''].filter(Boolean).map(esc).join(' · ');
+      return '<tr class="' + (r.x ? 'x' : '') + '"><td class="num">' + r.no + '</td><td>' + (r.anon ? '무기명' : esc(r.name)) + (r.x ? ' <span class="tag x">취소</span>' : '') + '</td><td class="r num">' + kor(r.amt) + '</td><td class="r num">' + r.tk + '장</td><td style="color:var(--sub);font-size:13px">' + note + '</td><td class="r"><button type="button" class="tbtn" data-edit="' + r.no + '">수정</button></td></tr>';
+    }).join('') : '<tr><td colspan="6" class="emptyl">찾는 이름이 없습니다</td></tr>';
+  }
+
+  /* 식권 출납: 추가로 받음 / 봉투 없이 드림 / 돌려받음 */
+  var REASONS = { in: ['혼주가 전달', '직접 받아 옴', '도장 추가', '기타'], out: ['무축의 요청', '혼주·가족', '진행팀', '기타'], back: ['남아서 돌려받음', '기타'] };
+  var LBL = { in: '추가로 받음', out: '봉투 없이 드림', back: '돌려받음' };
+  $('#openTicket').addEventListener('click', function () {
+    var kind = 'in', why = REASONS.in[0], q = 10;
+    openModal('ticket', '식권 추가·따로 지급', '봉투와 함께 드린 식권은 접수 화면에서 적고, 여기에는 그 밖의 들고 남만 적습니다.',
+      '<div class="seg" id="seg">' + ['in', 'out', 'back'].map(function (k) { return '<button type="button" data-k="' + k + '" aria-pressed="' + (k === kind) + '">' + LBL[k] + '</button>'; }).join('') + '</div>' +
+      '<div class="tkrow"><div class="l">장수</div><div class="stepper"><button type="button" id="qM">−</button><input id="qv" inputmode="numeric" value="' + q + '" aria-label="장수"><button type="button" id="qP">+</button></div></div>' +
+      '<div class="reasons" id="rs"></div>' +
+      '<button type="button" class="save" id="lSave" style="margin-top:0">기록하기</button>' +
+      '<div class="tsum"><div><small>받은 식권</small><b>' + have() + '장</b><em>처음 ' + S.start + (added() ? ' + 추가 ' + added() : '') + '</em></div><div><small>나간 식권</small><b>' + out() + '장</b></div><div><small>남은 식권</small><b>' + left() + '장</b></div></div>' +
+      '<div class="log"><h4>오늘 기록</h4>' + (S.ledger.length ? S.ledger.slice().reverse().map(function (l) {
+        return '<div><span>' + LBL[l.kind] + ' · ' + esc(l.why) + ' · ' + l.t + '</span><b>' + (l.kind === 'out' ? '−' : '+') + l.q + '장</b></div>'; }).join('') : '<div><span>아직 없습니다</span></div>') + '</div>');
+    var qv = function () { return Math.max(1, Math.min(500, parseInt($('#qv').value, 10) || 1)); };
+    function drawR() { $('#rs').innerHTML = REASONS[kind].map(function (w) { return '<button type="button" data-w="' + w + '" aria-pressed="' + (w === why) + '">' + w + '</button>'; }).join(''); }
+    drawR();
+    $('#seg').onclick = function (e) { var b = e.target.closest('button'); if (!b) return; kind = b.dataset.k; why = REASONS[kind][0]; $('#qv').value = kind === 'in' ? 10 : 1; this.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', x === b); }); drawR(); };
+    $('#rs').onclick = function (e) { var b = e.target.closest('button'); if (!b) return; why = b.dataset.w; drawR(); };
+    $('#qM').onclick = function () { $('#qv').value = Math.max(1, qv() - 1); };
+    $('#qP').onclick = function () { $('#qv').value = qv() + 1; };
+    $('#lSave').onclick = function () {
+      var n = qv(); S.ledger.push({ kind: kind, q: n, why: why, t: hhmm() }); saved();
+      toast(LBL[kind] + ' · ' + why + ' · 식권 ' + n + '장 기록 (남음 ' + left() + '장)'); closeModal(); render();
+    };
+  });
+
+  /* ---------- 정산 ---------- */
+  var DEN = [[50000, '5만 원', 'b50'], [10000, '1만 원', 'b10'], [5000, '5천 원', 'b5'], [1000, '1천 원', 'b1']];
+  $('#denoms').innerHTML = DEN.map(function (d, i) {
+    return '<div class="denom"><span class="bill ' + d[2] + '">' + d[1] + '</span><input class="inp" id="d' + i + '" inputmode="numeric" placeholder="0장" aria-label="' + d[1] + ' 장수"><span class="sub" id="s' + i + '">0원</span></div>';
+  }).join('');
+  function show(v) {
+    S.view = v;
+    $('#vEntry').hidden = v !== 'entry'; $('#vSettle').hidden = v !== 'settle'; $('#vDone').hidden = v !== 'done';
+    $('#topBtns').hidden = v !== 'entry'; $('#back').hidden = v !== 'settle';
+    $('.work').scrollTop = 0;
+  }
+  $('#back').addEventListener('click', function () { show('entry'); nameEl.focus(); });
+  $('#toSettle').addEventListener('click', function () { show('settle'); calc(); $('#d0').focus(); });
+  var counted = function () { return DEN.reduce(function (a, d, i) { return a + d[0] * (parseInt($('#d' + i).value, 10) || 0); }, 0); };
+  var anyCash = function () { return DEN.some(function (d, i) { return $('#d' + i).value !== ''; }); };
+  function calc() {
+    DEN.forEach(function (d, i) { $('#s' + i).textContent = won(d[0] * (parseInt($('#d' + i).value, 10) || 0)); });
+    var c = counted(), b = cashSum(), cv = $('#cVerdict'), bad = false;
+    $('#cCounted').textContent = won(c); $('#cBook').textContent = won(b);
+    if (!anyCash()) { cv.className = 'verdict wait'; cv.textContent = '장수를 넣으면 비교합니다'; }
+    else if (c === b) { cv.className = 'verdict ok'; cv.textContent = '맞습니다'; }
+    else { bad = true; cv.className = 'verdict bad'; cv.textContent = c > b ? won(c - b) + ' 더 많습니다' : won(b - c) + ' 모자랍니다'; }
+    $('#tHave').textContent = '받은 식권 ' + have() + '장 (처음 ' + S.start + (added() ? ' + 추가 ' + added() : '') + ')';
+    $('#tRec').textContent = out() + '장';
+    var lv = $('#left').value, tv = $('#tVerdict');
+    if (lv === '') { $('#tUsed').textContent = '-'; tv.className = 'verdict wait'; tv.textContent = '남은 장수를 넣으면 비교합니다'; }
+    else {
+      var used = have() - (parseInt(lv, 10) || 0);
+      $('#tUsed').textContent = used + '장';
+      if (used === out()) { tv.className = 'verdict ok'; tv.textContent = '맞습니다'; }
+      else { bad = true; tv.className = 'verdict bad'; tv.textContent = '기록보다 ' + Math.abs(used - out()) + '장 ' + (used > out() ? '더 나갔습니다' : '덜 나갔습니다'); }
+    }
+    $('#reasonBox').hidden = !bad;
+  }
+  $('#vSettle').addEventListener('input', function (e) { if (e.target.id !== 'reason') calc(); });
+  $('#submitBtn').addEventListener('click', function () {
+    if (!anyCash() || $('#left').value === '') { toast('현금 장수와 남은 식권을 먼저 세어 주세요'); return; }
+    if (!$('#reasonBox').hidden && !$('#reason').value.trim()) { toast('차이가 있습니다. 사유를 적어 주세요'); $('#reason').focus(); return; }
+    $('#confirmBox').hidden = false; this.hidden = true;
+  });
+  $('#cNo').addEventListener('click', function () { $('#confirmBox').hidden = true; $('#submitBtn').hidden = false; });
+  $('#cYes').addEventListener('click', function () {
+    var rows = [
+      ['구분', S.side === 'groom' ? '신랑측 (이용범)' : '신부측 (김홍매)'],
+      ['접수', live().length + '건 · 취소 ' + (S.rows.length - live().length) + '건'],
+      ['센 현금', won(counted())], ['명부 합계', won(cashSum())],
+      ['식권', '받음 ' + have() + ' · 나감 ' + (have() - (parseInt($('#left').value, 10) || 0)) + ' · 남음 ' + $('#left').value + '장'],
+      ['제출 시각', hhmm()]
+    ];
+    if ($('#reason').value.trim()) rows.push(['차이 사유', esc($('#reason').value.trim())]);
+    $('#handover').innerHTML = rows.map(function (r) { return '<div><span>' + r[0] + '</span><b>' + r[1] + '</b></div>'; }).join('');
+    show('done');
+  });
+
+  var tt;
+  function toast(m) { var t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(tt); tt = setTimeout(function () { t.hidden = true; }, 2600); }
+
+  load('groom'); render();
+})();
+</script>
