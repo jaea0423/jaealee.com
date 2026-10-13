@@ -46,6 +46,7 @@ function check() {
   const news=`news/data/${date}.json`;
   if(fs.existsSync(news)){
     const d=read(news);assert.equal(d.date,date);text(d.generatedAt);text(d.cutoff);assert(d.market&&Array.isArray(d.market.tiles));assert.equal(d.sections.length,5);
+    if(date>='2026-10-13') require('./market.cjs').validateMarket(d.market,d.cutoff);
     for(const s of d.sections){text(s.labelKr);assert(Array.isArray(s.cards)&&s.cards.length<=4);for(const c of s.cards){text(c.title);text(c.summary);url(c.url);(c.supportingUrls||[]).forEach(url);}}
   }
   console.log('PASS: 콘텐츠 형식·날짜·출처 URL·목록 연결');
