@@ -103,6 +103,7 @@ def desk():
 OUT = ROOT
 # 생성물은 덮어쓴다 (지우지 않으므로 저장소의 다른 파일은 건드리지 않는다)
 shutil.copytree(os.path.join(D, 'bg'), os.path.join(OUT, 'bg'), dirs_exist_ok=True)
+shutil.copytree(os.path.join(D, 'shop'), os.path.join(OUT, 'shop'), dirs_exist_ok=True)  # 축의대 용품 사진
 open(os.path.join(OUT, 'index.html'), 'w', encoding='utf-8').write(page(NAVPAGE, None))
 for p, f in [(REGISTER, 'register'), (SETUP, 'setup'), (REQUEST, 'request'), (GUIDE, 'guide'), (STATUS, 'status'), (RESULT, 'result')]:
     os.makedirs(os.path.join(OUT, f), exist_ok=True); open(os.path.join(OUT, f, 'index.html'), 'w', encoding='utf-8').write(page(p, f))

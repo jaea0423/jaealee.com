@@ -70,13 +70,13 @@ GUIDE_BODY = '''
       ])) + sec('g-close', 'CLOSING', '정산과 인계', '', '''
       <div class="steps">
         <div><span class="k paid">1</span><span><b>명부 마감하고 정산하기</b><small>하객이 뜸해지면 누릅니다. 잘못 눌렀으면 접수로 돌아갈 수 있습니다</small></span><span></span></div>
-        <div><span class="k paid">2</span><span><b>현금을 권종별로 세기</b><small>5만·1만·5천·1천 원권 장수를 넣으면 명부 합계와 바로 비교합니다</small></span><span></span></div>
+        <div><span class="k paid">2</span><span><b>현금을 권종별로 세기</b><small>5만·1만·5천·1천 원권 장수와 수표(금액 합계)를 넣으면 명부 합계와 바로 비교합니다</small></span><span></span></div>
         <div><span class="k paid">3</span><span><b>남은 식권 세기</b><small>받은 식권에서 남은 장수를 빼 기록과 맞춰 봅니다</small></span><span></span></div>
         <div><span class="k paid">4</span><span><b>차이가 나면 사유 적기</b><small>순번을 적어 둔 봉투와 명부를 하나씩 대조해 보고, 그래도 다르면 이유를 적습니다</small></span><span></span></div>
         <div><span class="k paid">5</span><span><b>최종 제출 · 인계</b><small>제출하면 더 고칠 수 없습니다. 봉투 가방과 남은 식권을 혼주께 직접 드립니다</small></span><span></span></div>
       </div>''') + sec('g-keys', 'KEYBOARD', '화면 사용법', '마우스 없이 키보드만으로 할 수 있습니다.', '''
       <div class="grid3">
-        <div class="sidecard"><h4><span><kbd>Tab</kbd></span></h4><p class="gp">다음 칸으로 (성함 → 금액 → 식권)</p></div>
+        <div class="sidecard"><h4><span><kbd>Tab</kbd></span></h4><p class="gp">다음 칸으로 (성함 → 금액 → 식권 → 저장). 저장에서 Enter</p></div>
         <div class="sidecard"><h4><span><kbd>Enter</kbd></span></h4><p class="gp">저장. 성함 칸에서는 금액 칸으로</p></div>
         <div class="sidecard"><h4><span><kbd>+</kbd> <kbd>−</kbd></span></h4><p class="gp">식권 한 장 늘리기·줄이기</p></div>
       </div>

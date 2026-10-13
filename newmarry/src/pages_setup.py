@@ -4,7 +4,7 @@ from pages import COUPLE_CAP, BRAND_CAP, flow
 
 # ---------------------------------------------------------------- 1. 등록
 REGISTER = dict(title='축의지기 화면 시안', cap=BRAND_CAP, body='''
-    <div class="top"><span class="sp"></span>''' + flow(0) + '''</div>
+    <div class="top"><span class="sp"></span><button type="button" class="btn2" data-shop="../shop/">축의대 용품</button>''' + flow(0) + '''</div>
 
     <section class="card hero">
       <div class="eb">FOR NEWLYWEDS</div>
@@ -59,7 +59,7 @@ def tbdlab(f, text, for_=None):
     return '<div class="lab"><%s>%s <span class="chg" data-f="%s" hidden title="요청서를 보낸 뒤 바뀜">변동</span></%s><button type="button" class="tbd" data-f="%s" aria-pressed="false">미정</button></div>' % (tag, text, f, close, f)
 
 SETUP = dict(title='축의지기 설정', cap=COUPLE_CAP, body='''
-    <div class="top"><span class="role">신랑신부</span><span class="chip">요청서 보냄 · 10월 1일</span><span class="sp"></span>''' + flow(1) + '''</div>
+    <div class="top"><span class="role">신랑신부</span><span class="chip">요청서 보냄 · 10월 1일</span><span class="sp"></span><button type="button" class="btn2" data-shop="../shop/">축의대 용품</button>''' + flow(1) + '''</div>
 
     <section class="card">
       <div class="ch"><div><h3>예식 전 준비</h3><p>아직 정해지지 않은 것은 미정으로 두어도 됩니다. 축의대를 열기 전까지만 채우면 됩니다.</p></div><span class="pill wait" id="readyPill"></span></div>

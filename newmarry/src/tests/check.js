@@ -61,8 +61,27 @@ const bad = (msg) => { fails++; console.log('  ✗', msg); };
   await p.keyboard.type('김하객'); await p.keyboard.press('Tab'); await p.keyboard.type('5'); await p.keyboard.press('Equal'); await p.keyboard.press('Enter'); await p.waitForTimeout(200);
   const toast = await p.textContent('#toast'); console.log('  저장 → ' + toast);
   if (!/저장됨/.test(toast)) bad('진행: 저장 알림이 없음');
+  // Tab: 성함 → 금액 → 식권 → 저장, 저장에서 Tab은 머묾, Enter = 저장
+  await p.waitForTimeout(100); await p.focus('#name'); await p.keyboard.type('나탭키'); await p.keyboard.press('Tab'); await p.keyboard.type('3'); await p.keyboard.press('Tab'); await p.keyboard.press('Tab');
+  const f1 = await p.evaluate(() => document.activeElement.id); await p.keyboard.press('Tab'); const f2 = await p.evaluate(() => document.activeElement.id);
+  await p.keyboard.press('Enter'); await p.waitForTimeout(200); const t2 = await p.textContent('#toast');
+  console.log('  Tab → ' + f1 + ' → ' + f2 + ' / Enter → ' + t2);
+  if (f1 !== 'saveBtn' || f2 !== 'saveBtn' || !/14번 저장됨/.test(t2)) bad('진행: Tab으로 저장 버튼에 가서 Enter 저장이 안 됨');
+  if (!/[0-9]/.test(await p.textContent('#stCash'))) bad('진행: 위쪽 현금 합계가 안 보임');
   await p.click('#toSettle'); await p.fill('#d0', '17'); await p.fill('#left', '186'); await p.waitForTimeout(100);
   console.log('  정산 → ' + await p.textContent('#cVerdict') + ' / ' + await p.textContent('#tVerdict'));
+  await p.fill('#ckA', '10'); await p.waitForTimeout(100);
+  console.log('  수표 10만 원 → ' + await p.textContent('#cCounted'));
+  // 축의대 용품 팝업 · 현황 구분 스위치
+  await p.goto(url('setup/index.html')); await p.click('[data-shop]'); await p.waitForTimeout(150);
+  const prods = await p.$$eval('.prod', (x) => x.length); await p.click('.prod [data-q="4"]'); await p.waitForTimeout(100);
+  console.log('  용품 → ' + prods + '개 · ' + (await p.textContent('#shopSum')).trim());
+  if (prods !== 7) bad('용품: 7개가 아님');
+  await p.screenshot({ path: path.join(SHOTS, 'shop.png') });
+  await p.goto(url('status/index.html')); await p.click('#viewTabs [data-v="bride"]'); await p.waitForTimeout(100);
+  const gHidden = await p.$eval('#cardG', (x) => x.hidden); const feedSides = await p.$$eval('#feed .sd', (x) => [...new Set(x.map((e) => e.textContent))].join(','));
+  console.log('  현황 신부측 → 신랑 카드 숨김 ' + gHidden + ' · 목록 ' + feedSides);
+  if (!gHidden || feedSides !== '신부측') bad('현황: 신부측만 보기가 안 됨');
   if (errs.length) bad('흐름 중 스크립트 오류: ' + errs.join(' | '));
   await browser.close();
 

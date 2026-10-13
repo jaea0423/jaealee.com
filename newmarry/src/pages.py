@@ -25,16 +25,16 @@ def flow(active):
 # ---------------------------------------------------------------- 1. 요청
 # ---------------------------------------------------------------- 4. 현황
 STATUS = dict(title='축의지기 현황', cap=COUPLE_CAP, body='''
-    <div class="top"><span class="role" id="roleName">신랑신부 · 혼주</span><span class="pill live">실시간</span><span class="sp"></span>''' + flow(5) + '''</div>
+    <div class="top"><span class="role" id="roleName">신랑신부 · 혼주</span><span class="pill live">실시간</span><div class="tabs" id="viewTabs" aria-label="볼 쪽"><button type="button" aria-pressed="true" data-v="all">신랑신부</button><button type="button" aria-pressed="false" data-v="groom">신랑측</button><button type="button" aria-pressed="false" data-v="bride">신부측</button></div><span class="sp"></span>''' + flow(5) + '''</div>
 
     <section class="stats" aria-label="전체 현황" style="grid-template-columns:repeat(3,1fr)">
-      <div><small>전체 접수</small><b class="n" id="allCount">0</b></div>
-      <div><small>전체 현금 <span class="meta">· 눌러서 보기</span></small><button type="button" class="veil hide" id="allVeil" style="text-align:left"><b class="n" id="allCash">0</b></button></div>
+      <div><small><span class="vlab">전체</span> 접수</small><b class="n" id="allCount">0</b></div>
+      <div><small><span class="vlab">전체</span> 현금 <span class="meta">· 눌러서 보기</span></small><button type="button" class="veil hide" id="allVeil" style="text-align:left"><b class="n" id="allCash">0</b></button></div>
       <div><small>마지막 접수</small><b class="n" id="allLast">-</b></div>
     </section>
 
     <div class="grid2" style="grid-template-columns:minmax(0,1fr) minmax(0,1.05fr)">
-      <div style="display:grid;gap:16px">
+      <div style="display:grid;gap:16px;grid-auto-rows:1fr">
         <section class="sidecard card" id="cardG"></section>
         <section class="sidecard card" id="cardB"></section>
       </div>
@@ -50,7 +50,8 @@ STATUS = dict(title='축의지기 현황', cap=COUPLE_CAP, body='''
   var live = function (s) { return R[s].filter(function (r) { return !r.x; }); };
   var cash = function (s) { return live(s).reduce(function (a, r) { return a + r.amt; }, 0); };
   var tk = function (s) { return live(s).reduce(function (a, r) { return a + r.tk; }, 0) + LEDGER[s]; };
-  var shown = false;
+  var shown = false, view = 'all';
+  var sides = function () { return view === 'all' ? ['groom', 'bride'] : [view]; };
   function card(s) {
     var last = R[s][R[s].length - 1];
     return '<h4>' + (s === 'groom' ? '신랑측 · 이용범' : '신부측 · 김홍매') + (submitted[s] ? '<span class="pill ok">제출 완료</span>' : '<span class="pill live">접수 중</span>') + '</h4>' +
@@ -65,12 +66,15 @@ STATUS = dict(title='축의지기 현황', cap=COUPLE_CAP, body='''
   }
   function draw(newRow) {
     $('#cardG').innerHTML = card('groom'); $('#cardB').innerHTML = card('bride');
-    var all = R.groom.concat(R.bride).sort(function (a, b) { return a.t < b.t ? 1 : -1; });
+    $('#cardG').hidden = view === 'bride'; $('#cardB').hidden = view === 'groom';
+    document.querySelectorAll('.vlab').forEach(function (x) { x.textContent = { all: '전체', groom: '신랑측', bride: '신부측' }[view]; });
+    var all = sides().reduce(function (a, s) { return a.concat(R[s]); }, []).sort(function (a, b) { return a.t < b.t ? 1 : -1; });
     $('#feed').innerHTML = all.map(function (r) { return feedHTML(r, r === newRow); }).join('');
-    $('#allCount').innerHTML = (live('groom').length + live('bride').length) + '<span>건</span>';
-    $('#allCash').textContent = won(cash('groom') + cash('bride'));
+    $('#allCount').innerHTML = sides().reduce(function (a, s) { return a + live(s).length; }, 0) + '<span>건</span>';
+    $('#allCash').textContent = won(sides().reduce(function (a, s) { return a + cash(s); }, 0));
     $('#allLast').textContent = all[0] ? all[0].t : '-';
   }
+  $('#viewTabs').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; view = b.dataset.v; this.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', x === b); }); draw(); });
   $('#allVeil').addEventListener('click', function () { shown = !this.classList.toggle('hide'); draw(); });
   var NAMES = ['김도윤', '이하준', '박서윤', '최지안', '정민서', '강유나', '조현우', '윤시우'], ni = 0, clock = 12 * 60 + 47;
   setInterval(function () {

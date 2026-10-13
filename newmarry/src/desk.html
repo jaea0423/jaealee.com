@@ -96,7 +96,7 @@ kbd { display: inline-block; min-width: 22px; padding: 1px 6px; border: 1px soli
 #topBtns { display: inline-flex; gap: 6px; }
 
 /* ---------- 현황 숫자 ---------- */
-.stats { display: grid; grid-template-columns: repeat(2, 1fr); border-radius: var(--r-card); }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); border-radius: var(--r-card); }
 .stats > div { padding: 14px 24px; }
 .stats > div + div { border-left: 1px solid var(--line); }
 .stats small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; font-size: 13px; color: var(--sub); font-weight: 500; }
@@ -161,6 +161,7 @@ kbd { display: inline-block; min-width: 22px; padding: 1px 6px; border: 1px soli
 .save { margin-top: 16px; width: 100%; height: 56px; border: 0; border-radius: var(--r-btn); font-size: 17px; font-weight: 700; letter-spacing: 0; color: #fff; background: var(--gold); }
 .save:hover { background: var(--gold-d); }
 .save:active { transform: translateY(1px); }
+#saveBtn:focus-visible { outline: none; background: var(--gold-d); box-shadow: 0 0 0 4px rgba(214,95,125,.35); }
 .save.confirm { background: var(--gold-d); }
 
 /* ---------- 최근 봉투 ---------- */
@@ -254,6 +255,8 @@ tr.x td:not(:last-child) { text-decoration: line-through; color: var(--muted); }
 .bill { height: 44px; border-radius: var(--r-chip); display: grid; place-items: center; font-size: 14px; font-weight: 800; }
 .b50 { background: #F7ECD2; color: #7C5A18; } .b10 { background: #E3F0DE; color: #3F6B36; } .b5 { background: #F8E1DB; color: #93493A; } .b1 { background: #E1EAF5; color: #3E5C82; }
 .denom .inp { height: 48px; font-size: 20px; text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
+.denom.chk .amtbox .inp { padding-right: 52px; }
+.bchk { background: #E8E8ED; color: var(--ink); }
 .denom .sub { text-align: right; font-size: 14.5px; font-weight: 700; color: var(--sub); font-variant-numeric: tabular-nums; }
 .cmp { margin-top: 16px; border-radius: var(--r-btn); padding: 14px 16px; background: var(--glass-hi); }
 .cmp .r { display: flex; justify-content: space-between; gap: 8px; font-size: 14.5px; padding: 3px 0; }
@@ -384,6 +387,7 @@ tr.x td:not(:last-child) { text-decoration: line-through; color: var(--muted); }
     <div id="vEntry" style="display:contents">
       <section class="stats" aria-label="현황">
         <div><small>접수 <span class="meta" id="stX"></span></small><b class="n" id="stCount">0</b></div>
+        <div><small>현금 합계 <span class="meta">· 취소 제외</span></small><b class="n" id="stCash">0</b></div>
         <div id="stLeftBox"><small>식권 남음</small><b class="n" id="stLeft">0</b></div>
       </section>
 
@@ -432,10 +436,10 @@ tr.x td:not(:last-child) { text-decoration: line-through; color: var(--muted); }
       <div class="stitle"><div class="eb">SETTLEMENT</div><h2>정산</h2><p>현금을 권종별로 세고, 남은 식권을 세어 넣어 주세요. 맞는지 바로 비교합니다.</p></div>
       <div class="settle">
         <section class="card">
-          <div class="lab" style="margin-bottom:12px">현금 장수</div>
+          <div class="lab" style="margin-bottom:12px">현금·수표 <span class="hint">수표는 금액 합계만 넣습니다</span></div>
           <div id="denoms"></div>
           <div class="cmp">
-            <div class="r"><span>센 현금</span><b id="cCounted">0원</b></div>
+            <div class="r"><span>센 현금·수표</span><b id="cCounted">0원</b></div>
             <div class="r"><span>명부 합계</span><b id="cBook">0원</b></div>
             <div class="verdict wait" id="cVerdict">장수를 넣으면 비교합니다</div>
           </div>
@@ -589,6 +593,7 @@ tr.x td:not(:last-child) { text-decoration: line-through; color: var(--muted); }
     var xs = S.rows.length - live().length;
     $('#stCount').innerHTML = live().length + '<span>건</span>';
     $('#stX').textContent = xs ? '· 취소 ' + xs : '';
+    $('#stCash').innerHTML = kor(cashSum()).replace(/ 원$/, '') + '<span>원</span>';
     $('#stLeft').innerHTML = left() + '<span>장</span>';
     $('#stLeftBox').classList.toggle('low', left() <= 30);
     $('#ordNo').textContent = S.rows.length + 1;
@@ -659,14 +664,14 @@ tr.x td:not(:last-child) { text-decoration: line-through; color: var(--muted); }
   $('#rq').addEventListener('input', drawRecent);
   $('#rq').addEventListener('keydown', function (e) { if (e.key === 'Escape') { this.value = ''; drawRecent(); nameEl.focus(); } });
   $('#rqx').addEventListener('click', function () { $('#rq').value = ''; drawRecent(); $('#rq').focus(); });
-  /* Tab은 입력칸끼리만 오간다 (버튼·체크박스는 건너뜀) */
+  /* Tab: 성함 → 금액 → 식권 → (메모) → 저장 버튼. 저장에서 Tab은 그대로 머묾(Enter = 저장). 그 밖의 버튼·체크박스는 건너뜀 */
   document.querySelectorAll('#form button, #form input[type=checkbox]').forEach(function (b) { b.tabIndex = -1; });
   $('#form').addEventListener('keydown', function (e) {
     if (e.key !== 'Tab') return;
-    var list = [nameEl, amtEl, tkEl, $('#memo')].filter(function (el) { return !el.disabled && !el.hidden; });
+    var list = [nameEl, amtEl, tkEl, $('#memo'), $('#saveBtn')].filter(function (el) { return !el.disabled && !el.hidden; });
     var i = list.indexOf(document.activeElement);
     e.preventDefault();
-    var next = list[(i + (e.shiftKey ? -1 : 1) + list.length) % list.length] || list[0];
+    var next = i < 0 ? list[0] : list[Math.max(0, Math.min(list.length - 1, i + (e.shiftKey ? -1 : 1)))];
     next.focus();
   });
   $('#memoLink').addEventListener('click', function () { var m = $('#memo'); m.hidden = !m.hidden; this.textContent = m.hidden ? '메모 남기기' : '메모 닫기'; if (!m.hidden) m.focus(); });
@@ -757,19 +762,12 @@ tr.x td:not(:last-child) { text-decoration: line-through; color: var(--muted); }
   }
 
   /* 명부 전체 */
-  var veilT;
   $('#openBook').addEventListener('click', function () {
     openModal('book', '명부', (S.side === 'groom' ? '신랑측' : '신부측') + ' · 취소한 봉투도 줄을 그어 남겨 둡니다.',
-      '<div class="total"><span>현금 합계 <small style="color:var(--muted)">(취소 제외)</small></span><button type="button" class="veil hide" id="veil"><b class="n">' + won(cashSum()) + '</b><em>눌러서 보기</em></button></div>' +
+      '<div class="total"><span>현금 합계 <small style="color:var(--muted)">(취소 제외)</small></span><span class="veil"><b class="n">' + won(cashSum()) + '</b><em>' + kor(cashSum()) + '</em></span></div>' +
       '<input class="search" id="q" placeholder="이름으로 찾기"><div class="tbl"><table><thead><tr><th>순번</th><th>성함</th><th class="r">축의금</th><th class="r">식권</th><th>메모·기록</th><th></th></tr></thead><tbody id="book"></tbody></table></div>', true);
     drawBook();
     $('#q').oninput = drawBook;
-    $('#veil').onclick = function () {
-      var v = this, hid = v.classList.toggle('hide');
-      v.querySelector('em').textContent = hid ? '눌러서 보기' : kor(cashSum());
-      clearTimeout(veilT);
-      if (!hid) veilT = setTimeout(function () { v.classList.add('hide'); v.querySelector('em').textContent = '눌러서 보기'; }, 15000);
-    };
   });
   function drawBook() {
     var q = ($('#q') && $('#q').value.trim()) || '';
@@ -810,7 +808,9 @@ tr.x td:not(:last-child) { text-decoration: line-through; color: var(--muted); }
   var DEN = [[50000, '5만 원', 'b50'], [10000, '1만 원', 'b10'], [5000, '5천 원', 'b5'], [1000, '1천 원', 'b1']];
   $('#denoms').innerHTML = DEN.map(function (d, i) {
     return '<div class="denom"><span class="bill ' + d[2] + '">' + d[1] + '</span><input class="inp" id="d' + i + '" inputmode="numeric" placeholder="0장" aria-label="' + d[1] + ' 장수"><span class="sub" id="s' + i + '">0원</span></div>';
-  }).join('');
+  }).join('') +
+    '<div class="denom chk"><span class="bill bchk">수표</span><div class="amtbox"><input class="inp" id="ckA" inputmode="decimal" placeholder="합계" aria-label="수표 금액 합계 (만 원)"><span class="unit">만 원</span></div><span class="sub" id="sCk">0원</span></div>';
+  var ckAmt = function () { return parseAmt($('#ckA').value); };
   function show(v) {
     S.view = v;
     $('#vEntry').hidden = v !== 'entry'; $('#vSettle').hidden = v !== 'settle'; $('#vDone').hidden = v !== 'done';
@@ -819,10 +819,11 @@ tr.x td:not(:last-child) { text-decoration: line-through; color: var(--muted); }
   }
   $('#back').addEventListener('click', function () { show('entry'); nameEl.focus(); });
   $('#toSettle').addEventListener('click', function () { show('settle'); calc(); $('#d0').focus(); });
-  var counted = function () { return DEN.reduce(function (a, d, i) { return a + d[0] * (parseInt($('#d' + i).value, 10) || 0); }, 0); };
-  var anyCash = function () { return DEN.some(function (d, i) { return $('#d' + i).value !== ''; }); };
+  var counted = function () { return DEN.reduce(function (a, d, i) { return a + d[0] * (parseInt($('#d' + i).value, 10) || 0); }, 0) + ckAmt(); };
+  var anyCash = function () { return DEN.some(function (d, i) { return $('#d' + i).value !== ''; }) || $('#ckA').value !== ''; };
   function calc() {
     DEN.forEach(function (d, i) { $('#s' + i).textContent = won(d[0] * (parseInt($('#d' + i).value, 10) || 0)); });
+    $('#sCk').textContent = won(ckAmt());
     var c = counted(), b = cashSum(), cv = $('#cVerdict'), bad = false;
     $('#cCounted').textContent = won(c); $('#cBook').textContent = won(b);
     if (!anyCash()) { cv.className = 'verdict wait'; cv.textContent = '장수를 넣으면 비교합니다'; }
@@ -851,7 +852,7 @@ tr.x td:not(:last-child) { text-decoration: line-through; color: var(--muted); }
     var rows = [
       ['구분', S.side === 'groom' ? '신랑측 (이용범)' : '신부측 (김홍매)'],
       ['접수', live().length + '건 · 취소 ' + (S.rows.length - live().length) + '건'],
-      ['센 현금', won(counted())], ['명부 합계', won(cashSum())],
+      ['센 현금·수표', won(counted()) + (ckAmt() ? ' (수표 ' + won(ckAmt()) + ' 포함)' : '')], ['명부 합계', won(cashSum())],
       ['식권', '받음 ' + have() + ' · 나감 ' + (have() - (parseInt($('#left').value, 10) || 0)) + ' · 남음 ' + $('#left').value + '장'],
       ['제출 시각', hhmm()]
     ];
