@@ -63,6 +63,8 @@ function preserveIndexes(state) {
 }
 function changedFiles() {return [...new Set([...nul(git('diff','--name-only','-z','HEAD')),...nul(git('ls-files','--others','--exclude-standard','-z'))])];}
 function prepare() {
+  const expectedDate=require('./run-time.cjs').assertDailyReady();
+  assert.equal(seoulDate(),expectedDate,'생성 대상은 실제 한국 달력의 당일이어야 합니다.');
   branch();assert(clean(),'기존 변경이 있습니다. 자동 stash/reset하지 않습니다.');
   fs.mkdirSync(lock); // atomic mkdir: 이전 실행이 남아 있으면 여기서 중단합니다.
   try {
