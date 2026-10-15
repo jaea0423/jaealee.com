@@ -370,8 +370,8 @@ body.nav-closed .wrap{grid-template-columns:minmax(0,1fr)}body.nav-closed .side{
       <hr>
       <div class="cap">복습 체크</div>
       <div class="chk">
-        <label><input type="checkbox"><span>지도 vs 비지도 학습, 군집화의 정의</span></label>
-        <label><input type="checkbox"><span>K-평균 · 계층적 · DBSCAN의 차이 (K를 미리 정하나)</span></label>
+        <label><input type="checkbox"><span>지도(x, y) vs 비지도(x만) 학습, 군집화의 정의</span></label>
+        <label><input type="checkbox"><span>K-평균 · 계층적 · DBSCAN의 차이 (K를 미리 정하나, 거리 vs 밀도 기반)</span></label>
         <label><input type="checkbox"><span>Cₖ의 두 성질 (합집합 = 전체, 교집합 = 공집합)</span></label>
         <label><input type="checkbox"><span>WCV와 K-평균 최적화 문제의 뜻</span></label>
         <label><input type="checkbox"><span>유클리드 vs 맨해튼 거리 계산</span></label>
@@ -450,7 +450,7 @@ body.nav-closed .wrap{grid-template-columns:minmax(0,1fr)}body.nav-closed .side{
   <section id="s1">
     <h2 class="st"><span class="sq">01</span>지도 학습 복습과 비지도 학습<span class="pg">교안 1–2쪽</span></h2>
     <span class="orig">Example of Machine Learning Tasks / Unsupervised Learning</span>
-    <p>지난 두 차시의 회귀·SVM은 모두 <b>정답(레이블)이 있는</b> 데이터로 배우는 <b>지도 학습</b><span class="en">(supervised learning)</span>이었습니다. 교안 첫 장은 지금까지 배운 모델이 어떤 문제에 쓰이는지 정리합니다.</p>
+    <p>지난 두 차시의 회귀·SVM은 모두 <b>정답(라벨)이 있는</b> 데이터로 배우는 <b>지도 학습</b><span class="en">(supervised learning)</span>이었습니다. 교안 첫 장은 지금까지 배운 모델이 어떤 문제에 쓰이는지 정리합니다.</p>
     <div class="tablewrap">
       <table>
         <thead><tr><th>과제 (Task)</th><th>입력 (Input)</th><th>정답 (Target)</th><th>모델 (Model)</th></tr></thead>
@@ -465,15 +465,19 @@ body.nav-closed .wrap{grid-template-columns:minmax(0,1fr)}body.nav-closed .side{
     </div>
     <p>정답이 숫자면 회귀(<a href="../week06/06-1.html">6주차 1차시</a>), 정답이 클래스면 분류(로지스틱 회귀, <a href="../week06/06-2.html">6주차 2차시 SVM</a>)였습니다. 표의 모든 행에 <b>Target 열(정답)</b>이 있다는 점이 지도 학습의 공통점입니다.</p>
     <h3>오늘의 주제 — 비지도 학습</h3>
-    <p><b>비지도 학습</b><span class="en">(unsupervised learning)</span>은 <b>레이블이 없는</b> 데이터에서 패턴과 구조를 배우는 방법입니다(<a href="../week04/04-2.html">4주차 2차시</a>에서 분류 기준으로 처음 봤습니다).</p>
+    <p><b>비지도 학습</b><span class="en">(unsupervised learning)</span>은 <b>라벨이 없는</b> 데이터에서 패턴과 구조를 배우는 방법입니다(<a href="../week04/04-2.html">4주차 2차시</a>에서 분류 기준으로 처음 봤습니다).</p>
     <span class="orig">Learning patterns and structures from unlabeled data.</span>
     <ul>
-      <li>정답 레이블이 주어지지 않습니다.<span class="orig">No ground truth labels are provided.</span></li>
+      <li>정답 라벨이 주어지지 않습니다.<span class="orig">No ground truth labels are provided.</span></li>
       <li>모델이 숨겨진 구조나 관계를 스스로 찾아냅니다.<span class="orig">The model discovers hidden structures or relationships.</span></li>
     </ul>
+    <div class="call quote">
+      <div class="t">교수님 말씀 — x만 있고 y는 없다</div>
+      <p>지도 학습에서는 정답 <b>y</b>가 있었는데, 비지도 학습에서는 <b>x(입력)만 있고 y는 없습니다</b>. 용어는 "레이블" 대신 <b>"라벨"</b>로 씁니다.</p>
+    </div>
     <p>위 표로 말하면 <b>Target 열이 통째로 없는 상황</b>입니다. 입력(특징)만 보고 "어떤 데이터끼리 비슷한가"를 찾아야 하고, 그 대표적인 방법이 오늘 배우는 <b>군집화</b>입니다.</p>
-    <div class="call sum"><div class="t">정리</div><ul><li>지도 학습 = 정답(Target)이 있음: 회귀(숫자), 분류(클래스)</li><li>비지도 학습 = 정답 없이 데이터의 구조를 찾음 → 대표가 군집화</li></ul></div>
-    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 1–2쪽 기반 — 실시간 필기 없음)</div></details>
+    <div class="call sum"><div class="t">정리</div><ul><li>지도 학습 = x와 정답 y가 모두 있음: 회귀(숫자), 분류(클래스)</li><li>비지도 학습 = x만 있고 y(라벨)는 없음 → 데이터의 구조를 찾음, 대표가 군집화</li></ul></div>
+    <details class="raw"><summary>필기 원문</summary><div class="txt">2페이지<br>y가 지도였는데 비지도 학습에서는 x만 있고 y는 없음<br>레이블 말고 라벨이라고 하자 용어를</div></details>
   </section>
 
   <!-- 02 -->
@@ -484,12 +488,16 @@ body.nav-closed .wrap{grid-template-columns:minmax(0,1fr)}body.nav-closed .side{
     <span class="orig">Clustering refers to a broad set of techniques for finding subgroups, or clusters, in a data set.</span>
     <p>목표는 데이터를 서로 겹치지 않는 몇 개의 집단으로 <b>나누되</b>(분할, partition), <b>같은 집단 안의 관측치끼리는 서로 매우 비슷하게</b> 만드는 것입니다.</p>
     <span class="orig">We seek a partition of the data into distinct groups so that the observations within each group are quite similar to each other.</span>
+    <div class="call quote">
+      <div class="t">교수님 말씀</div>
+      <p>데이터의 <b>패턴</b><span class="en">(pattern)</span>과 <b>구조</b><span class="en">(structure)</span>를 보고 <b>부분 집단</b>으로 나누는 것이 군집화입니다.</p>
+    </div>
     <h3>"비슷하다"를 먼저 정해야 한다</h3>
     <p>군집화를 하려면 두 관측치가 <b>비슷하다/다르다</b>는 것이 무슨 뜻인지 먼저 정의해야 합니다. 그리고 이 정의는 보통 <b>분야(도메인) 지식</b>에 따라 정해야 합니다.</p>
     <span class="orig">We must define what it means for two or more observations to be similar or different. Indeed, this is often a domain-specific consideration that must be made based on knowledge of the data being studied.</span>
     <p><span class="ext">예: 고객 데이터에서 "구매 금액"이 비슷한 고객을 묶을지, "구매 시간대"가 비슷한 고객을 묶을지는 데이터만 봐서는 정할 수 없고, 무엇을 하려는지(마케팅 대상 고르기 등)에 따라 정해집니다. 실제 계산에서는 "비슷함"을 보통 <b>거리</b>로 나타냅니다(<a href="#s7">07</a>).</span></p>
-    <div class="call sum"><div class="t">정리</div><ul><li>군집화 = 레이블 없이 데이터를 비슷한 것끼리 몇 개의 집단으로 나누는 기법</li><li>같은 군집 안은 서로 비슷하게, "비슷함"의 정의(거리)를 먼저 정해야 함</li></ul></div>
-    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 3쪽 기반 — 실시간 필기 없음)</div></details>
+    <div class="call sum"><div class="t">정리</div><ul><li>군집화 = 라벨 없이 데이터를 비슷한 것끼리 몇 개의 집단으로 나누는 기법</li><li>같은 군집 안은 서로 비슷하게, "비슷함"의 정의(거리)를 먼저 정해야 함</li></ul></div>
+    <details class="raw"><summary>필기 원문</summary><div class="txt">3페이지<br>pattern, structure로 부분집단을 나누는 거임</div></details>
   </section>
 
   <!-- 03 -->
@@ -506,9 +514,22 @@ body.nav-closed .wrap{grid-template-columns:minmax(0,1fr)}body.nav-closed .side{
         </tbody>
       </table>
     </div>
+    <div class="call quote">
+      <div class="t">교수님 말씀 — 거리 기반 vs 밀도 기반</div>
+      <p>DBSCAN의 <b>D는 density(밀도)</b>입니다. 위의 두 방법(K-평균, 계층적 군집화)은 <b>거리 기반</b>이고, DBSCAN은 <b>밀도 기반</b>입니다.</p>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>기준</th><th>방법</th><th>무엇을 보고 묶나</th></tr></thead>
+        <tbody>
+          <tr><td><b>거리 기반</b></td><td>K-평균, 계층적 군집화</td><td>점과 점(또는 중심) 사이 <b>거리</b>가 가까운가</td></tr>
+          <tr><td><b>밀도 기반</b></td><td>DBSCAN (Density-Based …)</td><td>주변에 점이 <b>빽빽하게</b> 모여 있는가</td></tr>
+        </tbody>
+      </table>
+    </div>
     <p>n은 관측치(데이터 점)의 개수입니다. 군집 수가 1개면 전부 한 덩어리, n개면 점 하나하나가 각자 군집입니다.</p>
-    <div class="call sum"><div class="t">정리</div><ul><li>K-평균: K를 미리 정함 / 계층적: 덴드로그램으로 모든 K를 한 번에 / DBSCAN: 밀도로 찾음, K 불필요</li></ul></div>
-    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 4쪽 기반 — 실시간 필기 없음)</div></details>
+    <div class="call sum"><div class="t">정리</div><ul><li>K-평균: K를 미리 정함 / 계층적: 덴드로그램으로 모든 K를 한 번에 / DBSCAN: 밀도로 찾음, K 불필요</li><li>거리 기반 = K-평균·계층적, 밀도 기반 = DBSCAN (D = density)</li></ul></div>
+    <details class="raw"><summary>필기 원문</summary><div class="txt">4페이지<br>DBSCAN에서 D: density(밀도)<br><br>위 두 개는 거리 기반<br>DBSCAN은 밀도 기반</div></details>
   </section>
 
   <!-- 04 -->
@@ -522,11 +543,19 @@ body.nav-closed .wrap{grid-template-columns:minmax(0,1fr)}body.nav-closed .side{
     <ul>
       <li>각 점의 색은 K-평균 알고리즘이 그 점을 <b>어느 군집에 배정했는지</b>를 나타냅니다.<span class="orig">The color of each observation indicates the cluster to which it was assigned using the K-means clustering algorithm.</span></li>
       <li>군집에는 <b>순서가 없으므로</b> 색은 임의입니다. 1번 군집이 파랑이든 주황이든 의미가 같습니다.<span class="orig">Note that there is no ordering of the clusters, so the cluster coloring is arbitrary.</span></li>
-      <li>이 색(군집 레이블)은 학습에 쓰인 정답이 아니라, 군집화를 한 <b>결과물</b>입니다.<span class="orig">These cluster labels were not used in clustering; instead, they are the outputs of the clustering procedure.</span></li>
+      <li>이 색(군집 라벨)은 학습에 쓰인 정답이 아니라, 군집화를 한 <b>결과물</b>입니다.<span class="orig">These cluster labels were not used in clustering; instead, they are the outputs of the clustering procedure.</span></li>
     </ul>
+    <div class="call quote">
+      <div class="t">교수님 말씀 — K를 정해 줘야 하고, 군집 번호는 K마다 다르다</div>
+      <ul>
+        <li>K-평균으로 클러스터링을 하려면 <b>K(클러스터 개수)를 정해 줘야</b> 합니다.</li>
+        <li>세 그림은 <b>모두 같은 데이터</b>입니다. 바뀐 것은 정해 준 클러스터 개수뿐입니다.</li>
+        <li>K = 2일 때의 cluster 1, 2와 K = 3일 때의 cluster 1, 2, 3은 <b>같은 클러스터가 아닙니다</b>. 번호가 같다고 같은 집단으로 해석하면 안 되니 <b>해석할 때 주의</b>해야 합니다.</li>
+      </ul>
+    </div>
     <p><b>그림 읽기</b>: K = 2이면 위·아래 두 무리로 자연스럽게 나뉩니다. K = 3이면 아래쪽 큰 무리가 둘로 쪼개지고, K = 4이면 더 쪼개집니다. 같은 데이터라도 <b>K를 몇으로 정하느냐에 따라 결과가 달라집니다</b>. K를 정하는 방법은 <a href="#s11">11</a>–<a href="#s12">12</a>에서 다룹니다.</p>
-    <div class="call sum"><div class="t">정리</div><ul><li>K-평균 = 데이터를 미리 정한 K개 군집으로 나눔</li><li>색(군집 번호)은 결과물이고 순서가 없음 — K에 따라 결과가 달라짐</li></ul></div>
-    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 5쪽 기반 — 실시간 필기 없음)</div></details>
+    <div class="call sum"><div class="t">정리</div><ul><li>K-평균 = 데이터를 미리 정한 K개 군집으로 나눔 (K는 사람이 정함)</li><li>세 그림은 같은 데이터, K만 다름 — K가 바뀌면 cluster 1, 2, …도 다른 집단 (해석 주의)</li></ul></div>
+    <details class="raw"><summary>필기 원문</summary><div class="txt">5페이지<br>클러스터링 할거면 k를 정해줘야함<br>세 데이터 모두 같은 데이터임<br>클러스터링 개수를 정해줘야함<br>k=2일 때 cluster 1 2가 k=3일때 cluster1  2 3 과 동일하지 않음<br>(같은 클러스터가 아님. 해석할 때 주의해야함)</div></details>
   </section>
 
   <!-- 05 -->
@@ -547,11 +576,16 @@ body.nav-closed .wrap{grid-template-columns:minmax(0,1fr)}body.nav-closed .side{
     </div>
     <p>두 성질을 합치면 <b>모든 점이 정확히 하나의 군집에만</b> 속한다는 뜻입니다. 이산수학 용어로 C₁, …, C<sub>K</sub>는 {1, …, n}의 <b>분할</b><span class="en">(partition)</span>입니다.</p>
     <div class="call quote">
+      <div class="t">교수님 말씀 — 100개, K = 3 예</div>
+      <p>데이터 100개, K = 3이라고 해 봅시다. cluster 1에 30개, cluster 2에 40개, cluster 3에 30개가 있으면 <b>총합은 100개</b>입니다(성질 ①: 빠짐없이).</p>
+      <p>어떤 데이터든 C₁, C₂, C₃ 중 <b>하나에는 무조건</b> 들어가야 합니다. 하지만 "C₁일 수도 있고 C₂일 수도 있다"처럼 두 군집에 동시에 속하는 것은 <b>불가능</b>합니다(성질 ②: 겹치지 않게).</p>
+    </div>
+    <div class="call quote">
       <div class="t">예 (보충)</div>
       <p><span class="ext">관측치 5개, K = 2에서 C₁ = {1, 2, 5}, C₂ = {3, 4}이면 ① C₁ ∪ C₂ = {1, 2, 3, 4, 5} ✓, ② C₁ ∩ C₂ = ∅ ✓. 반면 C₁ = {1, 2}, C₂ = {2, 3, 4, 5}는 2번이 두 군집에 겹치므로 ②를 어깁니다.</span></p>
     </div>
     <div class="call sum"><div class="t">정리</div><ul><li>Cₖ = k번째 군집에 속한 관측치 번호의 집합</li><li>합집합 = 전체(빠짐없이), 교집합 = 공집합(겹치지 않게) → 모든 점이 정확히 한 군집</li></ul></div>
-    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 6쪽 기반 — 실시간 필기 없음)</div></details>
+    <details class="raw"><summary>필기 원문</summary><div class="txt">6페이지<br>100개가 있고 k=3이라고 해보면<br>cluster 1 : 30개<br>cluster 2 : 40개<br>cluster 3 : 30개 있다고 해보면<br>총합 100개<br>어떤 데이터든 C1 C2 C_3 중에 하나에는 무조건 들어가야됨<br>C1일수도 있고 C2일수도 있다. 이건 불가능</div></details>
   </section>
 
   <!-- 06 -->
@@ -562,6 +596,10 @@ body.nav-closed .wrap{grid-template-columns:minmax(0,1fr)}body.nav-closed .side{
     <span class="orig">The idea behind K-means clustering is that a good clustering is one for which the within-cluster variation is as small as possible.</span>
     <p>군집 C<sub>k</sub>의 군집 내 변동 WCV(C<sub>k</sub>)는 <b>같은 군집 안의 관측치들이 서로 얼마나 다른지</b>를 나타내는 값입니다. 그래서 K-평균은 다음 문제를 풉니다.</p>
     <div class="eq">min<sub>C₁, …, C<sub>K</sub></sub> { <span style="font-size:1.4em;vertical-align:middle">∑</span><sub>k=1</sub><sup>K</sup> WCV(C<sub>k</sub>) }</div>
+    <div class="call quote">
+      <div class="t">교수님 말씀 — K = 3이면</div>
+      <p>K가 3이면 <b>WCV(C₁) + WCV(C₂) + WCV(C₃)</b>를 줄여 가야 합니다.</p>
+    </div>
     <p><b>읽는 법</b>: 점들을 K개 군집으로 나누는 모든 방법 중에서, 군집마다의 변동을 다 더한 값이 가장 작은 나누기를 고릅니다.</p>
     <h3>WCV를 구체적으로 — 유클리드 거리</h3>
     <p>보통 <b>유클리드 거리</b>를 써서 다음처럼 정의합니다.</p>
@@ -579,7 +617,7 @@ body.nav-closed .wrap{grid-template-columns:minmax(0,1fr)}body.nav-closed .side{
       <p><span class="ext">군집 중심(평균) x̄<sub>k</sub>를 쓰면 WCV(C<sub>k</sub>) = 2 ∑<sub>i ∈ C<sub>k</sub></sub> ∑<sub>j</sub> (x<sub>ij</sub> − x̄<sub>kj</sub>)²가 성립합니다. 예: 1차원 군집 {1, 3}이면 순서쌍 (1, 3), (3, 1)의 거리 제곱이 각각 4라 합이 8, |C| = 2로 나누면 <b>4</b>. 중심 2까지 거리 제곱합은 1 + 1 = 2이고, 2배하면 <b>4</b>로 같습니다. 그래서 "점들끼리 서로 가까운 군집"과 "점들이 중심에 가까운 군집"은 같은 말이고, 이 사실 때문에 다음 섹션의 알고리즘이 <b>중심(평균)</b>을 쓰게 됩니다. 또 교안은 "Euclidean distance"라고 했지만 실제로 더하는 것은 거리의 <b>제곱</b>입니다.</span></p>
     </div>
     <div class="call sum"><div class="t">정리</div><ul><li>K-평균 = 군집 내 변동(WCV)의 합을 최소화하는 분할을 찾는 문제</li><li>WCV = 군집 안 모든 점 쌍의 거리 제곱 합 ÷ 군집 크기 (= 중심까지 거리 제곱합 × 2)</li></ul></div>
-    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 7–8쪽 기반 — 실시간 필기 없음)</div></details>
+    <details class="raw"><summary>필기 원문</summary><div class="txt">7페이지<br>k가 3이면<br>WCV(C_1) + WCV(C_2) + WCV(C_3) 을 줄여가야함<br><br>8페이지<br>(빈 메모)</div></details>
   </section>
 
   <!-- 07 -->
@@ -602,7 +640,7 @@ body.nav-closed .wrap{grid-template-columns:minmax(0,1fr)}body.nav-closed .side{
     <p><span class="ext">교안에는 식이 없어 보충했습니다. p차원이면 각 차원의 차이를 똑같은 방식으로 p개 모두 더합니다. 예: A = (1, 1), B = (4, 5)이면 유클리드 √(3² + 4²) = <b>5</b>, 맨해튼 3 + 4 = <b>7</b>. 맨해튼 거리는 항상 유클리드 거리 이상입니다.</span></p>
     <p>K-평균은 기본적으로 <b>유클리드 거리</b>를 씁니다(<a href="#s8">08</a>의 2.2단계). 어떤 거리를 쓰느냐가 곧 <a href="#s2">02</a>에서 말한 "비슷함의 정의"입니다.</p>
     <div class="call sum"><div class="t">정리</div><ul><li>유클리드 = 직선 거리 √(∑ 차이²) / 맨해튼 = 가로·세로 이동 거리 ∑ |차이|</li><li>K-평균은 유클리드 거리 사용</li></ul></div>
-    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 9쪽 기반 — 실시간 필기 없음)</div></details>
+    <details class="raw"><summary>필기 원문</summary><div class="txt">9페이지<br>(빈 메모)</div></details>
   </section>
 
   <!-- 08 -->
@@ -619,6 +657,15 @@ body.nav-closed .wrap{grid-template-columns:minmax(0,1fr)}body.nav-closed .side{
         </ul>
       </li>
     </ol>
+    <div class="call quote">
+      <div class="t">교수님 말씀 — K-평균이라는 이름과 초기 중심</div>
+      <ul>
+        <li>각 점을 <b>centroid(중심)와 가까운 것끼리</b> 나눌 수 있습니다.</li>
+        <li>이때 centroid를 그 군집 점들의 <b>평균</b>으로 옮기는데, 그래서 이름이 <b>K-means(K-평균)</b>입니다.</li>
+        <li>centroid를 <b>처음에 어떻게 잡느냐에 따라 결과가 달라집니다</b>.</li>
+        <li>이것을 개선한 것이 <b>K-means++</b>입니다. <b>1번 단계(초기화)만 스마트하게</b> 바꾸고 나머지는 그대로입니다(<a href="#s9">09</a>).</li>
+      </ul>
+    </div>
     <figure><div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:end"><div><svg viewBox="0 0 200 208" role="img" aria-label="① 무작위 배정 → 중심 계산"><defs><marker id="ax" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-ah"/></marker></defs><path d="M22 164.0 H194" class="sv-axis" marker-end="url(#ax)"/><path d="M26.0 168 V8" class="sv-axis" marker-end="url(#ax)"/><text x="192" y="159.0" class="sv-x" text-anchor="end"></text><text x="31.0" y="14" class="sv-x"></text><clipPath id="clip11_25"><rect x="26" y="14" width="162" height="150"/></clipPath><ellipse cx="148.8" cy="102.0" rx="49.2" ry="47.0" style="fill:#E0453A;fill-opacity:.22;stroke:#E0453A;stroke-width:1.2"/><ellipse cx="110.6" cy="120.3" rx="77.0" ry="73.6" style="fill:#4CAF50;fill-opacity:.22;stroke:#4CAF50;stroke-width:1.2"/><ellipse cx="143.7" cy="84.1" rx="43.8" ry="41.9" style="fill:#4F7FD9;fill-opacity:.22;stroke:#4F7FD9;stroke-width:1.2"/><circle cx="155.6" cy="62.9" r="4.2" style="fill:#E0453A;stroke:#1F2937;stroke-width:.9"/><circle cx="142.0" cy="141.2" r="4.2" style="fill:#E0453A;stroke:#1F2937;stroke-width:.9"/><path d="M143.8 97.0 l10 10 M153.8 97.0 l-10 10" style="stroke:#E0453A;stroke-width:2.4;stroke-linecap:round"/><path d="M148.8 102.0 L147.1 123.2" style="stroke:#E0453A;stroke-width:1.6;stroke-dasharray:4 3" marker-end="url(#ax)"/><circle cx="60.1" cy="144.4" r="4.2" style="fill:#4CAF50;stroke:#1F2937;stroke-width:.9"/><circle cx="70.3" cy="137.9" r="4.2" style="fill:#4CAF50;stroke:#1F2937;stroke-width:.9"/><circle cx="138.5" cy="59.7" r="4.2" style="fill:#4CAF50;stroke:#1F2937;stroke-width:.9"/><circle cx="128.3" cy="131.4" r="4.2" style="fill:#4CAF50;stroke:#1F2937;stroke-width:.9"/><circle cx="155.6" cy="128.1" r="4.2" style="fill:#4CAF50;stroke:#1F2937;stroke-width:.9"/><path d="M105.6 115.3 l10 10 M115.6 115.3 l-10 10" style="stroke:#4CAF50;stroke-width:2.4;stroke-linecap:round"/><path d="M110.6 120.3 L100.2 138.7" style="stroke:#4CAF50;stroke-width:1.6;stroke-dasharray:4 3" marker-end="url(#ax)"/><circle cx="148.8" cy="49.9" r="4.2" style="fill:#4F7FD9;stroke:#1F2937;stroke-width:.9"/><circle cx="138.5" cy="118.3" r="4.2" style="fill:#4F7FD9;stroke:#1F2937;stroke-width:.9"/><path d="M138.7 79.1 l10 10 M148.7 79.1 l-10 10" style="stroke:#4F7FD9;stroke-width:2.4;stroke-linecap:round"/><path d="M143.7 84.1 L147.6 57.5" style="stroke:#4F7FD9;stroke-width:1.6;stroke-dasharray:4 3" marker-end="url(#ax)"/><text x="100.0" y="202" text-anchor="middle" class="sv-s">① 무작위 배정 → 중심 계산</text></svg></div><div><svg viewBox="0 0 200 208" role="img" aria-label="② 가까운 중심으로 재할당"><defs><marker id="ax" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-ah"/></marker></defs><path d="M22 164.0 H194" class="sv-axis" marker-end="url(#ax)"/><path d="M26.0 168 V8" class="sv-axis" marker-end="url(#ax)"/><text x="192" y="159.0" class="sv-x" text-anchor="end"></text><text x="31.0" y="14" class="sv-x"></text><clipPath id="clip11_26"><rect x="26" y="14" width="162" height="150"/></clipPath><ellipse cx="147.1" cy="123.2" rx="17.6" ry="16.8" style="fill:#E0453A;fill-opacity:.22;stroke:#E0453A;stroke-width:1.2"/><ellipse cx="100.2" cy="138.7" rx="49.5" ry="47.4" style="fill:#4CAF50;fill-opacity:.22;stroke:#4CAF50;stroke-width:1.2"/><ellipse cx="147.6" cy="57.5" rx="17.5" ry="16.7" style="fill:#4F7FD9;fill-opacity:.22;stroke:#4F7FD9;stroke-width:1.2"/><circle cx="155.6" cy="128.1" r="4.2" style="fill:#E0453A;stroke:#1F2937;stroke-width:.9"/><circle cx="138.5" cy="118.3" r="4.2" style="fill:#E0453A;stroke:#1F2937;stroke-width:.9"/><path d="M142.1 118.2 l10 10 M152.1 118.2 l-10 10" style="stroke:#E0453A;stroke-width:2.4;stroke-linecap:round"/><path d="M147.1 123.2 L141.1 129.8" style="stroke:#E0453A;stroke-width:1.6;stroke-dasharray:4 3" marker-end="url(#ax)"/><circle cx="60.1" cy="144.4" r="4.2" style="fill:#4CAF50;stroke:#1F2937;stroke-width:.9"/><circle cx="70.3" cy="137.9" r="4.2" style="fill:#4CAF50;stroke:#1F2937;stroke-width:.9"/><circle cx="128.3" cy="131.4" r="4.2" style="fill:#4CAF50;stroke:#1F2937;stroke-width:.9"/><circle cx="142.0" cy="141.2" r="4.2" style="fill:#4CAF50;stroke:#1F2937;stroke-width:.9"/><path d="M95.2 133.7 l10 10 M105.2 133.7 l-10 10" style="stroke:#4CAF50;stroke-width:2.4;stroke-linecap:round"/><path d="M100.2 138.7 L65.2 141.2" style="stroke:#4CAF50;stroke-width:1.6;stroke-dasharray:4 3" marker-end="url(#ax)"/><circle cx="138.5" cy="59.7" r="4.2" style="fill:#4F7FD9;stroke:#1F2937;stroke-width:.9"/><circle cx="148.8" cy="49.9" r="4.2" style="fill:#4F7FD9;stroke:#1F2937;stroke-width:.9"/><circle cx="155.6" cy="62.9" r="4.2" style="fill:#4F7FD9;stroke:#1F2937;stroke-width:.9"/><path d="M142.6 52.5 l10 10 M152.6 52.5 l-10 10" style="stroke:#4F7FD9;stroke-width:2.4;stroke-linecap:round"/><text x="100.0" y="202" text-anchor="middle" class="sv-s">② 가까운 중심으로 재할당</text></svg></div><div><svg viewBox="0 0 200 208" role="img" aria-label="③ 수렴 — 할당 변화 없음"><defs><marker id="ax" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-ah"/></marker></defs><path d="M22 164.0 H194" class="sv-axis" marker-end="url(#ax)"/><path d="M26.0 168 V8" class="sv-axis" marker-end="url(#ax)"/><text x="192" y="159.0" class="sv-x" text-anchor="end"></text><text x="31.0" y="14" class="sv-x"></text><clipPath id="clip11_27"><rect x="26" y="14" width="162" height="150"/></clipPath><ellipse cx="141.1" cy="129.8" rx="22.3" ry="21.3" style="fill:#E0453A;fill-opacity:.22;stroke:#E0453A;stroke-width:1.2"/><ellipse cx="65.2" cy="141.2" rx="13.8" ry="13.2" style="fill:#4CAF50;fill-opacity:.22;stroke:#4CAF50;stroke-width:1.2"/><ellipse cx="147.6" cy="57.5" rx="17.5" ry="16.7" style="fill:#4F7FD9;fill-opacity:.22;stroke:#4F7FD9;stroke-width:1.2"/><circle cx="128.3" cy="131.4" r="4.2" style="fill:#E0453A;stroke:#1F2937;stroke-width:.9"/><circle cx="142.0" cy="141.2" r="4.2" style="fill:#E0453A;stroke:#1F2937;stroke-width:.9"/><circle cx="155.6" cy="128.1" r="4.2" style="fill:#E0453A;stroke:#1F2937;stroke-width:.9"/><circle cx="138.5" cy="118.3" r="4.2" style="fill:#E0453A;stroke:#1F2937;stroke-width:.9"/><path d="M136.1 124.8 l10 10 M146.1 124.8 l-10 10" style="stroke:#E0453A;stroke-width:2.4;stroke-linecap:round"/><circle cx="60.1" cy="144.4" r="4.2" style="fill:#4CAF50;stroke:#1F2937;stroke-width:.9"/><circle cx="70.3" cy="137.9" r="4.2" style="fill:#4CAF50;stroke:#1F2937;stroke-width:.9"/><path d="M60.2 136.2 l10 10 M70.2 136.2 l-10 10" style="stroke:#4CAF50;stroke-width:2.4;stroke-linecap:round"/><circle cx="138.5" cy="59.7" r="4.2" style="fill:#4F7FD9;stroke:#1F2937;stroke-width:.9"/><circle cx="148.8" cy="49.9" r="4.2" style="fill:#4F7FD9;stroke:#1F2937;stroke-width:.9"/><circle cx="155.6" cy="62.9" r="4.2" style="fill:#4F7FD9;stroke:#1F2937;stroke-width:.9"/><path d="M142.6 52.5 l10 10 M152.6 52.5 l-10 10" style="stroke:#4F7FD9;stroke-width:2.4;stroke-linecap:round"/><text x="100.0" y="202" text-anchor="middle" class="sv-s">③ 수렴 — 할당 변화 없음</text></svg></div></div>
       <figcaption>K-평균 반복 과정 (교안 10쪽 재구성, 점 9개·K = 3을 실제로 계산) — ① 각 점에 1~3번을 무작위로 배정하고 군집별 평균(✕ = 중심)을 구한다. ② 각 점을 가장 가까운 중심으로 다시 배정하면 중심이 점선 화살표 방향(새 평균)으로 옮겨 간다. ③ 배정이 더 이상 바뀌지 않으면 멈춘다. 반복할수록 원이 작고 촘촘해진다</figcaption>
     </figure>
@@ -630,8 +677,8 @@ body.nav-closed .wrap{grid-template-columns:minmax(0,1fr)}body.nav-closed .side{
       <div class="t">보충 — 왜 반복하면 멈추나</div>
       <p><span class="ext">2.1(중심을 평균으로 옮김)은 군집 배정이 고정됐을 때 "중심까지 거리 제곱합"을 가장 작게 만드는 위치이고, 2.2(가장 가까운 중심으로 재배정)도 그 합을 줄이거나 그대로 둡니다. 즉 매 단계 목적함수(06의 값)가 <b>절대 커지지 않으므로</b> 언젠가 배정이 바뀌지 않는 상태에서 멈춥니다. 다만 멈춘 곳이 전체에서 가장 좋은 답(전역 최적)이라는 보장은 없고 <b>국소 최적</b>일 수 있습니다. 그래서 초기 배정을 바꿔 여러 번 돌리고 가장 좋은 결과를 쓰거나, 다음 섹션의 K-평균++로 시작점을 잘 고릅니다.</span></p>
     </div>
-    <div class="call sum"><div class="t">정리</div><ul><li>① 무작위로 번호 배정 → ② (중심 = 군집 평균 계산 → 가장 가까운 중심으로 재배정) 반복</li><li>배정이 안 바뀌면 종료, 결과는 국소 최적일 수 있음</li></ul></div>
-    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 10–11쪽 기반 — 실시간 필기 없음)</div></details>
+    <div class="call sum"><div class="t">정리</div><ul><li>① 무작위로 번호 배정 → ② (중심 = 군집 평균 계산 → 가장 가까운 중심으로 재배정) 반복</li><li>중심을 평균(mean)으로 옮겨서 K-means</li><li>배정이 안 바뀌면 종료, 결과는 초기 중심에 따라 달라짐(국소 최적)</li></ul></div>
+    <details class="raw"><summary>필기 원문</summary><div class="txt">10페이지<br>centroid와 가까운 애들로 나눌 수 있음<br>여기서 평균으로 centroid를 옮기는데 그래서 k-mean(k-평균)이 되는거임)<br>centroid를 처음에 어떻게 잡냐에 따라서 달라짐<br>이걸개선하는게 K-means++(1번 단계를 스마트하게 바꾸고 나머지는 그대로)</div></details>
   </section>
 
   <!-- 09 -->
@@ -640,7 +687,7 @@ body.nav-closed .wrap{grid-template-columns:minmax(0,1fr)}body.nav-closed .side{
     <span class="orig">K-Means++</span>
     <p><b>무작위 초기화의 문제</b>: 시작점이 나쁘면 <b>나쁜 국소 최솟값</b>으로 수렴합니다. 예를 들어 처음 고른 중심 두 개가 같은 무리 안에 있으면, 그 무리는 쪼개지고 다른 두 무리는 합쳐진 채로 멈출 수 있습니다.</p>
     <span class="orig">Problem with random initialization: Poor starting points ⇒ convergence to poor local minima.</span>
-    <p><b>K-평균++의 아이디어</b>: 초기 중심을 더 똑똑하게 고릅니다.</p>
+    <p><b>K-평균++의 아이디어</b>: 초기 중심을 더 똑똑하게 고릅니다. 교수님 말씀대로 <b>08의 1번 단계(초기화)만 바꾸고 나머지(2.1–2.2 반복)는 그대로</b>입니다.</p>
     <ol class="steps">
       <li>첫 번째 중심은 데이터 점 중에서 <b>균등하게 무작위로</b> 하나 고릅니다.<span class="orig">Choose the first centroid uniformly at random from the data points.</span></li>
       <li>다음 중심부터는, 각 데이터 점을 <b>이미 고른 가장 가까운 중심까지 거리의 제곱에 비례하는 확률</b>로 뽑습니다. → 이미 고른 중심에서 <b>멀리 있는 점일수록 뽑힐 확률이 크고</b>, 가까운 점은 작습니다.<span class="orig">select a data point with probability proportional to its squared distance from the nearest chosen centroid.</span></li>
@@ -669,6 +716,10 @@ body.nav-closed .wrap{grid-template-columns:minmax(0,1fr)}body.nav-closed .side{
   <section id="s10">
     <h2 class="st"><span class="sq">10</span>K-평균의 한계<span class="pg">교안 13–16쪽</span></h2>
     <span class="orig">Limitations of K-Means</span>
+    <div class="call quote">
+      <div class="t">교수님 말씀</div>
+      <p>K-평균은 <b>거리 기준으로는 잘 나누지만</b>, 문제가 몇 가지 있습니다.</p>
+    </div>
     <p>K-평균은 각 점을 <b>가장 가까운 중심</b>에 붙이는 방식이라, 군집을 "중심 주변의 비슷한 크기의 둥근 덩어리"로 가정하는 셈입니다. 이 가정이 맞지 않으면 잘 안 됩니다. 교안의 네 가지 예는 모두 아래에서 scikit-learn으로 직접 계산해 같은 실패가 나오는지 확인했습니다.</p>
     <h3>① 크기가 다른 군집을 잘 못 찾는다</h3>
     <span class="orig">Struggles to identify clusters of different sizes.</span>
@@ -692,7 +743,7 @@ body.nav-closed .wrap{grid-template-columns:minmax(0,1fr)}body.nav-closed .side{
     </figure>
     <p><b>왜 이런 일이 생기나</b>: K-평균의 목적함수는 "중심까지 거리 제곱합"이라서, 큰 무리 하나를 쪼개면 거리 합이 크게 줄고 작은 무리 두 개를 합쳐도 거리 합이 조금밖에 늘지 않으면 쪼개고 합치는 쪽을 택합니다. 또 경계가 항상 두 중심의 가운데 직선(수직이등분선)이라 초승달 같은 휘어진 모양은 나눌 수 없습니다. ③·②는 <a href="#s16">16</a>의 DBSCAN이 잘 푸는 문제이고, ④는 바로 다음 두 섹션이 다룹니다.</p>
     <div class="call sum"><div class="t">정리</div><ul><li>K-평균은 비슷한 크기·밀도의 둥근 군집을 가정</li><li>한계: 크기가 다른 군집, 밀도가 다른 군집, 휘어진 모양, K를 정하기 어려움</li></ul></div>
-    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 13–16쪽 기반 — 실시간 필기 없음)</div></details>
+    <details class="raw"><summary>필기 원문</summary><div class="txt">13페이지<br>k-means는 거리 기준으로 잘 나누지만 문제가 몇개 있음</div></details>
   </section>
 
   <!-- 11 -->
@@ -742,6 +793,10 @@ body.nav-closed .wrap{grid-template-columns:minmax(0,1fr)}body.nav-closed .side{
         </tbody>
       </table>
     </div>
+    <div class="call quote">
+      <div class="t">교수님 말씀 — 좋은 군집이 되려면</div>
+      <p><b>b는 커지고 a는 작아져야</b> 합니다. 같은 군집 안은 가깝고(a ↓), 다른 군집과는 멀수록(b ↑) s가 +1에 가까워지기 때문입니다.</p>
+    </div>
     <p><b>식 읽는 법</b>: b − a는 "다른 군집이 자기 군집보다 얼마나 더 먼가"이고, max(a, b)로 나눠 −1~+1 사이로 맞춥니다.</p>
     <div class="call quote">
       <div class="t">계산 예 (보충, Python으로 확인)</div>
@@ -759,8 +814,8 @@ body.nav-closed .wrap{grid-template-columns:minmax(0,1fr)}body.nav-closed .side{
       <figcaption>실루엣 다이어그램 (교안 19쪽 아래 그림 재구성, 실제 계산) — 칼날 하나 = 군집 하나. 칼날의 높이 = 군집에 속한 점 수, 가로 길이 = 각 점의 실루엣 계수(위에서 아래로 정렬), 빨간 점선 = 평균(실루엣 점수). k = 3·6은 평균선에 못 미치는 군집이 있고, k = 4·5는 모든 군집이 평균선을 넘는다</figcaption>
     </figure>
     <p><b>실루엣 다이어그램 읽기</b>: 칼날 하나가 군집 하나입니다. 칼날의 <b>두께(높이)는 군집 크기</b>, <b>가로 길이는 각 점의 실루엣 계수</b>, 빨간 점선은 평균(실루엣 점수)입니다. 좋은 k에서는 모든 칼날이 점선을 넘고 두께도 비교적 고릅니다. k = 3과 k = 6에는 점선에 못 미치는 칼날(나쁜 군집)이 있고, k = 4와 k = 5는 모두 넘습니다. 점수만 보면 k = 4가 가장 높지만, 다이어그램까지 보면 군집 크기가 고른 <b>k = 5</b>도 좋은 선택입니다(실제 덩어리는 5개).</p>
-    <div class="call sum"><div class="t">정리</div><ul><li>실루엣 계수 s = (b − a) / max(a, b), −1 ~ +1</li><li>a = 같은 군집까지 평균 거리, b = 가장 가까운 다른 군집까지 평균 거리</li><li>실루엣 점수(평균)가 높은 k를 고르고, 다이어그램으로 군집별 품질도 확인</li></ul></div>
-    <details class="raw"><summary>필기 원문</summary><div class="txt">(교안 18–19쪽 기반 — 실시간 필기 없음)</div></details>
+    <div class="call sum"><div class="t">정리</div><ul><li>실루엣 계수 s = (b − a) / max(a, b), −1 ~ +1 — b ↑, a ↓일수록 좋음</li><li>a = 같은 군집까지 평균 거리, b = 가장 가까운 다른 군집까지 평균 거리</li><li>실루엣 점수(평균)가 높은 k를 고르고, 다이어그램으로 군집별 품질도 확인</li></ul></div>
+    <details class="raw"><summary>필기 원문</summary><div class="txt">18페이지<br>b는 커지고 a믄 작아져야함</div></details>
   </section>
 
   <!-- 13 -->
@@ -1087,6 +1142,61 @@ body.nav-closed .wrap{grid-template-columns:minmax(0,1fr)}body.nav-closed .side{
       <div>
         <div class="body">7-1수업 (교안 마크다운·PDF 첨부)</div>
         <div class="where"><a href="#s1">01</a>–<a href="#s23">23</a> 초안 · 상단 PDF 링크</div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">02<span>16:01</span></div>
+      <div>
+        <div class="body">2페이지
+
+y가 지도였는데 비지도 학습에서는 x만 있고 y는 없음
+레이블 말고 라벨이라고 하자 용어를
+
+3페이지
+pattern, structure로 부분집단을 나누는 거임
+
+4페이지
+DBSCAN에서 D: density(밀도)
+
+위 두 개는 거리 기반
+DBSCAN은 밀도 기반
+
+5페이지
+클러스터링 할거면 k를 정해줘야함
+세 데이터 모두 같은 데이터임
+클러스터링 개수를 정해줘야함
+k=2일 때 cluster 1 2가 k=3일때 cluster1  2 3 과 동일하지 않음
+(같은 클러스터가 아님. 해석할 때 주의해야함)
+
+6페이지
+100개가 있고 k=3이라고 해보면
+cluster 1 : 30개
+cluster 2 : 40개
+cluster 3 : 30개 있다고 해보면
+총합 100개
+어떤 데이터든 C1 C2 C_3 중에 하나에는 무조건 들어가야됨
+C1일수도 있고 C2일수도 있다. 이건 불가능
+
+7페이지
+k가 3이면
+WCV(C_1) + WCV(C_2) + WCV(C_3) 을 줄여가야함
+
+8페이지
+
+9페이지
+
+10페이지
+centroid와 가까운 애들로 나눌 수 있음
+여기서 평균으로 centroid를 옮기는데 그래서 k-mean(k-평균)이 되는거임)
+centroid를 처음에 어떻게 잡냐에 따라서 달라짐
+이걸개선하는게 K-means++(1번 단계를 스마트하게 바꾸고 나머지는 그대로)
+
+13페이지
+k-means는 거리 기준으로 잘 나누지만 문제가 몇개 있음
+
+18페이지
+b는 커지고 a믄 작아져야함</div>
+        <div class="where"><a href="#s1">01</a> · <a href="#s2">02</a> · <a href="#s3">03</a> · <a href="#s4">04</a> · <a href="#s5">05</a> · <a href="#s6">06</a> · <a href="#s8">08</a> · <a href="#s9">09</a> · <a href="#s10">10</a> · <a href="#s12">12</a> · 전체 "레이블" → "라벨"</div>
       </div>
     </div>
   </div>
