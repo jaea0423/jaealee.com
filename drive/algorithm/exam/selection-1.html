@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>알고리즘 단원 평가 — 선택 문제 (기본)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../_exam/exam.css">
+<style>:root{ --subject:#4F46E5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../_exam/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다.<br>이 파일은 <b>drive/_exam/exam.css · exam.js</b> 와 함께 있어야 열립니다.
+(<code>drive/algorithm/exam/selection-1.html</code> 위치에서 열어 주세요.)</div>
+<script>
+/* ════════ 시험지 정보 ════════ */
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'알고리즘',
+  title:'단원 평가 · 선택 문제 (기본)',
+  written:'2026년 10월 15일 작성',
+  slug:'algorithm-selection-1',          // 저장 파일 이름 (영문)
+  lectureBase:'../lecture',              // 출처 링크 기준 (이 파일 기준 상대경로)
+  level:'기본',
+  mcMax:0.5,
+  scope:'<b>단원 평가 · 선택 문제 · 기본</b> (2주차 1차시 ~ 2주차 2차시)<br>최댓값 찾기·토너먼트, 최대·최소 동시에, 최소·두 번째로 작은 값, Quick Select(분할·재귀 조건·최선/최악), 좋은 피벗과 재귀 횟수, MoM(5개의 median·점화식·c 구하기), 수학적 귀납법'
+};
+
+/* ════════ 문항 ════════
+   type  : mc 객관식 · ox O/X · short 단답 · table 표 빈칸 · line 코드 줄 고르기 · essay 서술
+   lv    : 하 / 중 / 상        src : [['주차-차시','섹션 id','제목'], …]
+   채점  : 부분 점수 없음(정답 또는 오답). mc · ox · line 자동 / short · table · essay 직접, 빈 답은 자동 오답 */
+const EXAM = [
+ { type:'mc', lv:'하', unit:'Quick Select', pts:8,
+   q:`<p>피벗을 항상 L[0] 으로 잡는 quick_select 가 <b>최악의 경우</b>가 되는 상황과 그때의 시간복잡도를 바르게 짝지은 것은?</p>`,
+   choices:['매번 A 와 B 의 크기가 같을 때 — O(n log n)','매번 A 와 B 의 크기가 같을 때 — O(n<sup>2</sup>)','매번 A 또는 B 가 비어 있을 때 — O(n<sup>2</sup>)','매번 A 또는 B 가 비어 있을 때 — O(n log n)'], answer:[3],
+   exp:`A 나 B 가 비면 분할해도 피벗 하나만 줄어 T(n) = (n − 1) + T(n − 1) = (n − 1) + (n − 2) + … + 1 = ${F('(n−1)n','2')} → O(n<sup>2</sup>). 크기가 매번 절반으로 줄면 최선이고, n + ${F('n','2')} + ${F('n','4')} + … 이 2n 을 넘지 않아 O(n) 이다. O(n log n) 은 어느 경우에도 해당하지 않는다.`,
+   src:[['02-1','s5','Quick Select 최선·최악']] },
+
+ { type:'short', lv:'하', unit:'최대·최소', pts:8,
+   q:`<p>원소 10개에서 최댓값과 최솟값을 <b>동시에</b> 찾으려 한다. 수업에서 토너먼트를 이용해 비교 횟수를 줄인 방법으로 찾을 때 필요한 비교 횟수를 쓰시오.</p>`,
+   show:'13', alt:['13번','13회'],
+   exp:`최댓값 토너먼트에 n − 1 = 9 번. 1라운드에서 진 5개는 각자 짝보다 작으므로 최솟값은 반드시 이 안에 있고, 5개에서 최솟값을 찾는 데 4 번. 9 + 4 = 13 (= ${F('3','2')}n − 2). 최댓값을 뺀 나머지 9개에서 다시 찾는 단순한 방법은 2n − 3 = 17 번이다.`,
+   src:[['02-1','s3','최대·최소 동시에']] },
+
+ { type:'ox', lv:'하', unit:'MoM', pts:8,
+   q:`<p>MoM(Median of Medians)에 대한 설명이 옳으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[
+     ['1, 6, 3, 3, 4 의 median 은 3.4 이다.', false],
+     ['MoM 은 원소를 반드시 5개씩 묶어야만 성립하는 알고리즘이다.', false],
+     ['m* 는 각 그룹의 median 들 중에서 가장 작은 값이다.', false],
+     ['MoM 은 피벗을 고르는 방법만 다르고, 나머지 과정은 Quick Select 와 같다.', true]],
+   exp:`ㄱ. 정렬하면 1, 3, 3, 4, 6 이라 median 은 가운데 값 3 이다. 3.4 는 mean(평균값)이다. ㄴ. 5개는 설명을 위한 예시이고 꼭 5개일 필요는 없다고 하셨다. ㄷ. m* 는 medians 의 median(가운데 값)이라 구조도에서 한가운데에 온다. 가장 작은 median 이 아니다. ㄹ. m* 는 오직 피벗으로 쓰려고 구하며, 이 과정만 빼면 Quick Select 와 같다.`,
+   src:[['02-2','s4','MoM 개요']] },
+
+ { type:'table', lv:'하', unit:'두 번째 값', pts:9,
+   q:`<p>토너먼트로 최솟값을 찾은 뒤, 그 결과를 이용해 두 번째로 작은 값을 찾는다. 수업의 방법대로 표의 빈칸을 채우시오. (전체 = 최솟값 찾기 + 두 번째로 작은 값 찾기)</p>`,
+   head:['입력 개수 n','라운드 수','두 번째로 작은 값을 찾는 비교 횟수','전체 비교 횟수'],
+   rows:[
+     ['16', B('4'), B('3'), B('18')],
+     ['64', B('6'), B('5'), B('68')]],
+   exp:`두 번째로 작은 값은 최솟값에게 직접 진 원소 중에 있고, 그 수는 라운드 수 ⌈log₂n⌉ 과 같다. 그중 최솟값을 찾는 데 (라운드 수 − 1) 번. n = 16 : 15 + 3 = 18, n = 64 : 63 + 5 = 68 (= n + ⌈log₂n⌉ − 2). 최솟값을 뺀 나머지에서 다시 찾으면 2n − 3 (29, 125) 이 된다.`,
+   src:[['02-1','s4','최소·두 번째로 작은 값']] },
+
+ { type:'short', lv:'하', unit:'좋은 피벗', pts:7,
+   q:`<p>Quick Select 에서 피벗을 잘 골라, 재귀할 때마다 리스트 크기가 정확히 ${F('1','10')} 배로 줄어든다고 하자. 크기 1000 인 리스트에서 시작해 크기가 1 이 될 때까지 일어나는 <b>재귀 호출 횟수</b>를 쓰시오.</p>`,
+   show:'3', alt:['3번','3회'],
+   exp:`1000 → 100 → 10 → 1. 크기를 적은 칸은 4개지만, 칸 사이를 잇는 재귀는 3번이다 (${F('n','c<sup>k</sup>')} = 1 → k = log<sub>c</sub> n = log<sub>10</sub>1000 = 3). 칸 수 4 를 답하면 틀린다.`,
+   src:[['02-2','s2','재귀 횟수']] },
+
+ { type:'mc', lv:'하', unit:'최댓값·토너먼트', pts:8,
+   q:`<p>원소 7개에서 최댓값을 찾는다. <b>토너먼트 방식</b>의 비교 횟수와 <b>바로 옆 원소와 하나씩 차례로 비교하는 방식</b>의 비교 횟수를 순서대로 바르게 쓴 것은?</p>`,
+   choices:['3번, 6번','3번, 7번','6번, 7번','6번, 6번'], answer:[4],
+   exp:`토너먼트는 3 + 2 + 1 = 6 번(짝이 없는 원소는 비교 없이 올라감)이고, 하나씩 비교해도 n − 1 = 6 번으로 같다. 3 은 라운드 수이고, 7 은 원소 수를 그대로 센 값이다.`,
+   src:[['02-1','s1','최댓값 찾기'],['02-1','s2','토너먼트']] },
+
+ { type:'ox', lv:'하', unit:'귀납법', pts:8,
+   q:`<p>수학적 귀납법에 대한 설명이 옳으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[
+     ['기저 단계 없이 귀납 단계(n = k 에서 성립하면 n = k + 1 에서도 성립)만 보여도 모든 n 에서 성립한다고 할 수 있다.', false],
+     ['2단계의 귀납 가정은 증명하지 않고 참이라고 놓고 시작한다.', true],
+     ['“k &lt; n 인 모든 k 에서 성립한다고 가정하고 k = n 일 때 성립함을 보이는 것”은 원래 귀납법과 다른 증명 방법이다.', false],
+     [`1 + 2 + … + n = ${F('n(n+1)','2')} 을 귀납법으로 증명할 때, 3단계에서 보여야 할 목표식의 우변은 ${F('(k+1)(k+2)','2')} 이다.`, true]],
+   exp:`ㄱ. 기저가 없으면 출발점이 없어 어떤 n 에도 도달하지 못한다. 기저와 귀납 단계가 둘 다 있어야 한다. ㄷ. 교수님 말씀대로 같은 귀납법이고 표현만 다르다. ㄹ. 원래 공식에 n = k + 1 을 넣은 값이다. ${F('(k+1)+(k+2)','2')} 처럼 덧셈으로 쓰면 틀린다.`,
+   src:[['02-2','s8','귀납법 복습']] },
+
+ { type:'short', lv:'하', unit:'Quick Select', pts:8,
+   q:`<p>다음은 수업의 quick_select 이다. 빈칸에 들어갈 식을 쓰시오.</p>
+<pre>def quick_select(L, k):
+    P = L[0]
+    A, B, M = [], [], []
+    for x in L:
+        if P &gt; x:
+            A.append(x)
+        elif P &lt; x:
+            B.append(x)
+        else:
+            M.append(x)
+    if len(A) &gt;= k:
+        return quick_select(A, k)
+    elif len(A) + len(M) &lt; k:
+        return quick_select(B, ________)
+    else:
+        return P</pre>`,
+   show:'k - len(A) - len(M)', alt:['k - (len(A) + len(M))','k - len(M) - len(A)'],
+   exp:`A 와 M 의 값은 모두 B 의 값보다 작아, 전체 1등부터 |A| + |M| 등까지를 이미 차지한다. 그래서 B 안에서는 (k − |A| − |M|) 번째가 전체의 k 번째다. k 를 그대로 넘기거나 len(A) 만 빼면 M 의 원소 수만큼 순위가 어긋난다.`,
+   src:[['02-1','s5','quick_select 코드']] },
+
+ { type:'table', lv:'하', unit:'MoM', pts:9,
+   q:`<p>MoM(L, k) 의 네 단계에서 드는 비교 횟수(비용)를 쓰시오. (원소 n 개를 5개씩 묶고, 분할 결과 |A|, |B| ≤ ${F('n','c')} 가 보장된다고 한다)</p>`,
+   head:['단계','하는 일','비교 횟수 (비용)'],
+   rows:[
+     ['1','원소를 5개씩 묶는다', B('0')],
+     ['2','각 그룹의 median 을 구한다', blank(F('6n','5'),['6n/5','1.2n'])],
+     ['3','medians 의 median(m*) 을 구한다', blank(`T(${F('n','5')})`,['T(n/5)'])],
+     ['4','m* 를 피벗으로 분할하고 재귀 호출한다', blank(`n + T(${F('n','c')})`,['n+T(n/c)','T(n/c)+n'])]],
+   exp:`1단계는 묶기만 해 비교가 없다. 2단계는 그룹당 6번 × ${F('n','5')} 개 그룹. 3단계는 원소가 ${F('n','5')} 개인 medians 에 MoM 을 다시 호출하는 재귀다. 4단계는 분할에 n 번, 그리고 크기 ${F('n','c')} 이하인 A 또는 B 로의 재귀. 합치면 T(n) = T(${F('n','c')}) + T(${F('n','5')}) + ${F('11n','5')}.`,
+   src:[['02-2','s4','MoM 네 단계'],['02-2','s6','MoM 점화식']] },
+
+ { type:'mc', lv:'하', unit:'MoM', pts:7,
+   q:`<p>MoM 으로 고른 피벗 m* 는 |A|, |B| ≤ ${F('n','c')} 를 보장한다. 수업에서 구한 c 의 값은?</p>`,
+   choices:[F('3','4'), F('4','3'), '4', '5'], answer:[2],
+   exp:`m* 보다 작다는 것이 보장되는 영역 X 와 크다는 것이 보장되는 영역 W 가 각각 ${F('n','4')} 개 이상이므로 |A|, |B| ≤ n − ${F('n','4')} = ${F('3n','4')} = ${F('n','c')} → c = ${F('4','3')}. ① ${F('3','4')} 은 ${F('n','c')} = ${F('3n','4')} 에서 c 를 거꾸로 놓은 값, ③ 4 는 |X| 의 하한 ${F('n','4')} 의 분모, ④ 5 는 묶음 크기다.`,
+   src:[['02-2','s7','c 구하기']] },
+
+ { type:'short', lv:'하', unit:'최댓값·토너먼트', pts:6,
+   q:`<p>어떤 문제를 푸는 비교 횟수의 상한(upper bound)과 하한(lower bound)이 같을 때, 그 값을 무엇이라 하는가? (영어 용어로 쓰시오)</p>`,
+   show:'tight bound', alt:['타이트 바운드'],
+   exp:`상한은 '이보다 더 비교할 필요가 없다', 하한은 '최소 이만큼은 비교해야 한다'는 한계이다. 둘이 같으면 tight bound 이고, 그 값이 최적임이 증명된 상태다. 예: 최댓값 찾기는 상한·하한 모두 n − 1.`,
+   src:[['02-1','s1','상한과 하한']] },
+
+ { type:'mc', lv:'하', unit:'MoM', pts:7,
+   q:`<p>a, b, c, d, e 다섯 개의 median 을 찾는 수업의 방법에서, 처음 세 번의 비교로 a &lt; b, c &lt; d, a &lt; c 를 알게 되었다. 이 시점에 <b>median 이 될 수 없다고 확정</b>되는 원소는?</p>`,
+   choices:['a','b','c','d'], answer:[1],
+   exp:`a 는 b, c, d 셋보다 작으므로 a 보다 작을 수 있는 것은 e 하나뿐이다. a 는 1등 아니면 2등이라 3번째(median)가 될 수 없다. b 와 d 는 a 보다 크다는 것만 알 뿐 순위가 정해지지 않았고, c 도 아직 3번째가 될 수 있다.`,
+   src:[['02-2','s5','5개의 median']] },
+
+ { type:'short', lv:'하', unit:'Quick Select', pts:7,
+   q:`<p>L = [6, 5, 1, 7, 9, 3, 8, 10, 2] 에 대해 수업의 quick_select(L, 8) 을 실행한다. <b>처음 호출을 포함하여</b> quick_select 가 호출되는 횟수를 쓰시오.</p>`,
+   show:'3', alt:['3번','3회'],
+   exp:`① P = 6 : A = [5, 1, 3, 2], M = [6], B = [7, 9, 8, 10]. 4 + 1 &lt; 8 → B 로, k = 3. ② P = 7 : A = [], M = [7], B = [9, 8, 10]. 0 + 1 &lt; 3 → B 로, k = 2. ③ P = 9 : A = [8], M = [9], B = [10]. |A| = 1 &lt; 2 ≤ |A| + |M| → 9 반환. 크기는 9 → 4 → 3.`,
+   src:[['02-1','s5','k = 8 예시']] },
+];
+</script>
+</body>
+</html>

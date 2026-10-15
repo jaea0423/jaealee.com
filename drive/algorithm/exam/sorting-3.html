@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>알고리즘 단원 평가 — 정렬 (심화)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../_exam/exam.css">
+<style>:root{ --subject:#4F46E5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../_exam/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다.<br>이 파일은 <b>drive/_exam/exam.css · exam.js</b> 와 함께 있어야 열립니다.
+(<code>drive/algorithm/exam/sorting-3.html</code> 위치에서 열어 주세요.)</div>
+<script>
+/* ════════ 시험지 정보 ════════ */
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'알고리즘',
+  title:'단원 평가 · 정렬 (심화)',
+  written:'2026년 10월 15일 작성',
+  slug:'algorithm-sorting-3',            // 저장 파일 이름 (영문)
+  lectureBase:'../lecture',              // 출처 링크 기준 (이 파일 기준 상대경로)
+  level:'심화',
+  mcMax:0.2,
+  scope:'<b>단원 평가 · 정렬 · 심화</b> (5주차 1차시 ~ 6주차 2차시)<br>코드 변형과 stable · in-place 판정, 퀵 정렬 worst 입력 세기, 제자리 퀵 분할(같은 값 · 코드 오류 찾기), 병합 정렬 비교·호출 횟수, 힙 인덱스와 힙 정렬, get_max 로 본 정렬, 결정 트리와 Ω(n log n) 하한'
+};
+
+/* ════════ 문항 ════════
+   type  : mc 객관식 · ox O/X · short 단답 · table 표 빈칸 · line 코드 줄 고르기 · essay 서술
+   lv    : 하 / 중 / 상        src : [['주차-차시','섹션 id','제목'], …]
+   채점  : 부분 점수 없음(정답 또는 오답). mc · ox · line 자동 / short · table · essay 직접, 빈 답은 자동 오답 */
+const EXAM = [
+ { type:'short', lv:'상', unit:'퀵 정렬', pts:8,
+   q:`<p>수업의 S/M/L 퀵 정렬(피벗 = 첫 값)에 1 ~ 7 을 한 번씩 늘어놓은 배열(7! 가지)을 넣는다. 길이가 2 이상인 <b>모든</b> 재귀 호출에서 S 와 L 중 하나가 비어 있는(한쪽으로만 쏠리는) 입력은 모두 몇 가지인지 쓰시오.</p>`,
+   show:'64', alt:['64가지','64개','2^6'],
+   exp:`한쪽으로만 쏠리려면 매 호출의 피벗(첫 값)이 그 리스트의 최솟값이거나 최댓값이어야 한다. 길이 7, 6, 5, 4, 3, 2 인 호출 6번마다 2가지씩 → 2<sup>6</sup> = 64. 이 입력들에서 T(n) = T(n − 1) + Cn (worst). 정렬된 · 거꾸로 정렬된 2가지만 떠올리면 틀린다 — 예: [1, 7, 2, 6, 3, 5, 4] 도 매번 한쪽만 남는다.`,
+   src:[['05-1','s11','퀵 정렬 수행시간'],['06-1','s2','퀵 정렬 복습']] },
+
+ { type:'table', lv:'상', unit:'정렬 성질', pts:9,
+   q:`<p>수업 코드에서 <b>한 곳만</b> 바꾼 정렬들이다. 모두 정렬 결과(값의 순서)는 올바르다. 바꾼 코드 기준으로 stable 과 in-place 여부를 O 또는 X 로 쓰시오.</p>`,
+   head:['바꾼 코드','stable','in-place'],
+   rows:[
+     ['병합 : if A[i] &lt;= A[j] → if A[i] &lt; A[j]', B('X'), B('X')],
+     ['버블 : if A[j] &gt; A[j+1] → if A[j+1] &lt; A[j]', B('O'), B('O')],
+     ['S/M/L 퀵 : for x in A → for x in A[::-1] (뒤에서부터)', B('X'), B('X')],
+     ['삽입 : A[j] &gt; x → A[j] &gt;= x', B('X'), B('O')]],
+   exp:`병합 : 같을 때 else 로 가 뒤 그룹 값이 먼저 → X, 새 배열 B → X. 버블 : A[j+1] &lt; A[j] 는 A[j] &gt; A[j+1] 과 같은 조건이라 원래 코드 그대로 → O, O. S/M/L 퀵 : 피벗과 같은 값들이 M 에 거꾸로 담긴다. [2₁, 2₂, 1] → M = [2₂, 2₁] → [1, 2₂, 2₁] 이라 X, 새 리스트 → X. 삽입 : 같은 값 앞까지 넘어가 X, 자리 이동만 하므로 O.`,
+   src:[['06-1','s5','병합 정렬 성질'],['05-1','s8','부등호 함정'],['05-1','s10','퀵 정렬 성질']] },
+
+ { type:'essay', lv:'상', unit:'하한', pts:10,
+   q:`<p>서로 다른 값 n 개(n 은 짝수)를 비교로 정렬하는 알고리즘을 결정 트리로 나타낸다. 결정 트리의 높이 h 가 Ω(n log n) 임을 보이시오.</p>`,
+   model:`리프 : n 개를 늘어놓는 순서는 n! 가지이고, 순서마다 서로 다른 리프가 필요하므로 리프는 n! 개.<br>높이 h 인 이진트리의 리프는 최대 2<sup>h</sup> 개 → 2<sup>h</sup> ≥ n! → h ≥ log₂(n!).<br>n! = n × (n − 1) × ⋯ × (${F('n','2')} + 1) × ${F('n','2')} × ⋯ × 1 ≥ ${F('n','2')} × ⋯ × ${F('n','2')} × 1 × ⋯ × 1 = (${F('n','2')})<sup>n/2</sup><br>(앞 ${F('n','2')} 개 인수는 ${F('n','2')} 로, 뒤 ${F('n','2')} 개는 1 로 바꾸면 값이 작아지기만 한다)<br>h ≥ log₂(${F('n','2')})<sup>n/2</sup> = ${F('n','2')} log₂ ${F('n','2')} ≥ C · n log₂ n (차수만 보면)&nbsp;⇒&nbsp;<b>h = Ω(n log n)</b>`,
+   rubric:['리프 개수가 n! 임을 이유와 함께 씀','2<sup>h</sup> ≥ n! 에서 h ≥ log₂(n!) 을 이끌어 냄','n! ≥ (n/2)<sup>n/2</sup> 를 인수를 바꾸는 방법으로 보임 (부등호 방향 포함)','h ≥ (n/2) log₂(n/2) 로 정리','결론 Ω(n log n)'],
+   src:[['06-2','s8','n 개일 때의 결정 트리'],['06-2','s9','n! 어림'],['06-2','s10','결론']] },
+
+ { type:'short', lv:'상', unit:'힙', pts:8,
+   q:`<p>원소가 20개인 배열 A 를 A[0] 이 루트인 이진트리로 볼 때, 자식이 하나도 없는 노드(leaf)는 모두 몇 개인지 쓰시오.</p>`,
+   show:'10', alt:['10개'],
+   exp:`마지막 노드 A[19] 의 부모가 A[(19 − 1)//2] = A[9] 이므로 A[0] ~ A[9] 는 자식이 있다. A[10] ~ A[19] 의 10개는 왼쪽 자식 2k + 1 ≥ 20 이라 자식이 없다. A[9] 는 오른쪽 자식(A[20])이 없지만 왼쪽 자식 A[19] 가 있어 leaf 가 아니다 — 이걸 leaf 로 세면 11 이 된다. make_heap 이 A[19] ~ A[10] 에서 할 일이 없는 이유이기도 하다.`,
+   src:[['06-1','s8','배열을 이진트리로'],['06-1','s10','make_heap']] },
+
+ { type:'line', lv:'상', unit:'제자리 퀵', pts:8,
+   q:`<p>교수님의 제자리 퀵 정렬을 옮겨 적다 <b>한 줄</b>을 잘못 적었다. quick_sort(A, 0, 7) 에 A = [5, 8, 1, 9, 3, 7, 2, 6] 을 넣으면, 첫 분할이 끝난 직후(재귀 호출 전) A 가 [9, 2, 1, 3, 5, 7, 8, 6] 이 된다. 잘못 적은 줄을 고르시오.</p>`,
+   code:`
+def quick_sort(A, first, last):
+    if first >= last:
+        return
+    p = A[first]
+    left = first + 1
+    right = last
+    while left <= right:
+        while left <= last and A[left] < p:
+            left += 1
+        while right > first and A[right] > p:
+            right -= 1
+        if left <= right:
+            A[left], A[right] = A[right], A[left]
+    A[first], A[left] = A[left], A[first]
+    quick_sort(A, first, right-1)
+    quick_sort(A, left, last)`,
+   answer:[14],
+   exp:`8 ↔ 2, 9 ↔ 3 교환 뒤 [5, 2, 1, 3, 9, 7, 8, 6] 에서 left = 4 (값 9), right = 3 (값 3) 으로 끝난다. 피벗은 작은 쪽의 끝인 <b>right</b> 자리와 바꿔야 [3, 2, 1, 5, 9, 7, 8, 6] 이 된다. left 와 바꾸면 큰 쪽의 첫 값 9 가 맨 앞으로 온다. 8 · 10번 줄의 &lt; · &gt; 는 맞다. (교수님 정리 글의 코드에서 left·right 대입을 두 줄로 나누고, 실행되도록 2 · 3번 줄 기저 조건을 넣었다.)`,
+   src:[['05-1','s14','제자리 퀵 코드']] },
+
+ { type:'short', lv:'상', unit:'병합 정렬', pts:8,
+   q:`<p>서로 다른 값 8개를 수업의 merge_sort(A, 0, 7) 로 정렬할 때, 모든 병합을 통틀어 값끼리 비교하는 횟수의 합이 될 수 있는 <b>가장 큰 값</b>을 쓰시오.</p>`,
+   show:'17', alt:['17번','17회'],
+   exp:`병합 한 번의 비교는 많아야 (두 그룹 길이의 합) − 1 번 (마지막 하나는 비교 없이 붙음). 1 + 1 병합 4번 × 1, 2 + 2 병합 2번 × 3, 4 + 4 병합 1번 × 7 → 4 + 6 + 7 = 17. 예: [1, 5, 3, 7, 2, 6, 4, 8] 은 모든 병합에서 두 그룹이 끝까지 번갈아 빠져 17번. 층마다 n − 1 = 7 번씩 3층으로 21 이라 하면, 작은 병합 여러 개의 '− 1' 을 빠뜨린 것이다.`,
+   src:[['06-1','s4','병합 과정'],['06-1','s6','병합 정렬 코드']] },
+
+ { type:'mc', lv:'상', unit:'하한', pts:6,
+   q:`<p>비교 기반 정렬의 하한과 결정 트리에 대한 설명으로 옳은 것은?</p>`,
+   choices:['결정 트리의 높이 h 는 루트에서 가장 얕은 리프까지의 비교 횟수이다.','a, b, c 의 결정 트리에는 비교 2번 만에 순서가 정해지는 리프도 있다.','퀵 정렬도 average case 가 O(n log n) 이라 병합·힙 정렬처럼 최적이다.','하한이 n log n 차수이면 어떤 비교 정렬도 그보다 많이 비교하지 않는다.'], answer:[2],
+   exp:`② 판서 트리에서 a &lt; b &lt; c 와 c &lt; b &lt; a 는 비교 2번에 정해진다. 하한 3 은 '모든 입력에 3번' 이 아니라 가장 불리한 입력에서 3번이 필요하다는 뜻이다. ① 높이는 가장 <b>먼</b> 리프까지다. ③ 최적은 상한(worst)이 하한과 같아야 하는데 퀵 정렬의 상한은 O(n²). ④ 하한은 '최소 이만큼은 필요' 이고, '이보다 나빠지지 않음' 은 상한의 뜻이다.`,
+   src:[['06-2','s7','결정 트리'],['06-2','s6','상한과 하한'],['06-2','s10','결론']] },
+
+ { type:'short', lv:'상', unit:'힙 정렬', pts:8,
+   q:`<p>A = [4, 9, 2, 7, 5, 8] 에 수업의 힙 정렬을 적용한다(먼저 make_heap 으로 힙을 만든다). 힙 정렬 <b>2라운드가 끝난 직후</b>의 A 를 쓰시오.</p>`,
+   show:'[7, 5, 2, 4, 8, 9]', alt:['7 5 2 4 8 9','7, 5, 2, 4, 8, 9'],
+   exp:`make_heap : A[5] ~ A[3] 은 leaf. A[2] = 2 ↔ 8 → [4, 9, 8, 7, 5, 2]. A[1] = 9 는 7, 5 보다 커서 그대로. A[0] = 4 ↔ 9, 내려간 4 ↔ 7 → [9, 7, 8, 4, 5, 2]. 1라운드 : 9 ↔ 2 → [2, 7, 8, 4, 5, 9], 2 ↔ 8 → [8, 7, 2, 4, 5, 9]. 2라운드 : 8 ↔ 5 → [5, 7, 2, 4, 8, 9], 5 ↔ 7 → [7, 5, 2, 4, 8, 9] (A[4] 의 8 은 정렬된 칸이라 5 의 자식으로 보지 않는다).`,
+   src:[['06-1','s10','make_heap'],['06-2','s3','힙 정렬 과정']] },
+
+ { type:'essay', lv:'상', unit:'제자리 퀵', pts:10,
+   q:`<p>교수님의 제자리 퀵 정렬로 A = [4, 6₁, 1, 6₂, 2, 7] 의 첫 분할(first = 0, last = 5)을 피벗 교환까지 진행하고, 그 결과를 근거로 제자리 퀵 정렬이 stable 인지 판정하시오. (6₁, 6₂ 는 같은 값 6 을 입력 순서로 구분한 것)</p>`,
+   model:`p = 4. left 는 6₁(1번)에서 멈추고, right 는 7 을 지나 2(4번)에서 멈춤 → 교환 → [4, 2, 1, 6₂, 6₁, 7].<br>left 는 2, 1 을 지나 6₂(3번)에서, right 는 6₁, 6₂ 를 지나 1(2번)에서 멈춤 → left &gt; right 로 끝.<br>피벗 ↔ A[right = 2] → <b>[1, 2, 4, 6₂, 6₁, 7]</b><br>입력에서는 6₁ 이 앞이었는데 첫 분할에서 6₂ 가 앞으로 왔다. left·right 가 <b>멀리 떨어진 칸끼리</b> 교환해 같은 값이 서로를 건너뛸 수 있으므로 순서 유지를 보장하지 못한다 → <b>stable X</b>.`,
+   rubric:['left · right 가 멈추는 위치와 교환(6₁ ↔ 2)을 바르게 추적','left &gt; right 로 끝난 뒤 피벗을 A[right] 와 교환','첫 분할 결과 [1, 2, 4, 6₂, 6₁, 7]','6₁ · 6₂ 순서가 뒤집힌 것과 멀리 떨어진 칸끼리의 교환을 근거로 stable X'],
+   src:[['05-1','s13','한 단계씩 예시'],['05-1','s14','제자리 퀵 코드'],['05-1','s15','제자리 퀵 성질']] },
+
+ { type:'short', lv:'상', unit:'하한', pts:7,
+   q:`<p>어떤 비교 정렬 알고리즘이 서로 다른 값 n 개를 <b>어떤 입력이든 비교 10번 이하</b>로 정렬한다고 한다. 결정 트리로 따질 때 이것이 가능할 수 있는 n 의 최댓값을 쓰시오.</p>`,
+   show:'6', alt:['6개','n = 6'],
+   exp:`높이 ≤ 10 이면 리프는 많아야 2<sup>10</sup> = 1024 개. 리프는 n! 개가 필요하므로 n! ≤ 1024. 6! = 720 ≤ 1024 &lt; 5040 = 7! → n ≤ 6. n log₂ n ≤ 10 으로 풀면(n ≈ 4) 상수를 버린 차수 어림이라 정확한 답이 아니다.`,
+   src:[['06-2','s7','결정 트리'],['06-2','s8','n 개일 때의 결정 트리']] },
+
+ { type:'essay', lv:'상', unit:'힙 정렬', pts:10,
+   q:`<p>정렬을 "i = n − 1 부터 1 까지, A[0] ~ A[i] 의 최댓값을 찾아(get_max) A[i] 자리로 보내기" 의 반복으로 볼 때, 선택 정렬과 힙 정렬의 get_max 한 번의 비용과 전체 수행시간을 각각 유도하고, 차이가 생기는 이유를 쓰시오.</p>`,
+   model:`선택 정렬 : A[0] ~ A[i] 를 전부 훑어 O(i). 전체 O(1) + O(2) + … + O(n − 1) = O(${F('(n − 1)n','2')}) = <b>O(n²)</b>.<br>힙 정렬 : 먼저 make_heap 으로 힙을 만든다 — O(n log n). 힙이면 최댓값은 루트 A[0] 이라 바로 보이고, A[0] ↔ A[i] 교환 뒤 heapify_down 으로 높이만큼만 내려 O(log i) ≤ O(log n). 이를 n − 1 번 → (n − 1) · O(log n). 합 O(n log n) + O(n log n) = <b>O(n log n)</b>.<br>이유 : 힙 성질(부모 ≥ 자식) 덕분에 최댓값이 항상 루트에 있고, 꺼낸 뒤 힙을 고치는 데 전체가 아니라 트리 높이(log)만큼만 들기 때문.`,
+   rubric:['선택 정렬 get_max O(i), 합을 계산해 O(n²)','힙 정렬 get_max : 루트가 최댓값 + heapify_down O(log i)','make_heap 비용을 포함해 전체 O(n log n)','차이의 이유(힙 성질 → 높이만큼만)를 씀'],
+   src:[['06-2','s2','정렬의 공통 틀'],['06-2','s3','힙 정렬 과정'],['06-2','s4','힙 정렬 수행시간']] },
+
+ { type:'short', lv:'상', unit:'병합 정렬', pts:8,
+   q:`<p>다음 merge_sort 로 원소 10개짜리 A 를 merge_sort(A, 0, 9) 로 정렬한다. 처음 호출을 포함해 merge_sort 가 호출되는 <b>총 횟수</b>를 쓰시오. (first &gt;= last 로 바로 끝나는 호출도 센다)</p>
+<pre>def merge_sort(A, first, last):
+    if first &gt;= last:
+        return
+    merge_sort(A, first, (first+last)//2)
+    merge_sort(A, (first+last)//2 + 1, last)
+    merge_two_sorted_lists(A, first, last)</pre>`,
+   show:'19', alt:['19번','19회'],
+   exp:`바로 끝나는 호출은 원소 1개 구간이고, 구간을 반씩 나누다 보면 결국 10개가 된다 → 10번. 둘로 나뉘는 호출은 병합을 한 번씩 하는데, 병합할 때마다 구간이 하나씩 줄어 10개 → 1개이므로 9번. 합 10 + 9 = 19 (= 2n − 1). (first + last)//2 로 나누면 빈 구간은 생기지 않는다. 층 수 × 2 처럼 세면 틀린다.`,
+   src:[['06-1','s6','병합 정렬 코드']] },
+];
+</script>
+</body>
+</html>

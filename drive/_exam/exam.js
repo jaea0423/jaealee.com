@@ -327,7 +327,7 @@ function lint(){
   if(mc.length/qs.length>mcMax) w(`객관식 비율 ${Math.round(mc.length/qs.length*100)}% (${Math.round(mcMax*100)}% 이하 권장)`);
   const seq=mc.filter(i=>!i.multi).map(i=>i.answer[0]);
   for(let i=2;i<seq.length;i++) if(seq[i]===seq[i-1]&&seq[i]===seq[i-2]) w(`객관식 정답이 ${NUM[seq[i]-1]} 로 3번 연속`);
-  const lv={}; qs.forEach(i=>lv[i.lv]=(lv[i.lv]||0)+1); ['하','중','상'].forEach(k=>{if(!lv[k]) w(`난이도 '${k}' 문항이 없습니다`);});
+  const lv={}; qs.forEach(i=>lv[i.lv]=(lv[i.lv]||0)+1); if(!META.level) ['하','중','상'].forEach(k=>{if(!lv[k]) w(`난이도 '${k}' 문항이 없습니다`);});   // 난이도별 문제지(META.level)는 한 단계만 쓴다
   qs.forEach(i=>{ if(!i.exp&&!i.model) w(`${i.no}번 해설 없음`); if(!i.src) w(`${i.no}번 출처 없음`); });
 }
 

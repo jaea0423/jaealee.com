@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>알고리즘 단원 평가 — 분할 정복·점화식 (심화)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../_exam/exam.css">
+<style>:root{ --subject:#4F46E5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../_exam/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다.<br>이 파일은 <b>drive/_exam/exam.css · exam.js</b> 와 함께 있어야 열립니다.
+(<code>drive/algorithm/exam/divide-3.html</code> 위치에서 열어 주세요.)</div>
+<script>
+/* ════════ 시험지 정보 ════════ */
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'알고리즘',
+  title:'단원 평가 · 분할 정복·점화식 (심화)',
+  written:'2026년 10월 15일 작성',
+  slug:'algorithm-divide-3',             // 저장 파일 이름 (영문)
+  lectureBase:'../lecture',              // 출처 링크 기준 (이 파일 기준 상대경로)
+  level:'심화',
+  mcMax: 0.2,
+  scope:'<b>단원 평가 · 분할 정복·점화식 · 심화</b> (3주차 1차시 ~ 4주차 2차시, 4주차 1차시 휴강)<br>분할 정복(max 분할의 변형), 거듭제곱(power3 변형 판정), 피보나치(fibo1 호출 수·행렬식 확장), 큰 수의 곱셈(조각 수 바꾸기), 카라츠바(변형식), 이진탐색(코드 변형 판정·최대 호출 수), 점화식 계산(나무 그림)'
+};
+
+/* ════════ 문항 ════════
+   type  : mc 객관식 · ox O/X · short 단답 · table 표 빈칸 · line 코드 줄 고르기 · essay 서술
+   lv    : 하 / 중 / 상        src : [['주차-차시','섹션 id','제목'], …]
+   채점  : 부분 점수 없음(정답 또는 오답). mc · ox · line 자동 / short · table · essay 직접, 빈 답은 자동 오답 */
+const EXAM = [
+ { type:'short', lv:'상', unit:'카라츠바', pts:8,
+   q:`<p>16자리 × 16자리 곱셈을 카라츠바 알고리즘으로 계산한다. 자릿수가 1 이 될 때까지 계속 반으로 쪼개 재귀 호출한다면, 맨 마지막에 하는 <b>1자리 × 1자리 곱셈</b>은 모두 몇 번인가? (수업에서처럼 자릿수가 한 자리 늘어나는 경우는 무시하고 모든 부분 곱셈을 ${F('n','2')}자리로 본다)</p>`,
+   show:'81', alt:['81번','81회','3^4'],
+   exp:`카라츠바는 한 번 쪼갤 때 ${F('n','2')}자리 곱셈을 3번 부른다. 16 → 8 → 4 → 2 → 1 로 4번 쪼개므로 맨 아래 칸은 3<sup>4</sup> = 81 개(= n<sup>log₂3</sup>, n = 16). 세로식으로는 n² = 256 번이다. 곱셈 4번 방식이면 4<sup>4</sup> = 256 으로 세로식과 같아진다.`,
+   src:[['03-2','s10','새 점화식'],['04-2','s4','맨 아래 칸 개수']] },
+
+ { type:'ox', lv:'상', unit:'이진탐색', pts:8,
+   q:`<p>수업의 bs 에서 <b>한 군데만</b> 바꾼 경우에 대한 설명이다. 옳으면 O, 틀리면 X 를 고르시오. (A 의 원소는 서로 다르다)</p>
+<pre>def bs(A, a, b, k):
+    if a &gt; b:
+        return -1
+    m = (a + b) // 2
+    if A[m] == k:
+        return m
+    elif A[m] &gt; k:
+        return bs(A, a, m-1, k)
+    else:
+        return bs(A, m+1, b, k)</pre>`,
+   items:[
+     ['마지막 줄을 bs(A, m, b, k) 로 바꿔도, k 가 A 에 있기만 하면 항상 찾아서 끝난다.', false],
+     ['if a &gt; b 를 if a &gt;= b 로 바꾸면, k 가 A 에 있는데도 −1 을 반환하는 경우가 생긴다.', true],
+     ['m = (a + b) // 2 를 m = (a + b + 1) // 2 로 바꾸면, k 가 A 에 없을 때 끝나지 않는 경우가 생긴다.', false],
+     ['A 가 내림차순으로 정렬되어 있다면, elif 의 조건만 A[m] &lt; k 로 바꿔도 올바르게 찾는다.', true]],
+   exp:`ㄱ. A = [1, 2], k = 2 : m = 0, A[0] &lt; 2 → bs(A, 0, 1, 2) 가 같은 인자로 계속 불린다. ㄴ. A = [1, 2, 3], k = 1 : (0, 2) → (0, 0) 에서 a &gt;= b 라 원소 하나를 보지도 않고 −1. ㄷ. (a + b + 1) // 2 도 a ~ b 안에 있고, 다음 구간이 m − 1, m + 1 로 m 을 빼므로 구간은 늘 줄어든다. ㄹ. 내림차순이면 A[m] &lt; k 일 때 k 는 왼쪽에 있으므로 그대로 맞다.`,
+   src:[['03-2','s13','이진탐색 코드']] },
+
+ { type:'table', lv:'상', unit:'피보나치', pts:9,
+   q:`<p>세 항을 더하는 수열 G(n) = G(n − 1) + G(n − 2) + G(n − 3) 을 피보나치처럼 행렬식으로 나타내려 한다. 다음 식이 성립하도록 3×3 행렬 M 의 빈칸을 채우시오.</p>
+<pre>| G(n)   |       | G(n−1) |
+| G(n−1) | = M × | G(n−2) |
+| G(n−2) |       | G(n−3) |</pre>`,
+   head:['M','1열','2열','3열'],
+   rows:[
+     ['1행','1','1','1'],
+     ['2행', B('1'), B('0'), B('0')],
+     ['3행', B('0'), B('1'), B('0')]],
+   exp:`행렬 곱은 M 의 i 행과 오른쪽 세로벡터를 짝지어 곱해 더한 값이다. 2행 : 1·G(n−1) + 0·G(n−2) + 0·G(n−3) = G(n−1). 3행 : 0·G(n−1) + 1·G(n−2) + 0·G(n−3) = G(n−2). 2×2 의 [[1, 1], [1, 0]] 에서 아래 줄이 '한 칸 위 값을 그대로 옮기는' 역할을 한 것과 같다. 3행을 [0, 0, 1] 로 두면 G(n−3) 이 나온다.`,
+   src:[['03-1','s9','행렬 곱'],['03-1','s10','피보나치를 행렬로']] },
+
+ { type:'essay', lv:'상', unit:'점화식', pts:10,
+   q:`<p>T(n) = 4T(${F('n','2')}) + Cn, T(1) = C 를 <b>나무 그림</b>(층마다 드는 연산을 더하는 방법)으로 풀어 T(n) 을 n 의 식으로 나타내고 Big-O 로 쓰시오. 층의 합이 어떻게 변하는지, 맨 아래 칸이 몇 개인지를 반드시 밝히시오. (n = 2<sup>k</sup>)</p>`,
+   model:`네 갈래 나무. i 번째 층(i = 0, …, k − 1)의 갈래 수 4<sup>i</sup>, 갈래 하나의 연산 C·${F('n','2<sup>i</sup>')}<br>층의 합 = 4<sup>i</sup> × C·${F('n','2<sup>i</sup>')} = 2<sup>i</sup>Cn → 갈래 4배 × 크기 ${F('1','2')}배라 층의 합이 <b>2배씩</b> 커진다 : Cn, 2Cn, 2<sup>2</sup>Cn, …, 2<sup>k−1</sup>Cn<br>합 = Cn(2<sup>k</sup> − 1) = Cn(n − 1) (초항 Cn, 공비 2, k 개)<br>맨 아래 : 4<sup>k</sup> = (2<sup>k</sup>)<sup>2</sup> = n<sup>2</sup> 개 × C = Cn<sup>2</sup><br>T(n) = Cn<sup>2</sup> − Cn + Cn<sup>2</sup> = 2Cn<sup>2</sup> − Cn &nbsp;⇒&nbsp; <b>O(n<sup>2</sup>)</b> (전개로 구한 결과와 같다)`,
+   rubric:['층의 합이 2<sup>i</sup>Cn 으로 2배씩 커짐을 보임','층의 합을 등비수열로 더해 Cn(n − 1) 을 구함','맨 아래 칸 수 4<sup>k</sup> = n<sup>2</sup> 을 구함','T(n) = 2Cn<sup>2</sup> − Cn, 결론 O(n<sup>2</sup>)'],
+   src:[['04-2','s3','두 갈래 나무 (방법)'],['04-2','s4','세 갈래 나무 (방법)'],['03-2','s8','4T(n/2)+Cn 전개']] },
+
+ { type:'short', lv:'상', unit:'거듭제곱', pts:8,
+   q:`<p>수업의 power3 로 a<sup>1000</sup> 을 구할 때 하는 <b>곱셈 횟수</b>를 쓰시오. (x * x 는 곱셈 1번, x * x * a 는 곱셈 2번으로 센다)</p>`,
+   show:'14', alt:['14번','14회'],
+   exp:`n 은 1000 → 500 → 250 → 125 → 62 → 31 → 15 → 7 → 3 → 1 (호출 10번). n = 1 은 곱셈이 없고, 짝수 1000·500·250·62 는 1번씩(4번), 홀수 125·31·15·7·3 은 2번씩(10번). 합 14번. 호출 수 10 을 답으로 쓰거나, 홀수를 1번으로 세면 9 로 틀린다.`,
+   src:[['03-1','s6','power3']] },
+
+ { type:'table', lv:'상', unit:'큰 수 곱셈', pts:9,
+   q:`<p>n 자리 수를 반이 아니라 <b>세 조각</b>으로 나누어 u = x·10<sup>${F('2n','3')}</sup> + y·10<sup>${F('n','3')}</sup> + z, v = p·10<sup>${F('2n','3')}</sup> + q·10<sup>${F('n','3')}</sup> + r 로 쓰고, 전개한 곱을 곱셈 줄이기 없이 그대로 재귀로 계산한다. 덧셈·자리 밀기 비용은 Cn, T(1) = C, n = 3<sup>k</sup> 로 둔다. 표의 빈칸을 채우시오.</p>`,
+   head:['항목','답'],
+   rows:[
+     [`재귀로 하는 ${F('n','3')}자리 곱셈의 개수`, blank('9',['9번','9개'])],
+     ['점화식', blank('9T(n/3) + Cn',['9T(n/3)+Cn','9*T(n/3)+C*n','9T(n/3)+C*n','9T(n/3)+nC'])],
+     ['나무 그림 맨 아래 크기 1 인 칸의 개수 (n 의 식)', blank('n²',['n^2','n*n','9^k'])],
+     ['시간복잡도', blank('O(n²)',['O(n^2)'])]],
+   exp:`조각 3개 × 조각 3개 = 9번 곱한다(xp, xq, …, zr). 그래서 T(n) = 9T(${F('n','3')}) + Cn. 갈래 9배 × 크기 ${F('1','3')}배라 층의 합은 Cn, 3Cn, 9Cn, … 로 커지고, 맨 아래 칸은 9<sup>k</sup> = (3<sup>k</sup>)<sup>2</sup> = n<sup>2</sup> 개. T(n) = ${F('3','2')}Cn<sup>2</sup> − ${F('1','2')}Cn → O(n<sup>2</sup>). 반으로 쪼개 4번 곱하는 것과 마찬가지로 세로식보다 나아지지 않는다.`,
+   src:[['03-2','s5','수를 쪼개기'],['03-2','s6','u × v 펼치기'],['03-2','s8','곱셈 4번 → O(n²)'],['04-2','s4','나무 그림']] },
+
+ { type:'short', lv:'상', unit:'분할 정복', pts:8,
+   q:`<p>max(A) 를 반씩이 아니라 <b>네 묶음</b>으로 나누어 구한다. 각 묶음의 최댓값을 재귀로 구한 뒤, 네 값 중 가장 큰 값을 '두 수 비교' 3번으로 고른다. 점화식이 T(n) = 4T(${F('n','4')}) + 3C, T(1) = C 일 때, n = 4<sup>k</sup> 이면 T(n) 을 n 과 C 의 식으로 쓰시오.</p>`,
+   show:'2Cn − C', alt:['2Cn-C','2nC-C','C(2n-1)','-C+2Cn','2*C*n-C'],
+   exp:`층마다 묶음 수 4<sup>i</sup> × 3C → 층의 합 3C, 12C, 48C, … (공비 4, k 개) → 3C·${F('4<sup>k</sup> − 1','4 − 1')} = C(n − 1). 맨 아래 4<sup>k</sup> = n 개 × C = Cn. T(n) = C(n − 1) + Cn = 2Cn − C → O(n). 반씩 나눈 2T(${F('n','2')}) + C 와 똑같은 결과라 쪼개는 개수를 바꿔도 O(n) 이다. 공비를 4 가 아니라 2 로 두면 틀린다.`,
+   src:[['03-1','s3','max 반씩 분할 · 등비수열의 합']] },
+
+ { type:'essay', lv:'상', unit:'카라츠바', pts:10,
+   q:`<p>카라츠바 알고리즘의 가운데 항 x·z + y·w 를 <b>(x − y)(w − z)</b> 를 이용해 구하도록 바꾸려 한다. (1) x·z + y·w = x·w + y·z − (x − y)(w − z) 가 성립함을 보이고, (2) 이 식을 쓰면 u·v 하나에 재귀 곱셈이 몇 번 필요한지, (3) 그때의 점화식과 시간복잡도를 쓰시오. (뺄셈 결과가 음수일 때의 부호 처리 비용은 Cn 에 포함된다고 본다)</p>`,
+   model:`(1) (x − y)(w − z) = x·w − x·z − y·w + y·z 이므로 x·w + y·z − (x − y)(w − z) = x·z + y·w.<br>(2) x·w 와 y·z 는 맨 앞·맨 뒤 항에 어차피 필요하므로 재활용한다. 새로 하는 곱셈은 (x − y)(w − z) 하나 → 모두 <b>3번</b> (x·w, y·z, (x − y)(w − z)).<br>(3) 세 곱셈 모두 ${F('n','2')}자리 크기(뺄셈은 자릿수가 늘지 않음)이고, 덧셈·뺄셈·자리 밀기는 Cn → T(n) = 3T(${F('n','2')}) + Cn → <b>O(n<sup>log₂3</sup>)</b>.`,
+   rubric:['(x − y)(w − z) 를 전개해 식이 성립함을 보임','x·w, y·z 재활용으로 곱셈이 3번임을 설명','점화식 3T(n/2) + Cn','결론 O(n<sup>log₂3</sup>)'],
+   src:[['03-2','s9','카라츠바'],['03-2','s10','새 점화식'],['03-2','s11','O(n^log₂3)']] },
+
+ { type:'mc', lv:'상', unit:'이진탐색', pts:7,
+   q:`<p>오름차순으로 정렬된 서로 다른 원소 100개의 리스트 A 에 대해 수업의 bs 로 bs(A, 0, 99, k) 를 수행한다. k 를 어떻게 고르든(A 에 없는 값 포함) bs 가 호출되는 횟수의 <b>최댓값</b>은? (처음 호출과, a &gt; b 가 되어 −1 을 반환하는 호출도 센다)</p>`,
+   choices:['6','7','8','9'], answer:[3],
+   exp:`m = (0 + 99) // 2 = 49 라 오른쪽으로 가면 남는 원소가 50 개로 더 많다. 남는 원소 수 100 → 50 → 25 → 12 → 6 → 3 → 1 → 0 으로, 원소가 있는 호출 7번 + a &gt; b 호출 1번 = 8번. log₂100 ≈ 6.6 만 보고 6 이나 7 로 답하면 a &gt; b 로 끝나는 마지막 호출이나 올림을 놓친 것이다.`,
+   src:[['03-2','s13','이진탐색 코드'],['03-2','s14','이진탐색 복잡도']] },
+
+ { type:'short', lv:'상', unit:'피보나치', pts:7,
+   q:`<p>수업의 fibo1 로 fibo1(10) 을 호출할 때, fibo1 이 호출되는 <b>총 횟수</b>(처음 호출 포함)를 쓰시오.</p>`,
+   show:'177', alt:['177번','177회'],
+   exp:`호출 수 c(n) 은 자기 자신 1번 + 두 갈래의 호출 수이므로 c(n) = c(n − 1) + c(n − 2) + 1, c(0) = c(1) = 1. 1, 1, 3, 5, 9, 15, 25, 41, 67, 109, 177. 피보나치 점화식과 같은 모양에 +1 이 붙어 호출 수도 지수적으로 늘어난다. +1 을 빼먹으면 89 로 틀린다.`,
+   src:[['03-1','s7','fibo1 점화식·역토너먼트']] },
+
+ { type:'line', lv:'상', unit:'거듭제곱', pts:7,
+   q:`<p>다음은 power3 에서 <b>한 줄</b>을 바꾼 것이다. 결과(a<sup>n</sup>)는 언제나 맞게 나오지만, n = 2<sup>k</sup> 일 때 호출 횟수가 2n − 1 번이 되어 power3 의 장점을 잃는다. 바뀐 줄을 고르시오.</p>`,
+   code:`
+def power3(a, n):
+    if n == 1:
+        return a
+    x = power3(a, n//2)
+    if n % 2 == 0:
+        return x * power3(a, n//2)
+    else:
+        return x * x * a`,
+   answer:[6],
+   exp:`6번 줄은 return x * x 여야 한다. 이미 구한 x 를 다시 쓰지 않고 power3(a, n//2) 를 한 번 더 부르면, n 이 짝수일 때 재귀 호출이 두 번 → 2T(${F('n','2')}) + C 가 되어 power2 처럼 O(n). n = 2<sup>k</sup> 이면 모든 단계가 짝수라 호출 수가 1 + 2 + … + n = 2n − 1. 4번 줄은 원래 power3 와 같다.`,
+   src:[['03-1','s5','power2'],['03-1','s6','power3']] },
+
+ { type:'essay', lv:'상', unit:'거듭제곱', pts:9,
+   q:`<p>다음 power4 가 a<sup>n</sup> 을 바르게 구하는지, 그리고 시간복잡도가 O(log n) 인지 판정하고 이유를 쓰시오. (n 이 홀수일 때 다음 호출의 n 이 어떻게 되는지를 이용할 것)</p>
+<pre>def power4(a, n):
+    if n == 1:
+        return a
+    if n % 2 == 0:
+        x = power4(a, n//2)
+        return x * x
+    else:
+        return a * power4(a, n-1)</pre>`,
+   model:`<b>바르게 구한다.</b> 짝수면 a<sup>n</sup> = (a<sup>n/2</sup>)<sup>2</sup>, 홀수면 a<sup>n</sup> = a × a<sup>n−1</sup> 이고, 재귀 호출은 어느 경우든 한 번뿐이다.<br><b>O(log n) 이다.</b> n 이 홀수이면 다음 호출의 n − 1 은 짝수이므로, 바로 그다음 호출에서 반드시 반으로 줄어든다. 즉 호출 두 번 안에 n 이 적어도 절반이 되므로 호출 수는 많아야 2log₂n + 1 정도 → O(log n).<br>power1 처럼 n − 1 로 줄이는 줄이 있지만 연달아 일어나지 않으므로 O(n) 이 되지 않는다. (예 : n = 1023 이면 19번 호출)`,
+   rubric:['결과가 바름을 짝수·홀수 경우로 설명','재귀 호출이 매번 한 번뿐임을 지적','홀수 → n − 1 은 짝수라 다음에 반드시 절반이 됨을 설명','결론 O(log n)'],
+   src:[['03-1','s4','power1'],['03-1','s6','power3']] },
+];
+</script>
+</body>
+</html>
