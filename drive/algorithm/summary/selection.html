@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>알고리즘 정리노트 — 선택 문제</title>
+<style>
+:root{--acc:#4F46E5;--acc-2:#3730a3;--acc-bg:#eef0ff;--bg:#f6f6f8;--card:#fff;--ink:#16161d;--ink-2:#3c3c48;--ink-3:#7a7a88;--line:#e6e6ec;--line-2:#c9c9d4;
+--warn:#c2410c;--warn-bg:#fff1e8;--ok:#047857;--ok-bg:#e7f6ef;--code:#f2f2f6;--mono:ui-monospace,"SF Mono",Menlo,Consolas,"D2Coding",monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--acc:#8b8cff;--acc-2:#b4b5ff;--acc-bg:#23244a;--bg:#121218;--card:#1b1b23;--ink:#ececf2;--ink-2:#c5c5d0;--ink-3:#8d8d9b;--line:#2b2b36;--line-2:#43434f;--warn:#fb923c;--warn-bg:#3a2316;--ok:#34d399;--ok-bg:#12302a;--code:#24242e}}
+:root[data-theme="dark"]{--acc:#8b8cff;--acc-2:#b4b5ff;--acc-bg:#23244a;--bg:#121218;--card:#1b1b23;--ink:#ececf2;--ink-2:#c5c5d0;--ink-3:#8d8d9b;--line:#2b2b36;--line-2:#43434f;--warn:#fb923c;--warn-bg:#3a2316;--ok:#34d399;--ok-bg:#12302a;--code:#24242e}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.75 "Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;word-break:keep-all}
+.wrap{max-width:880px;margin:0 auto;padding:28px 18px 80px}
+header.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px;font-size:14px}
+header.top a{color:var(--ink-3);text-decoration:none}
+header.top button{font:inherit;font-size:13px;padding:6px 12px;border-radius:9px;border:1px solid var(--line-2);background:var(--card);color:var(--ink-2);cursor:pointer}
+.hero{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:26px 26px 22px;margin-bottom:18px}
+.hero .eyebrow{font-size:13px;font-weight:800;color:var(--acc);letter-spacing:.04em}
+.hero h1{font-size:30px;line-height:1.3;margin:6px 0 6px}
+.hero p{margin:0;color:var(--ink-2);font-size:15.5px}
+nav.chips{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0;margin-bottom:8px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+nav.chips a{flex:none;font-size:13.5px;font-weight:700;color:var(--ink-2);text-decoration:none;padding:6px 12px;border:1px solid var(--line-2);border-radius:999px;background:var(--card)}
+nav.chips a:hover{border-color:var(--acc);color:var(--acc)}
+section{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px 24px 18px;margin:16px 0;scroll-margin-top:64px}
+h2{font-size:22px;margin:0 0 4px;display:flex;align-items:center;gap:10px}
+h2 .no{font-size:13px;font-weight:800;color:#fff;background:var(--acc);border-radius:8px;padding:2px 8px}
+h2 .imp{white-space:nowrap;font-size:12px;font-weight:800;color:var(--warn);background:var(--warn-bg);border-radius:7px;padding:2px 8px;margin-left:auto}
+h3{font-size:17.5px;margin:22px 0 6px;color:var(--acc-2)}
+p{margin:8px 0}
+.lead{color:var(--ink-2);margin-bottom:12px}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:15.5px}
+th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+th{font-size:13.5px;color:var(--ink-3);font-weight:800;border-bottom:1.5px solid var(--line-2)}
+td b{color:var(--acc-2)}
+.tw{overflow-x:auto}
+.big{font-size:18px;font-weight:800;color:var(--acc-2);white-space:nowrap}
+.formula{background:var(--acc-bg);border-radius:14px;padding:14px 18px;margin:12px 0;font-size:18px;font-weight:700;text-align:center;line-height:2.1}
+.steps{background:var(--code);border-radius:14px;padding:14px 18px;margin:12px 0;font-size:16.5px;line-height:2.15}
+.steps .c{color:var(--ink-3);font-size:13.5px;font-weight:600;margin-left:10px}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.15;margin:0 2px;font-size:.92em}
+.fr>span:first-child{border-bottom:1.5px solid currentColor;padding:0 3px}
+.fr>span:last-child{padding:0 3px}
+.box{border-radius:14px;padding:12px 16px;margin:12px 0;font-size:15.5px}
+.box .t{font-weight:800;font-size:14px;margin-bottom:2px}
+.box.trap{background:var(--warn-bg);border-left:4px solid var(--warn)}
+.box.trap .t{color:var(--warn)}
+.box.key{background:var(--acc-bg);border-left:4px solid var(--acc)}
+.box.key .t{color:var(--acc-2)}
+.box.extra{background:var(--code);border-left:4px dashed var(--ink-3)}
+.box.extra .t{color:var(--ink-3)}
+pre{background:var(--code);border-radius:14px;padding:14px 16px;overflow-x:auto;font:14.5px/1.7 var(--mono);margin:12px 0}
+pre .cm{color:var(--ink-3)}
+code{font-family:var(--mono);font-size:.9em;background:var(--code);padding:1px 6px;border-radius:6px}
+figure{margin:14px 0}figcaption{text-align:center;font-size:13.5px;color:var(--ink-3);margin-top:6px}
+ol.flow{counter-reset:s;list-style:none;padding:0;margin:12px 0}
+ol.flow li{counter-increment:s;position:relative;padding:8px 0 8px 40px;border-bottom:1px dashed var(--line)}
+ol.flow li:last-child{border-bottom:0}
+ol.flow li::before{content:counter(s);position:absolute;left:0;top:9px;width:26px;height:26px;border-radius:50%;background:var(--acc-bg);color:var(--acc-2);font-weight:800;font-size:14px;display:grid;place-items:center}
+.qa details{border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin:10px 0;background:var(--bg)}
+.qa summary{cursor:pointer;font-weight:700;list-style:none}
+.qa summary::-webkit-details-marker{display:none}
+.qa summary::before{content:"Q";display:inline-block;width:24px;height:24px;border-radius:7px;background:var(--acc);color:#fff;font-size:13px;text-align:center;line-height:24px;margin-right:10px}
+.qa details[open] summary{margin-bottom:8px}
+.qa .a{border-top:1px dashed var(--line-2);padding-top:8px;color:var(--ink-2)}
+.qa .a b{color:var(--ok)}
+.trapgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.trapgrid div{border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:15px;background:var(--bg)}
+.trapgrid .x{color:var(--warn);font-weight:800}.trapgrid .o{color:var(--ok);font-weight:800}
+footer{text-align:center;color:var(--ink-3);font-size:13px;margin-top:30px}
+@media (max-width:640px){.tw table{min-width:560px}.tw{margin:0 -4px}body{font-size:16px}.hero h1{font-size:25px}section{padding:18px 16px 14px}.trapgrid{grid-template-columns:1fr}.formula{font-size:16.5px}}
+@media print{nav.chips,header.top button{display:none}section,.hero{break-inside:avoid;border:1px solid #ccc}.qa details{display:block}.qa details>*{display:block}}
+</style></head>
+<body><div class="wrap">
+<header class="top"><a href="../exam/index.html#selection">← 문제지 목록</a><button id="th">다크 / 라이트</button></header>
+<div class="hero">
+  <div class="eyebrow">알고리즘 · 정리노트 · 시험 대비</div>
+  <h1>선택 문제</h1>
+  <p>2주차 1·2차시 — 토너먼트 · Quick Select · 좋은 피벗 · MoM · 귀납법. 자세한 설명은 개념노트(<a href="../lecture/week02/02-1.html">2-1</a>, <a href="../lecture/week02/02-2.html">2-2</a>).</p>
+</div>
+<nav class="chips">
+  <a href="#all">한눈에</a><a href="#bound">상한·하한</a><a href="#tour">토너먼트</a><a href="#qs">Quick Select</a><a href="#good">좋은 피벗</a><a href="#mom">MoM</a><a href="#c">c = 4/3</a><a href="#ind">귀납법</a><a href="#trap">함정</a><a href="#check">셀프 체크</a>
+</nav>
+
+<section id="all">
+  <h2><span class="no">0</span>한눈에 보기</h2>
+  <p class="lead">선택 문제 = n개 중 <b>k번째로 작은(큰) 값</b>을 찾는 문제. 목표는 <b>비교 횟수 최소화</b>.</p>
+  <div class="tw"><table>
+    <thead><tr><th>문제</th><th>방법</th><th>비교 횟수</th></tr></thead>
+    <tbody>
+      <tr><td>최댓값 (또는 최솟값)</td><td>하나씩 비교 / 토너먼트</td><td class="big">n − 1</td></tr>
+      <tr><td>최대 + 최소 동시에</td><td>토너먼트 후 1R 패자에서 최솟값</td><td class="big"><span class="fr"><span>3</span><span>2</span></span>n − 2</td></tr>
+      <tr><td>최소 + 두 번째로 작은 값</td><td>최솟값에게 직접 진 원소에서 찾기</td><td class="big">n + ⌈log₂ n⌉ − 2</td></tr>
+      <tr><td>k번째 — Quick Select</td><td>피벗 = 아무 값 (L[0])</td><td>최선 <b>O(n)</b> · 최악 <b>O(n²)</b></td></tr>
+      <tr><td>k번째 — 좋은 피벗</td><td>|A|, |B| ≤ <span class="fr"><span>n</span><span>c</span></span>, 단 a ≤ n 가정</td><td><b>O(n log n)</b></td></tr>
+      <tr><td>k번째 — MoM</td><td>median들의 median을 피벗으로</td><td>최악도 <b>O(n)</b> (T(n) ≤ 44n)</td></tr>
+    </tbody>
+  </table></div>
+  <p style="font-size:14px;color:var(--ink-3)">위 세 줄의 비교 횟수는 모두 상한 = 하한인 <b>tight bound</b> (증명은 수업에서 하지 않음).</p>
+</section>
+
+<section id="bound">
+  <h2><span class="no">1</span>상한 · 하한 · tight bound</h2>
+  <div class="tw"><table><tbody>
+    <tr><td style="width:150px"><b>상한</b> upper bound</td><td>이보다 <b>더 많이</b> 비교할 필요는 없다</td></tr>
+    <tr><td><b>하한</b> lower bound</td><td>아무리 잘해도 <b>최소 이만큼</b>은 비교해야 한다</td></tr>
+    <tr><td><b>tight bound</b></td><td>상한 = 하한 → 그 값이 최적</td></tr>
+  </tbody></table></div>
+  <div class="box key"><div class="t">예 — 최댓값 찾기</div>n개면 n − 1번 이상 필요 없음(상한), 최소 n − 1번은 필요(하한) → tight bound = n − 1.</div>
+</section>
+
+<section id="tour">
+  <h2><span class="no">2</span>토너먼트로 비교 줄이기</h2>
+  <h3>① 최댓값 — 토너먼트도 n − 1번</h3>
+  <p>둘씩 붙여 이긴 쪽만 올라감. 비교 한 번에 <b>정확히 1명</b>이 탈락하고, 최댓값 1명만 남으려면 n − 1명이 탈락해야 하므로 n − 1번 (7개면 3 + 2 + 1 = 6번).</p>
+
+  <h3>② 최대 + 최소 동시에 — <span class="fr"><span>3</span><span>2</span></span>n − 2</h3>
+  <div class="steps">
+    단순: 최댓값 (n − 1) + 나머지에서 최솟값 (n − 2) = <b>2n − 3</b><br>
+    토너먼트: 최댓값 (n − 1) + <b>1라운드 패자 <span class="fr"><span>n</span><span>2</span></span>개</b>에서 최솟값 (<span class="fr"><span>n</span><span>2</span></span> − 1) = <b><span class="fr"><span>3</span><span>2</span></span>n − 2</b>
+  </div>
+  <figure><svg viewBox="0 0 600 278" width="100%" style="max-width:600px;display:block;margin:0 auto" role="img"><title>최대·최소 동시에</title><desc>8개로 최댓값 토너먼트 7번. 1라운드 패자 3,1,2,4 안에 최솟값이 있어 3번 더 비교. 합계 10번.</desc><line x1="72.5" y1="51" x2="105" y2="79" stroke="var(--line-2)" stroke-width="1.3"/><line x1="137.5" y1="51" x2="105" y2="79" stroke="var(--line-2)" stroke-width="1.3"/><line x1="202.5" y1="51" x2="235" y2="79" stroke="var(--line-2)" stroke-width="1.3"/><line x1="267.5" y1="51" x2="235" y2="79" stroke="var(--line-2)" stroke-width="1.3"/><line x1="332.5" y1="51" x2="365" y2="79" stroke="var(--line-2)" stroke-width="1.3"/><line x1="397.5" y1="51" x2="365" y2="79" stroke="var(--line-2)" stroke-width="1.3"/><line x1="462.5" y1="51" x2="495" y2="79" stroke="var(--line-2)" stroke-width="1.3"/><line x1="527.5" y1="51" x2="495" y2="79" stroke="var(--line-2)" stroke-width="1.3"/><line x1="105" y1="113" x2="170" y2="141" stroke="var(--line-2)" stroke-width="1.3"/><line x1="235" y1="113" x2="170" y2="141" stroke="var(--line-2)" stroke-width="1.3"/><line x1="365" y1="113" x2="430" y2="141" stroke="var(--line-2)" stroke-width="1.3"/><line x1="495" y1="113" x2="430" y2="141" stroke="var(--line-2)" stroke-width="1.3"/><line x1="170" y1="175" x2="300" y2="203" stroke="var(--line-2)" stroke-width="1.3"/><line x1="430" y1="175" x2="300" y2="203" stroke="var(--line-2)" stroke-width="1.3"/><circle cx="72.5" cy="34" r="17" fill="var(--warn-bg)" stroke="var(--warn)" stroke-width="1.6"/><text x="72.5" y="34" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--warn)">3</text><circle cx="137.5" cy="34" r="17" fill="var(--card)" stroke="var(--line-2)" stroke-width="1.6"/><text x="137.5" y="34" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--ink)">8</text><circle cx="202.5" cy="34" r="17" fill="var(--card)" stroke="var(--line-2)" stroke-width="1.6"/><text x="202.5" y="34" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--ink)">5</text><circle cx="267.5" cy="34" r="17" fill="var(--warn-bg)" stroke="var(--warn)" stroke-width="1.6"/><text x="267.5" y="34" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--warn)">1</text><circle cx="332.5" cy="34" r="17" fill="var(--card)" stroke="var(--line-2)" stroke-width="1.6"/><text x="332.5" y="34" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--ink)">7</text><circle cx="397.5" cy="34" r="17" fill="var(--warn-bg)" stroke="var(--warn)" stroke-width="1.6"/><text x="397.5" y="34" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--warn)">2</text><circle cx="462.5" cy="34" r="17" fill="var(--card)" stroke="var(--line-2)" stroke-width="1.6"/><text x="462.5" y="34" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--ink)">6</text><circle cx="527.5" cy="34" r="17" fill="var(--warn-bg)" stroke="var(--warn)" stroke-width="1.6"/><text x="527.5" y="34" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--warn)">4</text><text x="14" y="34" text-anchor="start" dominant-baseline="central" font-size="11" font-weight="700" fill="var(--ink-3)">입력</text><circle cx="105" cy="96" r="17" fill="var(--card)" stroke="var(--line-2)" stroke-width="1.6"/><text x="105" y="96" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--ink)">8</text><circle cx="235" cy="96" r="17" fill="var(--card)" stroke="var(--line-2)" stroke-width="1.6"/><text x="235" y="96" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--ink)">5</text><circle cx="365" cy="96" r="17" fill="var(--card)" stroke="var(--line-2)" stroke-width="1.6"/><text x="365" y="96" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--ink)">7</text><circle cx="495" cy="96" r="17" fill="var(--card)" stroke="var(--line-2)" stroke-width="1.6"/><text x="495" y="96" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--ink)">6</text><text x="14" y="96" text-anchor="start" dominant-baseline="central" font-size="11" font-weight="700" fill="var(--ink-3)">1R</text><circle cx="170" cy="158" r="17" fill="var(--card)" stroke="var(--line-2)" stroke-width="1.6"/><text x="170" y="158" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--ink)">8</text><circle cx="430" cy="158" r="17" fill="var(--card)" stroke="var(--line-2)" stroke-width="1.6"/><text x="430" y="158" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--ink)">7</text><text x="14" y="158" text-anchor="start" dominant-baseline="central" font-size="11" font-weight="700" fill="var(--ink-3)">2R</text><circle cx="300" cy="220" r="17" fill="var(--acc)" stroke="var(--acc)" stroke-width="1.6"/><text x="300" y="220" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="#fff">8</text><text x="14" y="220" text-anchor="start" dominant-baseline="central" font-size="11" font-weight="700" fill="var(--ink-3)">3R</text><text x="300" y="260" text-anchor="middle" dominant-baseline="central" font-size="12.5" font-weight="700" fill="var(--ink-2)">최댓값 8 : 4 + 2 + 1 = 7번   ·   1R 패자 {3, 1, 2, 4} 에서 최솟값 1 : 3번   →  10번</text></svg><figcaption>최솟값은 반드시 1라운드 패자 안에 있다 — 1라운드 승자는 모두 자기 짝보다 크기 때문</figcaption></figure>
+
+  <h3>③ 최소 + 두 번째로 작은 값 — n + ⌈log₂ n⌉ − 2</h3>
+  <div class="box key"><div class="t">핵심 논리</div>두 번째로 작은 값은 <b>최솟값에게만</b> 질 수 있다. 다른 원소 x 에게 졌다면 x 와 최솟값, 둘이 자기보다 작아서 "두 번째"가 아니게 되기 때문. → 후보 = 최솟값에게 <b>직접 진</b> 원소들.</div>
+  <figure><svg viewBox="0 0 600 278" width="100%" style="max-width:600px;display:block;margin:0 auto" role="img"><title>두 번째로 작은 값</title><desc>최솟값 1이 올라온 경로에서 1에게 직접 진 7, 3, 2가 후보. 후보 3개 중 최솟값 2를 2번 비교로 찾음.</desc><line x1="72.5" y1="51" x2="105" y2="79" stroke="var(--line-2)" stroke-width="1.3"/><line x1="137.5" y1="51" x2="105" y2="79" stroke="var(--line-2)" stroke-width="1.3"/><line x1="202.5" y1="51" x2="235" y2="79" stroke="var(--line-2)" stroke-width="1.3"/><line x1="267.5" y1="51" x2="235" y2="79" stroke="var(--line-2)" stroke-width="1.3"/><line x1="332.5" y1="51" x2="365" y2="79" stroke="var(--acc)" stroke-width="2.6"/><line x1="397.5" y1="51" x2="365" y2="79" stroke="var(--line-2)" stroke-width="1.3"/><line x1="462.5" y1="51" x2="495" y2="79" stroke="var(--line-2)" stroke-width="1.3"/><line x1="527.5" y1="51" x2="495" y2="79" stroke="var(--line-2)" stroke-width="1.3"/><line x1="105" y1="113" x2="170" y2="141" stroke="var(--line-2)" stroke-width="1.3"/><line x1="235" y1="113" x2="170" y2="141" stroke="var(--line-2)" stroke-width="1.3"/><line x1="365" y1="113" x2="430" y2="141" stroke="var(--acc)" stroke-width="2.6"/><line x1="495" y1="113" x2="430" y2="141" stroke="var(--line-2)" stroke-width="1.3"/><line x1="170" y1="175" x2="300" y2="203" stroke="var(--line-2)" stroke-width="1.3"/><line x1="430" y1="175" x2="300" y2="203" stroke="var(--acc)" stroke-width="2.6"/><circle cx="72.5" cy="34" r="17" fill="var(--card)" stroke="var(--line-2)" stroke-width="1.6"/><text x="72.5" y="34" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--ink)">5</text><circle cx="137.5" cy="34" r="17" fill="var(--card)" stroke="var(--line-2)" stroke-width="1.6"/><text x="137.5" y="34" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--ink)">2</text><circle cx="202.5" cy="34" r="17" fill="var(--card)" stroke="var(--line-2)" stroke-width="1.6"/><text x="202.5" y="34" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--ink)">8</text><circle cx="267.5" cy="34" r="17" fill="var(--card)" stroke="var(--line-2)" stroke-width="1.6"/><text x="267.5" y="34" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--ink)">6</text><circle cx="332.5" cy="34" r="17" fill="var(--acc)" stroke="var(--acc)" stroke-width="1.6"/><text x="332.5" y="34" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="#fff">1</text><circle cx="397.5" cy="34" r="17" fill="var(--warn-bg)" stroke="var(--warn)" stroke-width="1.6"/><text x="397.5" y="34" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--warn)">7</text><circle cx="462.5" cy="34" r="17" fill="var(--card)" stroke="var(--line-2)" stroke-width="1.6"/><text x="462.5" y="34" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--ink)">3</text><circle cx="527.5" cy="34" r="17" fill="var(--card)" stroke="var(--line-2)" stroke-width="1.6"/><text x="527.5" y="34" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--ink)">4</text><text x="14" y="34" text-anchor="start" dominant-baseline="central" font-size="11" font-weight="700" fill="var(--ink-3)">입력</text><circle cx="105" cy="96" r="17" fill="var(--card)" stroke="var(--line-2)" stroke-width="1.6"/><text x="105" y="96" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--ink)">2</text><circle cx="235" cy="96" r="17" fill="var(--card)" stroke="var(--line-2)" stroke-width="1.6"/><text x="235" y="96" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--ink)">6</text><circle cx="365" cy="96" r="17" fill="var(--acc)" stroke="var(--acc)" stroke-width="1.6"/><text x="365" y="96" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="#fff">1</text><circle cx="495" cy="96" r="17" fill="var(--warn-bg)" stroke="var(--warn)" stroke-width="1.6"/><text x="495" y="96" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--warn)">3</text><text x="14" y="96" text-anchor="start" dominant-baseline="central" font-size="11" font-weight="700" fill="var(--ink-3)">1R</text><circle cx="170" cy="158" r="17" fill="var(--warn-bg)" stroke="var(--warn)" stroke-width="1.6"/><text x="170" y="158" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--warn)">2</text><circle cx="430" cy="158" r="17" fill="var(--acc)" stroke="var(--acc)" stroke-width="1.6"/><text x="430" y="158" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="#fff">1</text><text x="14" y="158" text-anchor="start" dominant-baseline="central" font-size="11" font-weight="700" fill="var(--ink-3)">2R</text><circle cx="300" cy="220" r="17" fill="var(--acc)" stroke="var(--acc)" stroke-width="1.6"/><text x="300" y="220" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="#fff">1</text><text x="14" y="220" text-anchor="start" dominant-baseline="central" font-size="11" font-weight="700" fill="var(--ink-3)">3R</text><text x="300" y="260" text-anchor="middle" dominant-baseline="central" font-size="12.5" font-weight="700" fill="var(--ink-2)">최솟값 1 : 7번   ·   1에게 직접 진 {7, 3, 2} = 라운드 수 3개 → 2번   →  9번</text></svg><figcaption>후보 수 = 최솟값이 거친 라운드 수 = ⌈log₂ n⌉ (8개면 3개)</figcaption></figure>
+  <div class="tw"><table>
+    <thead><tr><th>n</th><th>라운드 수 ⌈log₂ n⌉</th><th>토너먼트 n + ⌈log₂ n⌉ − 2</th><th>단순 2n − 3</th></tr></thead>
+    <tbody><tr><td>8</td><td>3</td><td><b>9</b></td><td>13</td></tr><tr><td>9 ~ 16</td><td>4</td><td><b>11 ~ 18</b></td><td>15 ~ 29</td></tr><tr><td>17</td><td>5</td><td><b>20</b></td><td>31</td></tr></tbody>
+  </table></div>
+  <div class="steps">(n − 1) <span class="c">최솟값</span> + (⌈log₂ n⌉ − 1) <span class="c">후보 중 최솟값</span> = <b>n + ⌈log₂ n⌉ − 2</b></div>
+</section>
+
+<section id="qs">
+  <h2><span class="no">3</span>Quick Select</h2>
+  <ol class="flow">
+    <li>피벗 P 를 고른다 (아무 값 — 수업 코드는 L[0])</li>
+    <li>P 와 비교해 <b>A</b> (P보다 작음) · <b>M</b> (P와 같음, P 포함) · <b>B</b> (P보다 큼) 로 나눔 — n − 1번. 그룹 안은 정렬 안 됨</li>
+    <li>k 와 |A|, |M| 을 비교해 답이 있는 그룹 <b>하나만</b> 남기고 재귀</li>
+  </ol>
+  <div class="tw"><table>
+    <thead><tr><th>조건</th><th>답의 위치</th><th>다음 호출</th></tr></thead>
+    <tbody>
+      <tr><td><b>|A| ≥ k</b></td><td>A</td><td><code>quick_select(A, k)</code> — 순위 그대로</td></tr>
+      <tr><td><b>|A| + |M| &lt; k</b></td><td>B</td><td><code>quick_select(B, k − |A| − |M|)</code> — 앞 순위만큼 당김</td></tr>
+      <tr><td>그 외</td><td>M</td><td><code>return P</code></td></tr>
+    </tbody>
+  </table></div>
+<pre>def quick_select(L, k):
+    P = L[0]                          <span class="cm"># 피벗 = 0번째 값</span>
+    A, B, M = [], [], []
+    for x in L:                       <span class="cm"># n − 1 번 비교로 분류</span>
+        if P &gt; x:   A.append(x)
+        elif P &lt; x: B.append(x)
+        else:       M.append(x)
+    if len(A) &gt;= k:                   <span class="cm"># '&gt;=' — '&gt;' 면 |A| = k 를 놓침</span>
+        return quick_select(A, k)
+    elif len(A) + len(M) &lt; k:
+        return quick_select(B, k - len(A) - len(M))
+    else:
+        return P</pre>
+  <h3>추적 — L = [6, 5, 1, 7, 9, 3, 8, 10, 2], k = 8</h3>
+  <div class="tw"><table>
+    <thead><tr><th>단계</th><th>L</th><th>k</th><th>P</th><th>A</th><th>M</th><th>B</th><th>판정</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>9개</td><td>8</td><td>6</td><td>[5, 1, 3, 2]</td><td>[6]</td><td>[7, 9, 8, 10]</td><td>4 + 1 &lt; 8 → B, k = 3</td></tr>
+      <tr><td>2</td><td>[7, 9, 8, 10]</td><td>3</td><td>7</td><td>[ ]</td><td>[7]</td><td>[9, 8, 10]</td><td>0 + 1 &lt; 3 → B, k = 2</td></tr>
+      <tr><td>3</td><td>[9, 8, 10]</td><td>2</td><td>9</td><td>[8]</td><td>[9]</td><td>[10]</td><td>1 &lt; 2 ≤ 2 → <b>9 반환</b></td></tr>
+    </tbody>
+  </table></div>
+  <p>크기 9 → 4 (좋음, 반 가까이 줄어듦) → 3 (나쁨, A 가 비어 1개만 줄어듦).</p>
+  <h3>최선 · 최악</h3>
+  <div class="tw"><table>
+    <thead><tr><th></th><th>매번 줄어드는 크기</th><th>점화식</th><th>결과</th></tr></thead>
+    <tbody>
+      <tr><td><b>최악</b></td><td>1개 (A 또는 B 가 비어 버림)</td><td>T(n) = (n − 1) + T(n − 1)</td><td class="big">O(n²)</td></tr>
+      <tr><td><b>최선</b></td><td>절반</td><td>T(n) = n + T(<span class="fr"><span>n</span><span>2</span></span>)</td><td class="big">O(n)</td></tr>
+    </tbody>
+  </table></div>
+  <div class="steps">
+    최악: (n − 1) + (n − 2) + ⋯ + 1 + T(1) = <span class="fr"><span>(n − 1)n</span><span>2</span></span> = <b>O(n²)</b><br>
+    최선: n + <span class="fr"><span>n</span><span>2</span></span> + <span class="fr"><span>n</span><span>4</span></span> + ⋯ + T(1) = T(1) + n (1 + <span class="fr"><span>1</span><span>2</span></span> + <span class="fr"><span>1</span><span>4</span></span> + ⋯) <span class="c">괄호 &lt; 2 인 상수</span> = <b>O(n)</b>
+  </div>
+</section>
+
+<section id="good">
+  <h2><span class="no">4</span>좋은 피벗 → O(n log n)</h2>
+  <div class="formula">좋은 피벗 : |A| ≤ <span class="fr"><span>n</span><span>c</span></span>, &nbsp; |B| ≤ <span class="fr"><span>n</span><span>c</span></span> &nbsp; (c &gt; 1 인 상수)</div>
+  <div class="steps">
+    크기 n → <span class="fr"><span>n</span><span>c</span></span> → <span class="fr"><span>n</span><span>c²</span></span> → ⋯ → <span class="fr"><span>n</span><span>c<sup>k</sup></span></span> = 1 &nbsp;⟹&nbsp; n = c<sup>k</sup> &nbsp;⟹&nbsp; <b>재귀 횟수 k = log<sub>c</sub> n</b><br>
+    한 단계 = 피벗 고르기 <b>a</b> + 나누기 <b>n</b> <span class="c">나누기는 실제로 n, n/c, … 로 줄지만 전부 n 으로 크게 잡음</span><br>
+    전체 ≤ log<sub>c</sub> n · (a + n) ≤ log<sub>c</sub> n · 2n = <b>O(n log n)</b> <span class="c">a ≤ n 가정</span>
+  </div>
+  <div class="box trap"><div class="t">조건부 결론</div><b>a ≤ n</b> (피벗 고르는 비용이 나누는 비용 이하) 은 증명이 아니라 <b>가정</b>. "좋은 피벗을 n 이하로 고를 수 있다면 O(n log n)". 그런 방법이 MoM.</div>
+  <div class="box key"><div class="t">좋은 피벗 ≠ a ≤ n</div>좋은 피벗 = 피벗의 <b>위치</b>(고르게 나뉨) 조건. a ≤ n = 피벗을 <b>찾는 비용</b> 조건. 서로 다른 조건.</div>
+</section>
+
+<section id="mom">
+  <h2><span class="no">5</span>MoM — Median of Medians<span class="imp">시험 ★★★</span></h2>
+  <p class="lead">Quick Select 와 같고 <b>피벗만</b> "median 들의 median" 으로 고른다. mean(평균)은 쓰지 않음.</p>
+  <div class="tw"><table>
+    <thead><tr><th>단계</th><th>하는 일</th><th>비용</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>5개씩 묶기</td><td>0</td></tr>
+      <tr><td>2</td><td>각 묶음의 median (묶음당 6번 × <span class="fr"><span>n</span><span>5</span></span>묶음)</td><td><span class="fr"><span>6n</span><span>5</span></span></td></tr>
+      <tr><td>3</td><td>medians 의 median m* — <code>MoM(medians, 가운데 순위)</code> <b>재귀</b></td><td>T(<span class="fr"><span>n</span><span>5</span></span>)</td></tr>
+      <tr><td>4</td><td>m* 로 A / M / B 나누고 한쪽 재귀 또는 m* 반환</td><td>n + T(<span class="fr"><span>n</span><span>c</span></span>)</td></tr>
+    </tbody>
+  </table></div>
+  <div class="formula">T(n) = T(<span class="fr"><span>n</span><span>c</span></span>) + T(<span class="fr"><span>n</span><span>5</span></span>) + <span class="fr"><span>11n</span><span>5</span></span> &nbsp;→&nbsp; c = <span class="fr"><span>4</span><span>3</span></span> 대입 &nbsp;→&nbsp; T(n) = T(<span class="fr"><span>3n</span><span>4</span></span>) + T(<span class="fr"><span>n</span><span>5</span></span>) + <span class="fr"><span>11n</span><span>5</span></span></div>
+  <div class="box key"><div class="t">재귀가 두 군데</div>3단계 = 피벗 m* 를 구하려는 재귀 (크기 <span class="fr"><span>n</span><span>5</span></span>). 4단계 = 최종 답을 찾는 재귀 (크기 ≤ <span class="fr"><span>3n</span><span>4</span></span>).</div>
+  <h3>5개의 median 을 6번에</h3>
+  <div class="tw"><table>
+    <thead><tr><th>비교</th><th>결과</th><th>알게 되는 것</th></tr></thead>
+    <tbody>
+      <tr><td>① ② ③</td><td>a &lt; b, c &lt; d, a &lt; c</td><td>a 는 b, c, d 보다 작음 → 1등 또는 2등 → median 아님, <b>탈락</b></td></tr>
+      <tr><td>④ ⑤</td><td>b &lt; e, b &lt; c</td><td>b 가 {b, c, d, e} 중 최소 (c &lt; d 는 ② 에서 앎)</td></tr>
+      <tr><td>⑥</td><td>c &lt; e</td><td>{c, d, e} 중 최소 c = <b>median</b></td></tr>
+    </tbody>
+  </table></div>
+  <p>핵심 = <b>이미 비교한 결과를 다시 쓰기</b> (c &lt; d 를 두 번 재활용).</p>
+</section>
+
+<section id="c">
+  <h2><span class="no">6</span>c = <span class="fr"><span>4</span><span>3</span></span> 증명 — |A|, |B| ≤ <span class="fr"><span>3n</span><span>4</span></span><span class="imp">시험 ★★★</span></h2>
+  <figure><svg viewBox="0 0 500 290" width="100%" style="max-width:500px;display:block;margin:0 auto" role="img"><title>MoM 구조</title><desc>5개짜리 묶음을 세로로 정렬하고 median 순서로 늘어놓으면 왼쪽 위 X는 m* 이하, 오른쪽 아래 W는 m* 이상이 보장된다.</desc><circle cx="170" cy="30" r="14" fill="var(--warn-bg)" stroke="var(--warn)" stroke-width="1.5"/><circle cx="170" cy="80" r="14" fill="var(--warn-bg)" stroke="var(--warn)" stroke-width="1.5"/><circle cx="170" cy="130" r="14" fill="var(--acc)" stroke="var(--acc)" stroke-width="1.5"/><circle cx="170" cy="180" r="14" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/><circle cx="170" cy="230" r="14" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/><circle cx="220" cy="30" r="14" fill="var(--warn-bg)" stroke="var(--warn)" stroke-width="1.5"/><circle cx="220" cy="80" r="14" fill="var(--warn-bg)" stroke="var(--warn)" stroke-width="1.5"/><circle cx="220" cy="130" r="14" fill="var(--acc)" stroke="var(--acc)" stroke-width="1.5"/><circle cx="220" cy="180" r="14" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/><circle cx="220" cy="230" r="14" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/><circle cx="270" cy="30" r="14" fill="var(--warn-bg)" stroke="var(--warn)" stroke-width="1.5"/><circle cx="270" cy="80" r="14" fill="var(--warn-bg)" stroke="var(--warn)" stroke-width="1.5"/><circle cx="270" cy="130" r="19" fill="var(--ink)" stroke="var(--ink)"/><text x="270" y="130" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="var(--bg)">m*</text><circle cx="270" cy="180" r="14" fill="var(--ok-bg)" stroke="var(--ok)" stroke-width="1.5"/><circle cx="270" cy="230" r="14" fill="var(--ok-bg)" stroke="var(--ok)" stroke-width="1.5"/><circle cx="320" cy="30" r="14" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/><circle cx="320" cy="80" r="14" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/><circle cx="320" cy="130" r="14" fill="var(--acc)" stroke="var(--acc)" stroke-width="1.5"/><circle cx="320" cy="180" r="14" fill="var(--ok-bg)" stroke="var(--ok)" stroke-width="1.5"/><circle cx="320" cy="230" r="14" fill="var(--ok-bg)" stroke="var(--ok)" stroke-width="1.5"/><circle cx="370" cy="30" r="14" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/><circle cx="370" cy="80" r="14" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/><circle cx="370" cy="130" r="14" fill="var(--acc)" stroke="var(--acc)" stroke-width="1.5"/><circle cx="370" cy="180" r="14" fill="var(--ok-bg)" stroke="var(--ok)" stroke-width="1.5"/><circle cx="370" cy="230" r="14" fill="var(--ok-bg)" stroke="var(--ok)" stroke-width="1.5"/><rect x="146" y="6" width="148" height="148" rx="12" fill="none" stroke="var(--warn)" stroke-width="1.6" stroke-dasharray="5 4"/><rect x="246" y="106" width="148" height="148" rx="12" fill="none" stroke="var(--ok)" stroke-width="1.6" stroke-dasharray="5 4"/><text x="136" y="80" text-anchor="end" dominant-baseline="central" font-size="18" font-weight="800" fill="var(--warn)">X</text><text x="404" y="180" text-anchor="start" dominant-baseline="central" font-size="18" font-weight="800" fill="var(--ok)">W</text><text x="270" y="274" text-anchor="middle" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">↓ 각 세로줄: 위가 작고 아래가 큼 · → 세로줄은 median 이 작은 순서</text><text x="80" y="130" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="700" fill="var(--acc)">median 줄</text></svg><figcaption>X (왼쪽 위) = m* 이하 보장 · W (오른쪽 아래) = m* 이상 보장 · 나머지는 모름</figcaption></figure>
+  <ol class="flow">
+    <li><b>X 의 원소 ≤ m*</b> : x ≤ (자기 묶음의 median) ≤ m*. m* 자신도 X 에 들어 있으므로 "&lt;" 가 아니라 <b>"≤"</b></li>
+    <li><b>|X| 세기</b> : 묶음 <span class="fr"><span>n</span><span>5</span></span>개 중 절반(<span class="fr"><span>n</span><span>10</span></span>개)의 median 이 m* 이하, 그런 묶음마다 3개 → |X| ≥ <span class="fr"><span>3n</span><span>10</span></span> ≥ <b><span class="fr"><span>n</span><span>4</span></span></b> <span style="color:var(--ink-3);font-size:14px">(수업은 여유 있게 n/4)</span></li>
+    <li><b>|B| 의 상한</b> : X 의 원소는 m* 보다 크지 않으므로 B 에 못 들어감 → |B| ≤ n − <span class="fr"><span>n</span><span>4</span></span> = <b><span class="fr"><span>3n</span><span>4</span></span></b>. W 로 대칭 → |A| ≤ <span class="fr"><span>3n</span><span>4</span></span></li>
+    <li>따라서 <span class="fr"><span>n</span><span>c</span></span> = <span class="fr"><span>3n</span><span>4</span></span>, <b>c = <span class="fr"><span>4</span><span>3</span></span></b> — "최소 25% 는 가져가고 75% 보다 작게 만들어 준다"</li>
+  </ol>
+</section>
+
+<section id="ind">
+  <h2><span class="no">7</span>귀납법 → MoM 은 O(n)<span class="imp">시험 ★★★</span></h2>
+  <div class="tw"><table>
+    <thead><tr><th>단계</th><th>기본 표현</th><th>MoM 에 쓰는 표현</th></tr></thead>
+    <tbody>
+      <tr><td>1. 기저</td><td colspan="2">가장 작을 때 (n = 1) 직접 확인</td></tr>
+      <tr><td>2. 가정</td><td>n = k 일 때 성립</td><td><b>k &lt; n 인 모든 k</b> 에서 성립</td></tr>
+      <tr><td>3. 귀납</td><td>n = k + 1 일 때 성립 보이기</td><td><b>k = n</b> 일 때 성립 보이기</td></tr>
+      <tr><td>4. 결론</td><td colspan="2">1 에서 출발해 3 을 반복 → 모든 n 에서 성립</td></tr>
+    </tbody>
+  </table></div>
+  <p>MoM 은 T(<span class="fr"><span>3n</span><span>4</span></span>), T(<span class="fr"><span>n</span><span>5</span></span>) 처럼 <b>바로 앞(n − 1)이 아닌</b> 값을 쓰므로 "n 보다 작은 건 전부 성립" 표현이 편함.</p>
+  <h3>T(n) ≤ 44n 증명</h3>
+  <div class="steps">
+    기저 &nbsp; T(1) = 1 ≤ 44 ✓<br>
+    가정 &nbsp; k &lt; n 이면 T(k) ≤ 44k<br>
+    귀납 &nbsp; T(n) = T(<span class="fr"><span>3n</span><span>4</span></span>) + T(<span class="fr"><span>n</span><span>5</span></span>) + <span class="fr"><span>11n</span><span>5</span></span><br>
+    &emsp;&emsp;&emsp; ≤ 44 · <span class="fr"><span>3n</span><span>4</span></span> + 44 · <span class="fr"><span>n</span><span>5</span></span> + <span class="fr"><span>11n</span><span>5</span></span> <span class="c"><span class="fr"><span>3n</span><span>4</span></span>, <span class="fr"><span>n</span><span>5</span></span> &lt; n 이라 가정 적용</span><br>
+    &emsp;&emsp;&emsp; = 33n + <span class="fr"><span>44n</span><span>5</span></span> + <span class="fr"><span>11n</span><span>5</span></span> = 33n + 11n = <b>44n</b> ✓<br>
+    결론 &nbsp; T(n) ≤ 44n → <b>O(n)</b>
+  </div>
+  <div class="box extra"><div class="t">왜 44 · 왜 O(n) 인가 (정리본의 보충 설명)</div>T(n) ≤ Cn 으로 두면 C · <span class="fr"><span>19</span><span>20</span></span> + <span class="fr"><span>11</span><span>5</span></span> ≤ C 이어야 닫힘 → C ≥ 44. 근본 이유는 <span class="fr"><span>3</span><span>4</span></span> + <span class="fr"><span>1</span><span>5</span></span> = <span class="fr"><span>19</span><span>20</span></span> &lt; 1 — 두 재귀 조각을 합쳐도 원래보다 작음.</div>
+  <div class="box key"><div class="t">4절 O(n log n) 과 모순?</div>아님. 4절은 a ≤ n 가정으로 크게 잡은 상한, 여기는 피벗 비용까지 넣어 정확히 푼 결과. O(n) 이 더 정확한 답.</div>
+</section>
+
+<section id="trap">
+  <h2><span class="no">8</span>자주 틀리는 것</h2>
+  <div class="trapgrid">
+    <div><span class="x">✗</span> 토너먼트로 최댓값 찾으면 비교가 줄어든다<br><span class="o">✓</span> 그대로 n − 1. 줄어드는 건 "최대+최소", "최소+두 번째"</div>
+    <div><span class="x">✗</span> 최대·최소 동시에 = 2n − 3<br><span class="o">✓</span> 2n − 3 은 단순 방법. tight bound 는 <span class="fr"><span>3</span><span>2</span></span>n − 2</div>
+    <div><span class="x">✗</span> 라운드 수 = log₂ n<br><span class="o">✓</span> <b>올림</b> ⌈log₂ n⌉ — 9개도 4라운드</div>
+    <div><span class="x">✗</span> <code>if len(A) &gt; k</code><br><span class="o">✓</span> <code>&gt;=</code> — |A| = k 면 답은 A 의 맨 끝</div>
+    <div><span class="x">✗</span> B 로 갈 때 k 그대로<br><span class="o">✓</span> k − |A| − |M| — A, M 이 앞 순위를 차지</div>
+    <div><span class="x">✗</span> Quick Select 최악 O(n log n)<br><span class="o">✓</span> O(n²). O(n log n) 은 좋은 피벗 + a ≤ n 가정</div>
+    <div><span class="x">✗</span> MoM 의 m* = 전체의 중앙값<br><span class="o">✓</span> 피벗으로만 씀. 정확한 중앙값일 필요 없음</div>
+    <div><span class="x">✗</span> X 의 원소 &lt; m*<br><span class="o">✓</span> ≤ m* (m* 자신 포함)</div>
+    <div><span class="x">✗</span> 2단계 비용 = n<br><span class="o">✓</span> 6 × <span class="fr"><span>n</span><span>5</span></span> = <span class="fr"><span>6n</span><span>5</span></span>, 합치면 <span class="fr"><span>11n</span><span>5</span></span></div>
+    <div><span class="x">✗</span> 5개가 아니면 아무 수로 묶어도 O(n)<br><span class="o">✓</span> 두 재귀 비율 합이 1 보다 작아야 함 (5개: <span class="fr"><span>19</span><span>20</span></span>)</div>
+  </div>
+</section>
+
+<section id="check" class="qa">
+  <h2><span class="no">9</span>셀프 체크</h2>
+  <p class="lead">답을 떠올린 뒤 눌러서 확인.</p>
+  <details><summary>n = 16 에서 최소와 두 번째로 작은 값을 찾는 비교 횟수는?</summary><div class="a"><b>18번</b> — 16 + ⌈log₂ 16⌉ − 2 = 16 + 4 − 2. (최솟값 15번 + 후보 4개 중 3번)</div></details>
+  <details><summary>n = 10 에서 최대·최소를 동시에 찾는 최소 비교 횟수는?</summary><div class="a"><b>13번</b> — <span class="fr"><span>3</span><span>2</span></span> · 10 − 2. (최댓값 9번 + 1R 패자 5개 중 4번)</div></details>
+  <details><summary>quick_select 에서 B 로 재귀할 때 순위를 바꾸는 이유는?</summary><div class="a">A 와 M 의 원소가 전체 1등부터 |A| + |M| 등까지를 이미 차지하므로, B 안에서는 <b>k − |A| − |M|</b> 번째가 전체 k 번째다.</div></details>
+  <details><summary>Quick Select 최악의 점화식과 결과, 그리고 최악이 되는 상황은?</summary><div class="a">T(n) = (n − 1) + T(n − 1) = <span class="fr"><span>(n − 1)n</span><span>2</span></span> = <b>O(n²)</b>. 매번 A 또는 B 가 비어 크기가 1 씩만 줄 때.</div></details>
+  <details><summary>MoM 의 점화식을 단계별 비용과 함께 쓰면?</summary><div class="a">0 + <span class="fr"><span>6n</span><span>5</span></span> + T(<span class="fr"><span>n</span><span>5</span></span>) + n + T(<span class="fr"><span>n</span><span>c</span></span>) = <b>T(<span class="fr"><span>n</span><span>c</span></span>) + T(<span class="fr"><span>n</span><span>5</span></span>) + <span class="fr"><span>11n</span><span>5</span></span></b></div></details>
+  <details><summary>MoM 에서 c = 4/3 이 나오는 과정을 세 줄로?</summary><div class="a">① X 의 원소 ≤ 묶음 median ≤ m*. ② |X| ≥ <span class="fr"><span>3n</span><span>10</span></span> ≥ <span class="fr"><span>n</span><span>4</span></span>. ③ X 는 B 에 못 들어가므로 |B| ≤ <span class="fr"><span>3n</span><span>4</span></span>, 대칭으로 |A| ≤ <span class="fr"><span>3n</span><span>4</span></span> → <b>c = <span class="fr"><span>4</span><span>3</span></span></b>.</div></details>
+  <details><summary>T(n) ≤ 44n 귀납 3단계의 계산은?</summary><div class="a">44 · <span class="fr"><span>3n</span><span>4</span></span> + 44 · <span class="fr"><span>n</span><span>5</span></span> + <span class="fr"><span>11n</span><span>5</span></span> = 33n + <span class="fr"><span>44n</span><span>5</span></span> + <span class="fr"><span>11n</span><span>5</span></span> = 33n + 11n = <b>44n</b>.</div></details>
+  <details><summary>5개의 median 을 찾을 때 첫 3번 비교 후 a 를 탈락시키는 근거는?</summary><div class="a">a &lt; b, c &lt; d, a &lt; c 이면 a 보다 큰 원소가 최소 3개(b, c, d) → a 는 1등 또는 2등이라 <b>3번째(median)가 될 수 없다</b>.</div></details>
+  <div style="margin-top:14px;font-size:15px">더 풀어 보기 → <a href="../exam/selection-1.html">기본</a> · <a href="../exam/selection-2.html">응용</a> · <a href="../exam/selection-3.html">심화</a></div>
+</section>
+<footer>알고리즘 · 선택 문제 정리노트 · jaealee.com</footer>
+</div>
+<script>
+(function(){const r=document.documentElement,k='summary-theme';try{const s=localStorage.getItem(k);if(s)r.dataset.theme=s;}catch(e){}
+document.getElementById('th').onclick=()=>{const d=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;r.dataset.theme=d?'light':'dark';try{localStorage.setItem(k,r.dataset.theme)}catch(e){}};
+addEventListener('beforeprint',()=>document.querySelectorAll('details').forEach(d=>d.open=true));})();
+</script></body></html>
