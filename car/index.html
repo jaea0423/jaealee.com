@@ -80,6 +80,9 @@
     font:inherit;font-size:17px;font-weight:600;color:var(--ink);cursor:pointer;
   }
   .item:active{background:var(--surface-2)}
+  /* 메인 화면 버튼 3개만 작게(팝업의 보내기 버튼은 그대로) */
+  .actions .btn-primary,.actions .item{height:44px;font-size:15px}
+  .actions .item{margin-top:8px}
   .item svg{width:19px;height:19px}
 
 
@@ -139,8 +142,8 @@
   /* 전송 완료 */
   .done{display:none;text-align:center;padding:24px 4px 6px}
   .done.show{display:block}
-  .done .mark{width:68px;height:68px;margin:6px auto 18px;border-radius:6px;background:rgba(95,211,154,.12);border:1px solid rgba(95,211,154,.3);display:grid;place-items:center}
-  .done .mark svg{width:34px;height:34px;color:var(--ok)}
+  .done .mark{margin:4px auto 14px;display:grid;place-items:center}
+  .done .mark svg{width:44px;height:44px;color:var(--ok)}
   .done h2{margin:0 0 8px}
   .done p{margin:0;color:var(--ink-2);font-size:16px;line-height:1.6}
   .done .meta{margin-top:16px;font-size:13px;color:var(--ink-3)}
@@ -224,7 +227,7 @@
 
   <div class="done" id="done">
     <div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17 19 7.5"/></svg></div>
-    <h2 id="doneTitle">차주에게 전달했습니다</h2>
+    <h2 id="doneTitle">차주에게 전송되었습니다</h2>
     <p id="doneText"></p>
     <div class="meta" id="doneMeta"></div>
     <button class="btn-ghost" type="button" data-close>닫기</button>
@@ -246,7 +249,7 @@ const TYPES = {
   move: {
     title: "이동 주차 요청",
     chips: ["통행에 방해돼요", "급한 상황이에요"],
-    done: "확인하는 대로 바로 이동하겠습니다.<br>잠시만 기다려 주세요."
+    done: ""
   },
   accident: {
     title: "사고·접촉 알림",
@@ -254,7 +257,7 @@ const TYPES = {
     done: "알려 주셔서 감사합니다.<br>확인 즉시 연락드리겠습니다."
   },
   other: {
-    title: "기타 문의",
+    title: "기타 연락",
     chips: [],
     done: "내용을 전달했습니다.<br>확인 후 연락드리겠습니다."
   }
@@ -382,8 +385,8 @@ form.addEventListener("submit", async (e) => {
 function showDone(){
   if (navigator.vibrate) navigator.vibrate(18);
   form.classList.add("hide");
-  $("doneTitle").textContent = CONFIG.endpoint ? "차주에게 전달했습니다" : "미리보기 — 실제 전송 안 됨";
   $("doneText").innerHTML = TYPES[current].done;
+  $("doneText").style.display = TYPES[current].done ? "" : "none";
   const t = new Date();
   $("doneMeta").textContent = `${String(t.getHours()).padStart(2,"0")}:${String(t.getMinutes()).padStart(2,"0")} 전송 · 연락처 ${phone.value}`;
   done.classList.add("show");
