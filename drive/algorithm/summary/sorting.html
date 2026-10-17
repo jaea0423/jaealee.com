@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>알고리즘 정리노트 — 정렬</title>
+<style>
+:root{--acc:#4F46E5;--acc-2:#3730a3;--acc-bg:#eef0ff;--bg:#f6f6f8;--card:#fff;--ink:#16161d;--ink-2:#3c3c48;--ink-3:#7a7a88;--line:#e6e6ec;--line-2:#c9c9d4;
+--warn:#c2410c;--warn-bg:#fff1e8;--ok:#047857;--ok-bg:#e7f6ef;--code:#f2f2f6;--mono:ui-monospace,"SF Mono",Menlo,Consolas,"D2Coding",monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--acc:#8b8cff;--acc-2:#b4b5ff;--acc-bg:#23244a;--bg:#121218;--card:#1b1b23;--ink:#ececf2;--ink-2:#c5c5d0;--ink-3:#8d8d9b;--line:#2b2b36;--line-2:#43434f;--warn:#fb923c;--warn-bg:#3a2316;--ok:#34d399;--ok-bg:#12302a;--code:#24242e}}
+:root[data-theme="dark"]{--acc:#8b8cff;--acc-2:#b4b5ff;--acc-bg:#23244a;--bg:#121218;--card:#1b1b23;--ink:#ececf2;--ink-2:#c5c5d0;--ink-3:#8d8d9b;--line:#2b2b36;--line-2:#43434f;--warn:#fb923c;--warn-bg:#3a2316;--ok:#34d399;--ok-bg:#12302a;--code:#24242e}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.75 "Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;word-break:keep-all}
+.wrap{max-width:880px;margin:0 auto;padding:28px 18px 80px}
+header.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px;font-size:14px}
+header.top a{color:var(--ink-3);text-decoration:none}
+header.top button{font:inherit;font-size:13px;padding:6px 12px;border-radius:9px;border:1px solid var(--line-2);background:var(--card);color:var(--ink-2);cursor:pointer}
+.hero{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:26px 26px 22px;margin-bottom:18px}
+.hero .eyebrow{font-size:13px;font-weight:800;color:var(--acc);letter-spacing:.04em}
+.hero h1{font-size:30px;line-height:1.3;margin:6px 0 6px}
+.hero p{margin:0;color:var(--ink-2);font-size:15.5px}
+nav.chips{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0;margin-bottom:8px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+nav.chips a{flex:none;font-size:13.5px;font-weight:700;color:var(--ink-2);text-decoration:none;padding:6px 12px;border:1px solid var(--line-2);border-radius:999px;background:var(--card)}
+nav.chips a:hover{border-color:var(--acc);color:var(--acc)}
+section{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px 24px 18px;margin:16px 0;scroll-margin-top:64px}
+h2{font-size:22px;margin:0 0 4px;display:flex;align-items:center;gap:10px}
+h2 .no{font-size:13px;font-weight:800;color:#fff;background:var(--acc);border-radius:8px;padding:2px 8px}
+h2 .imp{white-space:nowrap;font-size:12px;font-weight:800;color:var(--warn);background:var(--warn-bg);border-radius:7px;padding:2px 8px;margin-left:auto}
+h3{font-size:17.5px;margin:22px 0 6px;color:var(--acc-2)}
+p{margin:8px 0}
+.lead{color:var(--ink-2);margin-bottom:12px}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:15.5px}
+th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+th{font-size:13.5px;color:var(--ink-3);font-weight:800;border-bottom:1.5px solid var(--line-2)}
+td b{color:var(--acc-2)}
+.tw{overflow-x:auto}
+.big{font-size:18px;font-weight:800;color:var(--acc-2);white-space:nowrap}
+.formula{background:var(--acc-bg);border-radius:14px;padding:14px 18px;margin:12px 0;font-size:18px;font-weight:700;text-align:center;line-height:2.1}
+.steps{background:var(--code);border-radius:14px;padding:14px 18px;margin:12px 0;font-size:16.5px;line-height:2.15}
+.steps .c{color:var(--ink-3);font-size:13.5px;font-weight:600;margin-left:10px}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.15;margin:0 2px;font-size:.92em}
+.fr>span:first-child{border-bottom:1.5px solid currentColor;padding:0 3px}
+.fr>span:last-child{padding:0 3px}
+.box{border-radius:14px;padding:12px 16px;margin:12px 0;font-size:15.5px}
+.box .t{font-weight:800;font-size:14px;margin-bottom:2px}
+.box.trap{background:var(--warn-bg);border-left:4px solid var(--warn)}
+.box.trap .t{color:var(--warn)}
+.box.key{background:var(--acc-bg);border-left:4px solid var(--acc)}
+.box.key .t{color:var(--acc-2)}
+.box.extra{background:var(--code);border-left:4px dashed var(--ink-3)}
+.box.extra .t{color:var(--ink-3)}
+pre{background:var(--code);border-radius:14px;padding:14px 16px;overflow-x:auto;font:14.5px/1.7 var(--mono);margin:12px 0}
+pre .cm{color:var(--ink-3)}
+code{font-family:var(--mono);font-size:.9em;background:var(--code);padding:1px 6px;border-radius:6px}
+figure{margin:14px 0}figcaption{text-align:center;font-size:13.5px;color:var(--ink-3);margin-top:6px}
+ol.flow{counter-reset:s;list-style:none;padding:0;margin:12px 0}
+ol.flow li{counter-increment:s;position:relative;padding:8px 0 8px 40px;border-bottom:1px dashed var(--line)}
+ol.flow li:last-child{border-bottom:0}
+ol.flow li::before{content:counter(s);position:absolute;left:0;top:9px;width:26px;height:26px;border-radius:50%;background:var(--acc-bg);color:var(--acc-2);font-weight:800;font-size:14px;display:grid;place-items:center}
+.qa details{border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin:10px 0;background:var(--bg)}
+.qa summary{cursor:pointer;font-weight:700;list-style:none}
+.qa summary::-webkit-details-marker{display:none}
+.qa summary::before{content:"Q";display:inline-block;width:24px;height:24px;border-radius:7px;background:var(--acc);color:#fff;font-size:13px;text-align:center;line-height:24px;margin-right:10px}
+.qa details[open] summary{margin-bottom:8px}
+.qa .a{border-top:1px dashed var(--line-2);padding-top:8px;color:var(--ink-2)}
+.qa .a b{color:var(--ok)}
+.trapgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.trapgrid div{border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:15px;background:var(--bg)}
+.trapgrid .x{color:var(--warn);font-weight:800}.trapgrid .o{color:var(--ok);font-weight:800}
+footer{text-align:center;color:var(--ink-3);font-size:13px;margin-top:30px}
+@media (max-width:640px){.tw table{min-width:560px}.tw{margin:0 -4px}body{font-size:16px}.hero h1{font-size:25px}section{padding:18px 16px 14px}.trapgrid{grid-template-columns:1fr}.formula{font-size:16.5px}}
+@media print{nav.chips,header.top button{display:none}section,.hero{break-inside:avoid;border:1px solid #ccc}.qa details{display:block}.qa details>*{display:block}}
+</style></head>
+<body><div class="wrap">
+<header class="top"><a href="../exam/index.html#sorting">← 문제지 목록</a><button id="th">다크 / 라이트</button></header>
+<div class="hero">
+  <div class="eyebrow">알고리즘 · 정리노트 · 시험 대비</div>
+  <h1>정렬</h1>
+  <p>5주차 1차시, 6주차 1·2차시 — 기본 정렬 · 퀵 · 제자리 퀵 · 병합 · 힙 · 힙 정렬 · 비교 정렬의 하한. 자세한 설명은 개념노트(<a href="../lecture/week05/05-1.html">5-1</a>, <a href="../lecture/week06/06-1.html">6-1</a>, <a href="../lecture/week06/06-2.html">6-2</a>).</p>
+</div>
+<nav class="chips">
+  <a href="#all">한눈에</a><a href="#prop">stable·in-place</a><a href="#basic">기본 정렬</a><a href="#quick">퀵</a><a href="#inq">제자리 퀵</a><a href="#merge">병합</a><a href="#heap">힙</a><a href="#hsort">힙 정렬</a><a href="#lower">하한</a><a href="#trap">함정</a><a href="#check">셀프 체크</a>
+</nav>
+
+<section id="all">
+  <h2><span class="no">0</span>한눈에 보기</h2>
+  <p class="lead">정렬 = 리스트를 오름차순(또는 내림차순)으로 재배치. 목표는 <b>비교·교환 횟수 최소화</b>.</p>
+  <div class="tw"><table>
+    <thead><tr><th>알고리즘</th><th>시간</th><th>in-place</th><th>stable</th><th>한 줄 근거</th></tr></thead>
+    <tbody>
+      <tr><td><b>선택</b></td><td>O(n²)</td><td>O</td><td><b>X</b></td><td>최댓값을 <b>멀리 떨어진</b> 끝 칸과 교환</td></tr>
+      <tr><td><b>버블</b></td><td>O(n²)</td><td>O</td><td>O <span style="font-size:13px">(<code>&gt;</code>)</span></td><td>이웃끼리, 클 때만 교환</td></tr>
+      <tr><td><b>삽입</b></td><td>O(n²)</td><td>O</td><td>O <span style="font-size:13px">(<code>&gt;</code>)</span></td><td>같은 값에서 멈춤</td></tr>
+      <tr><td><b>퀵 (S/M/L)</b></td><td>O(n²) · 평균 O(n log n)</td><td><b>X</b></td><td>O</td><td>새 리스트 S, M, L · <code>for x in A</code> 순서대로</td></tr>
+      <tr><td><b>제자리 퀵</b></td><td>O(n²) · 평균 O(n log n)</td><td>O</td><td><b>X</b></td><td>A 안에서만 교환 · 멀리 떨어진 칸 교환</td></tr>
+      <tr><td><b>병합</b></td><td><b>O(n log n)</b></td><td><b>X</b></td><td>O <span style="font-size:13px">(<code>&lt;=</code>)</span></td><td>새 배열 B · 같으면 앞 그룹 먼저</td></tr>
+      <tr><td><b>힙 정렬</b></td><td><b>O(n log n)</b></td><td>O</td><td><b>X</b></td><td>자리만 바꿈 · A[0] ↔ A[i] 먼 교환</td></tr>
+    </tbody>
+  </table></div>
+  <div class="box key"><div class="t">비교 정렬의 하한</div>어떤 비교 기반 정렬도 <b>Ω(n log n)</b> 보다 빠를 수 없음 → 상한 O(n log n) 인 <b>병합 · 힙 정렬은 최적</b>.</div>
+</section>
+
+<section id="prop">
+  <h2><span class="no">1</span>stable · in-place<span class="imp">시험 ★★★</span></h2>
+  <div class="tw"><table><tbody>
+    <tr><td style="width:120px"><b>stable</b></td><td>같은 값의 원소들이 정렬 <b>전 순서 그대로</b> 남는 것을 보장. [3₁, 3₂, 7, 9] 가 유지되면 stable. "뒤집힌다" 가 아니라 "<b>보장 안 됨</b>" 이 unstable</td></tr>
+    <tr><td><b>in-place</b></td><td>필요한 추가 메모리가 <b>O(1)</b>. 판단: <b>새 리스트·배열을 만드는가</b> (만들면 not in-place)</td></tr>
+  </tbody></table></div>
+  <div class="box key"><div class="t">답안 쓰는 형식 (교수님 예시)</div>in-place X — <code>S, M, L = [], [], []</code> 로 새 리스트를 만들기 때문. stable O — <code>for x in A</code> 에 의해 A 의 순서 그대로 S, M, L 에 넣기 때문.</div>
+  <div class="box trap"><div class="t">부등호를 먼저 본다</div>버블 <code>A[j] &gt; A[j+1]</code>, 삽입 <code>A[j] &gt; x</code> 면 stable. <b><code>&gt;=</code> 로 바뀌면 같은 값도 바꾸거나 넘어가서 stable X</b>. 병합은 반대로 <code>A[i] &lt;= A[j]</code> 여야 stable (<code>&lt;</code> 면 X).</div>
+</section>
+
+<section id="basic">
+  <h2><span class="no">2</span>기본 정렬 세 가지 — 모두 n − 1 라운드</h2>
+  <div class="tw"><table>
+    <thead><tr><th></th><th>라운드마다</th><th>비교</th><th>교환</th></tr></thead>
+    <tbody>
+      <tr><td><b>선택</b></td><td>남은 구간 최댓값을 찾아 <b>그 구간의 마지막 칸과</b> 교환</td><td><span class="fr"><span>(n − 1)n</span><span>2</span></span></td><td><b>n − 1</b></td></tr>
+      <tr><td><b>버블</b></td><td>이웃 두 값 비교, 앞이 크면 교환 → 최댓값이 끝까지 밀려감</td><td><span class="fr"><span>(n − 1)n</span><span>2</span></span></td><td>최악 <span class="fr"><span>(n − 1)n</span><span>2</span></span></td></tr>
+      <tr><td><b>삽입</b></td><td>새 값을 정렬된 앞부분에 뒤에서부터 비교하며 끼워 넣음</td><td>최악 <span class="fr"><span>(n − 1)n</span><span>2</span></span></td><td>최악 <span class="fr"><span>(n − 1)n</span><span>2</span></span></td></tr>
+    </tbody>
+  </table></div>
+  <div class="steps">(n − 1) + (n − 2) + ⋯ + 1 = <span class="fr"><span>(n − 1)n</span><span>2</span></span> → <b>O(n²)</b> <span class="c">세 가지 모두</span></div>
+  <div class="box trap"><div class="t">선택 정렬 stable X 반례</div>[3, 2₁, 2₂] → 최댓값 3 을 마지막 2₂ 와 교환 → <b>[2₂, 2₁, 3]</b>. 동점 처리와 상관없이 X.</div>
+</section>
+
+<section id="quick">
+  <h2><span class="no">3</span>퀵 정렬 (S / M / L)<span class="imp">시험 ★★★</span></h2>
+<pre>def quick_sort(A):
+    if len(A) &lt;= 1:                 <span class="cm"># 판서는 |A| == 1 — 빈 리스트에서 멈추려면 &lt;= 1</span>
+        return A
+    P = A[0]                        <span class="cm"># 피벗 = 첫 값</span>
+    S, M, L = [], [], []            <span class="cm"># 새 리스트 → not in-place</span>
+    for x in A:                     <span class="cm"># A 순서대로 → stable</span>
+        if P &gt; x:   S.append(x)
+        elif P &lt; x: L.append(x)
+        else:       M.append(x)
+    return quick_sort(S) + M + quick_sort(L)</pre>
+  <div class="tw"><table>
+    <thead><tr><th></th><th>입력</th><th>점화식</th><th>결과</th></tr></thead>
+    <tbody>
+      <tr><td><b>worst</b></td><td>이미 정렬된(또는 역순) 입력 — 한쪽만 남음</td><td>T(n − 1) + Cn</td><td class="big">O(n²)</td></tr>
+      <tr><td><b>best = average</b></td><td>잘 분배됨 — 반반</td><td>2T(<span class="fr"><span>n</span><span>2</span></span>) + Cn</td><td class="big">O(n log n)</td></tr>
+    </tbody>
+  </table></div>
+  <p>계산상 worst 는 O(n²) 이지만 실제로는 <b>평균적으로 가장 빠른</b> 정렬. quick_select 는 한쪽만 재귀, quick_sort 는 <b>S, L 둘 다</b> 재귀.</p>
+  <p style="font-size:14.5px;color:var(--ink-3)">피벗을 중앙값으로 고르면 best 가 보장되지만, 중앙값을 구하는 데 O(n) 이 들어 "조금 그렇다" (교수님).</p>
+</section>
+
+<section id="inq">
+  <h2><span class="no">4</span>제자리 퀵 정렬<span class="imp">시험 ★★★</span></h2>
+<pre>def quick_sort(A, first, last):     <span class="cm"># A[first] … A[last] 를 A 안에서 정렬</span>
+    p = A[first]                     <span class="cm"># 피벗</span>
+    left = first + 1; right = last
+    while left &lt;= right:
+        while left &lt;= last and A[left] &lt; p:     <span class="cm"># p 보다 작으면 통과</span>
+            left += 1
+        while right &gt; first and A[right] &gt; p:   <span class="cm"># p 보다 크면 통과</span>
+            right -= 1
+        if left &lt;= right:
+            A[left], A[right] = A[right], A[left]  <span class="cm"># 둘 다 잘못된 쪽 → 교환</span>
+    A[first], A[right] = A[right], A[first]       <span class="cm"># 피벗을 제자리로</span>
+    quick_sort(A, first, right - 1)
+    quick_sort(A, left, last)</pre>
+  <div class="box extra"><div class="t">교수님 코드 그대로 (주의)</div>교환 뒤 <code>left += 1; right -= 1</code> 과 기저 조건이 <b>없음</b> → 값이 모두 다르면 동작, 피벗과 같은 값을 둘 다 만나면 무한 반복. 첫 분할 결과는 두 줄이 있든 없든 같다.</div>
+  <h3>예시 — A = [4, 2₁, 5, 8, 6, 2₂, 3, 7, 10], 피벗 4</h3>
+  <div class="tw"><table>
+    <thead><tr><th>회차</th><th>left 멈춤</th><th>right 멈춤</th><th>동작</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>5 (2번)</td><td>3 (6번)</td><td>5 ↔ 3</td></tr>
+      <tr><td>2</td><td>8 (3번)</td><td>2₂ (5번)</td><td>8 ↔ 2₂</td></tr>
+      <tr><td>3</td><td>6 (4번)</td><td>2₂ (3번)</td><td>left &gt; right → 종료</td></tr>
+      <tr><td>피벗</td><td colspan="2">A[0] ↔ A[3]</td><td><b>[2₂, 2₁, 3, 4, 6, 8, 5, 7, 10]</b></td></tr>
+    </tbody>
+  </table></div>
+  <p><b>in-place O</b> — 새 배열 없이 자리만 바꿈 (교수님). <b>stable X</b> — 멀리 떨어진 칸 교환과 마지막 피벗 교환 때문에 2₁, 2₂ 순서가 뒤집힘 (위 예시).</p>
+</section>
+
+<section id="merge">
+  <h2><span class="no">5</span>병합 정렬<span class="imp">시험 ★★★</span></h2>
+  <ol class="flow">
+    <li>값을 보지 않고 <b>강제로 반반</b> 나눔 (피벗 없음)</li>
+    <li>두 그룹을 <b>각각 재귀 정렬</b></li>
+    <li>두 그룹의 <b>맨 앞끼리 비교</b>해 작은 값을 새 배열 B 에 채움 → 남은 쪽은 비교 없이 붙임 → A 로 되돌림</li>
+  </ol>
+  <div class="steps">[3, 20, 35, 40] + [9, 10, 80]: 3 · 9 · 10 · 20 · 35 · 40 순으로 B 에 → 비교 <b>6번</b>, 남은 80 은 그대로 붙임</div>
+<pre>def merge_two_sorted_lists(A, first, last):
+    m = (first + last) // 2
+    i, j = first, m + 1
+    B = []                                 <span class="cm"># 새 배열 → not in-place</span>
+    while i &lt;= m and j &lt;= last:
+        if A[i] &lt;= A[j]:                   <span class="cm"># 같으면 앞 그룹 먼저 → stable</span>
+            B.append(A[i]); i = i + 1
+        else:
+            B.append(A[j]); j = j + 1
+    for k in range(i, m + 1):    B.append(A[k])   <span class="cm"># 남은 쪽 (둘 중 하나만 돈다)</span>
+    for k in range(j, last + 1): B.append(A[k])
+    for i in range(first, last + 1):
+        A[i] = B[i - first]                <span class="cm"># B 는 0 부터, A 구간은 first 부터</span></pre>
+  <div class="steps">T(n) = 2T(<span class="fr"><span>n</span><span>2</span></span>) + Cn = <b>O(n log n)</b> — 항상 반반이라 worst · best · average 구분 없음</div>
+</section>
+
+<section id="heap">
+  <h2><span class="no">6</span>힙<span class="imp">시험 ★★★</span></h2>
+  <div class="tw"><table>
+    <thead><tr><th>찾을 노드</th><th>인덱스</th></tr></thead>
+    <tbody>
+      <tr><td>A[k] 의 왼쪽 자식</td><td class="big">2k + 1</td></tr>
+      <tr><td>A[k] 의 오른쪽 자식</td><td class="big">2k + 2</td></tr>
+      <tr><td>A[k] 의 부모</td><td class="big">(k − 1) // 2</td></tr>
+    </tbody>
+  </table></div>
+  <p>계산 한 번 → <b>O(1)</b>. 힙 성질 = 모든 노드에서 <b>부모 key ≥ 자식 key</b> → 루트 A[0] 이 최댓값. (모양: 배열은 항상 이진트리로 나타낼 수 있음)</p>
+  <h3>make_heap — 맨 뒤 노드부터 heapify_down</h3>
+  <div class="tw"><table>
+    <thead><tr><th>A = [2, 8, 6, 1, 10, 15, 3, 12, 11]</th><th>교환</th></tr></thead>
+    <tbody>
+      <tr><td>A[8] ~ A[4] (leaf)</td><td>없음</td></tr>
+      <tr><td>A[3] = 1</td><td>1 ↔ 12 (큰 자식)</td></tr>
+      <tr><td>A[2] = 6</td><td>6 ↔ 15</td></tr>
+      <tr><td>A[1] = 8</td><td>8 ↔ 12, 8 ↔ 11</td></tr>
+      <tr><td>A[0] = 2</td><td>2 ↔ 15, 2 ↔ 6</td></tr>
+      <tr><td><b>결과</b></td><td><b>[15, 12, 6, 11, 10, 2, 3, 1, 8]</b></td></tr>
+    </tbody>
+  </table></div>
+  <figure><svg viewBox="0 0 600 300" width="100%" style="max-width:600px;display:block;margin:0 auto" role="img"><title>힙</title><desc>A = [15, 12, 6, 11, 10, 2, 3, 1, 8] 을 트리로 그린 최대 힙.</desc><line x1="300" y1="30" x2="170" y2="88" stroke="var(--line-2)" stroke-width="1.3"/><line x1="300" y1="30" x2="430" y2="88" stroke="var(--line-2)" stroke-width="1.3"/><line x1="170" y1="88" x2="105" y2="146" stroke="var(--line-2)" stroke-width="1.3"/><line x1="170" y1="88" x2="235" y2="146" stroke="var(--line-2)" stroke-width="1.3"/><line x1="430" y1="88" x2="365" y2="146" stroke="var(--line-2)" stroke-width="1.3"/><line x1="430" y1="88" x2="495" y2="146" stroke="var(--line-2)" stroke-width="1.3"/><line x1="105" y1="146" x2="72.5" y2="204" stroke="var(--line-2)" stroke-width="1.3"/><line x1="105" y1="146" x2="137.5" y2="204" stroke="var(--line-2)" stroke-width="1.3"/><circle cx="300" cy="30" r="18" fill="var(--card)" stroke="var(--acc)" stroke-width="1.6"/><text x="300" y="30" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--ink)">15</text><text x="322" y="16" text-anchor="start" dominant-baseline="central" font-size="10" font-weight="700" fill="var(--ink-3)">[0]</text><circle cx="170" cy="88" r="18" fill="var(--card)" stroke="var(--acc)" stroke-width="1.6"/><text x="170" y="88" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--ink)">12</text><text x="192" y="74" text-anchor="start" dominant-baseline="central" font-size="10" font-weight="700" fill="var(--ink-3)">[1]</text><circle cx="430" cy="88" r="18" fill="var(--card)" stroke="var(--acc)" stroke-width="1.6"/><text x="430" y="88" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--ink)">6</text><text x="452" y="74" text-anchor="start" dominant-baseline="central" font-size="10" font-weight="700" fill="var(--ink-3)">[2]</text><circle cx="105" cy="146" r="18" fill="var(--card)" stroke="var(--acc)" stroke-width="1.6"/><text x="105" y="146" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--ink)">11</text><text x="127" y="132" text-anchor="start" dominant-baseline="central" font-size="10" font-weight="700" fill="var(--ink-3)">[3]</text><circle cx="235" cy="146" r="18" fill="var(--card)" stroke="var(--acc)" stroke-width="1.6"/><text x="235" y="146" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--ink)">10</text><text x="257" y="132" text-anchor="start" dominant-baseline="central" font-size="10" font-weight="700" fill="var(--ink-3)">[4]</text><circle cx="365" cy="146" r="18" fill="var(--card)" stroke="var(--acc)" stroke-width="1.6"/><text x="365" y="146" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--ink)">2</text><text x="387" y="132" text-anchor="start" dominant-baseline="central" font-size="10" font-weight="700" fill="var(--ink-3)">[5]</text><circle cx="495" cy="146" r="18" fill="var(--card)" stroke="var(--acc)" stroke-width="1.6"/><text x="495" y="146" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--ink)">3</text><text x="517" y="132" text-anchor="start" dominant-baseline="central" font-size="10" font-weight="700" fill="var(--ink-3)">[6]</text><circle cx="72.5" cy="204" r="18" fill="var(--card)" stroke="var(--acc)" stroke-width="1.6"/><text x="72.5" y="204" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--ink)">1</text><text x="94.5" y="190" text-anchor="start" dominant-baseline="central" font-size="10" font-weight="700" fill="var(--ink-3)">[7]</text><circle cx="137.5" cy="204" r="18" fill="var(--card)" stroke="var(--acc)" stroke-width="1.6"/><text x="137.5" y="204" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--ink)">8</text><text x="159.5" y="190" text-anchor="start" dominant-baseline="central" font-size="10" font-weight="700" fill="var(--ink-3)">[8]</text><rect x="125" y="246" width="36" height="30" rx="7" fill="var(--acc-bg)" stroke="var(--acc)" stroke-width="1.2"/><text x="143" y="261" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="var(--acc-2)">15</text><text x="143" y="288" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="600" fill="var(--ink-3)">0</text><rect x="165" y="246" width="36" height="30" rx="7" fill="var(--acc-bg)" stroke="var(--acc)" stroke-width="1.2"/><text x="183" y="261" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="var(--acc-2)">12</text><text x="183" y="288" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="600" fill="var(--ink-3)">1</text><rect x="205" y="246" width="36" height="30" rx="7" fill="var(--acc-bg)" stroke="var(--acc)" stroke-width="1.2"/><text x="223" y="261" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="var(--acc-2)">6</text><text x="223" y="288" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="600" fill="var(--ink-3)">2</text><rect x="245" y="246" width="36" height="30" rx="7" fill="var(--acc-bg)" stroke="var(--acc)" stroke-width="1.2"/><text x="263" y="261" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="var(--acc-2)">11</text><text x="263" y="288" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="600" fill="var(--ink-3)">3</text><rect x="285" y="246" width="36" height="30" rx="7" fill="var(--acc-bg)" stroke="var(--acc)" stroke-width="1.2"/><text x="303" y="261" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="var(--acc-2)">10</text><text x="303" y="288" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="600" fill="var(--ink-3)">4</text><rect x="325" y="246" width="36" height="30" rx="7" fill="var(--acc-bg)" stroke="var(--acc)" stroke-width="1.2"/><text x="343" y="261" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="var(--acc-2)">2</text><text x="343" y="288" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="600" fill="var(--ink-3)">5</text><rect x="365" y="246" width="36" height="30" rx="7" fill="var(--acc-bg)" stroke="var(--acc)" stroke-width="1.2"/><text x="383" y="261" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="var(--acc-2)">3</text><text x="383" y="288" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="600" fill="var(--ink-3)">6</text><rect x="405" y="246" width="36" height="30" rx="7" fill="var(--acc-bg)" stroke="var(--acc)" stroke-width="1.2"/><text x="423" y="261" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="var(--acc-2)">1</text><text x="423" y="288" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="600" fill="var(--ink-3)">7</text><rect x="445" y="246" width="36" height="30" rx="7" fill="var(--acc-bg)" stroke="var(--acc)" stroke-width="1.2"/><text x="463" y="261" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="var(--acc-2)">8</text><text x="463" y="288" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="600" fill="var(--ink-3)">8</text><text x="115" y="261" text-anchor="end" dominant-baseline="central" font-size="13" font-weight="800" fill="var(--ink-2)">A</text></svg><figcaption>make_heap 결과 — 모든 부모 ≥ 자식</figcaption></figure>
+  <div class="steps">make_heap = heapify_down × n번, heapify_down = 높이만큼 O(log n) → <b>O(n log n)</b> <span class="c">수업 기준</span></div>
+</section>
+
+<section id="hsort">
+  <h2><span class="no">7</span>힙 정렬<span class="imp">시험 ★★★</span></h2>
+  <ol class="flow">
+    <li>make_heap → 루트 A[0] = 최댓값</li>
+    <li><b>A[0] ↔ 구간 끝 A[i]</b> — 최댓값을 뒤로 (i = n − 1 → 1, 매번 한 칸씩 앞으로)</li>
+    <li>루트에서 heapify_down — <b>뒤로 보낸 값은 제외</b></li>
+  </ol>
+  <div class="tw"><table>
+    <thead><tr><th>라운드</th><th>교환 후</th><th>heapify_down 후</th></tr></thead>
+    <tbody>
+      <tr><td>1 (i = 8)</td><td>[8, 12, 6, 11, 10, 2, 3, 1, <b>15</b>]</td><td>[12, 11, 6, 8, 10, 2, 3, 1, <b>15</b>]</td></tr>
+      <tr><td>2 (i = 7)</td><td>[1, 11, 6, 8, 10, 2, 3, <b>12, 15</b>]</td><td>[11, 10, 6, 8, 1, 2, 3, <b>12, 15</b>]</td></tr>
+    </tbody>
+  </table></div>
+  <div class="steps">O(n log n) <span class="c">make_heap</span> + (n − 1) × O(log n) <span class="c">heapify_down</span> = <b>O(n log n)</b>, best · worst 없음</div>
+  <div class="box key"><div class="t">get_max 관점</div>정렬 = "A[0] ~ A[i] 의 최댓값을 A[i] 로" 를 n − 1 번. 선택 정렬은 get_max 가 O(i) 라 O(n²), 힙 정렬은 최댓값이 A[0] 이고 고치는 데 O(log i) 라 O(n log n).</div>
+  <div class="box trap"><div class="t">stable X 반례</div>[1₁, 1₂] → make_heap 그대로 → A[0] ↔ A[1] → <b>[1₂, 1₁]</b>.</div>
+</section>
+
+<section id="lower">
+  <h2><span class="no">8</span>비교 정렬의 하한 — Ω(n log n)<span class="imp">시험 ★★★</span></h2>
+  <div class="tw"><table><tbody>
+    <tr><td style="width:120px"><b>상한 O</b></td><td>이 알고리즘은 이보다 나빠지지 않는다</td></tr>
+    <tr><td><b>하한 Ω</b></td><td>어떤 비교 정렬이든 최소 이만큼은 필요하다</td></tr>
+  </tbody></table></div>
+  <figure><svg viewBox="0 0 720 310" width="100%" style="max-width:720px;display:block;margin:0 auto" role="img"><title>a, b, c 결정 트리</title><desc>비교 결과에 따라 갈라지는 트리. 리프 6개, 높이 3.</desc><line x1="360" y1="34" x2="170" y2="112" stroke="var(--line-2)" stroke-width="1.3"/><text x="257" y="66" text-anchor="end" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-2)">a < b</text><line x1="360" y1="34" x2="560" y2="112" stroke="var(--line-2)" stroke-width="1.3"/><text x="468" y="66" text-anchor="start" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-2)">a > b</text><line x1="170" y1="112" x2="70" y2="198" stroke="var(--line-2)" stroke-width="1.3"/><text x="112" y="148" text-anchor="end" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-2)">b < c</text><line x1="170" y1="112" x2="250" y2="198" stroke="var(--line-2)" stroke-width="1.3"/><text x="218" y="148" text-anchor="start" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-2)">b > c</text><line x1="560" y1="112" x2="470" y2="198" stroke="var(--line-2)" stroke-width="1.3"/><text x="507" y="148" text-anchor="end" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-2)">b < c</text><line x1="560" y1="112" x2="650" y2="198" stroke="var(--line-2)" stroke-width="1.3"/><text x="613" y="148" text-anchor="start" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-2)">b > c</text><line x1="250" y1="198" x2="185" y2="284" stroke="var(--line-2)" stroke-width="1.3"/><text x="209.5" y="234" text-anchor="end" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-2)">a < c</text><line x1="250" y1="198" x2="305" y2="284" stroke="var(--line-2)" stroke-width="1.3"/><text x="285.5" y="234" text-anchor="start" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-2)">a > c</text><line x1="470" y1="198" x2="415" y2="284" stroke="var(--line-2)" stroke-width="1.3"/><text x="434.5" y="234" text-anchor="end" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-2)">a < c</text><line x1="470" y1="198" x2="535" y2="284" stroke="var(--line-2)" stroke-width="1.3"/><text x="510.5" y="234" text-anchor="start" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-2)">a > c</text><ellipse cx="360" cy="34" rx="42" ry="19" fill="var(--card)" stroke="var(--acc)" stroke-width="1.6"/><text x="360" y="34" text-anchor="middle" dominant-baseline="central" font-size="13.5" font-weight="800" fill="var(--acc-2)">a ? b</text><ellipse cx="170" cy="112" rx="42" ry="19" fill="var(--card)" stroke="var(--acc)" stroke-width="1.6"/><text x="170" y="112" text-anchor="middle" dominant-baseline="central" font-size="13.5" font-weight="800" fill="var(--acc-2)">b ? c</text><ellipse cx="560" cy="112" rx="42" ry="19" fill="var(--card)" stroke="var(--acc)" stroke-width="1.6"/><text x="560" y="112" text-anchor="middle" dominant-baseline="central" font-size="13.5" font-weight="800" fill="var(--acc-2)">b ? c</text><ellipse cx="250" cy="198" rx="42" ry="19" fill="var(--card)" stroke="var(--acc)" stroke-width="1.6"/><text x="250" y="198" text-anchor="middle" dominant-baseline="central" font-size="13.5" font-weight="800" fill="var(--acc-2)">a ? c</text><ellipse cx="470" cy="198" rx="42" ry="19" fill="var(--card)" stroke="var(--acc)" stroke-width="1.6"/><text x="470" y="198" text-anchor="middle" dominant-baseline="central" font-size="13.5" font-weight="800" fill="var(--acc-2)">a ? c</text><rect x="22" y="181" width="96" height="34" rx="7" fill="var(--ok-bg)" stroke="var(--ok)" stroke-width="1.4"/><text x="70" y="198" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="var(--ok)">a < b < c</text><rect x="602" y="181" width="96" height="34" rx="7" fill="var(--ok-bg)" stroke="var(--ok)" stroke-width="1.4"/><text x="650" y="198" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="var(--ok)">c < b < a</text><rect x="137" y="267" width="96" height="34" rx="7" fill="var(--ok-bg)" stroke="var(--ok)" stroke-width="1.4"/><text x="185" y="284" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="var(--ok)">a < c < b</text><rect x="257" y="267" width="96" height="34" rx="7" fill="var(--ok-bg)" stroke="var(--ok)" stroke-width="1.4"/><text x="305" y="284" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="var(--ok)">c < a < b</text><rect x="367" y="267" width="96" height="34" rx="7" fill="var(--ok-bg)" stroke="var(--ok)" stroke-width="1.4"/><text x="415" y="284" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="var(--ok)">b < a < c</text><rect x="487" y="267" width="96" height="34" rx="7" fill="var(--ok-bg)" stroke="var(--ok)" stroke-width="1.4"/><text x="535" y="284" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="var(--ok)">b < c < a</text><text x="712" y="34" text-anchor="end" dominant-baseline="central" font-size="11" font-weight="700" fill="var(--ink-3)">깊이 0</text><text x="712" y="112" text-anchor="end" dominant-baseline="central" font-size="11" font-weight="700" fill="var(--ink-3)">1</text><text x="712" y="198" text-anchor="end" dominant-baseline="central" font-size="11" font-weight="700" fill="var(--ink-3)">2</text><text x="712" y="284" text-anchor="end" dominant-baseline="central" font-size="11" font-weight="700" fill="var(--ink-3)">3</text></svg><figcaption>결정 트리 — 리프 = 가능한 순서 3! = 6개, 높이 = 최악의 비교 횟수 3</figcaption></figure>
+  <div class="steps">
+    리프 n! 개 · 높이 h 인 이진트리의 리프 ≤ 2<sup>h</sup> → 2<sup>h</sup> ≥ n! → <b>h ≥ log₂ n!</b><br>
+    n! = n × (n − 1) × ⋯ × (<span class="fr"><span>n</span><span>2</span></span> + 1) × ⋯ × 1 ≥ (<span class="fr"><span>n</span><span>2</span></span>)<sup><span class="fr"><span>n</span><span>2</span></span></sup> <span class="c">큰 쪽 절반은 각각 <span class="fr"><span>n</span><span>2</span></span> 이상, 나머지는 1 이상</span><br>
+    h ≥ log₂(<span class="fr"><span>n</span><span>2</span></span>)<sup><span class="fr"><span>n</span><span>2</span></span></sup> = <span class="fr"><span>n</span><span>2</span></span> log₂ <span class="fr"><span>n</span><span>2</span></span> ≥ C · n log₂ n → <b>Ω(n log n)</b>
+  </div>
+  <div class="box key"><div class="t">결론</div>병합·힙 정렬의 상한 O(n log n) = 비교 정렬의 하한 Ω(n log n) → <b>최적</b>. 퀵 정렬은 상한(worst)이 O(n²) 이라 해당 안 됨.</div>
+  <div class="box trap"><div class="t">"최소 3번" 의 뜻</div>a, b, c 중 a &lt; b &lt; c, c &lt; b &lt; a 는 2번에 결정됨. 하한 3 = "<b>최악의 경우</b> 3번은 필요" (높이).</div>
+</section>
+
+<section id="trap">
+  <h2><span class="no">9</span>자주 틀리는 것</h2>
+  <div class="trapgrid">
+    <div><span class="x">✗</span> 선택 정렬은 동점 처리하면 stable<br><span class="o">✓</span> [3, 2₁, 2₂] → [2₂, 2₁, 3]. 항상 X</div>
+    <div><span class="x">✗</span> 버블·삽입은 무조건 stable<br><span class="o">✓</span> <code>&gt;=</code> 면 X — 코드의 부등호부터</div>
+    <div><span class="x">✗</span> 퀵 정렬(S/M/L)은 in-place<br><span class="o">✓</span> 새 리스트 S, M, L → X (stable 은 O)</div>
+    <div><span class="x">✗</span> 제자리 퀵도 stable<br><span class="o">✓</span> 멀리 떨어진 교환 → X (in-place 는 O)</div>
+    <div><span class="x">✗</span> 병합 정렬 worst 는 O(n²)<br><span class="o">✓</span> 항상 반반 → 항상 O(n log n)</div>
+    <div><span class="x">✗</span> 병합 <code>A[i] &lt; A[j]</code> 도 stable<br><span class="o">✓</span> 같을 때 뒤 그룹이 먼저 → X</div>
+    <div><span class="x">✗</span> <code>A[i] = B[i]</code><br><span class="o">✓</span> <code>B[i − first]</code> — B 는 0 부터</div>
+    <div><span class="x">✗</span> heapify_down 때 작은 자식과 교환<br><span class="o">✓</span> <b>큰 자식</b> — 작은 쪽이면 다른 자식이 더 커서 또 위배</div>
+    <div><span class="x">✗</span> 힙 정렬은 매번 A[0] ↔ A[n − 1]<br><span class="o">✓</span> 바꾸는 자리가 A[n − 1], A[n − 2], … 로 당겨짐</div>
+    <div><span class="x">✗</span> n! ≤ (<span class="fr"><span>n</span><span>2</span></span>)<sup><span class="fr"><span>n</span><span>2</span></span></sup><br><span class="o">✓</span> n! <b>≥</b> (<span class="fr"><span>n</span><span>2</span></span>)<sup><span class="fr"><span>n</span><span>2</span></span></sup> — 작은 값으로 바꿔 아래에서 받침</div>
+  </div>
+</section>
+
+<section id="check" class="qa">
+  <h2><span class="no">10</span>셀프 체크</h2>
+  <p class="lead">답을 떠올린 뒤 눌러서 확인.</p>
+  <details><summary>A = [7, 3, 9, 1, 5] 에 선택 정렬 1라운드 후 배열과 그 라운드의 비교 횟수는?</summary><div class="a">최댓값 9 ↔ 마지막 5 → <b>[7, 3, 5, 1, 9]</b>, 비교 <b>4번</b>.</div></details>
+  <details><summary>버블 정렬의 비교를 A[j] &gt;= A[j+1] 로 바꾸면 무엇이 달라지나?</summary><div class="a">같은 값도 교환해 순서가 뒤집힘 → <b>stable X</b>. 정렬 결과(값 순서)는 같다.</div></details>
+  <details><summary>퀵 정렬(S/M/L)의 in-place · stable 과 그 이유는?</summary><div class="a"><b>in-place X</b> — S, M, L 새 리스트. <b>stable O</b> — for x in A 로 A 순서대로 넣음.</div></details>
+  <details><summary>[4, 2₁, 5, 8, 6, 2₂, 3, 7, 10] 의 제자리 퀵 첫 분할 결과는?</summary><div class="a">5 ↔ 3, 8 ↔ 2₂, 피벗 A[0] ↔ A[3] → <b>[2₂, 2₁, 3, 4, 6, 8, 5, 7, 10]</b> — 2₁, 2₂ 순서 뒤집힘.</div></details>
+  <details><summary>[1, 3, 5, 8] 과 [2, 7, 9] 를 병합할 때 비교 횟수는?</summary><div class="a">1, 2, 3, 5, 7, 8 순으로 <b>6번</b>, 남은 9 는 비교 없이 붙임.</div></details>
+  <details><summary>힙에서 A[3] 의 자식과 A[8] 의 부모 인덱스는?</summary><div class="a">자식 <b>A[7], A[8]</b> (2·3 + 1, 2·3 + 2). A[8] 의 부모 <b>A[3]</b> ((8 − 1)//2).</div></details>
+  <details><summary>[4, 10, 3, 5, 1] 을 make_heap 하면?</summary><div class="a">A[1] = 10 그대로, A[0] = 4 ↔ 10, 4 ↔ 5 → <b>[10, 5, 3, 4, 1]</b>.</div></details>
+  <details><summary>값 4개 정렬의 결정 트리 리프 수와 최악 비교 하한은?</summary><div class="a">리프 4! = 24. 2⁴ = 16 &lt; 24 ≤ 32 = 2⁵ → <b>최소 5번</b>.</div></details>
+  <div style="margin-top:14px;font-size:15px">더 풀어 보기 → <a href="../exam/sorting-1.html">기본</a> · <a href="../exam/sorting-2.html">응용</a> · <a href="../exam/sorting-3.html">심화</a></div>
+</section>
+<footer>알고리즘 · 정렬 정리노트 · jaealee.com</footer>
+</div>
+<script>
+(function(){const r=document.documentElement,k='summary-theme';try{const s=localStorage.getItem(k);if(s)r.dataset.theme=s;}catch(e){}
+document.getElementById('th').onclick=()=>{const d=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;r.dataset.theme=d?'light':'dark';try{localStorage.setItem(k,r.dataset.theme)}catch(e){}};
+addEventListener('beforeprint',()=>document.querySelectorAll('details').forEach(d=>d.open=true));})();
+</script></body></html>
