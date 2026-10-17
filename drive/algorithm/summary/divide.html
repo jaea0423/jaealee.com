@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>알고리즘 정리노트 — 분할 정복 · 점화식</title>
+<style>
+:root{--acc:#4F46E5;--acc-2:#3730a3;--acc-bg:#eef0ff;--bg:#f6f6f8;--card:#fff;--ink:#16161d;--ink-2:#3c3c48;--ink-3:#7a7a88;--line:#e6e6ec;--line-2:#c9c9d4;
+--warn:#c2410c;--warn-bg:#fff1e8;--ok:#047857;--ok-bg:#e7f6ef;--code:#f2f2f6;--mono:ui-monospace,"SF Mono",Menlo,Consolas,"D2Coding",monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--acc:#8b8cff;--acc-2:#b4b5ff;--acc-bg:#23244a;--bg:#121218;--card:#1b1b23;--ink:#ececf2;--ink-2:#c5c5d0;--ink-3:#8d8d9b;--line:#2b2b36;--line-2:#43434f;--warn:#fb923c;--warn-bg:#3a2316;--ok:#34d399;--ok-bg:#12302a;--code:#24242e}}
+:root[data-theme="dark"]{--acc:#8b8cff;--acc-2:#b4b5ff;--acc-bg:#23244a;--bg:#121218;--card:#1b1b23;--ink:#ececf2;--ink-2:#c5c5d0;--ink-3:#8d8d9b;--line:#2b2b36;--line-2:#43434f;--warn:#fb923c;--warn-bg:#3a2316;--ok:#34d399;--ok-bg:#12302a;--code:#24242e}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.75 "Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;word-break:keep-all}
+.wrap{max-width:880px;margin:0 auto;padding:28px 18px 80px}
+header.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px;font-size:14px}
+header.top a{color:var(--ink-3);text-decoration:none}
+header.top button{font:inherit;font-size:13px;padding:6px 12px;border-radius:9px;border:1px solid var(--line-2);background:var(--card);color:var(--ink-2);cursor:pointer}
+.hero{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:26px 26px 22px;margin-bottom:18px}
+.hero .eyebrow{font-size:13px;font-weight:800;color:var(--acc);letter-spacing:.04em}
+.hero h1{font-size:30px;line-height:1.3;margin:6px 0 6px}
+.hero p{margin:0;color:var(--ink-2);font-size:15.5px}
+nav.chips{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0;margin-bottom:8px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+nav.chips a{flex:none;font-size:13.5px;font-weight:700;color:var(--ink-2);text-decoration:none;padding:6px 12px;border:1px solid var(--line-2);border-radius:999px;background:var(--card)}
+nav.chips a:hover{border-color:var(--acc);color:var(--acc)}
+section{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px 24px 18px;margin:16px 0;scroll-margin-top:64px}
+h2{font-size:22px;margin:0 0 4px;display:flex;align-items:center;gap:10px}
+h2 .no{font-size:13px;font-weight:800;color:#fff;background:var(--acc);border-radius:8px;padding:2px 8px}
+h2 .imp{white-space:nowrap;font-size:12px;font-weight:800;color:var(--warn);background:var(--warn-bg);border-radius:7px;padding:2px 8px;margin-left:auto}
+h3{font-size:17.5px;margin:22px 0 6px;color:var(--acc-2)}
+p{margin:8px 0}
+.lead{color:var(--ink-2);margin-bottom:12px}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:15.5px}
+th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+th{font-size:13.5px;color:var(--ink-3);font-weight:800;border-bottom:1.5px solid var(--line-2)}
+td b{color:var(--acc-2)}
+.tw{overflow-x:auto}
+.big{font-size:18px;font-weight:800;color:var(--acc-2);white-space:nowrap}
+.formula{background:var(--acc-bg);border-radius:14px;padding:14px 18px;margin:12px 0;font-size:18px;font-weight:700;text-align:center;line-height:2.1}
+.steps{background:var(--code);border-radius:14px;padding:14px 18px;margin:12px 0;font-size:16.5px;line-height:2.15}
+.steps .c{color:var(--ink-3);font-size:13.5px;font-weight:600;margin-left:10px}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.15;margin:0 2px;font-size:.92em}
+.fr>span:first-child{border-bottom:1.5px solid currentColor;padding:0 3px}
+.fr>span:last-child{padding:0 3px}
+.box{border-radius:14px;padding:12px 16px;margin:12px 0;font-size:15.5px}
+.box .t{font-weight:800;font-size:14px;margin-bottom:2px}
+.box.trap{background:var(--warn-bg);border-left:4px solid var(--warn)}
+.box.trap .t{color:var(--warn)}
+.box.key{background:var(--acc-bg);border-left:4px solid var(--acc)}
+.box.key .t{color:var(--acc-2)}
+.box.extra{background:var(--code);border-left:4px dashed var(--ink-3)}
+.box.extra .t{color:var(--ink-3)}
+pre{background:var(--code);border-radius:14px;padding:14px 16px;overflow-x:auto;font:14.5px/1.7 var(--mono);margin:12px 0}
+pre .cm{color:var(--ink-3)}
+code{font-family:var(--mono);font-size:.9em;background:var(--code);padding:1px 6px;border-radius:6px}
+figure{margin:14px 0}figcaption{text-align:center;font-size:13.5px;color:var(--ink-3);margin-top:6px}
+ol.flow{counter-reset:s;list-style:none;padding:0;margin:12px 0}
+ol.flow li{counter-increment:s;position:relative;padding:8px 0 8px 40px;border-bottom:1px dashed var(--line)}
+ol.flow li:last-child{border-bottom:0}
+ol.flow li::before{content:counter(s);position:absolute;left:0;top:9px;width:26px;height:26px;border-radius:50%;background:var(--acc-bg);color:var(--acc-2);font-weight:800;font-size:14px;display:grid;place-items:center}
+.qa details{border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin:10px 0;background:var(--bg)}
+.qa summary{cursor:pointer;font-weight:700;list-style:none}
+.qa summary::-webkit-details-marker{display:none}
+.qa summary::before{content:"Q";display:inline-block;width:24px;height:24px;border-radius:7px;background:var(--acc);color:#fff;font-size:13px;text-align:center;line-height:24px;margin-right:10px}
+.qa details[open] summary{margin-bottom:8px}
+.qa .a{border-top:1px dashed var(--line-2);padding-top:8px;color:var(--ink-2)}
+.qa .a b{color:var(--ok)}
+.trapgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.trapgrid div{border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:15px;background:var(--bg)}
+.trapgrid .x{color:var(--warn);font-weight:800}.trapgrid .o{color:var(--ok);font-weight:800}
+footer{text-align:center;color:var(--ink-3);font-size:13px;margin-top:30px}
+@media (max-width:640px){.tw table{min-width:560px}.tw{margin:0 -4px}body{font-size:16px}.hero h1{font-size:25px}section{padding:18px 16px 14px}.trapgrid{grid-template-columns:1fr}.formula{font-size:16.5px}}
+@media print{nav.chips,header.top button{display:none}section,.hero{break-inside:avoid;border:1px solid #ccc}.qa details{display:block}.qa details>*{display:block}}
+</style></head>
+<body><div class="wrap">
+<header class="top"><a href="../exam/index.html#divide">← 문제지 목록</a><button id="th">다크 / 라이트</button></header>
+<div class="hero">
+  <div class="eyebrow">알고리즘 · 정리노트 · 시험 대비</div>
+  <h1>분할 정복 · 점화식</h1>
+  <p>3주차 1·2차시, 4주차 2차시 — max 분할 · 거듭제곱 · 피보나치 · 카라츠바 · 이진탐색 · 점화식 풀기. 자세한 설명은 개념노트(<a href="../lecture/week03/03-1.html">3-1</a>, <a href="../lecture/week03/03-2.html">3-2</a>, <a href="../lecture/week04/04-2.html">4-2</a>).</p>
+</div>
+<nav class="chips">
+  <a href="#all">한눈에</a><a href="#tool">풀이 도구</a><a href="#max">max</a><a href="#pow">거듭제곱</a><a href="#fib">피보나치</a><a href="#mul">큰 수 곱셈</a><a href="#kara">카라츠바</a><a href="#bs">이진탐색</a><a href="#tree">나무 그림</a><a href="#trap">함정</a><a href="#check">셀프 체크</a>
+</nav>
+
+<section id="all">
+  <h2><span class="no">0</span>한눈에 보기 — 점화식 → Big-O</h2>
+  <p class="lead">분할 정복 = 큰 문제를 <b>같은 형태의 작은 문제</b>로 쪼개 재귀로 푸는 방법. 시간은 점화식으로 나타내고 풀어서 구한다.</p>
+  <div class="tw"><table>
+    <thead><tr><th>점화식 (T(1) = C)</th><th>결과</th><th>어디서 나왔나</th></tr></thead>
+    <tbody>
+      <tr><td>T(n − 1) + C</td><td class="big">O(n)</td><td>max 하나 vs 나머지 · power1</td></tr>
+      <tr><td>2T(<span class="fr"><span>n</span><span>2</span></span>) + C</td><td class="big">O(n)</td><td>max 반씩 분할 · power2</td></tr>
+      <tr><td>T(<span class="fr"><span>n</span><span>2</span></span>) + C</td><td class="big">O(log n)</td><td>power3 · 이진탐색</td></tr>
+      <tr><td>T(<span class="fr"><span>n</span><span>2</span></span>) + Cn</td><td class="big">O(n)</td><td>Quick Select 최선</td></tr>
+      <tr><td>2T(<span class="fr"><span>n</span><span>2</span></span>) + Cn</td><td class="big">O(n log n)</td><td>정렬 (병합 · 퀵 최선)</td></tr>
+      <tr><td>3T(<span class="fr"><span>n</span><span>2</span></span>) + Cn</td><td class="big">O(n<sup>log₂3</sup>)</td><td>카라츠바 (log₂3 ≈ 1.585)</td></tr>
+      <tr><td>4T(<span class="fr"><span>n</span><span>2</span></span>) + Cn</td><td class="big">O(n²)</td><td>큰 수 곱셈 단순 분할</td></tr>
+      <tr><td>T(n − 1) + T(n − 2) + C</td><td class="big">O(γ<sup>n</sup>)</td><td>fibo1 (γ = <span class="fr"><span>1 + √5</span><span>2</span></span> ≈ 1.618)</td></tr>
+    </tbody>
+  </table></div>
+  <p style="font-size:14px;color:var(--ink-3)">빠른 순서: O(log n) &lt; O(n) &lt; O(n log n) &lt; O(n<sup>1.585</sup>) &lt; O(n²) &lt; O(γ<sup>n</sup>)</p>
+</section>
+
+<section id="tool">
+  <h2><span class="no">1</span>풀이 도구<span class="imp">시험 ★★★</span></h2>
+  <h3>전개 순서 (과정 서술 필수)</h3>
+  <ol class="flow">
+    <li>T( ) 안을 같은 식으로 2~3번 <b>대입해 펼친다</b></li>
+    <li>규칙이 보이게 쓰고 <b>일반항</b> (k번 펼친 꼴)을 적는다</li>
+    <li><b>n = 2<sup>k</sup></b> 가정 → <span class="fr"><span>n</span><span>2<sup>k</sup></span></span> = 1, T(1) = C</li>
+    <li>남은 합을 계산 (C가 k개 / 등비수열) → <b>k = log₂ n</b> 대입 → 최고차항만 남겨 O( )</li>
+  </ol>
+  <div class="formula">등비수열의 합 (초항 a, 공비 r, 항 k개) &nbsp; = &nbsp; <span class="fr"><span>a(r<sup>k</sup> − 1)</span><span>r − 1</span></span> &nbsp;(r &gt; 1) &nbsp; = &nbsp; <span class="fr"><span>a(1 − r<sup>k</sup>)</span><span>1 − r</span></span> &nbsp;(r &lt; 1)</div>
+  <div class="tw"><table>
+    <thead><tr><th>성질</th><th>쓰는 곳</th></tr></thead>
+    <tbody>
+      <tr><td>(a<sup>b</sup>)<sup>c</sup> = (a<sup>c</sup>)<sup>b</sup> → 4<sup>k</sup> = (2<sup>k</sup>)² = <b>n²</b></td><td>4T(n/2) + Cn</td></tr>
+      <tr><td>a<sup>log<sub>b</sub> c</sup> = c<sup>log<sub>b</sub> a</sup> → 3<sup>log₂ n</sup> = <b>n<sup>log₂ 3</sup></b></td><td>카라츠바</td></tr>
+      <tr><td>log<sub>a</sub> b + log<sub>a</sub> c = log<sub>a</sub> bc → log₂<span class="fr"><span>3</span><span>2</span></span> + 1 = log₂<span class="fr"><span>3</span><span>2</span></span> + log₂2 = <b>log₂3</b></td><td>카라츠바</td></tr>
+      <tr><td>n = c<sup>k</sup> ⟺ k = log<sub>c</sub> n</td><td>재귀 횟수</td></tr>
+    </tbody>
+  </table></div>
+  <div class="box trap"><div class="t">로그의 밑 생략</div>O(log₂ n), O(log₃ n) → <b>O(log n) 으로 써도 됨</b> (밑이 바뀌어도 상수배). O(n<sup>log₂3</sup>) 은 <b>생략 금지</b> (지수 안이라 밑이 바뀌면 차수가 바뀜).</div>
+</section>
+
+<section id="max">
+  <h2><span class="no">2</span>max(A) — 두 가지 분할</h2>
+  <div class="tw"><table>
+    <thead><tr><th>분할</th><th>재귀식</th><th>점화식</th><th>결과</th></tr></thead>
+    <tbody>
+      <tr><td>하나 vs 나머지</td><td>max(A[0], max(A[1:]))</td><td>T(n − 1) + C</td><td class="big">O(n)</td></tr>
+      <tr><td>반씩</td><td>max(max(A[:4]), max(A[4:]))</td><td>2T(<span class="fr"><span>n</span><span>2</span></span>) + C</td><td class="big">O(n)</td></tr>
+    </tbody>
+  </table></div>
+  <div class="steps">
+    2T(<span class="fr"><span>n</span><span>2</span></span>) + C = 2<sup>k</sup>T(1) + C(2<sup>k−1</sup> + ⋯ + 2 + 1) <span class="c">등비 합 = 2<sup>k</sup> − 1</span><br>
+    = Cn + C(n − 1) = <b>2Cn − C → O(n)</b>
+  </div>
+  <div class="box key"><div class="t">두 max 는 다르다</div>바깥 max(·, ·) = 두 수 중 큰 값을 고르는 <b>비교 연산</b>. 안쪽 max(A[…]) = 지금 만드는 <b>알고리즘 함수</b>. 슬라이싱 A[:4] 는 인덱스 0~3.</div>
+</section>
+
+<section id="pow">
+  <h2><span class="no">3</span>거듭제곱 aⁿ — power1 · 2 · 3<span class="imp">시험 ★★★</span></h2>
+  <div class="tw"><table>
+    <thead><tr><th></th><th>쪼개기</th><th>재귀 호출</th><th>점화식</th><th>결과</th></tr></thead>
+    <tbody>
+      <tr><td><b>power1</b></td><td>n → n − 1</td><td>1번</td><td>T(n − 1) + C</td><td class="big">O(n)</td></tr>
+      <tr><td><b>power2</b></td><td>n → <span class="fr"><span>n</span><span>2</span></span></td><td><b>2번 (같은 값)</b></td><td>2T(<span class="fr"><span>n</span><span>2</span></span>) + C</td><td class="big">O(n)</td></tr>
+      <tr><td><b>power3</b></td><td>n → <span class="fr"><span>n</span><span>2</span></span></td><td><b>1번 + 재사용</b></td><td>T(<span class="fr"><span>n</span><span>2</span></span>) + C</td><td class="big">O(log n)</td></tr>
+    </tbody>
+  </table></div>
+<pre>def power3(a, n):
+    if n == 1:
+        return a
+    x = power3(a, n//2)        <span class="cm"># 재귀는 딱 한 번 — 결과를 x 에 담아 둠</span>
+    if n % 2 == 0:
+        return x * x           <span class="cm"># 짝수: x 를 두 번 쓰기만</span>
+    else:
+        return x * x * a       <span class="cm"># 홀수: 나머지 1 때문에 a 한 번 더</span></pre>
+  <figure><svg viewBox="0 0 720 266" width="100%" style="max-width:720px;display:block;margin:0 auto" role="img"><title>power2 와 power3 호출 비교</title><desc>n=8일 때 power2는 호출이 1, 2, 4, 8개로 늘어나고 power3는 한 줄로 4번만 호출한다.</desc><text x="160" y="16" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="var(--warn)">power2 — 같은 호출을 2번</text><rect x="143" y="34" width="34" height="24" rx="7" fill="var(--card)" stroke="var(--warn)" stroke-width="1.4"/><text x="160" y="46" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="var(--warn)">8</text><text x="326" y="46" text-anchor="start" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">1번</text><line x1="160" y1="58" x2="85" y2="84" stroke="var(--line-2)" stroke-width="1.2"/><rect x="68" y="84" width="34" height="24" rx="7" fill="var(--card)" stroke="var(--warn)" stroke-width="1.4"/><text x="85" y="96" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="var(--warn)">4</text><line x1="160" y1="58" x2="235" y2="84" stroke="var(--line-2)" stroke-width="1.2"/><rect x="218" y="84" width="34" height="24" rx="7" fill="var(--card)" stroke="var(--warn)" stroke-width="1.4"/><text x="235" y="96" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="var(--warn)">4</text><text x="326" y="96" text-anchor="start" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">2번</text><line x1="85" y1="108" x2="47.5" y2="134" stroke="var(--line-2)" stroke-width="1.2"/><rect x="30.5" y="134" width="34" height="24" rx="7" fill="var(--card)" stroke="var(--warn)" stroke-width="1.4"/><text x="47.5" y="146" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="var(--warn)">2</text><line x1="85" y1="108" x2="122.5" y2="134" stroke="var(--line-2)" stroke-width="1.2"/><rect x="105.5" y="134" width="34" height="24" rx="7" fill="var(--card)" stroke="var(--warn)" stroke-width="1.4"/><text x="122.5" y="146" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="var(--warn)">2</text><line x1="235" y1="108" x2="197.5" y2="134" stroke="var(--line-2)" stroke-width="1.2"/><rect x="180.5" y="134" width="34" height="24" rx="7" fill="var(--card)" stroke="var(--warn)" stroke-width="1.4"/><text x="197.5" y="146" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="var(--warn)">2</text><line x1="235" y1="108" x2="272.5" y2="134" stroke="var(--line-2)" stroke-width="1.2"/><rect x="255.5" y="134" width="34" height="24" rx="7" fill="var(--card)" stroke="var(--warn)" stroke-width="1.4"/><text x="272.5" y="146" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="var(--warn)">2</text><text x="326" y="146" text-anchor="start" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">4번</text><line x1="47.5" y1="158" x2="28.75" y2="184" stroke="var(--line-2)" stroke-width="1.2"/><rect x="11.75" y="184" width="34" height="24" rx="7" fill="var(--card)" stroke="var(--warn)" stroke-width="1.4"/><text x="28.75" y="196" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="var(--warn)">1</text><line x1="47.5" y1="158" x2="66.25" y2="184" stroke="var(--line-2)" stroke-width="1.2"/><rect x="49.25" y="184" width="34" height="24" rx="7" fill="var(--card)" stroke="var(--warn)" stroke-width="1.4"/><text x="66.25" y="196" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="var(--warn)">1</text><line x1="122.5" y1="158" x2="103.75" y2="184" stroke="var(--line-2)" stroke-width="1.2"/><rect x="86.75" y="184" width="34" height="24" rx="7" fill="var(--card)" stroke="var(--warn)" stroke-width="1.4"/><text x="103.75" y="196" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="var(--warn)">1</text><line x1="122.5" y1="158" x2="141.25" y2="184" stroke="var(--line-2)" stroke-width="1.2"/><rect x="124.25" y="184" width="34" height="24" rx="7" fill="var(--card)" stroke="var(--warn)" stroke-width="1.4"/><text x="141.25" y="196" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="var(--warn)">1</text><line x1="197.5" y1="158" x2="178.75" y2="184" stroke="var(--line-2)" stroke-width="1.2"/><rect x="161.75" y="184" width="34" height="24" rx="7" fill="var(--card)" stroke="var(--warn)" stroke-width="1.4"/><text x="178.75" y="196" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="var(--warn)">1</text><line x1="197.5" y1="158" x2="216.25" y2="184" stroke="var(--line-2)" stroke-width="1.2"/><rect x="199.25" y="184" width="34" height="24" rx="7" fill="var(--card)" stroke="var(--warn)" stroke-width="1.4"/><text x="216.25" y="196" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="var(--warn)">1</text><line x1="272.5" y1="158" x2="253.75" y2="184" stroke="var(--line-2)" stroke-width="1.2"/><rect x="236.75" y="184" width="34" height="24" rx="7" fill="var(--card)" stroke="var(--warn)" stroke-width="1.4"/><text x="253.75" y="196" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="var(--warn)">1</text><line x1="272.5" y1="158" x2="291.25" y2="184" stroke="var(--line-2)" stroke-width="1.2"/><rect x="274.25" y="184" width="34" height="24" rx="7" fill="var(--card)" stroke="var(--warn)" stroke-width="1.4"/><text x="291.25" y="196" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="var(--warn)">1</text><text x="326" y="196" text-anchor="start" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">8번</text><text x="530" y="16" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="var(--acc)">power3 — 1번 호출 후 재사용</text><rect x="513" y="34" width="34" height="24" rx="7" fill="var(--card)" stroke="var(--acc)" stroke-width="1.4"/><text x="530" y="46" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="var(--acc)">8</text><text x="696" y="46" text-anchor="start" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">1번</text><line x1="530" y1="58" x2="530" y2="84" stroke="var(--line-2)" stroke-width="1.2"/><rect x="513" y="84" width="34" height="24" rx="7" fill="var(--card)" stroke="var(--acc)" stroke-width="1.4"/><text x="530" y="96" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="var(--acc)">4</text><text x="696" y="96" text-anchor="start" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">1번</text><line x1="530" y1="108" x2="530" y2="134" stroke="var(--line-2)" stroke-width="1.2"/><rect x="513" y="134" width="34" height="24" rx="7" fill="var(--card)" stroke="var(--acc)" stroke-width="1.4"/><text x="530" y="146" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="var(--acc)">2</text><text x="696" y="146" text-anchor="start" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">1번</text><line x1="530" y1="158" x2="530" y2="184" stroke="var(--line-2)" stroke-width="1.2"/><rect x="513" y="184" width="34" height="24" rx="7" fill="var(--card)" stroke="var(--acc)" stroke-width="1.4"/><text x="530" y="196" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="var(--acc)">1</text><text x="696" y="196" text-anchor="start" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">1번</text><text x="160" y="250" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="var(--ink-2)">호출 1 + 2 + 4 + 8 → n 에 비례 → O(n)</text><text x="530" y="250" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="var(--ink-2)">호출 log₂ n + 1 줄 → O(log n)</text></svg><figcaption>쪼개는 방식은 같고 호출 횟수만 다르다 — 그것만으로 O(n) 과 O(log n) 이 갈린다</figcaption></figure>
+  <div class="steps">power3: T(<span class="fr"><span>n</span><span>2</span></span>) + C = T(<span class="fr"><span>n</span><span>2<sup>k</sup></span></span>) + kC = C + C·log₂ n → <b>O(log n)</b></div>
+</section>
+
+<section id="fib">
+  <h2><span class="no">4</span>피보나치 — O(γ<sup>n</sup>) → O(log n)<span class="imp">시험 ★★★</span></h2>
+  <p>F<sub>0</sub> = 0, F<sub>1</sub> = 1, F<sub>n</sub> = F<sub>n−1</sub> + F<sub>n−2</sub> → 0, 1, 1, 2, 3, 5, 8, 13, 21, …</p>
+  <div class="tw"><table>
+    <thead><tr><th>방법</th><th>점화식 · 핵심</th><th>결과</th></tr></thead>
+    <tbody>
+      <tr><td><b>fibo1</b> (그대로 재귀)</td><td>T(n − 1) + T(n − 2) + C — 같은 값을 계속 다시 계산 (F(3) 2번, F(2) 3번 …)</td><td class="big">O(γ<sup>n</sup>)</td></tr>
+      <tr><td><b>행렬 + power3</b></td><td>피보나치를 행렬의 거듭제곱 문제로 바꿈</td><td class="big">O(log n)</td></tr>
+    </tbody>
+  </table></div>
+  <div class="formula">
+    ( F<sub>n</sub> , F<sub>n−1</sub> )<sup>T</sup> = A · ( F<sub>n−1</sub> , F<sub>n−2</sub> )<sup>T</sup>, &nbsp; A = [ [1, 1], [1, 0] ]<br>
+    ⟹ ( F<sub>n+1</sub> , F<sub>n</sub> )<sup>T</sup> = A<sup>n</sup> · ( F<sub>1</sub> , F<sub>0</sub> )<sup>T</sup> &nbsp; → &nbsp; A<sup>n</sup> = power3(A, n) : <b>O(log n)</b>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>확인 (행 × 열)</th><th>계산</th><th>결과</th></tr></thead>
+    <tbody>
+      <tr><td>위쪽</td><td>1·F<sub>n−1</sub> + 1·F<sub>n−2</sub></td><td>= F<sub>n</sub> (정의) ✓</td></tr>
+      <tr><td>아래쪽</td><td>1·F<sub>n−1</sub> + 0·F<sub>n−2</sub></td><td>= F<sub>n−1</sub> ✓</td></tr>
+    </tbody>
+  </table></div>
+  <div class="box key"><div class="t">행렬 곱 규칙</div>결과의 i행 j열 = (왼쪽 <b>i행</b>) 과 (오른쪽 <b>j열</b>) 을 짝지어 곱해 더한 값. 예: A² = [[2, 1], [1, 1]], A³ = [[3, 2], [2, 1]] → F<sub>4</sub>, F<sub>3</sub>, F<sub>2</sub> 가 들어 있음.</div>
+  <p style="font-size:14.5px;color:var(--ink-3)">교수님: "어떻게 이 식을 찾았나요? 외울 필요 없음." — 식을 <b>확인</b>하고 왜 빨라지는지를 설명할 수 있으면 됨.</p>
+</section>
+
+<section id="mul">
+  <h2><span class="no">5</span>큰 수의 곱셈 — 세로식과 단순 분할</h2>
+  <p>수가 아주 크면 곱셈·덧셈 한 번을 <b>상수로 볼 수 없다</b> (자료형 범위를 넘음) → 자리 단위로 센다.</p>
+  <div class="tw"><table>
+    <thead><tr><th>세로식</th><th>개수</th></tr></thead>
+    <tbody>
+      <tr><td>곱셈 (가로) — 한 줄 n번 × 줄 n개</td><td>n²</td></tr>
+      <tr><td>덧셈 (세로) — 한 열 최대 n개 × 열 최대 2n개</td><td>2n²</td></tr>
+      <tr><td><b>합계</b></td><td><b>3n² → O(n²)</b></td></tr>
+    </tbody>
+  </table></div>
+  <h3>반으로 쪼개기</h3>
+  <div class="formula">u = x · 10<sup>n/2</sup> + y, &nbsp; v = w · 10<sup>n/2</sup> + z &nbsp; (1487 → x = 14, y = 87)</div>
+  <div class="steps">u · v = xw · 10<sup>n</sup> + (xz + yw) · 10<sup>n/2</sup> + yz <span class="c"><span class="fr"><span>n</span><span>2</span></span>자리 곱셈 4번</span><br>
+  T(n) = 4T(<span class="fr"><span>n</span><span>2</span></span>) + <b>Cn</b> <span class="c">자리 밀기 · 2n자리 덧셈이 n 에 비례 → C 가 아니라 Cn</span></div>
+  <div class="steps">
+    = 4<sup>k</sup>T(1) + Cn(2<sup>0</sup> + 2<sup>1</sup> + ⋯ + 2<sup>k−1</sup>) = C·4<sup>k</sup> + Cn(2<sup>k</sup> − 1)<br>
+    = Cn² + Cn² − Cn = <b>2Cn² − Cn → O(n²)</b> <span class="c">4<sup>k</sup> = n², 2<sup>k</sup> = n</span>
+  </div>
+  <div class="box trap"><div class="t">나아진 게 없다</div>크기 절반(이득 2배)을 곱셈 4번(손해 4배)이 까먹음 → 여전히 O(n²). 이 4 를 줄인 것이 카라츠바.</div>
+</section>
+
+<section id="kara">
+  <h2><span class="no">6</span>카라츠바 — 곱셈 4번 → 3번<span class="imp">시험 ★★★</span></h2>
+  <div class="formula">xz + yw = (x + y)(w + z) − xw − yz</div>
+  <p>xw, yz 는 맨 앞·맨 뒤 항에 <b>어차피 필요</b>해서 계산함 → 가운데 항은 곱셈 <b>한 번</b>((x + y)(w + z))과 뺄셈으로. 사라지는 게 아니라 <b>재활용</b>.</p>
+  <div class="steps">1487 × 2356: xw = 322, yz = 4872, (x + y)(w + z) = 101 × 79 = 7979 → 가운데 = 7979 − 322 − 4872 = 2785<br>
+  → 3,220,000 + 278,500 + 4,872 = <b>3,503,372</b> ✓</div>
+  <div class="steps">
+    T(n) = 2T(<span class="fr"><span>n</span><span>2</span></span>) + T(<span class="fr"><span>n</span><span>2</span></span> + 1) + Cn ≈ <b>3T(<span class="fr"><span>n</span><span>2</span></span>) + Cn</b> <span class="c">(x + y) 는 <span class="fr"><span>n</span><span>2</span></span> + 1 자리 — +1 은 차수에 영향 없음</span><br>
+    = 3<sup>k</sup>C + Cn((3/2)<sup>0</sup> + ⋯ + (3/2)<sup>k−1</sup>) <span class="c">공비 <span class="fr"><span>3</span><span>2</span></span> → 합 = 2((3/2)<sup>k</sup> − 1)</span><br>
+    = C·3<sup>k</sup> + 2Cn(3/2)<sup>k</sup> − 2Cn<br>
+    = C·n<sup>log₂3</sup> + 2C·n · n<sup>log₂(3/2)</sup> − 2Cn <span class="c">a<sup>log<sub>b</sub> c</sup> = c<sup>log<sub>b</sub> a</sup></span><br>
+    = C·n<sup>log₂3</sup> + 2C·n<sup>log₂3</sup> − 2Cn <span class="c">n · n<sup>log₂(3/2)</sup> = n<sup>log₂2 + log₂(3/2)</sup> = n<sup>log₂3</sup></span><br>
+    = <b>3C·n<sup>log₂3</sup> − 2Cn → O(n<sup>log₂3</sup>)</b>
+  </div>
+  <div class="box key"><div class="t">왜 더 빠른가</div>log₂2 &lt; log₂3 &lt; log₂4 → <b>1 &lt; log₂3 &lt; 2</b> (≈ 1.585) → n<sup>log₂3</sup> 은 n² 보다 차수가 낮다.</div>
+</section>
+
+<section id="bs">
+  <h2><span class="no">7</span>이진탐색<span class="imp">시험 ★★★</span></h2>
+  <p>입력: <b>오름차순 정렬된</b> 리스트, 찾을 값 k. 가운데와 비교해 한쪽 절반을 통째로 버림 (업다운 게임).</p>
+<pre>def bs(A, a, b, k):
+    if a &gt; b:
+        return -1                    <span class="cm"># 범위가 뒤집힘 = 없음</span>
+    m = (a + b) // 2
+    if A[m] == k:
+        return m                     <span class="cm"># 값이 아니라 인덱스</span>
+    elif A[m] &gt; k:
+        return bs(A, a, m - 1, k)    <span class="cm"># 왼쪽 절반만</span>
+    else:
+        return bs(A, m + 1, b, k)    <span class="cm"># 오른쪽 절반만</span></pre>
+  <div class="tw"><table>
+    <thead><tr><th>A = [2, 5, 7, 8, 15, 20, 32, 44], k = 32</th><th>a</th><th>b</th><th>m</th><th>A[m]</th><th>다음</th></tr></thead>
+    <tbody>
+      <tr><td>1회</td><td>0</td><td>7</td><td>3</td><td>8</td><td>8 &lt; 32 → 오른쪽</td></tr>
+      <tr><td>2회</td><td>4</td><td>7</td><td>5</td><td>20</td><td>20 &lt; 32 → 오른쪽</td></tr>
+      <tr><td>3회</td><td>6</td><td>7</td><td>6</td><td>32</td><td><b>찾음 → 6 반환</b></td></tr>
+    </tbody>
+  </table></div>
+  <div class="steps">T(n) = T(<span class="fr"><span>n</span><span>2</span></span>) + C = T(<span class="fr"><span>n</span><span>2<sup>k</sup></span></span>) + kC = C + C·log₂ n → <b>O(log n)</b> <span class="c">단순히 앞에서부터 찾으면 O(n)</span></div>
+</section>
+
+<section id="tree">
+  <h2><span class="no">8</span>그림으로 풀기 — 세로식 · 나무 그림<span class="imp">시험 ★★★</span></h2>
+  <p><span class="fr"><span>n</span><span>2</span></span> 는 연산이 아니라 <b>줄어든 입력의 크기</b>. 연산은 옆에 붙은 C, Cn. 층마다 드는 연산을 더하고 맨 아래(크기 1) 를 더하면 T(n).</p>
+  <figure><svg viewBox="0 0 680 366" width="100%" style="max-width:680px;display:block;margin:0 auto" role="img"><title>층 합의 변화</title><desc>네 점화식에서 층마다 드는 연산의 합이 어떻게 변하는지 막대로 비교.</desc><foreignObject x="8" y="32" width="150" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="font-size:13.5px;font-weight:800;color:var(--ink)">T(<span class="fr"><span>n</span><span>2</span></span>) + C</div></foreignObject><text x="12" y="82" text-anchor="start" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">같음 (C)</text><rect x="160" y="30" width="7.2" height="11" rx="3" fill="var(--ink-3)" opacity="0.90"/><rect x="160" y="45" width="7.2" height="11" rx="3" fill="var(--ink-3)" opacity="0.78"/><rect x="160" y="60" width="7.2" height="11" rx="3" fill="var(--ink-3)" opacity="0.66"/><rect x="160" y="75" width="7.2" height="11" rx="3" fill="var(--ink-3)" opacity="0.54"/><foreignObject x="540" y="42" width="140" height="30"><div xmlns="http://www.w3.org/1999/xhtml" style="font-size:15px;font-weight:800;color:var(--ink-3)">O(log n)</div></foreignObject><foreignObject x="8" y="116" width="150" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="font-size:13.5px;font-weight:800;color:var(--ink)">T(<span class="fr"><span>n</span><span>2</span></span>) + Cn</div></foreignObject><text x="12" y="166" text-anchor="start" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ok)">½배씩 감소</text><rect x="160" y="114" width="57.6" height="11" rx="3" fill="var(--ok)" opacity="0.90"/><rect x="160" y="129" width="28.8" height="11" rx="3" fill="var(--ok)" opacity="0.78"/><rect x="160" y="144" width="14.4" height="11" rx="3" fill="var(--ok)" opacity="0.66"/><rect x="160" y="159" width="7.2" height="11" rx="3" fill="var(--ok)" opacity="0.54"/><foreignObject x="540" y="126" width="140" height="30"><div xmlns="http://www.w3.org/1999/xhtml" style="font-size:15px;font-weight:800;color:var(--ok)">O(n)</div></foreignObject><foreignObject x="8" y="200" width="150" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="font-size:13.5px;font-weight:800;color:var(--ink)">2T(<span class="fr"><span>n</span><span>2</span></span>) + Cn</div></foreignObject><text x="12" y="250" text-anchor="start" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--acc)">같음 (Cn)</text><rect x="160" y="198" width="57.6" height="11" rx="3" fill="var(--acc)" opacity="0.90"/><rect x="160" y="213" width="57.6" height="11" rx="3" fill="var(--acc)" opacity="0.78"/><rect x="160" y="228" width="57.6" height="11" rx="3" fill="var(--acc)" opacity="0.66"/><rect x="160" y="243" width="57.6" height="11" rx="3" fill="var(--acc)" opacity="0.54"/><foreignObject x="540" y="210" width="140" height="30"><div xmlns="http://www.w3.org/1999/xhtml" style="font-size:15px;font-weight:800;color:var(--acc)">O(n log n)</div></foreignObject><foreignObject x="8" y="284" width="150" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="font-size:13.5px;font-weight:800;color:var(--ink)">3T(<span class="fr"><span>n</span><span>2</span></span>) + Cn</div></foreignObject><text x="12" y="334" text-anchor="start" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--warn)">1.5배씩 증가</text><rect x="160" y="282" width="57.6" height="11" rx="3" fill="var(--warn)" opacity="0.90"/><rect x="160" y="297" width="86.4" height="11" rx="3" fill="var(--warn)" opacity="0.78"/><rect x="160" y="312" width="129.6" height="11" rx="3" fill="var(--warn)" opacity="0.66"/><rect x="160" y="327" width="194.4" height="11" rx="3" fill="var(--warn)" opacity="0.54"/><foreignObject x="540" y="294" width="140" height="30"><div xmlns="http://www.w3.org/1999/xhtml" style="font-size:15px;font-weight:800;color:var(--warn)">O(n<sup>log₂3</sup>)</div></foreignObject><text x="160" y="14" text-anchor="start" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">층 1 → 층 4 의 층 합 (막대 길이)</text></svg><figcaption>층 합 = 갈래 수 × 갈래 하나의 연산. 층 합이 줄면 첫 층이, 같으면 층 수가, 늘면 맨 아래가 결과를 정한다</figcaption></figure>
+  <div class="tw"><table>
+    <thead><tr><th>점화식</th><th>그림</th><th>층 합</th><th>맨 아래</th><th>T(n)</th></tr></thead>
+    <tbody>
+      <tr><td>T(<span class="fr"><span>n</span><span>2</span></span>) + C</td><td>한 줄</td><td>C (같음)</td><td>C</td><td>C·log₂ n + C</td></tr>
+      <tr><td>T(<span class="fr"><span>n</span><span>2</span></span>) + Cn</td><td>한 줄</td><td>Cn, <span class="fr"><span>Cn</span><span>2</span></span>, … (½배)</td><td>C</td><td>2Cn − C</td></tr>
+      <tr><td>2T(<span class="fr"><span>n</span><span>2</span></span>) + Cn</td><td>두 갈래</td><td>Cn (같음)</td><td>n · C</td><td>Cn·log₂ n + Cn</td></tr>
+      <tr><td>3T(<span class="fr"><span>n</span><span>2</span></span>) + Cn</td><td>세 갈래</td><td><span class="fr"><span>3</span><span>2</span></span>배씩</td><td>3<sup>k</sup>C = n<sup>log₂3</sup>C</td><td>3C·n<sup>log₂3</sup> − 2Cn</td></tr>
+    </tbody>
+  </table></div>
+  <div class="box key"><div class="t">1 + ½ + ¼ + ⋯ &lt; 2</div>가로 2 · 세로 1 직사각형을 매번 남은 칸의 절반씩 채우는 것과 같아서 2 를 넘지 못함 → T(<span class="fr"><span>n</span><span>2</span></span>) + Cn ≤ 2Cn + C → O(n).</div>
+</section>
+
+<section id="trap">
+  <h2><span class="no">9</span>자주 틀리는 것</h2>
+  <div class="trapgrid">
+    <div><span class="x">✗</span> 반씩 쪼개면 무조건 빨라진다<br><span class="o">✓</span> power2 처럼 같은 걸 2번 부르면 O(n) 그대로</div>
+    <div><span class="x">✗</span> 2T(n/2) + C = O(n log n)<br><span class="o">✓</span> O(n). n log n 은 <b>+ Cn</b> 일 때</div>
+    <div><span class="x">✗</span> 큰 수 덧셈도 + C<br><span class="o">✓</span> 자리마다 한 번 → + <b>Cn</b></div>
+    <div><span class="x">✗</span> 4T(n/2) + Cn 이면 분할로 이득<br><span class="o">✓</span> O(n²) — 세로식과 같음</div>
+    <div><span class="x">✗</span> 카라츠바에서 xw, yz 가 사라짐<br><span class="o">✓</span> 계산하고 <b>재활용</b> (가운데 항에서 빼기)</div>
+    <div><span class="x">✗</span> O(n<sup>log₂3</sup>) = O(n<sup>log 3</sup>)<br><span class="o">✓</span> 지수 안의 밑은 <b>생략 금지</b></div>
+    <div><span class="x">✗</span> 등비수열 공식에 입력 크기 n<br><span class="o">✓</span> 항의 개수는 <b>k</b> — r<sup>k</sup></div>
+    <div><span class="x">✗</span> 등차수열로 계산<br><span class="o">✓</span> 공비를 곱해 나가므로 <b>등비수열</b></div>
+    <div><span class="x">✗</span> bs 가 찾은 값을 반환<br><span class="o">✓</span> <b>인덱스</b> m 반환, 없으면 −1</div>
+    <div><span class="x">✗</span> 이진탐색은 아무 리스트에나<br><span class="o">✓</span> <b>정렬</b>돼 있어야 절반을 버릴 수 있음</div>
+  </div>
+</section>
+
+<section id="check" class="qa">
+  <h2><span class="no">10</span>셀프 체크</h2>
+  <p class="lead">답을 떠올린 뒤 눌러서 확인.</p>
+  <details><summary>power2 와 power3 의 점화식과 결과, 차이가 나는 이유는?</summary><div class="a">power2: 2T(<span class="fr"><span>n</span><span>2</span></span>) + C → <b>O(n)</b>. power3: T(<span class="fr"><span>n</span><span>2</span></span>) + C → <b>O(log n)</b>. power2 는 같은 인자로 같은 값을 두 번 계산하고, power3 는 한 번 구해 x 에 담아 재사용한다.</div></details>
+  <details><summary>T(n) = 2T(n/2) + C 를 전개해 결과를 구하면?</summary><div class="a">2<sup>k</sup>T(1) + C(2<sup>k−1</sup> + ⋯ + 1) = Cn + C(n − 1) = <b>2Cn − C → O(n)</b>.</div></details>
+  <details><summary>큰 수 단순 분할 곱셈의 점화식에 + C 가 아니라 + Cn 이 붙는 이유는?</summary><div class="a">10<sup>n</sup>, 10<sup>n/2</sup> 곱하기(뒤에 0 붙이기)와 최대 2n자리 덧셈이 모두 <b>자리 수 n 에 비례</b>하기 때문.</div></details>
+  <details><summary>카라츠바에서 곱셈 3번은 무엇무엇인가?</summary><div class="a"><b>xw, yz, (x + y)(w + z)</b>. 가운데 항 xz + yw = (x + y)(w + z) − xw − yz.</div></details>
+  <details><summary>3T(n/2) + Cn 에서 등비수열의 초항·공비·항 수와 합은?</summary><div class="a">초항 1, 공비 <span class="fr"><span>3</span><span>2</span></span>, 항 k개 → 합 = <span class="fr"><span>(3/2)<sup>k</sup> − 1</span><span>3/2 − 1</span></span> = <b>2((3/2)<sup>k</sup> − 1)</b>.</div></details>
+  <details><summary>[[1, 1], [1, 0]] × [[2, 1], [1, 1]] 은?</summary><div class="a"><b>[[3, 2], [2, 1]]</b> (= A³). 1행 1열 = 1·2 + 1·1 = 3, 1행 2열 = 1·1 + 1·1 = 2, 2행 1열 = 2, 2행 2열 = 1.</div></details>
+  <details><summary>A = [3, 9, 14, 21, 30, 41, 55, 68] 에서 bs(A, 0, 7, 55) 의 m 순서와 반환값은?</summary><div class="a">m = 3 (21) → 5 (41) → 6 (55) → <b>6 반환</b>.</div></details>
+  <details><summary>2T(n/2) + Cn 나무 그림에서 층 합이 모두 Cn 인 이유는?</summary><div class="a">갈래 수가 2배가 될 때 갈래 하나의 크기는 절반 → 곱이 항상 <b>Cn</b>. 층이 log₂ n 개 + 맨 아래 n·C → Cn·log₂ n + Cn = O(n log n).</div></details>
+  <div style="margin-top:14px;font-size:15px">더 풀어 보기 → <a href="../exam/divide-1.html">기본</a> · <a href="../exam/divide-2.html">응용</a> · <a href="../exam/divide-3.html">심화</a></div>
+</section>
+<footer>알고리즘 · 분할 정복 · 점화식 정리노트 · jaealee.com</footer>
+</div>
+<script>
+(function(){const r=document.documentElement,k='summary-theme';try{const s=localStorage.getItem(k);if(s)r.dataset.theme=s;}catch(e){}
+document.getElementById('th').onclick=()=>{const d=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;r.dataset.theme=d?'light':'dark';try{localStorage.setItem(k,r.dataset.theme)}catch(e){}};
+addEventListener('beforeprint',()=>document.querySelectorAll('details').forEach(d=>d.open=true));})();
+</script></body></html>
