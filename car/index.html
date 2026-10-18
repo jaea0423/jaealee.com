@@ -152,6 +152,15 @@
     font:inherit;font-size:17px;font-weight:600;color:var(--ink);cursor:pointer;
   }
   .form.hide{display:none}
+  /* 전송 실패 화면: 보냈다고 착각하지 않도록 완료 화면과 같은 크기로 분명하게 */
+  .fail{display:none;text-align:center;padding:24px 4px 6px}
+  .fail.show{display:block}
+  .fail .mark{margin:4px auto 14px;display:grid;place-items:center}
+  .fail .mark svg{width:44px;height:44px;color:var(--danger)}
+  .fail h2{margin:0 0 8px}
+  .fail p{margin:0;color:var(--ink-2);font-size:16px;line-height:1.6}
+  .fail .actions-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:24px}
+  .fail .actions-row .btn-ghost{margin-top:0}
 
   @media (max-height:520px){html,body{overflow:auto}.page{height:auto;min-height:100dvh}.stage{padding-top:24px}}
   @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
@@ -233,6 +242,16 @@
     <div class="meta" id="doneMeta"></div>
     <button class="btn-ghost" type="button" data-close>닫기</button>
   </div>
+
+  <div class="fail" id="fail" role="alert">
+    <div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></div>
+    <h2>전송되지 않았습니다</h2>
+    <p>앞유리의 전화번호로<br>직접 연락해 주세요.</p>
+    <div class="actions-row">
+      <button class="btn-ghost" type="button" id="retryBtn">다시 시도</button>
+      <button class="btn-ghost" type="button" data-close>닫기</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -268,7 +287,7 @@ const TYPES = {
 
 /* ===== 요소 ===== */
 const $ = (id) => document.getElementById(id);
-const sheet = $("sheet"), backdrop = $("backdrop"), form = $("form"), done = $("done");
+const sheet = $("sheet"), backdrop = $("backdrop"), form = $("form"), done = $("done"), fail = $("fail");
 const chipsEl = $("chips"), detail = $("detail"), phone = $("phone"), hint = $("phoneHint");
 const submitBtn = $("submitBtn");
 let current = "move", selected = "";
@@ -301,7 +320,7 @@ function openSheet(type){
     };
     chipsEl.appendChild(b);
   });
-  form.classList.remove("hide"); done.classList.remove("show");
+  form.classList.remove("hide"); done.classList.remove("show"); fail.classList.remove("show");
   form.reset(); $("cnt").textContent = "0";
   setHint("", false);
   validate();
@@ -370,25 +389,42 @@ form.addEventListener("submit", async (e) => {
   };
 
   submitBtn.classList.add("loading"); submitBtn.disabled = true;
+  // 응답이 15초 안에 오지 않으면 실패로 처리
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 15000);
   try {
-    // 연결 전에는 보냈다고 표시하지 않음(가짜 성공 방지)
-    if (!CONFIG.endpoint) throw new Error("not-configured");
+    if (!CONFIG.endpoint) throw new Error("not-configured");   // 연결 전에는 보냈다고 표시하지 않음
     const res = await fetch(CONFIG.endpoint, {
       method: "POST",
+      signal: ctrl.signal,
       headers: Object.assign({ "Content-Type": "application/json" },
         CONFIG.publicKey ? { apikey: CONFIG.publicKey, Authorization: "Bearer " + CONFIG.publicKey } : {}),
       body: JSON.stringify(payload)
     });
     if (res.status === 429) throw new Error("cooldown");
-    if (!res.ok) throw new Error("HTTP " + res.status);
+    // 텔레그램 전송까지 성공했다고 서버가 확인해 준 경우(ok:true)에만 성공 화면
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok || body.ok !== true) throw new Error("send-failed");
     try { localStorage.setItem("car_req_last", String(Date.now())); } catch {}
     showDone();
   } catch (err) {
     submitBtn.classList.remove("loading"); validate();
-    setHint(err.message === "cooldown"
-      ? "잠시 후 다시 시도해 주세요."
-      : "전송에 실패했습니다. 앞유리의 전화번호로 연락해 주세요.", true);
+    if (err.message === "cooldown") setHint("방금 전송된 요청이 있습니다. 잠시 후 다시 시도해 주세요.", true);
+    else showFail();
+  } finally {
+    clearTimeout(timer);
   }
+});
+
+function showFail(){
+  if (navigator.vibrate) navigator.vibrate([30, 60, 30]);
+  form.classList.add("hide");
+  fail.classList.add("show");
+  sheet.scrollTop = 0;
+}
+// 다시 시도: 입력 내용을 그대로 둔 채 입력 화면으로
+$("retryBtn").addEventListener("click", () => {
+  fail.classList.remove("show"); form.classList.remove("hide"); validate();
 });
 
 function showDone(){
