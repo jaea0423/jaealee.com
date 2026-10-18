@@ -239,9 +239,11 @@
 /* ===== 설정 ===== */
 const CONFIG = {
   plate: "12호3456",
-  // 텔레그램 연결 시 서버(예: Cloudflare Worker) 주소를 넣으세요.
-  // 봇 토큰은 절대 이 HTML에 넣지 않습니다(누구나 소스를 볼 수 있음).
+  // Supabase Edge Function 주소: https://프로젝트ID.supabase.co/functions/v1/car-contact
+  // 비어 있으면 전송하지 않고 실패로 안내함. 봇 토큰은 절대 여기에 넣지 않음(Edge Function Secret에만 저장)
   endpoint: "",
+  // 함수의 JWT 검증을 끄지 못한 경우에만 Supabase 공개 키(anon 또는 sb_publishable_…)를 넣음. 공개돼도 되는 키
+  publicKey: "",
   cooldownSec: 60 // 같은 기기에서 연속 전송 제한
 };
 
@@ -369,23 +371,23 @@ form.addEventListener("submit", async (e) => {
 
   submitBtn.classList.add("loading"); submitBtn.disabled = true;
   try {
-    if (CONFIG.endpoint) {
-      const res = await fetch(CONFIG.endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      if (!res.ok) throw new Error("HTTP " + res.status);
-    } else {
-      // 미리보기: 실제 전송 없음
-      console.log("[미리보기] 전송 데이터", payload);
-      await new Promise(r => setTimeout(r, 700));
-    }
+    // 연결 전에는 보냈다고 표시하지 않음(가짜 성공 방지)
+    if (!CONFIG.endpoint) throw new Error("not-configured");
+    const res = await fetch(CONFIG.endpoint, {
+      method: "POST",
+      headers: Object.assign({ "Content-Type": "application/json" },
+        CONFIG.publicKey ? { apikey: CONFIG.publicKey, Authorization: "Bearer " + CONFIG.publicKey } : {}),
+      body: JSON.stringify(payload)
+    });
+    if (res.status === 429) throw new Error("cooldown");
+    if (!res.ok) throw new Error("HTTP " + res.status);
     try { localStorage.setItem("car_req_last", String(Date.now())); } catch {}
     showDone();
   } catch (err) {
     submitBtn.classList.remove("loading"); validate();
-    setHint("전송에 실패했습니다. 잠시 후 다시 시도해 주세요.", true);
+    setHint(err.message === "cooldown"
+      ? "잠시 후 다시 시도해 주세요."
+      : "전송에 실패했습니다. 앞유리의 전화번호로 연락해 주세요.", true);
   }
 });
 
