@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>알고리즘 7주차 2차시 — LCS — 최장 공통 부문자열</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   과목 테마 — 아래 3줄(--accent, --accent-deep, --accent-soft)만 교체
+   데이터분석프로그래밍 #0EA5E9 / #0369A1 / #E0F2FE
+   전공영어           #E08700 / #A55A00 / #FEF3DC
+   인공지능           #9333EA / #6B21A8 / #F3E8FF
+   알고리즘           #4F46E5 / #3730A3 / #E8E7FD
+   시큐어코딩         #DC2626 / #991B1B / #FDE7E7
+   개인정보보호암호기술 #DB2777 / #9D174D / #FCE7F3
+   개인정보보호법률이해 #059669 / #065F46 / #D8F5EA
+   ═══════════════════════════════════════════════════════════════ */
+:root{
+  --accent:#4F46E5;
+  --accent-deep:#3730A3;
+  --accent-soft:#E8E7FD;
+
+  --bg:#F7F8FA;
+  --surface:#FFFFFF;
+  --ink:#15161B;
+  --ink-2:#565C66;
+  --ink-3:#8B9098;
+  --line:#E5E7EC;
+  --line-2:#F0F1F4;
+  --code-bg:#1B1D24;
+  --code-ink:#E4E6ED;
+  --mark:#FFE27A;
+  --c1:#1D6FC4;
+  --c2:#0E8F72;
+  --c3:#C2410C;
+  --font:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,system-ui,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  --mono:'JetBrains Mono','SFMono-Regular',Consolas,'D2Coding',monospace;
+}
+html[data-theme="dark"]{
+  --accent:#7C78F0;
+  --accent-deep:#9C99F7;
+  --accent-soft:#22232E;
+  --bg:#101116;
+  --surface:#181A20;
+  --ink:#E8E9ED;
+  --ink-2:#A6AAB4;
+  --ink-3:#73777F;
+  --line:#2A2C34;
+  --line-2:#202229;
+  --code-bg:#0C0D11;
+  --mark:#6E5C16;
+  --c1:#6FB3F2;
+  --c2:#4FD9B0;
+  --c3:#F0955A;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15.5px;line-height:1.72;letter-spacing:-.012em;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-deep)}
+::selection{background:var(--accent);color:#fff}
+
+/* ── 스크롤 진행 바 ─────────────────────────────────── */
+#scrollbar{position:fixed;top:0;left:0;height:3px;width:0;background:var(--accent);z-index:99}
+
+/* ── 상단 바 ────────────────────────────────────────── */
+.topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:10px;padding:10px 22px;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.back{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink-2);font-size:14px;font-weight:700;white-space:nowrap}
+.back:hover{color:var(--accent-deep)}
+.back i{width:10px;height:10px;border-radius:3px;background:var(--accent);display:block}
+.search{flex:1;max-width:300px;margin-left:auto;position:relative}
+.search input{width:100%;padding:7px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14px}
+.search input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.hit{position:absolute;right:10px;top:8px;font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums;pointer-events:none}
+.tools{display:flex;gap:6px}
+.tbtn{border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:9px;padding:7px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);white-space:nowrap}
+.tbtn:hover{border-color:var(--accent);color:var(--accent-deep)}
+.tbtn.solid{background:var(--accent);border-color:var(--accent);color:#fff}
+.tbtn:disabled{opacity:.4;cursor:default}
+
+/* ── 레이아웃 ───────────────────────────────────────── */
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);gap:38px;max-width:1200px;margin:0 auto;padding:26px 24px 120px}
+main{min-width:0}
+
+/* ── 사이드 패널(포인트 컬러) ───────────────────────── */
+.side{position:sticky;top:80px;align-self:start;max-height:calc(100vh - 100px);overflow-y:auto;scrollbar-width:thin}
+.panel{background:var(--accent);border-radius:16px;padding:18px 16px;color:#fff;box-shadow:0 8px 24px -12px color-mix(in srgb,var(--accent) 70%,transparent)}
+.panel .cap{font-size:11.5px;font-weight:700;opacity:.72;margin-bottom:9px}
+.panel .subject{font-size:19px;font-weight:800;letter-spacing:-.03em;line-height:1.3;margin-bottom:2px}
+.panel .when{font-size:12.5px;opacity:.8;margin-bottom:16px}
+.toc{list-style:none;margin:0;padding:0}
+.toc a{display:block;padding:6px 10px;border-radius:8px;color:#fff;opacity:.82;text-decoration:none;font-size:13.5px;font-weight:600;line-height:1.45}
+.toc a:hover{background:rgba(255,255,255,.16);opacity:1}
+.toc a.on{background:#fff;color:var(--accent-deep);opacity:1;font-weight:800}
+.toc .num{display:inline-block;width:17px;font-variant-numeric:tabular-nums;opacity:.7}
+.toc a.on .num{opacity:1}
+.panel hr{border:0;border-top:1px solid rgba(255,255,255,.22);margin:14px 0}
+.chk label{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;padding:3px 0;cursor:pointer;line-height:1.5;opacity:.9}
+.chk input{margin-top:4px;accent-color:#fff;flex-shrink:0}
+.chk input:checked + span{opacity:.5;text-decoration:line-through}
+.pbar{height:4px;border-radius:99px;background:rgba(255,255,255,.28);margin-top:11px;overflow:hidden}
+.pbar i{display:block;height:100%;width:0;background:#fff;transition:width .25s}
+
+/* ── 히어로 ─────────────────────────────────────────── */
+.hero{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px 28px 22px;overflow:hidden;margin-bottom:16px}
+.hero::after{content:attr(data-w);position:absolute;right:14px;bottom:-26px;font-size:112px;font-weight:800;color:var(--accent);opacity:.09;letter-spacing:-.06em;line-height:1;pointer-events:none}
+.chip{display:inline-flex;align-items:center;gap:7px;background:var(--accent-soft);color:var(--accent-deep);font-size:12.5px;font-weight:800;padding:4px 11px;border-radius:99px}
+h1{font-size:clamp(26px,3.6vw,34px);font-weight:800;letter-spacing:-.04em;line-height:1.24;margin:12px 0 6px;position:relative}
+.hero .sub{color:var(--ink-2);font-size:15px;margin:0 0 14px;position:relative}
+[hidden]{display:none!important}
+.metaline{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-3);position:relative}
+.metaline b{color:var(--ink-2);font-weight:600}
+
+/* ── 수업 자료 (같은 폴더의 PDF) ────────────────────── */
+.files{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;position:relative}
+.file{display:inline-flex;align-items:center;gap:9px;padding:8px 13px 8px 9px;border:1px solid var(--line);border-radius:10px;background:var(--surface);text-decoration:none;color:var(--ink);font-size:13.5px;font-weight:700}
+.file:hover{border-color:var(--accent);background:var(--accent-soft)}
+.file .ic{background:var(--accent);color:#fff;font-size:10px;font-weight:800;padding:3px 6px;border-radius:6px;letter-spacing:.02em}
+.file em{font-style:normal;color:var(--ink-3);font-weight:600;font-size:12.5px}
+.files .none{font-size:12.5px;color:var(--ink-3);font-weight:600;padding:8px 0}
+.extra-chip:disabled{cursor:default;opacity:.6}
+
+/* ── 오늘의 흐름 ────────────────────────────────────── */
+.flow{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:26px}
+.flow a{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--line);border-radius:99px;background:var(--surface);text-decoration:none;color:var(--ink-2);font-size:13px;font-weight:600}
+.flow a:hover{border-color:var(--accent);color:var(--accent-deep);background:var(--accent-soft)}
+.flow a b{color:var(--accent);font-variant-numeric:tabular-nums}
+
+/* ── 핵심 카드 ──────────────────────────────────────── */
+.keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:34px}
+.key{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:14px;padding:16px 17px}
+.key .n{font-size:12px;font-weight:800;color:var(--accent);margin-bottom:5px}
+.key p{margin:0;font-size:14.5px;line-height:1.6}
+.key b{font-weight:800}
+
+/* ── 섹션 ───────────────────────────────────────────── */
+section{margin-bottom:46px;scroll-margin-top:82px}
+h2.st{display:flex;align-items:center;gap:11px;font-size:22px;font-weight:800;letter-spacing:-.035em;margin:0 0 14px}
+h2.st .sq{flex-shrink:0;width:30px;height:30px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+h3{font-size:16.5px;font-weight:800;margin:26px 0 8px;letter-spacing:-.025em;padding-left:11px;border-left:3px solid var(--accent)}
+h4{font-size:14.5px;font-weight:700;margin:18px 0 6px;color:var(--ink-2)}
+p{margin:9px 0}
+ul,ol{margin:9px 0;padding-left:21px}
+li{margin:3px 0}
+li::marker{color:var(--accent)}
+.en{color:var(--ink-3);font-weight:500;font-size:.9em}
+mark{background:linear-gradient(transparent 54%,var(--mark) 54%);color:inherit;padding:0 2px}
+.hit-mark{background:var(--accent);color:#fff;border-radius:3px}
+
+/* ── 배지 ───────────────────────────────────────────── */
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin:-6px 0 12px}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:6px;letter-spacing:0}
+.badge.exam{color:#92580B;background:#FDF0D5}
+.badge.prof{color:var(--accent-deep);background:var(--accent-soft)}
+.badge.ask{color:#B02020;background:#FCE4E4}
+html[data-theme="dark"] .badge.exam{background:#3B2D0E;color:#EFC470}
+html[data-theme="dark"] .badge.ask{background:#3A1919;color:#F0A0A0}
+
+/* ── 카드형 콜아웃 ──────────────────────────────────── */
+.call{border-radius:13px;padding:14px 17px;margin:15px 0;background:var(--surface);border:1px solid var(--line)}
+.call .t{font-size:12.5px;font-weight:800;margin-bottom:5px}
+.call p:first-of-type{margin-top:0}
+.call p:last-child,.call ul:last-child{margin-bottom:0}
+.call.quote{background:var(--accent-soft);border-color:transparent}
+.call.quote .t{color:var(--accent-deep)}
+.call.quote p{font-size:14.8px}
+.call.warn{border-left:4px solid #E5A50A}
+.call.warn .t{color:#A16207}
+.call.ask{border-left:4px solid #DC2626}
+.call.ask .t{color:#B02020}
+.call.link{border-left:4px solid var(--accent)}
+.call.link .t{color:var(--accent-deep)}
+
+/* 보충 — 교수님이 설명하지 않은 외부 자료. 회색 + 점선으로 본문과 확실히 구분 */
+.call.extra{background:repeating-linear-gradient(135deg,var(--line-2),var(--line-2) 9px,transparent 9px,transparent 18px);border:1.5px dashed var(--ink-3);border-left-width:1.5px}
+.call.extra .t{color:var(--ink-2);display:flex;align-items:center;gap:6px}
+.call.extra .t::before{content:"보충";background:var(--ink-3);color:var(--surface);font-size:10.5px;padding:1px 6px;border-radius:5px}
+.call.extra p{color:var(--ink-2)}
+.badge.extra{color:var(--ink-2);background:var(--line-2);border:1px dashed var(--ink-3)}
+.ext{border-bottom:2px dotted var(--ink-3);color:var(--ink-2)}
+.ext::after{content:"보충";font-size:9.5px;font-weight:800;vertical-align:super;color:var(--ink-3);margin-left:2px;letter-spacing:0}
+.extra-chip{border:1.5px dashed var(--ink-3);background:transparent;color:var(--ink-2);cursor:pointer;font-family:var(--font)}
+body.no-extra .call.extra,body.no-extra .badge.extra{display:none}
+body.no-extra .ext{border-bottom:0}
+body.no-extra .ext::after{display:none}
+html[data-theme="dark"] .call.warn .t{color:#E5B547}
+html[data-theme="dark"] .call.ask .t{color:#F0A0A0}
+
+/* ── 원문 보기 ──────────────────────────────────────── */
+details.raw{margin:12px 0;border:1px dashed var(--line);border-radius:10px;background:var(--line-2)}
+details.raw summary{cursor:pointer;padding:8px 14px;font-size:12.5px;color:var(--ink-3);font-weight:700;list-style:none}
+details.raw summary::-webkit-details-marker{display:none}
+details.raw summary::before{content:"▸ ";color:var(--accent)}
+details.raw[open] summary::before{content:"▾ "}
+details.raw .txt{padding:0 14px 12px;font-size:13px;color:var(--ink-2);white-space:pre-wrap;line-height:1.7}
+
+/* ── 필기 원문 페이지 ───────────────────────────────── */
+.rawnote{border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+.rawitem{display:grid;grid-template-columns:78px 1fr;gap:16px;padding:15px 18px;border-bottom:1px solid var(--line-2)}
+.rawitem:last-child{border-bottom:0}
+.rawitem .seq{font-size:12px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+.rawitem .seq span{display:block;color:var(--ink-3);font-weight:600;font-size:11px;margin-top:2px}
+.rawitem .body{white-space:pre-wrap;font-size:14px;line-height:1.75;color:var(--ink)}
+.rawitem .where{margin-top:7px;font-size:12px}
+.rawitem .where a{color:var(--accent-deep);text-decoration:none;font-weight:700;background:var(--accent-soft);padding:2px 8px;border-radius:6px}
+.rawitem .where a:hover{background:var(--accent);color:#fff}
+
+/* ── 표 ─────────────────────────────────────────────── */
+.tablewrap{overflow-x:auto;margin:15px 0;border:1px solid var(--line);border-radius:13px}
+.digits{white-space:normal;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:flex-start}.dgu{padding-top:2px}
+.dg{display:inline-flex;flex-direction:column;align-items:center}
+.dgs{padding:0 8px 6px;border-bottom:1.6px solid var(--accent);border-left:1.6px solid var(--accent);border-right:1.6px solid var(--accent);border-radius:0 0 8px 8px}
+.dgl{font-size:.9em;font-weight:700;color:var(--accent-deep);margin-top:4px}
+sup .frac,sub .frac{font-size:.9em;margin:0 1px}
+.frac{display:inline-flex;flex-direction:column;text-align:center;vertical-align:middle;line-height:1.15;margin:0 3px;font-size:.94em}
+.frac .num{border-bottom:1.4px solid currentColor;padding:0 4px}
+.frac .den{padding:0 4px}
+.math{white-space:pre-wrap;font-family:var(--mono);font-size:13.6px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 15px;line-height:1.7;margin:12px 0;overflow-x:auto}
+.q .lv{font-size:10.5px;font-weight:800;border-radius:6px;padding:1px 7px;flex-shrink:0;margin-top:3px;margin-left:6px}
+.q .lv.b{color:var(--c2);border:1px solid var(--c2)}
+.q .lv.m{color:var(--accent-deep);border:1px solid var(--accent)}
+.q .lv.h{color:var(--c3);border:1px solid var(--c3)}
+table{border-collapse:collapse;width:100%;font-size:14px;background:var(--surface)}
+th,td{padding:10px 13px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line-2)}
+th{background:var(--accent);color:#fff;font-weight:700;font-size:13px;white-space:nowrap;border-bottom:0}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--line-2)}
+
+/* ── 코드 / 의사코드 ────────────────────────────────── */
+.bsv{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:14px 14px 12px;margin:16px 0}
+.bsv .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.bsv .tabs button,.bsv .nav button{font:inherit;font-size:13px;font-weight:700;padding:6px 12px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink-2);cursor:pointer}
+.bsv .tabs button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.bsv .nav{display:flex;align-items:center;gap:8px;margin-top:10px}
+.bsv .nav .cnt{flex:1;text-align:center;font-size:13px;font-weight:700;color:var(--ink-2)}
+.bsv .nav button:disabled{opacity:.35;cursor:default}
+.bsv .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+@media (max-width:640px){.bsv .grid{grid-template-columns:1fr}}
+.bsv .code{font-family:var(--mono);font-size:12.4px;line-height:1.65;background:var(--code-bg);color:var(--code-ink);border-radius:10px;padding:10px 0;overflow-x:auto}
+.bsv .code div{padding:0 12px;white-space:pre;border-left:3px solid transparent}
+.bsv .code div.hl{background:color-mix(in srgb,var(--accent) 38%,transparent);border-left-color:#fff}
+.bsv .code .ln{display:inline-block;width:18px;opacity:.45}
+.bsv .stack{font-family:var(--mono);font-size:12.4px;line-height:1.6}
+.bsv .stack .fr{padding:5px 9px;border:1px solid var(--line);border-radius:8px;margin-bottom:5px;background:var(--bg)}
+.bsv .stack .fr.cur{border-color:var(--accent);background:var(--accent-soft);font-weight:700}
+.bsv .stack .fr .rv{color:var(--c2);font-weight:800}
+.bsv .lab{font-size:11.5px;font-weight:800;color:var(--ink-3);margin:0 0 5px;letter-spacing:.02em}
+.bsv .msg{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--accent-soft);font-size:14px;line-height:1.6}
+.codebox{margin:15px 0;border-radius:13px;overflow:hidden;background:var(--code-bg);border:1px solid var(--code-bg)}
+.codebox .head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 14px;font-size:12px;color:#9AA0AC;font-weight:700;background:rgba(255,255,255,.04)}
+.codebox .head .tag{color:#fff;background:var(--accent);border-radius:5px;padding:1px 7px;font-size:11px;margin-right:7px}
+.codebox pre{margin:0;padding:15px 17px;overflow-x:auto;font-family:var(--mono);font-size:13.2px;line-height:1.7;color:var(--code-ink)}
+.codebox .cm{color:#7C8494}
+.codebox .kw{color:#C4A6FF}
+.codebox .st2{color:#8BD5A0}
+.copy{border:0;background:transparent;color:#9AA0AC;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font)}
+.copy:hover{color:#fff}
+.codebox.pseudo{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent)}
+.codebox.pseudo .head{background:var(--accent-soft);color:var(--accent-deep)}
+.codebox.pseudo .head .tag{background:var(--accent-deep)}
+.codebox.pseudo pre{color:var(--ink);font-size:13.6px}
+.codebox.pseudo .cm{color:var(--ink-3)}
+.codebox.pseudo .kw{color:var(--accent-deep);font-weight:700}
+.codebox.pseudo .copy{color:var(--ink-3)}
+.codebox.pseudo .copy:hover{color:var(--accent-deep)}
+code:not(pre code){background:var(--accent-soft);color:var(--accent-deep);padding:1px 6px;border-radius:6px;font-family:var(--mono);font-size:.88em;font-weight:600}
+
+/* ── 도식 ───────────────────────────────────────────── */
+figure{margin:18px 0;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 14px 12px}
+figure svg{max-width:100%;height:auto}
+figure svg[viewBox^="0 0 440"],figure svg[viewBox^="0 0 380"]{max-width:560px;margin:0 auto}
+figcaption{font-size:12.5px;color:var(--ink-3);margin-top:10px}
+
+/* ── 용어 ───────────────────────────────────────────── */
+.terms{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:11px}
+.term{border:1px solid var(--line);border-radius:13px;padding:13px 15px;background:var(--surface)}
+.term b{display:block;font-size:15px}
+.term .e{display:block;font-size:12px;color:var(--accent-deep);font-family:var(--mono);margin-bottom:6px}
+.term p{margin:0;font-size:13.3px;color:var(--ink-2);line-height:1.6}
+
+/* ── 예상 문제 ──────────────────────────────────────── */
+.q{border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:12px 0;background:var(--surface)}
+.q .qh{display:flex;gap:10px;align-items:flex-start;font-weight:700;font-size:15px}
+.q .qn{color:#fff;background:var(--accent);border-radius:7px;padding:1px 8px;font-size:12.5px;font-weight:800;flex-shrink:0;margin-top:3px}
+.q .type{font-size:11px;font-weight:800;color:var(--ink-3);border:1px solid var(--line);border-radius:6px;padding:1px 7px;margin-left:auto;flex-shrink:0;margin-top:3px}
+.q ol.ch{list-style:none;padding-left:0;margin:11px 0 0;counter-reset:c}
+.q ol.ch li{padding:3px 0 3px 26px;position:relative;font-size:14.3px}
+.q ol.ch li::before{content:counter(c);counter-increment:c;position:absolute;left:0;top:4px;width:19px;height:19px;border:1px solid var(--line);border-radius:50%;font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--ink-3)}
+.ans{margin-top:12px;padding:11px 13px;border-radius:10px;background:var(--accent-soft);font-size:14.2px;cursor:pointer}
+.ans .lab{font-weight:800;color:var(--accent-deep);font-size:12.5px;margin-right:7px}
+body.hide-ans .ans:not(.on){background:var(--line-2);color:transparent;user-select:none;cursor:pointer;position:relative}
+body.hide-ans .ans:not(.on) *{color:transparent!important}
+body.hide-ans .ans:not(.on)::after{content:"눌러서 정답 확인";position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-3);font-size:12.5px;font-weight:700}
+
+/* ── 단어장 페이지 ──────────────────────────────────── */
+.vhead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px}
+.vhead input[type=search]{flex:1;min-width:170px;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14px}
+.vhead input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.vlist{margin:0;padding:0;list-style:none;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
+.vword{display:grid;grid-template-columns:190px 1fr;gap:16px;padding:14px 18px;border-bottom:1px solid var(--line-2)}
+.vword:last-child{border-bottom:0}
+.vword:hover{background:var(--line-2)}
+.vword .w{font-weight:800;font-size:16px;letter-spacing:-.02em}
+.vword .ipa{display:block;font-family:var(--mono);font-size:12px;color:var(--ink-3);font-weight:400;margin-top:1px}
+.vword .pos{display:inline-block;font-size:10.5px;font-weight:800;color:#fff;background:var(--accent);border-radius:5px;padding:1px 6px;margin-top:5px}
+.vword .mean{font-size:14.5px;margin:0;font-weight:600}
+.vword .ex{font-size:13px;color:var(--ink-2);margin:5px 0 0}
+.vword .ex b{color:var(--accent-deep);font-weight:700}
+.vword .ex .ko{display:block;color:var(--ink-3);font-size:12.5px}
+.masked .mean,.masked .ex{background:var(--line-2);border-radius:6px;color:transparent;cursor:pointer}
+.masked .mean *,.masked .ex *{color:transparent!important}
+.masked .mean.show,.masked .ex.show{background:transparent;color:inherit}
+.masked .mean.show *,.masked .ex.show *{color:revert!important}
+.masked .ex.show b{color:var(--accent-deep)!important}
+.quizbox{margin-top:18px;padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--surface);display:none}
+.quizbox.on{display:block}
+.quizbox .qq{font-size:22px;font-weight:800;margin-bottom:14px;letter-spacing:-.02em}
+.quizbox .opts{display:grid;gap:8px}
+.quizbox .opt{text-align:left;padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14.5px;cursor:pointer}
+.quizbox .opt:hover{border-color:var(--accent)}
+.quizbox .opt.ok{border-color:#16A34A;background:color-mix(in srgb,#16A34A 12%,var(--surface))}
+.quizbox .opt.no{border-color:#DC2626;background:color-mix(in srgb,#DC2626 12%,var(--surface))}
+.quizbox .score{margin-top:13px;font-size:13px;color:var(--ink-3);font-weight:600}
+
+footer{margin-top:54px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-3);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+@media(max-width:900px){
+  .wrap{grid-template-columns:1fr;gap:18px;padding:16px 16px 80px}
+  .side{position:static;max-height:none;order:-1}
+  .vword{grid-template-columns:1fr;gap:5px}
+  .search{max-width:none;order:3;flex-basis:100%;max-width:100%}
+  .topbar{flex-wrap:wrap}
+  .hero::after{font-size:78px}
+}
+@media print{
+  .topbar,.side,#scrollbar,.quizbox,.vhead,.flow,.files,.extra-chip{display:none!important}
+  .wrap{display:block;max-width:none;padding:0}
+  body{font-size:10.5pt;background:#fff}
+  section{page-break-inside:avoid;margin-bottom:22px}
+  body.hide-ans .ans:not(.on){background:var(--accent-soft)!important;color:inherit!important}
+  body.hide-ans .ans:not(.on) *{color:inherit!important}
+  body.hide-ans .ans:not(.on)::after{display:none}
+  details.raw{display:none}
+  #viewVocab,#viewRaw{display:block!important;page-break-before:always}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+.stepper .sf svg{max-width:640px}
+ol.steps{margin:8px 0 12px 20px;line-height:1.75}ol.steps li{margin:4px 0}
+code.fx{display:inline-block;margin-bottom:4px;font-weight:700}
+.cases{display:flex;align-items:center;gap:8px;margin:14px 0;padding:12px 15px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-family:var(--mono);font-size:14px;font-weight:700}
+.cases .brace{font-size:46px;font-weight:300;line-height:1;color:var(--ink-3);font-family:inherit}
+.cases .rows{display:grid;gap:8px}.cases .rows div{display:flex;flex-wrap:wrap;gap:2px 16px}.cases .c{color:var(--ink-3)}
+@media (max-width:520px){.cases{flex-wrap:wrap;font-size:13px}.cases .brace{display:none}.cases .lhs{width:100%}.cases .rows{padding-left:10px;border-left:3px solid var(--line)}}
+.lcs-wrap{overflow-x:auto}
+table.lcs{border-collapse:separate;border-spacing:4px;margin:0 auto;font-variant-numeric:tabular-nums}
+table.lcs th,table.lcs td{width:40px;height:36px;text-align:center;border-radius:8px;font-size:15px;padding:0}
+table.lcs th{font-weight:800;color:var(--accent-deep);background:none;border:none}
+table.lcs th small{display:block;font-size:9.5px;font-weight:600;color:var(--ink-3)}
+table.lcs td{border:1.3px solid var(--line);background:var(--surface);font-weight:700;color:var(--ink)}
+table.lcs td.base{color:var(--ink-3)}
+table.lcs td.empty{border-style:dashed;opacity:.55}
+table.lcs td.cur{background:var(--accent);border-color:var(--accent);color:#fff}
+table.lcs td.dg{background:color-mix(in srgb,var(--accent) 16%,var(--surface));border-color:var(--accent)}
+table.lcs td.nb{background:color-mix(in srgb,var(--c3) 14%,var(--surface));border-color:var(--c3)}
+table.lcs td.nbw{background:color-mix(in srgb,var(--c3) 28%,var(--surface));border-color:var(--c3);border-width:2px}
+table.lcs th.hx{background:color-mix(in srgb,var(--c2) 18%,var(--surface));color:var(--c2);border-radius:8px}
+.lcsw .nav{flex-wrap:wrap}
+.lcsw .legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:12px;color:var(--ink-3);font-weight:700}
+.lcsw .lg{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px;border:1.3px solid var(--line)}
+.lcsw .lg.cur{background:var(--accent);border-color:var(--accent)}.lcsw .lg.dg{background:color-mix(in srgb,var(--accent) 16%,var(--surface));border-color:var(--accent)}
+.lcsw .lg.nb{background:color-mix(in srgb,var(--c3) 14%,var(--surface));border-color:var(--c3)}.lcsw .lg.hx{background:color-mix(in srgb,var(--c2) 18%,var(--surface));border-color:var(--c2)}
+@media (max-width:520px){table.lcs{border-spacing:3px}table.lcs th,table.lcs td{width:33px;height:32px;font-size:14px}}
+@media print{.stepper .sf{display:block!important}.stepper .nav,.stepper .msg{display:none}}
+</style>
+</head>
+<body class="hide-ans">
+<div id="scrollbar"></div>
+
+<div class="topbar">
+  <a class="back" href="../"><i></i>알고리즘</a>
+  <div class="search"><input id="q" type="search" placeholder="찾기 (Enter로 다음)" aria-label="문서 내 검색"><span class="hit" id="hit"></span></div>
+  <div class="tools">
+    <button class="tbtn" id="ansBtn">정답 가리기</button>
+    <button class="tbtn" id="vocabBtn">단어장</button>
+    <button class="tbtn" id="rawBtn">필기 원문</button>
+    <button class="tbtn" id="themeBtn">다크</button>
+    <button class="tbtn" id="printBtn">🖨</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ═══════════ 사이드 패널 ═══════════ -->
+<aside class="side">
+  <div class="panel">
+    <div class="subject">알고리즘</div>
+    <div class="when">7주차 2차시 · 2026.10.19 (월)</div>
+
+    <div id="tocWrap">
+      <div class="cap">목차</div>
+      <ul class="toc" id="toc">
+        <li><a href="#s1"><span class="num">01</span>DP 로 푸는 순서</a></li>
+        <li><a href="#s2"><span class="num">02</span>LCS 문제</a></li>
+        <li><a href="#s3"><span class="num">03</span>LCS 점화식</a></li>
+        <li><a href="#s4"><span class="num">04</span>DP 테이블 채우기</a></li>
+        <li><a href="#s5"><span class="num">05</span>완성된 표와 답</a></li>
+        <li><a href="#sg"><span class="num">06</span>용어 정리</a></li>
+        <li><a href="#sq"><span class="num">07</span>확인 필요</a></li>
+        <li><a href="#sx"><span class="num">08</span>예상 문제</a></li>
+      </ul>
+      <hr>
+      <div class="cap">복습 체크</div>
+      <div class="chk">
+        <label><input type="checkbox"><span>DP 4단계와 실제로 신경 쓸 1 ~ 3단계</span></label>
+        <label><input type="checkbox"><span>부문자열(순서만) 과 부분 문자열(붙어 있음) 구분</span></label>
+        <label><input type="checkbox"><span>공통 부문자열인지 판단하기</span></label>
+        <label><input type="checkbox"><span>LCS(i, j) 정의와 답 LCS(n, m)</span></label>
+        <label><input type="checkbox"><span>점화식 두 경우와 이유</span></label>
+        <label><input type="checkbox"><span>바닥 조건 0 행 · 0 열 = 0</span></label>
+        <label><input type="checkbox"><span>좌 · 좌상 · 상 위치</span></label>
+        <label><input type="checkbox"><span>표를 순서대로 채워 LCS[7][6] = 4 얻기</span></label>
+        <label><input type="checkbox"><span>예상 문제 6개 풀기</span></label>
+      </div>
+      <div class="pbar"><i id="barFill"></i></div>
+    </div>
+
+    <div id="rawNav" hidden>
+      <div class="cap">필기 원문</div>
+      <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">내가 수업 중에 보낸 내용 <b id="rawTotal">0</b>개를 손대지 않고 그대로 모아둔 페이지입니다.</p>
+      <hr>
+      <div class="cap">확인 방법</div>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">여기 있는 내용이 본문에 다 반영됐는지 대조하세요. 각 항목의 파란 링크를 누르면 정리된 위치로 이동합니다.</p>
+    </div>
+
+    <div id="vocabNav" hidden>
+      <div class="cap">단어장</div>
+      <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">이번 차시에 나온 전공 필수 단어 <b id="vTotal">6</b>개입니다.</p>
+      <hr>
+      <div class="cap">사용법</div>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">뜻 가리기를 켜면 회색 칸을 눌러 하나씩 확인할 수 있습니다. 퀴즈는 아래 목록에서 문제를 자동으로 만듭니다.</p>
+    </div>
+  </div>
+</aside>
+
+<main>
+<!-- ═══════════ 본문 뷰 ═══════════ -->
+<div id="viewNote">
+
+  <div class="hero" data-w="07">
+    <span class="chip">7주차 · 2차시</span>
+    <button class="chip extra-chip" id="extraChip"></button>
+    <h1>LCS — 최장 공통 부문자열</h1>
+    <p class="sub">DP 순서 복습 · LCS 문제 정의 · 점화식 · 2차원 DP 테이블 채우기 (수업 진행 중)</p>
+    <div class="metaline">
+      <span>2026.10.19 (월)</span>
+      <span><b>윤지현</b> 교수님</span>
+      <span>교재 범위 없음 (판서 수업)</span>
+      <span><b style="color:var(--c3)">중간고사 10/26 (월)</b></span>
+    </div>
+  </div>
+
+  <nav class="flow">
+    <a href="#s1"><b>01</b> DP 순서</a>
+    <a href="#s2"><b>02</b> LCS</a>
+    <a href="#s3"><b>03</b> 점화식</a>
+    <a href="#s4"><b>04</b> 테이블</a>
+    <a href="#s5"><b>05</b> 답</a>
+  </nav>
+
+  <div class="keys">
+    <div class="key"><div class="n">핵심 1</div><p><b>DP 순서</b> — ① 작은 문제로 나눔 ② 점화식 ③ DP 테이블을 <b>순서대로</b> 채움 (④ 정확성은 1·2 에서 해결).</p></div>
+    <div class="key"><div class="n">핵심 2</div><p><b>LCS</b> — 두 문자열의 공통 부문자열(붙어 있지 않아도 되고 <b>순서만</b> 맞으면 됨) 중 가장 긴 것. ABCBDAB, BDCABA → 길이 <b>4</b>.</p></div>
+    <div class="key"><div class="n">핵심 3</div><p><b>점화식</b> — x<sub>i</sub> = y<sub>j</sub> 이면 <b>좌상 + 1</b>, 다르면 <b>max(좌, 상)</b>. 0 행 · 0 열 = 0 에서 시작해 한 줄씩 채움.</p></div>
+  </div>
+
+  <!-- 01 -->
+  <section id="s1">
+    <h2 class="st"><span class="sq">01</span>DP 로 푸는 순서 — 지난 시간 정리</h2>
+    <div class="badges"><span class="badge exam">시험 ★★</span><span class="badge prof">교수님 강조</span></div>
+    <p>DP 문제는 다음 순서로 접근합니다.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th style="width:44px">단계</th><th>할 일</th><th>7-1 최대 구간 합에서는</th></tr></thead>
+      <tbody>
+        <tr><td><b>1</b></td><td><b>해를 분석</b> — 큰 문제를 작은 문제(부 문제, subproblem)로 나누어 생각</td><td>A[k] 로 <b>끝나는</b> 최대 구간 합 S[k] 로 쪼갬</td></tr>
+        <tr><td><b>2</b></td><td>부 문제의 해로 큰 문제의 해를 만드는 <b>점화식</b></td><td>S[k] = max(S[k − 1] + A[k], A[k])</td></tr>
+        <tr><td><b>3</b></td><td><b>DP 테이블</b>(해를 저장하는 리스트·배열)을 <b>순서대로</b> 채움</td><td>S[0] 부터 S[n − 1] 까지</td></tr>
+        <tr><td><b>4</b></td><td>정확성 판별</td><td>—</td></tr>
+      </tbody>
+    </table></div>
+    <p>4단계는 1·2단계를 제대로 하면 해결되므로, 실제로 신경 쓸 과정은 <b>1 ~ 3단계</b>입니다. 함수를 계속 다시 부르지 않고 <b>DP 테이블에서 해를 꺼내 쓰기 때문에</b> 시간이 크게 줄었습니다 (피보나치 O(1.6<sup>n</sup>) → O(n)).</p>
+    <p>오늘은 이 순서를 <b>더 복잡한 문제</b>에 적용합니다.</p>
+    <details class="raw"><summary>필기 원문</summary><div class="txt">지난시간에 이어서 계속 진행
+DP에서는 처음에 먼저
+
+1. 해를 분석 : 큰 문제 → 작은 문제로 나누어서 생각
+2. 부 문제(그 작은 문제)의 해를 이용해서 큰 문제의 해 (점화식)
+3. DP TABLE (해를 저장하는 리스트/배열) 을 순서대로 채워넣기 (1/2로 다시)
+4. 정확성 판별(사실 1-2에서 해결되기 때문에 신경써야할 과정은 1-3임)
+
+계속 불러오는게 아니라 DP TABLE에서 해를 가져와서 사용했기 때문에 시간이 굉장히 줄어들었음
+오늘은 좀 더 복잡하게 어떤 문제들을 DP로 풀 수 있는지 살펴봄</div></details>
+  </section>
+  <!-- 02 -->
+  <section id="s2">
+    <h2 class="st"><span class="sq">02</span>LCS 문제 — 최장 공통 부문자열</h2>
+    <div class="badges"><span class="badge exam">시험 ★★★</span><span class="badge prof">새 문제</span></div>
+    <p><b>LCS(Longest Common Subsequence)</b> 문제 — 두 문자열에 <b>공통으로</b> 들어 있는 부문자열 중 <b>가장 긴 것</b>을 찾습니다.</p>
+    <pre class="math">X = ABCBDAB      Y = BDCABA      (길이가 달라도 됨)</pre>
+    <div class="call">
+      <div class="t">부문자열 = 순서만 맞으면 됨</div>
+      <p>글자들이 <b>꼭 붙어 있을 필요는 없고, 순서만</b> 지키면 됩니다. 예: BB 는 X 의 2번째 B 와 4번째 B 를 고른 것.</p>
+    </div>
+    <figure style="margin:16px 0"><svg width="100%" viewBox="0 0 450 222" role="img" style="display:block;max-width:450px;margin:0 auto"><title>공통 부문자열</title><desc>X와 Y에서 같은 글자를 순서를 지키며 고르면 공통 부문자열이 된다. BCAB — X 에서 2·3·6·7번째, Y 에서 1·3·4·5번째 글자</desc><text x="20" y="48" text-anchor="start" dominant-baseline="central" font-size="15" font-weight="800" fill="var(--ink-2)">X</text><text x="20" y="148" text-anchor="start" dominant-baseline="central" font-size="15" font-weight="800" fill="var(--ink-2)">Y</text><line x1="144" y1="66" x2="92" y2="130" stroke="var(--accent)" stroke-width="1.6" stroke-opacity=".7"/><line x1="196" y1="66" x2="196" y2="130" stroke="var(--accent)" stroke-width="1.6" stroke-opacity=".7"/><line x1="352" y1="66" x2="248" y2="130" stroke="var(--accent)" stroke-width="1.6" stroke-opacity=".7"/><line x1="404" y1="66" x2="300" y2="130" stroke="var(--accent)" stroke-width="1.6" stroke-opacity=".7"/><g opacity="1"><rect x="70" y="30" width="44" height="36" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="92" y="48" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">A</text></g><text x="92" y="20" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="600" fill="var(--ink-3)">1</text><g opacity="1"><rect x="122" y="30" width="44" height="36" rx="8" fill="var(--accent)" stroke="none" stroke-width="1.3"/><text x="144" y="48" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="#fff">B</text></g><text x="144" y="20" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="600" fill="var(--ink-3)">2</text><g opacity="1"><rect x="174" y="30" width="44" height="36" rx="8" fill="var(--accent)" stroke="none" stroke-width="1.3"/><text x="196" y="48" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="#fff">C</text></g><text x="196" y="20" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="600" fill="var(--ink-3)">3</text><g opacity="1"><rect x="226" y="30" width="44" height="36" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="248" y="48" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">B</text></g><text x="248" y="20" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="600" fill="var(--ink-3)">4</text><g opacity="1"><rect x="278" y="30" width="44" height="36" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="300" y="48" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">D</text></g><text x="300" y="20" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="600" fill="var(--ink-3)">5</text><g opacity="1"><rect x="330" y="30" width="44" height="36" rx="8" fill="var(--accent)" stroke="none" stroke-width="1.3"/><text x="352" y="48" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="#fff">A</text></g><text x="352" y="20" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="600" fill="var(--ink-3)">6</text><g opacity="1"><rect x="382" y="30" width="44" height="36" rx="8" fill="var(--accent)" stroke="none" stroke-width="1.3"/><text x="404" y="48" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="#fff">B</text></g><text x="404" y="20" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="600" fill="var(--ink-3)">7</text><g opacity="1"><rect x="70" y="130" width="44" height="36" rx="8" fill="var(--accent)" stroke="none" stroke-width="1.3"/><text x="92" y="148" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="#fff">B</text></g><text x="92" y="178" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="600" fill="var(--ink-3)">1</text><g opacity="1"><rect x="122" y="130" width="44" height="36" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="144" y="148" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">D</text></g><text x="144" y="178" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="600" fill="var(--ink-3)">2</text><g opacity="1"><rect x="174" y="130" width="44" height="36" rx="8" fill="var(--accent)" stroke="none" stroke-width="1.3"/><text x="196" y="148" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="#fff">C</text></g><text x="196" y="178" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="600" fill="var(--ink-3)">3</text><g opacity="1"><rect x="226" y="130" width="44" height="36" rx="8" fill="var(--accent)" stroke="none" stroke-width="1.3"/><text x="248" y="148" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="#fff">A</text></g><text x="248" y="178" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="600" fill="var(--ink-3)">4</text><g opacity="1"><rect x="278" y="130" width="44" height="36" rx="8" fill="var(--accent)" stroke="none" stroke-width="1.3"/><text x="300" y="148" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="#fff">B</text></g><text x="300" y="178" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="600" fill="var(--ink-3)">5</text><g opacity="1"><rect x="330" y="130" width="44" height="36" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="352" y="148" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">A</text></g><text x="352" y="178" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="600" fill="var(--ink-3)">6</text><foreignObject x="70" y="190" width="364" height="26"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:13px;font-weight:700;color:var(--ink-2);line-height:1.2;white-space:nowrap"><span>BCAB — X 에서 2·3·6·7번째, Y 에서 1·3·4·5번째 글자</span></div></foreignObject></svg><figcaption>같은 글자를 순서를 지키며 고르면 공통 부문자열 — 선이 서로 교차하지 않는다</figcaption></figure>
+    <div class="tablewrap"><table>
+      <thead><tr><th>길이</th><th>공통 부문자열</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>A, B, C, D</td></tr>
+        <tr><td>2</td><td>AB, BB, BD, … <span class="ext">(전체 10개: AA, AB, BA, BB, BC, BD, CA, CB, DA, DB)</span></td></tr>
+        <tr><td>3</td><td>… <span class="ext">(전체 10개: ABA, BAB, BBA, BCA, BCB, BDA, BDB, CAB, CBA, DAB)</span></td></tr>
+        <tr><td><b>4</b></td><td><b>BCAB, BDAB</b>, … <span class="ext">(전체 3개: BCAB, BCBA, BDAB)</span></td></tr>
+        <tr><td>5</td><td>존재하지 않음</td></tr>
+      </tbody>
+    </table></div>
+    <p>가장 긴 길이 <b>4</b> 를 찾는 것이 LCS 문제입니다. 묻는 형태는 세 가지 — <b>① 길이</b> 구하기, ② 해당 문자열 <b>전부</b> 찾기, ③ 문자열 <b>1개만</b> 찾기. 오늘 표로 구하는 것은 ① 길이입니다.</p>
+    <p style="margin-top:6px"><span class="ext">표의 괄호 속 목록은 모든 경우를 프로그램으로 확인한 것입니다. 길이 4 짜리가 여러 개이므로 LCS 는 <b>하나로 정해지지 않을 수 있습니다</b> (길이는 하나).</span></p>
+    <div class="call warn">
+      <div class="t">필기 확인 — 이름과 용어</div>
+      <p>필기의 "Longest Common <b>Sequence</b>" → 정식 명칭은 <b>Subsequence</b>. 또 일반적으로 "부분 문자열(substring)" 은 <b>붙어 있는</b> 것만 뜻하는데, 여기서 말하는 부문자열은 붙어 있지 않아도 되는 <b>부분수열(subsequence)</b> 입니다. 노트에서는 교수님 표현대로 "부문자열" 로 씁니다.</p>
+    </div>
+    <details class="raw"><summary>필기 원문</summary><div class="txt">Longest Common Sequence (LCS)  문제
+최장          공통          부문자열     문제
+잘 이해가 안되니까 예시로
+문자열 X가 존재 한다고 해보자
+X : ABCBDAB
+Y : BDCABA
+문자열의 길이는 달라도 상관 없음
+공통으로 존재하는 문자열을 찾으면 됨
+꼭 붙어있을 필요는 없고 순서만 맞으면 됨
+→ 길이가 1인 공통 부문자열 : A, B, C, D
+→ 길이가 2인 " : AB, BB(꼭 붙어있지 않아도 됨), BD,  ... 
+→ 길이가 3인 " : ...
+→ 길이가 4인 " : BCAB, BDAB, ...
+→ 길이가 5인 " : 존재하지 않음(확인해보면 아무튼 그럼)
+
+여기서 길이가 가장 긴 길이 4에 대하여 찾는 문제임
+이런 알고리즘임
+
+⇒ LCS 문제 : 가장 긴 길이의 공통 부문자열을 찾는 문제, (길이를 찾는 혹은 문자열을 전부 찾는 혹은 문자열을 1개만 찾기)</div></details>
+  </section>
+  <!-- 03 -->
+  <section id="s3">
+    <h2 class="st"><span class="sq">03</span>LCS 점화식</h2>
+    <div class="badges"><span class="badge exam">시험 ★★★</span></div>
+    <h3>기호 정의 — 1단계 "작은 문제로 나누기"</h3>
+    <pre class="math">X<sub>n</sub> = x<sub>1</sub> x<sub>2</sub> … x<sub>n</sub>
+Y<sub>m</sub> = y<sub>1</sub> y<sub>2</sub> … y<sub>m</sub>
+X<sub>i</sub> = x<sub>1</sub> x<sub>2</sub> … x<sub>i</sub>   (X 의 앞 i 글자)
+Y<sub>j</sub> = y<sub>1</sub> y<sub>2</sub> … y<sub>j</sub>   (Y 의 앞 j 글자)</pre>
+    <p><b>LCS(i, j)</b> = X<sub>i</sub> 와 Y<sub>j</sub> 의 LCS <b>길이</b> (LCS(X<sub>i</sub>, Y<sub>j</sub>) 를 줄여 쓴 것). 구하려는 답은 <b>LCS(n, m)</b>.</p>
+    <p>예: X<sub>3</sub> = ABC, Y<sub>2</sub> = BD → LCS(3, 2) = 1 (B).</p>
+    <h3>규칙 — 맨 끝 글자 x<sub>i</sub>, y<sub>j</sub> 를 비교</h3>
+    <div class="tablewrap"><table>
+      <thead><tr><th style="width:84px">경우</th><th>LCS(i, j) 와 이유</th></tr></thead>
+      <tbody>
+        <tr><td><b>x<sub>i</sub> = y<sub>j</sub></b></td><td><code class="fx">LCS(i − 1, j − 1) + 1</code><br>같은 끝 글자를 LCS 의 마지막 글자로 쓸 수 있음 → 그 글자를 뺀 앞부분들의 LCS 에 <b>1 글자 추가</b>. 길이를 구하므로 + 1</td></tr>
+        <tr><td><b>x<sub>i</sub> ≠ y<sub>j</sub></b></td><td><code class="fx">max(LCS(i, j − 1), LCS(i − 1, j))</code><br>두 끝 글자가 <b>동시에</b> LCS 의 끝일 수는 없음 → y<sub>j</sub> 를 빼 보거나 x<sub>i</sub> 를 빼 보고 <b>더 긴 쪽</b></td></tr>
+      </tbody>
+    </table></div>
+    <div class="cases">
+      <span class="lhs">LCS(i, j) =</span><span class="brace">{</span>
+      <div class="rows">
+        <div><span class="f">LCS(i − 1, j − 1) + 1</span><span class="c">if x<sub>i</sub> = y<sub>j</sub></span></div>
+        <div><span class="f">max(LCS(i, j − 1), LCS(i − 1, j))</span><span class="c">if x<sub>i</sub> ≠ y<sub>j</sub></span></div>
+      </div>
+    </div>
+    <p>바닥 조건: 한쪽이 빈 문자열이면 공통 글자가 없으므로 <b>LCS(0, j) = LCS(i, 0) = 0</b> (다음 섹션).</p>
+    <div class="call warn">
+      <div class="t">필기 확인 — 오타 두 곳</div>
+      <p><code>LCS(X_n, Y_n)</code> → <b>LCS(X<sub>n</sub>, Y<sub>m</sub>)</b> (Y 의 길이는 m). <code>if x_i 1= y_j</code> → <b>x<sub>i</sub> ≠ y<sub>j</sub></b>. 또 "맨 끝에 있는 <b>수</b>" 는 문자열이므로 "글자" 로 읽으면 됩니다.</p>
+    </div>
+    <p style="margin-top:8px"><span class="ext">"x<sub>i</sub> = y<sub>j</sub> 이면 LCS 에 x<sub>i</sub> 가 포함된다" 는 정확히는 "x<sub>i</sub> 를 마지막 글자로 하는 LCS 가 <b>적어도 하나 있다</b>" 는 뜻입니다. 앞의 예처럼 LCS 가 여러 개일 수 있기 때문입니다. 길이를 구하는 데는 차이가 없습니다.</span></p>
+    <details class="raw"><summary>필기 원문</summary><div class="txt">X_n : x_1 x_2 ... x_n
+Y_m : y_1 y_2 ... y_m
+이라고 정의
+
+LCS(X_n, Y_n) ⇒ X_n, Y_m의 최장 길이 공통 부문자열의 길이 (라고 해보자)
+
+→ LCS(i, j) 이렇게 간단히 하자 ⇒ X_i와 Y_j의 LCS 길이(축약한거임)
+X_i = x_1 x_2 ... x_i
+Y_j : y_1 y_2 ... y_j
+
+규칙을 생각해보자
+
+1. 맨 끝에 있는 수 x_i == y_j일 때 LCS에 x_i가 포함됨. LCS(i, j) = LCS(i-1, j-1)+1 과 같음. 길이구하는 거기 때문
+2. x_i != y_j를 생각해보면 LCS(i, j) = max(LCS(i, j-1), LCS(i-1, j)) 가 됨
+
+
+LCS(i, j) [  LCS(i-1, j-1)+1     if x_i = y_j
+                     max(LCS(i, j-1), LCS(i-1, j))   if x_i 1= y_j
+
+대괄호 [는 LCS(i, j)가 두 경우로 나뉜다는 걸 표현한거임(묶은거야 두 식을. 텍스트라서 저렇게 표현했어) </div></details>
+  </section>
+  <!-- 04 -->
+  <section id="s4">
+    <h2 class="st"><span class="sq">04</span>DP 테이블 채우기 — "순서대로"</h2>
+    <div class="badges"><span class="badge exam">시험 ★★★</span><span class="badge prof">교수님 강조</span></div>
+    <p>LCS(i, j) 를 2차원 표 <b>LCS[i][j]</b> 에 저장합니다. <b>행 = X 의 i, 열 = Y 의 j</b>. 한 칸을 채우려면 <b>좌 · 좌상 · 상</b> 세 칸만 있으면 됩니다.</p>
+    <figure style="margin:16px 0"><svg width="100%" viewBox="0 0 600 170" role="img" style="display:block;max-width:600px;margin:0 auto"><title>한 칸을 채우는 데 필요한 세 칸</title><desc>지금 칸 LCS[i][j]는 왼쪽, 위, 왼쪽 위 대각선 칸만 보면 채울 수 있다.</desc><rect x="120" y="36" width="96" height="59.52" rx="10" fill="color-mix(in srgb,var(--accent) 12%,var(--surface))" stroke="var(--accent)" stroke-width="1.4"/><text x="168" y="55.76" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="var(--accent-deep)">좌상</text><text x="168" y="76.76" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="700" fill="var(--ink-2)">LCS[i − 1][j − 1]</text><rect x="224" y="36" width="96" height="59.52" rx="10" fill="color-mix(in srgb,var(--accent) 7%,var(--surface))" stroke="var(--accent)" stroke-width="1.4"/><text x="272" y="55.76" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="var(--ink)">상</text><text x="272" y="76.76" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="700" fill="var(--ink-2)">LCS[i − 1][j]</text><rect x="120" y="103.52" width="96" height="59.52" rx="10" fill="color-mix(in srgb,var(--accent) 7%,var(--surface))" stroke="var(--accent)" stroke-width="1.4"/><text x="168" y="123.28" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="var(--ink)">좌</text><text x="168" y="144.28" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="700" fill="var(--ink-2)">LCS[i][j − 1]</text><rect x="224" y="103.52" width="96" height="59.52" rx="10" fill="var(--accent)" stroke="none" stroke-width="1.4"/><text x="272" y="123.28" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="#fff">지금 칸</text><text x="272" y="144.28" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="700" fill="#fff">LCS[i][j]</text><text x="110" y="66" text-anchor="end" dominant-baseline="central" font-size="11" font-weight="700" fill="var(--ink-3)">i − 1 행</text><text x="110" y="134" text-anchor="end" dominant-baseline="central" font-size="11" font-weight="700" fill="var(--ink-3)">i 행</text><text x="168" y="20" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="700" fill="var(--ink-3)">j − 1 열</text><text x="272" y="20" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="700" fill="var(--ink-3)">j 열</text><foreignObject x="330" y="40" width="250" height="30"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:flex-start;height:100%;font-size:13px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span><b style="color:var(--accent-deep)">x<sub>i</sub> = y<sub>j</sub></b> → 좌상 + 1</span></div></foreignObject><foreignObject x="330" y="92" width="250" height="30"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:flex-start;height:100%;font-size:13px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span><b style="color:var(--c3)">x<sub>i</sub> ≠ y<sub>j</sub></b> → max(좌, 상)</span></div></foreignObject></svg><figcaption>같으면 좌상 + 1, 다르면 좌·상 중 max</figcaption></figure>
+    <div class="call warn">
+      <div class="t">필기 확인 — 2×2 칸 배치</div>
+      <p>필기는 <code>[i-1, j-1][i, j-1] / [i-1, j][i, j]</code> 로 i 가 <b>열</b> 방향인 배치인데, 아래 큰 표는 i 가 <b>행</b>(X 가 세로)입니다. 큰 표 기준으로는 위 그림처럼 <b>좌 = [i][j − 1], 상 = [i − 1][j]</b>. 또 필기의 "LCS[4][1] 보면 A 로 같아서 좌상 + 1" 은 <b>LCS[1][4]</b> (A 행 i = 1, A 열 j = 4) 입니다.</p>
+    </div>
+    <h3>순서</h3>
+    <ol class="steps">
+      <li><b>바닥 조건</b> — 0 행과 0 열을 모두 0 으로 (예: LCS[0][3] = 0 — X 쪽이 빈 문자열이라 공통 글자가 있을 수 없음)</li>
+      <li>1 행을 <b>왼쪽 → 오른쪽</b>으로, 다음 2 행, 3 행, … 순서로 채움 — 이렇게 해야 지금 칸을 채울 때 좌·상·좌상이 <b>항상 이미 채워져 있음</b></li>
+      <li>마지막 칸 <b>LCS[n][m]</b> 이 답</li>
+    </ol>
+    <div class="bsv lcsw" id="lcsw">
+      <div class="lab">X = ABCBDAB, Y = BDCABA — 한 칸씩 채우기</div>
+      <div class="lcs-wrap"><table class="lcs" id="lcsT"></table></div>
+      <div class="msg" id="lcsMsg"></div>
+      <div class="nav"><button class="f0">⏮</button><button class="pv">◀ 이전</button><span class="cnt"></span><button class="nx">다음 ▶</button><button class="f1">⏭</button><button class="rowb">한 줄씩 ▶▶</button></div>
+      <div class="legend"><span><i class="lg cur"></i>지금 칸</span><span><i class="lg dg"></i>좌상 (같을 때)</span><span><i class="lg nb"></i>좌 · 상 (다를 때)</span><span><i class="lg hx"></i>비교하는 두 글자</span></div>
+    </div>
+    <details class="raw"><summary>필기 원문</summary><div class="txt">DP Table을 순서대로 채우기("순서대로"!!)
+⇒ LCS[i][j] 입력
+
+[i-1, j-1][i, j-1]
+[i-1, j][i, j]
+2*2 표임
+이런식으로 할 수 있음
+
+표 속 특정 물음표를 채우려면 그 좌, 좌상, 상 값이 필요함(체스판 같은 느낌)
+시각화가 필요해
+
+표를 그려보자(각각의 칸은 LCS[i][j]를 채울거임
+X/Y    None B D C A B A
+
+None | 
+A | 
+B | 
+C | 
+B | 
+D | 
+A | 
+B | 
+
+바닥조건부터 채워보자(ex. LCS[0][3] = 0(없을 수 밖에 없음))
+
+X/Y    None B D C A B A
+
+None | 0 0 0 0 0 0 0
+A | 0
+B | 0
+C | 0
+B | 0
+D | 0
+A | 0
+B | 0
+
+
+LCS[1][1]을 채울 수 있음(좌, 좌상, 상을 알고 있기 때문)
+같으면 좌상+1, 다르면 좌/상 중 맥스
+
+X/Y    None B D C A B A
+
+None | 0 0 0 0 0 0 0
+A | 0 0
+B | 0
+C | 0
+B | 0
+D | 0
+A | 0
+B | 0
+
+이렇게 하면 점점 채울 수 있음
+
+X/Y    None B D C A B A
+
+None | 0 0 0 0 0 0 0
+A | 0 0 0 0
+B | 0
+C | 0
+B | 0
+D | 0
+A | 0
+B | 0
+
+LCS[4][1] 보면 값이 A로 같기 때문에 좌상 + 1이 됨
+
+X/Y    None B D C A B A
+
+None | 0 0 0 0 0 0 0
+A | 0 0 0 0 1
+B | 0
+C | 0
+B | 0
+D | 0
+A | 0
+B | 0
+
+...
+(이런 과정으로 쭉 차는거 시각화(스탭별로))</div></details>
+  </section>
+  <!-- 05 -->
+  <section id="s5">
+    <h2 class="st"><span class="sq">05</span>완성된 표와 답</h2>
+    <div class="badges"><span class="badge exam">시험 ★★★</span></div>
+    <figure style="margin:16px 0"><svg width="100%" viewBox="0 0 456 372" role="img" style="display:block;max-width:456px;margin:0 auto"><title>완성된 LCS 표</title><desc>X = ABCBDAB, Y = BDCABA의 LCS 표. 오른쪽 아래 LCS[7][6] = 4가 답.</desc><text x="46" y="28" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="var(--ink-3)">X \ Y</text><text x="119" y="28" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">–</text><text x="119" y="44" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="600" fill="var(--ink-3)">j=0</text><text x="169" y="28" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">B</text><text x="169" y="44" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="600" fill="var(--ink-3)">j=1</text><text x="219" y="28" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">D</text><text x="219" y="44" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="600" fill="var(--ink-3)">j=2</text><text x="269" y="28" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">C</text><text x="269" y="44" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="600" fill="var(--ink-3)">j=3</text><text x="319" y="28" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">A</text><text x="319" y="44" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="600" fill="var(--ink-3)">j=4</text><text x="369" y="28" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">B</text><text x="369" y="44" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="600" fill="var(--ink-3)">j=5</text><text x="419" y="28" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">A</text><text x="419" y="44" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="600" fill="var(--ink-3)">j=6</text><text x="46" y="73" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">–</text><text x="74" y="73" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="600" fill="var(--ink-3)">i=0</text><g opacity="0.35"><rect x="96" y="56" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="119" y="73" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink-3)">0</text></g><g opacity="0.35"><rect x="146" y="56" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="169" y="73" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink-3)">0</text></g><g opacity="0.35"><rect x="196" y="56" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="219" y="73" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink-3)">0</text></g><g opacity="0.35"><rect x="246" y="56" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="269" y="73" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink-3)">0</text></g><g opacity="0.35"><rect x="296" y="56" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="319" y="73" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink-3)">0</text></g><g opacity="0.35"><rect x="346" y="56" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="369" y="73" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink-3)">0</text></g><g opacity="0.35"><rect x="396" y="56" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="419" y="73" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink-3)">0</text></g><text x="46" y="111" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">A</text><text x="74" y="111" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="600" fill="var(--ink-3)">i=1</text><g opacity="0.35"><rect x="96" y="94" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="119" y="111" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink-3)">0</text></g><g opacity="1"><rect x="146" y="94" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="169" y="111" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">0</text></g><g opacity="1"><rect x="196" y="94" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="219" y="111" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">0</text></g><g opacity="1"><rect x="246" y="94" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="269" y="111" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">0</text></g><g opacity="1"><rect x="296" y="94" width="46" height="34" rx="8" fill="color-mix(in srgb,var(--accent) 12%,var(--surface))" stroke="var(--accent)" stroke-width="1.3"/><text x="319" y="111" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">1</text></g><g opacity="1"><rect x="346" y="94" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="369" y="111" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">1</text></g><g opacity="1"><rect x="396" y="94" width="46" height="34" rx="8" fill="color-mix(in srgb,var(--accent) 12%,var(--surface))" stroke="var(--accent)" stroke-width="1.3"/><text x="419" y="111" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">1</text></g><text x="46" y="149" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">B</text><text x="74" y="149" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="600" fill="var(--ink-3)">i=2</text><g opacity="0.35"><rect x="96" y="132" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="119" y="149" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink-3)">0</text></g><g opacity="1"><rect x="146" y="132" width="46" height="34" rx="8" fill="color-mix(in srgb,var(--accent) 12%,var(--surface))" stroke="var(--accent)" stroke-width="1.3"/><text x="169" y="149" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">1</text></g><g opacity="1"><rect x="196" y="132" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="219" y="149" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">1</text></g><g opacity="1"><rect x="246" y="132" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="269" y="149" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">1</text></g><g opacity="1"><rect x="296" y="132" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="319" y="149" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">1</text></g><g opacity="1"><rect x="346" y="132" width="46" height="34" rx="8" fill="color-mix(in srgb,var(--accent) 12%,var(--surface))" stroke="var(--accent)" stroke-width="1.3"/><text x="369" y="149" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">2</text></g><g opacity="1"><rect x="396" y="132" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="419" y="149" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">2</text></g><text x="46" y="187" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">C</text><text x="74" y="187" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="600" fill="var(--ink-3)">i=3</text><g opacity="0.35"><rect x="96" y="170" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="119" y="187" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink-3)">0</text></g><g opacity="1"><rect x="146" y="170" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="169" y="187" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">1</text></g><g opacity="1"><rect x="196" y="170" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="219" y="187" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">1</text></g><g opacity="1"><rect x="246" y="170" width="46" height="34" rx="8" fill="color-mix(in srgb,var(--accent) 12%,var(--surface))" stroke="var(--accent)" stroke-width="1.3"/><text x="269" y="187" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">2</text></g><g opacity="1"><rect x="296" y="170" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="319" y="187" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">2</text></g><g opacity="1"><rect x="346" y="170" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="369" y="187" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">2</text></g><g opacity="1"><rect x="396" y="170" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="419" y="187" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">2</text></g><text x="46" y="225" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">B</text><text x="74" y="225" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="600" fill="var(--ink-3)">i=4</text><g opacity="0.35"><rect x="96" y="208" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="119" y="225" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink-3)">0</text></g><g opacity="1"><rect x="146" y="208" width="46" height="34" rx="8" fill="color-mix(in srgb,var(--accent) 12%,var(--surface))" stroke="var(--accent)" stroke-width="1.3"/><text x="169" y="225" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">1</text></g><g opacity="1"><rect x="196" y="208" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="219" y="225" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">1</text></g><g opacity="1"><rect x="246" y="208" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="269" y="225" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">2</text></g><g opacity="1"><rect x="296" y="208" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="319" y="225" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">2</text></g><g opacity="1"><rect x="346" y="208" width="46" height="34" rx="8" fill="color-mix(in srgb,var(--accent) 12%,var(--surface))" stroke="var(--accent)" stroke-width="1.3"/><text x="369" y="225" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">3</text></g><g opacity="1"><rect x="396" y="208" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="419" y="225" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">3</text></g><text x="46" y="263" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">D</text><text x="74" y="263" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="600" fill="var(--ink-3)">i=5</text><g opacity="0.35"><rect x="96" y="246" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="119" y="263" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink-3)">0</text></g><g opacity="1"><rect x="146" y="246" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="169" y="263" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">1</text></g><g opacity="1"><rect x="196" y="246" width="46" height="34" rx="8" fill="color-mix(in srgb,var(--accent) 12%,var(--surface))" stroke="var(--accent)" stroke-width="1.3"/><text x="219" y="263" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">2</text></g><g opacity="1"><rect x="246" y="246" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="269" y="263" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">2</text></g><g opacity="1"><rect x="296" y="246" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="319" y="263" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">2</text></g><g opacity="1"><rect x="346" y="246" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="369" y="263" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">3</text></g><g opacity="1"><rect x="396" y="246" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="419" y="263" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">3</text></g><text x="46" y="301" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">A</text><text x="74" y="301" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="600" fill="var(--ink-3)">i=6</text><g opacity="0.35"><rect x="96" y="284" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="119" y="301" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink-3)">0</text></g><g opacity="1"><rect x="146" y="284" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="169" y="301" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">1</text></g><g opacity="1"><rect x="196" y="284" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="219" y="301" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">2</text></g><g opacity="1"><rect x="246" y="284" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="269" y="301" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">2</text></g><g opacity="1"><rect x="296" y="284" width="46" height="34" rx="8" fill="color-mix(in srgb,var(--accent) 12%,var(--surface))" stroke="var(--accent)" stroke-width="1.3"/><text x="319" y="301" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">3</text></g><g opacity="1"><rect x="346" y="284" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="369" y="301" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">3</text></g><g opacity="1"><rect x="396" y="284" width="46" height="34" rx="8" fill="color-mix(in srgb,var(--accent) 12%,var(--surface))" stroke="var(--accent)" stroke-width="1.3"/><text x="419" y="301" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">4</text></g><text x="46" y="339" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">B</text><text x="74" y="339" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="600" fill="var(--ink-3)">i=7</text><g opacity="0.35"><rect x="96" y="322" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="119" y="339" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink-3)">0</text></g><g opacity="1"><rect x="146" y="322" width="46" height="34" rx="8" fill="color-mix(in srgb,var(--accent) 12%,var(--surface))" stroke="var(--accent)" stroke-width="1.3"/><text x="169" y="339" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">1</text></g><g opacity="1"><rect x="196" y="322" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="219" y="339" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">2</text></g><g opacity="1"><rect x="246" y="322" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="269" y="339" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">2</text></g><g opacity="1"><rect x="296" y="322" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="319" y="339" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">3</text></g><g opacity="1"><rect x="346" y="322" width="46" height="34" rx="8" fill="color-mix(in srgb,var(--accent) 12%,var(--surface))" stroke="var(--accent)" stroke-width="1.3"/><text x="369" y="339" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">4</text></g><g opacity="1"><rect x="396" y="322" width="46" height="34" rx="8" fill="var(--c3)" stroke="none" stroke-width="1.3"/><text x="419" y="339" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="#fff">4</text></g></svg><figcaption>보라 칸 = x<sub>i</sub> = y<sub>j</sub> (좌상 + 1 로 채운 칸) · 주황 = 답 LCS[7][6] = 4</figcaption></figure>
+    <p><b>LCS[7][6] = 4</b> → X = ABCBDAB, Y = BDCABA 의 LCS 길이는 <b>4</b>. 02 번에서 찾은 길이 4 와 같습니다.</p>
+    <p>표의 값은 오른쪽·아래로 갈수록 <b>줄지 않습니다</b> (글자가 늘어나면 공통 부문자열이 짧아질 수 없음). 손으로 채울 때 검산용으로 쓸 수 있습니다.</p>
+    <h3><span class="ext">보충 — 문자열 1개 찾기 (거꾸로 따라가기)</span></h3>
+    <div class="call extra">
+      <div class="t">수업에서 아직 안 다룸</div>
+      <p>LCS[7][6] 에서 출발해 거꾸로 갑니다. x<sub>i</sub> = y<sub>j</sub> 이면 그 글자를 기록하고 <b>좌상</b>으로, 다르면 값이 같은 <b>상(또는 좌)</b>으로. 기록한 글자를 뒤집으면 LCS 하나가 나옵니다.</p>
+    </div>
+    <figure style="margin:16px 0"><svg width="100%" viewBox="0 0 456 372" role="img" style="display:block;max-width:456px;margin:0 auto"><title>완성된 LCS 표</title><desc>X = ABCBDAB, Y = BDCABA의 LCS 표. 오른쪽 아래 LCS[7][6] = 4가 답.</desc><text x="46" y="28" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="var(--ink-3)">X \ Y</text><text x="119" y="28" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">–</text><text x="119" y="44" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="600" fill="var(--ink-3)">j=0</text><text x="169" y="28" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">B</text><text x="169" y="44" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="600" fill="var(--ink-3)">j=1</text><text x="219" y="28" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">D</text><text x="219" y="44" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="600" fill="var(--ink-3)">j=2</text><text x="269" y="28" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">C</text><text x="269" y="44" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="600" fill="var(--ink-3)">j=3</text><text x="319" y="28" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">A</text><text x="319" y="44" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="600" fill="var(--ink-3)">j=4</text><text x="369" y="28" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">B</text><text x="369" y="44" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="600" fill="var(--ink-3)">j=5</text><text x="419" y="28" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">A</text><text x="419" y="44" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="600" fill="var(--ink-3)">j=6</text><text x="46" y="73" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">–</text><text x="74" y="73" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="600" fill="var(--ink-3)">i=0</text><g opacity="0.35"><rect x="96" y="56" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="119" y="73" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink-3)">0</text></g><g opacity="0.35"><rect x="146" y="56" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="169" y="73" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink-3)">0</text></g><g opacity="0.35"><rect x="196" y="56" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="219" y="73" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink-3)">0</text></g><g opacity="0.35"><rect x="246" y="56" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="269" y="73" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink-3)">0</text></g><g opacity="0.35"><rect x="296" y="56" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="319" y="73" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink-3)">0</text></g><g opacity="0.35"><rect x="346" y="56" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="369" y="73" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink-3)">0</text></g><g opacity="0.35"><rect x="396" y="56" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="419" y="73" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink-3)">0</text></g><text x="46" y="111" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">A</text><text x="74" y="111" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="600" fill="var(--ink-3)">i=1</text><g opacity="0.35"><rect x="96" y="94" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="119" y="111" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink-3)">0</text></g><g opacity="1"><rect x="146" y="94" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="169" y="111" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">0</text></g><g opacity="1"><rect x="196" y="94" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="219" y="111" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">0</text></g><g opacity="1"><rect x="246" y="94" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="269" y="111" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">0</text></g><g opacity="1"><rect x="296" y="94" width="46" height="34" rx="8" fill="color-mix(in srgb,var(--accent) 12%,var(--surface))" stroke="var(--accent)" stroke-width="1.3"/><text x="319" y="111" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">1</text></g><g opacity="1"><rect x="346" y="94" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="369" y="111" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">1</text></g><g opacity="1"><rect x="396" y="94" width="46" height="34" rx="8" fill="color-mix(in srgb,var(--accent) 12%,var(--surface))" stroke="var(--accent)" stroke-width="1.3"/><text x="419" y="111" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">1</text></g><text x="46" y="149" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">B</text><text x="74" y="149" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="600" fill="var(--ink-3)">i=2</text><g opacity="0.35"><rect x="96" y="132" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="119" y="149" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink-3)">0</text></g><g opacity="1"><rect x="146" y="132" width="46" height="34" rx="8" fill="var(--c3)" stroke="none" stroke-width="1.3"/><text x="169" y="149" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="#fff">1</text></g><g opacity="1"><rect x="196" y="132" width="46" height="34" rx="8" fill="color-mix(in srgb,var(--c2) 13%,var(--surface))" stroke="var(--c2)" stroke-width="1.3"/><text x="219" y="149" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--c2)">1</text></g><g opacity="1"><rect x="246" y="132" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="269" y="149" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">1</text></g><g opacity="1"><rect x="296" y="132" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="319" y="149" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">1</text></g><g opacity="1"><rect x="346" y="132" width="46" height="34" rx="8" fill="color-mix(in srgb,var(--accent) 12%,var(--surface))" stroke="var(--accent)" stroke-width="1.3"/><text x="369" y="149" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">2</text></g><g opacity="1"><rect x="396" y="132" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="419" y="149" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">2</text></g><text x="46" y="187" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">C</text><text x="74" y="187" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="600" fill="var(--ink-3)">i=3</text><g opacity="0.35"><rect x="96" y="170" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="119" y="187" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink-3)">0</text></g><g opacity="1"><rect x="146" y="170" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="169" y="187" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">1</text></g><g opacity="1"><rect x="196" y="170" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="219" y="187" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">1</text></g><g opacity="1"><rect x="246" y="170" width="46" height="34" rx="8" fill="var(--c3)" stroke="none" stroke-width="1.3"/><text x="269" y="187" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="#fff">2</text></g><g opacity="1"><rect x="296" y="170" width="46" height="34" rx="8" fill="color-mix(in srgb,var(--c2) 13%,var(--surface))" stroke="var(--c2)" stroke-width="1.3"/><text x="319" y="187" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--c2)">2</text></g><g opacity="1"><rect x="346" y="170" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="369" y="187" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">2</text></g><g opacity="1"><rect x="396" y="170" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="419" y="187" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">2</text></g><text x="46" y="225" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">B</text><text x="74" y="225" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="600" fill="var(--ink-3)">i=4</text><g opacity="0.35"><rect x="96" y="208" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="119" y="225" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink-3)">0</text></g><g opacity="1"><rect x="146" y="208" width="46" height="34" rx="8" fill="color-mix(in srgb,var(--accent) 12%,var(--surface))" stroke="var(--accent)" stroke-width="1.3"/><text x="169" y="225" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">1</text></g><g opacity="1"><rect x="196" y="208" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="219" y="225" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">1</text></g><g opacity="1"><rect x="246" y="208" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="269" y="225" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">2</text></g><g opacity="1"><rect x="296" y="208" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="319" y="225" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">2</text></g><g opacity="1"><rect x="346" y="208" width="46" height="34" rx="8" fill="var(--c3)" stroke="none" stroke-width="1.3"/><text x="369" y="225" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="#fff">3</text></g><g opacity="1"><rect x="396" y="208" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="419" y="225" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">3</text></g><text x="46" y="263" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">D</text><text x="74" y="263" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="600" fill="var(--ink-3)">i=5</text><g opacity="0.35"><rect x="96" y="246" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="119" y="263" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink-3)">0</text></g><g opacity="1"><rect x="146" y="246" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="169" y="263" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">1</text></g><g opacity="1"><rect x="196" y="246" width="46" height="34" rx="8" fill="color-mix(in srgb,var(--accent) 12%,var(--surface))" stroke="var(--accent)" stroke-width="1.3"/><text x="219" y="263" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">2</text></g><g opacity="1"><rect x="246" y="246" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="269" y="263" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">2</text></g><g opacity="1"><rect x="296" y="246" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="319" y="263" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">2</text></g><g opacity="1"><rect x="346" y="246" width="46" height="34" rx="8" fill="color-mix(in srgb,var(--c2) 13%,var(--surface))" stroke="var(--c2)" stroke-width="1.3"/><text x="369" y="263" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--c2)">3</text></g><g opacity="1"><rect x="396" y="246" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="419" y="263" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">3</text></g><text x="46" y="301" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">A</text><text x="74" y="301" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="600" fill="var(--ink-3)">i=6</text><g opacity="0.35"><rect x="96" y="284" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="119" y="301" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink-3)">0</text></g><g opacity="1"><rect x="146" y="284" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="169" y="301" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">1</text></g><g opacity="1"><rect x="196" y="284" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="219" y="301" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">2</text></g><g opacity="1"><rect x="246" y="284" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="269" y="301" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">2</text></g><g opacity="1"><rect x="296" y="284" width="46" height="34" rx="8" fill="color-mix(in srgb,var(--accent) 12%,var(--surface))" stroke="var(--accent)" stroke-width="1.3"/><text x="319" y="301" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">3</text></g><g opacity="1"><rect x="346" y="284" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="369" y="301" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">3</text></g><g opacity="1"><rect x="396" y="284" width="46" height="34" rx="8" fill="var(--c3)" stroke="none" stroke-width="1.3"/><text x="419" y="301" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="#fff">4</text></g><text x="46" y="339" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">B</text><text x="74" y="339" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="600" fill="var(--ink-3)">i=7</text><g opacity="0.35"><rect x="96" y="322" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="119" y="339" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="var(--ink-3)">0</text></g><g opacity="1"><rect x="146" y="322" width="46" height="34" rx="8" fill="color-mix(in srgb,var(--accent) 12%,var(--surface))" stroke="var(--accent)" stroke-width="1.3"/><text x="169" y="339" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">1</text></g><g opacity="1"><rect x="196" y="322" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="219" y="339" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">2</text></g><g opacity="1"><rect x="246" y="322" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="269" y="339" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">2</text></g><g opacity="1"><rect x="296" y="322" width="46" height="34" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="319" y="339" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)">3</text></g><g opacity="1"><rect x="346" y="322" width="46" height="34" rx="8" fill="color-mix(in srgb,var(--accent) 12%,var(--surface))" stroke="var(--accent)" stroke-width="1.3"/><text x="369" y="339" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--accent-deep)">4</text></g><g opacity="1"><rect x="396" y="322" width="46" height="34" rx="8" fill="color-mix(in srgb,var(--c2) 13%,var(--surface))" stroke="var(--c2)" stroke-width="1.3"/><text x="419" y="339" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="800" fill="var(--c2)">4</text></g></svg><figcaption>주황 = 기록한 글자 (B, C, B, A) · 초록 = 지나간 칸 → LCS 하나 = BCBA</figcaption></figure>
+    <p><span class="ext">시간복잡도는 칸 (n + 1)(m + 1) 개를 각각 O(1) 에 채우므로 <b>O(nm)</b> 입니다 (수업에서 아직 언급 전).</span></p>
+  </section>
+  <!-- 06 -->
+  <section id="sg">
+    <h2 class="st"><span class="sq">06</span>용어 정리</h2>
+    <div class="terms">
+      <div class="term"><b>LCS</b><span class="e">longest common subsequence</span><p>최장 공통 부문자열. 두 문자열에 공통으로 들어 있는, 순서를 지킨 글자 모음 중 가장 긴 것.</p></div>
+      <div class="term"><b>부문자열 (부분수열)</b><span class="e">subsequence</span><p>글자를 순서만 지키며 고른 것. 붙어 있을 필요 없음.</p></div>
+      <div class="term"><b>부분 문자열</b><span class="e">substring</span><p>붙어 있는 구간. LCS 의 "부문자열" 과 다름.</p></div>
+      <div class="term"><b>부 문제</b><span class="e">subproblem</span><p>큰 문제를 나눈 작은 문제. LCS 에서는 X<sub>i</sub>, Y<sub>j</sub> 의 LCS.</p></div>
+      <div class="term"><b>DP 테이블</b><span class="e">DP table</span><p>부 문제의 해를 저장하는 표. LCS 는 2차원 LCS[i][j].</p></div>
+      <div class="term"><b>바닥 조건</b><span class="e">base case</span><p>LCS[0][j] = LCS[i][0] = 0.</p></div>
+    </div>
+  </section>
+  <!-- 07 -->
+  <section id="sq">
+    <h2 class="st"><span class="sq">07</span>확인 필요</h2>
+    <div class="call">
+      <div class="t">일정</div>
+      <p><b>중간고사 10/26 (월) 16:30 ~</b> — 다음 주. 공부한 노트 제출.</p>
+    </div>
+    <div class="call ask">
+      <div class="t">1. DP 3단계의 "(1/2로 다시)" — <span style="color:var(--c3)">뜻 확인</span></div>
+      <p>표를 채우다 막히면 1·2단계(분석·점화식)로 돌아가 다시 본다는 뜻인지, 다른 뜻인지 알려 주세요.</p>
+    </div>
+    <div class="call ask">
+      <div class="t">2. 이번 수업 이후 내용 — <span style="color:var(--c3)">수업 진행 중</span></div>
+      <p>LCS 코드, 시간복잡도, 문자열 찾기(거꾸로 따라가기)를 다루시면 보충 표시를 떼고 반영합니다.</p>
+    </div>
+    <div class="call ask">
+      <div class="t">3. 중간고사 범위에 7주차 포함 여부 — <span style="color:var(--c3)">확인</span></div>
+      <p>DP(7-1, 7-2) 가 중간고사 범위인지 확인해 보세요.</p>
+    </div>
+  </section>
+  <!-- 08 -->
+  <section id="sx">
+    <h2 class="st"><span class="sq">08</span>예상 문제</h2>
+    <p style="font-size:13px;color:var(--ink-3);margin-bottom:14px">난이도 — <b style="color:var(--c2)">기본</b> 수업에서 그대로 나온 것 · <b style="color:var(--accent-deep)">응용</b> 조합하거나 한 단계 더 가야 하는 것 · <b style="color:var(--c3)">심화</b> 수업 논리를 새 상황에 옮겨야 하는 것.</p>
+    <div class="q">
+      <div class="qh"><span class="qn">Q1</span><span>X = ABCBDAB, Y = BDCABA 일 때 BDAB, BBA, DBA 가 각각 공통 부문자열인지 판단하시오.</span><span class="type">판단</span><span class="lv b">기본</span></div>
+      <div class="ans"><span class="lab">정답</span>BDAB O (길이 4). BBA O (X: B·B·A, Y: B·B·A). <b>DBA X</b> — X 에서는 D(5) 뒤에 A(6), B(7) 순서라 D·B·A 를 만들 수 없음 (D 뒤에 B 다음 A 가 없음).</div>
+    </div>
+    <div class="q">
+      <div class="qh"><span class="qn">Q2</span><span>LCS(i, j) 의 점화식을 바닥 조건과 함께 쓰시오.</span><span class="type">서술</span><span class="lv b">기본</span></div>
+      <div class="ans"><span class="lab">정답</span>LCS(i, 0) = LCS(0, j) = 0. x<sub>i</sub> = y<sub>j</sub> 이면 LCS(i − 1, j − 1) + 1, x<sub>i</sub> ≠ y<sub>j</sub> 이면 max(LCS(i, j − 1), LCS(i − 1, j)).</div>
+    </div>
+    <div class="q">
+      <div class="qh"><span class="qn">Q3</span><span>X = ABCB, Y = BDCB 의 LCS 표를 채우고 LCS 길이를 구하시오.</span><span class="type">추적</span><span class="lv m">응용</span></div>
+      <div class="ans"><span class="lab">정답</span>행 A: 0 0 0 0 / B: 1 1 1 1 / C: 1 1 2 2 / B: 1 1 2 <b>3</b> (0 행·0 열 제외) → 길이 <b>3</b> (BCB).</div>
+    </div>
+    <div class="q">
+      <div class="qh"><span class="qn">Q4</span><span>LCS 표에서 좌상 = 2, 상 = 3, 좌 = 2 이고 x<sub>i</sub> ≠ y<sub>j</sub> 일 때 지금 칸의 값은? x<sub>i</sub> = y<sub>j</sub> 라면?</span><span class="type">계산</span><span class="lv b">기본</span></div>
+      <div class="ans"><span class="lab">정답</span>다르면 max(2, 3) = <b>3</b>. 같으면 좌상 + 1 = <b>3</b>.</div>
+    </div>
+    <div class="q">
+      <div class="qh"><span class="qn">Q5</span><span>LCS 표를 1 행부터 왼쪽 → 오른쪽 순서로 채워야 하는 이유를 쓰시오.</span><span class="type">서술</span><span class="lv m">응용</span></div>
+      <div class="ans"><span class="lab">모범답안</span>LCS[i][j] 는 LCS[i − 1][j − 1], LCS[i − 1][j], LCS[i][j − 1] 이 있어야 계산된다. 행 순서·왼쪽부터 채우면 이 세 칸(위 행, 같은 행의 왼쪽)이 항상 먼저 채워져 있으므로, 함수를 다시 부르지 않고 표에서 꺼내 쓸 수 있다.</div>
+    </div>
+    <div class="q">
+      <div class="qh"><span class="qn">Q6</span><span>x<sub>i</sub> ≠ y<sub>j</sub> 일 때 LCS(i − 1, j − 1) 만 보면 안 되는 이유를 예를 들어 설명하시오.</span><span class="type">서술</span><span class="lv h">심화</span></div>
+      <div class="ans"><span class="lab">모범답안</span>끝 글자 중 하나는 다른 쪽의 앞 글자와 짝지어질 수 있기 때문. 예: X = AB, Y = BA 에서 x<sub>2</sub> = B ≠ y<sub>2</sub> = A. LCS(1, 1) = 0 (A vs B) 이지만 실제 LCS 길이는 1 (A 또는 B). max(LCS(2, 1), LCS(1, 2)) = max(1, 1) = 1 이 맞다.</div>
+    </div>
+  </section>
+
+  <footer><span>알고리즘 · 7주차 2차시 · 2026.10.19</span><span>jaealee.com</span></footer>
+</div>
+
+<!-- ═══════════ 단어장 뷰 ═══════════ -->
+<div id="viewVocab" hidden>
+  <div class="hero" data-w="A–Z">
+    <span class="chip">7주차 2차시 단어장</span>
+    <h1>알고리즘 필수 용어</h1>
+    <p class="sub">이번 차시에 나온 단어 중 전공생이 원서·논문에서 다시 만날 것들만 골랐습니다.</p>
+  </div>
+
+  <div class="vhead">
+    <input type="search" id="vq" placeholder="단어 · 뜻으로 찾기">
+    <button class="tbtn" id="maskBtn">뜻 가리기</button>
+    <button class="tbtn" id="quizBtn">퀴즈 풀기</button>
+    <span style="font-size:13px;color:var(--ink-3);font-weight:600" id="vcount"></span>
+  </div>
+
+  <ul class="vlist" id="vlist">
+    <li class="vword">
+      <div><span class="w">subsequence</span><span class="ipa">/ˈsʌbsɪkwəns/</span><span class="pos">n.</span></div>
+      <div><p class="mean">부분수열, (LCS 의) 부문자열</p>
+      <p class="ex">A <b>subsequence</b> keeps the order but may skip letters.<span class="ko">부분수열은 순서는 지키지만 글자를 건너뛸 수 있다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">common</span><span class="ipa">/ˈkɑːmən/</span><span class="pos">adj.</span></div>
+      <div><p class="mean">공통의</p>
+      <p class="ex">Find the longest <b>common</b> subsequence.<span class="ko">가장 긴 공통 부분수열을 찾아라.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">longest</span><span class="ipa">/ˈlɔːŋɡɪst/</span><span class="pos">adj.</span></div>
+      <div><p class="mean">가장 긴</p>
+      <p class="ex">The <b>longest</b> one has length 4.<span class="ko">가장 긴 것의 길이는 4이다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">substring</span><span class="ipa">/ˈsʌbstrɪŋ/</span><span class="pos">n.</span></div>
+      <div><p class="mean">부분 문자열 (붙어 있는 구간)</p>
+      <p class="ex">A <b>substring</b> must be contiguous.<span class="ko">부분 문자열은 붙어 있어야 한다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">contiguous</span><span class="ipa">/kənˈtɪɡjuəs/</span><span class="pos">adj.</span></div>
+      <div><p class="mean">연속된, 붙어 있는</p>
+      <p class="ex">The letters need not be <b>contiguous</b>.<span class="ko">글자들이 붙어 있을 필요는 없다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">diagonal</span><span class="ipa">/daɪˈæɡənl/</span><span class="pos">adj./n.</span></div>
+      <div><p class="mean">대각선(의)</p>
+      <p class="ex">Take the <b>diagonal</b> value and add one.<span class="ko">대각선 값을 가져와 1을 더하라.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">row</span><span class="ipa">/roʊ/</span><span class="pos">n.</span></div>
+      <div><p class="mean">행 (가로줄)</p>
+      <p class="ex">Fill the table <b>row</b> by row.<span class="ko">표를 한 행씩 채워라.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">column</span><span class="ipa">/ˈkɑːləm/</span><span class="pos">n.</span></div>
+      <div><p class="mean">열 (세로줄)</p>
+      <p class="ex">Each <b>column</b> matches a letter of Y.<span class="ko">각 열은 Y 의 글자 하나에 대응한다.</span></p></div>
+    </li>
+  </ul>
+
+  <div class="quizbox" id="quiz">
+    <div class="qq" id="quizQ"></div>
+    <div class="opts" id="quizOpts"></div>
+    <div class="score" id="quizScore"></div>
+  </div>
+</div>
+<!-- ═══════════ 필기 원문 뷰 ═══════════ -->
+<div id="viewRaw" hidden>
+  <div class="hero" data-w="RAW">
+    <span class="chip">7주차 2차시 필기 원문</span>
+    <h1>내가 보낸 그대로</h1>
+    <p class="sub">한 글자도 고치지 않았습니다. 본문에 빠진 게 없는지 여기서 대조하세요.</p>
+  </div>
+
+  <div class="rawnote" id="rawlist">
+    <div class="rawitem">
+      <div class="seq">01<span>&nbsp;</span></div>
+      <div>
+        <div class="body">지난시간에 이어서 계속 진행
+DP에서는 처음에 먼저
+
+1. 해를 분석 : 큰 문제 → 작은 문제로 나누어서 생각
+2. 부 문제(그 작은 문제)의 해를 이용해서 큰 문제의 해 (점화식)
+3. DP TABLE (해를 저장하는 리스트/배열) 을 순서대로 채워넣기 (1/2로 다시)
+4. 정확성 판별(사실 1-2에서 해결되기 때문에 신경써야할 과정은 1-3임)
+
+계속 불러오는게 아니라 DP TABLE에서 해를 가져와서 사용했기 때문에 시간이 굉장히 줄어들었음
+오늘은 좀 더 복잡하게 어떤 문제들을 DP로 풀 수 있는지 살펴봄</div>
+        <div class="where"><a href="#s1">01. DP 순서</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">02<span>&nbsp;</span></div>
+      <div>
+        <div class="body">Longest Common Sequence (LCS)  문제
+최장          공통          부문자열     문제
+잘 이해가 안되니까 예시로
+문자열 X가 존재 한다고 해보자
+X : ABCBDAB
+Y : BDCABA
+문자열의 길이는 달라도 상관 없음
+공통으로 존재하는 문자열을 찾으면 됨
+꼭 붙어있을 필요는 없고 순서만 맞으면 됨
+→ 길이가 1인 공통 부문자열 : A, B, C, D
+→ 길이가 2인 " : AB, BB(꼭 붙어있지 않아도 됨), BD,  ... 
+→ 길이가 3인 " : ...
+→ 길이가 4인 " : BCAB, BDAB, ...
+→ 길이가 5인 " : 존재하지 않음(확인해보면 아무튼 그럼)
+
+여기서 길이가 가장 긴 길이 4에 대하여 찾는 문제임
+이런 알고리즘임
+
+⇒ LCS 문제 : 가장 긴 길이의 공통 부문자열을 찾는 문제, (길이를 찾는 혹은 문자열을 전부 찾는 혹은 문자열을 1개만 찾기)</div>
+        <div class="where"><a href="#s2">02. LCS 문제</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">03<span>&nbsp;</span></div>
+      <div>
+        <div class="body">X_n : x_1 x_2 ... x_n
+Y_m : y_1 y_2 ... y_m
+이라고 정의
+
+LCS(X_n, Y_n) ⇒ X_n, Y_m의 최장 길이 공통 부문자열의 길이 (라고 해보자)
+
+→ LCS(i, j) 이렇게 간단히 하자 ⇒ X_i와 Y_j의 LCS 길이(축약한거임)
+X_i = x_1 x_2 ... x_i
+Y_j : y_1 y_2 ... y_j
+
+규칙을 생각해보자
+
+1. 맨 끝에 있는 수 x_i == y_j일 때 LCS에 x_i가 포함됨. LCS(i, j) = LCS(i-1, j-1)+1 과 같음. 길이구하는 거기 때문
+2. x_i != y_j를 생각해보면 LCS(i, j) = max(LCS(i, j-1), LCS(i-1, j)) 가 됨
+
+
+LCS(i, j) [  LCS(i-1, j-1)+1     if x_i = y_j
+                     max(LCS(i, j-1), LCS(i-1, j))   if x_i 1= y_j
+
+대괄호 [는 LCS(i, j)가 두 경우로 나뉜다는 걸 표현한거임(묶은거야 두 식을. 텍스트라서 저렇게 표현했어) </div>
+        <div class="where"><a href="#s3">03. 점화식</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">04<span>&nbsp;</span></div>
+      <div>
+        <div class="body">DP Table을 순서대로 채우기("순서대로"!!)
+⇒ LCS[i][j] 입력
+
+[i-1, j-1][i, j-1]
+[i-1, j][i, j]
+2*2 표임
+이런식으로 할 수 있음
+
+표 속 특정 물음표를 채우려면 그 좌, 좌상, 상 값이 필요함(체스판 같은 느낌)
+시각화가 필요해
+
+표를 그려보자(각각의 칸은 LCS[i][j]를 채울거임
+X/Y    None B D C A B A
+
+None | 
+A | 
+B | 
+C | 
+B | 
+D | 
+A | 
+B | 
+
+바닥조건부터 채워보자(ex. LCS[0][3] = 0(없을 수 밖에 없음))
+
+X/Y    None B D C A B A
+
+None | 0 0 0 0 0 0 0
+A | 0
+B | 0
+C | 0
+B | 0
+D | 0
+A | 0
+B | 0
+
+
+LCS[1][1]을 채울 수 있음(좌, 좌상, 상을 알고 있기 때문)
+같으면 좌상+1, 다르면 좌/상 중 맥스
+
+X/Y    None B D C A B A
+
+None | 0 0 0 0 0 0 0
+A | 0 0
+B | 0
+C | 0
+B | 0
+D | 0
+A | 0
+B | 0
+
+이렇게 하면 점점 채울 수 있음
+
+X/Y    None B D C A B A
+
+None | 0 0 0 0 0 0 0
+A | 0 0 0 0
+B | 0
+C | 0
+B | 0
+D | 0
+A | 0
+B | 0
+
+LCS[4][1] 보면 값이 A로 같기 때문에 좌상 + 1이 됨
+
+X/Y    None B D C A B A
+
+None | 0 0 0 0 0 0 0
+A | 0 0 0 0 1
+B | 0
+C | 0
+B | 0
+D | 0
+A | 0
+B | 0
+
+...
+(이런 과정으로 쭉 차는거 시각화(스탭별로))</div>
+        <div class="where"><a href="#s4">04. DP 테이블</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+/* ── 스크롤 진행 바 ─────────────────────────────── */
+const sb = document.getElementById('scrollbar');
+addEventListener('scroll', () => {
+  const h = document.documentElement.scrollHeight - innerHeight;
+  sb.style.width = (h > 0 ? scrollY / h * 100 : 0) + '%';
+}, { passive: true });
+
+/* ── 다크 모드 ──────────────────────────────────── */
+const html = document.documentElement, themeBtn = document.getElementById('themeBtn');
+themeBtn.onclick = () => {
+  const dark = html.dataset.theme === 'dark';
+  html.dataset.theme = dark ? 'light' : 'dark';
+  themeBtn.textContent = dark ? '다크' : '라이트';
+};
+
+/* ── 정답: 기본은 가려짐. 답을 누르면 그 문제만 열리고,
+      "정답 가리기" 버튼을 누르면 열린 것들을 전부 다시 덮는다 ── */
+const ansBtn = document.getElementById('ansBtn');
+const answers = [...document.querySelectorAll('.ans')];
+function syncAnsBtn() {
+  const opened = answers.filter(a => a.classList.contains('on')).length;
+  ansBtn.disabled = opened === 0;
+  ansBtn.textContent = opened ? `정답 가리기 (${opened})` : '정답 가리기';
+}
+answers.forEach(a => a.addEventListener('click', () => { a.classList.toggle('on'); syncAnsBtn(); }));
+ansBtn.onclick = () => { answers.forEach(a => a.classList.remove('on')); syncAnsBtn(); };
+syncAnsBtn();
+
+/* ── 보충(외부 자료) 개수 표시 + 숨기기 토글 ────── */
+const extraChip = document.getElementById('extraChip');
+const extraCount = document.querySelectorAll('#viewNote .call.extra, #viewNote .ext').length;
+if (extraCount) {
+  extraChip.textContent = `보충 ${extraCount}곳 — 교수님 설명 아님`;
+  extraChip.onclick = () => {
+    const off = document.body.classList.toggle('no-extra');
+    extraChip.textContent = off ? `보충 ${extraCount}곳 숨김 — 눌러서 보기` : `보충 ${extraCount}곳 — 교수님 설명 아님`;
+  };
+} else {
+  extraChip.textContent = '보충 0곳 — 전부 교수님 내용';
+  extraChip.disabled = true;
+}
+
+/* ── 인쇄 ───────────────────────────────────────── */
+document.getElementById('printBtn').onclick = () => window.print();
+
+/* ── 코드 복사 ──────────────────────────────────── */
+document.querySelectorAll('.copy').forEach(btn => {
+  btn.onclick = async () => {
+    try { await navigator.clipboard.writeText(btn.closest('.codebox').querySelector('code').innerText); btn.textContent = '복사됨'; }
+    catch { btn.textContent = '실패'; }
+    setTimeout(() => btn.textContent = '복사', 1200);
+  };
+});
+
+/* ── 복습 체크 진행률 (새로고침하면 초기화) ─────── */
+const boxes = document.querySelectorAll('.chk input'), fill = document.getElementById('barFill');
+boxes.forEach(b => b.addEventListener('change', () => {
+  fill.style.width = [...boxes].filter(x => x.checked).length / boxes.length * 100 + '%';
+}));
+
+/* ── 본문 / 단어장 / 필기 원문 전환 ─────────────── */
+const views = {
+  note:  { el: document.getElementById('viewNote'),  nav: document.getElementById('tocWrap') },
+  vocab: { el: document.getElementById('viewVocab'), nav: document.getElementById('vocabNav'), btn: document.getElementById('vocabBtn'), on: '본문으로', off: '단어장' },
+  raw:   { el: document.getElementById('viewRaw'),   nav: document.getElementById('rawNav'),   btn: document.getElementById('rawBtn'),  on: '본문으로', off: '필기 원문' }
+};
+let current = 'note';
+function setView(name) {
+  current = name;
+  Object.entries(views).forEach(([k, v]) => {
+    v.el.hidden = k !== name;
+    v.nav.hidden = k !== name;
+    if (v.btn) { v.btn.classList.toggle('solid', k === name); v.btn.textContent = k === name ? v.on : v.off; }
+  });
+  clearMarks();
+  document.getElementById('q').value = '';
+  document.getElementById('hit').textContent = '';
+  scrollTo({ top: 0, behavior: 'smooth' });
+}
+views.vocab.btn.onclick = () => setView(current === 'vocab' ? 'note' : 'vocab');
+views.raw.btn.onclick   = () => setView(current === 'raw'   ? 'note' : 'raw');
+document.getElementById('rawTotal').textContent = document.querySelectorAll('#rawlist .rawitem').length;
+// 원문 페이지의 링크를 누르면 본문으로 돌아가서 해당 위치로 이동
+document.querySelectorAll('#rawlist .where a').forEach(a => {
+  a.onclick = e => { e.preventDefault(); setView('note'); setTimeout(() => document.querySelector(a.getAttribute('href')).scrollIntoView(), 60); };
+});
+
+/* ── 목차 현재 위치 ─────────────────────────────── */
+const links = [...document.querySelectorAll('#toc a')];
+const spy = new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) return;
+  links.forEach(l => l.classList.toggle('on', l.getAttribute('href') === '#' + e.target.id));
+}), { rootMargin: '-80px 0px -68% 0px' });
+document.querySelectorAll('#viewNote section').forEach(s => spy.observe(s));
+
+/* ── 문서 내 검색 ───────────────────────────────── */
+const qInput = document.getElementById('q'), hitEl = document.getElementById('hit');
+let marks = [], cursor = -1;
+function clearMarks() {
+  marks.forEach(m => { const p = m.parentNode; if (!p) return; p.replaceChild(document.createTextNode(m.textContent), m); p.normalize(); });
+  marks = []; cursor = -1;
+}
+function runSearch(word) {
+  clearMarks();
+  if (word.length < 2) { hitEl.textContent = ''; return; }
+  const root = views[current].el;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const targets = [];
+  while (walker.nextNode()) {
+    const n = walker.currentNode;
+    if (n.parentElement.closest('script,style')) continue;
+    if (n.nodeValue.toLowerCase().includes(word)) targets.push(n);
+  }
+  targets.forEach(n => {
+    const re = new RegExp('(' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    const frag = document.createDocumentFragment();
+    n.nodeValue.split(re).forEach(p => {
+      if (p.toLowerCase() === word) { const m = document.createElement('span'); m.className = 'hit-mark'; m.textContent = p; frag.appendChild(m); marks.push(m); }
+      else frag.appendChild(document.createTextNode(p));
+    });
+    n.parentNode.replaceChild(frag, n);
+  });
+  hitEl.textContent = marks.length ? '0/' + marks.length : '없음';
+}
+/* 검색은 본문 텍스트 노드를 통째로 갈아끼우기 때문에 브라우저가 스크롤 기준점을 잃고
+   맨 위로 튄다. 바꾸기 직전 위치를 적어 두었다가 끝나고 바로 되돌린다. */
+function keepScroll(fn) {
+  const y = window.scrollY, root = document.documentElement, prev = root.style.scrollBehavior;
+  root.style.scrollBehavior = 'auto';
+  fn();
+  window.scrollTo(0, y);
+  root.style.scrollBehavior = prev;
+}
+qInput.addEventListener('input', e => {
+  const w = e.target.value.trim().toLowerCase();
+  keepScroll(() => runSearch(w));
+});
+qInput.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || !marks.length) return;
+  e.preventDefault();
+  cursor = (cursor + 1) % marks.length;
+  marks[cursor].scrollIntoView({ block: 'center', behavior: 'smooth' });
+  hitEl.textContent = (cursor + 1) + '/' + marks.length;
+});
+addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); qInput.focus(); qInput.select(); }
+});
+
+/* ── 단어장 ─────────────────────────────────────── */
+const vlist = document.getElementById('vlist');
+const words = [...vlist.querySelectorAll('.vword')];
+document.getElementById('vcount').textContent = words.length + '개';
+document.getElementById('vTotal').textContent = words.length;
+
+document.getElementById('vq').addEventListener('input', e => {
+  const k = e.target.value.trim().toLowerCase();
+  keepScroll(() => {   // 항목을 숨기면 높이가 바뀌어 스크롤이 튄다
+    let shown = 0;
+    words.forEach(w => { const ok = w.innerText.toLowerCase().includes(k); w.style.display = ok ? '' : 'none'; if (ok) shown++; });
+    document.getElementById('vcount').textContent = shown + '개';
+  });
+});
+
+const maskBtn = document.getElementById('maskBtn');
+maskBtn.onclick = () => {
+  const on = vlist.classList.toggle('masked');
+  maskBtn.classList.toggle('solid', on);
+  maskBtn.textContent = on ? '뜻 보이기' : '뜻 가리기';
+  if (!on) vlist.querySelectorAll('.show').forEach(el => el.classList.remove('show'));
+};
+vlist.querySelectorAll('.mean, .ex').forEach(el => {
+  el.onclick = () => { if (vlist.classList.contains('masked')) el.classList.toggle('show'); };
+});
+
+/* 퀴즈 — 위 목록에서 문제를 자동 생성 */
+const quiz = document.getElementById('quiz'), quizBtn = document.getElementById('quizBtn');
+const qQ = document.getElementById('quizQ'), qO = document.getElementById('quizOpts'), qS = document.getElementById('quizScore');
+let pool = [], solved = 0, correct = 0;
+const data = () => words.map(w => ({
+  word: w.querySelector('.w').textContent,
+  mean: (w.querySelector('.mean').textContent.split('—')[1] || w.querySelector('.mean').textContent).trim()
+}));
+function nextQuiz() {
+  if (!pool.length) { qQ.textContent = '한 바퀴 끝'; qO.innerHTML = ''; qS.textContent = `${solved}문제 중 ${correct}개 정답`; return; }
+  const all = data(), cur = pool.pop();
+  qQ.textContent = cur.word;
+  const opts = [cur, ...all.filter(d => d.word !== cur.word).sort(() => Math.random() - .5).slice(0, 3)].sort(() => Math.random() - .5);
+  qO.innerHTML = '';
+  opts.forEach(o => {
+    const b = document.createElement('button');
+    b.className = 'opt'; b.textContent = o.mean;
+    b.onclick = () => {
+      solved++;
+      if (o.word === cur.word) { b.classList.add('ok'); correct++; }
+      else { b.classList.add('no'); [...qO.children].find(x => x.textContent === cur.mean)?.classList.add('ok'); }
+      [...qO.children].forEach(x => x.disabled = true);
+      qS.textContent = `${solved}문제 중 ${correct}개 정답`;
+      setTimeout(nextQuiz, 1000);
+    };
+    qO.appendChild(b);
+  });
+  qS.textContent = `${solved}문제 중 ${correct}개 정답 · 남은 ${pool.length}개`;
+}
+quizBtn.onclick = () => {
+  const on = quiz.classList.toggle('on');
+  quizBtn.classList.toggle('solid', on);
+  quizBtn.textContent = on ? '퀴즈 닫기' : '퀴즈 풀기';
+  if (on) { pool = data().sort(() => Math.random() - .5); solved = 0; correct = 0; nextQuiz(); }
+};
+
+/* ── 이진탐색 스텝 시각화 ─────────────────────────── */
+(function(){
+  const root=document.getElementById('bsv'); if(!root) return;
+  const A=[2,5,7,8,15,20,32,44];
+  const CODE=['def bs(A, a, b, k):','    if a > b:','        return -1','    m = (a + b) // 2','    if A[m] == k:','        return m','    elif A[m] > k:','        return bs(A, a, m-1, k)','    else:','        return bs(A, m+1, b, k)'];
+  // 실제 의사코드를 실행하면서 스텝 기록
+  function trace(k){
+    const st=[]; const stack=[];
+    function snap(o){ st.push(Object.assign({stack:stack.map(x=>Object.assign({},x))},o)); }
+    function bs(a,b){
+      stack.push({a,b,ret:null}); const me=stack.length-1;
+      snap({a,b,m:null,line:[0],msg: a>b ? `<b>bs(A, ${a}, ${b}, ${k})</b> 호출 — 시작(a = ${a})이 끝(b = ${b})보다 뒤라서 <b>볼 칸이 없습니다.</b>` : `<b>bs(A, ${a}, ${b}, ${k})</b> 호출 — 이번에 볼 범위는 A[${a}] ~ A[${b}] 입니다.`});
+      if(a>b){
+        snap({a,b,m:null,line:[1,2],msg:`a = ${a} &gt; b = ${b} — <b>범위가 뒤집혔습니다.</b> 볼 칸이 하나도 없으니 리스트에 k 가 없다는 뜻이고, <b>−1 을 반환</b>합니다.`});
+        stack[me].ret=-1; return -1;
+      }
+      snap({a,b,m:null,line:[1],msg:`a = ${a} &gt; b = ${b} 인가? → 아니오. 아직 볼 칸이 남아 있으니 계속합니다.`});
+      const m=Math.floor((a+b)/2);
+      snap({a,b,m,line:[3],msg:`가운데 자리 m = (${a} + ${b}) // 2 = <b>${m}</b>. A[${m}] = <b>${A[m]}</b> 입니다.`});
+      if(A[m]===k){
+        snap({a,b,m,line:[4,5],found:true,msg:`A[${m}] = ${A[m]} == k = ${k} → <b>찾았습니다.</b> 값 ${A[m]} 이 아니라 <b>자리 번호 ${m}</b> 을 반환합니다.`});
+        stack[me].ret=m; return m;
+      }
+      let r;
+      if(A[m]>k){
+        snap({a,b,m,line:[4,6,7],msg:`A[${m}] = ${A[m]} &gt; k = ${k} → k 는 <b>왼쪽</b>에 있습니다. m 과 그 오른쪽은 버리고 <b>bs(A, ${a}, ${m-1}, ${k})</b> 를 호출합니다.`});
+        r=bs(a,m-1);
+      }else{
+        snap({a,b,m,line:[4,6,8,9],msg:`A[${m}] = ${A[m]} &lt; k = ${k} → k 는 <b>오른쪽</b>에 있습니다. m 과 그 왼쪽은 버리고 <b>bs(A, ${m+1}, ${b}, ${k})</b> 를 호출합니다.`});
+        r=bs(m+1,b);
+      }
+      stack[me].ret=r;
+      snap({a,b,m,line:[A[m]>k?7:9],back:true,msg:`안쪽 호출이 <b>${r}</b> 을 돌려줬습니다. 이 호출(bs(A, ${a}, ${b}, ${k}))도 받은 값을 그대로 <b>${r}</b> 로 반환합니다. (값을 가공하지 않고 전달만 함)`});
+      stack.pop(); return r;
+    }
+    const res=bs(0,7);
+    st.push({stack:[],a:null,b:null,m:null,line:[],done:res,msg:res>=0?`최종 결과 <b>${res}</b> — A[${res}] = ${A[res]}. 비교는 <b>${st.filter(x=>x.line.includes(3)).length}번</b>, 볼 범위는 8 → 4 → 2 로 매번 절반이 됐습니다.`:`최종 결과 <b>−1</b> — 리스트에 ${k}이(가) 없습니다. 비교는 <b>${st.filter(x=>x.line.includes(3)).length}번</b>, 범위가 8 → 4 → 2 → 1 → 0 으로 줄다가 뒤집혀서 끝났습니다.`});
+    return st;
+  }
+  const arr=root.querySelector('.arr'), code=root.querySelector('.code'), stackEl=root.querySelector('.stack'), msg=root.querySelector('.msg'), cnt=root.querySelector('.cnt'), prev=root.querySelector('.prev'), next=root.querySelector('.next');
+  let k=32, steps=trace(32), i=0;
+  function svg(s){
+    const W=46,G=49,X0=24; let o='<svg width="100%" viewBox="0 0 440 112" role="img" style="display:block"><title>현재 단계의 탐색 범위</title>';
+    for(let j=0;j<8;j++){
+      const x=X0+j*G, cx=x+W/2;
+      const inR = s.a!==null && j>=s.a && j<=s.b;
+      const isM = s.m===j;
+      let fill='var(--bg)', stroke='var(--line)', tc='var(--ink)', fw=700, op=1;
+      if(!inR){ tc='var(--ink-3)'; fw=400; op=0.4; }
+      if(isM){ fill = s.found? 'var(--c2)':'var(--accent)'; stroke='none'; tc='#fff'; fw=800; op=1; }
+      if(s.done!==undefined && s.done===j){ fill='var(--c2)'; stroke='none'; tc='#fff'; fw=800; op=1; }
+      o+=`<text x="${cx}" y="12" text-anchor="middle" dominant-baseline="central" font-size="10" fill="var(--ink-3)">${j}</text>`;
+      o+=`<rect x="${x}" y="22" width="${W}" height="30" rx="7" fill="${fill}" stroke="${stroke}" stroke-width="1.2" opacity="${op}"/>`;
+      o+=`<text x="${cx}" y="37" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="${fw}" fill="${tc}" opacity="${op}">${A[j]}</text>`;
+    }
+    const lab=(j,t,y,c)=>{ if(j===null||j<0||j>7) return ''; const cx=X0+j*G+W/2; return `<path d="M${cx-5} ${y-8} L${cx+5} ${y-8} L${cx} ${y-15} Z" fill="${c}"/><text x="${cx}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="11.5" font-weight="800" fill="${c}">${t}</text>`; };
+    if(s.m!==null) o+=lab(s.m,'m',70,s.found?'var(--c2)':'var(--accent)');
+    if(s.a!==null){
+      if(s.a===s.b) o+=lab(s.a,'a = b',94,'var(--c3)');
+      else { o+=lab(s.a,'a',94,'var(--c3)'); o+=lab(s.b,'b',94,'var(--c3)'); }
+      if(s.a>s.b){ o+=`<text x="${X0+8*G-3}" y="108" text-anchor="end" font-size="10.5" font-weight="700" fill="var(--c3)">a &gt; b : 범위 없음</text>`; }
+    }
+    return o+'</svg>';
+  }
+  function render(){
+    const s=steps[i];
+    arr.innerHTML=svg(s);
+    code.innerHTML=CODE.map((t,j)=>`<div class="${s.line.includes(j)?'hl':''}"><span class="ln">${j+1}</span>${t.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`).join('');
+    stackEl.innerHTML = s.stack.length ? s.stack.map((f,j)=>`<div class="fr ${j===s.stack.length-1?'cur':''}">bs(A, ${f.a}, ${f.b}, ${k})${f.ret!==null?` <span class="rv">→ ${f.ret}</span>`:''}</div>`).join('') : `<div class="fr">모든 호출 종료 — 결과 <span class="rv">${s.done}</span></div>`;
+    msg.innerHTML=s.msg;
+    cnt.textContent=`${i+1} / ${steps.length}`;
+    prev.disabled=i===0; next.disabled=i===steps.length-1;
+  }
+  prev.onclick=()=>{ if(i>0){i--;render();} };
+  next.onclick=()=>{ if(i<steps.length-1){i++;render();} };
+  root.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
+    root.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));
+    k=+b.dataset.k; steps=trace(k); i=0; render();
+  });
+  render();
+})();
+
+/* ── 단계 넘기기 (병합 · 힙) ─────────────────────── */
+document.querySelectorAll('.stepper').forEach(root=>{
+  const fs=[...root.querySelectorAll('.sf')], msg=root.querySelector('.msg'), cnt=root.querySelector('.cnt'), pv=root.querySelector('.pv'), nx=root.querySelector('.nx');
+  let i=0;
+  const show=()=>{ fs.forEach((f,j)=>f.hidden=j!==i); msg.innerHTML=fs[i].dataset.msg; cnt.textContent=`${i+1} / ${fs.length}`; pv.disabled=i===0; nx.disabled=i===fs.length-1; };
+  pv.onclick=()=>{ if(i>0){i--;show();} }; nx.onclick=()=>{ if(i<fs.length-1){i++;show();} };
+  show();
+});
+
+/* ── LCS 표 한 칸씩 ─────────────────────── */
+(function(){
+  const root=document.getElementById('lcsw'); if(!root) return;
+  const X='ABCBDAB', Y='BDCABA', n=X.length, m=Y.length;
+  const L=[...Array(n+1)].map(()=>Array(m+1).fill(0));
+  for(let i=1;i<=n;i++)for(let j=1;j<=m;j++) L[i][j]=X[i-1]===Y[j-1]?L[i-1][j-1]+1:Math.max(L[i][j-1],L[i-1][j]);
+  const steps=[{t:'empty'},{t:'base'}]; for(let i=1;i<=n;i++)for(let j=1;j<=m;j++)steps.push({i,j}); steps.push({t:'end'});
+  const T=document.getElementById('lcsT'), msg=document.getElementById('lcsMsg'), cnt=root.querySelector('.cnt');
+  let k=0;
+  const filled=(i,j,s)=>{ if(s.t==='empty')return false; if(i===0||j===0)return true; if(s.t==='base')return false; if(s.t==='end')return true; return i<s.i||(i===s.i&&j<=s.j); };
+  function render(){
+    const s=steps[k]; let h='<tr><th>X &#92; Y</th>';
+    for(let j=0;j<=m;j++) h+=`<th class="${s.j===j?'hx':''}">${j?Y[j-1]:'–'}<small>j=${j}</small></th>`;
+    h+='</tr>';
+    const same=s.i&&X[s.i-1]===Y[s.j-1];
+    for(let i=0;i<=n;i++){
+      h+=`<tr><th class="${s.i===i?'hx':''}">${i?X[i-1]:'–'}<small>i=${i}</small></th>`;
+      for(let j=0;j<=m;j++){
+        let c=''; const f=filled(i,j,s);
+        if(!f) c='empty'; else if(i===0||j===0) c='base';
+        if(s.i){ if(i===s.i&&j===s.j)c='cur';
+          else if(same&&i===s.i-1&&j===s.j-1)c='dg';
+          else if(!same&&((i===s.i&&j===s.j-1)||(i===s.i-1&&j===s.j))){ const v=L[i][j], o=(i===s.i)?L[s.i-1][s.j]:L[s.i][s.j-1]; c=v>=o?'nbw':'nb'; } }
+        if(s.t==='end'&&i===n&&j===m)c='cur';
+        h+=`<td class="${c}">${f?L[i][j]:''}</td>`;
+      }
+      h+='</tr>';
+    }
+    T.innerHTML=h;
+    if(s.t==='empty') msg.innerHTML='빈 표. 행 = X 의 앞 i 글자, 열 = Y 의 앞 j 글자. 각 칸에 LCS[i][j] 를 채운다.';
+    else if(s.t==='base') msg.innerHTML='<b>바닥 조건</b> — 0 행과 0 열은 한쪽이 빈 문자열이라 모두 <b>0</b>. 이제 1 행부터 왼쪽 → 오른쪽으로 채운다.';
+    else if(s.t==='end') msg.innerHTML=`완성. 답 <b>LCS[${n}][${m}] = ${L[n][m]}</b> — ABCBDAB 와 BDCABA 의 LCS 길이는 4.`;
+    else { const {i,j}=s, a=X[i-1], b=Y[j-1];
+      msg.innerHTML= a===b
+        ? `<b>LCS[${i}][${j}]</b>: x<sub>${i}</sub> = ${a}, y<sub>${j}</sub> = ${b} → <b>같음</b> → 좌상 LCS[${i-1}][${j-1}] + 1 = ${L[i-1][j-1]} + 1 = <b>${L[i][j]}</b>`
+        : `<b>LCS[${i}][${j}]</b>: x<sub>${i}</sub> = ${a}, y<sub>${j}</sub> = ${b} → <b>다름</b> → max(좌 LCS[${i}][${j-1}] = ${L[i][j-1]}, 상 LCS[${i-1}][${j}] = ${L[i-1][j]}) = <b>${L[i][j]}</b>`; }
+    cnt.textContent=`${k+1} / ${steps.length}`;
+    root.querySelector('.pv').disabled=root.querySelector('.f0').disabled=k===0;
+    root.querySelector('.nx').disabled=root.querySelector('.f1').disabled=root.querySelector('.rowb').disabled=k===steps.length-1;
+  }
+  const go=v=>{k=Math.max(0,Math.min(steps.length-1,v));render();};
+  root.querySelector('.pv').onclick=()=>go(k-1); root.querySelector('.nx').onclick=()=>go(k+1);
+  root.querySelector('.f0').onclick=()=>go(0); root.querySelector('.f1').onclick=()=>go(steps.length-1);
+  root.querySelector('.rowb').onclick=()=>{ const s=steps[k]; if(!s.i){go(s.t==='empty'?1:1+m);return;} go(s.j===m?k+m:k+(m-s.j)); };
+  render();
+})();
+</script>
+</body>
+</html>
