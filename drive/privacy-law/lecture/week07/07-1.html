@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>개인정보보호법률이해 7주차 1차시 — 개인정보 라이프사이클 관리 ③</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   과목 테마 — 아래 3줄(--accent, --accent-deep, --accent-soft)만 교체
+   데이터분석프로그래밍 #0EA5E9 / #0369A1 / #E0F2FE
+   전공영어           #E08700 / #A55A00 / #FEF3DC
+   인공지능           #9333EA / #6B21A8 / #F3E8FF
+   알고리즘           #4F46E5 / #3730A3 / #E8E7FD
+   시큐어코딩         #DC2626 / #991B1B / #FDE7E7
+   개인정보보호암호기술 #DB2777 / #9D174D / #FCE7F3
+   개인정보보호법률이해 #059669 / #065F46 / #D8F5EA
+   ═══════════════════════════════════════════════════════════════ */
+:root{
+  --accent:#059669;
+  --accent-deep:#065F46;
+  --accent-soft:#D8F5EA;
+
+  --bg:#F7F8FA;
+  --surface:#FFFFFF;
+  --ink:#15161B;
+  --ink-2:#565C66;
+  --ink-3:#8B9098;
+  --line:#E5E7EC;
+  --line-2:#F0F1F4;
+  --code-bg:#1B1D24;
+  --code-ink:#E4E6ED;
+  --mark:#FFE27A;
+  --font:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,system-ui,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  --mono:'JetBrains Mono','SFMono-Regular',Consolas,'D2Coding',monospace;
+}
+html[data-theme="dark"]{
+  --accent:#10A37F;
+  --accent-deep:#6EE7B7;
+  --accent-soft:#12302A;
+  --bg:#101116;
+  --surface:#181A20;
+  --ink:#E8E9ED;
+  --ink-2:#A6AAB4;
+  --ink-3:#73777F;
+  --line:#2A2C34;
+  --line-2:#202229;
+  --code-bg:#0C0D11;
+  --mark:#6E5C16;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15.5px;line-height:1.72;letter-spacing:-.012em;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-deep)}
+::selection{background:var(--accent);color:#fff}
+
+/* ── 스크롤 진행 바 ─────────────────────────────────── */
+#scrollbar{position:fixed;top:0;left:0;height:3px;width:0;background:var(--accent);z-index:99}
+
+/* ── 상단 바 ────────────────────────────────────────── */
+.topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:10px;padding:10px 22px;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.back{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink-2);font-size:14px;font-weight:700;white-space:nowrap}
+.back:hover{color:var(--accent-deep)}
+.back i{width:10px;height:10px;border-radius:3px;background:var(--accent);display:block}
+.search{flex:1;max-width:300px;margin-left:auto;position:relative}
+.search input{width:100%;padding:7px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14px}
+.search input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.hit{position:absolute;right:10px;top:8px;font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums;pointer-events:none}
+.tools{display:flex;gap:6px}
+.tbtn{border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:9px;padding:7px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);white-space:nowrap}
+.tbtn:hover{border-color:var(--accent);color:var(--accent-deep)}
+.tbtn.solid{background:var(--accent);border-color:var(--accent);color:#fff}
+.tbtn:disabled{opacity:.4;cursor:default}
+
+/* ── 레이아웃 ───────────────────────────────────────── */
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);gap:38px;max-width:1200px;margin:0 auto;padding:26px 24px 120px}
+main{min-width:0}
+
+/* ── 사이드 패널(포인트 컬러) ───────────────────────── */
+.side{position:sticky;top:80px;align-self:start;max-height:calc(100vh - 100px);overflow-y:auto;scrollbar-width:thin}
+.panel{background:var(--accent);border-radius:16px;padding:18px 16px;color:#fff;box-shadow:0 8px 24px -12px color-mix(in srgb,var(--accent) 70%,transparent)}
+.panel .cap{font-size:11.5px;font-weight:700;opacity:.72;margin-bottom:9px}
+.panel .subject{font-size:19px;font-weight:800;letter-spacing:-.03em;line-height:1.3;margin-bottom:2px}
+.panel .when{font-size:12.5px;opacity:.8;margin-bottom:16px}
+.toc{list-style:none;margin:0;padding:0}
+.toc a{display:block;padding:6px 10px;border-radius:8px;color:#fff;opacity:.82;text-decoration:none;font-size:13.5px;font-weight:600;line-height:1.45}
+.toc a:hover{background:rgba(255,255,255,.16);opacity:1}
+.toc a.on{background:#fff;color:var(--accent-deep);opacity:1;font-weight:800}
+.toc .num{display:inline-block;width:17px;font-variant-numeric:tabular-nums;opacity:.7}
+.toc a.on .num{opacity:1}
+.panel hr{border:0;border-top:1px solid rgba(255,255,255,.22);margin:14px 0}
+.chk label{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;padding:3px 0;cursor:pointer;line-height:1.5;opacity:.9}
+.chk input{margin-top:4px;accent-color:#fff;flex-shrink:0}
+.chk input:checked + span{opacity:.5;text-decoration:line-through}
+.pbar{height:4px;border-radius:99px;background:rgba(255,255,255,.28);margin-top:11px;overflow:hidden}
+.pbar i{display:block;height:100%;width:0;background:#fff;transition:width .25s}
+
+/* ── 히어로 ─────────────────────────────────────────── */
+.hero{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px 28px 22px;overflow:hidden;margin-bottom:16px}
+.hero::after{content:attr(data-w);position:absolute;right:14px;bottom:-26px;font-size:112px;font-weight:800;color:var(--accent);opacity:.09;letter-spacing:-.06em;line-height:1;pointer-events:none}
+.chip{display:inline-flex;align-items:center;gap:7px;background:var(--accent-soft);color:var(--accent-deep);font-size:12.5px;font-weight:800;padding:4px 11px;border-radius:99px}
+h1{font-size:clamp(26px,3.6vw,34px);font-weight:800;letter-spacing:-.04em;line-height:1.24;margin:12px 0 6px;position:relative}
+.hero .sub{color:var(--ink-2);font-size:15px;margin:0 0 14px;position:relative}
+[hidden]{display:none!important}
+.metaline{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-3);position:relative}
+.metaline b{color:var(--ink-2);font-weight:600}
+
+/* ── 수업 자료 (같은 폴더의 PDF) ────────────────────── */
+.files{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;position:relative}
+.file{display:inline-flex;align-items:center;gap:9px;padding:8px 13px 8px 9px;border:1px solid var(--line);border-radius:10px;background:var(--surface);text-decoration:none;color:var(--ink);font-size:13.5px;font-weight:700}
+.file:hover{border-color:var(--accent);background:var(--accent-soft)}
+.file .ic{background:var(--accent);color:#fff;font-size:10px;font-weight:800;padding:3px 6px;border-radius:6px;letter-spacing:.02em}
+.file em{font-style:normal;color:var(--ink-3);font-weight:600;font-size:12.5px}
+.files .none{font-size:12.5px;color:var(--ink-3);font-weight:600;padding:8px 0}
+.extra-chip:disabled{cursor:default;opacity:.6}
+
+/* ── 오늘의 흐름 ────────────────────────────────────── */
+.flow{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:26px}
+.flow a{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--line);border-radius:99px;background:var(--surface);text-decoration:none;color:var(--ink-2);font-size:13px;font-weight:600}
+.flow a:hover{border-color:var(--accent);color:var(--accent-deep);background:var(--accent-soft)}
+.flow a b{color:var(--accent);font-variant-numeric:tabular-nums}
+
+/* ── 핵심 카드 ──────────────────────────────────────── */
+.keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:34px}
+.key{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:14px;padding:16px 17px}
+.key .n{font-size:12px;font-weight:800;color:var(--accent);margin-bottom:5px}
+.key p{margin:0;font-size:14.5px;line-height:1.6}
+.key b{font-weight:800}
+
+/* ── 섹션 ───────────────────────────────────────────── */
+section{margin-bottom:46px;scroll-margin-top:82px}
+h2.st{display:flex;align-items:center;gap:11px;font-size:22px;font-weight:800;letter-spacing:-.035em;margin:0 0 14px}
+h2.st .sq{flex-shrink:0;width:30px;height:30px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+h3{font-size:16.5px;font-weight:800;margin:26px 0 8px;letter-spacing:-.025em;padding-left:11px;border-left:3px solid var(--accent)}
+h4{font-size:14.5px;font-weight:700;margin:18px 0 6px;color:var(--ink-2)}
+p{margin:9px 0}
+ul,ol{margin:9px 0;padding-left:21px}
+li{margin:3px 0}
+li::marker{color:var(--accent)}
+.en{color:var(--ink-3);font-weight:500;font-size:.9em}
+mark{background:linear-gradient(transparent 54%,var(--mark) 54%);color:inherit;padding:0 2px}
+.hit-mark{background:var(--accent);color:#fff;border-radius:3px}
+
+/* ── 배지 ───────────────────────────────────────────── */
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin:-6px 0 12px}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:6px;letter-spacing:0}
+.badge.exam{color:#92580B;background:#FDF0D5}
+.badge.prof{color:var(--accent-deep);background:var(--accent-soft)}
+.badge.ask{color:#B02020;background:#FCE4E4}
+html[data-theme="dark"] .badge.exam{background:#3B2D0E;color:#EFC470}
+html[data-theme="dark"] .badge.ask{background:#3A1919;color:#F0A0A0}
+
+/* ── 카드형 콜아웃 ──────────────────────────────────── */
+.call{border-radius:13px;padding:14px 17px;margin:15px 0;background:var(--surface);border:1px solid var(--line)}
+.call .t{font-size:12.5px;font-weight:800;margin-bottom:5px}
+.call p:first-of-type{margin-top:0}
+.call p:last-child,.call ul:last-child{margin-bottom:0}
+.call.quote{background:var(--accent-soft);border-color:transparent}
+.call.quote .t{color:var(--accent-deep)}
+.call.quote p{font-size:14.8px}
+.call.warn{border-left:4px solid #E5A50A}
+.call.warn .t{color:#A16207}
+.call.ask{border-left:4px solid #DC2626}
+.call.ask .t{color:#B02020}
+.call.link{border-left:4px solid var(--accent)}
+.call.link .t{color:var(--accent-deep)}
+
+/* 보충 — 교수님이 설명하지 않은 외부 자료. 회색 + 점선으로 본문과 확실히 구분 */
+.call.extra{background:repeating-linear-gradient(135deg,var(--line-2),var(--line-2) 9px,transparent 9px,transparent 18px);border:1.5px dashed var(--ink-3);border-left-width:1.5px}
+.call.extra .t{color:var(--ink-2);display:flex;align-items:center;gap:6px}
+.call.extra .t::before{content:"보충";background:var(--ink-3);color:var(--surface);font-size:10.5px;padding:1px 6px;border-radius:5px}
+.call.extra p{color:var(--ink-2)}
+.badge.extra{color:var(--ink-2);background:var(--line-2);border:1px dashed var(--ink-3)}
+.ext{border-bottom:2px dotted var(--ink-3);color:var(--ink-2)}
+.ext::after{content:"보충";font-size:9.5px;font-weight:800;vertical-align:super;color:var(--ink-3);margin-left:2px;letter-spacing:0}
+.extra-chip{border:1.5px dashed var(--ink-3);background:transparent;color:var(--ink-2);cursor:pointer;font-family:var(--font)}
+body.no-extra .call.extra,body.no-extra .badge.extra{display:none}
+body.no-extra .ext{border-bottom:0}
+body.no-extra .ext::after{display:none}
+html[data-theme="dark"] .call.warn .t{color:#E5B547}
+html[data-theme="dark"] .call.ask .t{color:#F0A0A0}
+
+/* ── 원문 보기 ──────────────────────────────────────── */
+details.raw{margin:12px 0;border:1px dashed var(--line);border-radius:10px;background:var(--line-2)}
+details.raw summary{cursor:pointer;padding:8px 14px;font-size:12.5px;color:var(--ink-3);font-weight:700;list-style:none}
+details.raw summary::-webkit-details-marker{display:none}
+details.raw summary::before{content:"▸ ";color:var(--accent)}
+details.raw[open] summary::before{content:"▾ "}
+details.raw .txt{padding:0 14px 12px;font-size:13px;color:var(--ink-2);white-space:pre-wrap;line-height:1.7}
+
+/* ── 필기 원문 페이지 ───────────────────────────────── */
+.rawnote{border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+.rawitem{display:grid;grid-template-columns:78px 1fr;gap:16px;padding:15px 18px;border-bottom:1px solid var(--line-2)}
+.rawitem:last-child{border-bottom:0}
+.rawitem .seq{font-size:12px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+.rawitem .seq span{display:block;color:var(--ink-3);font-weight:600;font-size:11px;margin-top:2px}
+.rawitem .body{white-space:pre-wrap;font-size:14px;line-height:1.75;color:var(--ink)}
+.rawitem .where{margin-top:7px;font-size:12px}
+.rawitem .where a{color:var(--accent-deep);text-decoration:none;font-weight:700;background:var(--accent-soft);padding:2px 8px;border-radius:6px}
+.rawitem .where a:hover{background:var(--accent);color:#fff}
+
+/* ── 표 ─────────────────────────────────────────────── */
+.tablewrap{overflow-x:auto;margin:15px 0;border:1px solid var(--line);border-radius:13px}
+table{border-collapse:collapse;width:100%;font-size:14px;background:var(--surface)}
+th,td{padding:10px 13px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line-2)}
+th{background:var(--accent);color:#fff;font-weight:700;font-size:13px;white-space:nowrap;border-bottom:0}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--line-2)}
+
+/* ── 코드 / 의사코드 ────────────────────────────────── */
+.codebox{margin:15px 0;border-radius:13px;overflow:hidden;background:var(--code-bg);border:1px solid var(--code-bg)}
+.codebox .head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 14px;font-size:12px;color:#9AA0AC;font-weight:700;background:rgba(255,255,255,.04)}
+.codebox .head .tag{color:#fff;background:var(--accent);border-radius:5px;padding:1px 7px;font-size:11px;margin-right:7px}
+.codebox pre{margin:0;padding:15px 17px;overflow-x:auto;font-family:var(--mono);font-size:13.2px;line-height:1.7;color:var(--code-ink)}
+.codebox .cm{color:#7C8494}
+.codebox .kw{color:#C4A6FF}
+.codebox .st2{color:#8BD5A0}
+.copy{border:0;background:transparent;color:#9AA0AC;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font)}
+.copy:hover{color:#fff}
+.codebox.pseudo{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent)}
+.codebox.pseudo .head{background:var(--accent-soft);color:var(--accent-deep)}
+.codebox.pseudo .head .tag{background:var(--accent-deep)}
+.codebox.pseudo pre{color:var(--ink);font-size:13.6px}
+.codebox.pseudo .cm{color:var(--ink-3)}
+.codebox.pseudo .kw{color:var(--accent-deep);font-weight:700}
+.codebox.pseudo .copy{color:var(--ink-3)}
+.codebox.pseudo .copy:hover{color:var(--accent-deep)}
+code:not(pre code){background:var(--accent-soft);color:var(--accent-deep);padding:1px 6px;border-radius:6px;font-family:var(--mono);font-size:.88em;font-weight:600}
+
+/* ── 도식 ───────────────────────────────────────────── */
+figure{margin:18px 0;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 14px 12px}
+figure svg{max-width:100%;height:auto}
+figcaption{font-size:12.5px;color:var(--ink-3);margin-top:10px}
+
+/* ── 용어 ───────────────────────────────────────────── */
+.terms{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:11px}
+.term{border:1px solid var(--line);border-radius:13px;padding:13px 15px;background:var(--surface)}
+.term b{display:block;font-size:15px}
+.term .e{display:block;font-size:12px;color:var(--accent-deep);font-family:var(--mono);margin-bottom:6px}
+.term p{margin:0;font-size:13.3px;color:var(--ink-2);line-height:1.6}
+
+/* ── 예상 문제 ──────────────────────────────────────── */
+.q{border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:12px 0;background:var(--surface)}
+.q .qh{display:flex;gap:10px;align-items:flex-start;font-weight:700;font-size:15px}
+.q .qn{color:#fff;background:var(--accent);border-radius:7px;padding:1px 8px;font-size:12.5px;font-weight:800;flex-shrink:0;margin-top:3px}
+.q .type{font-size:11px;font-weight:800;color:var(--ink-3);border:1px solid var(--line);border-radius:6px;padding:1px 7px;margin-left:auto;flex-shrink:0;margin-top:3px}
+.q ol.ch{list-style:none;padding-left:0;margin:11px 0 0;counter-reset:c}
+.q ol.ch li{padding:3px 0 3px 26px;position:relative;font-size:14.3px}
+.q ol.ch li::before{content:counter(c);counter-increment:c;position:absolute;left:0;top:4px;width:19px;height:19px;border:1px solid var(--line);border-radius:50%;font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--ink-3)}
+.ans{margin-top:12px;padding:11px 13px;border-radius:10px;background:var(--accent-soft);font-size:14.2px;cursor:pointer}
+.ans .lab{font-weight:800;color:var(--accent-deep);font-size:12.5px;margin-right:7px}
+body.hide-ans .ans:not(.on){background:var(--line-2);color:transparent;user-select:none;cursor:pointer;position:relative}
+body.hide-ans .ans:not(.on) *{color:transparent!important}
+body.hide-ans .ans:not(.on)::after{content:"눌러서 정답 확인";position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-3);font-size:12.5px;font-weight:700}
+
+/* ── 단어장 페이지 ──────────────────────────────────── */
+.vhead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px}
+.vhead input[type=search]{flex:1;min-width:170px;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14px}
+.vhead input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.vlist{margin:0;padding:0;list-style:none;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
+.vword{display:grid;grid-template-columns:190px 1fr;gap:16px;padding:14px 18px;border-bottom:1px solid var(--line-2)}
+.vword:last-child{border-bottom:0}
+.vword:hover{background:var(--line-2)}
+.vword .w{font-weight:800;font-size:16px;letter-spacing:-.02em}
+.vword .ipa{display:block;font-family:var(--mono);font-size:12px;color:var(--ink-3);font-weight:400;margin-top:1px}
+.vword .pos{display:inline-block;font-size:10.5px;font-weight:800;color:#fff;background:var(--accent);border-radius:5px;padding:1px 6px;margin-top:5px}
+.vword .mean{font-size:14.5px;margin:0;font-weight:600}
+.vword .ex{font-size:13px;color:var(--ink-2);margin:5px 0 0}
+.vword .ex b{color:var(--accent-deep);font-weight:700}
+.vword .ex .ko{display:block;color:var(--ink-3);font-size:12.5px}
+.masked .mean,.masked .ex{background:var(--line-2);border-radius:6px;color:transparent;cursor:pointer}
+.masked .mean *,.masked .ex *{color:transparent!important}
+.masked .mean.show,.masked .ex.show{background:transparent;color:inherit}
+.masked .mean.show *,.masked .ex.show *{color:revert!important}
+.masked .ex.show b{color:var(--accent-deep)!important}
+.quizbox{margin-top:18px;padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--surface);display:none}
+.quizbox.on{display:block}
+.quizbox .qq{font-size:22px;font-weight:800;margin-bottom:14px;letter-spacing:-.02em}
+.quizbox .opts{display:grid;gap:8px}
+.quizbox .opt{text-align:left;padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14.5px;cursor:pointer}
+.quizbox .opt:hover{border-color:var(--accent)}
+.quizbox .opt.ok{border-color:#16A34A;background:color-mix(in srgb,#16A34A 12%,var(--surface))}
+.quizbox .opt.no{border-color:#DC2626;background:color-mix(in srgb,#DC2626 12%,var(--surface))}
+.quizbox .score{margin-top:13px;font-size:13px;color:var(--ink-3);font-weight:600}
+
+footer{margin-top:54px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-3);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+@media(max-width:900px){
+  .wrap{grid-template-columns:1fr;gap:18px;padding:16px 16px 80px}
+  .side{position:static;max-height:none;order:-1}
+  .vword{grid-template-columns:1fr;gap:5px}
+  .search{max-width:none;order:3;flex-basis:100%;max-width:100%}
+  .topbar{flex-wrap:wrap}
+  .hero::after{font-size:78px}
+}
+@media print{
+  .topbar,.side,#scrollbar,.quizbox,.vhead,.flow,.files,.extra-chip{display:none!important}
+  .wrap{display:block;max-width:none;padding:0}
+  body{font-size:10.5pt;background:#fff}
+  section{page-break-inside:avoid;margin-bottom:22px}
+  body.hide-ans .ans:not(.on){background:var(--accent-soft)!important;color:inherit!important}
+  body.hide-ans .ans:not(.on) *{color:inherit!important}
+  body.hide-ans .ans:not(.on)::after{display:none}
+  details.raw{display:none}
+  #viewVocab,#viewRaw{display:block!important;page-break-before:always}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body class="hide-ans">
+<div id="scrollbar"></div>
+
+<div class="topbar">
+  <a class="back" href="../"><i></i>개인정보보호법률이해</a>
+  <div class="search"><input id="q" type="search" placeholder="찾기 (Enter로 다음)" aria-label="문서 내 검색"><span class="hit" id="hit"></span></div>
+  <div class="tools">
+    <button class="tbtn" id="ansBtn">정답 가리기</button>
+    <button class="tbtn" id="vocabBtn">단어장</button>
+    <button class="tbtn" id="rawBtn">필기 원문</button>
+    <button class="tbtn" id="themeBtn">다크</button>
+    <button class="tbtn" id="printBtn">🖨</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ═══════════ 사이드 패널 ═══════════ -->
+<aside class="side">
+  <div class="panel">
+    <div class="subject">개인정보보호법률이해</div>
+    <div class="when">7주차 1차시 · 2026.10.13 (화)</div>
+
+    <div id="tocWrap">
+      <div class="cap">목차</div>
+      <ul class="toc" id="toc"><li><a href="#s1"><span class="num">01</span>제공의 의미</a></li><li><a href="#s2"><span class="num">02</span>제공·위탁·양도 비교</a></li><li><a href="#s3"><span class="num">03</span>제3자 제공</a></li><li><a href="#s4"><span class="num">04</span>추가적 이용·제공</a></li><li><a href="#s5"><span class="num">05</span>국외 이전 ①</a></li><li><a href="#s6"><span class="num">06</span>국외 이전 ②</a></li><li><a href="#s7"><span class="num">07</span>국외 이전 인증</a></li><li><a href="#s8"><span class="num">08</span>동등 수준 인정</a></li><li><a href="#s9"><span class="num">09</span>중지 명령·상호주의</a></li><li><a href="#s10"><span class="num">10</span>처리 위탁</a></li><li><a href="#s11"><span class="num">11</span>영업양도</a></li><li><a href="#s12"><span class="num">12</span>제공 시 유의사항</a></li><li><a href="#sg"><span class="num">13</span>용어 정리</a></li><li><a href="#sq"><span class="num">14</span>확인 필요</a></li><li><a href="#sx"><span class="num">15</span>예상 문제</a></li></ul>
+      <hr>
+      <div class="cap">복습 체크</div>
+      <div class="chk"><label><input type="checkbox"><span>제공 방법 표 (물리적 1 · 논리적 3)</span></label><label><input type="checkbox"><span>제공 · 위탁 · 양도 비교표 그리기</span></label><label><input type="checkbox"><span>제17조 ① 2호의 제15조 호 번호 (2·3·5~7)</span></label><label><input type="checkbox"><span>추가적 이용·제공 고려사항 4가지</span></label><label><input type="checkbox"><span>국외 이전 ① 1~5호</span></label><label><input type="checkbox"><span>국외 이전 고지사항 5가지 (제17조 ②와 비교)</span></label><label><input type="checkbox"><span>인증 3년 vs 고시 5년 범위 · 인증 절차 3단계</span></label><label><input type="checkbox"><span>동등 수준 인정 고려사항 (독립적 감독기관)</span></label><label><input type="checkbox"><span>중지 명령 7일 · 30일</span></label><label><input type="checkbox"><span>위탁 공개 방법 (홈페이지 · 30일)</span></label><label><input type="checkbox"><span>영업양도 통지 주체와 단서</span></label><label><input type="checkbox"><span>카카오택시 예시 · 상호주의(눈에는 눈)</span></label><label><input type="checkbox"><span>예상 문제 10개 풀기</span></label></div>
+      <div class="pbar"><i id="barFill"></i></div>
+    </div>
+
+    <div id="rawNav" hidden>
+      <div class="cap">강의 녹취 발췌</div>
+      <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">강의 녹취에서 뽑은 핵심 발언 <b id="rawTotal">0</b>개를 고치지 않고 영상 시각 순으로 모아둔 페이지입니다.</p>
+      <hr>
+      <div class="cap">확인 방법</div>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">여기 있는 내용이 본문에 다 반영됐는지 대조하세요. 각 항목의 링크를 누르면 정리된 위치로 이동합니다.</p>
+    </div>
+
+    <div id="vocabNav" hidden>
+      <div class="cap">단어장</div>
+      <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">이번 차시에 나온 전공 필수 단어 <b id="vTotal">0</b>개입니다.</p>
+      <hr>
+      <div class="cap">사용법</div>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">뜻 가리기를 켜면 회색 칸을 눌러 하나씩 확인할 수 있습니다. 퀴즈는 아래 목록에서 문제를 자동으로 만듭니다.</p>
+    </div>
+  </div>
+</aside>
+
+<main>
+<!-- ═══════════ 본문 뷰 ═══════════ -->
+<div id="viewNote">
+
+  <div class="hero" data-w="07">
+    <span class="chip">7주차 · 1차시</span>
+    <button class="chip extra-chip" id="extraChip"></button>
+    <h1>개인정보 제공 — 제3자 제공 · 국외 이전 · 처리 위탁 · 영업양도</h1>
+    <p class="sub">제공의 의미와 방법, 제3자 제공·처리 위탁·영업양도 비교, 제17조 제3자 제공과 추가적 제공, 국외 이전의 요건·고지·인증·동등성 인정·중지 명령·상호주의, 처리 위탁과 영업양도</p>
+    <div class="metaline"><span>2026.10.13 (화) · 이러닝</span><span><b>이동재</b> 교수님</span><span>교안 「개인정보 라이프사이클 관리 3」 p.1–31</span><span>과제: 강의 안내 없음</span><span>강의 영상 77:50 반영 (발화 + 화면 필기)</span></div>
+    <!-- 수업 자료: 같은 폴더에 둔 PDF. 없으면 이 블록 전체를 지운다 -->
+    <div class="files"><a class="file" href="07-1-material.pdf" target="_blank"><span class="ic">PDF</span>강의 교안<em>31p</em></a></div>
+  </div>
+
+  <nav class="flow"><a href="#s1"><b>01</b> 제공의 의미</a><a href="#s2"><b>02</b> 제공·위탁·양도 비교</a><a href="#s3"><b>03</b> 제3자 제공</a><a href="#s4"><b>04</b> 추가적 이용·제공</a><a href="#s5"><b>05</b> 국외 이전 ①</a><a href="#s6"><b>06</b> 국외 이전 ②</a><a href="#s7"><b>07</b> 국외 이전 인증</a><a href="#s8"><b>08</b> 동등 수준 인정</a><a href="#s9"><b>09</b> 중지 명령·상호주의</a><a href="#s10"><b>10</b> 처리 위탁</a><a href="#s11"><b>11</b> 영업양도</a><a href="#s12"><b>12</b> 제공 시 유의사항</a><a href="#sx"><b>15</b> 예상 문제</a></nav>
+
+  <div class="keys"><div class="key"><div class="n">핵심 1</div><p><b>제3자 제공</b> = 받는 쪽 이익·책임, 동의 필요 · <b>위탁</b> = 주는 쪽 이익·책임, 처리방침 공개 · <b>영업양도</b> = 목적 유지, 통지.</p></div><div class="key"><div class="n">핵심 2</div><p>국외 이전(제공·위탁·보관)은 원칙 금지, <b>별도 동의 · 법률/조약 · 계약 위한 위탁·보관 · 인증 · 동등 수준 인정</b>이면 가능. 중지 명령 이의 <b>7일</b>, 결과 <b>30일</b>.</p></div><div class="key"><div class="n">핵심 3</div><p>수탁자 재위탁은 <b>위탁자 동의</b>, 손해배상에서는 처리자 <b>소속 직원</b>으로 봄. 양수자는 <b>본래 목적</b>으로만 이용.</p></div></div>
+
+  <!-- 01 -->
+  <section id="s1">
+    <h2 class="st"><span class="sq">01</span>개인정보 제공의 의미와 방법</h2>
+    <div class="badges"><span class="badge prof">교안 p.2–3</span></div>
+    
+<div class="call warn"><div class="t">교수님 안내 — 중간고사 (강의 00:09–01:33, 77:35)</div><p>오늘로 라이프사이클이 끝나고 <b>다음 주(8주차) 중간고사</b>. 수업은 일주일 동안 영상으로 듣지만 정규 수업시간에 맞춰 <b>온라인 실시간</b>으로 진행하며, 지금 강의를 보는 <b>LMS 안의 ‘퀴즈’ 항목</b>으로 올라갑니다. 시험 진행 방식은 따로 안내하겠다고 했습니다. <mark>시험 범위는 오늘(7주차) 다룬 내용까지</mark>입니다.</p><p>시각: 영상에서는 “<b>19시</b>”라고 했지만, <mark>LMS 공지 기준 10월 20일(화) 오후 6시</mark>가 맞습니다(확인 완료).</p></div>
+
+<p>라이프사이클의 마지막 단계인 <b>개인정보 제공</b>입니다(6주차 교안 p.17 목록의 3번).</p>
+<ul><li>개인정보의 <b>제공</b>이란 개인정보처리자 외의 제3자에게 개인정보의 <mark>지배, 관리권이 이전</mark>되는 것을 의미한다.</li><li>개인정보를 저장한 매체나 수기문서를 전달하는 경우 뿐만 아니라,</li><li><b>DB 시스템에 대한 접속권한을 허용</b>하여 열람, 복사가 가능하게 하여 공유하는 경우 등도 제공에 포함된다.</li></ul>
+<div class="tablewrap"><table><thead><tr><th>구분</th><th>제공 방법</th><th>제공 레벨</th><th>제공 사례</th></tr></thead><tbody><tr><td>저장매체를 통한 전달</td><td>물리적</td><td>사물</td><td>디스크, 테이프, 외장하드, USB, 출력물</td></tr><tr><td>네트워크를 통한 전송</td><td>논리적</td><td>네트워크</td><td>파일 업로드, 다운로드, FTP</td></tr><tr><td>DB에 대한 접근권한 부여</td><td>논리적</td><td>데이터베이스</td><td>DB에 대한 열람, 복사 권한 부여</td></tr><tr><td>개인정보처리시스템 접근권한 부여</td><td>논리적</td><td>응용프로그램</td><td>-</td></tr><tr><td>기타</td><td>-</td><td>-</td><td>육안, SMS, 이메일</td></tr></tbody></table></div>
+<div class="call warn"><div class="t">헷갈리는 지점</div><p>파일을 직접 넘기지 않아도 <b>DB 접속권한만 열어 줘서</b> 상대가 열람·복사할 수 있게 하면 제공입니다. 물리적 방법은 저장매체 전달 하나뿐이고 나머지는 논리적 방법입니다.</p></div>
+
+<h3>강의 설명 <span class="en">(강의 01:41–05:45)</span></h3>
+<ul><li>제공 = 말 그대로 <b>남에게 주는 것</b></li><li>예: 내 아이디로 로그인하면 다룰 수 있는 DB 정보가 있을 때, 다른 사람에게 <b>내 아이디·비밀번호를 알려줘서</b> 그 사람이 접속해 개인정보를 다루게 되면 그것도 제3자 제공</li><li>물리적 제공의 예: 디스크·하드디스크, 과거의 플로피 디스크, 테이프, 외장하드, USB, 인쇄물·출력물</li><li>네트워크 전송: 제공하는 자는 업로드, 제공받는 자는 다운로드, 또는 FTP</li><li>개인정보처리시스템 접근권한 부여는 DB 접근권한 부여와 비슷하지만 <b>제공 레벨</b>(응용프로그램)이 다름</li></ul>
+
+    <details class="raw"><summary>강의 녹취 원문 (7)</summary><div class="txt">[00:15] 그 다음에 다음주 8주차에는 중간고사를 실시할 예정입니다.
+[00:28] 19시가 정규 수업시간인 걸로 제가 알고 있거든요.
+[00:34] 그래서 19시에 온라인 실시간으로 진행될 예정이고요.
+[00:54] 퀴즈 형태로, 퀴즈라는 항목으로 올라갈 예정이에요.
+[02:38] 그랬을 때 다른 사람에게 내 아이디 비밀번호를 알려줘서
+[02:42] 그 다른 제3자가 내 아이디 비밀번호로 접속해서 그 개인정보를 다룰 수 있게 되는 경우도 제3자 제공, 개인정보 제공에 해당한다.
+[05:21] 데이터베이스에 대한 접근 권한 부여와 좀 비슷하지만 제공 레벨이 처리 시스템 접근 권한이니까 그런 조금 차이가 있고요.</div></details>
+  </section>
+  <!-- 02 -->
+  <section id="s2">
+    <h2 class="st"><span class="sq">02</span>제3자 제공 · 처리 위탁 · 영업양도 비교</h2>
+    <div class="badges"><span class="badge prof">교안 p.4</span></div>
+    
+<div class="tablewrap"><table><thead><tr><th>구분</th><th>제3자 제공</th><th>처리 위탁</th><th>영업양도</th></tr></thead><tbody><tr><td>목적</td><td>제공받는 자(제3자)의 목적, 이익을 위해 개인정보 이전</td><td>제공하는 자의 목적, 이익을 위해 개인정보 이전</td><td>개인정보 처리목적은 유지되고 단지 개인정보의 보유, 관리주체만 변경</td></tr><tr><td>관리책임</td><td>제공받는 자(제3자)</td><td>제공하는 자</td><td>양수자</td></tr><tr><td>허용 요건</td><td>정보주체 고지 후 별도 동의 또는 법률 규정</td><td>처리위탁사실을 개인정보처리방침에 공개만해도 됨</td><td>정보주체에게 통지만 하면 됨</td></tr><tr><td>위반 시 처벌</td><td>형사벌금 (5년 이하 징역 또는 5천만원 이하 벌금)</td><td>과태료 (2천만원 이하)</td><td>과태료 (1천만원 이하)</td></tr><tr><td>사례</td><td>기업 간 이벤트 또는 업무 제휴 등을 통한 개인정보 제공</td><td>콜센터, A/S센터 등의 외부 위탁</td><td>기업간 양도, 합병</td></tr></tbody></table></div>
+<figure><svg viewBox="0 0 720 300" role="img" aria-label="제3자 제공 · 처리 위탁 · 영업양도 비교" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah-w7a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--ink-3)" style="fill:var(--ink-3)"/></marker></defs><text x="120" y="22" text-anchor="middle" style="font-family:var(--font);font-size:15px;font-weight:800;fill:var(--accent-deep)">제3자 제공</text><rect x="20" y="40" width="80" height="40" rx="8" ry="8" fill="var(--surface)" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5;"/><text x="60.0" y="64.3" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:var(--ink)">처리자 A</text><rect x="140" y="40" width="80" height="40" rx="8" ry="8" fill="var(--accent)" style="fill:var(--accent);stroke:var(--accent);stroke-width:1.5;"/><text x="180.0" y="64.3" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:#fff">제3자 B</text><polyline points="100,60 140,60" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w7a)"/><rect x="20" y="100" width="200" height="36" rx="8" ry="8" fill="var(--line-2)" style="fill:var(--line-2);stroke:var(--line);stroke-width:1.5;"/><text x="120.0" y="122.3" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:600;fill:var(--ink-2)">누구 이익: B의 목적 · 이익</text><rect x="20" y="146" width="200" height="36" rx="8" ry="8" fill="var(--line-2)" style="fill:var(--line-2);stroke:var(--line);stroke-width:1.5;"/><text x="120.0" y="168.3" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:600;fill:var(--ink-2)">관리책임: 제공받는 자 B</text><rect x="20" y="192" width="200" height="44" rx="8" ry="8" fill="var(--line-2)" style="fill:var(--line-2);stroke:var(--line);stroke-width:1.5;"/><text x="120.0" y="210.0" text-anchor="middle" style="font-family:var(--font);font-size:10px;font-weight:600;fill:var(--ink-2)">허용 요건</text><text x="120.0" y="226.0" text-anchor="middle" style="font-family:var(--font);font-size:10px;font-weight:600;fill:var(--ink-2)">고지 후 별도 동의 또는 법률 규정</text><rect x="20" y="246" width="200" height="36" rx="8" ry="8" fill="var(--accent-soft)" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5;stroke-dasharray:4 3;"/><text x="120.0" y="268.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--accent-deep)">예: 기업 간 이벤트 · 업무 제휴</text><text x="360" y="22" text-anchor="middle" style="font-family:var(--font);font-size:15px;font-weight:800;fill:var(--accent-deep)">처리 위탁</text><rect x="260" y="40" width="80" height="40" rx="8" ry="8" fill="var(--accent)" style="fill:var(--accent);stroke:var(--accent);stroke-width:1.5;"/><text x="300.0" y="64.3" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:#fff">위탁자 A</text><rect x="380" y="40" width="80" height="40" rx="8" ry="8" fill="var(--surface)" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5;"/><text x="420.0" y="64.3" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:var(--ink)">수탁자 B</text><polyline points="340,60 380,60" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w7a)"/><rect x="260" y="100" width="200" height="36" rx="8" ry="8" fill="var(--line-2)" style="fill:var(--line-2);stroke:var(--line);stroke-width:1.5;"/><text x="360.0" y="122.3" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:600;fill:var(--ink-2)">누구 이익: A의 목적 · 이익</text><rect x="260" y="146" width="200" height="36" rx="8" ry="8" fill="var(--line-2)" style="fill:var(--line-2);stroke:var(--line);stroke-width:1.5;"/><text x="360.0" y="168.3" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:600;fill:var(--ink-2)">관리책임: 제공하는 자 A</text><rect x="260" y="192" width="200" height="44" rx="8" ry="8" fill="var(--line-2)" style="fill:var(--line-2);stroke:var(--line);stroke-width:1.5;"/><text x="360.0" y="210.0" text-anchor="middle" style="font-family:var(--font);font-size:10px;font-weight:600;fill:var(--ink-2)">허용 요건</text><text x="360.0" y="226.0" text-anchor="middle" style="font-family:var(--font);font-size:10px;font-weight:600;fill:var(--ink-2)">처리방침에 위탁사실 공개</text><rect x="260" y="246" width="200" height="36" rx="8" ry="8" fill="var(--accent-soft)" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5;stroke-dasharray:4 3;"/><text x="360.0" y="268.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--accent-deep)">예: 콜센터 · A/S센터 외부 위탁</text><text x="600" y="22" text-anchor="middle" style="font-family:var(--font);font-size:15px;font-weight:800;fill:var(--accent-deep)">영업양도</text><rect x="500" y="40" width="80" height="40" rx="8" ry="8" fill="var(--surface)" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5;"/><text x="540.0" y="64.3" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:var(--ink)">양도자 A</text><rect x="620" y="40" width="80" height="40" rx="8" ry="8" fill="var(--accent)" style="fill:var(--accent);stroke:var(--accent);stroke-width:1.5;"/><text x="660.0" y="64.3" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:#fff">양수자 B</text><polyline points="580,60 620,60" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w7a)"/><rect x="500" y="100" width="200" height="36" rx="8" ry="8" fill="var(--line-2)" style="fill:var(--line-2);stroke:var(--line);stroke-width:1.5;"/><text x="600.0" y="122.3" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:600;fill:var(--ink-2)">누구 이익: 목적 유지 · 주체만 변경</text><rect x="500" y="146" width="200" height="36" rx="8" ry="8" fill="var(--line-2)" style="fill:var(--line-2);stroke:var(--line);stroke-width:1.5;"/><text x="600.0" y="168.3" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:600;fill:var(--ink-2)">관리책임: 양수자 B</text><rect x="500" y="192" width="200" height="44" rx="8" ry="8" fill="var(--line-2)" style="fill:var(--line-2);stroke:var(--line);stroke-width:1.5;"/><text x="600.0" y="210.0" text-anchor="middle" style="font-family:var(--font);font-size:10px;font-weight:600;fill:var(--ink-2)">허용 요건</text><text x="600.0" y="226.0" text-anchor="middle" style="font-family:var(--font);font-size:10px;font-weight:600;fill:var(--ink-2)">정보주체에게 통지</text><rect x="500" y="246" width="200" height="36" rx="8" ry="8" fill="var(--accent-soft)" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5;stroke-dasharray:4 3;"/><text x="600.0" y="268.0" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:700;fill:var(--accent-deep)">예: 기업 간 양도 · 합병</text></svg><figcaption>교안 p.4 비교표 — 진한 상자가 관리책임을 지는 쪽</figcaption></figure>
+<div class="call warn"><div class="t">핵심 구분 — 누구의 이익을 위해 넘기는가</div><p><b>제3자 제공</b> = 받는 쪽(B) 이익, 책임도 B. <b>처리 위탁</b> = 주는 쪽(A) 이익, 책임도 A. <b>영업양도</b> = 목적은 그대로, 주체만 바뀜. 요건은 제공(동의)이 가장 엄격하고, 위반 시 처벌도 교안 표 기준으로 제공만 <b>형사벌</b>이고 위탁·양도는 <b>과태료</b>입니다.</p><p><span class="ext">주의: 교안의 과태료는 위탁 사실 공개·양도 통지 같은 <b>허용 요건</b>을 어긴 경우입니다. 수탁자가 위탁 범위를 넘어 이용·제공하거나(제26조 ⑤), 양수자가 본래 목적 외로 이용·제공하면(제27조 ③) 형사처벌 대상이라고 알고 있습니다(제71조) — 교안·강의에 없는 보충, 조문 번호는 확인 필요.</span></p></div>
+<p style="font-size:13px;color:var(--ink-3)">강의 화면 관찰: 이 비교표는 06:08부터 약 12:00까지 6분 가까이 띄워져 있었습니다. 이번 강의에서 한 슬라이드에 가장 오래 머문 축에 속합니다(시간은 정지화면 관찰 기준이라 대략치입니다).</p>
+
+<h3>강의 설명 <span class="en">(강의 05:58–11:11)</span></h3>
+<ul><li>“주면 다 제공”이지만 법적으로는 제공에 <b>세 가지 종류</b>가 있고, 목적·책임·허용 요건·처벌이 모두 다름. 이 표는 <b>뒤에서 배울 내용의 요약표</b></li><li>책임: 제3자 제공은 받는 자의 이익을 위한 것이니 <b>받는 자</b>, 위탁은 <b>제공하는 자</b>, 영업양도는 양수·양도가 끝난 뒤 개인정보를 가진 <b>양수자</b></li><li>허용 요건의 “고지”와 “통지” 차이 다시 확인: <b>고지 = 사전</b>, <b>통지 = 사후</b>(6주차)</li><li>영업양도는 정보주체에게 <b>통지하지 않으면</b> 1천만원 이하 과태료</li><li>위탁 예: 콜센터에 부탁한 일을 콜센터 직원이 직접 처리하기도 하지만, 그 업무를 위해 다른 사람에게 일을 맡기는 형태</li></ul>
+
+    <details class="raw"><summary>강의 녹취 원문 (5)</summary><div class="txt">[05:58] 내가 가지고 있는 개인정보를 다른 사람에게 주면 그게 제공이지만 법적으로는 제공에도 세 가지 종류가 있습니다.
+[06:30] 그래서 뒤에서 배울 내용의 요약표라고 보시면 됩니다.
+[08:03] 왜냐하면 제3자 제공은 제공받는 자의 목적이익을 위해서니까 처리위탁은 그렇다면 제공하는 자가 관리 책임을 지겠죠.
+[09:27] 고지는 사전에 하는 것, 통지는 사후에 하는 것
+[10:13] 영업양도는 정보주책에 통제하지 않게 되면 1천만원 이하의 과태료를 물 수가 있다.</div></details>
+  </section>
+  <!-- 03 -->
+  <section id="s3">
+    <h2 class="st"><span class="sq">03</span>개인정보 제3자 제공 (제17조)</h2>
+    <div class="badges"><span class="badge prof">교안 p.5–7</span></div>
+    
+<div class="call"><div class="t">개인정보보호법 제17조(개인정보의 제공)</div><p>① 개인정보처리자는 다음 각 호의 어느 하나에 해당되는 경우에는 정보주체의 개인정보를 제3자에게 제공(<b>공유를 포함</b>한다. 이하 같다)할 수 있다.</p><ul style="list-style:none;padding-left:6px"><li>1. 정보주체의 동의를 받은 경우</li><li>2. <mark>제15조제1항제2호, 제3호 및 제5호부터 제7호까지</mark>에 따라 개인정보를 수집한 <b>목적 범위에서</b> 개인정보를 제공하는 경우</li></ul><p>② 개인정보처리자는 제1항제1호에 따른 동의를 받을 때에는 다음 각 호의 사항을 정보주체에게 알려야 한다. 다음 각 호의 어느 하나의 사항을 변경하는 경우에도 이를 알리고 동의를 받아야 한다.</p><ul style="list-style:none;padding-left:6px"><li>1. 개인정보를 제공받는 자</li><li>2. 개인정보를 제공받는 자의 개인정보 이용 목적</li><li>3. 제공하는 개인정보의 항목</li><li>4. 개인정보를 제공받는 자의 개인정보 보유 및 이용 기간</li><li>5. 동의를 거부할 권리가 있다는 사실 및 동의 거부에 따른 불이익이 있는 경우에는 그 불이익의 내용</li></ul><p>③ 삭제</p><p>④ 개인정보처리자는 <b>당초 수집 목적과 합리적으로 관련된 범위</b>에서 정보주체에게 불이익이 발생하는지 여부, 암호화 등 안전성 확보에 필요한 조치를 하였는지 여부 등을 고려하여 대통령령으로 정하는 바에 따라 <b>정보주체의 동의 없이</b> 개인정보를 제공할 수 있다.</p><p style="font-size:13px;color:var(--ink-3)">교안 p.7은 p.5와 같은 슬라이드입니다. ② 고지사항 = 자목항기거(6주차).</p></div>
+<div class="call"><div class="t">개인정보보호법 제15조제1항 제2호, 제3호, 제5호부터 제7호 (교안 p.6)</div><p>① 개인정보처리자는 다음 각 호의 어느 하나에 해당하는 경우에는 개인정보를 수집할 수 있으며 그 수집 목적의 범위에서 이용할 수 있다.</p><ul style="list-style:none;padding-left:6px"><li>2. 법률에 특별한 규정이 있거나 법령상 의무를 준수하기 위하여 불가피한 경우</li><li>3. 공공기관이 법령 등에서 정하는 소관 업무의 수행을 위하여 불가피한 경우</li><li>5. 명백히 정보주체 또는 제3자의 급박한 생명, 신체, 재산의 이익을 위하여 필요하다고 인정되는 경우</li><li>6. 개인정보처리자의 정당한 이익을 달성하기 위하여 필요한 경우로서 명백하게 정보주체의 권리보다 우선하는 경우. 이 경우 개인정보처리자의 정당한 이익과 상당한 관련이 있고 합리적인 범위를 초과하지 아니하는 경우에 한한다.</li><li>7. 공중위생 등 공공의 안전과 안녕을 위하여 긴급히 필요한 경우</li></ul></div>
+<div class="call warn"><div class="t">제17조 ① 2호에서 빠진 것 — 제15조 ① 4호(계약)</div><p><span class="ext">제15조 ①의 수집 근거 중 <b>4호(계약 체결·이행)</b>로 수집한 정보는 제17조 ① 2호의 목록(2·3·5~7호)에 없으므로, 제17조 ① 2호로는 제3자에게 줄 수 없습니다(동의를 받거나 ④의 추가적 제공 요건을 따로 갖춰야 함). 교안에 이 비교는 없고, 조문 목록을 대조한 결과입니다.</span></p></div>
+<div class="call quote"><div class="t">강의 화면 필기 — 교수님이 표시한 곳 (17:18–19:21)</div><p>① 2호의 “<b>제15조제1항제2호, 제3호 및 제5호부터 제7호까지</b>”와 “<b>수집한 목적 범위에서 개인정보를 제공</b>”에 밑줄, ④의 “<b>당초 수집 목적과 합리적으로 관련된 범위</b>”에 밑줄, ① 2호 앞에 체크 표시.</p></div>
+
+<h3>강의 설명 <span class="en">(강의 11:26–19:14)</span></h3>
+<ul><li>교수님: 제15조 ①의 “수집 목적의 범위에서 <b>이용</b>”에 제3자 제공도 포함된다는 것이 제17조 ① 2호의 내용(12:57)</li><li>제15조 ① 2·3·5~7호는 “워낙 중요하고 계속 나오는 법”이라 다시 짚음. 이 호들로 동의 없이 수집한 정보도 <b>수집 목적과 같은 업무를 위해 불가피하면</b> 동의 없이 제3자 제공 가능</li><li>고지사항은 다시 <b>목항기거 / 자목항기거</b></li><li>④ vs ① 2호: ① 2호는 법령상 소관 업무 등 불가피한 경우, ④는 <b>당초 수집 목적과 합리적으로 관련된 범위</b>의 제공</li><li>“합리적으로 관련된 범위” = 처음 수집할 때 알린 업무에 비추어, <b>사회통념상</b> 제3자에게 제공될 여지가 있다고 정보주체도 알 수 있는 경우</li><li>예: <b>카카오택시</b> — 나는 카카오에 정보를 줬지만 택시기사(다른 존재)에게 전화번호·호출 위치가 넘어감. 매번 “기사에게 가는 것에 동의하십니까?”라고 묻지 않음</li></ul>
+
+    <details class="raw"><summary>강의 녹취 원문 (4)</summary><div class="txt">[12:34] 워낙 중요하고 계속해서 나오는 법이기 때문에
+[17:36] 합리적으로 관련된 범위라고 하면 애초에 내가 이 업무를 하기 위해서 개인정보를 수집한다고 정보주체에게 알리고 수집을 했을 때
+[17:50] 사회 통념상 이 정보가 다른 제3자에게 제공될 여지가 있다고 정보주체도 알고 동의를 할 수 있게 되는 그런 경우를 얘기를 하는 거죠.
+[18:57] 매번 제공할 때마다 이 택시기사에게 개인정보가 가는 것을 동의하겠습니까?</div></details>
+  </section>
+  <!-- 04 -->
+  <section id="s4">
+    <h2 class="st"><span class="sq">04</span>동의 없는 추가적 이용 · 제공 (시행령 제14조의2)</h2>
+    <div class="badges"><span class="badge prof">교안 p.8–9</span></div>
+    
+<div class="call"><div class="t">개인정보보호법 시행령 제14조의2(개인정보의 추가적인 이용ㆍ제공의 기준 등)</div><p>① 개인정보처리자는 법 제15조제3항 또는 제17조제4항에 따라 정보주체의 동의 없이 개인정보를 이용 또는 제공(이하 “개인정보의 추가적인 이용 또는 제공”이라 한다)하려는 경우에는 다음 각 호의 사항을 고려해야 한다.</p><ul style="list-style:none;padding-left:6px"><li>1. 당초 수집 목적과 <b>관련성</b>이 있는지 여부</li><li>2. 개인정보를 수집한 정황 또는 처리 관행에 비추어 볼 때 개인정보의 추가적인 이용 또는 제공에 대한 <b>예측 가능성</b>이 있는지 여부</li><li>3. 정보주체의 이익을 <b>부당하게 침해</b>하는지 여부</li><li>4. <b>가명처리 또는 암호화</b> 등 안전성 확보에 필요한 조치를 하였는지 여부</li></ul><p>② 개인정보처리자는 개인정보의 추가적인 이용 또는 제공이 <b>지속적으로 발생</b>하는 경우에는 제1항 각 호의 고려사항에 대한 판단 기준을 법 제30조제1항에 따른 <b>개인정보 처리방침에 공개</b>하고, 법 제31조제1항에 따른 <b>개인정보 보호책임자</b>가 해당 기준에 따라 개인정보의 추가적인 이용 또는 제공을 하고 있는지 여부를 <b>점검</b>해야 한다.</p><p style="font-size:13px;color:var(--ink-3)">5주차에 같은 시행령을 이미 다뤘습니다(카카오택시 · 무신사 · 올리브영 예시).</p></div>
+<div class="call"><div class="t">교안 p.9 — 시행령 ②가 가리키는 조문</div><p><b>제15조 제3항</b> ③ 개인정보처리자는 당초 수집 목적과 합리적으로 관련된 범위에서 정보주체에게 불이익이 발생하는지 여부, 암호화 등 안전성 확보에 필요한 조치를 하였는지 여부 등을 고려하여 대통령령으로 정하는 바에 따라 정보주체의 동의 없이 개인정보를 이용할 수 있다.</p><p><b>제30조(개인정보 처리방침의 수립 및 공개)</b> ① 개인정보처리자는 다음 각 호의 사항이 포함된 개인정보의 처리 방침(이하 "개인정보 처리방침"이라 한다)을 정하여야 한다. 이 경우 공공기관은 제32조에 따라 등록대상이 되는 개인정보파일에 대하여 개인정보 처리방침을 정한다.</p><p><b>제31조(개인정보 보호책임자의 지정 등)</b> ① 개인정보처리자는 개인정보의 처리에 관한 업무를 총괄해서 책임질 개인정보 보호책임자를 지정하여야 한다. 다만, 종업원 수, 매출액 등이 대통령령으로 정하는 기준에 해당하는 개인정보처리자의 경우에는 지정하지 아니할 수 있다.</p></div>
+<div class="tablewrap"><table><thead><tr><th>조문</th><th>동의 없이 할 수 있는 것</th></tr></thead><tbody><tr><td>제15조 ③</td><td>추가적 <b>이용</b></td></tr><tr><td>제17조 ④</td><td>추가적 <b>제공</b></td></tr><tr><td>시행령 제14조의2</td><td>둘 다의 고려사항 4가지 + 지속적이면 처리방침 공개 · 보호책임자 점검</td></tr></tbody></table></div>
+<div class="call quote"><div class="t">강의 화면 필기 (24:08–24:39)</div><p>제15조제3항 제목 위에 체크, 세 조문 블록 전체를 왼쪽에서 묶는 괄호, 제31조의 “개인정보 보호책임자를”에 밑줄.</p></div>
+
+<p>교수님: 바로 앞의 카카오택시 이야기가 법에서는 제17조 ④ → <b>시행령 제14조의2</b>로 규정된 것. 4가지를 고려해 해당하면 동의 없이 추가적 이용·제공이 가능하고, <b>반복</b>되면 처리방침에 공개하고 보호책임자가 문제없는지 확인해야 함 (19:24–24:25).</p>
+
+    <details class="raw"><summary>강의 녹취 원문 (2)</summary><div class="txt">[19:24] 제가 이전 슬라이드 방금 카카오택시 얘기하면서 했던 내용들이 법에서는 어떻게 규정을 하고 있는지를 보면
+[20:57] 이러한 사항들을 고려해서 여기에 해당이 된다면 그때 정보주체에 동의 없이 추가적인 이용 또는 제공이 가능하다.</div></details>
+  </section>
+  <!-- 05 -->
+  <section id="s5">
+    <h2 class="st"><span class="sq">05</span>개인정보 국외 이전 ① — 이전할 수 있는 경우 (제28조의8 ①)</h2>
+    <div class="badges"><span class="badge prof">교안 p.10 · p.13</span></div>
+    
+<div class="call"><div class="t">개인정보보호법 제28조의8(개인정보의 국외 이전) 제1항</div><p>① 개인정보처리자는 개인정보를 국외로 <b>제공(조회되는 경우를 포함한다)ㆍ처리위탁ㆍ보관</b>(이하 이 절에서 <mark>“이전”</mark>이라 한다)하여서는 아니 된다. 다만, 다음 각 호의 어느 하나에 해당하는 경우에는 개인정보를 국외로 이전할 수 있다.</p><ul style="list-style:none;padding-left:6px"><li>1. 정보주체로부터 국외 이전에 관한 <b>별도의</b> 동의를 받은 경우</li><li>2. 법률, 대한민국을 당사자로 하는 조약 또는 그 밖의 국제협정에 개인정보의 국외 이전에 관한 특별한 규정이 있는 경우</li><li>3. 정보주체와의 <b>계약의 체결 및 이행</b>을 위하여 개인정보의 처리위탁ㆍ보관이 필요한 경우로서 다음 각 목의 어느 하나에 해당하는 경우 — 가. 제2항 각 호의 사항을 제30조에 따른 개인정보 처리방침에 공개한 경우 / 나. 전자우편 등 대통령령으로 정하는 방법에 따라 제2항 각 호의 사항을 정보주체에게 알린 경우</li><li>4. 개인정보를 이전받는 자가 제32조의2에 따른 개인정보 보호 인증 등 보호위원회가 정하여 고시하는 <b>인증</b>을 받은 경우로서 다음 각 목의 조치를 모두 한 경우 — 가. 개인정보 보호에 필요한 안전조치 및 정보주체 권리보장에 필요한 조치 / 나. 인증받은 사항을 개인정보가 이전되는 국가에서 이행하기 위하여 필요한 조치</li><li>5. 개인정보가 이전되는 국가 또는 국제기구의 개인정보 보호체계, 정보주체 권리보장 범위, 피해구제 절차 등이 이 법에 따른 개인정보 보호 수준과 <b>실질적으로 동등한 수준</b>을 갖추었다고 보호위원회가 인정하는 경우</li></ul></div>
+<div class="tablewrap"><table><thead><tr><th>호</th><th>요약</th><th>자세한 내용</th></tr></thead><tbody><tr><td>1</td><td>별도 동의</td><td>② 고지사항 (다음 섹션)</td></tr><tr><td>2</td><td>법률 · 조약 · 국제협정의 특별 규정</td><td>—</td></tr><tr><td>3</td><td>계약 체결·이행 위한 위탁·보관 + 처리방침 공개 또는 서면등 통지</td><td>아래 (교안 p.13)</td></tr><tr><td>4</td><td>보호위원회 고시 인증 + 가·나 조치 모두</td><td>07번 섹션 (교안 p.14–15)</td></tr><tr><td>5</td><td>이전 대상국의 실질적 동등 수준 인정</td><td>08번 섹션 (교안 p.16–17)</td></tr></tbody></table></div>
+<h3>3호 나목의 “전자우편 등 대통령령으로 정하는 방법” <span class="en">(교안 p.13)</span></h3>
+<div class="call"><div class="t">시행령 제29조의7 · 제17조 제5항</div><p><b>시행령 제29조의7(개인정보의 국외 처리위탁ㆍ보관 시 정보주체에게 알리는 방법)</b> 법 제28조의8제1항제3호나목에서 "전자우편 등 대통령령으로 정하는 방법"이란 <mark>서면등의 방법</mark>을 말한다.</p><p><b>시행령 제17조제5항</b> 법 제22조제3항 전단에서 "대통령령으로 정하는 방법"이란 <b>서면, 전자우편, 팩스, 전화, 문자전송 또는 이에 상당하는 방법</b>(이하 "서면등의 방법"이라 한다)을 말한다.</p></div>
+<div class="call quote"><div class="t">강의 화면 필기 — 교수님이 표시한 곳</div><p>(26:46–30:31) 1호 “<b>별도의</b>”에 원, 3호 “<b>계약의 체결 및 이행</b>”에 네모, 가목 “제2항 각 호의 사항”에 타원과 “제30조”·“처리방침에 공개” 밑줄, 나목 “대통령령으로 정하는 방법” 밑줄, 4호 앞 체크와 “제32조의2에 따른 개인정보 보호 인증 등” 밑줄, “인증을”에 원, 가·나목을 묶는 괄호, 나목 “개인정보가 이전되는 국가에서 이행하기 위하여 필요한 조치” 밑줄.<br>(36:41) p.13에서 나목 “전자우편 등 대통령령으로 정하는 방법”에서 시작해 시행령 제17조 ⑤의 “서면, 전자우편, 팩스, 전화, 문자전송…” 밑줄을 거쳐 제29조의7의 “<b>서면등의 방법</b>”으로 이어지는 큰 곡선 화살표 — 세 조문이 서로 이어진다는 표시로 보입니다.</p></div>
+
+<h3>강의 설명 <span class="en">(강의 24:37–31:50, 33:03–36:36)</span></h3>
+<ul><li>원래 순서는 처리 위탁이지만 그 <b>사이에 국외 이전</b>을 먼저 다룸</li><li>제공·처리위탁·보관을 통틀어 <b>이전</b>. 일단은 <b>안 된다</b>가 원칙이고, 각 호에 해당할 때만 가능</li><li>1호 “<b>별도의</b>” 동의: 수집 동의 따로, 제공 동의 따로, 국외 이전 동의도 <b>따로</b>. 회원가입 때 필수·선택 체크가 여러 개로 나뉜 것처럼 <b>체크 항목을 분리</b>한다는 뜻</li><li>2호는 앞에서 본 “다른 법령에서 정한 업무를 위해 불가피하면 동의 없이”와 비슷</li><li>4호 나목: 국내에서 받은 인증 사항(안전조치 등)이 개인정보가 <b>국외로 넘어간 뒤에도</b> 지켜지도록 필요한 조치를 해야 이전 가능</li><li>5호 예: 우리나라 개인정보보호법, 유럽의 <b>GDPR</b>처럼 법뿐 아니라, 피해를 입었을 때 신고·보상받을 곳 같은 <b>피해 구제 제도</b>가 상대 국가에도 갖춰졌는지</li><li>“<b>서면등의 방법</b>”은 하나의 고유명사처럼 쓰이는 용어. 정의는 시행령 제17조 ⑤에 나오고(내용은 관련 없지만 단어 정의가 거기 있음), 제29조의7이 그것을 가져다 씀</li></ul>
+
+    <details class="raw"><summary>강의 녹취 원문 (5)</summary><div class="txt">[25:26] 그래서 일단은 안 된다. 다만 다음 각 호에 어느 하나에 해당하는 경우에는 개인정보를 구개로 이전할 수 있다.
+[26:40] 체크를 동의를 할 때 체크하는 항목을 분리한다는 것을 의미하고요.
+[30:06] 이런 것들이 개인정보가 국외로 이전된 후에도
+[30:45] 개인정보가 이전되는 국가에도 대한민국의 개인정보보호법이 있고 미국에는 뭐가 있고 유럽에는 GDPR이 있고
+[35:16] 서면등의 방법이 그냥 통짜로 고유 명사처럼 쓰이는 영어라고 보시면 되는데요.</div></details>
+  </section>
+  <!-- 06 -->
+  <section id="s6">
+    <h2 class="st"><span class="sq">06</span>국외 이전 ② — 동의 시 고지사항과 준수 · 보호조치 (제28조의8 ②~⑥ · 시행령 제29조의10)</h2>
+    <div class="badges"><span class="badge prof">교안 p.11–12 · p.18–19</span></div>
+    
+<div class="call"><div class="t">개인정보보호법 제28조의8 제2항~제6항</div><p>② 개인정보처리자는 제1항제1호에 따른 동의를 받을 때에는 <b>미리</b> 다음 각 호의 사항을 정보주체에게 알려야 한다.</p><ul style="list-style:none;padding-left:6px"><li>1. 이전되는 개인정보 <b>항목</b></li><li>2. 개인정보가 이전되는 <b>국가, 시기 및 방법</b></li><li>3. 개인정보를 이전받는 자의 <b>성명</b>(법인인 경우에는 그 명칭과 연락처를 말한다)</li><li>4. 개인정보를 이전받는 자의 개인정보 <b>이용목적 및 보유ㆍ이용 기간</b></li><li>5. 개인정보의 이전을 <b>거부하는 방법, 절차 및 거부의 효과</b></li></ul><p>③ 개인정보처리자는 제2항 각 호의 어느 하나에 해당하는 사항을 변경하는 경우에는 정보주체에게 알리고 동의를 받아야 한다.</p><p>④ 개인정보처리자는 제1항 각 호 외의 부분 단서에 따라 개인정보를 국외로 이전하는 경우 국외 이전과 관련한 이 법의 다른 규정, <b>제17조부터 제19조까지의 규정 및 제5장의 규정</b>을 준수하여야 하고, <b>대통령령으로 정하는 보호조치</b>를 하여야 한다.</p><p>⑤ 개인정보처리자는 이 법을 위반하는 사항을 내용으로 하는 개인정보의 국외 이전에 관한 계약을 체결하여서는 아니 된다.</p><p>⑥ 제1항부터 제5항까지에서 규정한 사항 외에 개인정보 국외 이전의 기준 및 절차 등에 필요한 사항은 대통령령으로 정한다.</p><p style="font-size:13px;color:var(--ink-3)">교안 p.11 · p.12 · p.18은 같은 슬라이드입니다. 강의 화면에서는 p.11(32:04)과 p.18(49:00) 두 번 나왔습니다.</p></div>
+<div class="call warn"><div class="t">국외 이전 고지사항은 제17조 ②와 다르다</div><p>제17조 ②(자목항기거)와 비교하면 국외 이전 ②에는 <b>국가·시기·방법</b>과 <b>거부 방법·절차·효과</b>가 들어가고, 받는 자는 “성명(법인은 명칭과 연락처)”으로 적습니다. 또 ②는 동의를 받기 “<b>미리</b>” 알리라고 합니다.</p></div>
+<div class="call"><div class="t">개인정보보호법 시행령 제29조의10(개인정보의 국외 이전 시 보호조치 등) (교안 p.19)</div><p>① 개인정보처리자는 법 제28조의8제1항 각 호 외의 부분 단서에 따라 개인정보를 국외로 이전하는 경우에는 같은 조 제4항에 따라 다음 각 호의 보호조치를 해야 한다.</p><ul style="list-style:none;padding-left:6px"><li>1. 제30조제1항에 따른 개인정보 보호를 위한 <b>안전성 확보 조치</b></li><li>2. 개인정보 침해에 대한 <b>고충처리 및 분쟁해결</b>에 관한 조치</li><li>3. 그 밖에 정보주체의 개인정보 보호를 위하여 필요한 조치</li></ul><p>② 개인정보처리자는 법 제28조의8제1항 각 호 외의 부분 단서에 따라 개인정보를 국외로 이전하는 경우에는 제1항 각 호의 사항에 관하여 이전받는 자와 <b>미리 협의</b>하고 이를 <b>계약내용 등에 반영</b>해야 한다.</p><p style="font-size:13px;color:var(--ink-3)">제28조의8 ④의 “대통령령으로 정하는 보호조치” = 이 시행령 ①의 1~3호.</p></div>
+<div class="call quote"><div class="t">강의 화면 필기</div><p>(33:45) ② 1~5호 전체를 왼쪽에서 묶는 괄호. (50:12) ④ “국외 이전과 관련한 이 법의 다른 규정”, “제17조부터 제19조까지의 규정 및 제5장의 규정” 밑줄, “<b>대통령령으로 정하는 보호조치를 하여야 한다</b>”를 둥근 사각형으로 표시. (52:16) 시행령 제29조의10 ① 1~3호를 오른쪽에서 묶는 괄호와 화살표 — ④의 “보호조치”가 시행령 1~3호라는 연결로 보입니다.</p></div>
+
+<h3>강의 설명 <span class="en">(강의 31:53–32:49, 48:45–52:19)</span></h3>
+<ul><li>② 고지사항은 다른 동의 때 알리는 사항과 “얼추 비슷”하고 논리적으로 납득되는 내용</li><li>④에서 “다른 규정, 제17조~제19조, 제5장”까지는 다루지 않고 <b>대통령령으로 정하는 보호조치</b>(시행령 제29조의10)만 봄</li><li>⑥은 법률 마지막에 늘 있는 “그 밖에 대통령령으로” 조항</li><li>보호조치 내용은 이전받는 자와 <b>미리 협의</b>해서 <b>계약 내용</b>에 반영</li></ul>
+
+    <details class="raw"><summary>강의 녹취 원문 (2)</summary><div class="txt">[32:49] 그래서 다른 동의를 받을 때 알려야 되는 사항과 얼추 좀 비슷하죠. 논리적으로 납득이 될 만한 내용이고,
+[49:30] 여기서 법의 다른 규정, 제17조부터 제19조까지의 규정 및 5장의 규정 이런 것까지는 말고</div></details>
+  </section>
+  <!-- 07 -->
+  <section id="s7">
+    <h2 class="st"><span class="sq">07</span>국외 이전 ③ — 보호위원회의 인증 (제28조의8 ① 4호)</h2>
+    <div class="badges"><span class="badge prof">교안 p.14–15</span></div>
+    
+<div class="call"><div class="t">개인정보보호법 제32조의2(개인정보 보호 인증)</div><p>① 보호위원회는 개인정보처리자의 개인정보 처리 및 보호와 관련한 일련의 조치가 이 법에 부합하는지 등에 관하여 인증할 수 있다.</p><p>② 제1항에 따른 인증의 유효기간은 <mark>3년</mark>으로 한다.</p><p>...</p><p style="font-size:13px;color:var(--ink-3)">교안도 ③ 이하는 “...”으로 생략했습니다.</p></div>
+<div class="call"><div class="t">개인정보보호법 시행령 제29조의8(개인정보의 국외 이전 인증)</div><p>① 보호위원회는 법 제28조의8제1항제4호 각 목 외의 부분에 따른 인증을 고시하려는 경우에는 다음 각 호의 순서에 따른 절차를 모두 거쳐야 한다.</p><ul style="list-style:none;padding-left:6px"><li>1. 제34조의6에 따른 <b>개인정보 보호 인증 전문기관의 평가</b> <span style="color:#dc2626;font-weight:700">(한국인터넷진흥원 + 보호위원회가 지정/인정한 기관)</span></li><li>2. 제5조제1항제1호에 따른 개인정보의 국외 이전 분야 전문위원회(이하 “<b>국외이전전문위원회</b>”라 한다)의 평가</li><li>3. <b>정책협의회</b>의 협의</li></ul><p>② 보호위원회는 법 제28조의8제1항제4호 각 목 외의 부분에 따른 인증을 고시할 때에는 <mark>5년의 범위</mark>에서 유효 기간을 정하여 고시할 수 있다.</p><p>③ 제1항 및 제2항에서 규정한 사항 외에 인증의 고시 절차 등에 관하여 필요한 사항은 보호위원회가 정하여 고시한다. <span style="color:#dc2626;font-weight:700">(개인정보 국외 이전 운영 등에 관한 규정)</span></p><p style="font-size:13px;color:var(--ink-3)">빨간 글씨는 조문 원문이 아니라 교수님이 교안에 덧붙인 설명입니다.</p></div>
+<div class="tablewrap"><table><thead><tr><th>순서</th><th>인증 고시 절차 (시행령 제29조의8 ①)</th></tr></thead><tbody><tr><td>1</td><td>인증 전문기관의 평가 (KISA 등)</td></tr><tr><td>2</td><td>국외이전전문위원회의 평가</td></tr><tr><td>3</td><td>정책협의회의 협의</td></tr></tbody></table></div>
+<div class="call warn"><div class="t">헷갈리는 숫자 — 3년 vs 5년</div><p>제32조의2 개인정보 보호 인증 자체의 유효기간은 <b>3년</b>, 그 인증을 국외 이전 요건으로 <b>고시</b>할 때의 유효 기간은 <b>5년의 범위</b>에서 정합니다.</p></div>
+<div class="call quote"><div class="t">강의 화면 필기 (37:12–40:27)</div><p>“제32조의2에 따른 개인정보 보호 인증 등 보호위원회가 정하여 고시하는 인증” 밑줄, “이전받는 자가” 밑줄, 제32조의2 블록 전체 괄호, 제28조의8 첫 문장 전체 테두리와 “인증” 원, “고시하는” 밑줄, 시행령 ① “각 목 외의 부분”, “인증을 고시하려는”, 2호 “국외이전전문위원회”, 3호 “정책협의회의 협의”, ② “인증을 고시할” 밑줄.</p></div>
+
+<h3>강의 설명 <span class="en">(강의 36:45–40:44)</span></h3>
+<ul><li>국외로 이전<b>받는 자</b>가 인증을 일단 받아야 함</li><li>“각 목 외의 부분” = 4호에서 가목·나목을 <b>제외한</b> 본문 부분</li><li>인증 전문기관 = <b>한국인터넷진흥원</b>과 보호위원회가 지정·인정한 기관(교안 빨간 글씨와 같음)</li><li>고시 유효기간 5년 범위 → 최대로 잡아도 <b>5년에 한 번</b> 절차를 거쳐 갱신</li><li>③의 세부 고시 = “개인정보 국외 이전 운영 등에 관한 규정”. 그 아래 단계까지는 보지 않음</li></ul>
+
+    <details class="raw"><summary>강의 녹취 원문 (2)</summary><div class="txt">[38:25] 여기서 각목 외의 부분이라고 하는 것은 제4호에 감옥과 남옥이 있잖아요. 감옥과 남옥을 제외한 부분, 이 부분을 얘기합니다.
+[40:00] 그러니까 맥시멈으로 잡아도 5년에 한번 이 절차들을 거쳐서 인증을 갱신하려는 내용이고요.</div></details>
+  </section>
+  <!-- 08 -->
+  <section id="s8">
+    <h2 class="st"><span class="sq">08</span>국외 이전 ④ — 실질적으로 동등한 수준의 인정 (시행령 제29조의9)</h2>
+    <div class="badges"><span class="badge prof">교안 p.16–17</span></div>
+    
+<div class="call"><div class="t">개인정보보호법 시행령 제29조의9(국가 등에 대한 개인정보 보호 수준 인정)</div><p>① 보호위원회는 법 제28조의8제1항제5호에 따라 개인정보가 제공(조회되는 경우를 포함한다)ㆍ처리위탁ㆍ보관(이하 이 장에서 “이전”이라 한다)되는 국가 또는 국제기구(이하 “<b>이전대상국등</b>”이라 한다)의 개인정보 보호체계, 정보주체 권리보장 범위, 피해구제 절차 등이 법에 따른 개인정보 보호 수준과 <b>실질적으로 동등한 수준</b>을 갖추었다고 인정하려는 경우에는 다음 각 호의 사항을 <b>종합적으로</b> 고려해야 한다.</p><ul style="list-style:none;padding-left:6px"><li>1. 이전대상국등의 법령, 규정 또는 규칙 등 개인정보 보호체계가 법 제3조에서 정하는 <b>개인정보 보호 원칙</b>에 부합하고, 법 제4조에서 정하는 정보주체의 권리를 충분히 보장하고 있는지 여부</li><li>2. 이전대상국등에 개인정보 보호체계를 보장하고 집행할 책임이 있는 <b>독립적 감독기관이 존재하는지</b> 여부</li><li>3. 이전대상국등의 공공기관(이와 유사한 사무를 수행하는 기관을 포함한다)이 법률에 따라 개인정보를 처리하는지 여부 및 이에 대한 피해구제 절차 등 정보주체에 대한 보호수단이 존재하고 실질적으로 보장되는지 여부</li><li>4. 이전대상국등에 정보주체가 쉽게 접근할 수 있는 피해구제 절차가 존재하는지 여부 및 피해구제 절차가 정보주체를 효과적으로 보호하고 있는지 여부</li><li>5. 이전대상국등의 감독기관이 보호위원회와 정보주체의 권리 보호에 관하여 원활한 상호 협력이 가능한지 여부</li><li>6. 그 밖에 이전대상국등의 개인정보 보호체계, 정보주체의 권리보장 범위, 피해구제 절차 등의 개인정보 보호 수준을 인정하기 위해 필요한 사항으로서 보호위원회가 정하여 고시하는 사항</li></ul><p>② 보호위원회는 제1항에 따른 인정을 하려는 경우에는 다음 각 호의 절차를 거쳐야 한다.</p><ul style="list-style:none;padding-left:6px"><li>1. 국외이전전문위원회의 평가</li><li>2. 정책협의회의 협의</li></ul><p>③ 보호위원회는 제1항에 따른 인정을 할 때에는 정보주체의 권리 보호 등을 위하여 필요한 경우 이전대상국등으로 이전되는 개인정보의 범위, 이전받는 개인정보처리자의 범위, 인정 기간, 국외 이전의 조건 등을 <b>이전대상국등별로 달리 정할 수 있다</b>.</p><p>④ 보호위원회는 제1항에 따른 인정을 한 경우에는 인정 기간 동안 이전대상국등의 개인정보 보호수준이 법에 따른 수준과 실질적으로 동등한 수준을 유지하고 있는지 <b>점검</b>해야 한다.</p><p>⑤ 보호위원회는 제1항에 따른 인정을 받은 이전대상국등의 개인정보 보호체계, 정보주체의 권리보장 범위, 피해구제 절차 등의 수준이 변경된 경우에는 해당 이전대상국등의 의견을 듣고 해당 이전대상국등에 대한 인정을 <b>취소하거나 그 내용을 변경</b>할 수 있다.</p><p>⑥ 보호위원회가 제1항에 따른 인정을 하거나 제5항에 따라 인정을 취소하거나 그 내용을 변경하는 경우에는 그 사실을 <b>관보에 고시</b>하고 보호위원회 인터넷 홈페이지에 게재해야 한다.</p><p>⑦ 제1항부터 제6항까지에서 규정한 사항 외에 이전대상국등에 대한 인정에 필요한 사항은 보호위원회가 정하여 고시한다.</p></div>
+<div class="tablewrap"><table><thead><tr><th>비교</th><th>인증 고시 (제29조의8)</th><th>동등 수준 인정 (제29조의9)</th></tr></thead><tbody><tr><td>대상</td><td>이전<b>받는 자</b>(기업 등)</td><td>이전<b>대상국 · 국제기구</b></td></tr><tr><td>절차</td><td>인증 전문기관 평가 → 국외이전전문위원회 평가 → 정책협의회 협의</td><td>국외이전전문위원회 평가 → 정책협의회 협의</td></tr></tbody></table></div>
+<div class="call quote"><div class="t">강의 화면 필기 (41:59–48:30)</div><p>① 앞 체크, “<b>이전</b>” 원, “국가 또는 국제기구”, “이전대상국등”, “실질적으로 동등한 수준”, “종합적으로 고려” 밑줄, 1호 “개인정보 보호 원칙” 밑줄, 2호 “<b>독립적 감독기관이 존재하는지</b>”에 네모와 체크(두 번 표시). ③ “이전대상국등별로 달리 정할 수 있다”, ④ “실질적으로 동등한 수준”, ⑤ “수준이 변경된 경우에는”, “인정을 취소하거나 그 내용을 변경할 수 있다”, ⑥ 인정·취소 부분 밑줄. 이 슬라이드(① 화면)는 약 5분간 띄워져 있었습니다.</p></div>
+
+<h3>강의 설명 <span class="en">(강의 40:54–48:23)</span></h3>
+<ul><li>1호: 나라마다 다르니 “종합적으로 고려”라는 <b>여지</b>를 둠</li><li>2호: 우리나라의 <b>개인정보보호위원회</b> 같은 독립적 감독기관이 있는지</li><li>3호: 다른 나라는 공공기관을 뭐라 부르는지 모르니 “이와 유사한 사무를 수행하는 기관 포함”. 구제 절차가 있기만 한 게 아니라 <b>허울만 있는지 아닌지</b>(실질적 보장)</li><li>4호는 3호와 비슷</li><li>5호: 감독기관이 보호위원회와 협력 가능한지 — “<b>말이 안 통하는 나라에는</b> 인정해 주지 않는다”</li><li>④: 법과 제도를 갖췄는지뿐 아니라, 법은 제대로 있어도 <b>실제로 동등한 수준을 유지하는지</b> 점검</li></ul>
+
+    <details class="raw"><summary>강의 녹취 원문 (3)</summary><div class="txt">[43:02] 나라마다 다르니까 종합적으로 고려해야 한다
+[44:49] 진짜로 그 절차가 실질적으로 허울만 있는 게 아닌지 여부를 판단한다.
+[45:33] 여부. 말이 안 통하는 나라에다가는 개인정보보호수준 인정해주지 않는다.</div></details>
+  </section>
+  <!-- 09 -->
+  <section id="s9">
+    <h2 class="st"><span class="sq">09</span>국외 이전 ⑤ — 중지 명령 · 이의 제기 · 상호주의</h2>
+    <div class="badges"><span class="badge prof">교안 p.20–23</span></div>
+    
+<div class="call"><div class="t">개인정보보호법 제28조의9(개인정보의 국외 이전 중지 명령)</div><p>① 보호위원회는 개인정보의 국외 이전이 계속되고 있거나 추가적인 국외 이전이 예상되는 경우로서 다음 각 호의 어느 하나에 해당하는 경우에는 개인정보처리자에게 개인정보의 국외 이전을 <b>중지</b>할 것을 명할 수 있다.</p><ul style="list-style:none;padding-left:6px"><li>1. 제28조의8제1항, 제4항 또는 제5항을 위반한 경우</li><li>2. 개인정보를 이전받는 자나 개인정보가 이전되는 국가 또는 국제기구가 이 법에 따른 개인정보 보호 수준에 비하여 개인정보를 적정하게 보호하지 아니하여 정보주체에게 피해가 발생하거나 발생할 우려가 현저한 경우</li></ul><p>② 개인정보처리자는 제1항에 따른 국외 이전 중지 명령을 받은 경우에는 명령을 받은 날부터 <mark>7일 이내</mark>에 보호위원회에 이의를 제기할 수 있다.</p><p>③ 제1항에 따른 개인정보 국외 이전 중지 명령의 기준, 제2항에 따른 불복 절차 등에 필요한 사항은 대통령령으로 정한다.</p></div>
+<div class="call"><div class="t">개인정보보호법 시행령 제29조의11(국외 이전 중지 명령의 기준 등)</div><p>① 보호위원회는 법 제28조의9제1항에 따라 개인정보의 국외 이전을 중지할 것을 명하려는 경우에는 다음 각 호의 사항을 종합적으로 고려해야 한다.</p><ul style="list-style:none;padding-left:6px"><li>1. 국외로 이전되었거나 추가적인 국외 이전이 예상되는 개인정보의 <b>유형 및 규모</b></li><li>2. 법 제28조의8제1항, 제4항 또는 제5항 위반의 중대성</li><li>3. 정보주체에게 발생하거나 발생할 우려가 있는 피해가 중대하거나 회복하기 어려운 피해인지 여부</li><li>4. 국외 이전의 중지를 명하는 것이 중지를 명하지 않는 것보다 <b>명백히 정보주체에게 이익</b>이 되는지 여부</li><li>5. 법 제64조제1항 각 호에 해당하는 조치를 통해 개인정보의 보호 및 침해 방지가 가능한지 여부</li><li>6. 개인정보를 이전받는 자나 개인정보가 이전되는 이전대상국등이 정보주체의 피해구제를 위한 실효적인 수단을 갖추고 있는지 여부</li><li>7. 개인정보를 이전받는 자나 개인정보가 이전되는 이전대상국등에서 중대한 개인정보 침해가 발생하는 등 개인정보를 적정하게 보호하기 어렵다고 인정할 만한 사유가 존재하는지 여부</li></ul><p>② 보호위원회는 법 제28조의9제1항에 따라 개인정보의 국외 이전을 중지할 것을 명하려는 경우에는 <b>국외이전전문위원회의 평가</b>를 거쳐야 한다.</p><p>③ 보호위원회는 법 제28조의9제1항에 따라 개인정보의 국외 이전을 중지할 것을 명할 때에는 개인정보처리자에게 중지명령의 내용, 사유, 이의 제기 절차ㆍ방법 및 그 밖에 필요한 사항을 <b>문서로</b> 알려야 한다.</p><p>④ 제1항부터 제3항까지에서 규정한 사항 외에 개인정보의 국외 이전 중지 명령의 기준 등에 관하여 필요한 사항은 보호위원회가 정하여 고시한다.</p></div>
+<div class="call"><div class="t">개인정보보호법 시행령 제29조의12(국외 이전 중지 명령에 대한 이의 제기)</div><p>① 법 제28조의9제2항에 따라 이의를 제기하려는 자는 같은 조 제1항에 따른 국외 이전 중지 명령을 받은 날부터 7일 이내에 보호위원회가 정하는 이의신청서에 이의신청 사유를 증명할 수 있는 서류를 첨부하여 보호위원회에 제출해야 한다.</p><p>② 보호위원회는 제1항에 따라 이의신청서를 제출받은 날부터 <mark>30일 이내</mark>에 그 처리결과를 해당 개인정보처리자에게 문서로 알려야 한다.</p><p>③ 제1항 및 제2항에서 규정한 사항 외에 이의 제기의 절차 등에 관하여 필요한 사항은 보호위원회가 정하여 고시한다.</p></div>
+<figure><svg viewBox="0 0 700 170" role="img" aria-label="국외 이전 중지 명령과 이의 제기 기한" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah-w7b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--ink-3)" style="fill:var(--ink-3)"/></marker></defs><rect x="10" y="50" width="160" height="56" rx="8" ry="8" fill="var(--accent)" style="fill:var(--accent);stroke:var(--accent);stroke-width:1.5;"/><text x="90.0" y="73.8" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:#fff">보호위원회</text><text x="90.0" y="90.8" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:#fff">국외 이전 중지 명령</text><rect x="270" y="50" width="160" height="56" rx="8" ry="8" fill="var(--surface)" style="fill:var(--surface);stroke:var(--accent);stroke-width:1.5;"/><text x="350.0" y="73.8" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:var(--ink)">처리자 이의신청서 제출</text><text x="350.0" y="90.8" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:var(--ink)">(사유 증명 서류 첨부)</text><rect x="530" y="50" width="160" height="56" rx="8" ry="8" fill="var(--accent)" style="fill:var(--accent);stroke:var(--accent);stroke-width:1.5;"/><text x="610.0" y="73.8" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:#fff">보호위원회</text><text x="610.0" y="90.8" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:700;fill:#fff">처리결과 문서 통지</text><polyline points="170,78 270,78" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w7b)"/><polyline points="430,78 530,78" fill="none" style="fill:none;stroke:var(--ink-3);stroke-width:1.6;" marker-end="url(#ah-w7b)"/><text x="220" y="30" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:800;fill:var(--accent-deep)">명령 받은 날부터</text><text x="220" y="45" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:800;fill:var(--accent-deep)">7일 이내</text><text x="480" y="30" text-anchor="middle" style="font-family:var(--font);font-size:11px;font-weight:800;fill:var(--accent-deep)">제출받은 날부터</text><text x="480" y="45" text-anchor="middle" style="font-family:var(--font);font-size:12px;font-weight:800;fill:var(--accent-deep)">30일 이내</text><rect x="10" y="120" width="160" height="34" rx="8" ry="8" fill="var(--line-2)" style="fill:var(--line-2);stroke:var(--line);stroke-width:1.5;"/><text x="90.0" y="141.0" text-anchor="middle" style="font-family:var(--font);font-size:10px;font-weight:600;fill:var(--ink-2)">사전: 국외이전전문위원회 평가</text></svg><figcaption>중지 명령 → 이의 제기 → 처리결과 통지 기한</figcaption></figure>
+<div class="call"><div class="t">개인정보보호법 제28조의10(상호주의)</div><p>제28조의8에도 불구하고 개인정보의 국외 이전을 제한하는 국가의 개인정보처리자에 대해서는 해당 국가의 수준에 상응하는 제한을 할 수 있다. 다만, 조약 또는 그 밖의 국제협정의 이행에 필요한 경우에는 그러하지 아니하다.</p></div>
+<div class="call quote"><div class="t">강의 화면 필기</div><p>(55:30) 시행령 제29조의11 ① 1호 앞 체크, “유형”과 “규모”에 각각 네모. (56:01) 4호 끝에 체크. (58:05) 시행령 제29조의12 ① “국외 이전 중지 명령을 받은 날부터”, “이의신청 사유를” 부근에 선. 제28조의9 법 조문(52:47–54:20)과 상호주의(59:18)에는 필기가 관찰되지 않았습니다.</p></div>
+
+<h3>강의 설명 <span class="en">(강의 52:27–60:00)</span></h3>
+<ul><li>중지 명령: 허가할 때는 잘 지켜질 거라 봤는데, 지나고 보니 아니다 싶으면 <b>언제든</b> 중지를 명할 수 있음</li><li>이의 제기: “오해다, 보호조치가 잘 되고 있으니 중지하지 않아도 된다”고 다투는 것</li><li>시행령 제29조의11 고려사항은 “읽어 보면 합리적으로 이해할 수 있는” 사항들</li><li><b>상호주의 = 눈에는 눈, 이에는 이</b>. 우리가 제28조의8로 허용해도, 상대 국가가 제한하면 우리도 같은 수준으로 제한할 수 있음</li></ul>
+
+    <details class="raw"><summary>강의 녹취 원문 (2)</summary><div class="txt">[53:41] 지나고 나서 보니 아니다 싶으면 다시 언제든지 중지를 명할 수 있다는 겁니다.
+[59:19] 상호주의라는 것은 눈에는 눈, 이에는 이 이런 뜻이에요.</div></details>
+  </section>
+  <!-- 10 -->
+  <section id="s10">
+    <h2 class="st"><span class="sq">10</span>개인정보 처리 위탁 (제26조 · 시행령 제28조)</h2>
+    <div class="badges"><span class="badge prof">교안 p.24–27</span></div>
+    
+<div class="call"><div class="t">개인정보보호법 제26조(업무위탁에 따른 개인정보의 처리 제한)</div><p>① 개인정보처리자가 제3자에게 개인정보의 처리 업무를 위탁하는 경우에는 다음 각 호의 내용이 포함된 <b>문서</b>로 하여야 한다.</p><ul style="list-style:none;padding-left:6px"><li>1. 위탁업무 수행 목적 외 개인정보의 처리 금지에 관한 사항</li><li>2. 개인정보의 기술적ㆍ관리적 보호조치에 관한 사항</li><li>3. 그 밖에 개인정보의 안전한 관리를 위하여 대통령령으로 정한 사항</li></ul><p>② 제1항에 따라 개인정보의 처리 업무를 위탁하는 개인정보처리자(이하 “<b>위탁자</b>”라 한다)는 위탁하는 업무의 내용과 개인정보 처리 업무를 위탁받아 처리하는 자(개인정보 처리 업무를 위탁받아 처리하는 자로부터 위탁받은 업무를 다시 위탁받은 제3자를 포함하며, 이하 “<b>수탁자</b>”라 한다)를 정보주체가 언제든지 쉽게 확인할 수 있도록 대통령령으로 정하는 방법에 따라 <b>공개</b>하여야 한다.</p><p>③ 위탁자가 재화 또는 서비스를 <b>홍보하거나 판매를 권유</b>하는 업무를 위탁하는 경우에는 대통령령으로 정하는 방법에 따라 위탁하는 업무의 내용과 수탁자를 정보주체에게 <b>알려야</b> 한다. 위탁하는 업무의 내용이나 수탁자가 변경된 경우에도 또한 같다.</p><p>④ 위탁자는 업무 위탁으로 인하여 정보주체의 개인정보가 분실ㆍ도난ㆍ유출ㆍ위조ㆍ변조 또는 훼손되지 아니하도록 수탁자를 <b>교육</b>하고, 처리 현황 점검 등 대통령령으로 정하는 바에 따라 수탁자가 개인정보를 안전하게 처리하는지를 <b>감독</b>하여야 한다.</p><p>⑤ 수탁자는 개인정보처리자로부터 위탁받은 해당 업무 범위를 초과하여 개인정보를 이용하거나 제3자에게 제공하여서는 아니 된다.</p><p>⑥ 수탁자는 위탁받은 개인정보의 처리 업무를 제3자에게 <b>다시 위탁</b>하려는 경우에는 <mark>위탁자의 동의</mark>를 받아야 한다.</p><p>⑦ 수탁자가 위탁받은 업무와 관련하여 개인정보를 처리하는 과정에서 이 법을 위반하여 발생한 손해배상책임에 대하여는 수탁자를 <mark>개인정보처리자의 소속 직원으로 본다</mark>.</p><p>⑧ 수탁자에 관하여는 제15조부터 제18조까지, 제21조, 제22조, 제22조의2, 제23조, 제24조, 제24조의2, 제25조, 제25조의2, 제27조, 제28조, 제28조의2부터 제28조의5까지, 제28조의7부터 제28조의11까지, 제29조, 제30조, 제30조의2, 제31조, 제33조, 제34조, 제34조의2, 제35조, 제35조의2, 제36조, 제37조, 제37조의2, 제38조, 제59조, 제63조, 제63조의2 및 제64조의2를 준용한다. 이 경우 “개인정보처리자”는 “수탁자”로 본다.</p></div>
+<div class="tablewrap"><table><thead><tr><th>상황</th><th>위탁자가 할 일</th></tr></thead><tbody><tr><td>일반 위탁</td><td>② 위탁 업무 내용과 수탁자를 <b>공개</b> (홈페이지 지속 게재 등)</td></tr><tr><td>홍보 · 판매 권유 위탁</td><td>③ 정보주체에게 <b>알림</b> (서면등의 방법), 변경 시에도</td></tr><tr><td>재위탁</td><td>⑥ 수탁자가 <b>위탁자의 동의</b>를 받아야 함</td></tr></tbody></table></div>
+<div class="call"><div class="t">개인정보보호법 시행령 제28조(개인정보의 처리 업무 위탁 시 조치)</div><p>① 법 제26조제1항제3호에서 “대통령령으로 정한 사항”이란 다음 각 호의 사항을 말한다.</p><ul style="list-style:none;padding-left:6px"><li>1. 위탁업무의 목적 및 범위</li><li>2. 재위탁 제한에 관한 사항</li><li>3. 개인정보에 대한 접근 제한 등 안전성 확보 조치에 관한 사항</li><li>4. 위탁업무와 관련하여 보유하고 있는 개인정보의 관리 현황 점검 등 감독에 관한 사항</li><li>5. 법 제26조제2항에 따른 수탁자(이하 “수탁자”라 한다)가 준수하여야 할 의무를 위반한 경우의 <b>손해배상 등 책임에 관한 사항</b></li></ul><p>② 법 제26조제2항에서 “대통령령으로 정하는 방법”이란 개인정보 처리 업무를 위탁하는 개인정보처리자(이하 “위탁자”라 한다)가 위탁자의 <b>인터넷 홈페이지에</b> 위탁하는 업무의 내용과 수탁자를 <b>지속적으로 게재</b>하는 방법을 말한다.</p><p>③ 제2항에 따라 인터넷 홈페이지에 게재할 수 없는 경우에는 다음 각 호의 어느 하나 이상의 방법으로 위탁하는 업무의 내용과 수탁자를 공개하여야 한다.</p><ul style="list-style:none;padding-left:6px"><li>1. 위탁자의 사업장등의 보기 쉬운 장소에 게시하는 방법</li><li>2. 관보(위탁자가 공공기관인 경우만 해당한다)나 위탁자의 사업장등이 있는 시ㆍ도 이상의 지역을 주된 보급지역으로 하는 「신문 등의 진흥에 관한 법률」 제2조제1호가목ㆍ다목 및 같은 조 제2호에 따른 일반일간신문, 일반주간신문 또는 인터넷신문에 싣는 방법</li><li>3. 같은 제목으로 연 2회 이상 발행하여 정보주체에게 배포하는 간행물ㆍ소식지ㆍ홍보지 또는 청구서 등에 지속적으로 싣는 방법</li><li>4. 재화나 서비스를 제공하기 위하여 위탁자와 정보주체가 작성한 계약서 등에 실어 정보주체에게 발급하는 방법</li></ul><p>④ 법 제26조제3항 전단에서 “대통령령으로 정하는 방법”이란 <b>서면등의 방법</b>을 말한다.</p><p>⑤ 위탁자가 과실 없이 제4항에 따른 방법으로 위탁하는 업무의 내용과 수탁자를 정보주체에게 알릴 수 없는 경우에는 해당 사항을 인터넷 홈페이지에 <mark>30일 이상</mark> 게재하여야 한다. 다만, 인터넷 홈페이지를 운영하지 아니하는 위탁자의 경우에는 사업장등의 보기 쉬운 장소에 30일 이상 게시하여야 한다.</p><p>⑥ 위탁자는 수탁자가 개인정보 처리 업무를 수행하는 경우에 법 또는 이 영에 따라 개인정보처리자가 준수하여야 할 사항과 법 제26조제1항 각 호의 사항을 준수하는지를 같은 조 제4항에 따라 감독하여야 한다.</p></div>
+<div class="call quote"><div class="t">강의 화면 필기</div><p>(66:51) 시행령 제28조 ① 5호 “<b>책임에 관한 사항</b>”에 밑줄. 처리 위탁 슬라이드는 60:29~70:23로 약 10분이었고, 다른 붉은 필기는 관찰되지 않았습니다. 교안 자체에 굵은 글씨·밑줄 강조가 많습니다(① 문서, 목적 외 처리 금지, 기술적·관리적 보호조치 / ⑥ 재위탁·위탁자 동의 / ⑦ 소속 직원).</p></div>
+
+<h3>강의 설명 <span class="en">(강의 60:06–69:17)</span></h3>
+<ul><li>① 1호: 어떤 목적을 위해 넘기지만 <b>그 목적 외에는 처리하면 안 된다</b>는 내용이 문서에 들어가야 함</li><li>② 제공하는 자 = <b>위탁자</b>, 제공받는 자 = <b>수탁자</b></li><li>④ 위탁자가 수탁자를 교육·감독하는 이유: <b>책임 소재가 위탁자</b>에게 있으므로</li><li>⑦ “소속 직원으로 본다” = 위탁자를 수탁자의 <b>상사·책임자</b>로 본다는 뜻</li><li>⑧ 법 조문의 “개인정보처리자” 자리에 “수탁자”를 <b>갈아 끼워</b> 적용</li><li>시행령 제28조 ① 5호(손해배상 책임)를 문서에 적어 두지 않으면 <b>모든 책임은 위탁자</b>가 짐 — 화면에서 이 부분에 밑줄</li><li>⑤ “과실 없이” 알릴 수 없는 경우 = 예: 정보주체 <b>연락처를 모르는</b> 경우</li></ul>
+<p><span class="ext">보충: 정보주체에 대해서는 ⑦(소속 직원으로 봄)에 따라 문서 기재와 상관없이 위탁자가 책임을 집니다. 시행령 ① 5호의 책임 조항은 위탁자와 수탁자 <b>사이의</b> 책임 배분(나중에 수탁자에게 물어내게 하는 근거)에 의미가 있습니다. “적어 두면 위탁자가 면책된다”는 뜻은 아닙니다.</span></p>
+
+    <details class="raw"><summary>강의 녹취 원문 (5)</summary><div class="txt">[63:18] 왜냐? 책임 소재가 위탁자에게 있기 때문에.
+[64:07] 소속 직원으로 본다는 것은 위탁자가 보스, 상사, 책임자라고 본다는 거죠.
+[66:03] 어떤 위반을 했을 때 수탁자가 책임져야 될 내용을 적어놓지 않으면
+[66:09] 모든 건 위탁자가 책임져야 된다고 했었죠
+[68:23] 위탁자가 과실이 없는 경우라는 것은 정보주체에 연락처를 모른다던지 하는 경우를 이야기 하겠죠.</div></details>
+  </section>
+  <!-- 11 -->
+  <section id="s11">
+    <h2 class="st"><span class="sq">11</span>영업의 양도 · 양수 (제27조 · 시행령 제29조)</h2>
+    <div class="badges"><span class="badge prof">교안 p.28–29</span></div>
+    
+<div class="call"><div class="t">개인정보보호법 제27조(영업양도 등에 따른 개인정보의 이전 제한)</div><p>① 개인정보처리자<span style="color:#dc2626;font-weight:700">(양도자)</span>는 영업의 전부 또는 일부의 양도ㆍ합병 등으로 개인정보를 다른 사람에게 이전하는 경우에는 <b>미리</b> 다음 각 호의 사항을 대통령령으로 정하는 방법에 따라 해당 정보주체에게 알려야 한다.</p><ul style="list-style:none;padding-left:6px"><li>1. 개인정보를 이전하려는 사실</li><li>2. 개인정보를 이전받는 자(이하 “영업양수자등”이라 한다)의 성명(법인의 경우에는 법인의 명칭을 말한다), 주소, 전화번호 및 그 밖의 연락처</li><li>3. 정보주체가 개인정보의 이전을 원하지 아니하는 경우 조치할 수 있는 방법 및 절차</li></ul><p>② 영업양수자등은 개인정보를 이전받았을 때에는 <b>지체 없이</b> 그 사실을 대통령령으로 정하는 방법에 따라 정보주체에게 알려야 한다. 다만, <mark>개인정보처리자가 제1항에 따라 그 이전 사실을 이미 알린 경우에는 그러하지 아니하다</mark>.</p><p>③ 영업양수자등은 영업의 양도ㆍ합병 등으로 개인정보를 이전받은 경우에는 <b>이전 당시의 본래 목적으로만</b> 개인정보를 이용하거나 제3자에게 제공할 수 있다. 이 경우 영업양수자등은 개인정보처리자로 본다.</p><p style="font-size:13px;color:var(--ink-3)">빨간 글씨 “(양도자)”는 교수님이 교안에 덧붙인 표기입니다(교안 원본 기준). 원본 md 메모에는 p.27 아래에 적혀 있지만 화면 기록상 제27조 슬라이드(p.28)에 있습니다.</p></div>
+<div class="call"><div class="t">개인정보보호법 시행령 제29조(영업양도 등에 따른 개인정보 이전의 통지)</div><p>① 법 제27조제1항 각 호 외의 부분과 같은 조 제2항 본문에서 “대통령령으로 정하는 방법”이란 <b>서면등의 방법</b>을 말한다.</p><p>② 법 제27조제1항에 따라 개인정보를 이전하려는 자(이하 이 항에서 “영업양도자등”이라 한다)가 과실 없이 제1항에 따른 방법으로 법 제27조제1항 각 호의 사항을 정보주체에게 알릴 수 없는 경우에는 해당 사항을 인터넷 홈페이지에 <mark>30일 이상</mark> 게재하여야 한다. 다만, 인터넷 홈페이지에 게재할 수 없는 정당한 사유가 있는 경우에는 다음 각 호의 어느 하나의 방법으로 법 제27조제1항 각 호의 사항을 정보주체에게 알릴 수 있다.</p><ul style="list-style:none;padding-left:6px"><li>1. 영업양도자등의 사업장등의 보기 쉬운 장소에 30일 이상 게시하는 방법</li><li>2. 영업양도자등의 사업장등이 있는 시ㆍ도 이상의 지역을 주된 보급지역으로 하는 「신문 등의 진흥에 관한 법률」 제2조제1호가목ㆍ다목 또는 같은 조 제2호에 따른 일반일간신문ㆍ일반주간신문 또는 인터넷신문에 싣는 방법</li></ul></div>
+<div class="tablewrap"><table><thead><tr><th>누가</th><th>언제</th><th>무엇을</th></tr></thead><tbody><tr><td>양도자 (처리자)</td><td>이전하기 <b>미리</b></td><td>이전 사실 · 양수자 연락처 · 이전을 원하지 않을 때의 방법과 절차</td></tr><tr><td>양수자</td><td>이전받았을 때 <b>지체 없이</b></td><td>이전받은 사실 — 단, 양도자가 이미 알렸으면 안 해도 됨</td></tr></tbody></table></div>
+<div class="call quote"><div class="t">강의 화면 필기 (71:35)</div><p>② 앞에 체크, ② 단서의 “<b>개인정보처리자가</b>”(이미 알린 경우)에 곡선 밑줄 — 양수자의 통지 의무가 면제되는 단서를 짚은 것으로 보입니다.</p></div>
+
+<h3>강의 설명 <span class="en">(강의 69:22–74:51)</span></h3>
+<ul><li>① 양도자는 이전 사실, 양수자가 누구인지, 이전을 원하지 않을 때 할 수 있는 것을 알려야 함</li><li>② 단서에 대한 교수님 해석: 양도자가 이미 알렸으면 양수자는 안 알려도 됨 → 그런데 ②가 왜 있냐면, <b>양도자가 반드시 알려야 하는 건 아니라는 것</b>이고, 양도자가 못 알린 경우 <b>양수자가 알리면 된다</b></li><li>③ 영업양도는 처리자가 누구인지만 바뀐 것이므로, 정보주체가 처음 제공한 이유를 벗어나 쓸 수 없는 것은 “당연”</li><li>시행령 제29조: ①은 양도자(법 ①)와 양수자(법 ②)가 알리는 방법 모두 <b>서면등의 방법</b>. 과실 없이 못 알리면 홈페이지 30일 — 업무위탁과 비슷</li></ul>
+<div class="call warn"><div class="t">헷갈리는 지점 — 영업양도 “통지”의 시점</div><p>교수님 정의상 <b>통지는 사후</b>(09:27, 73:00 “통지란 어떤 행위 이후에 정보를 알리는 것”)입니다. 그런데 제27조 ①의 양도자는 이전하기 <b>미리</b>(사전) 알리고, ②의 양수자는 이전받은 뒤 <b>지체 없이</b>(사후) 알립니다. 교안 p.4·시행령 제29조는 둘 다 “통지”라고 부르니, 양도자 쪽은 사전이라는 점에 주의하세요.</p></div>
+<div class="call ask"><div class="t">조문과 강의 해석이 다른 부분 (영상으로 확인함)</div><p>제27조 ①은 양도자가 “미리 … 알려야 <b>한다</b>”(의무)로 되어 있습니다. 교수님은 ② 단서를 근거로 “양도자가 반드시 알려야 하는 건 아니다”라고 설명했습니다. 답안에는 <b>조문대로 양도자에게 사전 통지 의무</b>가 있고, ② 단서는 <b>양도자가 이미 알렸으면 양수자의 통지 의무가 면제</b>된다는 뜻으로 쓰는 것이 안전합니다. <span class="ext">교수님 말씀은 실제로 양도자가 알리지 못한 경우 양수자의 통지로 보완된다는 취지로 보입니다 — 제 추측입니다.</span></p></div>
+
+    <details class="raw"><summary>강의 녹취 원문 (4)</summary><div class="txt">[71:11] 근데 2항에 내용이 왜 있냐
+[71:14] 그렇다는 말은 양도자가 반드시 알려야 된다는 건 아니라는 거죠
+[71:20] 그래서 양도자가 못 알린 경우에는 양수자가 알리면 된다라는 내용입니다.
+[72:16] 어떠한 변화 없이 개인정보처리자가 누군지만 바뀐 건데</div></details>
+  </section>
+  <!-- 12 -->
+  <section id="s12">
+    <h2 class="st"><span class="sq">12</span>개인정보 제공 시 유의사항</h2>
+    <div class="badges"><span class="badge prof">교안 p.30</span></div>
+    
+<div class="tablewrap"><table><thead><tr><th>원인</th><th>위험</th><th>대책</th></tr></thead><tbody><tr><td>개인정보 취급자 증가</td><td>개인정보 오남용으로 인한 침해 위험 증가</td><td>개인정보 제공 시 최소한으로 제공</td></tr><tr><td>침해로 인한 책임소재 불분명</td><td>침해 원인 및 책임 소재 파악 어려움</td><td>개인정보 처리에 대해 계약서 등으로 손해배상 명시</td></tr><tr><td>개인정보보호 통제력 약화</td><td>제3자에게 통제할 수 있는 영향력 감소</td><td>개인정보 처리 관리감독, 처리 제한, 재위탁 시 승인 등 보호대책 이행</td></tr><tr><td>정보 제공 사실 고지/통지 미흡</td><td>개인정보 제공에 대한 예측 어려움</td><td>제공 시 고지 및 동의, 개인정보 처리방침 공개 또는 정보주체에게 통지</td></tr></tbody></table></div>
+<p>각 대책은 앞에서 본 조문과 이어집니다: 손해배상 명시 = 시행령 제28조 ① 5호, 재위탁 승인 = 제26조 ⑥, 처리방침 공개 = 제26조 ② · 제28조의8 ① 3호 가목, 통지 = 제27조.</p>
+<p>이것으로 개인정보 라이프사이클(수집·이용 → 저장·관리(파기) → 제공)이 끝나고, 6주차 강의 안내대로 <b>다음 주(8주차)는 중간고사</b>(LMS 공지: <b>2026년 10월 20일(화) 오후 6시</b>)입니다.</p>
+
+<p>교수님: 수집·이용·제공할 때 모두 <b>딱 필요한 부분만 최소한</b>으로. 제공 사실을 고지·통지하지 않으면 정보주체가 그 사실 자체를 모를 수 있고, 이는 <b>개인정보 자기결정권</b>을 위반하는 것 (75:03–77:06). 오늘은 개인정보의 소유권이 이전되는 <b>4가지 케이스</b>(제3자 제공 · 국외 이전 · 업무 위탁 · 영업양도)를 봤습니다.</p>
+
+    <details class="raw"><summary>강의 녹취 원문 (3)</summary><div class="txt">[75:22] 수집할 때도 이용할 때도 제공할 때도
+[76:49] 그렇다는 건 개인정보 자기결정권을 위반하는 행위이기 때문에
+[77:35] 오늘 다룬 내용까지가 중간고사 시험 범위이고요.</div></details>
+  </section>
+  <!-- 13 -->
+  <section id="sg">
+    <h2 class="st"><span class="sq">13</span>용어 정리</h2>
+    
+    <div class="terms"><div class="term"><b>제공</b><span class="e">provision</span><p>처리자 외 제3자에게 개인정보의 지배·관리권이 이전되는 것. DB 접근권한 부여도 포함.</p></div><div class="term"><b>처리 위탁</b><span class="e">outsourcing of processing</span><p>위탁자(주는 쪽)의 목적·이익을 위해 처리 업무를 맡기는 것. 책임은 위탁자.</p></div><div class="term"><b>수탁자</b><span class="e">processor (trustee)</span><p>처리 업무를 위탁받은 자. 재위탁받은 제3자 포함.</p></div><div class="term"><b>재위탁</b><span class="e">sub-outsourcing</span><p>수탁자가 다시 맡기는 것. 위탁자의 동의 필요.</p></div><div class="term"><b>영업양도</b><span class="e">business transfer</span><p>처리 목적은 유지되고 보유·관리 주체만 바뀜. 양수자가 책임.</p></div><div class="term"><b>국외 이전</b><span class="e">cross-border transfer</span><p>국외로 제공(조회 포함)·처리위탁·보관하는 것.</p></div><div class="term"><b>이전대상국등</b><span class="e">destination country, etc.</span><p>개인정보가 이전되는 국가 또는 국제기구.</p></div><div class="term"><b>서면등의 방법</b><span class="e">written or equivalent means</span><p>서면, 전자우편, 팩스, 전화, 문자전송 또는 이에 상당하는 방법(시행령 제17조 ⑤).</p></div><div class="term"><b>상호주의</b><span class="e">reciprocity</span><p>국외 이전을 제한하는 국가의 처리자에게 그 수준에 상응하는 제한을 할 수 있음.</p></div></div>
+    
+  </section>
+  <!-- 14 -->
+  <section id="sq">
+    <h2 class="st"><span class="sq">14</span>확인 필요</h2>
+    
+    
+<div class="call quote"><div class="t">1. 중간고사 시각 — 해결</div><p>영상(00:28)에서는 “19시”라고 했지만, LMS 공지대로 <b>2026년 10월 20일(화) 오후 6시</b>가 맞습니다. 방식은 LMS ‘퀴즈’ 항목, 범위는 “오늘(7주차) 다룬 내용까지”(77:35) — 즉 1~7주차입니다.</p></div>
+<div class="call ask"><div class="t">2. 제27조 영업양도 통지 — 강의 발언 확인됨, 조문과 다름</div><p>71:11–71:20에서 교수님이 “② 단서가 있다는 건 <b>양도자가 반드시 알려야 하는 건 아니라는 것</b>, 양도자가 못 알리면 양수자가 알리면 된다”고 하신 것이 맞습니다(영상 확인). 조문 ①은 양도자의 사전 통지를 <b>의무</b>로 정하므로, 서술형은 <b>조문 표현을 기본</b>으로 쓰고 교수님 설명(양도자가 못 알리면 양수자가 보완)을 덧붙이는 것을 권합니다.</p></div>
+<div class="call quote"><div class="t">해결 — 녹취 오인식 (대조 인식으로 확인)</div><p>17:00 “5호부터 17호” → <b>7호</b> / 50:45 “시행령 제25조의10” → <b>제29조의10</b> / 54:29 “제29조의10” → <b>제29조의11</b> / 56:28 “법 제29조 제9” → 교수님이 바로 “제28조의9”로 고침 / “9개·구개 이전” → 국외 이전 / “감옥·남옥” → 가목·나목. 모두 대조 인식 또는 화면으로 확인되어 본문은 조문대로 적었습니다.</p></div>
+<div class="call quote"><div class="t">참고</div><p>교안 p.4 처벌 수치는 강의에서도 교안대로 읽었습니다(근거 조문은 강의·교안 모두 없음). p.7=p.5, p.12=p.11=p.18은 같은 슬라이드입니다. 이번 교안에는 별도 퀴즈가 없고, 과제 안내도 없었습니다.</p></div>
+
+    
+  </section>
+  <!-- 15 -->
+  <section id="sx">
+    <h2 class="st"><span class="sq">15</span>예상 문제</h2>
+    
+    <div class="q"><div class="qh"><span class="qn">Q1</span><span>제3자 제공, 처리 위탁, 영업양도를 <b>누구의 이익을 위한 이전인지</b>와 <b>관리책임</b> 측면에서 비교하시오.</span><span class="type">서술형</span></div><div class="ans"><span class="lab">모범답안</span>제3자 제공은 제공받는 자(제3자)의 목적·이익을 위한 이전으로 관리책임도 제공받는 자에게 있다. 처리 위탁은 제공하는 자(위탁자)의 목적·이익을 위한 이전으로 관리책임은 위탁자에게 있다. 영업양도는 처리 목적은 유지되고 보유·관리 주체만 바뀌며 관리책임은 양수자에게 있다.</div></div><div class="q"><div class="qh"><span class="qn">Q2</span><span>다음 중 개인정보의 “제공”에 해당하지 <b>않는</b> 설명은?</span><span class="type">객관식</span></div><ol class="ch"><li>USB에 담아 협력사에 전달</li><li>협력사에 DB 열람·복사 권한 부여</li><li>FTP로 파일 전송</li><li>처리자 내부 부서가 수집 목적 범위에서 이용</li></ol><div class="ans"><span class="lab">정답 ④</span>교안 p.2: 제공은 제3자에게 지배·관리권이 이전되는 것이며, 저장매체 전달뿐 아니라 DB 접속권한을 허용해 열람·복사가 가능하게 하는 것도 포함합니다. 처리자 내부에서 목적 범위 안에서 쓰는 것은 제공이 아니라 이용입니다.</div></div><div class="q"><div class="qh"><span class="qn">Q3</span><span>제15조 ① 각 호 중, 그 근거로 수집한 개인정보를 제17조 ① 2호에 따라 <b>목적 범위에서 제3자에게 제공할 수 있는</b> 호가 <b>아닌</b> 것은?</span><span class="type">객관식</span></div><ol class="ch"><li>2호 법률·법령상 의무</li><li>3호 공공기관 소관 업무</li><li>4호 계약 체결·이행</li><li>7호 공중위생 등 긴급</li></ol><div class="ans"><span class="lab">정답 ③</span>제17조 ① 2호는 제15조 ① 2호, 3호, 5~7호만 열거합니다. 4호(계약 체결·이행)는 빠져 있습니다.</div></div><div class="q"><div class="qh"><span class="qn">Q4</span><span>정보주체의 별도 동의를 받아 개인정보를 국외로 이전할 때 미리 알려야 할 사항 5가지를 쓰시오.</span><span class="type">서술형</span></div><div class="ans"><span class="lab">모범답안</span>① 이전되는 개인정보 항목 ② 이전되는 국가, 시기 및 방법 ③ 이전받는 자의 성명(법인은 명칭과 연락처) ④ 이전받는 자의 이용목적 및 보유·이용 기간 ⑤ 이전을 거부하는 방법, 절차 및 거부의 효과 (제28조의8 ②). 변경 시에도 알리고 동의를 받는다(③).</div></div><div class="q"><div class="qh"><span class="qn">Q5</span><span>보호위원회가 국외 이전 중지 명령을 내렸다. 처리자의 이의 제기 기한과 보호위원회의 처리결과 통지 기한을 바르게 짝지은 것은?</span><span class="type">객관식</span></div><ol class="ch"><li>14일 — 30일</li><li>7일 — 30일</li><li>7일 — 60일</li><li>30일 — 7일</li></ol><div class="ans"><span class="lab">정답 ②</span>제28조의9 ②·시행령 제29조의12 ①: 명령을 받은 날부터 7일 이내 이의 제기. 시행령 제29조의12 ②: 이의신청서를 받은 날부터 30일 이내 문서로 통지.</div></div><div class="q"><div class="qh"><span class="qn">Q6</span><span>수탁자 B가 위탁받은 고객 개인정보 처리 업무를 C에게 다시 맡기려 한다. 필요한 절차와, B가 법을 위반해 손해가 발생했을 때 손해배상책임에서 B를 어떻게 보는지 쓰시오.</span><span class="type">서술형</span></div><div class="ans"><span class="lab">모범답안</span>재위탁하려면 위탁자의 동의를 받아야 한다(제26조 ⑥). C도 “수탁자”에 포함된다(②). 수탁자가 위탁 업무 관련해 법을 위반하여 발생한 손해배상책임에 대해서는 수탁자를 개인정보처리자(위탁자)의 소속 직원으로 본다(⑦).</div></div><div class="q"><div class="qh"><span class="qn">Q7</span><span>국외 이전 인증과 관련한 숫자가 바르게 짝지어진 것은?</span><span class="type">객관식</span></div><ol class="ch"><li>보호 인증 유효기간 3년 — 국외 이전 인증 고시 유효기간 5년 범위</li><li>보호 인증 유효기간 5년 — 국외 이전 인증 고시 유효기간 3년 범위</li><li>둘 다 3년</li><li>둘 다 5년</li></ol><div class="ans"><span class="lab">정답 ①</span>제32조의2 ②: 개인정보 보호 인증 유효기간 3년. 시행령 제29조의8 ②: 국외 이전 인증을 고시할 때 5년의 범위에서 유효 기간을 정함.</div></div><div class="q"><div class="qh"><span class="qn">Q8</span><span>영업양도로 개인정보를 이전받은 양수자가 정보주체에게 이전 사실을 알리지 않아도 되는 경우는? 또 양수자가 개인정보를 쓸 수 있는 범위는?</span><span class="type">서술형</span></div><div class="ans"><span class="lab">모범답안</span>양도자(개인정보처리자)가 제27조 ①에 따라 이전 사실을 이미 알린 경우(② 단서). 양수자는 이전 당시의 본래 목적으로만 개인정보를 이용하거나 제3자에게 제공할 수 있고, 이 경우 개인정보처리자로 본다(③).</div></div><div class="q"><div class="qh"><span class="qn">Q9</span><span>교수님 설명에 따르면 제17조 ④의 “당초 수집 목적과 합리적으로 관련된 범위”란 무엇인지 쓰고, 강의 예시를 하나 드시오.</span><span class="type">서술형</span></div><div class="ans"><span class="lab">모범답안</span>처음 수집할 때 정보주체에게 알린 업무에 비추어, 사회통념상 그 정보가 제3자에게 제공될 여지가 있다고 정보주체도 알 수 있는 범위다. 예: 카카오택시를 호출하면 전화번호·호출 위치가 택시기사에게 전달되지만, 매번 기사에게 제공하는 것에 대한 동의를 묻지 않는다. (강의 17:36–19:07, 시행령 제14조의2)</div></div><div class="q"><div class="qh"><span class="qn">Q10</span><span>제28조의10 상호주의의 의미로 옳은 것은?</span><span class="type">객관식</span></div><ol class="ch"><li>상대 국가와 동등한 수준을 갖추면 국외 이전을 허용한다</li><li>국외 이전을 제한하는 국가의 처리자에게 그 수준에 상응하는 제한을 할 수 있다</li><li>조약 이행을 위해서도 상호주의 제한을 할 수 있다</li><li>보호위원회 인증을 받은 자에게는 제한할 수 없다</li></ol><div class="ans"><span class="lab">정답 ②</span>교수님 표현으로 “눈에는 눈, 이에는 이”. 국외 이전을 제한하는 국가의 처리자에게 그 국가 수준에 상응하는 제한을 할 수 있습니다. 다만 조약·국제협정 이행에 필요하면 예외입니다.</div></div>
+    
+  </section>
+
+  <footer><span>개인정보보호법률이해 · 7주차 1차시 · 2026.10.13</span><span>jaealee.com</span></footer>
+</div>
+
+<!-- ═══════════ 단어장 뷰 ═══════════ -->
+<div id="viewVocab" hidden>
+  <div class="hero" data-w="A–Z">
+    <span class="chip">7주차 1차시 단어장</span>
+    <h1>개인정보보호법률이해 필수 용어</h1>
+    <p class="sub">이번 차시 교안에 나온 개념 중 영문 법령·가이드라인·논문에서 다시 만날 단어만 골랐습니다.</p>
+  </div>
+
+  <div class="vhead">
+    <input type="search" id="vq" placeholder="단어 · 뜻으로 찾기">
+    <button class="tbtn" id="maskBtn">뜻 가리기</button>
+    <button class="tbtn" id="quizBtn">퀴즈 풀기</button>
+    <span style="font-size:13px;color:var(--ink-3);font-weight:600" id="vcount"></span>
+  </div>
+
+  <ul class="vlist" id="vlist">
+    <li class="vword">
+      <div><span class="w">transfer</span><span class="ipa">/ˈtrænsfɜːr/</span><span class="pos">n.</span></div>
+      <div><p class="mean">이전 — 다른 곳·사람에게 넘기는 것</p>
+      <p class="ex">Cross-border <b>transfer</b> needs separate consent.<span class="ko">국외 이전에는 별도 동의가 필요하다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">outsource</span><span class="ipa">/ˈaʊtsɔːrs/</span><span class="pos">v.</span></div>
+      <div><p class="mean">위탁하다 — 업무를 외부에 맡기다</p>
+      <p class="ex">Many firms <b>outsource</b> their call centers.<span class="ko">많은 기업이 콜센터를 외부에 위탁한다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">trustee</span><span class="ipa">/trʌˈstiː/</span><span class="pos">n.</span></div>
+      <div><p class="mean">수탁자 — 맡겨진 일을 처리하는 자</p>
+      <p class="ex">The <b>trustee</b> must not use data beyond the task.<span class="ko">수탁자는 위탁 업무를 넘어 정보를 쓰면 안 된다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">merger</span><span class="ipa">/ˈmɜːrdʒər/</span><span class="pos">n.</span></div>
+      <div><p class="mean">합병 — 회사가 하나로 합쳐지는 것</p>
+      <p class="ex">After the <b>merger</b>, users must be notified.<span class="ko">합병 후에는 이용자에게 알려야 한다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">certification</span><span class="ipa">/ˌsɜːrtɪfɪˈkeɪʃn/</span><span class="pos">n.</span></div>
+      <div><p class="mean">인증 — 기준에 맞는다고 공식 확인하는 것</p>
+      <p class="ex">The <b>certification</b> is valid for three years.<span class="ko">인증은 3년간 유효하다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">adequacy</span><span class="ipa">/ˈædɪkwəsi/</span><span class="pos">n.</span></div>
+      <div><p class="mean">적정성 — 보호 수준이 충분하다고 인정됨</p>
+      <p class="ex">The EU gave Korea an <b>adequacy</b> decision.<span class="ko">EU는 한국에 적정성 결정을 내렸다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">suspension</span><span class="ipa">/səˈspenʃn/</span><span class="pos">n.</span></div>
+      <div><p class="mean">중지 — 일시적으로 멈추게 하는 것</p>
+      <p class="ex">The commission ordered a <b>suspension</b> of the transfer.<span class="ko">위원회는 이전 중지를 명령했다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">reciprocity</span><span class="ipa">/ˌresɪˈprɑːsəti/</span><span class="pos">n.</span></div>
+      <div><p class="mean">상호주의 — 상대가 하는 만큼 똑같이 대응함</p>
+      <p class="ex"><b>Reciprocity</b> lets Korea limit transfers to strict countries.<span class="ko">상호주의로 한국은 제한이 엄격한 나라에 이전을 제한할 수 있다.</span></p></div>
+    </li>
+  </ul>
+
+  <div class="quizbox" id="quiz">
+    <div class="qq" id="quizQ"></div>
+    <div class="opts" id="quizOpts"></div>
+    <div class="score" id="quizScore"></div>
+  </div>
+</div>
+<!-- ═══════════ 필기 원문 뷰 ═══════════ -->
+<div id="viewRaw" hidden>
+  <div class="hero" data-w="RAW">
+    <span class="chip">7주차 1차시 강의 녹취 발췌</span>
+    <h1>강의에서 하신 말 그대로</h1>
+    <p class="sub">강의 영상 녹취(7주차 77:50)에서 본문에 반영한 핵심 발언을 영상 시각 순으로 모았습니다. 자동 음성 인식 결과라 오인식도 고치지 않고 그대로 두었습니다. 전체 녹취는 같은 폴더의 txt 파일에 있습니다.</p>
+  </div>
+
+  <div class="rawnote" id="rawlist">
+    <div class="rawitem">
+      <div class="seq">01<span>00:15</span></div>
+      <div>
+        <div class="body">그 다음에 다음주 8주차에는 중간고사를 실시할 예정입니다.</div>
+        <div class="where"><a href="#s1">01. 제공의 의미</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">02<span>00:28</span></div>
+      <div>
+        <div class="body">19시가 정규 수업시간인 걸로 제가 알고 있거든요.</div>
+        <div class="where"><a href="#s1">01. 제공의 의미</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">03<span>00:34</span></div>
+      <div>
+        <div class="body">그래서 19시에 온라인 실시간으로 진행될 예정이고요.</div>
+        <div class="where"><a href="#s1">01. 제공의 의미</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">04<span>00:54</span></div>
+      <div>
+        <div class="body">퀴즈 형태로, 퀴즈라는 항목으로 올라갈 예정이에요.</div>
+        <div class="where"><a href="#s1">01. 제공의 의미</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">05<span>02:38</span></div>
+      <div>
+        <div class="body">그랬을 때 다른 사람에게 내 아이디 비밀번호를 알려줘서</div>
+        <div class="where"><a href="#s1">01. 제공의 의미</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">06<span>02:42</span></div>
+      <div>
+        <div class="body">그 다른 제3자가 내 아이디 비밀번호로 접속해서 그 개인정보를 다룰 수 있게 되는 경우도 제3자 제공, 개인정보 제공에 해당한다.</div>
+        <div class="where"><a href="#s1">01. 제공의 의미</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">07<span>05:21</span></div>
+      <div>
+        <div class="body">데이터베이스에 대한 접근 권한 부여와 좀 비슷하지만 제공 레벨이 처리 시스템 접근 권한이니까 그런 조금 차이가 있고요.</div>
+        <div class="where"><a href="#s1">01. 제공의 의미</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">08<span>05:58</span></div>
+      <div>
+        <div class="body">내가 가지고 있는 개인정보를 다른 사람에게 주면 그게 제공이지만 법적으로는 제공에도 세 가지 종류가 있습니다.</div>
+        <div class="where"><a href="#s2">02. 제공·위탁·양도 비교</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">09<span>06:30</span></div>
+      <div>
+        <div class="body">그래서 뒤에서 배울 내용의 요약표라고 보시면 됩니다.</div>
+        <div class="where"><a href="#s2">02. 제공·위탁·양도 비교</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">10<span>08:03</span></div>
+      <div>
+        <div class="body">왜냐하면 제3자 제공은 제공받는 자의 목적이익을 위해서니까 처리위탁은 그렇다면 제공하는 자가 관리 책임을 지겠죠.</div>
+        <div class="where"><a href="#s2">02. 제공·위탁·양도 비교</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">11<span>09:27</span></div>
+      <div>
+        <div class="body">고지는 사전에 하는 것, 통지는 사후에 하는 것</div>
+        <div class="where"><a href="#s2">02. 제공·위탁·양도 비교</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">12<span>10:13</span></div>
+      <div>
+        <div class="body">영업양도는 정보주책에 통제하지 않게 되면 1천만원 이하의 과태료를 물 수가 있다.</div>
+        <div class="where"><a href="#s2">02. 제공·위탁·양도 비교</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">13<span>12:34</span></div>
+      <div>
+        <div class="body">워낙 중요하고 계속해서 나오는 법이기 때문에</div>
+        <div class="where"><a href="#s3">03. 제3자 제공</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">14<span>17:36</span></div>
+      <div>
+        <div class="body">합리적으로 관련된 범위라고 하면 애초에 내가 이 업무를 하기 위해서 개인정보를 수집한다고 정보주체에게 알리고 수집을 했을 때</div>
+        <div class="where"><a href="#s3">03. 제3자 제공</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">15<span>17:50</span></div>
+      <div>
+        <div class="body">사회 통념상 이 정보가 다른 제3자에게 제공될 여지가 있다고 정보주체도 알고 동의를 할 수 있게 되는 그런 경우를 얘기를 하는 거죠.</div>
+        <div class="where"><a href="#s3">03. 제3자 제공</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">16<span>18:57</span></div>
+      <div>
+        <div class="body">매번 제공할 때마다 이 택시기사에게 개인정보가 가는 것을 동의하겠습니까?</div>
+        <div class="where"><a href="#s3">03. 제3자 제공</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">17<span>19:24</span></div>
+      <div>
+        <div class="body">제가 이전 슬라이드 방금 카카오택시 얘기하면서 했던 내용들이 법에서는 어떻게 규정을 하고 있는지를 보면</div>
+        <div class="where"><a href="#s4">04. 추가적 이용·제공</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">18<span>20:57</span></div>
+      <div>
+        <div class="body">이러한 사항들을 고려해서 여기에 해당이 된다면 그때 정보주체에 동의 없이 추가적인 이용 또는 제공이 가능하다.</div>
+        <div class="where"><a href="#s4">04. 추가적 이용·제공</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">19<span>25:26</span></div>
+      <div>
+        <div class="body">그래서 일단은 안 된다. 다만 다음 각 호에 어느 하나에 해당하는 경우에는 개인정보를 구개로 이전할 수 있다.</div>
+        <div class="where"><a href="#s5">05. 국외 이전 ①</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">20<span>26:40</span></div>
+      <div>
+        <div class="body">체크를 동의를 할 때 체크하는 항목을 분리한다는 것을 의미하고요.</div>
+        <div class="where"><a href="#s5">05. 국외 이전 ①</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">21<span>30:06</span></div>
+      <div>
+        <div class="body">이런 것들이 개인정보가 국외로 이전된 후에도</div>
+        <div class="where"><a href="#s5">05. 국외 이전 ①</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">22<span>30:45</span></div>
+      <div>
+        <div class="body">개인정보가 이전되는 국가에도 대한민국의 개인정보보호법이 있고 미국에는 뭐가 있고 유럽에는 GDPR이 있고</div>
+        <div class="where"><a href="#s5">05. 국외 이전 ①</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">23<span>32:49</span></div>
+      <div>
+        <div class="body">그래서 다른 동의를 받을 때 알려야 되는 사항과 얼추 좀 비슷하죠. 논리적으로 납득이 될 만한 내용이고,</div>
+        <div class="where"><a href="#s6">06. 국외 이전 ②</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">24<span>35:16</span></div>
+      <div>
+        <div class="body">서면등의 방법이 그냥 통짜로 고유 명사처럼 쓰이는 영어라고 보시면 되는데요.</div>
+        <div class="where"><a href="#s5">05. 국외 이전 ①</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">25<span>38:25</span></div>
+      <div>
+        <div class="body">여기서 각목 외의 부분이라고 하는 것은 제4호에 감옥과 남옥이 있잖아요. 감옥과 남옥을 제외한 부분, 이 부분을 얘기합니다.</div>
+        <div class="where"><a href="#s7">07. 국외 이전 인증</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">26<span>40:00</span></div>
+      <div>
+        <div class="body">그러니까 맥시멈으로 잡아도 5년에 한번 이 절차들을 거쳐서 인증을 갱신하려는 내용이고요.</div>
+        <div class="where"><a href="#s7">07. 국외 이전 인증</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">27<span>43:02</span></div>
+      <div>
+        <div class="body">나라마다 다르니까 종합적으로 고려해야 한다</div>
+        <div class="where"><a href="#s8">08. 동등 수준 인정</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">28<span>44:49</span></div>
+      <div>
+        <div class="body">진짜로 그 절차가 실질적으로 허울만 있는 게 아닌지 여부를 판단한다.</div>
+        <div class="where"><a href="#s8">08. 동등 수준 인정</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">29<span>45:33</span></div>
+      <div>
+        <div class="body">여부. 말이 안 통하는 나라에다가는 개인정보보호수준 인정해주지 않는다.</div>
+        <div class="where"><a href="#s8">08. 동등 수준 인정</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">30<span>49:30</span></div>
+      <div>
+        <div class="body">여기서 법의 다른 규정, 제17조부터 제19조까지의 규정 및 5장의 규정 이런 것까지는 말고</div>
+        <div class="where"><a href="#s6">06. 국외 이전 ②</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">31<span>53:41</span></div>
+      <div>
+        <div class="body">지나고 나서 보니 아니다 싶으면 다시 언제든지 중지를 명할 수 있다는 겁니다.</div>
+        <div class="where"><a href="#s9">09. 중지 명령·상호주의</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">32<span>59:19</span></div>
+      <div>
+        <div class="body">상호주의라는 것은 눈에는 눈, 이에는 이 이런 뜻이에요.</div>
+        <div class="where"><a href="#s9">09. 중지 명령·상호주의</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">33<span>63:18</span></div>
+      <div>
+        <div class="body">왜냐? 책임 소재가 위탁자에게 있기 때문에.</div>
+        <div class="where"><a href="#s10">10. 처리 위탁</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">34<span>64:07</span></div>
+      <div>
+        <div class="body">소속 직원으로 본다는 것은 위탁자가 보스, 상사, 책임자라고 본다는 거죠.</div>
+        <div class="where"><a href="#s10">10. 처리 위탁</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">35<span>66:03</span></div>
+      <div>
+        <div class="body">어떤 위반을 했을 때 수탁자가 책임져야 될 내용을 적어놓지 않으면</div>
+        <div class="where"><a href="#s10">10. 처리 위탁</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">36<span>66:09</span></div>
+      <div>
+        <div class="body">모든 건 위탁자가 책임져야 된다고 했었죠</div>
+        <div class="where"><a href="#s10">10. 처리 위탁</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">37<span>68:23</span></div>
+      <div>
+        <div class="body">위탁자가 과실이 없는 경우라는 것은 정보주체에 연락처를 모른다던지 하는 경우를 이야기 하겠죠.</div>
+        <div class="where"><a href="#s10">10. 처리 위탁</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">38<span>71:11</span></div>
+      <div>
+        <div class="body">근데 2항에 내용이 왜 있냐</div>
+        <div class="where"><a href="#s11">11. 영업양도</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">39<span>71:14</span></div>
+      <div>
+        <div class="body">그렇다는 말은 양도자가 반드시 알려야 된다는 건 아니라는 거죠</div>
+        <div class="where"><a href="#s11">11. 영업양도</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">40<span>71:20</span></div>
+      <div>
+        <div class="body">그래서 양도자가 못 알린 경우에는 양수자가 알리면 된다라는 내용입니다.</div>
+        <div class="where"><a href="#s11">11. 영업양도</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">41<span>72:16</span></div>
+      <div>
+        <div class="body">어떠한 변화 없이 개인정보처리자가 누군지만 바뀐 건데</div>
+        <div class="where"><a href="#s11">11. 영업양도</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">42<span>75:22</span></div>
+      <div>
+        <div class="body">수집할 때도 이용할 때도 제공할 때도</div>
+        <div class="where"><a href="#s12">12. 제공 시 유의사항</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">43<span>76:49</span></div>
+      <div>
+        <div class="body">그렇다는 건 개인정보 자기결정권을 위반하는 행위이기 때문에</div>
+        <div class="where"><a href="#s12">12. 제공 시 유의사항</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">44<span>77:35</span></div>
+      <div>
+        <div class="body">오늘 다룬 내용까지가 중간고사 시험 범위이고요.</div>
+        <div class="where"><a href="#s12">12. 제공 시 유의사항</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+/* ── 스크롤 진행 바 ─────────────────────────────── */
+const sb = document.getElementById('scrollbar');
+addEventListener('scroll', () => {
+  const h = document.documentElement.scrollHeight - innerHeight;
+  sb.style.width = (h > 0 ? scrollY / h * 100 : 0) + '%';
+}, { passive: true });
+
+/* ── 다크 모드 ──────────────────────────────────── */
+const html = document.documentElement, themeBtn = document.getElementById('themeBtn');
+themeBtn.onclick = () => {
+  const dark = html.dataset.theme === 'dark';
+  html.dataset.theme = dark ? 'light' : 'dark';
+  themeBtn.textContent = dark ? '다크' : '라이트';
+};
+
+/* ── 정답: 기본은 가려짐. 답을 누르면 그 문제만 열리고,
+      "정답 가리기" 버튼을 누르면 열린 것들을 전부 다시 덮는다 ── */
+const ansBtn = document.getElementById('ansBtn');
+const answers = [...document.querySelectorAll('.ans')];
+function syncAnsBtn() {
+  const opened = answers.filter(a => a.classList.contains('on')).length;
+  ansBtn.disabled = opened === 0;
+  ansBtn.textContent = opened ? `정답 가리기 (${opened})` : '정답 가리기';
+}
+answers.forEach(a => a.addEventListener('click', () => { a.classList.toggle('on'); syncAnsBtn(); }));
+ansBtn.onclick = () => { answers.forEach(a => a.classList.remove('on')); syncAnsBtn(); };
+syncAnsBtn();
+
+/* ── 보충(외부 자료) 개수 표시 + 숨기기 토글 ────── */
+const extraChip = document.getElementById('extraChip');
+const extraCount = document.querySelectorAll('#viewNote .call.extra, #viewNote .ext').length;
+if (extraCount) {
+  extraChip.textContent = `보충 ${extraCount}곳 — 교수님 설명 아님`;
+  extraChip.onclick = () => {
+    const off = document.body.classList.toggle('no-extra');
+    extraChip.textContent = off ? `보충 ${extraCount}곳 숨김 — 눌러서 보기` : `보충 ${extraCount}곳 — 교수님 설명 아님`;
+  };
+} else {
+  extraChip.textContent = '보충 0곳 — 전부 교수님 내용';
+  extraChip.disabled = true;
+}
+
+/* ── 인쇄 ───────────────────────────────────────── */
+document.getElementById('printBtn').onclick = () => window.print();
+
+/* ── 코드 복사 ──────────────────────────────────── */
+document.querySelectorAll('.copy').forEach(btn => {
+  btn.onclick = async () => {
+    try { await navigator.clipboard.writeText(btn.closest('.codebox').querySelector('code').innerText); btn.textContent = '복사됨'; }
+    catch { btn.textContent = '실패'; }
+    setTimeout(() => btn.textContent = '복사', 1200);
+  };
+});
+
+/* ── 복습 체크 진행률 (새로고침하면 초기화) ─────── */
+const boxes = document.querySelectorAll('.chk input'), fill = document.getElementById('barFill');
+boxes.forEach(b => b.addEventListener('change', () => {
+  fill.style.width = [...boxes].filter(x => x.checked).length / boxes.length * 100 + '%';
+}));
+
+/* ── 본문 / 단어장 / 필기 원문 전환 ─────────────── */
+const views = {
+  note:  { el: document.getElementById('viewNote'),  nav: document.getElementById('tocWrap') },
+  vocab: { el: document.getElementById('viewVocab'), nav: document.getElementById('vocabNav'), btn: document.getElementById('vocabBtn'), on: '본문으로', off: '단어장' },
+  raw:   { el: document.getElementById('viewRaw'),   nav: document.getElementById('rawNav'),   btn: document.getElementById('rawBtn'),  on: '본문으로', off: '필기 원문' }
+};
+let current = 'note';
+function setView(name) {
+  current = name;
+  Object.entries(views).forEach(([k, v]) => {
+    v.el.hidden = k !== name;
+    v.nav.hidden = k !== name;
+    if (v.btn) { v.btn.classList.toggle('solid', k === name); v.btn.textContent = k === name ? v.on : v.off; }
+  });
+  clearMarks();
+  document.getElementById('q').value = '';
+  document.getElementById('hit').textContent = '';
+  scrollTo({ top: 0, behavior: 'smooth' });
+}
+views.vocab.btn.onclick = () => setView(current === 'vocab' ? 'note' : 'vocab');
+views.raw.btn.onclick   = () => setView(current === 'raw'   ? 'note' : 'raw');
+document.getElementById('rawTotal').textContent = document.querySelectorAll('#rawlist .rawitem').length;
+// 원문 페이지의 링크를 누르면 본문으로 돌아가서 해당 위치로 이동
+document.querySelectorAll('#rawlist .where a').forEach(a => {
+  a.onclick = e => { e.preventDefault(); setView('note'); setTimeout(() => document.querySelector(a.getAttribute('href')).scrollIntoView(), 60); };
+});
+
+/* ── 목차 현재 위치 ─────────────────────────────── */
+const links = [...document.querySelectorAll('#toc a')];
+const spy = new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) return;
+  links.forEach(l => l.classList.toggle('on', l.getAttribute('href') === '#' + e.target.id));
+}), { rootMargin: '-80px 0px -68% 0px' });
+document.querySelectorAll('#viewNote section').forEach(s => spy.observe(s));
+
+/* ── 문서 내 검색 ───────────────────────────────── */
+const qInput = document.getElementById('q'), hitEl = document.getElementById('hit');
+let marks = [], cursor = -1;
+function clearMarks() {
+  marks.forEach(m => { const p = m.parentNode; if (!p) return; p.replaceChild(document.createTextNode(m.textContent), m); p.normalize(); });
+  marks = []; cursor = -1;
+}
+function runSearch(word) {
+  clearMarks();
+  if (word.length < 2) { hitEl.textContent = ''; return; }
+  const root = views[current].el;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const targets = [];
+  while (walker.nextNode()) {
+    const n = walker.currentNode;
+    if (n.parentElement.closest('script,style')) continue;
+    if (n.nodeValue.toLowerCase().includes(word)) targets.push(n);
+  }
+  targets.forEach(n => {
+    const re = new RegExp('(' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    const frag = document.createDocumentFragment();
+    n.nodeValue.split(re).forEach(p => {
+      if (p.toLowerCase() === word) { const m = document.createElement('span'); m.className = 'hit-mark'; m.textContent = p; frag.appendChild(m); marks.push(m); }
+      else frag.appendChild(document.createTextNode(p));
+    });
+    n.parentNode.replaceChild(frag, n);
+  });
+  hitEl.textContent = marks.length ? '0/' + marks.length : '없음';
+}
+qInput.addEventListener('input', e => runSearch(e.target.value.trim().toLowerCase()));
+qInput.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || !marks.length) return;
+  e.preventDefault();
+  cursor = (cursor + 1) % marks.length;
+  marks[cursor].scrollIntoView({ block: 'center', behavior: 'smooth' });
+  hitEl.textContent = (cursor + 1) + '/' + marks.length;
+});
+addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); qInput.focus(); qInput.select(); }
+});
+
+/* ── 단어장 ─────────────────────────────────────── */
+const vlist = document.getElementById('vlist');
+const words = [...vlist.querySelectorAll('.vword')];
+document.getElementById('vcount').textContent = words.length + '개';
+document.getElementById('vTotal').textContent = words.length;
+
+document.getElementById('vq').addEventListener('input', e => {
+  const k = e.target.value.trim().toLowerCase();
+  let shown = 0;
+  words.forEach(w => { const ok = w.innerText.toLowerCase().includes(k); w.style.display = ok ? '' : 'none'; if (ok) shown++; });
+  document.getElementById('vcount').textContent = shown + '개';
+});
+
+const maskBtn = document.getElementById('maskBtn');
+maskBtn.onclick = () => {
+  const on = vlist.classList.toggle('masked');
+  maskBtn.classList.toggle('solid', on);
+  maskBtn.textContent = on ? '뜻 보이기' : '뜻 가리기';
+  if (!on) vlist.querySelectorAll('.show').forEach(el => el.classList.remove('show'));
+};
+vlist.querySelectorAll('.mean, .ex').forEach(el => {
+  el.onclick = () => { if (vlist.classList.contains('masked')) el.classList.toggle('show'); };
+});
+
+/* 퀴즈 — 위 목록에서 문제를 자동 생성 */
+const quiz = document.getElementById('quiz'), quizBtn = document.getElementById('quizBtn');
+const qQ = document.getElementById('quizQ'), qO = document.getElementById('quizOpts'), qS = document.getElementById('quizScore');
+let pool = [], solved = 0, correct = 0;
+const data = () => words.map(w => ({
+  word: w.querySelector('.w').textContent,
+  mean: (w.querySelector('.mean').textContent.split('—')[1] || w.querySelector('.mean').textContent).trim()
+}));
+function nextQuiz() {
+  if (!pool.length) { qQ.textContent = '한 바퀴 끝'; qO.innerHTML = ''; qS.textContent = `${solved}문제 중 ${correct}개 정답`; return; }
+  const all = data(), cur = pool.pop();
+  qQ.textContent = cur.word;
+  const opts = [cur, ...all.filter(d => d.word !== cur.word).sort(() => Math.random() - .5).slice(0, 3)].sort(() => Math.random() - .5);
+  qO.innerHTML = '';
+  opts.forEach(o => {
+    const b = document.createElement('button');
+    b.className = 'opt'; b.textContent = o.mean;
+    b.onclick = () => {
+      solved++;
+      if (o.word === cur.word) { b.classList.add('ok'); correct++; }
+      else { b.classList.add('no'); [...qO.children].find(x => x.textContent === cur.mean)?.classList.add('ok'); }
+      [...qO.children].forEach(x => x.disabled = true);
+      qS.textContent = `${solved}문제 중 ${correct}개 정답`;
+      setTimeout(nextQuiz, 1000);
+    };
+    qO.appendChild(b);
+  });
+  qS.textContent = `${solved}문제 중 ${correct}개 정답 · 남은 ${pool.length}개`;
+}
+quizBtn.onclick = () => {
+  const on = quiz.classList.toggle('on');
+  quizBtn.classList.toggle('solid', on);
+  quizBtn.textContent = on ? '퀴즈 닫기' : '퀴즈 풀기';
+  if (on) { pool = data().sort(() => Math.random() - .5); solved = 0; correct = 0; nextQuiz(); }
+};
+</script>
+</body>
+</html>
