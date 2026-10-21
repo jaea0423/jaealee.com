@@ -257,7 +257,8 @@
 <script>
 /* ===== 설정 ===== */
 const CONFIG = {
-  plate: "22하4465",
+  // 차량 번호는 원문 대신 간단히 변환해 저장(단순 HTML 수집 봇이 번호를 바로 못 읽게). 아래 '번호 바꾸는 법' 참고
+  plateCode: "WFOI9PRRURtW",
   // Supabase Edge Function 주소: https://프로젝트ID.supabase.co/functions/v1/car-contact
   // 비어 있으면 전송하지 않고 실패로 안내함. 봇 토큰은 절대 여기에 넣지 않음(Edge Function Secret에만 저장)
   endpoint: "https://tequnppstugefkhilaqs.supabase.co/functions/v1/car-contact",
@@ -291,6 +292,16 @@ const sheet = $("sheet"), backdrop = $("backdrop"), form = $("form"), done = $("
 const chipsEl = $("chips"), detail = $("detail"), phone = $("phone"), hint = $("phoneHint");
 const submitBtn = $("submitBtn");
 let current = "move", selected = "";
+
+/* 차량 번호 복원: base64 → 키와 XOR → UTF-8 글자.
+   번호 바꾸는 법: 브라우저 콘솔에서 encodePlate("12가3456") 실행 → 나온 값을 plateCode에 넣기 */
+const PLATE_KEY = "jaealee-car";
+function xorBytes(bytes){ const k = new TextEncoder().encode(PLATE_KEY); return bytes.map((b, i) => b ^ k[i % k.length]); }
+function decodePlate(code){
+  try { return new TextDecoder().decode(xorBytes(Uint8Array.from(atob(code), c => c.charCodeAt(0)))); } catch { return ""; }
+}
+function encodePlate(plate){ return btoa(String.fromCharCode(...xorBytes(new TextEncoder().encode(plate)))); }
+CONFIG.plate = decodePlate(CONFIG.plateCode);
 
 /* 차량 번호 표시: "12호3456" → "12호 3456" */
 (function renderPlate(){
