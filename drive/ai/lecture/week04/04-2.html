@@ -6,7 +6,7 @@
 <title>4주차 2차시 · 규칙기반 AI와 기계학습 입문</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --desk:#D9DDE5;      /* 슬라이드 뒤 바탕 */
@@ -101,6 +101,17 @@ figure.img{display:flex;flex-direction:column;align-items:center}
 .tag2{display:inline-block;font-size:.62em;font-weight:700;color:var(--violet);border:1px solid #DDD5FF;background:#F3F0FF;border-radius:4px;padding:.05em .45em;vertical-align:.2em;margin-left:.4em}
 .warn{background:#FFF4E5;border-radius:8px;padding:.7em 1em}
 .warn .h{color:#B45309}
+
+/* 수식 */
+.fx{font-family:var(--sans);font-size:1.3em;text-align:center;background:var(--soft);border-radius:8px;padding:.45em .8em;margin:0 0 .7em;line-height:1.5}
+.fx.l{text-align:left}
+.fx .note{display:block;font-family:var(--sans);font-size:.6em;color:var(--mute);margin-top:.2em}
+.m{font-family:var(--sans);font-style:normal;white-space:nowrap}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 .15em;line-height:1.25}
+.frac>span:last-child{border-top:1.5px solid currentColor;padding-top:.05em}
+.frac>span{padding:0 .2em}
+.big-sum{font-size:1.35em;vertical-align:-.12em}
+sub,sup{font-size:.68em;line-height:0}
 
 /* 표지 */
 .cover{justify-content:flex-end;padding-bottom:84px}
@@ -262,7 +273,7 @@ body.toc-on .scrim{display:block}
 </section>
 
 <!-- ───── 오늘의 질문 ───── -->
-<section class="slide" data-name="오늘의 질문">
+<section class="slide" id="intro" data-name="오늘의 질문">
   <h2>오늘은 질문 두 개를 따라갑니다</h2>
   <div class="body">
     <div class="cols" style="margin-bottom:1.3em">
@@ -1770,12 +1781,13 @@ dies(X) <span class="k">:-</span> animal(X).  <span class="c">% 동물이면 죽
   function setPdf(s) {
     const d = DOCS[s.dataset.doc];
     if (!d || !s.dataset.pg) { pdfBtn.hidden = true; return; }
+    // offset: 교안 쪽 번호(슬라이드 아래 번호)와 PDF 쪽 번호의 차이 (표지 때문에 보통 1)
     const first = s.dataset.pg.split(/[–-]/)[0], gone = missing.has(d.file);
     pdfBtn.hidden = false;
     pdfBtn.textContent = `${d.name} - p.${s.dataset.pg}` + (gone ? ' (PDF 준비 중)' : '');
     pdfBtn.classList.toggle('missing', gone);
     if (gone) { pdfBtn.removeAttribute('href'); pdfBtn.title = '이 교안 PDF는 아직 올라오지 않았습니다'; }
-    else { pdfBtn.href = `${d.file}#page=${first}`; pdfBtn.title = '교안 PDF를 이 쪽에서 엽니다'; }
+    else { pdfBtn.href = `${d.file}#page=${+first + (d.offset || 0)}`; pdfBtn.title = '교안 PDF를 이 쪽에서 엽니다'; }
   }
 
   // 넘치는 장은 글자 기준 크기를 조금씩 줄여 16:9 안에 맞춘다 (최소 18px)
@@ -1856,9 +1868,17 @@ dies(X) <span class="k">:-</span> animal(X).  <span class="c">% 동물이면 죽
   view.addEventListener('touchstart', e => x0 = e.touches[0].clientX, { passive: true });
   view.addEventListener('touchend', e => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 50) show(i + (dx < 0 ? 1 : -1)); x0 = null; });
   addEventListener('resize', fit);
-  addEventListener('hashchange', () => show((parseInt(location.hash.slice(1)) || 1) - 1));
+  // 주소 뒤 #: 장 번호(#12), 예전 화면의 섹션 주소(#s11 → 11번 섹션 첫 장), 이름표(#intro)
+  function fromHash() {
+    const h = decodeURIComponent(location.hash.slice(1));
+    if (/^\d+$/.test(h)) return +h - 1;
+    const m = h.match(/^s(\d+)$/);
+    const k = m ? slides.findIndex(x => x.dataset.sec === m[1].padStart(2, '0')) : slides.findIndex(x => h && x.id === h);
+    return k >= 0 ? k : null;
+  }
+  addEventListener('hashchange', () => { const k = fromHash(); if (k !== null) show(k); });
   let saved = 0; try { saved = parseInt(localStorage.getItem(KEY)) || 0; } catch (e) {}
-  fit(); show((parseInt(location.hash.slice(1)) || saved || 1) - 1);
+  fit(); { const k = fromHash(); show(k !== null ? k : (saved || 1) - 1); }
   (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => { fitText(); show(i); });
   // 그림이 늦게 불러와지면 크기가 바뀌므로 다 불러온 뒤 한 번 더 맞춘다
   addEventListener('load', () => { fitText(); show(i); });
