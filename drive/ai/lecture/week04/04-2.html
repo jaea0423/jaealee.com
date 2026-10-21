@@ -203,7 +203,10 @@ table{border-collapse:collapse;width:100%}
 .nav button:hover{background:rgba(255,255,255,.6)}
 .nav .track{flex:1;height:4px;background:rgba(28,32,51,.12);border-radius:4px;overflow:hidden}
 .nav .track i{display:block;height:100%;background:var(--violet);width:0}
-.nav .cnt{font-size:14px;color:var(--mute);font-variant-numeric:tabular-nums;min-width:64px;text-align:right}
+.nav .cnt{font-size:14px;color:var(--mute);font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:6px}
+.nav .cnt input{font:inherit;font-size:14px;font-weight:600;color:var(--ink);width:52px;height:28px;text-align:center;border:1px solid rgba(28,32,51,.18);border-radius:6px;background:rgba(255,255,255,.85);font-variant-numeric:tabular-nums;-moz-appearance:textfield}
+.nav .cnt input::-webkit-inner-spin-button,.nav .cnt input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.nav .cnt input:focus{outline:2px solid var(--violet);outline-offset:1px;background:#fff}
 
 /* 왼쪽 목차 (기본 접힘) */
 .toc{position:fixed;top:0;left:0;bottom:0;width:340px;background:var(--paper);border-right:1px solid var(--rule);z-index:30;padding:60px 0 24px;overflow-y:auto;transform:translateX(-100%);transition:transform .2s}
@@ -251,7 +254,7 @@ body.toc-on .scrim{display:block}
 <script type="application/json" id="docs">{"ch6":{"name":"6장 규칙기반 인공지능","file":"04-2-slides1.pdf"},"ml":{"name":"Introduction to Machine Learning","file":"04-2-slides2.pdf"}}</script>
 <!-- ───── 표지 ───── -->
 <section class="slide cover" data-name="표지">
-  <div class="how">넘기기 <span class="k">←</span><span class="k">→</span> · <span class="k">Space</span> 다음 장 · 화면 클릭 (왼쪽 1/3은 이전) · <span class="k">M</span> 목차</div>
+  <div class="how">넘기기 <span class="k">←</span><span class="k">→</span> · <span class="k">Space</span> 다음 장 · 화면 클릭 (왼쪽 1/3은 이전) · <span class="k">M</span> 목차 · 오른쪽 아래 번호 칸에 장 번호 입력 후 <span class="k">Enter</span></div>
   <div class="big" aria-hidden="true">04·2</div>
   <div class="course">인공지능 · 4주차 2차시</div>
   <h1>규칙으로 생각하는 AI,<br>데이터로 배우는 AI</h1>
@@ -1738,7 +1741,7 @@ dies(X) <span class="k">:-</span> animal(X).  <span class="c">% 동물이면 죽
 <nav class="nav" aria-label="슬라이드 이동">
   <button type="button" id="prev" aria-label="이전 장">◀</button>
   <div class="track"><i id="prog"></i></div>
-  <span class="cnt" id="cnt"></span>
+  <label class="cnt" title="장 번호를 입력하고 Enter"><input type="number" id="go" min="1" inputmode="numeric" aria-label="이동할 장 번호"><span id="tot"></span></label>
   <button type="button" id="next" aria-label="다음 장">▶</button>
 </nav>
 
@@ -1747,6 +1750,7 @@ dies(X) <span class="k">:-</span> animal(X).  <span class="c">% 동물이면 죽
   const slides = [...document.querySelectorAll('.slide')];
   const stage = document.getElementById('stage'), view = document.getElementById('view'), toc = document.getElementById('toc');
   let i = 0;
+  const go = document.getElementById('go'), KEY = 'deck:' + location.pathname;
 
   // 장 번호와 섹션 표시
   slides.forEach((s, k) => {
@@ -1805,7 +1809,10 @@ dies(X) <span class="k">:-</span> animal(X).  <span class="c">% 동물이면 죽
   function show(k) {
     i = Math.max(0, Math.min(slides.length - 1, k));
     slides.forEach((s, n) => s.classList.toggle('on', n === i));
-    document.getElementById('cnt').textContent = `${i + 1} / ${slides.length}`;
+    if (document.activeElement !== go) go.value = i + 1;
+    document.getElementById('tot').textContent = `/ ${slides.length}`;
+    // 마지막으로 본 장을 기억해 다음에 열 때 이어서 보여 준다 (저장이 막힌 브라우저면 그냥 넘어감)
+    try { localStorage.setItem(KEY, i + 1); } catch (e) {}
     document.getElementById('prog').style.width = ((i + 1) / slides.length * 100) + '%';
     toc.querySelectorAll('a').forEach(a => a.classList.toggle('on', +a.dataset.k === i));
     setPdf(slides[i]);
@@ -1826,8 +1833,17 @@ dies(X) <span class="k">:-</span> animal(X).  <span class="c">% 동물이면 죽
     const r = stage.getBoundingClientRect();
     show(i + (e.clientX - r.left < r.width / 3 ? -1 : 1));
   });
+  // 오른쪽 아래 장 번호 칸: 숫자를 넣고 Enter로 이동, Esc로 취소
+  go.max = slides.length;
+  go.addEventListener('focus', () => go.select());
+  go.addEventListener('keydown', e => {
+    e.stopPropagation();
+    if (e.key === 'Enter') { const n = parseInt(go.value); if (n) show(n - 1); go.blur(); }
+    else if (e.key === 'Escape') { go.value = i + 1; go.blur(); }
+  });
+  go.addEventListener('blur', () => { go.value = i + 1; });
   addEventListener('keydown', e => {
-    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.ctrlKey || e.metaKey || e.altKey || e.target.closest('input,textarea')) return;
     if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); show(i + 1); }
     else if (e.key === ' ') { e.preventDefault(); show(e.shiftKey ? i - 1 : i + 1); }
     else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); show(i - 1); }
@@ -1841,7 +1857,8 @@ dies(X) <span class="k">:-</span> animal(X).  <span class="c">% 동물이면 죽
   view.addEventListener('touchend', e => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 50) show(i + (dx < 0 ? 1 : -1)); x0 = null; });
   addEventListener('resize', fit);
   addEventListener('hashchange', () => show((parseInt(location.hash.slice(1)) || 1) - 1));
-  fit(); show((parseInt(location.hash.slice(1)) || 1) - 1);
+  let saved = 0; try { saved = parseInt(localStorage.getItem(KEY)) || 0; } catch (e) {}
+  fit(); show((parseInt(location.hash.slice(1)) || saved || 1) - 1);
   (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => { fitText(); show(i); });
   // 그림이 늦게 불러와지면 크기가 바뀌므로 다 불러온 뒤 한 번 더 맞춘다
   addEventListener('load', () => { fitText(); show(i); });
