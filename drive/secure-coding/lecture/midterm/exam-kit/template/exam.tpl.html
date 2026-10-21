@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>시험 검색</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap');
+/* 참고 페이지(모두의 인공지능 자료실)와 같은 파스텔 유리 카드 분위기.
+   단, 오래 읽는 본문 창은 거의 불투명한 흰 바탕 + 진한 글자로 가독성을 지킨다 */
+:root{
+  /*THEME*/
+  --glass:rgba(255,255,255,.55); --glass-strong:rgba(255,255,255,.82); --glass-border:rgba(255,255,255,.75);
+  --shadow-soft:0 8px 32px rgba(var(--shade-rgb),.18); --shadow-strong:0 12px 48px rgba(var(--shade-rgb),.28);
+  --blue:#4a9ee8; --teal:#2fa596; --amber:#e08a00; --hit:#ffe066;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:17px}
+body{font-family:'Noto Sans KR',-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:var(--ink);line-height:1.6;min-height:100vh;word-break:keep-all;overflow-wrap:anywhere;
+  background:var(--bg);background-attachment:fixed}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+a{color:inherit}
+.bg-shapes{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.bg-shapes .s{position:absolute;border-radius:50%;filter:blur(2px);opacity:.6;animation:float 18s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translate(0,0)}33%{transform:translate(20px,-30px)}66%{transform:translate(-15px,20px)}}
+
+.page{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:40px 28px 80px}
+
+/* ── 헤더 ── */
+.header{text-align:center;padding:16px 0 36px}
+.header .badge{display:inline-block;padding:6px 18px;background:var(--glass-strong);border:1px solid var(--glass-border);border-radius:999px;font-size:13px;font-weight:700;letter-spacing:3px;color:var(--primary);margin-bottom:18px}
+.header h1{font-family:'Noto Sans KR',sans-serif;font-weight:900;font-size:clamp(38px,6vw,62px);line-height:1.15;color:var(--ink);letter-spacing:-1.5px;margin-bottom:10px}
+.header .subtitle{font-size:19px;font-weight:600;color:var(--ink-2)}
+.header .meta{display:inline-block;margin-top:14px;padding:8px 22px;background:var(--glass);border:1px solid var(--glass-border);border-radius:999px;font-size:14.5px;font-weight:500}
+
+/* ── 검색 (화면 위에 고정) ── */
+.search-section{position:sticky;top:14px;z-index:60;margin-bottom:34px}
+.search-box{background:var(--glass-strong);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:24px;padding:12px 14px 12px 22px;box-shadow:var(--shadow-soft);border:1.5px solid var(--glass-border);display:flex;align-items:center;gap:12px}
+.search-box:focus-within{box-shadow:var(--shadow-strong)}
+.search-box .icon{font-size:22px}
+.search-box input{flex:1;min-width:0;background:transparent;border:0;outline:0;font:inherit;font-size:19px;font-weight:500;color:var(--ink)}
+.search-box input::placeholder{color:var(--ink-3)}
+.pos{font-size:14px;font-weight:700;color:var(--primary);white-space:nowrap;font-variant-numeric:tabular-nums}
+.clr{font-size:22px;color:var(--ink-3);padding:0 6px;display:none}
+.has .clr{display:block}
+.kbd,.tocbtn{font-size:13px;color:var(--ink-2);padding:6px 12px;background:rgba(255,255,255,.7);border-radius:10px;border:1px solid rgba(var(--primary-rgb),.22);white-space:nowrap;font-weight:700}
+.tocbtn:hover{border-color:var(--primary);color:var(--primary)}
+body.toc-on .tocbtn{background:var(--primary);color:#fff;border-color:var(--primary)}
+.filters{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-top:10px;padding:0 6px 2px}
+.filters::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:5px 13px;border-radius:999px;background:var(--glass);border:1px solid var(--glass-border);font-size:14px;font-weight:700;color:var(--ink-2);backdrop-filter:blur(8px)}
+.chip .c{font-weight:500;font-size:12.5px;margin-left:3px;opacity:.8}
+.chip.on{background:var(--primary);border-color:var(--primary);color:#fff}
+.chip.wk{min-width:40px;padding:5px 10px}
+.chip.wk.on{background:var(--accent);border-color:var(--accent)}
+.fsep{width:1px;background:rgba(255,255,255,.7);margin:3px 4px}
+
+/* 결과 목록 (검색창 아래로 펼쳐짐) */
+.results{margin-top:10px;background:var(--glass-strong);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:20px;box-shadow:var(--shadow-soft);border:1.5px solid var(--glass-border);max-height:62vh;overflow-y:auto;display:none;padding:8px}
+.results.active{display:block}
+.rcount{font-size:13.5px;color:var(--ink-2);padding:8px 14px 10px;border-bottom:1px solid rgba(var(--primary-rgb),.15);margin-bottom:6px;font-weight:500;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.rgrp{font-size:12.5px;font-weight:800;color:var(--ink-3);padding:10px 14px 4px;letter-spacing:.03em}
+.ritem{display:block;width:100%;text-align:left;padding:11px 16px;border-radius:14px;cursor:pointer;transition:background .15s,transform .15s}
+.ritem:hover,.ritem.sel{background:linear-gradient(135deg,var(--tint-a),var(--tint-b));transform:translateX(4px)}
+.r1{display:flex;gap:10px;align-items:baseline}
+.rkw{font-size:17px;font-weight:700;color:var(--ink);line-height:1.45;flex:1}
+.rmeta{font-size:12px;padding:3px 10px;border-radius:999px;font-weight:700;white-space:nowrap;background:rgba(var(--primary-rgb),.14);color:var(--primary)}
+.rmeta.q{background:rgba(var(--accent-rgb),.16);color:var(--accent-dark)}
+.rmeta.law{background:rgba(74,158,232,.16);color:var(--primary-dark)}
+.rmeta.term{background:rgba(47,165,150,.16);color:#1d7a6e}
+.rmeta.chk{background:rgba(224,138,0,.16);color:#9a5c00}
+.rmeta.slide,.rmeta.tx{background:rgba(var(--shade-rgb),.1);color:var(--ink-2)}
+.rsub{font-size:13px;color:var(--ink-3);margin-top:1px}
+.rsum{font-size:14.5px;color:var(--ink-2);margin-top:4px;line-height:1.6}
+.rans{font-size:15px;color:var(--read);margin-top:6px;padding:7px 11px;border-radius:10px;background:rgba(255,255,255,.75);line-height:1.6}
+.rans b{color:var(--accent-dark);margin-right:6px}
+.more{display:block;margin:4px auto 8px;padding:6px 16px;border-radius:999px;background:rgba(var(--primary-rgb),.12);color:var(--primary);font-weight:700;font-size:13.5px}
+.none{padding:28px 20px;text-align:center;color:var(--ink-2);font-size:15px;line-height:1.8}
+mark.h{background:var(--hit);color:#2b2300;border-radius:3px;padding:0 1px}
+
+/* ── 우선 버튼 ── */
+.priority{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:0 0 8px}
+.pa{display:flex;align-items:center;gap:18px;padding:20px 26px;border-radius:22px;color:#fff;text-align:left;background:linear-gradient(135deg,var(--accent),var(--accent-dark));box-shadow:0 10px 28px rgba(var(--accent-rgb),.35);border:2px solid rgba(255,255,255,.7);transition:transform .18s,box-shadow .18s}
+.pa.blue{background:linear-gradient(135deg,var(--primary-2),var(--primary-dark));box-shadow:0 10px 28px rgba(var(--primary-rgb),.35)}
+.pa:hover{transform:translateY(-3px);box-shadow:0 14px 36px rgba(var(--shade-rgb),.4)}
+.pa .e{font-size:38px;line-height:1}
+.pa .tx{flex:1;display:flex;flex-direction:column}
+.pa .t{font-weight:800;font-size:23px;margin-bottom:2px}
+.pa .s{font-size:14px;opacity:.95}
+.pa .b{background:rgba(255,255,255,.28);padding:5px 12px;border-radius:999px;font-size:13px;font-weight:800;}
+
+/* ── 섹션 제목 ── */
+.stitle{font-weight:800;font-size:27px;color:var(--ink);margin:46px 0 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;scroll-margin-top:150px}
+.stitle .cnt{font-size:14px;padding:4px 12px;background:var(--glass);border-radius:999px;color:var(--ink);font-weight:700;text-shadow:none;border:1px solid var(--glass-border)}
+
+/* ── 주차 카드 ── */
+.wgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:20px}
+.wcard{background:var(--glass-strong);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:26px;padding:22px 22px 18px;box-shadow:var(--shadow-soft);border:1.5px solid var(--glass-border);display:flex;flex-direction:column}
+.wnum{font-family:'Noto Sans KR',sans-serif;font-weight:800;font-size:54px;line-height:1;background:linear-gradient(135deg,var(--primary),var(--accent-light));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-3px}
+.wnum small{font-size:21px;-webkit-text-fill-color:var(--ink-3);margin-left:4px;font-weight:800;letter-spacing:0}
+.wtitle{font-weight:800;font-size:21px;margin:4px 0 2px;line-height:1.3}
+.wdate{font-size:13px;color:var(--ink-3);font-weight:500;margin-bottom:8px}
+.wsecs{list-style:none;margin:6px 0 14px;border-top:1px solid rgba(var(--primary-rgb),.15);flex:1}
+.wsecs li button{display:flex;gap:10px;width:100%;text-align:left;padding:7px 6px;border-bottom:1px solid rgba(var(--primary-rgb),.1);font-size:15px;line-height:1.45;color:var(--ink);border-radius:6px}
+.wsecs li button:hover{background:rgba(255,255,255,.75);color:var(--primary)}
+.wsecs .no{color:var(--primary);font-weight:800;font-size:12.5px;min-width:20px;padding-top:2px;font-variant-numeric:tabular-nums}
+.wlinks{display:flex;gap:8px}
+.wlinks a{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:10px 8px;border-radius:14px;text-decoration:none;font-size:13.5px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--primary),var(--primary-2));transition:transform .15s,box-shadow .15s}
+.wlinks a.pdf{background:linear-gradient(135deg,var(--accent-light),var(--accent))}
+.wlinks a:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(var(--shade-rgb),.3)}
+
+/* ── 교수님 질문 ── */
+.qwrap{display:grid;grid-template-columns:repeat(auto-fill,minmax(480px,1fr));gap:16px}
+.qcard{background:var(--glass-strong);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:22px;padding:18px 22px;box-shadow:var(--shadow-soft);border:1.5px solid var(--glass-border)}
+.qmeta{font-size:12.5px;font-weight:700;color:var(--ink-3);margin-bottom:6px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.qmeta .k{padding:2px 10px;border-radius:999px;background:rgba(var(--accent-rgb),.16);color:var(--accent-dark)}
+.qq{font-size:17.5px;font-weight:700;line-height:1.55;color:var(--read)}
+.qa{margin-top:10px;padding:11px 14px;border-radius:14px;background:rgba(255,255,255,.88);font-size:16px;line-height:1.7;color:var(--read)}
+.qa b{color:var(--accent-dark);margin-right:8px}
+.qd{margin-top:8px;font-size:14px;color:var(--ink-2);line-height:1.65}
+.qopen{margin-top:10px;font-size:13.5px;font-weight:700;color:var(--primary);padding:5px 12px;border-radius:999px;background:rgba(var(--primary-rgb),.12)}
+.qfilter{display:flex;gap:6px;flex-wrap:wrap;margin:-8px 0 16px}
+
+/* ── 시험 카드 · AI 파일 ── */
+.exam{background:linear-gradient(135deg,rgba(255,255,255,.88),var(--tint-a));border-radius:30px;padding:28px 32px;box-shadow:var(--shadow-strong);border:2px solid rgba(var(--accent-rgb),.5);display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center}
+.exam .ic{font-size:84px;text-align:center}
+.exam h3{font-family:'Noto Sans KR',sans-serif;font-weight:800;font-size:36px;background:linear-gradient(135deg,var(--accent-light),var(--primary));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px}
+.sched{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.sched div{background:rgba(255,255,255,.75);padding:12px 16px;border-radius:16px;border:1px solid rgba(var(--primary-rgb),.2)}
+.sched b{display:block;font-size:12px;color:var(--ink-3);font-weight:700;letter-spacing:1px;margin-bottom:2px}
+.sched span{font-weight:800;font-size:19px}
+.exam .note{margin-top:14px;font-size:14.5px;color:var(--ink-2);padding:10px 14px;background:rgba(var(--primary-rgb),.08);border-radius:12px;border-left:3px solid var(--primary);line-height:1.7}
+.llm{margin-top:46px;padding:28px 30px;background:linear-gradient(135deg,rgba(var(--deep-rgb),.88),rgba(var(--shade-rgb),.88));border:1.5px solid rgba(255,255,255,.3);border-radius:24px;box-shadow:var(--shadow-soft);color:#fff}
+.llm .h{display:flex;align-items:center;gap:12px;font-weight:800;font-size:25px;margin-bottom:6px}
+.llm p{color:rgba(255,255,255,.9);font-size:14.5px;line-height:1.7;margin-bottom:18px}
+.llm code{background:rgba(255,255,255,.16);padding:1px 7px;border-radius:6px;font-size:13px}
+.lgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:12px}
+.lf{display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:14px;text-decoration:none;color:#fff;transition:transform .15s,background .15s}
+.lf:hover{background:rgba(255,255,255,.22);transform:translateY(-2px)}
+.lf .e{font-size:25px}.lf .m{flex:1}.lf .n{white-space:nowrap;font-weight:800;font-size:16px}.lf .s{font-size:12px;opacity:.85}
+.lf .r{background:rgba(var(--accent-rgb),.3);border:1px solid rgba(var(--accent-rgb),.6);padding:3px 10px;border-radius:999px;font-size:12px;font-weight:800;}
+footer{margin-top:60px;text-align:center}
+footer div{display:inline-block;background:var(--glass);border:1px solid var(--glass-border);padding:10px 24px;border-radius:999px;font-size:13px;font-weight:500}
+
+/* ── 목차 서랍 ── */
+.toc{position:fixed;left:14px;top:var(--rtop,120px);bottom:14px;width:320px;z-index:70;background:#fff;border-radius:20px;box-shadow:var(--shadow-strong);border:1.5px solid var(--glass-border);overflow:auto;padding:12px 10px 30px;display:none}
+body.toc-on .toc{display:block}
+.toc h4{font-weight:800;font-size:17px;margin:12px 10px 4px;color:var(--primary)}
+.toc button{display:block;width:100%;text-align:left;padding:5px 10px;border-radius:8px;font-size:14.5px;line-height:1.45;color:var(--ink)}
+.toc button:hover{background:rgba(var(--primary-rgb),.1)}
+.toc .no{color:var(--ink-3);font-size:12px;margin-right:6px}
+
+/* ── 본문 창 (결과를 열면 위에 겹쳐 뜸) ── */
+.reader{position:fixed;left:50%;transform:translateX(-50%);top:var(--rtop,120px);bottom:14px;width:min(1080px,calc(100% - 28px));z-index:55;background:rgba(255,255,255,.98);border-radius:24px;box-shadow:var(--shadow-strong);border:1.5px solid var(--glass-border);display:none;flex-direction:column;overflow:hidden}
+body.reading .reader{display:flex}
+.rbar{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid var(--line);background:linear-gradient(135deg,var(--tint-a),var(--tint-b));flex-wrap:wrap}
+.rbtn{padding:6px 12px;border-radius:10px;background:#fff;border:1px solid var(--line);font-size:13.5px;font-weight:700;color:var(--ink-2);text-decoration:none;white-space:nowrap}
+.rbtn:hover{border-color:var(--primary);color:var(--primary)}
+.rbtn.x{margin-left:auto}
+.hits{font-size:13.5px;font-weight:700;color:var(--ink-3);display:flex;gap:6px;align-items:center;margin-left:8px}
+.rscroll{overflow:auto;padding:26px 44px 70px;flex:1}
+.rin{max-width:860px;margin:0 auto}
+.dh{margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid var(--line-2)}
+.crumb{font-size:13.5px;font-weight:700;color:var(--primary);display:flex;gap:8px;flex-wrap:wrap}
+.crumb span+span:before{content:"›";margin-right:8px;color:var(--ink-3)}
+.dh h2{font-size:28px;line-height:1.35;color:var(--read);margin:6px 0 4px;letter-spacing:-.01em}
+.dh .bd{font-size:13px;color:var(--ink-3);font-weight:600}
+
+.body{font-size:17.5px;line-height:1.85;color:var(--read)}
+.body h3{font-size:20px;margin:32px 0 12px;color:var(--ink)}
+.body p{margin:10px 0}
+.body ul{padding-left:24px;margin:8px 0}
+.body li{margin:6px 0}
+.body .en{color:var(--ink-3);font-size:.85em;font-weight:500}
+.body mark{background:var(--primary-soft);color:var(--primary-dark);font-weight:700;border-radius:4px;padding:1px 4px}
+.body mark.h{background:var(--hit);color:#2b2300;font-weight:inherit;padding:0 1px}
+.body mark.h.now{box-shadow:0 0 0 3px var(--accent)}
+.body .ext{background:#eef3f5;border-radius:4px;padding:1px 5px}
+.body .ext:before{content:"보충 · ";font-weight:800;color:var(--ink-3);font-size:.85em}
+.body .call{border-radius:14px;padding:14px 18px;margin:16px 0;background:#f4f8fa;border:1px solid var(--line);border-left:5px solid #86a3b0}
+.body .call .t{font-weight:800;font-size:16px;margin-bottom:6px;line-height:1.5}
+.body .call p{margin:6px 0}
+.body .call:not(.warn):not(.ask):not(.quote):not(.extra){border-left-color:var(--blue);background:#f3f8fe}
+.body .call:not(.warn):not(.ask):not(.quote):not(.extra) .t{color:var(--primary-dark)}
+.body .call.warn{border-left-color:var(--accent);background:var(--accent-soft)}
+.body .call.warn .t{color:var(--accent-dark)}
+.body .call.ask{border-left-color:var(--amber);background:#fff8ea}
+.body .call.ask .t{color:#9a5c00}
+.body .call.quote{border-left-color:var(--teal);background:#effaf8}
+.body .call.quote .t{color:#1d7a6e}
+.body .call.extra{border-left-style:dashed}
+.tablewrap{overflow-x:auto;margin:14px 0}
+.body table{border-collapse:collapse;width:100%;font-size:15.5px;line-height:1.65;background:#fff}
+.body th,.body td{border:1px solid var(--line);padding:9px 12px;vertical-align:top;text-align:left}
+.body th{background:var(--surface-2);font-weight:800;color:var(--ink)}
+.body tr:nth-child(even) td{background:#fafcfd}
+.body figure{margin:20px 0}
+.body figure svg{width:100%;height:auto;max-width:760px}
+.body figcaption{font-size:13.5px;color:var(--ink-3);margin-top:6px}
+.body .badges{display:flex;gap:6px;flex-wrap:wrap}
+.body .badge{font-size:12.5px;font-weight:700;padding:2px 8px;border-radius:6px;background:var(--surface-2);color:var(--ink-2)}
+.body .q{border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:10px 0}
+.body details.raw{display:none}
+.lq{margin-top:34px;border-top:2px solid var(--line-2);padding-top:14px}
+.lq h4{font-size:14px;color:var(--ink-3);margin-bottom:8px}
+.lq div,.txl{font-size:15.5px;color:var(--ink-2);padding:6px 0;border-bottom:1px dashed var(--line);line-height:1.75}
+.tm{font-variant-numeric:tabular-nums;color:var(--primary);font-weight:800;margin-right:10px}
+.txl.cur{background:#fff6d6;border-radius:8px;padding:6px 10px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 18px;border-radius:999px;font-weight:700;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:90}
+.toast.on{opacity:1}
+
+@media (max-width:760px){
+  html{font-size:16px}
+  .page{padding:22px 14px 60px}
+  .header{padding:6px 0 22px}
+  .header .subtitle{font-size:19px;font-weight:600;color:var(--ink-2)}
+  .search-box{padding:10px 10px 10px 14px;gap:8px}
+  .search-box input{font-size:17px}
+  .kbd{display:none}
+  .filters{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+  .chip{flex:none}
+  .priority{grid-template-columns:1fr}
+  .pa{padding:15px 18px}.pa .e{font-size:30px}.pa .t{font-size:19px}
+  .wgrid,.qwrap{grid-template-columns:1fr}
+  .exam{grid-template-columns:1fr;padding:22px}.exam .ic{display:none}
+  .sched{grid-template-columns:1fr 1fr}
+  .reader{width:calc(100% - 16px);bottom:8px}
+  .rbar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding:8px 10px;gap:6px}
+  .rbar>*{flex:none}
+  .rbtn{padding:6px 10px;font-size:13px}
+  .hits{margin-left:0}.hits span{display:none}
+  .rbtn.x{order:-1;margin-left:0}
+  .rscroll{padding:18px 18px 60px}
+  .body{font-size:16.5px}
+  .toc{width:calc(100% - 28px)}
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="header">
+    <div class="badge" id="hbadge"></div>
+    <h1 id="htitle"></h1>
+    <div class="subtitle" id="hsub"></div>
+    <div class="meta" id="hmeta"></div>
+  </div>
+
+  <div class="search-section" id="ss">
+    <div class="search-box" id="sbox">
+      <span class="icon">🔍</span>
+      <input type="text" id="q" placeholder="검색" autocomplete="off" aria-label="검색">
+      <span class="pos" id="pos"></span>
+      <button class="clr" id="clr" aria-label="지우기">×</button>
+      <span class="kbd">Enter 다음 · Esc 닫기</span>
+      <button class="tocbtn" id="tocBtn">☰ 목차</button>
+    </div>
+    <div class="filters" id="filters"></div>
+    <div class="results" id="results" role="listbox"></div>
+  </div>
+
+  <div class="priority">
+    <button class="pa" id="goQ"><span class="e">🎯</span><span class="tx"><span class="t">교수님 질문</span><span class="s">강의·교안에서 교수님이 낸 질문과 답</span></span><span class="b" id="qcnt"></span></button>
+    <button class="pa blue" id="goLaw"><span class="e">⚖️</span><span class="tx"><span class="t">조문 모음</span><span class="s">주차별 조문 원문 바로 찾기</span></span><span class="b" id="lcnt"></span></button>
+  </div>
+
+  <h2 class="stitle">📖 주차별 개념 <span class="cnt" id="wrange"></span></h2>
+  <div class="wgrid" id="wgrid"></div>
+
+  <h2 class="stitle" id="qsec">🎯 교수님 질문 <span class="cnt" id="qsecCnt"></span></h2>
+  <div class="qfilter" id="qfilter"></div>
+  <div class="qwrap" id="qwrap"></div>
+
+  <h2 class="stitle">📅 시험 정보</h2>
+  <div class="exam">
+    <div class="ic">📝</div>
+    <div>
+      <h3 id="ename"></h3>
+      <div class="sched" id="sched"></div>
+      <div class="note">⚠️ 교안과 현행법이 다르면 <b>교안 기준</b>으로 답합니다. 페이지의 “보충”은 교안·강의 밖 내용입니다. 강의 발화는 자동 음성 인식이라 오인식이 있을 수 있습니다.</div>
+    </div>
+  </div>
+
+  <div class="llm">
+    <div class="h">🤖 AI에게 줄 파일</div>
+    <p>시험 중 AI에 <code>PROMPT.md</code>를 첫 메시지로 넣고 아래 파일을 첨부하세요. AI는 1→4 순서로 답을 찾고, 답마다 출처와 신뢰 등급(A~F)을 붙입니다. 용량상 <b>1·2는 항상</b> 첨부하고, 3·4는 AI가 파일 검색을 지원하거나 용량이 남을 때 첨부합니다.</p>
+    <div class="lgrid">
+      <a class="lf" href="PROMPT.md" download><span class="e">📋</span><span class="m"><div class="n">PROMPT.md</div><div class="s">풀이 규칙 · 5줄 양식</div></span><span class="r">시작</span></a>
+      <a class="lf" href="1-QUESTIONS.md" download><span class="e">🎯</span><span class="m"><div class="n">1-QUESTIONS.md</div><div class="s">교수님 질문 30개 · 등급 표시</div></span><span class="r">1순위</span></a>
+      <a class="lf" href="2-SLIDES.md" download><span class="e">📑</span><span class="m"><div class="n">2-SLIDES.md</div><div class="s">교안 원문 · 주차·쪽 단위</div></span><span class="r">2순위</span></a>
+      <a class="lf" href="3-TRANSCRIPT.md" download><span class="e">🎙️</span><span class="m"><div class="n">3-TRANSCRIPT.md</div><div class="s">강의 발화 전문 · 음성 인식</div></span><span class="r">3순위</span></a>
+      <a class="lf" href="4-NOTES.md" download><span class="e">📚</span><span class="m"><div class="n">4-NOTES.md</div><div class="s">주차별 정리 · AI 작성</div></span><span class="r">4순위</span></a>
+    </div>
+  </div>
+
+  <footer><div id="foot"></div></footer>
+</div>
+
+<nav class="toc" id="toc"></nav>
+<section class="reader" id="reader">
+  <div class="rbar">
+    <button class="rbtn" id="prevR">◀ 이전</button><button class="rbtn" id="nextR">다음 ▶</button><button class="rbtn" id="listR">결과 목록</button>
+    <span class="hits" id="hitnav"></span>
+    <button class="rbtn" onclick="copyBody()">본문 복사 (AI용)</button>
+    <span id="rlinks"></span>
+    <button class="rbtn x" id="closeR">✕ 닫기</button>
+  </div>
+  <div class="rscroll" id="rscroll"><div class="rin" id="rin"></div></div>
+</section>
+<div class="toast" id="toast"></div>
+
+<script id="data" type="application/json">/*DATA*/</script>
+<script id="files" type="application/json">/*FILES*/</script>
+<script>
+const D = JSON.parse(document.getElementById('data').textContent);
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pad = n => String(n).padStart(2, '0');
+/* 링크 경로 규칙: {W}=주차 두 자리(01), {w}=주차 숫자. 소스 JSON의 paths로 바꿀 수 있다 */
+const PATHS = Object.assign({notes:'../lecture/week{W}/{W}-1.html', pdf:'../lecture/week{W}/{W}-1-material.pdf'}, D.paths || {});
+const P = (tpl, w) => tpl.replace(/\{W\}/g, pad(w)).replace(/\{w\}/g, w);
+const WK = D.weeks.map(w => w.week), RANGE = `${Math.min(...WK)}~${Math.max(...WK)}주차`;
+
+/* ── 검색 대상 목록 ── */
+const TYPES = [['q','교수님 질문'],['sec','개념'],['law','조문'],['call','강조·주의'],['term','용어'],['chk','확인·차이'],['slide','교안 원문'],['tx','강의 발화']];
+const TNAME = Object.fromEntries(TYPES);
+const SEC = Object.fromEntries(D.sections.map(s => [s.id, s]));
+const CALLKIND = {warn:'강조', quote:'교수님 말씀', ask:'주의', extra:'보충'};
+const items = [];
+D.questions.forEach(q => items.push({type:'q', week:q.week, title:q.q, text:q.a + ' ' + q.detail, sub:q.where, ref:q}));
+D.sections.forEach(s => items.push({type:'sec', week:s.week, title:s.title, text:s.text, key:s.nav + ' ' + s.marks.join(' ') + ' ' + s.badges.join(' '), sub:s.badges.join(' · '), ref:s}));
+D.laws.forEach(l => items.push({type:'law', week:l.week, title:l.title, text:l.text, sub:SEC[l.section] ? SEC[l.section].title : '', ref:l}));
+D.callouts.forEach(c => items.push({type:'call', week:c.week, title:c.title, text:c.text, sub:(CALLKIND[c.kind] || '') + ' · ' + (SEC[c.section] ? SEC[c.section].title : ''), ref:c}));
+D.terms.forEach(t => items.push({type:'term', week:t.week, title:t.term + ' (' + t.en + ')', text:t.desc, sub:'', ref:t}));
+D.checks.forEach(c => items.push({type:'chk', week:c.week, title:c.title, text:c.text, sub:'', ref:c}));
+D.slides.forEach(s => items.push({type:'slide', week:s.week, title:'교안 p.' + s.page + ' — ' + (s.text.split('\n').find(x => x.trim() && !x.startsWith('#') && !x.startsWith('<')) || ''), text:s.text, sub:'', ref:s}));
+D.transcript.forEach(t => items.push({type:'tx', week:t.week, title:t.text, text:'', sub:t.t, ref:t}));
+
+/* 띄어쓰기 무시 매칭: "제 17 조" = "제17조" */
+function termRe(term){
+  const chars = [...term.replace(/\s+/g, '')].map(c => c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  return new RegExp(chars.join('\\s*'), 'gi');
+}
+const W_TYPE = {q:6, sec:5, law:5, call:3, term:4, chk:2, slide:1, tx:0};
+let state = {q:'', type:'all', weeks:new Set(), list:[], at:-1, expanded:{}};
+
+function run(res1){
+  const res = [];
+  for (const it of items){
+    if (state.type !== 'all' && it.type !== state.type) continue;
+    if (state.weeks.size && !state.weeks.has(it.week)) continue;
+    if (!res1.length){ res.push({it, score:0}); continue; }
+    let score = 0, ok = true;
+    for (const re of res1){
+      re.lastIndex = 0; const inT = re.test(it.title);
+      re.lastIndex = 0; const inK = it.key ? re.test(it.key) : false;
+      re.lastIndex = 0; const cnt = (it.text.match(re) || []).length;
+      if (!inT && !inK && !cnt){ ok = false; break; }
+      score += (inT ? 20 : 0) + (inK ? 8 : 0) + Math.min(cnt, 6);
+    }
+    if (ok) res.push({it, score: score + W_TYPE[it.type]});
+  }
+  if (res1.length) res.sort((a, b) => b.score - a.score);
+  return res;
+}
+function search(){
+  // 입력 전체를 한 덩어리로 먼저 찾고, 없으면 단어별로 나눠 모두 포함된 것을 찾는다
+  const q = state.q.trim();
+  if (!q) return {res1: [], res: run([])};
+  const words = q.split(/\s+/).filter(Boolean);
+  let res1 = [termRe(q)], res = run(res1);
+  if (!res.length && words.length > 1){ res1 = words.map(termRe); res = run(res1); }
+  return {res1, res};
+}
+function hl(text, res1, max){
+  let s = String(text);
+  if (max && s.length > max){
+    let pos = -1;
+    for (const re of res1){ re.lastIndex = 0; const m = re.exec(s); if (m && (pos < 0 || m.index < pos)) pos = m.index; }
+    const st = Math.max(0, (pos < 0 ? 0 : pos) - Math.floor(max / 3));
+    s = (st > 0 ? '… ' : '') + s.slice(st, st + max) + (st + max < s.length ? ' …' : '');
+  }
+  let h = esc(s);
+  for (const re of res1){
+    const r2 = new RegExp(re.source.split('\\s*').map(c => esc(c.replace(/\\(.)/g, '$1')).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('\\s*'), 'gi');
+    h = h.replace(r2, m => '<mark class="h">' + m + '</mark>');
+  }
+  return h;
+}
+
+/* ── 결과 목록 ── */
+const LIMIT = {q:20, sec:12, law:10, call:8, term:8, chk:6, slide:6, tx:8};
+function showResults(){
+  const R = $('#results');
+  const active = state.q.trim() || state.type !== 'all';
+  state.list = []; state.at = -1;
+  if (!active){ R.classList.remove('active'); R.innerHTML = ''; showPos(); return; }
+  const {res1, res} = search();
+  if (!res.length){ R.innerHTML = `<div class="none">“${esc(state.q)}”에 대한 결과가 없습니다 🤔<br>단어를 줄이거나 다른 표현으로 찾아보세요.</div>`; R.classList.add('active'); showPos(); return; }
+  const groups = {};
+  res.forEach(r => (groups[r.it.type] = groups[r.it.type] || []).push(r.it));
+  let shown = 0; for (const [ty] of TYPES){ const g = groups[ty]; if (g) shown += Math.min(g.length, (state.type !== 'all' || state.expanded[ty]) ? 500 : LIMIT[ty]); }
+  let h = `<div class="rcount"><span>총 <b>${res.length}</b>개 결과${shown < res.length ? ` · 목록 ${shown}개 (더 보기로 펼침)` : ''}${state.weeks.size ? ' · ' + [...state.weeks].sort().join('·') + '주차' : ''}</span><span>Enter 다음 결과 · Shift+Enter 이전 · ↑↓ 선택</span></div>`;
+  for (const [ty] of TYPES){
+    const g = groups[ty]; if (!g) continue;
+    const lim = (state.type !== 'all' || state.expanded[ty]) ? 500 : LIMIT[ty];
+    h += `<div class="rgrp">${TNAME[ty]} · ${g.length}</div>`;
+    g.slice(0, lim).forEach(it => { h += ritem(it, res1); });
+    if (g.length > lim) h += `<button class="more" data-more="${ty}">${TNAME[ty]} ${g.length - lim}개 더 보기</button>`;
+  }
+  R.innerHTML = h; R.classList.add('active'); R.scrollTop = 0;
+  showPos();
+}
+function ritem(it, res1){
+  const i = state.list.push(it) - 1;
+  const has = res1.length > 0;
+  const meta = `<span class="rmeta ${it.type}">${it.week}주차 · ${TNAME[it.type]}${it.type === 'tx' ? ' ' + esc(it.ref.t) : ''}</span>`;
+  if (it.type === 'q') return `<div class="ritem" data-i="${i}"><div class="r1"><span class="rkw">${hl(it.title, res1)}</span>${meta}</div><div class="rans"><b>답</b>${hl(it.ref.a, res1)}</div></div>`;
+  if (it.type === 'tx') return `<div class="ritem" data-i="${i}"><div class="r1"><span class="rsum" style="margin:0;flex:1">${hl(it.title, res1)}</span>${meta}</div></div>`;
+  const sub = it.sub ? `<div class="rsub">${esc(it.sub)}</div>` : '';
+  const snip = it.text ? `<div class="rsum">${hl(it.text, res1, has ? 150 : 100)}</div>` : '';
+  return `<div class="ritem" data-i="${i}"><div class="r1"><span class="rkw">${hl(it.title, res1)}</span>${meta}</div>${sub}${snip}</div>`;
+}
+function mark(i){
+  const els = [...document.querySelectorAll('#results .ritem')];
+  els.forEach((el, j) => el.classList.toggle('sel', j === i));
+  const el = els[i]; if (!el) return;
+  const R = $('#results'), r = el.getBoundingClientRect(), c = R.getBoundingClientRect();
+  if (r.bottom > c.bottom) R.scrollTop += r.bottom - c.bottom + 8; else if (r.top < c.top) R.scrollTop -= c.top - r.top + 8;
+}
+function showPos(){
+  const n = state.list.length;
+  $('#pos').textContent = n ? (state.at >= 0 ? `${state.at + 1} / ${n}` : `${n}개`) : '';
+}
+function go(i){
+  // 결과 i번째를 본문 창으로 연다 (Enter를 다시 누르면 다음 결과)
+  const n = state.list.length; if (!n) return;
+  state.at = (i + n) % n; showPos(); mark(state.at);
+  openItem(state.list[state.at]);
+}
+
+/* ── 본문 창 ── */
+let hits = [], hitAt = 0;
+function pin(){
+  // 검색창이 화면 맨 위에 붙도록 스크롤 → 결과·본문 창이 화면을 넓게 쓴다
+  const y = $('#ss').getBoundingClientRect().top;
+  if (y > 20) window.scrollBy(0, y - 14);
+}
+function setTop(){
+  // 본문 창·목차는 검색창 바로 아래부터 시작 (검색창은 계속 보이게)
+  const b = $('#sbox').getBoundingClientRect();
+  document.documentElement.style.setProperty('--rtop', Math.max(70, b.bottom + $('#filters').offsetHeight + 20) + 'px');
+}
+function openItem(it){
+  const {res1} = search();
+  let h = '', links = '';
+  if (['sec','law','call'].includes(it.type) || (it.type === 'q' && SEC[it.ref.section])){
+    const s = it.type === 'sec' ? it.ref : SEC[it.ref.section];
+    const w = D.weeks[s.week - 1];
+    h = head([`${s.week}주차 · ${w.title_plain}`, `${s.no}번 섹션`], esc(s.title), s.badges.join(' · '));
+    if (it.type === 'q') h += `<div class="body"><div class="call warn"><div class="t">🎯 교수님 질문 · ${esc(it.ref.where)}</div><p><b>${esc(it.ref.q)}</b></p><p>답: ${esc(it.ref.a)}</p></div></div>`;
+    h += `<div class="body">${s.html}</div>`;
+    if (s.lecture.length) h += `<div class="lq"><h4>강의 녹취 원문 (${s.lecture.length})</h4>${s.lecture.map(x => `<div><span class="tm">${x.t}</span>${esc(x.text)}</div>`).join('')}</div>`;
+    links = weekLink(s.week, s.id.split('-')[1]);
+  } else if (it.type === 'term'){
+    h = head([`${it.week}주차`, '용어'], esc(it.ref.term), it.ref.en) + `<div class="body"><p>${esc(it.ref.desc)}</p></div>`;
+  } else if (it.type === 'chk'){
+    h = head([`${it.week}주차`, '확인 필요 · 교안 차이'], esc(it.title), '') + `<div class="body"><p>${esc(it.text)}</p></div>`;
+    links = weekLink(it.week, 'sq');
+  } else if (it.type === 'slide'){
+    const s = it.ref;
+    h = head([`${s.week}주차`, '교안 원문'], `교안 p.${s.page}`, '') + `<div class="body">${mdLite(s.text)}</div>`;
+    links = `<a class="rbtn" href="${P(PATHS.pdf, s.week)}#page=${s.page}" target="_blank">PDF ${s.page}쪽 ↗</a>`;
+  } else if (it.type === 'tx'){
+    const all = D.transcript.filter(x => x.week === it.week), k = all.indexOf(it.ref);
+    h = head([`${it.week}주차`, '강의 발화'], `${it.week}주차 강의 ${it.ref.t} 부근`, '자동 음성 인식 결과 — 오인식이 있을 수 있음') +
+      `<div class="body">${all.slice(Math.max(0, k - 8), k + 9).map(x => `<div class="txl${x === it.ref ? ' cur' : ''}"><span class="tm">${x.t}</span>${esc(x.text)}</div>`).join('')}</div>`;
+    links = weekLink(it.week, '');
+  } else if (it.type === 'q'){
+    h = head([`${it.week}주차`, '교수님 질문'], esc(it.ref.q), it.ref.where) + `<div class="body"><div class="call warn"><div class="t">답</div><p>${esc(it.ref.a)}</p></div><p>${esc(it.ref.detail)}</p></div>`;
+  }
+  $('#rin').innerHTML = h; $('#rlinks').innerHTML = links;
+  const many = state.list.length > 1 && state.at >= 0;
+  $('#prevR').style.display = $('#nextR').style.display = many ? '' : 'none';
+  $('#listR').style.display = state.list.length ? '' : 'none';
+  pin(); setTop();
+  document.body.classList.add('reading'); document.body.classList.remove('toc-on');
+  $('#results').classList.remove('active');
+  $('#rscroll').scrollTop = 0;
+  markHits($('#rin'), res1);
+  if (it.type === 'law' || it.type === 'call') focusBlock(it.title);
+}
+function head(crumbs, title, sub){
+  return `<div class="dh"><div class="crumb">${crumbs.map(c => '<span>' + esc(c) + '</span>').join('')}</div><h2>${title}</h2>${sub ? `<div class="bd">${esc(sub)}</div>` : ''}</div>`;
+}
+function weekLink(w, a){ return `<a class="rbtn" href="${P(PATHS.notes, w)}${a ? '#' + a : ''}" target="_blank">${w}주차 정리 페이지 ↗</a>`; }
+function closeReader(){ document.body.classList.remove('reading'); }
+function mdLite(t){
+  const lines = t.split('\n'); let out = '', tb = [];
+  const inl = s => esc(s).replace(/&lt;br&gt;/g, '<br>').replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  const flush = () => { if (!tb.length) return; const rows = tb.filter(r => !/^\|\s*-{2,}/.test(r)).map(r => r.replace(/^\||\|$/g, '').split('|'));
+    out += '<div class="tablewrap"><table>' + rows.map((r, i) => '<tr>' + r.map(c => `<${i ? 'td' : 'th'}>${inl(c.trim())}</${i ? 'td' : 'th'}>`).join('') + '</tr>').join('') + '</table></div>'; tb = []; };
+  for (const l of lines){
+    if (l.trim().startsWith('|')){ tb.push(l.trim()); continue; }
+    flush(); if (!l.trim()) continue;
+    if (/^#+\s/.test(l)) out += `<h3>${inl(l.replace(/^#+\s/, ''))}</h3>`;
+    else if (/^>\s?/.test(l)) out += `<p style="border-left:3px solid var(--line);padding-left:10px">${inl(l.replace(/^>\s?/, ''))}</p>`;
+    else out += `<p>${inl(l)}</p>`;
+  }
+  flush(); return out;
+}
+function markHits(root, res1){
+  hits = []; hitAt = 0; $('#hitnav').innerHTML = '';
+  if (!res1.length) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {acceptNode: n => (n.parentNode.closest('svg,.dh') || !n.parentNode.closest('.body,.lq')) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT});
+  const nodes = []; while (walker.nextNode()) nodes.push(walker.currentNode);
+  for (const n of nodes){
+    const txt = n.nodeValue, rg = [];
+    for (const re of res1){ re.lastIndex = 0; let m; while ((m = re.exec(txt))){ if (!m[0].length){ re.lastIndex++; continue; } rg.push([m.index, m.index + m[0].length]); } }
+    if (!rg.length) continue;
+    rg.sort((a, b) => a[0] - b[0]);
+    const f = document.createDocumentFragment(); let last = 0;
+    for (const [a, b] of rg){ if (a < last) continue; f.append(txt.slice(last, a)); const mk = document.createElement('mark'); mk.className = 'h'; mk.textContent = txt.slice(a, b); f.append(mk); hits.push(mk); last = b; }
+    f.append(txt.slice(last)); n.replaceWith(f);
+  }
+  if (hits.length){ $('#hitnav').innerHTML = `<span>본문 ${hits.length}곳</span><button class="rbtn" onclick="jump(-1)">▲</button><button class="rbtn" onclick="jump(1)">▼</button>`; jump(0); }
+}
+function jump(d){
+  if (!hits.length) return;
+  hits[hitAt] && hits[hitAt].classList.remove('now');
+  hitAt = (hitAt + d + hits.length) % hits.length;
+  hits[hitAt].classList.add('now'); hits[hitAt].scrollIntoView({block:'center'});
+}
+function focusBlock(title){
+  const t = [...$('#rin').querySelectorAll('.call .t')].find(x => x.textContent.replace(/\s+/g, ' ').trim().startsWith(title.slice(0, 18)));
+  if (t){ const c = t.closest('.call'); c.scrollIntoView({block:'start'}); c.style.outline = '3px solid var(--accent)'; setTimeout(() => c.style.outline = '', 1800); }
+}
+function copyBody(){
+  const t = $('#rin h2') ? $('#rin h2').innerText : '';
+  const b = [...$('#rin').querySelectorAll('.body,.lq')].map(x => x.innerText).join('\n\n');
+  navigator.clipboard.writeText(t + '\n\n' + b).then(() => toast('복사했습니다 — AI에 붙여넣으세요'), () => toast('복사하지 못했습니다'));
+}
+function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('on'); setTimeout(() => t.classList.remove('on'), 1600); }
+
+/* ── 필터 ── */
+function renderFilters(){
+  const t0 = state.type; state.type = 'all'; const {res} = search(); state.type = t0;
+  const cnt = {}; res.forEach(r => cnt[r.it.type] = (cnt[r.it.type] || 0) + 1);
+  const has = !!state.q.trim();
+  let h = `<button class="chip${state.type === 'all' ? ' on' : ''}" data-type="all">전체${has ? `<span class="c">${res.length}</span>` : ''}</button>`;
+  TYPES.forEach(([k, n]) => { h += `<button class="chip${state.type === k ? ' on' : ''}" data-type="${k}">${n}${has ? `<span class="c">${cnt[k] || 0}</span>` : ''}</button>`; });
+  h += '<span class="fsep"></span>';
+  for (const {week: w} of D.weeks) h += `<button class="chip wk${state.weeks.has(w) ? ' on' : ''}" data-week="${w}">${w}주</button>`;
+  $('#filters').innerHTML = h;
+}
+function refresh(){ state.expanded = {}; renderFilters(); showResults(); }
+
+/* ── 화면 구성 ── */
+function renderPage(){
+  const E = D.exam;
+  const C = D.course;
+  document.title = `${C.name} · ${E.name} 검색`;
+  $('#hbadge').textContent = `${C.prof} 교수님 · ${C.name}`;
+  $('#htitle').textContent = `${E.name} 검색`; $('#ename').textContent = E.name;
+  $('#hsub').textContent = `📚 ${RANGE} 전 범위 · 정리 페이지 · 교안 · 강의 발화`; $('#wrange').textContent = RANGE;
+  $('#foot').textContent = `${C.name} · ${E.name} 검색` + (C.author ? ` · 정리: ${C.author}` : '');
+  $('#hmeta').textContent = `${E.name} ${E.date.slice(5).replace('-', '/')}(${E.weekday}) ${E.time} · ${E.format} · AI ${E.ai}`;
+  $('#qcnt').textContent = D.questions.length + '개'; $('#lcnt').textContent = D.laws.length + '개';
+  $('#sched').innerHTML = [['일시', `${E.date.slice(5).replace('-', '/')} (${E.weekday}) ${E.time}`], ['방식', E.format_short || E.format], ['범위', RANGE], ['AI', E.ai]].map(([a, b]) => `<div><b>${a}</b><span>${b}</span></div>`).join('');
+  $('#wgrid').innerHTML = D.weeks.map(w => {
+    const ss = D.sections.filter(s => s.week === w.week);
+    return `<div class="wcard"><div class="wnum">${pad(w.week)}<small>주차</small></div><div class="wtitle">${esc(w.title_plain)}</div><div class="wdate">${esc(w.date)}</div>
+      <ul class="wsecs">${ss.map(s => `<li><button data-s="${s.id}"><span class="no">${s.no}</span><span>${esc(s.nav || s.title)}</span></button></li>`).join('')}</ul>
+      <div class="wlinks"><a href="${P(PATHS.notes, w.week)}" target="_blank">📖 정리 페이지</a><a class="pdf" href="${P(PATHS.pdf, w.week)}" target="_blank">📑 교안 PDF</a></div></div>`;
+  }).join('');
+  $('#toc').innerHTML = D.weeks.map(w => `<h4>${w.week}주차 · ${esc(w.title_plain)}</h4>` + D.sections.filter(s => s.week === w.week).map(s => `<button data-s="${s.id}"><span class="no">${s.no}</span>${esc(s.nav || s.title)}</button>`).join('')).join('');
+  renderQ();
+}
+let qWeek = 0;
+function renderQ(){
+  const qs = D.questions.filter(q => !qWeek || q.week === qWeek);
+  $('#qsecCnt').textContent = qs.length + '개';
+  $('#qfilter').innerHTML = [0, ...new Set(D.questions.map(q => q.week))].map(w => `<button class="chip${qWeek === w ? ' on' : ''}" data-qw="${w}">${w ? w + '주차' : '전체'}</button>`).join('');
+  $('#qwrap').innerHTML = qs.map(q => `<div class="qcard"><div class="qmeta"><span class="k">${q.week}주차 · ${esc(q.kind)}</span><span>${esc(q.where)}</span></div>
+    <div class="qq">${esc(q.q)}</div><div class="qa"><b>답</b>${esc(q.a)}</div>${q.detail ? `<div class="qd">${esc(q.detail)}</div>` : ''}
+    ${SEC[q.section] ? `<button class="qopen" data-qid="${q.id}">관련 개념 열기 →</button>` : ''}</div>`).join('');
+}
+
+/* ── 이벤트 ── */
+let tmr;
+$('#q').addEventListener('input', e => {
+  state.q = e.target.value; $('#sbox').classList.toggle('has', !!state.q);
+  closeReader(); if (state.q) pin(); clearTimeout(tmr); tmr = setTimeout(refresh, 110);
+});
+$('#q').addEventListener('focus', () => { if (state.list.length && !document.body.classList.contains('reading')) $('#results').classList.add('active'); });
+$('#clr').onclick = () => { $('#q').value = ''; state.q = ''; $('#sbox').classList.remove('has'); state.type = 'all'; refresh(); closeReader(); $('#q').focus(); };
+$('#filters').addEventListener('click', e => {
+  const b = e.target.closest('.chip'); if (!b) return;
+  if (b.dataset.type) state.type = b.dataset.type;
+  if (b.dataset.week){ const w = +b.dataset.week; state.weeks.has(w) ? state.weeks.delete(w) : state.weeks.add(w); }
+  closeReader(); refresh();
+});
+$('#results').addEventListener('click', e => {
+  const m = e.target.closest('.more'); if (m){ state.expanded[m.dataset.more] = true; showResults(); return; }
+  const it = e.target.closest('.ritem'); if (it) go(+it.dataset.i);
+});
+function openSec(id){ state.list = []; state.at = -1; showPos(); openItem(items.find(x => x.type === 'sec' && x.ref.id === id)); }
+document.addEventListener('click', e => {
+  const s = e.target.closest('[data-s]'); if (s){ openSec(s.dataset.s); return; }
+  const q = e.target.closest('[data-qid]'); if (q){ state.list = []; state.at = -1; showPos(); openItem(items.find(x => x.type === 'q' && x.ref.id === q.dataset.qid)); return; }
+  const qw = e.target.closest('[data-qw]'); if (qw){ qWeek = +qw.dataset.qw; renderQ(); return; }
+  if (!e.target.closest('.search-section') && !e.target.closest('.reader')) $('#results').classList.remove('active');
+});
+$('#goQ').onclick = () => $('#qsec').scrollIntoView({behavior:'smooth', block:'start'});
+$('#goLaw').onclick = () => { state.type = 'law'; refresh(); window.scrollTo({top:0, behavior:'smooth'}); $('#q').focus(); };
+$('#tocBtn').onclick = () => { pin(); setTop(); closeReader(); document.body.classList.toggle('toc-on'); };
+$('#closeR').onclick = closeReader;
+$('#prevR').onclick = () => go(state.at - 1);
+$('#nextR').onclick = () => go(state.at + 1);
+$('#listR').onclick = () => { closeReader(); $('#results').classList.add('active'); $('#q').focus(); };
+document.addEventListener('keydown', e => {
+  const inQ = document.activeElement === $('#q');
+  if ((e.key === '/' && !inQ) || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k')){ e.preventDefault(); $('#q').focus(); $('#q').select(); return; }
+  if (e.key === 'Escape'){
+    if (document.body.classList.contains('reading')) closeReader();
+    else if (document.body.classList.contains('toc-on')) document.body.classList.remove('toc-on');
+    else if (state.q) $('#clr').click();
+    else $('#results').classList.remove('active');
+    return;
+  }
+  if (!inQ) return;
+  if (e.key === 'Enter'){
+    // Enter: 첫 결과 → 다음 결과 → … (Shift+Enter 이전)
+    e.preventDefault();
+    if (!state.list.length) return;
+    go(state.at < 0 ? 0 : state.at + (e.shiftKey ? -1 : 1));
+  } else if (e.key === 'ArrowDown' && $('#results').classList.contains('active')){
+    e.preventDefault(); state.at = Math.min(state.list.length - 1, state.at + 1); mark(state.at); showPos();
+  } else if (e.key === 'ArrowUp' && $('#results').classList.contains('active')){
+    e.preventDefault(); state.at = Math.max(0, state.at - 1); mark(state.at); showPos();
+  }
+});
+window.addEventListener('resize', setTop);
+window.addEventListener('scroll', setTop, {passive:true});
+/* AI용 파일 저장: 파일 내용을 페이지 안에 넣어 두고 Blob으로 내려받는다.
+   download 속성만으로는 로컬(file://)·일부 브라우저에서 저장 대신 열려 버리기 때문 */
+const FILES = JSON.parse(document.getElementById('files').textContent);
+document.querySelectorAll('a.lf').forEach(a => a.addEventListener('click', e => {
+  const name = a.getAttribute('href'), txt = FILES[name];
+  if (txt == null) return;               // 내용이 없으면 원래 링크 동작
+  e.preventDefault();
+  const url = URL.createObjectURL(new Blob([txt], {type:'application/octet-stream'}));
+  const t = document.createElement('a'); t.href = url; t.download = name;
+  document.body.append(t); t.click(); t.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+  toast(name + ' 저장');
+}));
+renderPage(); refresh(); setTop();
+</script>
+</body>
+</html>
