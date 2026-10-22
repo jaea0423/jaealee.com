@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>알고리즘 모의고사 3회 (실전)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>:root{ --subject:#4F46E5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../exam-engine/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다.<br>이 파일은 <b>drive/exam-engine/exam.css · exam.js</b> 와 함께 있어야 열립니다.
+(<code>drive/algorithm/exam/mock-3.html</code> 위치에서 열어 주세요.)</div>
+<script>
+/* ════════ 시험지 정보 ════════ */
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'알고리즘',
+  title:'모의고사 3회 (실전)',
+  written:'2026년 10월 23일 작성',
+  slug:'algorithm-mock-3',
+  lectureBase:'../lecture',
+  level:'실전',
+  mcMax:1,
+  scope:'<b>모의고사 3회 · 실전</b> (2주차 1차시 ~ 8주차 1차시, 행렬 곱셈 순서 문제 제외)<br>Quick Select (중복 값), power3, 버블 정렬, 병합 stable, 이진탐색 실패, 최대 구간 합 분할 정복, prefix sum, DP 설계, heapify_down, 정렬 하한'
+};
+
+/* ════════ 문항 ════════
+   type  : mc 객관식 · ox O/X · short 단답 · table 표 빈칸 · line 코드 줄 고르기 · essay 서술
+   lv    : 하 / 중 / 상        src : [['주차-차시','섹션 id','제목'], …]
+   채점  : 엔진은 채점하지 않음. 문항마다 「정답 · 해설」을 펼쳐 스스로 확인 — rubric 은 [기준, 점수] (부분 점수) */
+const EXAM = [
+{ type:'table',
+   lv:'중',
+   unit:"Quick Select",
+   pts:8,
+   q:`<p>quick_select(L, k) (피벗 P = L[0]) 를 L = [4, 7, 4, 2, 9, 4, 1] 에 대해 k = 4 와 k = 6 으로 각각 호출한다. 첫 호출의 분류 결과와 최종 반환값을 쓰시오.</p>`,
+   head:[`k`,`A`,`M`,`B`,`반환값`],
+   rows:[
+     [`4`,{a:`[2, 1]`,alt:[]},{a:`[4, 4, 4]`,alt:[]},{a:`[7, 9]`,alt:[]},{a:`4`,alt:[]}],
+     [`6`,{a:`[2, 1]`,alt:[]},{a:`[4, 4, 4]`,alt:[]},{a:`[7, 9]`,alt:[]},{a:`7`,alt:[]}]],
+   exp:`|A| = 2, |M| = 3. k = 4: 2 &lt; 4 ≤ 5 → P = 4 반환 (M 안). k = 6: 2 + 3 &lt; 6 → B = [7, 9] 로 가며 k = 6 − 2 − 3 = 1 → 피벗 7, A 가 비어 0 &lt; 1 ≤ 1 → 7.`,
+   src:[["02-1", "s5", "Quick Select"]] },
+
+{ type:'essay',
+   lv:'중',
+   unit:"power3",
+   pts:12,
+   q:`<p>power3(a, n) (x = power3(a, n//2) 를 한 번만 호출하고 짝수면 x × x, 홀수면 x × x × a) 에 대해</p><p>(1) power3(2, 13) 을 계산할 때 power3 가 호출되는 횟수와 곱셈 횟수를 쓰시오.<br>(2) T(n) = T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + C 를 전개해 Big-O 를 구하시오.</p>`,
+   model:`(1) n = 13 → 6 → 3 → 1 : 호출 <b>4 번</b>. 곱셈: 13 (홀수) 2번, 6 (짝수) 1번, 3 (홀수) 2번 → <b>5 번</b><br>(2) T(n) = T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + C = T(<span class="frac"><span class="num">n</span><span class="den">4</span></span>) + 2C = ⋯ = T(<span class="frac"><span class="num">n</span><span class="den">2<sup>k</sup></span></span>) + kC, n = 2<sup>k</sup> → T(1) + C·log₂ n = C + C log₂ n → <b>O(log n)</b>`,
+   rubric:[[`호출 4 번`,3],[`곱셈 5 번`,3],[`전개와 k = log₂ n 대입`,4],[`O(log n)`,2]],
+   src:[["03-1", "s6", "power3"]] },
+
+{ type:'essay',
+   lv:'중',
+   unit:"버블 정렬",
+   pts:10,
+   q:`<p>A = [5, 1, 4, 2, 8, 3] 에 버블 정렬 (이웃 둘을 비교해 A[j] &gt; A[j + 1] 이면 교환) 을 적용한다.</p><p>(1) 1라운드 뒤의 A 와 그 라운드의 비교 · 교환 횟수를 쓰시오.<br>(2) 조건을 A[j] &gt;= A[j + 1] 로 바꾸면 무엇이 달라지는지 쓰시오.</p>`,
+   model:`(1) <b>[1, 4, 2, 5, 3, 8]</b>, 비교 <b>5 번</b>, 교환 <b>4 번</b> (5↔1, 5↔4, 5↔2, 8↔3)<br>(2) 정렬 결과(값의 순서)는 같지만, 같은 값끼리도 교환해 원래 순서가 뒤집힐 수 있어 <b>stable X</b> 가 된다.`,
+   rubric:[[`1라운드 결과`,3],[`비교 5 · 교환 4`,3],[`&gt;= 면 같은 값도 교환 → stable X`,4]],
+   src:[["05-1", "s2", "버블 정렬"]] },
+
+{ type:'essay',
+   lv:'중',
+   unit:"병합 정렬",
+   pts:10,
+   q:`<p>merge_two_sorted_lists 에서 비교를 if A[i] &lt;= A[j] 대신 if A[i] &lt; A[j] 로 바꾸면 병합 정렬의 어떤 성질이 달라지는지 예를 들어 설명하시오.</p>`,
+   model:`<b>stable 이 깨진다.</b> 두 그룹의 맨 앞 값이 같을 때 &lt; 이면 조건이 거짓이라 뒤 그룹 값이 먼저 B 에 들어간다. 예: 앞 그룹 [3<sub>a</sub>, 5], 뒤 그룹 [1, 3<sub>b</sub>] → 1, 그다음 3<sub>a</sub> vs 3<sub>b</sub> 에서 3<sub>b</sub> 가 먼저 → [1, 3<sub>b</sub>, 3<sub>a</sub>, 5]. 원래 앞에 있던 3<sub>a</sub> 가 뒤로 감. (정렬 결과 값 순서와 시간 O(n log n) 은 그대로)`,
+   rubric:[[`stable 이 깨진다`,4],[`같을 때 뒤 그룹이 먼저 들어간다는 이유`,3],[`구체적인 예`,3]],
+   src:[["06-1", "s3", "병합 정렬"]] },
+
+{ type:'short',
+   lv:'중',
+   unit:"이진 탐색",
+   pts:8,
+   q:`<p>A = [2, 6, 9, 13, 18, 24, 31] 에서 bs(A, 0, 6, 20) 을 실행할 때 비교하는 m 을 순서대로 쓰고 반환값을 쓰시오.</p>`,
+   show:`m = 3 → 5 → 4, 반환 −1`,
+   alt:["3, 5, 4 / -1"],
+   exp:`m = 3 (13 &lt; 20) → a = 4. m = 5 (24 &gt; 20) → b = 4. m = 4 (18 &lt; 20) → a = 5. a = 5 &gt; b = 4 → 범위가 뒤집혀 −1.`,
+   src:[["03-2", "s13", "이진탐색"]] },
+
+{ type:'table',
+   lv:'중',
+   unit:"최대 구간 합",
+   pts:12,
+   q:`<p>최대 구간 합 분할 정복 코드의 첫 호출 max_interval(A, 0, 7) 에서 각 값을 구하시오.</p><p>A = [2, −1, 3, −6, 4, −2, 5, −3]</p>`,
+   head:[`m`,`L`,`R`,`max_left`,`max_right`,`M`,`반환값`],
+   rows:[
+     [{a:`3`,alt:[]},{a:`4`,alt:[]},{a:`7`,alt:[]},{a:`−2`,alt:[]},{a:`7`,alt:[]},{a:`5`,alt:[]},{a:`7`,alt:[]}]],
+   exp:`왼쪽 [2, −1, 3, −6] 의 최대 4 (2 − 1 + 3), 오른쪽 [4, −2, 5, −3] 의 최대 7 (4 − 2 + 5). A[3] 에서 왼쪽으로 −6, −3, −4, −2 → max_left = −2. A[4] 에서 오른쪽으로 4, 2, 7, 4 → max_right = 7. M = 5, max(4, 5, 7) = 7.`,
+   src:[["07-1", "s6", "방법 3 — 분할정복"]] },
+
+{ type:'essay',
+   lv:'중',
+   unit:"prefix sum",
+   pts:10,
+   q:`<p>A = [3, −5, 4, −1, 2, −4, 1, 2] 에 대해</p><p>(1) prefix sum P 를 구하시오.<br>(2) P 로 A[2] ~ A[4] 의 합과 A[0] ~ A[3] 의 합을 구하시오.<br>(3) 방법 1 (O(n³)) 보다 빨라지는 이유를 쓰시오.</p>`,
+   model:`(1) <b>P = [3, −2, 2, 1, 3, −1, 0, 2]</b><br>(2) A[2] ~ A[4] = P[4] − P[1] = 3 − (−2) = <b>5</b>. A[0] ~ A[3] = P[3] = <b>1</b> (i = 0 이면 P[j] 그대로)<br>(3) 구간마다 최대 n 번 더하던 것을 P[j] − P[i − 1] 뺄셈 한 번(O(1))으로 바꿔 O(n²).`,
+   rubric:[[`P`,3],[`5 (P[4] − P[1])`,2],[`1 (i = 0 이면 P[j])`,2],[`뺄셈 한 번 O(1) → O(n²)`,3]],
+   src:[["07-1", "s5", "방법 2 — prefix sum"]] },
+
+{ type:'essay',
+   lv:'중',
+   unit:"DP 설계",
+   pts:12,
+   q:`<p>계단을 1칸 또는 2칸씩 오르는데 <b>5층은 공사 중이라 밟을 수 없다.</b> 1층에서 8층까지 오르는 경우의 수를 DP 로 구하시오. 점화식, 5층의 처리, D[1] ~ D[8] 을 쓰시오.</p>`,
+   model:`D[n] = D[n − 1] + D[n − 2], D[1] = 1, D[2] = 1. 5층은 밟을 수 없으므로 <b>D[5] = 0</b> 으로 두면, 5층을 거쳐 오는 경로가 자동으로 빠진다.<br>D = 1, 1, 2, 3, <b>0</b>, 3, 3, <b>6</b> → <b>6 가지</b> (D[6] = D[5] + D[4] = 3, D[7] = D[6] + D[5] = 3, D[8] = D[7] + D[6] = 6)`,
+   rubric:[[`점화식 · 바닥 조건`,3],[`D[5] = 0 처리와 이유`,4],[`D[8] = 6 (중간값 맞으면 부분 2점)`,5]],
+   src:[["07-1", "s3", "계단 오르기"], ["07-2", "s1", "DP 순서"]] },
+
+{ type:'table',
+   lv:'중',
+   unit:"힙",
+   pts:8,
+   q:`<p>루트만 힙 성질을 어기는 A = [2, 9, 8, 5, 7, 6] 에 heapify_down(A, 0) 을 적용한 결과를 쓰시오. (큰 자식과 교환)</p>`,
+   head:[`인덱스`,`0`,`1`,`2`,`3`,`4`,`5`],
+   rows:[
+     [`결과`,{a:`9`,alt:[]},{a:`7`,alt:[]},{a:`8`,alt:[]},{a:`5`,alt:[]},{a:`2`,alt:[]},{a:`6`,alt:[]}]],
+   exp:`A[0] = 2 의 자식 9, 8 → 큰 9 와 교환. A[1] = 2 의 자식 A[3] = 5, A[4] = 7 → 7 과 교환. A[4] 는 자식 없음 → [9, 7, 8, 5, 2, 6].`,
+   src:[["06-1", "s5", "힙"]] },
+
+{ type:'essay',
+   lv:'중',
+   unit:"정렬 하한",
+   pts:10,
+   q:`<p>병합 정렬과 힙 정렬을 "비교 정렬 중 최적" 이라고 하는 이유를 쓰시오. 퀵 정렬이 여기에 들지 않는 이유도 쓰시오.</p>`,
+   model:`어떤 비교 정렬이든 최악의 경우 비교가 Ω(n log n) 필요하다 (결정 트리: 리프 n! 개, h ≥ log₂ n! ≥ C·n log n — <b>하한</b>). 병합 · 힙 정렬은 최악에도 O(n log n) (<b>상한</b>) 이라 상한 = 하한 → 차수를 더 줄일 수 없어 최적. 퀵 정렬은 최악이 O(n²) 이라 상한이 하한과 같지 않다.`,
+   rubric:[[`비교 정렬 하한 Ω(n log n)`,4],[`병합 · 힙 상한 O(n log n) = 하한`,4],[`퀵 최악 O(n²)`,2]],
+   src:[["06-2", "s9", "하한"], ["05-1", "s3", "퀵 정렬"]] }
+];
+</script>
+</body>
+</html>

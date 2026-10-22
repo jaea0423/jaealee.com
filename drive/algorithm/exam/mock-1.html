@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>알고리즘 모의고사 1회 (기본)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>:root{ --subject:#4F46E5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../exam-engine/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다.<br>이 파일은 <b>drive/exam-engine/exam.css · exam.js</b> 와 함께 있어야 열립니다.
+(<code>drive/algorithm/exam/mock-1.html</code> 위치에서 열어 주세요.)</div>
+<script>
+/* ════════ 시험지 정보 ════════ */
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'알고리즘',
+  title:'모의고사 1회 (기본)',
+  written:'2026년 10월 23일 작성',
+  slug:'algorithm-mock-1',
+  lectureBase:'../lecture',
+  level:'기본',
+  mcMax:1,
+  scope:'<b>모의고사 1회 · 기본</b> (2주차 1차시 ~ 8주차 1차시, 행렬 곱셈 순서 문제 제외)<br>Quick Select, 점화식 전개, 이진탐색, 병합, 힙, 최대 구간 합 DP, LCS, power1 · 2 · 3, 정렬 성질, 선택 정렬'
+};
+
+/* ════════ 문항 ════════
+   type  : mc 객관식 · ox O/X · short 단답 · table 표 빈칸 · line 코드 줄 고르기 · essay 서술
+   lv    : 하 / 중 / 상        src : [['주차-차시','섹션 id','제목'], …]
+   채점  : 엔진은 채점하지 않음. 문항마다 「정답 · 해설」을 펼쳐 스스로 확인 — rubric 은 [기준, 점수] (부분 점수) */
+const EXAM = [
+{ type:'table',
+   lv:'하',
+   unit:"Quick Select",
+   pts:10,
+   q:`<p>교수님 코드의 quick_select(L, k) (피벗 P = L[0], P 보다 작으면 A, 같으면 M, 크면 B) 를 L = [7, 3, 9, 1, 8, 4, 6, 2, 5], k = 8 로 호출한다. 호출마다 빈칸을 채우시오.</p>`,
+   head:[`호출`,`L`,`k`,`P`,`|A|`,`|M|`,`다음 동작`],
+   rows:[
+     [`1`,`[7, 3, 9, 1, 8, 4, 6, 2, 5]`,`8`,{a:`7`,alt:[]},{a:`6`,alt:[]},{a:`1`,alt:[]},{a:`B 로, k = 1`,alt:[]}],
+     [`2`,`[9, 8]`,`1`,{a:`9`,alt:[]},{a:`1`,alt:[]},{a:`1`,alt:[]},{a:`A 로, k = 1`,alt:[]}],
+     [`3`,`[8]`,`1`,{a:`8`,alt:[]},{a:`0`,alt:[]},{a:`1`,alt:[]},{a:`8 반환`,alt:[]}]],
+   exp:`1회: A = [3, 1, 4, 6, 2, 5], M = [7], B = [9, 8]. |A| + |M| = 7 &lt; 8 → B 로 가며 k = 8 − 6 − 1 = 1. 2회: A = [8] 이라 |A| = 1 ≥ k → A 로. 3회: |A| = 0 &lt; 1 ≤ 1 → P = 8 반환. 8 은 전체에서 8 번째로 작은 값이 맞다.`,
+   src:[["02-1", "s5", "Quick Select"]] },
+
+{ type:'essay',
+   lv:'하',
+   unit:"점화식",
+   pts:12,
+   q:`<p>T(n) = 2T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn, T(1) = C 를 전개해 Big-O 를 구하시오. (n = 2<sup>k</sup> 로 가정하고 과정을 쓸 것)</p>`,
+   model:`T(n) = 2T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn = 2²T(<span class="frac"><span class="num">n</span><span class="den">4</span></span>) + Cn + Cn = ⋯ = 2<sup>k</sup>T(<span class="frac"><span class="num">n</span><span class="den">2<sup>k</sup></span></span>) + kCn<br>n = 2<sup>k</sup> → <span class="frac"><span class="num">n</span><span class="den">2<sup>k</sup></span></span> = 1, k = log₂ n<br>= nT(1) + Cn·log₂ n = Cn + Cn log₂ n → <b>O(n log n)</b>`,
+   rubric:[[`2 ~ 3단계 대입해 펼침`,3],[`k 번 펼친 일반항 2<sup>k</sup>T(n ÷ 2<sup>k</sup>) + kCn`,4],[`n = 2<sup>k</sup>, k = log₂ n 대입`,3],[`결론 O(n log n)`,2]],
+   src:[["04-2", "s3", "점화식 풀기"]] },
+
+{ type:'short',
+   lv:'하',
+   unit:"이진 탐색",
+   pts:8,
+   q:`<p>정렬된 리스트 A = [3, 8, 12, 17, 21, 26, 30, 35, 41] 에서 bs(A, 0, 8, 26) 을 실행한다. 비교하는 가운데 인덱스 m 을 순서대로 쓰고 반환값을 쓰시오.</p>`,
+   show:`m = 4 → 6 → 5, 반환 5`,
+   alt:["4, 6, 5 / 5"],
+   exp:`a = 0, b = 8 → m = 4, A[4] = 21 &lt; 26 → 오른쪽 (a = 5). a = 5, b = 8 → m = 6, A[6] = 30 &gt; 26 → 왼쪽 (b = 5). a = b = 5 → m = 5, A[5] = 26 → 인덱스 5 반환.`,
+   src:[["03-2", "s13", "이진탐색"]] },
+
+{ type:'table',
+   lv:'하',
+   unit:"병합",
+   pts:10,
+   q:`<p>정렬된 두 그룹 [2, 9, 14, 20] 과 [5, 6, 15, 30, 31] 을 수업의 merge 방식 (맨 앞끼리 비교해 작은 값을 B 에 넣음, 같으면 앞 그룹 먼저) 으로 합친다.</p>`,
+   head:[`B (합친 결과)`,`값 비교 횟수`],
+   rows:[
+     [{a:`[2, 5, 6, 9, 14, 15, 20, 30, 31]`,alt:[]},{a:`7`,alt:[]}]],
+   exp:`2·5, 9·5, 9·6, 9·15, 14·15, 20·15, 20·30 → 7 번. 앞 그룹이 먼저 끝나 남은 30, 31 은 비교 없이 붙인다.`,
+   src:[["06-1", "s3", "병합 정렬"]] },
+
+{ type:'table',
+   lv:'하',
+   unit:"힙",
+   pts:10,
+   q:`<p>A = [3, 9, 4, 12, 7, 15, 1, 10] 에 make_heap (맨 뒤 노드부터 heapify_down, 큰 자식과 교환) 을 적용한 결과를 쓰시오.</p>`,
+   head:[`인덱스`,`0`,`1`,`2`,`3`,`4`,`5`,`6`,`7`],
+   rows:[
+     [`결과`,{a:`15`,alt:[]},{a:`12`,alt:[]},{a:`4`,alt:[]},{a:`10`,alt:[]},{a:`7`,alt:[]},{a:`3`,alt:[]},{a:`1`,alt:[]},{a:`9`,alt:[]}]],
+   exp:`A[3] = 12: 자식 10 → 그대로. A[2] = 4: 자식 15, 1 → 4 ↔ 15. A[1] = 9: 자식 12, 7 → 9 ↔ 12, 이어서 자식 10 → 9 ↔ 10. A[0] = 3: 자식 12, 15 → 3 ↔ 15, 이어서 자식 4, 1 → 3 ↔ 4. 모든 부모 ≥ 자식.`,
+   src:[["06-1", "s5", "힙"], ["06-2", "s1", "make_heap"]] },
+
+{ type:'table',
+   lv:'하',
+   unit:"최대 구간 합",
+   pts:10,
+   q:`<p>A = [1, −3, 4, −1, 2, −5, 3, −1] 에 최대 구간 합 DP (S[k] = A[k] 로 끝나는 최대 구간 합) 를 적용해 S 를 채우고, 마지막 칸에 답을 쓰시오.</p>`,
+   head:[`k`,`0`,`1`,`2`,`3`,`4`,`5`,`6`,`7`,`답`],
+   rows:[
+     [`A`,`1`,`−3`,`4`,`−1`,`2`,`−5`,`3`,`−1`,`—`],
+     [`S`,{a:`1`,alt:[]},{a:`−2`,alt:[]},{a:`4`,alt:[]},{a:`3`,alt:[]},{a:`5`,alt:[]},{a:`0`,alt:[]},{a:`3`,alt:[]},{a:`2`,alt:[]},{a:`5`,alt:[]}]],
+   exp:`S[0] = 1, S[k] = max(S[k − 1] + A[k], A[k]). k = 2 에서 S[1] = −2 가 음수라 새로 시작. 답 = max(S) = 5 (A[2] ~ A[4] = 4 − 1 + 2).`,
+   src:[["07-1", "s7", "방법 4 — DP"]] },
+
+{ type:'table',
+   lv:'하',
+   unit:"LCS",
+   pts:10,
+   q:`<p>X = BDCB, Y = CBDB 의 LCS 표를 채우시오.</p>`,
+   head:[`X \\ Y`,`–`,`C`,`B`,`D`,`B`],
+   rows:[
+     [`–`,`0`,`0`,`0`,`0`,`0`],
+     [`B`,`0`,{a:`0`,alt:[]},{a:`1`,alt:[]},{a:`1`,alt:[]},{a:`1`,alt:[]}],
+     [`D`,`0`,{a:`0`,alt:[]},{a:`1`,alt:[]},{a:`2`,alt:[]},{a:`2`,alt:[]}],
+     [`C`,`0`,{a:`1`,alt:[]},{a:`1`,alt:[]},{a:`2`,alt:[]},{a:`2`,alt:[]}],
+     [`B`,`0`,{a:`1`,alt:[]},{a:`2`,alt:[]},{a:`2`,alt:[]},{a:`3`,alt:[]}]],
+   exp:`같으면 좌상 + 1, 다르면 max(좌, 상). LCS 길이 = LCS[4][4] = 3 (예: BDB).`,
+   src:[["07-2", "s4", "DP 테이블 채우기"]] },
+
+{ type:'table',
+   lv:'하',
+   unit:"분할 정복",
+   pts:10,
+   q:`<p>aⁿ 을 구하는 세 방법의 점화식과 Big-O 를 쓰시오. (T(1) = C)</p>`,
+   head:[`방법`,`하는 일`,`점화식`,`Big-O`],
+   rows:[
+     [`power1`,`a × power1(a, n − 1)`,{a:`T(n − 1) + C`,alt:[]},{a:`O(n)`,alt:[]}],
+     [`power2`,`power2(a, n//2) 를 두 번 호출해 곱함`,{a:`2T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + C`,alt:[]},{a:`O(n)`,alt:[]}],
+     [`power3`,`x = power3(a, n//2) 를 한 번만 호출, x × x`,{a:`T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + C`,alt:[]},{a:`O(log n)`,alt:[]}]],
+   exp:`power2 와 power3 는 쪼개는 방식이 같고 호출 횟수만 다르다. 같은 값을 두 번 계산하는 power2 는 반으로 줄인 이득이 사라져 O(n).`,
+   src:[["03-1", "s4", "power1"], ["03-1", "s5", "power2"], ["03-1", "s6", "power3"]] },
+
+{ type:'table',
+   lv:'하',
+   unit:"정렬 성질",
+   pts:10,
+   q:`<p>각 정렬의 in-place · stable 여부를 O / X 로 쓰시오. (수업 코드 기준)</p>`,
+   head:[`정렬`,`in-place`,`stable`],
+   rows:[
+     [`선택`,{a:`O`,alt:[]},{a:`X`,alt:[]}],
+     [`버블`,{a:`O`,alt:[]},{a:`O`,alt:[]}],
+     [`퀵 (S, M, L 리스트)`,{a:`X`,alt:[]},{a:`O`,alt:[]}],
+     [`제자리 퀵`,{a:`O`,alt:[]},{a:`X`,alt:[]}],
+     [`병합`,{a:`X`,alt:[]},{a:`O`,alt:[]}]],
+   exp:`선택 · 제자리 퀵은 멀리 떨어진 칸끼리 교환해 stable X. 퀵(S/M/L) 과 병합은 새 리스트 · 배열을 만들어 in-place X. 병합은 같은 값이면 앞 그룹 먼저(&lt;=) 라 stable.`,
+   src:[["05-1", "s1", "정렬 성질"], ["06-2", "s5", "정렬 정리"]] },
+
+{ type:'essay',
+   lv:'하',
+   unit:"선택 정렬",
+   pts:10,
+   q:`<p>A = [6, 2, 9, 4, 1] 에 수업의 선택 정렬 (남은 구간의 최댓값을 그 구간 끝 칸과 교환) 을 적용한다.</p><p>(1) 1라운드, 2라운드 후의 A 를 쓰시오.<br>(2) n 개를 정렬할 때 비교 횟수와 교환 횟수를 쓰시오.</p>`,
+   model:`(1) 1라운드: 최댓값 9 ↔ 끝 1 → <b>[6, 2, 1, 4, 9]</b>. 2라운드: 앞 4칸의 최댓값 6 ↔ 4 → <b>[4, 2, 1, 6, 9]</b><br>(2) 비교 (n − 1) + (n − 2) + ⋯ + 1 = <b><span class="frac"><span class="num">(n − 1)n</span><span class="den">2</span></span></b> (항상), 교환 <b>n − 1</b> (라운드마다 1번, 항상)`,
+   rubric:[[`1라운드 결과`,3],[`2라운드 결과`,3],[`비교 (n − 1)n ÷ 2`,2],[`교환 n − 1`,2]],
+   src:[["05-1", "s2", "선택 정렬"]] }
+];
+</script>
+</body>
+</html>

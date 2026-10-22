@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>알고리즘 모의고사 4회 (어려움)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>:root{ --subject:#4F46E5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../exam-engine/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다.<br>이 파일은 <b>drive/exam-engine/exam.css · exam.js</b> 와 함께 있어야 열립니다.
+(<code>drive/algorithm/exam/mock-4.html</code> 위치에서 열어 주세요.)</div>
+<script>
+/* ════════ 시험지 정보 ════════ */
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'알고리즘',
+  title:'모의고사 4회 (어려움)',
+  written:'2026년 10월 23일 작성',
+  slug:'algorithm-mock-4',
+  lectureBase:'../lecture',
+  level:'어려움',
+  mcMax:1,
+  scope:'<b>모의고사 4회 · 어려움</b> (2주차 1차시 ~ 8주차 1차시, 행렬 곱셈 순서 문제 제외)<br>MoM 귀납 증명, Quick Select 최악 만들기, 4T · 3T 전개 비교, 힙 · 선택 정렬 stable 반례, LCS 여러 개, 분할 정복 점화식의 이유, 정렬 하한, 코드 분석, 지그재그'
+};
+
+/* ════════ 문항 ════════
+   type  : mc 객관식 · ox O/X · short 단답 · table 표 빈칸 · line 코드 줄 고르기 · essay 서술
+   lv    : 하 / 중 / 상        src : [['주차-차시','섹션 id','제목'], …]
+   채점  : 엔진은 채점하지 않음. 문항마다 「정답 · 해설」을 펼쳐 스스로 확인 — rubric 은 [기준, 점수] (부분 점수) */
+const EXAM = [
+{ type:'essay',
+   lv:'상',
+   unit:"MoM",
+   pts:12,
+   q:`<p>MoM 의 점화식 T(n) = T(<span class="frac"><span class="num">3n</span><span class="den">4</span></span>) + T(<span class="frac"><span class="num">n</span><span class="den">5</span></span>) + <span class="frac"><span class="num">11n</span><span class="den">5</span></span> 에 대해 T(n) ≤ 44n 임을 수학적 귀납법으로 보이시오. (T(1) = 1)</p>`,
+   model:`<b>기저</b> T(1) = 1 ≤ 44.<br><b>가정</b> n 보다 작은 모든 k 에 대해 T(k) ≤ 44k.<br><b>귀납</b> <span class="frac"><span class="num">3n</span><span class="den">4</span></span>, <span class="frac"><span class="num">n</span><span class="den">5</span></span> &lt; n 이므로 가정 적용: T(n) ≤ 44 · <span class="frac"><span class="num">3n</span><span class="den">4</span></span> + 44 · <span class="frac"><span class="num">n</span><span class="den">5</span></span> + <span class="frac"><span class="num">11n</span><span class="den">5</span></span> = 33n + <span class="frac"><span class="num">44n</span><span class="den">5</span></span> + <span class="frac"><span class="num">11n</span><span class="den">5</span></span> = 33n + 11n = 44n.<br><b>결론</b> 모든 n 에서 T(n) ≤ 44n → <b>O(n)</b>`,
+   rubric:[[`기저 단계`,2],[`"n 보다 작은 모든 k" 가정`,3],[`가정을 두 항에 적용한 계산 = 44n`,5],[`결론 O(n)`,2]],
+   src:[["02-2", "s7", "귀납법"]] },
+
+{ type:'essay',
+   lv:'상',
+   unit:"Quick Select",
+   pts:10,
+   q:`<p>피벗을 항상 L[0] 으로 잡는 quick_select 가 원소 6 개에서 <b>가장 많이</b> 재귀 호출되는 입력과 k 를 하나 만들고, 그때 호출 횟수와 점화식 · Big-O 를 쓰시오.</p>`,
+   model:`예: L = [1, 2, 3, 4, 5, 6], k = 6. 피벗이 매번 가장 작은 값이라 A 가 비고 B 에 나머지가 모두 남아 크기가 1 씩만 줄어든다 → 호출 <b>6 번</b> (크기 6, 5, 4, 3, 2, 1).<br>T(n) = T(n − 1) + (n − 1) → (n − 1) + (n − 2) + ⋯ + 1 = <span class="frac"><span class="num">(n − 1)n</span><span class="den">2</span></span> → <b>O(n²)</b>`,
+   rubric:[[`A 또는 B 가 매번 비는 입력 + 알맞은 k`,4],[`호출 6 번`,2],[`점화식 T(n − 1) + (n − 1) 과 O(n²)`,4]],
+   src:[["02-1", "s5", "Quick Select 최선·최악"]] },
+
+{ type:'essay',
+   lv:'상',
+   unit:"점화식",
+   pts:12,
+   q:`<p>큰 수 곱셈을 반으로 나눠 곱셈 4 번으로 하면 T(n) = 4T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn 이 된다.</p><p>(1) 전개해 Big-O 를 구하시오.<br>(2) 카라츠바가 이보다 빠른 이유를 점화식으로 설명하시오.</p>`,
+   model:`(1) T(n) = 4<sup>k</sup>T(1) + Cn(1 + 2 + ⋯ + 2<sup>k−1</sup>) = C·4<sup>k</sup> + Cn(2<sup>k</sup> − 1). n = 2<sup>k</sup> → 4<sup>k</sup> = n², 2<sup>k</sup> = n → 2Cn² − Cn → <b>O(n²)</b><br>(2) 카라츠바는 가운데 항을 (x + y)(w + z) − xw − yz 로 구해 곱셈을 3 번으로 줄인다 → 3T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn → O(n<sup>log₂ 3</sup>) ≈ O(n<sup>1.585</sup>). 1 &lt; log₂ 3 &lt; 2 라 차수가 낮다.`,
+   rubric:[[`일반항과 등비수열`,3],[`4<sup>k</sup> = n² 변환 → O(n²)`,3],[`곱셈 3 번 (가운데 항 재활용)`,3],[`3T(n ÷ 2) + Cn → O(n<sup>log₂ 3</sup>), 차수 비교`,3]],
+   src:[["03-2", "s7", "점화식"], ["03-2", "s8", "전개 → O(n²)"], ["03-2", "s12", "빠르기 비교"]] },
+
+{ type:'essay',
+   lv:'상',
+   unit:"힙 정렬",
+   pts:10,
+   q:`<p>힙 정렬이 stable 하지 않음을 원소 3 개로 된 반례로 보이시오. 같은 값은 2<sub>a</sub>, 2<sub>b</sub> 처럼 구분해 과정을 쓰시오.</p>`,
+   model:`A = [2<sub>a</sub>, 2<sub>b</sub>, 1]. make_heap: 루트 2<sub>a</sub> 는 자식보다 작지 않아 그대로.<br>1라운드: A[0] ↔ A[2] → [1, 2<sub>b</sub>, 2<sub>a</sub>], heapify_down → [2<sub>b</sub>, 1, 2<sub>a</sub>]<br>2라운드: A[0] ↔ A[1] → <b>[1, 2<sub>b</sub>, 2<sub>a</sub>]</b> → 2<sub>a</sub>, 2<sub>b</sub> 순서가 뒤집혔다 → stable X`,
+   rubric:[[`같은 값을 포함한 3 원소 입력`,2],[`make_heap 과 라운드 과정이 맞음`,5],[`순서가 뒤집힌 결론`,3]],
+   src:[["06-2", "s2", "힙 정렬"]] },
+
+{ type:'essay',
+   lv:'상',
+   unit:"LCS",
+   pts:10,
+   q:`<p>X = CABDA, Y = ACDBA 에 대해 LCS 길이를 구하고, 거꾸로 따라갈 때 (1) 좌 = 상 이면 위로, (2) 좌 = 상 이면 왼쪽으로 가는 경우 얻는 LCS 를 각각 쓰시오.</p>`,
+   model:`길이 <b>3</b>. (1) 위 우선 → <b>CBA</b> &nbsp; (2) 왼쪽 우선 → <b>ADA</b><br>둘 다 X, Y 에 순서대로 들어 있는 길이 3 공통 부문자열 — LCS 는 여러 개일 수 있다.`,
+   rubric:[[`길이 3`,3],[`CBA`,3],[`ADA`,4]],
+   src:[["07-2", "s6", "부문자열 찾기"]] },
+
+{ type:'essay',
+   lv:'상',
+   unit:"최대 구간 합",
+   pts:10,
+   q:`<p>최대 구간 합 분할 정복의 점화식이 T(n) = 2T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn 이 되는 이유를 코드의 각 부분과 연결해 설명하고, 결과 Big-O 를 쓰시오.</p>`,
+   model:`L = max_interval(A, l, m), R = max_interval(A, m + 1, r) — 크기가 반인 재귀 <b>두 번 → 2T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>)</b>. M 을 구하는 두 for 문은 m 에서 왼쪽 끝 · 오른쪽 끝까지 한 번씩 훑으므로 합쳐 n 번 → <b>Cn</b>. 결과는 병합 정렬과 같은 꼴 → <b>O(n log n)</b>.`,
+   rubric:[[`두 재귀가 2T(n ÷ 2)`,4],[`M 계산이 Cn`,4],[`O(n log n)`,2]],
+   src:[["07-1", "s6", "방법 3 — 분할정복"]] },
+
+{ type:'essay',
+   lv:'상',
+   unit:"정렬 하한",
+   pts:10,
+   q:`<p>(1) 원소 5 개를 비교 정렬할 때 최악의 경우 필요한 비교 횟수의 하한을 구하시오.<br>(2) h ≥ log₂ n! 에서 Ω(n log n) 을 얻는 과정을 쓰시오.</p>`,
+   model:`(1) 5! = 120, 2⁶ = 64 &lt; 120 ≤ 128 = 2⁷ → <b>최소 7 번</b><br>(2) n! = n × (n − 1) × ⋯ × 1 에서 큰 쪽 <span class="frac"><span class="num">n</span><span class="den">2</span></span> 개는 각각 <span class="frac"><span class="num">n</span><span class="den">2</span></span> 이상, 나머지는 1 이상 → n! ≥ (<span class="frac"><span class="num">n</span><span class="den">2</span></span>)<sup><span class="frac"><span class="num">n</span><span class="den">2</span></span></sup>. h ≥ log₂ n! ≥ <span class="frac"><span class="num">n</span><span class="den">2</span></span> log₂ <span class="frac"><span class="num">n</span><span class="den">2</span></span> ≥ C · n log₂ n → <b>Ω(n log n)</b>`,
+   rubric:[[`5! = 120 과 2⁷ 비교 → 7`,4],[`n! ≥ (n ÷ 2)<sup>n ÷ 2</sup> 의 이유`,4],[`Ω(n log n) 결론`,2]],
+   src:[["06-2", "s9", "하한"]] },
+
+{ type:'essay',
+   lv:'상',
+   unit:"병합 정렬",
+   pts:6,
+   q:`<p>merge_two_sorted_lists 의 마지막 줄을 A[i] = B[i − first] 대신 A[i] = B[i] 로 쓰면 어떤 문제가 생기는지 쓰시오.</p>`,
+   model:`B 는 0 번 칸부터 채워지고 A 의 구간은 first 부터다. first &gt; 0 인 구간(예: 오른쪽 절반)에서 B[i] 를 읽으면 B 의 길이를 넘어가거나 엉뚱한 칸을 읽어 <b>인덱스 오류 또는 잘못된 값</b>이 들어간다. first = 0 일 때만 우연히 맞는다.`,
+   rubric:[[`B 는 0 부터, A 구간은 first 부터`,3],[`first &gt; 0 에서 오류 · 잘못된 값`,3]],
+   src:[["06-1", "s3", "병합 정렬"]] },
+
+{ type:'essay',
+   lv:'상',
+   unit:"기본 정렬",
+   pts:10,
+   q:`<p>(1) 선택 정렬의 교환 횟수가 입력과 관계없이 항상 n − 1 인 이유를 수업 코드로 설명하시오.<br>(2) 선택 정렬이 stable 하지 않음을 원소 3 개 반례로 보이시오.</p>`,
+   model:`(1) 교환 줄 A[m], A[last] = A[last], A[m] 이 조건 없이 라운드마다 실행된다 (최댓값이 이미 끝에 있어도 자기 자신과 교환). 라운드가 n − 1 번 → <b>항상 n − 1</b>.<br>(2) [3, 2<sub>a</sub>, 2<sub>b</sub>] → 최댓값 3 ↔ 끝 2<sub>b</sub> → [2<sub>b</sub>, 2<sub>a</sub>, 3] → 2<sub>a</sub>, 2<sub>b</sub> 순서가 뒤집힘.`,
+   rubric:[[`조건 없는 교환 → 항상 n − 1`,5],[`올바른 반례`,5]],
+   src:[["05-1", "s2", "선택 정렬"]] },
+
+{ type:'table',
+   lv:'상',
+   unit:"지그재그",
+   pts:10,
+   q:`<p>A = [5, 3, 3, 8, 2, 9, 9, 4, 6] 에 지그재그 DP (시작값 1, 같은 값은 이어 붙이지 않음) 를 적용해 low, high 를 채우고 마지막 칸에 답을 쓰시오.</p>`,
+   head:[`k`,`0`,`1`,`2`,`3`,`4`,`5`,`6`,`7`,`8`,`답`],
+   rows:[
+     [`A`,`5`,`3`,`3`,`8`,`2`,`9`,`9`,`4`,`6`,`—`],
+     [`low`,{a:`1`,alt:[]},{a:`2`,alt:[]},{a:`2`,alt:[]},{a:`1`,alt:[]},{a:`4`,alt:[]},{a:`1`,alt:[]},{a:`1`,alt:[]},{a:`6`,alt:[]},{a:`6`,alt:[]},{a:`7`,alt:[]}],
+     [`high`,{a:`1`,alt:[]},{a:`1`,alt:[]},{a:`1`,alt:[]},{a:`3`,alt:[]},{a:`1`,alt:[]},{a:`5`,alt:[]},{a:`5`,alt:[]},{a:`5`,alt:[]},{a:`7`,alt:[]},``]],
+   exp:`같은 값(3, 3 / 9, 9)끼리는 이어 붙이지 않는다. 답 7 (예: 5, 3, 8, 2, 9, 4, 6).`,
+   src:[["07-2", "s10", "지그재그 코드 · 표"]] }
+];
+</script>
+</body>
+</html>

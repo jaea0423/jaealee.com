@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>알고리즘 모의고사 2회 (실전)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>:root{ --subject:#4F46E5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../exam-engine/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다.<br>이 파일은 <b>drive/exam-engine/exam.css · exam.js</b> 와 함께 있어야 열립니다.
+(<code>drive/algorithm/exam/mock-2.html</code> 위치에서 열어 주세요.)</div>
+<script>
+/* ════════ 시험지 정보 ════════ */
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'알고리즘',
+  title:'모의고사 2회 (실전)',
+  written:'2026년 10월 23일 작성',
+  slug:'algorithm-mock-2',
+  lectureBase:'../lecture',
+  level:'실전',
+  mcMax:1,
+  scope:'<b>모의고사 2회 · 실전</b> (2주차 1차시 ~ 8주차 1차시, 행렬 곱셈 순서 문제 제외)<br>토너먼트, 제자리 퀵, 카라츠바 전개, 힙 정렬, 알고리즘 식별, LCS, MoM, 삽입 정렬, 지그재그, 정렬 하한'
+};
+
+/* ════════ 문항 ════════
+   type  : mc 객관식 · ox O/X · short 단답 · table 표 빈칸 · line 코드 줄 고르기 · essay 서술
+   lv    : 하 / 중 / 상        src : [['주차-차시','섹션 id','제목'], …]
+   채점  : 엔진은 채점하지 않음. 문항마다 「정답 · 해설」을 펼쳐 스스로 확인 — rubric 은 [기준, 점수] (부분 점수) */
+const EXAM = [
+{ type:'essay',
+   lv:'중',
+   unit:"토너먼트",
+   pts:10,
+   q:`<p>원소 32 개에서 최솟값과 두 번째로 작은 값을 수업의 토너먼트 방법으로 찾는다.</p><p>(1) 필요한 비교 횟수를 구하시오.<br>(2) 두 번째로 작은 값을 최솟값에게 진 원소들 중에서만 찾아도 되는 이유를 설명하시오.</p>`,
+   model:`(1) 최솟값 토너먼트 n − 1 = 31 번 + 최솟값에게 직접 진 원소 ⌈log₂ 32⌉ = 5 개 중 최솟값 4 번 → <b>35 번</b> (= n + ⌈log₂ n⌉ − 2)<br>(2) 두 번째로 작은 값은 최솟값에게만 질 수 있다. 다른 원소 x 에게 졌다면 x 와 최솟값이 모두 자기보다 작아 "두 번째" 가 아니게 되기 때문.`,
+   rubric:[[`31 + 4 = 35`,5],[`최솟값에게만 질 수 있다는 논리`,5]],
+   src:[["02-1", "s4", "최소·두 번째로 작은 값"]] },
+
+{ type:'table',
+   lv:'중',
+   unit:"제자리 퀵",
+   pts:12,
+   q:`<p>교수님 코드의 제자리 퀵 정렬 분할 (피벗 p = A[first], left 는 p 보다 작으면 통과, right 는 p 보다 크면 통과, 둘 다 멈추면 교환, 끝나면 A[first] ↔ A[right]) 을 A = [5, 1, 8, 3, 9, 2, 7, 4, 6] 의 첫 분할에 적용한다.</p>`,
+   head:[`교환`,`바꾸는 두 값`],
+   rows:[
+     [`1번째`,{a:`8 ↔ 4`,alt:[]}],
+     [`2번째`,{a:`9 ↔ 2`,alt:[]}],
+     [`피벗 교환`,{a:`5 ↔ 2 (A[0] ↔ A[4])`,alt:[]}],
+     [`분할 결과`,{a:`[2, 1, 4, 3, 5, 9, 7, 8, 6]`,alt:[]}]],
+   exp:`left 는 8 (인덱스 2) 에서, right 는 4 (인덱스 7) 에서 멈춤 → 교환. 다시 left 는 9 (4), right 는 2 (5) → 교환. 다음엔 left = 5, right = 4 로 엇갈려 끝, A[0] ↔ A[4]. 5 왼쪽은 모두 5 보다 작고 오른쪽은 모두 크다.`,
+   src:[["05-1", "s4", "제자리 퀵 정렬"]] },
+
+{ type:'essay',
+   lv:'중',
+   unit:"점화식",
+   pts:12,
+   q:`<p>카라츠바 알고리즘의 점화식 T(n) = 3T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn (T(1) = C) 을 전개해 Big-O 를 구하시오.</p>`,
+   model:`T(n) = 3T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn = 3²T(<span class="frac"><span class="num">n</span><span class="den">4</span></span>) + Cn(1 + <span class="frac"><span class="num">3</span><span class="den">2</span></span>) = ⋯ = 3<sup>k</sup>T(1) + Cn(1 + <span class="frac"><span class="num">3</span><span class="den">2</span></span> + ⋯ + (<span class="frac"><span class="num">3</span><span class="den">2</span></span>)<sup>k−1</sup>)<br>등비수열 합 = 2((<span class="frac"><span class="num">3</span><span class="den">2</span></span>)<sup>k</sup> − 1) → = C·3<sup>k</sup> + 2Cn(<span class="frac"><span class="num">3</span><span class="den">2</span></span>)<sup>k</sup> − 2Cn<br>n = 2<sup>k</sup>: 3<sup>k</sup> = 3<sup>log₂ n</sup> = n<sup>log₂ 3</sup>, n(<span class="frac"><span class="num">3</span><span class="den">2</span></span>)<sup>k</sup> = n<sup>log₂ 3</sup><br>= 3C·n<sup>log₂ 3</sup> − 2Cn → <b>O(n<sup>log₂ 3</sup>)</b> ≈ O(n<sup>1.585</sup>)`,
+   rubric:[[`일반항 3<sup>k</sup>T(1) + Cn(등비수열)`,4],[`등비수열 합 (공비 3 ÷ 2)`,3],[`3<sup>log₂ n</sup> = n<sup>log₂ 3</sup> 변환`,3],[`결론 O(n<sup>log₂ 3</sup>)`,2]],
+   src:[["03-2", "s10", "새 점화식"], ["03-2", "s11", "전개 → 결론"]] },
+
+{ type:'table',
+   lv:'중',
+   unit:"힙 정렬",
+   pts:10,
+   q:`<p>최대 힙 A = [10, 8, 9, 3, 7, 6, 5, 1, 2] 에 힙 정렬을 2 라운드 진행한다 (A[0] ↔ 구간 끝, 그 칸을 뺀 범위에서 heapify_down). 각 라운드 뒤의 A 를 쓰시오.</p>`,
+   head:[``,`A`],
+   rows:[
+     [`1라운드 후`,{a:`[9, 8, 6, 3, 7, 2, 5, 1, 10]`,alt:[]}],
+     [`2라운드 후`,{a:`[8, 7, 6, 3, 1, 2, 5, 9, 10]`,alt:[]}]],
+   exp:`1라운드: 10 ↔ 2 → 루트 2 가 큰 자식 9 와, 이어서 6 과 교환 → [9, 8, 6, 3, 7, 2, 5, 1, 10]. 2라운드: 9 ↔ 1 → 1 이 8, 7 과 차례로 교환 → [8, 7, 6, 3, 1, 2, 5, 9, 10].`,
+   src:[["06-2", "s2", "힙 정렬"]] },
+
+{ type:'essay',
+   lv:'중',
+   unit:"알고리즘 식별",
+   pts:10,
+   q:`<p>다음 설명에 해당하는 알고리즘 이름과 수행시간을 쓰시오.</p><p>(가) 5 개씩 묶어 각 묶음의 median 을 구하고, median 들의 median 을 피벗으로 써서 k 번째 값을 찾는다.<br>(나) 두 큰 수를 반으로 나눠 곱할 때 가운데 항을 (x + y)(w + z) − xw − yz 로 구해 곱셈을 3 번만 한다.<br>(다) 같은 길이의 두 문자열을 표로 비교해, 같으면 좌상 + 1, 다르면 max(좌, 상) 을 쓴다.</p>`,
+   model:`(가) <b>MoM</b> (Median of Medians) — 최악도 <b>O(n)</b><br>(나) <b>카라츠바</b> — <b>O(n<sup>log₂ 3</sup>)</b><br>(다) <b>LCS</b> — 길이 n 이면 <b>O(n²)</b> (일반적으로 O(nm))`,
+   rubric:[[`(가) 이름 · 시간`,4],[`(나) 이름 · 시간`,3],[`(다) 이름 · 시간`,3]],
+   src:[["02-2", "s4", "MoM"], ["03-2", "s9", "카라츠바"], ["07-2", "s4", "LCS 표"]] },
+
+{ type:'essay',
+   lv:'중',
+   unit:"LCS",
+   pts:10,
+   q:`<p>X = DABCA, Y = BADCA 의 LCS 길이를 구하고, 표를 거꾸로 따라가 LCS 하나를 쓰시오 (좌 = 상 이면 위로).</p>`,
+   model:`표의 마지막 칸 LCS[5][5] = <b>3</b>. 위 우선으로 거꾸로 따라가면 <b>DCA</b> (C, A 를 맞추고 D 를 대각선으로 기록).`,
+   rubric:[[`표를 채워 길이 3`,5],[`규칙대로 따라간 LCS DCA (다른 길이 3 공통 부문자열이면 2점)`,5]],
+   src:[["07-2", "s4", "DP 테이블 채우기"], ["07-2", "s6", "부문자열 찾기"]] },
+
+{ type:'essay',
+   lv:'중',
+   unit:"MoM",
+   pts:10,
+   q:`<p>MoM 에서 분할 후 |A|, |B| ≤ <span class="frac"><span class="num">3n</span><span class="den">4</span></span> 가 되는 이유를 설명하시오. (m* = median 들의 median)</p>`,
+   model:`묶음 <span class="frac"><span class="num">n</span><span class="den">5</span></span> 개 중 절반(<span class="frac"><span class="num">n</span><span class="den">10</span></span> 개)의 median 이 m* 이하이고, 그 묶음마다 median 이하인 원소가 3 개 → m* 이하인 원소가 최소 <span class="frac"><span class="num">3n</span><span class="den">10</span></span> ≥ <span class="frac"><span class="num">n</span><span class="den">4</span></span> 개. 이 원소들은 B (m* 보다 큼) 에 들어갈 수 없으므로 |B| ≤ n − <span class="frac"><span class="num">n</span><span class="den">4</span></span> = <span class="frac"><span class="num">3n</span><span class="den">4</span></span>. m* 이상인 쪽으로 대칭 → |A| ≤ <span class="frac"><span class="num">3n</span><span class="den">4</span></span>.`,
+   rubric:[[`m* 이하 원소가 <span class="frac"><span class="num">3n</span><span class="den">10</span></span> 개 이상인 이유`,4],[`<span class="frac"><span class="num">3n</span><span class="den">10</span></span> ≥ <span class="frac"><span class="num">n</span><span class="den">4</span></span> 로 잡음`,2],[`그 원소들이 B 에 못 들어가 |B| ≤ 3n ÷ 4, 대칭으로 |A|`,4]],
+   src:[["02-2", "s6", "c = 4/3 증명"]] },
+
+{ type:'table',
+   lv:'중',
+   unit:"삽입 정렬",
+   pts:8,
+   q:`<p>A = [5, 2, 4, 6, 1, 3] 에 삽입 정렬을 적용한다. 각 라운드 (i = 1 ~ 5) 뒤의 A 와 전체 비교 횟수를 쓰시오.</p>`,
+   head:[`i`,`라운드 뒤 A`],
+   rows:[
+     [`1`,{a:`[2, 5, 4, 6, 1, 3]`,alt:[]}],
+     [`2`,{a:`[2, 4, 5, 6, 1, 3]`,alt:[]}],
+     [`3`,{a:`[2, 4, 5, 6, 1, 3]`,alt:[]}],
+     [`4`,{a:`[1, 2, 4, 5, 6, 3]`,alt:[]}],
+     [`5`,{a:`[1, 2, 3, 4, 5, 6]`,alt:[]}],
+     [`비교 횟수`,{a:`12`,alt:[]}]],
+   exp:`i = 1: 2 &lt; 5 → 1번. i = 2: 4 vs 5, 2 → 2번. i = 3: 6 vs 5 → 1번 (바로 멈춤). i = 4: 1 이 6, 5, 4, 2 를 모두 지나 맨 앞 → 4번. i = 5: 3 vs 6, 5, 4, 2 → 4번. 합 12.`,
+   src:[["05-1", "s2", "삽입 정렬"]] },
+
+{ type:'table',
+   lv:'중',
+   unit:"지그재그",
+   pts:8,
+   q:`<p>A = [4, 1, 6, 6, 2, 7, 3, 5] 에 지그재그 DP (시작값 1, 같은 값은 이어 붙이지 않음) 를 적용하시오.</p>`,
+   head:[`k`,`0`,`1`,`2`,`3`,`4`,`5`,`6`,`7`],
+   rows:[
+     [`A`,`4`,`1`,`6`,`6`,`2`,`7`,`3`,`5`],
+     [`low`,{a:`1`,alt:[]},{a:`2`,alt:[]},{a:`1`,alt:[]},{a:`1`,alt:[]},{a:`4`,alt:[]},{a:`1`,alt:[]},{a:`6`,alt:[]},{a:`6`,alt:[]}],
+     [`high`,{a:`1`,alt:[]},{a:`1`,alt:[]},{a:`3`,alt:[]},{a:`3`,alt:[]},{a:`3`,alt:[]},{a:`5`,alt:[]},{a:`5`,alt:[]},{a:`7`,alt:[]}]],
+   exp:`답 = 7 (예: 4, 1, 6, 2, 7, 3, 5).`,
+   src:[["07-2", "s10", "지그재그 코드 · 표"]] },
+
+{ type:'essay',
+   lv:'중',
+   unit:"정렬 하한",
+   pts:10,
+   q:`<p>원소 4 개를 비교로 정렬할 때, 어떤 알고리즘이든 최악의 경우 비교가 최소 몇 번 필요한지 결정 트리로 설명하시오.</p>`,
+   model:`가능한 순서가 4! = 24 가지라 결정 트리의 리프가 24 개 필요하다. 비교 한 번은 두 갈래라 높이 h 인 트리의 리프는 2<sup>h</sup> 개 이하 → 2<sup>h</sup> ≥ 24. 2⁴ = 16 &lt; 24 ≤ 32 = 2⁵ 이므로 <b>h ≥ 5 → 최소 5 번</b>.`,
+   rubric:[[`리프 4! = 24 개`,3],[`리프 ≤ 2<sup>h</sup>`,3],[`2⁴ &lt; 24 ≤ 2⁵ → 5 번`,4]],
+   src:[["06-2", "s8", "결정 트리"], ["06-2", "s9", "하한"]] }
+];
+</script>
+</body>
+</html>

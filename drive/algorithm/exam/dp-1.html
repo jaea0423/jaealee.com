@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>알고리즘 단원 평가 · 동적 계획법 (기본)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>:root{ --subject:#4F46E5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../exam-engine/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다.<br>이 파일은 <b>drive/exam-engine/exam.css · exam.js</b> 와 함께 있어야 열립니다.
+(<code>drive/algorithm/exam/dp-1.html</code> 위치에서 열어 주세요.)</div>
+<script>
+/* ════════ 시험지 정보 ════════ */
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'알고리즘',
+  title:'단원 평가 · 동적 계획법 (기본)',
+  written:'2026년 10월 23일 작성',
+  slug:'algorithm-dp-1',
+  lectureBase:'../lecture',
+  level:'기본',
+  mcMax:1,
+  scope:'<b>단원 평가 · 동적 계획법 · 기본</b> (7주차 1차시 ~ 8주차 1차시)<br>DP 와 분할 정복, 피보나치, 계단 오르기, 최대 구간 합 (prefix sum · DP), LCS, 지그재그. 행렬 곱셈 순서 문제는 제외'
+};
+
+/* ════════ 문항 ════════
+   type  : mc 객관식 · ox O/X · short 단답 · table 표 빈칸 · line 코드 줄 고르기 · essay 서술
+   lv    : 하 / 중 / 상        src : [['주차-차시','섹션 id','제목'], …]
+   채점  : 엔진은 채점하지 않음. 문항마다 「정답 · 해설」을 펼쳐 스스로 확인 — rubric 은 [기준, 점수] (부분 점수) */
+const EXAM = [
+{ type:'table', lv:'하', unit:'최대 구간 합', pts:12,
+   q:`<p>최대 구간 합 문제를 동적 계획법으로 푼다. S[k] 는 A[k] 로 <b>끝나는</b> 구간 중 합이 가장 큰 값이다. 표의 S 를 채우시오.</p>`,
+   head:['k','0','1','2','3','4','5','6','7'],
+   rows:[
+     ['A','−2','3','−1','4','−6','2','5','−1'],
+     ['S',B('−2'),B('3'),B('2'),B('6'),B('0'),B('2'),B('7'),B('6')]],
+   exp:`S[0] = A[0] = −2, S[k] = max(S[k − 1] + A[k], A[k]). k = 1 에서 S[0] = −2 가 음수라 앞을 버리고 3 부터 새로 시작, k = 4 는 max(6 − 6, −6) = 0.`,
+   src:[['07-1','s7','방법 4 — DP']] },
+
+{ type:'essay', lv:'하', unit:'DP 개념', pts:10,
+   q:`<p>피보나치 수를 분할 정복(재귀)으로 구할 때와 동적 계획법으로 구할 때의 차이를 설명하고, 각각의 시간복잡도를 쓰시오.</p>`,
+   model:`분할 정복은 f(n) = f(n − 1) + f(n − 2) 를 답을 <b>저장하지 않고</b> 다시 호출하므로 f(3), f(2) 처럼 같은 값을 여러 번 계산한다 → <b>O(1.6<sup>n</sup>)</b>.<br>동적 계획법은 F[0] = 0, F[1] = 1 부터 구한 값을 리스트에 <b>저장</b>해 두고 F[i] = F[i − 1] + F[i − 2] 로 꺼내 쓴다 → 반복 n 번 × O(1) = <b>O(n)</b>.`,
+   rubric:[['저장하지 않고 같은 값을 다시 계산 vs 저장해서 재사용 — 대비가 드러남',4],['분할 정복 O(1.6ⁿ) (지수 시간이라고만 써도 인정)',3],['동적 계획법 O(n)',3]],
+   src:[['07-1','s2','피보나치 수']] },
+
+{ type:'table', lv:'하', unit:'LCS', pts:15,
+   q:`<p>X = ACBDB, Y = BCADB 의 LCS 표를 채우시오. 칸 LCS[i][j] 는 X 의 앞 i 글자와 Y 의 앞 j 글자의 LCS 길이이다.</p>`,
+   head:['X \\ Y','–','B','C','A','D','B'],
+   rows:[['–','0','0','0','0','0','0'],
+     ['A','0',B('0'),B('0'),B('1'),B('1'),B('1')],
+     ['C','0',B('0'),B('1'),B('1'),B('1'),B('1')],
+     ['B','0',B('1'),B('1'),B('1'),B('1'),B('2')],
+     ['D','0',B('1'),B('1'),B('1'),B('2'),B('2')],
+     ['B','0',B('1'),B('1'),B('1'),B('2'),B('3')]],
+   exp:`같으면 좌상 + 1, 다르면 max(좌, 상). 1 행부터 왼쪽 → 오른쪽으로 채우면 좌 · 상 · 좌상이 항상 먼저 채워져 있다. 오른쪽 아래 LCS[5][5] = 3 이 LCS 길이.`,
+   src:[['07-2','s3','LCS 점화식'],['07-2','s4','DP 테이블 채우기']] },
+
+{ type:'essay', lv:'하', unit:'최대 구간 합', pts:8,
+   q:`<p>1번 문제의 결과로 최대 구간 합과 그 구간 (A[i] ~ A[j]) 을 쓰고, 마지막 칸 S[7] 이 답이 아닌 이유를 설명하시오.</p>`,
+   model:`답 = max(S) = <b>7</b>, 구간 <b>A[1] ~ A[6]</b> (3 − 1 + 4 − 6 + 2 + 5).<br>S[k] 는 A[k] 로 <b>끝나는</b> 구간의 최댓값일 뿐이고, 가장 큰 구간이 어디서 끝날지는 모르므로 모든 S[k] 중 최댓값을 골라야 한다. S[7] = 6 은 A[7] 로 끝나는 경우만 본 값.`,
+   rubric:[['답 7',3],['구간 A[1] ~ A[6]',2],['"끝나는" 위치를 모르므로 S 전체의 최댓값이라는 이유',3]],
+   src:[['07-1','s7','방법 4 — DP']] },
+
+{ type:'essay', lv:'하', unit:'계단 오르기', pts:10,
+   q:`<p>한 번에 계단을 1칸 또는 2칸 오를 수 있다. 1층에서 n층까지 오르는 경우의 수를 A[n] 이라 하자 (A[1] = 1, A[2] = 1).</p><p>(1) A[n] = A[n − 1] + A[n − 2] 가 되는 이유를 설명하시오.<br>(2) A[7] 을 구하시오.</p>`,
+   model:`(1) n층에 도착하는 <b>마지막 걸음</b>은 n − 1층에서 1칸 또는 n − 2층에서 2칸, 두 가지뿐이고 겹치지 않는다. 앞의 경우는 1층 → n − 1층 경로마다 1칸을 붙인 것이라 A[n − 1] 개, 뒤는 A[n − 2] 개 → 더한다.<br>(2) A = 1, 1, 2, 3, 5, 8, 13 → <b>A[7] = 13</b>`,
+   rubric:[['마지막 걸음이 두 경우뿐이고 겹치지 않음',3],['각 경우의 수가 A[n − 1], A[n − 2] 인 이유',3],['A[7] = 13',4]],
+   src:[['07-1','s3','계단 오르기']] },
+
+{ type:'short', lv:'하', unit:'LCS', pts:7,
+   q:`<p>3번 표를 오른쪽 아래 LCS[5][5] 부터 거꾸로 따라가 LCS 하나를 구하시오. 같으면 좌상으로 가며 그 글자를 기록하고, 다르면 값이 큰 쪽으로 가되 좌와 상이 같으면 <b>위</b>로 간다.</p>`,
+   show:'ADB', alt:[],
+   exp:`[5][5] B = B ↖ (B) → [4][4] D = D ↖ (DB) → [3][3] B ≠ A, 상 1 = 좌 1 → ↑ → [2][3] C ≠ A, 상 1 = 좌 1 → ↑ → [1][3] A = A ↖ (ADB) → 0 행, 끝. 방향을 다르게 고르면 CDB, BDB 같은 다른 LCS 가 나온다 — 이 문제는 "위 우선" 규칙이라 ADB.`,
+   src:[['07-2','s6','부문자열 찾기']] },
+
+{ type:'table', lv:'하', unit:'지그재그', pts:12,
+   q:`<p>가장 긴 지그재그 수열을 low · high 로 구한다. low[k] 는 A[k] 가 앞 수보다 작게 (내려오며) 끝나는, high[k] 는 크게 (올라가며) 끝나는 가장 긴 지그재그 길이이고 시작값은 모두 1 이다. 같은 값끼리는 이어 붙이지 않는다. 표를 채우시오.</p>`,
+   head:['k','0','1','2','3','4','5','6','7'],
+   rows:[
+     ['A','3','5','5','2','8','1','1','4'],
+     ['low',B('1'),B('1'),B('1'),B('3'),B('1'),B('5'),B('5'),B('5')],
+     ['high',B('1'),B('2'),B('2'),B('1'),B('4'),B('1'),B('1'),B('6')]],
+   exp:`A[j] &gt; A[k] 이면 low[k] = max(low[k], high[j] + 1), A[j] &lt; A[k] 이면 high[k] = max(high[k], low[j] + 1). 답 = 모든 k 의 max(low[k], high[k]) 중 최댓값 = 6 (예: 3, 5, 2, 8, 1, 4).`,
+   src:[['07-2','s9','low · high 상태'],['07-2','s10','지그재그 코드 · 표']] },
+
+{ type:'essay', lv:'하', unit:'prefix sum', pts:12,
+   q:`<p>1번의 A = [−2, 3, −1, 4, −6, 2, 5, −1] 에 대해</p><p>(1) prefix sum P (P[i] = A[0] + ⋯ + A[i]) 를 구하시오.<br>(2) P 를 이용해 A[2] + A[3] + A[4] + A[5] 를 구하고, 사용한 식을 쓰시오.</p>`,
+   model:`(1) P[0] = A[0], P[i] = P[i − 1] + A[i] → <b>P = [−2, 1, 0, 4, −2, 0, 5, 4]</b><br>(2) A[2] + ⋯ + A[5] = P[5] − P[1] = 0 − 1 = <b>−1</b> (구간 합 = P[j] − P[i − 1])`,
+   rubric:[['P 8칸 (틀린 칸 하나당 −1, 최소 0)',6],['P[5] − P[1] (P[j] − P[i − 1]) 식',4],['값 −1',2]],
+   src:[['07-1','s5','방법 2 — prefix sum']] },
+
+{ type:'essay', lv:'하', unit:'수행시간', pts:14,
+   q:`<p>최대 구간 합 문제를 푸는 네 방법 — 단순한 방법, prefix sum, 분할 정복, 동적 계획법 — 의 시간복잡도를 각각 쓰고, 동적 계획법이 가장 빠른 이유를 쓰시오.</p>`,
+   model:`단순 <b>O(n³)</b> · prefix sum <b>O(n²)</b> · 분할 정복 <b>O(n log n)</b> · 동적 계획법 <b>O(n)</b><br>동적 계획법은 S[k − 1] 을 저장해 두고 S[k] = max(S[k − 1] + A[k], A[k]) 로 칸 하나를 O(1) 에 채우므로, n 칸 → O(n).`,
+   rubric:[['네 방법의 시간복잡도 (각 3점)',12],['저장된 S[k − 1] 을 재사용해 칸당 O(1) 이라는 이유',2]],
+   src:[['07-1','s8','4가지 비교']] }
+];
+</script>
+</body>
+</html>
