@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>알고리즘 8주차 1차시 — 행렬 곱셈 순서</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   과목 테마 — 아래 3줄(--accent, --accent-deep, --accent-soft)만 교체
+   데이터분석프로그래밍 #0EA5E9 / #0369A1 / #E0F2FE
+   전공영어           #E08700 / #A55A00 / #FEF3DC
+   인공지능           #9333EA / #6B21A8 / #F3E8FF
+   알고리즘           #4F46E5 / #3730A3 / #E8E7FD
+   시큐어코딩         #DC2626 / #991B1B / #FDE7E7
+   개인정보보호암호기술 #DB2777 / #9D174D / #FCE7F3
+   개인정보보호법률이해 #059669 / #065F46 / #D8F5EA
+   ═══════════════════════════════════════════════════════════════ */
+:root{
+  --accent:#4F46E5;
+  --accent-deep:#3730A3;
+  --accent-soft:#E8E7FD;
+
+  --bg:#F7F8FA;
+  --surface:#FFFFFF;
+  --ink:#15161B;
+  --ink-2:#565C66;
+  --ink-3:#8B9098;
+  --line:#E5E7EC;
+  --line-2:#F0F1F4;
+  --code-bg:#1B1D24;
+  --code-ink:#E4E6ED;
+  --mark:#FFE27A;
+  --c1:#1D6FC4;
+  --c2:#0E8F72;
+  --c3:#C2410C;
+  --font:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,system-ui,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  --mono:'JetBrains Mono','SFMono-Regular',Consolas,'D2Coding',monospace;
+}
+html[data-theme="dark"]{
+  --accent:#7C78F0;
+  --accent-deep:#9C99F7;
+  --accent-soft:#22232E;
+  --bg:#101116;
+  --surface:#181A20;
+  --ink:#E8E9ED;
+  --ink-2:#A6AAB4;
+  --ink-3:#73777F;
+  --line:#2A2C34;
+  --line-2:#202229;
+  --code-bg:#0C0D11;
+  --mark:#6E5C16;
+  --c1:#6FB3F2;
+  --c2:#4FD9B0;
+  --c3:#F0955A;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15.5px;line-height:1.72;letter-spacing:-.012em;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-deep)}
+::selection{background:var(--accent);color:#fff}
+
+/* ── 스크롤 진행 바 ─────────────────────────────────── */
+#scrollbar{position:fixed;top:0;left:0;height:3px;width:0;background:var(--accent);z-index:99}
+
+/* ── 상단 바 ────────────────────────────────────────── */
+.topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:10px;padding:10px 22px;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.back{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink-2);font-size:14px;font-weight:700;white-space:nowrap}
+.back:hover{color:var(--accent-deep)}
+.back i{width:10px;height:10px;border-radius:3px;background:var(--accent);display:block}
+.search{flex:1;max-width:300px;margin-left:auto;position:relative}
+.search input{width:100%;padding:7px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14px}
+.search input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.hit{position:absolute;right:10px;top:8px;font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums;pointer-events:none}
+.tools{display:flex;gap:6px}
+.tbtn{border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:9px;padding:7px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);white-space:nowrap}
+.tbtn:hover{border-color:var(--accent);color:var(--accent-deep)}
+.tbtn.solid{background:var(--accent);border-color:var(--accent);color:#fff}
+.tbtn:disabled{opacity:.4;cursor:default}
+
+/* ── 레이아웃 ───────────────────────────────────────── */
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);gap:38px;max-width:1200px;margin:0 auto;padding:26px 24px 120px}
+main{min-width:0}
+
+/* ── 사이드 패널(포인트 컬러) ───────────────────────── */
+.side{position:sticky;top:80px;align-self:start;max-height:calc(100vh - 100px);overflow-y:auto;scrollbar-width:thin}
+.panel{background:var(--accent);border-radius:16px;padding:18px 16px;color:#fff;box-shadow:0 8px 24px -12px color-mix(in srgb,var(--accent) 70%,transparent)}
+.panel .cap{font-size:11.5px;font-weight:700;opacity:.72;margin-bottom:9px}
+.panel .subject{font-size:19px;font-weight:800;letter-spacing:-.03em;line-height:1.3;margin-bottom:2px}
+.panel .when{font-size:12.5px;opacity:.8;margin-bottom:16px}
+.toc{list-style:none;margin:0;padding:0}
+.toc a{display:block;padding:6px 10px;border-radius:8px;color:#fff;opacity:.82;text-decoration:none;font-size:13.5px;font-weight:600;line-height:1.45}
+.toc a:hover{background:rgba(255,255,255,.16);opacity:1}
+.toc a.on{background:#fff;color:var(--accent-deep);opacity:1;font-weight:800}
+.toc .num{display:inline-block;width:17px;font-variant-numeric:tabular-nums;opacity:.7}
+.toc a.on .num{opacity:1}
+.panel hr{border:0;border-top:1px solid rgba(255,255,255,.22);margin:14px 0}
+.chk label{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;padding:3px 0;cursor:pointer;line-height:1.5;opacity:.9}
+.chk input{margin-top:4px;accent-color:#fff;flex-shrink:0}
+.chk input:checked + span{opacity:.5;text-decoration:line-through}
+.pbar{height:4px;border-radius:99px;background:rgba(255,255,255,.28);margin-top:11px;overflow:hidden}
+.pbar i{display:block;height:100%;width:0;background:#fff;transition:width .25s}
+
+/* ── 히어로 ─────────────────────────────────────────── */
+.hero{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px 28px 22px;overflow:hidden;margin-bottom:16px}
+.hero::after{content:attr(data-w);position:absolute;right:14px;bottom:-26px;font-size:112px;font-weight:800;color:var(--accent);opacity:.09;letter-spacing:-.06em;line-height:1;pointer-events:none}
+.chip{display:inline-flex;align-items:center;gap:7px;background:var(--accent-soft);color:var(--accent-deep);font-size:12.5px;font-weight:800;padding:4px 11px;border-radius:99px}
+h1{font-size:clamp(26px,3.6vw,34px);font-weight:800;letter-spacing:-.04em;line-height:1.24;margin:12px 0 6px;position:relative}
+.hero .sub{color:var(--ink-2);font-size:15px;margin:0 0 14px;position:relative}
+[hidden]{display:none!important}
+.metaline{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink-3);position:relative}
+.metaline b{color:var(--ink-2);font-weight:600}
+
+/* ── 수업 자료 (같은 폴더의 PDF) ────────────────────── */
+.files{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;position:relative}
+.file{display:inline-flex;align-items:center;gap:9px;padding:8px 13px 8px 9px;border:1px solid var(--line);border-radius:10px;background:var(--surface);text-decoration:none;color:var(--ink);font-size:13.5px;font-weight:700}
+.file:hover{border-color:var(--accent);background:var(--accent-soft)}
+.file .ic{background:var(--accent);color:#fff;font-size:10px;font-weight:800;padding:3px 6px;border-radius:6px;letter-spacing:.02em}
+.file em{font-style:normal;color:var(--ink-3);font-weight:600;font-size:12.5px}
+.files .none{font-size:12.5px;color:var(--ink-3);font-weight:600;padding:8px 0}
+.extra-chip:disabled{cursor:default;opacity:.6}
+
+/* ── 오늘의 흐름 ────────────────────────────────────── */
+.flow{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:26px}
+.flow a{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--line);border-radius:99px;background:var(--surface);text-decoration:none;color:var(--ink-2);font-size:13px;font-weight:600}
+.flow a:hover{border-color:var(--accent);color:var(--accent-deep);background:var(--accent-soft)}
+.flow a b{color:var(--accent);font-variant-numeric:tabular-nums}
+
+/* ── 핵심 카드 ──────────────────────────────────────── */
+.keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:34px}
+.key{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:14px;padding:16px 17px}
+.key .n{font-size:12px;font-weight:800;color:var(--accent);margin-bottom:5px}
+.key p{margin:0;font-size:14.5px;line-height:1.6}
+.key b{font-weight:800}
+
+/* ── 섹션 ───────────────────────────────────────────── */
+section{margin-bottom:46px;scroll-margin-top:82px}
+h2.st{display:flex;align-items:center;gap:11px;font-size:22px;font-weight:800;letter-spacing:-.035em;margin:0 0 14px}
+h2.st .sq{flex-shrink:0;width:30px;height:30px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+h3{font-size:16.5px;font-weight:800;margin:26px 0 8px;letter-spacing:-.025em;padding-left:11px;border-left:3px solid var(--accent)}
+h4{font-size:14.5px;font-weight:700;margin:18px 0 6px;color:var(--ink-2)}
+p{margin:9px 0}
+ul,ol{margin:9px 0;padding-left:21px}
+li{margin:3px 0}
+li::marker{color:var(--accent)}
+.en{color:var(--ink-3);font-weight:500;font-size:.9em}
+mark{background:linear-gradient(transparent 54%,var(--mark) 54%);color:inherit;padding:0 2px}
+.hit-mark{background:var(--accent);color:#fff;border-radius:3px}
+
+/* ── 배지 ───────────────────────────────────────────── */
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin:-6px 0 12px}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:6px;letter-spacing:0}
+.badge.exam{color:#92580B;background:#FDF0D5}
+.badge.prof{color:var(--accent-deep);background:var(--accent-soft)}
+.badge.ask{color:#B02020;background:#FCE4E4}
+html[data-theme="dark"] .badge.exam{background:#3B2D0E;color:#EFC470}
+html[data-theme="dark"] .badge.ask{background:#3A1919;color:#F0A0A0}
+
+/* ── 카드형 콜아웃 ──────────────────────────────────── */
+.call{border-radius:13px;padding:14px 17px;margin:15px 0;background:var(--surface);border:1px solid var(--line)}
+.call .t{font-size:12.5px;font-weight:800;margin-bottom:5px}
+.call p:first-of-type{margin-top:0}
+.call p:last-child,.call ul:last-child{margin-bottom:0}
+.call.quote{background:var(--accent-soft);border-color:transparent}
+.call.quote .t{color:var(--accent-deep)}
+.call.quote p{font-size:14.8px}
+.call.warn{border-left:4px solid #E5A50A}
+.call.warn .t{color:#A16207}
+.call.ask{border-left:4px solid #DC2626}
+.call.ask .t{color:#B02020}
+.call.link{border-left:4px solid var(--accent)}
+.call.link .t{color:var(--accent-deep)}
+
+/* 보충 — 교수님이 설명하지 않은 외부 자료. 회색 + 점선으로 본문과 확실히 구분 */
+.call.extra{background:repeating-linear-gradient(135deg,var(--line-2),var(--line-2) 9px,transparent 9px,transparent 18px);border:1.5px dashed var(--ink-3);border-left-width:1.5px}
+.call.extra .t{color:var(--ink-2);display:flex;align-items:center;gap:6px}
+.call.extra .t::before{content:"보충";background:var(--ink-3);color:var(--surface);font-size:10.5px;padding:1px 6px;border-radius:5px}
+.call.extra p{color:var(--ink-2)}
+.badge.extra{color:var(--ink-2);background:var(--line-2);border:1px dashed var(--ink-3)}
+.ext{border-bottom:2px dotted var(--ink-3);color:var(--ink-2)}
+.ext::after{content:"보충";font-size:9.5px;font-weight:800;vertical-align:super;color:var(--ink-3);margin-left:2px;letter-spacing:0}
+.extra-chip{border:1.5px dashed var(--ink-3);background:transparent;color:var(--ink-2);cursor:pointer;font-family:var(--font)}
+body.no-extra .call.extra,body.no-extra .badge.extra{display:none}
+body.no-extra .ext{border-bottom:0}
+body.no-extra .ext::after{display:none}
+html[data-theme="dark"] .call.warn .t{color:#E5B547}
+html[data-theme="dark"] .call.ask .t{color:#F0A0A0}
+
+/* ── 원문 보기 ──────────────────────────────────────── */
+details.raw{margin:12px 0;border:1px dashed var(--line);border-radius:10px;background:var(--line-2)}
+details.raw summary{cursor:pointer;padding:8px 14px;font-size:12.5px;color:var(--ink-3);font-weight:700;list-style:none}
+details.raw summary::-webkit-details-marker{display:none}
+details.raw summary::before{content:"▸ ";color:var(--accent)}
+details.raw[open] summary::before{content:"▾ "}
+details.raw .txt{padding:0 14px 12px;font-size:13px;color:var(--ink-2);white-space:pre-wrap;line-height:1.7}
+
+/* ── 필기 원문 페이지 ───────────────────────────────── */
+.rawnote{border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+.rawitem{display:grid;grid-template-columns:78px 1fr;gap:16px;padding:15px 18px;border-bottom:1px solid var(--line-2)}
+.rawitem:last-child{border-bottom:0}
+.rawitem .seq{font-size:12px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+.rawitem .seq span{display:block;color:var(--ink-3);font-weight:600;font-size:11px;margin-top:2px}
+.rawitem .body{white-space:pre-wrap;font-size:14px;line-height:1.75;color:var(--ink)}
+.rawitem .where{margin-top:7px;font-size:12px}
+.rawitem .where a{color:var(--accent-deep);text-decoration:none;font-weight:700;background:var(--accent-soft);padding:2px 8px;border-radius:6px}
+.rawitem .where a:hover{background:var(--accent);color:#fff}
+
+/* ── 표 ─────────────────────────────────────────────── */
+.tablewrap{overflow-x:auto;margin:15px 0;border:1px solid var(--line);border-radius:13px}
+.digits{white-space:normal;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:flex-start}.dgu{padding-top:2px}
+.dg{display:inline-flex;flex-direction:column;align-items:center}
+.dgs{padding:0 8px 6px;border-bottom:1.6px solid var(--accent);border-left:1.6px solid var(--accent);border-right:1.6px solid var(--accent);border-radius:0 0 8px 8px}
+.dgl{font-size:.9em;font-weight:700;color:var(--accent-deep);margin-top:4px}
+sup .frac,sub .frac{font-size:.9em;margin:0 1px}
+.frac{display:inline-flex;flex-direction:column;text-align:center;vertical-align:middle;line-height:1.15;margin:0 3px;font-size:.94em}
+.frac .num{border-bottom:1.4px solid currentColor;padding:0 4px}
+.frac .den{padding:0 4px}
+.math{white-space:pre-wrap;font-family:var(--mono);font-size:13.6px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 15px;line-height:1.7;margin:12px 0;overflow-x:auto}
+.q .lv{font-size:10.5px;font-weight:800;border-radius:6px;padding:1px 7px;flex-shrink:0;margin-top:3px;margin-left:6px}
+.q .lv.b{color:var(--c2);border:1px solid var(--c2)}
+.q .lv.m{color:var(--accent-deep);border:1px solid var(--accent)}
+.q .lv.h{color:var(--c3);border:1px solid var(--c3)}
+table{border-collapse:collapse;width:100%;font-size:14px;background:var(--surface)}
+th,td{padding:10px 13px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line-2)}
+th{background:var(--accent);color:#fff;font-weight:700;font-size:13px;white-space:nowrap;border-bottom:0}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--line-2)}
+
+/* ── 코드 / 의사코드 ────────────────────────────────── */
+.bsv{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:14px 14px 12px;margin:16px 0}
+.bsv .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.bsv .tabs button,.bsv .nav button{font:inherit;font-size:13px;font-weight:700;padding:6px 12px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink-2);cursor:pointer}
+.bsv .tabs button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.bsv .nav{display:flex;align-items:center;gap:8px;margin-top:10px}
+.bsv .nav .cnt{flex:1;text-align:center;font-size:13px;font-weight:700;color:var(--ink-2)}
+.bsv .nav button:disabled{opacity:.35;cursor:default}
+.bsv .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+@media (max-width:640px){.bsv .grid{grid-template-columns:1fr}}
+.bsv .code{font-family:var(--mono);font-size:12.4px;line-height:1.65;background:var(--code-bg);color:var(--code-ink);border-radius:10px;padding:10px 0;overflow-x:auto}
+.bsv .code div{padding:0 12px;white-space:pre;border-left:3px solid transparent}
+.bsv .code div.hl{background:color-mix(in srgb,var(--accent) 38%,transparent);border-left-color:#fff}
+.bsv .code .ln{display:inline-block;width:18px;opacity:.45}
+.bsv .stack{font-family:var(--mono);font-size:12.4px;line-height:1.6}
+.bsv .stack .fr{padding:5px 9px;border:1px solid var(--line);border-radius:8px;margin-bottom:5px;background:var(--bg)}
+.bsv .stack .fr.cur{border-color:var(--accent);background:var(--accent-soft);font-weight:700}
+.bsv .stack .fr .rv{color:var(--c2);font-weight:800}
+.bsv .lab{font-size:11.5px;font-weight:800;color:var(--ink-3);margin:0 0 5px;letter-spacing:.02em}
+.bsv .msg{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--accent-soft);font-size:14px;line-height:1.6}
+.codebox{margin:15px 0;border-radius:13px;overflow:hidden;background:var(--code-bg);border:1px solid var(--code-bg)}
+.codebox .head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 14px;font-size:12px;color:#9AA0AC;font-weight:700;background:rgba(255,255,255,.04)}
+.codebox .head .tag{color:#fff;background:var(--accent);border-radius:5px;padding:1px 7px;font-size:11px;margin-right:7px}
+.codebox pre{margin:0;padding:15px 17px;overflow-x:auto;font-family:var(--mono);font-size:13.2px;line-height:1.7;color:var(--code-ink)}
+.codebox .cm{color:#7C8494}
+.codebox .kw{color:#C4A6FF}
+.codebox .st2{color:#8BD5A0}
+.copy{border:0;background:transparent;color:#9AA0AC;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font)}
+.copy:hover{color:#fff}
+.codebox.pseudo{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent)}
+.codebox.pseudo .head{background:var(--accent-soft);color:var(--accent-deep)}
+.codebox.pseudo .head .tag{background:var(--accent-deep)}
+.codebox.pseudo pre{color:var(--ink);font-size:13.6px}
+.codebox.pseudo .cm{color:var(--ink-3)}
+.codebox.pseudo .kw{color:var(--accent-deep);font-weight:700}
+.codebox.pseudo .copy{color:var(--ink-3)}
+.codebox.pseudo .copy:hover{color:var(--accent-deep)}
+code:not(pre code){background:var(--accent-soft);color:var(--accent-deep);padding:1px 6px;border-radius:6px;font-family:var(--mono);font-size:.88em;font-weight:600}
+
+/* ── 도식 ───────────────────────────────────────────── */
+figure{margin:18px 0;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 14px 12px}
+figure svg{max-width:100%;height:auto}
+figure svg[viewBox^="0 0 440"],figure svg[viewBox^="0 0 380"]{max-width:560px;margin:0 auto}
+figcaption{font-size:12.5px;color:var(--ink-3);margin-top:10px}
+
+/* ── 용어 ───────────────────────────────────────────── */
+.terms{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:11px}
+.term{border:1px solid var(--line);border-radius:13px;padding:13px 15px;background:var(--surface)}
+.term b{display:block;font-size:15px}
+.term .e{display:block;font-size:12px;color:var(--accent-deep);font-family:var(--mono);margin-bottom:6px}
+.term p{margin:0;font-size:13.3px;color:var(--ink-2);line-height:1.6}
+
+/* ── 예상 문제 ──────────────────────────────────────── */
+.q{border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:12px 0;background:var(--surface)}
+.q .qh{display:flex;gap:10px;align-items:flex-start;font-weight:700;font-size:15px}
+.q .qn{color:#fff;background:var(--accent);border-radius:7px;padding:1px 8px;font-size:12.5px;font-weight:800;flex-shrink:0;margin-top:3px}
+.q .type{font-size:11px;font-weight:800;color:var(--ink-3);border:1px solid var(--line);border-radius:6px;padding:1px 7px;margin-left:auto;flex-shrink:0;margin-top:3px}
+.q ol.ch{list-style:none;padding-left:0;margin:11px 0 0;counter-reset:c}
+.q ol.ch li{padding:3px 0 3px 26px;position:relative;font-size:14.3px}
+.q ol.ch li::before{content:counter(c);counter-increment:c;position:absolute;left:0;top:4px;width:19px;height:19px;border:1px solid var(--line);border-radius:50%;font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--ink-3)}
+.ans{margin-top:12px;padding:11px 13px;border-radius:10px;background:var(--accent-soft);font-size:14.2px;cursor:pointer}
+.ans .lab{font-weight:800;color:var(--accent-deep);font-size:12.5px;margin-right:7px}
+body.hide-ans .ans:not(.on){background:var(--line-2);color:transparent;user-select:none;cursor:pointer;position:relative}
+body.hide-ans .ans:not(.on) *{color:transparent!important}
+body.hide-ans .ans:not(.on)::after{content:"눌러서 정답 확인";position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-3);font-size:12.5px;font-weight:700}
+
+/* ── 단어장 페이지 ──────────────────────────────────── */
+.vhead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px}
+.vhead input[type=search]{flex:1;min-width:170px;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14px}
+.vhead input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.vlist{margin:0;padding:0;list-style:none;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
+.vword{display:grid;grid-template-columns:190px 1fr;gap:16px;padding:14px 18px;border-bottom:1px solid var(--line-2)}
+.vword:last-child{border-bottom:0}
+.vword:hover{background:var(--line-2)}
+.vword .w{font-weight:800;font-size:16px;letter-spacing:-.02em}
+.vword .ipa{display:block;font-family:var(--mono);font-size:12px;color:var(--ink-3);font-weight:400;margin-top:1px}
+.vword .pos{display:inline-block;font-size:10.5px;font-weight:800;color:#fff;background:var(--accent);border-radius:5px;padding:1px 6px;margin-top:5px}
+.vword .mean{font-size:14.5px;margin:0;font-weight:600}
+.vword .ex{font-size:13px;color:var(--ink-2);margin:5px 0 0}
+.vword .ex b{color:var(--accent-deep);font-weight:700}
+.vword .ex .ko{display:block;color:var(--ink-3);font-size:12.5px}
+.masked .mean,.masked .ex{background:var(--line-2);border-radius:6px;color:transparent;cursor:pointer}
+.masked .mean *,.masked .ex *{color:transparent!important}
+.masked .mean.show,.masked .ex.show{background:transparent;color:inherit}
+.masked .mean.show *,.masked .ex.show *{color:revert!important}
+.masked .ex.show b{color:var(--accent-deep)!important}
+.quizbox{margin-top:18px;padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--surface);display:none}
+.quizbox.on{display:block}
+.quizbox .qq{font-size:22px;font-weight:800;margin-bottom:14px;letter-spacing:-.02em}
+.quizbox .opts{display:grid;gap:8px}
+.quizbox .opt{text-align:left;padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-family:var(--font);font-size:14.5px;cursor:pointer}
+.quizbox .opt:hover{border-color:var(--accent)}
+.quizbox .opt.ok{border-color:#16A34A;background:color-mix(in srgb,#16A34A 12%,var(--surface))}
+.quizbox .opt.no{border-color:#DC2626;background:color-mix(in srgb,#DC2626 12%,var(--surface))}
+.quizbox .score{margin-top:13px;font-size:13px;color:var(--ink-3);font-weight:600}
+
+footer{margin-top:54px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-3);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+@media(max-width:900px){
+  .wrap{grid-template-columns:1fr;gap:18px;padding:16px 16px 80px}
+  .side{position:static;max-height:none;order:-1}
+  .vword{grid-template-columns:1fr;gap:5px}
+  .search{max-width:none;order:3;flex-basis:100%;max-width:100%}
+  .topbar{flex-wrap:wrap}
+  .hero::after{font-size:78px}
+}
+@media print{
+  .topbar,.side,#scrollbar,.quizbox,.vhead,.flow,.files,.extra-chip{display:none!important}
+  .wrap{display:block;max-width:none;padding:0}
+  body{font-size:10.5pt;background:#fff}
+  section{page-break-inside:avoid;margin-bottom:22px}
+  body.hide-ans .ans:not(.on){background:var(--accent-soft)!important;color:inherit!important}
+  body.hide-ans .ans:not(.on) *{color:inherit!important}
+  body.hide-ans .ans:not(.on)::after{display:none}
+  details.raw{display:none}
+  #viewVocab,#viewRaw{display:block!important;page-break-before:always}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+.stepper .sf svg{max-width:640px}
+ol.steps{margin:8px 0 12px 20px;line-height:1.75}ol.steps li{margin:4px 0}
+code.fx{display:inline-block;margin-bottom:4px;font-weight:700}
+.cases{display:flex;align-items:center;gap:8px;margin:14px 0;padding:12px 15px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-family:var(--mono);font-size:14px;font-weight:700}
+.cases .brace{font-size:46px;font-weight:300;line-height:1;color:var(--ink-3);font-family:inherit}
+.cases .rows{display:grid;gap:8px}.cases .rows div{display:flex;flex-wrap:wrap;gap:2px 16px}.cases .c{color:var(--ink-3)}
+@media (max-width:520px){.cases{flex-wrap:wrap;font-size:13px}.cases .brace{display:none}.cases .lhs{width:100%}.cases .rows{padding-left:10px;border-left:3px solid var(--line)}}
+.lcs-wrap{overflow-x:auto}
+table.lcs{border-collapse:separate;border-spacing:4px;margin:0 auto;font-variant-numeric:tabular-nums}
+table.lcs th,table.lcs td{width:40px;height:36px;text-align:center;border-radius:8px;font-size:15px;padding:0}
+table.lcs th{font-weight:800;color:var(--accent-deep);background:none;border:none}
+table.lcs th small{display:block;font-size:9.5px;font-weight:600;color:var(--ink-3)}
+table.lcs td{border:1.3px solid var(--line);background:var(--surface);font-weight:700;color:var(--ink)}
+table.lcs td.base{color:var(--ink-3)}
+table.lcs td.empty{border-style:dashed;opacity:.55}
+table.lcs td.cur{background:var(--accent);border-color:var(--accent);color:#fff}
+table.lcs td.dg{background:color-mix(in srgb,var(--accent) 16%,var(--surface));border-color:var(--accent)}
+table.lcs td.nb{background:color-mix(in srgb,var(--c3) 14%,var(--surface));border-color:var(--c3)}
+table.lcs td.nbw{background:color-mix(in srgb,var(--c3) 28%,var(--surface));border-color:var(--c3);border-width:2px}
+table.lcs th.hx{background:color-mix(in srgb,var(--c2) 18%,var(--surface));color:var(--c2);border-radius:8px}
+.lcsw .nav{flex-wrap:wrap}
+.lcsw .legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:12px;color:var(--ink-3);font-weight:700}
+.lcsw .lg{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px;border:1.3px solid var(--line)}
+.lcsw .lg.cur{background:var(--accent);border-color:var(--accent)}.lcsw .lg.dg{background:color-mix(in srgb,var(--accent) 16%,var(--surface));border-color:var(--accent)}
+.lcsw .lg.nb{background:color-mix(in srgb,var(--c3) 14%,var(--surface));border-color:var(--c3)}.lcsw .lg.hx{background:color-mix(in srgb,var(--c2) 18%,var(--surface));border-color:var(--c2)}
+table.lcs td.xx{border:none;background:none;color:var(--ink-3);opacity:.45;font-weight:500}
+table.lcs td.uL{box-shadow:inset 0 0 0 2px #4F46E5}table.lcs td.uD{box-shadow:inset 0 0 0 2px #C2410C}table.lcs td.uB{box-shadow:inset 0 0 0 3px var(--ink);font-weight:900}
+.lcsw .lg.uL,.mcw .lg.uL{border:2px solid #4F46E5}.mcw .lg.uD{border:2px solid #C2410C}.mcw .lg.uB{border:3px solid var(--ink)}
+.mcw .lg{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px;border:1.3px solid var(--line)}.mcw .lg.cur{background:var(--accent);border-color:var(--accent)}
+.mcw .nav{flex-wrap:wrap}.mcw .legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:12px;color:var(--ink-3);font-weight:700}
+table.mct td{width:52px}table.mct th small{font-size:9.5px}
+ul.dots{margin:8px 0 12px 20px;line-height:1.75}ul.dots li{margin:3px 0}
+@media (max-width:520px){table.mct td{width:36px;font-size:12.5px}table.lcs{border-spacing:3px}table.lcs th,table.lcs td{width:33px;height:32px;font-size:14px}}
+@media print{.stepper .sf{display:block!important}.stepper .nav,.stepper .msg{display:none}}
+</style>
+</head>
+<body class="hide-ans">
+<div id="scrollbar"></div>
+
+<div class="topbar">
+  <a class="back" href="../"><i></i>알고리즘</a>
+  <div class="search"><input id="q" type="search" placeholder="찾기 (Enter로 다음)" aria-label="문서 내 검색"><span class="hit" id="hit"></span></div>
+  <div class="tools">
+    <button class="tbtn" id="ansBtn">정답 가리기</button>
+    <button class="tbtn" id="vocabBtn">단어장</button>
+    <button class="tbtn" id="rawBtn">필기 원문</button>
+    <button class="tbtn" id="themeBtn">다크</button>
+    <button class="tbtn" id="printBtn">🖨</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ═══════════ 사이드 패널 ═══════════ -->
+<aside class="side">
+  <div class="panel">
+    <div class="subject">알고리즘</div>
+    <div class="when">8주차 1차시 · 2026.10.22 (목)</div>
+
+    <div id="tocWrap">
+      <div class="cap">목차</div>
+      <ul class="toc" id="toc">
+        <li><a href="#s1"><span class="num">01</span>행렬 곱셈 복습</a></li>
+        <li><a href="#s2"><span class="num">02</span>행렬 3개 — 순서와 비용</a></li>
+        <li><a href="#s3"><span class="num">03</span>n 개 — O(4ⁿ)</a></li>
+        <li><a href="#s4"><span class="num">04</span>DP 점화식</a></li>
+        <li><a href="#s5"><span class="num">05</span>DP 테이블 채우기</a></li>
+        <li><a href="#s6"><span class="num">06</span>코드와 최적 순서</a></li>
+        <li><a href="#s7"><span class="num">07</span>수행시간 O(n³)</a></li>
+        <li><a href="#sg"><span class="num">08</span>용어 정리</a></li>
+        <li><a href="#sq"><span class="num">09</span>확인 필요</a></li>
+        <li><a href="#sx"><span class="num">10</span>예상 문제</a></li>
+      </ul>
+      <hr>
+      <div class="cap">복습 체크</div>
+      <div class="chk">
+        <label><input type="checkbox"><span>행렬 곱 한 칸 = i행 · j열, 비용 O(pqr)</span></label>
+        <label><input type="checkbox"><span>교환법칙 X · 결합법칙 O</span></label>
+        <label><input type="checkbox"><span>행렬 3개 두 순서 비용 32 vs 60</span></label>
+        <label><input type="checkbox"><span>M_i 크기 = P_i × P_(i+1)</span></label>
+        <label><input type="checkbox"><span>괄호 묶기 수 2, 5, 14, 42, 132 와 O(4ⁿ)</span></label>
+        <label><input type="checkbox"><span>마지막 곱셈으로 자르는 점화식</span></label>
+        <label><input type="checkbox"><span>DP[i][j] 일반식 (P[i]·P[k+1]·P[j+1])</span></label>
+        <label><input type="checkbox"><span>대각선 순서로 표 채워 188 얻기</span></label>
+        <label><input type="checkbox"><span>O(n³) 이유</span></label>
+        <label><input type="checkbox"><span>예상 문제 7개 풀기</span></label>
+      </div>
+      <div class="pbar"><i id="barFill"></i></div>
+    </div>
+
+    <div id="rawNav" hidden>
+      <div class="cap">필기 원문</div>
+      <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">내가 수업 중에 보낸 내용 <b id="rawTotal">0</b>개를 손대지 않고 그대로 모아둔 페이지입니다.</p>
+      <hr>
+      <div class="cap">확인 방법</div>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">여기 있는 내용이 본문에 다 반영됐는지 대조하세요. 각 항목의 파란 링크를 누르면 정리된 위치로 이동합니다.</p>
+    </div>
+
+    <div id="vocabNav" hidden>
+      <div class="cap">단어장</div>
+      <p style="font-size:13px;opacity:.85;margin:0 0 12px;line-height:1.6">이번 차시에 나온 전공 필수 단어 <b id="vTotal">6</b>개입니다.</p>
+      <hr>
+      <div class="cap">사용법</div>
+      <p style="font-size:12.5px;opacity:.8;margin:0;line-height:1.65">뜻 가리기를 켜면 회색 칸을 눌러 하나씩 확인할 수 있습니다. 퀴즈는 아래 목록에서 문제를 자동으로 만듭니다.</p>
+    </div>
+  </div>
+</aside>
+
+<main>
+<!-- ═══════════ 본문 뷰 ═══════════ -->
+<div id="viewNote">
+
+  <div class="hero" data-w="07">
+    <span class="chip">8주차 · 1차시</span>
+    <button class="chip extra-chip" id="extraChip"></button>
+    <h1>행렬 곱셈 순서</h1>
+    <p class="sub">동적 계획법 마지막 예시 — 행렬 곱셈 복습 · 곱하는 순서와 비용 · DP 점화식 · 대각선 테이블 · O(n³)</p>
+    <div class="metaline">
+      <span>2026.10.22 (목)</span>
+      <span><b>윤지현</b> 교수님</span>
+      <span>교재 범위 없음 (판서 수업)</span>
+      <span><b style="color:var(--c3)">중간고사 10/26 (월)</b></span>
+    </div>
+  </div>
+
+  <nav class="flow">
+    <a href="#s1"><b>01</b> 행렬 곱</a>
+    <a href="#s2"><b>02</b> 순서와 비용</a>
+    <a href="#s3"><b>03</b> O(4ⁿ)</a>
+    <a href="#s4"><b>04</b> 점화식</a>
+    <a href="#s5"><b>05</b> 테이블</a>
+    <a href="#s7"><b>07</b> O(n³)</a>
+  </nav>
+
+  <div class="keys">
+    <div class="key"><div class="n">핵심 1</div><p><b>행렬 곱</b> — p × q 와 q × r 의 곱은 p × r, 칸마다 i행 · j열 → <b>O(pqr)</b>. 교환법칙 X, 결합법칙 O — 괄호 순서에 따라 결과는 같고 <b>비용만</b> 다름 (32 vs 60).</p></div>
+    <div class="key"><div class="n">핵심 2</div><p><b>점화식</b> — 마지막 곱셈 위치 k 에서 자름: DP[i][j] = min<sub>k</sub>(DP[i][k] + DP[k+1][j] + P[i]·P[k+1]·P[j+1]), DP[i][i] = 0. 답 DP[1][n].</p></div>
+    <div class="key"><div class="n">핵심 3</div><p><b>순서 · 시간</b> — 짧은 구간(대각선)부터 채움. 모든 순서 O(4<sup>n</sup>) → DP <b>O(n³)</b>. 여기까지 중간고사 범위.</p></div>
+  </div>
+
+  <!-- 01 -->
+  <section id="s1">
+    <h2 class="st"><span class="sq">01</span>행렬 곱셈 복습</h2>
+    <div class="badges"><span class="badge exam">시험 ★★</span></div>
+    <figure style="margin:16px 0"><svg width="100%" viewBox="0 0 380 348" role="img" style="display:block;max-width:380px;margin:0 auto"><title>행렬 곱셈</title><desc>앞 행렬의 1행 a b c d 와 뒤 행렬의 2열 E F G H 를 같은 위치끼리 곱해 더한 aE+bF+cG+dH 가 결과의 1행 2열 칸이 된다.</desc><rect x="24" y="76" width="36" height="36" rx="7" fill="color-mix(in srgb,var(--accent) 14%,var(--surface))" stroke="var(--accent)" stroke-width="1.3"/><text x="42" y="94" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--accent-deep)">a</text><rect x="64" y="76" width="36" height="36" rx="7" fill="color-mix(in srgb,var(--accent) 14%,var(--surface))" stroke="var(--accent)" stroke-width="1.3"/><text x="82" y="94" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--accent-deep)">b</text><rect x="104" y="76" width="36" height="36" rx="7" fill="color-mix(in srgb,var(--accent) 14%,var(--surface))" stroke="var(--accent)" stroke-width="1.3"/><text x="122" y="94" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--accent-deep)">c</text><rect x="144" y="76" width="36" height="36" rx="7" fill="color-mix(in srgb,var(--accent) 14%,var(--surface))" stroke="var(--accent)" stroke-width="1.3"/><text x="162" y="94" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--accent-deep)">d</text><rect x="24" y="116" width="36" height="36" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="42" y="134" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink-2)">e</text><rect x="64" y="116" width="36" height="36" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="82" y="134" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink-2)">f</text><rect x="104" y="116" width="36" height="36" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="122" y="134" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink-2)">g</text><rect x="144" y="116" width="36" height="36" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="162" y="134" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink-2)">h</text><text x="102" y="62" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="var(--ink-3)">2 × 4  (p × q)</text><text x="200" y="114" text-anchor="middle" dominant-baseline="central" font-size="20" font-weight="700" fill="var(--ink-3)">×</text><rect x="226" y="30" width="36" height="36" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="244" y="48" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink-2)">A</text><rect x="266" y="30" width="36" height="36" rx="7" fill="color-mix(in srgb,var(--c3) 14%,var(--surface))" stroke="var(--c3)" stroke-width="1.3"/><text x="284" y="48" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--c3)">E</text><rect x="226" y="70" width="36" height="36" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="244" y="88" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink-2)">B</text><rect x="266" y="70" width="36" height="36" rx="7" fill="color-mix(in srgb,var(--c3) 14%,var(--surface))" stroke="var(--c3)" stroke-width="1.3"/><text x="284" y="88" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--c3)">F</text><rect x="226" y="110" width="36" height="36" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="244" y="128" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink-2)">C</text><rect x="266" y="110" width="36" height="36" rx="7" fill="color-mix(in srgb,var(--c3) 14%,var(--surface))" stroke="var(--c3)" stroke-width="1.3"/><text x="284" y="128" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--c3)">G</text><rect x="226" y="150" width="36" height="36" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="244" y="168" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink-2)">D</text><rect x="266" y="150" width="36" height="36" rx="7" fill="color-mix(in srgb,var(--c3) 14%,var(--surface))" stroke="var(--c3)" stroke-width="1.3"/><text x="284" y="168" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--c3)">H</text><text x="264" y="16" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="var(--ink-3)">4 × 2  (q × r)</text><text x="190" y="212" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="var(--ink-3)">=   2 × 2  (p × r)</text><rect x="30" y="226" width="160" height="36" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="110" y="244" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="600" fill="var(--ink-2)">aA+bB+cC+dD</text><rect x="200" y="226" width="160" height="36" rx="7" fill="var(--accent)" stroke="var(--accent)" stroke-width="1.3"/><text x="280" y="244" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="#fff">aE+bF+cG+dH</text><rect x="30" y="268" width="160" height="36" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="110" y="286" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="600" fill="var(--ink-2)">eA+fB+gC+hD</text><rect x="200" y="268" width="160" height="36" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="280" y="286" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="600" fill="var(--ink-2)">eE+fF+gG+hH</text><foreignObject x="0" y="318" width="380" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:12.5px;font-weight:700;color:var(--ink-2);line-height:1.2;white-space:nowrap"><span><b style="color:var(--accent-deep)">앞 1행</b> · <b style="color:var(--c3)">뒤 2열</b> 같은 자리끼리 곱해 더함 → <b>1행 2열</b> 칸</span></div></foreignObject></svg><figcaption>결과의 (i, j) 칸 = 앞 행렬 i행 · 뒤 행렬 j열 의 같은 자리끼리 곱해 모두 더한 값</figcaption></figure>
+    <div class="tablewrap"><table><tbody>
+      <tr><td style="width:120px">곱할 수 있는 조건</td><td>A 의 <b>열</b> 개수 = B 의 <b>행</b> 개수 — A 가 p × q 면 B 는 q × r</td></tr>
+      <tr><td>결과 크기</td><td>C = A × B 는 <b>p × r</b></td></tr>
+      <tr><td>한 칸</td><td>C[i][j] = Σ<sub>k=1…q</sub> A[i][k] · B[k][j] — A 의 i행과 B 의 j열을 1:1 로 곱해 모두 더함</td></tr>
+      <tr><td>한 칸 비용</td><td>곱셈 q 번 + 덧셈 q − 1 번 ≈ 2q</td></tr>
+      <tr><td><b>전체 비용</b></td><td class="big">칸 pr 개 × 2q = O(pqr)</td></tr>
+      <tr><td>교환법칙</td><td><b>성립 안 함</b> — A × B ≠ B × A (항상 같지는 않고, 크기에 따라 B × A 는 계산조차 안 될 수 있음)</td></tr>
+      <tr><td>결합법칙</td><td><b>성립</b> — (A × B) × C = A × (B × C). 결과는 같고 <b>비용만</b> 다름</td></tr>
+    </tbody></table></div>
+    <div class="call warn">
+      <div class="t">필기 확인</div>
+      <p>"첫번째 가로줄과 두 번째 세로 줄" → <b>앞 행렬의 i행 과 뒤 행렬의 j열</b> (그림의 aE + bF + cG + dH 는 1행 × 2열 → 결과 1행 2열). <code>A[있다 i][k]</code> → <code>A[i][k]</code>, "B의 j번째 요소" → <b>j번째 열</b>의 요소.</p>
+    </div>
+    <details class="raw"><summary>필기 원문</summary><div class="txt">동적계획법 예시(마지막)
+
+행렬 곱셈 문제
+
+* 행렬곱셈 간단히 복습(내용 기억 안날까봐)
+
+[ a b c d 
+e f g h ]
+[ A E
+B F
+C G
+D H ]
+=
+첫번째 가로줄과 두 번째 세로 줄을 곱해서 하나의 요소로 들어감
+매칭되는 수를 곱한거를 더함
+[ aA+bB+cC+dD aE+bF+cG+dH
+eA+fB+gC+hD eE+fF+gG+hH ]
+이렇게 됨(시각화로 알려주면 좋을거같아. 헷갈리니까
+
+다시 돌아와서 행렬곱셈문제 동적계획법
+
+[  ] * [  ] = [  ] 
+ A       B        C
+A의 열의 개수와, B의 행의 개수가 같아야 행렬곱이 가능함
+A = p(행)*q(열)의 행렬이라면
+B = q(행) * r(열) 의 행렬이어야함
+결과는 C 행렬은 p(행)*r(열)의 행렬이 됨
+
+행렬에서는 A x B != B x A 임(교환법칙 성립 안함)
+
+
+결과적으로 C의 요소 하나를 보면 C[i][j] = 시그마 k=1~q A[있다 i][k] * B[k][j]           (A의 i번째 행의 요소 vs B의 j번째 요소를 1:1로 곱한걸 전부 더해줌)
+
+C 요소 하나 구하는데 드는 연산 시간은 대략 2q개의 곱셈 또는 덧셈(시그마로 계속 더하면서 요소들을 곱해야하기 때문) 필요
+C행렬은 p*r행렬이기 때문에 pr개의 요소가 존재
+따라서 C행렬을 구하려면 p*r*2q = O(pqr)의 기본 연산이 필요함</div></details>
+  </section>
+  <!-- 02 -->
+  <section id="s2">
+    <h2 class="st"><span class="sq">02</span>행렬 3개 — 곱하는 순서에 따라 비용이 다름</h2>
+    <div class="badges"><span class="badge exam">시험 ★★★</span></div>
+    <p>M<sub>1</sub> (2 × 3) × M<sub>2</sub> (3 × 2) × M<sub>3</sub> (2 × 5). 비용은 p × q × r (곱셈 횟수) 로 셉니다.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>순서</th><th>첫 곱셈</th><th>두 번째 곱셈</th><th>합</th></tr></thead>
+      <tbody>
+        <tr><td>(M<sub>1</sub> × M<sub>2</sub>) × M<sub>3</sub></td><td>2 × 3 × 2 = 12 → 2 × 2</td><td>2 × 2 × 5 = 20</td><td class="big"><b>32</b></td></tr>
+        <tr><td>M<sub>1</sub> × (M<sub>2</sub> × M<sub>3</sub>)</td><td>3 × 2 × 5 = 30 → 3 × 5</td><td>2 × 3 × 5 = 30</td><td class="big">60</td></tr>
+      </tbody>
+    </table></div>
+    <p>결과 행렬(2 × 5)은 같지만 비용은 <b>거의 두 배</b> 차이. 오늘의 문제: <b>기본 연산 횟수가 최소가 되는 곱셈 순서(괄호 묶기)</b> 를 DP 로 찾기.</p>
+    <p style="margin-top:6px"><span class="ext">여기서는 칸당 2q 의 2 를 빼고 곱셈 횟수 pqr 만 셉니다. 순서끼리 비교할 때는 같은 기준이면 되므로 보통 이렇게 셉니다.</span></p>
+    <details class="raw"><summary>필기 원문</summary><div class="txt">오늘은 행렬 여러개가 있을 때 곱을 생각해봄
+
+쉬운거부터 봄. 행렬 3개 곱의 경우부터 보자
+
+M_1 * M_2 * M_3
+2*3     3*2     2*5    (행렬의 크기)
+
+((M_1 * M_2) * M_3) 로 쪼개서 곱하기(행렬곱은 결합법칙은 성립(교환법칙은 성립하지 않음))
+(M_1 * M_2) 은 2*2행렬이 됨
+이 결과를 다시 M_3와 곱하면 2*5 가 됨
+
+2*3*2 + 2*2*5 = 32 정도의 기본연산이 필요함(아까 구한 O(pqr)을 적용한거임. 빅오표현이지만 간단하게 보기 위해 이렇게 확인)
+
+그럼 이번에는 
+M_1 * (M_2 * M_3)  로 쪼개서 곱하기
+= 3*2*5 + 2*3*5 = 60
+
+O(pqr)을 통해 계산한거임
+
+어떤 순서로 계산해주냐에 따라 기본연산 횟수가 굉장히 차이남
+오늘 풀 동적계획법은 어떻게 해야 기본연산 횟수가 줄어들지</div></details>
+  </section>
+  <!-- 03 -->
+  <section id="s3">
+    <h2 class="st"><span class="sq">03</span>n 개로 일반화 — 모든 순서를 다 보면 O(4<sup>n</sup>)</h2>
+    <div class="badges"><span class="badge exam">시험 ★★★</span></div>
+    <p>M<sub>1</sub> × M<sub>2</sub> × ⋯ × M<sub>n</sub> = M. 크기가 맞아야 하므로 크기를 한 리스트로 줍니다.</p>
+    <pre class="math hi">M<sub>i</sub> 의 크기 = P<sub>i</sub> × P<sub>i+1</sub>     (M<sub>1</sub> = P<sub>1</sub> × P<sub>2</sub>, M<sub>2</sub> = P<sub>2</sub> × P<sub>3</sub>, …, M<sub>n</sub> = P<sub>n</sub> × P<sub>n+1</sub>)
+결과 M 의 크기 = P<sub>1</sub> × P<sub>n+1</sub></pre>
+    <h3>순서 = 괄호 묶기 — 행렬 4개면 5가지</h3>
+    <pre class="math">(((M<sub>1</sub> M<sub>2</sub>) M<sub>3</sub>) M<sub>4</sub>)
+((M<sub>1</sub> M<sub>2</sub>) (M<sub>3</sub> M<sub>4</sub>))
+((M<sub>1</sub> (M<sub>2</sub> M<sub>3</sub>)) M<sub>4</sub>)
+(M<sub>1</sub> ((M<sub>2</sub> M<sub>3</sub>) M<sub>4</sub>))
+(M<sub>1</sub> (M<sub>2</sub> (M<sub>3</sub> M<sub>4</sub>)))</pre>
+    <p>이 중 비용이 min 인 것을 고르면 됩니다. 행렬 n 개 → 곱셈 <b>n − 1</b> 번 (가장 바깥까지 세면 괄호도 n − 1 쌍).</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>행렬 개수 n</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>…</th><th>n</th></tr></thead>
+      <tbody><tr><td>괄호 묶기 경우의 수</td><td>2 = C<sub>2</sub></td><td>5 = C<sub>3</sub></td><td>14</td><td>42</td><td>132</td><td>…</td><td>C<sub>n−1</sub></td></tr></tbody>
+    </table></div>
+    <pre class="math hi">C<sub>n</sub> ~ C · 4<sup>n</sup>     →  모든 순서를 다 계산해 보면 O(4<sup>n</sup>) — 지수 시간</pre>
+    <p><b>물결 ~ 은 등호가 아닙니다.</b> "n 이 커질 때 <b>대략 이 꼴로 자란다</b>" 는 뜻 (증명 없이 결과만 소개하심).</p>
+    <p style="margin-top:6px"><span class="ext">이 수열은 <b>카탈랑 수(Catalan number)</b>. 정확한 근사는 C<sub>n</sub> ≈ 4<sup>n</sup> ÷ (n<sup>1.5</sup> · √π) 로 4<sup>n</sup> 보다 조금 작지만 여전히 지수. 행렬 20 개면 C<sub>19</sub> = 1,767,263,190 가지.</span></p>
+    <details class="raw"><summary>필기 원문</summary><div class="txt">행렬3개가 아닌 일반화하면
+n개의 행렬을 곱해줌
+
+M_1 * M_2 * ... * M_n = M
+이라고 하자.
+
+행렬사이즈는 미리 주어져야함. 맞아야하니까
+M_1부터 순서대로
+P_1*P_2
+P_2*P_3
+P_3*P_4
+...
+P_n*P(n+1)
+
+최종적으로 M은 P_1 * P_(n+1)
+
+우리가 궁금한 점 : 어떤 순서로 곱해야할까?
+어떤 순서 : 기본연산의 총 횟수가 최소가 되는 곱셈의 순서
+
+곱셈의 순서가 몇가지 중 최소가 돼야할까?
+
+행렬의 요소가 3개일 때는 2가지가 존재했었음
+순서 = 괄호 묶기
+
+행렬이 4개 있다고 생각해보자
+M_1 * M_2 * M_3 * M_4
+
+괄호를 씌워보면
+(((M_1 * M_2) * M_3) * M_4) = ?
+((M_1 * M_2) * (M_3 * M_4)) = ?
+((M_1 * (M_2 * M_3)) * M_4) = ?
+(M_1 * ((M_2 * M_3) * M_4)) = ?
+(M_1 * (M_2 * (M_3 * M_4))) = ?
+이렇게 5가지 경우의 수가 나옴.
+이 경우 중 min이 나오는 식으로 풀면 됨
+
+4개의 행렬 곱 ⇒ 3개의 괄호를 어떻게 묶는지에 따라 결과가 나옴
+
+(지금 쓰는건 표야)
+행렬 개수 n |  3 | 4 | 5 |  6 | 7 | ... | n
+괄호 묶기 경우의 수 | 2 (= C_2라고 하자. 2는 필요한 괄호 개수) | 5( = C_3) | 14 | 42 | 132 | ... | C_(n-1)
+
+누가 이걸 구해봤더니(증명이나 설명 x)
+C_n ~ C*4^n
+(이게 무슨 뜻일까? 물결이 아니라 등호일까)
+
+즉 시간복잡도가 O(4^n)가 나오고 굉장히 아주 오래 걸리는 최악의 시간복잡도임
+
+
+이제 진짜 동적프로그래밍으로 해보신대</div></details>
+  </section>
+  <!-- 04 -->
+  <section id="s4">
+    <h2 class="st"><span class="sq">04</span>DP 점화식 — 마지막 곱셈에서 자르기</h2>
+    <div class="badges"><span class="badge exam">시험 ★★★</span><span class="badge prof">판서</span></div>
+    <p>DP 순서 (7-2 와 같음): ① 큰 문제 → 작은 문제 ② 점화식 ③ DP 테이블을 순서대로 ④ 검증(신경 쓰지 않음).</p>
+    <h3>1단계 — 나누기</h3>
+    <p>어떤 순서든 <b>맨 마지막 곱셈</b>은 행렬 두 개의 곱입니다. M<sub>i</sub> 와 M<sub>i+1</sub> 사이에서 잘린다고 하면</p>
+    <figure style="margin:16px 0"><svg width="100%" viewBox="0 0 660 195" role="img" style="display:block;max-width:660px;margin:0 auto"><title>마지막 곱셈으로 둘로 나누기</title><desc>M1부터 Mi까지의 곱 M′ 과 Mi+1부터 Mn까지의 곱 M″ 을 마지막에 곱한다.</desc><rect x="40" y="60" width="58" height="40" rx="8" fill="color-mix(in srgb,var(--accent) 12%,var(--surface))" stroke="var(--accent)" stroke-width="1.3"/><foreignObject x="40" y="60" width="58" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:14px;font-weight:800;color:var(--accent-deep);line-height:1.2;white-space:nowrap"><span>M<sub>1</sub></span></div></foreignObject><rect x="106" y="60" width="58" height="40" rx="8" fill="color-mix(in srgb,var(--accent) 12%,var(--surface))" stroke="var(--accent)" stroke-width="1.3"/><foreignObject x="106" y="60" width="58" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:14px;font-weight:800;color:var(--accent-deep);line-height:1.2;white-space:nowrap"><span>M<sub>2</sub></span></div></foreignObject><rect x="172" y="60" width="58" height="40" rx="8" fill="color-mix(in srgb,var(--accent) 12%,var(--surface))" stroke="var(--accent)" stroke-width="1.3"/><foreignObject x="172" y="60" width="58" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:14px;font-weight:800;color:var(--accent-deep);line-height:1.2;white-space:nowrap"><span>⋯</span></div></foreignObject><rect x="238" y="60" width="58" height="40" rx="8" fill="color-mix(in srgb,var(--accent) 12%,var(--surface))" stroke="var(--accent)" stroke-width="1.3"/><foreignObject x="238" y="60" width="58" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:14px;font-weight:800;color:var(--accent-deep);line-height:1.2;white-space:nowrap"><span>M<sub>i</sub></span></div></foreignObject><rect x="328" y="60" width="58" height="40" rx="8" fill="color-mix(in srgb,var(--c3) 12%,var(--surface))" stroke="var(--c3)" stroke-width="1.3"/><foreignObject x="328" y="60" width="58" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:14px;font-weight:800;color:var(--c3);line-height:1.2;white-space:nowrap"><span>M<sub>i+1</sub></span></div></foreignObject><rect x="394" y="60" width="58" height="40" rx="8" fill="color-mix(in srgb,var(--c3) 12%,var(--surface))" stroke="var(--c3)" stroke-width="1.3"/><foreignObject x="394" y="60" width="58" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:14px;font-weight:800;color:var(--c3);line-height:1.2;white-space:nowrap"><span>⋯</span></div></foreignObject><rect x="460" y="60" width="58" height="40" rx="8" fill="color-mix(in srgb,var(--c3) 12%,var(--surface))" stroke="var(--c3)" stroke-width="1.3"/><foreignObject x="460" y="60" width="58" height="40"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:14px;font-weight:800;color:var(--c3);line-height:1.2;white-space:nowrap"><span>M<sub>n</sub></span></div></foreignObject><path d="M40 112 V120 H296 V112" fill="none" stroke="var(--accent)" stroke-width="1.6"/><path d="M328 112 V120 H518 V112" fill="none" stroke="var(--c3)" stroke-width="1.6"/><foreignObject x="40" y="126" width="256" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:13px;font-weight:800;color:var(--accent-deep);line-height:1.2;white-space:nowrap"><span>M′ : P<sub>1</sub> × P<sub>i+1</sub></span></div></foreignObject><foreignObject x="328" y="126" width="190" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:13px;font-weight:800;color:var(--c3);line-height:1.2;white-space:nowrap"><span>M″ : P<sub>i+1</sub> × P<sub>n+1</sub></span></div></foreignObject><text x="312" y="80" text-anchor="middle" dominant-baseline="central" font-size="22" font-weight="300" fill="var(--ink-3)">|</text><text x="312" y="44" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="700" fill="var(--ink-3)">마지막 곱셈</text><foreignObject x="20" y="160" width="620" height="26"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:13px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap"><span>마지막 곱셈 M′ × M″ 비용 = P<sub>1</sub> × P<sub>i+1</sub> × P<sub>n+1</sub>  (p × q × r)</span></div></foreignObject></svg><figcaption>M′ = M<sub>1</sub> ~ M<sub>i</sub> 의 곱, M″ = M<sub>i+1</sub> ~ M<sub>n</sub> 의 곱</figcaption></figure>
+    <p><b>전체가 최소가 되려면 M′ 도 최소, M″ 도 최소</b>로 곱해져 있어야 합니다 (작은 문제의 최적 해로 큰 문제의 최적 해를 만듦).</p>
+    <h3>2단계 — 점화식</h3>
+    <pre class="math hi">cost(M<sub>1</sub> ⋯ M<sub>n</sub>) = cost(M<sub>1</sub> ⋯ M<sub>i</sub>) + cost(M<sub>i+1</sub> ⋯ M<sub>n</sub>) + P<sub>1</sub> · P<sub>i+1</sub> · P<sub>n+1</sub></pre>
+    <p>마지막 항은 M′ (P<sub>1</sub> × P<sub>i+1</sub>) 와 M″ (P<sub>i+1</sub> × P<sub>n+1</sub>) 를 곱하는 비용 pqr. P 는 처음부터 주어지므로 <b>바로 계산되는 값</b>입니다. 어디서 자르느냐(i)에 따라 비용이 달라지므로 <b>가능한 i 를 모두</b> 해 보고 min.</p>
+    <div class="cases">
+      <span class="lhs">DP[1][n] =</span>
+      <div class="rows"><div><span class="f">min<sub style="font-size:11px">i = 1, …, n−1</sub> ( DP[1][i] + DP[i+1][n] + P[1] · P[i+1] · P[n+1] )</span></div></div>
+    </div>
+    <h3>일반화 — 아무 구간 M<sub>i</sub> ~ M<sub>j</sub></h3>
+    <div class="cases">
+      <span class="lhs">DP[i][j] =</span>
+      <div class="rows"><div><span class="f">min<sub style="font-size:11px">k = i, …, j−1</sub> ( DP[i][k] + DP[k+1][j] + P[i] · P[k+1] · P[j+1] )</span></div><div><span class="c">DP[i][i] = 0</span></div></div>
+    </div>
+    <p>위 DP[1][n] 식을 <b>시작 1 → i, 끝 n → j, 자르는 위치 i → k</b> 로 바꾼 것입니다. 큰 문제(1 ~ n)를 풀려면 그 안의 작은 구간들(i ~ j)도 같은 식으로 풀어야 하므로 일반형이 필요합니다. DP[i][j] = M<sub>i</sub> ~ M<sub>j</sub> 를 곱하는 <b>최소 비용</b>.</p>
+    <div class="call warn">
+      <div class="t">필기 오류 — 일반식의 마지막 항</div>
+      <p>필기 <code>P[j]*P[k+1]*P[j+1]</code> → <b>P[i] · P[k+1] · P[j+1]</b>. 앞 묶음 M<sub>i</sub> ~ M<sub>k</sub> 는 P<sub>i</sub> × P<sub>k+1</sub>, 뒤 묶음 M<sub>k+1</sub> ~ M<sub>j</sub> 는 P<sub>k+1</sub> × P<sub>j+1</sub> 이므로 행 수는 P[i]. 바로 위 DP[1][n] 식(P[1])과 i = 1 일 때 일치해야 합니다. 필기 식으로 계산하면 이 예의 답이 188 대신 200 (프로그램으로 확인).</p>
+    </div>
+    <details class="raw"><summary>필기 원문</summary><div class="txt">* 행렬 곱셈 DP 알고리즘
+
+
+1. 해 분석 : 큰 문제 → 작은 문제로 나누기
+2. 작은문제의 해를 이용해서 큰 문제의 해로 나타내기 (점화식 구하자는 얘기)
+3. DP 테이블 값 순서대로 채우자
+4. 검증(상관쓰지 않음)
+
+
+M_1 x M_2 x ... x M_n 개 있다고 하자
+
+마지막에 곱해지는 행렬(직전에 곱해지는 2개)은 행렬곱을 두 개로 쪼갤거고
+그 기준이 되는 행렬을 M_i라고 하자(~M_i * M_(i+1) * ~ )
+
+M_1 x M_2 x ... M_i x M_(i+1) x ... x M_n
+
+가장 마지막 곱셈은 최종 2개 행렬의 곱 모야이 됨
+
+그 최종 2개를 M' * M'' 이라고 하자
+(M'는 M_1 x M_2 x ... M_i 
+M''는  M_(i+1) x ... x M_n)
+
+M' * M''가 최소가 되려면 M'도 최소, M''도 최소가 돼아함.
+전체가 최소가 되려면 두 개로 쪼개진 것도 각각 최소가 돼야함
+
+이걸 식으로 적어보면(cost() 행렬곱 비용 말하는거임)
+cost(M_1 * ... * M_n) = cost(M_1 * ... * M_i) + cost(M_(i+1) * ... * M_n) + ??
+M_i은 P_i * P_(i+1) , M_(i+1)은 P_(i+1) * P_(i+2)가 됨
+결국 M'은 P_1 * P_(i+1) 
+M'' 는 P_(i+1) * P_(n+1)
+
+결국 cost(M_1 * ... * M_n) = cost(M_1 * ... * M_i) + cost(M_(i+1) * ... * M_n) + P_1*P_(i+1)*P_(n+1)
+왜냐면 O(pqr)이기 때문
+근데  P_1*P_(i+1)*P_(n+1)는 이미 주어진 값임
+P = [None, P_1, ..., P_(n+1)]은 이미 주어진 값이기 때문(행렬의 크기이기 때문)
+
+그렇다면 우리는 cost의 최소비용이 궁금한거임
+최소가 되려면 어떤 i가 되는지가 중요(중간에 어디서 끊는지에 따라 비용이 계속 바뀜)
+
+가능한 i를 다 고려해서 그 중에 최소를 구하면 되겠구나
+
+우리가 점화식( cost(M_1 * ... * M_n) = cost(M_1 * ... * M_i) + cost(M_(i+1) * ... * M_n) + P_1*P_(i+1)*P_(n+1))을 얻었으니까 이 점화식을 DP Table 에 넣음(2차원 행렬에 넣음)
+
+DP[1][n] = min            ( DP[1][i] + DP[i+1][n] + P[1]*P[i+1]*P[n+1])
+                    i=1, ... ,n-1     
+최소비용을 DP테이블에 기록함
+위 수식은 min 아래 작게   i=1, ... ,n-1     가 오면 됨
+i = 1, .. , n-1이 될 수 있음(중간을 자르는거기 때문에)</div></details>
+  </section>
+  <!-- 05 -->
+  <section id="s5">
+    <h2 class="st"><span class="sq">05</span>DP 테이블 채우기 — 대각선 순서</h2>
+    <div class="badges"><span class="badge exam">시험 ★★★</span><span class="badge prof">교수님 강조</span></div>
+    <p>예: 행렬 6개, <b>P = [None, 2, 5, 3, 5, 10, 2, 4]</b></p>
+    <div class="tablewrap"><table>
+      <thead><tr><th></th><th>M<sub>1</sub></th><th>M<sub>2</sub></th><th>M<sub>3</sub></th><th>M<sub>4</sub></th><th>M<sub>5</sub></th><th>M<sub>6</sub></th></tr></thead>
+      <tbody><tr><td>크기</td><td>2 × 5</td><td>5 × 3</td><td>3 × 5</td><td>5 × 10</td><td>10 × 2</td><td>2 × 4</td></tr></tbody>
+    </table></div>
+    <div class="call warn">
+      <div class="t">필기 확인 — 크기 목록</div>
+      <p>필기의 "2*5 5*3 5*10 10*2 2*4" 는 5개뿐이고 M<sub>2</sub> (5 × 3) 다음이 5 × 10 이라 곱할 수 없습니다. P 에서 읽으면 위 표처럼 <b>3 × 5</b> 가 빠진 것입니다. 또 표의 0 행 · 0 열은 행렬이 M<sub>1</sub> 부터라 쓰지 않으므로 1 ~ 6 으로 그렸습니다. <code>P[1][2][7]</code> 은 <b>P[1] · P[2] · P[7]</b>.</p>
+    </div>
+    <h3>바닥 조건과 안 쓰는 칸</h3>
+    <ul class="dots">
+      <li><b>DP[i][i] = 0</b> — 행렬 1개, 곱셈 없음 (회색 대각선).</li>
+      <li><b>i &gt; j</b> 칸은 "i ~ j 의 곱" 이 성립하지 않으므로 지움 (×).</li>
+      <li>구하려는 답은 오른쪽 위 <b>DP[1][6]</b>.</li>
+    </ul>
+    <h3>DP[1][6] 에 필요한 칸 — k 별 색</h3>
+    <figure style="margin:16px 0"><svg width="100%" viewBox="0 0 560 352" role="img" style="display:block;max-width:560px;margin:0 auto"><title>DP 테이블</title><desc>DP[i][j] 는 Mi 부터 Mj 까지 곱하는 최소 비용. i > j 칸은 쓰지 않는다.</desc><text x="158" y="34" text-anchor="middle" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">j=1</text><text x="214" y="34" text-anchor="middle" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">j=2</text><text x="270" y="34" text-anchor="middle" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">j=3</text><text x="326" y="34" text-anchor="middle" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">j=4</text><text x="382" y="34" text-anchor="middle" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">j=5</text><text x="438" y="34" text-anchor="middle" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">j=6</text><text x="118" y="70" text-anchor="end" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">i=1</text><rect x="132" y="50" width="52" height="40" rx="7" fill="color-mix(in srgb,#4F46E5 18%,var(--surface))" stroke="#4F46E5" stroke-width="2"/><text x="158" y="64" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="#4F46E5">0</text><text x="158" y="79" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="800" fill="#4F46E5">k=1</text><rect x="188" y="50" width="52" height="40" rx="7" fill="color-mix(in srgb,#0E8F72 18%,var(--surface))" stroke="#0E8F72" stroke-width="2"/><text x="214" y="64" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="#0E8F72"></text><text x="214" y="70" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="800" fill="#0E8F72">k=2</text><rect x="244" y="50" width="52" height="40" rx="7" fill="color-mix(in srgb,#C2410C 18%,var(--surface))" stroke="#C2410C" stroke-width="2"/><text x="270" y="64" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="#C2410C"></text><text x="270" y="70" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="800" fill="#C2410C">k=3</text><rect x="300" y="50" width="52" height="40" rx="7" fill="color-mix(in srgb,#B45309 18%,var(--surface))" stroke="#B45309" stroke-width="2"/><text x="326" y="64" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="#B45309"></text><text x="326" y="70" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="800" fill="#B45309">k=4</text><rect x="356" y="50" width="52" height="40" rx="7" fill="color-mix(in srgb,#BE185D 18%,var(--surface))" stroke="#BE185D" stroke-width="2"/><text x="382" y="64" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="#BE185D"></text><text x="382" y="70" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="800" fill="#BE185D">k=5</text><rect x="412" y="50" width="52" height="40" rx="7" fill="var(--ink)" stroke="var(--ink)" stroke-width="1.3"/><text x="438" y="70" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--surface)">답</text><text x="118" y="114" text-anchor="end" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">i=2</text><rect x="132" y="94" width="52" height="40" rx="7" fill="none" stroke="var(--line)" stroke-width="1" opacity=".45"/><text x="158" y="114" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="var(--ink-3)">×</text><rect x="188" y="94" width="52" height="40" rx="7" fill="var(--surface)" stroke="var(--ink-3)" stroke-width="1.3"/><text x="214" y="114" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink-3)">0</text><rect x="244" y="94" width="52" height="40" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3" stroke-dasharray="4 4"/><text x="270" y="114" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)"></text><rect x="300" y="94" width="52" height="40" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3" stroke-dasharray="4 4"/><text x="326" y="114" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)"></text><rect x="356" y="94" width="52" height="40" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3" stroke-dasharray="4 4"/><text x="382" y="114" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)"></text><rect x="412" y="94" width="52" height="40" rx="7" fill="color-mix(in srgb,#4F46E5 18%,var(--surface))" stroke="#4F46E5" stroke-width="2"/><text x="438" y="108" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="#4F46E5"></text><text x="438" y="114" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="800" fill="#4F46E5">k=1</text><text x="118" y="158" text-anchor="end" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">i=3</text><rect x="132" y="138" width="52" height="40" rx="7" fill="none" stroke="var(--line)" stroke-width="1" opacity=".45"/><text x="158" y="158" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="var(--ink-3)">×</text><rect x="188" y="138" width="52" height="40" rx="7" fill="none" stroke="var(--line)" stroke-width="1" opacity=".45"/><text x="214" y="158" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="var(--ink-3)">×</text><rect x="244" y="138" width="52" height="40" rx="7" fill="var(--surface)" stroke="var(--ink-3)" stroke-width="1.3"/><text x="270" y="158" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink-3)">0</text><rect x="300" y="138" width="52" height="40" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3" stroke-dasharray="4 4"/><text x="326" y="158" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)"></text><rect x="356" y="138" width="52" height="40" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3" stroke-dasharray="4 4"/><text x="382" y="158" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)"></text><rect x="412" y="138" width="52" height="40" rx="7" fill="color-mix(in srgb,#0E8F72 18%,var(--surface))" stroke="#0E8F72" stroke-width="2"/><text x="438" y="152" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="#0E8F72"></text><text x="438" y="158" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="800" fill="#0E8F72">k=2</text><text x="118" y="202" text-anchor="end" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">i=4</text><rect x="132" y="182" width="52" height="40" rx="7" fill="none" stroke="var(--line)" stroke-width="1" opacity=".45"/><text x="158" y="202" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="var(--ink-3)">×</text><rect x="188" y="182" width="52" height="40" rx="7" fill="none" stroke="var(--line)" stroke-width="1" opacity=".45"/><text x="214" y="202" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="var(--ink-3)">×</text><rect x="244" y="182" width="52" height="40" rx="7" fill="none" stroke="var(--line)" stroke-width="1" opacity=".45"/><text x="270" y="202" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="var(--ink-3)">×</text><rect x="300" y="182" width="52" height="40" rx="7" fill="var(--surface)" stroke="var(--ink-3)" stroke-width="1.3"/><text x="326" y="202" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink-3)">0</text><rect x="356" y="182" width="52" height="40" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3" stroke-dasharray="4 4"/><text x="382" y="202" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink)"></text><rect x="412" y="182" width="52" height="40" rx="7" fill="color-mix(in srgb,#C2410C 18%,var(--surface))" stroke="#C2410C" stroke-width="2"/><text x="438" y="196" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="#C2410C"></text><text x="438" y="202" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="800" fill="#C2410C">k=3</text><text x="118" y="246" text-anchor="end" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">i=5</text><rect x="132" y="226" width="52" height="40" rx="7" fill="none" stroke="var(--line)" stroke-width="1" opacity=".45"/><text x="158" y="246" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="var(--ink-3)">×</text><rect x="188" y="226" width="52" height="40" rx="7" fill="none" stroke="var(--line)" stroke-width="1" opacity=".45"/><text x="214" y="246" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="var(--ink-3)">×</text><rect x="244" y="226" width="52" height="40" rx="7" fill="none" stroke="var(--line)" stroke-width="1" opacity=".45"/><text x="270" y="246" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="var(--ink-3)">×</text><rect x="300" y="226" width="52" height="40" rx="7" fill="none" stroke="var(--line)" stroke-width="1" opacity=".45"/><text x="326" y="246" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="var(--ink-3)">×</text><rect x="356" y="226" width="52" height="40" rx="7" fill="var(--surface)" stroke="var(--ink-3)" stroke-width="1.3"/><text x="382" y="246" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink-3)">0</text><rect x="412" y="226" width="52" height="40" rx="7" fill="color-mix(in srgb,#B45309 18%,var(--surface))" stroke="#B45309" stroke-width="2"/><text x="438" y="240" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="#B45309"></text><text x="438" y="246" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="800" fill="#B45309">k=4</text><text x="118" y="290" text-anchor="end" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">i=6</text><rect x="132" y="270" width="52" height="40" rx="7" fill="none" stroke="var(--line)" stroke-width="1" opacity=".45"/><text x="158" y="290" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="var(--ink-3)">×</text><rect x="188" y="270" width="52" height="40" rx="7" fill="none" stroke="var(--line)" stroke-width="1" opacity=".45"/><text x="214" y="290" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="var(--ink-3)">×</text><rect x="244" y="270" width="52" height="40" rx="7" fill="none" stroke="var(--line)" stroke-width="1" opacity=".45"/><text x="270" y="290" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="var(--ink-3)">×</text><rect x="300" y="270" width="52" height="40" rx="7" fill="none" stroke="var(--line)" stroke-width="1" opacity=".45"/><text x="326" y="290" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="var(--ink-3)">×</text><rect x="356" y="270" width="52" height="40" rx="7" fill="none" stroke="var(--line)" stroke-width="1" opacity=".45"/><text x="382" y="290" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="var(--ink-3)">×</text><rect x="412" y="270" width="52" height="40" rx="7" fill="color-mix(in srgb,#BE185D 18%,var(--surface))" stroke="#BE185D" stroke-width="2"/><text x="438" y="284" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="800" fill="#BE185D">0</text><text x="438" y="299" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-weight="800" fill="#BE185D">k=5</text><foreignObject x="0" y="320" width="560" height="26"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:12.5px;font-weight:700;color:var(--ink-2);line-height:1.2;white-space:nowrap"><span>같은 색 두 칸 = 그 k 에서 더하는 DP[1][k] (왼쪽 행) 과 DP[k+1][6] (아래 열)</span></div></foreignObject></svg><figcaption>답 칸 기준 왼쪽 쭉 (DP[1][1 ~ 5]) 과 아래 쭉 (DP[2 ~ 6][6]) 이 필요 — ㄱ 자</figcaption></figure>
+    <div class="tablewrap"><table>
+      <thead><tr><th>k</th><th>식</th><th>값</th><th>합</th></tr></thead>
+      <tbody><tr><td><b style="color:#4F46E5">k = 1</b></td><td>DP[1][1] + DP[2][6] + P[1]·P[2]·P[7]</td><td>0 + 200 + 2·5·4</td><td>240</td></tr><tr><td><b style="color:#0E8F72">k = 2</b></td><td>DP[1][2] + DP[3][6] + P[1]·P[3]·P[7]</td><td>30 + 154 + 2·3·4</td><td>208</td></tr><tr><td><b style="color:#C2410C">k = 3</b></td><td>DP[1][3] + DP[4][6] + P[1]·P[4]·P[7]</td><td>60 + 140 + 2·5·4</td><td>240</td></tr><tr><td><b style="color:#B45309">k = 4</b></td><td>DP[1][4] + DP[5][6] + P[1]·P[5]·P[7]</td><td>160 + 80 + 2·10·4</td><td>320</td></tr><tr><td><b style="color:#BE185D">k = 5</b></td><td>DP[1][5] + DP[6][6] + P[1]·P[6]·P[7]</td><td>172 + 0 + 2·2·4</td><td><b>188</b> ← 최소</td></tr></tbody>
+    </table></div>
+    <p>→ <b>DP[1][6] = min(240, 208, 240, 320, 188) = 188</b>. 단, 이 값들을 쓰려면 그 칸들이 먼저 채워져 있어야 합니다.</p>
+    <h3>순서 — 짧은 구간부터, 대각선 단위로</h3>
+    <p>칸 DP[i][j] 는 같은 행 왼쪽과 같은 열 아래 칸(모두 <b>더 짧은 구간</b>)만 쓰므로, 구간 길이가 짧은 <b>대각선부터</b> 채우면 항상 ㄱ 자가 준비되어 있습니다. 예: DP[1][2] = DP[1][1] + DP[2][2] + P<sub>1</sub>P<sub>2</sub>P<sub>3</sub> = 0 + 0 + 2·5·3 = <b>30</b>, 이어서 그 대각선 전체 → 다음 대각선의 DP[1][3] = min(125, 60) = <b>60</b> → …</p>
+    <div class="bsv mcw" id="mcw">
+      <div class="lab">P = [None, 2, 5, 3, 5, 10, 2, 4] — 대각선 순서로 한 칸씩</div>
+      <div class="lcs-wrap"><table class="lcs mct" id="mcT"></table></div>
+      <div class="msg" id="mcMsg"></div>
+      <div class="nav"><button class="f0">⏮</button><button class="pv">◀ 이전</button><span class="cnt"></span><button class="nx">다음 ▶</button><button class="f1">⏭</button><button class="rowb">대각선씩 ▶▶</button></div>
+      <div class="legend"><span><i class="lg cur"></i>지금 칸</span><span><i class="lg uL"></i>왼쪽 (DP[i][k])</span><span><i class="lg uD"></i>아래 (DP[k+1][j])</span><span><i class="lg uB"></i>최소가 된 k</span></div>
+    </div>
+    <figure style="margin:16px 0"><svg width="100%" viewBox="0 0 560 352" role="img" style="display:block;max-width:560px;margin:0 auto"><title>DP 테이블</title><desc>DP[i][j] 는 Mi 부터 Mj 까지 곱하는 최소 비용. i > j 칸은 쓰지 않는다.</desc><text x="158" y="34" text-anchor="middle" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">j=1</text><text x="214" y="34" text-anchor="middle" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">j=2</text><text x="270" y="34" text-anchor="middle" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">j=3</text><text x="326" y="34" text-anchor="middle" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">j=4</text><text x="382" y="34" text-anchor="middle" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">j=5</text><text x="438" y="34" text-anchor="middle" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">j=6</text><text x="118" y="70" text-anchor="end" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">i=1</text><rect x="132" y="50" width="52" height="40" rx="7" fill="var(--surface)" stroke="var(--ink-3)" stroke-width="1.3"/><text x="158" y="70" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink-3)">0</text><rect x="188" y="50" width="52" height="40" rx="7" fill="color-mix(in srgb,#4F46E5 14%,var(--surface))" stroke="#4F46E5" stroke-width="1.3"/><text x="214" y="70" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="#4F46E5">30</text><rect x="244" y="50" width="52" height="40" rx="7" fill="color-mix(in srgb,#0E8F72 14%,var(--surface))" stroke="#0E8F72" stroke-width="1.3"/><text x="270" y="70" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="#0E8F72">60</text><rect x="300" y="50" width="52" height="40" rx="7" fill="color-mix(in srgb,#C2410C 14%,var(--surface))" stroke="#C2410C" stroke-width="1.3"/><text x="326" y="70" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="#C2410C">160</text><rect x="356" y="50" width="52" height="40" rx="7" fill="color-mix(in srgb,#B45309 14%,var(--surface))" stroke="#B45309" stroke-width="1.3"/><text x="382" y="70" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="#B45309">172</text><rect x="412" y="50" width="52" height="40" rx="7" fill="#BE185D" stroke="#BE185D" stroke-width="1.3"/><text x="438" y="70" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="#fff">188</text><text x="118" y="114" text-anchor="end" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">i=2</text><rect x="132" y="94" width="52" height="40" rx="7" fill="none" stroke="var(--line)" stroke-width="1" opacity=".45"/><text x="158" y="114" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="var(--ink-3)">×</text><rect x="188" y="94" width="52" height="40" rx="7" fill="var(--surface)" stroke="var(--ink-3)" stroke-width="1.3"/><text x="214" y="114" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink-3)">0</text><rect x="244" y="94" width="52" height="40" rx="7" fill="color-mix(in srgb,#4F46E5 14%,var(--surface))" stroke="#4F46E5" stroke-width="1.3"/><text x="270" y="114" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="#4F46E5">75</text><rect x="300" y="94" width="52" height="40" rx="7" fill="color-mix(in srgb,#0E8F72 14%,var(--surface))" stroke="#0E8F72" stroke-width="1.3"/><text x="326" y="114" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="#0E8F72">300</text><rect x="356" y="94" width="52" height="40" rx="7" fill="color-mix(in srgb,#C2410C 14%,var(--surface))" stroke="#C2410C" stroke-width="1.3"/><text x="382" y="114" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="#C2410C">160</text><rect x="412" y="94" width="52" height="40" rx="7" fill="color-mix(in srgb,#B45309 14%,var(--surface))" stroke="#B45309" stroke-width="1.3"/><text x="438" y="114" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="#B45309">200</text><text x="118" y="158" text-anchor="end" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">i=3</text><rect x="132" y="138" width="52" height="40" rx="7" fill="none" stroke="var(--line)" stroke-width="1" opacity=".45"/><text x="158" y="158" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="var(--ink-3)">×</text><rect x="188" y="138" width="52" height="40" rx="7" fill="none" stroke="var(--line)" stroke-width="1" opacity=".45"/><text x="214" y="158" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="var(--ink-3)">×</text><rect x="244" y="138" width="52" height="40" rx="7" fill="var(--surface)" stroke="var(--ink-3)" stroke-width="1.3"/><text x="270" y="158" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink-3)">0</text><rect x="300" y="138" width="52" height="40" rx="7" fill="color-mix(in srgb,#4F46E5 14%,var(--surface))" stroke="#4F46E5" stroke-width="1.3"/><text x="326" y="158" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="#4F46E5">150</text><rect x="356" y="138" width="52" height="40" rx="7" fill="color-mix(in srgb,#0E8F72 14%,var(--surface))" stroke="#0E8F72" stroke-width="1.3"/><text x="382" y="158" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="#0E8F72">130</text><rect x="412" y="138" width="52" height="40" rx="7" fill="color-mix(in srgb,#C2410C 14%,var(--surface))" stroke="#C2410C" stroke-width="1.3"/><text x="438" y="158" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="#C2410C">154</text><text x="118" y="202" text-anchor="end" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">i=4</text><rect x="132" y="182" width="52" height="40" rx="7" fill="none" stroke="var(--line)" stroke-width="1" opacity=".45"/><text x="158" y="202" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="var(--ink-3)">×</text><rect x="188" y="182" width="52" height="40" rx="7" fill="none" stroke="var(--line)" stroke-width="1" opacity=".45"/><text x="214" y="202" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="var(--ink-3)">×</text><rect x="244" y="182" width="52" height="40" rx="7" fill="none" stroke="var(--line)" stroke-width="1" opacity=".45"/><text x="270" y="202" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="var(--ink-3)">×</text><rect x="300" y="182" width="52" height="40" rx="7" fill="var(--surface)" stroke="var(--ink-3)" stroke-width="1.3"/><text x="326" y="202" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink-3)">0</text><rect x="356" y="182" width="52" height="40" rx="7" fill="color-mix(in srgb,#4F46E5 14%,var(--surface))" stroke="#4F46E5" stroke-width="1.3"/><text x="382" y="202" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="#4F46E5">100</text><rect x="412" y="182" width="52" height="40" rx="7" fill="color-mix(in srgb,#0E8F72 14%,var(--surface))" stroke="#0E8F72" stroke-width="1.3"/><text x="438" y="202" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="#0E8F72">140</text><text x="118" y="246" text-anchor="end" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">i=5</text><rect x="132" y="226" width="52" height="40" rx="7" fill="none" stroke="var(--line)" stroke-width="1" opacity=".45"/><text x="158" y="246" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="var(--ink-3)">×</text><rect x="188" y="226" width="52" height="40" rx="7" fill="none" stroke="var(--line)" stroke-width="1" opacity=".45"/><text x="214" y="246" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="var(--ink-3)">×</text><rect x="244" y="226" width="52" height="40" rx="7" fill="none" stroke="var(--line)" stroke-width="1" opacity=".45"/><text x="270" y="246" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="var(--ink-3)">×</text><rect x="300" y="226" width="52" height="40" rx="7" fill="none" stroke="var(--line)" stroke-width="1" opacity=".45"/><text x="326" y="246" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="var(--ink-3)">×</text><rect x="356" y="226" width="52" height="40" rx="7" fill="var(--surface)" stroke="var(--ink-3)" stroke-width="1.3"/><text x="382" y="246" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink-3)">0</text><rect x="412" y="226" width="52" height="40" rx="7" fill="color-mix(in srgb,#4F46E5 14%,var(--surface))" stroke="#4F46E5" stroke-width="1.3"/><text x="438" y="246" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="#4F46E5">80</text><text x="118" y="290" text-anchor="end" dominant-baseline="central" font-size="11.5" font-weight="700" fill="var(--ink-3)">i=6</text><rect x="132" y="270" width="52" height="40" rx="7" fill="none" stroke="var(--line)" stroke-width="1" opacity=".45"/><text x="158" y="290" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="var(--ink-3)">×</text><rect x="188" y="270" width="52" height="40" rx="7" fill="none" stroke="var(--line)" stroke-width="1" opacity=".45"/><text x="214" y="290" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="var(--ink-3)">×</text><rect x="244" y="270" width="52" height="40" rx="7" fill="none" stroke="var(--line)" stroke-width="1" opacity=".45"/><text x="270" y="290" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="var(--ink-3)">×</text><rect x="300" y="270" width="52" height="40" rx="7" fill="none" stroke="var(--line)" stroke-width="1" opacity=".45"/><text x="326" y="290" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="var(--ink-3)">×</text><rect x="356" y="270" width="52" height="40" rx="7" fill="none" stroke="var(--line)" stroke-width="1" opacity=".45"/><text x="382" y="290" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="var(--ink-3)">×</text><rect x="412" y="270" width="52" height="40" rx="7" fill="var(--surface)" stroke="var(--ink-3)" stroke-width="1.3"/><text x="438" y="290" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="var(--ink-3)">0</text><foreignObject x="0" y="320" width="560" height="26"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:row;align-items:center;justify-content:center;height:100%;font-size:12.5px;font-weight:700;color:var(--ink-2);line-height:1.2;white-space:nowrap"><span>같은 색 = 같은 대각선 (한 번에 함께 채워지는 칸) · 답 DP[1][6] = 188</span></div></foreignObject></svg><figcaption>완성된 표 — 대각선 색: 파랑 = 행렬 2개, 초록 = 3개, 주황 = 4개, 갈색 = 5개, 분홍 = 6개 (답)</figcaption></figure>
+    <details class="raw"><summary>필기 원문</summary><div class="txt">n개의 표를 그릴 순 없으니까 예시로 표를 채워봄
+ex. M_1 * M_2 * M-3 * M_4 * M_5 * M_6
+사이즈는 순서대로 2*5 5*3 5*10 10*2 2*4 로 주어짐
+
+즉 P = [None, 2, 5, 3, 5, 10, 2, 4]로 주어짐
+
+DP[i][j] = min            ( DP[i][k] + DP[k+1][j] + P[j]*P[k+1]*P[j+1])
+                    k=i, ... ,j-1     
+
+(이게 아까 식이랑 뭐가 다르지..? 일반화한건가)
+
+표로 그려보자(2차원 행렬이기 때문)
+i / j | 0 | 1 | 2 | 3 | 4 | 5 | 6 
+0 | 
+1 | 
+2 | 
+3 | 
+4 | 
+5 | 
+6 | 
+
+가 되고
+바닥조건을 먼저 생각해야함.
+DP[i][i]를 생각하면 i 번째 행렬 ~ i 번Wo rhq ⇒ 1개 ⇒ 피료한 연삿 횟수 0(자기 자신 뿐이기 때문)
+
+i / j | 0 | 1 | 2 | 3 | 4 | 5 | 6 
+0 | 0
+1 | |0
+2 | ||0
+3 | |||0
+4 | ||||0
+5 | |||||0
+6 |||||||0
+
+i~j까지 행렬 곱이기 때문에 무조건 i&lt;=j여야함
+고로 채울 필요도 없고 모순이기 때문에 지워줌
+i / j | 0 | 1 | 2 | 3 | 4 | 5 | 6 
+0 | 0
+1 | x|0
+2 | x|x|0
+3 | x|x|x|0
+4 | x|x|x|x|0
+5 | x|x|x|x|x|0
+6 |x|x|x|x|x|x|0
+
+결국 내가 구하고 싶은 최종 값은 DP[1][n]임(전체 행렬곱 최소값)
+i / j | 0 | 1 | 2 | 3 | 4 | 5 | 6 
+0 | 0
+1 | x|0|||||"최종 답"
+2 | x|x|0
+3 | x|x|x|0
+4 | x|x|x|x|0
+5 | x|x|x|x|x|0
+6 |x|x|x|x|x|x|0
+
+DP[1][6] = min    ( k=1일 때 DP[1][1] + DP[2][6] + P[1][2][7],
+                      k=1~5   
+
+k=1일 때는 필요한 값은
+
+i / j | 0 | 1 | 2 | 3 | 4 | 5 | 6 
+0 | 0
+1 | x|0(필요한 값)|||||"최종 답"
+2 | x|x|0|||(필요한 값)
+3 | x|x|x|0
+4 | x|x|x|x|0
+5 | x|x|x|x|x|0
+6 |x|x|x|x|x|x|0
+
+DP[1][6] = min    ( k=1일 때 DP[1][1] + DP[2][6] + P[1][2][7],
+                      k=1~5    k=2일 때 ~(너가 채워줘) k=5일때까지
+
+i / j | 0 | 1 | 2 | 3 | 4 | 5 | 6 
+0 | 0
+1 | x|0|||||"최종 답"
+2 | x|x|0
+3 | x|x|x|0
+4 | x|x|x|x|0
+5 | x|x|x|x|x|0
+6 |x|x|x|x|x|x|0
+여기서도 k=1~5까지 구할 때 어떤 값을 알아야하는지 k별로 색 다르게 해서 나타내줘.
+즉 최종 답 기준 좌측 쭉이랑 아래 쯕을 알아야함
+그럼 채울 수 있는거부터 보면 [1][2]를 채울 수 있음(ㄱ자가 만들어져아 구할 수 있기 때문) 그럼 연쇄적으로 대각선으로 쭉 채워지고 이어서 계속 채워져서 최종답도 구할 수 있음(색으로 잘 구분)
+
+i / j | 0 | 1 | 2 | 3 | 4 | 5 | 6 
+0 | 0
+1 | x|
+2 | x|x|0
+3 | x|x|x|0
+4 | x|x|x|x|0
+5 | x|x|x|x|x|0
+6 |x|x|x|x|x|x|0
+
+DP[1][2] = min(k=1) (DP[1][1] + DP[2][2] + P_1 * P_2 * P_3)이고
+값을 알고 있는걸 채워보면 0 + 0 + 2*5*3 = 30인걸 알 수 있음
+
+i / j | 0 | 1 | 2 | 3 | 4 | 5 | 6 
+0 | 0
+1 | x|0|30
+2 | x|x|0
+3 | x|x|x|0
+4 | x|x|x|x|0
+5 | x|x|x|x|x|0
+6 |x|x|x|x|x|x|0
+
+그러면 30부터 대각선 쭈루룩 채워짐
+채워졌다치고 DP[1][3]를 구할 수 있어짐
+DP[1][3] = min(k=1,2) (k=1일 때, DP[1][1] + DP[2][3] + P_1 * P_2 * P_4 = 125(가 나옴)
+                                                  k=2일 때, DP[1][2] + DP[3][3] + P[1]*P[3]*P[4] = 60(가 나옴))
+그래서 DP[1][3] = 60
+그러면 또 대각선으로 쭈루룩 채워짐(대각선들은 같은 색으로 구분해줘)
+연쇄적으로 구하다보면 최종적으로 내가 구하고 싶었던 최종 답 DP[1][6]이 나오게 됨</div></details>
+  </section>
+  <!-- 06 -->
+  <section id="s6">
+    <h2 class="st"><span class="sq">06</span>코드와 최적 순서</h2>
+    <div class="badges"><span class="badge exam">시험 ★★</span><span class="badge extra">보충</span></div>
+    <div class="call extra">
+      <div class="t">수업에서 코드는 판서 안 하심</div>
+      <p>표를 채우는 순서를 그대로 코드로 옮기면 아래와 같습니다. 같은 예에서 188 이 나오는 것을 확인했습니다.</p>
+    </div>
+    <div class="codebox pseudo">
+      <div class="head"><span><span class="tag">Python</span>matrix chain DP</span><button class="copy">복사</button></div>
+<pre><code><span class="cm"># P = [None, P1, P2, …, P(n+1)] — M_i 의 크기는 P[i] × P[i+1]</span>
+<span class="kw">def</span> matrix_chain(P):
+    n = len(P) - 2                               <span class="cm"># 행렬 개수 (None 과 P(n+1) 때문에 2 를 뺌)</span>
+    DP = [[0] * (n + 1) <span class="kw">for</span> _ <span class="kw">in</span> range(n + 1)] <span class="cm"># DP[i][j] = M_i ~ M_j 를 곱하는 최소 비용</span>
+                                                 <span class="cm"># 바닥 조건 DP[i][i] = 0 (행렬 1개 → 곱셈 없음) 은 0 으로 시작해 자동으로 들어감</span>
+    <span class="kw">for</span> d <span class="kw">in</span> range(1, n):                       <span class="cm"># d = j − i : 대각선 번호. 짧은 구간부터 (1 → n−1)</span>
+        <span class="kw">for</span> i <span class="kw">in</span> range(1, n - d + 1):           <span class="cm"># 그 대각선 위의 칸을 위에서 아래로</span>
+            j = i + d
+            DP[i][j] = min(DP[i][k] + DP[k + 1][j] + P[i] * P[k + 1] * P[j + 1]
+                           <span class="kw">for</span> k <span class="kw">in</span> range(i, j))  <span class="cm"># k = i … j−1 : 마지막 곱셈을 M_k 뒤에서 자름</span>
+                                                 <span class="cm"># 필요한 DP[i][k], DP[k+1][j] 는 더 짧은 구간 → 이미 채워져 있음</span>
+    <span class="kw">return</span> DP[1][n]                              <span class="cm"># 전체 M_1 ~ M_n 의 최소 비용</span></code></pre>
+    </div>
+    <p><span class="ext">각 칸에서 최소가 된 k 를 따로 기록해 두면 (LCS 의 화살표처럼) 실제 괄호 순서도 되찾을 수 있습니다. 이 예의 최적 순서: <b>(((M<sub>1</sub> × M<sub>2</sub>) × (M<sub>3</sub> × (M<sub>4</sub> × M<sub>5</sub>))) × M<sub>6</sub>)</b> → 비용 188.</span></p>
+  </section>
+  <!-- 07 -->
+  <section id="s7">
+    <h2 class="st"><span class="sq">07</span>수행시간 — O(n³)</h2>
+    <div class="badges"><span class="badge exam">시험 ★★★</span></div>
+    <div class="tablewrap"><table><tbody>
+      <tr><td style="width:150px">채울 칸 수</td><td>대략 n² 개 (실제로는 i ≤ j 칸만이라 약 <span class="frac"><span class="num">n²</span><span class="den">2</span></span> — 상한으로 n²)</td></tr>
+      <tr><td>한 칸</td><td>min 안의 후보 k 가 최악 n 개, 후보 하나는 더하기 · 곱하기 몇 번 (기본 연산) → O(n)</td></tr>
+      <tr><td><b>전체</b></td><td class="big">n² × O(n) = O(n³)</td></tr>
+    </tbody></table></div>
+    <p>모든 순서를 다 보는 O(4<sup>n</sup>) (지수) 에서 <b>O(n³)</b> (다항) 으로 — DP 로 훨씬 효율적인 알고리즘이 됩니다.</p>
+    <div class="call">
+      <div class="t">시험 범위</div>
+      <p>교수님: <b>여기까지가 중간고사 범위</b>.</p>
+    </div>
+    <details class="raw"><summary>필기 원문</summary><div class="txt">그러면 이제 마지막으로 시간복잡도를 보자
+
+DP Table이 대충 n^2개 있다고 하자(사실은 지운 칸들 때문에 n^2 / 2 이지만 어차피 상한이 중요한거니까)
+그러면 그 칸들이 각각 min을 고려하는경우의 수만큼 드는데(그 내부 수식은 기본연산), 근데 이 경우의수가 최악 n번임
+즉 n^2칸 * O(n) = O(n^3)
+
+아까 구했던 O(4^n)이었는데 이보다 효율적인 O(n^3)으로 더 효율적인 알고리즘이 탄생함. 수업 끝. 여기까지 시험범위야</div></details>
+  </section>
+  <!-- 08 -->
+  <section id="sg">
+    <h2 class="st"><span class="sq">08</span>용어 정리</h2>
+    <div class="terms">
+      <div class="term"><b>행렬 곱셈 순서 문제</b><span class="e">matrix chain multiplication</span><p>여러 행렬을 곱할 때 기본 연산이 최소가 되는 괄호 묶기를 찾는 문제.</p></div>
+      <div class="term"><b>교환법칙</b><span class="e">commutative law</span><p>A × B = B × A. 행렬 곱셈에서는 성립 안 함.</p></div>
+      <div class="term"><b>결합법칙</b><span class="e">associative law</span><p>(A × B) × C = A × (B × C). 행렬 곱셈에서 성립 — 결과는 같고 비용만 다름.</p></div>
+      <div class="term"><b>카탈랑 수</b><span class="e">Catalan number</span><p>2, 5, 14, 42, 132, … 괄호 묶기 경우의 수. 대략 4ⁿ 꼴로 증가.</p></div>
+      <div class="term"><b>DP[i][j]</b><span class="e">—</span><p>M<sub>i</sub> ~ M<sub>j</sub> 를 곱하는 최소 비용. DP[i][i] = 0.</p></div>
+      <div class="term"><b>~ (물결)</b><span class="e">asymptotic</span><p>n 이 커질 때 대략 그 꼴로 자란다는 뜻. 등호 아님.</p></div>
+    </div>
+  </section>
+  <!-- 09 -->
+  <section id="sq">
+    <h2 class="st"><span class="sq">09</span>확인 필요</h2>
+    <div class="call">
+      <div class="t">일정</div>
+      <p><b>중간고사 10/26 (월) 16:30 ~</b>. 범위: 오늘(8-1)까지 — 동적 계획법 포함. 공부한 노트 제출.</p>
+    </div>
+    <div class="call ask">
+      <div class="t">1. 일반식의 P[j] — <span style="color:var(--c3)">판서 확인</span></div>
+      <p>판서가 P[i]·P[k+1]·P[j+1] 이었는지 확인해 보세요 (04번). P[j] 면 결과가 달라집니다.</p>
+    </div>
+    <div class="call ask">
+      <div class="t">2. 예시 크기 목록 — <span style="color:var(--c3)">확인</span></div>
+      <p>P = [None, 2, 5, 3, 5, 10, 2, 4] 기준으로 정리했습니다 (M<sub>3</sub> = 3 × 5). 판서 크기가 달랐다면 알려 주세요.</p>
+    </div>
+  </section>
+  <!-- 10 -->
+  <section id="sx">
+    <h2 class="st"><span class="sq">10</span>예상 문제</h2>
+    <p style="font-size:13px;color:var(--ink-3);margin-bottom:14px">난이도 — <b style="color:var(--c2)">기본</b> 수업에서 그대로 나온 것 · <b style="color:var(--accent-deep)">응용</b> 조합하거나 한 단계 더 가야 하는 것 · <b style="color:var(--c3)">심화</b> 수업 논리를 새 상황에 옮겨야 하는 것.</p>
+    <div class="q">
+      <div class="qh"><span class="qn">Q1</span><span>p × q 행렬과 q × r 행렬의 곱에 필요한 기본 연산의 차수를 쓰고 이유를 설명하시오.</span><span class="type">서술</span><span class="lv b">기본</span></div>
+      <div class="ans"><span class="lab">모범답안</span>결과는 p × r 로 칸이 pr 개. 칸 하나는 A 의 i행과 B 의 j열을 같은 자리끼리 곱해 더하므로 곱셈 q 번 + 덧셈 q − 1 번 ≈ 2q. 전체 pr × 2q → <b>O(pqr)</b>.</div>
+    </div>
+    <div class="q">
+      <div class="qh"><span class="qn">Q2</span><span>M<sub>1</sub> (10 × 20), M<sub>2</sub> (20 × 5), M<sub>3</sub> (5 × 30) 의 두 곱셈 순서의 비용을 각각 구하고 최소 순서를 고르시오.</span><span class="type">계산</span><span class="lv b">기본</span></div>
+      <div class="ans"><span class="lab">정답</span>(M<sub>1</sub>M<sub>2</sub>)M<sub>3</sub> = 10·20·5 + 10·5·30 = 1000 + 1500 = <b>2500</b>. M<sub>1</sub>(M<sub>2</sub>M<sub>3</sub>) = 20·5·30 + 10·20·30 = 3000 + 6000 = 9000. → (M<sub>1</sub>M<sub>2</sub>)M<sub>3</sub>.</div>
+    </div>
+    <div class="q">
+      <div class="qh"><span class="qn">Q3</span><span>Q2 를 DP 표로 풀 때 P, DP[1][2], DP[2][3], DP[1][3] 을 쓰시오.</span><span class="type">추적</span><span class="lv m">응용</span></div>
+      <div class="ans"><span class="lab">정답</span>P = [None, 10, 20, 5, 30]. DP[1][2] = 10·20·5 = 1000, DP[2][3] = 20·5·30 = 3000. DP[1][3] = min(k=1: 0 + 3000 + 10·20·30 = 9000, k=2: 1000 + 0 + 10·5·30 = 2500) = <b>2500</b>.</div>
+    </div>
+    <div class="q">
+      <div class="qh"><span class="qn">Q4</span><span>DP[i][j] 의 점화식을 바닥 조건과 함께 쓰고, P[i]·P[k+1]·P[j+1] 항의 의미를 설명하시오.</span><span class="type">서술</span><span class="lv b">기본</span></div>
+      <div class="ans"><span class="lab">모범답안</span>DP[i][i] = 0, DP[i][j] = min<sub>k=i…j−1</sub>(DP[i][k] + DP[k+1][j] + P[i]·P[k+1]·P[j+1]). 마지막 항은 M<sub>i</sub>~M<sub>k</sub> 의 결과(P[i] × P[k+1])와 M<sub>k+1</sub>~M<sub>j</sub> 의 결과(P[k+1] × P[j+1])를 마지막에 곱하는 비용 pqr.</div>
+    </div>
+    <div class="q">
+      <div class="qh"><span class="qn">Q5</span><span>DP 표를 대각선 순서(짧은 구간부터)로 채워야 하는 이유를 쓰시오.</span><span class="type">서술</span><span class="lv m">응용</span></div>
+      <div class="ans"><span class="lab">모범답안</span>DP[i][j] 는 DP[i][k] (같은 행 왼쪽) 와 DP[k+1][j] (같은 열 아래) 를 쓰는데, 둘 다 i ~ j 보다 짧은 구간이다. 구간 길이가 짧은 대각선부터 채우면 이 값들이 항상 먼저 채워져 있어 함수를 다시 부르지 않고 꺼내 쓸 수 있다.</div>
+    </div>
+    <div class="q">
+      <div class="qh"><span class="qn">Q6</span><span>행렬 n 개의 곱셈 순서 문제를 모든 경우를 다 보는 방법과 DP 로 풀 때의 시간복잡도를 비교하시오.</span><span class="type">비교 서술</span><span class="lv b">기본</span></div>
+      <div class="ans"><span class="lab">모범답안</span>괄호 묶기 경우의 수가 C<sub>n−1</sub> ~ C·4<sup>n</sup> 이라 모든 경우를 보면 O(4<sup>n</sup>). DP 는 칸 약 n² 개 × 칸당 후보 k 최대 n 개(O(n)) = O(n³).</div>
+    </div>
+    <div class="q">
+      <div class="qh"><span class="qn">Q7</span><span>점화식의 마지막 항을 P[j]·P[k+1]·P[j+1] 로 잘못 쓰면 무엇이 틀리는지 설명하시오.</span><span class="type">코드 분석</span><span class="lv h">심화</span></div>
+      <div class="ans"><span class="lab">모범답안</span>앞 묶음 M<sub>i</sub>~M<sub>k</sub> 의 결과 행 수는 P[i] 인데 P[j] 를 써서 마지막 곱셈 비용을 잘못 센다. i = 1 일 때 DP[1][n] 식의 P[1] 과도 맞지 않는다. 수업 예에서 답이 188 대신 200 이 된다.</div>
+    </div>
+  </section>
+
+  <footer><span>알고리즘 · 8주차 1차시 · 2026.10.22</span><span>jaealee.com</span></footer>
+</div>
+
+<!-- ═══════════ 단어장 뷰 ═══════════ -->
+<div id="viewVocab" hidden>
+  <div class="hero" data-w="A–Z">
+    <span class="chip">8주차 1차시 단어장</span>
+    <h1>알고리즘 필수 용어</h1>
+    <p class="sub">이번 차시에 나온 단어 중 전공생이 원서·논문에서 다시 만날 것들만 골랐습니다.</p>
+  </div>
+
+  <div class="vhead">
+    <input type="search" id="vq" placeholder="단어 · 뜻으로 찾기">
+    <button class="tbtn" id="maskBtn">뜻 가리기</button>
+    <button class="tbtn" id="quizBtn">퀴즈 풀기</button>
+    <span style="font-size:13px;color:var(--ink-3);font-weight:600" id="vcount"></span>
+  </div>
+
+  <ul class="vlist" id="vlist">
+    <li class="vword">
+      <div><span class="w">matrix</span><span class="ipa">/ˈmeɪtrɪks/</span><span class="pos">n.</span></div>
+      <div><p class="mean">행렬</p>
+      <p class="ex">Multiply a 2 × 3 <b>matrix</b> by a 3 × 2 one.<span class="ko">2 × 3 행렬에 3 × 2 행렬을 곱하라.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">chain</span><span class="ipa">/tʃeɪn/</span><span class="pos">n.</span></div>
+      <div><p class="mean">사슬, 연쇄</p>
+      <p class="ex">A <b>chain</b> of matrices is multiplied in order.<span class="ko">행렬의 연쇄를 순서대로 곱한다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">commutative</span><span class="ipa">/kəˈmjuːtətɪv/</span><span class="pos">adj.</span></div>
+      <div><p class="mean">교환 가능한</p>
+      <p class="ex">Matrix multiplication is not <b>commutative</b>.<span class="ko">행렬 곱셈은 교환법칙이 성립하지 않는다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">associative</span><span class="ipa">/əˈsoʊʃieɪtɪv/</span><span class="pos">adj.</span></div>
+      <div><p class="mean">결합 가능한</p>
+      <p class="ex">It is <b>associative</b>, so parentheses only change the cost.<span class="ko">결합법칙이 성립하므로 괄호는 비용만 바꾼다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">parenthesize</span><span class="ipa">/pəˈrenθəsaɪz/</span><span class="pos">v.</span></div>
+      <div><p class="mean">괄호로 묶다</p>
+      <p class="ex">There are five ways to <b>parenthesize</b> four matrices.<span class="ko">행렬 4개를 괄호로 묶는 방법은 다섯 가지다.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">scalar</span><span class="ipa">/ˈskeɪlər/</span><span class="pos">adj./n.</span></div>
+      <div><p class="mean">스칼라 (숫자 하나)</p>
+      <p class="ex">Count the <b>scalar</b> multiplications.<span class="ko">스칼라 곱셈 횟수를 세라.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">diagonal</span><span class="ipa">/daɪˈæɡənl/</span><span class="pos">n.</span></div>
+      <div><p class="mean">대각선</p>
+      <p class="ex">Fill the table one <b>diagonal</b> at a time.<span class="ko">표를 대각선 하나씩 채워라.</span></p></div>
+    </li>
+    <li class="vword">
+      <div><span class="w">optimal</span><span class="ipa">/ˈɑːptɪməl/</span><span class="pos">adj.</span></div>
+      <div><p class="mean">최적의</p>
+      <p class="ex">Find the <b>optimal</b> order of multiplication.<span class="ko">곱셈의 최적 순서를 찾아라.</span></p></div>
+    </li>
+  </ul>
+
+  <div class="quizbox" id="quiz">
+    <div class="qq" id="quizQ"></div>
+    <div class="opts" id="quizOpts"></div>
+    <div class="score" id="quizScore"></div>
+  </div>
+</div>
+<!-- ═══════════ 필기 원문 뷰 ═══════════ -->
+<div id="viewRaw" hidden>
+  <div class="hero" data-w="RAW">
+    <span class="chip">8주차 1차시 필기 원문</span>
+    <h1>내가 보낸 그대로</h1>
+    <p class="sub">한 글자도 고치지 않았습니다. 본문에 빠진 게 없는지 여기서 대조하세요.</p>
+  </div>
+
+  <div class="rawnote" id="rawlist">
+    <div class="rawitem">
+      <div class="seq">01<span>&nbsp;</span></div>
+      <div>
+        <div class="body">동적계획법 예시(마지막)
+
+행렬 곱셈 문제
+
+* 행렬곱셈 간단히 복습(내용 기억 안날까봐)
+
+[ a b c d 
+e f g h ]
+[ A E
+B F
+C G
+D H ]
+=
+첫번째 가로줄과 두 번째 세로 줄을 곱해서 하나의 요소로 들어감
+매칭되는 수를 곱한거를 더함
+[ aA+bB+cC+dD aE+bF+cG+dH
+eA+fB+gC+hD eE+fF+gG+hH ]
+이렇게 됨(시각화로 알려주면 좋을거같아. 헷갈리니까
+
+다시 돌아와서 행렬곱셈문제 동적계획법
+
+[  ] * [  ] = [  ] 
+ A       B        C
+A의 열의 개수와, B의 행의 개수가 같아야 행렬곱이 가능함
+A = p(행)*q(열)의 행렬이라면
+B = q(행) * r(열) 의 행렬이어야함
+결과는 C 행렬은 p(행)*r(열)의 행렬이 됨
+
+행렬에서는 A x B != B x A 임(교환법칙 성립 안함)
+
+
+결과적으로 C의 요소 하나를 보면 C[i][j] = 시그마 k=1~q A[있다 i][k] * B[k][j]           (A의 i번째 행의 요소 vs B의 j번째 요소를 1:1로 곱한걸 전부 더해줌)
+
+C 요소 하나 구하는데 드는 연산 시간은 대략 2q개의 곱셈 또는 덧셈(시그마로 계속 더하면서 요소들을 곱해야하기 때문) 필요
+C행렬은 p*r행렬이기 때문에 pr개의 요소가 존재
+따라서 C행렬을 구하려면 p*r*2q = O(pqr)의 기본 연산이 필요함</div>
+        <div class="where"><a href="#s1">01. 행렬 곱셈 복습</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">02<span>&nbsp;</span></div>
+      <div>
+        <div class="body">오늘은 행렬 여러개가 있을 때 곱을 생각해봄
+
+쉬운거부터 봄. 행렬 3개 곱의 경우부터 보자
+
+M_1 * M_2 * M_3
+2*3     3*2     2*5    (행렬의 크기)
+
+((M_1 * M_2) * M_3) 로 쪼개서 곱하기(행렬곱은 결합법칙은 성립(교환법칙은 성립하지 않음))
+(M_1 * M_2) 은 2*2행렬이 됨
+이 결과를 다시 M_3와 곱하면 2*5 가 됨
+
+2*3*2 + 2*2*5 = 32 정도의 기본연산이 필요함(아까 구한 O(pqr)을 적용한거임. 빅오표현이지만 간단하게 보기 위해 이렇게 확인)
+
+그럼 이번에는 
+M_1 * (M_2 * M_3)  로 쪼개서 곱하기
+= 3*2*5 + 2*3*5 = 60
+
+O(pqr)을 통해 계산한거임
+
+어떤 순서로 계산해주냐에 따라 기본연산 횟수가 굉장히 차이남
+오늘 풀 동적계획법은 어떻게 해야 기본연산 횟수가 줄어들지</div>
+        <div class="where"><a href="#s2">02. 행렬 3개</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">03<span>&nbsp;</span></div>
+      <div>
+        <div class="body">행렬3개가 아닌 일반화하면
+n개의 행렬을 곱해줌
+
+M_1 * M_2 * ... * M_n = M
+이라고 하자.
+
+행렬사이즈는 미리 주어져야함. 맞아야하니까
+M_1부터 순서대로
+P_1*P_2
+P_2*P_3
+P_3*P_4
+...
+P_n*P(n+1)
+
+최종적으로 M은 P_1 * P_(n+1)
+
+우리가 궁금한 점 : 어떤 순서로 곱해야할까?
+어떤 순서 : 기본연산의 총 횟수가 최소가 되는 곱셈의 순서
+
+곱셈의 순서가 몇가지 중 최소가 돼야할까?
+
+행렬의 요소가 3개일 때는 2가지가 존재했었음
+순서 = 괄호 묶기
+
+행렬이 4개 있다고 생각해보자
+M_1 * M_2 * M_3 * M_4
+
+괄호를 씌워보면
+(((M_1 * M_2) * M_3) * M_4) = ?
+((M_1 * M_2) * (M_3 * M_4)) = ?
+((M_1 * (M_2 * M_3)) * M_4) = ?
+(M_1 * ((M_2 * M_3) * M_4)) = ?
+(M_1 * (M_2 * (M_3 * M_4))) = ?
+이렇게 5가지 경우의 수가 나옴.
+이 경우 중 min이 나오는 식으로 풀면 됨
+
+4개의 행렬 곱 ⇒ 3개의 괄호를 어떻게 묶는지에 따라 결과가 나옴
+
+(지금 쓰는건 표야)
+행렬 개수 n |  3 | 4 | 5 |  6 | 7 | ... | n
+괄호 묶기 경우의 수 | 2 (= C_2라고 하자. 2는 필요한 괄호 개수) | 5( = C_3) | 14 | 42 | 132 | ... | C_(n-1)
+
+누가 이걸 구해봤더니(증명이나 설명 x)
+C_n ~ C*4^n
+(이게 무슨 뜻일까? 물결이 아니라 등호일까)
+
+즉 시간복잡도가 O(4^n)가 나오고 굉장히 아주 오래 걸리는 최악의 시간복잡도임
+
+
+이제 진짜 동적프로그래밍으로 해보신대</div>
+        <div class="where"><a href="#s3">03. n 개</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">04<span>&nbsp;</span></div>
+      <div>
+        <div class="body">* 행렬 곱셈 DP 알고리즘
+
+
+1. 해 분석 : 큰 문제 → 작은 문제로 나누기
+2. 작은문제의 해를 이용해서 큰 문제의 해로 나타내기 (점화식 구하자는 얘기)
+3. DP 테이블 값 순서대로 채우자
+4. 검증(상관쓰지 않음)
+
+
+M_1 x M_2 x ... x M_n 개 있다고 하자
+
+마지막에 곱해지는 행렬(직전에 곱해지는 2개)은 행렬곱을 두 개로 쪼갤거고
+그 기준이 되는 행렬을 M_i라고 하자(~M_i * M_(i+1) * ~ )
+
+M_1 x M_2 x ... M_i x M_(i+1) x ... x M_n
+
+가장 마지막 곱셈은 최종 2개 행렬의 곱 모야이 됨
+
+그 최종 2개를 M' * M'' 이라고 하자
+(M'는 M_1 x M_2 x ... M_i 
+M''는  M_(i+1) x ... x M_n)
+
+M' * M''가 최소가 되려면 M'도 최소, M''도 최소가 돼아함.
+전체가 최소가 되려면 두 개로 쪼개진 것도 각각 최소가 돼야함
+
+이걸 식으로 적어보면(cost() 행렬곱 비용 말하는거임)
+cost(M_1 * ... * M_n) = cost(M_1 * ... * M_i) + cost(M_(i+1) * ... * M_n) + ??
+M_i은 P_i * P_(i+1) , M_(i+1)은 P_(i+1) * P_(i+2)가 됨
+결국 M'은 P_1 * P_(i+1) 
+M'' 는 P_(i+1) * P_(n+1)
+
+결국 cost(M_1 * ... * M_n) = cost(M_1 * ... * M_i) + cost(M_(i+1) * ... * M_n) + P_1*P_(i+1)*P_(n+1)
+왜냐면 O(pqr)이기 때문
+근데  P_1*P_(i+1)*P_(n+1)는 이미 주어진 값임
+P = [None, P_1, ..., P_(n+1)]은 이미 주어진 값이기 때문(행렬의 크기이기 때문)
+
+그렇다면 우리는 cost의 최소비용이 궁금한거임
+최소가 되려면 어떤 i가 되는지가 중요(중간에 어디서 끊는지에 따라 비용이 계속 바뀜)
+
+가능한 i를 다 고려해서 그 중에 최소를 구하면 되겠구나
+
+우리가 점화식( cost(M_1 * ... * M_n) = cost(M_1 * ... * M_i) + cost(M_(i+1) * ... * M_n) + P_1*P_(i+1)*P_(n+1))을 얻었으니까 이 점화식을 DP Table 에 넣음(2차원 행렬에 넣음)
+
+DP[1][n] = min            ( DP[1][i] + DP[i+1][n] + P[1]*P[i+1]*P[n+1])
+                    i=1, ... ,n-1     
+최소비용을 DP테이블에 기록함
+위 수식은 min 아래 작게   i=1, ... ,n-1     가 오면 됨
+i = 1, .. , n-1이 될 수 있음(중간을 자르는거기 때문에)</div>
+        <div class="where"><a href="#s4">04. 점화식</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">05<span>&nbsp;</span></div>
+      <div>
+        <div class="body">n개의 표를 그릴 순 없으니까 예시로 표를 채워봄
+ex. M_1 * M_2 * M-3 * M_4 * M_5 * M_6
+사이즈는 순서대로 2*5 5*3 5*10 10*2 2*4 로 주어짐
+
+즉 P = [None, 2, 5, 3, 5, 10, 2, 4]로 주어짐
+
+DP[i][j] = min            ( DP[i][k] + DP[k+1][j] + P[j]*P[k+1]*P[j+1])
+                    k=i, ... ,j-1     
+
+(이게 아까 식이랑 뭐가 다르지..? 일반화한건가)
+
+표로 그려보자(2차원 행렬이기 때문)
+i / j | 0 | 1 | 2 | 3 | 4 | 5 | 6 
+0 | 
+1 | 
+2 | 
+3 | 
+4 | 
+5 | 
+6 | 
+
+가 되고
+바닥조건을 먼저 생각해야함.
+DP[i][i]를 생각하면 i 번째 행렬 ~ i 번Wo rhq ⇒ 1개 ⇒ 피료한 연삿 횟수 0(자기 자신 뿐이기 때문)
+
+i / j | 0 | 1 | 2 | 3 | 4 | 5 | 6 
+0 | 0
+1 | |0
+2 | ||0
+3 | |||0
+4 | ||||0
+5 | |||||0
+6 |||||||0
+
+i~j까지 행렬 곱이기 때문에 무조건 i&lt;=j여야함
+고로 채울 필요도 없고 모순이기 때문에 지워줌
+i / j | 0 | 1 | 2 | 3 | 4 | 5 | 6 
+0 | 0
+1 | x|0
+2 | x|x|0
+3 | x|x|x|0
+4 | x|x|x|x|0
+5 | x|x|x|x|x|0
+6 |x|x|x|x|x|x|0
+
+결국 내가 구하고 싶은 최종 값은 DP[1][n]임(전체 행렬곱 최소값)
+i / j | 0 | 1 | 2 | 3 | 4 | 5 | 6 
+0 | 0
+1 | x|0|||||"최종 답"
+2 | x|x|0
+3 | x|x|x|0
+4 | x|x|x|x|0
+5 | x|x|x|x|x|0
+6 |x|x|x|x|x|x|0
+
+DP[1][6] = min    ( k=1일 때 DP[1][1] + DP[2][6] + P[1][2][7],
+                      k=1~5   
+
+k=1일 때는 필요한 값은
+
+i / j | 0 | 1 | 2 | 3 | 4 | 5 | 6 
+0 | 0
+1 | x|0(필요한 값)|||||"최종 답"
+2 | x|x|0|||(필요한 값)
+3 | x|x|x|0
+4 | x|x|x|x|0
+5 | x|x|x|x|x|0
+6 |x|x|x|x|x|x|0
+
+DP[1][6] = min    ( k=1일 때 DP[1][1] + DP[2][6] + P[1][2][7],
+                      k=1~5    k=2일 때 ~(너가 채워줘) k=5일때까지
+
+i / j | 0 | 1 | 2 | 3 | 4 | 5 | 6 
+0 | 0
+1 | x|0|||||"최종 답"
+2 | x|x|0
+3 | x|x|x|0
+4 | x|x|x|x|0
+5 | x|x|x|x|x|0
+6 |x|x|x|x|x|x|0
+여기서도 k=1~5까지 구할 때 어떤 값을 알아야하는지 k별로 색 다르게 해서 나타내줘.
+즉 최종 답 기준 좌측 쭉이랑 아래 쯕을 알아야함
+그럼 채울 수 있는거부터 보면 [1][2]를 채울 수 있음(ㄱ자가 만들어져아 구할 수 있기 때문) 그럼 연쇄적으로 대각선으로 쭉 채워지고 이어서 계속 채워져서 최종답도 구할 수 있음(색으로 잘 구분)
+
+i / j | 0 | 1 | 2 | 3 | 4 | 5 | 6 
+0 | 0
+1 | x|
+2 | x|x|0
+3 | x|x|x|0
+4 | x|x|x|x|0
+5 | x|x|x|x|x|0
+6 |x|x|x|x|x|x|0
+
+DP[1][2] = min(k=1) (DP[1][1] + DP[2][2] + P_1 * P_2 * P_3)이고
+값을 알고 있는걸 채워보면 0 + 0 + 2*5*3 = 30인걸 알 수 있음
+
+i / j | 0 | 1 | 2 | 3 | 4 | 5 | 6 
+0 | 0
+1 | x|0|30
+2 | x|x|0
+3 | x|x|x|0
+4 | x|x|x|x|0
+5 | x|x|x|x|x|0
+6 |x|x|x|x|x|x|0
+
+그러면 30부터 대각선 쭈루룩 채워짐
+채워졌다치고 DP[1][3]를 구할 수 있어짐
+DP[1][3] = min(k=1,2) (k=1일 때, DP[1][1] + DP[2][3] + P_1 * P_2 * P_4 = 125(가 나옴)
+                                                  k=2일 때, DP[1][2] + DP[3][3] + P[1]*P[3]*P[4] = 60(가 나옴))
+그래서 DP[1][3] = 60
+그러면 또 대각선으로 쭈루룩 채워짐(대각선들은 같은 색으로 구분해줘)
+연쇄적으로 구하다보면 최종적으로 내가 구하고 싶었던 최종 답 DP[1][6]이 나오게 됨</div>
+        <div class="where"><a href="#s5">05. 테이블</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">06<span>&nbsp;</span></div>
+      <div>
+        <div class="body">그러면 이제 마지막으로 시간복잡도를 보자
+
+DP Table이 대충 n^2개 있다고 하자(사실은 지운 칸들 때문에 n^2 / 2 이지만 어차피 상한이 중요한거니까)
+그러면 그 칸들이 각각 min을 고려하는경우의 수만큼 드는데(그 내부 수식은 기본연산), 근데 이 경우의수가 최악 n번임
+즉 n^2칸 * O(n) = O(n^3)
+
+아까 구했던 O(4^n)이었는데 이보다 효율적인 O(n^3)으로 더 효율적인 알고리즘이 탄생함. 수업 끝. 여기까지 시험범위야</div>
+        <div class="where"><a href="#s7">07. 수행시간</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+/* ── 스크롤 진행 바 ─────────────────────────────── */
+const sb = document.getElementById('scrollbar');
+addEventListener('scroll', () => {
+  const h = document.documentElement.scrollHeight - innerHeight;
+  sb.style.width = (h > 0 ? scrollY / h * 100 : 0) + '%';
+}, { passive: true });
+
+/* ── 다크 모드 ──────────────────────────────────── */
+const html = document.documentElement, themeBtn = document.getElementById('themeBtn');
+themeBtn.onclick = () => {
+  const dark = html.dataset.theme === 'dark';
+  html.dataset.theme = dark ? 'light' : 'dark';
+  themeBtn.textContent = dark ? '다크' : '라이트';
+};
+
+/* ── 정답: 기본은 가려짐. 답을 누르면 그 문제만 열리고,
+      "정답 가리기" 버튼을 누르면 열린 것들을 전부 다시 덮는다 ── */
+const ansBtn = document.getElementById('ansBtn');
+const answers = [...document.querySelectorAll('.ans')];
+function syncAnsBtn() {
+  const opened = answers.filter(a => a.classList.contains('on')).length;
+  ansBtn.disabled = opened === 0;
+  ansBtn.textContent = opened ? `정답 가리기 (${opened})` : '정답 가리기';
+}
+answers.forEach(a => a.addEventListener('click', () => { a.classList.toggle('on'); syncAnsBtn(); }));
+ansBtn.onclick = () => { answers.forEach(a => a.classList.remove('on')); syncAnsBtn(); };
+syncAnsBtn();
+
+/* ── 보충(외부 자료) 개수 표시 + 숨기기 토글 ────── */
+const extraChip = document.getElementById('extraChip');
+const extraCount = document.querySelectorAll('#viewNote .call.extra, #viewNote .ext').length;
+if (extraCount) {
+  extraChip.textContent = `보충 ${extraCount}곳 — 교수님 설명 아님`;
+  extraChip.onclick = () => {
+    const off = document.body.classList.toggle('no-extra');
+    extraChip.textContent = off ? `보충 ${extraCount}곳 숨김 — 눌러서 보기` : `보충 ${extraCount}곳 — 교수님 설명 아님`;
+  };
+} else {
+  extraChip.textContent = '보충 0곳 — 전부 교수님 내용';
+  extraChip.disabled = true;
+}
+
+/* ── 인쇄 ───────────────────────────────────────── */
+document.getElementById('printBtn').onclick = () => window.print();
+
+/* ── 코드 복사 ──────────────────────────────────── */
+document.querySelectorAll('.copy').forEach(btn => {
+  btn.onclick = async () => {
+    try { await navigator.clipboard.writeText(btn.closest('.codebox').querySelector('code').innerText); btn.textContent = '복사됨'; }
+    catch { btn.textContent = '실패'; }
+    setTimeout(() => btn.textContent = '복사', 1200);
+  };
+});
+
+/* ── 복습 체크 진행률 (새로고침하면 초기화) ─────── */
+const boxes = document.querySelectorAll('.chk input'), fill = document.getElementById('barFill');
+boxes.forEach(b => b.addEventListener('change', () => {
+  fill.style.width = [...boxes].filter(x => x.checked).length / boxes.length * 100 + '%';
+}));
+
+/* ── 본문 / 단어장 / 필기 원문 전환 ─────────────── */
+const views = {
+  note:  { el: document.getElementById('viewNote'),  nav: document.getElementById('tocWrap') },
+  vocab: { el: document.getElementById('viewVocab'), nav: document.getElementById('vocabNav'), btn: document.getElementById('vocabBtn'), on: '본문으로', off: '단어장' },
+  raw:   { el: document.getElementById('viewRaw'),   nav: document.getElementById('rawNav'),   btn: document.getElementById('rawBtn'),  on: '본문으로', off: '필기 원문' }
+};
+let current = 'note';
+function setView(name) {
+  current = name;
+  Object.entries(views).forEach(([k, v]) => {
+    v.el.hidden = k !== name;
+    v.nav.hidden = k !== name;
+    if (v.btn) { v.btn.classList.toggle('solid', k === name); v.btn.textContent = k === name ? v.on : v.off; }
+  });
+  clearMarks();
+  document.getElementById('q').value = '';
+  document.getElementById('hit').textContent = '';
+  scrollTo({ top: 0, behavior: 'smooth' });
+}
+views.vocab.btn.onclick = () => setView(current === 'vocab' ? 'note' : 'vocab');
+views.raw.btn.onclick   = () => setView(current === 'raw'   ? 'note' : 'raw');
+document.getElementById('rawTotal').textContent = document.querySelectorAll('#rawlist .rawitem').length;
+// 원문 페이지의 링크를 누르면 본문으로 돌아가서 해당 위치로 이동
+document.querySelectorAll('#rawlist .where a').forEach(a => {
+  a.onclick = e => { e.preventDefault(); setView('note'); setTimeout(() => document.querySelector(a.getAttribute('href')).scrollIntoView(), 60); };
+});
+
+/* ── 목차 현재 위치 ─────────────────────────────── */
+const links = [...document.querySelectorAll('#toc a')];
+const spy = new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) return;
+  links.forEach(l => l.classList.toggle('on', l.getAttribute('href') === '#' + e.target.id));
+}), { rootMargin: '-80px 0px -68% 0px' });
+document.querySelectorAll('#viewNote section').forEach(s => spy.observe(s));
+
+/* ── 문서 내 검색 ───────────────────────────────── */
+const qInput = document.getElementById('q'), hitEl = document.getElementById('hit');
+let marks = [], cursor = -1;
+function clearMarks() {
+  marks.forEach(m => { const p = m.parentNode; if (!p) return; p.replaceChild(document.createTextNode(m.textContent), m); p.normalize(); });
+  marks = []; cursor = -1;
+}
+function runSearch(word) {
+  clearMarks();
+  if (word.length < 2) { hitEl.textContent = ''; return; }
+  const root = views[current].el;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const targets = [];
+  while (walker.nextNode()) {
+    const n = walker.currentNode;
+    if (n.parentElement.closest('script,style')) continue;
+    if (n.nodeValue.toLowerCase().includes(word)) targets.push(n);
+  }
+  targets.forEach(n => {
+    const re = new RegExp('(' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    const frag = document.createDocumentFragment();
+    n.nodeValue.split(re).forEach(p => {
+      if (p.toLowerCase() === word) { const m = document.createElement('span'); m.className = 'hit-mark'; m.textContent = p; frag.appendChild(m); marks.push(m); }
+      else frag.appendChild(document.createTextNode(p));
+    });
+    n.parentNode.replaceChild(frag, n);
+  });
+  hitEl.textContent = marks.length ? '0/' + marks.length : '없음';
+}
+/* 검색은 본문 텍스트 노드를 통째로 갈아끼우기 때문에 브라우저가 스크롤 기준점을 잃고
+   맨 위로 튄다. 바꾸기 직전 위치를 적어 두었다가 끝나고 바로 되돌린다. */
+function keepScroll(fn) {
+  const y = window.scrollY, root = document.documentElement, prev = root.style.scrollBehavior;
+  root.style.scrollBehavior = 'auto';
+  fn();
+  window.scrollTo(0, y);
+  root.style.scrollBehavior = prev;
+}
+qInput.addEventListener('input', e => {
+  const w = e.target.value.trim().toLowerCase();
+  keepScroll(() => runSearch(w));
+});
+qInput.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || !marks.length) return;
+  e.preventDefault();
+  cursor = (cursor + 1) % marks.length;
+  marks[cursor].scrollIntoView({ block: 'center', behavior: 'smooth' });
+  hitEl.textContent = (cursor + 1) + '/' + marks.length;
+});
+addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); qInput.focus(); qInput.select(); }
+});
+
+/* ── 단어장 ─────────────────────────────────────── */
+const vlist = document.getElementById('vlist');
+const words = [...vlist.querySelectorAll('.vword')];
+document.getElementById('vcount').textContent = words.length + '개';
+document.getElementById('vTotal').textContent = words.length;
+
+document.getElementById('vq').addEventListener('input', e => {
+  const k = e.target.value.trim().toLowerCase();
+  keepScroll(() => {   // 항목을 숨기면 높이가 바뀌어 스크롤이 튄다
+    let shown = 0;
+    words.forEach(w => { const ok = w.innerText.toLowerCase().includes(k); w.style.display = ok ? '' : 'none'; if (ok) shown++; });
+    document.getElementById('vcount').textContent = shown + '개';
+  });
+});
+
+const maskBtn = document.getElementById('maskBtn');
+maskBtn.onclick = () => {
+  const on = vlist.classList.toggle('masked');
+  maskBtn.classList.toggle('solid', on);
+  maskBtn.textContent = on ? '뜻 보이기' : '뜻 가리기';
+  if (!on) vlist.querySelectorAll('.show').forEach(el => el.classList.remove('show'));
+};
+vlist.querySelectorAll('.mean, .ex').forEach(el => {
+  el.onclick = () => { if (vlist.classList.contains('masked')) el.classList.toggle('show'); };
+});
+
+/* 퀴즈 — 위 목록에서 문제를 자동 생성 */
+const quiz = document.getElementById('quiz'), quizBtn = document.getElementById('quizBtn');
+const qQ = document.getElementById('quizQ'), qO = document.getElementById('quizOpts'), qS = document.getElementById('quizScore');
+let pool = [], solved = 0, correct = 0;
+const data = () => words.map(w => ({
+  word: w.querySelector('.w').textContent,
+  mean: (w.querySelector('.mean').textContent.split('—')[1] || w.querySelector('.mean').textContent).trim()
+}));
+function nextQuiz() {
+  if (!pool.length) { qQ.textContent = '한 바퀴 끝'; qO.innerHTML = ''; qS.textContent = `${solved}문제 중 ${correct}개 정답`; return; }
+  const all = data(), cur = pool.pop();
+  qQ.textContent = cur.word;
+  const opts = [cur, ...all.filter(d => d.word !== cur.word).sort(() => Math.random() - .5).slice(0, 3)].sort(() => Math.random() - .5);
+  qO.innerHTML = '';
+  opts.forEach(o => {
+    const b = document.createElement('button');
+    b.className = 'opt'; b.textContent = o.mean;
+    b.onclick = () => {
+      solved++;
+      if (o.word === cur.word) { b.classList.add('ok'); correct++; }
+      else { b.classList.add('no'); [...qO.children].find(x => x.textContent === cur.mean)?.classList.add('ok'); }
+      [...qO.children].forEach(x => x.disabled = true);
+      qS.textContent = `${solved}문제 중 ${correct}개 정답`;
+      setTimeout(nextQuiz, 1000);
+    };
+    qO.appendChild(b);
+  });
+  qS.textContent = `${solved}문제 중 ${correct}개 정답 · 남은 ${pool.length}개`;
+}
+quizBtn.onclick = () => {
+  const on = quiz.classList.toggle('on');
+  quizBtn.classList.toggle('solid', on);
+  quizBtn.textContent = on ? '퀴즈 닫기' : '퀴즈 풀기';
+  if (on) { pool = data().sort(() => Math.random() - .5); solved = 0; correct = 0; nextQuiz(); }
+};
+
+/* ── 이진탐색 스텝 시각화 ─────────────────────────── */
+(function(){
+  const root=document.getElementById('bsv'); if(!root) return;
+  const A=[2,5,7,8,15,20,32,44];
+  const CODE=['def bs(A, a, b, k):','    if a > b:','        return -1','    m = (a + b) // 2','    if A[m] == k:','        return m','    elif A[m] > k:','        return bs(A, a, m-1, k)','    else:','        return bs(A, m+1, b, k)'];
+  // 실제 의사코드를 실행하면서 스텝 기록
+  function trace(k){
+    const st=[]; const stack=[];
+    function snap(o){ st.push(Object.assign({stack:stack.map(x=>Object.assign({},x))},o)); }
+    function bs(a,b){
+      stack.push({a,b,ret:null}); const me=stack.length-1;
+      snap({a,b,m:null,line:[0],msg: a>b ? `<b>bs(A, ${a}, ${b}, ${k})</b> 호출 — 시작(a = ${a})이 끝(b = ${b})보다 뒤라서 <b>볼 칸이 없습니다.</b>` : `<b>bs(A, ${a}, ${b}, ${k})</b> 호출 — 이번에 볼 범위는 A[${a}] ~ A[${b}] 입니다.`});
+      if(a>b){
+        snap({a,b,m:null,line:[1,2],msg:`a = ${a} &gt; b = ${b} — <b>범위가 뒤집혔습니다.</b> 볼 칸이 하나도 없으니 리스트에 k 가 없다는 뜻이고, <b>−1 을 반환</b>합니다.`});
+        stack[me].ret=-1; return -1;
+      }
+      snap({a,b,m:null,line:[1],msg:`a = ${a} &gt; b = ${b} 인가? → 아니오. 아직 볼 칸이 남아 있으니 계속합니다.`});
+      const m=Math.floor((a+b)/2);
+      snap({a,b,m,line:[3],msg:`가운데 자리 m = (${a} + ${b}) // 2 = <b>${m}</b>. A[${m}] = <b>${A[m]}</b> 입니다.`});
+      if(A[m]===k){
+        snap({a,b,m,line:[4,5],found:true,msg:`A[${m}] = ${A[m]} == k = ${k} → <b>찾았습니다.</b> 값 ${A[m]} 이 아니라 <b>자리 번호 ${m}</b> 을 반환합니다.`});
+        stack[me].ret=m; return m;
+      }
+      let r;
+      if(A[m]>k){
+        snap({a,b,m,line:[4,6,7],msg:`A[${m}] = ${A[m]} &gt; k = ${k} → k 는 <b>왼쪽</b>에 있습니다. m 과 그 오른쪽은 버리고 <b>bs(A, ${a}, ${m-1}, ${k})</b> 를 호출합니다.`});
+        r=bs(a,m-1);
+      }else{
+        snap({a,b,m,line:[4,6,8,9],msg:`A[${m}] = ${A[m]} &lt; k = ${k} → k 는 <b>오른쪽</b>에 있습니다. m 과 그 왼쪽은 버리고 <b>bs(A, ${m+1}, ${b}, ${k})</b> 를 호출합니다.`});
+        r=bs(m+1,b);
+      }
+      stack[me].ret=r;
+      snap({a,b,m,line:[A[m]>k?7:9],back:true,msg:`안쪽 호출이 <b>${r}</b> 을 돌려줬습니다. 이 호출(bs(A, ${a}, ${b}, ${k}))도 받은 값을 그대로 <b>${r}</b> 로 반환합니다. (값을 가공하지 않고 전달만 함)`});
+      stack.pop(); return r;
+    }
+    const res=bs(0,7);
+    st.push({stack:[],a:null,b:null,m:null,line:[],done:res,msg:res>=0?`최종 결과 <b>${res}</b> — A[${res}] = ${A[res]}. 비교는 <b>${st.filter(x=>x.line.includes(3)).length}번</b>, 볼 범위는 8 → 4 → 2 로 매번 절반이 됐습니다.`:`최종 결과 <b>−1</b> — 리스트에 ${k}이(가) 없습니다. 비교는 <b>${st.filter(x=>x.line.includes(3)).length}번</b>, 범위가 8 → 4 → 2 → 1 → 0 으로 줄다가 뒤집혀서 끝났습니다.`});
+    return st;
+  }
+  const arr=root.querySelector('.arr'), code=root.querySelector('.code'), stackEl=root.querySelector('.stack'), msg=root.querySelector('.msg'), cnt=root.querySelector('.cnt'), prev=root.querySelector('.prev'), next=root.querySelector('.next');
+  let k=32, steps=trace(32), i=0;
+  function svg(s){
+    const W=46,G=49,X0=24; let o='<svg width="100%" viewBox="0 0 440 112" role="img" style="display:block"><title>현재 단계의 탐색 범위</title>';
+    for(let j=0;j<8;j++){
+      const x=X0+j*G, cx=x+W/2;
+      const inR = s.a!==null && j>=s.a && j<=s.b;
+      const isM = s.m===j;
+      let fill='var(--bg)', stroke='var(--line)', tc='var(--ink)', fw=700, op=1;
+      if(!inR){ tc='var(--ink-3)'; fw=400; op=0.4; }
+      if(isM){ fill = s.found? 'var(--c2)':'var(--accent)'; stroke='none'; tc='#fff'; fw=800; op=1; }
+      if(s.done!==undefined && s.done===j){ fill='var(--c2)'; stroke='none'; tc='#fff'; fw=800; op=1; }
+      o+=`<text x="${cx}" y="12" text-anchor="middle" dominant-baseline="central" font-size="10" fill="var(--ink-3)">${j}</text>`;
+      o+=`<rect x="${x}" y="22" width="${W}" height="30" rx="7" fill="${fill}" stroke="${stroke}" stroke-width="1.2" opacity="${op}"/>`;
+      o+=`<text x="${cx}" y="37" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="${fw}" fill="${tc}" opacity="${op}">${A[j]}</text>`;
+    }
+    const lab=(j,t,y,c)=>{ if(j===null||j<0||j>7) return ''; const cx=X0+j*G+W/2; return `<path d="M${cx-5} ${y-8} L${cx+5} ${y-8} L${cx} ${y-15} Z" fill="${c}"/><text x="${cx}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="11.5" font-weight="800" fill="${c}">${t}</text>`; };
+    if(s.m!==null) o+=lab(s.m,'m',70,s.found?'var(--c2)':'var(--accent)');
+    if(s.a!==null){
+      if(s.a===s.b) o+=lab(s.a,'a = b',94,'var(--c3)');
+      else { o+=lab(s.a,'a',94,'var(--c3)'); o+=lab(s.b,'b',94,'var(--c3)'); }
+      if(s.a>s.b){ o+=`<text x="${X0+8*G-3}" y="108" text-anchor="end" font-size="10.5" font-weight="700" fill="var(--c3)">a &gt; b : 범위 없음</text>`; }
+    }
+    return o+'</svg>';
+  }
+  function render(){
+    const s=steps[i];
+    arr.innerHTML=svg(s);
+    code.innerHTML=CODE.map((t,j)=>`<div class="${s.line.includes(j)?'hl':''}"><span class="ln">${j+1}</span>${t.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`).join('');
+    stackEl.innerHTML = s.stack.length ? s.stack.map((f,j)=>`<div class="fr ${j===s.stack.length-1?'cur':''}">bs(A, ${f.a}, ${f.b}, ${k})${f.ret!==null?` <span class="rv">→ ${f.ret}</span>`:''}</div>`).join('') : `<div class="fr">모든 호출 종료 — 결과 <span class="rv">${s.done}</span></div>`;
+    msg.innerHTML=s.msg;
+    cnt.textContent=`${i+1} / ${steps.length}`;
+    prev.disabled=i===0; next.disabled=i===steps.length-1;
+  }
+  prev.onclick=()=>{ if(i>0){i--;render();} };
+  next.onclick=()=>{ if(i<steps.length-1){i++;render();} };
+  root.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
+    root.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));
+    k=+b.dataset.k; steps=trace(k); i=0; render();
+  });
+  render();
+})();
+
+/* ── 단계 넘기기 (병합 · 힙) ─────────────────────── */
+document.querySelectorAll('.stepper').forEach(root=>{
+  const fs=[...root.querySelectorAll('.sf')], msg=root.querySelector('.msg'), cnt=root.querySelector('.cnt'), pv=root.querySelector('.pv'), nx=root.querySelector('.nx');
+  let i=0;
+  const show=()=>{ fs.forEach((f,j)=>f.hidden=j!==i); msg.innerHTML=fs[i].dataset.msg; cnt.textContent=`${i+1} / ${fs.length}`; pv.disabled=i===0; nx.disabled=i===fs.length-1; };
+  pv.onclick=()=>{ if(i>0){i--;show();} }; nx.onclick=()=>{ if(i<fs.length-1){i++;show();} };
+  show();
+});
+
+/* ── 행렬 곱셈 순서 DP 표 ─────────────────────── */
+(function(){
+  const root=document.getElementById('mcw'); if(!root) return;
+  const P=[null,2,5,3,5,10,2,4], n=6, DC=['','#4F46E5','#0E8F72','#C2410C','#B45309','#BE185D'];
+  const D=[...Array(n+2)].map(()=>Array(n+2).fill(null)), K=[...Array(n+2)].map(()=>Array(n+2).fill(null));
+  for(let i=1;i<=n;i++)D[i][i]=0;
+  const steps=[{t:'base'}];
+  for(let d=1;d<n;d++)for(let i=1;i<=n-d;i++){const j=i+d;let b=null;const c=[];for(let k=i;k<j;k++){const v=D[i][k]+D[k+1][j]+P[i]*P[k+1]*P[j+1];c.push([k,D[i][k],D[k+1][j],P[i]*P[k+1]*P[j+1],v]);if(b===null||v<b){b=v;K[i][j]=k;}}D[i][j]=b;steps.push({i,j,d,c});}
+  steps.push({t:'end'});
+  const T=document.getElementById('mcT'), msg=document.getElementById('mcMsg'), cnt=root.querySelector('.cnt');
+  let s=0;
+  const done=(i,j,st)=>{ if(i===j)return true; if(st.t==='base')return false; if(st.t==='end')return true; const d=j-i; return d<st.d||(d===st.d&&i<=st.i); };
+  function render(){
+    const st=steps[s]; let h='<tr><th></th>';
+    for(let j=1;j<=n;j++) h+=`<th>j=${j}<small>M${j}</small></th>`;
+    h+='</tr>';
+    const best=st.i?K[st.i][st.j]:null;
+    for(let i=1;i<=n;i++){
+      h+=`<tr><th>i=${i}<small>${P[i]}×${P[i+1]}</small></th>`;
+      for(let j=1;j<=n;j++){
+        if(j<i){h+='<td class="xx">×</td>';continue;}
+        const f=done(i,j,st); let cls='', sty='';
+        if(!f) cls='empty';
+        else if(i===j) cls='base';
+        else { const c=DC[j-i]; sty=`style="color:${c};border-color:${c};background:color-mix(in srgb,${c} 13%,var(--surface))"`; }
+        if(st.i){ if(i===st.i&&j===st.j){cls='cur';sty='';}
+          else if(i===st.i&&j<st.j){cls+=(j===best?' uB':' uL');}
+          else if(j===st.j&&i>st.i){cls+=(i===best+1?' uB':' uD');} }
+        if(st.t==='end'&&i===1&&j===n){cls='cur';sty='';}
+        h+=`<td class="${cls}" ${sty}>${f?D[i][j]:''}</td>`;
+      }
+      h+='</tr>';
+    }
+    T.innerHTML=h;
+    if(st.t==='base') msg.innerHTML='<b>바닥 조건</b> — DP[i][i] = 0 (행렬 1개는 곱셈 없음). i &gt; j 칸(×)은 쓰지 않음. 이제 행렬 2개짜리 구간(첫 번째 대각선)부터 채운다.';
+    else if(st.t==='end') msg.innerHTML=`완성. 답 <b>DP[1][6] = ${D[1][6]}</b> — M<sub>1</sub> ~ M<sub>6</sub> 을 곱하는 최소 비용.`;
+    else { const {i,j,c}=st;
+      const lines=c.map(([k,a,b,p,v])=>`k=${k}: DP[${i}][${k}] + DP[${k+1}][${j}] + P[${i}]·P[${k+1}]·P[${j+1}] = ${a} + ${b} + ${p} = ${k===best?'<b>'+v+'</b>':v}`).join('<br>');
+      msg.innerHTML=`<b>DP[${i}][${j}]</b> (M<sub>${i}</sub> ~ M<sub>${j}</sub>, 행렬 ${j-i+1}개)<br>${lines}<br>→ 최소 <b>${D[i][j]}</b> (k = ${best})`; }
+    cnt.textContent=`${s+1} / ${steps.length}`;
+    root.querySelector('.pv').disabled=root.querySelector('.f0').disabled=s===0;
+    root.querySelector('.nx').disabled=root.querySelector('.f1').disabled=root.querySelector('.rowb').disabled=s===steps.length-1;
+  }
+  const go=v=>{s=Math.max(0,Math.min(steps.length-1,v));render();};
+  root.querySelector('.pv').onclick=()=>go(s-1); root.querySelector('.nx').onclick=()=>go(s+1);
+  root.querySelector('.f0').onclick=()=>go(0); root.querySelector('.f1').onclick=()=>go(steps.length-1);
+  root.querySelector('.rowb').onclick=()=>{ const st=steps[s]; if(!st.d){go(1+(n-1)-1);return;} let t=s+1; while(t<steps.length-1&&steps[t].d===st.d)t++; if(t<steps.length-1){while(t+1<steps.length-1&&steps[t+1].d===steps[t].d)t++;} go(t); };
+  render();
+})();
+</script>
+</body>
+</html>
