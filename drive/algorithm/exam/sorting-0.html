@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>알고리즘 C. 정렬 — 기초 OX</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>:root{ --subject:#4F46E5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../exam-engine/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다.<br>이 파일은 <b>drive/exam-engine/exam.css · exam.js</b> 와 함께 있어야 열립니다.
+(<code>drive/algorithm/exam/sorting-0.html</code> 위치에서 열어 주세요.)</div>
+<script>
+/* ════════ 시험지 정보 ════════ */
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'알고리즘',
+  title:'C. 정렬 — 기초 OX',
+  written:'2026년 10월 24일 작성',
+  slug:'algorithm-sorting-0',
+  lectureBase:'../lecture',
+  level:'기초',
+  mcMax:1,
+  scope:'5주차 1차시, 6주차 1·2차시 — 기본 정렬 · 퀵 · 제자리 퀵 · 병합 · 힙 · 힙 정렬 · 하한'
+};
+
+/* ════════ 문항 ════════
+   type  : mc 객관식 · ox O/X · short 단답 · table 표 빈칸 · line 코드 줄 고르기 · essay 서술
+   lv    : 하 / 중 / 상        src : [['주차-차시','섹션 id','제목'], …]
+   채점  : 엔진은 채점하지 않음. 문항마다 「정답 · 해설」을 펼쳐 스스로 확인 — rubric 은 [기준, 점수] (부분 점수) */
+const EXAM = [
+{ type:'ox',
+   lv:'기초',
+   unit:"stable · in-place",
+   pts:8,
+   q:`<p>정렬의 두 가지 성질에 대한 설명이다. 각 문장이 맞으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[[`stable 은 같은 값의 원소들이 정렬 전 순서 그대로 남는 것을 보장하는 성질이다.`,true],[`unstable 은 같은 값들의 순서가 반드시 뒤집힌다는 뜻이다.`,false],[`in-place 는 필요한 추가 메모리가 O(1) 이라는 뜻이다.`,true],[`새 리스트나 배열을 만들어 쓰면 not in-place 이다.`,true],[`정렬 결과의 값 순서가 같아도 stable 여부는 다를 수 있다.`,true]],
+   exp:`<b>ㄱ (O)</b> [3₁, 3₂, 7, 9] 가 유지되면 stable.<br><b>ㄴ (X)</b> 뒤집힌다가 아니라 "보장되지 않는다".<br><b>ㄷ (O)</b> 입력 배열 안에서만 자리를 바꾼다.<br><b>ㄹ (O)</b> 판단 기준: 새 리스트·배열을 만드는가.<br><b>ㅁ (O)</b> 같은 값끼리의 순서만 다르다.`,
+   src:[["05-1", "s2", "stable"], ["05-1", "s3", "in-place"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"기본 정렬",
+   pts:15,
+   q:`<p>선택 · 버블 · 삽입 정렬에 대한 설명이다. 각 문장이 맞으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[[`선택 정렬은 남은 구간의 최댓값을 그 구간의 마지막 칸과 교환한다.`,true],[`선택 정렬의 비교는 <span class="frac"><span class="num">(n − 1)n</span><span class="den">2</span></span> 번, 교환은 n − 1 번이다.`,true],[`선택 정렬은 동점 처리를 잘 하면 stable 이다.`,false],[`A = [7, 3, 9, 1, 5] 에 선택 정렬 1라운드를 하면 [7, 3, 5, 1, 9] 이고 비교는 4번이다.`,true],[`버블 정렬에서 A[j] &gt; A[j+1] 일 때만 교환하면 stable 이다.`,true],[`버블 정렬의 조건을 A[j] &gt;= A[j+1] 로 바꿔도 stable 이다.`,false],[`삽입 정렬은 새 값을 정렬된 앞부분에 뒤에서부터 비교하며 끼워 넣는다.`,true],[`선택 · 버블 · 삽입 정렬은 모두 in-place 이다.`,true],[`선택 · 버블 · 삽입 정렬은 모두 O(n²) 이다.`,true]],
+   exp:`<b>ㄱ (O)</b> 라운드마다 최댓값이 뒤에 확정.<br><b>ㄴ (O)</b> 비교는 항상, 교환은 라운드마다 1번.<br><b>ㄷ (X)</b> [3, 2₁, 2₂] → 3 ↔ 2₂ → [2₂, 2₁, 3]. 동점 처리와 상관없이 X.<br><b>ㄹ (O)</b> 최댓값 9 ↔ 마지막 5.<br><b>ㅁ (O)</b> 같은 값은 바꾸지 않는다.<br><b>ㅂ (X)</b> 같은 값도 교환해 순서가 뒤집힌다.<br><b>ㅅ (O)</b> 같은 값을 만나면 멈춰서 stable (A[j] &gt; x).<br><b>ㅇ (O)</b> 배열 안에서 자리만 바꾼다.<br><b>ㅈ (O)</b> (n − 1) + ⋯ + 1 = <span class="frac"><span class="num">(n − 1)n</span><span class="den">2</span></span>.`,
+   src:[["05-1", "s4", "선택 정렬"], ["05-1", "s5", "버블 정렬"], ["05-1", "s6", "삽입 정렬"], ["05-1", "s7", "세 가지 비교"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"퀵 정렬",
+   pts:11,
+   q:`<p>퀵 정렬(S / M / L 새 리스트 방식)에 대한 설명이다. 각 문장이 맞으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[[`퀵 정렬(S/M/L)은 in-place 이다.`,false],[`퀵 정렬(S/M/L)은 stable 이다.`,true],[`return quick_sort(S) + M + quick_sort(L) 에서 S 와 L 을 모두 재귀 호출한다.`,true],[`이미 정렬된 입력은 퀵 정렬의 best 이다.`,false],[`best 는 2T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn 으로 O(n log n) 이다.`,true],[`퀵 정렬의 worst 는 O(n log n) 이다.`,false],[`피벗을 중앙값으로 고르면 best 가 보장되지만 중앙값을 구하는 데 비용이 든다.`,true]],
+   exp:`<b>ㄱ (X)</b> S, M, L = [], [], [] 새 리스트를 만든다.<br><b>ㄴ (O)</b> for x in A 로 A 의 순서대로 S, M, L 에 넣는다.<br><b>ㄷ (O)</b> M 은 모두 피벗과 같아서 정렬할 필요가 없다.<br><b>ㄹ (X)</b> worst. 피벗(첫 값)이 최솟값이라 한쪽만 남아 T(n − 1) + Cn → O(n²).<br><b>ㅁ (O)</b> 매번 반반.<br><b>ㅂ (X)</b> O(n²). 평균 · best 가 O(n log n).<br><b>ㅅ (O)</b> 교수님: "조금 그렇다".`,
+   src:[["05-1", "s10", "퀵 정렬 코드와 성질"], ["05-1", "s11", "수행시간"], ["06-1", "s2", "피벗"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"제자리 퀵 정렬",
+   pts:10,
+   q:`<p>제자리 퀵 정렬(in-place quick sort)에 대한 설명이다. 각 문장이 맞으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[[`제자리 퀵 정렬은 in-place 이다.`,true],[`제자리 퀵 정렬은 stable 이다.`,false],[`왼쪽 포인터는 피벗보다 작은 값을 통과하고, 오른쪽 포인터는 피벗보다 큰 값을 통과한다.`,true],[`분할이 끝나면 피벗 A[first] 를 A[left] 와 교환해 제자리에 놓는다.`,false],[`[4, 2₁, 5, 8, 6, 2₂, 3, 7, 10] 의 첫 분할 결과는 [2₂, 2₁, 3, 4, 6, 8, 5, 7, 10] 이다.`,true],[`제자리 퀵 정렬의 수행시간은 S/M/L 퀵 정렬과 같다.`,true]],
+   exp:`<b>ㄱ (O)</b> 새 배열 없이 A 안에서 자리만 바꾼다.<br><b>ㄴ (X)</b> 멀리 떨어진 칸끼리 교환해서 같은 값의 순서가 뒤집힐 수 있다.<br><b>ㄷ (O)</b> 둘 다 멈추면 교환.<br><b>ㄹ (X)</b> A[right] 와 교환. 멈춘 right 자리는 피벗보다 작은 값들의 마지막 칸이다.<br><b>ㅁ (O)</b> 5 ↔ 3, 8 ↔ 2₂, 피벗 4 ↔ A[3].<br><b>ㅂ (O)</b> worst O(n²), 평균 O(n log n). 다른 것은 in-place · stable.`,
+   src:[["05-1", "s12", "아이디어"], ["05-1", "s13", "예시"], ["05-1", "s15", "성질"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"병합 정렬",
+   pts:13,
+   q:`<p>병합 정렬(merge sort)에 대한 설명이다. 각 문장이 맞으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[[`병합 정렬은 피벗을 기준으로 두 그룹을 나눈다.`,false],[`두 그룹의 맨 앞끼리 비교해 작은 값을 새 배열 B 에 채운다.`,true],[`병합 정렬은 not in-place 이다.`,true],[`A[i] &lt;= A[j] 일 때 앞 그룹 값을 먼저 넣으므로 stable 이다.`,true],[`조건을 A[i] &lt; A[j] 로 바꿔도 stable 이다.`,false],[`병합 정렬의 worst 는 O(n²) 이다.`,false],[`[1, 3, 5, 8] 과 [2, 7, 9] 를 병합할 때 비교는 7번이다.`,false],[`B 의 값을 A 로 되돌릴 때 A[i] = B[i] 로 쓴다.`,false]],
+   exp:`<b>ㄱ (X)</b> 값을 보지 않고 강제로 반반 나눈다.<br><b>ㄴ (O)</b> 남은 쪽은 비교 없이 붙인다.<br><b>ㄷ (O)</b> 새 배열 B.<br><b>ㄹ (O)</b> 같으면 앞 그룹 먼저.<br><b>ㅁ (X)</b> 같을 때 뒤 그룹 값이 먼저 들어가서 X.<br><b>ㅂ (X)</b> 항상 반반이라 worst · best · average 모두 O(n log n).<br><b>ㅅ (X)</b> 6번. 1, 2, 3, 5, 7, 8 을 넣는 데 6번, 한쪽이 바닥나면 남은 9 는 비교 없이 붙인다.<br><b>ㅇ (X)</b> A[i] = B[i − first]. B 는 0부터, A 구간은 first 부터 시작한다.`,
+   src:[["06-1", "s3", "병합 정렬 아이디어"], ["06-1", "s4", "병합 과정"], ["06-1", "s5", "성질"], ["06-1", "s7", "수행시간"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"힙",
+   pts:16,
+   q:`<p>힙(heap)과 make_heap 에 대한 설명이다. (인덱스는 0부터) 각 문장이 맞으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[[`A[k] 의 자식은 A[2k + 1], A[2k + 2] 이고 부모는 A[(k − 1) // 2] 이다.`,true],[`부모 인덱스로 자식은 구할 수 있지만 자식 인덱스로 부모는 구할 수 없다.`,false],[`힙 성질은 모든 노드에서 부모 key ≥ 자식 key 이다.`,true],[`힙에서는 왼쪽 자식이 항상 오른쪽 자식보다 크거나 같다.`,false],[`힙은 완전 이진트리이고 높이는 ⌊log₂ n⌋ 이다.`,true],[`완전 이진트리는 포화 이진트리에 포함된다.`,false],[`heapify_down 은 부모를 두 자식 중 작은 자식과 교환한다.`,false],[`make_heap 은 루트(A[0])부터 시작해 뒤쪽 노드로 진행한다.`,false],[`[2, 8, 6, 1, 10, 15, 3, 12, 11] 을 make_heap 하면 [15, 12, 6, 11, 10, 2, 3, 1, 8] 이다.`,true],[`make_heap 은 수업 기준 O(log n) 이다.`,false]],
+   exp:`<b>ㄱ (O)</b> 계산 한 번 → O(1).<br><b>ㄴ (X)</b> 둘 다 식으로 구할 수 있다.<br><b>ㄷ (O)</b> 그래서 루트 A[0] 이 최댓값.<br><b>ㄹ (X)</b> 부모 ≥ 자식만 정해져 있다. 형제끼리는 순서가 없다.<br><b>ㅁ (O)</b> 배열을 앞부터 채우므로 빈칸이 마지막 층 오른쪽에만 생긴다.<br><b>ㅂ (X)</b> 반대. 포화 ⊂ 완전 ⊂ 이진트리 (조건이 엄격한 쪽이 더 작은 집합).<br><b>ㅅ (X)</b> 큰 자식. 작은 쪽과 바꾸면 다른 자식이 더 커서 또 위배.<br><b>ㅇ (X)</b> 맨 뒤 노드부터 루트 쪽으로.<br><b>ㅈ (O)</b> 수업 예시.<br><b>ㅊ (X)</b> O(n log n). heapify_down O(log n) 을 노드 n 개마다.`,
+   src:[["06-1", "s8", "힙 자료구조"], ["06-1", "s9", "힙의 성질"], ["06-1", "s10", "make_heap"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"힙 정렬",
+   pts:13,
+   q:`<p>힙 정렬(heap sort)에 대한 설명이다. 각 문장이 맞으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[[`make_heap 후, A[0] 과 구간 끝 A[i] 를 교환하고 heapify_down 하는 것을 n − 1 번 반복한다.`,true],[`교환하는 자리는 매번 A[n − 1] 이다.`,false],[`교환 후에는 루트 한 곳만 heapify_down 하면 다시 힙이 된다.`,true],[`교환할 때마다 make_heap 을 처음부터 다시 해야 한다.`,false],[`힙 정렬은 O(n log n) 이고 best · worst 구분이 없다.`,true],[`힙 정렬은 in-place 이다.`,true],[`힙 정렬은 stable 이다.`,false],[`선택 정렬은 get_max 가 O(i) 라서 O(n²), 힙 정렬은 최댓값을 다시 얻는 데 O(log i) 라서 O(n log n) 이다.`,true]],
+   exp:`<b>ㄱ (O)</b> i = n − 1 → 1.<br><b>ㄴ (X)</b> A[n − 1], A[n − 2], … 로 한 칸씩 당겨진다.<br><b>ㄷ (O)</b> 나머지 서브트리는 그대로 힙이다.<br><b>ㄹ (X)</b> 루트만 어긋나므로 heapify_down 한 번(O(log n)).<br><b>ㅁ (O)</b> make_heap + (n − 1) × O(log n).<br><b>ㅂ (O)</b> 배열 안에서 자리만 바꾼다.<br><b>ㅅ (X)</b> [1₁, 1₂] → A[0] ↔ A[1] → [1₂, 1₁].<br><b>ㅇ (O)</b> 정렬의 공통 틀 = "최댓값을 끝으로" n − 1 번.`,
+   src:[["06-2", "s2", "get_max"], ["06-2", "s3", "힙 정렬 과정"], ["06-2", "s4", "수행시간과 성질"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"비교 정렬의 하한",
+   pts:14,
+   q:`<p>비교 정렬의 하한에 대한 설명이다. 각 문장이 맞으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[[`하한 Ω 는 어떤 비교 정렬이든 최소 이만큼은 필요하다는 뜻이다.`,true],[`n 개를 정렬하는 결정 트리의 리프는 n! 개이다.`,true],[`결정 트리의 높이는 최악의 경우 비교 횟수이다.`,true],[`높이 h 인 이진트리의 리프는 최대 2<sup>h</sup> 개이므로 h ≥ log₂ n! 이다.`,true],[`하한을 구할 때 n! ≤ (<span class="frac"><span class="num">n</span><span class="den">2</span></span>)<sup><span class="frac"><span class="num">n</span><span class="den">2</span></span></sup> 로 바꿔 쓴다.`,false],[`값 3개를 정렬하려면 어떤 입력이든 항상 3번 비교해야 한다.`,false],[`값 4개를 정렬할 때 최악의 비교 횟수는 최소 5번이다.`,true],[`병합 정렬과 힙 정렬은 비교 정렬 중 최적이다.`,true],[`퀵 정렬도 평균이 O(n log n) 이므로 최적에 해당한다.`,false]],
+   exp:`<b>ㄱ (O)</b> 상한 O 는 "이보다 나빠지지 않는다".<br><b>ㄴ (O)</b> 가능한 순서마다 리프 하나.<br><b>ㄷ (O)</b> 루트에서 가장 깊은 리프까지.<br><b>ㄹ (O)</b> 2<sup>h</sup> ≥ n!.<br><b>ㅁ (X)</b> n! ≥ (<span class="frac"><span class="num">n</span><span class="den">2</span></span>)<sup><span class="frac"><span class="num">n</span><span class="den">2</span></span></sup>. 하한은 더 작은 값으로 바꿔 아래에서 받쳐야 한다 (큰 쪽 절반은 각각 <span class="frac"><span class="num">n</span><span class="den">2</span></span> 이상, 나머지는 1 이상).<br><b>ㅂ (X)</b> a &lt; b &lt; c 처럼 2번에 끝나는 입력도 있다. 3번은 최악의 경우.<br><b>ㅅ (O)</b> 4! = 24, 2⁴ = 16 &lt; 24 ≤ 32 = 2⁵.<br><b>ㅇ (O)</b> 상한 O(n log n) = 하한 Ω(n log n).<br><b>ㅈ (X)</b> 상한(worst)이 O(n²) 이라 해당하지 않는다.`,
+   src:[["06-2", "s6", "상한과 하한"], ["06-2", "s7", "결정 트리"], ["06-2", "s9", "n! 어림"], ["06-2", "s10", "결론"]] }
+];
+</script>
+</body>
+</html>

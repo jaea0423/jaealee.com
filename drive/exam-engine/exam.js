@@ -151,7 +151,7 @@ function paint(it){
       $$('.lines label',e).forEach((l,i)=>l.classList.toggle('correct',it.answer.includes(i+1)));
       x=`<span class="a">정답 ${it.answer.join(', ')}번 줄</span>${lv}<br>${it.exp}`;
     } else if(it.type==='table'){
-      blanksOf(it).forEach(b=>{ const td=e.querySelector(`td[data-r="${b.ri}"][data-c="${b.ci}"]`); td.querySelector('.fix').textContent=b.a; });
+      blanksOf(it).forEach(b=>{ const td=e.querySelector(`td[data-r="${b.ri}"][data-c="${b.ci}"]`); td.querySelector('.fix').innerHTML=b.a; /* 정답에 분수(F) 같은 HTML 이 들어갈 수 있으므로 innerHTML */ });
       x=`<span class="a">정답은 빈칸 아래 빨간 글씨</span>${lv}<br>${it.exp}`;
     } else if(it.type==='short'){
       x=`<span class="a">정답 ${it.show}</span>${it.alt&&it.alt.length?` <span style="font-family:var(--gothic);font-size:11.5px">(허용 ${it.alt.join(' · ')})</span>`:''}${lv}<br>${it.exp}`;

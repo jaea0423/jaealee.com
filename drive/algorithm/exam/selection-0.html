@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>알고리즘 A. 선택 문제 — 기초 OX</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>:root{ --subject:#4F46E5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../exam-engine/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다.<br>이 파일은 <b>drive/exam-engine/exam.css · exam.js</b> 와 함께 있어야 열립니다.
+(<code>drive/algorithm/exam/selection-0.html</code> 위치에서 열어 주세요.)</div>
+<script>
+/* ════════ 시험지 정보 ════════ */
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'알고리즘',
+  title:'A. 선택 문제 — 기초 OX',
+  written:'2026년 10월 24일 작성',
+  slug:'algorithm-selection-0',
+  lectureBase:'../lecture',
+  level:'기초',
+  mcMax:1,
+  scope:'2주차 1·2차시 — 토너먼트 · Quick Select · 좋은 피벗 · MoM · 귀납법'
+};
+
+/* ════════ 문항 ════════
+   type  : mc 객관식 · ox O/X · short 단답 · table 표 빈칸 · line 코드 줄 고르기 · essay 서술
+   lv    : 하 / 중 / 상        src : [['주차-차시','섹션 id','제목'], …]
+   채점  : 엔진은 채점하지 않음. 문항마다 「정답 · 해설」을 펼쳐 스스로 확인 — rubric 은 [기준, 점수] (부분 점수) */
+const EXAM = [
+{ type:'ox',
+   lv:'기초',
+   unit:"상한·하한",
+   pts:12,
+   q:`<p>선택 문제와 상한 · 하한에 대한 설명이다. 각 문장이 맞으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[[`선택 문제는 n 개 중 k 번째로 작은(또는 큰) 값을 찾는 문제이다.`,true],[`선택 문제에서 줄이려는 것은 비교 횟수이다.`,true],[`상한(upper bound)은 "아무리 잘해도 최소 이만큼은 비교해야 한다" 는 뜻이다.`,false],[`상한과 하한이 같으면 tight bound 라고 하고, 그 값이 최적이다.`,true],[`n 개 중 최댓값 찾기의 tight bound 는 n − 1 이다.`,true],[`k 번째 값을 찾으려면 먼저 전체를 정렬해야만 한다.`,false]],
+   exp:`<b>ㄱ (O)</b> 수업의 정의 그대로.<br><b>ㄴ (O)</b> 알고리즘의 비용을 비교 횟수로 센다.<br><b>ㄷ (X)</b> 그건 하한(lower bound). 상한은 "이보다 더 많이 비교할 필요는 없다".<br><b>ㄹ (O)</b> 더 줄일 수도, 더 쓸 필요도 없는 값.<br><b>ㅁ (O)</b> 상한도 n − 1, 하한도 n − 1.<br><b>ㅂ (X)</b> Quick Select · MoM 은 정렬 없이 답이 있는 그룹 하나만 남기며 찾는다.`,
+   src:[["02-1", "s1", "선택 문제"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"토너먼트",
+   pts:21,
+   q:`<p>토너먼트 방식에 대한 설명이다. 각 문장이 맞으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[[`토너먼트 방식으로 최댓값을 찾으면 비교 횟수가 n − 1 보다 줄어든다.`,false],[`원소 7개로 최댓값 토너먼트를 하면 비교는 6번이다.`,true],[`최댓값과 최솟값을 단순하게 따로 찾으면 2n − 3 번 비교한다.`,true],[`최댓값과 최솟값을 동시에 찾는 tight bound 는 <span class="frac"><span class="num">3</span><span class="den">2</span></span>n − 2 이다.`,true],[`최솟값은 반드시 1라운드 패자 안에 있다.`,true],[`n = 10 일 때 최댓값과 최솟값을 동시에 찾는 최소 비교 횟수는 13번이다.`,true],[`두 번째로 작은 값은 최솟값에게 직접 진 원소들 안에 있다.`,true],[`최소와 두 번째로 작은 값을 함께 찾는 비교 횟수는 n + ⌈log₂ n⌉ − 2 이다.`,true],[`n = 16 일 때 최소와 두 번째로 작은 값을 찾는 비교 횟수는 19번이다.`,false],[`원소 9개로 토너먼트를 하면 3라운드면 끝난다.`,false]],
+   exp:`<b>ㄱ (X)</b> 비교 한 번에 정확히 1명이 탈락하고 n − 1 명이 탈락해야 하므로 그대로 n − 1.<br><b>ㄴ (O)</b> 3 + 2 + 1 = 6 = n − 1.<br><b>ㄷ (O)</b> 최댓값 n − 1 번 + 나머지 n − 1 개에서 최솟값 n − 2 번.<br><b>ㄹ (O)</b> 최댓값 토너먼트 n − 1 + 1라운드 패자 <span class="frac"><span class="num">n</span><span class="den">2</span></span> 개에서 최솟값 <span class="frac"><span class="num">n</span><span class="den">2</span></span> − 1.<br><b>ㅁ (O)</b> 1라운드 승자는 모두 자기 짝보다 크므로 최솟값이 될 수 없다.<br><b>ㅂ (O)</b> <span class="frac"><span class="num">3</span><span class="den">2</span></span> × 10 − 2 = 13 (최댓값 9번 + 패자 5개 중 4번).<br><b>ㅅ (O)</b> 다른 원소 x 에게 졌다면 x 와 최솟값 둘이 더 작아서 "두 번째" 가 아니다.<br><b>ㅇ (O)</b> 최솟값 n − 1 번 + 후보 ⌈log₂ n⌉ 개에서 최솟값 ⌈log₂ n⌉ − 1 번.<br><b>ㅈ (X)</b> 16 + ⌈log₂ 16⌉ − 2 = 16 + 4 − 2 = 18번.<br><b>ㅊ (X)</b> 라운드 수는 올림 ⌈log₂ 9⌉ = 4. 9개 → 5 → 3 → 2 → 1.`,
+   src:[["02-1", "s2", "토너먼트"], ["02-1", "s3", "최대·최소"], ["02-1", "s4", "최소·두 번째"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"Quick Select",
+   pts:21,
+   q:`<p>Quick Select 에 대한 설명이다. (A = 피벗보다 작은 값, M = 같은 값, B = 큰 값) 각 문장이 맞으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[[`피벗과 비교해 A, M, B 로 나누는 데 n − 1 번 비교한다.`,true],[`나눈 뒤 A, M, B 각 그룹 안은 정렬되어 있다.`,false],[`|A| ≥ k 이면 답은 A 에 있고, quick_select(A, k) 로 순위를 그대로 넘긴다.`,true],[`B 로 재귀할 때도 순위 k 를 그대로 넘긴다.`,false],[`|A| &lt; k ≤ |A| + |M| 이면 피벗 P 가 답이다.`,true],[`if len(A) &gt;= k 를 &gt; 로 바꾸면 |A| = k 인 경우를 놓친다.`,true],[`Quick Select 는 A 와 B 양쪽을 모두 재귀 호출한다.`,false],[`최악은 매번 크기가 1씩만 줄 때이고, 점화식은 T(n) = (n − 1) + T(n − 1) 이다.`,true],[`최선은 매번 절반으로 줄 때이고 T(n) = n + T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) 이므로 O(n) 이다.`,true],[`수업 코드처럼 첫 원소를 피벗으로 쓰는 Quick Select 는 좋은 피벗을 보장한다.`,false]],
+   exp:`<b>ㄱ (O)</b> 피벗을 뺀 나머지와 한 번씩.<br><b>ㄴ (X)</b> 그룹만 나눌 뿐 그룹 안은 정렬되지 않는다.<br><b>ㄷ (O)</b> A 가 1등부터 차지하므로 순위가 바뀌지 않는다.<br><b>ㄹ (X)</b> A 와 M 이 앞 순위를 차지하므로 k − |A| − |M|.<br><b>ㅁ (O)</b> k 번째가 M 안에 있고 M 은 모두 P.<br><b>ㅂ (O)</b> |A| = k 이면 답은 A 의 맨 끝인데 &gt; 면 A 로 가지 않는다.<br><b>ㅅ (X)</b> 답이 있는 한쪽만 재귀. 양쪽 모두 재귀하는 것은 퀵 정렬.<br><b>ㅇ (O)</b> (n − 1) + ⋯ + 1 = <span class="frac"><span class="num">(n − 1)n</span><span class="den">2</span></span> → O(n²).<br><b>ㅈ (O)</b> n(1 + <span class="frac"><span class="num">1</span><span class="den">2</span></span> + <span class="frac"><span class="num">1</span><span class="den">4</span></span> + ⋯) 에서 괄호 안이 2보다 작다.<br><b>ㅊ (X)</b> 보장하지 않아서 최악 O(n²). 좋은 피벗을 보장하는 버전이 MoM.`,
+   src:[["02-1", "s5", "Quick Select"], ["04-2", "s2", "Quick Select 최선"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"좋은 피벗",
+   pts:12,
+   q:`<p>좋은 피벗에 대한 설명이다. (a = 피벗을 고르는 비용) 각 문장이 맞으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[[`좋은 피벗은 |A| ≤ <span class="frac"><span class="num">n</span><span class="den">c</span></span>, |B| ≤ <span class="frac"><span class="num">n</span><span class="den">c</span></span> (c &gt; 1 인 상수) 를 만족하는 피벗이다.`,true],[`좋은 피벗이면 재귀 횟수는 log<sub>c</sub> n 이다.`,true],[`각 단계의 나누기 비용 n, <span class="frac"><span class="num">n</span><span class="den">c</span></span>, … 를 전부 n 으로 크게 잡는 것은 상한을 구할 때 허용된다.`,true],[`a ≤ n 은 수업에서 증명한 사실이다.`,false],[`좋은 피벗 조건과 a ≤ n 은 같은 조건이다.`,false],[`좋은 피벗이고 a ≤ n 이면 전체 비교 횟수는 O(n log n) 이다.`,true]],
+   exp:`<b>ㄱ (O)</b> 양쪽 모두 일정 비율 이하로 줄어드는 피벗.<br><b>ㄴ (O)</b> n → <span class="frac"><span class="num">n</span><span class="den">c</span></span> → ⋯ → 1, n = c<sup>k</sup> 이므로 k = log<sub>c</sub> n.<br><b>ㄷ (O)</b> 상한은 더 큰 값으로 바꿔도 결론이 유지된다.<br><b>ㄹ (X)</b> 증명이 아니라 가정. "피벗을 n 이하 비용으로 고를 수 있다면".<br><b>ㅁ (X)</b> 좋은 피벗 = 피벗의 위치(고르게 나뉨), a ≤ n = 피벗을 찾는 비용. 서로 다르다.<br><b>ㅂ (O)</b> log<sub>c</sub> n · (a + n) ≤ log<sub>c</sub> n · 2n.`,
+   src:[["02-2", "s1", "좋은 피벗의 조건"], ["02-2", "s2", "재귀 횟수"], ["02-2", "s3", "전체 비교 횟수"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"MoM",
+   pts:20,
+   q:`<p>MoM(Median of Medians) 에 대한 설명이다. 각 문장이 맞으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[[`MoM 은 Quick Select 와 같고, 피벗만 median 들의 median 으로 고른다.`,true],[`MoM 의 피벗 m* 는 전체의 정확한 중앙값이다.`,false],[`원소 5개의 median 을 찾으려면 비교가 최소 7번 필요하다.`,false],[`각 묶음의 median 을 구하는 2단계의 비용은 n 이다.`,false],[`3단계에서 medians <span class="frac"><span class="num">n</span><span class="den">5</span></span> 개의 median 을 MoM 으로 재귀해 구하므로 비용은 T(<span class="frac"><span class="num">n</span><span class="den">5</span></span>) 이다.`,true],[`MoM 의 점화식에는 재귀가 한 군데만 있다.`,false],[`|A|, |B| ≤ <span class="frac"><span class="num">3n</span><span class="den">4</span></span> 이므로 c = <span class="frac"><span class="num">4</span><span class="den">3</span></span> 이다.`,true],[`그림의 왼쪽 위 X 의 원소는 m* 보다 작다(<).`,false],[`|X| ≥ <span class="frac"><span class="num">3n</span><span class="den">10</span></span> 이고, 수업에서는 여유 있게 <span class="frac"><span class="num">n</span><span class="den">4</span></span> 로 잡았다.`,true],[`5개가 아니라 아무 수로 묶어도 MoM 은 O(n) 이다.`,false]],
+   exp:`<b>ㄱ (O)</b> 나누고 한쪽만 재귀하는 틀은 같다.<br><b>ㄴ (X)</b> 피벗으로만 쓰는 값. 정확한 중앙값일 필요가 없다.<br><b>ㄷ (X)</b> 6번이면 된다. 이미 비교한 결과(c &lt; d)를 두 번 재활용.<br><b>ㄹ (X)</b> 묶음당 6번 × <span class="frac"><span class="num">n</span><span class="den">5</span></span> 묶음 = <span class="frac"><span class="num">6n</span><span class="den">5</span></span>.<br><b>ㅁ (O)</b> 피벗 m* 를 구하려는 재귀.<br><b>ㅂ (X)</b> 두 군데: T(<span class="frac"><span class="num">n</span><span class="den">5</span></span>) (피벗 구하기) + T(<span class="frac"><span class="num">n</span><span class="den">c</span></span>) (답 찾기).<br><b>ㅅ (O)</b> <span class="frac"><span class="num">n</span><span class="den">c</span></span> = <span class="frac"><span class="num">3n</span><span class="den">4</span></span>.<br><b>ㅇ (X)</b> m* 자신도 X 에 들어 있으므로 ≤ m*.<br><b>ㅈ (O)</b> 하한은 더 작은 값 <span class="frac"><span class="num">n</span><span class="den">4</span></span> 로 바꿔도 된다.<br><b>ㅊ (X)</b> 두 재귀 비율의 합이 1보다 작아야 한다 (5개: <span class="frac"><span class="num">3</span><span class="den">4</span></span> + <span class="frac"><span class="num">1</span><span class="den">5</span></span> = <span class="frac"><span class="num">19</span><span class="den">20</span></span>).`,
+   src:[["02-2", "s4", "MoM 개요"], ["02-2", "s5", "5개의 median"], ["02-2", "s6", "MoM 점화식"], ["02-2", "s7", "c 구하기"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"귀납법",
+   pts:14,
+   q:`<p>MoM 이 O(n) 임을 귀납법으로 보이는 과정에 대한 설명이다. 각 문장이 맞으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[[`귀납법의 순서는 기저 → 가정 → 귀납 → 결론이다.`,true],[`MoM 증명에서는 "k &lt; n 인 모든 k 에서 T(k) ≤ 44k" 를 가정한다.`,true],[`MoM 증명에서는 "n − 1 일 때 성립" 만 가정해도 충분하다.`,false],[`기저는 T(1) = 1 ≤ 44 로 확인한다.`,true],[`44 · <span class="frac"><span class="num">3n</span><span class="den">4</span></span> + 44 · <span class="frac"><span class="num">n</span><span class="den">5</span></span> + <span class="frac"><span class="num">11n</span><span class="den">5</span></span> = 44n 이다.`,true],[`T(n) ≤ 44n 이 증명되면 MoM 은 O(n log n) 이다.`,false],[`MoM 의 최악 수행시간은 O(n) 이다.`,true]],
+   exp:`<b>ㄱ (O)</b> 수업의 4단계.<br><b>ㄴ (O)</b> T(<span class="frac"><span class="num">3n</span><span class="den">4</span></span>), T(<span class="frac"><span class="num">n</span><span class="den">5</span></span>) 처럼 n − 1 이 아닌 값을 쓰기 때문.<br><b>ㄷ (X)</b> 귀납 단계에 쓰이는 값이 <span class="frac"><span class="num">3n</span><span class="den">4</span></span>, <span class="frac"><span class="num">n</span><span class="den">5</span></span> 이므로 n 보다 작은 모든 k 가 필요하다.<br><b>ㄹ (O)</b> 가장 작은 경우를 직접 확인.<br><b>ㅁ (O)</b> 33n + <span class="frac"><span class="num">44n</span><span class="den">5</span></span> + <span class="frac"><span class="num">11n</span><span class="den">5</span></span> = 33n + 11n.<br><b>ㅂ (X)</b> O(n). O(n log n) 은 a ≤ n 가정으로 크게 잡은 상한이다.<br><b>ㅅ (O)</b> 좋은 피벗을 항상 보장하므로 최악에도 O(n).`,
+   src:[["02-2", "s8", "귀납법"], ["02-2", "s9", "귀납법으로 MoM"]] }
+];
+</script>
+</body>
+</html>
