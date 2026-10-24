@@ -111,6 +111,10 @@ function render(){
       <div class="cols"><div class="col">${nos.L.map(n=>qHTML(qs[n-1])).join('')}</div><div class="col">${nos.R.map(n=>qHTML(qs[n-1])).join('')}</div></div>${pno(i+1)}</section>`;
   });
   $('#book').innerHTML=h;
+  // 코드 블록(pre)을 줄마다 span 으로 감싼다 — 긴 줄이 줄바꿈될 때 이어진 줄만 깊게 들여써서 실제 들여쓰기와 구분 (가로 스크롤은 인쇄 때 잘림)
+  $$('#book .q pre').forEach(p=>{ if(p.querySelector('.pl')) return; p.innerHTML=p.innerHTML.replace(/^\n/,'').split('\n').map(l=>`<span class="pl">${l||' '}</span>`).join(''); });
+  // 이어진 줄의 들여쓰기 = 그 줄 자신의 들여쓰기 + 4칸 (줄마다 다르므로 여기서 계산)
+  $$('#book .q pre .pl, #book .lines .cd').forEach(e=>{ const n=(e.textContent.match(/^ */)||[''])[0].length+4; e.style.paddingLeft=n+'ch'; e.style.textIndent=(-n)+'ch'; });
 }
 
 /* ════════ 3. 내 답 읽기 ════════ */
