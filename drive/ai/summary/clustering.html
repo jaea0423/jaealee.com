@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>인공지능 개념정리노트 — D. 군집화 (Clustering)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>
+:root{ --subject:#5B3CF5; }
+.toolbar a{color:#EEE;text-decoration:none;border:1px solid #6A6A6A;border-radius:4px;padding:5px 13px}
+.toolbar button.on{background:#F2F2F2;color:#111;border-color:#F2F2F2;font-weight:700}
+.blk{padding-bottom:16px}
+.blk.sh{padding-bottom:6px}
+.blk h2{margin:0;font-size:18px;font-weight:800;letter-spacing:.04em;display:flex;align-items:baseline;gap:10px;border-bottom:1.5px solid var(--line);padding-bottom:4px}
+.blk h2 .sn{font-family:var(--gothic);font-size:13px;font-weight:800;color:#fff;background:var(--ink);padding:1px 8px;letter-spacing:0}
+.blk .lead{margin:6px 0 0;font-family:var(--gothic);font-size:12px;color:var(--ink-2);line-height:1.6}
+.unit{font-family:var(--gothic);font-size:12.5px;font-weight:800;margin:0 0 4px;display:flex;align-items:center;gap:6px}
+.unit::before{content:"";width:6px;height:6px;background:var(--subject)}
+table.mt{width:100%;border-collapse:collapse;font-size:13.4px;line-height:1.5}
+table.mt th{background:#F1F1EE;font-family:var(--gothic);font-size:11.8px;font-weight:700;border:1px solid var(--line);padding:4px 6px;text-align:left;white-space:nowrap}
+table.mt td{border:1px solid var(--line);padding:5px 7px;vertical-align:middle}
+table.mt td.nm{font-weight:700;white-space:normal}
+table.mt td.res{font-weight:800;white-space:nowrap}
+table.mt td.eq{white-space:nowrap}
+table.mt td.src{font-family:var(--gothic);font-size:11.6px;color:var(--ink-2)}
+table.mt td.why{font-size:12.6px}
+table.mt td.c{text-align:center;font-weight:800;width:56px}
+table.mt td.x{color:var(--red);width:46%}
+table.mt.dp td{font-size:12.6px}
+table.mt.dp td.res{white-space:nowrap}
+.box{border:1px solid var(--line);padding:8px 12px;font-size:13.2px;line-height:1.6}
+.box b{font-family:var(--gothic);font-size:12.5px}
+.box ol,.box ul{margin:2px 0 6px;padding-left:1.4em}
+.frac{font-size:.86em}
+/* 가리기 */
+body.quiz .a{color:transparent!important;background:#E4E4E0;cursor:pointer;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body.quiz .a *{visibility:hidden}
+body.quiz .a.show{color:var(--red)!important;background:transparent}
+body.quiz .a.show *{visibility:visible}
+body.quiz.printblank .a{background:#fff}
+
+.blk p{margin:4px 0;font-size:13.2px;line-height:1.65}
+.blk ul.pt,.blk ol.pt{margin:3px 0 4px;padding-left:1.25em;font-size:13.2px;line-height:1.62}
+.blk ul.pt li,.blk ol.pt li{margin:1px 0}
+.prof{border:1.5px solid var(--subject);padding:6px 10px;font-size:13px;line-height:1.6}
+.prof .h,.trap .h,.key .h{font-family:var(--gothic);font-size:11.8px;font-weight:800;margin-bottom:2px}
+.prof .h{color:var(--subject)}
+.trap{border:1px dashed var(--red);padding:6px 10px;font-size:13px;line-height:1.6}
+.trap .h{color:var(--red)}
+.key{background:#F4F3EF;padding:6px 10px;font-size:13.2px;line-height:1.6;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.en{font-family:var(--gothic);font-size:.82em;color:var(--ink-2);margin-left:2px}
+.pg{font-family:var(--gothic);font-size:10.5px;color:var(--ink-2);margin-left:4px;white-space:nowrap}
+.fx{text-align:center;font-size:14px;margin:4px 0;line-height:1.7}
+mark{background:linear-gradient(transparent 55%,#DCD2FF 55%);color:inherit;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+table.mt td{font-size:13px}
+
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <a href="../exam/index.html">‹ 문제지 목록</a>
+  <span class="sep"></span>
+  <button id="quizBtn">답 가리기</button>
+  <span class="sep"></span>
+  <button id="printBtn" class="primary">인쇄 · PDF</button>
+  <button id="printBlank" title="답 칸을 비운 채 인쇄 — 손으로 채워 보는 연습지">빈칸 연습지 인쇄</button>
+</div>
+<div id="book"></div>
+<template id="src">
+<div class="blk sh"><h2><span class="sn">Ⅰ</span>한눈에 보기</h2><p class=lead>교안 1–35쪽. 26–35쪽(DBSCAN 정의 이후)은 7주차 2차시 앞부분에 이어서 했습니다.</p></div>
+<div class="blk"><div class="key"><ul class="pt"><li>비지도 학습은 <span class="a">x만 있고 y(라벨)가 없는</span> 데이터에서 패턴과 구조를 찾습니다. 대표 방법이 군집화입니다.</li><li>방법 세 가지: K-평균·계층적 군집화 = <span class="a">거리 기반</span>, DBSCAN = <span class="a">밀도 기반</span>.</li><li>K-평균: K를 <span class="a">미리 정하고</span>, 모든 점을 정확히 한 군집에 넣어 <span class="a">군집 내 변동(WCV)</span>의 합을 최소로 합니다.</li><li>알고리즘: 무작위 배정 → (중심 = <span class="a">평균</span> 계산 ↔ 가장 가까운 중심으로 재배정)을 배정이 안 바뀔 때까지 반복.</li><li>K-means++는 <span class="a">초기 중심 고르기</span>만 바꿉니다.</li><li>K 고르기: 엘보(이너셔의 <span class="a">꺾이는 점</span>), 실루엣 점수(<span class="a">가장 높은</span> K).</li><li>계층적: K 없이 가장 가까운 두 군집을 계속 합쳐 <span class="a">덴드로그램</span>을 만들고, 자르는 높이로 군집 수를 정합니다.</li><li>DBSCAN: 핵심점·경계점·<span class="a">잡음</span>으로 나누고, 밀도 도달·연결로 군집을 정의합니다. 군집 수를 미리 정하지 않습니다.</li></ul></div></div>
+<div class="blk"><div class="prof"><div class="h">교수님 강조</div><p><b>비지도 학습</b>: 지도 학습에서는 y가 있었는데, 비지도 학습에서는 x만 있고 y는 없다. 용어는 "레이블" 말고 "라벨".</p><p><b>거리 vs 밀도</b>: DBSCAN의 D는 density(밀도). K-평균·계층적은 거리 기반, DBSCAN은 밀도 기반.</p><p><b>K와 군집 번호</b>: K = 2일 때의 cluster 1, 2와 K = 3일 때의 cluster 1, 2, 3은 같은 클러스터가 아니다. 해석할 때 주의.</p></div></div>
+<div class="blk"><div class="prof"><div class="h">교수님 강조</div><p><b>K-평균</b>: 평균으로 centroid를 옮기기 때문에 K-means. centroid를 처음에 어떻게 잡느냐에 따라 결과가 달라지고, 이를 개선한 것이 K-means++(1번 단계만 바꾸고 나머지는 그대로).</p><p><b>실루엣</b>: b는 커지고 a는 작아져야 한다.</p><p><b>덴드로그램</b>: 어디서 끊느냐에 따라 클러스터 개수가 바뀐다. 연결 방식(24쪽)은 외울 것 없음.</p><p><b>DBSCAN</b>: 이름에서 중요한 것은 Density와 Noise. 밀도가 높은 클러스터에서 빠져나온 데이터를 억지로 넣지 않고 노이즈로 처리.</p></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅱ</span>비지도 학습과 군집화</h2><p class=lead>교안 1–4쪽 <span class="pg">p.1–4</span></p></div>
+<div class="blk"><div class="box"><p>지금까지의 모델(선형 회귀, 로지스틱 회귀, SVM)은 모든 데이터에 정답 Target이 있는 <span class="a">지도 학습</span>이었습니다. <span class="pg">p.1</span></p><p><b>Unsupervised Learning(비지도 학습)</b>: <span class="a">라벨이 없는</span> 데이터에서 패턴과 구조를 학습합니다. <span class="pg">p.2</span></p><ul class="pt"><li>정답 라벨이 주어지지 않습니다<span class="en">No ground truth labels</span>.</li><li>모델이 숨겨진 <span class="a">구조나 관계</span>를 스스로 찾아냅니다.</li></ul></div></div>
+<div class="blk"><div class="box"><p><b>Clustering(군집화)</b>: 데이터 안에서 <span class="a">부분 집단</span>, 즉 군집(cluster)을 찾는 기법 전체입니다. <span class="pg">p.3</span></p><p>데이터를 서로 겹치지 않는 집단으로 <span class="a">분할</span><span class="en">partition</span>하되, 같은 집단 안의 관측치끼리는 서로 <span class="a">매우 비슷하게</span> 나눕니다.</p><p>"비슷하다"의 뜻을 먼저 정의해야 하며, 이는 보통 <span class="a">도메인 지식</span>으로 정합니다. 계산에서는 보통 거리로 나타냅니다.</p></div></div>
+<div class="blk"><div class="unit">Clustering Methods <span class="pg">p.4</span></div><table class="mt "><tr><th>방법</th><th>기준</th><th>군집 수</th><th>핵심</th></tr><tr><td>K-means</td><td><span class="a">거리</span></td><td><span class="a">미리 정함</span></td><td>미리 정한 K개로 분할</td></tr><tr><td>Hierarchical</td><td><span class="a">거리</span></td><td>안 정함</td><td><span class="a">덴드로그램</span>으로 1~n개 결과를 한꺼번에</td></tr><tr><td>DBSCAN</td><td><span class="a">밀도</span></td><td>안 정함</td><td><span class="a">빽빽한 영역</span>을 군집으로</td></tr></table></div>
+<div class="blk sh"><h2><span class="sn">Ⅲ</span>K-평균: 무엇을 최소로 하나</h2><p class=lead>교안 5–9쪽 <span class="pg">p.5–9</span></p></div>
+<div class="blk"><div class="box"><p><b>K-means clustering</b>: 관측치를 <span class="a">미리 정한 K개</span>의 군집으로 분할합니다. <span class="pg">p.5</span></p><p>같은 데이터도 K에 따라 결과가 달라집니다. 군집에는 <span class="a">순서가 없어</span> 색(번호)은 임의이고, 이 색은 학습에 쓴 정답이 아니라 군집화의 <span class="a">결과물</span>입니다.</p></div></div>
+<div class="blk"><div class="unit">군집 C<sub>1</sub>, …, C<sub>K</sub>의 두 성질 <span class="pg">p.6</span></div><table class="mt "><tr><th>성질</th><th>식</th><th>뜻</th></tr><tr><td>① 빠짐없이</td><td>C<sub>1</sub> ∪ ⋯ ∪ C<sub>K</sub> = {1, …, n}</td><td>모든 관측치는 <span class="a">적어도 하나</span>에 속함</td></tr><tr><td>② 겹치지 않게</td><td>C<sub>k</sub> ∩ C<sub>k′</sub> = ∅ (k ≠ k′)</td><td><span class="a">두 군집 이상</span>에 속하지 않음</td></tr></table></div>
+<div class="blk"><div class="box"><p>C<sub>k</sub>는 k번째 군집에 속한 관측치 번호의 집합입니다. i번째 관측치가 k번째 군집에 있으면 i ∈ C<sub>k</sub>.</p><p><b>교수님 예</b>: 100개, K = 3에서 30 + 40 + 30 = 100개(①). 어떤 데이터든 C<sub>1</sub>, C<sub>2</sub>, C<sub>3</sub> 중 하나에는 무조건 들어가야 하고, "C<sub>1</sub>일 수도 C<sub>2</sub>일 수도 있다"는 <span class="a">불가능</span>(②).</p></div></div>
+<div class="blk"><div class="key"><div class="h">K-평균의 목적 <span class="pg">p.7–8</span></div><div class="fx">min<sub>C<sub>1</sub>, …, C<sub>K</sub></sub> { Σ<sub>k=1</sub><sup>K</sup> WCV(C<sub>k</sub>) }</div><div class="fx">WCV(C<sub>k</sub>) = <span class="frac"><span class="num">1</span><span class="den">|C<sub>k</sub>|</span></span> Σ<sub>i, i′ ∈ C<sub>k</sub></sub> Σ<sub>j=1</sub><sup>p</sup> (x<sub>ij</sub> − x<sub>i′j</sub>)<sup>2</sup></div></div></div>
+<div class="blk"><div class="unit">식의 각 부분</div><table class="mt "><tr><th>기호</th><th>뜻</th></tr><tr><td>WCV(C<sub>k</sub>)</td><td><span class="a">군집 내 변동</span><span class="en">within-cluster variation</span> — 군집 안 관측치들이 서로 얼마나 다른지</td></tr><tr><td>|C<sub>k</sub>|</td><td>k번째 군집의 <span class="a">관측치 수</span></td></tr><tr><td>p</td><td><span class="a">특징(차원) 수</span></td></tr><tr><td class="eq">(x<sub>ij</sub> − x<sub>i′j</sub>)<sup>2</sup></td><td>두 관측치의 j번째 특징 차이의 제곱</td></tr><tr><td>Σ<sub>i, i′</sub></td><td>군집 안 <span class="a">모든 점 쌍</span>에 대해 더함</td></tr></table></div>
+<div class="blk"><div class="box"><p>좋은 군집화 = WCV가 <span class="a">가능한 한 작은</span> 것입니다. 점들을 K개로 나누는 모든 방법 중 WCV 합이 가장 작은 분할을 고릅니다.</p><p><b>교수님 말씀</b>: K가 3이면 WCV(C<sub>1</sub>) + WCV(C<sub>2</sub>) + WCV(C<sub>3</sub>)를 줄여 가야 합니다.</p></div></div>
+<div class="blk"><div class="unit">Distance Metrics <span class="pg">p.9</span></div><table class="mt "><tr><th>거리</th><th>식 (2차원)</th><th>뜻</th></tr><tr><td>Euclidean(유클리드)</td><td>√((a<sub>1</sub>−b<sub>1</sub>)<sup>2</sup> + (a<sub>2</sub>−b<sub>2</sub>)<sup>2</sup>)</td><td><span class="a">직선</span> 길이</td></tr><tr><td>Manhattan(맨해튼)</td><td>|a<sub>1</sub>−b<sub>1</sub>| + |a<sub>2</sub>−b<sub>2</sub>|</td><td><span class="a">가로·세로</span>로만 이동</td></tr></table></div>
+<div class="blk"><div class="box"><p>K-평균은 기본적으로 <span class="a">유클리드</span> 거리를 씁니다. 예: (1, 2)와 (4, 6) → 유클리드 5, 맨해튼 7.</p></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅳ</span>K-평균 알고리즘과 K-means++</h2><p class=lead>교안 10–12쪽 <span class="pg">p.10–12</span></p></div>
+<div class="blk"><div class="key"><div class="h">K-Means Clustering Algorithm <span class="pg">p.10</span></div><ol class="pt"><li>각 관측치에 1부터 K까지 번호를 <span class="a">무작위로</span> 배정합니다(초기 군집 배정).</li><li>군집 배정이 <span class="a">더 이상 바뀌지 않을 때까지</span> 반복합니다.<br>2.1 군집마다 <span class="a">중심(centroid)</span>을 계산합니다. 중심 = 그 군집 관측치들의 p개 특징별 <span class="a">평균</span> 벡터.<br>2.2 각 관측치를 중심이 <span class="a">가장 가까운</span>(유클리드 거리) 군집에 배정합니다.</li></ol></div></div>
+<div class="blk"><div class="unit">알고리즘의 성질</div><ul class="pt"><li>중심을 군집의 평균으로 옮기기 때문에 이름이 <span class="a">K-means(K-평균)</span>입니다.</li><li>반복할 때마다 목적함수가 커지지 않아 언젠가 멈춥니다. 그러나 멈춘 곳은 <span class="a">국소 최적</span>일 수 있습니다.</li><li>그래서 결과가 <span class="a">초기 배정(중심)</span>에 따라 달라집니다.</li><li>교안 11쪽 그림: Initialize → Assign → Update → Reassign, 수렴할 때까지 반복.</li></ul></div>
+<div class="blk"><div class="box"><p><b>무작위 초기화의 문제</b>: 시작점이 나쁘면 <span class="a">나쁜 국소 최솟값</span><span class="en">poor local minima</span>으로 수렴합니다. <span class="pg">p.12</span></p><p><b>K-Means++</b>: 초기 중심만 더 똑똑하게 고릅니다.</p><ol class="pt"><li>첫 중심은 데이터 점 중에서 <span class="a">균등하게 무작위로</span> 고릅니다.</li><li>다음 중심은 가장 가까운 기존 중심까지 <span class="a">거리의 제곱</span>에 비례하는 확률로 고릅니다 → <span class="a">멀리</span> 있는 점일수록 잘 뽑힙니다.</li><li>K개가 될 때까지 반복합니다. 그 뒤는 K-평균과 같습니다.</li></ol><p>장점: 초기 중심이 고르게 퍼짐, 대체로 <span class="a">더 빨리 수렴</span>, 나쁜 국소 최솟값 가능성 감소.</p></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅴ</span>K-평균의 한계와 K 고르기</h2><p class=lead>교안 13–19쪽 <span class="pg">p.13–19</span></p></div>
+<div class="blk"><div class="box"><p><b>교수님 말씀</b>: K-means는 거리 기준으로는 잘 나누지만 문제가 몇 개 있습니다.</p><p>K-평균은 각 점을 가장 가까운 중심에 붙이므로, 군집이 중심 주변의 비슷한 크기의 둥근 덩어리라고 가정하는 셈입니다.</p></div></div>
+<div class="blk"><div class="unit">Limitations of K-Means <span class="pg">p.13–16</span></div><table class="mt "><tr><th>쪽</th><th>한계</th><th>그림에서 일어난 일</th></tr><tr><td>13</td><td><span class="a">크기</span>가 다른 군집<span class="en">different sizes</span></td><td>큰 무리를 쪼개고 작은 무리를 합침</td></tr><tr><td>14</td><td><span class="a">밀도</span>가 다른 군집<span class="en">different densities</span></td><td>성긴 무리를 쪼개고 촘촘한 둘을 합침</td></tr><tr><td>15</td><td><span class="a">국소 패턴</span>(휘어진 모양)<span class="en">local patterns</span></td><td>맞물린 초승달을 직선으로 자름</td></tr><tr><td>16</td><td><span class="a">K</span>를 정하기 어려움</td><td>k가 작으면 합치고, 크면 쪼갬</td></tr></table></div>
+<div class="blk"><div class="key"><div class="h">Inertia(이너셔)와 엘보 <span class="pg">p.17</span></div><div class="fx">Inertia = Σ<sub>k=1</sub><sup>K</sup> WCV(C<sub>k</sub>)</div><div class="fx">= Σ<sub>k=1</sub><sup>K</sup> Σ<sub>i∈C<sub>k</sub></sub> Σ<sub>j=1</sub><sup>p</sup> (x<sub>ij</sub> − x̄<sub>kj</sub>)<sup>2</sup></div><p>x̄<sub>kj</sub>: 군집 k 중심의 j번째 특징 값. 즉 각 점에서 자기 중심까지 <span class="a">거리 제곱의 총합</span>입니다.</p><p>이너셔는 K를 늘리면 <span class="a">계속 작아지므로</span>(K = n이면 0) 값 자체로는 K를 고르는 좋은 지표가 아닙니다. 그래서 급하게 줄다가 갑자기 완만해지는 <span class="a">꺾이는 점(elbow)</span>의 K를 고릅니다. 교안 그림에서는 k = 4.</p></div></div>
+<div class="blk"><div class="key"><div class="h">Silhouette(실루엣) <span class="pg">p.18–19</span></div><div class="fx">s = <span class="frac"><span class="num">b − a</span><span class="den">max(a, b)</span></span></div><p>a: 같은 군집의 다른 점들까지 <span class="a">평균 거리</span><span class="en">intra-cluster distance</span><br>b: <span class="a">가장 가까운 다른 군집</span>의 점들까지 평균 거리</p><p><b>실루엣 점수</b> = 모든 샘플의 실루엣 계수의 <span class="a">평균</span>. 이너셔보다 더 정확한 방법이며, 점수가 <span class="a">가장 높은</span> K를 고릅니다.</p></div></div>
+<div class="blk"><div class="unit">실루엣 계수 읽기</div><table class="mt "><tr><th>값</th><th>뜻</th></tr><tr><td>s ≈ +1</td><td><span class="a">자기 군집 안쪽</span>, 다른 군집과 멂 (a ≪ b)</td></tr><tr><td>s ≈ 0</td><td><span class="a">군집 경계</span> 근처 (a ≈ b)</td></tr><tr><td>s ≈ −1</td><td><span class="a">잘못 배정</span>됐을 가능성, 다른 군집에 더 가까움</td></tr></table></div>
+<div class="blk"><div class="prof"><div class="h">교수님 강조</div><p><b>b는 커지고 a는 작아져야 한다.</b> 같은 군집끼리는 가깝고(a ↓), 다른 군집과는 멀어야(b ↑) 좋은 군집입니다.</p></div></div>
+<div class="blk"><div class="box"><p><b>실루엣 다이어그램</b> <span class="pg">p.19</span>: 칼날 하나 = 군집 하나, 높이 = 군집 크기, 가로 길이 = 각 점의 실루엣 계수, 빨간 점선 = 평균(실루엣 점수). 모든 칼날이 점선을 넘고 두께가 고른 K가 좋습니다.</p></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅵ</span>계층적 군집화</h2><p class=lead>교안 20–24쪽 <span class="pg">p.20–24</span></p></div>
+<div class="blk"><div class="box"><p><b>Hierarchical clustering</b>: K-평균은 K를 미리 정해야 하는데 이것이 단점이 될 수 있습니다. 계층적 군집화는 특정 K를 <span class="a">정하지 않아도</span> 됩니다. <span class="pg">p.20</span></p><p>가장 흔한 것은 <span class="a">상향식(bottom-up)</span> = <span class="a">병합형(agglomerative)</span>입니다. 덴드로그램을 <span class="a">잎</span>에서 시작해 군집을 합쳐 <span class="a">줄기</span>까지 쌓아 올립니다.</p></div></div>
+<div class="blk"><div class="key"><div class="h">알고리즘 <span class="pg">p.22</span></div><ol class="pt"><li>각 점을 <span class="a">혼자만의 군집</span>으로 시작합니다.</li><li><span class="a">가장 가까운 두 군집</span>을 찾아 합칩니다.</li><li>반복합니다.</li><li>모든 점이 <span class="a">하나의 군집</span>이 되면 끝납니다.</li></ol></div></div>
+<div class="blk"><div class="box"><p><b>Dendrogram(덴드로그램)</b>: 군집이 합쳐지는 과정을 나타낸 나무 그림입니다. 세로축 높이 = 두 군집을 합칠 때의 <span class="a">거리</span>. <span class="a">낮은</span> 곳에서 합쳐질수록 비슷합니다.</p><p>자르는 선이 세로선과 만나는 개수 = 군집 수. <span class="a">높게</span> 자를수록 군집이 적고, <span class="a">낮게</span> 자를수록 많습니다. 한 번 만든 덴드로그램으로 군집 수 1개부터 n개까지의 결과를 모두 얻습니다. <span class="pg">p.23</span></p></div></div>
+<div class="blk"><div class="prof"><div class="h">교수님 강조</div><p><b>어디서 끊느냐</b>에 따라 클러스터 개수가 바뀐다.</p><p><b>Types of Linkage(연결 방식, 24쪽)</b>: 외울 것 없고 "이런 게 있구나" 정도로 보고 넘어가면 됨 — single·complete·average·centroid·Ward.</p></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅶ</span>DBSCAN — 밀도 기반 군집화</h2><p class=lead>교안 25–32쪽 <span class="pg">p.25–32</span></p></div>
+<div class="blk"><div class="box"><p><b>DBSCAN</b> <span class="en">Density-Based Spatial Clustering of Applications with Noise</span>: 점이 <span class="a">빽빽하게 모인</span> 곳(고밀도 영역)의 점들을 하나의 군집으로 묶고, 밀도가 낮은 영역의 점은 <span class="a">이상치(잡음, noise)</span>로 표시합니다. <span class="pg">p.25</span></p></div></div>
+<div class="blk"><div class="unit">K-평균과의 차이 <span class="pg">p.25</span></div><table class="mt "><tr><th></th><th>K-평균</th><th>DBSCAN</th></tr><tr><td>군집 수</td><td><span class="a">미리 정함</span> (K)</td><td><span class="a">정할 필요 없음</span></td></tr><tr><td>군집 모양</td><td>둥근 덩어리</td><td><span class="a">임의의 모양</span></td></tr><tr><td>떨어진 점</td><td><span class="a">반드시</span> 어떤 군집에</td><td><span class="a">잡음</span>으로 뺌</td></tr><tr><td>정할 값</td><td>K</td><td><span class="a">ε, MinPts</span></td></tr></table></div>
+<div class="blk"><div class="key"><div class="h">정의 1 — ε-neighborhood(ε-이웃) <span class="pg">p.26</span></div><div class="fx">N<sub>ε</sub>(p) = { q ∈ D | dist(p, q) ≤ ε }</div><p>점 p에서 거리 <span class="a">ε 이하</span>인 점들의 집합(p 자신 포함)입니다. D는 전체 데이터, dist는 두 점 사이 거리입니다.</p><p>단순한 방법(군집 안 모든 점이 이웃 MinPts개 이상)의 문제: 군집 가장자리 점은 이웃이 훨씬 적어 빠져 버립니다 → 핵심점과 경계점으로 나눕니다.</p></div></div>
+<div class="blk"><div class="unit">점의 세 종류 <span class="pg">p.27</span></div><table class="mt "><tr><th>종류</th><th>자기 ε-이웃 점 수</th><th>핵심점의 이웃 안?</th><th>군집</th></tr><tr><td>Core point(핵심점)</td><td><span class="a">MinPts 이상</span></td><td>상관없음</td><td>속함 (안쪽)</td></tr><tr><td>Border point(경계점)</td><td>MinPts 미만</td><td><span class="a">예</span></td><td>속함 (가장자리)</td></tr><tr><td>Noise(잡음)</td><td>MinPts 미만</td><td><span class="a">아니오</span></td><td><span class="a">속하지 않음</span></td></tr></table></div>
+<div class="blk"><div class="box"><p>핵심점: |N<sub>ε</sub>(p)| ≥ MinPts. 셀 때 <span class="a">p 자신도 포함</span>합니다. 빽빽한 영역의 안쪽입니다.</p><p>판정 순서: ① 내 ε-이웃 점 수를 센다 → ② MinPts 이상이면 핵심점 → ③ 아니면 "나를 이웃에 품은 핵심점이 있나?" 있으면 경계점, 없으면 잡음.</p></div></div>
+<div class="blk"><div class="unit">도달과 연결</div><table class="mt "><tr><th>관계</th><th>조건</th><th>대칭?</th></tr><tr><td>Directly density-reachable<span class="en">직접 밀도 도달</span><span class="pg">p.28</span></td><td>q ∈ N<sub>ε</sub>(p) 그리고 |N<sub>ε</sub>(p)| ≥ MinPts (출발점 p가 <span class="a">핵심점</span>)</td><td>핵심점끼리 <span class="a">대칭</span>, 핵심점–경계점 <span class="a">비대칭</span></td></tr><tr><td>Density-reachable<span class="en">밀도 도달</span><span class="pg">p.30</span></td><td>p = p<sub>1</sub>, …, p<sub>m</sub> = q 사슬, p<sub>i+1</sub> ∈ N<sub>ε</sub>(p<sub>i</sub>)이고 p<sub>i</sub>는 <span class="a">핵심점</span></td><td><span class="a">방향 있음</span></td></tr><tr><td>Density-connected<span class="en">밀도 연결</span><span class="pg">p.30</span></td><td>p와 q 모두 어떤 o로부터 <span class="a">밀도 도달</span> 가능</td><td><span class="a">대칭</span></td></tr></table></div>
+<div class="blk"><div class="box"><p>핵심점 하나의 이웃만으로는 군집이 작으므로, 핵심점에서 핵심점으로 이어 가며 군집을 넓힙니다. 직접 밀도 도달(한 걸음) → 밀도 도달(사슬) → 밀도 연결(공통 출발점 o)은 이 "이어 감"을 정확히 말하려는 정의입니다.</p><p>교안 31쪽 그림: 경계점 p와 q는 서로 도달할 수 없어도, 핵심점 o에서 둘 다 닿으면 <span class="a">밀도 연결</span>입니다.</p></div></div>
+<div class="blk"><div class="unit">정의 5 · 6 — 군집과 잡음 <span class="pg">p.32</span></div><table class="mt "><tr><th>조건</th><th>뜻</th></tr><tr><td>① Maximality(최대성)</td><td>p ∈ C이고 q가 p로부터 밀도 도달 가능하면 q ∈ C → 닿는 점은 <span class="a">빠짐없이</span> 포함</td></tr><tr><td>② Connectivity(연결성)</td><td>C의 모든 p, q가 <span class="a">밀도 연결</span> → 한 덩어리</td></tr></table></div>
+<div class="blk"><div class="box"><p>군집은 데이터 D의 <span class="a">비어 있지 않은</span> 부분집합 C로 ①②를 만족합니다. 어느 군집 C<sub>1</sub>, …, C<sub>k</sub>에도 속하지 않는 점들의 집합이 <span class="a">잡음(noise)</span>입니다.</p></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅷ</span>GMM · 이미지 분할 · 방법 비교</h2><p class=lead>교안 33–35쪽 <span class="pg">p.33–35</span> — 그림이 무엇을 보여 주는지만</p></div>
+<div class="blk"><div class="unit">나머지 주제</div><table class="mt "><tr><th>주제</th><th>한 줄 정리</th></tr><tr><td>GMM<span class="en">Gaussian Mixture Model</span><span class="pg">p.33</span></td><td>데이터를 여러 개의 <span class="a">가우시안(정규분포)</span>을 섞은 것으로 보고, 가우시안 하나 = 군집 하나</td></tr><tr><td>이미지 분할<span class="pg">p.34</span></td><td>픽셀을 (R, G, B) 점으로 보고 <span class="a">K-평균</span>으로 묶어 중심색으로 바꿈. K가 작을수록 색이 단순</td></tr><tr><td>방법 비교<span class="pg">p.35</span></td><td>모든 데이터에 가장 좋은 방법은 <span class="a">없음</span>. K-평균은 둥근 군집, DBSCAN 계열은 휘어진 모양·잡음에 강함</td></tr></table></div>
+<div class="blk sh"><h2><span class="sn">Ⅸ</span>헷갈리는 것 정리</h2><p class=lead>함정 상자는 "시험에서 이렇게 판단"하는 기준입니다.</p></div>
+<div class="blk"><div class="trap"><div class="h">함정 · 헷갈리는 것</div><p><b>WCV(8쪽)와 이너셔(17쪽) 식은 정확히 같지 않습니다.</b> 8쪽 WCV(점 쌍 합 ÷ |C<sub>k</sub>|)는 17쪽 오른쪽 식(중심까지 거리 제곱합)의 <span class="a">2배</span>입니다.</p><p><b>시험 판단</b>: 둘 다 "군집 안 점들이 얼마나 퍼져 있나"이고 최소화하는 분할은 <span class="a">같습니다</span>. 개념을 물으면 "이너셔 = WCV 합 = 중심까지 거리 제곱 총합"으로 답합니다.</p><p>교안 8쪽은 "Euclidean distance"라 하지만 실제로 더하는 것은 거리의 <span class="a">제곱</span>입니다.</p></div></div>
+<div class="blk"><div class="trap"><div class="h">함정 · 헷갈리는 것</div><p><b>K-평균에서 어떤 군집에도 안 속하는 점은 없습니다.</b> 잡음으로 빼는 것은 <span class="a">DBSCAN</span>입니다.</p><p><b>중심은 중앙값이 아니라 특징별 <span class="a">평균</span></b>입니다.</p><p><b>K-means++는 1단계(<span class="a">초기화</span>)만</b> 바꿉니다. 확률은 거리가 아니라 거리의 <span class="a">제곱</span>에 비례합니다.</p></div></div>
+<div class="blk"><div class="trap"><div class="h">함정 · 헷갈리는 것</div><p><b>이너셔가 가장 작은 K를 고르면 안 됩니다.</b> K를 늘리면 항상 작아지므로 <span class="a">꺾이는 점</span>을 봅니다.</p><p><b>실루엣의 a와 b를 바꾸지 마세요.</b> a = <span class="a">같은</span> 군집, b = 가장 가까운 <span class="a">다른</span> 군집까지 평균 거리.</p><p><b>덴드로그램을 높게 자르면</b> 군집 수가 <span class="a">줄어듭니다</span>.</p></div></div>
+<div class="blk"><div class="trap"><div class="h">함정 · 헷갈리는 것</div><p><b>경계점 ≠ "이웃이 MinPts 미만인 모든 점".</b> 그중 <span class="a">핵심점의 ε-이웃 안</span>에 있는 점만 경계점이고, 나머지는 잡음입니다.</p><p><b>핵심점 p의 이웃에 경계점 q가 있으면</b> p → q만 직접 밀도 도달입니다. q → p는 출발점 q가 핵심점이 아니라 <span class="a">불가능</span>합니다.</p><p><b>군집 번호</b>: K가 바뀌면 같은 번호라도 <span class="a">다른 집단</span>입니다.</p></div></div>
+<div class="blk"><div class="unit">세 방법 비교</div><table class="mt "><tr><th></th><th>K-평균</th><th>계층적</th><th>DBSCAN</th></tr><tr><td>기준</td><td>거리</td><td>거리</td><td><span class="a">밀도</span></td></tr><tr><td>군집 수</td><td><span class="a">K 지정</span></td><td><span class="a">자르는 높이</span></td><td><span class="a">저절로</span></td></tr><tr><td>정할 값</td><td>K</td><td>자르는 높이</td><td>ε, MinPts</td></tr><tr><td>떨어진 점</td><td>어떤 군집에</td><td>어떤 군집에</td><td><span class="a">잡음</span></td></tr></table></div>
+<div class="blk"><div class="unit">K를 정하는 방법</div><table class="mt "><tr><th>방법</th><th>무엇을 보나</th><th>어떤 K</th></tr><tr><td>엘보</td><td>이너셔</td><td><span class="a">꺾이는 점</span></td></tr><tr><td>실루엣 점수</td><td>s의 평균</td><td><span class="a">가장 높은</span> K</td></tr><tr><td>덴드로그램</td><td>병합 높이</td><td>자른 선 아래 가지 수</td></tr></table></div>
+<div class="blk sh"><h2><span class="sn">Ⅹ</span>셀프 체크</h2><p class=lead>「답 가리기」를 켜고 답을 떠올려 보세요.</p></div>
+<div class="blk"><div class="unit">①</div><table class="mt "><tr><th>질문</th><th>답</th></tr><tr><td>지도·비지도 학습의 차이?</td><td><span class="a">y(라벨)의 유무</span></td></tr><tr><td>거리 기반 방법 두 가지?</td><td><span class="a">K-평균, 계층적 군집화</span></td></tr><tr><td>DBSCAN의 D?</td><td><span class="a">Density(밀도)</span></td></tr><tr><td>분할의 두 성질?</td><td><span class="a">합집합 = 전체, 교집합 = ∅</span></td></tr><tr><td>K-평균이 최소로 하는 것?</td><td><span class="a">WCV(군집 내 변동)의 합</span></td></tr><tr><td>K-평균의 종료 조건?</td><td><span class="a">군집 배정이 안 바뀔 때</span></td></tr><tr><td>K-means++가 바꾼 단계?</td><td><span class="a">1단계 초기 중심 고르기</span></td></tr></table></div>
+<div class="blk"><div class="unit">②</div><table class="mt "><tr><th>질문</th><th>답</th></tr><tr><td>K-means++ 뽑힐 확률은?</td><td><span class="a">가장 가까운 중심까지 거리 제곱에 비례</span></td></tr><tr><td>K-평균의 한계 네 가지?</td><td><span class="a">크기·밀도 차이, 국소 패턴, K 정하기</span></td></tr><tr><td>엘보에서 고르는 K?</td><td><span class="a">이너셔가 꺾이는 점</span></td></tr><tr><td>실루엣 s의 식과 좋은 방향?</td><td><span class="a">(b − a) ÷ max(a, b), b ↑ a ↓</span></td></tr><tr><td>덴드로그램을 낮게 자르면?</td><td><span class="a">군집 수 증가</span></td></tr><tr><td>핵심점의 조건?</td><td><span class="a">ε-이웃 점 수(자기 포함) ≥ MinPts</span></td></tr><tr><td>밀도 연결의 대칭 여부?</td><td><span class="a">대칭</span></td></tr></table></div>
+</template>
+<script>
+(function(){
+const $=s=>document.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const masthead=`<header class="masthead"><div class="mh-top"><span class="org">Kangwon National University CSE</span><span class="subj">인공지능</span></div><div class="mh-title"><div class="y">D. 군집화 (Clustering)</div><h1>개념정리노트</h1></div><div class="scope"><span class="h">범 위</span><div class="b">7주차 1차시 (+2차시 앞부분) — 비지도 학습 · K-평균 · K-means++ · 엘보·실루엣 · 계층적 군집화 · DBSCAN · GMM. 「답 가리기」로 핵심어를 가리고 떠올려 보세요.</div></div></header>`;
+const running=`<div class="running"><span>인공지능 개념정리노트 · D. 군집화 (Clustering)</span><span><b>인공지능</b></span></div>`;
+const blocks=[...$('#src').content.children].map(e=>e.outerHTML);
+function paginate(){
+  const PAGE_H=1180, PAD=40+70;
+  const m=document.createElement('section'); m.className='page measure';
+  m.innerHTML=masthead+`<div class="cols"><div class="col" id="mcol">${blocks.join('')}</div><div class="col"></div></div>`;
+  document.body.appendChild(m);
+  const capFirst=PAGE_H-PAD-m.querySelector('.masthead').offsetHeight-18-4;
+  m.innerHTML=running+`<div class="cols"><div class="col" id="mcol">${blocks.join('')}</div><div class="col"></div></div>`;
+  const capRest=PAGE_H-PAD-m.querySelector('.running').offsetHeight-18-4;
+  const els=$$('#mcol>.blk',m), hs=els.map(e=>e.offsetHeight), sh=els.map(e=>e.classList.contains('sh'));
+  m.remove();
+  // 제목 블록은 바로 다음 블록과 묶어서 배치
+  const units=[]; for(let i=0;i<blocks.length;i++){ if(sh[i]&&i+1<blocks.length){units.push({ids:[i,i+1],h:hs[i]+hs[i+1]});i++;} else units.push({ids:[i],h:hs[i]}); }
+  const pages=[]; let p=null, side='R', used=0;
+  const cap=()=>pages.length===1?capFirst:capRest;
+  units.forEach(u=>{
+    if(!p||used+u.h>cap()&&used>0){ if(!p||side==='R'){p={L:[],R:[]};pages.push(p);side='L';} else side='R'; used=0; }
+    p[side].push(...u.ids); used+=u.h;
+  });
+  return pages;
+}
+function render(){
+  const P=paginate(), total=P.length;
+  $('#book').innerHTML=P.map((pg,i)=>`<section class="page">${i===0?masthead:running}<div class="cols"><div class="col">${pg.L.map(k=>blocks[k]).join('')}</div><div class="col">${pg.R.map(k=>blocks[k]).join('')}</div></div><div class="pno">${i+1} / ${total}</div></section>`).join('');
+}
+const A4W=793.7, A4H=1122.5, PW=860;
+function preparePrint(){
+  document.body.classList.add('printing');
+  const pages=$$('#book .page'); const base=A4W/PW, sheet=A4H/base;
+  pages.forEach(p=>{p.style.zoom='';p.style.height='';});
+  pages.forEach(p=>{const h=p.scrollHeight; if(h<=sheet){p.style.zoom=base;p.style.height=sheet+'px';} else {p.style.zoom=A4H/h-0.0005;p.style.height=h+'px';}});
+  if(pages.length) pages[pages.length-1].classList.add('lastprint');
+}
+function afterPrint(){ document.body.classList.remove('printing'); $$('#book .page').forEach(p=>{p.style.zoom='';p.style.height='';p.classList.remove('lastprint');}); }
+window.addEventListener('beforeprint',preparePrint); window.addEventListener('afterprint',afterPrint);
+window.__memoPrint={prepare:preparePrint,done:afterPrint};
+function setQuiz(on){ document.body.classList.toggle('quiz',on); $('#quizBtn').classList.toggle('on',on); $('#quizBtn').textContent=on?'답 보이기':'답 가리기'; $$('.a.show').forEach(e=>e.classList.remove('show')); }
+function boot(){
+  render();
+  $('#quizBtn').onclick=()=>setQuiz(!document.body.classList.contains('quiz'));
+  document.addEventListener('click',e=>{const a=e.target.closest('.a'); if(a&&document.body.classList.contains('quiz')) a.classList.toggle('show');});
+  $('#printBtn').onclick=()=>{ const q=document.body.classList.contains('quiz'); setQuiz(false); window.print(); if(q) setQuiz(true); };
+  $('#printBlank').onclick=()=>{ setQuiz(true); document.body.classList.add('printblank'); window.print(); document.body.classList.remove('printblank'); };
+}
+const fams=['400 16px "Nanum Myeongjo"','800 16px "Nanum Myeongjo"','400 16px "Nanum Gothic"','700 16px "Nanum Gothic"'];
+const wait=document.fonts?Promise.all(fams.map(f=>document.fonts.load(f,'가A1').catch(()=>{}))):Promise.resolve();
+const start=()=>Promise.race([wait,new Promise(r=>setTimeout(r,2000))]).then(boot);
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start); else start();
+})();
+</script>
+</body>
+</html>

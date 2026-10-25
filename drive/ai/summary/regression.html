@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>인공지능 개념정리노트 — B. 회귀 (Regression)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>
+:root{ --subject:#5B3CF5; }
+.toolbar a{color:#EEE;text-decoration:none;border:1px solid #6A6A6A;border-radius:4px;padding:5px 13px}
+.toolbar button.on{background:#F2F2F2;color:#111;border-color:#F2F2F2;font-weight:700}
+.blk{padding-bottom:16px}
+.blk.sh{padding-bottom:6px}
+.blk h2{margin:0;font-size:18px;font-weight:800;letter-spacing:.04em;display:flex;align-items:baseline;gap:10px;border-bottom:1.5px solid var(--line);padding-bottom:4px}
+.blk h2 .sn{font-family:var(--gothic);font-size:13px;font-weight:800;color:#fff;background:var(--ink);padding:1px 8px;letter-spacing:0}
+.blk .lead{margin:6px 0 0;font-family:var(--gothic);font-size:12px;color:var(--ink-2);line-height:1.6}
+.unit{font-family:var(--gothic);font-size:12.5px;font-weight:800;margin:0 0 4px;display:flex;align-items:center;gap:6px}
+.unit::before{content:"";width:6px;height:6px;background:var(--subject)}
+table.mt{width:100%;border-collapse:collapse;font-size:13.4px;line-height:1.5}
+table.mt th{background:#F1F1EE;font-family:var(--gothic);font-size:11.8px;font-weight:700;border:1px solid var(--line);padding:4px 6px;text-align:left;white-space:nowrap}
+table.mt td{border:1px solid var(--line);padding:5px 7px;vertical-align:middle}
+table.mt td.nm{font-weight:700;white-space:normal}
+table.mt td.res{font-weight:800;white-space:nowrap}
+table.mt td.eq{white-space:nowrap}
+table.mt td.src{font-family:var(--gothic);font-size:11.6px;color:var(--ink-2)}
+table.mt td.why{font-size:12.6px}
+table.mt td.c{text-align:center;font-weight:800;width:56px}
+table.mt td.x{color:var(--red);width:46%}
+table.mt.dp td{font-size:12.6px}
+table.mt.dp td.res{white-space:nowrap}
+.box{border:1px solid var(--line);padding:8px 12px;font-size:13.2px;line-height:1.6}
+.box b{font-family:var(--gothic);font-size:12.5px}
+.box ol,.box ul{margin:2px 0 6px;padding-left:1.4em}
+.frac{font-size:.86em}
+/* 가리기 */
+body.quiz .a{color:transparent!important;background:#E4E4E0;cursor:pointer;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body.quiz .a *{visibility:hidden}
+body.quiz .a.show{color:var(--red)!important;background:transparent}
+body.quiz .a.show *{visibility:visible}
+body.quiz.printblank .a{background:#fff}
+
+.blk p{margin:4px 0;font-size:13.2px;line-height:1.65}
+.blk ul.pt,.blk ol.pt{margin:3px 0 4px;padding-left:1.25em;font-size:13.2px;line-height:1.62}
+.blk ul.pt li,.blk ol.pt li{margin:1px 0}
+.prof{border:1.5px solid var(--subject);padding:6px 10px;font-size:13px;line-height:1.6}
+.prof .h,.trap .h,.key .h{font-family:var(--gothic);font-size:11.8px;font-weight:800;margin-bottom:2px}
+.prof .h{color:var(--subject)}
+.trap{border:1px dashed var(--red);padding:6px 10px;font-size:13px;line-height:1.6}
+.trap .h{color:var(--red)}
+.key{background:#F4F3EF;padding:6px 10px;font-size:13.2px;line-height:1.6;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.en{font-family:var(--gothic);font-size:.82em;color:var(--ink-2);margin-left:2px}
+.pg{font-family:var(--gothic);font-size:10.5px;color:var(--ink-2);margin-left:4px;white-space:nowrap}
+.fx{text-align:center;font-size:14px;margin:4px 0;line-height:1.7}
+mark{background:linear-gradient(transparent 55%,#DCD2FF 55%);color:inherit;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+table.mt td{font-size:13px}
+
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <a href="../exam/index.html">‹ 문제지 목록</a>
+  <span class="sep"></span>
+  <button id="quizBtn">답 가리기</button>
+  <span class="sep"></span>
+  <button id="printBtn" class="primary">인쇄 · PDF</button>
+  <button id="printBlank" title="답 칸을 비운 채 인쇄 — 손으로 채워 보는 연습지">빈칸 연습지 인쇄</button>
+</div>
+<div id="book"></div>
+<template id="src">
+<div class="blk sh"><h2><span class="sn">Ⅰ</span>한눈에 보기</h2><p class=lead>가진 것은 데이터(점)뿐이고, 그 점들을 가장 잘 설명하는 선을 찾습니다.</p></div>
+<div class="blk"><div class="key"><div class="blk"><ul class="pt"><li>회귀는 <span class="a">지도 학습</span>입니다. 형식은 x → 모델 → y입니다.</li><li>선형 회귀를 만든다는 것은 데이터로 <span class="a">β<sub>0</sub>, β<sub>1</sub></span>을 찾는 것입니다.</li><li>독립변수 1개 = <span class="a">단순</span> 회귀, 2개 이상 = <span class="a">다중</span> 회귀. 선 → 면 → 초평면.</li><li>잔차를 제곱해 더한 <span class="a">RSS</span>를 최소로 하는 계수를 고릅니다 = <span class="a">최소제곱법</span>.</li><li>편미분 = 0으로 풀면 <span style="white-space:nowrap"><span style="display:inline-block;position:relative">β<span style="position:absolute;left:0;right:0;top:-.38em;text-align:center;font-size:.9em;line-height:1">ˆ</span></span><sub>1</sub></span>, <span style="white-space:nowrap"><span style="display:inline-block;position:relative">β<span style="position:absolute;left:0;right:0;top:-.38em;text-align:center;font-size:.9em;line-height:1">ˆ</span></span><sub>0</sub></span> 공식이 나옵니다.</li><li>평가: R² = 1 − <span class="frac"><span class="num">SSE</span><span class="den">SST</span></span>. 다중 회귀는 변수 수에 벌점을 주는 <span class="a">Adjusted R²</span>.</li><li>y가 0 또는 1이면 <span class="a">로지스틱</span> 회귀: 출력이 항상 0~1, 계수는 <span class="a">최대우도</span>로 추정.</li></ul></div></div></div>
+<div class="blk"><div class="prof"><div class="h">교수님 강조</div><div class="blk"><ul class="pt"><li>최소제곱 해: "이 식을 <span class="a">직접 푸는</span> 문제는 안 나올 것 같다. <span class="a">이런 식으로 푼다</span>까지는 이해가 필요하다."</li><li>잔차를 그대로 더하면 +와 −가 <span class="a">상쇄</span>되어 오차가 없는 것처럼 계산됩니다 → 양수로 만들어 더합니다.</li><li>회귀계수는 <span class="a">상관관계</span>로 해석합니다. <span class="a">인과관계</span>로 단정하면 안 됩니다.</li><li>로그 오즈에서 p(x) = y가 <span class="a">1</span>일 확률, 1 − p(x) = y가 <span class="a">0</span>일 확률.</li><li>수업은 <span class="a">선형</span>만. 비선형 회귀는 다루지 않습니다. 다항 회귀는 "차수를 올리면 <span class="a">구불구불</span>해질 수 있다"까지.</li></ul></div></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅱ</span>회귀란 <span class="pg">p.1–6</span></h2><p class=lead>광고 데이터: TV·Radio·Newspaper 광고비로 판매량(Sales)을 예측합니다.</p></div>
+<div class="blk"><div class="box"><p><b>선형 회귀 모델</b><span class="en">Linear Regression Model</span>: 출력 변수 Y를 입력 변수 X들의 <span class="a">선형 결합</span><span class="en">linear combination</span>으로 나타냅니다. 선형 결합은 여러 변수에 각각 <span class="a">계수</span>를 곱한 뒤 더한 형태입니다. <span class="pg">p.4</span></p><p>목적: ① X와 Y의 관계를 <span class="a">수학식</span>으로 설명 ② 반응 변수 Y의 미래 값을 <span class="a">예측</span>. <span class="pg">p.4</span></p></div></div>
+<div class="blk"><div class="unit">같은 대상의 여러 이름 <span class="pg">p.3</span></div><table class="mt "><tr><th>독립변수 x</th><th>종속변수 y</th></tr><tr><td>Input 입력</td><td>Output 출력</td></tr><tr><td>Feature 특징</td><td>Target 타깃</td></tr><tr><td>Attribute 속성</td><td>Label 라벨</td></tr><tr><td><span class="a">Predictor</span> 예측변수</td><td><span class="a">Response</span> 반응변수</td></tr><tr><td>Risk factor 위험 요인</td><td>Class 클래스 · Outcome 결과</td></tr></table></div>
+<div class="blk"><div class="box"><p>표기: x 소문자 = <span class="a">스칼라</span> · <b>x</b> 굵은 소문자 = <span class="a">벡터</span> · X 대문자 = <span class="a">확률변수</span> · <b>X</b> 굵은 대문자 = <span class="a">행렬</span>. 무조건 지켜지지는 않지만 알고 있으면 좋습니다(교수님).</p></div></div>
+<div class="blk"><div class="unit">회귀의 분류 <span class="pg">p.5</span></div><table class="mt "><tr><th></th><th>단순 회귀</th><th>다중 회귀</th></tr><tr><td>독립변수</td><td><span class="a">1</span>개 (x, 스칼라)</td><td><span class="a">2개 이상</span> (<b>x</b> = [x<sub>1</sub>, …, x<sub>N</sub>])</td></tr><tr><td>맞추는 대상</td><td><span class="a">선</span></td><td><span class="a">면</span> → 3차원 이상은 <span class="a">초평면</span></td></tr><tr><td>종류</td><td>선형 · 비선형</td><td>선형 · 비선형</td></tr></table></div>
+<div class="blk"><div class="unit">Variable vs Variate <span class="pg">p.6</span> — 수업은 variable 위주</div><table class="mt "><tr><th>용어</th><th>세는 것</th></tr><tr><td>Univariable 단변수</td><td>독립변수 <span class="a">x</span>가 1개</td></tr><tr><td>Multivariable 다변수</td><td>독립변수 <span class="a">x</span>가 여러 개</td></tr><tr><td>Univariate 단변량</td><td>종속변수 <span class="a">y</span>가 1개</td></tr><tr><td>Multivariate 다변량</td><td>종속변수 <span class="a">y</span>가 여러 개</td></tr></table></div>
+<div class="blk sh"><h2><span class="sn">Ⅲ</span>단순 선형 회귀 <span class="pg">p.7</span></h2></div>
+<div class="blk"><div class="box"><p class="fx">Y = β<sub>0</sub> + β<sub>1</sub>X + ε &nbsp;&nbsp;→&nbsp;&nbsp; ŷ = <span style="white-space:nowrap"><span style="display:inline-block;position:relative">β<span style="position:absolute;left:0;right:0;top:-.38em;text-align:center;font-size:.9em;line-height:1">ˆ</span></span><sub>0</sub></span> + <span style="white-space:nowrap"><span style="display:inline-block;position:relative">β<span style="position:absolute;left:0;right:0;top:-.38em;text-align:center;font-size:.9em;line-height:1">ˆ</span></span><sub>1</sub></span>x</p><ul class="pt"><li>β<sub>0</sub>: <span class="a">절편</span><span class="en">intercept</span> — X = 0일 때 Y의 값</li><li>β<sub>1</sub>: <span class="a">기울기</span><span class="en">slope</span> — X가 1 늘 때 Y의 변화량</li><li>ε: <span class="a">오차항</span><span class="en">error term</span> — 직선으로 설명되지 않는 나머지</li><li>햇(hat) 기호: <span class="a">추정값·예측값</span>. ŷ = X = x를 바탕으로 한 Y의 예측</li></ul></div></div>
+<div class="blk"><div class="prof"><div class="h">교수님 강조</div><p>β<sub>0</sub>, β<sub>1</sub>는 <span class="a">모르는 상수</span>이고, 회귀계수<span class="en">coefficients</span> = parameter = (learnable) parameter = <span class="a">weight</span>로 부릅니다. y = ax + b와 맞춰 보면 β<sub>1</sub> = a, β<sub>0</sub> = b입니다.</p><p>"선형 회귀를 만들겠다는 것은 결국 β<sub>0</sub>과 β<sub>1</sub>을 찾겠다는 것. X와 Y를 여러 개 보면서 찾는다."</p></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅳ</span>최소제곱 추정 <span class="pg">p.8–11</span></h2><p class=lead>시험 킬러 후보입니다. 유도 순서와 두 공식을 그대로 쓸 수 있어야 합니다.</p></div>
+<div class="blk"><div class="unit">잔차와 RSS</div><div class="box"><p class="fx">e<sub>i</sub> = <span class="a">y<sub>i</sub> − ŷ<sub>i</sub></span> &nbsp;(실제 − 예측)</p><p class="fx">RSS = e<sub>1</sub><sup>2</sup> + e<sub>2</sub><sup>2</sup> + ⋯ + e<sub>n</sub><sup>2</sup> = Σ(y<sub>i</sub> − <span style="white-space:nowrap"><span style="display:inline-block;position:relative">β<span style="position:absolute;left:0;right:0;top:-.38em;text-align:center;font-size:.9em;line-height:1">ˆ</span></span><sub>0</sub></span> − <span style="white-space:nowrap"><span style="display:inline-block;position:relative">β<span style="position:absolute;left:0;right:0;top:-.38em;text-align:center;font-size:.9em;line-height:1">ˆ</span></span><sub>1</sub></span>x<sub>i</sub>)<sup>2</sup></p><p><b>잔차</b><span class="en">residual</span>: i번째 실제 값과 예측값의 차이입니다. <b>RSS</b><span class="en">Residual Sum of Squares</span>: 잔차를 <span class="a">제곱</span>해 모두 더한 값입니다(= SSE). <b>최소제곱법</b>: RSS를 <span class="a">최소</span>로 만드는 <span style="white-space:nowrap"><span style="display:inline-block;position:relative">β<span style="position:absolute;left:0;right:0;top:-.38em;text-align:center;font-size:.9em;line-height:1">ˆ</span></span><sub>0</sub></span>, <span style="white-space:nowrap"><span style="display:inline-block;position:relative">β<span style="position:absolute;left:0;right:0;top:-.38em;text-align:center;font-size:.9em;line-height:1">ˆ</span></span><sub>1</sub></span>을 고릅니다. <span class="pg">p.8</span></p></div></div>
+<div class="blk"><div class="prof"><div class="h">교수님 강조</div><p>제곱하는 이유: 오차가 +2인 점과 −2인 점을 그대로 더하면 0이 되어 <span class="a">오차가 없는 것처럼</span> 계산됩니다. 제곱·<span class="a">절댓값</span>·루트를 쓰며, 공통점은 <span class="a">양수</span>로만 만든다는 것입니다.</p><p>그래프의 회색선 = <span class="a">에러텀</span>(잔차). 회귀는 최적·최선을 찾는 것이라, 새 데이터가 들어오면 100% 맞지 않을 수 있습니다.</p></div></div>
+<div class="blk"><div class="unit">최소제곱 추정 알고리즘 <span class="pg">p.9</span></div><div class="box"><p><b>Step 1</b> 오차 제곱합을 식으로 씁니다.</p><p class="fx">Σ<sub>i=1</sub><sup>n</sup> {y<sub>i</sub> − (β<sub>0</sub> + β<sub>1</sub>x<sub>i</sub>)}<sup>2</sup></p><p><b>Step 2</b> 이 값을 <span class="a">최소</span>로 하는 β<sub>0</sub>, β<sub>1</sub>을 찾는 문제로 정의합니다.</p><p class="fx">C(β<sub>0</sub>, β<sub>1</sub>) = Σ{y<sub>i</sub> − (β<sub>0</sub> + β<sub>1</sub>x<sub>i</sub>)}<sup>2</sup></p><p class="fx">(<span style="white-space:nowrap"><span style="display:inline-block;position:relative">β<span style="position:absolute;left:0;right:0;top:-.38em;text-align:center;font-size:.9em;line-height:1">ˆ</span></span><sub>0</sub></span>, <span style="white-space:nowrap"><span style="display:inline-block;position:relative">β<span style="position:absolute;left:0;right:0;top:-.38em;text-align:center;font-size:.9em;line-height:1">ˆ</span></span><sub>1</sub></span>) = <span class="a">arg min</span> C(β<sub>0</sub>, β<sub>1</sub>)</p></div></div>
+<div class="blk"><div class="box"><p><b>Step 3</b> C를 각 계수로 <span class="a">편미분</span>해 <span class="a">0</span>으로 놓습니다.</p><p class="fx" style="line-height:2.4"><span class="frac"><span class="num">∂C</span><span class="den">∂β<sub>0</sub></span></span> = −2Σ(y<sub>i</sub> − β<sub>0</sub> − β<sub>1</sub>x<sub>i</sub>) = 0</p><p class="fx" style="line-height:2.4"><span class="frac"><span class="num">∂C</span><span class="den">∂β<sub>1</sub></span></span> = −2Σ(y<sub>i</sub> − β<sub>0</sub> − β<sub>1</sub>x<sub>i</sub>)x<sub>i</sub> = 0</p><p style="font-size:12.4px">∂ = 편미분(다른 계수는 상수로 두고 미분). C가 아래로 볼록한 그릇 모양이라 최소점에서 기울기가 0입니다(보충).</p></div></div>
+<div class="blk"><div class="unit">해 (Solution) — 꼭 외울 공식 <span class="pg">p.10</span></div><div class="key"><p class="fx" style="line-height:2.4"><span style="white-space:nowrap"><span style="display:inline-block;position:relative">β<span style="position:absolute;left:0;right:0;top:-.38em;text-align:center;font-size:.9em;line-height:1">ˆ</span></span><sub>1</sub></span> = <span class="frac"><span class="num">Σ(x<sub>i</sub> − <span style="text-decoration:overline">x</span>)(y<sub>i</sub> − <span style="text-decoration:overline">y</span>)</span><span class="den">Σ(x<sub>i</sub> − <span style="text-decoration:overline">x</span>)<sup>2</sup></span></span></p><p class="fx"><span style="white-space:nowrap"><span style="display:inline-block;position:relative">β<span style="position:absolute;left:0;right:0;top:-.38em;text-align:center;font-size:.9em;line-height:1">ˆ</span></span><sub>0</sub></span> = <span class="a"><span style="text-decoration:overline">y</span> − <span style="white-space:nowrap"><span style="display:inline-block;position:relative">β<span style="position:absolute;left:0;right:0;top:-.38em;text-align:center;font-size:.9em;line-height:1">ˆ</span></span><sub>1</sub></span><span style="text-decoration:overline">x</span></span></p><p class="fx" style="line-height:2.4"><span style="text-decoration:overline">x</span> = <span class="frac"><span class="num">1</span><span class="den">n</span></span>Σx<sub>i</sub>, &nbsp; <span style="text-decoration:overline">y</span> = <span class="frac"><span class="num">1</span><span class="den">n</span></span>Σy<sub>i</sub> &nbsp;(x바·y바 = <span class="a">평균</span>)</p></div></div>
+<div class="blk"><div class="unit">두 공식이 나오는 순서 (보충)</div><ul class="pt"><li>첫 식(β<sub>0</sub>로 편미분한 식)을 n으로 나누면 <span style="text-decoration:overline">y</span> = β<sub>0</sub> + β<sub>1</sub><span style="text-decoration:overline">x</span> → <span style="white-space:nowrap"><span style="display:inline-block;position:relative">β<span style="position:absolute;left:0;right:0;top:-.38em;text-align:center;font-size:.9em;line-height:1">ˆ</span></span><sub>0</sub></span> = <span style="text-decoration:overline">y</span> − <span style="white-space:nowrap"><span style="display:inline-block;position:relative">β<span style="position:absolute;left:0;right:0;top:-.38em;text-align:center;font-size:.9em;line-height:1">ˆ</span></span><sub>1</sub></span><span style="text-decoration:overline">x</span>.</li><li>이것을 둘째 식에 넣어 정리하면 <span style="white-space:nowrap"><span style="display:inline-block;position:relative">β<span style="position:absolute;left:0;right:0;top:-.38em;text-align:center;font-size:.9em;line-height:1">ˆ</span></span><sub>1</sub></span> = (x와 y의 편차곱의 합) ÷ (x의 편차 제곱합)이 나옵니다.</li><li>뜻: 잔차의 합 = <span class="a">0</span>, 회귀직선은 평균점 <span class="a">(<span style="text-decoration:overline">x</span>, <span style="text-decoration:overline">y</span>)</span>를 지납니다.</li></ul></div>
+<div class="blk"><div class="unit">Step 2·3의 용어</div><table class="mt "><tr><th>용어</th><th>뜻</th></tr><tr><td class="nm">목적·손실·비용함수</td><td>줄이고자 하는 함수의 이름. <span class="en">objective · loss · cost</span> C는 <span class="a">cost</span>의 C</td></tr><tr><td class="nm">arg min</td><td>최솟값 자체가 아니라 함수를 최소로 만드는 <span class="a">변수의 값</span></td></tr><tr><td class="nm">경사하강법</td><td>gradient descent. 식을 직접 푸는 대신 쓰는 방법 — 뒤에서 다룸</td></tr></table></div>
+<div class="blk sh"><h2><span class="sn">Ⅴ</span>결정계수 R² <span class="pg">p.12–13</span></h2></div>
+<div class="blk"><div class="box"><p><b>결정계수</b><span class="en">Coefficient of Determination</span>: 회귀 모델이 데이터의 변동을 얼마나 잘 설명하는지 나타냅니다. y의 전체 분산 중 모델이 <span class="a">설명하는 비율</span>입니다.</p><p class="fx" style="line-height:2.4">R<sup>2</sup> = 1 − <span class="frac"><span class="num">SSE</span><span class="den">SST</span></span> = <span class="frac"><span class="num"><span class="a">SSR</span></span><span class="den">SST</span></span> &nbsp;&nbsp; SST = <span class="a">SSR + SSE</span></p><p>범위 0 ≤ R² ≤ 1. 1이면 잘 맞고(good fit), 0이면 못 맞습니다. 모델이 매우 나쁘면 <span class="a">음수</span>도 나옵니다. <span class="pg">p.12</span></p></div></div>
+<div class="blk"><div class="unit">전체 변동의 분해 <span class="pg">p.13</span></div><table class="mt "><tr><th>기호</th><th>식</th><th>뜻</th></tr><tr><td class="nm">SST Total</td><td class="eq">Σ(y<sub>i</sub> − <span style="text-decoration:overline">y</span>)<sup>2</sup></td><td>y의 <span class="a">전체</span> 변동</td></tr><tr><td class="nm">SSR Regression</td><td class="eq">Σ(<span class="a">ŷ<sub>i</sub> − <span style="text-decoration:overline">y</span></span>)<sup>2</sup></td><td>모형이 <span class="a">설명하는</span> 변동</td></tr><tr><td class="nm">SSE Error</td><td class="eq">Σ(<span class="a">y<sub>i</sub> − ŷ<sub>i</sub></span>)<sup>2</sup></td><td>설명되지 <span class="a">않는</span> 변동 (= RSS)</td></tr></table></div>
+<div class="blk sh"><h2><span class="sn">Ⅵ</span>다중 선형 회귀 <span class="pg">p.14–21</span></h2></div>
+<div class="blk"><div class="box"><p class="fx">Y = β<sub>0</sub> + β<sub>1</sub>X<sub>1</sub> + β<sub>2</sub>X<sub>2</sub> + ⋯ + β<sub>p</sub>X<sub>p</sub> + ε</p><p>β<sub>j</sub>: 다른 예측변수를 모두 <span class="a">고정</span><span class="en">holding all other predictors fixed</span>했을 때, X<sub>j</sub>가 1 늘면 Y가 <span class="a">평균적으로</span> 변하는 양입니다. <span class="pg">p.14</span></p><p>예: sales = β<sub>0</sub> + β<sub>1</sub>×TV + β<sub>2</sub>×radio + β<sub>3</sub>×newspaper + ε. 계수는 단순 회귀와 같이 <span class="a">RSS 최소</span>로 추정합니다. <span class="pg">p.15–16</span></p></div></div>
+<div class="blk"><div class="unit">수정된 결정계수 (Adjusted R²)</div><div class="box"><p class="fx" style="line-height:2.4">Adjusted R<sup>2</sup> = 1 − <span class="frac"><span class="num">SSE · (n − 1)</span><span class="den">SST · (n − p − 1)</span></span></p><p>n = 표본 크기, p = <span class="a">예측변수 개수</span>. 조정 항 <span class="frac"><span class="num">n − 1</span><span class="den">n − p − 1</span></span>이 예측변수 추가에 <span class="a">벌점</span><span class="en">penalizes</span>을 줍니다.</p><p>R²는 쓸모없는 변수를 넣어도 <span class="a">내려가지 않습니다</span>. Adjusted R²는 예측변수를 더 넣을 때 적합도가 <span class="a">과대평가</span>되는 것을 막습니다. <span class="pg">p.18</span></p></div></div>
+<div class="blk"><div class="unit">회귀계수 해석 <span class="pg">p.19</span></div><table class="mt "><tr><th>상황</th><th>결과</th></tr><tr><td>예측변수끼리 상관 없음 = <span class="a">균형 설계</span><span class="en">balanced design</span></td><td>각 계수를 <span class="a">따로</span> 추정·검정 가능. "다른 변수 고정, X<sub>j</sub> 1 변화 → β<sub>j</sub> 변화" 해석 가능</td></tr><tr><td>예측변수끼리 <span class="a">상관</span> 있음</td><td>모든 계수의 <span class="a">분산</span>이 커짐(때로는 매우). X<sub>j</sub>가 바뀌면 다른 것도 바뀌어 해석이 <span class="a">위험</span></td></tr></table></div>
+<div class="blk"><div class="prof"><div class="h">교수님 강조</div><p>관찰 데이터로는 <span class="a">인과관계</span> 주장을 피해야 합니다<span class="en">claims of causality should be avoided</span>. x → g(x) → y를 배워 "x가 y의 원인"으로 보기 쉽지만, x와 y의 <span class="a">상관관계</span>로 생각해야 합니다. <span class="pg">p.19</span></p></div></div>
+<div class="blk"><div class="box"><p><b>다항 회귀</b><span class="en">polynomial regression</span>: mpg = β<sub>0</sub> + β<sub>1</sub>×horsepower + β<sub>2</sub>×horsepower<sup>2</sup> + ε. 예측변수의 <span class="a">비선형</span> 효과를 넣습니다. <span class="pg">p.20</span></p><p>교수님: "non-linear할 수도 있구나", "degree 2, degree 5처럼 차수를 올리면 구불구불해질 수 있다" 정도. 그 이상은 심화라 다루지 않습니다.</p></div></div>
+<div class="blk"><div class="unit">회귀에서 중요한 질문 4가지 <span class="pg">p.21</span></div><table class="mt "><tr><th>질문</th><th>도구</th></tr><tr><td>예측변수 중 적어도 하나는 쓸모 있는가?</td><td>개별 계수 <span class="a">t-검정</span>, 모델 전체 <span class="a">F-검정</span></td></tr><tr><td>모든 변수가 필요한가, 일부만인가?</td><td><span class="a">전진·후진 선택</span><span class="en">forward · backward</span></td></tr><tr><td>모델이 데이터에 얼마나 잘 맞는가?</td><td><span class="a">R², Adjusted R²</span></td></tr><tr><td>예측값은 얼마이고 얼마나 정확한가?</td><td><span class="a">신뢰구간</span><span class="en">confidence interval</span></td></tr></table></div>
+<div class="blk sh"><h2><span class="sn">Ⅶ</span>로지스틱 회귀 <span class="pg">p.22–27</span></h2><p class=lead>y가 0(No) 또는 1(Yes)인 분류 문제입니다. 예: balance로 default 예측.</p></div>
+<div class="blk"><div class="box"><p>"Y를 X에 선형 회귀하고 Ŷ > 0.5이면 Yes로 분류하면?" E(Y | X = x) = Pr(Y = 1 | X = x)라 회귀가 맞아 보이지만, 선형 회귀는 <span class="a">0보다 작거나 1보다 큰</span> 확률을 낼 수 있습니다 → <span class="a">로지스틱 회귀</span>가 더 적절합니다. <span class="pg">p.22</span></p></div></div>
+<div class="blk"><div class="unit">로지스틱 회귀식 <span class="pg">p.24</span></div><div class="box"><p class="fx" style="line-height:2.4">p(X) = <span class="frac"><span class="num">e<sup>β₀ + β₁X</sup></span><span class="den">1 + e<sup>β₀ + β₁X</sup></span></span> = <span class="frac"><span class="num">1</span><span class="den">1 + e<sup>−(β₀ + β₁X)</sup></span></span></p><p class="fx" style="line-height:2.4">log <span class="frac"><span class="num">p(X)</span><span class="den">1 − p(X)</span></span> = β<sub>0</sub> + β<sub>1</sub>X</p><ul class="pt"><li>p(X) = Pr(Y = 1 | X): y가 <span class="a">1</span>일 확률, 1 − p(X): y가 <span class="a">0</span>일 확률</li><li>p(X)는 항상 <span class="a">0과 1 사이</span>입니다.</li><li>왼쪽 = <span class="a">로그 오즈</span> · 이 변환 = <span class="a">로짓 변환</span><span class="en">logit</span></li><li>직선 β<sub>0</sub> + β<sub>1</sub>X가 나타내는 것은 확률이 아니라 로그 오즈입니다.</li></ul></div></div>
+<div class="blk"><div class="box"><p class="fx" style="line-height:2.4">φ(z) = <span class="frac"><span class="num">1</span><span class="den">1 + e<sup>−z</sup></span></span></p><p><b>시그모이드 함수</b><span class="en">sigmoid</span>: 어떤 실수든 <span class="a">0~1</span>로 바꾸는 <span class="a">S자</span> 곡선입니다. z = 0에서 <span class="a">0.5</span>입니다. <span class="pg">p.25</span></p></div></div>
+<div class="blk"><div class="unit">계수 추정</div><div class="box"><p class="fx">ℓ(β<sub>0</sub>, β<sub>1</sub>) = ∏<sub>i: yᵢ=1</sub> p(x<sub>i</sub>) · ∏<sub>i: yᵢ=0</sub> (1 − p(x<sub>i</sub>))</p><p>계수는 <span class="a">최대우도</span><span class="en">maximum likelihood</span>로 추정합니다. Yes인 데이터는 p, No인 데이터는 1 − p를 모두 곱한 우도 ℓ을 <span class="a">최대</span>로 하는 계수를 고릅니다. <span class="pg">p.26</span></p></div></div>
+<div class="blk"><div class="unit">분류 규칙 <span class="pg">p.26–27</span></div><table class="mt "><tr><th>p̂(X)</th><th>예측</th></tr><tr><td>p̂(X) <span class="a">&gt; 0.5</span></td><td>Ŷ = 1 (Yes, Default)</td></tr><tr><td>p̂(X) <span class="a">≤ 0.5</span></td><td>Ŷ = 0 (No, Non-default)</td></tr><tr><td>교안 계수</td><td><span style="white-space:nowrap"><span style="display:inline-block;position:relative">β<span style="position:absolute;left:0;right:0;top:-.38em;text-align:center;font-size:.9em;line-height:1">ˆ</span></span><sub>0</sub></span> = −10.6513, <span style="white-space:nowrap"><span style="display:inline-block;position:relative">β<span style="position:absolute;left:0;right:0;top:-.38em;text-align:center;font-size:.9em;line-height:1">ˆ</span></span><sub>1</sub></span> = 0.0055</td></tr><tr><td>balance 1000: p̂ = 0.006</td><td><span class="a">No Default</span></td></tr><tr><td>balance 2000: p̂ = 0.586</td><td><span class="a">Default</span></td></tr></table></div>
+<div class="blk"><div class="unit">선형 vs 로지스틱 <span class="pg">p.23</span></div><table class="mt "><tr><th></th><th>선형 회귀</th><th>로지스틱 회귀</th></tr><tr><td>y</td><td>숫자(판매량 등)</td><td><span class="a">0 또는 1</span></td></tr><tr><td>그래프</td><td>직선</td><td><span class="a">S자</span> 곡선</td></tr><tr><td>출력 범위</td><td>제한 없음</td><td>항상 <span class="a">0 ~ 1</span></td></tr><tr><td>계수 추정</td><td>RSS <span class="a">최소</span>(최소제곱)</td><td>우도 <span class="a">최대</span>(최대우도)</td></tr><tr><td>과제</td><td>회귀</td><td><span class="a">분류</span>(이름만 회귀)</td></tr></table></div>
+<div class="blk sh"><h2><span class="sn">Ⅷ</span>헷갈리는 것 정리</h2></div>
+<div class="blk"><div class="trap"><div class="h">함정 · 헷갈리는 것</div><p><b>다항 모델 식의 첨자</b> <span class="pg">p.5</span><br>교안 5쪽 다항 모델 식은 y = b<sub>0</sub> + b<sub>1</sub>x + b<sub>2</sub>x<sub>1</sub><sup>2</sup>로 적혀 있지만, 20쪽 다항 회귀(horsepower, horsepower<sup>2</sup>)와 같이 독립변수가 하나인 식입니다.<br>→ 시험에서는 <span class="a">b<sub>2</sub>x<sup>2</sup></span>(같은 변수의 제곱)으로 읽고 답합니다.</p></div></div>
+<div class="blk"><div class="trap"><div class="h">함정 · 헷갈리는 것</div><div class="blk"><ul class="pt"><li>광고비 3개 → 판매량 1개는 <span class="a">multivariable</span>. multivariate는 <span class="a">y</span>가 여러 개일 때입니다.</li><li>잔차 = <span class="a">실제 − 예측</span> (y<sub>i</sub> − ŷ<sub>i</sub>). 순서를 뒤집으면 오답.</li><li>최소제곱법은 RSS를 <span class="a">최소</span>로. 최대로 하는 것은 로지스틱의 <span class="a">우도</span>.</li><li>arg min은 최솟값이 아니라 최소로 만드는 <span class="a">변수 값</span>(<span style="white-space:nowrap"><span style="display:inline-block;position:relative">β<span style="position:absolute;left:0;right:0;top:-.38em;text-align:center;font-size:.9em;line-height:1">ˆ</span></span><sub>0</sub></span>, <span style="white-space:nowrap"><span style="display:inline-block;position:relative">β<span style="position:absolute;left:0;right:0;top:-.38em;text-align:center;font-size:.9em;line-height:1">ˆ</span></span><sub>1</sub></span>).</li><li>R² = <span class="frac"><span class="num">SSE</span><span class="den">SST</span></span>가 아닙니다. R² = <span class="a">1 − <span class="frac"><span class="num">SSE</span><span class="den">SST</span></span></span> = <span class="frac"><span class="num">SSR</span><span class="den">SST</span></span>.</li></ul></div></div></div>
+<div class="blk"><div class="trap"><div class="h">함정 · 헷갈리는 것</div><div class="blk"><ul class="pt"><li>R²는 0~1이지만 모델이 매우 나쁘면 <span class="a">음수</span>도 가능(교안).</li><li>쓸모없는 변수를 넣었을 때 내려갈 수 있는 것은 <span class="a">Adjusted R²</span>. R²는 내려가지 않음.</li><li>계수가 양수여도 x가 y의 원인이라고 할 수 <span class="a">없습니다</span>(상관관계).</li><li>예측변수끼리 상관이 있으면 계수의 분산이 <span class="a">커집니다</span>.</li><li>p(x)와 1 − p(x)를 바꾸면 오답: p(x) = y가 <span class="a">1</span>일 확률.</li><li>p̂ = 0.5 정확히 같으면 <span class="a">0 (No)</span>. 1은 0.5 "초과"일 때만.</li><li>로지스틱은 이름만 회귀, 실제 쓰임은 <span class="a">분류</span>. 계수는 최소제곱이 아니라 <span class="a">최대우도</span>.</li></ul></div></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅸ</span>셀프 체크</h2><p class=lead>답을 가리고 소리 내어 답해 보세요.</p></div>
+<div class="blk"><ol class="pt" start="1"><li>선형 회귀를 만든다는 것은 무엇을 찾는 것인가? → <span class="a">회귀계수 β₀, β₁</span></li><li>입력 3개·출력 1개인 회귀는 multivariable인가 multivariate인가? → <span class="a">multivariable</span></li><li>Y = β₀ + β₁X + ε에서 ε와 햇(hat) 기호의 뜻은? → <span class="a">오차항 / 추정·예측값</span></li><li>잔차의 정의는? → <span class="a">eᵢ = yᵢ − ŷᵢ (실제 − 예측)</span></li></ol></div>
+<div class="blk"><ol class="pt" start="5"><li>잔차를 제곱해서 더하는 이유는? → <span class="a">+와 −가 상쇄되어 오차가 없는 것처럼 계산되는 것을 막으려고</span></li><li>최소제곱 추정 3단계는? → <span class="a">오차 제곱합 식 → arg min C로 정의 → 편미분 = 0</span></li><li><span style="display:inline-block;position:relative">β<span style="position:absolute;left:0;right:0;top:-.38em;text-align:center;font-size:.9em;line-height:1">ˆ</span></span>₁과 <span style="display:inline-block;position:relative">β<span style="position:absolute;left:0;right:0;top:-.38em;text-align:center;font-size:.9em;line-height:1">ˆ</span></span>₀ 공식은? → <span class="a">Σ(x−<span style="text-decoration:overline">x</span>)(y−<span style="text-decoration:overline">y</span>) ÷ Σ(x−<span style="text-decoration:overline">x</span>)², <span style="text-decoration:overline">y</span> − <span style="display:inline-block;position:relative">β<span style="position:absolute;left:0;right:0;top:-.38em;text-align:center;font-size:.9em;line-height:1">ˆ</span></span>₁<span style="text-decoration:overline">x</span></span></li><li>R²를 SST, SSR, SSE로 쓰면? → <span class="a">1 − <span class="frac"><span class="num">SSE</span><span class="den">SST</span></span> = <span class="frac"><span class="num">SSR</span><span class="den">SST</span></span></span></li></ol></div>
+<div class="blk"><ol class="pt" start="9"><li>다중 회귀에서 Adjusted R²를 쓰는 이유는? → <span class="a">예측변수 추가에 벌점, 적합도 과대평가 방지</span></li><li>회귀계수는 어떻게 해석해야 하는가? → <span class="a">상관관계로 (인과 단정 금지)</span></li><li>0·1 분류에 선형 회귀가 부적절한 이유는? → <span class="a">0 미만·1 초과 확률이 나올 수 있음</span></li><li>로지스틱 회귀의 계수 추정 방법과 분류 기준은? → <span class="a">최대우도, p̂ > 0.5이면 1</span></li></ol></div>
+</template>
+<script>
+(function(){
+const $=s=>document.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const masthead=`<header class="masthead"><div class="mh-top"><span class="org">Kangwon National University CSE</span><span class="subj">인공지능</span></div><div class="mh-title"><div class="y">B. 회귀 (Regression)</div><h1>개념정리노트</h1></div><div class="scope"><span class="h">범 위</span><div class="b">6주차 1차시 — Regression 교안 1–27쪽: 단순·다중 선형 회귀, 최소제곱 추정, R²·Adjusted R², 로지스틱 회귀. 「답 가리기」로 핵심어를 가리고 떠올려 보세요.</div></div></header>`;
+const running=`<div class="running"><span>인공지능 개념정리노트 · B. 회귀 (Regression)</span><span><b>인공지능</b></span></div>`;
+const blocks=[...$('#src').content.children].map(e=>e.outerHTML);
+function paginate(){
+  const PAGE_H=1180, PAD=40+70;
+  const m=document.createElement('section'); m.className='page measure';
+  m.innerHTML=masthead+`<div class="cols"><div class="col" id="mcol">${blocks.join('')}</div><div class="col"></div></div>`;
+  document.body.appendChild(m);
+  const capFirst=PAGE_H-PAD-m.querySelector('.masthead').offsetHeight-18-4;
+  m.innerHTML=running+`<div class="cols"><div class="col" id="mcol">${blocks.join('')}</div><div class="col"></div></div>`;
+  const capRest=PAGE_H-PAD-m.querySelector('.running').offsetHeight-18-4;
+  const els=$$('#mcol>.blk',m), hs=els.map(e=>e.offsetHeight), sh=els.map(e=>e.classList.contains('sh'));
+  m.remove();
+  // 제목 블록은 바로 다음 블록과 묶어서 배치
+  const units=[]; for(let i=0;i<blocks.length;i++){ if(sh[i]&&i+1<blocks.length){units.push({ids:[i,i+1],h:hs[i]+hs[i+1]});i++;} else units.push({ids:[i],h:hs[i]}); }
+  const pages=[]; let p=null, side='R', used=0;
+  const cap=()=>pages.length===1?capFirst:capRest;
+  units.forEach(u=>{
+    if(!p||used+u.h>cap()&&used>0){ if(!p||side==='R'){p={L:[],R:[]};pages.push(p);side='L';} else side='R'; used=0; }
+    p[side].push(...u.ids); used+=u.h;
+  });
+  return pages;
+}
+function render(){
+  const P=paginate(), total=P.length;
+  $('#book').innerHTML=P.map((pg,i)=>`<section class="page">${i===0?masthead:running}<div class="cols"><div class="col">${pg.L.map(k=>blocks[k]).join('')}</div><div class="col">${pg.R.map(k=>blocks[k]).join('')}</div></div><div class="pno">${i+1} / ${total}</div></section>`).join('');
+}
+const A4W=793.7, A4H=1122.5, PW=860;
+function preparePrint(){
+  document.body.classList.add('printing');
+  const pages=$$('#book .page'); const base=A4W/PW, sheet=A4H/base;
+  pages.forEach(p=>{p.style.zoom='';p.style.height='';});
+  pages.forEach(p=>{const h=p.scrollHeight; if(h<=sheet){p.style.zoom=base;p.style.height=sheet+'px';} else {p.style.zoom=A4H/h-0.0005;p.style.height=h+'px';}});
+  if(pages.length) pages[pages.length-1].classList.add('lastprint');
+}
+function afterPrint(){ document.body.classList.remove('printing'); $$('#book .page').forEach(p=>{p.style.zoom='';p.style.height='';p.classList.remove('lastprint');}); }
+window.addEventListener('beforeprint',preparePrint); window.addEventListener('afterprint',afterPrint);
+window.__memoPrint={prepare:preparePrint,done:afterPrint};
+function setQuiz(on){ document.body.classList.toggle('quiz',on); $('#quizBtn').classList.toggle('on',on); $('#quizBtn').textContent=on?'답 보이기':'답 가리기'; $$('.a.show').forEach(e=>e.classList.remove('show')); }
+function boot(){
+  render();
+  $('#quizBtn').onclick=()=>setQuiz(!document.body.classList.contains('quiz'));
+  document.addEventListener('click',e=>{const a=e.target.closest('.a'); if(a&&document.body.classList.contains('quiz')) a.classList.toggle('show');});
+  $('#printBtn').onclick=()=>{ const q=document.body.classList.contains('quiz'); setQuiz(false); window.print(); if(q) setQuiz(true); };
+  $('#printBlank').onclick=()=>{ setQuiz(true); document.body.classList.add('printblank'); window.print(); document.body.classList.remove('printblank'); };
+}
+const fams=['400 16px "Nanum Myeongjo"','800 16px "Nanum Myeongjo"','400 16px "Nanum Gothic"','700 16px "Nanum Gothic"'];
+const wait=document.fonts?Promise.all(fams.map(f=>document.fonts.load(f,'가A1').catch(()=>{}))):Promise.resolve();
+const start=()=>Promise.race([wait,new Promise(r=>setTimeout(r,2000))]).then(boot);
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start); else start();
+})();
+</script>
+</body>
+</html>

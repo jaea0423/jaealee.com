@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>인공지능 개념정리노트 — A. 규칙기반 AI · 기계학습 입문</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>
+:root{ --subject:#5B3CF5; }
+.toolbar a{color:#EEE;text-decoration:none;border:1px solid #6A6A6A;border-radius:4px;padding:5px 13px}
+.toolbar button.on{background:#F2F2F2;color:#111;border-color:#F2F2F2;font-weight:700}
+.blk{padding-bottom:16px}
+.blk.sh{padding-bottom:6px}
+.blk h2{margin:0;font-size:18px;font-weight:800;letter-spacing:.04em;display:flex;align-items:baseline;gap:10px;border-bottom:1.5px solid var(--line);padding-bottom:4px}
+.blk h2 .sn{font-family:var(--gothic);font-size:13px;font-weight:800;color:#fff;background:var(--ink);padding:1px 8px;letter-spacing:0}
+.blk .lead{margin:6px 0 0;font-family:var(--gothic);font-size:12px;color:var(--ink-2);line-height:1.6}
+.unit{font-family:var(--gothic);font-size:12.5px;font-weight:800;margin:0 0 4px;display:flex;align-items:center;gap:6px}
+.unit::before{content:"";width:6px;height:6px;background:var(--subject)}
+table.mt{width:100%;border-collapse:collapse;font-size:13.4px;line-height:1.5}
+table.mt th{background:#F1F1EE;font-family:var(--gothic);font-size:11.8px;font-weight:700;border:1px solid var(--line);padding:4px 6px;text-align:left;white-space:nowrap}
+table.mt td{border:1px solid var(--line);padding:5px 7px;vertical-align:middle}
+table.mt td.nm{font-weight:700;white-space:normal}
+table.mt td.res{font-weight:800;white-space:nowrap}
+table.mt td.eq{white-space:nowrap}
+table.mt td.src{font-family:var(--gothic);font-size:11.6px;color:var(--ink-2)}
+table.mt td.why{font-size:12.6px}
+table.mt td.c{text-align:center;font-weight:800;width:56px}
+table.mt td.x{color:var(--red);width:46%}
+table.mt.dp td{font-size:12.6px}
+table.mt.dp td.res{white-space:nowrap}
+.box{border:1px solid var(--line);padding:8px 12px;font-size:13.2px;line-height:1.6}
+.box b{font-family:var(--gothic);font-size:12.5px}
+.box ol,.box ul{margin:2px 0 6px;padding-left:1.4em}
+.frac{font-size:.86em}
+/* 가리기 */
+body.quiz .a{color:transparent!important;background:#E4E4E0;cursor:pointer;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body.quiz .a *{visibility:hidden}
+body.quiz .a.show{color:var(--red)!important;background:transparent}
+body.quiz .a.show *{visibility:visible}
+body.quiz.printblank .a{background:#fff}
+
+.blk p{margin:4px 0;font-size:13.2px;line-height:1.65}
+.blk ul.pt,.blk ol.pt{margin:3px 0 4px;padding-left:1.25em;font-size:13.2px;line-height:1.62}
+.blk ul.pt li,.blk ol.pt li{margin:1px 0}
+.prof{border:1.5px solid var(--subject);padding:6px 10px;font-size:13px;line-height:1.6}
+.prof .h,.trap .h,.key .h{font-family:var(--gothic);font-size:11.8px;font-weight:800;margin-bottom:2px}
+.prof .h{color:var(--subject)}
+.trap{border:1px dashed var(--red);padding:6px 10px;font-size:13px;line-height:1.6}
+.trap .h{color:var(--red)}
+.key{background:#F4F3EF;padding:6px 10px;font-size:13.2px;line-height:1.6;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.en{font-family:var(--gothic);font-size:.82em;color:var(--ink-2);margin-left:2px}
+.pg{font-family:var(--gothic);font-size:10.5px;color:var(--ink-2);margin-left:4px;white-space:nowrap}
+.fx{text-align:center;font-size:14px;margin:4px 0;line-height:1.7}
+mark{background:linear-gradient(transparent 55%,#DCD2FF 55%);color:inherit;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+table.mt td{font-size:13px}
+
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <a href="../exam/index.html">‹ 문제지 목록</a>
+  <span class="sep"></span>
+  <button id="quizBtn">답 가리기</button>
+  <span class="sep"></span>
+  <button id="printBtn" class="primary">인쇄 · PDF</button>
+  <button id="printBlank" title="답 칸을 비운 채 인쇄 — 손으로 채워 보는 연습지">빈칸 연습지 인쇄</button>
+</div>
+<div id="book"></div>
+<template id="src">
+<div class="blk sh"><h2><span class="sn">Ⅰ</span>한눈에 보기</h2><p class=lead>앞부분(6장)은 사람이 규칙을 써 주는 AI, 뒷부분(ML)은 데이터에서 규칙을 배우는 AI입니다.</p></div>
+<div class="blk"><div class="key"><div class="blk"><ul class="pt"><li>규칙기반 AI는 <span class="a">논리</span> 바탕의 규칙(사실 + If–then)으로 <span class="a">추론</span>합니다.</li><li>명제 → 논리 연산 4개(~, ∨, ∧, →) → 술어 논리로 지식을 식으로 씁니다.</li><li>추론 3종: <span class="a">귀납</span>(사례 → 일반) · <span class="a">연역</span>(전제 → 결론) · <span class="a">유비</span>(유사성).</li><li>탐색: 순방향·역방향 / DFS·BFS(<span class="a">무정보</span> 탐색) / 휴리스틱 탐색 / 최소최대 탐색.</li><li>알고리즘 vs 휴리스틱, A*(평가 함수 f), 8-Queens(약 <span class="a">44억</span> 가지).</li><li>전문가 시스템 = <span class="a">지식베이스</span> + <span class="a">추론기구</span>.</li><li>ML: AI ⊃ 기계학습 ⊃ 딥러닝 ⊃ 생성형 AI, Samuel·Mitchell(E·T·P) 정의.</li><li>학습 유형: 지도 · 비지도 · 강화 / 배치 vs 온라인.</li></ul></div></div></div>
+<div class="blk"><div class="prof"><div class="h">교수님 강조</div><div class="blk"><ul class="pt"><li>교안 〈표 6.4〉 머리글 "~p → q"는 <span class="a">오류</span>. <span class="a">p → q</span>가 맞습니다. <span class="pg">6장 p.10</span></li><li>생성형 AI는 <span class="a">딥러닝</span> 안에 들어갑니다(교안 그림에 없는 내용).</li><li>새로 들어오는 데이터를 처리할 수 있게 하는 것 = <span class="a">일반화</span><span class="en">generalization</span>.</li><li>Induction을 <span class="a">추론</span>이라고 부르셨습니다(= 귀납).</li><li>배치 학습보다 온라인 학습이 좋은 이유: <span class="a">더 빠르다</span>.</li></ul></div><p style="margin:4px 0 0;font-size:12px">범위: ML 교안은 p.21(외부 메모리 학습)까지. 사례 기반 학습(p.22)부터는 5주차 1차시라 시험 범위가 아닙니다.</p></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅱ</span>논리와 명제 <span class="pg">6장 p.3–11</span></h2><p class=lead>규칙기반 AI의 이론적 기반이 논리입니다.</p></div>
+<div class="blk"><div class="box"><p>규칙기반 AI는 논리 바탕의 규칙을 통해 추론합니다. 논리는 규칙기반 AI에 <span class="a">이론적 기반</span>을 제공하고, AI에서 <span class="a">지식 표현</span>이나 <span class="a">추론</span><span class="en">inference</span>의 도구로 쓰입니다.<span class="pg">6장 p.5</span></p><p><b>명제</b><span class="en">proposition</span>: 명확하게 <span class="a">참(T)/거짓(F)</span>을 구분할 수 있는 문장이나 식입니다. <span class="pg">6장 p.6</span></p><p>거짓인 문장("2 × 7의 값은 홀수다")도 <span class="a">명제</span>입니다. "사과는 맛있다"는 참·거짓이 정해지지 않아 명제가 아닙니다. 둘 이상의 명제가 결합된 것은 <span class="a">합성 명제</span>입니다.</p></div></div>
+<div class="blk"><div class="unit">명제 논리 vs 술어 논리 <span class="pg">6장 p.6, 11</span></div><table class="mt "><tr><th>구분</th><th>다루는 것</th></tr><tr><td class="nm">명제 논리<span class="en">propositional</span></td><td>문장 <span class="a">전체</span>의 참/거짓을 판별하는 법칙</td></tr><tr><td class="nm">술어 논리<span class="en">predicate</span></td><td>문장을 <span class="a">주어와 술어</span>로 구분해 참/거짓 법칙을 다룸. 대상들 간의 <span class="a">관계</span>도 표현</td></tr></table></div>
+<div class="blk"><div class="unit">논리 연산 4개 — 예외 한 줄만 외웁니다 <span class="pg">6장 p.7–10</span></div><table class="mt "><tr><th>연산</th><th>기호 · 읽기</th><th>진리값 규칙</th></tr><tr><td class="nm">부정<span class="en">negation</span></td><td>~p · not p</td><td>p의 반대 진리값</td></tr><tr><td class="nm">논리합<span class="en">disjunction</span></td><td>p ∨ q · p 또는 q</td><td>둘 다 <span class="a">F</span>일 때만 F</td></tr><tr><td class="nm">논리곱<span class="en">conjunction</span></td><td>p ∧ q · p 그리고 q</td><td>둘 다 <span class="a">T</span>일 때만 T</td></tr><tr><td class="nm">조건<span class="en">implication</span></td><td>p → q · p이면 q</td><td>p = <span class="a">T</span>, q = <span class="a">F</span>일 때만 F</td></tr></table></div>
+<div class="blk"><div class="unit">진리표 — 가정이 F이면 → 는 항상 T</div><table class="mt dp"><tr><th>p, q</th><th>p ∨ q</th><th>p ∧ q</th><th>p → q</th></tr><tr><td>T, T</td><td>T</td><td>T</td><td>T</td></tr><tr><td>T, F</td><td>T</td><td><span class="a">F</span></td><td><span class="a">F</span></td></tr><tr><td>F, T</td><td>T</td><td>F</td><td><span class="a">T</span></td></tr><tr><td>F, F</td><td><span class="a">F</span></td><td>F</td><td><span class="a">T</span></td></tr></table></div>
+<div class="blk"><div class="unit">예문의 진리값 — "이거나" ∨, "이고" ∧, "라면" → <span class="pg">6장 p.8–10</span></div><table class="mt "><tr><th>교안 예문</th><th>식</th><th>값</th></tr><tr><td>사과는 채소이거나, 시금치는 채소이다</td><td>F ∨ T</td><td><span class="a">T</span></td></tr><tr><td>서울은 대한민국의 수도이고, 3 × 2 = 5이다</td><td>T ∧ F</td><td><span class="a">F</span></td></tr><tr><td>유채꽃이 노랗다면, 바다가 육지이다</td><td>T → F</td><td><span class="a">F</span></td></tr><tr><td>3 × 2 = 5라면, 런던은 미국의 수도이다</td><td>F → F</td><td><span class="a">T</span></td></tr></table></div>
+<div class="blk"><div class="unit">술어 논리 표기</div><div class="box"><p>술어 논리는 <span class="a">변수</span>의 값에 따라 T 또는 F가 정해집니다. x<sup>2</sup> + 5x + 6 = 0은 x가 −2나 −3일 때만 T입니다.</p><p>"영철이는 남자다" → <span class="a">남자(영철)</span> · "영철의 아버지는 김춘추다" → <span class="a">아버지(김춘추, 영철)</span>. 괄호 밖이 술어(성질·관계), 괄호 안이 대상입니다. <span class="pg">6장 p.11</span></p></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅲ</span>추론 <span class="pg">6장 p.12–16</span></h2></div>
+<div class="blk"><div class="box"><p><b>추론</b><span class="en">inference</span>: 알려진 사실이나 명제를 근거로 삼아 <span class="a">미지의 사실</span>에 대한 판단이나 결론을 이끌어내는 사고 과정입니다. 추론에 주로 쓰이는 프로그래밍 언어는 <span class="a">Prolog</span>입니다. <span class="pg">6장 p.12</span></p></div></div>
+<div class="blk"><div class="unit">추론의 종류 3가지 <span class="pg">6장 p.13–16</span></div><table class="mt "><tr><th>종류</th><th>방향</th><th>특징</th></tr><tr><td class="nm">귀납<span class="en">induction</span></td><td><span class="a">개별 사실</span> → 일반적 결론</td><td>논리적 필연성이 <span class="a">적음</span>. 새 지식·이론의 <span class="a">발견과 확장</span>에 쓰임</td></tr><tr><td class="nm">연역<span class="en">deduction</span></td><td>전제 → 다른 결론</td><td><span class="a">가장 널리</span> 쓰임. 최초의 <span class="a">대전제</span>가 가장 중요한 근거. 확장성 부족, 논리의 <span class="a">일관성</span>이 장점</td></tr><tr><td class="nm">유비<span class="en">analogy</span></td><td>한 현상이 유사 → 다른 현상도 유사</td><td>"<span class="a">유추</span>"라고도 함. 모르던 새 영역 이해에 도움</td></tr></table></div>
+<div class="blk"><div class="box"><p>예: 귀납 = 까마귀 1, 2, 3 … 이 까맣다 → 모든 까마귀는 까맣다 · 연역 = <span class="a">삼단논법</span>(소크라테스는 사람이다, 사람은 모두 죽는다 → 소크라테스는 죽는다).</p></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅳ</span>탐색 기법과 알고리즘 <span class="pg">6장 p.17–30</span></h2></div>
+<div class="blk"><div class="unit">추론을 통한 탐색 <span class="pg">6장 p.17</span></div><table class="mt "><tr><th>추론 방향</th><th>진행</th></tr><tr><td>순방향<span class="en">forward</span></td><td><span class="a">출발</span> 상태 → <span class="a">목표</span> 상태</td></tr><tr><td>역방향<span class="en">backward</span></td><td><span class="a">목표</span> 상태 → <span class="a">출발</span> 상태</td></tr><tr><td>양방향</td><td>순방향과 역방향을 <span class="a">접합</span></td></tr></table></div>
+<div class="blk"><div class="unit">DFS · BFS <span class="pg">6장 p.18–20</span></div><table class="mt "><tr><th></th><th>DFS 깊이 우선</th><th>BFS 너비 우선</th></tr><tr><td>순서</td><td>첫 정점 방문 후 <span class="a">왼쪽</span>으로 계속 내려감, 없으면 <span class="a">되돌아와</span> 순환 탐색</td><td>시작 정점과 연결된 정점을 왼쪽부터 모두 → <span class="a">level</span> 0, 1, 2 … 순서</td></tr><tr><td>분류</td><td><span class="a">무정보</span> 탐색</td><td><span class="a">무정보</span> 탐색</td></tr></table></div>
+<div class="blk"><div class="box"><p>예: 루트 A의 자식 B, C / B의 자식 D, E / C의 자식 F. DFS = <span class="a">A B D E C F</span>, BFS = <span class="a">A B C D E F</span>.</p></div></div>
+<div class="blk"><div class="unit">탐색의 종류 <span class="pg">6장 p.20–21</span></div><table class="mt "><tr><th>탐색</th><th>뜻</th></tr><tr><td class="nm">무정보 탐색<span class="en">uninformed</span></td><td><span class="a">사전 정보</span>를 사용하지 않고 일정한 순서대로만 탐색 (DFS, BFS)</td></tr><tr><td class="nm">휴리스틱 탐색</td><td>탐색 과정에서 <span class="a">경험적 지식</span>을 활용</td></tr><tr><td class="nm">최소최대 탐색<span class="en">minimax</span></td><td>상대가 있는 <span class="a">2인용 게임</span>(틱택토). 나의 가능성 <span class="a">최대</span>, 상대방의 가능성 <span class="a">최소</span> 전략</td></tr><tr><td class="nm">전지 작업<span class="en">pruning</span></td><td>탐색이 필요 없는 경로를 <span class="a">잘라내는</span> 작업</td></tr></table></div>
+<div class="blk"><div class="unit">알고리즘 vs 휴리스틱 <span class="pg">6장 p.22, 26</span></div><table class="mt "><tr><th></th><th>알고리즘</th><th>휴리스틱</th></tr><tr><td>정의</td><td>문제 해결 단계들을 <span class="a">체계적으로 명시</span>한 것</td><td>과거 경험을 바탕으로 <span class="a">직관적</span>으로 판단해 선택하는 의사결정 방식</td></tr><tr><td>특징</td><td>순서도·유사 코드·언어적 표현. 단 하나만 있는 것이 <span class="a">아님</span></td><td>최적을 <span class="a">보장하지 않음</span>. 만족할 만한 해결책을 비교적 <span class="a">빠르게</span> 찾는 실용적 방법</td></tr></table></div>
+<div class="blk"><div class="box"><p><b>A* 알고리즘</b>: <span class="a">최상 우선 탐색</span> 중 가장 잘 알려진 방법입니다. 출발점에서 목표지점까지 <span class="a">최적 경로</span>(비용이 가장 적거나 짧은 경로)를 찾고, <span class="a">평가 함수 f</span>를 사용해 다음에 이동할 경로를 결정합니다. <span class="pg">6장 p.28</span></p></div></div>
+<div class="blk"><div class="box"><p><b>8-Queens 문제</b>: 체스에서 유래했고, 서로 <span class="a">공격하지 않는</span> 위치에 퀸 8개를 배치합니다. 퀸은 수평·수직·대각선으로 몇 칸이든 이동합니다. 64칸의 경우의 수는 약 <span class="a">44억</span> 가지이며, 해답은 <span class="a">여러 개</span>가 나옵니다. <span class="pg">6장 p.29–30</span></p></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅴ</span>규칙기반 전문가 시스템 <span class="pg">6장 p.31–38</span></h2></div>
+<div class="blk"><div class="box"><p>규칙은 "<span class="a">If ooo then xxx</span>" 형식으로 표현합니다. 지식처리 기술은 규칙이나 <span class="a">프레임</span>에 의한 표현입니다.</p><p><b>의미 네트워크</b><span class="en">semantic network</span>: 개념 간의 관계를 <span class="a">링크</span><span class="en">link</span>로 연결한 것입니다(개–세퍼드, 개–진돗개). 지식을 <span class="a">체계화</span>해 표현하기에 적합합니다. <span class="pg">6장 p.31</span></p><p><b>규칙기반 시스템</b>: 사실(fact)을 나타내는 <span class="a">지식베이스</span>와 If–then <span class="a">추론규칙</span>으로 이루어집니다. 질의가 오면 둘을 이용해 추론한 뒤 결과를 알려줍니다. <span class="pg">6장 p.32</span></p></div></div>
+<div class="blk"><div class="unit">추론 규칙표 <span class="pg">6장 p.32</span> — ∴ = 따라서</div><table class="mt "><tr><th>형태</th><th>이름</th></tr><tr><td>P ∴ P ∨ Q</td><td>Addition (가산)</td></tr><tr><td>P, Q ∴ P ∧ Q</td><td>Conjunction (논리곱)</td></tr><tr><td>P ∨ Q, ¬P ∴ Q</td><td><span class="a">Disjunctive</span> Syllogism (선언적 삼단논법)</td></tr><tr><td>P → Q, Q → R ∴ P → R</td><td><span class="a">Hypothetical</span> Syllogism (가언적 삼단논법)</td></tr></table></div>
+<div class="blk"><div class="unit">소크라테스의 죽음 (그림 6.15)</div><div class="box"><p>지식베이스: Socrates is a human · Daesukim is a human · Wurry is an animal</p><p>추론규칙: If X is a human, then X dies · If X is an animal, then X dies</p><p>"Is Socrates die?" → <span class="a">Yes</span> · "Tell me what dies?" → <span class="a">Socrates, Daesukim, Wurry</span></p><p>"죽는다"는 지식베이스에 직접 없습니다. 사실과 규칙이 결합해 <span class="a">추론</span>으로 만들어진 답입니다. <span class="pg">6장 p.33–34</span></p></div></div>
+<div class="blk"><div class="box"><p><b>전문가 시스템</b><span class="en">Expert System</span>: 컴퓨터 <span class="a">자문</span> 시스템의 일종입니다. 특정 분야 인간 전문가의 전문 지식과 AI의 <span class="a">추론 능력</span>을 이용한 문제 해결 시스템입니다. <span class="pg">6장 p.35</span></p><p>전문가 시스템으로 향한 이유: ① 규칙기반 AI가 전문가 시스템으로 응용됨 ② <span class="a">A* 알고리즘</span> 이후 새로운 알고리즘 발견의 어려움. <span class="pg">6장 p.36</span></p></div></div>
+<div class="blk"><div class="unit">전문가 시스템의 동작 순서</div><ol class="pt"><li>전문가의 지식을 정리해 <span class="a">지식베이스</span>부터 구축합니다.</li><li>사용자가 질문합니다.</li><li><span class="a">추론기구</span>가 지식베이스를 이용하여 추론합니다.</li><li>결과를 사용자에게 전해 줍니다.</li></ol></div>
+<div class="blk"><div class="unit">전문가 시스템의 응용 〈표 6.5〉 <span class="pg">6장 p.38</span></div><table class="mt "><tr><th>이름</th><th>기능</th><th>개발 기관</th></tr><tr><td>MYCIN</td><td><span class="a">백혈병 진단</span></td><td>스탠퍼드 대학</td></tr><tr><td>DENDRAL</td><td><span class="a">질량 분석</span>의 해설</td><td>스탠퍼드 대학</td></tr><tr><td>PROSPECTOR</td><td><span class="a">광맥 탐사</span></td><td>SRI International</td></tr><tr><td>AIRPLAN</td><td>항공기 이착륙 관리</td><td>U.S. Army</td></tr><tr><td>LOGOS</td><td><span class="a">자동 번역</span></td><td>Logos Computer System</td></tr><tr><td>ASK</td><td>자연어 DB 관리 시스템</td><td>Caltech</td></tr></table></div>
+<div class="blk sh"><h2><span class="sn">Ⅵ</span>기계학습이란 <span class="pg">ML p.1–7</span></h2><p class=lead>Introduction to Machine Learning 교안입니다.</p></div>
+<div class="blk"><div class="unit">포함 관계: AI ⊃ <span class="a">ML</span> ⊃ <span class="a">DL</span> ⊃ <span class="a">생성형 AI</span> <span class="pg">ML p.1</span></div><table class="mt "><tr><th>영역</th><th>정의</th></tr><tr><td class="nm">인공지능 AI</td><td>사람이 하던 일을 기계가 수행하는 모든 자동화</td></tr><tr><td class="nm">기계학습 ML</td><td>규칙을 <span class="a">명시적으로 프로그래밍하지 않아도</span> 데이터에서 패턴을 학습</td></tr><tr><td class="nm">딥러닝 DL</td><td><span class="a">신경망</span> 기반, 특징 추출과 의사결정을 한 번에(end to end)</td></tr><tr><td class="nm">생성형 AI</td><td><span class="a">딥러닝</span> 안에 들어가는 영역(교수님)</td></tr></table></div>
+<div class="blk"><div class="unit">기계학습의 두 정의</div><div class="box"><p><b>Samuel (1959)</b>: 컴퓨터가 <span class="a">명시적으로 프로그래밍되지 않고도</span><span class="en">without being explicitly programmed</span> 학습하는 능력을 갖게 하는 연구 분야.</p><p><b>Mitchell (1997)</b>: 작업 <span class="a">T</span>에 대한 성능을 <span class="a">P</span>로 측정했을 때, 경험 <span class="a">E</span>로 성능이 향상되면 프로그램은 E로부터 학습한다. <span class="pg">ML p.2</span></p><p>E = <span class="a">experience</span>(경험) · T = <span class="a">task</span>(작업) · P = <span class="a">performance measure</span>(성능 지표)</p></div></div>
+<div class="blk"><div class="unit">기계학습을 쓰는 이유 4가지 <span class="pg">ML p.3</span></div><table class="mt "><tr><th>이유</th><th>핵심</th></tr><tr><td>① 수작업 조정·긴 규칙 목록이 필요한 문제</td><td>ML 알고리즘 하나로 코드 <span class="a">단순화</span>, 성능 향상</td></tr><tr><td>② 전통적 방식으로 좋은 해법이 없는 복잡한 문제</td><td>최고의 ML 기법이 해법을 찾음</td></tr><tr><td>③ <span class="a">변화하는 환경</span><span class="en">fluctuating environments</span></td><td><span class="a">새 데이터</span>에 적응 → 교수님: <span class="a">일반화</span></td></tr><tr><td>④ 복잡한 문제·대량 데이터</td><td><span class="a">통찰</span><span class="en">insights</span>을 얻음</td></tr></table></div>
+<div class="blk"><div class="box"><p>전통 방식과 ML 방식은 가운데 단계 하나만 다릅니다. 전통 = <span class="a">규칙 작성</span><span class="en">write rules</span>, ML = 데이터로 <span class="a">ML 알고리즘 훈련</span><span class="en">train ML algorithm</span>. 평가 → 불만족이면 오류 분석 후 반복하는 구조는 같습니다. <span class="pg">ML p.4</span></p></div></div>
+<div class="blk"><div class="unit">"Learning" in ML <span class="pg">ML p.7</span></div><table class="mt "><tr><th>용어</th><th>뜻</th></tr><tr><td class="nm">Induction</td><td>특정한 예시들의 집합에서 <span class="a">일반적인 규칙</span>을 뽑아내는 과정 (교수님: <span class="a">추론</span>, 6장의 귀납)</td></tr><tr><td class="nm">Learning</td><td>데이터를 분석해 자동으로 정보를 추출하는 컴퓨터 모델을 만드는 것</td></tr><tr><td class="nm">모델</td><td>데이터에 대한 좋고 쓸모 있는 <span class="a">근사</span><span class="en">approximation</span>. 모두 설명하지 못해도 일부를 설명</td></tr></table></div>
+<div class="blk sh"><h2><span class="sn">Ⅶ</span>기계학습 시스템의 종류 <span class="pg">ML p.8–18</span></h2></div>
+<div class="blk"><div class="unit">분류 기준 3가지 <span class="pg">ML p.8</span></div><table class="mt "><tr><th>분류 기준</th><th>나뉘는 것</th></tr><tr><td>사람의 <span class="a">감독</span>을 받으며 훈련하는가</td><td>지도 · 비지도 · <span class="a">준지도</span> · 강화</td></tr><tr><td>실시간으로 <span class="a">점진적</span> 학습이 가능한가</td><td><span class="a">온라인</span> vs <span class="a">배치</span></td></tr><tr><td>새 데이터를 알려진 데이터와 비교 / 패턴으로 모델 생성</td><td>사례 기반 vs 모델 기반 (범위 아님)</td></tr></table></div>
+<div class="blk"><div class="unit">x → g(x) → y에서 무엇이 주어지는가 <span class="pg">ML p.9</span></div><table class="mt "><tr><th>학습</th><th>주어지는 것</th><th>대표 작업</th></tr><tr><td class="nm">지도</td><td><span class="a">{(x<sup>t</sup>, y<sup>t</sup>)}</span> 입력 + 라벨</td><td>분류 · 회귀</td></tr><tr><td class="nm">비지도</td><td><span class="a">{x<sup>t</sup>}</span> 입력만</td><td>군집화 · 시각화 · 차원 축소 · 이상치 탐지</td></tr><tr><td class="nm">강화</td><td>지도 출력 없음 + <span class="a">지연된 보상</span></td><td>에이전트가 <span class="a">정책</span> 학습</td></tr></table></div>
+<div class="blk"><div class="unit">지도 학습: 분류 vs 회귀 <span class="pg">ML p.9–11</span></div><table class="mt "><tr><th></th><th>분류</th><th>회귀</th></tr><tr><td>예측하는 것</td><td><span class="a">이산적인 라벨</span><span class="en">discrete label</span></td><td><span class="a">연속적인 수</span><span class="en">continuous number</span></td></tr></table></div>
+<div class="blk"><div class="box"><p>지도 학습의 훈련 데이터에는 원하는 답, 즉 <span class="a">라벨</span><span class="en">label</span>이 포함됩니다. <span class="pg">ML p.10</span></p><p>비지도 학습은 라벨이 <span class="a">없고</span>, 교사나 감독 없이 학습합니다. <span class="pg">ML p.13</span></p><p>지도 학습 알고리즘: 선형 회귀, <span class="a">로지스틱 회귀</span>, k-최근접 이웃, 결정 트리·랜덤 포레스트, <span class="a">SVM</span>, 신경망 등. <span class="pg">ML p.12</span></p></div></div>
+<div class="blk"><div class="unit">비지도 학습 작업 4가지 <span class="pg">ML p.14–17</span></div><table class="mt "><tr><th>작업</th><th>뜻</th></tr><tr><td class="nm">군집화</td><td>서로 "<span class="a">비슷한</span>" 객체의 모임, 다른 군집과는 "비슷하지 않은" 집합(군집)을 찾음</td></tr><tr><td class="nm">시각화</td><td><span class="a">t-SNE</span>: <span class="a">국소 구조</span><span class="en">local structure</span>를 보존하며 2·3차원으로 줄여 시각화</td></tr><tr><td class="nm">차원 축소</td><td>본질을 담는 더 <span class="a">낮은 차원의 부분공간</span>으로 <span class="a">투영</span><span class="en">projecting</span></td></tr><tr><td class="nm">이상치 탐지</td><td>대다수 데이터에서 크게 <span class="a">벗어난</span> 관측값을 찾음<span class="en">anomaly</span></td></tr></table></div>
+<div class="blk"><div class="box"><p><b>강화 학습</b>: 학습 시스템인 <span class="a">에이전트</span><span class="en">agent</span>가 환경을 관찰하고 행동을 골라 수행하며 <span class="a">보상/벌점</span>을 받습니다. 시간에 따라 보상을 최대화하는 최선의 전략인 <span class="a">정책</span><span class="en">policy</span>을 스스로 학습합니다. <span class="pg">ML p.18</span></p><p>6단계: 관찰 → 정책으로 행동 선택 → 행동 → <span class="a">보상 또는 벌점</span>(예: 불에 닿아 −50점) → <span class="a">정책 갱신</span> → 최적 정책까지 반복</p></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅷ</span>배치 학습과 온라인 학습 <span class="pg">ML p.19–21</span></h2><p class=lead>데이터 흐름에서 점진적으로 학습할 수 있는가로 나눕니다.</p></div>
+<div class="blk"><div class="unit">배치 vs 온라인</div><table class="mt "><tr><th></th><th>배치 학습</th><th>온라인 학습</th></tr><tr><td>점진적 학습</td><td><span class="a">불가</span> — 가용한 데이터 <span class="a">전부</span>로 훈련</td><td>가능 — <span class="a">미니배치</span>로 나눠 순차 공급</td></tr><tr><td>비용</td><td>시간·자원이 많이 들어 보통 오프라인</td><td>학습 단계 하나가 <span class="a">빠르고 저렴</span></td></tr><tr><td>운영 후</td><td>더 학습하지 않고 배운 것만 적용(= <span class="a">오프라인 학습</span>)</td><td>새 데이터로 <span class="a">점진적</span> 갱신. 데이터가 연속으로 들어오고 빨리 적응해야 하는 시스템에 적합</td></tr></table></div>
+<div class="blk"><div class="box"><p><b>외부 메모리 학습</b><span class="en">out-of-core learning</span>: 온라인 학습 알고리즘으로 한 컴퓨터의 <span class="a">주기억장치</span>에 들어가지 않는 거대한 데이터셋을 학습합니다. 데이터 일부를 불러와 훈련 단계를 수행하고, 전체를 다 돌 때까지 반복합니다(<span class="a">점진적 학습</span><span class="en">incremental learning</span>). <span class="pg">ML p.21</span></p></div></div>
+<div class="blk"><div class="prof"><div class="h">교수님 강조</div><p>배치 학습에 비해 온라인 학습이 좋은 이유는 <span class="a">더 빠르다</span>는 것입니다. 교안 표현은 "Each learning step is faster and cheaper"입니다. <span class="pg">ML p.20</span></p></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅸ</span>헷갈리는 것 정리</h2></div>
+<div class="blk"><div class="trap"><div class="h">함정 · 헷갈리는 것</div><p><b>삼단논법의 대전제·소전제</b> <span class="pg">6장 p.15</span><br>교안은 "대전제 - 소크라테스는 사람이다 / 소전제 - 사람은 모두 죽는다"로 적혀 있습니다. 일반적인 정의는 반대(대전제 = 일반 규칙)입니다.<br>→ 시험에서는 "연역의 가장 중요한 근거 = 최초의 <span class="a">대전제</span>"만 확실히 하고, 대전제·소전제를 쓸 때는 <span class="a">문장 내용을 함께</span> 적습니다.</p></div></div>
+<div class="blk"><div class="trap"><div class="h">함정 · 헷갈리는 것</div><p><b>MYCIN의 기능</b> <span class="pg">6장 p.38</span><br>6장 〈표 6.5〉는 "<span class="a">백혈병 진단</span>", 3주차(3장)는 "혈액감염 치료 진단과 처방"입니다.<br>→ 6장 표를 묻는 문제면 표 그대로 백혈병 진단으로 답합니다. 둘 다 "스탠퍼드의 <span class="a">의료 진단</span> 전문가 시스템"이라는 점은 같습니다.</p></div></div>
+<div class="blk"><div class="trap"><div class="h">함정 · 헷갈리는 것</div><div class="blk"><ul class="pt"><li>거짓인 문장도 <span class="a">명제</span>입니다. 참/거짓이 정해지지 않는 문장만 명제가 아닙니다.</li><li>p → q가 F인 경우는 p = T, q = F <span class="a">하나뿐</span>.</li><li>귀납은 필연성이 <span class="a">적고</span>, 연역은 <span class="a">확장성</span>이 부족합니다(방향 반대로 내면 오답).</li><li>DFS·BFS는 휴리스틱이 아니라 <span class="a">무정보</span> 탐색입니다.</li><li>역방향 추론 = <span class="a">목표</span> → 출발. 출발 → 목표는 순방향.</li><li>휴리스틱은 최적을 보장하지 <span class="a">않습니다</span>.</li></ul></div></div></div>
+<div class="blk"><div class="trap"><div class="h">함정 · 헷갈리는 것</div><div class="blk"><ul class="pt"><li>생성형 AI ⊂ 딥러닝입니다. 딥러닝이 생성형 AI 안에 있는 것이 <span class="a">아닙니다</span>.</li><li>분류 = <span class="a">이산</span> 라벨, 회귀 = <span class="a">연속</span> 수. 로지스틱 회귀는 이름만 회귀이고 지도 학습 알고리즘 목록에 들어 있습니다.</li><li>비지도 데이터는 {x<sup>t</sup>}, 지도는 {(x<sup>t</sup>, y<sup>t</sup>)}. 강화는 정답 대신 <span class="a">지연된</span> 보상.</li><li>배치 학습은 운영 중에 더 학습하지 <span class="a">않습니다</span>. 오프라인 학습이라고도 합니다.</li><li>온라인 학습이 "빠르다" = 학습 단계 <span class="a">하나하나</span>가 빠르고 저렴하다는 뜻입니다. 전체 학습 시간이 늘 짧다는 뜻이 아닙니다.</li><li>전문가 시스템은 AI이지만 규칙을 사람이 쓰므로 기계학습은 아닙니다(보충).</li></ul></div></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅹ</span>셀프 체크</h2><p class=lead>답을 가리고 소리 내어 답해 보세요.</p></div>
+<div class="blk"><ol class="pt" start="1"><li>명제의 정의는? → <span class="a">참/거짓을 명확히 구분할 수 있는 문장이나 식</span></li><li>p → q가 거짓인 경우는? → <span class="a">p = T, q = F</span></li><li>교수님이 짚은 〈표 6.4〉의 오류는? → <span class="a">머리글 ~p → q를 p → q로 고침</span></li><li>연역 추론의 장점과 약점은? → <span class="a">논리의 일관성 / 확장성 부족</span></li></ol></div>
+<div class="blk"><ol class="pt" start="5"><li>DFS와 BFS는 어떤 탐색에 속하는가? → <span class="a">무정보 탐색</span></li><li>나의 가능성 최대·상대 최소 전략, 필요 없는 경로를 잘라내는 작업은? → <span class="a">최소최대 탐색, 전지 작업(pruning)</span></li><li>전문가 시스템의 두 요소는? → <span class="a">지식베이스 + 추론기구</span></li><li>Mitchell 정의의 E, T, P는? → <span class="a">경험, 작업, 성능 지표</span></li></ol></div>
+<div class="blk"><ol class="pt" start="9"><li>교수님이 말한 일반화의 뜻은? → <span class="a">새로 들어오는 데이터를 처리할 수 있게 하는 것</span></li><li>비지도 학습의 작업 4가지는? → <span class="a">군집화, 시각화(t-SNE), 차원 축소, 이상치 탐지</span></li><li>강화 학습에서 에이전트가 학습하는 것은? → <span class="a">보상을 최대화하는 정책(policy)</span></li><li>배치 학습보다 온라인 학습이 좋은 이유는? → <span class="a">더 빠르다(학습 단계가 빠르고 저렴)</span></li></ol></div>
+</template>
+<script>
+(function(){
+const $=s=>document.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const masthead=`<header class="masthead"><div class="mh-top"><span class="org">Kangwon National University CSE</span><span class="subj">인공지능</span></div><div class="mh-title"><div class="y">A. 규칙기반 AI · 기계학습 입문</div><h1>개념정리노트</h1></div><div class="scope"><span class="h">범 위</span><div class="b">4주차 2차시 — 6장 규칙기반 인공지능(논리·추론·탐색·알고리즘·전문가 시스템)과 Introduction to Machine Learning(정의·학습 유형·배치/온라인). 「답 가리기」로 핵심어를 가리고 떠올려 보세요.</div></div></header>`;
+const running=`<div class="running"><span>인공지능 개념정리노트 · A. 규칙기반 AI · 기계학습 입문</span><span><b>인공지능</b></span></div>`;
+const blocks=[...$('#src').content.children].map(e=>e.outerHTML);
+function paginate(){
+  const PAGE_H=1180, PAD=40+70;
+  const m=document.createElement('section'); m.className='page measure';
+  m.innerHTML=masthead+`<div class="cols"><div class="col" id="mcol">${blocks.join('')}</div><div class="col"></div></div>`;
+  document.body.appendChild(m);
+  const capFirst=PAGE_H-PAD-m.querySelector('.masthead').offsetHeight-18-4;
+  m.innerHTML=running+`<div class="cols"><div class="col" id="mcol">${blocks.join('')}</div><div class="col"></div></div>`;
+  const capRest=PAGE_H-PAD-m.querySelector('.running').offsetHeight-18-4;
+  const els=$$('#mcol>.blk',m), hs=els.map(e=>e.offsetHeight), sh=els.map(e=>e.classList.contains('sh'));
+  m.remove();
+  // 제목 블록은 바로 다음 블록과 묶어서 배치
+  const units=[]; for(let i=0;i<blocks.length;i++){ if(sh[i]&&i+1<blocks.length){units.push({ids:[i,i+1],h:hs[i]+hs[i+1]});i++;} else units.push({ids:[i],h:hs[i]}); }
+  const pages=[]; let p=null, side='R', used=0;
+  const cap=()=>pages.length===1?capFirst:capRest;
+  units.forEach(u=>{
+    if(!p||used+u.h>cap()&&used>0){ if(!p||side==='R'){p={L:[],R:[]};pages.push(p);side='L';} else side='R'; used=0; }
+    p[side].push(...u.ids); used+=u.h;
+  });
+  return pages;
+}
+function render(){
+  const P=paginate(), total=P.length;
+  $('#book').innerHTML=P.map((pg,i)=>`<section class="page">${i===0?masthead:running}<div class="cols"><div class="col">${pg.L.map(k=>blocks[k]).join('')}</div><div class="col">${pg.R.map(k=>blocks[k]).join('')}</div></div><div class="pno">${i+1} / ${total}</div></section>`).join('');
+}
+const A4W=793.7, A4H=1122.5, PW=860;
+function preparePrint(){
+  document.body.classList.add('printing');
+  const pages=$$('#book .page'); const base=A4W/PW, sheet=A4H/base;
+  pages.forEach(p=>{p.style.zoom='';p.style.height='';});
+  pages.forEach(p=>{const h=p.scrollHeight; if(h<=sheet){p.style.zoom=base;p.style.height=sheet+'px';} else {p.style.zoom=A4H/h-0.0005;p.style.height=h+'px';}});
+  if(pages.length) pages[pages.length-1].classList.add('lastprint');
+}
+function afterPrint(){ document.body.classList.remove('printing'); $$('#book .page').forEach(p=>{p.style.zoom='';p.style.height='';p.classList.remove('lastprint');}); }
+window.addEventListener('beforeprint',preparePrint); window.addEventListener('afterprint',afterPrint);
+window.__memoPrint={prepare:preparePrint,done:afterPrint};
+function setQuiz(on){ document.body.classList.toggle('quiz',on); $('#quizBtn').classList.toggle('on',on); $('#quizBtn').textContent=on?'답 보이기':'답 가리기'; $$('.a.show').forEach(e=>e.classList.remove('show')); }
+function boot(){
+  render();
+  $('#quizBtn').onclick=()=>setQuiz(!document.body.classList.contains('quiz'));
+  document.addEventListener('click',e=>{const a=e.target.closest('.a'); if(a&&document.body.classList.contains('quiz')) a.classList.toggle('show');});
+  $('#printBtn').onclick=()=>{ const q=document.body.classList.contains('quiz'); setQuiz(false); window.print(); if(q) setQuiz(true); };
+  $('#printBlank').onclick=()=>{ setQuiz(true); document.body.classList.add('printblank'); window.print(); document.body.classList.remove('printblank'); };
+}
+const fams=['400 16px "Nanum Myeongjo"','800 16px "Nanum Myeongjo"','400 16px "Nanum Gothic"','700 16px "Nanum Gothic"'];
+const wait=document.fonts?Promise.all(fams.map(f=>document.fonts.load(f,'가A1').catch(()=>{}))):Promise.resolve();
+const start=()=>Promise.race([wait,new Promise(r=>setTimeout(r,2000))]).then(boot);
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start); else start();
+})();
+</script>
+</body>
+</html>

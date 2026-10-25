@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>인공지능 개념정리노트 — F. 앙상블 학습</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>
+:root{ --subject:#5B3CF5; }
+.toolbar a{color:#EEE;text-decoration:none;border:1px solid #6A6A6A;border-radius:4px;padding:5px 13px}
+.toolbar button.on{background:#F2F2F2;color:#111;border-color:#F2F2F2;font-weight:700}
+.blk{padding-bottom:16px}
+.blk.sh{padding-bottom:6px}
+.blk h2{margin:0;font-size:18px;font-weight:800;letter-spacing:.04em;display:flex;align-items:baseline;gap:10px;border-bottom:1.5px solid var(--line);padding-bottom:4px}
+.blk h2 .sn{font-family:var(--gothic);font-size:13px;font-weight:800;color:#fff;background:var(--ink);padding:1px 8px;letter-spacing:0}
+.blk .lead{margin:6px 0 0;font-family:var(--gothic);font-size:12px;color:var(--ink-2);line-height:1.6}
+.unit{font-family:var(--gothic);font-size:12.5px;font-weight:800;margin:0 0 4px;display:flex;align-items:center;gap:6px}
+.unit::before{content:"";width:6px;height:6px;background:var(--subject)}
+table.mt{width:100%;border-collapse:collapse;font-size:13.4px;line-height:1.5}
+table.mt th{background:#F1F1EE;font-family:var(--gothic);font-size:11.8px;font-weight:700;border:1px solid var(--line);padding:4px 6px;text-align:left;white-space:nowrap}
+table.mt td{border:1px solid var(--line);padding:5px 7px;vertical-align:middle}
+table.mt td.nm{font-weight:700;white-space:normal}
+table.mt td.res{font-weight:800;white-space:nowrap}
+table.mt td.eq{white-space:nowrap}
+table.mt td.src{font-family:var(--gothic);font-size:11.6px;color:var(--ink-2)}
+table.mt td.why{font-size:12.6px}
+table.mt td.c{text-align:center;font-weight:800;width:56px}
+table.mt td.x{color:var(--red);width:46%}
+table.mt.dp td{font-size:12.6px}
+table.mt.dp td.res{white-space:nowrap}
+.box{border:1px solid var(--line);padding:8px 12px;font-size:13.2px;line-height:1.6}
+.box b{font-family:var(--gothic);font-size:12.5px}
+.box ol,.box ul{margin:2px 0 6px;padding-left:1.4em}
+.frac{font-size:.86em}
+/* 가리기 */
+body.quiz .a{color:transparent!important;background:#E4E4E0;cursor:pointer;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body.quiz .a *{visibility:hidden}
+body.quiz .a.show{color:var(--red)!important;background:transparent}
+body.quiz .a.show *{visibility:visible}
+body.quiz.printblank .a{background:#fff}
+
+.blk p{margin:4px 0;font-size:13.2px;line-height:1.65}
+.blk ul.pt,.blk ol.pt{margin:3px 0 4px;padding-left:1.25em;font-size:13.2px;line-height:1.62}
+.blk ul.pt li,.blk ol.pt li{margin:1px 0}
+.prof{border:1.5px solid var(--subject);padding:6px 10px;font-size:13px;line-height:1.6}
+.prof .h,.trap .h,.key .h{font-family:var(--gothic);font-size:11.8px;font-weight:800;margin-bottom:2px}
+.prof .h{color:var(--subject)}
+.trap{border:1px dashed var(--red);padding:6px 10px;font-size:13px;line-height:1.6}
+.trap .h{color:var(--red)}
+.key{background:#F4F3EF;padding:6px 10px;font-size:13.2px;line-height:1.6;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.en{font-family:var(--gothic);font-size:.82em;color:var(--ink-2);margin-left:2px}
+.pg{font-family:var(--gothic);font-size:10.5px;color:var(--ink-2);margin-left:4px;white-space:nowrap}
+.fx{text-align:center;font-size:14px;margin:4px 0;line-height:1.7}
+mark{background:linear-gradient(transparent 55%,#DCD2FF 55%);color:inherit;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+table.mt td{font-size:13px}
+
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <a href="../exam/index.html">‹ 문제지 목록</a>
+  <span class="sep"></span>
+  <button id="quizBtn">답 가리기</button>
+  <span class="sep"></span>
+  <button id="printBtn" class="primary">인쇄 · PDF</button>
+  <button id="printBlank" title="답 칸을 비운 채 인쇄 — 손으로 채워 보는 연습지">빈칸 연습지 인쇄</button>
+</div>
+<div id="book"></div>
+<template id="src">
+<div class="blk sh"><h2><span class="sn">Ⅰ</span>한눈에 보기</h2><p class=lead>교안 Ensemble Learning 1–26쪽이 시험 범위입니다.</p></div>
+<div class="blk"><div class="key"><ul class="pt"><li>앙상블 학습 = 여러 개별 모델을 <span class="a">결합</span>해 <span class="a">일반화</span> 성능이 더 좋은 모델을 만드는 방법. 대표: 투표 · 배깅 · 부스팅 · 스태킹.</li><li>투표: <span class="a">서로 다른</span> 알고리즘을 같은 데이터로 학습. 하드 = <span class="a">다수결</span>, 소프트 = <span class="a">확률 평균</span> 최대.</li><li>배깅(<span class="a">복원</span> 추출)·페이스팅(<span class="a">비복원</span> 추출): <span class="a">같은</span> 알고리즘 + 서로 다른 부분 집합 → 편향 비슷, 분산 <span class="a">↓</span>.</li><li>랜덤 포레스트 = 트리 배깅 + 노드마다 <span class="a">무작위로 고른 특징 일부</span> 중 최선으로 분할.</li><li>부스팅 = 약한 학습기를 <span class="a">순서대로</span> 학습, 각자 앞 예측기의 잘못을 고침. AdaBoost는 틀린 샘플의 <span class="a">가중치 ↑</span>.</li><li>그래디언트 부스팅 = 가중치 대신 <span class="a">잔차</span>에 새 예측기를 학습. XGBoost = 최적화·<span class="a">규제</span>를 더한 그래디언트 부스팅.</li><li>스태킹 = 예측을 합치는 일 자체를 <span class="a">블렌더(메타 학습기)</span>로 학습.</li></ul></div></div>
+<div class="blk"><div class="prof"><div class="h">교수님 강조</div><p><b>식은 형태를 안내해 줍니다.</b> 식 자체를 외워 쓰게 하거나 계산시키는 문제는 거의 없습니다(전 범위 공통 말씀, 6-2 차시). → r<sub>j</sub>, α<sub>j</sub>, 가중치 갱신, v<sub>i</sub>, 분산 식은 <b>각 부분의 뜻과 커지고 작아지는 방향</b>을 말할 수 있으면 됩니다.</p><p>객관식·단답·TF·서술형, <b>영어 키워드</b>(Bagging, Pasting, OOB, Boosting, residual 등)가 나올 수 있습니다.</p><p>이 차시는 수업 필기·교수님 말씀을 받지 못했습니다. XGBoost(23–24쪽)·스태킹(25쪽)은 정의와 비교표(26쪽) 수준으로 정리했습니다.</p></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅱ</span>앙상블 학습과 투표</h2><p class=lead>교안 1–5쪽</p></div>
+<div class="blk"><div class="unit">정의</div><div class="box"><p><b>Ensemble learning(앙상블 학습)</b>은 여러 개의 <span class="a">개별 모델</span>을 결합해 <span class="a">improved generalization(일반화 성능 개선)</span>을 이룬 최적의 모델을 만드는 방법입니다. <span class="pg">p.1</span></p><p>일반화 = 학습에 쓰지 않은 새 데이터에서도 잘 맞히는 것. 앙상블을 이루는 개별 모델 = predictor(예측기), 분류에서는 분류기.</p><p>대표 방법: <span class="a">Voting</span> · <span class="a">Bagging</span>(예: random forests) · <span class="a">Boosting</span>(예: AdaBoost, XGBoost) · <span class="a">Stacking</span>.</p></div></div>
+<div class="blk"><div class="unit">Hard voting vs Soft voting <span class="pg">p.2–5</span></div><table class="mt "><tr><th></th><th>하드 투표</th><th>소프트 투표</th></tr><tr><td class="nm">모으는 것</td><td>각 분류기의 <span class="a">예측 클래스</span></td><td>각 분류기의 <span class="a">클래스별 확률</span></td></tr><tr><td class="nm">최종 선택</td><td><span class="a">가장 많은 표</span>의 클래스 (다수결)</td><td><span class="a">평균 확률</span>이 가장 높은 클래스</td></tr><tr><td class="nm">특징</td><td>앙상블 안 가장 좋은 분류기보다 정확도가 높은 경우가 많음</td><td>확률(확신 정도)을 쓰므로 하드보다 <span class="a">정교</span></td></tr></table></div>
+<div class="blk"><div class="unit">약한 학습기 → 강한 학습기</div><div class="box"><p>투표 분류기는 보통 <span class="a">서로 다른 알고리즘</span>(로지스틱 회귀, SVM, 랜덤 포레스트 …)의 분류기를 <span class="a">같은 학습 세트</span>로 학습합니다. <span class="pg">p.2</span></p><p>각 분류기가 <span class="a">weak learner(약한 학습기)</span>여도, 약한 학습기가 <span class="a">충분히 많고</span> <span class="a">충분히 다양하면</span>(sufficiently diverse) 앙상블은 strong learner(강한 학습기)가 될 수 있습니다. <span class="pg">p.4</span></p><p>약한 학습기 = 무작위 추측보다 조금 나은 모델 (보충).</p></div></div>
+<div class="blk"><div class="unit">다수결 정확도와 독립 조건</div><div class="box"><div class="fx">0.7<sup>5</sup> + 5(0.7<sup>4</sup>)(0.3) + 10(0.7<sup>3</sup>)(0.3<sup>2</sup>) = 0.8369</div><p>정확도 70%인 독립 분류기 5개의 다수결 정확도. 5개 중 <span class="a">3개 이상</span> 맞으면 다수결이 맞습니다(5개·4개·3개 맞힘의 확률 합). 계수 5, 10은 5개 중 4개·3개를 고르는 경우의 수. 101개면 <span class="a">0.99</span> 이상. <span class="pg">p.4</span></p><p><b>조건:</b> 모든 분류기가 <span class="a">perfectly independent(완전히 독립)</span>이어서 <span class="a">uncorrelated errors(서로 상관없는 오류)</span>를 낼 때만 참입니다. 실제로는 <span class="a">같은 데이터</span>로 학습하므로 성립하지 않습니다.</p></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅲ</span>배깅과 페이스팅</h2><p class=lead>교안 6–9쪽</p></div>
+<div class="blk"><div class="unit">정의</div><div class="box"><p>모든 예측기에 <span class="a">같은</span> 학습 알고리즘을 쓰고, 학습 세트의 <span class="a">서로 다른 무작위 부분 집합</span>으로 각각 학습시키는 방법입니다. <span class="pg">p.6</span></p></div></div>
+<div class="blk"><div class="unit">배깅 vs 페이스팅 <span class="pg">p.6</span></div><table class="mt "><tr><th></th><th>추출 방식 · 특징</th></tr><tr><td class="nm">Bagging<br>(배깅)</td><td><span class="a">복원 추출</span><span class="en">sampling with replacement · bootstrap</span><br>중복 가능, 뽑히지 않은 샘플 = <span class="a">OOB</span></td></tr><tr><td class="nm">Pasting<br>(페이스팅)</td><td><span class="a">비복원 추출</span><span class="en">sampling without replacement</span><br>중복 없음</td></tr></table></div>
+<div class="blk"><div class="unit">배깅의 효과</div><div class="box"><p>결합: 분류는 다수결(또는 확률 평균), 회귀는 평균. 예측기끼리 독립이므로 <span class="a">병렬</span> 학습이 가능합니다.</p><p>결과: 원래 학습 세트로 학습한 예측기 하나와 비교해 앙상블은 <span class="a">similar bias(편향은 비슷)</span>, <span class="a">lower variance(분산은 더 낮음)</span>. <span class="pg">p.7</span></p><p>Bagging = Bootstrap AGGregatING (보충).</p></div></div>
+<div class="blk"><div class="unit">왜 분산이 줄어드나</div><div class="box"><div class="fx">E[<span class="frac"><span class="num">x<sub>1</sub> + ⋯ + x<sub>K</sub></span><span class="den">K</span></span>] = μ, &nbsp; Var(<span class="frac"><span class="num">x<sub>1</sub> + ⋯ + x<sub>K</sub></span><span class="den">K</span></span>) = <span class="frac"><span class="num">Kσ<sup>2</sup></span><span class="den">K<sup>2</sup></span></span> = <span class="frac"><span class="num">σ<sup>2</sup></span><span class="den">K</span></span></div><p>x ∼ N(μ, σ<sup>2</sup>)를 K번 측정해 평균 내는 상황 · K = 예측기 수. 측정 하나는 E[x<sub>1</sub>] = μ, Var(x<sub>1</sub>) = σ<sup>2</sup>. <span class="pg">p.7</span></p><p>평균 내면 기댓값(편향)은 <span class="a">그대로 μ</span>, 분산은 <span class="a"><span class="frac"><span class="num">1</span><span class="den">K</span></span>배</span> → 배깅은 분산이 더 작은 모델을 만듭니다. 이 계산도 측정들이 <span class="a">독립</span>일 때 성립합니다.</p></div></div>
+<div class="blk"><div class="unit">그림 — 결정 트리 하나 vs 배깅</div><div class="box"><p>트리 하나: 축에 평행한 경계가 점 하나하나를 따라가 작은 섬이 많음 = <span class="a">과대적합</span>, 분산 큼. 트리 500개 배깅: 경계가 <span class="a">매끄러움</span> = 분산 작음, 새 데이터에 더 잘 일반화. <span class="pg">p.9</span></p><p>8쪽 [Review] 편향·분산: 편향 = 평균적으로 정답에서 벗어난 정도, 분산 = 데이터에 따라 예측이 흔들리는 정도.</p></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅳ</span>랜덤 포레스트</h2><p class=lead>교안 10–13쪽</p></div>
+<div class="blk"><div class="unit">정의와 추가 무작위성</div><div class="box"><p><b>Random forest(랜덤 포레스트)</b> = <span class="a">결정 트리</span>의 앙상블. 보통 <span class="a">배깅</span>(가끔 페이스팅)으로 학습합니다. <span class="pg">p.10</span></p><p>추가 무작위성: 노드를 나눌 때 모든 특징 중 최선을 찾지 않고 <span class="a">무작위로 고른 특징 일부(random subset of features)</span> 중에서 최선을 찾습니다.</p><p>→ 트리 <span class="a">다양성 ↑</span> → 편향을 조금 <span class="a">높이는</span> 대신 분산을 <span class="a">낮춤</span>(trades a higher bias for a lower variance) → 대체로 더 좋은 모델.</p><p>예측: 트리마다 예측 → 회귀는 평균, 분류는 다수결(또는 확률 평균). <span class="pg">p.11</span></p></div></div>
+<div class="blk"><div class="unit">특징 중요도 Feature importance</div><div class="box"><p><b>불순도 기반:</b> 그 특징을 쓴 트리 노드들이 숲의 모든 트리에 걸쳐 불순도를 <span class="a">평균적으로 얼마나 줄였는지</span>로 잽니다. <span class="pg">p.10</span></p><p><b>OOB 기반:</b> <span class="a">Out-of-Bag(OOB) samples</span> = 부트스트랩 추출에서 <span class="a">뽑히지 않은</span> 학습 샘플. 그 트리가 보지 않았으므로 <span class="a">검증 데이터</span>처럼 씁니다. n이 크면 예측기마다 약 36.8% (보충). <span class="pg">p.12</span></p></div></div>
+<div class="blk"><div class="unit">OOB 순열 변수 중요도 — 절차 <span class="pg">p.12</span></div><ol class="pt"><li>원래 데이터로 OOB 오차 e를 구합니다.</li><li>특징 x<sub>i</sub>의 값만 무작위로 <span class="a">섞은(permuted)</span> 데이터로 OOB 오차 p<sub>i</sub>를 구합니다.</li><li>모든 트리에서 (p<sub>i</sub> − e)의 <span class="a">평균과 표준편차</span>로 중요도를 계산합니다.</li></ol></div>
+<div class="blk"><div class="unit">중요도 점수 v</div><div class="box"><div class="fx">d<sub>i</sub><sup>(t)</sup> = p<sub>i</sub><sup>(t)</sup> − e<sup>(t)</sup>, &nbsp; v<sub>i</sub> = <span class="frac"><span class="num">d̄<sub>i</sub></span><span class="den">s<sub>i</sub></span></span></div><p>t: 트리 번호 · T: 트리 수 · d<sub>i</sub><sup>(t)</sup>: 트리 t에서 특징 i를 섞었을 때 오차 <span class="a">증가량</span> · d̄<sub>i</sub>: 그 평균(÷T) · s<sub>i</sub>: 표준편차(분모 T − 1). <span class="pg">p.13</span></p><p>섞었을 때 오차가 <span class="a">일관되게(consistently) 늘면</span> 중요한 특징입니다. 평균 증가가 크고 트리마다 고르게 늘수록(s 작음) v<sub>i</sub>가 큽니다.</p></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅴ</span>부스팅과 AdaBoost</h2><p class=lead>교안 14–19쪽</p></div>
+<div class="blk"><div class="unit">부스팅</div><div class="box"><p><b>Boosting(부스팅)</b> = 여러 <span class="a">weak learner(약한 학습기)</span>를 결합해 <span class="a">strong learner(강한 학습기)</span>를 만드는 앙상블 방법 전체. <span class="pg">p.14</span></p><p>대부분 예측기를 <span class="a">sequentially(순서대로)</span> 학습시키고, 각 예측기는 <span class="a">predecessor(바로 앞 예측기)</span>의 잘못을 고치려 합니다. 예: AdaBoost, Gradient Boosting, XGBoost.</p><p>앞 결과가 있어야 다음을 학습하므로 <span class="a">병렬로 할 수 없습니다</span>.</p></div></div>
+<div class="blk"><div class="unit">AdaBoost 학습 과정</div><div class="box"><p><b>AdaBoost</b><span class="en">Adaptive Boosting</span>는 앞 예측기가 <span class="a">underfitted(과소적합)</span>된 학습 샘플에 더 주의를 기울입니다 → 새 예측기일수록 <span class="a">hard cases(어려운 샘플)</span>에 집중. <span class="pg">p.15</span></p><ol class="pt"><li>기본 분류기(예: 결정 트리)를 학습 세트로 학습</li><li><span class="a">잘못 분류된</span> 샘플의 가중치를 <span class="a">높임</span></li><li>갱신된 가중치로 다음 분류기를 학습</li><li>반복한 뒤 모든 분류기를 앙상블로 결합</li></ol></div></div>
+<div class="blk"><div class="unit">가중 오차율과 예측기 가중치 α</div><div class="box"><div class="fx">w<sup>(i)</sup> = <span class="frac"><span class="num">1</span><span class="den">m</span></span>, &nbsp; r<sub>j</sub> = <span class="frac"><span class="num">∑<sub>i</sub> w<sup>(i)</sup> 𝟏(ŷ<sub>j</sub><sup>(i)</sup> ≠ y<sup>(i)</sup>)</span><span class="den">∑<sub>i</sub> w<sup>(i)</sup></span></span></div><p>m: 학습 샘플 수 · ŷ<sub>j</sub><sup>(i)</sup>: j번째 예측기가 i번째 샘플에 낸 예측 · 𝟏(조건): 참이면 1. r<sub>j</sub> = <span class="a">틀린 샘플들의 가중치 합</span> ÷ 전체 가중치 합 = <span class="a">weighted error rate(가중 오차율)</span>. <span class="pg">p.18</span></p><div class="fx">α<sub>j</sub> = η log <span class="frac"><span class="num">1 − r<sub>j</sub></span><span class="den">r<sub>j</sub></span></span></div><p>α<sub>j</sub> = 예측기 가중치(최종 투표의 발언권) · η: <span class="a">learning rate(학습률)</span>.</p></div></div>
+<div class="blk"><div class="unit">α의 방향 (이진 분류 기준) <span class="pg">p.18</span></div><table class="mt "><tr><th>r<sub>j</sub> (가중 오차율)</th><th>α<sub>j</sub></th><th>뜻</th></tr><tr><td>작음 (정확)</td><td class="res"><span class="a">큼</span></td><td>발언권이 큼</td></tr><tr><td>0.5</td><td class="res"><span class="a">0</span></td><td>무작위 추측 수준</td></tr><tr><td>0.5보다 큼</td><td class="res"><span class="a">음수</span></td><td>worse than random guessing</td></tr></table></div>
+<div class="blk"><div class="unit">샘플 가중치 갱신</div><div class="box"><div class="fx">w<sup>(i)</sup> ← w<sup>(i)</sup> (맞힘), &nbsp; w<sup>(i)</sup> ← w<sup>(i)</sup> · exp(α<sub>j</sub>) (틀림)</div><p>맞힌 샘플은 그대로, <span class="a">틀린 샘플만</span> exp(α<sub>j</sub>)배 → 모든 가중치의 합이 <span class="a">1</span>이 되게 <span class="a">정규화</span>. 그다음 갱신된 가중치로 새 예측기를 학습합니다. <span class="pg">p.19</span></p><p>멈춤: 원하는 예측기 수에 도달하거나 <span class="a">완벽한 예측기</span>를 찾을 때까지 반복.</p></div></div>
+<div class="blk"><div class="unit">최종 예측 — 가중 다수결</div><div class="box"><div class="fx">ŷ(x) = argmax<sub>k</sub> ∑<sub>j: ŷ<sub>j</sub>(x)=k</sub> α<sub>j</sub></div><p>N: 예측기 수 · k: 클래스. 클래스마다 그 클래스로 예측한 예측기들의 <span class="a">α를 더해</span> 가장 큰 클래스를 고릅니다 = <span class="a">weighted majority vote(가중 다수결)</span>. <span class="pg">p.19</span></p><p>하드 투표의 「한 표 = 1」을 「한 표 = α<sub>j</sub>」로 바꾼 것 → 표 수가 적어도 정확한 예측기가 이길 수 있습니다.</p></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅵ</span>그래디언트 부스팅과 XGBoost</h2><p class=lead>교안 20–24쪽</p></div>
+<div class="blk"><div class="unit">그래디언트 부스팅</div><div class="box"><p><b>Gradient boosting(그래디언트 부스팅)</b>: AdaBoost처럼 예측기를 <span class="a">순서대로 추가</span>하고 각 새 예측기가 앞 예측기의 오류를 고칩니다. <span class="pg">p.20</span></p><p>차이: 샘플 가중치를 조정하는 대신, 새 예측기를 앞 예측기가 남긴 <span class="a">residual errors(잔차)</span>에 맞춰 학습합니다. 잔차 = 정답 − 지금까지의 예측.</p><div class="fx">F<sub>m</sub> = F<sub>m−1</sub> + (잔차 y − F<sub>m−1</sub>에 학습한 새 트리의 예측)</div><p>앙상블 예측 = 트리 예측들의 <span class="a">합</span>. 반복할수록 잔차는 0 근처로 줄어듭니다. <span class="pg">p.21</span></p><p>회귀·분류·순위(ranking)에 모두 쓸 수 있습니다. 경사 하강법(gradient descent)으로 오류를 최소화합니다. <span class="pg">p.24</span></p></div></div>
+<div class="blk"><div class="unit">AdaBoost vs 그래디언트 부스팅</div><table class="mt "><tr><th></th><th>AdaBoost</th><th>그래디언트 부스팅</th></tr><tr><td class="nm">다음 예측기가 보는 것</td><td>같은 (x, y), <span class="a">샘플 가중치</span>만 바뀜</td><td>같은 x, 목표가 <span class="a">잔차</span>로 바뀜</td></tr><tr><td class="nm">결합</td><td>α로 <span class="a">가중 다수결</span></td><td>예측을 <span class="a">더함</span></td></tr></table></div>
+<div class="blk"><div class="unit">XGBoost</div><div class="box"><p><b>XGBoost</b><span class="en">Extreme Gradient Boosting</span> = 트리를 순서대로 만들어 앞의 오류를 고치는 <span class="a">그래디언트 부스팅</span> 알고리즘으로, 고급 최적화와 <span class="a">regularization(규제)</span>로 과대적합을 줄이고 성능을 높였습니다. <span class="pg">p.23</span></p><p>장점(그림): 병렬 트리 구축, 깊이 우선 가지치기, 캐시·외부 메모리 계산, 과대적합 방지 규제, 결측값 처리, 내장 교차 검증.</p><p>발전 흐름: 결정 트리 → 배깅 → 랜덤 포레스트 → 부스팅 → 그래디언트 부스팅 → XGBoost. <span class="pg">p.24</span></p></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅶ</span>스태킹</h2><p class=lead>교안 25쪽</p></div>
+<div class="blk"><div class="unit">정의</div><div class="box"><p><b>Stacking(스태킹)</b>: 다수결·평균 같은 <span class="a">단순한 함수(trivial functions)</span> 대신, 예측을 합치는 일 자체를 <span class="a">모델로 학습</span>합니다. 그 모델 = <span class="a">blender(블렌더)</span> = meta-learner(메타 학습기). <span class="pg">p.25</span></p><p>예: 새 샘플 → 첫 층 예측 3.1, 2.7, 2.9 → 블렌더 → 3.0 (단순 평균 2.9가 아님 = 학습한 결합).</p></div></div>
+<div class="blk"><div class="unit">블렌더 학습 절차 <span class="pg">p.25</span></div><ol class="pt"><li>학습 세트를 Subset 1과 Subset 2(홀드아웃)로 나눕니다.</li><li><span class="a">Subset 1</span>로 첫 층 예측기들을 학습합니다.</li><li>첫 층 예측기로 <span class="a">Subset 2</span>를 예측 → 샘플마다 예측값 여러 개.</li><li>입력 = 첫 층 <span class="a">예측값들</span>, 정답 = Subset 2의 실제 y로 블렌더를 학습합니다.</li></ol></div>
+<div class="blk"><div class="unit">포인트</div><div class="box"><p>블렌더의 입력은 원래 특징이 아니라 <span class="a">첫 층의 예측값</span>이고, 블렌더는 첫 층이 <span class="a">보지 않은</span> 데이터(Subset 2)로 학습합니다. 첫 층이 학습한 데이터의 예측은 실제보다 정확하게 나오기 때문입니다 (보충).</p></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅷ</span>네 방법 비교</h2><p class=lead>교안 26쪽 — 장점과 한계</p></div>
+<div class="blk"><div class="unit">투표 · 배깅</div><table class="mt "><tr><th></th><th>Strengths(장점)</th><th>Limitations(한계)</th></tr><tr><td class="nm">Voting</td><td>서로 다른 알고리즘이 <span class="a">서로 보완</span>. 구현이 간단, 빨리 시도</td><td>기본 모델들의 품질 차이가 크면 <span class="a">약한 모델이 전체를 끌어내림</span></td></tr><tr><td class="nm">Bagging</td><td>분산이 큰 학습기의 <span class="a">분산 ↓</span> → 과대적합 방지. <span class="a">병렬</span> 학습 효율적</td><td><span class="a">편향이 큰</span> 학습기엔 효과 제한. 모두 같은 <span class="a">inductive bias(귀납적 편향)</span> 공유</td></tr></table></div>
+<div class="blk"><div class="unit">부스팅 · 스태킹</div><table class="mt "><tr><th></th><th>Strengths(장점)</th><th>Limitations(한계)</th></tr><tr><td class="nm">Boosting</td><td>오류에 <span class="a">순서대로 집중</span>해 고침. 복잡한 패턴, 높은 정확도</td><td><span class="a">잡음·이상치</span>에 민감, 과대적합 위험. 학습 시간·튜닝 복잡</td></tr><tr><td class="nm">Stacking</td><td>보완하는 모델 활용, <span class="a">메타 학습기</span>가 일반화 개선</td><td>메타 모델·<span class="a">데이터 분할</span> 전략을 신중히. 구조 복잡, 구현 어려움</td></tr></table></div>
+<div class="blk"><div class="unit">한 표로 (보충)</div><table class="mt "><tr><th></th><th>예측기 알고리즘</th><th>각 예측기의 데이터</th><th>순서</th></tr><tr><td class="nm">투표</td><td><span class="a">서로 다름</span></td><td>같은 학습 세트 전체</td><td>병렬</td></tr><tr><td class="nm">배깅</td><td><span class="a">모두 같음</span></td><td>서로 다른 무작위 부분 집합</td><td>병렬</td></tr><tr><td class="nm">부스팅</td><td>모두 같음</td><td>같은 세트, 가중치·목표가 바뀜</td><td><span class="a">순차</span></td></tr><tr><td class="nm">스태킹</td><td>서로 다름</td><td>학습 세트를 나눠 씀</td><td>층별</td></tr></table></div>
+<div class="blk sh"><h2><span class="sn">Ⅸ</span>헷갈리는 것 정리</h2></div>
+<div class="blk"><div class="unit">배깅 vs 부스팅</div><table class="mt "><tr><th></th><th>배깅</th><th>부스팅</th></tr><tr><td class="nm">학습 순서</td><td>독립 → <span class="a">병렬</span></td><td>앞 결과를 보고 → <span class="a">순차</span></td></tr><tr><td class="nm">결합</td><td>같은 비중의 다수결·평균</td><td>α 가중 다수결 · 예측의 합</td></tr><tr><td class="nm">주로 줄이는 것 (보충)</td><td><span class="a">분산</span></td><td><span class="a">편향</span></td></tr></table></div>
+<div class="blk"><div class="trap"><div class="h">함정 · 헷갈리는 것</div><ul class="pt"><li>확률을 평균하는 것은 <b>소프트</b> 투표, 예측 클래스로 다수결은 <b>하드</b> 투표.</li><li>배깅 = <b>복원</b> 추출, 페이스팅 = <b>비복원</b> 추출(거꾸로 내기 쉬움).</li><li>0.8369나 분산 <span class="frac"><span class="num">σ<sup>2</sup></span><span class="den">K</span></span> 같은 이득은 <b>독립</b>일 때만. 같은 데이터로 학습하면 그만큼 오르지 않습니다.</li><li>랜덤 포레스트의 무작위성: 편향 <b>약간 ↑</b>, 분산 <b>↓</b> (편향이 낮아지는 것이 아님).</li><li>OOB 순열 중요도: 섞어서 오차가 <b>일관되게 늘어야</b> 중요. 변화 없으면 중요하지 않음.</li><li>AdaBoost는 <b>틀린</b> 샘플의 가중치를 높이고, r이 <b>작을수록</b> α가 큽니다.</li><li>샘플 가중치 조정 = AdaBoost, 잔차 학습 = 그래디언트 부스팅.</li></ul></div></div>
+<div class="blk"><div class="trap"><div class="h">함정 · 헷갈리는 것</div><ul class="pt"><li><b>log의 밑:</b> α<sub>j</sub> = η log(…)에 밑이 없습니다. 가중치 갱신이 exp(α<sub>j</sub>)이므로 짝이 맞는 <b>자연로그(ln)</b>로 봅니다. 방향(r ↓ → α ↑, r = 0.5 → α = 0)은 밑과 상관없이 같습니다.</li><li><b>k와 K:</b> 7쪽 분산 식은 측정 횟수를 k와 K로 섞어 썼지만 같은 값(예측기 수)입니다. 7쪽에는 독립 조건이 안 적혀 있지만 4쪽 경고처럼 독립일 때만 성립합니다.</li><li><b>e<sub>i</sub>와 e<sup>(t)</sup>:</b> 12쪽은 원래 OOB 오차를 e<sub>i</sub>, 13쪽은 e<sup>(t)</sup>로 적었습니다. 둘 다 「특징을 섞기 전 원래 데이터의 OOB 오차」입니다.</li><li><b>Bagging (i.e., random forests):</b> 1쪽 i.e.는 「예를 들어(e.g.)」의 뜻입니다. 랜덤 포레스트는 배깅의 한 예이지 배깅과 같은 말이 아닙니다.</li><li><b>101개 → 0.99:</b> 실제 값은 약 0.99999. 「0.99 이상」으로 이해합니다.</li></ul></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅹ</span>셀프 체크</h2><p class=lead>「답 가리기」를 켜고 답을 떠올린 뒤 눌러 확인하세요.</p></div>
+<div class="blk"><table class="mt "><tr><th>질문</th><th>답</th></tr><tr><td>1. 앙상블 학습의 목적은?</td><td><span class="a">여러 모델 결합 → 일반화 성능 개선</span></td></tr><tr><td>2. 하드 투표와 소프트 투표가 모으는 것은?</td><td><span class="a">예측 클래스(다수결) / 클래스 확률(평균)</span></td></tr><tr><td>3. 다수결 정확도 0.8369가 성립하는 조건은?</td><td><span class="a">분류기들이 완전히 독립(상관없는 오류)</span></td></tr><tr><td>4. 배깅과 페이스팅의 추출 방식은?</td><td><span class="a">복원 추출 / 비복원 추출</span></td></tr></table></div>
+<div class="blk"><table class="mt "><tr><th>질문</th><th>답</th></tr><tr><td>5. 배깅 앙상블의 편향과 분산은?</td><td><span class="a">편향 비슷, 분산 낮음</span></td></tr><tr><td>6. 랜덤 포레스트가 배깅에 더한 무작위성은?</td><td><span class="a">노드마다 무작위로 고른 특징 일부 중 최선 분할</span></td></tr><tr><td>7. OOB 샘플이란?</td><td><span class="a">부트스트랩에서 뽑히지 않은 학습 샘플</span></td></tr><tr><td>8. 부스팅의 학습 방식은?</td><td><span class="a">순차 학습, 앞 예측기의 잘못을 고침</span></td></tr></table></div>
+<div class="blk"><table class="mt "><tr><th>질문</th><th>답</th></tr><tr><td>9. AdaBoost가 가중치를 높이는 샘플은?</td><td><span class="a">잘못 분류된 샘플</span></td></tr><tr><td>10. r<sub>j</sub> = 0.5일 때와 0.5보다 클 때 α<sub>j</sub>는?</td><td><span class="a">0 / 음수</span></td></tr><tr><td>11. 그래디언트 부스팅의 새 예측기가 학습하는 목표는?</td><td><span class="a">앞 예측기의 잔차</span></td></tr><tr><td>12. 스태킹에서 예측을 합치는 모델과 그 학습 데이터는?</td><td><span class="a">블렌더(메타 학습기), 첫 층이 보지 않은 Subset 2의 예측</span></td></tr></table></div>
+</template>
+<script>
+(function(){
+const $=s=>document.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const masthead=`<header class="masthead"><div class="mh-top"><span class="org">Kangwon National University CSE</span><span class="subj">인공지능</span></div><div class="mh-title"><div class="y">F. 앙상블 학습</div><h1>개념정리노트</h1></div><div class="scope"><span class="h">범 위</span><div class="b">8주차 1차시 (교안 Ensemble Learning 1–26쪽) — 투표, 배깅·페이스팅, 랜덤 포레스트·OOB 중요도, 부스팅·AdaBoost, 그래디언트 부스팅·XGBoost, 스태킹, 비교. 「답 가리기」로 핵심어를 가리고 떠올려 보세요.</div></div></header>`;
+const running=`<div class="running"><span>인공지능 개념정리노트 · F. 앙상블 학습</span><span><b>인공지능</b></span></div>`;
+const blocks=[...$('#src').content.children].map(e=>e.outerHTML);
+function paginate(){
+  const PAGE_H=1180, PAD=40+70;
+  const m=document.createElement('section'); m.className='page measure';
+  m.innerHTML=masthead+`<div class="cols"><div class="col" id="mcol">${blocks.join('')}</div><div class="col"></div></div>`;
+  document.body.appendChild(m);
+  const capFirst=PAGE_H-PAD-m.querySelector('.masthead').offsetHeight-18-4;
+  m.innerHTML=running+`<div class="cols"><div class="col" id="mcol">${blocks.join('')}</div><div class="col"></div></div>`;
+  const capRest=PAGE_H-PAD-m.querySelector('.running').offsetHeight-18-4;
+  const els=$$('#mcol>.blk',m), hs=els.map(e=>e.offsetHeight), sh=els.map(e=>e.classList.contains('sh'));
+  m.remove();
+  // 제목 블록은 바로 다음 블록과 묶어서 배치
+  const units=[]; for(let i=0;i<blocks.length;i++){ if(sh[i]&&i+1<blocks.length){units.push({ids:[i,i+1],h:hs[i]+hs[i+1]});i++;} else units.push({ids:[i],h:hs[i]}); }
+  const pages=[]; let p=null, side='R', used=0;
+  const cap=()=>pages.length===1?capFirst:capRest;
+  units.forEach(u=>{
+    if(!p||used+u.h>cap()&&used>0){ if(!p||side==='R'){p={L:[],R:[]};pages.push(p);side='L';} else side='R'; used=0; }
+    p[side].push(...u.ids); used+=u.h;
+  });
+  return pages;
+}
+function render(){
+  const P=paginate(), total=P.length;
+  $('#book').innerHTML=P.map((pg,i)=>`<section class="page">${i===0?masthead:running}<div class="cols"><div class="col">${pg.L.map(k=>blocks[k]).join('')}</div><div class="col">${pg.R.map(k=>blocks[k]).join('')}</div></div><div class="pno">${i+1} / ${total}</div></section>`).join('');
+}
+const A4W=793.7, A4H=1122.5, PW=860;
+function preparePrint(){
+  document.body.classList.add('printing');
+  const pages=$$('#book .page'); const base=A4W/PW, sheet=A4H/base;
+  pages.forEach(p=>{p.style.zoom='';p.style.height='';});
+  pages.forEach(p=>{const h=p.scrollHeight; if(h<=sheet){p.style.zoom=base;p.style.height=sheet+'px';} else {p.style.zoom=A4H/h-0.0005;p.style.height=h+'px';}});
+  if(pages.length) pages[pages.length-1].classList.add('lastprint');
+}
+function afterPrint(){ document.body.classList.remove('printing'); $$('#book .page').forEach(p=>{p.style.zoom='';p.style.height='';p.classList.remove('lastprint');}); }
+window.addEventListener('beforeprint',preparePrint); window.addEventListener('afterprint',afterPrint);
+window.__memoPrint={prepare:preparePrint,done:afterPrint};
+function setQuiz(on){ document.body.classList.toggle('quiz',on); $('#quizBtn').classList.toggle('on',on); $('#quizBtn').textContent=on?'답 보이기':'답 가리기'; $$('.a.show').forEach(e=>e.classList.remove('show')); }
+function boot(){
+  render();
+  $('#quizBtn').onclick=()=>setQuiz(!document.body.classList.contains('quiz'));
+  document.addEventListener('click',e=>{const a=e.target.closest('.a'); if(a&&document.body.classList.contains('quiz')) a.classList.toggle('show');});
+  $('#printBtn').onclick=()=>{ const q=document.body.classList.contains('quiz'); setQuiz(false); window.print(); if(q) setQuiz(true); };
+  $('#printBlank').onclick=()=>{ setQuiz(true); document.body.classList.add('printblank'); window.print(); document.body.classList.remove('printblank'); };
+}
+const fams=['400 16px "Nanum Myeongjo"','800 16px "Nanum Myeongjo"','400 16px "Nanum Gothic"','700 16px "Nanum Gothic"'];
+const wait=document.fonts?Promise.all(fams.map(f=>document.fonts.load(f,'가A1').catch(()=>{}))):Promise.resolve();
+const start=()=>Promise.race([wait,new Promise(r=>setTimeout(r,2000))]).then(boot);
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start); else start();
+})();
+</script>
+</body>
+</html>
