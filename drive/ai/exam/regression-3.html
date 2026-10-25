@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>인공지능 B. 회귀 — 실전 문제지</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>:root{ --subject:#5B3CF5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../exam-engine/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다. 이 파일은 drive/exam-engine/exam.css · exam.js 와 함께 있어야 열립니다.</div>
+<script>
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'인공지능',
+  title:'B. 회귀 — 실전 문제지',
+  written:'2026년 10월 25일 작성',
+  slug:'ai-regression-3',
+  lectureBase:'../lecture',
+  level:'중',
+  mcMax:1,
+  scope:`6주차 1차시 — Regression(회귀) 교안 1–27쪽 · 객관식 · TF · 주관식 · 서술 (계산기 없이, LSE 계산·유도 포함)`,
+  oxLabels:["T", "F"]
+};
+const EXAM = [
+{ type:'mc',
+   lv:'중',
+   unit:"회귀 분류",
+   pts:5,
+   q:`<p>집의 넓이, 방 개수, 역까지 거리 세 가지로 집값 하나를 예측하는 선형 회귀 모델을 만든다. 이 모델에 대한 설명으로 옳은 것은?</p>`,
+   choices:[`단순 회귀이고, 회귀가 맞추는 대상은 직선이다`,`다중 회귀이고 multivariate이며, 회귀가 맞추는 대상은 평면이다`,`다중 회귀이고 multivariable이며, 회귀가 맞추는 대상은 초평면이다`,`다중 회귀이고 multivariable이며, 회귀가 맞추는 대상은 평면이다`],
+   answer:[3],
+   exp:`독립변수 3개 → 다중 회귀, 입력 x가 여러 개 → multivariable(다변수), 출력 y는 1개이므로 multivariate가 아닙니다. 독립변수가 3개 이상이면 (x<sub>1</sub>, x<sub>2</sub>, x<sub>3</sub>, y) 4차원이라 초평면입니다(선 → 면 → 초평면).`,
+   src:[["06-1", "s3", "회귀란 · 회귀의 분류"], ["06-1", "s4", "Variate와 Variable"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"최소제곱법",
+   pts:5,
+   q:`<p>같은 데이터 세 점에 대해 후보 직선 A의 잔차는 (3, −3, 0), 후보 직선 B의 잔차는 (1, 1, −1)이다. 최소제곱법이 고르는 직선과 그 이유는?</p>`,
+   choices:[`A — 잔차의 합이 0이므로`,`B — RSS가 더 작으므로`,`A — RSS가 더 작으므로`,`두 직선의 RSS가 같으므로 고를 수 없다`],
+   answer:[2],
+   exp:`RSS(A) = 9 + 9 + 0 = 18, RSS(B) = 1 + 1 + 1 = 3. 최소제곱법은 RSS가 가장 작은 직선을 고르므로 <b>B</b>입니다. A는 잔차의 합이 0이지만 +3과 −3이 상쇄된 것일 뿐 오차가 큽니다. 이것이 잔차를 제곱하는 이유입니다.`,
+   src:[["06-1", "s6", "잔차 제곱합 · 최소제곱법"]] },
+
+{ type:'table',
+   lv:'상',
+   unit:"최소제곱법",
+   pts:15,
+   q:`<p>데이터 (1, 4), (2, 3), (3, 8)에 단순 선형 회귀 ŷ = β̂<sub>0</sub> + β̂<sub>1</sub>x를 최소제곱법으로 적합한다. Step 1의 오차 제곱합은 Σ<sub>i=1</sub><sup>n</sup> {y<sub>i</sub> − (β<sub>0</sub> + β<sub>1</sub>x<sub>i</sub>)}<sup>2</sup>이다. 표를 채우시오.</p>`,
+   head:[`항목`,`값`],
+   rows:[
+     [`<span style="text-decoration:overline">x</span>`,{a:`2`,alt:[]}],
+     [`<span style="text-decoration:overline">y</span>`,{a:`5`,alt:[]}],
+     [`Σ(x<sub>i</sub> − <span style="text-decoration:overline">x</span>)(y<sub>i</sub> − <span style="text-decoration:overline">y</span>)`,{a:`4`,alt:[]}],
+     [`Σ(x<sub>i</sub> − <span style="text-decoration:overline">x</span>)<sup>2</sup>`,{a:`2`,alt:[]}],
+     [`β̂<sub>1</sub>`,{a:`2`,alt:[]}],
+     [`β̂<sub>0</sub>`,{a:`1`,alt:[]}],
+     [`x = 4일 때 ŷ`,{a:`9`,alt:[]}]],
+   exp:`<b>해 식으로</b> (교안 10쪽): <span style="text-decoration:overline">x</span> = <span class="frac"><span class="num">1 + 2 + 3</span><span class="den">3</span></span> = 2, <span style="text-decoration:overline">y</span> = <span class="frac"><span class="num">4 + 3 + 8</span><span class="den">3</span></span> = 5.<br>x<sub>i</sub> − <span style="text-decoration:overline">x</span> = −1, 0, 1, y<sub>i</sub> − <span style="text-decoration:overline">y</span> = −1, −2, 3 → 분자 = (−1)(−1) + 0 × (−2) + 1 × 3 = 4, 분모 = 1 + 0 + 1 = 2.<br>β̂<sub>1</sub> = <span class="frac"><span class="num">4</span><span class="den">2</span></span> = 2, β̂<sub>0</sub> = <span style="text-decoration:overline">y</span> − β̂<sub>1</sub><span style="text-decoration:overline">x</span> = 5 − 2 × 2 = 1 → ŷ = 1 + 2x, x = 4이면 ŷ = 9.<br><b>Step 3의 두 식으로</b> (교안 9쪽): Σ(y<sub>i</sub> − β<sub>0</sub> − β<sub>1</sub>x<sub>i</sub>) = 0 → 15 − 3β<sub>0</sub> − 6β<sub>1</sub> = 0, Σ(y<sub>i</sub> − β<sub>0</sub> − β<sub>1</sub>x<sub>i</sub>)x<sub>i</sub> = 0 → 34 − 6β<sub>0</sub> − 14β<sub>1</sub> = 0 (Σx<sub>i</sub>y<sub>i</sub> = 34, Σx<sub>i</sub><sup>2</sup> = 14). 첫 식에서 β<sub>0</sub> = 5 − 2β<sub>1</sub>, 둘째 식에 넣으면 4 − 2β<sub>1</sub> = 0 → β<sub>1</sub> = 2, β<sub>0</sub> = 1로 같습니다.<br>확인: 잔차 1, −2, 1의 합이 0 — Step 3 첫 식 그대로입니다.`,
+   src:[["06-1", "s6", "잔차 제곱합 · 최소제곱법"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"최소제곱법",
+   pts:5,
+   q:`<p>어떤 데이터에서 C(β<sub>0</sub>, β<sub>1</sub>) = Σ<sub>i=1</sub><sup>n</sup> {y<sub>i</sub> − (β<sub>0</sub> + β<sub>1</sub>x<sub>i</sub>)}<sup>2</sup>의 최솟값은 2이고, 이 최솟값은 β<sub>0</sub> = 1, β<sub>1</sub> = 3일 때 나온다. (β̂<sub>0</sub>, β̂<sub>1</sub>) = arg min C(β<sub>0</sub>, β<sub>1</sub>)의 값은?</p>`,
+   choices:[`2`,`(2, 2)`,`(3, 1)`,`(1, 3)`],
+   answer:[4],
+   exp:`arg min은 최솟값 자체(2)가 아니라 최솟값을 만드는 <b>변수의 값</b>입니다. 따라서 (β̂<sub>0</sub>, β̂<sub>1</sub>) = (1, 3)이고, RSS는 2입니다(교안 9쪽 Step 2).`,
+   src:[["06-1", "s6", "잔차 제곱합 · 최소제곱법"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"R²",
+   pts:5,
+   q:`<p>표본 크기 n = 11, 예측변수 p = 2인 다중 회귀 모델에서 SST = 100, SSE = 20이다. R<sup>2</sup>와 Adjusted R<sup>2</sup>를 차례로 쓴 것은?</p><p>Adjusted R<sup>2</sup> = 1 − <span class="frac"><span class="num">SSE ÷ (n − p − 1)</span><span class="den">SST ÷ (n − 1)</span></span></p>`,
+   choices:[`0.8, 0.75`,`0.8, 0.8`,`0.75, 0.8`,`0.8, 0.85`],
+   answer:[1],
+   exp:`R<sup>2</sup> = 1 − <span class="frac"><span class="num">20</span><span class="den">100</span></span> = 0.8. Adjusted R<sup>2</sup> = 1 − <span class="frac"><span class="num">20 ÷ 8</span><span class="den">100 ÷ 10</span></span> = 1 − <span class="frac"><span class="num">2.5</span><span class="den">10</span></span> = 0.75.<br>벌점 때문에 Adjusted R<sup>2</sup>는 R<sup>2</sup>보다 작습니다. 예측변수 개수 p가 클수록 차이가 커집니다(교안 18쪽).`,
+   src:[["06-1", "s7", "결정계수 R²"], ["06-1", "s9", "수정된 결정계수"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"회귀계수 해석",
+   pts:5,
+   q:`<p>광고 데이터로 sales = β<sub>0</sub> + β<sub>1</sub> × TV + β<sub>2</sub> × radio + β<sub>3</sub> × newspaper + ε를 추정했더니 TV의 회귀계수가 0.05였다. 이 결과의 해석으로 가장 적절한 것은?</p>`,
+   choices:[`TV 광고비를 1 늘리면 그것이 원인이 되어 판매량이 반드시 0.05 늘어난다`,`radio와 newspaper 광고비가 그대로일 때, TV 광고비가 1 큰 것과 판매량이 평균 0.05 큰 것이 함께 나타난다`,`TV 광고비가 0일 때 판매량은 0.05이다`,`판매량 변동의 5%를 TV 광고비가 설명한다`],
+   answer:[2],
+   exp:`β<sub>j</sub>는 다른 예측변수를 모두 고정했을 때 X<sub>j</sub>가 1 늘 때 Y의 평균 변화량입니다(교안 14쪽). 이것은 <b>상관관계</b>이며, 관찰 데이터로 인과관계를 주장하면 안 됩니다(교안 19쪽, 교수님 강조).<br>③은 절편 β<sub>0</sub>의 뜻, ④는 R<sup>2</sup>의 뜻과 섞은 오답입니다.`,
+   src:[["06-1", "s8", "다중 선형 회귀"], ["06-1", "s10", "회귀계수 해석"]] },
+
+{ type:'ox',
+   lv:'중',
+   unit:"로지스틱 회귀",
+   pts:10,
+   q:`<p>선형 회귀와 로지스틱 회귀를 비교한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`선형 회귀의 출력은 범위 제한이 없고, 로지스틱 회귀의 출력은 항상 0과 1 사이이다.`,true],[`두 모델 모두 식 안에 β<sub>0</sub> + β<sub>1</sub>X라는 직선 식이 들어 있다.`,true],[`로지스틱 회귀에서 직선 β<sub>0</sub> + β<sub>1</sub>X와 같다고 놓는 것은 오즈 <span class="frac"><span class="num">p(X)</span><span class="den">1 − p(X)</span></span>이다.`,false],[`로지스틱 회귀는 이름에 "회귀"가 붙지만 최종적으로 클래스를 정하는 분류에 쓴다.`,true],[`로지스틱 회귀의 계수는 관찰된 결과가 나올 확률(우도)을 가장 작게 하는 값으로 고른다.`,false]],
+   exp:`<b>ㄱ (T)</b> 선형 회귀는 0 미만·1 초과가 가능, 로지스틱은 S자 곡선으로 0~1(교안 23쪽).<br><b>ㄴ (T)</b> 선형 회귀는 출력 자체가, 로지스틱 회귀는 로그 오즈가 β<sub>0</sub> + β<sub>1</sub>X입니다(교안 24쪽).<br><b>ㄷ (F)</b> 직선과 같다고 놓는 것은 오즈가 아니라 <b>로그 오즈</b> log <span class="frac"><span class="num">p(X)</span><span class="den">1 − p(X)</span></span> = β<sub>0</sub> + β<sub>1</sub>X입니다(log odds, logit 변환, 교안 24쪽). 오즈에 로그를 취한 값이 직선과 같습니다.<br><b>ㄹ (T)</b> 확률 p̂(X)를 추정하고 0.5 기준으로 분류 결정까지 내립니다(교안 27쪽).<br><b>ㅁ (F)</b> 우도를 <b>최대로</b> 하는 값을 고릅니다(Maximum likelihood, 교안 26쪽).`,
+   src:[["06-1", "s14", "선형 vs 로지스틱"], ["06-1", "s15", "시그모이드 · 로그 오즈"], ["06-1", "s16", "최대우도"], ["06-1", "s17", "0.5 기준 분류"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"로지스틱 회귀",
+   pts:5,
+   q:`<p>로지스틱 회귀에서 어떤 샘플의 β̂<sub>0</sub> + β̂<sub>1</sub>X 값이 −2로 계산되었다. 이 샘플의 분류로 옳은 것은?</p>`,
+   choices:[`p̂(X) &gt; 0.5이므로 Y = 1`,`값이 음수이므로 확률을 정할 수 없다`,`p̂(X) &lt; 0.5이므로 Y = 0`,`p̂(X) = −2이므로 Y = 0`],
+   answer:[3],
+   exp:`β̂<sub>0</sub> + β̂<sub>1</sub>X는 로그 오즈 log <span class="frac"><span class="num">p(X)</span><span class="den">1 − p(X)</span></span>입니다. 로그 오즈가 음수이면 오즈 <span class="frac"><span class="num">p</span><span class="den">1 − p</span></span> &lt; 1, 즉 p &lt; 1 − p이므로 p̂(X) &lt; 0.5 → Y = 0입니다.<br>확률 p̂(X)는 항상 0~1이므로 −2가 될 수 없습니다(④ 오답). 로그 오즈가 0이면 p̂(X) = 0.5입니다.`,
+   src:[["06-1", "s15", "시그모이드 · 로그 오즈"], ["06-1", "s17", "0.5 기준 분류"]] },
+
+{ type:'short',
+   lv:'중',
+   unit:"로지스틱 회귀",
+   pts:5,
+   q:`<p>세 사람 A(실제 Yes), B(실제 No), C(실제 Yes)에 대해 어떤 계수의 로지스틱 회귀가 p(A) = 0.8, p(B) = 0.5, p(C) = 0.5를 냈다. 이 계수의 우도(likelihood) ℓ을 구하시오. (p는 Yes일 확률)</p>`,
+   show:`0.2`,
+   alt:["1/5", "<span class=\"frac\"><span class=\"num\">1</span><span class=\"den\">5</span></span>"],
+   exp:`ℓ = Π<sub>y<sub>i</sub>=1</sub> p(x<sub>i</sub>) × Π<sub>y<sub>i</sub>=0</sub> (1 − p(x<sub>i</sub>)) (교안 26쪽). Yes인 A, C는 p, No인 B는 1 − p를 곱합니다.<br>ℓ = 0.8 × (1 − 0.5) × 0.5 = 0.2. 최대우도는 이 값이 가장 커지는 계수를 고릅니다.`,
+   src:[["06-1", "s16", "최대우도"]] },
+
+{ type:'short',
+   lv:'중',
+   unit:"English",
+   pts:5,
+   q:`<p>다음 문장의 뜻을 한국어로 쓰시오.</p><p>"Claims of causality should be avoided for observational data."</p>`,
+   show:`관찰 데이터로는 인과관계를 주장하지 말아야 한다.`,
+   alt:["관찰 데이터에서는 인과관계 주장을 피해야 한다"],
+   exp:`causality = 인과관계, observational data = 관찰 데이터. 회귀계수는 상관관계로 해석해야 하고 x가 y의 원인이라고 단정하면 안 된다는 교수님 강조와 같은 내용입니다(교안 19쪽).`,
+   src:[["06-1", "s10", "회귀계수 해석"]] },
+
+{ type:'short',
+   lv:'중',
+   unit:"English",
+   pts:5,
+   q:`<p>다음 문장에서 밑줄 친 부분의 뜻을 한국어로 쓰시오.</p><p>"We interpret β<sub>j</sub> as the average effect on Y of a one unit increase in X<sub>j</sub>, <u>holding all other predictors fixed</u>."</p>`,
+   show:`다른 예측변수를 모두 고정한 채로`,
+   alt:["나머지 예측변수는 그대로 둔 채", "다른 모든 예측변수를 고정했을 때"],
+   exp:`다중 회귀의 β<sub>j</sub>는 다른 예측변수를 모두 고정했을 때 X<sub>j</sub>가 1 늘면 Y가 평균적으로 변하는 양입니다(교안 14쪽).`,
+   src:[["06-1", "s8", "다중 선형 회귀"]] },
+
+{ type:'essay',
+   lv:'상',
+   unit:"최소제곱법",
+   pts:15,
+   q:`<p>단순 선형 회귀 Y = β<sub>0</sub> + β<sub>1</sub>X + ε의 회귀계수를 Least squares(최소제곱법)로 구하는 과정을 3단계로 서술하시오. 각 단계에서 세우는 식과, 마지막에 얻는 β̂<sub>0</sub>, β̂<sub>1</sub>의 식을 포함하시오.</p>`,
+   model:`Step 1: 잔차(실제 값 − 예측값)를 제곱해서 더한 오차 제곱합 Σ<sub>i=1</sub><sup>n</sup> {y<sub>i</sub> − (β<sub>0</sub> + β<sub>1</sub>x<sub>i</sub>)}<sup>2</sup>을 식으로 쓴다. 제곱하는 것은 + 오차와 − 오차가 상쇄되지 않게 하기 위해서이다. Step 2: 이 값을 β<sub>0</sub>, β<sub>1</sub>의 함수(비용함수) C(β<sub>0</sub>, β<sub>1</sub>)로 두고, 이를 최소로 하는 문제로 정의한다. 구하려는 추정값은 (β̂<sub>0</sub>, β̂<sub>1</sub>) = arg min C(β<sub>0</sub>, β<sub>1</sub>), 즉 C를 최소로 만드는 변수 값이다. Step 3: C를 β<sub>0</sub>와 β<sub>1</sub>로 각각 편미분해서 0으로 놓는다: −2Σ(y<sub>i</sub> − (β<sub>0</sub> + β<sub>1</sub>x<sub>i</sub>)) = 0, −2Σ(y<sub>i</sub> − (β<sub>0</sub> + β<sub>1</sub>x<sub>i</sub>))x<sub>i</sub> = 0. 두 식을 연립해서 풀면 β̂<sub>1</sub> = Σ(x<sub>i</sub> − <span style="text-decoration:overline">x</span>)(y<sub>i</sub> − <span style="text-decoration:overline">y</span>) ÷ Σ(x<sub>i</sub> − <span style="text-decoration:overline">x</span>)<sup>2</sup>, β̂<sub>0</sub> = <span style="text-decoration:overline">y</span> − β̂<sub>1</sub><span style="text-decoration:overline">x</span>를 얻는다(<span style="text-decoration:overline">x</span>, <span style="text-decoration:overline">y</span>는 평균).`,
+   rubric:[[`Step 1: 오차(잔차) 제곱합 식`,4],[`Step 2: C를 최소로 하는 문제 · arg min = 최소로 만드는 변수 값`,4],[`Step 3: β<sub>0</sub>, β<sub>1</sub>로 각각 편미분 = 0, 두 식 연립`,4],[`해: β̂<sub>1</sub>의 분자·분모와 β̂<sub>0</sub>의 식(평균 사용)`,3]],
+   src:[["06-1", "s6", "잔차 제곱합 · 최소제곱법"]] },
+
+{ type:'essay',
+   lv:'상',
+   unit:"로지스틱 회귀",
+   pts:15,
+   q:`<p>카드 사용자의 채무불이행 여부(Yes = 1, No = 0)를 Balance로 예측하려 한다. ① 선형 회귀로 예측하고 Ŷ &gt; 0.5이면 Yes로 분류하는 방법이 부적절한 이유, ② 로지스틱 회귀가 이 문제를 해결하는 방식(식의 구조), ③ 로지스틱 회귀의 계수 추정 기준과 분류 규칙을 서술하시오.</p>`,
+   model:`① Y가 0 또는 1이면 E(Y | X = x) = Pr(Y = 1 | X = x)라서 회귀가 확률을 예측하는 것처럼 보이지만, 선형 회귀는 직선이라 0보다 작거나 1보다 큰 값을 낼 수 있어 확률로 쓸 수 없다. ② 로지스틱 회귀는 p(X) = <span class="frac"><span class="num">1</span><span class="den">1 + e<sup>−(β<sub>0</sub> + β<sub>1</sub>X)</sup></span></span>처럼 직선 β<sub>0</sub> + β<sub>1</sub>X를 시그모이드 함수에 넣어 출력을 항상 0~1로 만든다. 정리하면 로그 오즈 log <span class="frac"><span class="num">p(X)</span><span class="den">1 − p(X)</span></span> = β<sub>0</sub> + β<sub>1</sub>X이고, p(X)는 y가 1일 확률, 1 − p(X)는 y가 0일 확률이다. ③ 계수는 최소제곱이 아니라 우도(관찰된 결과가 나올 확률)를 최대로 하는 최대우도로 추정하고, p̂(X) &gt; 0.5이면 1(Default), p̂(X) ≤ 0.5이면 0(No Default)으로 분류한다.`,
+   rubric:[[`① 선형 회귀는 0 미만·1 초과 값이 나와 확률이 될 수 없음`,5],[`② 직선을 시그모이드에 넣어 0~1 / 로그 오즈 = 직선, p(x) = y가 1일 확률`,5],[`③ 최대우도 추정 + 0.5 기준 분류(같으면 0)`,5]],
+   src:[["06-1", "s13", "y가 Yes/No일 때"], ["06-1", "s14", "선형 vs 로지스틱"], ["06-1", "s15", "시그모이드 · 로그 오즈"], ["06-1", "s16", "최대우도"], ["06-1", "s17", "0.5 기준 분류"]] }
+];
+</script>
+</body>
+</html>

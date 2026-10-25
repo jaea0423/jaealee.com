@@ -65,7 +65,7 @@ const EXAM = [
    q:`<p>OOB 순열 변수 중요도에서 특징 x<sub>i</sub>가 중요하다고 판단하는 경우는?</p>`,
    choices:[`x<sub>i</sub>를 섞어도 OOB 오차가 변하지 않을 때`,`x<sub>i</sub>를 섞으면 OOB 오차가 일관되게 커질 때`,`x<sub>i</sub>를 섞으면 OOB 오차가 작아질 때`,`x<sub>i</sub>가 bootstrap에서 한 번도 뽑히지 않을 때`],
    answer:[2],
-   exp:`교안 13쪽: "A feature is important if randomizing it on OOB data consistently increases the prediction error." 중요도 점수 v<sub>i</sub> = <span class="frac"><span class="num">d̄<sub>i</sub></span><span class="den">s<sub>i</sub></span></span>가 큽니다.`,
+   exp:`교안 13쪽: "A feature is important if randomizing it on OOB data consistently increases the prediction error." 중요도 점수 v<sub>i</sub> = <span class="frac"><span class="num"><span style="display:inline-block;padding-bottom:.32em">d̄<sub>i</sub></span></span><span class="den">s<sub>i</sub></span></span>가 큽니다.`,
    src:[["08-1", "s11", "OOB 순열 변수 중요도"]] },
 
 { type:'table',
@@ -83,7 +83,7 @@ const EXAM = [
    lv:'중',
    unit:"Boosting",
    pts:10,
-   q:`<p>AdaBoost의 예측기 가중치 α<sub>j</sub> = η log<span class="frac"><span class="num">1 − r<sub>j</sub></span><span class="den">r<sub>j</sub></span></span> (η &gt; 0)에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   q:`<p>AdaBoost의 예측기 가중치 α<sub>j</sub> = η log<span class="frac"><span class="num"><span style="display:inline-block;padding-bottom:.32em">1 − r<sub>j</sub></span></span><span class="den">r<sub>j</sub></span></span> (η &gt; 0)에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
    items:[[`r<sub>j</sub>가 작을수록(예측기가 정확할수록) α<sub>j</sub>는 커진다.`,true],[`r<sub>j</sub> = 0.5이면 α<sub>j</sub> = 0이다.`,true],[`r<sub>j</sub> &gt; 0.5이면 α<sub>j</sub> &gt; 0이다.`,false],[`α<sub>j</sub>가 클수록 틀린 샘플의 가중치는 더 많이 커진다.`,true],[`α<sub>j</sub>는 학습률 η와 관계없다.`,false]],
    exp:`<b>ㄱ (T)</b> <span class="frac"><span class="num">1 − r</span><span class="den">r</span></span>이 커지므로 log 값이 커집니다(교안 18쪽).<br><b>ㄴ (T)</b> <span class="frac"><span class="num">0.5</span><span class="den">0.5</span></span> = 1, log 1 = 0.<br><b>ㄷ (F)</b> <span class="frac"><span class="num">1 − r</span><span class="den">r</span></span> &lt; 1 이므로 log가 음수, α &lt; 0(무작위보다 못한 예측기).<br><b>ㄹ (T)</b> 틀린 샘플에 exp(α<sub>j</sub>)를 곱하므로(교안 19쪽).<br><b>ㅁ (F)</b> α<sub>j</sub> = η × log(…)로 η에 비례합니다.`,
    src:[["08-1", "s15", "가중 오차율과 예측기 가중치"], ["08-1", "s16", "가중치 갱신과 최종 예측"]] },
@@ -93,10 +93,12 @@ const EXAM = [
    unit:"Boosting",
    pts:10,
    q:`<p>Gradient Boosting으로 샘플 두 개(정답 y = 5, 8)를 학습한다. 첫 트리 h<sub>1</sub>의 예측이 4, 9였다. 표를 채우시오.</p><p>(가) 두 번째 트리 h<sub>2</sub>가 맞춰 학습할 값 &nbsp;(나) h<sub>2</sub>가 (가)를 정확히 맞혔을 때 앙상블의 예측</p>`,
-   head:[`샘플`,`y`,`h<sub>1</sub>`,`(가)`,`(나)`],
+   head:[`항목`,`샘플 1`,`샘플 2`],
    rows:[
-     [`1`,`5`,`4`,{a:`1`,alt:[]},{a:`5`,alt:[]}],
-     [`2`,`8`,`9`,{a:`−1`,alt:[]},{a:`8`,alt:[]}]],
+     [`y`,`5`,`8`],
+     [`h<sub>1</sub>`,`4`,`9`],
+     [`(가)`,{a:`1`,alt:[]},{a:`−1`,alt:["-1"]}],
+     [`(나)`,{a:`5`,alt:[]},{a:`8`,alt:[]}]],
    exp:`두 번째 트리는 잔차 y − h<sub>1</sub> = 1, −1에 맞춰 학습합니다(교안 20–21쪽). 앙상블 예측은 트리 예측의 <b>합</b> h<sub>1</sub> + h<sub>2</sub> = 5, 8.`,
    src:[["08-1", "s17", "그래디언트 부스팅"]] },
 
@@ -104,11 +106,11 @@ const EXAM = [
    lv:'중',
    unit:"XGBoost",
    pts:5,
-   q:`<p>XGBoost의 장점으로 옳지 <b>않은</b> 것은?</p>`,
-   choices:[`Parallelized tree building`,`Regularization for avoiding overfitting`,`Efficient handling of missing data`,`Sampling without replacement`],
+   q:`<p>다음 설명에 해당하는 방법은?</p><p>"트리를 순차적으로 만들어 앞 모델의 오류를 바로잡는 gradient boosting 알고리즘이며, regularization(규제)·병렬 처리·결측값 처리 등으로 최적화해 overfitting(과적합)을 줄인다."</p>`,
+   choices:[`Random Forest`,`AdaBoost`,`Stacking`,`XGBoost`],
    answer:[4],
-   exp:`Sampling without replacement는 Pasting(교안 6쪽)입니다. 그림의 여섯 가지: 병렬 트리 생성, depth-first 가지치기, 캐시 인식·out-of-core 계산, 규제, 결측 데이터 처리, 내장 교차 검증.`,
-   src:[["08-1", "s20", "XGBoost"]] },
+   exp:`XGBoost(Extreme Gradient Boosting)입니다(교안 23–24쪽). Random Forest는 배깅 기반, AdaBoost는 샘플 가중치 조정, Stacking은 블렌더 학습입니다.`,
+   src:[["08-1", "s20", "XGBoost"], ["08-1", "s21", "결정 트리에서 XGBoost까지"]] },
 
 { type:'mc',
    lv:'중',
@@ -154,7 +156,7 @@ const EXAM = [
    unit:"Stacking",
    pts:15,
    q:`<p>Voting(투표)과 Stacking(스태킹)은 모두 서로 다른 예측기의 예측을 합친다. 두 방법이 예측을 <b>합치는 방식</b>의 차이를 쓰고, 세 예측기의 예측 3.1, 2.7, 2.9를 받은 블렌더가 최종 예측 3.0을 냈다면 이것이 이 차이를 어떻게 보여 주는지 설명하시오.</p>`,
-   model:`Voting은 다수결(hard)이나 확률 평균(soft) 같은 미리 정해진 단순한 함수로 예측을 합친다. Stacking은 합치는 일 자체를 하는 모델(블렌더, Blender)을 데이터로 학습시킨다. 교안 예에서 세 예측의 단순 평균은 2.9이지만 블렌더의 출력은 3.0이다. 즉 블렌더는 정해진 평균이 아니라 학습으로 얻은 결합 방식으로 예측을 합친다.`,
+   model:`Voting은 다수결(hard)이나 확률 평균(soft) 같은 미리 정해진 단순한 함수로 예측을 합친다. Stacking은 합치는 일 자체를 하는 모델(블렌더, Blender)을 데이터로 학습시킨다. 이 예에서 세 예측의 단순 평균은 2.9이지만 블렌더의 출력은 3.0이다. 즉 블렌더는 정해진 평균이 아니라 학습으로 얻은 결합 방식으로 예측을 합친다.`,
    rubric:[[`Voting = 정해진 단순 함수(다수결·평균)`,5],[`Stacking = 결합 모델(블렌더)을 학습`,5],[`예: 평균 2.9 ≠ 블렌더 3.0의 의미`,5]],
    src:[["08-1", "s2", "하드 투표"], ["08-1", "s4", "소프트 투표"], ["08-1", "s22", "스태킹"]] }
 ];

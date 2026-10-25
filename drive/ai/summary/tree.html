@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>인공지능 개념정리노트 — E. 결정 트리</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>
+:root{ --subject:#5B3CF5; }
+.toolbar a{color:#EEE;text-decoration:none;border:1px solid #6A6A6A;border-radius:4px;padding:5px 13px}
+.toolbar button.on{background:#F2F2F2;color:#111;border-color:#F2F2F2;font-weight:700}
+.blk{padding-bottom:16px}
+.blk.sh{padding-bottom:6px}
+.blk h2{margin:0;font-size:18px;font-weight:800;letter-spacing:.04em;display:flex;align-items:baseline;gap:10px;border-bottom:1.5px solid var(--line);padding-bottom:4px}
+.blk h2 .sn{font-family:var(--gothic);font-size:13px;font-weight:800;color:#fff;background:var(--ink);padding:1px 8px;letter-spacing:0}
+.blk .lead{margin:6px 0 0;font-family:var(--gothic);font-size:12px;color:var(--ink-2);line-height:1.6}
+.unit{font-family:var(--gothic);font-size:12.5px;font-weight:800;margin:0 0 4px;display:flex;align-items:center;gap:6px}
+.unit::before{content:"";width:6px;height:6px;background:var(--subject)}
+table.mt{width:100%;border-collapse:collapse;font-size:13.4px;line-height:1.5}
+table.mt th{background:#F1F1EE;font-family:var(--gothic);font-size:11.8px;font-weight:700;border:1px solid var(--line);padding:4px 6px;text-align:left;white-space:nowrap}
+table.mt td{border:1px solid var(--line);padding:5px 7px;vertical-align:middle}
+table.mt td.nm{font-weight:700;white-space:normal}
+table.mt td.res{font-weight:800;white-space:nowrap}
+table.mt td.eq{white-space:nowrap}
+table.mt td.src{font-family:var(--gothic);font-size:11.6px;color:var(--ink-2)}
+table.mt td.why{font-size:12.6px}
+table.mt td.c{text-align:center;font-weight:800;width:56px}
+table.mt td.x{color:var(--red);width:46%}
+table.mt.dp td{font-size:12.6px}
+table.mt.dp td.res{white-space:nowrap}
+.box{border:1px solid var(--line);padding:8px 12px;font-size:13.2px;line-height:1.6}
+.box b{font-family:var(--gothic);font-size:12.5px}
+.box ol,.box ul{margin:2px 0 6px;padding-left:1.4em}
+.frac{font-size:.86em}
+/* 가리기 */
+body.quiz .a{color:transparent!important;background:#E4E4E0;cursor:pointer;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body.quiz .a *{visibility:hidden}
+body.quiz .a.show{color:var(--red)!important;background:transparent}
+body.quiz .a.show *{visibility:visible}
+body.quiz.printblank .a{background:#fff}
+
+.blk p{margin:4px 0;font-size:13.2px;line-height:1.65}
+.blk ul.pt,.blk ol.pt{margin:3px 0 4px;padding-left:1.25em;font-size:13.2px;line-height:1.62}
+.blk ul.pt li,.blk ol.pt li{margin:1px 0}
+.prof{border:1.5px solid var(--subject);padding:6px 10px;font-size:13px;line-height:1.6}
+.prof .h,.trap .h,.key .h{font-family:var(--gothic);font-size:11.8px;font-weight:800;margin-bottom:2px}
+.prof .h{color:var(--subject)}
+.trap{border:1px dashed var(--red);padding:6px 10px;font-size:13px;line-height:1.6}
+.trap .h{color:var(--red)}
+.key{background:#F4F3EF;padding:6px 10px;font-size:13.2px;line-height:1.6;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.en{font-family:var(--gothic);font-size:.82em;color:var(--ink-2);margin-left:2px}
+.pg{font-family:var(--gothic);font-size:10.5px;color:var(--ink-2);margin-left:4px;white-space:nowrap}
+.fx{text-align:center;font-size:14px;margin:4px 0;line-height:1.7}
+mark{background:linear-gradient(transparent 55%,#DCD2FF 55%);color:inherit;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+table.mt td{font-size:13px}
+
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <a href="../exam/index.html">‹ 문제지 목록</a>
+  <span class="sep"></span>
+  <button id="quizBtn">답 가리기</button>
+  <span class="sep"></span>
+  <button id="printBtn" class="primary">인쇄 · PDF</button>
+  <button id="printBlank" title="답 칸을 비운 채 인쇄 — 손으로 채워 보는 연습지">빈칸 연습지 인쇄</button>
+</div>
+<div id="book"></div>
+<template id="src">
+<div class="blk sh"><h2><span class="sn">Ⅰ</span>한눈에 보기</h2><p class=lead>교안 Decision Tree 1–35쪽 전체가 시험 범위입니다.</p></div>
+<div class="blk"><div class="key"><ul class="pt"><li>결정 트리는 「특징 ≤ 기준값?」 규칙으로 <span class="a">predictor space(예측 변수 공간)</span>를 단순한 영역들로 나눕니다. 분류와 회귀를 모두 합니다.</li><li>장점은 <span class="a">해석이 쉬움</span>, 단점은 <span class="a">예측 정확도가 최고 수준이 아님</span> → 배깅·랜덤 포레스트·부스팅(8-1)으로 이어집니다.</li><li>노드 = 규칙·gini·samples·value·class. 리프 하나 = <span class="a">직사각형 영역</span> 하나, 경계는 <span class="a">축에 평행</span>합니다.</li><li>좋은 분할 = 불순도를 많이 줄이는 분할. 척도는 <span class="a">지니</span>(기본값)와 <span class="a">엔트로피</span>, 회귀는 <span class="a">MSE</span>.</li><li>규제(사전 가지치기): max_depth <span class="a">↓</span>, min_samples_split · min_samples_leaf <span class="a">↑</span>.</li><li>CART = 지니 + <span class="a">이진</span> 분할 + ΔG 최대. ID3 = 엔트로피 + <span class="a">정보 이득</span> 최대 + 범주 수만큼 분할.</li><li>회귀 트리: 리프 예측 = 구간 y의 <span class="a">평균</span>, MSE 최소 분할, 예측은 <span class="a">계단</span> 모양.</li><li>한계: 학습 데이터의 <span class="a">회전</span>에 민감, 데이터의 <span class="a">작은 변화</span>에 민감.</li></ul></div></div>
+<div class="blk"><div class="prof"><div class="h">교수님 강조</div><p><b>"식은 형태를 그대로 안내해 준다(식 자체를 내지는 않음)"</b> — 6-2 차시 말씀(전 범위에 적용). 7-2 차시에는 따로 짚은 시험 포인트가 필기에 없습니다.</p></div></div>
+<div class="blk"><div class="box"><p>→ 지니·엔트로피·ΔG·정보 이득은 <b>각 부분의 뜻과 0·최댓값·방향</b>을 말할 수 있으면 됩니다.</p><p><b>범위:</b> 7-2 수업은 15쪽(CART 지니 예제)까지, 16–35쪽(ID3·회귀 트리·한계)은 8-1 수업에서 했습니다. 모두 시험 범위입니다.</p></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅱ</span>트리 기반 방법과 용어</h2><p class=lead>교안 1–4쪽</p></div>
+<div class="blk"><div class="unit">정의</div><div class="box"><p><b>Tree-based methods(트리 기반 방법)</b>는 예측 변수 공간을 여러 개의 <span class="a">단순한 영역</span>으로 나누는(stratifying / segmenting) 방법입니다. <span class="pg">p.1</span></p><p>나누는 데 쓴 <span class="a">splitting rules(분할 규칙)</span>을 나무 모양으로 요약할 수 있어 Decision tree(결정 트리)라고 부릅니다.</p><p>결정 트리는 <span class="a">분류와 회귀</span>를 모두 하고, 출력이 여러 개인 multi-output 과제도 할 수 있습니다.</p></div></div>
+<div class="blk"><div class="unit">장단점 <span class="pg">p.2</span></div><table class="mt "><tr><th></th><th>내용</th></tr><tr><td class="nm">장점</td><td>단순하고 <span class="a">해석하기 쉬움</span><span class="en">simple and useful for interpretation</span></td></tr><tr><td class="nm">단점</td><td>예측 정확도가 최고 수준의 지도 학습 방법과 <span class="a">경쟁이 안 됨</span><span class="en">not competitive</span></td></tr><tr><td class="nm">해결</td><td>트리 여러 개를 합침(bagging · random forests · boosting) → 정확도 <span class="a">크게 ↑</span>, 해석력 <span class="a">일부 잃음</span></td></tr></table></div>
+<div class="blk"><div class="unit">트리 용어 <span class="pg">p.3</span></div><table class="mt "><tr><th>노드</th><th>뜻</th></tr><tr><td class="nm">Root node</td><td>맨 위 노드, depth(깊이) <span class="a">0</span></td></tr><tr><td class="nm">Child node</td><td>다른 노드(부모) 바로 아래 연결된 노드</td></tr><tr><td class="nm">Leaf node</td><td>자식이 <span class="a">없는</span> 노드(terminal node) → <span class="a">최종 예측</span></td></tr></table></div>
+<div class="blk"><div class="unit">노드 한 칸의 다섯 줄 (Iris 트리) <span class="pg">p.3</span></div><table class="mt "><tr><th>줄</th><th>뜻</th></tr><tr><td class="nm">분할 규칙</td><td>예: petal length ≤ 2.45 → 참이면 <span class="a">왼쪽</span></td></tr><tr><td class="nm">gini</td><td>그 노드의 <span class="a">불순도</span></td></tr><tr><td class="nm">samples</td><td>그 노드에 도달한 <span class="a">학습 샘플 수</span></td></tr><tr><td class="nm">value</td><td><span class="a">클래스별</span> 샘플 수 (합 = samples)</td></tr><tr><td class="nm">class</td><td>샘플이 <span class="a">가장 많은</span> 클래스 = 여기서 멈출 때의 예측</td></tr></table></div>
+<div class="blk"><div class="unit">결정 경계 · 스케일링</div><div class="box"><p>리프 하나는 특징 공간의 <span class="a">직사각형 영역</span> 하나입니다. 한 번에 <span class="a">특징 하나</span>만 기준값과 비교하므로 경계는 항상 <span class="a">축에 평행</span>한 직선입니다. <span class="pg">p.4</span></p><p>같은 이유로 결정 트리는 <span class="a">feature scaling(특징 스케일링)</span>이나 centering(중심화)이 <span class="a">전혀 필요 없습니다</span>. 단위가 바뀌면 기준값만 함께 바뀝니다. <span class="pg">p.3</span></p><p>예측: 새 샘플을 루트부터 규칙에 넣어 리프까지 따라갑니다. 예) 꽃잎 길이 5, 너비 1.5 → 5 ≤ 2.45 거짓(오른쪽) → 1.5 ≤ 1.75 참(왼쪽) → <span class="a">versicolor</span>.</p></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅲ</span>좋은 분할 — 지니와 엔트로피</h2><p class=lead>교안 5–8쪽</p></div>
+<div class="blk"><div class="unit">불순도</div><div class="box"><p><b>impurity(불순도)</b> = 한 노드 안에 클래스가 <span class="a">섞인 정도</span>. 좋은 분할은 나눈 뒤 자식의 불순도가 <span class="a">낮아지는</span> 분할입니다. <span class="pg">p.5</span></p><ul class="pt"><li>분류: <span class="a">Gini’s diversity index(지니 다양성 지수)</span> — 기본값</li><li>분류: <span class="a">Entropy(엔트로피)</span> — criterion 하이퍼파라미터를 entropy로</li><li>회귀: <span class="a">Variance(분산) · MSE</span></li></ul></div></div>
+<div class="blk"><div class="unit">지니 다양성 지수 Gini’s diversity index</div><div class="box"><div class="fx">G<sub>i</sub> = 1 − ∑<sub>k=1</sub><sup>N<sub>classes</sub></sup> (<span class="frac"><span class="num"><span style="display:inline-block;padding-bottom:.32em">N<sub>k,i</sub></span></span><span class="den">N<sub>i</sub></span></span>)<sup>2</sup> = 1 − ∑<sub>k</sub> p<sub>i,k</sub><sup>2</sup></div><p>N<sub>k,i</sub>: 노드 i의 클래스 k 샘플 수 · N<sub>i</sub>: 노드 i의 전체 샘플 수 · p<sub>i,k</sub>: 노드 i에서 클래스 k의 <span class="a">비율</span>. <span class="pg">p.6</span></p><p>한 클래스만 있으면 1 − 1<sup>2</sup> = <span class="a">0</span> (100% pure, 순수). 고르게 섞일수록 커집니다.</p><p>범위: 0 ~ 1 − <span class="frac"><span class="num">1</span><span class="den">N<sub>classes</sub></span></span> → 2클래스 최대 <span class="a">0.5</span>, 3클래스 최대 <span class="a">0.667</span> (<span class="frac"><span class="num">2</span><span class="den">3</span></span>).</p></div></div>
+<div class="blk"><div class="unit">엔트로피 Entropy</div><div class="box"><div class="fx">H<sub>i</sub> = − ∑<sub>k, p<sub>i,k</sub>≠0</sub> p<sub>i,k</sub> log p<sub>i,k</sub></div><p>Entropy는 노드의 <span class="a">uncertainty(불확실성)</span>를 잽니다. <span class="pg">p.7</span></p><p>모든 클래스가 <span class="a">같은 비율</span>일 때 최대, 한 클래스만 있으면 <span class="a">0</span>입니다.</p><p>비율 0인 클래스는 합에서 뺍니다(log 0은 정의되지 않음). 앞의 −는 log p ≤ 0이라 H를 0 이상으로 만들기 위함입니다. 이진 분류 반반 + log<sub>2</sub>이면 H = <span class="a">1</span>.</p></div></div>
+<div class="blk"><div class="unit">지니 vs 엔트로피 <span class="pg">p.8</span></div><table class="mt "><tr><th></th><th>지니</th><th>엔트로피</th></tr><tr><td class="nm">식</td><td>1 − ∑p<sub>k</sub><sup>2</sup></td><td>−∑p<sub>k</sub> log p<sub>k</sub></td></tr><tr><td class="nm">순수 노드</td><td>0</td><td>0</td></tr><tr><td class="nm">2클래스 최대</td><td>0.5</td><td>1 (log<sub>2</sub>)</td></tr><tr><td class="nm">특징</td><td>계산이 약간 <span class="a">빠름</span> → <span class="a">기본값</span><span class="en">strong default</span></td><td><span class="a">minority class(소수 클래스)</span>에 더 민감</td></tr><tr><td class="nm">쓰는 곳</td><td>CART</td><td>ID3</td></tr></table></div>
+<div class="blk sh"><h2><span class="sn">Ⅳ</span>규제 — 사전 가지치기</h2><p class=lead>교안 9–10쪽</p></div>
+<div class="blk"><div class="unit">왜 규제하나</div><div class="box"><p>결정 트리는 학습 데이터에 대한 <span class="a">가정이 거의 없습니다</span>. 선형 모델은 데이터가 선형이라고 가정하는 것과 반대입니다. <span class="pg">p.9</span></p><p>제약이 없으면 학습 데이터에 맞춰 자라 <span class="a">overfitting(과대적합)</span>하기 쉽습니다. <b>Pre-pruning(사전 가지치기)</b> = 학습 <span class="a">중에</span> 자유를 제한(규제).</p></div></div>
+<div class="blk"><div class="unit">규제 방향 — max_는 줄이고 min_은 늘린다</div><table class="mt "><tr><th>하이퍼파라미터</th><th>뜻</th><th>규제 ↑</th></tr><tr><td class="nm">max_depth</td><td>최대 깊이</td><td class="res"><span class="a">↓ 줄임</span></td></tr><tr><td class="nm">min_samples_split</td><td>노드를 나누기 위한 최소 샘플 수</td><td class="res"><span class="a">↑ 늘림</span></td></tr><tr><td class="nm">min_samples_leaf</td><td>리프가 가져야 할 최소 샘플 수</td><td class="res"><span class="a">↑ 늘림</span></td></tr></table></div>
+<div class="blk"><div class="unit">그림 — min_samples_leaf</div><div class="box"><p>규제 없음: 경계가 점 하나하나를 따라 복잡함 = <span class="a">과대적합</span>. min_samples_leaf = 4: 경계가 <span class="a">단순</span>해져 새 데이터에 더 잘 맞을 가능성이 큽니다. <span class="pg">p.10</span></p><p>"Reducing max depth will regularize the model and thus reduce the risk of overfitting."</p></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅴ</span>CART — 지니 감소량으로 분할 고르기</h2><p class=lead>교안 11–15쪽 (7-2 수업은 여기까지)</p></div>
+<div class="blk"><div class="unit">CART와 ΔG</div><div class="box"><p><b>CART</b><span class="en">Classification and Regression Trees</span>는 분류에서 <span class="a">지니 불순도</span>를 쓰고, <span class="a">impurity reduction(불순도 감소량)</span>이 가장 <span class="a">큰</span> <span class="a">binary split(이진 분할)</span>을 고릅니다. <span class="pg">p.11</span></p><div class="fx">ΔG(D, s) = G(D) − ( <span class="frac"><span class="num"><span style="display:inline-block;padding-bottom:.32em">|D<sub>L</sub>|</span></span><span class="den">|D|</span></span> G(D<sub>L</sub>) + <span class="frac"><span class="num"><span style="display:inline-block;padding-bottom:.32em">|D<sub>R</sub>|</span></span><span class="den">|D|</span></span> G(D<sub>R</sub>) )</div><p>s: 후보 이진 분할 · D<sub>L</sub>, D<sub>R</sub>: 나눈 뒤 왼쪽·오른쪽 자식 · 괄호 안 = 나눈 뒤 <span class="a">샘플 수 가중평균</span> 지니. <span class="pg">p.12</span></p></div></div>
+<div class="blk"><div class="unit">CART 절차</div><ol class="pt"><li>부모 지니 G(D)를 구합니다.</li><li>후보 이진 분할마다 자식 지니를 구해 <span class="a">샘플 수 비율</span>로 가중평균합니다.</li><li>ΔG = 부모 − 가중평균. ΔG가 <span class="a">가장 큰</span> 분할(= 가중 지니가 가장 작은 분할)을 고릅니다.</li><li>자식마다 반복하고, G = <span class="a">0</span>(순수)이면 리프로 멈춥니다.</li></ol></div>
+<div class="blk"><div class="unit">교안 예제 (고객 7명) <span class="pg">p.12–14</span></div><table class="mt "><tr><th></th><th>분할</th><th>결과</th></tr><tr><td class="nm">부모</td><td>구매 4 · 비구매 3</td><td class="res">G ≈ 0.490</td></tr><tr><td class="nm">s1</td><td>Adolescent (0, 2) vs 나머지 (4, 1)</td><td class="res">ΔG ≈ <span class="a">0.26</span></td></tr><tr><td class="nm">s2</td><td>Adolescent·Young Adult (2, 2) vs Middle-aged (2, 1)</td><td class="res">ΔG ≈ <span class="a">0.014</span></td></tr></table></div>
+<div class="blk"><div class="unit">예제 결론</div><div class="box"><p>s1의 왼쪽 자식이 완전히 순수(G = 0)해져 ΔG가 큽니다 → 루트 = <span class="a">Age = Adolescent?</span>. Income · Student · Credit Rating도 같은 방법으로 비교합니다. <span class="pg">p.15</span></p><p>최종 트리: 오른쪽 5명은 Credit Rating으로, Excellent 쪽은 다시 Age로 나뉘고 모든 리프의 gini = 0.</p><p><b>방향 주의:</b> 지니·엔트로피(불순도)는 <span class="a">작을수록</span> 좋고, ΔG·정보 이득(줄어든 양)은 <span class="a">클수록</span> 좋습니다.</p></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅵ</span>ID3 — 엔트로피와 정보 이득</h2><p class=lead>교안 16–28쪽 (8-1 수업)</p></div>
+<div class="blk"><div class="unit">ID3와 정보 이득</div><div class="box"><p><b>ID3</b><span class="en">Iterative Dichotomiser 3</span>는 엔트로피로 <span class="a">information gain(정보 이득)</span>을 계산하고, 정보 이득이 가장 <span class="a">큰</span> 속성을 <span class="a">splitting attribute(분할 속성)</span>로 고릅니다. <span class="pg">p.16</span></p><div class="fx">Gain(D, A) = H(D) − ∑<sub>v∈V<sub>A</sub></sub> <span class="frac"><span class="num"><span style="display:inline-block;padding-bottom:.32em">|D<sub>v</sub>|</span></span><span class="den">|D|</span></span> H(D<sub>v</sub>)</div><p>A: 후보 특징 · V<sub>A</sub>: A의 범주 집합 · D<sub>v</sub>: A = v인 샘플들. 정보 이득 = <span class="a">엔트로피의 감소량</span>. <span class="pg">p.17</span></p><p>CART와 달리 이진 분할이 아니라 특징의 <span class="a">범주 수만큼</span> 가지를 나눕니다(Age → 세 갈래).</p></div></div>
+<div class="blk"><div class="unit">교안 예제 (고객 14명, H(D) ≈ 0.940) <span class="pg">p.17–22</span></div><table class="mt "><tr><th>속성</th><th>정보 이득</th><th></th></tr><tr><td class="nm">Age</td><td>0.247</td><td><span class="a">최대 → 첫 분할</span></td></tr><tr><td class="nm">Student</td><td>0.151</td><td></td></tr><tr><td class="nm">Credit Rating</td><td>0.048</td><td></td></tr><tr><td class="nm">Income</td><td>0.029</td><td></td></tr></table></div>
+<div class="blk"><div class="unit">두 번째 분할</div><div class="box"><p>Young adult 4명은 모두 구매 → 엔트로피 <span class="a">0</span> → 바로 리프. <span class="pg">p.23</span></p><p>Youth 그룹은 <span class="a">Student</span>, Middle-aged 그룹은 <span class="a">Credit Rating</span>이 두 번째 분할 속성입니다(그룹 안에서 정보 이득을 다시 계산). 모든 리프가 순수해집니다. <span class="pg">p.24–28</span></p></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅶ</span>회귀 트리</h2><p class=lead>교안 29–33쪽</p></div>
+<div class="blk"><div class="unit">회귀 트리</div><div class="box"><p><b>Decision Tree Regression</b>: 구조는 분류 트리와 같고, 리프가 클래스 대신 <span class="a">숫자</span>를 예측합니다. <span class="pg">p.29</span></p><p>노드의 value = 그 노드 학습 샘플 y값의 <span class="a">평균</span> = 예측값. 노드의 mse = y가 평균에서 흩어진 정도(분류의 gini 자리).</p></div></div>
+<div class="blk"><div class="unit">회귀용 CART 비용함수</div><div class="box"><p>불순도 대신 <span class="a">MSE(평균제곱오차)</span>를 최소로 하도록 나눕니다. <span class="pg">p.30</span></p><div class="fx">J(k, t<sub>k</sub>) = <span class="frac"><span class="num"><span style="display:inline-block;padding-bottom:.32em">m<sub>left</sub></span></span><span class="den">m</span></span> MSE<sub>left</sub> + <span class="frac"><span class="num"><span style="display:inline-block;padding-bottom:.32em">m<sub>right</sub></span></span><span class="den">m</span></span> MSE<sub>right</sub></div><div class="fx">MSE<sub>node</sub> = <span class="frac"><span class="num">1</span><span class="den">m<sub>node</sub></span></span> ∑<sub>i∈node</sub> (ŷ<sub>node</sub> − y<sup>(i)</sup>)<sup>2</sup></div><div class="fx">ŷ<sub>node</sub> = <span class="frac"><span class="num">1</span><span class="den">m<sub>node</sub></span></span> ∑<sub>i∈node</sub> y<sup>(i)</sup> &nbsp;(노드 y의 평균)</div><p>k, t<sub>k</sub>: 나눌 특징과 기준값(x<sub>k</sub> ≤ t<sub>k</sub>?) · m<sub>left</sub>, m<sub>right</sub>, m: 왼쪽·오른쪽·부모 샘플 수 · J가 가장 <span class="a">작은</span> 분할을 고릅니다. MSE<sub>node</sub> 식의 <span class="frac"><span class="num">1</span><span class="den">m<sub>node</sub></span></span>은 (보충) — 교안 식에는 없음(Ⅸ).</p></div></div>
+<div class="blk"><div class="unit">예측 모양 · 규제 · 예제</div><div class="box"><p>리프 하나가 입력의 한 구간을 맡고 그 구간에서는 항상 같은 값(평균)을 내므로 예측은 <span class="a">계단 모양</span>입니다. 깊이가 1 늘면 구간이 2배가 되어 곡선을 더 촘촘히 따라갑니다. <span class="pg">p.31</span></p><p>규제하지 않으면 리프가 샘플마다 하나가 되어 들쭉날쭉 = <span class="a">과대적합</span>. min_samples_leaf = 10처럼 규제하면 매끄러워집니다. <span class="pg">p.32</span></p><p>야구 선수 연봉 예제: 경력(Years)으로 먼저 나누고, 경력이 짧은 쪽만 안타(Hits)로 다시 나눕니다. 각 영역의 예측 = 그 영역 연봉의 <span class="a">평균</span>. <span class="pg">p.33</span></p></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅷ</span>선형 모델 vs 트리 · 결정 트리의 한계</h2><p class=lead>교안 34–35쪽</p></div>
+<div class="blk"><div class="unit">선형 vs 트리 <span class="pg">p.34</span></div><table class="mt "><tr><th>실제 경계</th><th>선형 모델</th><th>트리 모델</th></tr><tr><td class="nm">대각선</td><td><span class="a">잘 맞음</span> (직선 하나)</td><td>축 평행 선분의 <span class="a">계단</span>으로 근사</td></tr><tr><td class="nm">축 평행 직사각형</td><td>대각선 하나로밖에 못 나눔</td><td><span class="a">잘 맞음</span> (분할 두 번)</td></tr></table></div>
+<div class="blk"><div class="unit">결론과 한계</div><div class="box"><p>어느 모델이 항상 낫지 않습니다. 데이터의 <span class="a">실제 구조</span>에 달려 있습니다.</p><p>결정 트리는 이해·해석이 쉽고, 쓰기 쉽고, 다재다능하고 강력하지만 한계가 있습니다. <span class="pg">p.35</span></p><ul class="pt"><li>① <span class="a">orthogonal decision boundaries(직교 결정 경계)</span>를 좋아함 — 모든 분할이 축에 수직 → 학습 데이터의 <span class="a">회전</span>에 민감</li><li>② 학습 데이터의 <span class="a">작은 변화</span>에도 매우 민감 → 트리 구조가 크게 달라질 수 있음</li></ul></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅸ</span>헷갈리는 것 정리</h2></div>
+<div class="blk"><div class="unit">CART vs ID3</div><table class="mt "><tr><th></th><th>CART</th><th>ID3</th></tr><tr><td class="nm">척도</td><td><span class="a">지니</span></td><td><span class="a">엔트로피</span></td></tr><tr><td class="nm">기준</td><td>ΔG 최대</td><td>정보 이득 최대</td></tr><tr><td class="nm">분할</td><td><span class="a">이진</span>(두 갈래)</td><td><span class="a">범주 수만큼</span></td></tr><tr><td class="nm">회귀</td><td>가능 (MSE 최소)</td><td>교안에 없음</td></tr></table></div>
+<div class="blk"><div class="unit">분류 트리 vs 회귀 트리</div><table class="mt "><tr><th></th><th>분류 트리</th><th>회귀 트리</th></tr><tr><td class="nm">리프 예측</td><td>가장 많은 클래스</td><td>y의 <span class="a">평균</span></td></tr><tr><td class="nm">노드 척도</td><td>gini (entropy)</td><td><span class="a">mse</span></td></tr><tr><td class="nm">분할 기준</td><td>가중 지니 최소</td><td>J 최소</td></tr><tr><td class="nm">예측 모양</td><td>축 평행 직사각형</td><td><span class="a">계단</span></td></tr></table></div>
+<div class="blk"><div class="trap"><div class="h">함정 · 헷갈리는 것</div><ul class="pt"><li>지니 <b>0</b> = 한 클래스뿐(순수). "고르게 섞임"이 아닙니다. 최댓값은 1이 아니라 1 − <span class="frac"><span class="num">1</span><span class="den">클래스 수</span></span>.</li><li>계산이 빠르고 기본값인 것은 <b>지니</b>, 소수 클래스에 민감한 것은 <b>엔트로피</b>.</li><li>max_depth는 <b>줄여야</b>, min_ 값은 <b>늘려야</b> 규제 ↑.</li><li>ΔG 괄호 안은 단순 평균이 아니라 <b>샘플 수 가중평균</b>.</li><li>결정 트리는 가정이 <b>거의 없어서</b> 과대적합하기 쉽습니다(가정이 많은 것은 선형 모델).</li><li>사전 가지치기는 학습 <b>중에</b> 제한하는 것(다 자란 뒤 자르는 것이 아님).</li></ul></div></div>
+<div class="blk"><div class="trap"><div class="h">함정 · 헷갈리는 것</div><ul class="pt"><li><b>Youth = Adolescent:</b> CART 예제는 Adolescent, ID3 표는 Youth로 쓰고 22·25쪽은 "adolescent group"이라 섞어 씁니다. 같은 가장 어린 연령대로 보면 됩니다.</li><li><b>Age 정보 이득 0.246 vs 0.247:</b> 반올림 순서 차이(정확히 0.2467). 어느 쪽이든 Age가 최대라는 결론은 같습니다.</li><li><b>log의 밑:</b> 7쪽 엔트로피 식은 밑을 안 적었고 예제(17쪽~)는 log<sub>2</sub>. 반반 2클래스 엔트로피 = 1은 log<sub>2</sub> 기준입니다.</li><li><b>30쪽 MSE<sub>node</sub>:</b> 교안 식에는 <span class="frac"><span class="num">1</span><span class="den">m<sub>node</sub></span></span>이 빠져 있어 그대로면 제곱오차의 합입니다. 시험에서는 주어진 식의 형태를 따르되, 이름대로 "평균"제곱오차로 이해합니다.</li></ul></div></div>
+<div class="blk sh"><h2><span class="sn">Ⅹ</span>셀프 체크</h2><p class=lead>「답 가리기」를 켜고 답을 떠올린 뒤 눌러 확인하세요.</p></div>
+<div class="blk"><table class="mt "><tr><th>질문</th><th>답</th></tr><tr><td>1. 결정 트리의 리프 하나는 특징 공간에서 어떤 모양인가?</td><td><span class="a">축에 평행한 직사각형 영역</span></td></tr><tr><td>2. 결정 트리에 특징 스케일링이 필요 없는 이유는?</td><td><span class="a">특징 하나를 기준값과 비교만 하기 때문</span></td></tr><tr><td>3. 노드의 value와 class의 뜻은?</td><td><span class="a">클래스별 샘플 수 / 가장 많은 클래스(예측)</span></td></tr><tr><td>4. 지니 지수가 0이면?</td><td><span class="a">한 클래스만 있는 순수 노드</span></td></tr></table></div>
+<div class="blk"><table class="mt "><tr><th>질문</th><th>답</th></tr><tr><td>5. 3클래스 지니의 최댓값은?</td><td><span class="a">1 − <span class="frac"><span class="num">1</span><span class="den">3</span></span> ≈ 0.667</span></td></tr><tr><td>6. 엔트로피가 최대가 되는 때는?</td><td><span class="a">모든 클래스가 같은 비율일 때</span></td></tr><tr><td>7. 지니가 기본값인 이유와 엔트로피의 특징은?</td><td><span class="a">약간 빠름 / 소수 클래스에 민감</span></td></tr><tr><td>8. 과대적합일 때 max_depth와 min_samples_leaf는?</td><td><span class="a">max_depth ↓, min_samples_leaf ↑</span></td></tr></table></div>
+<div class="blk"><table class="mt "><tr><th>질문</th><th>답</th></tr><tr><td>9. CART가 고르는 분할은?</td><td><span class="a">ΔG(불순도 감소량)가 가장 큰 이진 분할</span></td></tr><tr><td>10. ID3의 분할 기준과 분할 모양은?</td><td><span class="a">정보 이득 최대, 범주 수만큼 분할</span></td></tr><tr><td>11. 회귀 트리 리프의 예측값과 분할 기준은?</td><td><span class="a">리프 샘플 y의 평균, MSE(J) 최소</span></td></tr><tr><td>12. 결정 트리의 한계 두 가지는?</td><td><span class="a">회전에 민감(직교 경계), 작은 변화에 민감</span></td></tr></table></div>
+</template>
+<script>
+(function(){
+const $=s=>document.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const masthead=`<header class="masthead"><div class="mh-top"><span class="org">Kangwon National University CSE</span><span class="subj">인공지능</span></div><div class="mh-title"><div class="y">E. 결정 트리</div><h1>개념정리노트</h1></div><div class="scope"><span class="h">범 위</span><div class="b">7주차 2차시 (교안 Decision Tree 1–35쪽, 16쪽부터는 8주차 1차시 수업) — 트리 용어·결정 경계, 지니·엔트로피, 규제, CART·ID3, 회귀 트리, 한계. 「답 가리기」로 핵심어를 가리고 떠올려 보세요.</div></div></header>`;
+const running=`<div class="running"><span>인공지능 개념정리노트 · E. 결정 트리</span><span><b>인공지능</b></span></div>`;
+const blocks=[...$('#src').content.children].map(e=>e.outerHTML);
+function paginate(){
+  const PAGE_H=1180, PAD=40+70;
+  const m=document.createElement('section'); m.className='page measure';
+  m.innerHTML=masthead+`<div class="cols"><div class="col" id="mcol">${blocks.join('')}</div><div class="col"></div></div>`;
+  document.body.appendChild(m);
+  const capFirst=PAGE_H-PAD-m.querySelector('.masthead').offsetHeight-18-4;
+  m.innerHTML=running+`<div class="cols"><div class="col" id="mcol">${blocks.join('')}</div><div class="col"></div></div>`;
+  const capRest=PAGE_H-PAD-m.querySelector('.running').offsetHeight-18-4;
+  const els=$$('#mcol>.blk',m), hs=els.map(e=>e.offsetHeight), sh=els.map(e=>e.classList.contains('sh'));
+  m.remove();
+  // 제목 블록은 바로 다음 블록과 묶어서 배치
+  const units=[]; for(let i=0;i<blocks.length;i++){ if(sh[i]&&i+1<blocks.length){units.push({ids:[i,i+1],h:hs[i]+hs[i+1]});i++;} else units.push({ids:[i],h:hs[i]}); }
+  const pages=[]; let p=null, side='R', used=0;
+  const cap=()=>pages.length===1?capFirst:capRest;
+  units.forEach(u=>{
+    if(!p||used+u.h>cap()&&used>0){ if(!p||side==='R'){p={L:[],R:[]};pages.push(p);side='L';} else side='R'; used=0; }
+    p[side].push(...u.ids); used+=u.h;
+  });
+  return pages;
+}
+function render(){
+  const P=paginate(), total=P.length;
+  $('#book').innerHTML=P.map((pg,i)=>`<section class="page">${i===0?masthead:running}<div class="cols"><div class="col">${pg.L.map(k=>blocks[k]).join('')}</div><div class="col">${pg.R.map(k=>blocks[k]).join('')}</div></div><div class="pno">${i+1} / ${total}</div></section>`).join('');
+}
+const A4W=793.7, A4H=1122.5, PW=860;
+function preparePrint(){
+  document.body.classList.add('printing');
+  const pages=$$('#book .page'); const base=A4W/PW, sheet=A4H/base;
+  pages.forEach(p=>{p.style.zoom='';p.style.height='';});
+  pages.forEach(p=>{const h=p.scrollHeight; if(h<=sheet){p.style.zoom=base;p.style.height=sheet+'px';} else {p.style.zoom=A4H/h-0.0005;p.style.height=h+'px';}});
+  if(pages.length) pages[pages.length-1].classList.add('lastprint');
+}
+function afterPrint(){ document.body.classList.remove('printing'); $$('#book .page').forEach(p=>{p.style.zoom='';p.style.height='';p.classList.remove('lastprint');}); }
+window.addEventListener('beforeprint',preparePrint); window.addEventListener('afterprint',afterPrint);
+window.__memoPrint={prepare:preparePrint,done:afterPrint};
+function setQuiz(on){ document.body.classList.toggle('quiz',on); $('#quizBtn').classList.toggle('on',on); $('#quizBtn').textContent=on?'답 보이기':'답 가리기'; $$('.a.show').forEach(e=>e.classList.remove('show')); }
+function boot(){
+  render();
+  $('#quizBtn').onclick=()=>setQuiz(!document.body.classList.contains('quiz'));
+  document.addEventListener('click',e=>{const a=e.target.closest('.a'); if(a&&document.body.classList.contains('quiz')) a.classList.toggle('show');});
+  $('#printBtn').onclick=()=>{ const q=document.body.classList.contains('quiz'); setQuiz(false); window.print(); if(q) setQuiz(true); };
+  $('#printBlank').onclick=()=>{ setQuiz(true); document.body.classList.add('printblank'); window.print(); document.body.classList.remove('printblank'); };
+}
+const fams=['400 16px "Nanum Myeongjo"','800 16px "Nanum Myeongjo"','400 16px "Nanum Gothic"','700 16px "Nanum Gothic"'];
+const wait=document.fonts?Promise.all(fams.map(f=>document.fonts.load(f,'가A1').catch(()=>{}))):Promise.resolve();
+const start=()=>Promise.race([wait,new Promise(r=>setTimeout(r,2000))]).then(boot);
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start); else start();
+})();
+</script>
+</body>
+</html>

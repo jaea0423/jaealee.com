@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>인공지능 D. 군집화 — 기본 TF</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>:root{ --subject:#5B3CF5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../exam-engine/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다. 이 파일은 drive/exam-engine/exam.css · exam.js 와 함께 있어야 열립니다.</div>
+<script>
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'인공지능',
+  title:'D. 군집화 — 기본 TF',
+  written:'2026년 10월 25일 작성',
+  slug:'ai-clustering-1',
+  lectureBase:'../lecture',
+  level:'하',
+  mcMax:1,
+  scope:`7주차 1차시(+2차시 앞부분) — Clustering(군집화) 교안 1–35쪽 · 헷갈리는 지점(방향 뒤집기·개념 바꿔치기·조건)을 노린 TF`,
+  oxLabels:["T", "F"]
+};
+const EXAM = [
+{ type:'ox',
+   lv:'하',
+   unit:"지도 · 비지도 · 방법 구분",
+   pts:11,
+   q:`<p>학습 방식과 군집화 방법을 구분하는 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`정답 y가 숫자이면 회귀, 클래스이면 분류이며, 둘 다 지도 학습이다.`,true],[`비지도 학습은 x와 y가 모두 있지만 y를 쓰지 않고 학습하는 방법이다.`,false],[`K-평균이 각 관측치에 붙인 군집 번호는 학습에 쓴 정답 라벨이 아니라 군집화의 결과물이다.`,true],[`계층적 군집화는 DBSCAN과 같은 밀도 기반 방법이다.`,false],[`DBSCAN에서 사람이 정해 주는 값은 K가 아니라 ε과 MinPts이다.`,true]],
+   exp:`<b>ㄱ (T)</b> 교안 1쪽 표: 모든 행에 Target(정답)이 있는 지도 학습입니다.<br><b>ㄴ (F)</b> y를 안 쓰는 것이 아니라 y가 <b>아예 없습니다</b>(교수님: "x만 있고 y는 없음").<br><b>ㄷ (T)</b> 교안 5쪽 "These cluster labels were not used in clustering; instead, they are the outputs". 군집에는 순서가 없어 번호(색)는 임의입니다.<br><b>ㄹ (F)</b> 계층적 군집화는 K-평균과 같은 <b>거리 기반</b>입니다(교수님).<br><b>ㅁ (T)</b> DBSCAN은 군집 수를 정하지 않고, ε-이웃의 반지름 ε과 핵심점 기준 MinPts를 정합니다(교안 25–27쪽).`,
+   src:[["07-1", "s1", "비지도 학습"], ["07-1", "s3", "군집화 방법 세 가지"], ["07-1", "s4", "K-평균"], ["07-1", "s16", "DBSCAN"]] },
+
+{ type:'ox',
+   lv:'하',
+   unit:"분할 · 군집 내 변동",
+   pts:15,
+   q:`<p>K-평균 군집 C<sub>1</sub>, …, C<sub>K</sub>와 within-cluster variation(군집 내 변동, WCV)에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`조건 C<sub>k</sub> ∩ C<sub>k′</sub> = ∅ (k ≠ k′)은 "모든 관측치가 적어도 한 군집에 속한다"는 뜻이다.`,false],[`조건 C<sub>1</sub> ∪ ⋯ ∪ C<sub>K</sub> = {1, …, n}은 어떤 관측치도 군집 밖에 남지 않는다는 뜻이다.`,true],[`관측치 5개를 K = 2로 나눈 C<sub>1</sub> = {1, 2}, C<sub>2</sub> = {2, 3, 4, 5}는 K-평균의 군집이 될 수 없다.`,true],[`관측치 5개를 K = 2로 나눈 C<sub>1</sub> = {1, 2}, C<sub>2</sub> = {4, 5}는 K-평균의 군집이 될 수 있다.`,false],[`WCV(C<sub>k</sub>)는 같은 군집 안의 관측치들이 서로 얼마나 다른지를 나타내므로, 값이 클수록 좋은 군집이다.`,false],[`WCV(C<sub>k</sub>) 식에서 <span class="frac"><span class="num">1</span><span class="den">|C<sub>k</sub>|</span></span>은 군집 안 점 쌍들의 거리 제곱을 모두 더한 값을 군집의 관측치 수로 나누는 부분이다.`,true],[`K-평균의 목적은 WCV(C<sub>1</sub>) + ⋯ + WCV(C<sub>K</sub>)를 최소로 하는 분할을 찾는 것이다.`,true]],
+   exp:`<b>ㄱ (F)</b> 교집합 = ∅은 <b>군집끼리 겹치지 않는다</b>는 뜻입니다. "적어도 한 군집에 속한다"는 합집합 조건 C<sub>1</sub> ∪ ⋯ ∪ C<sub>K</sub> = {1, …, n}입니다.<br><b>ㄴ (T)</b> 모든 관측치는 적어도 한 군집에 속합니다(교안 6쪽).<br><b>ㄷ (T)</b> 2번이 두 군집에 겹쳐 교집합 = ∅ 조건을 어깁니다.<br><b>ㄹ (F)</b> 3번이 어느 군집에도 없어 합집합 조건을 어깁니다. 떨어진 점을 군집 밖에 두는 것은 DBSCAN의 잡음입니다.<br><b>ㅁ (F)</b> 좋은 군집은 WCV가 <b>작은</b> 것입니다(교안 7쪽 "as small as possible").<br><b>ㅂ (T)</b> |C<sub>k</sub>| = k번째 군집의 관측치 수(교안 8쪽).<br><b>ㅅ (T)</b> 교안 7쪽 min ∑<sub>k</sub> WCV(C<sub>k</sub>). 교수님: K = 3이면 세 WCV의 합을 줄여 가야 합니다.`,
+   src:[["07-1", "s5", "분할의 두 성질"], ["07-1", "s6", "군집 내 변동"]] },
+
+{ type:'ox',
+   lv:'하',
+   unit:"K-평균 알고리즘 · K-means++",
+   pts:15,
+   q:`<p>K-평균 알고리즘의 순서와 K-means++에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`K-평균 알고리즘의 첫 단계는 각 관측치에 1부터 K까지의 번호를 무작위로 배정하는 것이다.`,true],[`반복 단계 안에서는 군집마다 중심을 먼저 계산하고, 그다음 각 관측치를 가장 가까운 중심의 군집에 다시 배정한다.`,true],[`K-평균 알고리즘은 정해 둔 반복 횟수를 채우면 군집 배정이 아직 바뀌고 있어도 멈추는 것이 종료 조건이다.`,false],[`초기 중심이 나쁘면 K-평균은 나쁜 local minimum(국소 최솟값)으로 수렴할 수 있다.`,true],[`K-means++에서는 이미 고른 중심에 가까운 점일수록 다음 중심으로 뽑힐 확률이 높다.`,false],[`K-means++에서 다음 중심을 뽑는 확률은 가장 가까운 기존 중심까지의 거리에 비례한다.`,false],[`K-means++의 장점에는 초기 중심이 고르게 퍼지고 대체로 더 빨리 수렴한다는 것이 있다.`,true]],
+   exp:`<b>ㄱ (T)</b> 교안 10쪽 1단계 "Randomly assign a number, from 1 to K".<br><b>ㄴ (T)</b> 교안 10쪽 2.1(중심 계산) → 2.2(재배정) 순서입니다.<br><b>ㄷ (F)</b> 종료 조건은 <b>군집 배정이 더 이상 바뀌지 않을 때</b>입니다(교안 10쪽).<br><b>ㄹ (T)</b> 교안 12쪽 "Poor starting points ⇒ convergence to poor local minima."<br><b>ㅁ (F)</b> 반대입니다. 이미 고른 중심에서 <b>먼 점일수록</b> 잘 뽑힙니다(교안 12쪽).<br><b>ㅂ (F)</b> 거리가 아니라 거리의 <b>제곱</b>에 비례합니다(squared distance).<br><b>ㅅ (T)</b> 교안 12쪽 Advantages: better spread-out, faster convergence, poor local minima 감소.`,
+   src:[["07-1", "s8", "K-평균 알고리즘"], ["07-1", "s9", "K-평균++"]] },
+
+{ type:'ox',
+   lv:'하',
+   unit:"한계 · 이너셔 · 실루엣",
+   pts:15,
+   q:`<p>K-평균의 한계와 K를 고르는 방법에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`큰 군집과 작은 군집이 섞여 있으면 K-평균은 큰 군집을 쪼개고 작은 군집을 큰 군집 조각과 합칠 수 있다.`,true],[`K-평균의 한계에는 K를 어떻게 정해야 할지 알기 어렵다는 것도 포함된다.`,true],[`이너셔는 K가 관측치 수 n과 같을 때 가장 크다.`,false],[`엘보 방법으로 고른 K는 언제나 실제 덩어리 수와 정확히 일치한다.`,false],[`실루엣 점수는 이너셔(엘보)보다 더 정밀하게 K를 고르는 방법이다.`,true],[`좋은 군집화가 되려면 실루엣 계수의 a는 커지고 b는 작아져야 한다.`,false],[`a = b인 점의 실루엣 계수는 0이며, 그 점이 군집 경계 근처에 있다는 뜻이다.`,true]],
+   exp:`<b>ㄱ (T)</b> 교안 13쪽 (a) 원하는 군집화와 (b) K-평균 결과의 차이입니다.<br><b>ㄴ (T)</b> 교안 16쪽 "Not be so easy to know how to set K." (k = 3이면 합쳐지고 k = 8이면 쪼개짐)<br><b>ㄷ (F)</b> K = n이면 각 점이 자기 자신이 중심이라 이너셔는 <b>0</b>(가장 작음)입니다.<br><b>ㄹ (F)</b> 엘보는 대략적인 방법입니다. 실제 덩어리 5개인 데이터에서 꺾이는 점은 k = 4였습니다(교안 16–17쪽). 그래서 더 정확한 실루엣 점수를 씁니다.<br><b>ㅁ (T)</b> 교안 18쪽 "A more precise approach for choosing k".<br><b>ㅂ (F)</b> 교수님: "<b>b는 커지고 a는 작아져야</b> 함." 같은 군집과는 가깝고(a ↓) 다른 군집과는 멀어야(b ↑) s가 +1에 가까워집니다.<br><b>ㅅ (T)</b> s = <span class="frac"><span class="num">0</span><span class="den">max(a, b)</span></span> = 0, "s ≈ 0: close to a cluster boundary" (교안 18쪽).`,
+   src:[["07-1", "s10", "K-평균의 한계"], ["07-1", "s11", "이너셔와 엘보"], ["07-1", "s12", "실루엣 점수"]] },
+
+{ type:'ox',
+   lv:'하',
+   unit:"계층적 군집화 · 덴드로그램",
+   pts:11,
+   q:`<p>병합형 계층적 군집화와 Dendrogram(덴드로그램)에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`덴드로그램을 한 번 만들면 자르는 높이만 바꾸어 군집 수 1개부터 n개까지의 결과를 모두 얻을 수 있다.`,true],[`덴드로그램의 세로축 높이는 두 군집을 합칠 때의 거리를 나타낸다.`,true],[`덴드로그램을 낮은 높이에서 자르면 높은 높이에서 자를 때보다 군집 수가 적다.`,false],[`점 n개에 병합형 군집화를 끝까지 하면 병합은 n번 일어난다.`,false],[`계층적 군집화가 K-평균보다 나은 점 하나는 특정 K를 미리 정하지 않아도 된다는 것이다.`,true]],
+   exp:`<b>ㄱ (T)</b> 교안 4쪽 "view at once the clusterings obtained for each possible number of clusters, from 1 to n".<br><b>ㄴ (T)</b> 낮은 곳에서 합쳐질수록 가깝고 비슷합니다.<br><b>ㄷ (F)</b> 낮게 자를수록 군집 수가 <b>많아집니다</b>(높이 9 → 2개, 높이 5 → 3개, 교안 23쪽).<br><b>ㄹ (F)</b> 한 번 합칠 때마다 군집이 하나씩 줄어 n개 → 1개이므로 병합은 <b>n − 1번</b>입니다(5개 → 4번).<br><b>ㅁ (T)</b> 교안 20쪽: K를 미리 정하는 것이 K-평균의 단점이 될 수 있습니다.`,
+   src:[["07-1", "s13", "계층적 군집화"], ["07-1", "s14", "덴드로그램 자르기"]] },
+
+{ type:'ox',
+   lv:'하',
+   unit:"DBSCAN 점의 종류",
+   pts:13,
+   q:`<p>DBSCAN의 Core point(핵심점), Border point(경계점), Noise(잡음)에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`핵심점이 아닌 점은 "자기를 ε-이웃 안에 품은 핵심점이 있는가"에 따라 경계점과 잡음으로 나뉜다.`,true],[`경계점은 군집의 가장자리에 있으며 군집에 속한다.`,true],[`잡음은 ε-이웃의 점 수가 MinPts 이상이지만 핵심점의 이웃 안에 없는 점이다.`,false],[`"군집 안의 모든 점이 ε-이웃에 MinPts개 이상의 점을 가져야 한다"고 정하면, 가장자리 점은 이웃이 적어 군집에서 빠지는 문제가 생긴다.`,true],[`DBSCAN은 밀도가 높은 군집에서 떨어져 나온 점도 가장 가까운 군집에 넣어 준다.`,false],[`ε는 그대로 두고 MinPts를 키우면 핵심점이 되기가 더 어려워진다.`,true]],
+   exp:`<b>ㄱ (T)</b> 있으면 경계점, 없으면 잡음입니다(교안 27쪽).<br><b>ㄴ (T)</b> "Border points are on the edge of a cluster." 잡음만 군집에 속하지 않습니다.<br><b>ㄷ (F)</b> ε-이웃의 점 수가 MinPts 이상이면 그 점은 <b>핵심점</b>입니다. 잡음은 핵심점도 경계점도 아닌 점입니다.<br><b>ㄹ (T)</b> 교안 26쪽 naïve approach의 문제입니다. 그래서 핵심점과 경계점을 나눕니다.<br><b>ㅁ (F)</b> 교수님: DBSCAN은 그런 점을 <b>억지로 넣지 않고 노이즈로 처리</b>합니다. 가장 가까운 군집에 넣는 것은 K-평균입니다.<br><b>ㅂ (T)</b> |N<sub>ε</sub>(p)| ≥ MinPts를 만족해야 하므로 MinPts가 클수록 조건이 까다로워집니다.`,
+   src:[["07-1", "s16", "DBSCAN"], ["07-1", "s17", "핵심점·경계점·잡음"], ["07-1", "s20", "군집과 잡음"]] },
+
+{ type:'ox',
+   lv:'하',
+   unit:"도달 · 연결 · 군집",
+   pts:15,
+   q:`<p>DBSCAN의 도달·연결 관계와 군집의 조건에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`두 핵심점 사이의 직접 밀도 도달은 대칭이다.`,true],[`핵심점 p의 ε-이웃 안에 경계점 q가 있으면, p는 q로부터 직접 밀도 도달 가능하다.`,false],[`Density-reachable(밀도 도달)은 사슬 p = p<sub>1</sub>, …, p<sub>m</sub> = q에서 p<sub>1</sub>, …, p<sub>m−1</sub>이 모두 핵심점이어야 한다.`,true],[`밀도 도달은 항상 대칭이다.`,false],[`서로 밀도 도달 가능하지 않은 두 경계점도 밀도 연결될 수 있다.`,true],[`DBSCAN 군집의 Maximality(최대성)는 군집 안의 점에서 밀도 도달 가능한 점은 모두 그 군집에 들어 있어야 한다는 조건이다.`,true],[`DBSCAN 군집의 Connectivity(연결성)는 군집 안의 모든 두 점이 서로 직접 밀도 도달 가능해야 한다는 조건이다.`,false]],
+   exp:`<b>ㄱ (T)</b> 교안 28쪽 "symmetric for pairs of core points".<br><b>ㄴ (F)</b> 출발점이 핵심점이어야 하므로 q → p는 <b>불가능</b>하고 p → q만 성립합니다(비대칭, 교안 28쪽).<br><b>ㄷ (T)</b> 교안 30쪽: 모든 i = 1, …, m − 1에 대해 p<sub>i+1</sub> ∈ N<sub>ε</sub>(p<sub>i</sub>)이고 p<sub>i</sub>가 핵심점. 마지막 점 q는 경계점이어도 됩니다.<br><b>ㄹ (F)</b> q가 핵심점이 아니면 q에서 출발할 수 없으므로 <b>대칭이 아닐 수 있습니다</b>(교안 31쪽 왼쪽: p → r → q).<br><b>ㅁ (T)</b> 두 점 모두에 닿는 핵심점 o가 있으면 밀도 연결입니다(교안 31쪽 오른쪽).<br><b>ㅂ (T)</b> 교안 32쪽 조건 1입니다.<br><b>ㅅ (F)</b> 직접 밀도 도달이 아니라 모든 두 점이 <b>밀도 연결</b>되어 있어야 한다는 조건입니다(교안 32쪽 조건 2).`,
+   src:[["07-1", "s18", "직접 밀도 도달"], ["07-1", "s19", "밀도 도달과 밀도 연결"], ["07-1", "s20", "군집과 잡음"]] },
+
+{ type:'ox',
+   lv:'하',
+   unit:"방법 고르기",
+   pts:5,
+   q:`<p>데이터 모양에 따라 군집화 방법을 고르는 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`한 군집이 다른 군집을 둘러싼 동심원 모양의 데이터는 K-평균보다 DBSCAN이 잘 나눌 수 있다.`,true],[`뚜렷한 덩어리가 없이 고르게 퍼진 데이터에도 K-평균은 K개의 군집을 만들어 낸다.`,true]],
+   exp:`<b>ㄱ (T)</b> K-평균은 중심에서 가까운 쪽으로만 나눠 휘어진 모양에 약하고, DBSCAN은 임의 모양의 군집을 찾습니다(교안 15·25·35쪽).<br><b>ㄴ (T)</b> K-평균은 모든 점을 반드시 K개 군집 중 하나에 넣으므로 구조가 없어도 억지로 나눕니다(교안 35쪽 마지막 줄).`,
+   src:[["07-1", "s10", "K-평균의 한계"], ["07-1", "s23", "군집화 방법 비교"]] }
+];
+</script>
+</body>
+</html>
