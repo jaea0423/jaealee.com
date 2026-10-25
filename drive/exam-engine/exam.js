@@ -15,6 +15,8 @@ const $=s=>document.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(
 const NUM=['①','②','③','④','⑤','⑥'];
 const TYPE={mc:'객관식',ox:'O/X',short:'단답형',table:'표 채우기',line:'코드 줄 고르기',essay:'서술형'};
 const KOR='ㄱㄴㄷㄹㅁㅂㅅㅇㅈㅊ';
+// O/X 문항의 표시 글자 — 과목마다 META.oxLabels 로 바꿀 수 있다 (예: ['T','F']). 답 값은 내부적으로 항상 'O'/'X'
+const OXL=()=>(typeof META!=='undefined'&&META.oxLabels)||['O','X'];
 // 빨간펜 표시 (path 를 data-d 에도 넣어 두고, 이미지 저장 때는 캔버스에 직접 다시 그린다)
 const PEN_D={
   O:['M25 7 C38 6 45 15 44 26 C43 38 33 44 23 43 C11 42 5 33 7 22 C9 13 17 8 29 9',2.6],
@@ -41,8 +43,8 @@ function field(it){
   }
   if(it.type==='ox'){
     return `<table class="ox">`+it.items.map((s,i)=>`<tr><td class="k">${KOR[i]}.</td><td class="s">${s[0]}</td>
-      <td class="c"><label title="O"><input type="radio" name="a${n}_${i}" value="O"><span class="mk">O</span></label></td>
-      <td class="c"><label title="X"><input type="radio" name="a${n}_${i}" value="X"><span class="mk">X</span></label></td></tr>`).join('')+`</table>`;
+      <td class="c"><label title="${OXL()[0]}"><input type="radio" name="a${n}_${i}" value="O"><span class="mk">${OXL()[0]}</span></label></td>
+      <td class="c"><label title="${OXL()[1]}"><input type="radio" name="a${n}_${i}" value="X"><span class="mk">${OXL()[1]}</span></label></td></tr>`).join('')+`</table>`;
   }
   if(it.type==='table'){
     let h=`<div class="tbl-wrap"><table class="tbl"><tr>${it.head.map(c=>`<th>${c}</th>`).join('')}</tr>`;
@@ -111,6 +113,10 @@ function render(){
       <div class="cols"><div class="col">${nos.L.map(n=>qHTML(qs[n-1])).join('')}</div><div class="col">${nos.R.map(n=>qHTML(qs[n-1])).join('')}</div></div>${pno(i+1)}</section>`;
   });
   $('#book').innerHTML=h;
+  // 코드 블록(pre)을 줄마다 span 으로 감싼다 — 긴 줄이 줄바꿈될 때 이어진 줄만 깊게 들여써서 실제 들여쓰기와 구분 (가로 스크롤은 인쇄 때 잘림)
+  $$('#book .q pre').forEach(p=>{ if(p.querySelector('.pl')) return; p.innerHTML=p.innerHTML.replace(/^\n/,'').split('\n').map(l=>`<span class="pl">${l||' '}</span>`).join(''); });
+  // 이어진 줄의 들여쓰기 = 그 줄 자신의 들여쓰기 + 4칸 (줄마다 다르므로 여기서 계산)
+  $$('#book .q pre .pl, #book .lines .cd').forEach(e=>{ const n=(e.textContent.match(/^ */)||[''])[0].length+4; e.style.paddingLeft=n+'ch'; e.style.textIndent=(-n)+'ch'; });
 }
 
 /* ════════ 3. 내 답 읽기 ════════ */
@@ -146,12 +152,12 @@ function paint(it){
       x=`<span class="a">정답 ${it.answer.map(a=>NUM[a-1]).join(', ')}</span>${lv}<br>${it.exp}`;
     } else if(it.type==='ox'){
       it.items.forEach((s,i)=>$$(`input[name="a${it.no}_${i}"]`,e).forEach(inp=>inp.parentElement.classList.toggle('correct',inp.value===(s[1]?'O':'X'))));
-      x=`<span class="a">정답 ${it.items.map((s,i)=>KOR[i]+' '+(s[1]?'O':'X')).join(', ')}</span>${lv}<br>${it.exp}`;
+      x=`<span class="a">정답 ${it.items.map((s,i)=>KOR[i]+' '+(s[1]?OXL()[0]:OXL()[1])).join(', ')}</span>${lv}<br>${it.exp}`;
     } else if(it.type==='line'){
       $$('.lines label',e).forEach((l,i)=>l.classList.toggle('correct',it.answer.includes(i+1)));
       x=`<span class="a">정답 ${it.answer.join(', ')}번 줄</span>${lv}<br>${it.exp}`;
     } else if(it.type==='table'){
-      blanksOf(it).forEach(b=>{ const td=e.querySelector(`td[data-r="${b.ri}"][data-c="${b.ci}"]`); td.querySelector('.fix').textContent=b.a; });
+      blanksOf(it).forEach(b=>{ const td=e.querySelector(`td[data-r="${b.ri}"][data-c="${b.ci}"]`); td.querySelector('.fix').innerHTML=b.a; /* 정답에 분수(F) 같은 HTML 이 들어갈 수 있으므로 innerHTML */ });
       x=`<span class="a">정답은 빈칸 아래 빨간 글씨</span>${lv}<br>${it.exp}`;
     } else if(it.type==='short'){
       x=`<span class="a">정답 ${it.show}</span>${it.alt&&it.alt.length?` <span style="font-family:var(--gothic);font-size:11.5px">(허용 ${it.alt.join(' · ')})</span>`:''}${lv}<br>${it.exp}`;
