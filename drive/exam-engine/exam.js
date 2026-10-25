@@ -15,6 +15,8 @@ const $=s=>document.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(
 const NUM=['①','②','③','④','⑤','⑥'];
 const TYPE={mc:'객관식',ox:'O/X',short:'단답형',table:'표 채우기',line:'코드 줄 고르기',essay:'서술형'};
 const KOR='ㄱㄴㄷㄹㅁㅂㅅㅇㅈㅊ';
+// O/X 문항의 표시 글자 — 과목마다 META.oxLabels 로 바꿀 수 있다 (예: ['T','F']). 답 값은 내부적으로 항상 'O'/'X'
+const OXL=()=>(typeof META!=='undefined'&&META.oxLabels)||['O','X'];
 // 빨간펜 표시 (path 를 data-d 에도 넣어 두고, 이미지 저장 때는 캔버스에 직접 다시 그린다)
 const PEN_D={
   O:['M25 7 C38 6 45 15 44 26 C43 38 33 44 23 43 C11 42 5 33 7 22 C9 13 17 8 29 9',2.6],
@@ -41,8 +43,8 @@ function field(it){
   }
   if(it.type==='ox'){
     return `<table class="ox">`+it.items.map((s,i)=>`<tr><td class="k">${KOR[i]}.</td><td class="s">${s[0]}</td>
-      <td class="c"><label title="O"><input type="radio" name="a${n}_${i}" value="O"><span class="mk">O</span></label></td>
-      <td class="c"><label title="X"><input type="radio" name="a${n}_${i}" value="X"><span class="mk">X</span></label></td></tr>`).join('')+`</table>`;
+      <td class="c"><label title="${OXL()[0]}"><input type="radio" name="a${n}_${i}" value="O"><span class="mk">${OXL()[0]}</span></label></td>
+      <td class="c"><label title="${OXL()[1]}"><input type="radio" name="a${n}_${i}" value="X"><span class="mk">${OXL()[1]}</span></label></td></tr>`).join('')+`</table>`;
   }
   if(it.type==='table'){
     let h=`<div class="tbl-wrap"><table class="tbl"><tr>${it.head.map(c=>`<th>${c}</th>`).join('')}</tr>`;
@@ -150,7 +152,7 @@ function paint(it){
       x=`<span class="a">정답 ${it.answer.map(a=>NUM[a-1]).join(', ')}</span>${lv}<br>${it.exp}`;
     } else if(it.type==='ox'){
       it.items.forEach((s,i)=>$$(`input[name="a${it.no}_${i}"]`,e).forEach(inp=>inp.parentElement.classList.toggle('correct',inp.value===(s[1]?'O':'X'))));
-      x=`<span class="a">정답 ${it.items.map((s,i)=>KOR[i]+' '+(s[1]?'O':'X')).join(', ')}</span>${lv}<br>${it.exp}`;
+      x=`<span class="a">정답 ${it.items.map((s,i)=>KOR[i]+' '+(s[1]?OXL()[0]:OXL()[1])).join(', ')}</span>${lv}<br>${it.exp}`;
     } else if(it.type==='line'){
       $$('.lines label',e).forEach((l,i)=>l.classList.toggle('correct',it.answer.includes(i+1)));
       x=`<span class="a">정답 ${it.answer.join(', ')}번 줄</span>${lv}<br>${it.exp}`;

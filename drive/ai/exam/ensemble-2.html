@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>인공지능 F. 앙상블 학습 — 기본 문제지</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>:root{ --subject:#5B3CF5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../exam-engine/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다. 이 파일은 drive/exam-engine/exam.css · exam.js 와 함께 있어야 열립니다.</div>
+<script>
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'인공지능',
+  title:'F. 앙상블 학습 — 기본 문제지',
+  written:'2026년 10월 25일 작성',
+  slug:'ai-ensemble-2',
+  lectureBase:'../lecture',
+  level:'하',
+  mcMax:1,
+  scope:`8주차 1차시 — Ensemble Learning(앙상블 학습) 교안 1–26쪽 · 객관식 · 단답 · 표 · TF (수업 예시 수준)`,
+  oxLabels:["T", "F"]
+};
+const EXAM = [
+{ type:'mc',
+   lv:'하',
+   unit:"Voting",
+   pts:6,
+   q:`<p>교안의 Ensemble learning(앙상블 학습) 정의로 옳은 것은?</p>`,
+   choices:[`가장 정확한 모델 하나를 골라 쓰는 방법`,`하나의 모델을 여러 번 학습해 가장 낮은 학습 오차를 고르는 방법`,`여러 개별 모델을 결합해 일반화 성능이 더 좋은 하나의 모델을 만드는 방법`,`학습 데이터를 여러 번 복사해 크기를 늘리는 방법`],
+   answer:[3],
+   exp:`교안 1쪽: "combining multiple individual models to create an optimal model with improved generalization".`,
+   src:[["08-1", "s1", "앙상블 학습이란"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"Voting",
+   pts:6,
+   q:`<p>교안 3쪽 그림처럼 네 예측기가 각각 1, 2, 2, 2로 예측했다. Hard voting(하드 투표) 결과는?</p>`,
+   choices:[`1`,`2`,`1과 2를 반씩`,`결정할 수 없다`],
+   answer:[2],
+   exp:`2가 3표, 1이 1표이므로 가장 많은 표를 받은 <b>2</b>입니다.`,
+   src:[["08-1", "s2", "하드 투표"]] },
+
+{ type:'table',
+   lv:'하',
+   unit:"Voting",
+   pts:10,
+   q:`<p>분류기 세 개가 한 샘플에 대해 클래스 A일 확률을 0.6, 0.3, 0.3으로 예측했다(클래스는 A, B 두 개). 표를 채우시오.</p>`,
+   head:[`투표 방식`,`결과 클래스`],
+   rows:[
+     [`Hard voting(하드 투표)`,{a:`B`,alt:[]}],
+     [`Soft voting(소프트 투표)`,{a:`B`,alt:[]}]],
+   exp:`Hard: 분류기 1은 A, 분류기 2·3은 B → B가 2표로 <b>B</b>.<br>Soft: A의 평균 확률 0.4, B의 평균 확률 0.6 → 평균 확률이 가장 높은 <b>B</b>(교안 5쪽).`,
+   src:[["08-1", "s2", "하드 투표"], ["08-1", "s4", "소프트 투표"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"Bagging",
+   pts:6,
+   q:`<p>Bagging(배깅)과 Pasting(페이스팅)의 차이로 옳은 것은?</p>`,
+   choices:[`Bagging은 복원 추출(sampling with replacement), Pasting은 비복원 추출(without replacement)이다`,`Bagging은 서로 다른 알고리즘, Pasting은 같은 알고리즘을 쓴다`,`Bagging은 비복원 추출, Pasting은 복원 추출이다`,`Bagging은 순차 학습, Pasting은 병렬 학습이다`],
+   answer:[1],
+   exp:`교안 6쪽: Bagging(Bootstrapping) = sampling with replacement, Pasting = sampling without replacement. 둘 다 같은 알고리즘을 씁니다.`,
+   src:[["08-1", "s5", "배깅과 페이스팅"]] },
+
+{ type:'short',
+   lv:'하',
+   unit:"Bagging",
+   pts:6,
+   q:`<p>교안 7쪽: 측정값 x의 분산이 σ<sup>2</sup>일 때, 독립으로 K번 측정해 평균한 값의 분산은?</p>`,
+   show:`<span class="frac"><span class="num">σ<sup>2</sup></span><span class="den">K</span></span>`,
+   alt:["σ²/K"],
+   exp:`Var = <span class="frac"><span class="num">Kσ<sup>2</sup></span><span class="den">K<sup>2</sup></span></span> = <span class="frac"><span class="num">σ<sup>2</sup></span><span class="den">K</span></span>. 그래서 배깅은 분산이 작은 모델을 만듭니다(교안 7쪽).`,
+   src:[["08-1", "s6", "배깅이 분산을 줄이는 이유"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"Random Forest",
+   pts:6,
+   q:`<p>Random Forest(랜덤 포레스트)가 일반 Bagging 트리에 더하는 무작위성은?</p>`,
+   choices:[`샘플을 비복원으로 뽑는다`,`틀린 샘플의 가중치를 늘린다`,`트리의 예측을 블렌더로 합친다`,`노드를 나눌 때 무작위로 고른 특징 부분집합 중에서 가장 좋은 특징을 찾는다`],
+   answer:[4],
+   exp:`교안 10쪽: "searches for the best feature among a random subset of features". "틀린 샘플의 가중치를 늘린다"는 AdaBoost, "블렌더로 합친다"는 Stacking입니다.`,
+   src:[["08-1", "s9", "랜덤 포레스트"]] },
+
+{ type:'short',
+   lv:'하',
+   unit:"Random Forest",
+   pts:6,
+   q:`<p>bootstrap sampling(부트스트랩 추출)에서 선택되지 않은 학습 샘플을 무엇이라 하는가? (영어 약어 또는 한글)</p>`,
+   show:`OOB(Out-of-Bag) 샘플`,
+   alt:["OOB", "Out-of-Bag"],
+   exp:`교안 12쪽 정의입니다. 변수 중요도 계산에 씁니다.`,
+   src:[["08-1", "s11", "OOB 순열 변수 중요도"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"Boosting",
+   pts:6,
+   q:`<p>AdaBoost 학습 과정(교안 15쪽)의 순서로 옳은 것은?</p><p>ㄱ. 갱신된 가중치로 다음 분류기를 학습<br>ㄴ. 기본 분류기를 학습 세트로 학습<br>ㄷ. 잘못 분류된 샘플의 가중치를 늘림<br>ㄹ. 반복하고 모든 분류기를 결합</p>`,
+   choices:[`ㄱ → ㄴ → ㄷ → ㄹ`,`ㄴ → ㄱ → ㄷ → ㄹ`,`ㄴ → ㄷ → ㄱ → ㄹ`,`ㄷ → ㄴ → ㄱ → ㄹ`],
+   answer:[3],
+   exp:`① Train a base classifier → ② Increase the weights of misclassified instances → ③ Train the next classifier → ④ Repeat and combine.`,
+   src:[["08-1", "s13", "AdaBoost 과정"]] },
+
+{ type:'table',
+   lv:'하',
+   unit:"Boosting",
+   pts:10,
+   q:`<p>학습 샘플 10개로 AdaBoost를 시작한다. 첫 예측기가 2개를 틀렸다. 표를 채우시오. (log는 계산하지 않고 식으로 두어도 된다)</p>`,
+   head:[`항목`,`값`],
+   rows:[
+     [`각 샘플의 초기 가중치`,{a:`<span class="frac"><span class="num">1</span><span class="den">10</span></span>`,alt:["0.1", "1/10"]}],
+     [`가중 오차율 r<sub>1</sub>`,{a:`0.2`,alt:["1/5", "<span class=\"frac\"><span class=\"num\">1</span><span class=\"den\">5</span></span>", "<span class=\"frac\"><span class=\"num\">2</span><span class=\"den\">10</span></span>"]}],
+     [`η = 1일 때 α<sub>1</sub>`,{a:`log 4`,alt:["log4", "log(4)"]}]],
+   exp:`초기 가중치 = <span class="frac"><span class="num">1</span><span class="den">m</span></span> = <span class="frac"><span class="num">1</span><span class="den">10</span></span>. r<sub>1</sub> = <span class="frac"><span class="num">틀린 샘플 가중치 합</span><span class="den">전체 가중치 합</span></span> = <span class="frac"><span class="num">2 × 0.1</span><span class="den">1</span></span> = 0.2.<br>α<sub>1</sub> = η log<span class="frac"><span class="num">1 − r</span><span class="den">r</span></span> = log<span class="frac"><span class="num">0.8</span><span class="den">0.2</span></span> = log 4 (교안 18쪽 식).`,
+   src:[["08-1", "s15", "가중 오차율과 예측기 가중치"]] },
+
+{ type:'short',
+   lv:'하',
+   unit:"Boosting",
+   pts:6,
+   q:`<p>Gradient Boosting(그래디언트 부스팅)에서 새 예측기는 앞 예측기의 무엇에 맞춰 학습하는가? (영어 또는 한글)</p>`,
+   show:`residual errors(잔차)`,
+   alt:["잔차", "residual", "residuals"],
+   exp:`교안 20쪽: "fits the new predictor to the residual errors made by the previous one". 샘플 가중치를 조정하는 AdaBoost와 다릅니다.`,
+   src:[["08-1", "s17", "그래디언트 부스팅"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"Stacking",
+   pts:6,
+   q:`<p>Stacking(스태킹)에서 첫 번째 층 예측기들의 예측을 입력으로 받아 최종 예측을 내도록 학습하는 모델은?</p>`,
+   choices:[`Blender(블렌더)`,`Bootstrap`,`Weak learner`,`OOB`],
+   answer:[1],
+   exp:`교안 25쪽 그림의 Blending / Blender입니다.`,
+   src:[["08-1", "s22", "스태킹"]] },
+
+{ type:'ox',
+   lv:'하',
+   unit:"방법 비교",
+   pts:26,
+   q:`<p>교안 26쪽 비교표에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`Voting은 구현이 간단하고 빨리 시도해 볼 수 있다.`,true],[`Bagging은 bias가 큰 학습기의 bias를 크게 줄인다.`,false],[`Boosting은 오류에 순차적으로 집중해 복잡한 패턴을 잡을 수 있다.`,true],[`Boosting은 학습 시간과 튜닝 복잡도가 낮다.`,false],[`Stacking은 구조가 복잡하고 구현이 어렵다.`,true]],
+   exp:`<b>ㄱ (T)</b> Voting 장점.<br><b>ㄴ (F)</b> Bagging은 high-variance 학습기의 분산을 낮추고, high-bias 학습기에는 효과가 제한적입니다.<br><b>ㄷ (T)</b> Boosting 장점.<br><b>ㄹ (F)</b> 학습 시간과 튜닝 복잡도가 <b>높을 수 있다</b>가 한계입니다.<br><b>ㅁ (T)</b> Stacking 한계.`,
+   src:[["08-1", "s23", "방법 비교"]] }
+];
+</script>
+</body>
+</html>

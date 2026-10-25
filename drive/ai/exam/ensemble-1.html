@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>인공지능 F. 앙상블 학습 — 기본 TF</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>:root{ --subject:#5B3CF5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../exam-engine/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다. 이 파일은 drive/exam-engine/exam.css · exam.js 와 함께 있어야 열립니다.</div>
+<script>
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'인공지능',
+  title:'F. 앙상블 학습 — 기본 TF',
+  written:'2026년 10월 25일 작성',
+  slug:'ai-ensemble-1',
+  lectureBase:'../lecture',
+  level:'하',
+  mcMax:1,
+  scope:`8주차 1차시 — Ensemble Learning(앙상블 학습) 교안 1–26쪽 · 헷갈리는 지점(방향 뒤집기·개념 바꿔치기·조건)을 노린 TF`,
+  oxLabels:["T", "F"]
+};
+const EXAM = [
+{ type:'ox',
+   lv:'기초',
+   unit:"Voting · Bagging 구분",
+   pts:12,
+   q:`<p>두 방법을 구분하는 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`Voting은 서로 다른 알고리즘을, Bagging은 같은 알고리즘을 쓴다.`,true],[`Bagging은 모든 예측기가 학습 세트 전체를 똑같이 쓴다.`,false],[`Voting 그림의 분류기들은 모두 같은 학습 데이터로 학습한다.`,true],[`Pasting은 한 부분집합 안에 같은 샘플이 두 번 들어갈 수 있다.`,false],[`Bagging은 bootstrapping(부트스트래핑)이라고도 적혀 있다.`,true],[`Random Forest는 Voting의 예로 교안에 소개되었다.`,false]],
+   exp:`<b>ㄱ (T)</b> 교안 2쪽(diverse classifiers)과 6쪽(same training algorithm).<br><b>ㄴ (F)</b> 학습 세트의 <b>서로 다른 무작위 부분집합</b>으로 학습합니다.<br><b>ㄷ (T)</b> 교안 2쪽 그림: 학습 데이터 하나에서 화살표 4개.<br><b>ㄹ (F)</b> Pasting은 비복원 추출이라 한 부분집합 안에서 샘플이 중복되지 않습니다. 중복될 수 있는 것은 Bagging(복원 추출)입니다.<br><b>ㅁ (T)</b> 교안 6쪽 "Bagging (Bootstrapping)".<br><b>ㅂ (F)</b> Bagging의 예(Bagging (i.e., random forests))입니다.`,
+   src:[["08-1", "s2", "하드 투표"], ["08-1", "s5", "배깅과 페이스팅"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"하드 · 소프트 투표",
+   pts:10,
+   q:`<p>투표 방식에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`Hard voting은 각 분류기의 클래스 확률을 이용한다.`,false],[`Soft voting은 평균 확률이 가장 높은 클래스를 최종 예측으로 고른다.`,true],[`교안은 Hard voting이 Soft voting보다 더 정교한 방법이라고 했다.`,false],[`Hard voting 앙상블은 항상 가장 좋은 개별 분류기보다 정확하다.`,false],[`교안 3쪽 그림에서 앙상블의 예측은 majority vote(다수결)로 정해진다.`,true]],
+   exp:`<b>ㄱ (F)</b> 확률을 쓰는 것은 <b>Soft voting</b>입니다. Hard voting은 예측 클래스의 표 수를 셉니다.<br><b>ㄴ (T)</b> 교안 5쪽입니다.<br><b>ㄷ (F)</b> 반대입니다. Soft voting이 확률 출력을 쓰므로 <b>더 정교하다</b>고 했습니다.<br><b>ㄹ (F)</b> 교안은 "often(자주)" 더 높다고 했지 항상이라고 하지 않았습니다.<br><b>ㅁ (T)</b> "Ensemble’s prediction (e.g., majority vote)".`,
+   src:[["08-1", "s2", "하드 투표"], ["08-1", "s4", "소프트 투표"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"다수결 정확도의 조건",
+   pts:12,
+   q:`<p>교안 4쪽 계산에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`정확도 0.8369는 5개 중 3개 이상이 맞는 확률을 더한 것이다.`,true],[`식의 첫 항 0.7<sup>5</sup>은 5개 분류기가 모두 틀릴 확률이다.`,false],[`분류기 수를 5개에서 101개로 늘리면 교안의 다수결 정확도는 0.8369보다 낮아진다.`,false],[`교안의 계산은 분류기들의 오류가 서로 상관(correlated)되어 있어도 그대로 성립한다.`,false],[`교안은 같은 데이터로 학습했다는 점을 독립 조건이 깨지는 이유로 들었다.`,true],[`앙상블이 strong learner가 되려면 weak learner의 수가 충분하고 충분히 다양해야 한다.`,true]],
+   exp:`<b>ㄱ (T)</b> 0.7<sup>5</sup> + 5(0.7<sup>4</sup>)(0.3) + 10(0.7<sup>3</sup>)(0.3<sup>2</sup>): 5개·4개·3개가 맞는 경우입니다.<br><b>ㄴ (F)</b> 0.7은 맞힐 확률이므로 0.7<sup>5</sup>은 5개가 <b>모두 맞힐</b> 확률입니다.<br><b>ㄷ (F)</b> 101개이면 0.99로 <b>높아집니다</b>.<br><b>ㄹ (F)</b> uncorrelated errors(상관없는 오류), 즉 완전히 독립일 때만 성립합니다.<br><b>ㅁ (T)</b> "since they are trained on the same data".<br><b>ㅂ (T)</b> 교안 4쪽 조건 두 가지입니다.`,
+   src:[["08-1", "s3", "다수결이 정확해지는 이유"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"편향 · 분산",
+   pts:14,
+   q:`<p>bias(편향)와 variance(분산)에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`Bagging 앙상블은 단일 예측기보다 bias(편향)가 크게 줄어든다.`,false],[`교안 7쪽 계산은 측정을 여러 번 해 평균하면 분산이 측정 횟수 K로 나뉜다는 것이다.`,true],[`과녁 그림에서 점들이 중앙에서 벗어난 곳에 촘촘히 모여 있으면 High bias(높은 편향), Low variance(낮은 분산)이다.`,true],[`과녁 그림에서 점들이 중앙 주변에 넓게 흩어져 있으면 Low bias, Low variance이다.`,false],[`교안 9쪽 그림에서 단일 결정 트리의 경계보다 트리 500개 배깅의 경계가 더 매끄럽다.`,true],[`교안은 Random Forest가 더 높은 bias를 감수하고 더 낮은 variance를 얻는다고 했다.`,true],[`교안은 Random Forest가 더 낮은 bias를 얻는 대신 variance가 높아진다고 했다.`,false]],
+   exp:`<b>ㄱ (F)</b> 편향은 <b>비슷하고(similar bias)</b> 분산이 낮아집니다.<br><b>ㄴ (T)</b> Var = <span class="frac"><span class="num">σ<sup>2</sup></span><span class="den">K</span></span>.<br><b>ㄷ (T)</b> 교안 8쪽 그림 왼쪽 아래 칸입니다.<br><b>ㄹ (F)</b> 넓게 흩어진 것은 <b>High variance</b>입니다(오른쪽 위 칸).<br><b>ㅁ (T)</b> 교안 9쪽 그림입니다.<br><b>ㅂ (T)</b> "trades a higher bias for a lower variance".<br><b>ㅅ (F)</b> 반대입니다. 편향을 조금 높이고 분산을 낮춥니다.`,
+   src:[["08-1", "s6", "배깅이 분산을 줄이는 이유"], ["08-1", "s7", "편향과 분산"], ["08-1", "s8", "단일 트리 vs 배깅"], ["08-1", "s9", "랜덤 포레스트"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"Random Forest 세부",
+   pts:12,
+   q:`<p>Random Forest의 세부 내용이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`Random Forest의 특징 중요도는 그 특징을 쓰는 노드들이 impurity(불순도)를 평균적으로 얼마나 줄이는지로 잴 수 있다.`,true],[`OOB 샘플은 bootstrap에서 여러 번 뽑힌 샘플이다.`,false],[`교안의 변수 중요도는 모든 트리에 걸친 (p<sub>i</sub> − e<sub>i</sub>)의 평균과 표준편차로 계산한다.`,true],[`교안 13쪽 중요도 점수 v<sub>i</sub>는 오차 증가량의 평균을 표준편차로 나눈 값이다.`,true],[`특징을 섞었는데 OOB 오차가 거의 변하지 않으면 그 특징은 중요한 특징이다.`,false],[`교안 11쪽 그림에서 테스트 샘플은 각 트리에서 하나의 리프에 도달해 그 트리의 예측을 낸다.`,true]],
+   exp:`<b>ㄱ (T)</b> 교안 10쪽입니다.<br><b>ㄴ (F)</b> OOB 샘플은 bootstrap에서 <b>한 번도 선택되지 않은</b> 샘플입니다.<br><b>ㄷ (T)</b> 교안 12쪽 3단계입니다.<br><b>ㄹ (T)</b> v<sub>i</sub> = <span class="frac"><span class="num">d̄<sub>i</sub></span><span class="den">s<sub>i</sub></span></span>.<br><b>ㅁ (F)</b> 오차가 <b>일관되게 커질 때</b> 중요한 특징입니다.<br><b>ㅂ (T)</b> 그림의 진한 경로가 리프까지 내려갑니다.`,
+   src:[["08-1", "s9", "랜덤 포레스트"], ["08-1", "s10", "랜덤 포레스트의 예측"], ["08-1", "s11", "OOB 순열 변수 중요도"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"AdaBoost 방향",
+   pts:14,
+   q:`<p>AdaBoost에서 값이 커지고 작아지는 방향에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`가중 오차율 r<sub>j</sub>는 틀린 샘플들의 가중치 합을 전체 가중치 합으로 나눈 값이다.`,true],[`AdaBoost의 learning rate(학습률)는 η로 나타낸다.`,true],[`가중치를 갱신할 때 맞힌 샘플의 가중치에 exp(α<sub>j</sub>)를 곱한다.`,false],[`가중치를 갱신한 뒤에는 모든 가중치의 합이 1이 되도록 normalize(정규화)한다.`,true],[`AdaBoost는 정해 둔 예측기 수에 도달하거나 완벽한 예측기를 찾으면 반복을 멈춘다.`,true],[`AdaBoost의 최종 예측은 모든 예측기에 같은 표를 주는 단순 다수결이다.`,false],[`AdaBoost 예시 그림에서 Weak learner #1이 틀린 점은 Weighted dataset에서 더 크게 그려진다.`,true]],
+   exp:`<b>ㄱ (T)</b> 교안 18쪽 식입니다.<br><b>ㄴ (T)</b> 교안 18쪽 "η: learning rate".<br><b>ㄷ (F)</b> exp(α<sub>j</sub>)를 곱하는 것은 <b>틀린</b> 샘플입니다. 맞힌 샘플은 그대로 둡니다.<br><b>ㄹ (T)</b> 교안 19쪽입니다.<br><b>ㅁ (T)</b> 교안 19쪽입니다.<br><b>ㅂ (F)</b> 예측기마다 α<sub>j</sub>만큼 표를 주는 <b>가중 다수결</b>입니다.<br><b>ㅅ (T)</b> 교안 17쪽 그림: 가중치가 커진 것을 크기로 나타냈습니다.`,
+   src:[["08-1", "s13", "AdaBoost 과정"], ["08-1", "s15", "가중 오차율과 예측기 가중치"], ["08-1", "s16", "가중치 갱신과 최종 예측"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"Gradient Boosting 구분",
+   pts:12,
+   q:`<p>Gradient Boosting을 AdaBoost와 구분하는 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`Gradient Boosting은 AdaBoost처럼 샘플 가중치를 조정해 다음 예측기를 학습한다.`,false],[`교안 21쪽 그림에서 두 번째 트리 h<sub>2</sub>는 y − h<sub>1</sub>(x<sub>1</sub>)에 맞춰 학습한다.`,true],[`교안 21쪽 그림에서 앙상블의 예측은 트리 예측들의 합 h<sub>1</sub> + h<sub>2</sub> + h<sub>3</sub>이다.`,true],[`교안 21쪽 그림에서 앙상블의 예측은 트리 예측들의 평균이다.`,false],[`교안 24쪽 그림은 Gradient Boosting이 gradient descent(경사 하강법)로 순차 모델의 오차를 줄인다고 설명한다.`,true],[`교안 22쪽 골프 그림의 포물선은 MSE Loss Function(MSE 손실 함수)이다.`,true]],
+   exp:`<b>ㄱ (F)</b> 샘플 가중치를 조정하는 <b>대신</b> 잔차에 새 예측기를 맞춥니다.<br><b>ㄴ (T)</b> 두 번째 행의 세로축이 y − h<sub>1</sub>(x<sub>1</sub>)입니다.<br><b>ㄷ (T)</b> 오른쪽 열 범례입니다.<br><b>ㄹ (F)</b> 평균이 아니라 <b>합</b>입니다.<br><b>ㅁ (T)</b> "employs gradient descent algorithm to minimize errors".<br><b>ㅂ (T)</b> 그림 라벨입니다.`,
+   src:[["08-1", "s17", "그래디언트 부스팅"], ["08-1", "s19", "골프 그림"], ["08-1", "s21", "결정 트리에서 XGBoost까지"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"방법 비교 (교안 26쪽 표)",
+   pts:14,
+   q:`<p>교안 26쪽 비교표와 XGBoost·Stacking에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`Bagging의 한계는 bias가 큰 학습기에는 효과가 제한적이라는 것이다.`,true],[`Boosting은 noise(잡음)와 outlier(이상치)에 둔감하다.`,false],[`Voting의 한계는 기본 모델들의 품질 차이가 크면 약한 모델이 전체 성능을 끌어내릴 수 있다는 것이다.`,true],[`Stacking의 한계는 meta-model(메타 모델) 선택과 데이터 분할 전략을 신중히 정해야 한다는 것이다.`,true],[`Bagging의 모든 모델은 같은 기본 알고리즘을 쓰므로 같은 inductive bias(귀납적 편향)를 공유한다.`,true],[`교안 25쪽 블렌더 예에서 세 예측 3.1, 2.7, 2.9의 최종 예측은 세 값의 단순 평균인 2.9이다.`,false],[`XGBoost 장점 그림에는 Parallelized tree building(병렬 트리 생성)과 In-built cross-validation(내장 교차 검증)이 있다.`,true]],
+   exp:`<b>ㄱ (T)</b> "Limited effect for high-bias learners".<br><b>ㄴ (F)</b> <b>민감하고(sensitive)</b> 과적합 위험이 있습니다.<br><b>ㄷ (T)</b> 교안 26쪽입니다.<br><b>ㄹ (T)</b> 교안 26쪽입니다.<br><b>ㅁ (T)</b> 교안 26쪽 Bagging 한계입니다.<br><b>ㅂ (F)</b> 블렌더의 출력은 <b>3.0</b>입니다. 블렌더는 단순 평균이 아니라 학습한 결합 방식입니다.<br><b>ㅅ (T)</b> 교안 23쪽 그림입니다.`,
+   src:[["08-1", "s23", "방법 비교"], ["08-1", "s22", "스태킹"], ["08-1", "s20", "XGBoost"]] }
+];
+</script>
+</body>
+</html>
