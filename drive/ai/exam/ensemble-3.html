@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>인공지능 F. 앙상블 학습 — 실전 문제지</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>:root{ --subject:#5B3CF5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../exam-engine/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다. 이 파일은 drive/exam-engine/exam.css · exam.js 와 함께 있어야 열립니다.</div>
+<script>
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'인공지능',
+  title:'F. 앙상블 학습 — 실전 문제지',
+  written:'2026년 10월 25일 작성',
+  slug:'ai-ensemble-3',
+  lectureBase:'../lecture',
+  level:'중',
+  mcMax:1,
+  scope:`8주차 1차시 — Ensemble Learning(앙상블 학습) 교안 1–26쪽 · 객관식 · TF · 주관식 · 서술 (계산기 없이)`,
+  oxLabels:["T", "F"]
+};
+const EXAM = [
+{ type:'mc',
+   lv:'중',
+   unit:"Voting",
+   pts:5,
+   q:`<p>정확도가 각각 70%인 독립 분류기 5개의 다수결 정확도 (.7<sup>5</sup>) + 5(.7<sup>4</sup>)(.3) + 10(.7<sup>3</sup>)(.3<sup>2</sup>) = 0.8369 에서 10(.7<sup>3</sup>)(.3<sup>2</sup>) 항이 나타내는 경우는?</p>`,
+   choices:[`5개 모두 맞힘`,`4개 맞히고 1개 틀림`,`3개 맞히고 2개 틀림`,`2개 맞히고 3개 틀림`],
+   answer:[3],
+   exp:`0.7(맞힘)이 3번, 0.3(틀림)이 2번이므로 3개 맞힘·2개 틀림이고, 10은 5개 중 맞힐 3개를 고르는 경우의 수입니다. 다수결이 맞으려면 3개 이상 맞혀야 하므로 2개 맞힘은 더하지 않습니다.`,
+   src:[["08-1", "s3", "다수결이 정확해지는 이유"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"Voting",
+   pts:5,
+   q:`<p>정확도 70%인 분류기 101개로 다수결 투표를 하면 정확도가 약 0.99라는 계산이 실제로는 성립하지 않는 이유는?</p>`,
+   choices:[`분류기 수가 홀수이기 때문`,`분류기들이 같은 데이터로 학습해 완전히 독립이 아니기 때문`,`정확도 70%가 너무 낮기 때문`,`Soft voting을 쓰지 않았기 때문`],
+   answer:[2],
+   exp:`"Only true if all classifiers are perfectly independent, making uncorrelated errors, which is clearly not the case since they are trained on the same data."`,
+   src:[["08-1", "s3", "다수결이 정확해지는 이유"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"Bagging",
+   pts:5,
+   q:`<p>다음 중 Bagging(배깅)에 대한 설명으로 옳지 <b>않은</b> 것은?</p>`,
+   choices:[`모든 예측기에 같은 학습 알고리즘을 쓴다`,`복원 추출로 학습 세트의 무작위 부분집합을 만든다`,`단일 예측기보다 bias는 비슷하고 variance는 낮다`,`예측기를 순차적으로 학습하며 앞 예측기의 오류를 바로잡는다`],
+   answer:[4],
+   exp:`④는 <b>Boosting</b>입니다(교안 14쪽). Bagging은 예측기를 독립으로(병렬로) 학습합니다(교안 26쪽 "parallel training").`,
+   src:[["08-1", "s5", "배깅과 페이스팅"], ["08-1", "s6", "배깅이 분산을 줄이는 이유"], ["08-1", "s23", "방법 비교"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"Random Forest",
+   pts:5,
+   q:`<p>OOB 순열 변수 중요도에서 특징 x<sub>i</sub>가 중요하다고 판단하는 경우는?</p>`,
+   choices:[`x<sub>i</sub>를 섞어도 OOB 오차가 변하지 않을 때`,`x<sub>i</sub>를 섞으면 OOB 오차가 일관되게 커질 때`,`x<sub>i</sub>를 섞으면 OOB 오차가 작아질 때`,`x<sub>i</sub>가 bootstrap에서 한 번도 뽑히지 않을 때`],
+   answer:[2],
+   exp:`교안 13쪽: "A feature is important if randomizing it on OOB data consistently increases the prediction error." 중요도 점수 v<sub>i</sub> = <span class="frac"><span class="num">d̄<sub>i</sub></span><span class="den">s<sub>i</sub></span></span>가 큽니다.`,
+   src:[["08-1", "s11", "OOB 순열 변수 중요도"]] },
+
+{ type:'table',
+   lv:'중',
+   unit:"Boosting",
+   pts:10,
+   q:`<p>AdaBoost 예측기 세 개의 가중치 α와 한 샘플에 대한 예측이 다음과 같다: 예측기 1 (α = 3, A), 예측기 2 (α = 2, B), 예측기 3 (α = 2, B). AdaBoost의 weighted majority vote(가중 다수결)로 표를 채우시오.</p>`,
+   head:[`클래스 A 점수`,`클래스 B 점수`,`최종 예측`,`예측기 1의 α가 5라면`],
+   rows:[
+     [{a:`3`,alt:[]},{a:`4`,alt:[]},{a:`B`,alt:[]},{a:`A`,alt:[]}]],
+   exp:`각 클래스 점수 = 그 클래스를 예측한 예측기들의 α 합. A = 3, B = 2 + 2 = 4 → arg max = <b>B</b>.<br>예측기 1의 α가 5이면 A = 5 &gt; B = 4 → <b>A</b>. 단순 다수결(B가 2표)과 결과가 달라질 수 있습니다.`,
+   src:[["08-1", "s16", "가중치 갱신과 최종 예측"]] },
+
+{ type:'ox',
+   lv:'중',
+   unit:"Boosting",
+   pts:10,
+   q:`<p>AdaBoost의 예측기 가중치 α<sub>j</sub> = η log<span class="frac"><span class="num">1 − r<sub>j</sub></span><span class="den">r<sub>j</sub></span></span> (η &gt; 0)에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`r<sub>j</sub>가 작을수록(예측기가 정확할수록) α<sub>j</sub>는 커진다.`,true],[`r<sub>j</sub> = 0.5이면 α<sub>j</sub> = 0이다.`,true],[`r<sub>j</sub> &gt; 0.5이면 α<sub>j</sub> &gt; 0이다.`,false],[`α<sub>j</sub>가 클수록 틀린 샘플의 가중치는 더 많이 커진다.`,true],[`α<sub>j</sub>는 학습률 η와 관계없다.`,false]],
+   exp:`<b>ㄱ (T)</b> <span class="frac"><span class="num">1 − r</span><span class="den">r</span></span>이 커지므로 log 값이 커집니다(교안 18쪽).<br><b>ㄴ (T)</b> <span class="frac"><span class="num">0.5</span><span class="den">0.5</span></span> = 1, log 1 = 0.<br><b>ㄷ (F)</b> <span class="frac"><span class="num">1 − r</span><span class="den">r</span></span> &lt; 1 이므로 log가 음수, α &lt; 0(무작위보다 못한 예측기).<br><b>ㄹ (T)</b> 틀린 샘플에 exp(α<sub>j</sub>)를 곱하므로(교안 19쪽).<br><b>ㅁ (F)</b> α<sub>j</sub> = η × log(…)로 η에 비례합니다.`,
+   src:[["08-1", "s15", "가중 오차율과 예측기 가중치"], ["08-1", "s16", "가중치 갱신과 최종 예측"]] },
+
+{ type:'table',
+   lv:'중',
+   unit:"Boosting",
+   pts:10,
+   q:`<p>Gradient Boosting으로 샘플 두 개(정답 y = 5, 8)를 학습한다. 첫 트리 h<sub>1</sub>의 예측이 4, 9였다. 표를 채우시오.</p><p>(가) 두 번째 트리 h<sub>2</sub>가 맞춰 학습할 값 &nbsp;(나) h<sub>2</sub>가 (가)를 정확히 맞혔을 때 앙상블의 예측</p>`,
+   head:[`샘플`,`y`,`h<sub>1</sub>`,`(가)`,`(나)`],
+   rows:[
+     [`1`,`5`,`4`,{a:`1`,alt:[]},{a:`5`,alt:[]}],
+     [`2`,`8`,`9`,{a:`−1`,alt:[]},{a:`8`,alt:[]}]],
+   exp:`두 번째 트리는 잔차 y − h<sub>1</sub> = 1, −1에 맞춰 학습합니다(교안 20–21쪽). 앙상블 예측은 트리 예측의 <b>합</b> h<sub>1</sub> + h<sub>2</sub> = 5, 8.`,
+   src:[["08-1", "s17", "그래디언트 부스팅"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"XGBoost",
+   pts:5,
+   q:`<p>XGBoost의 장점으로 옳지 <b>않은</b> 것은?</p>`,
+   choices:[`Parallelized tree building`,`Regularization for avoiding overfitting`,`Efficient handling of missing data`,`Sampling without replacement`],
+   answer:[4],
+   exp:`Sampling without replacement는 Pasting(교안 6쪽)입니다. 그림의 여섯 가지: 병렬 트리 생성, depth-first 가지치기, 캐시 인식·out-of-core 계산, 규제, 결측 데이터 처리, 내장 교차 검증.`,
+   src:[["08-1", "s20", "XGBoost"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"Stacking",
+   pts:5,
+   q:`<p>Stacking에서 Blender(블렌더)의 학습 데이터(Blending training set)를 만드는 방법은? (학습 세트를 Subset 1, 2로 나눈다)</p>`,
+   choices:[`Subset 1로 블렌더를 직접 학습한다`,`Subset 1로 학습한 첫 층 예측기들에 Subset 2를 넣어 나온 예측값들을 모은다`,`학습 세트 전체의 정답 y를 평균한다`,`첫 층 예측기들의 예측을 단순 평균한다`],
+   answer:[2],
+   exp:`① 학습 세트를 Subset 1, 2로 나눔(Split) ② Subset 1로 첫 층 학습 ③ Subset 2를 첫 층에 넣어 예측 → 그 예측들로 Blending training set → 블렌더 학습.`,
+   src:[["08-1", "s22", "스태킹"]] },
+
+{ type:'short',
+   lv:'중',
+   unit:"English",
+   pts:5,
+   q:`<p>다음 문장에서 밑줄 친 부분의 뜻을 한국어로 쓰시오.</p><p>"The random forest algorithm introduces extra randomness when growing trees; instead of searching for the very best feature when splitting a node, it searches for the best feature <u>among a random subset of features</u>."</p>`,
+   show:`무작위로 고른 특징(feature)들의 부분집합 중에서`,
+   alt:["무작위 특징 부분집합 중에서", "특징 중 무작위로 뽑은 일부 안에서"],
+   exp:`Random Forest는 노드를 나눌 때 전체 특징이 아니라 무작위로 뽑은 일부 특징 중에서 가장 좋은 특징을 찾습니다. 그래서 트리가 더 다양해집니다(교안 10쪽).`,
+   src:[["08-1", "s9", "랜덤 포레스트"]] },
+
+{ type:'short',
+   lv:'중',
+   unit:"English",
+   pts:5,
+   q:`<p>다음 문장이 설명하는 방법의 이름을 영어로 쓰시오.</p><p>"Instead of adjusting instance weights, this method fits the new predictor to the residual errors made by the previous one."</p>`,
+   show:`Gradient Boosting(그래디언트 부스팅)`,
+   alt:["Gradient Boosting", "그래디언트 부스팅"],
+   exp:`교안 20쪽입니다. "adjusting instance weights(샘플 가중치 조정)"는 AdaBoost의 방식입니다.`,
+   src:[["08-1", "s17", "그래디언트 부스팅"]] },
+
+{ type:'essay',
+   lv:'상',
+   unit:"Bagging · Boosting",
+   pts:15,
+   q:`<p>Bagging(배깅)과 Boosting(부스팅)을 ① 예측기를 학습하는 순서 ② 각 예측기의 학습 데이터를 다르게 만드는 방법 ③ 각 방법의 한계 한 가지씩 기준으로 비교하여 서술하시오.</p>`,
+   model:`① Bagging은 예측기들을 서로 독립으로(병렬로) 학습하고, Boosting은 예측기를 순차적으로 학습해 각 예측기가 앞 예측기를 바로잡는다. ② Bagging은 같은 알고리즘에 학습 세트를 복원 추출(bootstrap)한 서로 다른 무작위 부분집합을 준다. Boosting(AdaBoost)은 같은 학습 세트에서 앞 예측기가 틀린 샘플의 가중치를 늘려 다음 예측기가 어려운 샘플에 집중하게 한다. ③ Bagging은 bias가 큰 학습기에는 효과가 제한적이고 모든 모델이 같은 귀납적 편향을 공유한다. Boosting은 잡음·이상치에 민감해 과적합 위험이 있고 학습 시간·튜닝이 복잡할 수 있다.`,
+   rubric:[[`① 병렬(독립) vs 순차`,5],[`② 복원 추출 부분집합 vs 틀린 샘플 가중치 증가`,5],[`③ 각 방법의 한계를 하나씩 정확히`,5]],
+   src:[["08-1", "s5", "배깅과 페이스팅"], ["08-1", "s12", "부스팅"], ["08-1", "s13", "AdaBoost 과정"], ["08-1", "s23", "방법 비교"]] },
+
+{ type:'essay',
+   lv:'상',
+   unit:"Stacking",
+   pts:15,
+   q:`<p>Voting(투표)과 Stacking(스태킹)은 모두 서로 다른 예측기의 예측을 합친다. 두 방법이 예측을 <b>합치는 방식</b>의 차이를 쓰고, 세 예측기의 예측 3.1, 2.7, 2.9를 받은 블렌더가 최종 예측 3.0을 냈다면 이것이 이 차이를 어떻게 보여 주는지 설명하시오.</p>`,
+   model:`Voting은 다수결(hard)이나 확률 평균(soft) 같은 미리 정해진 단순한 함수로 예측을 합친다. Stacking은 합치는 일 자체를 하는 모델(블렌더, Blender)을 데이터로 학습시킨다. 교안 예에서 세 예측의 단순 평균은 2.9이지만 블렌더의 출력은 3.0이다. 즉 블렌더는 정해진 평균이 아니라 학습으로 얻은 결합 방식으로 예측을 합친다.`,
+   rubric:[[`Voting = 정해진 단순 함수(다수결·평균)`,5],[`Stacking = 결합 모델(블렌더)을 학습`,5],[`예: 평균 2.9 ≠ 블렌더 3.0의 의미`,5]],
+   src:[["08-1", "s2", "하드 투표"], ["08-1", "s4", "소프트 투표"], ["08-1", "s22", "스태킹"]] }
+];
+</script>
+</body>
+</html>

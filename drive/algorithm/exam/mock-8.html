@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>알고리즘 모의고사 8회 (실전)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>:root{ --subject:#4F46E5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../exam-engine/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다.<br>이 파일은 <b>drive/exam-engine/exam.css · exam.js</b> 와 함께 있어야 열립니다.
+(<code>drive/algorithm/exam/mock-8.html</code> 위치에서 열어 주세요.)</div>
+<script>
+/* ════════ 시험지 정보 ════════ */
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'알고리즘',
+  title:'모의고사 8회 (실전)',
+  written:'2026년 10월 23일 작성',
+  slug:'algorithm-mock-8',
+  lectureBase:'../lecture',
+  level:'실전',
+  mcMax:1,
+  scope:'<b>모의고사 8회 · 실전</b> (2주차 1차시 ~ 8주차 1차시, 행렬 곱셈 순서 문제 제외)<br>토너먼트, Quick Select (중복값), 좋은 피벗, MoM, 점화식, 카라츠바, 코드 오류, stable, 힙 정렬, 정렬 하한, LCS, DP 설계, 지그재그'
+};
+
+/* ════════ 문항 ════════
+   type  : mc 객관식 · ox O/X · short 단답 · table 표 빈칸 · line 코드 줄 고르기 · essay 서술
+   lv    : 하 / 중 / 상        src : [['주차-차시','섹션 id','제목'], …]
+   채점  : 엔진은 채점하지 않음. 문항마다 「정답 · 해설」을 펼쳐 스스로 확인 — rubric 은 [기준, 점수] (부분 점수) */
+const EXAM = [
+{ type:'essay',
+   lv:'중',
+   unit:"토너먼트",
+   pts:6,
+   q:`<p>원소 16 개에서 최댓값과 최솟값을 동시에 찾는다. 수업의 방법으로 필요한 비교 횟수를 구하고, 최솟값을 1라운드 패자들 안에서만 찾아도 되는 이유를 쓰시오.</p>`,
+   model:`최댓값 토너먼트 15 번 + 1라운드 패자 8 개 중 최솟값 7 번 = <b>22 번</b> (= <span class="frac"><span class="num">3</span><span class="den">2</span></span>n − 2).<br>1라운드 승자는 모두 자기 짝보다 크므로 최솟값이 될 수 없다. 따라서 최솟값은 1라운드 패자 안에 있다.`,
+   rubric:[[`15 + 7 = 22`,3],[`1라운드 승자는 짝보다 크다는 이유`,3]],
+   src:[["02-1", "s3", "최대·최소 동시에"]] },
+
+{ type:'table',
+   lv:'중',
+   unit:"Quick Select",
+   pts:6,
+   q:`<p>교수님 코드의 quick_select(L, k) (피벗 P = L[0], P 보다 작으면 A, 같으면 M, 크면 B) 를 L = [4, 7, 4, 2, 9, 4, 1], k = 4 로 호출한다. 호출마다 빈칸을 채우시오.</p>`,
+   head:[`호출`,`L`,`k`,`P`,`|A|`,`|M|`,`다음 동작`],
+   rows:[
+     [`1`,`[4, 7, 4, 2, 9, 4, 1]`,`4`,{a:`4`,alt:[]},{a:`2`,alt:[]},{a:`3`,alt:[]},{a:`4 반환`,alt:[]}]],
+   exp:`1회: P = 4, A = [2, 1], M = [4, 4, 4], B = [7, 9] → 4 반환<br>정렬하면 [1, 2, 4, 4, 4, 7, 9] 이라 4 번째로 작은 값 4 이 맞다.`,
+   src:[["02-1", "s5", "Quick Select"]] },
+
+{ type:'essay',
+   lv:'중',
+   unit:"좋은 피벗",
+   pts:6,
+   q:`<p>|A|, |B| ≤ <span class="frac"><span class="num">n</span><span class="den">c</span></span> (c &gt; 1) 를 만족하는 좋은 피벗을 a 의 비용으로 고를 수 있을 때, a ≤ n 이면 선택 문제가 O(n log n) 인 이유를 쓰시오.</p>`,
+   model:`크기가 n → <span class="frac"><span class="num">n</span><span class="den">c</span></span> → <span class="frac"><span class="num">n</span><span class="den">c²</span></span> → ⋯ → 1 로 줄어 재귀 횟수 k 는 n = c<sup>k</sup>, k = log<sub>c</sub> n.<br>한 단계 비용 = 피벗 고르기 a + 나누기 n (실제로는 줄어들지만 모두 n 으로 크게 잡음).<br>전체 ≤ log<sub>c</sub> n · (a + n) ≤ log<sub>c</sub> n · 2n = <b>O(n log n)</b> (a ≤ n 은 가정)`,
+   rubric:[[`재귀 횟수 log<sub>c</sub> n`,2],[`단계 비용 a + n, n 으로 크게 잡음`,2],[`a ≤ n 으로 2n log<sub>c</sub> n → O(n log n)`,2]],
+   src:[["02-2", "s2", "재귀 횟수"], ["02-2", "s3", "전체 비교 횟수"]] },
+
+{ type:'essay',
+   lv:'중',
+   unit:"MoM",
+   pts:8,
+   q:`<p>MoM 알고리즘의 네 단계를 쓰고, 단계별 비용을 더해 점화식을 세우시오. (분할 후 큰 쪽은 최대 3n ÷ 4)</p>`,
+   model:`1. 5개씩 묶기 — 0<br>2. 각 묶음의 median (5개 median 은 6번) — 6 × <span class="frac"><span class="num">n</span><span class="den">5</span></span> = <span class="frac"><span class="num">6n</span><span class="den">5</span></span><br>3. medians 의 median m* 를 MoM 으로 재귀 — T(<span class="frac"><span class="num">n</span><span class="den">5</span></span>)<br>4. m* 로 A / M / B 로 나누고 답이 있는 쪽 재귀 — n + T(<span class="frac"><span class="num">3n</span><span class="den">4</span></span>)<br>T(n) = <b>T(<span class="frac"><span class="num">3n</span><span class="den">4</span></span>) + T(<span class="frac"><span class="num">n</span><span class="den">5</span></span>) + <span class="frac"><span class="num">11n</span><span class="den">5</span></span></b>`,
+   rubric:[[`네 단계 순서`,3],[`단계별 비용 0, 6n ÷ 5, T(n ÷ 5), n + T(3n ÷ 4)`,3],[`합친 점화식`,2]],
+   src:[["02-2", "s4", "MoM 개요"], ["02-2", "s6", "MoM 점화식"]] },
+
+{ type:'essay',
+   lv:'중',
+   unit:"점화식",
+   pts:6,
+   q:`<p>Quick Select 의 최선 점화식 T(n) = T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn, T(1) = C 를 전개해 Big-O 를 구하시오.</p>`,
+   model:`T(n) = Cn + C<span class="frac"><span class="num">n</span><span class="den">2</span></span> + C<span class="frac"><span class="num">n</span><span class="den">4</span></span> + ⋯ + T(1) = Cn(1 + <span class="frac"><span class="num">1</span><span class="den">2</span></span> + <span class="frac"><span class="num">1</span><span class="den">4</span></span> + ⋯) + C<br>괄호 안은 등비수열(공비 <span class="frac"><span class="num">1</span><span class="den">2</span></span>) 로 2 보다 작다 → ≤ 2Cn + C → <b>O(n)</b>`,
+   rubric:[[`층마다 Cn, Cn ÷ 2, … 로 펼침`,2],[`괄호 안이 2 미만인 이유`,2],[`결론 O(n)`,2]],
+   src:[["04-2", "s2", "Quick Select 최선"]] },
+
+{ type:'essay',
+   lv:'중',
+   unit:"카라츠바",
+   pts:8,
+   q:`<p>1234 × 5678 을 카라츠바 방식으로 계산한다 (x = 12, y = 34, w = 56, z = 78). 곱셈 3번의 값과 가운데 항, 최종 결과를 쓰시오.</p>`,
+   model:`xw = 12 × 56 = <b>672</b>, yz = 34 × 78 = <b>2652</b>, (x + y)(w + z) = 46 × 134 = <b>6164</b><br>가운데 xz + yw = 6164 − 672 − 2652 = <b>2840</b><br>672 × 10⁴ + 2840 × 10² + 2652 = 6,720,000 + 284,000 + 2,652 = <b>7,006,652</b>`,
+   rubric:[[`곱셈 3번 값`,3],[`가운데 항 = (x + y)(w + z) − xw − yz`,3],[`최종 결과`,2]],
+   src:[["03-2", "s9", "카라츠바"]] },
+
+{ type:'short',
+   lv:'중',
+   unit:"거듭제곱",
+   pts:6,
+   q:`<p>다음 power3 는 일부 n 에서 틀린 값을 낸다. 잘못된 줄의 번호를 쓰고 바르게 고치시오.</p><pre>1  def power3(a, n):
+2      if n == 1:
+3          return a
+4      x = power3(a, n // 2)
+5      if n % 2 == 0:
+6          return x * x
+7      else:
+8          return x * x</pre>`,
+   show:`8번 줄 → return x * x * a`,
+   alt:[],
+   exp:`n 이 홀수면 n // 2 가 나머지 1 을 버리므로 x * x 는 a 의 n − 1 제곱. a 를 한 번 더 곱해야 한다. 예: power3(a, 3) → x = a, x * x = a² (a³ 이어야 함).`,
+   src:[["03-1", "s6", "power3"]] },
+
+{ type:'table',
+   lv:'중',
+   unit:"stable",
+   pts:6,
+   q:`<p>같은 값을 구분해 [2₁, 1, 2₂] 를 버블 정렬한다. 비교 조건에 따라 결과와 stable 여부를 쓰시오.</p>`,
+   head:[`조건`,`정렬 결과`,`stable`],
+   rows:[
+     [`A[j] &gt; A[j+1] 이면 교환`,{a:`[1, 2₁, 2₂]`,alt:[]},{a:`O`,alt:[]}],
+     [`A[j] &gt;= A[j+1] 이면 교환`,{a:`[1, 2₂, 2₁]`,alt:[]},{a:`X`,alt:[]}]],
+   exp:`&gt;= 이면 1라운드에서 2₁ ↔ 1, 이어서 같은 값 2₁ ↔ 2₂ 까지 교환해 순서가 뒤집힌다. 값 순서는 같아도 stable 여부가 달라진다.`,
+   src:[["05-1", "s5", "버블 정렬"], ["05-1", "s2", "stable"]] },
+
+{ type:'table',
+   lv:'중',
+   unit:"힙 정렬",
+   pts:6,
+   q:`<p>최대 힙 A = [12, 10, 11, 4, 9, 3, 7, 1] 에 힙 정렬을 3 라운드 진행한다. 각 라운드 뒤의 A 를 쓰시오.</p>`,
+   head:[``,`A`],
+   rows:[
+     [`1라운드 후`,{a:`[11, 10, 7, 4, 9, 3, 1, 12]`,alt:[]}],
+     [`2라운드 후`,{a:`[10, 9, 7, 4, 1, 3, 11, 12]`,alt:[]}],
+     [`3라운드 후`,{a:`[9, 4, 7, 3, 1, 10, 11, 12]`,alt:[]}]],
+   exp:`라운드마다 A[0] ↔ 구간 끝 (A[7], A[6], A[5]) 교환 후, 그 칸을 뺀 범위에서 루트를 큰 자식과 바꾸며 내린다.`,
+   src:[["06-2", "s3", "힙 정렬 과정"]] },
+
+{ type:'essay',
+   lv:'중',
+   unit:"정렬 하한",
+   pts:8,
+   q:`<p>비교 정렬의 결정 트리 높이 h 가 Ω(n log n) 임을 보이시오. (n 은 짝수)</p>`,
+   model:`리프 = 가능한 순서 n! 개, 높이 h 인 이진트리의 리프 ≤ 2<sup>h</sup> → 2<sup>h</sup> ≥ n! → h ≥ log₂ n!<br>n! = n × ⋯ × (<span class="frac"><span class="num">n</span><span class="den">2</span></span> + 1) × ⋯ × 1 ≥ (<span class="frac"><span class="num">n</span><span class="den">2</span></span>)<sup><span class="frac"><span class="num">n</span><span class="den">2</span></span></sup> (큰 쪽 절반은 각각 <span class="frac"><span class="num">n</span><span class="den">2</span></span> 이상, 나머지는 1 이상)<br>h ≥ log₂ (<span class="frac"><span class="num">n</span><span class="den">2</span></span>)<sup><span class="frac"><span class="num">n</span><span class="den">2</span></span></sup> = <span class="frac"><span class="num">n</span><span class="den">2</span></span> log₂ <span class="frac"><span class="num">n</span><span class="den">2</span></span> → <b>Ω(n log n)</b>`,
+   rubric:[[`리프 n!, 2<sup>h</sup> ≥ n!`,3],[`n! ≥ (n ÷ 2)<sup>n ÷ 2</sup> 와 방향 이유`,3],[`결론`,2]],
+   src:[["06-2", "s8", "n 개 결정 트리"], ["06-2", "s9", "n! 어림"]] },
+
+{ type:'essay',
+   lv:'중',
+   unit:"LCS",
+   pts:8,
+   q:`<p>X = ABDCA, Y = BDAC 의 LCS 표를 채워 LCS 길이를 구하고, 표를 거꾸로 따라가 LCS 하나를 쓰시오 (왼쪽과 위가 같으면 위로).</p>`,
+   model:`표 (행 X, 열 Y):<br>A: 0 0 1 1<br>B: 1 1 1 1<br>D: 1 2 2 2<br>C: 1 2 2 3<br>A: 1 2 3 3<br>길이 = <b>3</b>, 위 우선으로 따라가면 <b>BDC</b>`,
+   rubric:[[`표를 규칙대로 채움`,4],[`길이 3`,2],[`LCS BDC (다른 길이 3 공통 부문자열이면 1점)`,2]],
+   src:[["07-2", "s4", "DP 테이블"], ["07-2", "s6", "부문자열 찾기"]] },
+
+{ type:'essay',
+   lv:'중',
+   unit:"DP 설계",
+   pts:8,
+   q:`<p>계단을 한 번에 <b>1칸, 2칸 또는 3칸</b> 오를 수 있다. 1층에서 n층까지 오르는 경우의 수 A[n] 을 DP 로 구하려 한다.</p><p>(1) 점화식을 세우고 그 이유를 쓰시오.<br>(2) A[1] = 1, A[2] = 1, A[3] = 2 일 때 A[6] 을 구하시오.<br>(3) 수행시간을 쓰시오.</p>`,
+   model:`(1) n 층에 오는 마지막 한 걸음은 1칸 (n − 1 층에서), 2칸 (n − 2 층), 3칸 (n − 3 층) 셋뿐 → <b>A[n] = A[n − 1] + A[n − 2] + A[n − 3]</b><br>(2) A[4] = 2 + 1 + 1 = 4, A[5] = 4 + 2 + 1 = 7, A[6] = 7 + 4 + 2 = <b>13</b><br>(3) 칸 n 개 × O(1) = <b>O(n)</b>`,
+   rubric:[[`점화식과 마지막 한 걸음 이유`,4],[`A[6] = 13`,2],[`O(n)`,2]],
+   src:[["07-1", "s3", "계단 오르기"], ["07-2", "s1", "DP 순서"]] },
+
+{ type:'table',
+   lv:'중',
+   unit:"지그재그",
+   pts:6,
+   q:`<p>A = [5, 3, 8, 8, 1, 6, 2, 9] 에 지그재그 DP 를 적용한다. low[k] 는 A[k] 가 앞 수보다 작게(내려오며), high[k] 는 크게(올라가며) 끝나는 가장 긴 지그재그 길이이고 시작값은 1, 같은 값끼리는 이어 붙이지 않는다. 표를 채우고 답을 쓰시오.</p>`,
+   head:[`k`,`0`,`1`,`2`,`3`,`4`,`5`,`6`,`7`,`답`],
+   rows:[
+     [`A`,`5`,`3`,`8`,`8`,`1`,`6`,`2`,`9`,`—`],
+     [`low`,{a:`1`,alt:[]},{a:`2`,alt:[]},{a:`1`,alt:[]},{a:`1`,alt:[]},{a:`4`,alt:[]},{a:`4`,alt:[]},{a:`6`,alt:[]},{a:`1`,alt:[]},{a:`7`,alt:[]}],
+     [`high`,{a:`1`,alt:[]},{a:`1`,alt:[]},{a:`3`,alt:[]},{a:`3`,alt:[]},{a:`1`,alt:[]},{a:`5`,alt:[]},{a:`5`,alt:[]},{a:`7`,alt:[]},`—`]],
+   exp:`low[k] = (왼쪽에서 A[k] 보다 큰 수들의 high 최댓값) + 1, high[k] = (왼쪽에서 A[k] 보다 작은 수들의 low 최댓값) + 1. 답 = 모든 칸의 최댓값 = 7.`,
+   src:[["07-2", "s9", "low · high"], ["07-2", "s10", "지그재그 코드 · 표"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"알고리즘 식별",
+   pts:6,
+   q:`<p>"두 문자열의 앞부분끼리의 답을 2차원 표에 저장하며, 끝 글자가 같으면 왼쪽 위 칸 + 1, 다르면 왼쪽과 위 칸 중 큰 값을 쓴다." 이 알고리즘과 수행시간으로 옳은 것은? (길이 n, m)</p>`,
+   choices:[`지그재그, O(n²)`,`최대 구간 합, O(n)`,`LCS, O(nm)`,`LCS, O(n + m)`],
+   answer:[3],
+   exp:`LCS. 칸 n × m 개를 각각 O(1) 에 채워 O(nm). O(n + m) 은 표를 거꾸로 따라가 부문자열을 찾는 시간.`,
+   src:[["07-2", "s3", "LCS 점화식"], ["07-2", "s7", "O(nm)"]] },
+
+{ type:'ox',
+   lv:'중',
+   unit:"수행시간",
+   pts:6,
+   q:`<p>각 문장이 맞으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[[`2T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn 은 O(n log n), 2T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + C 는 O(n) 이다.`,true],[`카라츠바는 O(n<sup>log₂3</sup>) 이고 단순 분할 곱셈 O(n²) 보다 빠르다.`,true],[`퀵 정렬은 평균 O(n log n) 이므로 비교 정렬 중 최적이다.`,false],[`MoM 은 최악에도 O(n) 이다.`,true],[`make_heap 은 수업 기준 O(log n) 이다.`,false]],
+   exp:`ㄷ: 최적은 상한(worst) 이 O(n log n) 인 병합 · 힙 정렬. 퀵 정렬 worst 는 O(n²). ㅁ: heapify_down O(log n) × n 번 = O(n log n).`,
+   src:[["03-2", "s11", "카라츠바 전개"], ["04-2", "s3", "정렬 점화식"], ["06-2", "s10", "결론"]] }
+];
+</script>
+</body>
+</html>

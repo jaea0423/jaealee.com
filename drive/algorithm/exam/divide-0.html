@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>알고리즘 B. 분할 정복 — 기초 OX</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>:root{ --subject:#4F46E5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../exam-engine/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다.<br>이 파일은 <b>drive/exam-engine/exam.css · exam.js</b> 와 함께 있어야 열립니다.
+(<code>drive/algorithm/exam/divide-0.html</code> 위치에서 열어 주세요.)</div>
+<script>
+/* ════════ 시험지 정보 ════════ */
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'알고리즘',
+  title:'B. 분할 정복 — 기초 OX',
+  written:'2026년 10월 24일 작성',
+  slug:'algorithm-divide-0',
+  lectureBase:'../lecture',
+  level:'기초',
+  mcMax:1,
+  scope:'3주차 1·2차시, 4주차 2차시 — max · 거듭제곱 · 피보나치 · 큰 수 곱셈 · 카라츠바 · 이진탐색 · 점화식'
+};
+
+/* ════════ 문항 ════════
+   type  : mc 객관식 · ox O/X · short 단답 · table 표 빈칸 · line 코드 줄 고르기 · essay 서술
+   lv    : 하 / 중 / 상        src : [['주차-차시','섹션 id','제목'], …]
+   채점  : 엔진은 채점하지 않음. 문항마다 「정답 · 해설」을 펼쳐 스스로 확인 — rubric 은 [기준, 점수] (부분 점수) */
+const EXAM = [
+{ type:'ox',
+   lv:'기초',
+   unit:"분할 정복 · max",
+   pts:12,
+   q:`<p>분할 정복과 max(A) 에 대한 설명이다. 각 문장이 맞으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[[`분할 정복은 큰 문제를 같은 형태의 작은 문제로 쪼개 재귀로 푸는 방법이다.`,true],[`분할 정복 알고리즘의 수행시간은 보통 점화식으로 나타내고 풀어서 구한다.`,true],[`max(A) = max(A[0], max(A[1:])) 에서 바깥 max 는 두 수 중 큰 값을 고르는 비교 연산이다.`,true],[`하나 vs 나머지로 나누면 점화식은 T(n − 1) + C 이고 O(n²) 이다.`,false],[`반씩 나누면 점화식은 2T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + C 이고 O(n log n) 이다.`,false],[`반으로 쪼개기만 하면 항상 더 빨라진다.`,false],[`파이썬 슬라이싱 A[:4] 는 인덱스 0 ~ 4 이다.`,false]],
+   exp:`<b>ㄱ (O)</b> 수업의 정의.<br><b>ㄴ (O)</b> 재귀 구조가 그대로 점화식이 된다.<br><b>ㄷ (O)</b> 안쪽 max(A[1:]) 는 지금 만드는 함수(재귀 호출).<br><b>ㄹ (X)</b> O(n). T(1) + (n − 1)C. O(n²) 은 뒤에 + Cn 이 붙을 때 (T(n − 1) + Cn).<br><b>ㅁ (X)</b> O(n). 2T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + C = 2Cn − C. n log n 은 + Cn 일 때.<br><b>ㅂ (X)</b> 반씩 나눈 max, power2 는 모두 O(n) 그대로.<br><b>ㅅ (X)</b> 0 ~ 3. 끝 번호는 포함하지 않는다.`,
+   src:[["03-1", "s1", "분할 정복법"], ["03-1", "s2", "하나 vs 나머지"], ["03-1", "s3", "반씩 분할"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"거듭제곱",
+   pts:14,
+   q:`<p>거듭제곱 aⁿ 을 구하는 함수에 대한 설명이다. 각 문장이 맞으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[[`power1 은 aⁿ = a × aⁿ⁻¹ 로 계산하며 점화식은 T(n − 1) + C 이다.`,true],[`power2 는 a<sup><span class="frac"><span class="num">n</span><span class="den">2</span></span></sup> 을 구하는 재귀를 두 번 호출하므로 점화식이 2T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + C 이다.`,true],[`power2 는 O(log n) 이다.`,false],[`power3 는 x = power3(a, n//2) 로 한 번만 구한 값을 재사용한다.`,true],[`power3 의 점화식은 T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + C 이고 O(log n) 이다.`,true],[`n 이 홀수면 power3 는 x * x 에 a 를 한 번 더 곱한다.`,true],[`7 // 2 = 3.5 이다.`,false],[`power2 와 power3 는 쪼개는 방식이 서로 다르다.`,false]],
+   exp:`<b>ㄱ (O)</b> 재귀 1번 + 곱셈 1번 → O(n).<br><b>ㄴ (O)</b> 같은 값을 두 번 계산.<br><b>ㄷ (X)</b> 2T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + C → O(n).<br><b>ㄹ (O)</b> 재귀 호출이 1번으로 줄어든다.<br><b>ㅁ (O)</b> C + C · log₂ n.<br><b>ㅂ (O)</b> n = 2 × (n//2) + 1 이라 나머지 1 만큼.<br><b>ㅅ (X)</b> // 는 몫만 남기므로 3. 7 = 2 × 3 + 1.<br><b>ㅇ (X)</b> 쪼개는 방식(n → <span class="frac"><span class="num">n</span><span class="den">2</span></span>)은 같고 재귀 호출 횟수만 다르다.`,
+   src:[["03-1", "s4", "power1"], ["03-1", "s5", "power2"], ["03-1", "s6", "power3"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"피보나치",
+   pts:15,
+   q:`<p>피보나치 수와 행렬에 대한 설명이다. (A = [[1, 1], [1, 0]]) 각 문장이 맞으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[[`fibo1(그대로 재귀)은 같은 값을 여러 번 다시 계산한다.`,true],[`fibo1 은 O(γⁿ) 이고 γ ≈ 1.618 이다.`,true],[`fibo1 의 수행시간은 n 의 다항식으로 나타난다.`,false],[`(F<sub>n+1</sub>, F<sub>n</sub>) = Aⁿ · (F<sub>1</sub>, F<sub>0</sub>) 이다.`,true],[`Aⁿ 을 power3 방식으로 계산하면 피보나치 수를 O(log n) 에 구한다.`,true],[`A² = [[2, 1], [1, 2]] 이다.`,false],[`행렬 곱셈은 교환법칙이 성립한다.`,false],[`p × q 행렬과 q × r 행렬을 곱하면 결과는 p × r 이고 곱셈은 pqr 번이다.`,true],[`증가 속도는 O(log n) &lt; O(n) &lt; O(n log n) &lt; O(n²) &lt; O(γⁿ) 순이다.`,true]],
+   exp:`<b>ㄱ (O)</b> F(3) 2번, F(2) 3번 …<br><b>ㄴ (O)</b> γ 는 황금비. 수업에서는 결과만 소개.<br><b>ㄷ (X)</b> γⁿ 은 지수 시간.<br><b>ㄹ (O)</b> 한 번 곱할 때마다 한 칸씩 앞으로.<br><b>ㅁ (O)</b> T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + C.<br><b>ㅂ (X)</b> A² = [[2, 1], [1, 1]]. 2행 2열 = (2행 [1, 0]) · (2열 [1, 0]) = 1·1 + 0·0 = 1.<br><b>ㅅ (X)</b> AB ≠ BA 일 수 있다. 결합법칙은 성립.<br><b>ㅇ (O)</b> 칸 p × r 개, 칸마다 q 번.<br><b>ㅈ (O)</b> 수업의 빠른 순서.`,
+   src:[["03-1", "s7", "fibo1"], ["03-1", "s9", "행렬 곱"], ["03-1", "s11", "Aⁿ 으로 O(log n)"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"큰 수 곱셈",
+   pts:12,
+   q:`<p>n 자리 큰 수의 곱셈에 대한 설명이다. 각 문장이 맞으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[[`수가 아주 크면 곱셈·덧셈 한 번을 상수 시간으로 볼 수 없다.`,true],[`세로식(보통의 곱셈)은 분할 정복 알고리즘이다.`,false],[`세로식 곱셈은 곱셈 n 번, 덧셈 n 번으로 O(n) 이다.`,false],[`u = x · 10<sup><span class="frac"><span class="num">n</span><span class="den">2</span></span></sup> + y 로 쪼개면 <span class="frac"><span class="num">n</span><span class="den">2</span></span> 자리 곱셈이 4번(xw, xz, yw, yz) 필요하다.`,true],[`단순 분할의 점화식에 + C 가 아니라 + Cn 이 붙는 이유는 자리 밀기와 덧셈이 자리 수에 비례하기 때문이다.`,true],[`단순 분할 4T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn 은 O(n log n) 이다.`,false],[`n = 2<sup>k</sup> 일 때 4<sup>k</sup> = (2<sup>k</sup>)² = n² 이다.`,true]],
+   exp:`<b>ㄱ (O)</b> 자료형 범위를 넘으므로 자리 단위로 센다.<br><b>ㄴ (X)</b> 쪼개서 재귀하지 않고 자리마다 직접 곱하고 더한다.<br><b>ㄷ (X)</b> 한 줄에 곱셈 n 번 × 줄 n 개 = n², 덧셈 2n² → 3n² → O(n²).<br><b>ㄹ (O)</b> u · v 를 펼치면 네 항.<br><b>ㅁ (O)</b> 10ⁿ 곱하기(0 붙이기), 2n 자리 덧셈.<br><b>ㅂ (X)</b> O(n²). 크기 절반의 이득을 곱셈 4번이 까먹어 세로식과 같다.<br><b>ㅅ (O)</b> 지수 법칙 (a<sup>b</sup>)<sup>c</sup> = (a<sup>c</sup>)<sup>b</sup>.`,
+   src:[["03-2", "s3", "세로식"], ["03-2", "s6", "곱셈 4번"], ["03-2", "s8", "다시 O(n²)"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"카라츠바",
+   pts:15,
+   q:`<p>카라츠바 알고리즘에 대한 설명이다. 각 문장이 맞으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[[`카라츠바는 큰 수 곱셈을 분할 정복으로 풀면서 곱셈 4번을 3번으로 줄인다.`,true],[`xz + yw = (x + y)(w + z) + xw + yz 이다.`,false],[`카라츠바에서는 xw, yz 를 계산하지 않는다.`,false],[`카라츠바의 점화식은 3T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn 이다.`,true],[`카라츠바는 O(n<sup>log₂3</sup>) 이고 log₂3 ≈ 1.585 이다.`,true],[`O(n<sup>log₂3</sup>) 은 밑을 생략해 O(n<sup>log 3</sup>) 으로 써도 된다.`,false],[`3<sup>log₂ n</sup> = n<sup>log₂ 3</sup> 이다.`,true],[`3T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn 을 전개할 때 나오는 등비수열의 공비는 3 이다.`,false],[`(x + y) 는 <span class="frac"><span class="num">n</span><span class="den">2</span></span> + 1 자리일 수 있지만 차수에는 영향이 없다.`,true]],
+   exp:`<b>ㄱ (O)</b> 곱셈 xw, yz, (x + y)(w + z).<br><b>ㄴ (X)</b> (x + y)(w + z) = xw + xz + yw + yz 이므로 xw, yz 를 빼야 한다: (x + y)(w + z) − xw − yz.<br><b>ㄷ (X)</b> 맨 앞·맨 뒤 항에 필요해서 계산하고, 가운데 항에서 재활용한다.<br><b>ㄹ (O)</b> 곱셈 3번 + 덧셈·뺄셈·자리 밀기 Cn.<br><b>ㅁ (O)</b> 1 &lt; log₂3 &lt; 2.<br><b>ㅂ (X)</b> 지수 안의 밑은 바뀌면 차수가 바뀌므로 생략 금지.<br><b>ㅅ (O)</b> a<sup>log<sub>b</sub> c</sup> = c<sup>log<sub>b</sub> a</sup>.<br><b>ㅇ (X)</b> 갈래 3배 × 크기 절반 → 층 합은 <span class="frac"><span class="num">3</span><span class="den">2</span></span> 배. 공비 <span class="frac"><span class="num">3</span><span class="den">2</span></span>.<br><b>ㅈ (O)</b> +1 자리는 Big-O 에서 무시.`,
+   src:[["03-2", "s9", "카라츠바"], ["03-2", "s10", "새 점화식"], ["03-2", "s11", "전개"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"이진탐색",
+   pts:15,
+   q:`<p>이진탐색 bs(A, a, b, k) 에 대한 설명이다. 각 문장이 맞으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[[`이진탐색은 정렬된 리스트에서만 쓸 수 있다.`,true],[`bs 는 찾은 값 k 를 반환한다.`,false],[`찾는 값이 없으면 −1 을 반환한다.`,true],[`한 번 호출에서 재귀는 최대 1번, 한쪽 절반에만 한다.`,true],[`이진탐색의 점화식은 2T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + C 이다.`,false],[`이진탐색은 O(log n) 이다.`,true],[`if 문이 세 갈래로 나뉘기 때문에 분할 정복이다.`,false],[`A = [2, 5, 7, 8, 15, 20, 32, 44] 에서 32 를 찾으면 6 을 반환한다.`,true],[`앞에서부터 하나씩 찾으면 O(n) 이다.`,true]],
+   exp:`<b>ㄱ (O)</b> 정렬되어 있어야 절반을 통째로 버릴 수 있다.<br><b>ㄴ (X)</b> 인덱스 m 을 반환한다.<br><b>ㄷ (O)</b> a &gt; b (범위가 비었음).<br><b>ㄹ (O)</b> 나머지 절반은 버린다.<br><b>ㅁ (X)</b> T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + C. 재귀가 1번.<br><b>ㅂ (O)</b> C + C · log₂ n.<br><b>ㅅ (X)</b> 세 갈래는 비교 결과일 뿐. 분할 정복인 이유는 절반 크기의 같은 문제를 재귀로 푸는 것.<br><b>ㅇ (O)</b> m = 3 (8) → m = 5 (20) → m = 6 (32).<br><b>ㅈ (O)</b> 이진탐색 O(log n) 과 비교.`,
+   src:[["03-2", "s13", "이진탐색"], ["03-2", "s14", "시간복잡도"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"점화식 풀기",
+   pts:17,
+   q:`<p>점화식을 Big-O 로 푸는 방법에 대한 설명이다. (T(1) = C) 각 문장이 맞으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[[`T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + C = O(log n)`,true],[`T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn = O(n log n)`,false],[`2T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn = O(n log n)`,true],[`2T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + C = O(n log n)`,false],[`전개할 때 n = 2<sup>k</sup> 로 가정하면 k = log₂ n 이다.`,true],[`등비수열의 합 공식에서 항의 개수는 입력 크기 n 이다.`,false],[`1 + <span class="frac"><span class="num">1</span><span class="den">2</span></span> + <span class="frac"><span class="num">1</span><span class="den">4</span></span> + ⋯ 는 2를 넘지 않는다.`,true],[`나무 그림에서 <span class="frac"><span class="num">n</span><span class="den">2</span></span> 는 그 층에서 하는 연산의 횟수이다.`,false],[`3T(<span class="frac"><span class="num">n</span><span class="den">2</span></span>) + Cn 은 층 합이 층마다 늘어나서 맨 아래 층이 결과를 정한다.`,true],[`O(log₂ n) 과 O(log₃ n) 은 둘 다 O(log n) 으로 써도 된다.`,true]],
+   exp:`<b>ㄱ (O)</b> 층마다 C, 층 수 log₂ n.<br><b>ㄴ (X)</b> O(n). n(1 + <span class="frac"><span class="num">1</span><span class="den">2</span></span> + ⋯) ≤ 2Cn — 층 합이 절반씩 줄어 첫 층이 결과를 정한다.<br><b>ㄷ (O)</b> 층 합 Cn × 층 수 log₂ n.<br><b>ㄹ (X)</b> O(n).<br><b>ㅁ (O)</b> 반으로 k 번 나누면 1.<br><b>ㅂ (X)</b> 항의 개수는 쪼갠 횟수 k.<br><b>ㅅ (O)</b> 절반씩 더해 가도 2 미만.<br><b>ㅇ (X)</b> <span class="frac"><span class="num">n</span><span class="den">2</span></span> 는 줄어든 입력의 크기. 연산은 옆에 붙은 C, Cn.<br><b>ㅈ (O)</b> 맨 아래 3<sup>k</sup>C = n<sup>log₂3</sup>C.<br><b>ㅊ (O)</b> 밑이 바뀌어도 상수배 차이.`,
+   src:[["04-2", "s1", "연습 ①"], ["04-2", "s2", "연습 ②"], ["04-2", "s3", "연습 ③"], ["04-2", "s4", "연습 ④"]] }
+];
+</script>
+</body>
+</html>
