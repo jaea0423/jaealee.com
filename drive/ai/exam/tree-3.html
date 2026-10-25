@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>인공지능 E. 결정 트리 — 실전 문제지</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>:root{ --subject:#5B3CF5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../exam-engine/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다. 이 파일은 drive/exam-engine/exam.css · exam.js 와 함께 있어야 열립니다.</div>
+<script>
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'인공지능',
+  title:'E. 결정 트리 — 실전 문제지',
+  written:'2026년 10월 25일 작성',
+  slug:'ai-tree-3',
+  lectureBase:'../lecture',
+  level:'중',
+  mcMax:1,
+  scope:`7주차 2차시 — Decision Tree(결정 트리) 교안 1–35쪽 · 객관식 · TF · 주관식 · 서술 (계산기 없이)`,
+  oxLabels:["T", "F"]
+};
+const EXAM = [
+{ type:'mc',
+   lv:'중',
+   unit:"트리 기본",
+   pts:5,
+   q:`<p>꽃잎 길이 x<sub>1</sub>(cm)로 루트를 "x<sub>1</sub> ≤ 2.45"로 나누는 결정 트리가 있다. x<sub>1</sub>의 단위를 mm로 바꾸어(값 × 10) 같은 데이터로 다시 학습할 때 일어나는 일로 옳은 것은?</p>`,
+   choices:[`스케일링을 하지 않으면 x<sub>1</sub>이 다른 특징보다 10배 중요해진다`,`결정 경계가 축에 평행하지 않게 된다`,`루트 기준값이 24.5로 바뀔 뿐 데이터가 나뉘는 방식은 같다`,`각 노드의 지니 지수가 10배가 된다`],
+   answer:[3],
+   exp:`결정 트리는 특징 하나를 기준값과 비교만 하므로 단위를 바꾸면 기준값만 같이 바뀝니다. 그래서 스케일링·중심화가 필요 없습니다(교안 3쪽). 지니는 클래스 비율로만 계산하므로 변하지 않습니다.`,
+   src:[["07-2", "s3", "용어 — 트리 읽기"], ["07-2", "s4", "결정 경계"]] },
+
+{ type:'table',
+   lv:'중',
+   unit:"CART",
+   pts:10,
+   q:`<p>부모 노드에 클래스 A 6개, B 4개가 있다. 두 후보 이진 분할 결과가 다음과 같다. (괄호는 (A, B) 수)</p><p>s<sub>1</sub>: 왼쪽 4개 (4, 0), 오른쪽 6개 (2, 4) &nbsp;&nbsp; s<sub>2</sub>: 왼쪽 5개 (3, 2), 오른쪽 5개 (3, 2)</p><p>표를 채우시오. (분수로 써도 된다)</p>`,
+   head:[`항목`,`값`],
+   rows:[
+     [`부모 지니 G(D)`,{a:`0.48`,alt:["<span class=\"frac\"><span class=\"num\">12</span><span class=\"den\">25</span></span>", "12/25"]}],
+     [`분할 s₁의 오른쪽 자식 지니`,{a:`<span class="frac"><span class="num">4</span><span class="den">9</span></span>`,alt:["4/9", "0.444"]}],
+     [`분할 s₁의 나눈 뒤 가중 지니`,{a:`<span class="frac"><span class="num">4</span><span class="den">15</span></span>`,alt:["4/15", "0.267"]}],
+     [`분할 s₂의 ΔG`,{a:`0`,alt:[]}],
+     [`CART가 고르는 분할`,{a:`s₁`,alt:["s1"]}]],
+   exp:`G(D) = 1 − 0.6<sup>2</sup> − 0.4<sup>2</sup> = 1 − 0.36 − 0.16 = 0.48.<br>s<sub>1</sub> 오른쪽: 1 − (<span class="frac"><span class="num">1</span><span class="den">3</span></span>)<sup>2</sup> − (<span class="frac"><span class="num">2</span><span class="den">3</span></span>)<sup>2</sup> = 1 − <span class="frac"><span class="num">5</span><span class="den">9</span></span> = <span class="frac"><span class="num">4</span><span class="den">9</span></span>. 가중 지니 = <span class="frac"><span class="num">4</span><span class="den">10</span></span> × 0 + <span class="frac"><span class="num">6</span><span class="den">10</span></span> × <span class="frac"><span class="num">4</span><span class="den">9</span></span> = <span class="frac"><span class="num">4</span><span class="den">15</span></span> ≈ 0.267 → ΔG ≈ 0.213.<br>s<sub>2</sub>: 두 자식의 클래스 비율이 부모와 똑같으므로 자식 지니 = 0.48, 가중 지니 = 0.48, <b>ΔG = 0</b>(불순도가 전혀 줄지 않음).<br>ΔG가 큰 <b>s<sub>1</sub></b>을 고릅니다. 양쪽 크기가 같다는 것은 기준이 아닙니다.`,
+   src:[["07-2", "s9", "지니 예제 — CART"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"ID3",
+   pts:5,
+   q:`<p>어떤 노드에 구매 2명, 비구매 3명이 있고 엔트로피는 0.971이다(log<sub>2</sub>). 세 특징으로 나눈 결과가 다음과 같다. (괄호는 (구매, 비구매) 수, 엔트로피 H(1, 2) = 0.918)</p><p>Student: Yes (2, 0), No (0, 3)<br>Income: Low (1, 0), Medium (1, 1), High (0, 2)<br>Credit: Excellent (1, 1), Fair (1, 2)</p><p>ID3가 이 노드에서 고르는 특징과 그 정보 이득은?</p>`,
+   choices:[`Income, 0.571`,`Student, 0.971`,`Credit, 0.020`,`Income, 0.971`],
+   answer:[2],
+   exp:`순수 그룹의 엔트로피는 0, 반반 그룹은 1입니다.<br>Student: 두 그룹 모두 순수 → 가중 엔트로피 0 → 이득 0.971 − 0 = <b>0.971</b>.<br>Income: <span class="frac"><span class="num">2</span><span class="den">5</span></span> × 1 = 0.4 → 이득 0.571.<br>Credit: <span class="frac"><span class="num">2</span><span class="den">5</span></span> × 1 + <span class="frac"><span class="num">3</span><span class="den">5</span></span> × 0.918 ≈ 0.951 → 이득 0.020.<br>이득이 가장 큰 Student를 고르며, 나눈 뒤 모든 그룹이 순수하면 이득은 부모 엔트로피와 같아 최대가 됩니다(교안 24–25쪽과 같은 구조).`,
+   src:[["07-2", "s10", "ID3와 정보 이득"]] },
+
+{ type:'ox',
+   lv:'중',
+   unit:"불순도 · 분할",
+   pts:10,
+   q:`<p>분할 기준에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`정보 이득은 부모 엔트로피보다 클 수 없으며, 나눈 뒤 모든 그룹이 순수할 때 부모 엔트로피와 같아진다.`,true],[`어떤 특징으로 나눈 뒤 모든 그룹의 클래스 비율이 부모와 같으면 그 특징의 정보 이득은 0이다.`,true],[`CART는 범주가 3개인 특징에 대해 "범주 하나 vs 나머지 둘"과 같은 이진 분할 후보들을 비교한다.`,true],[`나눈 뒤 가중 엔트로피가 클수록 정보 이득도 크다.`,false],[`지니 지수로 고른 분할과 엔트로피로 고른 분할은 항상 서로 다르다.`,false]],
+   exp:`<b>ㄱ (T)</b> 나눈 뒤 가중 엔트로피는 0 이상이므로 이득 ≤ H(D), 모두 순수하면 가중 엔트로피 0.<br><b>ㄴ (T)</b> 자식 엔트로피가 모두 부모와 같아 가중평균도 부모와 같습니다.<br><b>ㄷ (T)</b> 교안 13–14쪽: Adolescent vs 나머지, Adolescent·Young Adult vs Middle-aged.<br><b>ㄹ (F)</b> 이득 = H(D) − 가중 엔트로피이므로 가중 엔트로피가 <b>작을수록</b> 이득이 큽니다.<br><b>ㅁ (F)</b> 두 척도는 모양이 비슷해(지니를 2배로 맞추면 거의 겹침, 교안 8쪽) 같은 분할을 고르는 경우가 많습니다.`,
+   src:[["07-2", "s7", "지니 vs 엔트로피"], ["07-2", "s9", "지니 예제 — CART"], ["07-2", "s10", "ID3와 정보 이득"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"규제",
+   pts:5,
+   q:`<p>결정 트리를 제약 없이 학습했더니 학습 정확도는 100%, 검증 정확도는 크게 낮았다. 가장 알맞은 조치는?</p>`,
+   choices:[`max_depth를 늘린다`,`min_samples_split을 줄인다`,`불순도 척도를 지니에서 엔트로피로 바꾼다`,`min_samples_leaf를 늘린다`],
+   answer:[4],
+   exp:`학습 데이터에만 잘 맞는 과대적합입니다. 규제를 강하게 하려면 min_ 값은 늘리고 max_ 값은 줄입니다(교안 9–10쪽). 지니와 엔트로피는 비슷한 분할을 만들어 과대적합 해결책이 아닙니다.`,
+   src:[["07-2", "s8", "규제 하이퍼파라미터"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"선형 vs 트리",
+   pts:5,
+   q:`<p>실제 클래스 경계가 "x<sub>1</sub> &gt; 2 이고 x<sub>2</sub> &gt; 3"인 영역(축에 평행한 직사각형 모서리)으로 정해지는 데이터가 있다. 선형 모델과 결정 트리에 대한 설명으로 옳은 것은?</p>`,
+   choices:[`선형 모델은 직선 하나로 이 경계를 정확히 나눈다`,`결정 트리는 x<sub>1</sub> ≤ 2, x<sub>2</sub> ≤ 3 두 번의 분할로 이 경계를 잘 맞출 수 있다`,`결정 트리는 이 경계를 대각선 하나로 근사한다`,`두 모델 모두 이 경계를 정확히 나눌 수 없다`],
+   answer:[2],
+   exp:`축에 평행한 직사각형 경계는 트리가 분할 두 번으로 잘 맞추고, 선형 모델은 대각선 하나로밖에 못 나눕니다(교안 34쪽 아래 줄). 경계가 대각선이면 반대로 선형 모델이 유리합니다.`,
+   src:[["07-2", "s16", "선형 vs 트리"], ["07-2", "s4", "결정 경계"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"회귀 트리",
+   pts:5,
+   q:`<p>입력 x 하나로 y를 예측하는 깊이 2의 회귀 트리(리프 4개)가 있다. 이 트리의 예측 ŷ을 x에 대해 그린 모양으로 옳은 것은?</p>`,
+   choices:[`학습 데이터를 따라가는 매끄러운 곡선`,`기울기가 일정한 직선`,`값이 최대 4단으로 바뀌는 계단`,`학습 샘플마다 다른 값을 갖는 들쭉날쭉한 선`],
+   answer:[3],
+   exp:`리프 하나가 x의 구간 하나를 맡고 그 구간에서는 항상 같은 값(구간 y의 평균)을 내므로, 리프 4개면 4단 계단입니다(교안 31쪽). 샘플마다 다른 값은 규제 없이 끝까지 자란 트리의 모습입니다(교안 32쪽).`,
+   src:[["07-2", "s13", "회귀 트리의 예측"]] },
+
+{ type:'table',
+   lv:'중',
+   unit:"회귀 트리",
+   pts:10,
+   q:`<p>점 네 개 (x, y) = (1, 2), (2, 4), (3, 10), (4, 12)로 회귀 트리의 루트 분할 "x ≤ t"를 정한다. 비용함수는 J = <span class="frac"><span class="num">m<sub>left</sub></span><span class="den">m</span></span>MSE<sub>left</sub> + <span class="frac"><span class="num">m<sub>right</sub></span><span class="den">m</span></span>MSE<sub>right</sub> 이고, MSE는 각 쪽 평균과의 제곱오차의 평균이다. t = 1.5와 t = 3.5일 때 J ≈ 8.67이다. t = 2.5일 때 표를 채우시오.</p>`,
+   head:[`항목`,`값`],
+   rows:[
+     [`왼쪽 리프의 예측값`,{a:`3`,alt:[]}],
+     [`오른쪽 리프의 예측값`,{a:`11`,alt:[]}],
+     [`MSE<sub>left</sub>, MSE<sub>right</sub>`,{a:`1, 1`,alt:["1과 1"]}],
+     [`J`,{a:`1`,alt:[]}],
+     [`고르는 기준값 t`,{a:`2.5`,alt:[]}]],
+   exp:`왼쪽 {2, 4}: 평균 3, MSE = <span class="frac"><span class="num">(2 − 3)<sup>2</sup> + (4 − 3)<sup>2</sup></span><span class="den">2</span></span> = 1. 오른쪽 {10, 12}: 평균 11, MSE = 1.<br>J = <span class="frac"><span class="num">2</span><span class="den">4</span></span> × 1 + <span class="frac"><span class="num">2</span><span class="den">4</span></span> × 1 = 1.<br>회귀용 CART는 J가 <b>가장 작은</b> 분할을 고르므로 t = 2.5(1 &lt; 8.67)입니다. 리프 예측값은 각 구간 y의 평균입니다(교안 30쪽).`,
+   src:[["07-2", "s12", "회귀용 CART"]] },
+
+{ type:'short',
+   lv:'중',
+   unit:"English",
+   pts:5,
+   q:`<p>다음 문장에서 밑줄 친 부분의 뜻을 한국어로 쓰시오.</p><p>"Decision trees love orthogonal decision boundaries (all splits are perpendicular to an axis), which makes them <u>sensitive to training set rotation</u>."</p>`,
+   show:`학습 데이터(세트)의 회전에 민감하다`,
+   alt:["학습 데이터 회전에 민감", "훈련 세트를 회전시키면 결과가 크게 달라진다"],
+   exp:`모든 분할이 축에 수직이라 데이터를 회전시키기만 해도 결과가 크게 달라진다는 뜻입니다. 결정 트리의 한계 ①입니다(교안 35쪽).`,
+   src:[["07-2", "s17", "결정 트리의 한계"]] },
+
+{ type:'short',
+   lv:'중',
+   unit:"English",
+   pts:5,
+   q:`<p>다음 문장의 빈칸에 들어갈 영어 단어를 쓰고, 문장 전체의 뜻을 한국어로 쓰시오.</p><p>"If left unconstrained, the tree structure will adapt itself to the training data, fitting it very closely, and most likely (&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;) it."</p>`,
+   show:`overfitting — 제약 없이 두면 트리 구조가 학습 데이터에 맞춰져 매우 가깝게 적합되고, 과대적합할 가능성이 크다`,
+   alt:["overfitting", "과대적합"],
+   exp:`교안 9쪽 문장입니다. 이를 막으려고 학습 중에 트리의 자유를 제한하는 것이 규제(사전 가지치기)입니다.`,
+   src:[["07-2", "s8", "규제 하이퍼파라미터"]] },
+
+{ type:'short',
+   lv:'중',
+   unit:"ID3",
+   pts:5,
+   q:`<p>10개 샘플(클래스 A 5, B 5)의 엔트로피는 1이다(log<sub>2</sub>). 어떤 특징으로 나누었더니 그룹 1은 4개 (A 4, B 0), 그룹 2는 6개 (A 1, B 5)이고 그룹 2의 엔트로피는 0.65이다. 이 특징의 정보 이득은?</p>`,
+   show:`0.61`,
+   alt:["0.61"],
+   exp:`그룹 1은 순수 → 엔트로피 0. 가중 엔트로피 = <span class="frac"><span class="num">4</span><span class="den">10</span></span> × 0 + <span class="frac"><span class="num">6</span><span class="den">10</span></span> × 0.65 = 0.39. 정보 이득 = 1 − 0.39 = <b>0.61</b>.`,
+   src:[["07-2", "s10", "ID3와 정보 이득"]] },
+
+{ type:'essay',
+   lv:'상',
+   unit:"CART · ID3",
+   pts:15,
+   q:`<p>CART와 ID3가 분류 트리를 만드는 방법을 ① 불순도 척도 ② 분할을 고르는 기준 ③ 한 번에 나누는 가지 수 기준으로 비교하고, ④ 두 알고리즘의 공통 절차를 서술하시오.</p>`,
+   model:`① CART는 지니 지수, ID3는 엔트로피로 노드의 불순도를 잰다. ② CART는 지니 감소량 ΔG(부모 지니 − 자식 지니의 가중평균)가 가장 큰 분할을, ID3는 정보 이득(부모 엔트로피 − 나눈 뒤 엔트로피의 가중평균)이 가장 큰 특징을 고른다. ③ CART는 항상 두 갈래로 나누는 이진 분할이고, ID3는 특징의 범주 수만큼 가지를 나눈다. ④ 둘 다 나누기 전 불순도를 구하고, 후보마다 나눈 뒤 불순도를 샘플 수 비율로 가중평균해 감소량을 비교한 뒤 가장 많이 줄이는 것을 고르며, 순수하지 않은 자식에서 같은 과정을 반복하고 순수해지면 리프로 멈춘다.`,
+   rubric:[[`① 지니 vs 엔트로피`,3],[`② ΔG 최대 vs 정보 이득 최대(가중평균을 빼는 구조)`,4],[`③ 이진 분할 vs 범주 수만큼`,4],[`④ 공통 절차(가중평균 → 감소량 최대 선택 → 자식에서 반복)`,4]],
+   src:[["07-2", "s9", "지니 예제 — CART"], ["07-2", "s10", "ID3와 정보 이득"]] },
+
+{ type:'essay',
+   lv:'상',
+   unit:"규제",
+   pts:15,
+   q:`<p>결정 트리가 과대적합되기 쉬운 이유를 선형 모델과 비교하여 쓰고, 이를 막는 아래 세 하이퍼파라미터를 각각 어느 방향으로 조정해야 하는지와 그 이유를 쓰시오. 또 규제한 뒤 분류 트리의 결정 경계(또는 회귀 트리의 예측선)가 어떻게 달라지는지 서술하시오.</p><p>· max_depth<br>· min_samples_split<br>· min_samples_leaf</p>`,
+   model:`선형 모델은 데이터가 선형이라고 가정하지만, 결정 트리는 학습 데이터에 대한 가정이 거의 없어 제약 없이 두면 학습 데이터에 매우 가깝게 맞춰 자라 과대적합하기 쉽다. 그래서 학습 중에 트리의 자유를 제한한다. max_depth는 줄여 트리가 깊어지지 못하게 하고, min_samples_split은 늘려 샘플이 충분한 노드만 나누게 하며, min_samples_leaf는 늘려 작은 리프가 생기지 않게 한다. 규제하면 점 하나하나를 맞추던 좁은 띠·작은 상자(또는 들쭉날쭉한 예측선)가 사라져 경계와 예측선이 단순해지고, 학습 데이터 일부를 틀리더라도 새 데이터에 더 잘 맞을 가능성이 커진다.`,
+   rubric:[[`가정이 거의 없음 vs 선형 가정 → 과대적합`,4],[`세 하이퍼파라미터 방향(max ↓, min ↑)과 이유`,6],[`규제 후 경계·예측선이 단순해지고 일반화가 좋아짐`,5]],
+   src:[["07-2", "s8", "규제 하이퍼파라미터"], ["07-2", "s14", "회귀 트리의 규제"]] }
+];
+</script>
+</body>
+</html>

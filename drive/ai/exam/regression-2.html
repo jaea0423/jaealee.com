@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>인공지능 B. 회귀 — 기본 문제지</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>:root{ --subject:#5B3CF5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../exam-engine/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다. 이 파일은 drive/exam-engine/exam.css · exam.js 와 함께 있어야 열립니다.</div>
+<script>
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'인공지능',
+  title:'B. 회귀 — 기본 문제지',
+  written:'2026년 10월 25일 작성',
+  slug:'ai-regression-2',
+  lectureBase:'../lecture',
+  level:'하',
+  mcMax:1,
+  scope:`6주차 1차시 — Regression(회귀) 교안 1–27쪽 · 객관식 · 단답 · 표 · TF (수업 예시 수준)`,
+  oxLabels:["T", "F"]
+};
+const EXAM = [
+{ type:'mc',
+   lv:'하',
+   unit:"회귀 기초",
+   pts:6,
+   q:`<p>다음 중 독립변수(입력 x)를 부르는 이름이 <b>아닌</b> 것은?</p>`,
+   choices:[`Predictor`,`Feature`,`Attribute`,`Response`],
+   answer:[4],
+   exp:`Response(반응변수)는 종속변수(출력 y)의 이름입니다. Predictor·Feature·Attribute·Input·Risk factor가 독립변수입니다(교안 3쪽).`,
+   src:[["06-1", "s2", "x → 모델 → y"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"회귀 분류",
+   pts:6,
+   q:`<p>TV, Radio, Newspaper 광고비 3개로 판매량 1개를 예측하는 회귀는?</p>`,
+   choices:[`Univariable`,`Multivariable`,`Multivariate`,`Multivariable이면서 Multivariate`],
+   answer:[2],
+   exp:`Variable은 입력 x의 개수, Variate는 출력 y의 개수를 셉니다. 입력 3개, 출력 1개이므로 Multivariable(다변수)입니다.`,
+   src:[["06-1", "s4", "Variate와 Variable"]] },
+
+{ type:'table',
+   lv:'하',
+   unit:"회귀 분류",
+   pts:10,
+   q:`<p>독립변수 개수에 따른 선형 회귀의 이름과, 회귀가 데이터에 맞추는 대상을 채우시오.</p>`,
+   head:[`독립변수`,`회귀의 이름`,`맞추는 대상`],
+   rows:[
+     [`1개`,{a:`단순 회귀`,alt:["단순", "Simple", "Simple regression"]},{a:`직선`,alt:["선"]}],
+     [`2개`,{a:`다중 회귀`,alt:["다중", "Multiple", "Multiple regression"]},{a:`평면`,alt:["면"]}],
+     [`3개 이상`,{a:`다중 회귀`,alt:["다중", "Multiple"]},{a:`초평면`,alt:["hyperplane"]}]],
+   exp:`독립변수 1개 = Simple(단순), 2개 이상 = Multiple(다중). 맞추는 대상은 선 → 면 → 초평면(hyperplane)입니다(교안 5쪽, 17쪽, 교수님 말씀).`,
+   src:[["06-1", "s3", "회귀란 · 회귀의 분류"], ["06-1", "s8", "다중 선형 회귀"]] },
+
+{ type:'short',
+   lv:'하',
+   unit:"단순 선형 회귀",
+   pts:6,
+   q:`<p>Y = β<sub>0</sub> + β<sub>1</sub>X + ε에서 X = 0일 때 Y의 값을 나타내는 회귀계수의 기호와 이름을 쓰시오.</p>`,
+   show:`β<sub>0</sub>, 절편(intercept)`,
+   alt:["β0 절편", "β₀", "절편", "intercept"],
+   exp:`β<sub>0</sub>은 intercept(절편), β<sub>1</sub>은 slope(기울기, X가 1 늘 때 Y가 변하는 양)입니다. y = ax + b의 b에 해당합니다.`,
+   src:[["06-1", "s5", "단순 선형 회귀"]] },
+
+{ type:'table',
+   lv:'하',
+   unit:"최소제곱법",
+   pts:10,
+   q:`<p>추정된 회귀직선이 ŷ = 1 + 2x이다. 데이터 세 개에 대해 예측값 ŷ와 잔차 e를 채우고, 마지막 줄에 RSS를 쓰시오.</p>`,
+   head:[`x`,`y`,`ŷ`,`잔차 e`],
+   rows:[
+     [`1`,`4`,{a:`3`,alt:[]},{a:`1`,alt:[]}],
+     [`2`,`4`,{a:`5`,alt:[]},{a:`−1`,alt:[]}],
+     [`3`,`8`,{a:`7`,alt:[]},{a:`1`,alt:[]}],
+     [`RSS`,``,``,{a:`3`,alt:[]}]],
+   exp:`ŷ = 1 + 2x에 x를 넣으면 3, 5, 7. 잔차 e<sub>i</sub> = y<sub>i</sub> − ŷ<sub>i</sub> = 1, −1, 1(실제 − 예측).<br>RSS = 1<sup>2</sup> + (−1)<sup>2</sup> + 1<sup>2</sup> = 3 (교안 8쪽).`,
+   src:[["06-1", "s5", "단순 선형 회귀"], ["06-1", "s6", "잔차 제곱합 · 최소제곱법"]] },
+
+{ type:'short',
+   lv:'하',
+   unit:"최소제곱법",
+   pts:6,
+   q:`<p>두 점의 잔차가 +2, −2이다. 잔차를 그대로 더한 값과 RSS를 차례로 쓰시오.</p>`,
+   show:`0, 8`,
+   alt:["합 0, RSS 8", "0 8"],
+   exp:`그대로 더하면 0이 되어 오차가 없는 것처럼 보입니다. 제곱해서 더하면 4 + 4 = 8. 교수님이 든 이유 그대로, + 오차와 − 오차가 상쇄되지 않게 양수로 만들어 더합니다.`,
+   src:[["06-1", "s6", "잔차 제곱합 · 최소제곱법"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"최소제곱법",
+   pts:6,
+   q:`<p>최소제곱 추정 알고리즘(Least Squares Estimation Algorithm)의 단계를 순서대로 나열한 것은?</p><p>ㄱ. C(β<sub>0</sub>, β<sub>1</sub>)를 β<sub>0</sub>, β<sub>1</sub>로 각각 편미분해서 0으로 놓는다<br>ㄴ. 오차 제곱합 Σ<sub>i=1</sub><sup>n</sup> {y<sub>i</sub> − (β<sub>0</sub> + β<sub>1</sub>x<sub>i</sub>)}<sup>2</sup>을 식으로 쓴다<br>ㄷ. 이 값을 최소로 하는 문제로 정의하고 (β̂<sub>0</sub>, β̂<sub>1</sub>) = arg min C(β<sub>0</sub>, β<sub>1</sub>)로 둔다</p>`,
+   choices:[`ㄱ → ㄴ → ㄷ`,`ㄴ → ㄱ → ㄷ`,`ㄴ → ㄷ → ㄱ`,`ㄷ → ㄴ → ㄱ`],
+   answer:[3],
+   exp:`Step 1 오차 제곱합 → Step 2 최소화 문제(arg min) 정의 → Step 3 편미분 = 0(교안 9쪽). 두 식을 연립해 풀면 β̂<sub>1</sub> = <span class="frac"><span class="num">Σ(x<sub>i</sub> − <span style="text-decoration:overline">x</span>)(y<sub>i</sub> − <span style="text-decoration:overline">y</span>)</span><span class="den">Σ(x<sub>i</sub> − <span style="text-decoration:overline">x</span>)<sup>2</sup></span></span>, β̂<sub>0</sub> = <span style="text-decoration:overline">y</span> − β̂<sub>1</sub><span style="text-decoration:overline">x</span>(교안 10쪽).`,
+   src:[["06-1", "s6", "잔차 제곱합 · 최소제곱법"]] },
+
+{ type:'short',
+   lv:'하',
+   unit:"최소제곱법",
+   pts:6,
+   q:`<p>최소제곱 추정의 Step 2에서 최소로 만들려고 정의하는 함수 C를 부르는 이름을 두 가지 쓰시오. (영어 또는 한국어)</p>`,
+   show:`objective(목적함수), loss(손실함수), cost(비용함수) 중 두 가지`,
+   alt:["목적함수", "손실함수", "비용함수", "objective", "loss", "cost"],
+   exp:`교수님: 줄이고자 하는 함수를 어떻게 정의하느냐에 따라 목적함수·손실함수·비용함수로 부릅니다(Step 2에 해당).`,
+   src:[["06-1", "s6", "잔차 제곱합 · 최소제곱법"]] },
+
+{ type:'table',
+   lv:'하',
+   unit:"R²",
+   pts:10,
+   q:`<p>두 회귀 모델의 SST와 SSE가 다음과 같다. SSR과 R<sup>2</sup>를 채우시오.</p>`,
+   head:[`모델`,`SST`,`SSE`,`SSR`,`R<sup>2</sup>`],
+   rows:[
+     [`A`,`50`,`10`,{a:`40`,alt:[]},{a:`0.8`,alt:["4/5", "<span class=\"frac\"><span class=\"num\">4</span><span class=\"den\">5</span></span>"]}],
+     [`B`,`50`,`50`,{a:`0`,alt:[]},{a:`0`,alt:[]}]],
+   exp:`SST = SSR + SSE이므로 SSR = SST − SSE.<br>A: SSR = 40, R<sup>2</sup> = 1 − <span class="frac"><span class="num">10</span><span class="den">50</span></span> = 0.8 → y 변동의 80%를 설명합니다.<br>B: SSR = 0, R<sup>2</sup> = 1 − <span class="frac"><span class="num">50</span><span class="den">50</span></span> = 0 → 모델이 y 변동을 전혀 설명하지 못합니다(Poor fit, 교안 12쪽).`,
+   src:[["06-1", "s7", "결정계수 R²"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"R²",
+   pts:6,
+   q:`<p>다중 회귀 모델에 쓸모없는 예측변수를 하나 더 넣었다. 일반적으로 일어나는 일로 옳은 것은?</p>`,
+   choices:[`R<sup>2</sup>는 내려가지 않고, Adjusted R<sup>2</sup>는 내려갈 수 있다`,`R<sup>2</sup>는 내려가고, Adjusted R<sup>2</sup>는 올라간다`,`R<sup>2</sup>와 Adjusted R<sup>2</sup> 모두 반드시 올라간다`,`R<sup>2</sup>와 Adjusted R<sup>2</sup> 모두 변하지 않는다`],
+   answer:[1],
+   exp:`R<sup>2</sup>는 변수를 추가해도 내려가지 않아 적합도를 과대평가합니다. Adjusted R<sup>2</sup>는 조정 항 <span class="frac"><span class="num">n − 1</span><span class="den">n − p − 1</span></span>로 예측변수 추가에 벌점을 주므로 SSE가 충분히 줄지 않으면 내려갑니다(교안 18쪽).`,
+   src:[["06-1", "s9", "수정된 결정계수"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"로지스틱 회귀",
+   pts:6,
+   q:`<p>로지스틱 회귀의 회귀계수 β<sub>0</sub>, β<sub>1</sub>을 추정하는 방법은?</p>`,
+   choices:[`Least squares(최소제곱법)`,`Maximum likelihood(최대우도)`,`Adjusted R<sup>2</sup> 최대화`,`Forward selection(전진 선택)`],
+   answer:[2],
+   exp:`교안 26쪽 "Use maximum likelihood to estimate the parameters." 선형 회귀는 RSS 최소(최소제곱), 로지스틱 회귀는 우도 최대입니다.`,
+   src:[["06-1", "s16", "최대우도"]] },
+
+{ type:'table',
+   lv:'하',
+   unit:"로지스틱 회귀",
+   pts:10,
+   q:`<p>로지스틱 회귀로 추정한 채무불이행(Default) 확률 p̂(X)가 다음과 같다. 분류 규칙에 따라 예측 Y(1 = Default, 0 = No Default)를 채우시오.</p>`,
+   head:[`Balance`,`p̂(X)`,`예측 Y`],
+   rows:[
+     [`1000`,`0.006`,{a:`0`,alt:["No Default"]}],
+     [`2000`,`0.586`,{a:`1`,alt:["Default"]}],
+     [`어떤 값`,`0.5`,{a:`0`,alt:["No Default"]}]],
+   exp:`p̂(X) &gt; 0.5이면 1(Default), p̂(X) ≤ 0.5이면 0(No Default)입니다(교안 27쪽). 0.5와 <b>같으면</b> 0입니다.`,
+   src:[["06-1", "s17", "0.5 기준 분류"]] },
+
+{ type:'ox',
+   lv:'하',
+   unit:"다중 회귀",
+   pts:12,
+   q:`<p>다중 회귀와 회귀 분석에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`독립변수가 2개인 다중 선형 회귀는 잔차 제곱합이 최소가 되는 평면을 찾는다.`,true],[`예측변수끼리 상관이 없는 경우를 balanced design(균형 설계)이라 한다.`,true],[`예측변수끼리 상관이 강하면 모든 회귀계수의 분산이 작아진다.`,false],[`mpg = β<sub>0</sub> + β<sub>1</sub> × horsepower + β<sub>2</sub> × horsepower<sup>2</sup> + ε는 horsepower의 제곱 항을 예측변수로 추가한 다항 회귀 모델이다.`,true],[`개별 회귀계수가 반응 예측에 쓸모 있는지는 Confidence interval(신뢰구간)로 검정한다.`,false]],
+   exp:`<b>ㄱ (T)</b> 독립변수 2개 → 평면(교안 16–17쪽).<br><b>ㄴ (T)</b> 교안 19쪽.<br><b>ㄷ (F)</b> 분산이 <b>커집니다</b>(때로는 매우 크게).<br><b>ㄹ (T)</b> Non-linear effects of predictors(교안 20쪽).<br><b>ㅁ (F)</b> 개별 계수는 <b>t-test</b>입니다. 신뢰구간은 예측값이 얼마나 정확한지 볼 때 씁니다(교안 21쪽).`,
+   src:[["06-1", "s8", "다중 선형 회귀"], ["06-1", "s10", "회귀계수 해석"], ["06-1", "s11", "다항 회귀"], ["06-1", "s12", "회귀의 중요한 질문 4가지"]] }
+];
+</script>
+</body>
+</html>

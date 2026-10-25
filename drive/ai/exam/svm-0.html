@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>인공지능 C. 서포트 벡터 머신 (SVM) — 기초 TF</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>:root{ --subject:#5B3CF5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../exam-engine/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다. 이 파일은 drive/exam-engine/exam.css · exam.js 와 함께 있어야 열립니다.</div>
+<script>
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'인공지능',
+  title:'C. 서포트 벡터 머신 (SVM) — 기초 TF',
+  written:'2026년 10월 25일 작성',
+  slug:'ai-svm-0',
+  lectureBase:'../lecture',
+  level:'기초',
+  mcMax:1,
+  scope:`6주차 2차시 — Support Vector Machine(서포트 벡터 머신) 교안 1–30쪽 (21쪽~ 심화는 최소, 31–33쪽 제외) · 핵심 사실 확인 TF`,
+  oxLabels:["T", "F"]
+};
+const EXAM = [
+{ type:'ox',
+   lv:'기초',
+   unit:"SVM · 초평면",
+   pts:12,
+   q:`<p>SVM(Support Vector Machine)과 hyperplane(초평면)에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`SVM은 정답 라벨이 없는 데이터를 비슷한 것끼리 묶는 unsupervised learning(비지도 학습) 모델이다.`,false],[`SVM은 support vector(서포트 벡터)를 이용해 decision boundary(결정 경계)를 만들고, kernel trick(커널 트릭)으로 비선형 경계까지 확장된다.`,true],[`p차원 공간의 초평면은 (p − 1)차원의 평평한 부분공간이다.`,true],[`3차원 공간에서 초평면은 직선이다.`,false],[`선형 분리 가능한(linearly separable) 데이터에서 두 클래스를 나누는 분리 초평면은 하나뿐이다.`,false],[`Hard Margin SVM과 Soft Margin SVM은 선형 SVM이고, Kernel SVM은 비선형 SVM이다.`,true]],
+   exp:`<b>ㄱ (F)</b> SVM은 <b>supervised learning(지도 학습)</b> 모델로, 클래스 사이의 마진을 최대로 하는 결정 경계를 만듭니다(교안 2쪽 정의).<br><b>ㄴ (T)</b> 교안 2쪽 정의 "using support vectors, and extends to nonlinear boundaries through the kernel trick".<br><b>ㄷ (T)</b> 교안 3쪽 정의입니다. 공간을 두 반쪽 공간(half-spaces)으로 나눕니다.<br><b>ㄹ (F)</b> 3차원에서 초평면은 2차원 <b>평면(plane)</b>입니다. 직선은 2차원 공간의 초평면입니다(교안 3쪽).<br><b>ㅁ (F)</b> 분리 초평면은 <b>무한히 많습니다</b>(an infinite number, 교안 6쪽). 그래서 그중 무엇을 고를지가 문제가 되고, 답이 최대 마진 초평면입니다.<br><b>ㅂ (T)</b> 교안 2쪽 분류: Linear(Hard Margin, Soft Margin) · Nonlinear(Kernel SVM).`,
+   src:[["06-2", "s1", "서포트 벡터 머신"], ["06-2", "s2", "초평면"], ["06-2", "s4", "분리 초평면으로 분류"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"마진 · 서포트 벡터",
+   pts:14,
+   q:`<p>Margin(마진)과 Support vector(서포트 벡터)에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`마진은 학습 데이터 중 초평면에 가장 가까운 점까지의 거리이다.`,true],[`마진은 모든 학습 데이터와 초평면 사이 거리의 평균이다.`,false],[`maximal margin hyperplane(최대 마진 초평면)은 분리 초평면 중 학습 데이터에 가장 가깝게 지나는 것이다.`,false],[`서포트 벡터는 초평면까지의 거리가 마진과 같은 학습 데이터이다.`,true],[`서포트 벡터는 학습을 시작하기 전에 사람이 직접 골라 준다.`,false],[`서포트 벡터가 아닌 점을 조금 옮겨도 최대 마진 초평면은 바뀌지 않는다.`,true],[`하드 마진 제약 y<sup>(i)</sup>·f(x<sup>(i)</sup>) ≥ M은 모든 점이 자기 클래스 편에 있으면서 초평면에서 M 이상 떨어져 있어야 한다는 뜻이다.`,true]],
+   exp:`<b>ㄱ (T)</b> 교안 7쪽 "smallest distance between any training observation and the hyperplane".<br><b>ㄴ (F)</b> 평균이 아니라 <b>가장 작은 거리</b>(가장 가까운 점까지의 거리)입니다.<br><b>ㄷ (F)</b> 반대입니다. 학습 데이터에서 <b>가장 멀리 떨어진(farthest)</b> 분리 초평면입니다(교안 7쪽).<br><b>ㄹ (T)</b> 교안 7쪽 정의 그대로입니다.<br><b>ㅁ (F)</b> 서포트 벡터는 최적화 문제를 풀면 <b>결과로 정해집니다</b>. 제약이 등호(y·f(x) = M)로 성립하는 점입니다.<br><b>ㅂ (T)</b> 서포트 벡터가 아닌 점은 마진 바깥에 있어 경계를 정하는 데 관여하지 않습니다. 서포트 벡터만 경계를 결정합니다.<br><b>ㅅ (T)</b> 교안 8쪽. y = +1이면 f(x) ≥ M, y = −1이면 f(x) ≤ −M을 한 줄로 쓴 것입니다(수업 중 교수님 설명).`,
+   src:[["06-2", "s5", "최대 마진·서포트 벡터"], ["06-2", "s6", "하드 마진 SVM"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"단위벡터 · 스케일링",
+   pts:14,
+   q:`<p>normal vector(법선벡터), unit vector(단위벡터)와 feature scaling(특징 스케일링)에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`초평면 β<sub>0</sub> + β<sub>1</sub>X<sub>1</sub> + ⋯ + β<sub>p</sub>X<sub>p</sub> = 0에서 β = (β<sub>1</sub>, …, β<sub>p</sub>)는 초평면에 수직인 법선벡터이다.`,true],[`하드 마진 SVM의 조건 ∑β<sub>j</sub><sup>2</sup> = 1는 β를 길이가 1인 단위벡터로 고정한다.`,true],[`x<sub>1</sub> + x<sub>2</sub> − 5 = 0과 2x<sub>1</sub> + 2x<sub>2</sub> − 10 = 0은 서로 다른 초평면이다.`,false],[`SVM은 거리로 경계를 정하므로 특징마다 범위가 크게 다르면 마진이 잘못 정해질 수 있다.`,true],[`Standardization(표준화)은 특징을 평균 0, 분산 1로 만든다.`,true],[`Min–Max Normalization(최소-최대 정규화)은 값의 범위를 고정하지 않는다.`,false],[`스케일링 통계값(평균, 표준편차, 최솟값, 최댓값)은 테스트 데이터에서 따로 계산해 테스트 데이터에 쓴다.`,false]],
+   exp:`<b>ㄱ (T)</b> 법선벡터는 면에 수직(perpendicular)인 벡터입니다(교안 9쪽). β가 초평면의 법선벡터입니다.<br><b>ㄴ (T)</b> 단위벡터 = 크기(magnitude)가 1인 벡터(교안 9쪽). 이 조건이 있어야 y·f(x)가 실제 거리가 됩니다.<br><b>ㄷ (F)</b> 두 번째 식은 첫 번째 식에 2를 곱한 것이므로 <b>같은 초평면</b>입니다(교안 10쪽 Case 1, 2).<br><b>ㄹ (T)</b> 교안 11쪽: 범위가 다르면 법선벡터가 왜곡되어 마진이 잘못 정해집니다(incorrectly defined margin).<br><b>ㅁ (T)</b> 교안 12쪽 "Centers the feature at zero and scales it to unit variance".<br><b>ㅂ (F)</b> 최소-최대 정규화는 학습 데이터 값을 <b>[0, 1]</b>로 옮깁니다. 범위를 고정하지 않는 것은 <b>표준화</b>입니다(교안 12쪽).<br><b>ㅅ (F)</b> 통계값은 <b>학습 데이터에서만</b> 계산하고 검증·테스트 데이터에 그대로 다시 씁니다(교안 12쪽).`,
+   src:[["06-2", "s7", "법선벡터·단위벡터"], ["06-2", "s8", "데이터 스케일"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"하드 마진의 한계 · 소프트 마진",
+   pts:12,
+   q:`<p>maximal margin classifier(최대 마진 분류기)와 soft margin SVM(소프트 마진 SVM)에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`최대 마진 분류기는 개별 관측값 하나에 민감할 수 있다.`,true],[`최대 마진 분류기는 학습 데이터에 overfitting(과적합)할 수 있다.`,true],[`하드 마진 SVM은 선형 분리가 불가능한 데이터에도 항상 해가 있다.`,false],[`소프트 마진 SVM은 학습 데이터가 마진이나 초평면의 반대편에 있는 것을 허용한다.`,true],[`소프트 마진 SVM은 초평면이 아니라 곡선으로 분류한다.`,false],[`소프트 마진 SVM에서는 마진 위에 정확히 있는 점과, 자기 클래스 기준으로 마진의 반대편에 있는 점이 모두 서포트 벡터이다.`,true]],
+   exp:`<b>ㄱ (T)</b> 교안 13쪽 단점 ① "sensitive to individual observations". 점 하나가 추가되자 경계가 크게 기울었습니다.<br><b>ㄴ (T)</b> 교안 13쪽 단점 ② "May overfit training data".<br><b>ㄷ (F)</b> 모든 점이 마진 바깥 올바른 편에 있어야 하므로 <b>선형 분리 가능할 때만</b> 해가 있습니다.<br><b>ㄹ (T)</b> 교안 14쪽 "allowed to be on the wrong side of the margin or hyperplane".<br><b>ㅁ (F)</b> 소프트 마진 SVM도 최대 마진 분류기처럼 <b>초평면</b>으로 분류합니다(교안 14쪽). 곡선 경계는 커널을 쓰는 비선형 SVM입니다.<br><b>ㅂ (T)</b> 교안 15쪽 "Points lying directly on the margin, or on the wrong side of the margin for their class".`,
+   src:[["06-2", "s9", "최대 마진 분류기의 단점"], ["06-2", "s10", "소프트 마진"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"Slack variable(슬랙 변수)",
+   pts:10,
+   q:`<p>Slack variable(슬랙 변수) ε<sub>i</sub>에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`ε<sub>i</sub>는 점 i가 마진을 위반하는 것을 허용하는 변수이다.`,true],[`ε<sub>i</sub> = 0이면 그 점은 마진의 올바른 편에 있다.`,true],[`0 &lt; ε<sub>i</sub> ≤ 1이면 그 점은 오분류된 점이다.`,false],[`ε<sub>i</sub> &gt; 1이면 그 점은 초평면의 반대편에 있다(오분류).`,true],[`ε<sub>i</sub>는 음수가 될 수 있다.`,false]],
+   exp:`<b>ㄱ (T)</b> 교안 17쪽 "Slack variables allow for violations of the margin".<br><b>ㄴ (T)</b> 교안 17쪽 "on the correct side of the margin".<br><b>ㄷ (F)</b> 0 &lt; ε ≤ 1은 <b>마진을 위반했지만 초평면은 올바른 편</b>입니다. 오분류는 ε<sub>i</sub> &gt; 1입니다.<br><b>ㄹ (T)</b> 교안 17쪽 "misclassified (wrong side of hyperplane)".<br><b>ㅁ (F)</b> 제약에 ε<sub>i</sub> ≥ 0이 있습니다(교안 16쪽). 위반 정도이므로 0 이상입니다.`,
+   src:[["06-2", "s11", "슬랙 변수"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"★ 벌점 매개변수 C",
+   pts:20,
+   q:`<p>Penalty parameter C(벌점 매개변수 C)에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`벌점 매개변수 C는 마진의 폭과 분류 오류를 허용하는 정도 사이의 trade-off(균형)를 조절한다.`,true],[`벌점 매개변수 C는 hyperparameter(하이퍼파라미터)로, cross-validation(교차 검증)으로 정한다.`,true],[`벌점 매개변수 C는 β와 함께 학습 과정에서 자동으로 정해진다.`,false],[`벌점 매개변수 C는 음수가 될 수 없다.`,true],[`벌점 매개변수 C가 작으면 마진이 넓다.`,true],[`벌점 매개변수 C가 크면 오류를 최소화하려고 데이터를 빡빡하게 나누어 overfitting(과적합)되기 쉽다.`,true],[`벌점 매개변수 C가 작으면 오류를 어느 정도 허용해 단순한 모델이 되고 underfitting(과소적합)되기 쉽다.`,true],[`벌점 매개변수 C가 크면 bias(편향)가 높고 variance(분산)가 낮다.`,false],[`벌점 매개변수 C가 작으면 편향이 높고 분산이 낮다.`,true],[`벌점 매개변수 C가 크면 마진이 넓어진다.`,false]],
+   exp:`<b>ㄱ (T)</b> 교안 18쪽 "controls the trade-off between margin width and the tolerance of classification errors".<br><b>ㄴ (T)</b> 교안 18쪽 "C is a hyperparameter that we tune using cross-validation".<br><b>ㄷ (F)</b> C는 학습되는 값이 아니라 사람이 정하는 <b>하이퍼파라미터</b>이고, 교차 검증으로 고릅니다.<br><b>ㄹ (T)</b> 교안 18쪽 "it must be non-negative".<br><b>ㅁ (T)</b> 교안 19쪽 Small C → Large margin.<br><b>ㅂ (T)</b> 교안 19쪽 Large C "Tries to minimize errors and separates the data more tightly (Overfitting)".<br><b>ㅅ (T)</b> 교안 19쪽 Small C "Allows for some errors, leading to a simpler model (Underfitting)".<br><b>ㅇ (F)</b> 큰 C는 <b>편향 낮음, 분산 높음</b>(과적합)입니다. 편향 높음·분산 낮음은 작은 C입니다(교안 19쪽).<br><b>ㅈ (T)</b> 교안 19쪽 Small C "High bias, low variance".<br><b>ㅊ (F)</b> 큰 벌점 C → <b>좁은 마진(Small margin)</b>입니다. 오류에 대한 벌점이 커서 위반을 줄이려고 마진을 좁힙니다. (참고: 교안 16·18쪽처럼 C를 위반 총량의 상한 ∑ε<sub>i</sub> ≤ C로 정의하면 방향이 반대입니다. 문제에서 "벌점 매개변수 C"라고 하면 19쪽 기준으로 답합니다.)`,
+   src:[["06-2", "s12", "벌점 매개변수 C"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"편향 · 분산",
+   pts:10,
+   q:`<p>편향-분산 트레이드오프에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`Bias(편향)는 예측이 평균적으로 정답에서 벗어난 정도이다.`,true],[`Variance(분산)는 예측이 평균적으로 정답에서 벗어난 정도이다.`,false],[`모델이 복잡해질수록 편향은 커지고 분산은 작아진다.`,false],[`모델 복잡도에 따른 total error(전체 오차)는 U자 모양이어서 가운데에 최적 복잡도가 있다.`,true],[`편향을 줄이면 분산이 늘고 분산을 줄이면 편향이 느는 관계를 bias-variance tradeoff(편향-분산 트레이드오프)라고 한다.`,true]],
+   exp:`<b>ㄱ (T)</b> 모델이 너무 단순해 패턴을 못 잡으면 커집니다(과소적합).<br><b>ㄴ (F)</b> 그것은 <b>편향</b>입니다. 분산은 학습 데이터가 조금 바뀔 때 예측이 <b>흔들리는 정도</b>입니다.<br><b>ㄷ (F)</b> 반대입니다. 복잡해질수록 Bias<sup>2</sup>는 <b>줄고</b> Variance는 <b>늘어납니다</b>(교안 20쪽 오차 그래프).<br><b>ㄹ (T)</b> 교안 20쪽: 왼쪽은 과소적합, 오른쪽은 과적합 영역, 가운데 최솟값이 최적입니다.<br><b>ㅁ (T)</b> 교안 18·20쪽. 벌점 C를 작은 값에서 큰 값으로 바꾸면 이 트레이드오프가 나타납니다.`,
+   src:[["06-2", "s13", "편향-분산 트레이드오프"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"선형 경계의 한계",
+   pts:8,
+   q:`<p>선형으로 나눌 수 없는 데이터에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`데이터에 따라서는 C를 어떻게 정해도 선형 경계로 두 클래스를 나눌 수 없다.`,true],[`선형 분리가 안 되는 데이터도 더 높은 차원의 특징 공간으로 옮기면 선형 분리가 가능해질 수 있다.`,true],[`특징 공간을 확장해 찾은 선형 초평면은 원래 공간에서도 항상 직선 경계이다.`,false],[`비선형 SVM은 kernel function(커널 함수)을 써서 비선형 결정 경계를 만든다.`,true]],
+   exp:`<b>ㄱ (T)</b> 교안 24쪽 "a linear boundary simply won’t work, no matter what value of C".<br><b>ㄴ (T)</b> 교안 25쪽 Expanding Feature Space.<br><b>ㄷ (F)</b> 확장된 공간의 선형 초평면은 원래 공간에서 <b>비선형(곡선) 경계</b>가 됩니다(교안 27쪽). 예: 원 모양 경계.<br><b>ㄹ (T)</b> 교안 28쪽 정의입니다(커널은 심화라 이 정도만 알면 됩니다).`,
+   src:[["06-2", "s15", "특징 공간 확장"], ["06-2", "s16", "비선형 SVM과 커널"]] }
+];
+</script>
+</body>
+</html>

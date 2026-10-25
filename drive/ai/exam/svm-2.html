@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>인공지능 C. 서포트 벡터 머신 (SVM) — 기본 문제지</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>:root{ --subject:#5B3CF5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../exam-engine/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다. 이 파일은 drive/exam-engine/exam.css · exam.js 와 함께 있어야 열립니다.</div>
+<script>
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'인공지능',
+  title:'C. 서포트 벡터 머신 (SVM) — 기본 문제지',
+  written:'2026년 10월 25일 작성',
+  slug:'ai-svm-2',
+  lectureBase:'../lecture',
+  level:'하',
+  mcMax:1,
+  scope:`6주차 2차시 — Support Vector Machine(서포트 벡터 머신) 교안 1–30쪽 (21쪽~ 심화는 최소, 31–33쪽 제외) · 객관식 · 단답 · 표 · TF (수업 예시 수준)`,
+  oxLabels:["T", "F"]
+};
+const EXAM = [
+{ type:'mc',
+   lv:'하',
+   unit:"SVM",
+   pts:6,
+   q:`<p>SVM(Support Vector Machine)에 대한 설명으로 옳은 것은?</p>`,
+   choices:[`y = 1일 확률을 구한 뒤 0.5를 기준으로 분류하는 모델이다`,`클래스 사이의 margin(마진)을 최대로 하는 결정 경계를 찾는 지도 학습 모델이다`,`정답 라벨 없이 비슷한 데이터끼리 묶는 모델이다`,`모든 학습 데이터와 경계 사이 거리의 평균을 최대로 하는 모델이다`],
+   answer:[2],
+   exp:`교안 2쪽 정의: "constructs a decision boundary by maximizing the margin between classes". ②는 로지스틱 회귀, ③은 군집화입니다. ④ 마진은 평균 거리가 아니라 가장 가까운 점까지의 거리입니다.`,
+   src:[["06-2", "s1", "서포트 벡터 머신"]] },
+
+{ type:'short',
+   lv:'하',
+   unit:"초평면",
+   pts:6,
+   q:`<p>p차원 공간에서 hyperplane(초평면)은 몇 차원의 평평한 부분공간인가?</p>`,
+   show:`(p − 1)차원`,
+   alt:["p−1", "p-1", "p − 1"],
+   exp:`교안 3쪽: an (p − 1)-dimensional subspace. 2차원에서는 직선(1차원), 3차원에서는 평면(2차원)입니다.`,
+   src:[["06-2", "s2", "초평면"]] },
+
+{ type:'table',
+   lv:'하',
+   unit:"초평면",
+   pts:8,
+   q:`<p>초평면 1 + 2X<sub>1</sub> + 3X<sub>2</sub> = 0과 세 점 A(0, 0), B(−1, 0), C(1, −1)에 대하여 표를 채우시오. 위치는 "양수 영역", "음수 영역", "초평면 위" 중 하나로 쓴다.</p>`,
+   head:[`점`,`식의 값`,`위치`],
+   rows:[
+     [`A`,{a:`1`,alt:[]},{a:`양수 영역`,alt:[]}],
+     [`B`,{a:`−1`,alt:[]},{a:`음수 영역`,alt:[]}],
+     [`C`,{a:`0`,alt:[]},{a:`초평면 위`,alt:[]}]],
+   exp:`(0, 0): 1 + 0 + 0 = 1 &gt; 0. (−1, 0): 1 − 2 + 0 = −1 &lt; 0. (1, −1): 1 + 2 − 3 = 0 → 초평면 위(교안 5쪽). 식 값의 부호가 곧 분류 규칙입니다.`,
+   src:[["06-2", "s3", "분리 초평면 예시"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"서포트 벡터",
+   pts:6,
+   q:`<p>Support vector(서포트 벡터)에 대한 설명으로 옳은 것은?</p>`,
+   choices:[`학습 데이터 전체를 말한다`,`초평면에서 가장 멀리 떨어진 점들이다`,`초평면까지의 거리가 마진과 같은 점들이며, 이 점들만 경계를 결정한다`,`학습 전에 사람이 직접 골라 주는 점이다`],
+   answer:[3],
+   exp:`교안 7쪽 정의입니다. 서포트 벡터는 최적화를 풀면 결과로 정해지고(④ 아님), 서포트 벡터가 아닌 점은 움직여도 경계가 바뀌지 않습니다.`,
+   src:[["06-2", "s5", "최대 마진·서포트 벡터"], ["06-2", "s6", "하드 마진 SVM"]] },
+
+{ type:'short',
+   lv:'하',
+   unit:"하드 마진",
+   pts:6,
+   q:`<p>하드 마진 SVM의 제약 y·f(x) ≥ M (f(x) = β<sub>0</sub> + β<sub>1</sub>x<sub>1</sub> + ⋯ + β<sub>p</sub>x<sub>p</sub>)에서, 레이블이 y = −1인 점의 f(x)가 만족해야 하는 조건을 부등식으로 쓰시오.</p>`,
+   show:`f(x) ≤ −M`,
+   alt:["f(x)≤-M", "f ≤ −M", "−M 이하"],
+   exp:`y = −1을 넣으면 −f(x) ≥ M, 양변에 −1을 곱하면 f(x) ≤ −M입니다. 교수님 설명: "−1일 때는 −M보다 작아야 한다." y = +1이면 f(x) ≥ M입니다.`,
+   src:[["06-2", "s6", "하드 마진 SVM"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"단위벡터",
+   pts:6,
+   q:`<p>하드 마진 SVM에 조건 ∑β<sub>j</sub><sup>2</sup> = 1(β를 unit vector(단위벡터)로 고정)가 필요한 이유로 옳은 것은?</p>`,
+   choices:[`β에 상수를 곱하면 초평면은 같은데 y(β<sup>⊤</sup>x + b) 값이 달라져 마진 값이 일관되지 않기 때문`,`서포트 벡터의 개수를 1개로 만들기 위해서`,`특징 스케일링을 대신하기 위해서`,`레이블을 −1과 +1로 바꾸기 위해서`],
+   answer:[1],
+   exp:`교안 10쪽: x<sub>1</sub> + x<sub>2</sub> − 5 = 0과 2x<sub>1</sub> + 2x<sub>2</sub> − 10 = 0은 같은 초평면인데 점 (2, 2), y = +1의 값이 −1, −2로 다릅니다. β의 길이를 1로 고정해야 y·f(x)가 실제 거리가 됩니다.`,
+   src:[["06-2", "s7", "법선벡터·단위벡터"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"스케일링",
+   pts:6,
+   q:`<p>SVM의 특징 스케일링에 대한 설명으로 옳지 <b>않은</b> 것은?</p>`,
+   choices:[`SVM은 거리로 경계를 정하므로 특징 범위가 크게 다르면 마진이 잘못 정해질 수 있다`,`Standardization(표준화)은 특징을 평균 0, 분산 1로 만든다`,`Min–Max Normalization(최소-최대 정규화)은 학습 데이터 값을 [0, 1]로 옮긴다`,`스케일링 통계값은 테스트 데이터에서 다시 계산해 테스트 데이터에 쓴다`],
+   answer:[4],
+   exp:`통계값은 <b>학습 데이터에서만</b> 계산하고 검증·테스트 데이터에 그대로 다시 씁니다(교안 12쪽). 나머지는 모두 교안 11–12쪽 내용입니다.`,
+   src:[["06-2", "s8", "데이터 스케일"]] },
+
+{ type:'table',
+   lv:'하',
+   unit:"슬랙 변수",
+   pts:10,
+   q:`<p>소프트 마진 SVM에서 점의 위치에 따른 slack variable(슬랙 변수) ε<sub>i</sub>의 범위와 서포트 벡터 여부를 채우시오. (ε<sub>i</sub>의 범위는 "= 0", "0 &lt; ε<sub>i</sub> ≤ 1", "&gt; 1" 중 하나, 서포트 벡터 여부는 예 또는 아니오)</p>`,
+   head:[`점의 위치`,`ε의 범위`,`서포트 벡터인가`],
+   rows:[
+     [`자기 클래스 편 마진 바깥`,{a:`ε<sub>i</sub> = 0`,alt:["0", "= 0"]},{a:`아니오`,alt:[]}],
+     [`마진 안 (초평면은 올바른 편)`,{a:`0 &lt; ε<sub>i</sub> ≤ 1`,alt:["0~1"]},{a:`예`,alt:[]}],
+     [`초평면 반대편 (오분류)`,{a:`ε<sub>i</sub> &gt; 1`,alt:["&gt; 1", "1 초과"]},{a:`예`,alt:[]}]],
+   exp:`교안 17쪽: ε = 0 마진의 올바른 편, 0 &lt; ε ≤ 1 마진 위반, ε &gt; 1 오분류. 교안 15쪽: 마진 위의 점과 마진 반대편(위반·오분류) 점이 서포트 벡터이고, 마진 바깥 점은 서포트 벡터가 아닙니다.`,
+   src:[["06-2", "s10", "소프트 마진"], ["06-2", "s11", "슬랙 변수"]] },
+
+{ type:'table',
+   lv:'하',
+   unit:"벌점 C",
+   pts:16,
+   q:`<p>Penalty parameter C(벌점 매개변수 C)의 크기에 따른 변화를 표에 채우시오. (넓음·좁음, 과소적합·과적합, 높음·낮음 중에서)</p>`,
+   head:[`항목`,`작은 벌점 C`,`큰 벌점 C`],
+   rows:[
+     [`마진 폭`,{a:`넓음`,alt:[]},{a:`좁음`,alt:[]}],
+     [`경향`,{a:`과소적합`,alt:[]},{a:`과적합`,alt:[]}],
+     [`bias(편향)`,{a:`높음`,alt:[]},{a:`낮음`,alt:[]}],
+     [`variance(분산)`,{a:`낮음`,alt:[]},{a:`높음`,alt:[]}]],
+   exp:`교안 19쪽 표 그대로입니다. 작은 C: Large margin, 오류를 어느 정도 허용해 단순한 모델(Underfitting), High bias·low variance. 큰 C: Small margin, 오류를 최소화하려고 빡빡하게 분리(Overfitting), Low bias·high variance. (참고: 교안 16·18쪽처럼 C를 위반 총량의 상한 ∑ε<sub>i</sub> ≤ C로 정의하면 방향이 반대입니다. 문제에서 "벌점 매개변수 C"라고 하면 19쪽 기준으로 답합니다.)`,
+   src:[["06-2", "s12", "벌점 매개변수 C"], ["06-2", "s13", "편향-분산 트레이드오프"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"벌점 C",
+   pts:6,
+   q:`<p>벌점 매개변수 C에 대한 설명으로 옳은 것은?</p>`,
+   choices:[`β처럼 학습 과정에서 자동으로 정해진다`,`hyperparameter(하이퍼파라미터)이며 cross-validation(교차 검증)으로 정한다`,`음수 값도 가질 수 있다`,`값이 커질수록 마진이 넓어진다`],
+   answer:[2],
+   exp:`교안 18쪽: "C is a hyperparameter that we tune using cross-validation", "it must be non-negative". 벌점 C가 커지면 마진은 <b>좁아집니다</b>(교안 19쪽).`,
+   src:[["06-2", "s12", "벌점 매개변수 C"]] },
+
+{ type:'short',
+   lv:'하',
+   unit:"편향-분산",
+   pts:6,
+   q:`<p>편향을 줄이면 분산이 늘고, 분산을 줄이면 편향이 느는 관계를 무엇이라 하는가? (영어 또는 한글)</p>`,
+   show:`bias-variance tradeoff(편향-분산 트레이드오프)`,
+   alt:["편향-분산 트레이드오프", "bias-variance tradeoff", "bias variance trade-off"],
+   exp:`교안 18·20쪽. 벌점 C를 작은 값에서 큰 값으로 바꾸면 고편향·저분산(과소적합)에서 저편향·고분산(과적합)으로 옮겨 갑니다.`,
+   src:[["06-2", "s13", "편향-분산 트레이드오프"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"하드 마진",
+   pts:6,
+   q:`<p>최대 마진 분류기(Hard Margin SVM)의 단점을 바르게 짝지은 것은?</p>`,
+   choices:[`커널을 쓸 수 없다 · 서포트 벡터가 너무 많다`,`학습이 너무 느리다 · 마진이 항상 0이다`,`개별 관측값에 민감할 수 있다 · 학습 데이터에 과적합할 수 있다`,`확률을 출력하지 못한다 · 레이블이 0과 1이어야 한다`],
+   answer:[3],
+   exp:`교안 13쪽: "Can be sensitive to individual observations", "May overfit training data". 또 선형 분리가 안 되면 해가 없으므로 소프트 마진이 필요합니다.`,
+   src:[["06-2", "s9", "최대 마진 분류기의 단점"], ["06-2", "s6", "하드 마진 SVM"]] },
+
+{ type:'ox',
+   lv:'하',
+   unit:"소프트 마진 · C",
+   pts:12,
+   q:`<p>소프트 마진 SVM과 벌점 매개변수 C에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`소프트 마진 SVM은 선형 분리가 안 되는 데이터에도 쓸 수 있다.`,true],[`소프트 마진 SVM에서 마진을 위반한 점은 서포트 벡터가 아니다.`,false],[`벌점 매개변수 C를 크게 하면 마진이 좁아져 서포트 벡터 수가 대체로 늘어난다.`,false],[`벌점 매개변수 C를 작게 하면 모델이 단순해진다.`,true],[`비선형 SVM은 kernel function(커널 함수)으로 곡선 경계를 만든다.`,true]],
+   exp:`<b>ㄱ (T)</b> 위반을 허용하므로 선형 분리가 안 돼도 해가 있습니다.<br><b>ㄴ (F)</b> 마진 위반·오분류 점도 서포트 벡터입니다(교안 15쪽).<br><b>ㄷ (F)</b> 마진이 좁아지면 마진 안에 드는 점이 줄어 서포트 벡터는 대체로 <b>줄어듭니다</b>.<br><b>ㄹ (T)</b> 작은 C → 오류 허용 → 단순한 모델(과소적합 쪽, 교안 19쪽).<br><b>ㅁ (T)</b> 교안 28쪽.`,
+   src:[["06-2", "s10", "소프트 마진"], ["06-2", "s12", "벌점 매개변수 C"], ["06-2", "s16", "비선형 SVM과 커널"]] }
+];
+</script>
+</body>
+</html>

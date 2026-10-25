@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>인공지능 E. 결정 트리 — 기초 TF</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>:root{ --subject:#5B3CF5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../exam-engine/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다. 이 파일은 drive/exam-engine/exam.css · exam.js 와 함께 있어야 열립니다.</div>
+<script>
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'인공지능',
+  title:'E. 결정 트리 — 기초 TF',
+  written:'2026년 10월 25일 작성',
+  slug:'ai-tree-0',
+  lectureBase:'../lecture',
+  level:'기초',
+  mcMax:1,
+  scope:`7주차 2차시 — Decision Tree(결정 트리) 교안 1–35쪽 · 핵심 사실을 확인하는 TF`,
+  oxLabels:["T", "F"]
+};
+const EXAM = [
+{ type:'ox',
+   lv:'기초',
+   unit:"트리 기반 방법",
+   pts:10,
+   q:`<p>Tree-based methods(트리 기반 방법)에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`트리 기반 방법은 predictor space(예측 변수 공간)를 여러 개의 단순한 영역으로 나누는 방법이다.`,true],[`Decision tree(결정 트리)는 분류에만 쓸 수 있고 회귀에는 쓸 수 없다.`,false],[`트리 기반 방법의 장점은 단순하고 해석하기 쉽다는 것이다.`,true],[`단일 결정 트리는 예측 정확도에서 최고 수준의 지도 학습 방법들보다 앞선다.`,false],[`트리를 여러 개 키워 합치는 방법(bagging, random forests, boosting)은 정확도를 크게 높이지만 해석력은 일부 잃는다.`,true]],
+   exp:`<b>ㄱ (T)</b> 교안 1쪽 정의(stratifying or segmenting the predictor space into a number of simple regions)입니다.<br><b>ㄴ (F)</b> 결정 트리는 분류와 회귀를 <b>모두</b> 할 수 있고, 출력이 여러 개인 multi-output 과제도 할 수 있습니다(교안 1쪽).<br><b>ㄷ (T)</b> 교안 2쪽 "simple and useful for interpretation". 규칙을 사람이 그대로 읽을 수 있습니다.<br><b>ㄹ (F)</b> 반대입니다. 예측 정확도는 최고 수준의 방법들과 <b>경쟁이 되지 않는다(not competitive)</b>는 것이 단점입니다(교안 2쪽).<br><b>ㅁ (T)</b> 교안 2쪽 "dramatic improvements in prediction accuracy, at the expense of some loss of interpretation".`,
+   src:[["07-2", "s1", "트리 기반 방법"], ["07-2", "s2", "장단점"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"용어 · 노드 · 경계",
+   pts:13,
+   q:`<p>결정 트리의 용어와 결정 경계에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`Root node(루트 노드)는 트리의 맨 위 노드이며 depth(깊이)가 0이다.`,true],[`Leaf node(리프 노드)는 자식 노드를 두 개 가진 노드이다.`,false],[`노드에 표시된 samples는 그 노드에 도달한 학습 샘플의 수이다.`,true],[`노드에 표시된 class는 그 노드에서 샘플 수가 가장 적은 클래스이다.`,false],[`결정 트리는 특징 scaling(스케일링)을 반드시 해야 성능이 나온다.`,false],[`결정 트리에서 리프 하나는 특징 공간의 직사각형 영역 하나에 해당하고, 경계는 축에 평행한 직선들로 이루어진다.`,true]],
+   exp:`<b>ㄱ (T)</b> 교안 3쪽 정의입니다.<br><b>ㄴ (F)</b> 리프 노드는 자식이 <b>없는</b> 노드(terminal node)이고, 여기서 최종 예측을 냅니다.<br><b>ㄷ (T)</b> value는 클래스별 샘플 수, samples는 그 합입니다.<br><b>ㄹ (F)</b> class는 그 노드에서 샘플 수가 <b>가장 많은</b> 클래스이며, 그 노드에서 멈춘다면 낼 예측입니다.<br><b>ㅁ (F)</b> 결정 트리는 특징 스케일링이나 중심화(centering)가 <b>전혀 필요 없습니다</b>(교안 3쪽). 특징 하나를 기준값과 비교만 하기 때문입니다.<br><b>ㅂ (T)</b> 한 번에 특징 하나만 보고 나누므로 경계가 축에 평행합니다(교안 4쪽).`,
+   src:[["07-2", "s3", "용어 — 트리 읽기"], ["07-2", "s4", "결정 경계"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"불순도 · 지니",
+   pts:13,
+   q:`<p>impurity(불순도)와 Gini(지니) 지수 G = 1 − ∑<sub>k</sub> p<sub>k</sub><sup>2</sup> 에 대한 설명이다. (p<sub>k</sub>: 노드에서 클래스 k의 비율) 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`impurity(불순도)는 한 노드 안에 여러 클래스가 섞여 있는 정도이다.`,true],[`지니 지수가 0이면 노드 안에 클래스들이 고르게 섞여 있다는 뜻이다.`,false],[`노드에 한 클래스만 있으면 지니 지수는 1 − 1<sup>2</sup> = 0이다.`,true],[`클래스가 2개일 때 지니 지수의 최댓값은 0.5이다.`,true],[`클래스가 3개일 때 지니 지수의 최댓값은 1이다.`,false],[`두 클래스가 2개씩 있는 노드의 지니 지수는 1 − (<span class="frac"><span class="num">1</span><span class="den">2</span></span>)<sup>2</sup> − (<span class="frac"><span class="num">1</span><span class="den">2</span></span>)<sup>2</sup> = <span class="frac"><span class="num">1</span><span class="den">2</span></span>이다.`,true]],
+   exp:`<b>ㄱ (T)</b> 좋은 분할은 나눈 뒤 각 자식의 불순도가 낮아지는(깨끗해지는) 분할입니다(교안 5쪽).<br><b>ㄴ (F)</b> 지니 0은 한 클래스만 있는 <b>100% 순수(pure)</b> 노드입니다. 고르게 섞일수록 커집니다.<br><b>ㄷ (T)</b> 비율이 1인 클래스 하나뿐이므로 1 − 1 = 0입니다.<br><b>ㄹ (T)</b> 범위는 0 ~ 1 − <span class="frac"><span class="num">1</span><span class="den">클래스 수</span></span>이므로 2클래스는 1 − <span class="frac"><span class="num">1</span><span class="den">2</span></span> = 0.5입니다(교안 6쪽).<br><b>ㅁ (F)</b> 최댓값은 1 − <span class="frac"><span class="num">1</span><span class="den">3</span></span> = <span class="frac"><span class="num">2</span><span class="den">3</span></span> ≈ 0.667입니다. 세 클래스가 <span class="frac"><span class="num">1</span><span class="den">3</span></span>씩 있을 때입니다.<br><b>ㅂ (T)</b> 반반이므로 2클래스 최댓값 0.5입니다.`,
+   src:[["07-2", "s5", "좋은 분할과 지니"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"엔트로피 · 지니 비교",
+   pts:10,
+   q:`<p>Entropy(엔트로피) H = −∑<sub>k</sub> p<sub>k</sub> log p<sub>k</sub> 와 지니 지수에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`Entropy(엔트로피)는 노드의 uncertainty(불확실성)를 재는 척도이다.`,true],[`엔트로피는 한 클래스가 대부분을 차지할 때 최대가 된다.`,false],[`이진 분류에서 밑이 2인 log를 쓰면, 두 클래스가 반반인 노드의 엔트로피는 1이다.`,true],[`엔트로피는 지니 지수보다 계산이 약간 더 빨라 기본값(default)으로 많이 쓰인다.`,false],[`엔트로피는 지니 지수보다 minority class(소수 클래스)에 더 민감하게 반응할 수 있다.`,true]],
+   exp:`<b>ㄱ (T)</b> 교안 7쪽 "Entropy measures the uncertainty in a node."<br><b>ㄴ (F)</b> 모든 클래스가 <b>같은 비율일 때(equally likely)</b> 최대이고, 한 클래스만 있으면 0입니다.<br><b>ㄷ (T)</b> −(0.5 log<sub>2</sub> 0.5 + 0.5 log<sub>2</sub> 0.5) = 1. 이진 분류에서 엔트로피의 최댓값입니다.<br><b>ㄹ (F)</b> 계산이 약간 더 빠르고 무난한 기본값(strong default choice)인 것은 <b>지니</b>입니다(교안 8쪽).<br><b>ㅁ (T)</b> 교안 8쪽 "Entropy can react more to minority class."`,
+   src:[["07-2", "s6", "엔트로피"], ["07-2", "s7", "지니 vs 엔트로피"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"규제 · 사전 가지치기",
+   pts:12,
+   q:`<p>결정 트리의 regularization(규제)에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`결정 트리는 학습 데이터에 대한 가정을 거의 하지 않는다.`,true],[`결정 트리는 선형 모델처럼 데이터가 선형이라고 가정한다.`,false],[`제약 없이 두면 결정 트리는 학습 데이터에 매우 가깝게 맞춰져 overfitting(과대적합)할 가능성이 크다.`,true],[`max_depth(최대 깊이)를 줄이면 규제가 강해져 과대적합 위험이 줄어든다.`,true],[`min_samples_leaf(리프의 최소 샘플 수)를 줄이면 규제가 강해진다.`,false],[`Pre-pruning(사전 가지치기)은 학습이 끝난 뒤 다 자란 트리의 가지를 잘라 내는 방식이다.`,false]],
+   exp:`<b>ㄱ (T)</b> 교안 9쪽 "very few assumptions about the training data".<br><b>ㄴ (F)</b> 데이터가 선형이라고 가정하는 것은 <b>선형 모델</b>입니다. 결정 트리는 가정이 거의 없습니다.<br><b>ㄷ (T)</b> 교안 9쪽 "If left unconstrained … most likely overfitting it."<br><b>ㄹ (T)</b> 교안 9쪽 "Reducing max depth will regularize the model".<br><b>ㅁ (F)</b> min_ 으로 시작하는 값은 <b>늘려야</b> 규제가 강해집니다. 줄이면 작은 리프가 허용되어 트리가 더 복잡해집니다.<br><b>ㅂ (F)</b> 사전 가지치기는 <b>학습 중에</b> 트리의 자유를 제한해(max_depth, min_samples_split, min_samples_leaf) 다 자라기 전에 막는 것입니다.`,
+   src:[["07-2", "s8", "규제 하이퍼파라미터"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"CART",
+   pts:12,
+   q:`<p>CART(Classification and Regression Trees)에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`CART는 분류에서 Gini impurity(지니 불순도)를 쓰고, 불순도 감소량이 가장 큰 binary split(이진 분할)을 고른다.`,true],[`CART는 불순도 감소량 ΔG가 가장 작은 분할을 고른다.`,false],[`ΔG는 부모 노드의 지니에서 나눈 뒤 자식 노드 지니들의 가중평균을 뺀 값이다.`,true],[`CART는 한 노드를 특징의 범주 수만큼 여러 갈래로 나눌 수 있다.`,false],[`자식 노드의 지니가 0이 되면 그 노드는 더 나누지 않고 리프가 된다.`,true],[`구매 4명, 비구매 3명인 노드의 지니 지수는 1 − (<span class="frac"><span class="num">4</span><span class="den">7</span></span>)<sup>2</sup> − (<span class="frac"><span class="num">3</span><span class="den">7</span></span>)<sup>2</sup> = <span class="frac"><span class="num">24</span><span class="den">49</span></span>이다.`,true]],
+   exp:`<b>ㄱ (T)</b> 교안 11쪽 정의입니다.<br><b>ㄴ (F)</b> ΔG가 <b>가장 큰</b> 분할을 고릅니다. ΔG가 크다 = 나눈 뒤 불순도가 많이 줄었다.<br><b>ㄷ (T)</b> ΔG(D, s) = G(D) − (<span class="frac"><span class="num">|D<sub>L</sub>|</span><span class="den">|D|</span></span>G(D<sub>L</sub>) + <span class="frac"><span class="num">|D<sub>R</sub>|</span><span class="den">|D|</span></span>G(D<sub>R</sub>)) (교안 12쪽).<br><b>ㄹ (F)</b> CART는 항상 <b>두 갈래(이진 분할)</b>로 나눕니다. 범주 수만큼 나누는 것은 ID3입니다.<br><b>ㅁ (T)</b> 한 클래스만 남은 순수 노드라 더 나눌 필요가 없습니다(교안 15쪽 최종 트리의 리프는 모두 gini 0).<br><b>ㅂ (T)</b> 1 − <span class="frac"><span class="num">16</span><span class="den">49</span></span> − <span class="frac"><span class="num">9</span><span class="den">49</span></span> = <span class="frac"><span class="num">24</span><span class="den">49</span></span> ≈ 0.490 (교안 12쪽).`,
+   src:[["07-2", "s9", "지니 예제 — CART"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"ID3 · 정보 이득",
+   pts:10,
+   q:`<p>ID3(Iterative Dichotomiser 3)와 information gain(정보 이득)에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`ID3는 entropy(엔트로피)로 information gain(정보 이득)을 계산해 정보 이득이 가장 큰 특징을 분할 속성으로 고른다.`,true],[`ID3도 CART처럼 항상 두 갈래로만 나눈다.`,false],[`정보 이득은 나누기 전 엔트로피에서 나눈 뒤 엔트로피의 가중평균을 뺀 값이다.`,true],[`나눈 뒤 어떤 그룹의 샘플이 모두 같은 클래스이면, 그 그룹은 다시 나눠야 한다.`,false],[`구매 2·비구매 3인 그룹과 구매 3·비구매 2인 그룹은 엔트로피가 같다.`,true]],
+   exp:`<b>ㄱ (T)</b> 교안 16쪽 정의입니다.<br><b>ㄴ (F)</b> ID3는 특징의 <b>범주 수만큼</b> 나눕니다(예: 범주 3개인 Age → 세 갈래).<br><b>ㄷ (T)</b> Gain(D, A) = H(D) − ∑<sub>v</sub> <span class="frac"><span class="num">|D<sub>v</sub>|</span><span class="den">|D|</span></span>H(D<sub>v</sub>) (교안 17쪽).<br><b>ㄹ (F)</b> 모두 같은 클래스면 엔트로피 0(순수)이라 <b>더 나눌 필요가 없고</b> 바로 리프가 됩니다(교안 22쪽 young adult 그룹).<br><b>ㅁ (T)</b> 엔트로피는 어느 클래스가 많은지가 아니라 비율이 얼마나 고른지만 봅니다. 둘 다 약 0.971입니다(교안 18쪽).`,
+   src:[["07-2", "s10", "ID3와 정보 이득"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"회귀 트리",
+   pts:12,
+   q:`<p>Decision tree regression(회귀 트리)에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`회귀 트리는 리프가 클래스 대신 숫자 값을 예측한다.`,true],[`회귀 트리 리프의 예측값은 그 리프에 속한 학습 샘플 y값 중 가장 자주 나온 값이다.`,false],[`회귀용 CART는 불순도 대신 MSE(평균제곱오차)를 최소로 하도록 나눈다.`,true],[`회귀용 CART의 비용함수 J는 두 자식 노드 MSE의 샘플 수 가중평균이다.`,true],[`회귀 트리의 예측을 입력에 대해 그리면 구간마다 값이 일정한 계단 모양이 된다.`,true],[`회귀 트리는 규제하지 않아도 과대적합할 위험이 없다.`,false]],
+   exp:`<b>ㄱ (T)</b> 구조는 분류 트리와 같고 리프가 숫자를 냅니다(교안 29쪽).<br><b>ㄴ (F)</b> 리프 예측값은 그 리프 학습 샘플 y값의 <b>평균</b>입니다(교안 30쪽 ŷ<sub>node</sub>).<br><b>ㄷ (T)</b> 교안 30쪽 "minimizes the MSE".<br><b>ㄹ (T)</b> J(k, t<sub>k</sub>) = <span class="frac"><span class="num">m<sub>left</sub></span><span class="den">m</span></span>MSE<sub>left</sub> + <span class="frac"><span class="num">m<sub>right</sub></span><span class="den">m</span></span>MSE<sub>right</sub>.<br><b>ㅁ (T)</b> 리프 하나가 구간 하나를 맡고 그 구간에서는 항상 같은 값(평균)을 내기 때문입니다(교안 31쪽).<br><b>ㅂ (F)</b> 회귀 트리도 규제하지 않으면 리프가 샘플마다 생겨 <b>과대적합</b>합니다. min_samples_leaf 등으로 규제합니다(교안 32쪽).`,
+   src:[["07-2", "s11", "회귀 트리"], ["07-2", "s12", "회귀용 CART"], ["07-2", "s13", "회귀 트리의 예측"], ["07-2", "s14", "회귀 트리의 규제"], ["07-2", "s15", "야구 선수 연봉 예제"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"선형 vs 트리 · 한계",
+   pts:8,
+   q:`<p>선형 모델과 트리 모델, 결정 트리의 한계에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`실제 클래스 경계가 대각선 직선이면 선형 모델이 잘 맞고, 트리는 축에 평행한 선분의 계단으로 근사한다.`,true],[`트리 모델은 어떤 데이터에서든 선형 모델보다 정확하다.`,false],[`결정 트리는 orthogonal decision boundaries(직교 결정 경계)를 만들기 때문에 학습 데이터의 회전에 민감하다.`,true],[`결정 트리는 학습 데이터의 작은 변화에 둔감하다.`,false]],
+   exp:`<b>ㄱ (T)</b> 교안 34쪽 위 줄입니다.<br><b>ㄴ (F)</b> 어느 쪽이 낫다고 정해져 있지 않고 <b>데이터의 실제 구조</b>에 달려 있습니다(교안 34쪽).<br><b>ㄷ (T)</b> 모든 분할이 축에 수직이라 데이터를 회전시키면 결과가 크게 달라집니다(교안 35쪽).<br><b>ㄹ (F)</b> 결정 트리는 학습 데이터의 작은 변화에 <b>매우 민감합니다</b>(very sensitive to small variations, 교안 35쪽).`,
+   src:[["07-2", "s16", "선형 vs 트리"], ["07-2", "s17", "결정 트리의 한계"]] }
+];
+</script>
+</body>
+</html>

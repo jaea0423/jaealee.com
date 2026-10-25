@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>인공지능 B. 회귀 — 기초 TF</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>:root{ --subject:#5B3CF5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../exam-engine/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다. 이 파일은 drive/exam-engine/exam.css · exam.js 와 함께 있어야 열립니다.</div>
+<script>
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'인공지능',
+  title:'B. 회귀 — 기초 TF',
+  written:'2026년 10월 25일 작성',
+  slug:'ai-regression-0',
+  lectureBase:'../lecture',
+  level:'기초',
+  mcMax:1,
+  scope:`6주차 1차시 — Regression(회귀) 교안 1–27쪽 · 핵심 사실을 확인하는 TF`,
+  oxLabels:["T", "F"]
+};
+const EXAM = [
+{ type:'ox',
+   lv:'기초',
+   unit:"회귀 기초",
+   pts:13,
+   q:`<p>회귀의 기본 개념과 용어에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`Regression(회귀)은 기계학습 중 supervised learning(지도 학습)에 속한다.`,true],[`회귀에서 처음부터 알고 있는 것은 데이터(점)뿐이고, 데이터를 가장 잘 설명하는 선은 데이터로부터 찾아내야 한다.`,true],[`회귀의 기본 형식은 x → model → y로, 입력 x를 모델에 넣으면 출력 y가 나온다.`,true],[`Independent variable(독립변수)은 출력 y를, Dependent variable(종속변수)은 입력 x를 가리킨다.`,false],[`Predictor(예측변수), Feature(특징), Attribute(속성)는 모두 독립변수를 부르는 이름이다.`,true],[`Response(반응변수), Target(타깃), Label(라벨)은 모두 독립변수를 부르는 이름이다.`,false]],
+   exp:`<b>ㄱ (T)</b> 교수님: 인공지능 ⊃ 기계학습 ⊃ 딥러닝 ⊃ 생성형 AI, 회귀는 기계학습의 지도 학습(입력 x와 정답 y가 함께 있음)입니다.<br><b>ㄴ (T)</b> 교수님 말씀 그대로입니다. "실제로 우리가 알고 있는 것은 동그라미(데이터)뿐"이고 파란 선은 찾아야 하는 것입니다.<br><b>ㄷ (T)</b> 교수님이 짚은 기본 형식 x → system(model) → y입니다.<br><b>ㄹ (F)</b> 반대입니다. 독립변수 = 입력 x, 종속변수 = 출력 y입니다(교안 3쪽).<br><b>ㅁ (T)</b> 교안 3쪽 왼쪽 열(Input, Feature, Attribute, Predictor, Risk factor)은 모두 독립변수입니다.<br><b>ㅂ (F)</b> 모두 <b>종속변수(출력 y)</b>를 부르는 이름입니다(교안 3쪽 오른쪽 열).`,
+   src:[["06-1", "s1", "광고비와 판매량"], ["06-1", "s2", "x → 모델 → y"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"회귀 분류",
+   pts:13,
+   q:`<p>회귀의 분류에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`Simple regression(단순 회귀)은 독립변수가 1개인 회귀이다.`,true],[`Multiple regression(다중 회귀)은 종속변수가 2개 이상인 회귀이다.`,false],[`독립변수가 2개인 선형 회귀가 데이터에 맞추는 대상은 직선이다.`,false],[`독립변수가 3개 이상이면 선형 회귀가 맞추는 대상은 hyperplane(초평면)이다.`,true],[`Multivariable(다변수)은 독립변수 x가 여러 개라는 뜻이다.`,true],[`Multivariate(다변량)는 독립변수 x가 여러 개라는 뜻이다.`,false]],
+   exp:`<b>ㄱ (T)</b> 교안 5쪽 정의입니다.<br><b>ㄴ (F)</b> 다중 회귀는 <b>독립변수</b>가 2개 이상인 회귀입니다(교안 5쪽).<br><b>ㄷ (F)</b> 독립변수가 2개이면 (x<sub>1</sub>, x<sub>2</sub>, y) 3차원에서 <b>평면</b>을 맞춥니다. 선 → 면 → 초평면.<br><b>ㄹ (T)</b> 교수님: 선 → 면 → 초평면(3차원 이상부터).<br><b>ㅁ (T)</b> Variable은 입력 x의 개수를 셉니다(교안 6쪽).<br><b>ㅂ (F)</b> Variate는 출력 <b>y</b>의 개수를 셉니다. Multivariate = y가 여러 개.`,
+   src:[["06-1", "s3", "회귀란 · 회귀의 분류"], ["06-1", "s4", "Variate와 Variable"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"단순 선형 회귀",
+   pts:13,
+   q:`<p>단순 선형 회귀 모델 Y = β<sub>0</sub> + β<sub>1</sub>X + ε에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`β<sub>0</sub>은 intercept(절편), β<sub>1</sub>은 slope(기울기)이다.`,true],[`β<sub>0</sub>, β<sub>1</sub>은 coefficients(회귀계수) 또는 parameters(파라미터)라 부르는, 알려지지 않은 상수이다.`,true],[`β<sub>1</sub>은 X = 0일 때 Y의 값이다.`,false],[`선형 회귀를 만든다는 것은 데이터로 β<sub>0</sub>과 β<sub>1</sub>을 찾는다는 것이다.`,true],[`hat(^) 기호는 데이터로 추정하거나 예측한 값을 나타낸다.`,true],[`ŷ는 실제로 관측된 값이고, y는 모델이 예측한 값이다.`,false]],
+   exp:`<b>ㄱ (T)</b> 교안 7쪽: "intercept and slope".<br><b>ㄴ (T)</b> 교안 7쪽 "two unknown constants … also known as coefficients or parameters".<br><b>ㄷ (F)</b> X = 0일 때 Y의 값은 절편 β<sub>0</sub>입니다. β<sub>1</sub>은 X가 1 늘 때 Y가 변하는 양(기울기)입니다.<br><b>ㄹ (T)</b> 교수님: "선형 회귀를 만들겠다는 것은 결국 β₀과 β₁을 찾겠다는 것".<br><b>ㅁ (T)</b> 교안 7쪽 "The hat symbol denotes an estimated value." 교수님: 햇 심볼 = 예측하는 값.<br><b>ㅂ (F)</b> 반대입니다. y가 실제 값, <b>ŷ</b>가 모델이 예측한 값입니다.`,
+   src:[["06-1", "s5", "단순 선형 회귀"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"최소제곱법",
+   pts:18,
+   q:`<p>잔차와 Least squares(최소제곱법)에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`Residual(잔차) e<sub>i</sub>는 실제 값 y<sub>i</sub>에서 예측값 ŷ<sub>i</sub>를 뺀 값이다.`,true],[`RSS(Residual Sum of Squares, 잔차 제곱합)는 잔차를 제곱해서 모두 더한 값이다.`,true],[`잔차를 제곱해서 더하는 이유는 + 오차와 − 오차가 서로 상쇄되어 오차가 없는 것처럼 계산되는 것을 막기 위해서이다.`,true],[`최소제곱법은 RSS를 가장 크게 만드는 β̂<sub>0</sub>, β̂<sub>1</sub>을 찾는다.`,false],[`최소제곱 추정의 Step 1은 오차 제곱합 Σ<sub>i=1</sub><sup>n</sup> {y<sub>i</sub> − (β<sub>0</sub> + β<sub>1</sub>x<sub>i</sub>)}<sup>2</sup>을 식으로 쓰는 단계이다.`,true],[`Step 2에서 최소로 만들려는 함수 C는 objective(목적함수), loss(손실함수), cost(비용함수) 등으로 부른다.`,true],[`(β̂<sub>0</sub>, β̂<sub>1</sub>) = arg min C(β<sub>0</sub>, β<sub>1</sub>)에서 arg min은 C의 최솟값 자체를 뜻한다.`,false],[`Step 3에서는 C를 β<sub>0</sub>, β<sub>1</sub>로 각각 편미분해서 0으로 놓는다.`,true]],
+   exp:`<b>ㄱ (T)</b> 교안 8쪽: e<sub>i</sub> = y<sub>i</sub> − ŷ<sub>i</sub>.<br><b>ㄴ (T)</b> RSS = e<sub>1</sub><sup>2</sup> + e<sub>2</sub><sup>2</sup> + ⋯ + e<sub>n</sub><sup>2</sup>(교안 8쪽).<br><b>ㄷ (T)</b> 교수님 말씀입니다. 제곱·절댓값·루트 모두 "양수로 만든다"는 공통점이 있습니다.<br><b>ㄹ (F)</b> RSS를 <b>가장 작게</b> 만드는 값을 찾습니다. 최대로 하는 것은 로지스틱 회귀의 우도입니다.<br><b>ㅁ (T)</b> 교안 9쪽 Step 1입니다.<br><b>ㅂ (T)</b> 교수님: 줄이고자 하는 함수를 어떻게 정의하느냐에 따라 이름이 여러 가지입니다(Step 2에 해당).<br><b>ㅅ (F)</b> arg min은 최솟값이 아니라 C를 최소로 만드는 <b>변수의 값</b>(β̂<sub>0</sub>, β̂<sub>1</sub>)입니다.<br><b>ㅇ (T)</b> 교안 9쪽 Step 3: <span class="frac"><span class="num">∂C</span><span class="den">∂β<sub>0</sub></span></span> = 0, <span class="frac"><span class="num">∂C</span><span class="den">∂β<sub>1</sub></span></span> = 0.`,
+   src:[["06-1", "s6", "잔차 제곱합 · 최소제곱법"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"R²",
+   pts:15,
+   q:`<p>R<sup>2</sup>(결정계수)와 Adjusted R<sup>2</sup>에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`R<sup>2</sup>(Coefficient of Determination, 결정계수)는 y의 전체 변동 중 모델이 설명하는 비율을 나타낸다.`,true],[`R<sup>2</sup> = 1 − <span class="frac"><span class="num">SSE</span><span class="den">SST</span></span> = <span class="frac"><span class="num">SSR</span><span class="den">SST</span></span>이다.`,true],[`SST = SSR + SSE이다.`,true],[`R<sup>2</sup> = 1이면 모델이 데이터를 전혀 설명하지 못한다는 뜻이다.`,false],[`SSR은 Σ(y<sub>i</sub> − <span style="text-decoration:overline">y</span>)<sup>2</sup>이다.`,false],[`Adjusted R<sup>2</sup>(수정된 결정계수)는 예측변수를 추가하는 것에 벌점을 준다.`,true],[`Adjusted R<sup>2</sup> 식에서 n은 예측변수의 개수, p는 표본 크기이다.`,false]],
+   exp:`<b>ㄱ (T)</b> 교안 12쪽 "proportion of the total variance in y explained by the model".<br><b>ㄴ (T)</b> 교안 12쪽 정의입니다.<br><b>ㄷ (T)</b> y의 전체 변동 = 모형이 설명하는 변동 + 설명하지 못한 변동(교안 13쪽).<br><b>ㄹ (F)</b> R<sup>2</sup> = 1은 <b>Good fit(잘 맞음)</b>, R<sup>2</sup> = 0이 Poor fit입니다(교안 12쪽).<br><b>ㅁ (F)</b> Σ(y<sub>i</sub> − <span style="text-decoration:overline">y</span>)<sup>2</sup>는 <b>SST</b>(전체 변동)입니다. SSR = Σ(ŷ<sub>i</sub> − <span style="text-decoration:overline">y</span>)<sup>2</sup>(교안 13쪽).<br><b>ㅂ (T)</b> 교안 18쪽 "penalizes the addition of predictors".<br><b>ㅅ (F)</b> 반대입니다. n = Sample size(표본 크기), p = Number of predictors(예측변수 개수).`,
+   src:[["06-1", "s7", "결정계수 R²"], ["06-1", "s9", "수정된 결정계수"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"다중 회귀",
+   pts:11,
+   q:`<p>다중 선형 회귀, 회귀계수 해석, 다항 회귀에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`다중 선형 회귀에서 β<sub>j</sub>는 다른 예측변수를 모두 고정했을 때 X<sub>j</sub>가 1 늘면 Y가 평균적으로 변하는 양이다.`,true],[`회귀계수는 x와 y의 인과관계를 나타내므로 x가 y의 원인이라고 해석해야 한다.`,false],[`예측변수끼리 상관이 없는 balanced design(균형 설계)에서는 각 계수를 따로 추정하고 검정할 수 있다.`,true],[`예측변수끼리 상관이 있으면 계수들의 분산이 작아져 해석이 쉬워진다.`,false],[`Polynomial regression(다항 회귀)에서 차수(degree)를 2, 5처럼 올리면 곡선이 구불구불해질 수 있다.`,true]],
+   exp:`<b>ㄱ (T)</b> 교안 14쪽 "holding all other predictors fixed".<br><b>ㄴ (F)</b> 교수님: 회귀계수는 <b>상관관계</b>로 해석해야 하며 인과관계로 단정하면 안 됩니다.<br><b>ㄷ (T)</b> 교안 19쪽 "Each coefficient can be estimated and tested separately."<br><b>ㄹ (F)</b> 분산이 <b>커지고</b>(때로는 매우 크게) 해석이 위험해집니다(교안 19쪽).<br><b>ㅁ (T)</b> 교수님: "degree 2, degree 5처럼 차수를 올리면 구불구불해질 수 있다" 정도만 알면 됩니다.`,
+   src:[["06-1", "s8", "다중 선형 회귀"], ["06-1", "s10", "회귀계수 해석"], ["06-1", "s11", "다항 회귀"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"로지스틱 회귀",
+   pts:17,
+   q:`<p>Logistic regression(로지스틱 회귀)에 대한 설명이다. 각 문장이 맞으면 T, 틀리면 F 를 고르시오.</p>`,
+   items:[[`y가 0 또는 1인 분류에 선형 회귀를 쓰면 0보다 작거나 1보다 큰 확률이 나올 수 있다.`,true],[`로지스틱 회귀의 p(X)는 항상 0과 1 사이의 값이다.`,true],[`로지스틱 회귀에서 p(x)는 y가 0일 확률이다.`,false],[`log <span class="frac"><span class="num">p(x)</span><span class="den">1 − p(x)</span></span> = β<sub>0</sub> + β<sub>1</sub>X로 바꾸는 변환을 log odds(로그 오즈) 또는 logit(로짓) 변환이라 한다.`,true],[`로지스틱 회귀의 계수는 최소제곱법으로 추정한다.`,false],[`Sigmoid(시그모이드) 함수는 어떤 실수든 0과 1 사이의 값으로 바꾼다.`,true],[`로지스틱 회귀는 p̂(X) &gt; 0.5이면 Y = 1(Yes)로 예측한다.`,true],[`로지스틱 회귀는 확률만 추정할 뿐 분류 결정은 하지 않는다.`,false]],
+   exp:`<b>ㄱ (T)</b> 교안 22쪽 "might produce probabilities less than zero or bigger than one".<br><b>ㄴ (T)</b> 교안 24쪽 "p(X) will have values between 0 and 1."<br><b>ㄷ (F)</b> 교수님: p(x)는 y가 <b>1</b>일 확률, 1 − p(x)가 y가 0일 확률입니다.<br><b>ㄹ (T)</b> 교안 24쪽 "log odds or logit transformation".<br><b>ㅁ (F)</b> <b>Maximum likelihood(최대우도)</b>로 추정합니다(교안 26쪽).<br><b>ㅂ (T)</b> 교안 25쪽 시그모이드 그래프입니다. 로지스틱 회귀는 직선 값을 시그모이드에 넣어 0~1로 바꿉니다.<br><b>ㅅ (T)</b> 교안 27쪽 분류 규칙입니다.<br><b>ㅇ (F)</b> 교안 27쪽 "not just about estimating probabilities, but also about making classification decisions." 이름만 회귀이고 분류에 씁니다.`,
+   src:[["06-1", "s13", "y가 Yes/No일 때"], ["06-1", "s14", "선형 vs 로지스틱"], ["06-1", "s15", "시그모이드 · 로그 오즈"], ["06-1", "s16", "최대우도"], ["06-1", "s17", "0.5 기준 분류"]] }
+];
+</script>
+</body>
+</html>
