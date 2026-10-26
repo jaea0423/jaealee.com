@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>인공지능 모의고사 3회 — 실전</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>:root{ --subject:#5B3CF5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../exam-engine/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다. 이 파일은 drive/exam-engine/exam.css · exam.js 와 함께 있어야 열립니다.</div>
+<script>
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'인공지능',
+  title:'모의고사 3회 — 실전',
+  written:'2026년 10월 26일 작성',
+  slug:'ai-mid-mock-3',
+  lectureBase:'../lecture',
+  level:'중',
+  mcMax:0.5,
+  scope:`전 범위(A~F) — 10/26 복습 수업 기준 · 20문항 × 5점 · 모두 고르시오는 부분점수 없음`,
+  oxLabels:["O", "X"],
+  srcHref:"slides.html"
+};
+const EXAM = [
+{ type:'ox',
+   lv:'중',
+   unit:"A 기계학습 입문 · 주요 어려움",
+   pts:5,
+   q:`<p>다음 문장이 맞으면 O, 틀리면 X를 고르시오.</p>`,
+   items:[[`Nonrepresentative training data(대표성 없는 학습 데이터)는 sampling noise나 sampling bias 때문에 생길 수 있다.`,true]],
+   exp:`교안 24쪽: Nonrepresentative training data — sampling noise, sampling bias. 학습 데이터가 실제로 예측할 데이터를 잘 대표하지 못하면, 데이터가 많아도 학습에 문제가 됩니다(교수님 10/26). (보충) 표본 잡음은 표본이 작아 우연히 치우친 것, 표본 편향은 뽑는 방법 자체가 치우친 것입니다.`,
+   src:[["A", "A6", "기계학습의 주요 어려움"]] },
+
+{ type:'ox',
+   lv:'중',
+   unit:"D 군집화 · DBSCAN",
+   pts:5,
+   q:`<p>다음 문장이 맞으면 O, 틀리면 X를 고르시오.</p>`,
+   items:[[`DBSCAN은 서로 맞물린 초승달처럼 휘어진 모양의 군집도 찾을 수 있다.`,true]],
+   exp:`DBSCAN은 점이 빽빽하게 이어진 영역을 하나의 군집으로 묶으므로 임의의 모양(arbitrary shape)의 군집도 찾습니다(교안 25쪽). 각 샘플을 가장 가까운 중심에 붙이는 K-평균은 이런 국소 패턴(휘어진 모양)에서 성능이 나쁩니다(교안 15쪽).`,
+   src:[["D", "D9", "DBSCAN"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"B 회귀 · 로지스틱 회귀",
+   pts:5,
+   q:`<p>Logistic regression(로지스틱 회귀) 모델이 어떤 샘플에 대해 p(X) = 0.8을 냈다. 기준값이 0.5일 때 이 샘플의 예측으로 옳은 것은?</p>`,
+   choices:[`Y = 0으로 분류한다`,`0.5와 1 사이 값이므로 분류할 수 없다`,`실수값 0.8을 그대로 예측 클래스로 낸다`,`Y = 1로 분류한다`],
+   answer:[4],
+   exp:`p(X)는 Pr(Y = 1 | X), 즉 Y = 1일 확률입니다(교안 24쪽). 0.8은 기준 0.5보다 크므로 가까운 쪽인 1로 분류합니다(교수님 10/26 "가까운 쪽으로 0 또는 1로 분류, 일반적으로 0.5 기준"). 로지스틱 회귀는 확률을 기준값과 비교해 클래스로 바꾸는 분류 방법이며, 실수값 자체를 예측으로 내는 것은 선형 회귀입니다.`,
+   src:[["B", "B6", "로지스틱 회귀"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"F 앙상블 · 병렬은 배깅",
+   pts:5,
+   q:`<p>예측기 1,000개로 앙상블을 만들 때, 컴퓨터 여러 대에 나누어 예측기들을 동시에 학습시키고 싶다. 이 목적에 알맞은 방법과 이유로 옳은 것은?</p>`,
+   choices:[`Boosting(부스팅). 각 예측기가 앞 예측기의 잘못을 고치며 학습하기 때문이다`,`Bagging(배깅). 각 예측기가 서로의 결과 없이 자기 부분 집합만으로 학습하기 때문이다`,`Boosting. 약한 학습기들은 서로 독립으로 학습되기 때문이다`,`두 방법 모두 앞 예측기의 결과를 기다려야 하므로 동시에 학습할 수 없다`],
+   answer:[2],
+   exp:`병렬로 학습할 수 있는 것은 <b>배깅</b>입니다(교수님 10/26). 부스팅은 예측기를 순차적으로(sequentially) 학습시키며 각 예측기가 바로 앞 예측기(predecessor)의 잘못을 고치려 하므로(교안 14쪽), 앞 예측기가 끝나야 다음을 시작할 수 있습니다. 필기의 "병렬 처리가 가능함. 부스팅은 안 됨"에서 주어는 배깅입니다.`,
+   src:[["F", "F5", "배깅"], ["F", "F9", "부스팅"]] },
+
+{ type:'short',
+   lv:'중',
+   unit:"A 기계학습 입문 · 학습 유형",
+   pts:5,
+   q:`<p>학습 데이터에 관측값 x와 함께 목표 출력(정답) y가 주어지는 학습 유형을 영어로 쓰시오.</p>`,
+   show:`Supervised Learning(지도 학습)`,
+   alt:["Supervised Learning", "Supervised learning", "supervised learning", "Supervised", "supervised", "지도 학습", "지도학습"],
+   exp:`교안 9쪽 "target outputs are provided along with the observations" → {(x<sup>t</sup>, y<sup>t</sup>)}. y가 이산 라벨이면 분류, 연속적인 수이면 회귀입니다. y가 없으면 Unsupervised Learning(비지도 학습)입니다.`,
+   src:[["A", "A4", "학습 유형"]] },
+
+{ type:'ox',
+   lv:'중',
+   unit:"F 앙상블 · ★ 배깅",
+   pts:5,
+   q:`<p>다음 문장이 맞으면 O, 틀리면 X를 고르시오.</p>`,
+   items:[[`Bagging(배깅)에서 각 예측기는 학습 세트 전체를 그대로 사용해 학습한다.`,false]],
+   exp:`배깅은 학습 세트에서 복원 추출(bootstrap)로 뽑은 <b>서로 다른 부분 집합</b>으로 각 예측기를 학습시킵니다(교안 6쪽). 모든 예측기가 같은 알고리즘에 같은 데이터를 쓰면 예측기가 서로 같아져 합칠 의미가 없습니다. 서로 다른 데이터로 학습한 예측을 합치기 때문에 분산이 낮아집니다(교안 7쪽, 교수님 10/26).`,
+   src:[["F", "F5", "배깅"], ["F", "F6", "배깅은 분산을 낮춘다"]] },
+
+{ type:'short',
+   lv:'중',
+   unit:"C SVM · 하드 마진 SVM",
+   pts:5,
+   q:`<p>SVM 가운데 학습 샘플의 분류 오류를 전혀 허용하지 않아, 선형 분리가 가능한 데이터에만 쓸 수 있는 것의 이름을 쓰시오. (영어 또는 한글)</p>`,
+   show:`Hard Margin SVM(하드 마진 SVM)`,
+   alt:["Hard Margin SVM", "Hard margin SVM", "hard margin SVM", "Hard Margin", "Hard margin", "hard margin", "하드 마진 SVM", "하드마진 SVM", "하드 마진", "하드마진", "Maximal margin classifier", "최대 마진 분류기"],
+   exp:`교수님 10/26 "하드 마진은 오류를 허용할 수 없지만 소프트 마진은 어느 정도 오류를 허용". 교안 2쪽에서 Hard Margin SVM = Maximal margin classifier(최대 마진 분류기)입니다. 실제로는 보통 Soft Margin SVM을 씁니다.`,
+   src:[["C", "C2", "SVM 정의"], ["C", "C4", "소프트 마진 SVM"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"E 결정 트리 · 불순도 · 엔트로피",
+   pts:5,
+   q:`<p>클래스 수가 2개 또는 3개인 결정 트리 노드의 클래스별 샘플 수가 다음과 같다. Entropy(엔트로피)가 0인 노드를 고르시오. (모두 고르시오)</p>`,
+   choices:[`setosa 50개 · versicolor 0개 · virginica 0개`,`구매 9개 · 비구매 1개`,`구매 0개 · 비구매 7개`,`구매 10개 · 비구매 0개`,`구매 5개 · 비구매 5개`],
+   answer:[1, 3, 4],
+   exp:`엔트로피는 노드에 <b>한 클래스만</b> 있을 때 0입니다(교안 7쪽 "equals zero when the node contains only one class"). ①③④는 샘플이 모두 한 클래스이므로 순수한 노드입니다. 지니 지수도 이 세 노드에서 0입니다(교안 6쪽).<br>⑤ 두 클래스가 같은 비율이라 엔트로피가 <b>최대</b>입니다. ② 한 클래스가 대부분이라 낮은 편이지만 0은 아닙니다. 계산 없이 "한 클래스뿐인가"만 보면 됩니다(교수님 10/26 "계산 안 나옴").`,
+   multi:true,
+   src:[["E", "E4", "불순도와 지니"], ["E", "E5", "엔트로피"]] },
+
+{ type:'short',
+   lv:'중',
+   unit:"F 앙상블 · 랜덤 포레스트",
+   pts:5,
+   q:`<p>Random Forest(랜덤 포레스트)는 어떤 모델 여러 개를 결합한 앙상블인가? 모델 이름을 쓰시오. (영어 또는 한글)</p>`,
+   show:`Decision tree(결정 트리)`,
+   alt:["Decision tree", "decision tree", "Decision Tree", "Decision trees", "decision trees", "결정 트리", "결정트리", "의사결정나무", "의사결정 트리"],
+   exp:`교안 10쪽 "A random forest is an ensemble of decision trees, generally trained via the bagging method". 교수님 10/26 "결정 트리를 여러 개 쓰는 방식이 랜덤 포레스트". 데이터(부트스트랩)와 특징(노드마다 일부) 두 군데에서 무작위성이 들어갑니다.`,
+   src:[["F", "F7", "랜덤 포레스트"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"E 결정 트리 · ★ 정보 이득으로 고르기",
+   pts:5,
+   q:`<p>ID3로 루트 노드의 분할 속성을 고르려 한다. 속성 A로 나누면 Information Gain(정보 이득)이 0.25, 속성 B로 나누면 0.05이다. 옳은 것은?</p>`,
+   choices:[`B를 고른다. 정보 이득이 작을수록 나눈 뒤 노드가 순수하기 때문이다`,`B를 고른다. 나눈 뒤 엔트로피가 크게 남아 있어야 다음 분할에 쓸 수 있기 때문이다`,`A를 고른다. 나눈 뒤 엔트로피가 더 많이 줄어들기 때문이다`,`정보 이득만으로는 고를 수 없고, 지니 지수가 0인 속성을 골라야 한다`],
+   answer:[3],
+   exp:`ID3는 정보 이득이 <b>가장 큰</b> 속성을 고릅니다(교안 16쪽). 정보 이득 = 나누기 전 엔트로피 − 나눈 뒤 엔트로피이므로, 클수록 불확실성이 많이 줄어 자식 노드가 순수해집니다(교안 17쪽). 교수님 10/26 "정보 이득은 높이고, 엔트로피는 낮춘다". ID3는 지니가 아니라 엔트로피로 계산한 정보 이득을 기준으로 씁니다.`,
+   src:[["E", "E6", "ID3와 정보 이득"], ["E", "E7", "방향 정리"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"C SVM · 마진 · 결정 경계",
+   pts:5,
+   q:`<p>SVM의 Margin(마진)과 결정 경계에 대한 설명으로 옳은 것을 고르시오. (모두 고르시오)</p>`,
+   choices:[`Maximal margin hyperplane(최대 마진 초평면)은 분리 초평면 가운데 학습 샘플에서 가장 멀리 떨어진 것이다`,`마진이 작을수록 두 클래스를 더 여유 있게 나눈 것이다`,`마진은 초평면과 가장 가까운 학습 샘플 사이의 거리이다`,`마진은 초평면과 모든 학습 샘플 사이 거리의 평균이다`,`결정 경계는 두 마진 경계의 정확히 가운데에 놓인다`],
+   answer:[1, 3, 5],
+   exp:`①③ 교안 7쪽 정의입니다. ⑤ 결정 경계(실선)는 두 마진 경계(점선)의 가운데입니다(교수님 10/26 "마진을 최대화시키는 중간 경계").<br>④ 평균이 아니라 <b>가장 작은</b> 거리입니다. ② 마진이 <b>클수록</b> 여유 있게 나눈 것이며, 그래서 SVM은 마진을 최대화합니다.`,
+   multi:true,
+   src:[["C", "C3", "최대 마진 초평면"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"B 회귀 · 용어",
+   pts:5,
+   q:`<p>회귀에서 출력 y(종속변수)를 가리키는 이름을 고르시오. (모두 고르시오)</p>`,
+   choices:[`Independent variable`,`Outcome`,`Response`,`Predictor`,`Dependent variable`],
+   answer:[2, 3, 5],
+   exp:`교안 3쪽 용어 표에서 출력 y는 Dependent variable(종속변수), Output, Target, Label, Response(반응변수), Class, Outcome(결과)으로 부릅니다.<br>④ Predictor(예측변수)와 ① Independent variable(독립변수)은 입력 x의 이름입니다.`,
+   multi:true,
+   src:[["B", "B2", "회귀의 정의"]] },
+
+{ type:'ox',
+   lv:'중',
+   unit:"D 군집화 · K-평균의 한계",
+   pts:5,
+   q:`<p>다음 문장이 맞으면 O, 틀리면 X를 고르시오.</p>`,
+   items:[[`K-means(K-평균)의 한계 가운데 하나는 밀도가 높은 군집을 찾지 못한다는 것이다.`,false]],
+   exp:`교안 14쪽의 한계는 밀도가 <b>서로 다른</b>(different densities) 군집을 잘 찾지 못한다는 것입니다. 밀도가 높은 것 자체가 문제가 아닙니다. 예를 들어 성긴 무리 하나와 촘촘한 무리 둘이면 성긴 무리를 쪼개고 촘촘한 두 무리를 합칩니다. 필기의 "밀도가 높아도 한계"를 바로잡은 부분입니다.`,
+   src:[["D", "D6", "K-평균의 한계"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"C SVM · 커널 SVM",
+   pts:5,
+   q:`<p>Kernel SVM(커널 SVM)에 대한 설명으로 옳지 <b>않은</b> 것은?</p>`,
+   choices:[`커널 함수는 두 입력 사이의 거리 차이만 구하는 함수로, 내적과는 관계가 없다`,`커널 함수를 써서 서포트 벡터 분류기를 비선형 결정 경계로 확장한 것이다`,`데이터를 (암묵적으로) 고차원 공간으로 옮겨 그 공간에서 초평면으로 나눈다`,`비선형 결정 경계를 만드는 효율적인 계산 방법이다`],
+   answer:[1],
+   exp:`커널 함수는 <b>내적(inner product)을 일반화</b>한 것으로, 두 입력의 고차원 특징 공간 내적을 암묵적으로 계산합니다(교안 28쪽).<br>나머지는 교안 28쪽 문장 그대로입니다: 서포트 벡터 분류기의 확장, 고차원에서 선형 결정 경계(초평면), 효율적인 계산 방법(efficient computational approach).`,
+   src:[["C", "C7", "비선형 SVM과 커널"]] },
+
+{ type:'ox',
+   lv:'중',
+   unit:"E 결정 트리 · 트리로 예측",
+   pts:5,
+   q:`<p>다음 문장이 맞으면 O, 틀리면 X를 고르시오.</p>`,
+   items:[[`완성된 결정 트리로 새 샘플을 분류할 때는 루트부터 리프까지 트리에 있는 모든 노드의 질문에 답해야 한다.`,false]],
+   exp:`새 샘플은 루트에서 시작해 자기 값에 맞는 가지 <b>하나만</b> 따라 리프까지 내려갑니다. 지나지 않는 노드의 질문은 묻지 않습니다. 예: 나이 그룹이 청년이면 바로 리프 "구매"에 닿아 학생 여부나 신용 등급을 보지 않습니다(교안 28쪽, 교수님 10/26).`,
+   src:[["E", "E8", "완성된 트리로 예측"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"C SVM · ★ C와 편향·분산",
+   pts:5,
+   q:`<p>Soft Margin SVM(소프트 마진 SVM)에서 Penalty parameter C(벌점 매개변수)를 작은 값에서 큰 값으로 바꿀 때, 마진과 bias(편향), variance(분산)의 변화로 옳은 것은?</p>`,
+   choices:[`마진이 넓어지고, 편향은 낮아지며 분산은 높아진다`,`마진이 좁아지고, 편향은 낮아지며 분산은 높아진다`,`마진이 좁아지고, 편향은 높아지며 분산은 낮아진다`,`마진은 그대로이고, 허용하는 오류만 늘어난다`],
+   answer:[2],
+   exp:`교안 19쪽: Small C → Large margin, High bias · low variance, 그리고 Large C → Small margin, Low bias · high variance입니다. C를 키우면 오류 벌점이 커져 데이터를 빡빡하게 나누므로 마진이 좁아지고, 학습 데이터에 잘 맞는 대신(편향 ↓) 데이터가 조금만 바뀌어도 경계가 흔들립니다(분산 ↑). 교안 18쪽 "As C goes from small to large, there is a bias-variance tradeoff." 큰 C는 오류를 <b>적게</b> 허용합니다.`,
+   src:[["C", "C5", "벌점 매개변수 C"]] },
+
+{ type:'short',
+   lv:'중',
+   unit:"D 군집화 · ★ 실루엣 점수",
+   pts:5,
+   q:`<p>모든 샘플의 실루엣 계수를 평균한 값으로, k를 바꿔 가며 구해 가장 높은 k를 군집 수로 고르는 데 쓰는 점수를 영어로 쓰시오.</p>`,
+   show:`Silhouette score(실루엣 점수)`,
+   alt:["Silhouette score", "silhouette score", "Silhouette Score", "Silhouette", "silhouette", "실루엣 점수", "실루엣 스코어", "실루엣"],
+   exp:`교안 18쪽 "the silhouette score, which is the mean silhouette coefficient over all instances". 교안 19쪽 그래프에서는 k = 4가 가장 높아 k = 4를 고릅니다(교수님 10/26). 교안 제목이 "Finding the Optimal Number of Clusters 2"이므로 필기의 "(아마)"는 확실한 내용입니다.`,
+   src:[["D", "D7", "K 정하기"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"A 기계학습 입문 · ★ 과소적합 조치",
+   pts:5,
+   q:`<p>어떤 모델의 정확도가 학습 데이터에서 60%, 테스트 데이터에서 58%로 둘 다 낮다. 가장 알맞은 조치는?</p>`,
+   choices:[`Regularization(규제)을 강하게 걸어 모델의 자유도를 줄인다`,`입력 특징의 개수를 줄여 모델을 단순하게 만든다`,`파라미터가 더 적은 모델로 바꾼다`,`모델의 층과 파라미터를 늘려 더 크게 만든다`],
+   answer:[4],
+   exp:`학습 데이터에서도 성능이 낮으므로 모델이 너무 단순한 Underfitting(과소적합)입니다. 해결은 파라미터가 더 많은 강력한 모델, 더 좋은 특징, 제약 줄이기입니다(교안 26쪽, 교수님 10/26 "모델을 더 깊게 만들거나 크게 만들어야 함").<br>규제 강화, 특징(속성) 수 줄이기, 파라미터 줄이기는 모델을 더 단순하게 만드는 <b>과적합</b> 해결책(교안 25쪽)이라 상황을 더 나쁘게 합니다.`,
+   src:[["A", "A8", "과소적합 Underfitting"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"D 군집화 · ★ 세 방법의 기준",
+   pts:5,
+   q:`<p>라벨 없는 위치 데이터를 군집화하려 한다. 군집이 몇 개인지 모르고, 어느 무리에도 속하지 않는 외딴 점은 군집에 억지로 넣지 않고 따로 걸러 내고 싶다. 가장 알맞은 방법은?</p>`,
+   choices:[`DBSCAN`,`K-means(K-평균)`,`K-means++`,`Agglomerative(병합) 군집화`],
+   answer:[1],
+   exp:`DBSCAN은 밀도 기반이라 군집 수를 미리 정하지 않고, 밀도가 낮은 곳의 점을 Noise(잡음)로 표시합니다(교안 25쪽, 교수님 10/26 "노이즈 개념"). K-평균과 K-means++는 K를 미리 정해야 하고 모든 샘플을 반드시 한 군집에 넣습니다. 병합 군집화는 K를 미리 정하지 않지만 Noise 개념이 없어 모든 샘플이 결국 어떤 군집에 들어갑니다.`,
+   src:[["D", "D3", "군집화 방법 세 가지"], ["D", "D9", "DBSCAN"]] },
+
+{ type:'ox',
+   lv:'중',
+   unit:"B 회귀 · ★ R² 음수",
+   pts:5,
+   q:`<p>다음 문장이 맞으면 O, 틀리면 X를 고르시오.</p>`,
+   items:[[`R²(결정계수)가 음수로 나왔다면 SSE가 SST보다 크다.`,true]],
+   exp:`R² = 1 − SSE ÷ SST로 보면, SSE가 SST보다 클 때 음수가 됩니다. 모든 샘플을 평균 ȳ로 예측할 때의 변동(SST)보다 모델이 틀린 정도(SSE)가 크다는 뜻이므로 평균보다도 못한 모델입니다(교안 12쪽 "sometimes negative if the model is very poor").<br>필기의 "−1이면 평균보다 못 맞춘다"는 정확히는 "음수이면"이며, −1이 하한도 아닙니다.`,
+   src:[["B", "B5", "결정계수 R²"]] }
+];
+</script>
+</body>
+</html>

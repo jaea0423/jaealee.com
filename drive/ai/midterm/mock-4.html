@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>인공지능 모의고사 4회 — 실전</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>:root{ --subject:#5B3CF5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../exam-engine/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다. 이 파일은 drive/exam-engine/exam.css · exam.js 와 함께 있어야 열립니다.</div>
+<script>
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'인공지능',
+  title:'모의고사 4회 — 실전',
+  written:'2026년 10월 26일 작성',
+  slug:'ai-mid-mock-4',
+  lectureBase:'../lecture',
+  level:'중',
+  mcMax:0.5,
+  scope:`전 범위(A~F) — 10/26 복습 수업 기준 · 20문항 × 5점 · 모두 고르시오는 부분점수 없음`,
+  oxLabels:["O", "X"],
+  srcHref:"slides.html"
+};
+const EXAM = [
+{ type:'ox',
+   lv:'중',
+   unit:"C SVM · SVM 정의",
+   pts:5,
+   q:`<p>다음 문장이 맞으면 O, 틀리면 X를 고르시오.</p>`,
+   items:[[`SVM(서포트 벡터 머신)은 정답 라벨 없이 비슷한 샘플끼리 묶는 Clustering(군집화) 모델이다.`,false]],
+   exp:`SVM은 정답 라벨이 있는 데이터로 학습하는 <b>Supervised learning(지도학습)</b> 분류 모델입니다(교안 2쪽, 교수님 10/26). 라벨 없이 묶는 것은 비지도 학습인 D 군집화입니다.`,
+   src:[["C", "C2", "SVM 정의"]] },
+
+{ type:'ox',
+   lv:'중',
+   unit:"E 결정 트리 · ★ 감소량 방향",
+   pts:5,
+   q:`<p>다음 문장이 맞으면 O, 틀리면 X를 고르시오.</p>`,
+   items:[[`같은 노드를 나누는 두 후보 가운데 불순도 감소량이 큰 분할을 고르면, 나눈 뒤 자식 노드들이 더 순수해진다.`,true]],
+   exp:`불순도 감소량 = 나누기 전 불순도 − 나눈 뒤 불순도이므로, 같은 노드에서 감소량이 클수록 나눈 뒤 불순도가 낮아(순수해)집니다. 그래서 불순도는 <b>낮추고</b> 감소량은 <b>큰</b> 것을 고릅니다(교수님 10/26 "주의"). 두 방향이 반대처럼 보여도 같은 일을 두 방향에서 본 것입니다.`,
+   src:[["E", "E7", "방향 정리"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"D 군집화 · ★ K-평균 순서",
+   pts:5,
+   q:`<p>K-means(K-평균)를 실행하는 도중, 중심을 다시 계산하고 샘플을 재배정하였더니 어떤 샘플의 군집도 바뀌지 않았다. 다음에 일어나는 일은?</p>`,
+   choices:[`알고리즘이 멈추고 현재 배정이 결과가 된다`,`중심을 무작위로 다시 골라 처음부터 반복한다`,`가장 가까운 두 군집을 하나로 합친다`,`K를 하나 늘려 다시 반복한다`],
+   answer:[1],
+   exp:`교안 10쪽: 중심 계산과 재배정을 "배정이 더 이상 바뀌지 않을 때까지" 반복합니다. 배정이 바뀌지 않으면 중심도 그대로이므로 수렴한 것이고 멈춥니다(교수님 10/26 "순서 알아둬야 함").<br>두 군집 합치기는 병합 군집화이고, K는 실행 중에 바뀌지 않는 하이퍼파라미터입니다.`,
+   src:[["D", "D5", "K-평균 알고리즘"]] },
+
+{ type:'short',
+   lv:'중',
+   unit:"C SVM · 결정 경계",
+   pts:5,
+   q:`<p>SVM이 마진을 최대화하여 만드는, 클래스를 나누는 선(또는 초평면)을 영어로 쓰시오.</p>`,
+   show:`Decision boundary(결정 경계)`,
+   alt:["Decision boundary", "decision boundary", "Decision Boundary", "decision boundaries", "결정 경계", "결정경계"],
+   exp:`교안 2쪽 정의 "constructs a decision boundary by maximizing the margin". 교수님 10/26 "선이 decision 바운더리". 2차원에서는 직선, 그 이상에서는 초평면(hyperplane)입니다.`,
+   src:[["C", "C2", "SVM 정의"], ["C", "C3", "최대 마진 초평면"]] },
+
+{ type:'ox',
+   lv:'중',
+   unit:"B 회귀 · ★ 단순 · 다중",
+   pts:5,
+   q:`<p>다음 문장이 맞으면 O, 틀리면 X를 고르시오.</p>`,
+   items:[[`Simple regression(단순 회귀)과 Multiple regression(다중 회귀)은 예측하는 출력 y의 개수로 구분한다.`,false]],
+   exp:`단순·다중은 <b>독립변수 x의 개수</b>로 나눕니다. x가 1개이면 단순, 2개 이상이면 다중입니다(교안 5쪽). 두 회귀 모두 출력 y는 하나입니다. 교수님 10/26 "정의 알아둬야 할 것 같음".`,
+   src:[["B", "B3", "회귀의 분류"]] },
+
+{ type:'ox',
+   lv:'중',
+   unit:"F 앙상블 · 랜덤 포레스트",
+   pts:5,
+   q:`<p>다음 문장이 맞으면 O, 틀리면 X를 고르시오.</p>`,
+   items:[[`Random Forest(랜덤 포레스트)의 무작위성은 트리마다 부트스트랩으로 다른 학습 데이터를 쓰는 것 한 가지뿐이다.`,false]],
+   exp:`무작위성은 두 군데입니다. ① 데이터: 트리마다 부트스트랩(복원 추출)으로 뽑은 다른 학습 데이터, ② 특징: 노드를 나눌 때마다 무작위로 고른 특징 일부 중에서 최선을 찾음(extra randomness, 교안 10쪽). 교수님 10/26 "데이터셋도 다르고 속성도 달라 무작위이기 때문에 랜덤 포레스트".`,
+   src:[["F", "F7", "랜덤 포레스트"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"D 군집화 · 병합 군집화 시작",
+   pts:5,
+   q:`<p>샘플 6개로 Agglomerative(병합) 군집화를 할 때, 시작할 때의 군집 수와 가장 가까운 두 군집을 한 번 합친 뒤의 군집 수로 옳은 것은?</p>`,
+   choices:[`1개 → 2개`,`1개 → 6개`,`6개 → 5개`,`6개 → 3개`],
+   answer:[3],
+   exp:`병합 군집화는 <b>샘플마다 자기만의 군집</b>으로 시작하므로 처음에는 6개입니다. 한 번에 가장 가까운 두 군집만 합치므로 5개가 됩니다. 이것을 반복해 마지막에 1개가 됩니다(교안 22쪽).<br>필기의 "모든 애들이 하나의 클러스터라고 본 것"은 시작이 아니라 마지막 상태입니다(교안 20쪽 "starting from the leaves … up to the trunk").`,
+   src:[["D", "D8", "계층적 군집화"]] },
+
+{ type:'ox',
+   lv:'중',
+   unit:"F 앙상블 · 하드 투표",
+   pts:5,
+   q:`<p>다음 문장이 맞으면 O, 틀리면 X를 고르시오.</p>`,
+   items:[[`Hard voting(하드 투표)으로 합친 앙상블은 앙상블 안에서 가장 좋은 분류기보다 정확도가 높은 경우가 많다.`,true]],
+   exp:`교안 3쪽 "Often achieves a higher accuracy than the best classifier in the ensemble." 서로 다른 알고리즘의 분류기들은 틀리는 샘플이 서로 달라지기 쉬워, 다수결을 하면 일부의 실수가 가려집니다.`,
+   src:[["F", "F3", "투표 분류기 · 하드 투표"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"A 기계학습 입문 · ★ 전통적 방식 vs ML",
+   pts:5,
+   q:`<p>ML approach(기계학습 방식)의 작업 흐름에서 Train ML algorithm(ML 알고리즘 학습) 바로 다음 단계는?</p>`,
+   choices:[`Study the problem(문제 연구)`,`Evaluate solution(해법 평가)`,`Write rules(규칙 작성)`,`Analyze errors(오류 분석)`],
+   answer:[2],
+   exp:`교안 4쪽 순서도: 문제 연구 → (데이터로) 알고리즘 학습 → <b>해법 평가</b> → 좋으면 출시(Launch!), 나쁘면 오류 분석 후 문제 연구로 되돌아갑니다. Write rules는 전통적 방식의 가운데 칸이고, ML 방식에서는 이 자리가 Train ML algorithm으로 바뀝니다. 오류 분석은 평가 결과가 나쁠 때만 옵니다. 교수님 10/26: 이 그림이 나올 것 같습니다.`,
+   src:[["A", "A3", "전통적 방식 vs 기계학습 방식"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"B 회귀 · ★ R² 음수",
+   pts:5,
+   q:`<p>같은 평가 데이터에서 네 회귀 모델의 R²(결정계수)를 구하였다. 모든 샘플을 평균 ȳ로 예측하는 것보다도 <b>못한</b> 모델은?</p>`,
+   choices:[`R² = 0인 모델`,`R² = 0.45인 모델`,`R² = 0.92인 모델`,`R² = −0.3인 모델`],
+   answer:[4],
+   exp:`R²가 <b>음수</b>이면 SSE가 SST보다 커서, 평균으로 예측하는 것보다 못한 모델입니다(교안 12쪽 "sometimes negative if the model is very poor"). R² = 0은 평균으로 예측하는 것과 <b>같은</b> 수준이지 못한 것이 아닙니다. 1에 가까울수록 좋으므로 0.92가 가장 좋습니다. 필기의 "−1이면 평균보다 못 맞춘다"는 정확히는 "음수이면"입니다.`,
+   src:[["B", "B5", "결정계수 R²"]] },
+
+{ type:'short',
+   lv:'중',
+   unit:"E 결정 트리 · ID3",
+   pts:5,
+   q:`<p>엔트로피로 Information Gain(정보 이득)을 계산하고, 정보 이득이 가장 큰 속성을 골라 나누는 결정 트리 알고리즘의 이름을 쓰시오.</p>`,
+   show:`ID3(Iterative Dichotomiser 3)`,
+   alt:["ID3", "id3", "Id3", "ID 3", "Iterative Dichotomiser 3", "Iterative Dichotomizer 3"],
+   exp:`교안 16쪽 "ID3 (Iterative Dichotomiser 3) uses entropy to calculate information gain and selects the attribute with the highest information gain." 교안 예제에서는 루트에서 나이(Age)가, 중년 그룹 안에서는 신용 등급이 선택됩니다(교안 28쪽).`,
+   src:[["E", "E6", "ID3와 정보 이득"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"A 기계학습 입문 · ★ 과소적합",
+   pts:5,
+   q:`<p>Underfitting(과소적합)에 해당하는 설명을 고르시오. (모두 고르시오)</p>`,
+   choices:[`학습 손실은 계속 줄어드는데 테스트 손실만 다시 커진다`,`모델이 너무 단순해 데이터에 깔린 구조를 학습하지 못한다`,`Regularization(규제)을 더 강하게 걸면 해결된다`,`학습 데이터에서도 성능이 낮다`,`모델의 파라미터가 충분히 많지 않아 학습을 오래 해도 더 복잡한 패턴을 배우지 못한다`],
+   answer:[2, 4, 5],
+   exp:`②⑤ 교안 26쪽 정의와 교수님 10/26 "파라미터가 충분히 많지 않아 아무리 학습해도 더 복잡한 학습이 안 됨". ④ 너무 단순하면 학습 데이터도 잘 맞추지 못합니다.<br>① 테스트 손실만 다시 커지는 것은 <b>과적합</b> 구간입니다(교안 27쪽). ③ 규제를 강하게 하면 모델이 더 단순해지므로 과적합의 해결책입니다. 과소적합은 제약을 <b>줄여야</b> 합니다.`,
+   multi:true,
+   src:[["A", "A8", "과소적합 Underfitting"], ["A", "A9", "과적합 vs 과소적합 그래프"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"F 앙상블 · OOB 순열 중요도",
+   pts:5,
+   q:`<p>Random Forest(랜덤 포레스트)에서 특징 x<sub>1</sub>, x<sub>2</sub>, x<sub>3</sub>의 값을 하나씩 OOB(Out-of-Bag) 데이터 안에서 섞은 뒤 OOB 오차를 다시 구하였다. 원래 오차보다 각각 0.20, 0.01, 0.08만큼 늘었다. 가장 중요한 특징은?</p>`,
+   choices:[`x<sub>2</sub>`,`x<sub>3</sub>`,`x<sub>1</sub>`,`세 특징의 중요도는 같다`],
+   answer:[3],
+   exp:`특징 하나를 섞으면(permutation) 그 특징과 정답의 관계가 끊깁니다. 오차가 <b>가장 크게 늘어난</b> 특징일수록 모델이 많이 기대던 중요한 특징입니다(교안 12쪽, 교수님 10/26 "에러가 커졌다면 바꾼 원래 애가 중요한 애"). 0.01만 늘어난 x<sub>2</sub>는 거의 쓰이지 않은 특징입니다.`,
+   src:[["F", "F8", "OOB 순열 변수 중요도"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"D 군집화 · ★ K-평균 vs DBSCAN",
+   pts:5,
+   q:`<p>K-means(K-평균)와 비교할 때 DBSCAN에만 해당하는 특징을 고르시오. (모두 고르시오)</p>`,
+   choices:[`중심을 군집 샘플들의 평균으로 반복해서 옮긴다`,`모든 샘플이 정확히 하나의 군집에 속한다`,`밀도가 낮은 곳의 점을 Noise(잡음)로 남긴다`,`휘어진 모양처럼 임의의 모양(arbitrary shape)의 군집도 찾는다`,`군집 수를 미리 정할 필요가 없다`],
+   answer:[3, 4, 5],
+   exp:`③④⑤ 교안 25쪽에 K-평균과 다른 점으로 나옵니다(No need to pre-specify, noise, arbitrary shape). 교수님 10/26 "DBSCAN은 밀도 기반, 노이즈 개념".<br>①②는 K-평균의 성질입니다. K-평균은 모든 샘플이 한 군집에 속하고(교안 6쪽), 중심을 평균으로 갱신합니다(교안 10쪽).`,
+   multi:true,
+   src:[["D", "D3", "군집화 방법 세 가지"], ["D", "D9", "DBSCAN"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"C SVM · 다중 클래스 SVM",
+   pts:5,
+   q:`<p>SVM으로 클래스가 3개 이상인 문제를 풀 때 이진 SVM 여러 개를 조합하는 방식을 고르시오. (모두 고르시오)</p>`,
+   choices:[`K-means++ 방식`,`One versus one(하나 vs 하나)`,`Soft margin(소프트 마진) 방식`,`One versus all(하나 vs 나머지)`,`Bootstrap(부트스트랩) 방식`],
+   answer:[2, 4],
+   exp:`교안 32쪽: SVM은 두 클래스를 나누는 이진 분류기이므로, 클래스마다 "그 클래스 vs 나머지"를 만드는 One versus all과 두 클래스씩 짝짓는 One versus one으로 여러 이진 SVM을 조합합니다(교수님 10/26).<br>③ 소프트 마진은 오류 허용 여부에 따른 SVM 종류, ① K-means++는 D 군집화의 초기화, ⑤ 부트스트랩은 F 배깅의 복원 추출입니다.`,
+   multi:true,
+   src:[["C", "C8", "다중 클래스 SVM"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"E 결정 트리 · 트리로 예측",
+   pts:5,
+   q:`<p>고객의 구매 여부를 예측하는 결정 트리가 있다.</p><p>· 루트 "나이 그룹?" → 청소년: "학생 여부?" 노드, 청년: 리프 "구매", 중년: "신용 등급?" 노드<br>· "학생 여부?" → 예: 구매, 아니오: 비구매<br>· "신용 등급?" → 보통: 구매, 우수: 비구매</p><p>새 고객을 분류할 때 "학생 여부?" 노드를 지나는 고객은?</p>`,
+   choices:[`청년 고객`,`청소년 고객`,`중년이고 신용 등급이 보통인 고객`,`중년이고 신용 등급이 우수한 고객`],
+   answer:[2],
+   exp:`학생 여부 노드는 루트에서 청소년 가지로 내려간 곳에만 있습니다(교안 28쪽 ID3 트리). 청년은 루트 다음에 바로 리프에 닿고, 중년은 신용 등급 노드로 갑니다. 새 샘플은 루트에서 자기 값에 맞는 가지만 따라 내려갑니다(교수님 10/26 "트리 탐색해 가는 과정").`,
+   src:[["E", "E8", "완성된 트리로 예측"]] },
+
+{ type:'short',
+   lv:'중',
+   unit:"A 기계학습 입문 · 강건",
+   pts:5,
+   q:`<p>학습 데이터에만 맞춰지지 않고 어떤 데이터가 들어와도 잘 맞는 모델을 "강건하다"고 표현한다. "강건하다"에 해당하는 영어 단어를 쓰시오.</p>`,
+   show:`robust(강건한)`,
+   alt:["robust", "Robust", "ROBUST", "robustness", "Robustness", "강건", "강건한"],
+   exp:`교수님 10/26: 과적합과 반대로 어떤 데이터가 들어와도 잘 맞게 만들면 generalization(일반화)이 잘 된다, 또는 모델이 robust(강건)하다고 표현합니다.`,
+   src:[["A", "A7", "과적합 Overfitting"]] },
+
+{ type:'ox',
+   lv:'중',
+   unit:"D 군집화 · K 정하기",
+   pts:5,
+   q:`<p>다음 문장이 맞으면 O, 틀리면 X를 고르시오.</p>`,
+   items:[[`K-means(K-평균)에서 K를 얼마로 정해야 하는지에 대한 하나의 정답은 없으며, 실루엣 점수 같은 방법으로 알맞은 K를 고른다.`,true]],
+   exp:`교안 16쪽 "Not be so easy to know how to set K", 교수님 10/26 "K를 잘 구해야 하는데 사실 정답은 없음". 그래서 k를 바꿔 가며 실루엣 점수를 구해 가장 높은 k를 고르는 방법을 씁니다(교안 18–19쪽).`,
+   src:[["D", "D6", "K-평균의 한계"], ["D", "D7", "K 정하기"]] },
+
+{ type:'mc',
+   lv:'중',
+   unit:"C SVM · ★ C와 마진 폭",
+   pts:5,
+   q:`<p>같은 데이터에 Penalty parameter C(벌점 매개변수)만 바꿔 Soft Margin SVM 네 개(가, 나, 다, 라)를 학습시켰다. 학습된 마진의 폭은 가 &gt; 나 &gt; 다 &gt; 라 순으로 넓었다. C가 가장 큰 모델은?</p>`,
+   choices:[`가`,`나`,`다`,`라`],
+   answer:[4],
+   exp:`C가 클수록 오류 벌점이 커져 데이터를 빡빡하게 나누므로 마진이 <b>좁아집니다</b>(교안 19쪽 Large C → Small margin). 따라서 마진이 가장 좁은 라가 C가 가장 크고, 마진이 가장 넓은 가가 C가 가장 작습니다. 라는 과적합, 가는 과소적합 위험이 가장 큽니다(교수님 10/26 "외우자").`,
+   src:[["C", "C5", "벌점 매개변수 C"]] },
+
+{ type:'short',
+   lv:'중',
+   unit:"B 회귀 · 단순 선형 회귀",
+   pts:5,
+   q:`<p>독립변수가 하나이고, 맞추는 모양이 직선인 회귀를 무엇이라 하는가? (한글 또는 영어)</p>`,
+   show:`단순 선형 회귀(Simple linear regression)`,
+   alt:["단순 선형 회귀", "단순선형회귀", "단순 선형회귀", "Simple linear regression", "simple linear regression", "Simple Linear Regression"],
+   exp:`교안 5쪽 네 칸: 단순(x 1개)·다중(x 2개 이상) × 선형(직선·평면)·비선형(곡선·곡면). x 하나 + 직선 = 단순 선형 회귀(Y = β<sub>0</sub> + β<sub>1</sub>X + ε, 교안 7쪽)입니다. 철자 주의: 회귀(○), 회기(✕).`,
+   src:[["B", "B3", "회귀의 분류"], ["B", "B4", "단순 선형 회귀"]] }
+];
+</script>
+</body>
+</html>
