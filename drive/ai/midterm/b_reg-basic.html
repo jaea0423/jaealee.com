@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>인공지능 B. 회귀 — 기본 문제</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>:root{ --subject:#5B3CF5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../exam-engine/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다. 이 파일은 drive/exam-engine/exam.css · exam.js 와 함께 있어야 열립니다.</div>
+<script>
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'인공지능',
+  title:'B. 회귀 — 기본 문제',
+  written:'2026년 10월 26일 작성',
+  slug:'ai-mid-b_reg-basic',
+  lectureBase:'../lecture',
+  level:'하',
+  mcMax:0.7,
+  scope:`회귀 — 10/26 복습 수업 범위(교안 Regression 3, 4, 5, 7, 12, 13, 23, 24, 25쪽)`,
+  oxLabels:["O", "X"],
+  srcHref:"slides.html"
+};
+const EXAM = [
+{ type:'mc',
+   lv:'하',
+   unit:"회귀의 정의",
+   pts:10,
+   q:`<p>다음 중 회귀에서 입력 x를 가리키는 이름을 모두 고르시오. (모두 고르시오)</p>`,
+   choices:[`Feature`,`Response`,`Predictor`,`Target`,`Attribute`],
+   answer:[1, 3, 5],
+   exp:`입력 x(독립변수)의 다른 이름은 Input, <b>Feature</b>(특징), <b>Attribute</b>(속성), <b>Predictor</b>(예측변수), Risk factor입니다. <b>Response</b>(반응변수)와 <b>Target</b>(타깃)은 출력 y(종속변수)의 이름입니다(교안 3쪽).`,
+   multi:true,
+   src:[["B", "B2", "회귀의 정의"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"회귀의 정의",
+   pts:10,
+   q:`<p>Linear regression(선형 회귀)의 두 가지 목적을 바르게 짝지은 것은?</p>`,
+   choices:[`라벨이 없는 데이터를 비슷한 것끼리 묶고, 묶음의 개수를 정한다`,`Y를 보고 X의 값을 예측하고, X들 사이의 관계를 찾는다`,`X와 Y의 관계를 수학식으로 설명하고, Y의 미래 값을 예측한다`,`샘플을 0 또는 1로 분류하고, 분류 기준값을 정한다`],
+   answer:[3],
+   exp:`교안 4쪽 Objective: ① X와 Y의 관계를 수학식으로 <b>설명</b>(Explain the relationship) ② 반응 변수 Y의 미래 값을 <b>예측</b>(Predict the future value). 라벨 없이 묶는 것은 군집화(D), 0/1 분류는 로지스틱 회귀의 일입니다. 예측하는 쪽은 X가 아니라 <b>Y</b>입니다.`,
+   src:[["B", "B2", "회귀의 정의"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"회귀의 분류",
+   pts:10,
+   q:`<p>y = b<sub>0</sub> + b<sub>1</sub>x + b<sub>2</sub>x<sup>2</sup> 모델은 어느 회귀에 해당하는가?</p>`,
+   choices:[`Simple nonlinear regression(단순 비선형 회귀)`,`Simple linear regression(단순 선형 회귀)`,`Multiple linear regression(다중 선형 회귀)`,`Multiple nonlinear regression(다중 비선형 회귀)`],
+   answer:[1],
+   exp:`단순·다중은 항의 수가 아니라 <b>독립변수 x의 개수</b>로 나눕니다. 이 모델의 독립변수는 x 하나뿐이므로 <b>단순</b> 회귀입니다. x<sup>2</sup> 항 때문에 곡선을 맞추므로 <b>비선형</b>(다항 모델)입니다(교안 5쪽 그림). 항이 셋이라고 다중 회귀로 고르는 것이 흔한 실수입니다.`,
+   src:[["B", "B3", "회귀의 분류"]] },
+
+{ type:'short',
+   lv:'하',
+   unit:"회귀의 분류",
+   pts:10,
+   q:`<p>독립변수가 두 개 이상인 회귀를 무엇이라 하는가? (영어 또는 한글)</p>`,
+   show:`Multiple regression(다중 회귀)`,
+   alt:["Multiple regression", "multiple regression", "Multiple Regression", "다중 회귀", "다중회귀", "다중 회귀분석", "Multiple linear regression"],
+   exp:`교안 5쪽 "Multiple regression: regression with two or more independent variables"입니다. 독립변수가 하나면 Simple regression(단순 회귀)입니다. 교수님 10/26: 두 정의를 알아 둘 것.`,
+   src:[["B", "B3", "회귀의 분류"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"결정계수 R²",
+   pts:10,
+   q:`<p>Coefficient of Determination(결정계수, R²) 값과 그 뜻을 연결한 것으로 옳지 <b>않은</b> 것은?</p>`,
+   choices:[`R² = 1: SSE가 0이며, 모든 데이터를 정확히 맞춘다`,`R² = 0: 평균 ȳ로 예측하는 것과 같은 수준이다`,`R²가 음수: 평균 ȳ로 예측하는 것보다 못하다`,`R² = −1: 가능한 가장 나쁜 값이며, R²는 이보다 작아질 수 없다`],
+   answer:[4],
+   exp:`R²가 <b>음수</b>이면 평균으로 예측하는 것보다 못하다는 뜻이고, <b>−1은 하한이 아닙니다.</b> SSE가 SST보다 클수록 R²는 −1보다 더 작아질 수 있습니다. (필기에는 "−1이면 평균보다 못 맞춘다"고 적혔지만 정확히는 "음수이면"입니다.) R² = 0은 평균 수준이지 평균보다 못한 것이 아닙니다.`,
+   src:[["B", "B5", "결정계수 R²"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"결정계수 R²",
+   pts:10,
+   q:`<p>평균선 ȳ, 회귀선 ŷ, 실제값 y<sub>i</sub>로 SST, SSR, SSE를 설명한 것으로 옳은 것을 모두 고르시오. (모두 고르시오)</p>`,
+   choices:[`SST는 평균 ȳ에서 실제값 y<sub>i</sub>까지의 거리를 제곱해 더한 값이다`,`SSR은 평균 ȳ에서 예측값 ŷ<sub>i</sub>까지의 거리를 제곱해 더한 값이다`,`SSE는 평균 ȳ에서 예측값 ŷ<sub>i</sub>까지의 거리를 제곱해 더한 값이다`,`모델이 좋아질수록 SSR이 커지고 SSE가 작아진다`,`SSR이 작아질수록 R²는 1에 가까워진다`],
+   answer:[1, 2, 4],
+   exp:`SST = 평균→정답(전체 변동), SSR = 평균→예측(모델이 설명한 변동), SSE = <b>예측→정답</b>(틀린 정도)입니다(교안 13쪽). 셋째 보기는 SSR의 설명입니다. SST는 고정이므로 좋은 모델일수록 SSR 몫이 커지고 SSE 몫이 작아집니다. 교수님 10/26: "SSR이 높아져야 한다." 따라서 R²는 SSR이 <b>커질수록</b> 1에 가까워집니다.`,
+   multi:true,
+   src:[["B", "B5", "결정계수 R²"]] },
+
+{ type:'short',
+   lv:'하',
+   unit:"결정계수 R²",
+   pts:10,
+   q:`<p>SST = SSR + SSE에서 모델의 예측이 틀린 정도, 즉 모델이 설명하지 못한 변동을 나타내는 것은? (약어)</p>`,
+   show:`SSE(Error Sum of Squares)`,
+   alt:["SSE", "sse", "Error Sum of Squares", "오차 제곱합", "잔차 제곱합"],
+   exp:`SSE는 실제값 y<sub>i</sub>와 예측값 ŷ<sub>i</sub>의 차이를 제곱해 더한 값입니다(교안 13쪽). 교수님 10/26: "SSE는 예측값이 틀린 정도." 모델이 설명한 변동은 SSR, 전체 변동은 SST입니다.`,
+   src:[["B", "B5", "결정계수 R²"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"로지스틱 회귀",
+   pts:10,
+   q:`<p>출력이 0 또는 1인 데이터(예: 카드 잔액으로 채무불이행 여부 예측)에 선형 회귀 대신 Logistic regression(로지스틱 회귀)을 쓰는 이유로 가장 알맞은 것은?</p>`,
+   choices:[`로지스틱 회귀는 독립변수를 하나만 쓸 수 있기 때문`,`선형 회귀의 직선은 0보다 작거나 1보다 큰 값을 낼 수 있지만, 로지스틱 회귀의 출력은 항상 0과 1 사이이기 때문`,`로지스틱 회귀는 계수 β<sub>0</sub>, β<sub>1</sub>을 쓰지 않기 때문`,`선형 회귀는 데이터의 변동을 전혀 설명할 수 없기 때문`],
+   answer:[2],
+   exp:`교안 23쪽 비교 그림: 직선은 0 아래로 내려가고 1에 닿지 못하지만, S자 곡선은 항상 0과 1 사이에 있습니다. 그래서 확률로 읽고 분류할 수 있습니다. 로지스틱 회귀도 β<sub>0</sub> + β<sub>1</sub>X를 그대로 쓰고, 이를 시그모이드에 넣을 뿐입니다(교안 24쪽).`,
+   src:[["B", "B6", "로지스틱 회귀"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"로지스틱 회귀",
+   pts:10,
+   q:`<p>로지스틱 회귀에서 시그모이드 출력으로 0 또는 1을 정하는 기준값에 대한 설명으로 옳은 것은?</p>`,
+   choices:[`기준값은 항상 0.5로 고정되어 있어 바꿀 수 없다`,`기준값은 0이며, 시그모이드 출력이 음수이면 0으로 분류한다`,`특별한 말이 없으면 0.5를 쓰고, 필요에 따라(예: 병원에서 환자 분류의 민감도를 높일 때) 바꿀 수 있다`,`기준값은 학습한 절편 β<sub>0</sub>의 값과 같다`],
+   answer:[3],
+   exp:`교수님 10/26: "가까운 쪽으로 0 또는 1로 분류한다. 일반적으로 0.5 기준이고, 특별한 말이 없으면 0.5이며 규정에 따라 바꾸기도 한다(병원에서 민감도를 높이는 경우)." 시그모이드 출력은 0과 1 사이이므로 음수가 나오지 않습니다.`,
+   src:[["B", "B6", "로지스틱 회귀"]] },
+
+{ type:'short',
+   lv:'하',
+   unit:"회귀의 정의",
+   pts:10,
+   q:`<p>다음 ( )에 공통으로 들어갈 말을 한글로 쓰시오.</p><p>· 출력 Y를 입력 X들의 선형 결합으로 나타내 실수값을 예측하는 방법은 선형 ( )이다.<br>· 로지스틱 ( )는 이름과 달리 분류 문제에 쓴다.</p>`,
+   show:`회귀`,
+   alt:["회귀", "Regression", "regression", "회귀분석"],
+   exp:`Regression = <b>회귀</b>입니다. 필기에 자주 나온 "회기"는 오기이므로 주관식에서 철자에 주의합니다. 선형 회귀는 실수값을 예측하고, 로지스틱 회귀는 이를 분류 문제로 가져갑니다(교안 4, 23쪽).`,
+   src:[["B", "B2", "회귀의 정의"], ["B", "B6", "로지스틱 회귀"]] }
+];
+</script>
+</body>
+</html>

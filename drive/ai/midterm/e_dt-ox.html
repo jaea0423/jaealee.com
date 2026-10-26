@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>인공지능 E. 결정 트리 — OX</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>:root{ --subject:#5B3CF5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../exam-engine/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다. 이 파일은 drive/exam-engine/exam.css · exam.js 와 함께 있어야 열립니다.</div>
+<script>
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'인공지능',
+  title:'E. 결정 트리 — OX',
+  written:'2026년 10월 26일 작성',
+  slug:'ai-mid-e_dt-ox',
+  lectureBase:'../lecture',
+  level:'기초',
+  mcMax:1,
+  scope:`결정 트리 — 10/26 복습 수업 범위(교안 Decision Tree 3, 5, 6, 7, 16, 17, 28, 29, 33쪽)`,
+  oxLabels:["O", "X"],
+  srcHref:"slides.html"
+};
+const EXAM = [
+{ type:'ox',
+   lv:'기초',
+   unit:"트리 용어 · 분할 기준",
+   pts:30,
+   q:`<p>Decision Tree(결정 트리)의 구조와 분할 기준에 대한 설명이다. 각 문장이 맞으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[[`Root node(루트 노드)는 트리의 맨 위 노드이며, 그 depth(깊이)는 0이다.`,true],[`Leaf node(리프 노드)는 자식 노드가 없는 끝 노드이다.`,true],[`결정 트리는 학습 전에 feature scaling(특징 스케일링)을 반드시 해야 한다.`,false],[`Gini's diversity index(지니 다양성 지수)는 노드의 impurity(불순도)를 재는 척도이다.`,true],[`분산(MSE)은 주로 분류 트리의 분할 기준으로 쓰고, 지니와 엔트로피는 주로 회귀 트리에 쓴다.`,false],[`결정 트리가 노드를 나누어 아래로 가지를 뻗어 가는 것을 Pruning(가지치기)이라 한다.`,false]],
+   exp:`<b>ㄱ (O)</b> 교안 3쪽 "The topmost node of a tree with depth 0". 루트에서 한 칸 내려갈 때마다 깊이가 1씩 늘어 0, 1, 2…가 됩니다.<br><b>ㄴ (O)</b> 교안 3쪽 "A node that has no children (a terminal node)". 예측은 이 리프에서 나옵니다.<br><b>ㄷ (X)</b> 교안 3쪽 "Decision trees don't require feature scaling or centering at all." 노드는 "특징 하나 ≤ 기준값?"만 묻기 때문에, 단위가 바뀌어도 기준값만 같이 바뀌고 분할 결과는 같습니다.<br><b>ㄹ (O)</b> 교안 5쪽 "a measure of a node's impurity". 지니는 분류 트리의 분할 기준입니다.<br><b>ㅁ (X)</b> 반대입니다. 지니·엔트로피는 <b>분류</b>, 분산(MSE)은 <b>회귀</b>에 주로 씁니다(교안 5쪽, 교수님 10/26). 클래스가 섞인 정도는 분류에서만 의미가 있고, 실수값은 평균에서 흩어진 정도(분산)로 잽니다.<br><b>ㅂ (X)</b> 노드를 나누는 것은 <b>분할(split)</b>입니다. Pruning(가지치기)은 반대로 트리가 자라는 것을 제한하는 것으로 다른 말입니다(필기 "가지치며 나가는데"를 바로잡은 부분).`,
+   src:[["E", "E2", "트리 용어"], ["E", "E3", "좋은 분할의 기준"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"불순도 · 엔트로피 · 정보 이득",
+   pts:45,
+   q:`<p>노드의 impurity(불순도)와 분할 선택에 대한 설명이다. 각 문장이 맞으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[[`한 노드 안에 여러 클래스가 고르게 섞여 있을수록 Impurity(불순도)가 높다.`,true],[`3클래스 노드에서 비율이 1/3 · 1/3 · 1/3인 노드는 80% · 10% · 10%인 노드보다 불순도가 낮다.`,false],[`결정 트리는 분할한 뒤 자식 노드의 불순도가 낮아지도록 나누는 것을 목표로 한다.`,true],[`한 클래스의 샘플로만 이루어진 노드의 지니 지수는 0이다.`,true],[`Entropy(엔트로피)는 노드의 uncertainty(불확실성)를 재는 값이다.`,true],[`엔트로피는 모든 클래스가 같은 비율로 섞여 있을 때 최소가 된다.`,false],[`Information Gain(정보 이득)은 분할로 엔트로피가 얼마나 줄었는지를 재는 값이다.`,true],[`ID3는 Information Gain(정보 이득)이 가장 작은 속성을 골라 노드를 나눈다.`,false],[`좋은 분할은 불순도 감소량이 작은 분할이다.`,false]],
+   exp:`<b>ㄱ (O)</b> 교안 6쪽, 교수님 10/26. 클래스가 다양하게 섞이면 불순도가 높고, 한 클래스뿐이면 불순도가 0(순수)입니다.<br><b>ㄴ (X)</b> <b>높습니다.</b> 고르게 섞일수록 불순도가 큽니다. 80% · 10% · 10%는 한 클래스가 대부분이라 불순도가 더 낮은 편입니다(교수님 10/26 예).<br><b>ㄷ (O)</b> 교수님 10/26 "우리의 목표는 불순도가 낮은 것". 자식 노드가 한 클래스에 가까울수록 좋은 분할입니다.<br><b>ㄹ (O)</b> 교안 6쪽 "ranges from 0 (100% pure node)". 지니는 0(완전히 순수)에서 시작해, 섞일수록 커집니다.<br><b>ㅁ (O)</b> 교안 7쪽 "Entropy measures the uncertainty in a node." 교수님도 "엔트로피는 불확실성"이라고 하셨습니다.<br><b>ㅂ (X)</b> <b>최대</b>가 됩니다. 교안 7쪽 "maximized when all classes are equally likely and equals zero when the node contains only one class." 최소(0)는 한 클래스뿐일 때입니다.<br><b>ㅅ (O)</b> 교안 17쪽 "Information gain measures the reduction in entropy." 나누기 전 엔트로피에서 나눈 뒤 엔트로피(그룹 크기 비율로 평균)를 뺀 값입니다.<br><b>ㅇ (X)</b> <b>가장 큰</b> 속성을 고릅니다. 교안 16쪽 "selects the attribute with the highest information gain." 정보 이득이 크다는 것은 불확실성이 많이 줄었다는 뜻입니다.<br><b>ㅈ (X)</b> 불순도 <b>자체</b>는 낮출수록, 불순도 <b>감소량</b>은 클수록 좋습니다(교수님 10/26 "불순도는 낮추고, 감소량은 큰 것을 찾는다(주의)"). 감소량이 크다는 것은 나눈 뒤 많이 깨끗해졌다는 뜻입니다.`,
+   src:[["E", "E4", "불순도와 지니"], ["E", "E5", "엔트로피"], ["E", "E6", "ID3와 정보 이득"], ["E", "E7", "방향 정리"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"트리로 예측 · 회귀 트리",
+   pts:25,
+   q:`<p>완성된 결정 트리로 예측하는 과정과 회귀 트리에 대한 설명이다. 각 문장이 맞으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[[`새 샘플은 루트 노드에서 시작해 각 노드의 질문에 답하며 리프 노드까지 내려가고, 도달한 리프의 클래스로 분류된다.`,true],[`도달한 리프에 여러 클래스의 학습 샘플이 섞여 있으면, 그 리프에서 가장 많은 클래스로 예측한다.`,true],[`Decision Tree Regression(회귀 트리)에서 리프의 예측값은 그 리프에 속한 학습 샘플 y값의 평균이다.`,true],[`회귀 트리는 노드의 MSE가 커지는 방향으로 분할한다.`,false],[`특징 두 개로 만든 회귀 트리는 한 번에 특징 하나와 기준값 하나로 나누므로, 영역의 경계가 축에 평행한 직선이 된다.`,true]],
+   exp:`<b>ㄱ (O)</b> 교수님 10/26 "이미 만든 트리를 탐색하면서 새로운 데이터를 분류". 지나지 않은 노드의 특징은 예측에 쓰이지 않습니다.<br><b>ㄴ (O)</b> 교수님 10/26 "애매하면 다수 쪽으로". 예: 리프 value = [0, 49, 5]이면 49개인 클래스로 예측합니다.<br><b>ㄷ (O)</b> 교안 29쪽 그림의 value, 교수님 10/26 "value는 샘플들의 평균값". 회귀는 클래스가 아니라 실수값을 예측합니다.<br><b>ㄹ (X)</b> MSE(실제값과 예측값의 차이)를 <b>줄이는</b> 방향으로 나눕니다(교수님 10/26). 분류 트리에서 불순도를 낮추는 것과 같은 역할입니다.<br><b>ㅁ (O)</b> 교안 33쪽 야구 연봉 예제: 경력 ≤ 11년(세로선), 안타 ≤ 65개(가로선)로 나눠 평면이 직사각형 영역 3개가 되고, 각 영역은 그 영역 연봉의 평균을 예측합니다.`,
+   src:[["E", "E8", "완성된 트리로 예측"], ["E", "E9", "회귀 트리"], ["E", "E10", "야구 연봉 예제"]] }
+];
+</script>
+</body>
+</html>

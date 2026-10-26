@@ -3817,7 +3817,8 @@ body.toc-on .scrim{display:block}
     const h = decodeURIComponent(location.hash.slice(1));
     if (/^\d+$/.test(h)) return +h - 1;
     const m = h.match(/^s(\d+)$/);
-    const k = m ? slides.findIndex(x => x.dataset.sec === m[1].padStart(2, '0')) : slides.findIndex(x => h && x.id === h);
+    // 중간고사 덱처럼 섹션이 글자+숫자(#C5)이면 그 섹션의 첫 장으로
+    const k = m ? slides.findIndex(x => x.dataset.sec === m[1].padStart(2, '0')) : /^[A-Z]\d+$/.test(h) ? slides.findIndex(x => x.dataset.sec === h) : slides.findIndex(x => h && x.id === h);
     return k >= 0 ? k : null;
   }
   addEventListener('hashchange', () => { const k = fromHash(); if (k !== null) show(k); });

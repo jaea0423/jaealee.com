@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>인공지능 E. 결정 트리 — 기본 문제</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>:root{ --subject:#5B3CF5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../exam-engine/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다. 이 파일은 drive/exam-engine/exam.css · exam.js 와 함께 있어야 열립니다.</div>
+<script>
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'인공지능',
+  title:'E. 결정 트리 — 기본 문제',
+  written:'2026년 10월 26일 작성',
+  slug:'ai-mid-e_dt-basic',
+  lectureBase:'../lecture',
+  level:'하',
+  mcMax:0.7,
+  scope:`결정 트리 — 10/26 복습 수업 범위(교안 Decision Tree 3, 5, 6, 7, 16, 17, 28, 29, 33쪽)`,
+  oxLabels:["O", "X"],
+  srcHref:"slides.html"
+};
+const EXAM = [
+{ type:'mc',
+   lv:'하',
+   unit:"트리 용어",
+   pts:10,
+   q:`<p>어떤 결정 트리에서 Root node(루트 노드)의 질문에 참이면 바로 Leaf node(리프 노드)에 닿고, 거짓이면 자식 노드로 간다. 이 자식 노드는 다시 질문 하나로 리프 노드 두 개로 나뉜다. 이 트리의 depth(깊이)는?</p>`,
+   choices:[`0`,`1`,`2`,`3`],
+   answer:[3],
+   exp:`루트가 깊이 0, 그 아래 자식이 깊이 1, 가장 아래 리프 두 개가 깊이 2입니다. 가장 깊은 리프의 깊이가 트리의 깊이이므로 <b>2</b>입니다(교안 3쪽, 교수님 10/26 "depth는 2, 0·1·2"). 3은 노드 층 수(3층)를 센 실수이고, 1은 루트를 깊이 1로 센 실수입니다.`,
+   src:[["E", "E2", "트리 용어"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"분할 기준",
+   pts:10,
+   q:`<p>결정 트리의 분할 기준과 그 기준을 주로 쓰는 문제의 짝으로 옳지 <b>않은</b> 것은?</p>`,
+   choices:[`Information Gain(정보 이득) — 회귀`,`Gini's diversity index(지니 다양성 지수) — 분류`,`Entropy(엔트로피) — 분류`,`분산(MSE) — 회귀`],
+   answer:[1],
+   exp:`Information Gain(정보 이득)은 <b>엔트로피</b>로 계산하는 값이므로 분류 트리(ID3)에서 씁니다(교안 16쪽). 회귀 트리의 분할 기준은 분산(MSE)입니다(교안 5쪽). 지니·엔트로피는 분류, 분산은 회귀라는 짝은 교수님 10/26 말씀 그대로입니다.`,
+   src:[["E", "E3", "좋은 분할의 기준"], ["E", "E6", "ID3와 정보 이득"]] },
+
+{ type:'short',
+   lv:'하',
+   unit:"불순도",
+   pts:10,
+   q:`<p>결정 트리의 한 노드에 들어온 샘플들의 클래스가 여러 가지로 섞여 있는 정도를 뜻하며, Gini's diversity index(지니 다양성 지수)로 재는 값이다. 이 값을 무엇이라 하는가? (영어 또는 한글)</p>`,
+   show:`Impurity(불순도)`,
+   alt:["Impurity", "impurity", "불순도", "impurity(불순도)", "불순도(Impurity)", "노드 불순도"],
+   exp:`교안 5쪽 "a measure of a node's impurity". 한 클래스뿐이면 불순도 0(순수), 여러 클래스가 고르게 섞일수록 높습니다. 트리는 불순도가 낮은 노드를 만들도록 나눕니다.`,
+   src:[["E", "E4", "불순도와 지니"]] },
+
+{ type:'short',
+   lv:'하',
+   unit:"불순도",
+   pts:10,
+   q:`<p>클래스가 3개인 문제에서 세 노드의 클래스 비율이 다음과 같다. 불순도가 <b>낮은</b> 노드부터 순서대로 기호를 쓰시오.</p><p>A: 1/3 · 1/3 · 1/3 &nbsp;&nbsp; B: 80% · 10% · 10% &nbsp;&nbsp; C: 100% · 0% · 0%</p>`,
+   show:`C, B, A`,
+   alt:["C B A", "CBA", "C,B,A", "C-B-A", "C → B → A", "C→B→A", "C, B, A 순"],
+   exp:`C는 한 클래스뿐이라 불순도 0(순수)으로 가장 낮습니다. B는 한 클래스가 대부분이라 더 낮은 편이고, A는 세 클래스가 고르게 섞여 가장 높습니다(교수님 10/26 예, 교안 6쪽). 엔트로피로 재도 순서가 같습니다(교안 7쪽: 한 클래스면 0, 고르게 섞이면 최대).`,
+   src:[["E", "E4", "불순도와 지니"], ["E", "E5", "엔트로피"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"방향",
+   pts:10,
+   q:`<p>결정 트리가 노드를 나눌 속성을 고르는 방법에 대한 설명으로 옳은 것을 고르시오. (모두 고르시오)</p>`,
+   choices:[`불순도 감소량이 가장 큰 분할을 고른다.`,`자식 노드들의 Entropy(엔트로피)가 가장 커지는 속성을 고른다.`,`Information Gain(정보 이득)은 나누기 전 엔트로피에서 나눈 뒤 엔트로피를 뺀 값이다.`,`지니 지수가 0인 자식 노드는 클래스가 고르게 섞인 노드이다.`,`정보 이득이 0에 가까운 속성일수록 분할에 우선 선택된다.`],
+   answer:[1, 3],
+   exp:`① O: 감소량이 클수록 나눈 뒤 많이 깨끗해진 것입니다(교수님 10/26 "감소량은 큰 것"). ② X: 엔트로피(불확실성)는 <b>낮아지는</b> 쪽이 좋습니다. ③ O: 교안 17쪽 "reduction in entropy" — 원래 불확실성에서 그 속성으로 나눈 뒤의 불확실성을 뺍니다. ④ X: 지니 0은 한 클래스뿐인 <b>순수한</b> 노드입니다(교안 6쪽). ⑤ X: 정보 이득이 0에 가깝다는 것은 나눠도 불확실성이 거의 줄지 않았다는 뜻입니다. ID3는 정보 이득이 <b>가장 큰</b> 속성을 고릅니다(교안 16쪽).`,
+   multi:true,
+   src:[["E", "E6", "ID3와 정보 이득"], ["E", "E7", "방향 정리"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"방향",
+   pts:10,
+   q:`<p>결정 트리를 만들 때 값이 <b>클수록</b> 좋은 분할을 뜻하는 것은?</p>`,
+   choices:[`자식 노드의 지니 지수`,`자식 노드의 Entropy(엔트로피)`,`회귀 트리 리프의 MSE`,`Information Gain(정보 이득)`],
+   answer:[4],
+   exp:`정보 이득은 줄어든 엔트로피의 양이므로 <b>높일수록</b> 좋습니다. 나머지 셋(지니·엔트로피·MSE)은 모두 <b>낮출수록</b> 좋습니다(교수님 10/26 "정보 이득은 높이고, 엔트로피는 낮춘다"). 값 자체(불순도)와 줄어든 양(감소량·정보 이득)의 방향이 반대라는 점이 함정입니다.`,
+   src:[["E", "E7", "방향 정리"]] },
+
+{ type:'short',
+   lv:'하',
+   unit:"English",
+   pts:10,
+   q:`<p>다음 문장의 빈칸 두 곳에 공통으로 들어갈 말을 영어로 쓰시오.</p><p>"ID3 (Iterative Dichotomiser 3) uses entropy to calculate ( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ) and selects the attribute with the highest ( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )."</p>`,
+   show:`information gain`,
+   alt:["Information Gain", "Information gain", "information gain", "informationgain", "IG", "정보 이득", "정보이득"],
+   exp:`교안 16쪽 문장입니다. 뜻: "ID3는 엔트로피로 정보 이득을 계산하고, 정보 이득이 가장 큰 속성을 고른다." 정보 이득 = 나누기 전 엔트로피 − 나눈 뒤 엔트로피(교안 17쪽).`,
+   src:[["E", "E6", "ID3와 정보 이득"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"트리로 예측",
+   pts:10,
+   q:`<p>고객의 구매 여부를 예측하는 결정 트리가 있다. 루트 노드는 "나이 그룹?"이다.</p><p>· 청소년 → "학생 여부?" → 예: 구매 / 아니오: 비구매<br>· 청년 → 리프 "구매"<br>· 중년 → "신용 등급?" → 보통: 구매 / 우수: 비구매</p><p>이 트리가 <b>비구매</b>로 예측하는 고객은?</p>`,
+   choices:[`청년 · 학생 아님 · 신용 등급 우수`,`청소년 · 학생 아님 · 신용 등급 보통`,`중년 · 학생 아님 · 신용 등급 보통`,`청소년 · 학생 · 신용 등급 우수`],
+   answer:[2],
+   exp:`청소년 → 학생 여부 → 아니오 → <b>비구매</b>입니다. 청년은 학생 여부·신용 등급을 묻지 않고 바로 리프 "구매"에 닿습니다(교수님 10/26 "청년이면 바로 중앙 클래스"). 중년 · 신용 보통은 구매, 청소년 · 학생은 구매입니다. 경로에 없는 노드의 특징(예: 청년의 신용 등급)은 예측에 쓰이지 않는 것이 함정입니다(교안 28쪽 트리).`,
+   src:[["E", "E8", "완성된 트리로 예측"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"회귀 트리",
+   pts:10,
+   q:`<p>Decision Tree Regression(회귀 트리)에 대한 설명으로 옳은 것을 고르시오. (모두 고르시오)</p>`,
+   choices:[`리프 노드가 클래스 대신 실수값을 예측한다.`,`리프에 여러 값이 섞여 있으면 가장 많이 나온 값(다수)으로 예측한다.`,`결정 트리는 분류에만 쓸 수 있으므로 회귀에는 다른 모델을 써야 한다.`,`분산(MSE)을 기준으로 노드를 나눈다.`,`새 샘플도 루트부터 리프까지 내려가 도달한 리프의 값을 예측으로 낸다.`],
+   answer:[1, 4, 5],
+   exp:`① O: 회귀는 0이냐 1이냐가 아니라 실수형 예측값을 냅니다(교수님 10/26). ② X: 다수 클래스로 예측하는 것은 <b>분류</b> 트리입니다. 회귀 트리 리프는 그 리프 샘플 y값의 <b>평균</b>을 냅니다. ③ X: 교안 29쪽 "Decision trees are also capable of performing regression tasks." ④ O: 분산(MSE)은 회귀용 분할 기준이며, MSE를 줄이는 방향으로 나눕니다(교안 5쪽). ⑤ O: 탐색 방법은 분류 트리와 같고, 리프가 내는 값만 다릅니다.`,
+   multi:true,
+   src:[["E", "E9", "회귀 트리"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"회귀 트리 예제",
+   pts:10,
+   q:`<p>경력 연수와 안타 수로 야구 선수의 연봉을 예측하는 회귀 트리가 있다.</p><p>· 경력 ≤ 11년? 아니오 → 55M<br>· 경력 ≤ 11년? 예 → 안타 ≤ 65개? 예: 25M / 아니오: 45M</p><p>경력 15년, 안타 30개인 선수의 예측 연봉은?</p>`,
+   choices:[`25M`,`45M`,`55M`,`25M와 55M의 평균인 40M`],
+   answer:[3],
+   exp:`첫 분할에서 경력 15년은 11년 <b>초과</b>이므로 오른쪽 리프 55M에 바로 닿습니다. 안타 수는 11년 이하 쪽에서만 묻기 때문에 이 선수에게는 쓰이지 않습니다. 각 리프 값은 그 영역에 속한 학습 선수 연봉의 평균(Region Mean)이며, 리프끼리 다시 평균 내지 않습니다(교안 33쪽).`,
+   src:[["E", "E10", "야구 연봉 예제"]] }
+];
+</script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>인공지능 C. 서포트 벡터 머신(SVM) — 기본 문제</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>:root{ --subject:#5B3CF5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../exam-engine/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다. 이 파일은 drive/exam-engine/exam.css · exam.js 와 함께 있어야 열립니다.</div>
+<script>
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'인공지능',
+  title:'C. 서포트 벡터 머신(SVM) — 기본 문제',
+  written:'2026년 10월 26일 작성',
+  slug:'ai-mid-c_svm-basic',
+  lectureBase:'../lecture',
+  level:'하',
+  mcMax:0.7,
+  scope:`서포트 벡터 머신(SVM) — 10/26 복습 수업 범위(교안 Classification: Support Vector Machine 2, 7, 14, 15, 18, 19, 25, 28, 32쪽)`,
+  oxLabels:["O", "X"],
+  srcHref:"slides.html"
+};
+const EXAM = [
+{ type:'mc',
+   lv:'하',
+   unit:"SVM 정의",
+   pts:10,
+   q:`<p>다음은 SVM의 정의이다. 빈칸에 들어갈 말로 옳은 것은?</p><p>"Support vector machine (SVM) is a supervised learning model that constructs a decision boundary by ( &nbsp;&nbsp; ) the margin between classes, using support vectors, and extends to nonlinear boundaries through the kernel trick."</p>`,
+   choices:[`minimizing`,`averaging`,`maximizing`,`ignoring`],
+   answer:[3],
+   exp:`SVM은 클래스 사이의 마진을 <b>최대화(maximizing)</b>하여 결정 경계를 만듭니다(교안 2쪽). 마진은 경계와 가장 가까운 샘플까지의 거리이므로, 이 거리를 가장 크게 해야 두 클래스를 여유 있게 나눌 수 있습니다. 교수님 10/26: "결정 경계를 마진을 최대화하도록 만듦".`,
+   src:[["C", "C2", "SVM 정의"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"최대 마진 초평면",
+   pts:10,
+   q:`<p>두 클래스를 오류 없이 나누는 Hard Margin SVM(하드 마진 SVM)의 결정 경계에 대한 설명으로 옳은 것은?</p>`,
+   choices:[`결정 경계는 서포트 벡터들로 정해지며, 두 마진 경계의 정확히 가운데에 놓인다.`,`결정 경계는 모든 학습 샘플까지의 평균 거리가 가장 큰 초평면이다.`,`결정 경계에서 가장 멀리 떨어진 학습 샘플들이 서포트 벡터가 된다.`,`서포트 벡터가 아닌 샘플 하나를 마진 바깥에서 조금 옮기면 결정 경계도 함께 움직인다.`],
+   answer:[1],
+   exp:`경계를 정하는 것은 마진 위에 놓인 <b>서포트 벡터</b>뿐이고, 결정 경계(실선)는 두 마진 경계(점선)의 가운데입니다(교안 7쪽, 교수님 10/26 "마진을 최대화시키는 중간 경계").<br>② 마진은 평균 거리가 아니라 <b>가장 작은</b> 거리입니다.<br>③ 서포트 벡터는 경계에 <b>가장 가까운</b> 샘플(거리 = 마진)입니다.<br>④ 서포트 벡터가 아닌 샘플은 마진 바깥에 있으므로 조금 움직여도 경계가 그대로입니다.`,
+   src:[["C", "C3", "최대 마진 초평면"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"소프트 마진의 서포트 벡터",
+   pts:10,
+   q:`<p>Soft Margin SVM(소프트 마진 SVM)에서 Support vector(서포트 벡터)가 되는 학습 샘플을 고르시오. (모두 고르시오)</p>`,
+   choices:[`마진 경계 위에 정확히 놓인 샘플`,`자기 클래스의 마진 경계 바깥에 멀리 떨어진 샘플`,`마진 안으로 들어왔지만 초평면 기준으로는 자기 클래스 편에 있는 샘플`,`초평면 반대편에 놓여 잘못 분류된 샘플`,`결정 경계에서 가장 멀리 떨어진 샘플`],
+   answer:[1, 3, 4],
+   exp:`정답 ①③④. 소프트 마진의 서포트 벡터는 "마진 위에 정확히 놓인 점 + 자기 클래스 기준으로 마진의 반대편에 놓인 점"입니다(교안 15쪽 "Points lying directly on the margin, or on the wrong side of the margin for their class"). 마진을 침범한 점과 초평면을 넘어 오분류된 점이 모두 포함됩니다.<br>②⑤ 자기 편 마진 바깥에 있는 점(결정 경계에서 가장 먼 점 포함)은 경계를 정하지 않으므로 서포트 벡터가 아닙니다. 하드 마진은 마진 위의 점만 서포트 벡터라는 점과 구분하십시오.`,
+   multi:true,
+   src:[["C", "C3", "최대 마진 초평면"], ["C", "C4", "소프트 마진 SVM"]] },
+
+{ type:'short',
+   lv:'하',
+   unit:"최대 마진 초평면",
+   pts:10,
+   q:`<p>SVM에서 마진을 만드는 점, 즉 초평면까지의 거리가 마진과 같아 결정 경계의 위치를 정하는 학습 샘플을 영어로 쓰시오.</p>`,
+   show:`Support vector(서포트 벡터)`,
+   alt:["Support vector", "Support vectors", "support vector", "support vectors", "Supportvector", "서포트 벡터", "서포트벡터"],
+   exp:`교안 7쪽 "Support vectors: training observations whose distance to the hyperplane is equal to the margin". 필기에는 "소프트벡터"라고 적혔지만 용어는 <b>Support vector</b>입니다. "소프트"는 Soft margin(소프트 마진)의 소프트이므로 철자를 주의하십시오.`,
+   src:[["C", "C3", "최대 마진 초평면"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"소프트 마진 SVM",
+   pts:10,
+   q:`<p>Hard Margin SVM과 Soft Margin SVM을 비교한 설명으로 옳지 <u>않은</u> 것은?</p>`,
+   choices:[`Hard Margin SVM은 오류를 허용하지 않고, Soft Margin SVM은 어느 정도 허용한다.`,`Hard Margin SVM은 Maximal margin classifier(최대 마진 분류기), Soft Margin SVM은 Linear SVM이라고도 부른다.`,`두 방법 모두 초평면(선형 경계)으로 분류한다.`,`직선 하나로 완전히 나뉘지 않고 몇 개가 섞여 있는 데이터에는 Hard Margin SVM이 더 알맞다.`],
+   answer:[4],
+   exp:`하드 마진은 오류를 하나도 허용하지 않으므로 직선 하나로 <b>완전히 나뉘는</b> 데이터에만 쓸 수 있습니다. 섞여 있는 데이터에는 일부 샘플이 마진이나 초평면 반대편에 놓이는 것을 허용하는 <b>Soft Margin SVM</b>이 알맞습니다(교안 14쪽). 그래서 보통 소프트 마진을 씁니다(교수님 10/26).<br>나머지는 옳습니다. 소프트 마진도 "최대 마진 분류기처럼 초평면으로 분류"합니다(교안 14쪽), 이름은 교안 2쪽입니다.`,
+   src:[["C", "C2", "SVM 정의"], ["C", "C4", "소프트 마진 SVM"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"벌점 매개변수 C",
+   pts:10,
+   q:`<p>Soft Margin SVM이 학습 데이터는 거의 틀리지 않는데 새 데이터에서는 성능이 크게 떨어진다. 학습된 마진은 매우 좁았다. Penalty parameter C(벌점 매개변수)에 대한 판단으로 가장 알맞은 것은?</p>`,
+   choices:[`C가 너무 작아서 과적합이 생긴 것이므로 C를 키워 본다.`,`C가 너무 커서 Overfitting(과적합)이 생긴 것이므로 C를 줄여 본다.`,`C가 너무 커서 Underfitting(과소적합)이 생긴 것이므로 C를 더 키워 본다.`,`C는 마진의 폭과 관계가 없으므로 C는 그대로 두어도 된다.`],
+   answer:[2],
+   exp:`학습 데이터에는 잘 맞고 새 데이터에서 성능이 떨어지는 것은 과적합입니다(A 기계학습 입문). 좁은 마진·과적합은 <b>큰 C</b>의 결과입니다(교안 19쪽 Large C → Small margin, Overfitting). 따라서 C를 줄이면 마진이 넓어지고 오류를 더 허용해 단순해집니다.<br>① 필기 오기("C를 작게 잡으면 마진이 작아짐 … 오버피팅")와 같은 함정입니다. 작은 C는 넓은 마진·과소적합입니다.<br>③ 큰 C의 위험은 과소적합이 아니라 과적합입니다.<br>④ C는 마진 폭과 오류 허용 사이의 균형을 조절합니다(교안 18쪽).`,
+   src:[["C", "C5", "벌점 매개변수 C"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"벌점 매개변수 C",
+   pts:10,
+   q:`<p>Penalty parameter C(벌점 매개변수)에 대한 설명으로 옳은 것을 고르시오. (모두 고르시오)</p>`,
+   choices:[`C는 마진 폭과 분류 오류 허용 정도 사이의 trade-off(균형)를 조절한다.`,`C의 값은 cross-validation(교차 검증)으로 조정한다.`,`C는 음수 값도 가질 수 있다.`,`C는 Kernel function(커널 함수)의 종류를 고르는 매개변수이다.`,`C를 작은 값에서 큰 값으로 바꾸면 bias-variance tradeoff(편향-분산 트레이드오프)가 생긴다.`],
+   answer:[1, 2, 5],
+   exp:`정답 ①②⑤. 교안 18쪽: "Penalty parameter C controls the trade-off between margin width and the tolerance of classification errors. C is a hyperparameter that we tune using cross-validation. … As C goes from small to large, there is a bias-variance tradeoff."<br>③ "it must be non-negative" — C는 음수가 될 수 없습니다(0 이상).<br>④ C는 오류에 주는 벌점의 크기이고, 커널과는 별개의 설정값입니다.`,
+   multi:true,
+   src:[["C", "C5", "벌점 매개변수 C"]] },
+
+{ type:'short',
+   lv:'하',
+   unit:"SVM 정의",
+   pts:10,
+   q:`<p>SVM의 C처럼 학습으로 정해지는 값이 아니라, 모델을 학습시키기 전에 사람이 먼저 정해 주는 설정값을 영어로 쓰시오.</p>`,
+   show:`Hyperparameter(하이퍼파라미터)`,
+   alt:["Hyperparameter", "hyperparameter", "Hyper parameter", "hyper parameter", "Hyper-parameter", "hyper-parameter", "Hyperparameters", "하이퍼파라미터", "하이퍼 파라미터"],
+   exp:`교수님 10/26: "중요한 하이퍼 파라미터가 있음. 내가 모델 학습시키는 데 있어서 먼저 줘야 하는 값(설정값). C". 교안 18쪽도 "C is a hyperparameter"입니다. 학습 데이터로부터 모델이 스스로 구하는 값이 아니므로 교차 검증으로 골라 줍니다.`,
+   src:[["C", "C2", "SVM 정의"], ["C", "C5", "벌점 매개변수 C"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"비선형 SVM과 커널",
+   pts:10,
+   q:`<p>Kernel function(커널 함수)을 쓰는 비선형 SVM에 대한 설명으로 옳은 것은?</p>`,
+   choices:[`고차원 특징을 모두 직접 계산해 저장해야 하므로 계산이 비효율적인 방법이다.`,`원래 특징 공간에서 직선 경계만 만들 수 있다.`,`데이터를 (암묵적으로) 고차원 공간으로 옮긴 뒤, 그 공간에서 선형 결정 경계(초평면)로 SVM을 적용한다.`,`고차원으로 옮기지 않고 원래 공간에서 곡선 경계를 직접 찾는 방법이다.`],
+   answer:[3],
+   exp:`교안 28쪽: "They (implicitly) map data into a higher-dimensional space. We then apply a support vector classifier in this high-dimensional space with a linear decision boundary (hyperplane)." 고차원의 선형 경계는 원래 공간에서 비선형 경계가 됩니다(교안 25쪽).<br>① 커널은 고차원 내적을 <b>암묵적으로(implicitly)</b> 계산하므로 고차원 특징을 직접 만들지 않는 <b>효율적인(efficient)</b> 방법입니다.<br>② 커널을 쓰는 목적이 비선형 결정 경계입니다.<br>④ 커널은 데이터를 고차원으로 (암묵적으로) 옮겨 그곳에서 선형으로 나눕니다.`,
+   src:[["C", "C6", "특징 공간 확장"], ["C", "C7", "비선형 SVM과 커널"]] },
+
+{ type:'short',
+   lv:'하',
+   unit:"다중 클래스 SVM",
+   pts:10,
+   q:`<p>클래스가 3개 이상일 때, 클래스마다 "그 클래스 vs 나머지 전부"를 나누는 이진 SVM을 만들어 조합하는 방식을 영어로 쓰시오.</p>`,
+   show:`One versus all(하나 vs 나머지, One-versus-Rest)`,
+   alt:["One versus all", "One-versus-all", "One vs all", "One vs All", "One-vs-all", "One-vs-All", "One versus rest", "One-versus-Rest", "One vs rest", "One vs Rest", "OvR", "OvA", "OVR", "OVA", "하나 vs 나머지", "일대다"],
+   exp:`교안 32쪽 One versus all입니다(교수님 10/26 "하나 vs 나머지"). 클래스를 <b>두 개씩</b> 짝지어 만드는 방식은 One versus one(하나 vs 하나)입니다. (보충) 클래스가 K개이면 분류기 수는 One versus all이 K개, One versus one이 <span class="frac"><span class="num">K(K − 1)</span><span class="den">2</span></span>개입니다.`,
+   src:[["C", "C8", "다중 클래스 SVM"]] }
+];
+</script>
+</body>
+</html>

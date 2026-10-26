@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>인공지능 F. 앙상블 학습 — 기본 문제</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>:root{ --subject:#5B3CF5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../exam-engine/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다. 이 파일은 drive/exam-engine/exam.css · exam.js 와 함께 있어야 열립니다.</div>
+<script>
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'인공지능',
+  title:'F. 앙상블 학습 — 기본 문제',
+  written:'2026년 10월 26일 작성',
+  slug:'ai-mid-f_ens-basic',
+  lectureBase:'../lecture',
+  level:'하',
+  mcMax:0.7,
+  scope:`앙상블 학습 — 10/26 복습 수업 범위(교안 Ensemble Learning 1, 2, 3, 5, 6, 7, 10, 11, 12, 14쪽)`,
+  oxLabels:["O", "X"],
+  srcHref:"slides.html"
+};
+const EXAM = [
+{ type:'mc',
+   lv:'하',
+   unit:"하드 · 소프트 투표",
+   pts:10,
+   q:`<p>Hard voting(하드 투표)과 Soft voting(소프트 투표)의 차이로 옳은 것은?</p>`,
+   choices:[`하드 투표는 클래스별 확률을 평균하고, 소프트 투표는 예측 클래스의 다수결을 따른다.`,`소프트 투표는 각 분류기가 얼마나 확신하는지가 결과에 반영되고, 하드 투표는 반영되지 않는다.`,`소프트 투표는 확률 출력을 쓰지 않으므로 하드 투표보다 단순한 방법이다.`,`하드 투표는 같은 알고리즘으로 학습한 분류기들에만 쓸 수 있다.`],
+   answer:[2],
+   exp:`소프트 투표는 클래스별 확률을 평균하므로 확신의 정도가 반영됩니다(교안 5쪽 more refined). 하드 투표는 예측 클래스 하나를 한 표로 세는 다수결입니다. 확률 평균과 다수결을 바꿔 쓴 보기, "더 단순하다"(실제는 더 정교함)는 틀렸습니다. 투표 분류기는 오히려 서로 다른 알고리즘의 분류기를 합칩니다(교안 2쪽).`,
+   src:[["F", "F3", "투표 분류기 · 하드 투표"], ["F", "F4", "소프트 투표"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"투표 vs 배깅",
+   pts:10,
+   q:`<p>Voting classifier(투표 분류기)와 Bagging(배깅)이 개별 예측기를 서로 다르게 만드는 방법을 바르게 짝지은 것은?</p>`,
+   choices:[`투표 분류기: 같은 알고리즘, 복원 추출한 서로 다른 부분 집합<br>배깅: 같은 학습 데이터, 서로 다른 알고리즘`,`투표 분류기: 서로 다른 알고리즘<br>배깅: 같은 알고리즘에 학습 세트 전체를 모든 예측기가 똑같이 사용`,`투표 분류기: 앞 분류기의 잘못을 다음 분류기가 보정<br>배깅: 같은 알고리즘, 복원 추출한 서로 다른 부분 집합`,`투표 분류기: 같은 학습 데이터, 서로 다른 알고리즘<br>배깅: 같은 알고리즘, 복원 추출한 서로 다른 부분 집합`],
+   answer:[4],
+   exp:`투표 분류기는 하나의 학습 데이터로 로지스틱 회귀, SVM 등 서로 다른 알고리즘을 학습시킵니다(교안 2쪽). 배깅은 같은 알고리즘에 학습 세트에서 복원 추출한 서로 다른 부분 집합을 줍니다(교안 6쪽). 모든 예측기가 같은 데이터·같은 알고리즘이면 예측기가 서로 같아져 합칠 의미가 없습니다. 앞 분류기를 보정하는 것은 부스팅입니다.`,
+   src:[["F", "F3", "투표 분류기 · 하드 투표"], ["F", "F5", "배깅"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"Bagging",
+   pts:10,
+   q:`<p>Bagging(배깅)에 대한 설명으로 옳은 것은? (모두 고르시오)</p>`,
+   choices:[`학습 세트에서 sampling with replacement(복원 추출)로 부분 집합을 여러 개 만든다.`,`원래 학습 세트로 학습한 예측기 하나보다 variance(분산)를 낮추는 효과가 있다.`,`원래 학습 세트로 학습한 예측기 하나보다 bias(편향)를 크게 낮추고, 분산은 비슷하게 유지한다.`,`각 예측기는 앞 예측기의 결과를 보고 차례로 학습한다.`,`Aggregating(집계) 단계에서 예측기들의 예측을 하드 투표, 소프트 투표 또는 평균으로 합친다.`],
+   answer:[1, 2, 5],
+   exp:`① 부트스트랩 = 복원 추출입니다(교안 6쪽). ② 편향은 비슷하고 분산이 낮아집니다(교안 7쪽, 교수님 10/26 ★). ③ 편향과 분산을 뒤바꾼 문장입니다. 배깅이 낮추는 것은 분산입니다. ④ 앞 예측기를 보고 차례로 학습하는 것은 부스팅이고, 배깅의 예측기는 서로 독립이라 병렬로 학습합니다. ⑤ 교수님 10/26: 복원 추출한 데이터로 학습한 뒤 하드 투표든 소프트 투표든 해서 합칩니다(회귀는 평균).`,
+   multi:true,
+   src:[["F", "F5", "배깅"], ["F", "F6", "배깅은 분산을 낮춘다"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"Bagging",
+   pts:10,
+   q:`<p>Bagging(배깅)으로 분류 모델을 만들고 예측하는 과정을 순서대로 나열한 것은?</p><p>ㄱ. 각 부분 집합으로 같은 알고리즘의 예측기를 하나씩 학습한다.<br>ㄴ. 학습 세트에서 복원 추출로 부분 집합을 여러 개 만든다.<br>ㄷ. 새 샘플에 대한 예측기들의 예측을 투표로 합친다.</p>`,
+   choices:[`ㄱ → ㄴ → ㄷ`,`ㄴ → ㄷ → ㄱ`,`ㄴ → ㄱ → ㄷ`,`ㄷ → ㄴ → ㄱ`],
+   answer:[3],
+   exp:`Bootstrap(복원 추출로 부분 집합 만들기, ㄴ) → 부분 집합마다 예측기 학습(ㄱ) → Aggregating(예측 합치기, ㄷ)입니다. 이름 그대로 Bootstrap이 먼저, Aggregating이 마지막입니다. 교수님 10/26: 이 전체 과정이 배깅입니다.`,
+   src:[["F", "F5", "배깅"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"Random Forest",
+   pts:10,
+   q:`<p>Random Forest(랜덤 포레스트)가 일반적인 결정 트리 배깅에 더하는 extra randomness(추가 무작위성)에 대한 설명으로 옳은 것은?</p>`,
+   choices:[`트리마다 특징 일부를 한 번 무작위로 고르고, 그 트리의 모든 노드에서 같은 후보 특징을 쓴다.`,`노드를 나눌 때마다 무작위로 고른 특징 일부 가운데에서 가장 좋은 특징을 찾는다.`,`노드를 나눌 때 가장 좋은 특징을 찾지 않고, 특징 하나를 무작위로 골라 그대로 나눈다.`,`부트스트랩 대신 비복원 추출로 트리마다 학습 데이터를 뽑는다.`],
+   answer:[2],
+   exp:`교안 10쪽: "instead of searching for the very best feature <b>when splitting a node</b>, it searches for the best feature among a random subset of features". 후보 특징은 트리마다 한 번이 아니라 <b>노드를 나눌 때마다</b> 새로 뽑고, 그 후보 안에서는 여전히 가장 좋은 특징을 고릅니다. 데이터 쪽 무작위성은 그대로 부트스트랩(복원 추출)입니다.`,
+   src:[["F", "F7", "랜덤 포레스트"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"OOB 변수 중요도",
+   pts:10,
+   q:`<p>Random Forest의 OOB(Out-of-Bag) 샘플과 permutation(순열) 변수 중요도에 대한 설명으로 옳은 것은? (모두 고르시오)</p>`,
+   choices:[`OOB 샘플이 생기는 것은 부트스트랩 샘플링이 복원 추출이기 때문이다.`,`어떤 트리의 OOB 샘플은 그 트리의 학습에 쓰이지 않았으므로 그 트리를 테스트하는 데 쓸 수 있다.`,`OOB 샘플은 모든 트리에서 똑같은 샘플들이다.`,`특징 하나의 값을 샘플끼리 섞으면 그 특징과 정답 사이의 관계가 끊긴다.`,`특징을 섞은 뒤 OOB 오차가 줄어들수록 그 특징은 중요하다.`],
+   answer:[1, 2, 4],
+   exp:`① 복원 추출이라 중복이 생기는 만큼 한 번도 뽑히지 않는 샘플이 생깁니다(교수님 10/26). ② 학습에 안 쓴 샘플이라 테스트 데이터처럼 쓸 수 있습니다. ③ 트리마다 부트스트랩 결과가 다르므로 OOB 샘플도 트리마다 다릅니다. ④ 값들은 그대로 두고 순서만 섞으므로 정답과의 관계만 끊깁니다. ⑤ 오차가 <b>커질수록</b>(원래 오차와 비교해 많이 늘수록) 중요한 특징입니다(교안 12쪽).`,
+   multi:true,
+   src:[["F", "F8", "OOB 순열 변수 중요도"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"Bagging vs Boosting",
+   pts:10,
+   q:`<p>Bagging(배깅)과 Boosting(부스팅)을 비교한 설명으로 옳은 것은?</p>`,
+   choices:[`부스팅은 예측기들을 병렬로 학습할 수 있고, 배깅은 앞 예측기를 보정하며 순차적으로 학습한다.`,`부스팅은 strong learner(강한 학습기) 여러 개를 결합해 weak learner(약한 학습기)를 만든다.`,`부스팅의 예측기들은 서로 독립으로 학습한 뒤 마지막에 다수결로 합쳐진다.`,`배깅은 예측기들을 병렬로 학습할 수 있고, 부스팅은 앞 예측기를 보정하며 순차적으로 학습하므로 병렬 학습이 어렵다.`],
+   answer:[4],
+   exp:`교수님 10/26: 병렬 처리가 가능한 쪽은 배깅이고, 부스팅은 안 됩니다. 부스팅은 앞 예측기(predecessor)의 잘못을 보고 다음 예측기를 학습하므로 앞 결과가 나와야 다음을 시작할 수 있습니다(교안 14쪽 sequentially). 부스팅은 약한 학습기 여러 개로 강한 학습기를 만듭니다(방향 반대 보기 오답). 서로 독립으로 학습하는 것은 배깅입니다.`,
+   src:[["F", "F5", "배깅"], ["F", "F9", "부스팅"]] },
+
+{ type:'short',
+   lv:'하',
+   unit:"Bagging",
+   pts:10,
+   q:`<p>모든 예측기에 같은 학습 알고리즘을 쓰고, 학습 세트에서 복원 추출로 뽑은 서로 다른 부분 집합으로 각각 학습시킨 뒤 예측을 합치는 앙상블 방법의 이름을 영어로 쓰시오.</p>`,
+   show:`Bagging`,
+   alt:["bagging", "BAGGING", "Bootstrap Aggregating", "bootstrap aggregating", "Bootstrap aggregating"],
+   exp:`Bagging = Bootstrap(복원 추출) + Aggregating(집계)입니다(교안 6쪽, 교수님 10/26 ★). 철자에 주의하세요. begging이 아니라 B-a-g-g-i-n-g입니다. 서로 다른 알고리즘을 같은 데이터로 학습시키면 Voting(투표)입니다.`,
+   src:[["F", "F5", "배깅"]] },
+
+{ type:'short',
+   lv:'하',
+   unit:"OOB",
+   pts:10,
+   q:`<p>Bootstrap sampling(부트스트랩 샘플링)에서 한 번도 뽑히지 않아, 그 트리를 테스트하는 데 쓸 수 있는 학습 샘플을 무엇이라 하는가? (영어 또는 영어 약어)</p>`,
+   show:`OOB (Out-of-Bag)`,
+   alt:["OOB", "oob", "Out-of-Bag", "out-of-bag", "Out of Bag", "out of bag", "OOB 샘플", "Out-of-Bag samples", "Out-of-Bag sample"],
+   exp:`교안 12쪽 "Out-of-Bag (OOB) Samples: Training instances not selected during bootstrap sampling"입니다. 복원 추출이라 어떤 샘플은 여러 번 뽑히고 어떤 샘플은 한 번도 뽑히지 않습니다. 교수님 10/26: 이 OOB로 테스트해 원래 오차와 특징을 섞은 오차를 비교합니다.`,
+   src:[["F", "F8", "OOB 순열 변수 중요도"]] },
+
+{ type:'short',
+   lv:'하',
+   unit:"Boosting",
+   pts:10,
+   q:`<p>다음 빈칸에 들어갈 말을 쓰시오. (영어 또는 한글)</p><p>Boosting(부스팅)은 예측기를 (&emsp;&emsp;&emsp;&emsp;) 학습시키며, 각 예측기는 바로 앞 예측기의 잘못을 고치려 한다. 그래서 배깅과 달리 병렬 처리가 되지 않는다.</p>`,
+   show:`순차적으로 (sequentially)`,
+   alt:["순차적으로", "순차적", "순차", "sequentially", "Sequentially", "sequential", "차례로", "순서대로"],
+   exp:`교안 14쪽 "train predictors sequentially, each trying to correct its predecessor"입니다. 교수님 10/26: 부스팅은 약한 학습기들을 시퀀셜하게(순차적으로) 보정해 가면서 강한 학습기로 만든다는 개념만 알아 두면 됩니다.`,
+   src:[["F", "F9", "부스팅"]] }
+];
+</script>
+</body>
+</html>

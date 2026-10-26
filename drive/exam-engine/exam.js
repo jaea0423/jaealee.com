@@ -133,6 +133,8 @@ function isEmpty(it){ const m=mine(it); return Array.isArray(m)?!m.some(v=>v!=='
 /* ════════ 5. 빨간펜 + 문항 아래 해설 ════════ */
 function srcHTML(it){
   if(!it.src||!it.src.length) return '';
+  // META.srcHref가 있으면 출처를 그 한 파일(예: 중간고사 슬라이드)의 섹션으로 연결한다: [장, 섹션, 제목] → srcHref#섹션
+  if(META.srcHref) return `<div class="src">출처 ${it.src.map(([ch,sec,title])=>`<a href="${META.srcHref}${sec?'#'+sec:''}">${sec||ch}${title?' '+title:''}</a>`).join(' · ')}</div>`;
   return `<div class="src">출처 ${it.src.map(([ses,sec,title])=>{
     const w='week'+String(ses.split('-')[0]).padStart(2,'0');
     const href=`${META.lectureBase||'../lecture'}/${w}/${ses}.html${sec?'#'+sec:''}`;
