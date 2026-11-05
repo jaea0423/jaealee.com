@@ -409,9 +409,12 @@ ul.dots{margin:8px 0 12px 20px;line-height:1.75}ul.dots li{margin:3px 0}
         <li><a href="#s1"><span class="num">01</span>세 번째 예제</a></li>
         <li><a href="#s2"><span class="num">02</span>강의를 수평선 위에 그리기</a></li>
         <li><a href="#s3"><span class="num">03</span>최적 답</a></li>
-        <li><a href="#sg"><span class="num">04</span>용어 정리</a></li>
-        <li><a href="#sq"><span class="num">05</span>확인 필요</a></li>
-        <li><a href="#sx"><span class="num">06</span>예상 문제</a></li>
+        <li><a href="#s4"><span class="num">04</span>그리디 전략 후보 4가지</a></li>
+        <li><a href="#s5"><span class="num">05</span>4번 전략의 알고리즘</a></li>
+        <li><a href="#s6"><span class="num">06</span>예시에 적용</a></li>
+        <li><a href="#sg"><span class="num">07</span>용어 정리</a></li>
+        <li><a href="#sq"><span class="num">08</span>확인 필요</a></li>
+        <li><a href="#sx"><span class="num">09</span>예상 문제</a></li>
       </ul>
       <hr>
       <div class="cap">복습 체크</div>
@@ -421,6 +424,10 @@ ul.dots{margin:8px 0 12px 20px;line-height:1.75}ul.dots li{margin:3px 0}
         <label><input type="checkbox"><span>수평선 그림 — 겹치는 것만 층 나눠 아래부터</span></label>
         <label><input type="checkbox"><span>최적 답 4개 (0, 3, 7, 10 등)</span></label>
         <label><input type="checkbox"><span>끝 = 시작이면 겹치지 않음</span></label>
+        <label><input type="checkbox"><span>전략 1 · 2 반례 그리기</span></label>
+        <label><input type="checkbox"><span>4번: 빨리 끝나는 강의부터</span></label>
+        <label><input type="checkbox"><span>알고리즘 4단계와 O(n log n)</span></label>
+        <label><input type="checkbox"><span>예시 추적 L = [0, 3, 7, 10]</span></label>
       </div>
       <div class="pbar"><i id="barFill"></i></div>
     </div>
@@ -464,12 +471,15 @@ ul.dots{margin:8px 0 12px 20px;line-height:1.75}ul.dots li{margin:3px 0}
     <a href="#s1"><b>01</b> 세 번째 예제</a>
     <a href="#s2"><b>02</b> 강의를 수평선 위에</a>
     <a href="#s3"><b>03</b> 최적 답</a>
+    <a href="#s4"><b>04</b> 그리디 전략 후보 </a>
+    <a href="#s5"><b>05</b> 4번 전략의 알고리</a>
+    <a href="#s6"><b>06</b> 예시에 적용</a>
   </nav>
 
   <div class="keys">
     <div class="key"><div class="n">핵심 1</div><p><b>문제</b> — 시작 시간 S, 끝 시간 F 가 주어진 강의들 중 <b>겹치지 않게</b> 한 강의실에 배정할 수 있는 <b>강의 개수의 최대</b>.</p></div>
     <div class="key"><div class="n">핵심 2</div><p><b>입력</b> — S = [1, 3, 0, 5, 3, 5, 6, 8, 8, 2, 12], F = [4, 5, 6, …, 14] (강의 11개).</p></div>
-    <div class="key"><div class="n">핵심 3</div><p><b>그림 · 답</b> — 0 ~ 14 수평선에 겹치는 강의만 층을 나눠 아래부터 채움. 최대 <b>4개</b> (예: 0, 3, 7, 10번) — 어떤 강의보다 개수가 중요.</p></div>
+    <div class="key"><div class="n">핵심 3</div><p><b>답 · 전략</b> — 최대 <b>4개</b> (0, 3, 7, 10번 등). 짧은 것부터 · 빨리 시작하는 것부터는 반례가 있고, <b>빨리 끝나는 강의부터</b> 배정이 최적 → F 정렬 O(n log n) + 한 번 훑기 O(n) = <b>O(n log n)</b>.</p></div>
   </div>
 
   <!-- 01 -->
@@ -544,26 +554,168 @@ F = [ 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]</div></details>
     <p>다른 조합도 있습니다 (예: 1, 3, 7, 10번). 이 문제에서는 <b>어떤 강의인지보다 개수</b>가 중요하므로 답은 <b>4개</b>입니다.</p>
     <div class="call warn"><div class="t">끝 시간 = 시작 시간</div><p>1, 3, 7, 10번 조합에서 1번(3 – 5) 이 끝나는 <b>5</b> 에 3번(5 – 7) 이 시작합니다. 이 조합이 답이 되려면 <b>앞 강의가 끝나는 시각에 다음 강의가 시작하는 것은 겹치지 않는 것</b>으로 봅니다. 그림도 이 기준으로 그렸습니다.</p></div>
     <div class="call extra"><div class="t">4개가 최대인지 · 다른 조합</div><p>11개 중 겹치지 않는 조합을 모두 따져 보면 (코드로 확인) 최대는 4개이고, 4개짜리 조합은 <b>0·3·7·10, 0·3·8·10, 1·3·7·10, 1·3·8·10</b> 네 가지입니다. 아래부터 채운 그림의 <b>맨 아래 층</b>이 마침 0·3·7·10 입니다.</p></div>
-    <div class="call"><div class="t">수업 진행 중</div><p>이 답을 얻는 그리디 전략과 증명은 다음 필기를 받아 이어서 정리합니다.</p></div>
     <details class="raw"><summary>필기 원문</summary><div class="txt">이렇게 했을 때 최적의 답은 0 3 7 10 강의를 하는 4개까지가 최대임(다른 경우의 수도 있음. 1 3 7 10 등. 근데 어떤 강의인지보다는 개수가 중요함. 개수 4개가 답)</div></details>
   </section>
   <!-- 04 -->
+  <section id="s4">
+    <h2 class="st"><span class="sq">04</span>그리디 전략 후보 4가지</h2>
+    <div class="badges"><span class="badge exam">시험 ★★★</span></div>
+    <p>정답부터가 아니라 <b>가능한 전략</b>을 먼저 생각해 봅니다.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th style="width:44px">번호</th><th>전략</th><th style="width:150px">판단</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><b>소요 시간이 적은</b> 강의부터 배정</td><td>반례 있음 → 별로</td></tr>
+        <tr><td>2</td><td><b>빨리 시작하는</b> 강의부터 배정</td><td>반례 있음 → 별로</td></tr>
+        <tr><td>3</td><td><b>가장 적게 겹치는</b> 강의부터 배정 (강의마다 몇 개와 겹치는지 세서)</td><td>답이 아님 (아래 보충)</td></tr>
+        <tr><td>4</td><td><b>빨리 끝나는</b> 강의부터 배정 — 남아 있는 시간이 많게</td><td class="big"><b>최적 (이 문제의 답)</b></td></tr>
+      </tbody>
+    </table></div>
+    <h3>1번 전략의 반례 — 짧은 a 가 붙어 있는 b, c 를 막음</h3>
+    <figure style="margin:12px 0"><svg width="100%" viewBox="0 0 406 120" role="img" style="display:block;max-width:406px;margin:0 auto"><title>1번 전략 반례</title><desc>1번 전략 반례</desc><line x1="26" y1="6" x2="26" y2="90" stroke="var(--line)" stroke-width="1"/><text x="26" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">0</text><line x1="62" y1="6" x2="62" y2="90" stroke="var(--line)" stroke-width="1"/><text x="62" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">1</text><line x1="98" y1="6" x2="98" y2="90" stroke="var(--line)" stroke-width="1"/><text x="98" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">2</text><line x1="134" y1="6" x2="134" y2="90" stroke="var(--line)" stroke-width="1"/><text x="134" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">3</text><line x1="170" y1="6" x2="170" y2="90" stroke="var(--line)" stroke-width="1"/><text x="170" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">4</text><line x1="206" y1="6" x2="206" y2="90" stroke="var(--line)" stroke-width="1"/><text x="206" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">5</text><line x1="242" y1="6" x2="242" y2="90" stroke="var(--line)" stroke-width="1"/><text x="242" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">6</text><line x1="278" y1="6" x2="278" y2="90" stroke="var(--line)" stroke-width="1"/><text x="278" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">7</text><line x1="314" y1="6" x2="314" y2="90" stroke="var(--line)" stroke-width="1"/><text x="314" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">8</text><line x1="350" y1="6" x2="350" y2="90" stroke="var(--line)" stroke-width="1"/><text x="350" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">9</text><line x1="386" y1="6" x2="386" y2="90" stroke="var(--line)" stroke-width="1"/><text x="386" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">10</text><line x1="26" y1="90" x2="386" y2="90" stroke="var(--ink-3)" stroke-width="1.5"/><rect x="27" y="59" width="178" height="26" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="116.0" y="76.32" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">b</text><rect x="207" y="59" width="178" height="26" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="296.0" y="76.32" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">c</text><rect x="171" y="21" width="70" height="26" rx="7" fill="color-mix(in srgb,#DC2626 12%,var(--surface))" stroke="#DC2626" stroke-width="1.3"/><text x="206.0" y="38.32" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">a</text></svg><figcaption>a 가 가장 짧아 먼저 고르면 b, c 둘 다 겹쳐 1개. a 를 빼고 b, c 를 고르면 2개</figcaption></figure>
+    <h3>2번 전략의 반례 — 먼저 시작하는 긴 a 가 b, c, d 를 막음</h3>
+    <figure style="margin:12px 0"><svg width="100%" viewBox="0 0 406 120" role="img" style="display:block;max-width:406px;margin:0 auto"><title>2번 전략 반례</title><desc>2번 전략 반례</desc><line x1="26" y1="6" x2="26" y2="90" stroke="var(--line)" stroke-width="1"/><text x="26" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">0</text><line x1="62" y1="6" x2="62" y2="90" stroke="var(--line)" stroke-width="1"/><text x="62" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">1</text><line x1="98" y1="6" x2="98" y2="90" stroke="var(--line)" stroke-width="1"/><text x="98" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">2</text><line x1="134" y1="6" x2="134" y2="90" stroke="var(--line)" stroke-width="1"/><text x="134" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">3</text><line x1="170" y1="6" x2="170" y2="90" stroke="var(--line)" stroke-width="1"/><text x="170" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">4</text><line x1="206" y1="6" x2="206" y2="90" stroke="var(--line)" stroke-width="1"/><text x="206" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">5</text><line x1="242" y1="6" x2="242" y2="90" stroke="var(--line)" stroke-width="1"/><text x="242" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">6</text><line x1="278" y1="6" x2="278" y2="90" stroke="var(--line)" stroke-width="1"/><text x="278" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">7</text><line x1="314" y1="6" x2="314" y2="90" stroke="var(--line)" stroke-width="1"/><text x="314" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">8</text><line x1="350" y1="6" x2="350" y2="90" stroke="var(--line)" stroke-width="1"/><text x="350" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">9</text><line x1="386" y1="6" x2="386" y2="90" stroke="var(--line)" stroke-width="1"/><text x="386" y="107" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">10</text><line x1="26" y1="90" x2="386" y2="90" stroke="var(--ink-3)" stroke-width="1.5"/><rect x="27" y="59" width="358" height="26" rx="7" fill="color-mix(in srgb,#DC2626 12%,var(--surface))" stroke="#DC2626" stroke-width="1.3"/><text x="206.0" y="76.32" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">a</text><rect x="63" y="21" width="70" height="26" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="98.0" y="38.32" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">b</text><rect x="171" y="21" width="70" height="26" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="206.0" y="38.32" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">c</text><rect x="279" y="21" width="70" height="26" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="314.0" y="38.32" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">d</text></svg><figcaption>a 가 가장 먼저 시작해 고르면 1개. a 를 빼고 b, c, d 를 고르면 3개</figcaption></figure>
+    <h3>3번 전략 — 예시에서 강의마다 겹치는 개수</h3>
+    <div class="tablewrap"><table>
+      <thead><tr><th>강의</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead>
+      <tbody><tr><td>겹치는 수</td><td>4</td><td>4</td><td>6</td><td>5</td><td>7</td><td>7</td></tr></tbody>
+    </table></div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>강의</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th></tr></thead>
+      <tbody><tr><td>겹치는 수</td><td>6</td><td>4</td><td>4</td><td>10</td><td>1</td></tr></tbody>
+    </table></div>
+    <div class="call extra"><div class="t">3번 전략이 틀리는 예</div>
+      <p>위 예시에서는 3번 전략도 우연히 4개 (10 → 0 → 3 → 7번 순) 가 나옵니다. 하지만 일반적으로는 틀립니다. 아래처럼 <b>m</b> 이 겹치는 수가 2 로 가장 적어 먼저 고르면, 아래층의 4개 중 가운데 둘(a2, a3)을 막아 <b>3개</b>밖에 못 고릅니다. 최적은 a1 · a2 · a3 · a4 의 <b>4개</b>입니다 (코드로 확인).</p>
+      <figure style="margin:10px 0"><svg width="100%" viewBox="0 0 556 196" role="img" style="display:block;max-width:556px;margin:0 auto"><title>3번 전략 반례</title><desc>3번 전략 반례</desc><line x1="26" y1="6" x2="26" y2="166" stroke="var(--line)" stroke-width="1"/><text x="26" y="183" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">0</text><line x1="60" y1="6" x2="60" y2="166" stroke="var(--line)" stroke-width="1"/><text x="60" y="183" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">1</text><line x1="94" y1="6" x2="94" y2="166" stroke="var(--line)" stroke-width="1"/><text x="94" y="183" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">2</text><line x1="128" y1="6" x2="128" y2="166" stroke="var(--line)" stroke-width="1"/><text x="128" y="183" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">3</text><line x1="162" y1="6" x2="162" y2="166" stroke="var(--line)" stroke-width="1"/><text x="162" y="183" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">4</text><line x1="196" y1="6" x2="196" y2="166" stroke="var(--line)" stroke-width="1"/><text x="196" y="183" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">5</text><line x1="230" y1="6" x2="230" y2="166" stroke="var(--line)" stroke-width="1"/><text x="230" y="183" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">6</text><line x1="264" y1="6" x2="264" y2="166" stroke="var(--line)" stroke-width="1"/><text x="264" y="183" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">7</text><line x1="298" y1="6" x2="298" y2="166" stroke="var(--line)" stroke-width="1"/><text x="298" y="183" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">8</text><line x1="332" y1="6" x2="332" y2="166" stroke="var(--line)" stroke-width="1"/><text x="332" y="183" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">9</text><line x1="366" y1="6" x2="366" y2="166" stroke="var(--line)" stroke-width="1"/><text x="366" y="183" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">10</text><line x1="400" y1="6" x2="400" y2="166" stroke="var(--line)" stroke-width="1"/><text x="400" y="183" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">11</text><line x1="434" y1="6" x2="434" y2="166" stroke="var(--line)" stroke-width="1"/><text x="434" y="183" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">12</text><line x1="468" y1="6" x2="468" y2="166" stroke="var(--line)" stroke-width="1"/><text x="468" y="183" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">13</text><line x1="502" y1="6" x2="502" y2="166" stroke="var(--line)" stroke-width="1"/><text x="502" y="183" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">14</text><line x1="536" y1="6" x2="536" y2="166" stroke="var(--line)" stroke-width="1"/><text x="536" y="183" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">15</text><line x1="26" y1="166" x2="536" y2="166" stroke="var(--ink-3)" stroke-width="1.5"/><rect x="27" y="135" width="100" height="26" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="77.0" y="152.32" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">a1</text><rect x="163" y="135" width="100" height="26" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="213.0" y="152.32" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">a2</text><rect x="299" y="135" width="100" height="26" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="349.0" y="152.32" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">a3</text><rect x="435" y="135" width="100" height="26" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="485.0" y="152.32" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">a4</text><rect x="231" y="97" width="100" height="26" rx="7" fill="color-mix(in srgb,#DC2626 12%,var(--surface))" stroke="#DC2626" stroke-width="1.3"/><text x="281.0" y="114.32" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">m</text><rect x="95" y="97" width="100" height="26" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="145.0" y="114.32" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">x</text><rect x="367" y="97" width="100" height="26" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="417.0" y="114.32" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">y</text><rect x="95" y="59" width="134" height="26" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="162.0" y="76.32" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">x</text><rect x="333" y="59" width="134" height="26" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="400.0" y="76.32" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">y</text><rect x="61" y="21" width="134" height="26" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="128.0" y="38.32" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">x</text><rect x="367" y="21" width="134" height="26" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="434.0" y="38.32" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">y</text></svg><figcaption>m(빨강) 은 a2, a3 와만 겹쳐 겹치는 수 2 — 가장 적음</figcaption></figure></div>
+    <div class="call extra"><div class="t">2번 전략은 이 예시에서도 틀림</div><p>강의 11개에 2번 전략(빨리 시작하는 것부터)을 쓰면 2번(0 – 6) → 6번(6 – 10) → 10번(12 – 14) 으로 <b>3개</b>라 최적(4개)이 아닙니다. 1번 전략은 이 예시에서는 4개가 나옵니다.</p></div>
+    <h3>4번 전략이 답인 이유 — 귀류법</h3>
+    <p>greedy 전략으로 구한 해가 최적임을 보이기 위해 <b>귀류법</b>을 씁니다. "이 전략이 최적이 아니다" 로 가정한 뒤 모순이 생기면, 최적이라고 결론 낼 수 있습니다.</p>
+    <details class="raw"><summary>필기 원문</summary><div class="txt">그리디 전략 : 
+
+(정답이 아니라 가능한걸 생각해보자)
+1번 전략 : 소요시간 적은 강의부터 배정하자.
+a가 있고 bc가(붙어있는) 시간이 있을 때 그 사이에 겹치는 2개를 선택하는게 더 이득일지라도 a를 먼저 골라 bc를 못고르는 경우가 생김. 별로인 전략
+
+2번 전략 : 빨리 시작하는 강의부터? bcd를 선택할 수 있는데 먼저오는 a를 선택해버리면 안됨. 별로다.
+
+1-2번 전략은 생각해보면 반례가 있기 때문에 별로
+
+3번 전략 : 가장 적게 겹치는 강의부터 배정하면 될까?
+
+각 인덱스별로 몇개가 겹치는지 세서 배정
+
+4번 전략 : (이 문제의 답. 최적인 전략)
+빨리 끝나는 강의부터 배정(남아있는 시간이 많게)
+
+4번 전략이 왜 답인가?
+
+greedy 전략으로 구한 해가 최적이다를 보이기 위해 &quot;귀류법&quot;으로 증명
+이 전략이 최적이 아니다로 가정 후 모순 유발한다면 최적으로 결론낼 수 있음</div></details>
+  </section>
+  <!-- 05 -->
+  <section id="s5">
+    <h2 class="st"><span class="sq">05</span>4번 전략의 알고리즘 — O(n log n)</h2>
+    <div class="badges"><span class="badge exam">시험 ★★★</span></div>
+    <div class="tablewrap"><table><tbody>
+      <tr><td style="width:44px"><b>1</b></td><td><b>F 의 오름차순으로 정렬</b> (빨리 끝나는 순서) → <b>O(n log n)</b>. 비교 정렬은 이보다 빠를 수 없음 (6-2 정렬의 하한)</td></tr>
+      <tr><td><b>2</b></td><td>L = [0], k = 0 — <b>L</b>: 선택한 강의의 집합, <b>k</b>: 가장 최근에 배정을 마친 강의의 인덱스. 정렬 후 0번(가장 빨리 끝나는 강의)은 무조건 배정</td></tr>
+      <tr><td><b>3</b></td><td>i = 1 ~ n − 1 을 차례로 보며, <b>F[k] ≤ S[i]</b> (마지막으로 배정한 강의가 끝난 뒤에 시작) 이면 배정하고 k = i</td></tr>
+      <tr><td><b>4</b></td><td>L 또는 len(L) 을 반환 (정하기 나름)</td></tr>
+    </tbody></table></div>
+    <div class="codebox pseudo">
+      <div class="head"><span><span class="tag">Python</span>강의실 배정 (빨리 끝나는 강의부터)</span><button class="copy">복사</button></div>
+<pre><code><span class="cm"># 1. 강의를 F(끝 시간) 오름차순으로 정렬해 두었다고 하자 — O(n log n)</span>
+L = [0]                          <span class="cm"># 2. 가장 빨리 끝나는 0번은 바로 배정</span>
+k = 0                            <span class="cm">#    k = 가장 최근에 배정한 강의</span>
+<span class="kw">for</span> i <span class="kw">in</span> range(1, n):            <span class="cm"># 3. 나머지를 끝 시간 순서대로 한 번씩 — O(n)</span>
+    <span class="kw">if</span> F[k] &lt;= S[i]:             <span class="cm">#    마지막 강의가 끝난 뒤(같은 시각 포함)에 시작하면</span>
+        L.append(i)              <span class="cm">#    배정하고</span>
+        k = i                    <span class="cm">#    기준을 이 강의로 바꿈</span>
+<span class="kw">return</span> L                         <span class="cm"># 4. 또는 len(L)</span></code></pre>
+    </div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>단계</th><th>시간</th></tr></thead>
+      <tbody>
+        <tr><td>1. 정렬</td><td>O(n log n)</td></tr>
+        <tr><td>3. for 문 (i 마다 비교 한 번)</td><td>O(n)</td></tr>
+        <tr><td><b>전체</b></td><td class="big"><b>O(n log n)</b> — 정렬이 지배</td></tr>
+      </tbody>
+    </table></div>
+    <p style="margin-top:6px"><span class="ext">조건이 &lt; 가 아니라 <b>&lt;=</b> 라서, 앞 강의가 끝나는 시각에 시작하는 강의도 배정합니다 — 03 의 "끝 = 시작이면 겹치지 않음" 과 같은 기준.</span></p>
+    <details class="raw"><summary>필기 원문</summary><div class="txt">4번 전략으로
+
+알고리즘 동작 생각해보자
+
+1. F값의 오름차순으로 정렬(Sorting)  → O(nlogn)이 걸림.(소팅은 이게 최적. 이거보다 좋을 순 없음)
+
+*L은 선택한 강의의 집합이라고 해보자
+
+2. L = [0] ,  k = 0     *k는 가장 최근에 배정을 마친 강의 인덱스라고 해보자
+3. for i in range(1, n) : 
+
+             if F[k] &lt;= S[i] : 
+                  L.append(i), k=i
+
+4. return L / len(L)    (정하기 나름)
+
+
+1번은 O(nlogn), 3번 for문이 O(n) 정도.
+따라서 소요시간은 O(nlogn) 소요</div></details>
+  </section>
+  <!-- 06 -->
+  <section id="s6">
+    <h2 class="st"><span class="sq">06</span>예시에 적용 — L = [0, 3, 7, 10]</h2>
+    <div class="badges"><span class="badge exam">시험 ★★★</span></div>
+    <p>예시는 F 가 이미 오름차순이라 정렬 결과가 그대로입니다. 빨간 점선은 그 시점의 기준 F[k] 입니다.</p>
+    <figure style="margin:16px 0"><svg width="100%" viewBox="0 0 648 290" role="img" style="display:block;max-width:648px;margin:0 auto"><title>강의 11개의 시간 막대</title><desc>0부터 14까지 수평선 위에, 겹치지 않는 강의는 같은 층에 아래부터 채워 그림</desc><line x1="64" y1="10" x2="64" y2="240" stroke="var(--line)" stroke-width="1"/><text x="64" y="258" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink-3)">0</text><line x1="104" y1="10" x2="104" y2="240" stroke="var(--line)" stroke-width="1"/><text x="104" y="258" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink-3)">1</text><line x1="144" y1="10" x2="144" y2="240" stroke="var(--line)" stroke-width="1"/><text x="144" y="258" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink-3)">2</text><line x1="184" y1="10" x2="184" y2="240" stroke="var(--line)" stroke-width="1"/><text x="184" y="258" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink-3)">3</text><line x1="224" y1="10" x2="224" y2="240" stroke="var(--line)" stroke-width="1"/><text x="224" y="258" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink-3)">4</text><line x1="264" y1="10" x2="264" y2="240" stroke="var(--line)" stroke-width="1"/><text x="264" y="258" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink-3)">5</text><line x1="304" y1="10" x2="304" y2="240" stroke="var(--line)" stroke-width="1"/><text x="304" y="258" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink-3)">6</text><line x1="344" y1="10" x2="344" y2="240" stroke="var(--line)" stroke-width="1"/><text x="344" y="258" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink-3)">7</text><line x1="384" y1="10" x2="384" y2="240" stroke="var(--line)" stroke-width="1"/><text x="384" y="258" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink-3)">8</text><line x1="424" y1="10" x2="424" y2="240" stroke="var(--line)" stroke-width="1"/><text x="424" y="258" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink-3)">9</text><line x1="464" y1="10" x2="464" y2="240" stroke="var(--line)" stroke-width="1"/><text x="464" y="258" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink-3)">10</text><line x1="504" y1="10" x2="504" y2="240" stroke="var(--line)" stroke-width="1"/><text x="504" y="258" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink-3)">11</text><line x1="544" y1="10" x2="544" y2="240" stroke="var(--line)" stroke-width="1"/><text x="544" y="258" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink-3)">12</text><line x1="584" y1="10" x2="584" y2="240" stroke="var(--line)" stroke-width="1"/><text x="584" y="258" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink-3)">13</text><line x1="624" y1="10" x2="624" y2="240" stroke="var(--line)" stroke-width="1"/><text x="624" y="258" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink-3)">14</text><line x1="64" y1="240" x2="624" y2="240" stroke="var(--ink-3)" stroke-width="1.6"/><text x="344" y="278" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink-3)">시간</text><line x1="224" y1="8" x2="224" y2="240" stroke="#DC2626" stroke-width="2" stroke-dasharray="5 4"/><text x="224" y="12" text-anchor="start" font-size="11" font-weight="600" fill="var(--ink-2)"></text><line x1="344" y1="8" x2="344" y2="240" stroke="#DC2626" stroke-width="2" stroke-dasharray="5 4"/><text x="344" y="12" text-anchor="start" font-size="11" font-weight="600" fill="var(--ink-2)"></text><line x1="504" y1="8" x2="504" y2="240" stroke="#DC2626" stroke-width="2" stroke-dasharray="5 4"/><text x="504" y="12" text-anchor="start" font-size="11" font-weight="600" fill="var(--ink-2)"></text><text x="52" y="224" text-anchor="end" font-size="12" font-weight="800" fill="var(--ink-3)">1층</text><rect x="105" y="203" width="118" height="32" rx="7" fill="color-mix(in srgb,#16A34A 14%,var(--surface))" stroke="#16A34A" stroke-width="1.3"/><text x="164.0" y="223.32" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">0번 · 1–4</text><rect x="265" y="203" width="78" height="32" rx="7" fill="color-mix(in srgb,#16A34A 14%,var(--surface))" stroke="#16A34A" stroke-width="1.3"/><text x="304.0" y="223.32" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">3번 · 5–7</text><rect x="385" y="203" width="118" height="32" rx="7" fill="color-mix(in srgb,#16A34A 14%,var(--surface))" stroke="#16A34A" stroke-width="1.3"/><text x="444.0" y="223.32" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">7번 · 8–11</text><rect x="545" y="203" width="78" height="32" rx="7" fill="color-mix(in srgb,#16A34A 14%,var(--surface))" stroke="#16A34A" stroke-width="1.3"/><text x="584.0" y="223.32" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">10번 · 12–14</text><text x="52" y="180" text-anchor="end" font-size="12" font-weight="800" fill="var(--ink-3)">2층</text><rect x="185" y="159" width="78" height="32" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="224.0" y="179.32" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">1번 · 3–5</text><rect x="265" y="159" width="158" height="32" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="344.0" y="179.32" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">5번 · 5–9</text><text x="52" y="136" text-anchor="end" font-size="12" font-weight="800" fill="var(--ink-3)">3층</text><rect x="65" y="115" width="238" height="32" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="184.0" y="135.32" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">2번 · 0–6</text><rect x="305" y="115" width="158" height="32" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="384.0" y="135.32" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">6번 · 6–10</text><text x="52" y="92" text-anchor="end" font-size="12" font-weight="800" fill="var(--ink-3)">4층</text><rect x="185" y="71" width="198" height="32" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="284.0" y="91.32" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">4번 · 3–8</text><rect x="385" y="71" width="158" height="32" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="464.0" y="91.32" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">8번 · 8–12</text><text x="52" y="48" text-anchor="end" font-size="12" font-weight="800" fill="var(--ink-3)">5층</text><rect x="145" y="27" width="438" height="32" rx="7" fill="var(--surface)" stroke="var(--line)" stroke-width="1.3"/><text x="364.0" y="47.32" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">9번 · 2–13</text></svg><figcaption>F[k] = 4 → 7 → 11 을 기준으로, 그 뒤에 시작하는 첫 강의를 고름</figcaption></figure>
+    <div class="tablewrap"><table>
+      <thead><tr><th>i</th><th>S[i] – F[i]</th><th>기준 F[k]</th><th>F[k] ≤ S[i] ?</th><th>L</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>1 – 4</td><td>—</td><td>처음 → 배정</td><td>[0]</td></tr>
+        <tr><td>1</td><td>3 – 5</td><td>4</td><td>4 &gt; 3 → X</td><td>[0]</td></tr>
+        <tr><td>2</td><td>0 – 6</td><td>4</td><td>4 &gt; 0 → X</td><td>[0]</td></tr>
+        <tr style="font-weight:700"><td>3</td><td>5 – 7</td><td>4</td><td>4 ≤ 5 → <b>배정</b></td><td>[0, 3]</td></tr>
+        <tr><td>4</td><td>3 – 8</td><td>7</td><td>7 &gt; 3 → X</td><td>[0, 3]</td></tr>
+        <tr><td>5</td><td>5 – 9</td><td>7</td><td>7 &gt; 5 → X</td><td>[0, 3]</td></tr>
+        <tr><td>6</td><td>6 – 10</td><td>7</td><td>7 &gt; 6 → X</td><td>[0, 3]</td></tr>
+        <tr style="font-weight:700"><td>7</td><td>8 – 11</td><td>7</td><td>7 ≤ 8 → <b>배정</b></td><td>[0, 3, 7]</td></tr>
+        <tr><td>8</td><td>8 – 12</td><td>11</td><td>11 &gt; 8 → X</td><td>[0, 3, 7]</td></tr>
+        <tr><td>9</td><td>2 – 13</td><td>11</td><td>11 &gt; 2 → X</td><td>[0, 3, 7]</td></tr>
+        <tr style="font-weight:700"><td>10</td><td>12 – 14</td><td>11</td><td>11 ≤ 12 → <b>배정</b></td><td>[0, 3, 7, 10]</td></tr>
+      </tbody>
+    </table></div>
+    <div class="call quote"><div class="t">결과</div><p>L = <b>[0, 3, 7, 10]</b>, len(L) = <b>4</b> — 03 의 최적 답 4개와 같습니다.</p></div>
+    <div class="call warn"><div class="t">필기 확인</div><p>"0 인덱스 끝나는 시간보다 <b>뒤에서</b> 시작하는" → 코드 조건이 F[k] ≤ S[i] 이므로 정확히는 끝나는 시간과 <b>같거나 뒤</b>에 시작하는 강의입니다 (이 예시에서는 같은 경우가 없어 결과는 같음).</p></div>
+    <div class="call"><div class="t">수업 진행 중</div><p>4번 전략이 최적임을 보이는 귀류법 증명은 다음 필기를 받아 이어서 정리합니다.</p></div>
+    <details class="raw"><summary>필기 원문</summary><div class="txt">다시 그래프로 가보면 
+0부터 보면서 0인덱스 끝나는 시간보다 뒤에서 시작하는 인덱스를 고름
+그러면 3을 골라짐
+그러면 3이 끝나는 시간 7을 기준으로 그 다음애들 뒤에 시작하는 애들을 바로 넣음
+그러면 7을 골라짐
+그러면 7에서 끝나는 시간보다 뒤에 시작하는 인덱스를 찾아 고름
+그러면 10이 골라짐
+(시각화해주면 좋을듯)
+
+그러면 L = [0,3,7,10]이 됨(len(L) = 4)</div></details>
+  </section>
+  <!-- 07 -->
   <section id="sg">
-    <h2 class="st"><span class="sq">04</span>용어 정리</h2>
+    <h2 class="st"><span class="sq">07</span>용어 정리</h2>
     <div class="terms">
       <div class="term"><b>강의실 배정 문제</b><span class="e">activity selection problem</span><p>한 강의실(자원)에 시간이 겹치지 않게 최대한 많은 강의를 배정하는 문제.</p></div>
       <div class="term"><b>시작 시간 · 끝 시간</b><span class="e">start time · finish time</span><p>S[i] · F[i] — i 번째 강의가 시작하고 끝나는 시각.</p></div>
+      <div class="term"><b>정렬 기준 F</b><span class="e">sort by finish time</span><p>강의를 끝 시간 오름차순으로 정렬 — 빨리 끝나는 강의부터 보기 위함. O(n log n).</p></div>
+      <div class="term"><b>L · k</b><span class="e">—</span><p>L = 선택한 강의 집합, k = 가장 최근에 배정한 강의의 인덱스.</p></div>
       <div class="term"><b>겹친다</b><span class="e">overlap</span><p>두 강의의 시간 구간이 일부라도 같은 시간을 차지하는 것. 겹치면 한 강의실에 둘 다 배정 불가.</p></div>
     </div>
   </section>
-  <!-- 05 -->
+  <!-- 08 -->
   <section id="sq">
-    <h2 class="st"><span class="sq">05</span>확인 필요</h2>
-    <p style="color:var(--ink-3)">지금은 답이 필요한 질문이 없습니다.</p>
+    <h2 class="st"><span class="sq">08</span>확인 필요</h2>
+    <div class="call ask"><div class="t">1. 3번 전략 — <span style="color:var(--c3)">수업에서 확인</span></div><p>필기에는 1 · 2번만 "반례가 있어 별로" 라고 되어 있고, 3번(가장 적게 겹치는 강의부터)은 왜 답이 아닌지가 없습니다. 교수님이 3번에 대해 반례나 이유를 말씀하셨는지 알려 주세요 (04번 보충에 반례를 넣어 둠).</p></div>
   </section>
-  <!-- 06 -->
+  <!-- 09 -->
   <section id="sx">
-    <h2 class="st"><span class="sq">06</span>예상 문제</h2>
+    <h2 class="st"><span class="sq">09</span>예상 문제</h2>
     <div class="call"><div class="t">수업 종료 후 작성</div><p>수업이 끝나면 필기 내용 위주로 (시험의 약 80% 가 필기에서 출제) 예상 문제를 만듭니다.</p></div>
   </section>
 
@@ -668,6 +820,74 @@ F = [ 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]</div>
       <div>
         <div class="body">이렇게 했을 때 최적의 답은 0 3 7 10 강의를 하는 4개까지가 최대임(다른 경우의 수도 있음. 1 3 7 10 등. 근데 어떤 강의인지보다는 개수가 중요함. 개수 4개가 답)</div>
         <div class="where"><a href="#s3">03. 최적 답 — 4개</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">05<span>&nbsp;</span></div>
+      <div>
+        <div class="body">그리디 전략 : 
+
+(정답이 아니라 가능한걸 생각해보자)
+1번 전략 : 소요시간 적은 강의부터 배정하자.
+a가 있고 bc가(붙어있는) 시간이 있을 때 그 사이에 겹치는 2개를 선택하는게 더 이득일지라도 a를 먼저 골라 bc를 못고르는 경우가 생김. 별로인 전략
+
+2번 전략 : 빨리 시작하는 강의부터? bcd를 선택할 수 있는데 먼저오는 a를 선택해버리면 안됨. 별로다.
+
+1-2번 전략은 생각해보면 반례가 있기 때문에 별로
+
+3번 전략 : 가장 적게 겹치는 강의부터 배정하면 될까?
+
+각 인덱스별로 몇개가 겹치는지 세서 배정
+
+4번 전략 : (이 문제의 답. 최적인 전략)
+빨리 끝나는 강의부터 배정(남아있는 시간이 많게)
+
+4번 전략이 왜 답인가?
+
+greedy 전략으로 구한 해가 최적이다를 보이기 위해 &quot;귀류법&quot;으로 증명
+이 전략이 최적이 아니다로 가정 후 모순 유발한다면 최적으로 결론낼 수 있음</div>
+        <div class="where"><a href="#s4">04. 그리디 전략 후보 4가지</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">06<span>&nbsp;</span></div>
+      <div>
+        <div class="body">4번 전략으로
+
+알고리즘 동작 생각해보자
+
+1. F값의 오름차순으로 정렬(Sorting)  → O(nlogn)이 걸림.(소팅은 이게 최적. 이거보다 좋을 순 없음)
+
+*L은 선택한 강의의 집합이라고 해보자
+
+2. L = [0] ,  k = 0     *k는 가장 최근에 배정을 마친 강의 인덱스라고 해보자
+3. for i in range(1, n) : 
+
+             if F[k] &lt;= S[i] : 
+                  L.append(i), k=i
+
+4. return L / len(L)    (정하기 나름)
+
+
+1번은 O(nlogn), 3번 for문이 O(n) 정도.
+따라서 소요시간은 O(nlogn) 소요</div>
+        <div class="where"><a href="#s5">05. 4번 전략의 알고리즘</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">07<span>&nbsp;</span></div>
+      <div>
+        <div class="body">다시 그래프로 가보면 
+0부터 보면서 0인덱스 끝나는 시간보다 뒤에서 시작하는 인덱스를 고름
+그러면 3을 골라짐
+그러면 3이 끝나는 시간 7을 기준으로 그 다음애들 뒤에 시작하는 애들을 바로 넣음
+그러면 7을 골라짐
+그러면 7에서 끝나는 시간보다 뒤에 시작하는 인덱스를 찾아 고름
+그러면 10이 골라짐
+(시각화해주면 좋을듯)
+
+그러면 L = [0,3,7,10]이 됨(len(L) = 4)</div>
+        <div class="where"><a href="#s6">06. 예시에 적용</a></div>
       </div>
     </div>
   </div>
