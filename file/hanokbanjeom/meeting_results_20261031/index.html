@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>한옥반점 예약 관리 시스템 미팅 결과 정리</title>
+<style>
+  /* A4 인쇄용 사무 서식 — 흑백 실선 표, 바깥 글꼴·스크립트 없음 */
+  @page{
+    size:A4; margin:16mm 15mm 16mm;
+    /* 여백 칸을 직접 채워 두면 브라우저 머리글·바닥글(날짜·제목·주소)이 찍히지 않음 */
+    @top-left{ content:" "; } @top-center{ content:" "; } @top-right{ content:" "; }
+    @bottom-left{ content:" "; } @bottom-right{ content:" "; }
+    @bottom-center{ content:"- " counter(page) " -"; font-family:"Malgun Gothic","맑은 고딕",sans-serif; font-size:9pt; color:#000; }
+  }
+  *{ box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  html,body{ margin:0; background:#d6d6d6; color:#000; }
+  body{ font-family:"Malgun Gothic","맑은 고딕","Apple SD Gothic Neo","Noto Sans KR",sans-serif; font-size:10pt; line-height:1.5; }
+  .sheet{ width:210mm; margin:8mm auto; padding:16mm 15mm; background:#fff; }
+  @media print{
+    html,body{ background:#fff; }
+    .sheet{ width:auto; margin:0; padding:0; }
+    .pb{ break-before:page; }
+  }
+  @media screen{ .pb{ margin-top:12mm; padding-top:10mm; border-top:1px dashed #999; } }
+
+  /* 제목부 */
+  .doc-head{ margin-bottom:5mm; }
+  .doc-title{ font-size:16pt; font-weight:700; letter-spacing:.03em; white-space:nowrap; text-align:center; padding:3mm 0; border-top:2.5px solid #000; border-bottom:2.5px solid #000; }
+
+  /* 공통 표 */
+  table{ width:100%; border-collapse:collapse; }
+  table.t th,table.t td{ border:1px solid #000; padding:1.3mm 2mm; vertical-align:middle; }
+  table.t thead th{ background:#e6e6e6; font-weight:700; text-align:center; font-size:9.5pt; white-space:nowrap; }
+  table.t th.row{ background:#f2f2f2; font-weight:700; text-align:center; white-space:nowrap; }
+  table.t tr{ break-inside:avoid; }
+  /* 표는 쪽 사이에서 끊지 않고, 메모 칸은 표와 같은 쪽에 */
+  table.t{ break-inside:avoid; }
+  .memo-box{ break-before:avoid; }
+  /* 소제목·표·메모 칸을 한 덩어리로 — 메모 칸만 다음 쪽으로 넘어가지 않게 */
+  .blk{ break-inside:avoid; }
+  .guide, p.note, ul.note{ break-after:avoid; }
+  table.t .c{ text-align:center; } table.t .r{ text-align:right; white-space:nowrap; }
+  table.t .no{ width:11mm; text-align:center; }
+  table.t .chk{ width:13mm; text-align:center; font-size:12pt; line-height:1; }
+  table.t thead th.chk{ font-size:9.5pt; line-height:1.5; }
+  table.t .memo{ width:42mm; }
+  table.t .sub{ font-size:8.8pt; color:#333; }
+  table.t tr.sum td{ font-weight:700; background:#f2f2f2; }
+  table.t td.ans{ height:9mm; }
+  .gap{ margin-top:2mm; }
+
+  /* 장·절 제목 */
+  h1{ font-size:13pt; font-weight:700; margin:7mm 0 2.5mm; padding-bottom:1mm; border-bottom:1.5px solid #000; break-after:avoid; }
+  h2{ font-size:10.5pt; font-weight:700; margin:4.5mm 0 1.8mm; break-after:avoid; }
+  .pb > h1:first-child, .sheet > h1:first-child{ margin-top:0; }
+  p{ margin:0 0 1.5mm; }
+  .guide{ font-size:9pt; margin:0 0 2mm; }
+  ul.dash{ margin:0; padding:0; list-style:none; }
+  ul.dash li{ padding-left:4mm; text-indent:-4mm; margin:.8mm 0; }
+  ul.dash li::before{ content:"- "; }
+  .box{ border:1px solid #000; padding:2.5mm 3.5mm; margin:2mm 0; break-inside:avoid; break-after:avoid; }
+  .box b{ font-weight:700; }
+  .note{ font-size:8.8pt; margin-top:1.5mm; }
+  /* 메모 칸 — 줄 선 없이 약 5줄 높이 */
+  .memo-box{ border:1px solid #000; height:28mm; margin-top:1.5mm; break-inside:avoid; }
+  .memo-box.big{ height:70mm; }
+  .end{ text-align:right; margin-top:6mm; font-weight:700; }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+<div class="doc-head">
+  <div class="doc-title">한옥반점 예약 관리 시스템 미팅 결과 정리</div>
+</div>
+
+<table class="t">
+  <tr><th class="row" style="width:24mm">미팅 일시</th><td>2026. 10. 31.(토) 15:00~17:30</td><th class="row" style="width:24mm">장    소</th><td>한옥반점</td></tr>
+  <tr><th class="row">대 상 자</th><td>한옥반점 대표 김지아</td><th class="row">작 성 자</th><td>개발자 이재아</td></tr>
+</table>
+
+<div class="box">※ 본 문서는 미팅 결과를 정리한 것이며, 아직 시스템에 적용된 사항이 아님. 적용 후 공지사항으로 안내 예정.</div>
+
+<!-- 1 -->
+<div class="blk">
+<h1>1. 휴대폰 화면</h1>
+<p class="guide">※ 실제 사용이 대부분 휴대폰이므로 휴대폰 화면에 맞춰 개선.</p>
+<table class="t">
+  <thead><tr><th class="no">번호</th><th>내용</th></tr></thead>
+  <tbody>
+    <tr><td class="no">1</td><td>예약 등록 중 단계 표시(인원·날짜·시간 등)를 눌러 앞뒤 단계로 바로 이동</td></tr>
+    <tr><td class="no">2</td><td>예약 등록 중 그날 예약 현황(스케줄)을 팝업으로 확인 — 손님과 통화하며 예약받을 때 사용</td></tr>
+    <tr><td class="no">3</td><td>예약 시간 선택 시 'NaN' 표시 오류 수정</td></tr>
+    <tr><td class="no">4</td><td>날짜 이동 시 화면이 검게만 바뀌지 않고 이동한 날짜가 보이도록 개선</td></tr>
+    <tr><td class="no">5</td><td>인원 표기: 타임라인에서는 넘쳐 잘 보이지 않으나, 휴대폰 목록형에서 잘 보이므로 현행 유지</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- 2 -->
+<div class="blk">
+<h1>2. 디스플레이 모드 (TV)</h1>
+<table class="t">
+  <thead><tr><th class="no">번호</th><th>내용</th></tr></thead>
+  <tbody>
+    <tr><td class="no">1</td><td>목록형을 기본 화면으로</td></tr>
+    <tr><td class="no">2</td><td>목록형의 룸 이름·인원 글씨 확대, 세로 가운데 정렬</td></tr>
+    <tr><td class="no">3</td><td>화면 하단에 그날 메뉴(코스·세트 수량) 표시 — 주방 확인용</td></tr>
+    <tr><td class="no">4</td><td>그날 예약이 끝나면(마지막 예약 시각 30분 경과) 다음 날 예약 화면으로 자동 전환</td></tr>
+    <tr><td class="no">5</td><td>다음 날 예약도 없으면 광고 화면으로 자동 전환 (이틀 뒤 예약까지는 표시하지 않음)</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- 3 -->
+<div class="pb">
+<h1>3. 예약 규칙 변경</h1>
+
+<div class="blk">
+<h2>가. 마지막 예약 시각</h2>
+<table class="t">
+  <thead><tr><th style="width:30mm">구분</th><th>점심</th><th>저녁</th></tr></thead>
+  <tbody>
+    <tr><th class="row">평일</th><td>14:30까지 (14:30 포함)<br><span class="sub">점심 적용 기준 시각으로 따로 관리</span></td><td>19:30까지 (19:30 포함)</td></tr>
+    <tr><th class="row">토요일</th><td>15:30 전까지 (15:30부터 저녁 예약으로 간주)</td><td>19:30까지 (19:30 포함)</td></tr>
+    <tr><th class="row">일요일·공휴일</th><td>15:30 전까지 (15:30부터 저녁 예약으로 간주)</td><td>18:30까지 (18:30 포함)</td></tr>
+  </tbody>
+</table>
+<ul class="dash note">
+  <li>주방 마감 20:40, 라스트오더 19:30 (일요일·공휴일은 확인 요청 사항 2번)</li>
+  <li>룸 이용 시간: 점심 2시간, 저녁 제한 없음 (평일·주말 동일)</li>
+</ul>
+</div>
+
+<div class="blk">
+<h2>나. 좌석</h2>
+<table class="t">
+  <thead><tr><th class="no">번호</th><th>내용</th></tr></thead>
+  <tbody>
+    <tr><td class="no">1</td><td>좌석 종류는 모두 '홀'로 유지. 테이블 이름(하후상 등)은 자리를 가리킬 때만 사용</td></tr>
+    <tr><td class="no">2</td><td>여포는 홀과 동일하게 적용 — 최소 인원 없음(2명 가능), 5명도 경고 없이 가능</td></tr>
+    <tr><td class="no">3</td><td>2명 예약은 2인석 우선 배정</td></tr>
+    <tr><td class="no">4</td><td>거동이 불편한 손님은 1층 우선 배정, 1층이 아니면 경고</td></tr>
+    <tr><td class="no">5</td><td>'단체(8명 이상)' 구분 및 단체 표시 폐지</td></tr>
+    <tr><td class="no">6</td><td>자리 배정은 현행대로 대표가 상황에 따라 직접 배정</td></tr>
+    <tr><td class="no">7</td><td>14명까지 장비+관우 룸. 15명부터는 룸 중문 개방(원탁 3개) 또는 저층 홀 이용<br><span class="sub">단체는 원탁을 선호하지 않는 경우가 많아 저층 홀(룸과 비슷한 분위기)로 안내하기도 함</span></td></tr>
+    <tr><td class="no">8</td><td>상견례·돌잔치 등 중요한 자리는 기준 인원보다 적어도 룸 합치기 가능 — 시스템에서 막지 않고 예약 담당자가 판단</td></tr>
+    <tr><td class="no">9</td><td>(예정) 룸·홀 배치도를 보고 눌러서 자리를 고르는 화면</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="blk">
+<h2>다. 거동불편 표시</h2>
+<table class="t">
+  <tbody>
+    <tr><th class="row" style="width:30mm">예약 상세</th><td>거동불편 손님 여부 확인만 가능</td></tr>
+    <tr><th class="row">예약 수정</th><td>체크박스로 표시·해제 (예약 상세에서 바로 바꾸면 헷갈리기 때문)</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="blk">
+<h2>라. 홈페이지 예약 (재개 시점부터 적용)</h2>
+<table class="t">
+  <thead><tr><th class="no">번호</th><th>내용</th></tr></thead>
+  <tbody>
+    <tr><td class="no">1</td><td>내일부터 60일 앞까지 예약 가능, 당일 예약 없음</td></tr>
+    <tr><td class="no">2</td><td>홈페이지 신청 알림(팝업)은 5분 간격 — 바쁠 때 너무 자주 뜨지 않도록</td></tr>
+    <tr><td class="no">3</td><td>홈페이지 예약은 문자 연결과 함께 재개</td></tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+<!-- 4 -->
+<div class="blk">
+<h1>4. 문자</h1>
+<table class="t">
+  <thead><tr><th style="width:30mm">구분</th><th>내용</th></tr></thead>
+  <tbody>
+    <tr><th class="row">재안내 문자</th><td>방문 전날 오후 7시 발송. 방문 전날에 받은 예약은 방문 당일 오전 9시</td></tr>
+    <tr><th class="row" rowspan="3">감사 문자</th><td>AI 작성 시 요청사항·메모는 읽지 않음. 이름·인원·코스 등은 참고</td></tr>
+    <tr><td>문구 키워드는 현행 유지 (내용 전달 예정)</td></tr>
+    <tr><td>대표가 직접 검토한 뒤 '예약 발송'을 걸어야만 발송(즉시 발송도 가능). 검토 없는 자동 발송 없음</td></tr>
+    <tr><th class="row">알리고</th><td>사이트 아이디·비밀번호 전달 필요 (비밀번호 변경 후)</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- 5 -->
+<div class="blk">
+<h1>5. 손님 관리</h1>
+<table class="t">
+  <thead><tr><th style="width:30mm">구분</th><th>내용</th></tr></thead>
+  <tbody>
+    <tr><th class="row">손님 정보 표시</th><td>손님 관리 화면 개선. 예약 등록 중 이름·전화번호 입력 시 손님 정보 표시, 누르면 팝업으로 특이사항까지 확인</td></tr>
+    <tr><th class="row">VIP 기준</th><td>방문 횟수 기준은 더 엄격하게, 이용 금액을 우선. 직접 지정한 등급이 가장 우선 (금액 기준은 확인 요청 사항 7~9번)</td></tr>
+    <tr><th class="row">손님 묶기</th><td>같은 회사 등 예약 담당자가 여러 명이면 이름이 달라도 한 손님으로 묶기.<br>같은 이름이 이미 있으면 "이미 등록된 이름이 있습니다" → 합치기 / 새로 등록하기 선택</td></tr>
+    <tr><th class="row">현장 손님 기록</th><td>예약 없이 온 손님 간단 기록 — 이름, 전화번호(선택), 날짜(선택), 메뉴(선택), 인원(선택)</td></tr>
+    <tr><th class="row">유아의자</th><td>현재 6개 보유 — 초과 시 알림</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- 6 -->
+<div class="blk">
+<h1>6. 워크시프트 (근무·급여)</h1>
+<table class="t">
+  <thead><tr><th style="width:30mm">구분</th><th>내용</th></tr></thead>
+  <tbody>
+    <tr><th class="row">일용 직원 등록</th><td>PIN 없이 이름만으로 추가 (로그인 방식은 확인 요청 사항 13번)</td></tr>
+    <tr><th class="row">일용 급여 지급</th><td>연속 근무 일괄 / 하루씩 외에, 연속 5일 중 3일만 지급처럼 날짜를 골라 지급</td></tr>
+    <tr><th class="row">지급 완료 표시</th><td>근무표 칸 오른쪽 위에 작은 동그라미·체크로 표시 (대표만 확인·수정)</td></tr>
+    <tr><th class="row">근무표 출력</th><td>작성된 근무표, 빈 근무표(양식) 모두 출력</td></tr>
+    <tr><th class="row">급여 자료</th><td>대표가 월 1회 회계사무소에 엑셀 전달</td></tr>
+    <tr><th class="row">급여일</th><td>산정 기간이 끝나고 바로 그 기간 급여가 지급되는 것이 아니라, 한 기간 뒤 지급 (확인 요청 사항 10번)</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- 7 -->
+<div class="blk">
+<h1>7. 알림</h1>
+<table class="t">
+  <thead><tr><th style="width:30mm">구분</th><th>내용</th></tr></thead>
+  <tbody>
+    <tr><th class="row">수신 방법</th><td>텔레그램만 사용 (메일 알림 사용 안 함). 예약 현황 브리핑 사용 안 함</td></tr>
+    <tr><th class="row">설치 대상</th><td>대표, 팀장, 근무자 1명</td></tr>
+    <tr><th class="row">대표</th><td>홈페이지 예약 알림 항상 수신. 밤 12시~오전 10시 알림은 모아서 오전 10시에 한 번에 발송</td></tr>
+    <tr><th class="row">팀장·근무자</th><td>근무하는 날, 근무 시작 1시간 전부터 근무 종료 1시간 후까지 알림 수신 (점심시간 포함)<br>그 밖의 시간에 생긴 당일 예약 등록·수정 알림은 알림 시간이 되면 바로 발송 (밀린 알림 확인용)</td></tr>
+    <tr><th class="row">당일 예약</th><td>당일 예약 등록·수정은 대표에게 시간과 관계없이 즉시 알림</td></tr>
+    <tr><th class="row">화면 갱신</th><td>현재 10초마다 서버에서 예약을 받아옴. 속도·사용량에 문제가 있으면 1분 등으로 조정 가능</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- 8 -->
+<div class="blk">
+<h1>8. 그 밖</h1>
+<table class="t">
+  <thead><tr><th class="no">번호</th><th>내용</th></tr></thead>
+  <tbody>
+    <tr><td class="no">1</td><td>'저장하지 못했습니다' 이후 인터넷이 돌아오면 자동으로 다시 저장하지 않고 "다시 저장할까요?"로 확인</td></tr>
+    <tr><td class="no">2</td><td>네이버·구글 검색 등록 — 네이버에서 '한옥반점' 검색 시 홈페이지(hanokbanjeom.com)가 나오도록</td></tr>
+    <tr><td class="no">3</td><td>홈페이지 주방장 사진 교체 (대표가 사진 전달 예정)</td></tr>
+    <tr><td class="no">4</td><td>권한 정리 후 권한별 접근표 전달 — 어느 권한으로 어디까지 들어갈 수 있는지 정리</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- 9 -->
+<div class="pb">
+<h1>9. 확인 요청 사항</h1>
+<p class="guide">※ 답변은 별도로 전달 부탁드림. 모르시는 항목은 비워 두셔도 됨.</p>
+
+<div class="blk">
+<h2>가. 영업시간</h2>
+<table class="t">
+  <thead><tr><th class="no">번호</th><th>질문</th></tr></thead>
+  <tbody>
+    <tr><td class="no">1</td><td>토·일·월처럼 이어지는 연휴는 앞날 토요일 시간표, 마지막 날 공휴일 시간표. 평일 하루 공휴일(예: 수요일 하루)은 토요일 시간표가 맞나요?</td></tr>
+    <tr><td class="no">2</td><td>일요일·공휴일의 주방 마감 시각과 라스트오더 시각</td></tr>
+    <tr><td class="no">3</td><td>홀 이용 시간(한 팀이 홀 테이블을 쓰는 평균 시간) — 점심·저녁 각각<br><span class="sub">손님 이용 시간을 제한하려는 것이 아님. 회전이 있는 홀은 앞 예약을 끝까지 점유로 보면 다음 예약을 받기 어려워짐. 평균 이용 시간을 알면 다음 예약을 유연하게 받을 수 있음</span></td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="blk">
+<h2>나. 좌석</h2>
+<table class="t">
+  <thead><tr><th class="no">번호</th><th>질문</th></tr></thead>
+  <tbody>
+    <tr><td class="no">4</td><td>룸별 인원 — 평일·주말 각각 최소 / 적정 / 최대 (아래 표 형식 참고)</td></tr>
+    <tr><td class="no">5</td><td>평소 룸·홀 배정 우선순위 — 홀은 테이블별로 (아래 표 형식 참고)<br><span class="sub">확정 전 예약을 인원·객단가·VIP 기준으로 자동 재배정하는 데 사용</span></td></tr>
+    <tr><td class="no">6</td><td>주말에 2명이 4인석을 원할 때 '코스요리부터' 가능 — 어느 세트·코스부터인지 (모든 코스 / 특정 코스 이상)</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="blk">
+<h2>□ 표 형식 참고 — 룸별 인원·우선순위 (4·5번)</h2>
+<table class="t">
+  <thead>
+    <tr><th rowspan="2" style="width:22mm">좌석</th><th colspan="3">평일</th><th colspan="3">주말·공휴일</th><th rowspan="2" style="width:18mm">우선순위</th></tr>
+    <tr><th>최소</th><th>적정</th><th>최대</th><th>최소</th><th>적정</th><th>최대</th></tr>
+  </thead>
+  <tbody>
+    <tr><th class="row">조조</th><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><th class="row">유비</th><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><th class="row">장비</th><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><th class="row">관우</th><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><th class="row">공명</th><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><th class="row">주유</th><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><th class="row">초선</th><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><th class="row">동탁</th><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="blk">
+<h2>□ 표 형식 참고 — 홀 테이블별 우선순위 (5번)</h2>
+<table class="t">
+  <thead><tr><th style="width:20mm">층</th><th>테이블</th><th style="width:24mm">좌석</th><th style="width:30mm">우선순위</th></tr></thead>
+  <tbody>
+    <tr><td class="c">1층</td><th class="row">21</th><td class="c">4인</td><td></td></tr>
+    <tr><td class="c">1층</td><th class="row">22</th><td class="c">4인</td><td></td></tr>
+    <tr><td class="c">1층</td><th class="row">23-4</th><td class="c">4인</td><td></td></tr>
+    <tr><td class="c">1층</td><th class="row">23-2</th><td class="c">2인</td><td></td></tr>
+    <tr><td class="c">1층</td><th class="row">24</th><td class="c">2인</td><td></td></tr>
+    <tr><td class="c">1층</td><th class="row">25</th><td class="c">2인</td><td></td></tr>
+    <tr><td class="c">저층</td><th class="row">여포</th><td class="c">4인</td><td></td></tr>
+    <tr><td class="c">저층</td><th class="row">하후돈</th><td class="c">4인</td><td></td></tr>
+    <tr><td class="c">저층</td><th class="row">하후상-1</th><td class="c">4인</td><td></td></tr>
+    <tr><td class="c">저층</td><th class="row">하후상-2</th><td class="c">4인</td><td></td></tr>
+    <tr><td class="c">저층</td><th class="row">하후연</th><td class="c">2인</td><td></td></tr>
+    <tr><td class="c">저층</td><th class="row">하후은</th><td class="c">2인</td><td></td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="blk">
+<h2>다. 손님 관리</h2>
+<table class="t">
+  <thead><tr><th class="no">번호</th><th>질문</th></tr></thead>
+  <tbody>
+    <tr><td class="no">7</td><td>VIP 금액 기준 — 1회 이용 금액(객단가)과 누적 이용 금액 중 어느 것으로 볼지, 얼마부터 VIP·VVIP로 할지</td></tr>
+    <tr><td class="no">8</td><td>VIP 방문 횟수 — 현재 2회 VIP, 5회 VVIP(노쇼 1회 = −5). 몇 회로 올릴지</td></tr>
+    <tr><td class="no">9</td><td>현장 손님 기록도 VIP 계산에 넣을지</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="blk">
+<h2>라. 워크시프트</h2>
+<table class="t">
+  <thead><tr><th class="no">번호</th><th>질문</th></tr></thead>
+  <tbody>
+    <tr><td class="no">10</td><td>급여일 확인 — 9/16~10/15 근무분은 언제 지급되는지 (예: 11/15, 한 기간 뒤)</td></tr>
+    <tr><td class="no">11</td><td>급여 엑셀은 회계사무소에 매달 언제 보내시는지</td></tr>
+    <tr><td class="no">12</td><td>파트타이머 급여는 정직원처럼 한 달 단위로 지급하는지, 일한 날마다 지급하는지<br><span class="sub">한 달 단위이면 근무표에 지급 완료 표시를 넣지 않음</span></td></tr>
+    <tr><td class="no">13</td><td>일용 직원 로그인 방식 제안: PIN 대신 전용 링크. 링크로 들어오면 근무하는 동안만 자동 로그인, 필요할 때 대표가 링크를 일용 직원에게 전송 (필요 없을 경우 전송하지 않아도 됨)</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="blk">
+<h2>마. 알림</h2>
+<table class="t">
+  <thead><tr><th class="no">번호</th><th>질문</th></tr></thead>
+  <tbody>
+    <tr><td class="no">14</td><td>텔레그램을 설치할 근무자 1명은 누구인지</td></tr>
+    <tr><td class="no">15</td><td>대표와 팀장이 둘 다 근무하지 않는 날이 있는지</td></tr>
+    <tr><td class="no">16</td><td>밤 12시~오전 10시 알림을 오전 10시에 모아서 받는 방식이 괜찮은지 (당일 예약 등록·수정은 시간 관계 없이 즉시 발송)</td></tr>
+    <tr><td class="no">17</td><td>텔레그램 설치 후 사용자 번호(user ID) 전달 부탁드림 — 확인 방법:<br>
+      ① 텔레그램 앱 위쪽 검색창에서 <b>@userinfobot</b> 검색 → ② 대화방에서 <b>'시작'(START)</b> 누르기 → ③ 답장으로 온 <b>Id</b> 옆 숫자를 개발자에게 전달<br>
+      <span class="sub">이후 개발자가 보내 드리는 한옥반점 알림 봇에서도 '시작'을 한 번 눌러 주셔야 알림을 받을 수 있음 (추후 안내 예정)</span></td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="blk">
+<h2>바. 전달 요청 자료</h2>
+<table class="t">
+  <thead><tr><th class="no">번호</th><th>자료</th></tr></thead>
+  <tbody>
+    <tr><td class="no">1</td><td>알리고 아이디·비밀번호 (비밀번호 변경 후)</td></tr>
+    <tr><td class="no">2</td><td>주방장 사진</td></tr>
+    <tr><td class="no">3</td><td>보유하신 사진 원본 (음식, 매장 내부, 매장 전경) — 카카오톡 '원본' 전송 또는 메일(jaea0423@gmail.com)</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p class="end">끝.</p>
+</div>
+
+</div>
+
+</body>
+</html>
