@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>대경빌 안내</title>
+<meta name="description" content="대경빌 생활 안내 및 등록 차량">
+<link rel="stylesheet" as="style" crossorigin
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <!-- 여기(P 마크 / 건물 이름)를 5번 연속 누르면 관리자 모드로 갑니다 -->
+  <div class="pmark tap" aria-hidden="true">P</div>
+  <div class="topbar-title tap">
+    <span id="bldg">대경빌</span> 안내
+    <small>NOTICE</small>
+  </div>
+  <div class="topbar-meta" id="today"></div>
+</header>
+
+<div class="stage">
+
+  <!-- ===== 위: 생활 안내 ===== -->
+  <section class="notices">
+    <div class="sec-head">
+      <h2>생활 안내</h2>
+      <span class="sub">모두가 편하게 지내기 위한 약속입니다</span>
+    </div>
+
+    <div class="notice-list" id="notice-list"></div>
+    <div class="notice-footer" id="notice-footer"></div>
+  </section>
+
+  <!-- ===== 아래: 등록 차량 ===== -->
+  <section class="cars">
+    <div class="sec-head">
+      <h2>등록 차량</h2>
+      <span class="count" id="count">불러오는 중…</span>
+    </div>
+
+    <ul class="plates" id="plates"></ul>
+    <div class="msg" id="plates-msg" hidden></div>
+
+    <div class="ban">
+      <span id="ban-head">대경빌 등록 차량 외 주차 불가</span>
+      <small>위에 등록된 차량 외 외부차량은 이동주차 요청하시면 됩니다.</small>
+    </div>
+  </section>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="../config.js"></script>
+<script src="notices.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var platesEl = document.getElementById("plates");
+  var msgEl    = document.getElementById("plates-msg");
+  var countEl  = document.getElementById("count");
+  var current  = [];
+
+  /* ---------------- 0. 건물 이름 / 날짜 ---------------- */
+  var B = CONFIG.BUILDING || "대경빌";
+  document.getElementById("bldg").textContent = B;
+  document.getElementById("ban-head").textContent = B + " 등록 차량 외 주차 불가";
+  document.title = B + " 안내";
+
+  (function () {
+    var d = new Date();
+    var days = ["일", "월", "화", "수", "목", "금", "토"];
+    document.getElementById("today").innerHTML =
+      fmt(d) + "<br>" + days[d.getDay()] + "요일";
+  })();
+
+  /* ---------------- 1. 안내문 그리기 ---------------- */
+  (function () {
+    var box = document.getElementById("notice-list");
+
+    NOTICES.forEach(function (n) {
+      var card = document.createElement("div");
+      card.className = "card t-" + n.tone;
+
+      var tab = document.createElement("div");
+      tab.className = "card-tab";
+      tab.textContent = n.title;
+
+      var body = document.createElement("div");
+      body.className = "card-body";
+
+      var inner = document.createElement("div");
+      inner.className = "card-inner";
+
+      n.items.forEach(function (text) {
+        var p = document.createElement("p");
+        // notices.js 는 우리가 쓰는 파일이라 <b> 같은 간단한 태그를 허용합니다
+        p.innerHTML = text;
+        inner.appendChild(p);
+      });
+      body.appendChild(inner);
+
+      card.appendChild(tab);
+      card.appendChild(body);
+      box.appendChild(card);
+    });
+
+    fitNotices();
+
+    var foot = document.getElementById("notice-footer");
+    if (typeof NOTICE_FOOTER === "string" && NOTICE_FOOTER) {
+      foot.textContent = NOTICE_FOOTER;
+    } else {
+      foot.style.display = "none";
+    }
+  })();
+
+  /* 안내 카드 글자가 칸을 넘치면 들어갈 때까지 줄입니다.
+     화면 크기나 안내 줄 수가 달라져도 글자가 잘리지 않습니다. */
+  function fitNotices() {
+    document.querySelectorAll(".card-body").forEach(function (body) {
+      var inner = body.querySelector(".card-inner");
+      if (!inner) { return; }
+
+      var size = window.innerHeight * 0.02;   // 2vh 에서 시작
+      var min  = 11;
+      body.style.fontSize = size.toFixed(1) + "px";
+
+      var guard = 0;
+      while (inner.offsetHeight > body.clientHeight && size > min && guard < 80) {
+        size *= 0.96;
+        body.style.fontSize = size.toFixed(1) + "px";
+        guard += 1;
+      }
+    });
+  }
+
+  /* ---------------- 2. 5번 눌러 관리자 모드 ---------------- */
+  var clicks = 0, timer = null;
+  function tap() {
+    clicks += 1;
+    clearTimeout(timer);
+    timer = setTimeout(function () { clicks = 0; }, 3000);
+    if (clicks >= 5) {
+      clicks = 0;
+      clearTimeout(timer);
+      location.href = "../admin.html";   // 관리자 화면은 v1 과 같이 씁니다
+    }
+  }
+  document.querySelectorAll(".tap").forEach(function (el) {
+    el.addEventListener("click", tap);
+  });
+
+  /* ---------------- 3. 번호판 글자 크기 맞추기 ----------------
+     글자 폭을 눈대중으로 잡으면 한글 때문에 두 줄로 접힙니다.
+     화면 밖에 같은 모양의 글자를 그려 놓고 실제 폭을 잽니다. */
+  var ruler = document.createElement("span");
+  ruler.setAttribute("aria-hidden", "true");
+  ruler.style.cssText =
+    "position:absolute;left:-9999px;top:0;white-space:nowrap;" +
+    "font-size:100px;font-weight:800;letter-spacing:.03em;" +
+    "font-variant-numeric:tabular-nums;visibility:hidden";
+  document.body.appendChild(ruler);
+
+  function widestRatio() {
+    ruler.style.fontFamily = getComputedStyle(platesEl).fontFamily;
+    var max = 5.5;
+    current.forEach(function (row) {
+      ruler.textContent = formatPlate(row.plate);
+      var r = ruler.getBoundingClientRect().width / 100;
+      if (r > max) { max = r; }
+    });
+    return max;
+  }
+
+  function fitFont() {
+    var first = platesEl.firstElementChild;
+    if (!first) { return; }
+
+    var cs  = getComputedStyle(first);
+    var box = first.getBoundingClientRect();
+    var padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight)
+             + parseFloat(cs.borderLeftWidth) + parseFloat(cs.borderRightWidth);
+
+    var byWidth  = (box.width - padX - 4) / widestRatio();
+    var byHeight = box.height * 0.6;
+
+    var size = Math.max(12, Math.min(byWidth, byHeight, 60));
+    platesEl.style.fontSize = size.toFixed(1) + "px";
+  }
+
+  /* ---------------- 4. 목록 그리기 ---------------- */
+  /* 2열~5열 중에서 번호판 글자가 가장 크게 들어가는 배치를 고릅니다.
+     세로 화면은 폭이 좁아, 열을 줄이면 글자가 커지고 행이 늘면 높이가 줄어듭니다.
+     둘을 다 계산해서 가장 나은 쪽을 씁니다. */
+  function gridPlan(n) {
+    var box   = platesEl.getBoundingClientRect();
+    var gap   = parseFloat(getComputedStyle(platesEl).gap) || 8;
+    var ratio = widestRatio();
+    var padX  = window.innerHeight * 0.02;   // 좌우 여백 + 테두리 (대략)
+
+    var best = null;
+    for (var c = 2; c <= 5; c++) {
+      var r    = Math.max(1, Math.ceil(Math.max(n, c) / c));
+      var colW = (box.width  - (c - 1) * gap) / c;
+      var rowH = (box.height - (r - 1) * gap) / r;
+      var f    = Math.min((colW - padX - 4) / ratio, rowH * 0.6);
+      if (!best || f > best.f) { best = { cols: c, rows: r, total: c * r, f: f }; }
+    }
+    return best;
+  }
+
+  function render(list) {
+    current = list;
+    msgEl.hidden = true;
+
+    if (!list.length) {
+      platesEl.innerHTML = "";
+      countEl.textContent = "";
+      msgEl.hidden = false;
+      msgEl.textContent = "현재 등록된 차량이 없습니다.";
+      return;
+    }
+
+    var plan = gridPlan(list.length);
+    platesEl.style.gridTemplateColumns = "repeat(" + plan.cols + ", minmax(0, 1fr))";
+    platesEl.style.gridTemplateRows    = "repeat(" + plan.rows + ", minmax(0, 1fr))";
+    platesEl.innerHTML = "";
+
+    list.forEach(function (row) {
+      var li = document.createElement("li");
+      li.className = "plate";
+      li.textContent = formatPlate(row.plate);
+      platesEl.appendChild(li);
+    });
+
+    // 마지막 줄만 빈 칸으로 채워 모양을 맞춥니다
+    for (var i = list.length; i < plan.total; i++) {
+      var e = document.createElement("li");
+      e.className = "plate empty-slot";
+      e.setAttribute("aria-hidden", "true");
+      platesEl.appendChild(e);
+    }
+
+    countEl.textContent = "총 " + list.length + "대";
+    requestAnimationFrame(fitFont);
+  }
+
+  var resizeTimer = null;
+  window.addEventListener("resize", function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function () { fitNotices(); render(current); }, 150);
+  });
+
+  /* ---------------- 5. 불러오기 ---------------- */
+  function load() {
+    if (!configReady()) {
+      countEl.textContent = "";
+      msgEl.hidden = false;
+      msgEl.textContent = "설정이 아직 되지 않았습니다. config.js 를 채워 주세요.";
+      return;
+    }
+
+    makeClient().from("vehicles_public").select("plate").then(function (res) {
+      if (res.error) {
+        console.error(res.error);
+        countEl.textContent = "";
+        msgEl.hidden = false;
+        msgEl.textContent = "목록을 불러오지 못했습니다.";
+        return;
+      }
+      var list = res.data.slice().sort(function (a, b) {
+        return formatPlate(a.plate).localeCompare(formatPlate(b.plate), "ko");
+      });
+      render(list);
+    });
+  }
+
+  load();
+  setInterval(load, 5 * 60 * 1000);
+
+  // 웹폰트는 늦게 도착할 수 있습니다. 다 불러온 뒤 크기를 다시 맞춥니다.
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function () {
+      fitNotices();
+      if (current.length) { render(current); }
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

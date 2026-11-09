@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>인공지능 D. 군집화 — 기본 문제</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>:root{ --subject:#5B3CF5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../exam-engine/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다. 이 파일은 drive/exam-engine/exam.css · exam.js 와 함께 있어야 열립니다.</div>
+<script>
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'인공지능',
+  title:'D. 군집화 — 기본 문제',
+  written:'2026년 10월 26일 작성',
+  slug:'ai-mid-d_clu-basic',
+  lectureBase:'../lecture',
+  level:'하',
+  mcMax:0.7,
+  scope:`군집화 — 10/26 복습 수업 범위(교안 Clustering 2–4, 6, 8, 10–16, 18–20, 22, 23, 25, 26쪽)`,
+  oxLabels:["O", "X"],
+  srcHref:"slides.html"
+};
+const EXAM = [
+{ type:'mc',
+   lv:'하',
+   unit:"세 방법의 기준",
+   pts:10,
+   q:`<p>군집화 방법과 그 방법이 "비슷하다"를 판단하는 기준, 군집 수를 미리 정하는지 여부를 바르게 짝지은 것은?</p>`,
+   choices:[`K-means(K-평균) — 밀도 — 군집 수를 미리 정하지 않음`,`Hierarchical clustering(계층적 군집화) — 거리 — 군집 수를 미리 정해야 함`,`DBSCAN — 밀도 — 군집 수를 미리 정하지 않음`,`DBSCAN — 거리 — 군집 수를 미리 정해야 함`],
+   answer:[3],
+   exp:`DBSCAN은 점이 빽빽한 영역을 군집으로 보는 <b>밀도</b> 기반이고, 군집 수를 미리 정하지 않습니다. K-평균은 <b>거리</b>(가까운 중심) 기반이고 군집 수 K를 <b>미리 정합니다</b>. 계층적 군집화는 거리 기반이지만 덴드로그램을 끊는 위치로 군집 수를 정하므로 미리 정하지 <b>않습니다</b>(교안 4쪽, 교수님 10/26 "각각 기준 알아둬야 함").`,
+   src:[["D", "D3", "군집화 방법 세 가지"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"K-평균 순서",
+   pts:10,
+   q:`<p>K-means(K-평균) 알고리즘은 각 샘플에 1부터 K까지 번호를 무작위로 붙여 처음 배정을 만든 뒤, 두 단계를 반복한다. 반복하는 두 단계와 멈추는 조건을 바르게 나타낸 것은?</p>`,
+   choices:[`군집마다 중심(샘플들의 평균)을 계산 → 각 샘플을 중심이 가장 가까운 군집에 재배정, 배정이 더 이상 바뀌지 않으면 멈춤`,`각 샘플을 중심이 가장 가까운 군집에 재배정 → 가장 가까운 두 군집을 합침, 하나의 군집이 되면 멈춤`,`이미 고른 중심에서 먼 샘플을 새 중심으로 추가 → 중심을 다시 계산, 중심이 K개가 되면 멈춤`,`군집마다 중심을 계산 → 중심에서 거리 ε 안의 점이 MinPts보다 적은 샘플을 Noise로 표시, Noise가 없으면 멈춤`],
+   answer:[1],
+   exp:`교안 10쪽: 2.1 중심 계산(특징별 평균) → 2.2 가장 가까운 중심의 군집에 배정을 <b>배정이 바뀌지 않을 때까지</b> 반복합니다. ②는 병합 군집화, ③은 K-means++의 초기화(중심 고르기), ④는 DBSCAN의 ε·MinPts 개념을 섞은 것입니다.`,
+   src:[["D", "D5", "K-평균 알고리즘"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"K-평균의 한계",
+   pts:10,
+   q:`<p>성긴 무리 하나와 촘촘한 무리 두 개로 이루어진 데이터에 K-means(K-평균)를 K = 3으로 적용할 때 나타날 수 있는 결과와 그 원인으로 옳은 것은?</p>`,
+   choices:[`세 무리를 모두 정확히 찾는다. 각 샘플을 가장 가까운 중심에 붙이므로 밀도와 상관이 없기 때문이다.`,`성긴 무리의 점들을 Noise(잡음)로 남긴다. 밀도가 낮은 영역의 점은 군집에 넣지 않기 때문이다.`,`촘촘한 두 무리만 군집으로 찾는다. K-평균은 밀도가 높은 영역만 군집으로 보기 때문이다.`,`성긴 무리를 둘로 쪼개고 촘촘한 두 무리를 하나로 합친다. 밀도가 서로 다른 군집을 잘 찾지 못하기 때문이다.`],
+   answer:[4],
+   exp:`K-평균은 거리 기반이라 <b>밀도가 서로 다른(different densities)</b> 군집을 잘 찾지 못합니다(교안 14쪽). 필기에는 "밀도가 높아도 한계"라고 적혔지만, 한계는 밀도가 <b>높은</b> 것이 아니라 <b>서로 다른</b> 것입니다. Noise로 남기는 것(②)은 DBSCAN이고, K-평균은 모든 샘플을 반드시 한 군집에 넣습니다.`,
+   src:[["D", "D6", "K-평균의 한계"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"실루엣으로 K 고르기",
+   pts:10,
+   q:`<p>k = 2, 3, 4, 5에 대해 Silhouette score(실루엣 점수)를 구했더니 k = 4일 때 가장 높고 k = 3일 때 가장 낮았다. 옳은 것은?</p>`,
+   choices:[`k = 3을 고른다. 점수가 가장 낮으면 같은 군집 안 거리 a가 가장 작기 때문이다.`,`k = 4를 고른다. 같은 군집 안은 가깝고 다른 군집과는 멀리 떨어진 정도가 가장 크기 때문이다.`,`k = 5를 고른다. k가 클수록 군집 내 변동이 작아지므로 가장 큰 k가 좋기 때문이다.`,`어떤 k를 골라도 같다. 실루엣 점수는 k와 상관없이 일정해야 하기 때문이다.`],
+   answer:[2],
+   exp:`실루엣 계수는 a(같은 군집 안 평균 거리)가 <b>작고</b> b(가장 가까운 다른 군집까지 평균 거리)가 <b>클수록</b> 높아집니다. 그래서 점수가 <b>가장 높은</b> k를 고릅니다(교안 18–19쪽, 교수님 10/26 "4가 가장 높기 때문에 4를 k로"). 군집 내 변동은 k를 늘리면 계속 줄어들기 때문에 가장 큰 k를 고르면 안 됩니다.`,
+   src:[["D", "D7", "K 정하기"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"병합 군집화",
+   pts:10,
+   q:`<p>Agglomerative(병합) 군집화의 진행으로 옳은 것은?</p>`,
+   choices:[`샘플마다 자기만의 군집으로 시작해, 가장 가까운 두 군집을 합치는 일을 모든 샘플이 하나의 군집이 될 때까지 반복한다.`,`모든 샘플을 하나의 군집으로 시작해, 가장 먼 샘플부터 떼어 내며 샘플마다 하나의 군집이 될 때까지 나눈다.`,`미리 정한 K개 군집으로 시작해, 가까운 군집끼리 합쳐 하나의 군집이 되면 멈춘다.`,`샘플을 무작위로 K개 군집에 배정한 뒤, 중심이 가장 가까운 두 군집을 합쳐 간다.`],
+   answer:[1],
+   exp:`교안 22쪽: 1) 각 샘플을 자기만의 군집으로 시작 2) 가장 가까운 두 군집을 합침 3) 반복 4) 모두 하나가 되면 끝. 덴드로그램을 잎에서 줄기까지 쌓는 상향식(bottom-up)입니다(교안 20쪽). 필기의 "모든 애들이 하나의 클러스터라고 본 것"은 <b>마지막 상태</b>이지 시작이 아닙니다. 병합 군집화는 K를 미리 정하지 않습니다.`,
+   src:[["D", "D8", "계층적 군집화"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"K-평균 종합",
+   pts:10,
+   q:`<p>K-means(K-평균)에 대한 설명으로 옳은 것을 고르시오. (모두 고르시오)</p>`,
+   choices:[`모든 군집의 Within-cluster variation(군집 내 변동) 합이 가장 작아지도록 샘플을 나눈다.`,`K-means++로 처음 중심을 고르면 무작위성이 없어져 실행할 때마다 같은 결과를 얻는다.`,`서로 맞물린 초승달처럼 휘어진 모양의 군집은 잘 나누지 못한다.`,`덴드로그램을 끊는 높이를 바꿔서 K를 정한다.`,`각 샘플을 중심이 가장 가까운 군집에 배정한다.`],
+   answer:[1, 3, 5],
+   exp:`① 교안 8쪽, 군집 안 분산을 줄입니다. ③ 국소 패턴(local patterns)이 있으면 성능이 나쁩니다(교안 15쪽). ⑤ 교안 10쪽 2.2단계입니다. ② K-means++는 첫 중심을 무작위로, 다음 중심을 확률로 뽑으므로 <b>여전히 무작위</b>입니다(교수님 10/26 "결국 이것도 랜덤"). ④ 덴드로그램은 <b>계층적 군집화</b>의 방법이고, K-평균의 K는 학습 전에 미리 정하는 하이퍼파라미터입니다.`,
+   multi:true,
+   src:[["D", "D4", "K-평균의 정의"], ["D", "D5", "K-평균 알고리즘"], ["D", "D6", "K-평균의 한계"]] },
+
+{ type:'mc',
+   lv:'하',
+   unit:"DBSCAN",
+   pts:10,
+   q:`<p>DBSCAN에 대한 설명으로 옳은 것을 고르시오. (모두 고르시오)</p>`,
+   choices:[`점들이 빽빽하게 모인 고밀도 영역(high-density regions)을 하나의 군집으로 묶는다.`,`모든 샘플은 반드시 어느 한 군집에 속한다.`,`임의의 모양(arbitrary shape)의 군집도 찾을 수 있다.`,`ε은 이웃 안에 있어야 하는 최소 점 개수이고, MinPts는 이웃의 반지름이다.`,`군집 수 K를 하이퍼파라미터로 미리 정해야 한다.`],
+   answer:[1, 3],
+   exp:`① 교안 25쪽 "Groups together points that are closely packed"입니다. ③ K-평균과 다른 점으로 교안 25쪽에 있습니다. ② 밀도가 낮은 곳의 점은 <b>Noise</b>로 표시하므로 군집에 속하지 않는 샘플이 있습니다. ④ 반대입니다. ε은 <b>반지름</b>, MinPts는 ε-이웃 안의 <b>최소 점 개수</b>입니다(교안 26쪽). ⑤ DBSCAN은 군집 수를 미리 정하지 <b>않습니다</b>(No need to pre-specify).`,
+   multi:true,
+   src:[["D", "D3", "군집화 방법 세 가지"], ["D", "D9", "DBSCAN"]] },
+
+{ type:'short',
+   lv:'하',
+   unit:"Centroid",
+   pts:10,
+   q:`<p>K-means(K-평균)에서 한 군집에 속한 샘플들의 특징별 평균 벡터로, 샘플을 재배정하는 기준이 되는 점을 영어로 쓰시오.</p>`,
+   show:`Centroid(센트로이드, 중심)`,
+   alt:["Centroid", "centroid", "cluster centroid", "센트로이드", "중심", "군집 중심"],
+   exp:`교안 10쪽 "compute the cluster centroid. The kth cluster centroid is the vector of the p feature means"입니다. 중심을 군집의 평균으로 옮기는 것을 반복하므로 이름이 K-means입니다.`,
+   src:[["D", "D5", "K-평균 알고리즘"]] },
+
+{ type:'short',
+   lv:'하',
+   unit:"Dendrogram",
+   pts:10,
+   q:`<p>병합 군집화에서 군집이 합쳐지는 과정을 잎(샘플)에서 줄기까지 나무 모양으로 나타낸 것으로, 어느 높이에서 자르느냐에 따라 군집 수가 정해지는 것의 이름을 영어로 쓰시오.</p>`,
+   show:`Dendrogram(덴드로그램)`,
+   alt:["Dendrogram", "dendrogram", "덴드로그램"],
+   exp:`교안 4·20·23쪽입니다. 세로 높이는 합칠 때의 거리이고, 높게 자르면 군집이 적고 낮게 자르면 많습니다. 그래서 계층적 군집화는 K를 미리 줄 필요가 없습니다.`,
+   src:[["D", "D8", "계층적 군집화"]] },
+
+{ type:'short',
+   lv:'하',
+   unit:"English",
+   pts:10,
+   q:`<p>DBSCAN을 설명한 다음 문장의 빈칸에 들어갈 영어 단어를 쓰시오.</p><p>"Groups together points that are closely packed (high-density regions). Marks points in low-density regions as outliers (&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)."</p>`,
+   show:`noise(잡음)`,
+   alt:["noise", "Noise", "NOISE", "노이즈", "잡음"],
+   exp:`교안 25쪽입니다. DBSCAN(Density-Based Spatial Clustering of Applications with <b>Noise</b>)은 밀도가 낮은 곳의 점을 군집에 억지로 넣지 않고 noise(잡음)로 둡니다. 모든 샘플이 한 군집에 속해야 하는 K-평균과 다른 점입니다.`,
+   src:[["D", "D9", "DBSCAN"]] }
+];
+</script>
+</body>
+</html>

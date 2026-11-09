@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>인공지능 C. 서포트 벡터 머신(SVM) — OX</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>:root{ --subject:#5B3CF5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../exam-engine/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다. 이 파일은 drive/exam-engine/exam.css · exam.js 와 함께 있어야 열립니다.</div>
+<script>
+const META = {
+  org:'Kangwon National University CSE',
+  subject:'인공지능',
+  title:'C. 서포트 벡터 머신(SVM) — OX',
+  written:'2026년 10월 26일 작성',
+  slug:'ai-mid-c_svm-ox',
+  lectureBase:'../lecture',
+  level:'기초',
+  mcMax:1,
+  scope:`서포트 벡터 머신(SVM) — 10/26 복습 수업 범위(교안 Classification: Support Vector Machine 2, 7, 14, 15, 18, 19, 25, 28, 32쪽)`,
+  oxLabels:["O", "X"],
+  srcHref:"slides.html"
+};
+const EXAM = [
+{ type:'ox',
+   lv:'기초',
+   unit:"SVM 정의 · 마진",
+   pts:25,
+   q:`<p>SVM(Support Vector Machine, 서포트 벡터 머신)의 정의와 Margin(마진)에 대한 설명이다. 각 문장이 맞으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[[`SVM은 정답 라벨이 있는 데이터로 학습하는 Supervised learning(지도학습) 모델이다.`,true],[`Kernel SVM은 Linear(선형) SVM에 속하고, Hard Margin SVM은 Nonlinear(비선형) SVM에 속한다.`,false],[`마진은 학습 샘플과 초평면 사이의 거리 가운데 가장 작은 거리이다.`,true],[`Maximal margin hyperplane(최대 마진 초평면)은 분리 초평면 가운데 학습 샘플에서 가장 가까운 것이다.`,false],[`Support vector(서포트 벡터)는 결정 경계에서 가장 멀리 떨어진 학습 샘플이다.`,false]],
+   exp:`<b>ㄱ (O)</b> SVM은 지도학습 모델로, 클래스 사이의 마진을 최대화하여 결정 경계를 만듭니다(교안 2쪽 정의, 교수님 10/26 "지도학습인데 결정 경계를 마진을 최대화하도록 만듦").<br><b>ㄴ (X)</b> 반대입니다. <b>선형</b>에는 Hard Margin SVM(최대 마진 분류기)과 Soft Margin SVM(Linear SVM)이 있고, <b>비선형</b>에는 Kernel SVM이 있습니다(교안 2쪽). 커널로 곡선 경계를 만들기 때문에 비선형입니다.<br><b>ㄷ (O)</b> 교안 7쪽 "smallest distance between any training observation and the hyperplane". 평균 거리가 아니라 초평면에 <b>가장 가까운</b> 샘플까지의 거리입니다.<br><b>ㄹ (X)</b> 학습 샘플에서 <b>가장 멀리 떨어진(farthest)</b> 분리 초평면입니다(교안 7쪽). 가장 가까운 샘플까지의 거리(마진)를 가장 크게 만드는 초평면이라는 뜻입니다.<br><b>ㅁ (X)</b> 서포트 벡터는 초평면까지의 거리가 <b>마진과 같은</b> 샘플, 즉 결정 경계에 가장 가까이 있어 마진을 만드는 샘플입니다(교안 7쪽, 교수님 10/26 "마진을 만드는 점").`,
+   src:[["C", "C2", "SVM 정의"], ["C", "C3", "최대 마진 초평면"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"Hard Margin · Soft Margin",
+   pts:20,
+   q:`<p>Hard Margin SVM(하드 마진 SVM)과 Soft Margin SVM(소프트 마진 SVM)에 대한 설명이다. 각 문장이 맞으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[[`Hard Margin SVM은 분류 오류를 허용하지 않는다.`,true],[`Soft Margin SVM은 클래스를 오류 없이 완전히 나누는 초평면만 찾는다.`,false],[`Soft Margin SVM이 오류를 얼마나 허용할지는 Penalty parameter C(벌점 매개변수)로 정한다.`,true],[`실제로는 Soft Margin SVM보다 Hard Margin SVM을 보통 쓴다.`,false]],
+   exp:`<b>ㄱ (O)</b> 하드 마진은 모든 학습 샘플이 마진 바깥의 올바른 편에 있어야 합니다. 교수님 10/26: "하드 마진은 오류를 허용할 수 없지만 소프트 마진은 어느 정도 오류를 허용함".<br><b>ㄴ (X)</b> 소프트 마진은 학습 샘플이 마진이나 초평면의 반대편에 놓이는 것을 허용하고, 클래스를 <b>거의(almost)</b> 나누는 초평면을 찾습니다(교안 14쪽).<br><b>ㄷ (O)</b> 교수님 10/26: 오류를 얼만큼 허용할지에 대한 내용이 18쪽 벌점 매개변수 C입니다. C는 마진 폭과 오류 허용 정도 사이의 균형을 조절합니다.<br><b>ㄹ (X)</b> 교수님 10/26: "소프트 마진을 보통 씀". 하드 마진은 직선 하나로 완전히 나뉘는 데이터에만 쓸 수 있기 때문입니다.`,
+   src:[["C", "C2", "SVM 정의"], ["C", "C4", "소프트 마진 SVM"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"★ C와 마진 · 적합",
+   pts:35,
+   q:`<p>Penalty parameter C(벌점 매개변수)의 크기에 따른 변화에 대한 설명이다. 각 문장이 맞으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[[`C를 작게 하면 마진이 넓어지고 오류를 많이 허용한다.`,true],[`C를 작게 하면 마진이 좁아져 Overfitting(과적합)이 될 수 있다.`,false],[`C를 크게 하면 bias(편향)는 낮고 variance(분산)는 높다.`,true],[`C가 작을 때 생길 수 있는 문제는 Underfitting(과소적합)이다.`,true],[`C를 크게 하면 오류를 더 많이 허용하여 모델이 단순해진다.`,false],[`C를 크게 하면 분류 오류를 최소화하려고 데이터를 더 빡빡하게(tightly) 나눈다.`,true],[`C를 작게 하면 편향은 낮고 분산은 높다.`,false]],
+   exp:`<b>ㄱ (O)</b> 교안 19쪽 표: Small C → Large margin, 오류를 허용해 단순한 모델이 됩니다. 교수님 10/26 "19페이지 외우자".<br><b>ㄴ (X)</b> 마진이 좁아지고 과적합이 될 수 있는 것은 C를 <b>크게</b> 할 때입니다(교안 19쪽 Large C). 필기의 "C를 작게 잡으면 마진이 작아짐 … 오버피팅"은 받아 적기 오기입니다.<br><b>ㄷ (O)</b> 교안 19쪽 Large C: "Low bias, high variance". 학습 데이터에 빡빡하게 맞추므로 학습 데이터가 조금 바뀌어도 경계가 많이 흔들립니다.<br><b>ㄹ (O)</b> 작은 C는 오류를 많이 허용해 단순한 모델이 되므로 과소적합이 될 수 있습니다(교안 19쪽, 교수님 10/26 "언더피팅 될 수도 있다는 문제").<br><b>ㅁ (X)</b> C는 오류에 주는 벌점입니다. C가 크면 오류가 비싸지므로 오류를 <b>최소화</b>하려고 데이터를 빡빡하게 나눕니다. 오류를 많이 허용해 단순해지는 것은 작은 C입니다.<br><b>ㅂ (O)</b> 교안 19쪽 Large C: "Tries to minimize errors and separates the data more tightly (Overfitting)".<br><b>ㅅ (X)</b> 작은 C는 <b>편향 높음, 분산 낮음(High bias, low variance)</b>입니다(교안 19쪽). 편향 낮음·분산 높음은 큰 C입니다.`,
+   src:[["C", "C5", "벌점 매개변수 C"]] },
+
+{ type:'ox',
+   lv:'기초',
+   unit:"특징 공간 · 커널 · 다중 클래스",
+   pts:20,
+   q:`<p>특징 공간 확장, Kernel function(커널 함수), 다중 클래스 SVM에 대한 설명이다. 각 문장이 맞으면 O, 틀리면 X 를 고르시오.</p>`,
+   items:[[`선형 분리가 불가능한 데이터도 더 높은 차원의 공간으로 변환하면 선형 분리가 가능해질 수 있다.`,true],[`2차원에서 직선으로 나눌 수 없던 데이터를 새 특징을 더해 3차원으로 옮긴 뒤 평면 하나로 나누었다면, 이 평면은 원래 2차원 공간에서 보아도 직선 경계이다.`,false],[`커널 함수는 inner product(내적)를 일반화한 것이다.`,true],[`One versus one(하나 vs 하나) 방식은 클래스를 두 개씩 짝지어 이진 SVM을 만든다.`,true]],
+   exp:`<b>ㄱ (O)</b> 교안 25쪽 첫 문장입니다. 교수님 10/26: "2D를 3D로 늘려서 거기서 선형으로 품".<br><b>ㄴ (X)</b> 고차원의 선형 경계(평면)를 원래 2차원으로 되돌려 보면 <b>비선형(곡선)</b> 경계가 됩니다. 원래 공간에서는 직선으로 나눌 수 없었기 때문에 차원을 늘린 것입니다.<br><b>ㄷ (O)</b> 교안 28쪽 "Kernel function K: generalization of inner product". 두 입력의 고차원 공간 내적을 암묵적으로 계산합니다.<br><b>ㄹ (O)</b> 교안 32쪽입니다. 클래스마다 "그 클래스 vs 나머지 전부"로 만드는 것은 One versus all(하나 vs 나머지)입니다.`,
+   src:[["C", "C6", "특징 공간 확장"], ["C", "C7", "비선형 SVM과 커널"], ["C", "C8", "다중 클래스 SVM"]] }
+];
+</script>
+</body>
+</html>
