@@ -1,4 +1,4 @@
-/* 짚불태백 인계점 시안 — 예약·웨이팅·선결제 장부 자료 한 곳 (window.ZB).
+/* 짚불태백 인계점 시안 — 예약·웨이팅·선결제 장부·포인트 자료 한 곳 (window.ZB).
    손님 홈페이지의 예약 창(../js/reserve.js), 손님용 웨이팅 접수 화면(../waiting/), 매장 화면(app.js)이 이 파일 하나를 같이 씁니다.
 
    ★ 한옥반점과 다른 점: 자리를 '어느 테이블' 로 배정하지 않습니다. 테이블 '개수' 만 셉니다.
@@ -24,7 +24,9 @@
     dwellMin: 120,       /* 한 팀 식사 시간(분) — 이 동안 테이블을 차지 */
     slots: ["11:30","12:00","12:30","13:00","13:30","14:00","17:00","17:30","18:00","18:30","19:00","19:30","20:00","20:30"],   /* ../js/reserve.js 의 시간표와 같게 */
     waitMin: 8,          /* 웨이팅: 앞 팀 하나가 빠지는 데 걸리는 시간(분, 예시) — 예상 대기 = 앞 팀 수 × 이 값 */
-    lowBalance: 100000   /* 선결제 장부: 잔액이 이 아래로 내려가면 '충전 안내' 표시 */
+    lowBalance: 100000,  /* 선결제 장부: 잔액이 이 아래로 내려가면 '충전 안내' 표시 */
+    pointRate: 5,        /* 포인트: 결제 금액의 몇 % 를 쌓아 줄지 (예시) */
+    pointMin: 5000       /* 포인트: 이만큼 모여야 쓸 수 있음 (1P = 1원) */
   };
   const ACTIVE = { req: 1, ok: 1, in: 1 };   /* 테이블을 차지하는 상태: 신청(확정 전에도 자리를 잡아 둠) · 확정 · 방문 */
 
@@ -33,8 +35,8 @@
     try{ db = JSON.parse(localStorage.getItem(KEY) || "null"); }catch(e){ db = null; }
     if(!db || db.seeded !== today()) db = seed((db && db.cfg) || null);   /* 하루 지난 예시는 날짜가 안 맞아 새로 */
     /* 웨이팅이 생기기 전에 저장된 자료에는 웨이팅 칸이 없음 — 예약은 그대로 두고 빠진 것만 채움 */
-    if(!db.wait || !db.ledger || db.cfg.waitMin == null || db.cfg.lowBalance == null){
-      db.cfg = Object.assign({}, DEFAULT_CFG, db.cfg); if(!db.wait) db.wait = seedWait(); if(!db.ledger) db.ledger = seedLedger(); save(); }
+    if(!db.wait || !db.ledger || !db.points || db.cfg.waitMin == null || db.cfg.lowBalance == null || db.cfg.pointRate == null){
+      db.cfg = Object.assign({}, DEFAULT_CFG, db.cfg); if(!db.wait) db.wait = seedWait(); if(!db.ledger) db.ledger = seedLedger(); if(!db.points) db.points = seedPoints(); save(); }
     return db;
   }
   function save(){ try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){} }
@@ -96,6 +98,7 @@
     }
     out.wait = seedWait();
     out.ledger = seedLedger();
+    out.points = seedPoints();
     save();
     return out;
   }
@@ -148,6 +151,33 @@
     T(a, "charge", 300000, 5, "카드");
     return { seq: n, accts: accts, tx: tx };
   }
+  /* ---------- 포인트 ----------
+     POS 연동 없이 시작할 수 있게: 계산할 때 직원이 '결제 금액 + 손님 휴대폰 번호' 를 넣으면 그 % 만큼 쌓입니다.
+     처음 보는 번호면 그 자리에서 회원이 됩니다(따로 가입 단계 없음). 1P = 1원, 다음 계산에서 할인으로 씀.
+     회원 = member { phone, name(선택) }, 기록 = tx { mem, type earn 적립 / use 사용, pts, amount 그때 결제 금액, at, void }
+     장부와 같은 규칙: 잔액은 기록을 더해 계산하고, 잘못 넣은 줄은 지우지 않고 취소로 남깁니다. */
+  function seedPoints(){
+    let x = 4242; const rnd = () => { x = (x * 1103515245 + 12345) & 0x7fffffff; return x / 0x7fffffff; };
+    const now = Date.now(), D = 86400000, rate = DEFAULT_CFG.pointRate, members = [], tx = []; let n = 0;
+    const NAMES = ["김민수", "박지훈", "이하은", "최도윤", "정서연", "강예준"];
+    for(let i = 0; i < 16; i++){
+      const m = { id: "m" + (i + 1), phone: "010-0000-" + String(2101 + i * 173).slice(-4), name: i % 3 === 0 ? NAMES[i / 3] : "" };
+      members.push(m);
+      const days = []; const v = 1 + Math.floor(rnd() * 6);
+      for(let k = 0; k < v; k++) days.push(Math.floor(rnd() * 90));
+      days.sort((a, b) => b - a);   /* 오래된 방문부터 */
+      let bal = 0;
+      days.forEach(d => {
+        const at = now - d * D - (12 + Math.floor(rnd() * 9)) * 3600000 + 6 * 3600000, amount = (40 + Math.floor(rnd() * 200)) * 1000;
+        if(bal >= 5000 && rnd() < 0.35){ const use = Math.floor(bal / 1000) * 1000; tx.push({ id: "p" + (++n), mem: m.id, type: "use", pts: use, amount: amount, at: at - 60000 }); bal -= use; }
+        const pts = Math.floor(amount * rate / 100); tx.push({ id: "p" + (++n), mem: m.id, type: "earn", pts: pts, amount: amount, at: at }); bal += pts;
+      });
+    }
+    return { seq: n, members: members, tx: tx };
+  }
+  const pbal = id => db.points.tx.reduce((s, t) => t.mem !== id || t.void ? s : s + (t.type === "earn" ? t.pts : -t.pts), 0);
+  const fmtPhone = s => { const d = String(s || "").replace(/\D/g, ""); return d.length === 11 ? d.slice(0, 3) + "-" + d.slice(3, 7) + "-" + d.slice(7) : d; };
+
   const bal = id => db.ledger.tx.reduce((s, t) => t.acct !== id || t.void ? s : s + (t.type === "charge" ? t.amount : -t.amount), 0);
 
   window.ZB = {
@@ -176,6 +206,20 @@
     acctTx(id){ return db.ledger.tx.filter(t => t.acct === id).sort((a, b) => a.at - b.at); },   /* 오래된 것부터(잔액을 차례로 계산하려고) */
     addAcct(p){ const a = Object.assign({ id: "a_" + Date.now().toString(36) }, p); db.ledger.accts.push(a); save(); return a; },
     addTx(acct, type, amount, memo, by){ const t = { id: "t_" + (++db.ledger.seq) + Date.now().toString(36), acct: acct, type: type, amount: amount, memo: memo || "", by: by || "", at: Date.now() }; db.ledger.tx.push(t); save(); return t; },
+    /* 포인트 */
+    get points(){ return db.points; },
+    pbal: pbal, fmtPhone: fmtPhone,
+    memTx(id){ return db.points.tx.filter(t => t.mem === id).sort((a, b) => a.at - b.at); },
+    memberByPhone(p){ const f = fmtPhone(p); return db.points.members.filter(m => m.phone === f)[0] || null; },
+    /* 적립: 번호가 처음이면 회원을 만들고 쌓음 */
+    earn(phone, amount, name){
+      let m = this.memberByPhone(phone), isNew = !m;
+      if(!m){ m = { id: "m_" + Date.now().toString(36), phone: fmtPhone(phone), name: name || "" }; db.points.members.push(m); }
+      const t = { id: "p_" + (++db.points.seq) + Date.now().toString(36), mem: m.id, type: "earn", pts: Math.floor(amount * db.cfg.pointRate / 100), amount: amount, at: Date.now() };
+      db.points.tx.push(t); save(); return { m: m, t: t, isNew: isNew };
+    },
+    usePts(mem, pts){ const t = { id: "p_" + (++db.points.seq) + Date.now().toString(36), mem: mem, type: "use", pts: pts, amount: 0, at: Date.now() }; db.points.tx.push(t); save(); return t; },
+    voidPTx(id, on){ const t = db.points.tx.filter(x => x.id === id)[0]; if(t){ if(on === false) delete t.void; else t.void = true; save(); } return t; },
     voidTx(id, on){ const t = db.ledger.tx.filter(x => x.id === id)[0]; if(t){ if(on === false) delete t.void; else t.void = true; save(); } return t; },
     today: today, addDays: addDays, mins: mins, hhmm: hhmm, KEY: KEY
   };

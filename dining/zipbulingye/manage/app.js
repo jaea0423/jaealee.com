@@ -1,4 +1,4 @@
-/* 매장 화면 시안 — 예약 탭 · 웨이팅 탭 · 선결제 장부 탭.
+/* 매장 화면 시안 — 예약 탭 · 웨이팅 탭 · 선결제 장부 탭 · 포인트 탭.
    화면은 상태(view) 하나로 통째로 다시 그립니다(render). 자료는 store.js 의 ZB.
    설계 원칙(한옥반점에서 가져온 것 하나): 경고는 막지 않고 알리기만 — 자리가 모자라도 직원이 판단해 받을 수 있게.
    단추는 data-a="동작" 으로 표시하고 맨 아래 한 곳에서 처리합니다(문자열 onclick 을 안 써서 따옴표 문제가 없음). */
@@ -9,7 +9,7 @@
   const dateText = s => { const d = new Date(s + "T00:00:00"); return (d.getMonth() + 1) + "월 " + d.getDate() + "일 " + WD[d.getDay()] + "요일"; };
   const hm = t => { const m = ZB.mins(t), h = Math.floor(m / 60); return (h < 12 ? "오전 " : "오후 ") + (h % 12 === 0 ? 12 : h % 12) + ":" + String(m % 60).padStart(2, "0"); };
   const STATUS = { req: "새 신청", ok: "확정", in: "방문", noshow: "노쇼", cancel: "취소" };
-  const TABS = [["res", "예약", ""], ["wait", "웨이팅", ""], ["ledger", "선결제 장부", ""], ["point", "포인트", "준비 중"]];
+  const TABS = [["res", "예약", ""], ["wait", "웨이팅", ""], ["ledger", "선결제 장부", ""], ["point", "포인트", ""]];
 
   const view = { tab: "res", date: ZB.today(), filter: "all", slot: "", sheet: null };
   let form = null, toastTimer = null;
@@ -17,9 +17,9 @@
   /* ---------- 그리기 ---------- */
   function render(){
     const app = $("#app");
-    app.innerHTML = top() + (view.tab === "res" ? resTab() : view.tab === "wait" ? waitTab() : view.tab === "ledger" ? ledgerTab() : soon())
+    app.innerHTML = top() + (view.tab === "res" ? resTab() : view.tab === "wait" ? waitTab() : view.tab === "ledger" ? ledgerTab() : view.tab === "point" ? pointTab() : soon())
       + (view.sheet === "new" ? sheetNew() : view.sheet === "cfg" ? sheetCfg() : view.sheet === "wnew" ? sheetWait()
-        : view.sheet === "lx" ? sheetTx() : view.sheet === "la" ? sheetAcct() : "");
+        : view.sheet === "lx" ? sheetTx() : view.sheet === "la" ? sheetAcct() : view.sheet === "pe" ? sheetEarn() : view.sheet === "pu" ? sheetUse() : "");
   }
   function top(){
     const reqAll = ZB.res.filter(r => r.status === "req" && r.date >= ZB.today()).length, waitN = ZB.waitLive().length;
@@ -299,6 +299,110 @@
       </div></div>`;
   }
 
+  /* ---------- 포인트 탭 ----------
+     계산대에서 하는 일은 '적립' 하나가 거의 전부 — 결제 금액과 손님 번호를 넣으면 끝.
+     왼쪽: 회원(최근 방문 순, 뒷번호 4자리로 찾기). 오른쪽: 고른 회원의 포인트와 기록. 화면 구성은 선결제 장부와 같게 맞춤. */
+  const pt = n => n.toLocaleString("ko-KR") + "P";
+  const digits = s => String(s || "").replace(/\D/g, "");
+  function memRows(){
+    const P = ZB.points, q = digits(view.pq), nm = (view.pq || "").trim();
+    const last = id => { const a = ZB.memTx(id); return a.length ? a[a.length - 1].at : 0; };
+    const list = P.members.filter(m => !nm || (q && digits(m.phone).indexOf(q) >= 0) || (m.name && m.name.indexOf(nm) >= 0)).sort((x, y) => last(y.id) - last(x.id));
+    if(!list.length) return `<div class="empty sm">찾는 회원이 없습니다.</div>`;
+    return list.map(m => { const b = ZB.pbal(m.id), can = b >= ZB.cfg.pointMin;
+      return `<button class="acct${view.mem === m.id ? " on" : ""}" data-a="mem" data-v="${esc(m.id)}">
+          <span class="nm"><b class="num">${esc(m.phone)}</b><small>${m.name ? esc(m.name) + " · " : ""}최근 ${last(m.id) ? md(last(m.id)).split(" ")[0] : "-"}</small></span>
+          <span class="bl num">${pt(b)}${can ? `<small class="ok-t">사용 가능</small>` : ""}</span>
+        </button>`; }).join("");
+  }
+  function pointTab(){
+    const P = ZB.points, c = ZB.cfg;
+    if(!view.mem || !P.members.some(m => m.id === view.mem)){ const t = P.tx.filter(x => !x.void).sort((a, b) => b.at - a.at)[0]; view.mem = t ? t.mem : (P.members[0] || {}).id; }
+    const d = new Date(), m0 = new Date(d.getFullYear(), d.getMonth(), 1).getTime();
+    const live = P.tx.filter(t => !t.void), month = live.filter(t => t.at >= m0);
+    const sumT = (arr, type) => arr.filter(t => t.type === type).reduce((s, t) => s + t.pts, 0);
+    const left = P.members.reduce((s, m) => s + ZB.pbal(m.id), 0);
+    const newM = P.members.filter(m => { const a = ZB.memTx(m.id); return a.length && a[0].at >= m0; }).length;
+    const m = P.members.filter(x => x.id === view.mem)[0];
+    return `<div class="datebar wbar">
+        <h2>포인트</h2><p class="rate">결제 금액의 <b>${c.pointRate}%</b> 적립 · ${pt(c.pointMin)}부터 사용</p>
+        <div class="r"><button class="btn pri big" data-a="p-earn">+ 적립</button></div>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><span>회원</span><b class="num">${P.members.length}명<small>이번 달 새로 ${newM}명</small></b></div>
+        <div class="kpi"><span>이번 달 적립</span><b class="num">${pt(sumT(month, "earn"))}</b></div>
+        <div class="kpi"><span>이번 달 사용</span><b class="num">${pt(sumT(month, "use"))}</b></div>
+        <div class="kpi"><span>쌓여 있는 포인트<em>앞으로 할인해 줄 몫</em></span><b class="num">${pt(left)}</b></div>
+      </div>
+      <div class="cols l">
+        <section class="panel">
+          <header><div><h3>회원 ${P.members.length}명</h3><p>휴대폰 번호가 곧 회원 — 따로 가입하지 않습니다</p></div></header>
+          <div class="search"><input data-q="p" value="${esc(view.pq || "")}" inputmode="numeric" placeholder="뒷번호 4자리 또는 이름" autocomplete="off" aria-label="회원 찾기"></div>
+          <div id="mem-list">${memRows()}</div>
+        </section>
+        ${m ? memPanel(m) : `<section class="panel"><div class="empty">회원을 골라 주세요.</div></section>`}
+      </div>`;
+  }
+  function memPanel(m){
+    const b = ZB.pbal(m.id), all = ZB.memTx(m.id), live = all.filter(t => !t.void), min = ZB.cfg.pointMin; let run = 0;
+    const visits = live.filter(t => t.type === "earn"), spent = visits.reduce((s, t) => s + t.amount, 0);
+    const rows = all.map(t => { if(!t.void) run += t.type === "earn" ? t.pts : -t.pts;
+      return `<div class="tx ${t.type === "earn" ? "charge" : "use"}${t.void ? " void" : ""}">
+          <span class="dt num">${md(t.at)}</span>
+          <span class="ty">${t.type === "earn" ? "적립" : "사용"}</span>
+          <span class="mm">${t.type === "earn" ? "결제 " + won(t.amount) : "계산에서 할인"}${t.void ? `<small>취소한 줄 — 포인트에 넣지 않음</small>` : ""}</span>
+          <span class="am num">${t.type === "earn" ? "+" : "−"}${t.pts.toLocaleString("ko-KR")}</span>
+          <span class="rn num">${t.void ? "" : pt(run)}</span>
+          <button class="btn sm ghost" data-a="p-void" data-v="${esc(t.id)}">${t.void ? "되살리기" : "취소"}</button>
+        </div>`; }).reverse().join("");
+    return `<section class="panel">
+        <div class="ahead">
+          <div><h3 class="num">${esc(m.phone)}</h3><p>${m.name ? esc(m.name) + " · " : ""}방문 ${visits.length}번 · 누적 결제 ${won(spent)}</p>${all.length ? `<p>처음 적립 ${md(all[0].at).split(" ")[0]}</p>` : ""}</div>
+          <div class="bal"><span>포인트</span><b class="num">${pt(b)}</b>${b < min ? `<small class="sub-t">${pt(min - b)} 더 모으면 사용</small>` : `<small class="ok-t">지금 ${won(b)} 할인 가능</small>`}</div>
+        </div>
+        <div class="abtn"><button class="btn pri" data-a="p-earn" data-v="${esc(m.phone)}">적립</button><button class="btn" data-a="p-use"${b > 0 ? "" : " disabled"}>포인트 사용</button></div>
+        <div class="tx th"><span>날짜</span><span>구분</span><span>내용</span><span>포인트</span><span>남은 포인트</span><span></span></div>
+        ${rows || `<div class="empty sm">기록이 없습니다.</div>`}
+      </section>`;
+  }
+  /* 적립 창 — 번호를 치는 동안 '기존 회원 n P / 새 회원' 이 바로 보임 */
+  function earnPreview(){
+    const f = form, ph = digits(f.phone), amount = Number(digits(f.amount)) || 0, get = Math.floor(amount * ZB.cfg.pointRate / 100);
+    const m = ph.length === 11 ? ZB.memberByPhone(ph) : null;
+    const who = ph.length < 11 ? `휴대폰 번호 11자리를 넣어 주세요` : m ? `기존 회원 · 지금 ${pt(ZB.pbal(m.id))}` : `처음 오신 손님 — 새 회원으로 등록됩니다`;
+    return `<span>${who}</span>` + (amount ? `<b>${won(amount)} × ${ZB.cfg.pointRate}% = ${pt(get)} 적립</b>` : "");
+  }
+  const earnOk = () => digits(form.phone).length === 11 && /^010/.test(digits(form.phone)) && Number(digits(form.amount)) > 0;
+  function sheetEarn(){
+    const f = form;
+    return `<div class="ov" data-a="close-ov"><div class="sheet" role="dialog" aria-modal="true" aria-label="포인트 적립">
+        <header><h3>포인트 적립</h3><button class="btn sm ghost" data-a="close">닫기</button></header>
+        <div class="body">
+          <div class="fld"><label for="f-amount">결제 금액<em>계산서 금액 그대로</em></label><input id="f-amount" data-f="amount" value="${esc(f.amount)}" inputmode="numeric" autocomplete="off" placeholder="0"></div>
+          <div class="fld"><label for="f-phone">손님 휴대폰 번호<em>손님께 직접 눌러 달라고 해도 됩니다</em></label><input id="f-phone" data-f="phone" value="${esc(f.phone)}" inputmode="numeric" autocomplete="off" placeholder="010-0000-0000"></div>
+          <p class="pv" id="pe-pv">${earnPreview()}</p>
+        </div>
+        <footer><button class="btn" data-a="close">취소</button><button class="btn pri" data-a="pe-save"${earnOk() ? "" : " disabled"}>적립</button></footer>
+      </div></div>`;
+  }
+  function sheetUse(){
+    const m = ZB.points.members.filter(x => x.id === form.mem)[0], b = ZB.pbal(m.id), min = ZB.cfg.pointMin, n = Number(digits(form.pts)) || 0;
+    return `<div class="ov" data-a="close-ov"><div class="sheet" role="dialog" aria-modal="true" aria-label="포인트 사용">
+        <header><h3>포인트 사용 · ${esc(m.phone)}</h3><button class="btn sm ghost" data-a="close">닫기</button></header>
+        <div class="body">
+          <div class="fld"><label for="f-pts">쓸 포인트<em>지금 ${pt(b)} · 1P = 1원 할인</em></label><input id="f-pts" data-f="pts" value="${esc(form.pts)}" inputmode="numeric" autocomplete="off">
+            <div class="presets"><button class="btn sm" data-a="pu-all">모두 쓰기</button></div></div>
+          <p class="pv" id="pu-pv">${puPreview()}</p>
+        </div>
+        <footer><button class="btn" data-a="close">취소</button><button class="btn pri" data-a="pu-save"${n > 0 && n <= b ? "" : " disabled"}>사용</button></footer>
+      </div></div>`;
+  }
+  function puPreview(){
+    const b = ZB.pbal(form.mem), min = ZB.cfg.pointMin, n = Number(digits(form.pts)) || 0;
+    if(n > b) return `<em>가진 포인트(${pt(b)})보다 많이 쓸 수 없습니다.</em>`;
+    return `계산에서 <b>${won(n)}</b> 할인 · 남는 포인트 ${pt(b - n)}` + (b < min ? `<em>${pt(min)}부터 쓰는 규칙이지만 막지는 않습니다. 사장님 판단으로 쓰세요.</em>` : "");
+  }
+
   /* ---------- 설정: 테이블 개수 ---------- */
   function sheetCfg(){
     const c = ZB.cfg;
@@ -313,6 +417,8 @@
           ${row("dwellMin", "한 팀 식사 시간", "이 시간 동안 자리를 차지하는 것으로 셉니다", c.dwellMin, "분")}
           ${row("waitMin", "웨이팅 한 팀당 시간", "예상 대기 = 앞에 기다리는 팀 수 × 이 시간", c.waitMin, "분")}
           ${row("lowBalance", "선결제 잔액 부족 기준", "잔액이 이 아래면 장부에 '충전 안내' 표시", (c.lowBalance / 10000) + "만", "원")}
+          ${row("pointRate", "포인트 적립률", "결제 금액의 이만큼을 포인트로", c.pointRate, "%")}
+          ${row("pointMin", "포인트 사용 시작", "이만큼 모이면 할인으로 쓸 수 있음", c.pointMin.toLocaleString("ko-KR"), "P")}
           <p class="hint">어느 테이블에 앉힐지는 정하지 않습니다. 개수만 세기 때문에 좌석 배치도를 그리거나 관리할 필요가 없습니다. 바꾸면 손님 홈페이지의 예약 가능 시간에도 바로 반영됩니다.</p>
         </div>
         <footer><button class="btn ghost" data-a="reset">예시 자료 처음으로</button><button class="btn pri" data-a="close">확인</button></footer>
@@ -352,8 +458,9 @@
         toast(`${r.name} 님 ${r.time} 예약을 ${M[v]}`, (v === "ok" || v === "cancel") && r.phone ? "손님에게 안내 문자를 보냈습니다 (시안: 실제 발송 없음)" : ""); }
     }
     else if(a === "c"){
-      const k = el.dataset.k, c = ZB.cfg, step = k === "dwellMin" ? 30 : k === "lowBalance" ? 10000 : 1, min = k === "dwellMin" ? 60 : k === "lowBalance" ? 0 : k === "seats" || k === "waitMin" ? 2 : 1,
-        max = k === "dwellMin" ? 240 : k === "seats" ? 8 : k === "waitMin" ? 30 : k === "lowBalance" ? 500000 : k === "onlineTables" ? c.tables : 80;
+      const k = el.dataset.k, c = ZB.cfg, step = k === "dwellMin" ? 30 : k === "lowBalance" ? 10000 : k === "pointMin" ? 1000 : 1,
+        min = k === "dwellMin" ? 60 : k === "lowBalance" || k === "pointMin" ? 0 : k === "seats" || k === "waitMin" ? 2 : 1,
+        max = k === "dwellMin" ? 240 : k === "seats" ? 8 : k === "waitMin" ? 30 : k === "lowBalance" ? 500000 : k === "pointRate" ? 10 : k === "pointMin" ? 20000 : k === "onlineTables" ? c.tables : 80;
       const p = {}; p[k] = Math.max(min, Math.min(max, c[k] + Number(v) * step)); ZB.setCfg(p);
     }
     else if(a === "w-on"){ ZB.waitOn(!ZB.wait.on); toast(ZB.wait.on ? "웨이팅 접수를 다시 받습니다" : "웨이팅 접수를 멈췄습니다", ZB.wait.on ? "" : "기다리던 팀은 그대로 남습니다"); }
@@ -389,18 +496,40 @@
       if(n > 0) ZB.addTx(ac.id, "charge", n, "처음 맡김", form.contact.trim());
       view.acct = ac.id; view.q = ""; view.sheet = null; toast(`${ac.name} 장부를 만들었습니다${n > 0 ? " · " + won(n) : ""}`);
     }
+    else if(a === "mem"){ view.mem = v; }
+    else if(a === "p-earn"){ form = { phone: v || "", amount: "" }; view.sheet = "pe"; }
+    else if(a === "pe-save"){
+      if(!earnOk()) return;
+      const r = ZB.earn(digits(form.phone), Number(digits(form.amount)));
+      view.mem = r.m.id; view.pq = ""; view.sheet = null;
+      toast(`${r.m.phone} ${pt(r.t.pts)} 적립${r.isNew ? " · 새 회원" : ""} · 모두 ${pt(ZB.pbal(r.m.id))}`, "적립 알림톡을 보냈습니다 (시안: 실제 발송 없음)");
+    }
+    else if(a === "p-use"){ form = { mem: view.mem, pts: "" }; view.sheet = "pu"; }
+    else if(a === "pu-all"){ form.pts = String(ZB.pbal(form.mem)); }
+    else if(a === "pu-save"){
+      const n = Number(digits(form.pts)) || 0, b = ZB.pbal(form.mem); if(n <= 0 || n > b) return;
+      ZB.usePts(form.mem, n); view.sheet = null; toast(`${won(n)} 할인으로 썼습니다 · 남은 포인트 ${pt(b - n)}`);
+    }
+    else if(a === "p-void"){
+      const t = ZB.points.tx.filter(x => x.id === v)[0]; if(!t) return;
+      if(!t.void && !confirm(`${md(t.at)} ${t.type === "earn" ? "적립" : "사용"} ${pt(t.pts)} 을(를) 취소할까요?\n줄은 지우지 않고 '취소' 로 남습니다.`)) return;
+      ZB.voidPTx(v, !t.void); toast(t.void ? "취소했습니다 — 포인트를 그 전으로 되돌렸습니다" : "되살렸습니다");
+    }
     else if(a === "reset"){ ZB.reset(); view.sheet = null; toast("예시 자료를 처음 상태로 되돌렸습니다"); }
     render();
   });
   /* 글자 칸은 다시 그리지 않고 값만 받아 둠(그리면 입력 중에 초점이 날아감). 등록 단추만 켜고 끔 */
   document.addEventListener("input", e => {
     const ds = e.target.dataset || {};
+    if(ds.q === "p"){ view.pq = e.target.value; const box = $("#mem-list"); if(box) box.innerHTML = memRows(); return; }   /* 회원 찾기 — 목록만 다시 그림 */
     if(ds.q){ view.q = e.target.value; const box = $("#acct-list"); if(box) box.innerHTML = acctRows(); return; }   /* 장부 찾기 — 목록만 다시 그림 */
     const k = ds.f; if(!k || !form) return;
     form[k] = e.target.value;
     const b = $("[data-a=f-save]"); if(b) b.disabled = !(form.time && form.name.trim());
     if(view.sheet === "lx"){ $("#lx-pv").innerHTML = txPreview(); $("[data-a=l-save]").disabled = amt() <= 0; }
     if(view.sheet === "la"){ $("[data-a=la-save]").disabled = !form.name.trim(); }
+    if(view.sheet === "pe"){ $("#pe-pv").innerHTML = earnPreview(); $("[data-a=pe-save]").disabled = !earnOk(); }
+    if(view.sheet === "pu"){ const n = Number(digits(form.pts)) || 0; $("#pu-pv").innerHTML = puPreview(); $("[data-a=pu-save]").disabled = !(n > 0 && n <= ZB.pbal(form.mem)); }
   });
   document.addEventListener("keydown", e => { if(e.key === "Escape" && view.sheet){ view.sheet = null; render(); } });
   /* 손님 홈페이지(다른 탭)에서 예약이 들어오면 바로 반영 — 실제 서비스의 '새 신청 알림' 자리 */
