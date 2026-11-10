@@ -47,7 +47,7 @@
           ${pend ? `<button class="quiet" data-a="skip">적립 안 할게요</button>` : `<button class="quiet" data-a="idle">돌아가기</button>`}
         </div>
         <div class="right">
-          <div class="pad">${keys}</div>
+          <div class="pad">${keys}</div><p class="kbd">키보드 숫자로도 누를 수 있습니다 · Enter</p>
           <button class="go" data-a="${pend ? "earn" : "show"}"${ok ? "" : " disabled"}>${pend ? "적립하기" : "조회"}</button>
         </div>
       </section>`;
@@ -98,6 +98,19 @@
   });
   /* 매장 화면(다른 탭)에서 금액을 보내거나 거두면 바로 바뀜. 끝 화면을 보는 중에는 그대로 둠 */
   window.addEventListener("storage", e => { if(e.key === ZB.KEY && S.mode !== "done") render(); });
+
+  /* 키보드로도 — 노트북에서 보여 줄 때·입구에 키보드를 둔 매장. 숫자, ← 지우기(Backspace), Enter = 주 단추 */
+  document.addEventListener("keydown", e => {
+    if(e.ctrlKey || e.metaKey || e.altKey) return;
+    let sel = null;
+    if(/^[0-9]$/.test(e.key)) sel = '[data-a=key][data-v="' + e.key + '"]';
+    else if(e.key === "Backspace") sel = '[data-a=key][data-v="del"]';
+    else if(e.key === "Enter") sel = ".go:not(:disabled)";
+    const b = sel && document.querySelector(sel); if(!b) return;
+    e.preventDefault(); b.click();
+    const again = sel.indexOf("data-a=key") >= 0 && document.querySelector(sel);   /* 다시 그린 뒤의 같은 단추에 잠깐 눌림 표시 */
+    if(again){ again.classList.add("hit"); setTimeout(() => again.classList.remove("hit"), 120); }
+  });
 
   render();
 })();

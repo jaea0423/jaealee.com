@@ -12,6 +12,7 @@
   const TABS = [["res", "예약", ""], ["wait", "웨이팅", ""], ["ledger", "선결제 장부", ""], ["point", "포인트", ""]];
 
   /* 주소 끝 #wait · #ledger · #point 로 열면 그 탭부터 (안내 페이지 단추가 탭별로 바로 열리게) */
+  const nowMin = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); };
   const view = { tab: TABS.some(t => t[0] === location.hash.slice(1)) ? location.hash.slice(1) : "res", date: ZB.today(), filter: "all", slot: "", sheet: null };
   let form = null, toastTimer = null;
 
@@ -42,7 +43,7 @@
     /* 날짜 줄: 오늘부터 7일 */
     const days = []; for(let i = 0; i < 7; i++) days.push(ZB.addDays(ZB.today(), i));
     const dayBtn = d => { const dt = new Date(d + "T00:00:00"), n = ZB.byDate(d).filter(r => r.status !== "cancel" && r.status !== "noshow").length;
-      return `<button data-a="date" data-v="${d}" class="${d === view.date ? "on" : ""}${dt.getDay() === 0 ? " sun" : ""}"><b>${dt.getDate()} ${WD[dt.getDay()]}</b><span>${n}팀</span></button>`; };
+      return `<button data-a="date" data-v="${d}" class="${d === view.date ? "on" : ""}${dt.getDay() === 0 ? " sun" : dt.getDay() === 6 ? " sat" : ""}"><b>${dt.getDate()} ${WD[dt.getDay()]}</b><span>${n}팀</span></button>`; };
     return `<div class="datebar">
         <div class="nav"><button data-a="shift" data-v="-1" aria-label="전날">‹</button><button data-a="shift" data-v="1" aria-label="다음날">›</button><button class="today" data-a="date" data-v="${ZB.today()}">오늘</button></div>
         <h2>${dateText(view.date)}</h2>
@@ -50,7 +51,7 @@
       </div>
       <div class="kpis">
         <div class="kpi"><span>예약</span><b class="num">${act.length}팀<small>${sum(act)}명</small></b></div>
-        <div class="kpi req"><span>확인할 새 신청</span><b class="num">${cnt("req")}건</b></div>
+        <div class="kpi${cnt("req") ? " req" : ""}"><span>확인할 새 신청</span><b class="num">${cnt("req")}건</b></div>
         <div class="kpi"><span>방문</span><b class="num">${cnt("in")}팀<small>${sum(list.filter(r => r.status === "in"))}명</small></b></div>
         <div class="kpi"><span>노쇼 · 취소</span><b class="num">${cnt("noshow")} · ${cnt("cancel")}</b></div>
       </div>
@@ -64,7 +65,8 @@
       const m = ZB.mins(t), used = ZB.usedAt(view.date, m), left = c.tables - used, pct = Math.min(100, used / c.tables * 100);
       const cls = left <= 0 ? "full" : used >= c.onlineTables ? "hot" : "";
       const gap = prev && m - prev > 30 ? `<div class="gap">브레이크</div>` : ""; prev = m;
-      return gap + `<button class="slot${view.slot === t ? " on" : ""}${left <= 0 ? " full" : ""}" data-a="slot" data-v="${t}">
+      const isNow = view.date === ZB.today() && m <= nowMin() && nowMin() < m + 30;   /* 지금 시각이 든 줄 */
+      return gap + `<button class="slot${view.slot === t ? " on" : ""}${left <= 0 ? " full" : ""}${isNow ? " now" : ""}" data-a="slot" data-v="${t}"${isNow ? ' aria-current="time"' : ""}>
           <span class="t num">${t}</span>
           <span class="bar"><i class="${cls}" style="width:${pct}%"></i><u style="left:${c.onlineTables / c.tables * 100}%"></u></span>
           <span class="n num"><b>${Math.max(0, left)}</b> 남음</span>
@@ -85,19 +87,23 @@
     const F = [["all", "전체"], ["req", "새 신청"], ["ok", "확정"], ["in", "방문"], ["off", "노쇼·취소"]];
     const reqs = list.filter(r => r.status === "req"), rest = list.filter(r => r.status !== "req");
     const lunch = rest.filter(r => ZB.mins(r.time) < 15 * 60), dinner = rest.filter(r => ZB.mins(r.time) >= 15 * 60);
-    const sec = (title, arr) => arr.length ? `<div class="sec-h">${title} · ${arr.length}팀</div>` + arr.map(card).join("") : "";
+    /* 오늘 목록에는 '지금' 줄을 넣어 지난 팀과 올 팀을 한눈에 나눔(시간을 골라 본 때는 빼고) */
+    let marked = view.date !== ZB.today() || !!view.slot;
+    const nowLine = () => { const n = nowMin(); return `<div class="now-line" role="separator"><span>지금 ${ZB.hhmm(n)}</span></div>`; };
+    const rows = arr => arr.map(r => { let h = ""; if(!marked && ZB.mins(r.time) >= nowMin()){ marked = true; h = nowLine(); } return h + card(r); }).join("");
+    const sec = (title, arr) => arr.length ? `<div class="sec-h">${title} · ${arr.length}팀</div>` + (title === "확인할 새 신청" ? arr.map(card).join("") : rows(arr)) : "";
     return `<section class="panel">
         <header><div><h3>예약 목록${view.slot ? ` · ${view.slot} 에 있는 팀` : ""}</h3>${view.slot ? `<p><button class="btn sm ghost" data-a="slot" data-v="">시간 선택 풀기</button></p>` : ""}</div>
           <button class="btn pri" data-a="new">+ 예약 등록</button></header>
         <div class="filters">${F.map(([k, l]) => `<button data-a="filter" data-v="${k}" class="${view.filter === k ? "on" : ""}">${l}</button>`).join("")}</div>
-        ${list.length ? sec("확인할 새 신청", reqs) + sec("점심", lunch) + sec("저녁", dinner) : `<div class="empty">해당하는 예약이 없습니다.</div>`}
+        ${list.length ? sec("확인할 새 신청", reqs) + sec("점심", lunch) + sec("저녁", dinner) + (!marked && rest.length ? nowLine() : "") : `<div class="empty">해당하는 예약이 없습니다.</div>`}
       </section>`;
   }
   function card(r){
     const B = (a, label, cls) => `<button class="btn sm ${cls || ""}" data-a="st" data-id="${esc(r.id)}" data-v="${a}">${label}</button>`;
     const acts = r.status === "req" ? B("ok", "확정", "ok") + B("cancel", "거절", "no")
                : r.status === "ok" ? B("in", "방문", "in") + B("noshow", "노쇼", "no") + B("cancel", "취소")
-               : B("ok", "되돌리기");
+               : B("ok", "되돌리기", "ghost");   /* 끝난 예약 — 되돌리기는 드물게 쓰니 눈에 덜 띄게 */
     return `<article class="res ${r.status}">
         <div class="time"><b class="num">${esc(r.time)}</b><span>${hm(r.time).slice(0, 2)}</span></div>
         <div class="who">
@@ -540,7 +546,13 @@
     if(view.sheet === "pe"){ $("#pe-pv").innerHTML = earnPreview(); $("[data-a=pe-save]").disabled = !earnOk(); $("[data-a=pe-send]").disabled = !(Number(digits(form.amount)) > 0); }
     if(view.sheet === "pu"){ const n = Number(digits(form.pts)) || 0; $("#pu-pv").innerHTML = puPreview(); $("[data-a=pu-save]").disabled = !(n > 0 && n <= ZB.pbal(form.mem)); }
   });
-  document.addEventListener("keydown", e => { if(e.key === "Escape" && view.sheet){ view.sheet = null; render(); } });
+  document.addEventListener("keydown", e => {
+    if(e.key === "Escape" && view.sheet){ view.sheet = null; render(); return; }
+    /* 창 안 글자 칸에서 Enter = 그 창의 주 단추(등록·적립·빼기 등) — 켜져 있을 때만 */
+    if(e.key === "Enter" && view.sheet && e.target.matches && e.target.matches(".sheet input") && !e.isComposing){
+      const b = $(".sheet footer .btn.pri:not(:disabled)"); if(b){ e.preventDefault(); b.click(); }
+    }
+  });
   /* 손님 홈페이지(다른 탭)에서 예약이 들어오면 바로 반영 — 실제 서비스의 '새 신청 알림' 자리 */
   window.addEventListener("storage", e => {
     if(e.key !== ZB.KEY) return;
@@ -554,7 +566,8 @@
       toast(`계산대에서 ${m ? m.phone : ""} ${pt(t.pts)} 적립`, m ? "모두 " + pt(ZB.pbal(m.id)) : ""); }
   });
   /* '기다린 지 n분' 이 흐르게 — 웨이팅 탭을 보고 있을 때만 가끔 다시 그림 */
-  setInterval(() => { if(view.tab === "wait" && !view.sheet) render(); }, 30000);
+  /* 예약 탭의 '지금' 줄도 시간 따라 내려가게. 글자를 치는 중(초점이 입력 칸)이면 건너뜀 */
+  setInterval(() => { if((view.tab === "wait" || view.tab === "res") && !view.sheet && !(document.activeElement && document.activeElement.matches("input"))) render(); }, 30000);
 
   render();
 })();

@@ -38,7 +38,7 @@
           <button class="agree${S.agree ? " on" : ""}" data-a="agree" role="checkbox" aria-checked="${S.agree}"><i></i><span>대기 안내를 위한 전화번호 수집에 동의합니다<small>오늘 영업이 끝나면 지웁니다 (예시 문구)</small></span></button>
         </div>
         <div class="right">
-          <div class="pad">${keys}</div>
+          <div class="pad">${keys}</div><p class="kbd">키보드 숫자로도 누를 수 있습니다 · Enter</p>
           <button class="go" data-a="go"${ok ? "" : " disabled"}>웨이팅 접수</button>
         </div>
       </section>`;
@@ -96,6 +96,19 @@
   /* 매장 화면(다른 탭)에서 호출·입장을 누르면 바로 반영 */
   window.addEventListener("storage", e => { if(e.key === ZB.KEY && S.step !== "done") render(); });
   if(myNo) setInterval(render, 20000);   /* 예상 대기 숫자가 멈춰 보이지 않게 */
+
+  /* 키보드로도 — 노트북에서 보여 줄 때·입구에 키보드를 둔 매장. 숫자, ← 지우기(Backspace), Enter = 주 단추 */
+  document.addEventListener("keydown", e => {
+    if(e.ctrlKey || e.metaKey || e.altKey) return;
+    let sel = null;
+    if(/^[0-9]$/.test(e.key)) sel = '[data-a=key][data-v="' + e.key + '"]';
+    else if(e.key === "Backspace") sel = '[data-a=key][data-v="del"]';
+    else if(e.key === "Enter") sel = ".go:not(:disabled)";
+    const b = sel && document.querySelector(sel); if(!b) return;
+    e.preventDefault(); b.click();
+    const again = sel.indexOf("data-a=key") >= 0 && document.querySelector(sel);   /* 다시 그린 뒤의 같은 단추에 잠깐 눌림 표시 */
+    if(again){ again.classList.add("hit"); setTimeout(() => again.classList.remove("hit"), 120); }
+  });
 
   render();
 })();
