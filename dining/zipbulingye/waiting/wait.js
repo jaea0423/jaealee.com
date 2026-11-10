@@ -49,7 +49,7 @@
         <p class="sub">${S.dup ? "이미 접수된 번호입니다" : "접수되었습니다"}</p>
         <div class="big"><span>대기번호</span><b>${x.no}</b></div>
         <div class="pair"><div><span>내 앞</span><b>${Math.max(0, ahead)}팀</b></div><div><span>예상 대기</span><b>${etaText(ahead)}</b></div></div>
-        <p class="sub">순서가 가까워지면 카카오 알림톡으로 알려 드립니다.<br>(시안: 실제 발송 없음)</p>
+        <p class="sub">순서가 가까워지면 카카오 알림톡으로 알려 드립니다.</p>
         <a class="link" href="?no=${x.no}" target="_blank" rel="noopener">손님 휴대폰에서 보이는 화면 예시</a>
         <button class="go" data-a="home">처음으로 <small>${S.back}초 뒤 자동</small></button>
       </section>`;

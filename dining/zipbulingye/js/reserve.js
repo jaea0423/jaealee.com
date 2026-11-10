@@ -4,7 +4,7 @@
    · 남은 시간과 접수가 매장 화면 시안(manage/)과 같은 자료를 씀 — 접수하면 매장 화면의 새 신청으로 뜸
    · ⑤ 메뉴: 코스 대신 짚불구이 미리 주문(data/site.js 의 pre:true) + 점심 시각이면 점심 특선
    · 흉내 시간표: 점심 11:30–14:00 · 저녁 17:00–20:30 (영업시간 예시와 같게)
-   · 서버가 없어 접수는 흉내 — 완료 화면에 시안이라고 적음
+   · 서버가 없어 접수는 이 브라우저 자료(ZB)에만 들어감 — 완료 화면의 '시안' 안내는 사용자 요청으로 뺌
    아래부터 한옥반점 원문 설명 — 어느 장에서든 [data-reserve] 를 누르면 뜹니다.
 
    흐름(한 화면에 하나씩) ① 인원 → ② 날짜 → ③ 시간 → ④ 자리 → ⑤ 메뉴 → ⑥ 예약자 정보 → ⑦ 예약 확인 → 접수
@@ -850,7 +850,6 @@ if(!window.safeHref) window.safeHref = function(u){ return /^https?:\/\//i.test(
         <div class="rv-tick"><svg viewBox="0 0 48 48"><path d="M14 25l7 7 14-15"/></svg></div>
         <h3>접수되었습니다</h3>
         <p class="big">${esc(dateText(S.date))} ${esc(hm(S.time))} · ${esc(peopleText())}</p>
-        <p class="rv-note">제안용 시안입니다. 접수 내용은 이 브라우저에만 저장되고 실제 매장으로는 가지 않습니다. <a href="manage/" target="_blank" rel="noopener">매장 화면 시안</a>에서 새 신청으로 들어온 것을 볼 수 있습니다.</p>
         ${S.reqId ? `<p class="rv-code">예약번호 <b class="num">${resCode(S.reqId)}</b></p>` : ""}
         <p>가게에서 확인한 뒤 <b>${esc(S.phone)}</b> 로 확정을 알려드립니다.</p>
         <p class="rv-quiet">예약 변경 혹은 다른 문의사항은 <a href="tel:${telHref(INFO.tel)}">${esc(INFO.tel)}</a> 로 전화 주세요.</p>

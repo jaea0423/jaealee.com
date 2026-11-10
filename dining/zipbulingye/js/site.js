@@ -60,7 +60,7 @@ window.SITE_READY.then(function(){
       <div><h5>주차</h5><p>${esc(INFO.parking)}</p></div>
       <div><h5>브랜드</h5><a href="about.html">짚불태백 이야기</a><a href="https://www.zipfiretaebaek.com" target="_blank" rel="noopener">본사 홈페이지</a>${INFO.instagram ? `<a href="${esc(safeUrl(INFO.instagram))}" target="_blank" rel="noopener">인스타그램</a>` : ""}</div>
     </div>
-    <div class="foot-copy"><span>© ${new Date().getFullYear()} ${esc(INFO.name)} · 제안용 시안</span><span>대표 ${esc(INFO.owner)} · 사업자등록번호 ${esc(INFO.bizno)}</span><a href="privacy.html" class="foot-priv">개인정보처리방침</a></div>`;   /* 09-25 */
+    <div class="foot-copy"><span>© ${new Date().getFullYear()} ${esc(INFO.name)}</span><span>대표 ${esc(INFO.owner)} · 사업자등록번호 ${esc(INFO.bizno)}</span><a href="privacy.html" class="foot-priv">개인정보처리방침</a></div>`;   /* 09-25 */
   document.body.append(foot);
 
   /* ---------- 팝업창: 여러 개면 왼쪽 위부터 나란히(겹치지 않게). '오늘 하루 보지 않기' 는 그 팝업만 하루 숨김. ?notice=1 이면 무조건 ---------- */
@@ -199,9 +199,6 @@ window.SITE_READY.then(function(){
   document.querySelectorAll("a.insta").forEach(a => { if(INFO.instagram) a.href = safeUrl(INFO.instagram); else a.hidden = true; });
   /* 사진이 없는 띠 그림(차림 장 위 띠)은 숨김 */
   document.querySelectorAll("img[data-img]").forEach(el => { if(!get(el.dataset.img)) el.hidden = true; });
-  /* 제안용 시안 띠 — 실제 짚불태백 홈페이지로 오해하지 않게 모든 장 아래에 늘 보임 */
-  const demo = document.createElement("div"); demo.className = "demo-bar";
-  demo.innerHTML = `<b>제안용 시안</b><span>실제 짚불태백 홈페이지가 아닙니다 · 주소·전화·영업시간은 예시이며 예약은 실제 매장으로 가지 않습니다</span><a href="manage/" target="_blank" rel="noopener">매장 화면 시안 보기</a>`;
-  document.body.append(demo);
+  /* (예전 '제안용 시안' 붉은 띠는 뺌 — 사용자 요청: 헷갈릴 일 없고 오히려 거슬림) */
 });
 /* (한옥반점) 방문 세기(hanokHit)는 js/hit.js — 바로 예약 장(reserve.html)도 같이 쓰려고 뗌(10-03) */

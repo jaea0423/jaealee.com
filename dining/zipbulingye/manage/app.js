@@ -28,12 +28,11 @@
         <h1>짚불태백 인계점<small>매장 화면</small></h1>
         <nav class="tabs">${TABS.map(([k, l, note]) => `<button data-a="tab" data-v="${k}" class="${view.tab === k ? "on" : ""}">${l}${k === "res" && reqAll ? `<em>새 신청 ${reqAll}</em>` : k === "wait" && waitN ? `<em>대기 ${waitN}</em>` : note ? `<em>${note}</em>` : ""}</button>`).join("")}</nav>
         <div class="r"><a href="../home.html" target="_blank" rel="noopener">손님 홈페이지</a><button data-a="cfg">설정</button></div>
-      </div>
-      <div class="demo">제안용 시안 — 예시 자료입니다. 바꾼 내용은 이 브라우저에만 남고, 문자는 실제로 나가지 않습니다.</div>`;
+      </div>`;
   }
   function soon(){
     const t = TABS.filter(x => x[0] === view.tab)[0];
-    return `<div class="soon"><h2>${t[1]}</h2><p>다음 시안에서 만듭니다.</p></div>`;
+    return `<div class="soon"><h2>${t[1]}</h2><p>준비 중입니다.</p></div>`;
   }
 
   function resTab(){
@@ -454,12 +453,12 @@
     else if(a === "f-save"){
       if(!form.time || !form.name.trim()) return;
       ZB.add({ date: form.date, time: form.time, people: form.people, name: form.name.trim(), phone: form.phone.trim(), memo: form.memo.trim(), pre: "", status: "ok", src: "전화" });
-      view.sheet = null; toast(`${form.name.trim()} 님 ${form.time} ${form.people}명 예약을 등록했습니다`, form.phone.trim() ? "확정 문자를 보냈습니다 (시안: 실제 발송 없음)" : "");
+      view.sheet = null; toast(`${form.name.trim()} 님 ${form.time} ${form.people}명 예약을 등록했습니다`, form.phone.trim() ? "확정 문자를 보냈습니다" : "");
     }
     else if(a === "st"){
       const r = ZB.update(el.dataset.id, { status: v });
       if(r){ const M = { ok: "확정했습니다", in: "방문 처리했습니다", noshow: "노쇼로 표시했습니다", cancel: "취소했습니다" };
-        toast(`${r.name} 님 ${r.time} 예약을 ${M[v]}`, (v === "ok" || v === "cancel") && r.phone ? "손님에게 안내 문자를 보냈습니다 (시안: 실제 발송 없음)" : ""); }
+        toast(`${r.name} 님 ${r.time} 예약을 ${M[v]}`, (v === "ok" || v === "cancel") && r.phone ? "손님에게 안내 문자를 보냈습니다" : ""); }
     }
     else if(a === "c"){
       const k = el.dataset.k, c = ZB.cfg, step = k === "dwellMin" ? 30 : k === "lowBalance" ? 10000 : k === "pointMin" ? 1000 : 1,
@@ -471,12 +470,12 @@
     else if(a === "w-new"){ form = { people: 2, phone: "" }; view.sheet = "wnew"; }
     else if(a === "w-save"){
       const x = ZB.waitAdd(form.people, form.phone.trim(), "직접 등록"), ahead = ZB.waitAhead(x.id);
-      view.sheet = null; toast(`${x.no}번 · ${x.people}명을 등록했습니다 (앞에 ${ahead}팀)`, x.phone ? "대기 접수 안내를 보냈습니다 (시안: 실제 발송 없음)" : "");
+      view.sheet = null; toast(`${x.no}번 · ${x.people}명을 등록했습니다 (앞에 ${ahead}팀)`, x.phone ? "대기 접수 안내를 보냈습니다" : "");
     }
     else if(a === "w-st"){
       const x = ZB.waitSet(el.dataset.id, v);
       if(x){ const M = { call: "손님을 호출했습니다", in: "입장 처리했습니다", gone: "미방문으로 넘겼습니다", cancel: "취소했습니다", wait: "다시 대기로 되돌렸습니다" };
-        toast(`${x.no}번 ${M[v]}`, v === "call" ? (x.phone ? "입장 안내를 보냈습니다 (시안: 실제 발송 없음)" : "전화번호가 없습니다 — 번호를 직접 불러 주세요") : ""); }
+        toast(`${x.no}번 ${M[v]}`, v === "call" ? (x.phone ? "입장 안내를 보냈습니다" : "전화번호가 없습니다 — 번호를 직접 불러 주세요") : ""); }
     }
     else if(a === "acct"){ view.acct = v; }
     else if(a === "l-tx"){ form = { type: v, acct: view.acct, amount: "", memo: "", by: "" }; view.sheet = "lx"; }
@@ -485,7 +484,7 @@
       const n = amt(); if(n <= 0) return;
       const ac = ZB.ledger.accts.filter(x => x.id === form.acct)[0];
       ZB.addTx(form.acct, form.type, n, form.memo.trim(), form.by.trim()); view.sheet = null;
-      toast(`${ac.name} ${form.type === "charge" ? "충전" : "사용"} ${won(n)} · 잔액 ${won(ZB.bal(ac.id))}`, ac.phone ? "담당자에게 내역 문자를 보냈습니다 (시안: 실제 발송 없음)" : "");
+      toast(`${ac.name} ${form.type === "charge" ? "충전" : "사용"} ${won(n)} · 잔액 ${won(ZB.bal(ac.id))}`, ac.phone ? "담당자에게 내역 문자를 보냈습니다" : "");
     }
     else if(a === "l-void"){
       const t = ZB.ledger.tx.filter(x => x.id === v)[0]; if(!t) return;
@@ -506,7 +505,7 @@
       if(!earnOk()) return;
       const r = ZB.earn(digits(form.phone), Number(digits(form.amount)));
       view.mem = r.m.id; view.pq = ""; view.sheet = null;
-      toast(`${r.m.phone} ${pt(r.t.pts)} 적립${r.isNew ? " · 새 회원" : ""} · 모두 ${pt(ZB.pbal(r.m.id))}`, "적립 알림톡을 보냈습니다 (시안: 실제 발송 없음)");
+      toast(`${r.m.phone} ${pt(r.t.pts)} 적립${r.isNew ? " · 새 회원" : ""} · 모두 ${pt(ZB.pbal(r.m.id))}`, "적립 알림톡을 보냈습니다");
     }
     else if(a === "pe-send"){
       const n = Number(digits(form.amount)) || 0; if(n <= 0) return;

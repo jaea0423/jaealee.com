@@ -62,7 +62,7 @@
         ${d.kind === "earn" ? `<div class="big"><span>이번에 쌓인 포인트</span><b>+${d.pts.toLocaleString("ko-KR")}</b></div>` : ""}
         <div class="pair one"><div><span>모두</span><b>${pt(d.total)}</b></div></div>
         <p class="sub">${can ? `다음 계산 때 직원에게 말씀하시면 <b>${won(d.total)}</b>까지 할인해 드립니다.` : `${pt(c.pointMin - d.total)} 더 모으시면 할인으로 쓰실 수 있습니다.`}</p>
-        ${d.kind === "earn" ? `<p class="sub">적립 내역을 카카오 알림톡으로 보내 드렸습니다. (시안: 실제 발송 없음)</p>` : ""}
+        ${d.kind === "earn" ? `<p class="sub">적립 내역을 카카오 알림톡으로 보내 드렸습니다.</p>` : ""}
         ${backBtn()}
       </section>`;
   }
