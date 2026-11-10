@@ -1,4 +1,4 @@
-/* 매장 화면 시안 — 예약 탭.
+/* 매장 화면 시안 — 예약 탭 · 웨이팅 탭.
    화면은 상태(view) 하나로 통째로 다시 그립니다(render). 자료는 store.js 의 ZB.
    설계 원칙(한옥반점에서 가져온 것 하나): 경고는 막지 않고 알리기만 — 자리가 모자라도 직원이 판단해 받을 수 있게.
    단추는 data-a="동작" 으로 표시하고 맨 아래 한 곳에서 처리합니다(문자열 onclick 을 안 써서 따옴표 문제가 없음). */
@@ -9,7 +9,7 @@
   const dateText = s => { const d = new Date(s + "T00:00:00"); return (d.getMonth() + 1) + "월 " + d.getDate() + "일 " + WD[d.getDay()] + "요일"; };
   const hm = t => { const m = ZB.mins(t), h = Math.floor(m / 60); return (h < 12 ? "오전 " : "오후 ") + (h % 12 === 0 ? 12 : h % 12) + ":" + String(m % 60).padStart(2, "0"); };
   const STATUS = { req: "새 신청", ok: "확정", in: "방문", noshow: "노쇼", cancel: "취소" };
-  const TABS = [["res", "예약", ""], ["wait", "웨이팅", "준비 중"], ["ledger", "선결제 장부", "준비 중"], ["point", "포인트", "준비 중"]];
+  const TABS = [["res", "예약", ""], ["wait", "웨이팅", ""], ["ledger", "선결제 장부", "준비 중"], ["point", "포인트", "준비 중"]];
 
   const view = { tab: "res", date: ZB.today(), filter: "all", slot: "", sheet: null };
   let form = null, toastTimer = null;
@@ -17,13 +17,14 @@
   /* ---------- 그리기 ---------- */
   function render(){
     const app = $("#app");
-    app.innerHTML = top() + (view.tab === "res" ? resTab() : soon()) + (view.sheet === "new" ? sheetNew() : view.sheet === "cfg" ? sheetCfg() : "");
+    app.innerHTML = top() + (view.tab === "res" ? resTab() : view.tab === "wait" ? waitTab() : soon())
+      + (view.sheet === "new" ? sheetNew() : view.sheet === "cfg" ? sheetCfg() : view.sheet === "wnew" ? sheetWait() : "");
   }
   function top(){
-    const reqAll = ZB.res.filter(r => r.status === "req" && r.date >= ZB.today()).length;
+    const reqAll = ZB.res.filter(r => r.status === "req" && r.date >= ZB.today()).length, waitN = ZB.waitLive().length;
     return `<div class="top">
         <h1>짚불태백 인계점<small>매장 화면</small></h1>
-        <nav class="tabs">${TABS.map(([k, l, note]) => `<button data-a="tab" data-v="${k}" class="${view.tab === k ? "on" : ""}">${l}${k === "res" && reqAll ? `<em>새 신청 ${reqAll}</em>` : note ? `<em>${note}</em>` : ""}</button>`).join("")}</nav>
+        <nav class="tabs">${TABS.map(([k, l, note]) => `<button data-a="tab" data-v="${k}" class="${view.tab === k ? "on" : ""}">${l}${k === "res" && reqAll ? `<em>새 신청 ${reqAll}</em>` : k === "wait" && waitN ? `<em>대기 ${waitN}</em>` : note ? `<em>${note}</em>` : ""}</button>`).join("")}</nav>
         <div class="r"><a href="../index.html" target="_blank" rel="noopener">손님 홈페이지</a><button data-a="cfg">설정</button></div>
       </div>
       <div class="demo">제안용 시안 — 예시 자료입니다. 바꾼 내용은 이 브라우저에만 남고, 문자는 실제로 나가지 않습니다.</div>`;
@@ -131,18 +132,85 @@
       </div></div>`;
   }
 
+  /* ---------- 웨이팅 탭 ----------
+     왼쪽: 지금 기다리는 팀(번호 순). 오른쪽: 판단에 필요한 것 — 곧 오는 예약, 오늘 지나간 팀.
+     흐름은 한 줄: 대기 → 호출(입장 안내를 보냄) → 입장 / 미방문. 어느 테이블인지는 여기서도 정하지 않습니다. */
+  function waitTab(){
+    const w = ZB.wait, now = Date.now(), live = ZB.waitLive(), c = ZB.cfg;
+    const done = w.list.filter(x => x.status === "in" || x.status === "gone" || x.status === "cancel").sort((a, b) => (b.doneAt || 0) - (a.doneAt || 0));
+    const ago = t => Math.max(0, Math.round((now - t) / 60000));
+    const sum = a => a.reduce((n, r) => n + r.people, 0), cnt = s => done.filter(x => x.status === s).length;
+    const eta = ZB.waitEta(live.length);
+    const B = (x, a, label, cls) => `<button class="btn sm ${cls || ""}" data-a="w-st" data-id="${esc(x.id)}" data-v="${a}">${label}</button>`;
+    const row = (x, i) => `<article class="wt ${x.status}">
+        <div class="no"><b class="num">${x.no}</b><span>번</span></div>
+        <div class="who">
+          <div class="l1"><b class="num">${x.people}명</b>${x.status === "call" ? `<span class="chip req">호출함 · ${ago(x.callAt)}분 전</span>` : `<span class="chip ok">${i === 0 ? "다음 순서" : "앞에 " + i + "팀"}</span>`}<span class="chip src">${esc(x.src)}</span></div>
+          <div class="l2 num">${esc(x.phone || "전화번호 없음")} · 기다린 지 ${ago(x.at)}분</div>
+        </div>
+        <div class="acts">${x.status === "call" ? B(x, "in", "입장", "in") + B(x, "call", "다시 호출") + B(x, "gone", "미방문", "no") : B(x, "call", "호출", "ok") + B(x, "in", "입장") + B(x, "cancel", "취소", "no")}</div>
+      </article>`;
+    const DONE = { in: "입장", gone: "미방문", cancel: "취소" }, CH = { in: "in", gone: "noshow", cancel: "cancel" };
+    const old = x => `<div class="wdone"><b class="num">${x.no}번</b><span class="num">${x.people}명</span><span class="chip ${CH[x.status]}">${DONE[x.status]}</span><button class="btn sm ghost" data-a="w-st" data-id="${esc(x.id)}" data-v="wait">되돌리기</button></div>`;
+    /* 곧 오는 예약 — 빈자리가 나도 예약 손님 몫을 남겨야 하니, 호출하기 전에 같이 봅니다 */
+    const d = new Date(), nowM = d.getHours() * 60 + d.getMinutes(), td = ZB.today();
+    const soonRes = ZB.byDate(td).filter(r => (r.status === "ok" || r.status === "req") && ZB.mins(r.time) >= nowM - 15 && ZB.mins(r.time) <= nowM + 60);
+    return `<div class="datebar wbar">
+        <h2>오늘 웨이팅</h2>
+        <button class="sw${w.on ? " on" : ""}" data-a="w-on" role="switch" aria-checked="${w.on}"><i></i>${w.on ? "접수 받는 중" : "접수 멈춤"}</button>
+        <div class="r"><a class="btn" href="../waiting/" target="_blank" rel="noopener">손님용 접수 화면 열기</a><button class="btn pri" data-a="w-new">+ 직접 등록</button></div>
+      </div>
+      <div class="kpis">
+        <div class="kpi${live.length ? " req" : ""}"><span>지금 대기</span><b class="num">${live.length}팀<small>${sum(live)}명</small></b></div>
+        <div class="kpi"><span>지금 오면 예상 대기</span><b class="num">${eta ? "약 " + eta + "분" : "바로 입장"}</b></div>
+        <div class="kpi"><span>오늘 입장</span><b class="num">${cnt("in")}팀<small>${sum(done.filter(x => x.status === "in"))}명</small></b></div>
+        <div class="kpi"><span>미방문 · 취소</span><b class="num">${cnt("gone")} · ${cnt("cancel")}</b></div>
+      </div>
+      <div class="cols w">
+        <section class="panel">
+          <header><div><h3>기다리는 팀</h3><p>번호 순서입니다. 호출하면 손님 휴대폰으로 입장 안내가 갑니다.</p></div></header>
+          ${live.length ? live.map(row).join("") : `<div class="empty">기다리는 팀이 없습니다.${w.on ? "" : "<br>접수가 멈춰 있어 손님용 화면에서 새로 받지 않습니다."}</div>`}
+        </section>
+        <div class="side">
+          <section class="panel">
+            <header><div><h3>곧 오는 예약</h3><p>1시간 안 · 지금 예약으로 잡힌 테이블 ${ZB.usedAt(td, nowM)} / ${c.tables}개</p></div></header>
+            ${soonRes.length ? soonRes.map(r => `<div class="wdone"><b class="num">${esc(r.time)}</b><span>${esc(r.name)} · ${r.people}명</span><span class="chip src">테이블 ${ZB.tablesFor(r.people)}개</span></div>`).join("") : `<div class="empty sm">1시간 안에 오는 예약이 없습니다.</div>`}
+          </section>
+          <section class="panel">
+            <header><div><h3>오늘 지나간 팀</h3><p>${done.length}팀</p></div></header>
+            ${done.length ? done.map(old).join("") : `<div class="empty sm">아직 없습니다.</div>`}
+          </section>
+        </div>
+      </div>`;
+  }
+  /* 직접 등록 — 화면을 못 쓰시는 손님, 전화번호 없이 기다리는 손님 */
+  function sheetWait(){
+    const f = form, n = ZB.waitLive().length;
+    return `<div class="ov" data-a="close-ov"><div class="sheet" role="dialog" aria-modal="true" aria-label="웨이팅 직접 등록">
+        <header><h3>웨이팅 직접 등록</h3><button class="btn sm ghost" data-a="close">닫기</button></header>
+        <div class="body">
+          <div class="fld"><span>인원</span>
+            <div class="step"><button data-a="f-ppl" data-v="-1" aria-label="한 명 줄이기">−</button><b class="num">${f.people}</b><button data-a="f-ppl" data-v="1" aria-label="한 명 늘리기">+</button><span>명</span></div></div>
+          <div class="fld"><label for="f-phone">전화번호<em>없어도 됩니다 — 없으면 번호를 직접 불러 주세요</em></label><input id="f-phone" data-f="phone" value="${esc(f.phone)}" inputmode="numeric" autocomplete="off" placeholder="010-0000-0000"></div>
+          <p class="hint">지금 ${n}팀이 기다리고 있어 예상 대기는 ${n ? "약 " + ZB.waitEta(n) + "분" : "없음(바로 입장)"}입니다.</p>
+        </div>
+        <footer><button class="btn" data-a="close">취소</button><button class="btn pri" data-a="w-save">등록</button></footer>
+      </div></div>`;
+  }
+
   /* ---------- 설정: 테이블 개수 ---------- */
   function sheetCfg(){
     const c = ZB.cfg;
     const row = (k, title, note, val, unit) => `<div class="row"><div class="lbl"><b>${title}</b><span>${note}</span></div>
         <div class="step"><button data-a="c" data-k="${k}" data-v="-1">−</button><b class="num">${val}</b><button data-a="c" data-k="${k}" data-v="1">+</button><span>${unit}</span></div></div>`;
     return `<div class="ov" data-a="close-ov"><div class="sheet" role="dialog" aria-modal="true" aria-label="설정">
-        <header><h3>설정 · 테이블</h3><button class="btn sm ghost" data-a="close">닫기</button></header>
+        <header><h3>설정</h3><button class="btn sm ghost" data-a="close">닫기</button></header>
         <div class="body">
           ${row("tables", "전체 테이블", "매장에 있는 테이블 수", c.tables, "개")}
           ${row("onlineTables", "홈페이지 예약 한도", "이 개수까지만 홈페이지로 받고 나머지는 워크인·전화용", c.onlineTables, "개")}
           ${row("seats", "한 테이블 좌석", "인원을 이 수로 나눠 필요한 테이블을 셉니다", c.seats, "명")}
           ${row("dwellMin", "한 팀 식사 시간", "이 시간 동안 자리를 차지하는 것으로 셉니다", c.dwellMin, "분")}
+          ${row("waitMin", "웨이팅 한 팀당 시간", "예상 대기 = 앞에 기다리는 팀 수 × 이 시간", c.waitMin, "분")}
           <p class="hint">어느 테이블에 앉힐지는 정하지 않습니다. 개수만 세기 때문에 좌석 배치도를 그리거나 관리할 필요가 없습니다. 바꾸면 손님 홈페이지의 예약 가능 시간에도 바로 반영됩니다.</p>
         </div>
         <footer><button class="btn ghost" data-a="reset">예시 자료 처음으로</button><button class="btn pri" data-a="close">확인</button></footer>
@@ -182,8 +250,19 @@
         toast(`${r.name} 님 ${r.time} 예약을 ${M[v]}`, (v === "ok" || v === "cancel") && r.phone ? "손님에게 안내 문자를 보냈습니다 (시안: 실제 발송 없음)" : ""); }
     }
     else if(a === "c"){
-      const k = el.dataset.k, c = ZB.cfg, step = k === "dwellMin" ? 30 : 1, min = k === "dwellMin" ? 60 : k === "seats" ? 2 : 1, max = k === "dwellMin" ? 240 : k === "seats" ? 8 : k === "onlineTables" ? c.tables : 80;
+      const k = el.dataset.k, c = ZB.cfg, step = k === "dwellMin" ? 30 : 1, min = k === "dwellMin" ? 60 : k === "seats" || k === "waitMin" ? 2 : 1, max = k === "dwellMin" ? 240 : k === "seats" ? 8 : k === "waitMin" ? 30 : k === "onlineTables" ? c.tables : 80;
       const p = {}; p[k] = Math.max(min, Math.min(max, c[k] + Number(v) * step)); ZB.setCfg(p);
+    }
+    else if(a === "w-on"){ ZB.waitOn(!ZB.wait.on); toast(ZB.wait.on ? "웨이팅 접수를 다시 받습니다" : "웨이팅 접수를 멈췄습니다", ZB.wait.on ? "" : "기다리던 팀은 그대로 남습니다"); }
+    else if(a === "w-new"){ form = { people: 2, phone: "" }; view.sheet = "wnew"; }
+    else if(a === "w-save"){
+      const x = ZB.waitAdd(form.people, form.phone.trim(), "직접 등록"), ahead = ZB.waitAhead(x.id);
+      view.sheet = null; toast(`${x.no}번 · ${x.people}명을 등록했습니다 (앞에 ${ahead}팀)`, x.phone ? "대기 접수 안내를 보냈습니다 (시안: 실제 발송 없음)" : "");
+    }
+    else if(a === "w-st"){
+      const x = ZB.waitSet(el.dataset.id, v);
+      if(x){ const M = { call: "손님을 호출했습니다", in: "입장 처리했습니다", gone: "미방문으로 넘겼습니다", cancel: "취소했습니다", wait: "다시 대기로 되돌렸습니다" };
+        toast(`${x.no}번 ${M[v]}`, v === "call" ? (x.phone ? "입장 안내를 보냈습니다 (시안: 실제 발송 없음)" : "전화번호가 없습니다 — 번호를 직접 불러 주세요") : ""); }
     }
     else if(a === "reset"){ ZB.reset(); view.sheet = null; toast("예시 자료를 처음 상태로 되돌렸습니다"); }
     render();
@@ -198,11 +277,14 @@
   /* 손님 홈페이지(다른 탭)에서 예약이 들어오면 바로 반영 — 실제 서비스의 '새 신청 알림' 자리 */
   window.addEventListener("storage", e => {
     if(e.key !== ZB.KEY) return;
-    const before = ZB.res.filter(r => r.status === "req").length; ZB.reload();
+    const before = ZB.res.filter(r => r.status === "req").length, wBefore = ZB.wait.seq; ZB.reload();
     const after = ZB.res.filter(r => r.status === "req").length;
     if(!view.sheet) render();
     if(after > before) toast("홈페이지에서 새 예약 신청이 들어왔습니다");
+    else if(ZB.wait.seq > wBefore){ const x = ZB.wait.list[ZB.wait.list.length - 1]; toast(`웨이팅 ${x.no}번 · ${x.people}명이 접수됐습니다`); }
   });
+  /* '기다린 지 n분' 이 흐르게 — 웨이팅 탭을 보고 있을 때만 가끔 다시 그림 */
+  setInterval(() => { if(view.tab === "wait" && !view.sheet) render(); }, 30000);
 
   render();
 })();

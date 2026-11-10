@@ -1,5 +1,5 @@
-/* 짚불태백 인계점 시안 — 예약 자료 한 곳 (window.ZB).
-   손님 홈페이지의 예약 창(../js/reserve.js)과 매장 화면(app.js)이 이 파일 하나를 같이 씁니다.
+/* 짚불태백 인계점 시안 — 예약·웨이팅 자료 한 곳 (window.ZB).
+   손님 홈페이지의 예약 창(../js/reserve.js), 손님용 웨이팅 접수 화면(../waiting/), 매장 화면(app.js)이 이 파일 하나를 같이 씁니다.
 
    ★ 한옥반점과 다른 점: 자리를 '어느 테이블' 로 배정하지 않습니다. 테이블 '개수' 만 셉니다.
      · 예약 하나가 쓰는 테이블 수 = 인원 ÷ 한 테이블 좌석(올림)
@@ -22,7 +22,8 @@
     onlineTables: 12,    /* 그중 홈페이지 예약으로 받을 수 (예시) */
     seats: 4,            /* 한 테이블 좌석 */
     dwellMin: 120,       /* 한 팀 식사 시간(분) — 이 동안 테이블을 차지 */
-    slots: ["11:30","12:00","12:30","13:00","13:30","14:00","17:00","17:30","18:00","18:30","19:00","19:30","20:00","20:30"]   /* ../js/reserve.js 의 시간표와 같게 */
+    slots: ["11:30","12:00","12:30","13:00","13:30","14:00","17:00","17:30","18:00","18:30","19:00","19:30","20:00","20:30"],   /* ../js/reserve.js 의 시간표와 같게 */
+    waitMin: 8           /* 웨이팅: 앞 팀 하나가 빠지는 데 걸리는 시간(분, 예시) — 예상 대기 = 앞 팀 수 × 이 값 */
   };
   const ACTIVE = { req: 1, ok: 1, in: 1 };   /* 테이블을 차지하는 상태: 신청(확정 전에도 자리를 잡아 둠) · 확정 · 방문 */
 
@@ -30,6 +31,8 @@
   function load(){
     try{ db = JSON.parse(localStorage.getItem(KEY) || "null"); }catch(e){ db = null; }
     if(!db || db.seeded !== today()) db = seed((db && db.cfg) || null);   /* 하루 지난 예시는 날짜가 안 맞아 새로 */
+    /* 웨이팅이 생기기 전에 저장된 자료에는 웨이팅 칸이 없음 — 예약은 그대로 두고 빠진 것만 채움 */
+    if(!db.wait || db.cfg.waitMin == null){ db.cfg = Object.assign({}, DEFAULT_CFG, db.cfg); if(!db.wait) db.wait = seedWait(); save(); }
     return db;
   }
   function save(){ try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){} }
@@ -89,9 +92,29 @@
           memo: pick(MEMO), pre: people <= 6 ? pick(PRE) : "", status: status, src: src, at: Date.now() - Math.floor(rnd() * 5e8) });
       }
     }
+    out.wait = seedWait();
     save();
     return out;
   }
+
+  /* ---------- 웨이팅 ----------
+     예약과 달리 '오늘, 지금' 만 있습니다. 번호표 한 줄 = { no 대기번호, people, phone, at 접수 시각, status }.
+     status: wait 대기 → call 호출(입장 안내를 보냄) → in 입장 / gone 미방문 / cancel 취소
+     예시는 지금 시각에서 거꾸로 만들어, 언제 열어도 대기 중인 팀이 보입니다. */
+  const LIVE = { wait: 1, call: 1 };
+  function seedWait(){
+    const now = Date.now(), M = 60000, list = []; let no = 0;
+    const mk = (ago, people, status, src) => {
+      const r = { id: "w_ex" + (++no), no: no, people: people, phone: "010-0000-" + String(1000 + no * 137).slice(-4), src: src || "매장 접수", status: status, at: now - ago * M };
+      if(status === "call") r.callAt = now - 2 * M;
+      else if(!LIVE[status]) r.doneAt = r.at + 22 * M;
+      list.push(r);
+    };
+    mk(95, 2, "in"); mk(88, 4, "in"); mk(80, 3, "gone"); mk(71, 6, "in"); mk(63, 2, "in"); mk(55, 4, "cancel"); mk(47, 5, "in", "직접 등록");
+    mk(33, 4, "call"); mk(26, 2, "wait"); mk(19, 6, "wait"); mk(12, 3, "wait", "직접 등록"); mk(5, 4, "wait");
+    return { on: true, seq: no, list: list };
+  }
+  const waitLive = () => db.wait.list.filter(x => LIVE[x.status]).sort((a, b) => a.no - b.no);
 
   window.ZB = {
     get cfg(){ return db.cfg; },
@@ -103,6 +126,16 @@
     update(id, patch){ const r = db.res.filter(x => x.id === id)[0]; if(r){ Object.assign(r, patch); save(); } return r; },
     byDate(date){ return db.res.filter(r => r.date === date).sort((a, b) => a.time < b.time ? -1 : a.time > b.time ? 1 : a.at - b.at); },
     tablesFor: tablesFor, usedAt: usedAt, fits: fits, leftAt: leftAt,
+    /* 웨이팅 */
+    get wait(){ return db.wait; },
+    waitLive: waitLive,
+    waitAhead(id){ return waitLive().findIndex(x => x.id === id); },   /* 내 앞에 몇 팀(0 이면 맨 앞, -1 이면 대기 중이 아님) */
+    waitEta(ahead){ return ahead * db.cfg.waitMin; },
+    waitAdd(people, phone, src){ const w = db.wait, r = { id: "w_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), no: ++w.seq, people: people, phone: phone || "", src: src, status: "wait", at: Date.now() }; w.list.push(r); save(); return r; },
+    waitSet(id, status){ const r = db.wait.list.filter(x => x.id === id)[0]; if(!r) return null;
+      r.status = status; if(status === "call") r.callAt = Date.now(); else if(status === "wait"){ delete r.callAt; delete r.doneAt; } else r.doneAt = Date.now();
+      save(); return r; },
+    waitOn(v){ db.wait.on = !!v; save(); },
     today: today, addDays: addDays, mins: mins, hhmm: hhmm, KEY: KEY
   };
   load();
