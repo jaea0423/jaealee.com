@@ -1,5 +1,7 @@
 /* 짚불태백 인계점 시안 예약 창 — 한옥반점 js/reserve.js 를 옮김. 달라진 곳:
-   · 좌석 이름: 홀 → 테이블, 룸 → 단체석 (seat 값은 그대로 table / room)
+   · 좌석 단계를 뺌 — 자리를 고르지 않고 테이블 개수로만 받음(manage/store.js 의 ZB). 흐름: 인원 → 날짜 → 시간 → 메뉴 → 예약자 → 확인
+     (sSeat 함수와 룸 관련 계산은 남겨 두었지만 부르지 않음)
+   · 남은 시간과 접수가 매장 화면 시안(manage/)과 같은 자료를 씀 — 접수하면 매장 화면의 새 신청으로 뜸
    · ⑤ 메뉴: 코스 대신 짚불구이 미리 주문(data/site.js 의 pre:true) + 점심 시각이면 점심 특선
    · 흉내 시간표: 점심 11:30–14:00 · 저녁 17:00–20:30 (영업시간 예시와 같게)
    · 서버가 없어 접수는 흉내 — 완료 화면에 시안이라고 적음
@@ -60,7 +62,8 @@ if(!window.safeHref) window.safeHref = function(u){ return /^https?:\/\//i.test(
       const out = []; const add = (a, b) => { for(let x = a; x <= b; x += 30) out.push(pad(Math.floor(x/60))+":"+pad(x%60)); };
       /* 접수 시각 = 예약 시스템 세션과 같은 값: 평일 점심 11:00–14:30 · 저녁 17:00–19:30, 토 11:00–19:30, 일·공휴일 11:00–18:30 */
       add(11*60+30, 14*60); add(17*60, 20*60+30);   /* 시안: 매일 같은 시간표(예시) */
-      return leadCut(date, out.filter(t => seat === "any" || !stubFull(date, t, seat)));
+      /* 시안: 매장 화면과 같은 자료로 — 홈페이지 한도(onlineTables) 안에서 그 인원이 식사 시간 내내 들어가는 시각만 */
+      return leadCut(date, out.filter(t => !window.ZB || ZB.fits(date, t, people, true)));
     },
     /* 기본 구현은 slots 를 날마다 불러 셉니다. 실제로는 한 번에 받아오게 바꾸세요 */
     month: async function(ym, people, seat){
@@ -69,7 +72,14 @@ if(!window.safeHref) window.safeHref = function(u){ return /^https?:\/\//i.test(
       for(let d = 1; d <= last; d++){ const key = ym+"-"+pad(d); out[key] = (await this.slots(key, people, seat)).length; }
       return out;
     },
-    submit: async payload => { await new Promise(r => setTimeout(r, 600)); return {ok:true}; },
+    submit: async p => {
+      await new Promise(r => setTimeout(r, 600));
+      const id = p.rid || ("rq_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36));
+      /* 시안: 서버 대신 이 브라우저의 자료에 '새 신청' 으로 넣음 — 매장 화면 시안이 같은 자료를 읽음 */
+      if(window.ZB && !ZB.res.some(x => x.id === id)){ ZB.reload(); ZB.add({ id: id, date: p.date, time: p.time, people: p.people, name: p.name, phone: p.phone, memo: p.request || "",
+        pre: (p.course && p.course !== "none" && p.course !== "later") ? p.courseLabel : "", status: "req", src: "홈페이지" }); }
+      return {ok:true, id: id};
+    },
     day: async date => null,   /* 그날 전체 시각표·세션(_d) — 예약 시스템이 올린 자료에만 있음 */
     /* 휴대폰 인증(66차) — 서버가 켜 둔 때만. 서버가 없으면 꺼짐 */
     otpOn: async () => false,
@@ -208,7 +218,7 @@ if(!window.safeHref) window.safeHref = function(u){ return /^https?:\/\//i.test(
   function confirmClose(){
     /* 접수 중(서버 답 기다리는 중)엔 닫지 않음 — 닫아도 접수는 들어가 '그만둔 줄 아는 예약' 이 생겼음(10-09 점검) */
     if(submitting){ ask("접수하는 중입니다", "잠시만 기다려 주세요. 끝나면 결과가 나옵니다.", "확인", () => {}); return; }
-    if(step > 1 && step < 8){ ask("예약을 그만두시겠습니까?", "입력하신 내용은 저장되지 않습니다.", "그만두기", close); return; }
+    if(step > 1 && step < 7){ ask("예약을 그만두시겠습니까?", "입력하신 내용은 저장되지 않습니다.", "그만두기", close); return; }
     close();
   }
   function onKey(e){
@@ -289,7 +299,7 @@ if(!window.safeHref) window.safeHref = function(u){ return /^https?:\/\//i.test(
       <span class="rv-fail-tel">또는 전화로 예약 <a class="rv-tel-lnk" href="tel:${telHref(INFO.tel)}">${esc(INFO.tel)}</a></span></div>`;
 
   /* ---------- 틀 ---------- */
-  const STEPS = ["인원", "날짜", "시간", "좌석", "메뉴", "예약자 정보", "예약 확인"];
+  const STEPS = ["인원", "날짜", "시간", "메뉴", "예약자 정보", "예약 확인"];
   function render(msg){
     const steps = $(".rv-steps", ov);
     /* 접수 중단(관리 화면에서 끔) — 단계 없이 안내와 전화만 */
@@ -307,7 +317,7 @@ if(!window.safeHref) window.safeHref = function(u){ return /^https?:\/\//i.test(
     const b = $(".rv-b", ov), f = $(".rv-f", ov);
     b.scrollTop = 0;
     b.innerHTML = msg ? `<div class="rv-msg" role="alert" tabindex="-1">${esc(msg)}</div>` : "";
-    [null, sPeople, sDate, sTime, sSeat, sMenu, sGuest, sConfirm, done][step](b, f);
+    [null, sPeople, sDate, sTime, sMenu, sGuest, sConfirm, done][step](b, f);
     const on = steps.querySelector(".on"); if(on && on.scrollIntoView) on.scrollIntoView({block:"nearest", inline:"center"});
     /* 10-03: 단계가 바뀌면 눌렀던 '다음' 단추가 사라져 초점이 문서 처음으로 돌아갔음 → 새 단계 제목(오류면 안내 문구)으로 옮김.
        같은 단계를 다시 그릴 때(입력 중)는 건드리지 않음. 처음 열 때도 여기서 창 안으로 초점이 들어옴 */
@@ -330,7 +340,6 @@ if(!window.safeHref) window.safeHref = function(u){ return /^https?:\/\//i.test(
     const bits = [peopleText()];
     if(S.date) bits.push(dateText(S.date));
     if(S.time) bits.push(hm(S.time));
-    if(S.seat) bits.push(S.seat === "room" ? "단체석" : "테이블");
     if(S.courseLabel) bits.push(S.courseLabel);
     return `<div class="rv-sum">${bits.map(x=>`<span>${esc(x)}</span>`).join("")}</div>`;
   };
@@ -503,7 +512,7 @@ if(!window.safeHref) window.safeHref = function(u){ return /^https?:\/\//i.test(
       foot(f, true, next, "다음", !S.time);
     }
     load();
-    function next(){ if(S.time){ startTimer(); step = 4; render(); } }
+    function next(){ if(S.time){ S.seat = "table"; startTimer(); step = 4; render(); } }   /* 좌석 단계 없음 — 바로 메뉴 */
   }
 
   /* ---------- ④ 좌석 ---------- */
@@ -639,7 +648,7 @@ if(!window.safeHref) window.safeHref = function(u){ return /^https?:\/\//i.test(
       b.querySelectorAll("[data-c]").forEach(x => x.classList.toggle("on", x === el));
       foot(f, true, next, "다음", false);
     }));
-    function go(){ step = 6; render(); }
+    function go(){ step = 5; render(); }
     function next(){
       if(!S.course) return;
       if(cr && !condOk(cr, S.courseLabel)) return;
@@ -755,7 +764,7 @@ if(!window.safeHref) window.safeHref = function(u){ return /^https?:\/\//i.test(
       S.verified = true; codebox.hidden = true; phone.disabled = true; send.disabled = true; send.textContent = "인증 완료"; edit.hidden = true;
       hint.classList.remove("bad"); hint.textContent = "인증되었습니다."; refoot();
     });
-    function next(){ if(ok()){ step = 7; render(); } }
+    function next(){ if(ok()){ step = 6; render(); } }
     refoot();
   }
 
@@ -764,7 +773,6 @@ if(!window.safeHref) window.safeHref = function(u){ return /^https?:\/\//i.test(
     const rows = [
       ["날짜", dateText(S.date)], ["시간", hm(S.time)],
       ["인원", S.kids ? `성인 ${S.adults}명 · 어린이 ${S.kids}명` : `성인 ${S.adults}명`],
-      ["좌석", S.seat === "room" ? "단체석" : "테이블"],
       ["메뉴", S.course === "later" ? "미정" : (S.course === "none" ? "방문해서 주문" : `${S.courseLabel} · ${S.adults}인분 (성인 기준)`)],
       ["예약자", S.name.trim()+" · "+S.phone]
     ];
@@ -822,7 +830,7 @@ if(!window.safeHref) window.safeHref = function(u){ return /^https?:\/\//i.test(
       submitting = false;
       if(!ov) return;   /* 그사이 창이 닫혔으면(다른 길) 화면을 다시 그리지 않음 */
       if(r && r.id){ S.rid = r.id; S.ridSig = sig; }   /* 다시 보낼 때 같은 번호 */
-      if(r && r.ok){ S.reqId = r.id || ""; clearInterval(timer); timer = null; step = 8; render(); }
+      if(r && r.ok){ S.reqId = r.id || ""; clearInterval(timer); timer = null; step = 7; render(); }
       else { if(!timer) startTimer(); btn.disabled = false; btn.textContent = "접수하기"; render((r && r.msg) || "접수가 되지 않았습니다. 잠시 뒤 다시 시도하시거나 전화로 문의해 주세요."); }   /* 실패하면 남은 시간도 다시(전엔 멈춘 채) */
     }
     refoot();
@@ -841,8 +849,8 @@ if(!window.safeHref) window.safeHref = function(u){ return /^https?:\/\//i.test(
     b.innerHTML = `<div class="rv-done">
         <div class="rv-tick"><svg viewBox="0 0 48 48"><path d="M14 25l7 7 14-15"/></svg></div>
         <h3>접수되었습니다</h3>
-        <p class="big">${esc(dateText(S.date))} ${esc(hm(S.time))} · ${esc(peopleText())} · ${S.seat==="room"?"단체석":"테이블"}</p>
-        <p class="rv-note">제안용 시안이라 실제로는 접수되지 않았습니다. 입력하신 내용은 어디에도 저장·전송되지 않습니다.</p>
+        <p class="big">${esc(dateText(S.date))} ${esc(hm(S.time))} · ${esc(peopleText())}</p>
+        <p class="rv-note">제안용 시안입니다. 접수 내용은 이 브라우저에만 저장되고 실제 매장으로는 가지 않습니다. <a href="manage/" target="_blank" rel="noopener">매장 화면 시안</a>에서 새 신청으로 들어온 것을 볼 수 있습니다.</p>
         ${S.reqId ? `<p class="rv-code">예약번호 <b class="num">${resCode(S.reqId)}</b></p>` : ""}
         <p>가게에서 확인한 뒤 <b>${esc(S.phone)}</b> 로 확정을 알려드립니다.</p>
         <p class="rv-quiet">예약 변경 혹은 다른 문의사항은 <a href="tel:${telHref(INFO.tel)}">${esc(INFO.tel)}</a> 로 전화 주세요.</p>

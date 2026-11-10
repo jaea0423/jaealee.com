@@ -201,7 +201,7 @@ window.SITE_READY.then(function(){
   document.querySelectorAll("img[data-img]").forEach(el => { if(!get(el.dataset.img)) el.hidden = true; });
   /* 제안용 시안 띠 — 실제 짚불태백 홈페이지로 오해하지 않게 모든 장 아래에 늘 보임 */
   const demo = document.createElement("div"); demo.className = "demo-bar";
-  demo.innerHTML = `<b>제안용 시안</b><span>실제 짚불태백 홈페이지가 아닙니다 · 주소·전화·영업시간은 예시이며 예약은 접수되지 않습니다</span>`;
+  demo.innerHTML = `<b>제안용 시안</b><span>실제 짚불태백 홈페이지가 아닙니다 · 주소·전화·영업시간은 예시이며 예약은 실제 매장으로 가지 않습니다</span><a href="manage/" target="_blank" rel="noopener">매장 화면 시안 보기</a>`;
   document.body.append(demo);
 });
 /* (한옥반점) 방문 세기(hanokHit)는 js/hit.js — 바로 예약 장(reserve.html)도 같이 쓰려고 뗌(10-03) */
