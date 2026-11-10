@@ -26,7 +26,7 @@ window.SITE_READY.then(function(){
   const header = document.createElement("header");
   header.className = "nav";
   header.innerHTML = `<div class="wrap">
-      <a class="brand" href="index.html"><img class="brand-logo" src="img/logo.png" alt="${esc(INFO.brand || INFO.name)}"><span class="brand-en">${esc(INFO.branchEn || "")}</span></a>
+      <a class="brand" href="home.html"><img class="brand-logo" src="img/logo.png" alt="${esc(INFO.brand || INFO.name)}"><span class="brand-en">${esc(INFO.branchEn || "")}</span></a>
       <nav class="links">${L.map(([h,k,l])=>`<a href="${h}" class="${page===k?'cur':''}">${l}</a>`).join("")}</nav>
       <div class="nav-r"><button type="button" class="btn fill cta" data-reserve>예약하기</button><button type="button" class="burger" aria-label="메뉴 열기" aria-controls="mobile-navigation" aria-expanded="false"><i></i><i></i></button></div>
     </div>`;
@@ -39,7 +39,7 @@ window.SITE_READY.then(function(){
     window.addEventListener("scroll", onScroll, {passive:true}); onScroll();
   }
   const mnav = document.createElement("nav"); mnav.className = "mnav"; mnav.id = "mobile-navigation";
-  mnav.innerHTML = `<a href="index.html">홈</a>` + L.map(([h,k,l])=>`<a href="${h}">${l}</a>`).join("") + `<a href="#" data-reserve>예약</a><a href="tel:${telHref(INFO.tel)}">전화 ${esc(INFO.tel)}</a>`;
+  mnav.innerHTML = `<a href="home.html">홈</a>` + L.map(([h,k,l])=>`<a href="${h}">${l}</a>`).join("") + `<a href="#" data-reserve>예약</a><a href="tel:${telHref(INFO.tel)}">전화 ${esc(INFO.tel)}</a>`;
   header.after(mnav);
   const burger = header.querySelector(".burger");
   burger.addEventListener("click", () => {

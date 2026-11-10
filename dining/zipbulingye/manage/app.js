@@ -11,7 +11,8 @@
   const STATUS = { req: "새 신청", ok: "확정", in: "방문", noshow: "노쇼", cancel: "취소" };
   const TABS = [["res", "예약", ""], ["wait", "웨이팅", ""], ["ledger", "선결제 장부", ""], ["point", "포인트", ""]];
 
-  const view = { tab: "res", date: ZB.today(), filter: "all", slot: "", sheet: null };
+  /* 주소 끝 #wait · #ledger · #point 로 열면 그 탭부터 (안내 페이지 단추가 탭별로 바로 열리게) */
+  const view = { tab: TABS.some(t => t[0] === location.hash.slice(1)) ? location.hash.slice(1) : "res", date: ZB.today(), filter: "all", slot: "", sheet: null };
   let form = null, toastTimer = null;
 
   /* ---------- 그리기 ---------- */
@@ -26,7 +27,7 @@
     return `<div class="top">
         <h1>짚불태백 인계점<small>매장 화면</small></h1>
         <nav class="tabs">${TABS.map(([k, l, note]) => `<button data-a="tab" data-v="${k}" class="${view.tab === k ? "on" : ""}">${l}${k === "res" && reqAll ? `<em>새 신청 ${reqAll}</em>` : k === "wait" && waitN ? `<em>대기 ${waitN}</em>` : note ? `<em>${note}</em>` : ""}</button>`).join("")}</nav>
-        <div class="r"><a href="../index.html" target="_blank" rel="noopener">손님 홈페이지</a><button data-a="cfg">설정</button></div>
+        <div class="r"><a href="../home.html" target="_blank" rel="noopener">손님 홈페이지</a><button data-a="cfg">설정</button></div>
       </div>
       <div class="demo">제안용 시안 — 예시 자료입니다. 바꾼 내용은 이 브라우저에만 남고, 문자는 실제로 나가지 않습니다.</div>`;
   }
