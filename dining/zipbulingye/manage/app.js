@@ -430,7 +430,7 @@
           ${row("pointMin", "포인트 사용 시작", "이만큼 모이면 할인으로 쓸 수 있음", c.pointMin.toLocaleString("ko-KR"), "P")}
           <p class="hint">어느 테이블에 앉힐지는 정하지 않습니다. 개수만 세기 때문에 좌석 배치도를 그리거나 관리할 필요가 없습니다. 바꾸면 손님 홈페이지의 예약 가능 시간에도 바로 반영됩니다.</p>
         </div>
-        <footer><button class="btn ghost" data-a="reset">예시 자료 처음으로</button><button class="btn pri" data-a="close">확인</button></footer>
+        <footer><button class="btn ghost" data-a="reset">자료 처음으로</button><button class="btn pri" data-a="close">확인</button></footer>
       </div></div>`;
   }
 
@@ -530,7 +530,7 @@
       if(!t.void && !confirm(`${md(t.at)} ${t.type === "earn" ? "적립" : "사용"} ${pt(t.pts)} 을(를) 취소할까요?\n줄은 지우지 않고 '취소' 로 남습니다.`)) return;
       ZB.voidPTx(v, !t.void); toast(t.void ? "취소했습니다 — 포인트를 그 전으로 되돌렸습니다" : "되살렸습니다");
     }
-    else if(a === "reset"){ ZB.reset(); view.sheet = null; toast("예시 자료를 처음 상태로 되돌렸습니다"); }
+    else if(a === "reset"){ ZB.reset(); view.sheet = null; toast("자료를 처음 상태로 되돌렸습니다"); }
     render();
   });
   /* 글자 칸은 다시 그리지 않고 값만 받아 둠(그리면 입력 중에 초점이 날아감). 등록 단추만 켜고 끔 */

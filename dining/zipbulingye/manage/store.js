@@ -9,7 +9,7 @@
 
    시안이라 서버가 없습니다. 자료는 이 브라우저(localStorage)에만 있고, 날짜가 바뀌면 예시를 새로 만듭니다. */
 (function(){
-  const KEY = "zb-demo-v1";
+  const KEY = "zb-demo-v2";   /* v2(11-10): 더미 이름·번호를 바꿔서 — 옛 자료(v1)는 읽지 않고 새로 만듦 */
   const pad = n => String(n).padStart(2, "0");
   const ymd = d => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
   const addDays = (s, n) => { const d = new Date(s + "T00:00:00"); d.setDate(d.getDate() + n); return ymd(d); };
@@ -92,7 +92,7 @@
         if(!past && src === "홈페이지" && i <= 3 && rnd() < 0.3) status = "req";   /* 아직 확인 안 한 홈페이지 신청 몇 건 */
         if(!past && rnd() < 0.05) status = "cancel";
         out.res.push({ id: "ex_" + (++seq), date: date, time: time, people: people,
-          name: pick(FAM) + pick(GIV), phone: "010-0000-" + pad(Math.floor(rnd() * 100)) + pad(Math.floor(rnd() * 100)),
+          name: pick(FAM) + pick(GIV), phone: "010-" + (2000 + Math.floor(rnd() * 8000)) + "-" + pad(Math.floor(rnd() * 100)) + pad(Math.floor(rnd() * 100)),
           memo: pick(MEMO), pre: people <= 6 ? pick(PRE) : "", status: status, src: src, at: Date.now() - Math.floor(rnd() * 5e8) });
       }
     }
@@ -111,7 +111,7 @@
   function seedWait(){
     const now = Date.now(), M = 60000, list = []; let no = 0;
     const mk = (ago, people, status, src) => {
-      const r = { id: "w_ex" + (++no), no: no, people: people, phone: "010-0000-" + String(1000 + no * 137).slice(-4), src: src || "매장 접수", status: status, at: now - ago * M };
+      const r = { id: "w_ex" + (++no), no: no, people: people, phone: "010-" + String(3100 + no * 617).slice(-4) + "-" + String(1000 + no * 137).slice(-4), src: src || "매장 접수", status: status, at: now - ago * M };
       if(status === "call") r.callAt = now - 2 * M;
       else if(!LIVE[status]) r.doneAt = r.at + 22 * M;
       list.push(r);
@@ -132,22 +132,22 @@
     const now = Date.now(), D = 86400000, accts = [], tx = []; let n = 0;
     const A = (name, kind, contact, phone, memo) => { const a = { id: "a" + (accts.length + 1), name: name, kind: kind, contact: contact, phone: phone, memo: memo || "" }; accts.push(a); return a; };
     const T = (a, type, amount, daysAgo, memo, by, isVoid) => { const t = { id: "t" + (++n), acct: a.id, type: type, amount: amount, memo: memo || "", by: by || "", at: now - daysAgo * D - (n % 5) * 3600000 }; if(isVoid) t.void = true; tx.push(t); };
-    let a = A("인계건설 총무팀 (예시)", "회사", "박 과장", "010-0000-1201", "회식 때 차감. 영수증은 담당자 메일로");
+    let a = A("인계건설 총무팀", "회사", "박 과장", "010-4821-1201", "회식 때 차감. 영수증은 담당자 메일로");
     T(a, "charge", 1000000, 80, "계좌이체"); T(a, "use", 186000, 74, "팀 회식 8명", "박 과장"); T(a, "use", 243000, 51, "송년회 1차 11명", "박 과장");
     T(a, "use", 158000, 30, "6명", "김 대리"); T(a, "use", 64000, 9, "금액 잘못 입력", "", true); T(a, "use", 212000, 9, "부서 회식 9명", "박 과장");
-    a = A("인계 OO치과 (예시)", "회사", "김 원장", "010-0000-1302", "직원 점심 · 저녁");
+    a = A("인계 미소치과", "회사", "김 원장", "010-9356-1302", "직원 점심 · 저녁");
     T(a, "charge", 500000, 60, "카드"); T(a, "use", 98000, 45, "점심 5명", "김 원장"); T(a, "use", 132000, 20, "저녁 4명", "실장"); T(a, "use", 76000, 3, "점심 특선 4명", "실장");
-    a = A("한빛세무회계 (예시)", "회사", "이 실장", "010-0000-1403", "");
+    a = A("한빛세무회계", "회사", "이 실장", "010-2287-1403", "");
     T(a, "charge", 300000, 40, "계좌이체"); T(a, "use", 87000, 33, "4명", "이 실장"); T(a, "use", 64000, 12, "3명", "이 실장"); T(a, "use", 95000, 2, "5명", "대표");
-    a = A("김민수 님", "개인", "", "010-0000-1504", "단골 · 생갈비 미리 준비");
+    a = A("김민수 님", "개인", "", "010-7140-1504", "단골 · 생갈비 미리 준비");
     T(a, "charge", 200000, 25, "현금"); T(a, "use", 46000, 18, "2명"); T(a, "use", 52000, 6, "가족 3명");
-    a = A("OO보험 인계지점 (예시)", "회사", "최 팀장", "010-0000-1605", "분기마다 충전");
+    a = A("한결화재 인계지점", "회사", "최 팀장", "010-5512-1605", "분기마다 충전");
     T(a, "charge", 1000000, 20, "계좌이체"); T(a, "use", 312000, 14, "지점 회식 14명", "최 팀장");
-    a = A("이서연 님", "개인", "", "010-0000-1706", "");
+    a = A("이서연 님", "개인", "", "010-3368-1706", "");
     T(a, "charge", 100000, 50, "카드"); T(a, "use", 58000, 41, "3명"); T(a, "use", 49000, 22, "2명");
-    a = A("인계동 상인회 (예시)", "회사", "정 총무", "010-0000-1807", "월례회 셋째 주 화요일");
+    a = A("인계동 상인회", "회사", "정 총무", "010-8823-1807", "월례회 셋째 주 화요일");
     T(a, "charge", 500000, 70, "계좌이체"); T(a, "use", 162000, 60, "월례회"); T(a, "use", 145000, 38, "월례회"); T(a, "use", 193000, 16, "월례회 + 추가 주문");
-    a = A("정도윤 님", "개인", "", "010-0000-1908", "");
+    a = A("정도윤 님", "개인", "", "010-6604-1908", "");
     T(a, "charge", 300000, 5, "카드");
     return { seq: n, accts: accts, tx: tx };
   }
@@ -161,7 +161,7 @@
     const now = Date.now(), D = 86400000, rate = DEFAULT_CFG.pointRate, members = [], tx = []; let n = 0;
     const NAMES = ["김민수", "박지훈", "이하은", "최도윤", "정서연", "강예준"];
     for(let i = 0; i < 16; i++){
-      const m = { id: "m" + (i + 1), phone: "010-0000-" + String(2101 + i * 173).slice(-4), name: i % 3 === 0 ? NAMES[i / 3] : "" };
+      const m = { id: "m" + (i + 1), phone: "010-" + String(2400 + i * 389).slice(-4) + "-" + String(2101 + i * 173).slice(-4), name: i % 3 === 0 ? NAMES[i / 3] : "" };
       members.push(m);
       const days = []; const v = 1 + Math.floor(rnd() * 6);
       for(let k = 0; k < v; k++) days.push(Math.floor(rnd() * 90));

@@ -35,10 +35,10 @@
           <h2>휴대폰 번호</h2>
           <div class="phone${S.digits.length === 8 ? " full" : ""}" aria-live="polite">${phoneText(S.digits)}</div>
           <p class="sub">순서가 가까워지면 이 번호로 알려 드립니다.</p>
-          <button class="agree${S.agree ? " on" : ""}" data-a="agree" role="checkbox" aria-checked="${S.agree}"><i></i><span>대기 안내를 위한 전화번호 수집에 동의합니다<small>오늘 영업이 끝나면 지웁니다 (예시 문구)</small></span></button>
+          <button class="agree${S.agree ? " on" : ""}" data-a="agree" role="checkbox" aria-checked="${S.agree}"><i></i><span>대기 안내를 위한 전화번호 수집에 동의합니다<small>오늘 영업이 끝나면 지웁니다</small></span></button>
         </div>
         <div class="right">
-          <div class="pad">${keys}</div><p class="kbd">키보드 숫자로도 누를 수 있습니다 · Enter</p>
+          <div class="pad">${keys}</div>
           <button class="go" data-a="go"${ok ? "" : " disabled"}>웨이팅 접수</button>
         </div>
       </section>`;
@@ -50,7 +50,7 @@
         <div class="big"><span>대기번호</span><b>${x.no}</b></div>
         <div class="pair"><div><span>내 앞</span><b>${Math.max(0, ahead)}팀</b></div><div><span>예상 대기</span><b>${etaText(ahead)}</b></div></div>
         <p class="sub">순서가 가까워지면 카카오 알림톡으로 알려 드립니다.</p>
-        <a class="link" href="?no=${x.no}" target="_blank" rel="noopener">손님 휴대폰에서 보이는 화면 예시</a>
+        <a class="link" href="?no=${x.no}" target="_blank" rel="noopener">휴대폰으로 내 순서 보기</a>
         <button class="go" data-a="home">처음으로 <small>${S.back}초 뒤 자동</small></button>
       </section>`;
   }

@@ -2,26 +2,27 @@
    한옥반점 사이트(hanokbanjeom.com)와 같은 구조: 글·사진·팝업·차림·영업시간·연락처가 이 한 객체에 들어 있고, 사이트는 이 값으로 그립니다.
    시안이라 서버(js/config.js)가 없습니다 — 예약 창은 영업시간 규칙으로 흉내만 냅니다(js/reserve.js).
 
-   ★ '예시' 라고 적힌 값(주소·전화·영업시간·주차·좌석 수·사업자 정보)은 실제 인계점 정보가 아닙니다. 받으면 여기만 고치면 됩니다.
+   ★ 주소·전화·영업시간·주차·좌석·사업자 정보·약도(img/map.svg)는 그럴듯한 더미입니다(11-10 사용자 요청: 화면에 '예시' 표시 없이).
+     실제 인계점 정보가 아닙니다 — 받으면 여기만 고치면 됩니다.
    브랜드 소개·메뉴 이름은 본사 사이트(zipfiretaebaek.com, 2026-11-10 수집)에서 옮겼고, 가격은 본사 사이트에 없어 넣지 않았습니다.
    사진은 본사 사이트의 것 — 매장 사진은 인계점이 아니라 다른 지점입니다. */
 window.SITE_DEFAULT = {
   info: {
     name: "짚불태백 인계점", brand: "짚불태백", branch: "인계점", branchEn: "INGYE",
-    addr: "경기 수원시 팔달구 인계동 (주소 예시)", addr2: "경기 수원시 팔달구\n인계동 (주소 예시)",
-    tel: "031-000-0000", parking: "매장 앞 주차 (예시)", since: 2025,
-    naverMap: "", kakaoMap: "", instagram: "",   /* 받으면 채움 — 비어 있으면 단추·링크가 안 보입니다 */
-    owner: "(예시)", bizno: "000-00-00000",
+    addr: "경기 수원시 팔달구 인계로124번길 18, 1층", addr2: "경기 수원시 팔달구\n인계로124번길 18, 1층",
+    tel: "031-232-0136", parking: "건물 뒤 전용 주차 12대 · 2시간 무료", since: 2025,
+    naverMap: "https://map.naver.com/p/search/%EC%A7%9A%EB%B6%88%ED%83%9C%EB%B0%B1", kakaoMap: "https://map.kakao.com/?q=%EC%A7%9A%EB%B6%88%ED%83%9C%EB%B0%B1", instagram: "",   /* 지도는 상호 검색 주소(더미) — 인계점 지도 주소를 받으면 바꿈 */
+    owner: "이태성", bizno: "124-58-03671",
     naverBooking: "",
-    services: ["단체 회식 예약", "유아용 의자", "콜키지 (문의)"],   /* 예시 */
+    services: ["단체 회식 예약", "유아용 의자", "콜키지 가능", "포장 가능"],
     menuPdf: ""   /* 메뉴판 PDF — 받으면 파일명 */
   },
 
-  /* 영업시간 — 예시. js/reserve.js 의 흉내 시간표(점심 11:30–14:00 · 저녁 17:00–20:30)와 같게 */
+  /* 영업시간 — 더미. js/reserve.js 의 흉내 시간표(점심 11:30–14:00 · 저녁 17:00–20:30)와 같게 */
   hours: [
     { day: "매일", open: "11:30 – 22:00" }
   ],
-  hoursNote: ["브레이크 15:00 – 17:00", "라스트오더 21:00", "영업시간은 예시입니다"],
+  hoursNote: ["브레이크 15:00 – 17:00", "라스트오더 21:00", "연중무휴 · 설·추석 당일 휴무"],
   closed: [],
 
   /* 홈페이지 예약 접수 규칙 — 한옥반점의 '룸' 자리를 여기서는 '단체석' 으로 씁니다(seat 값은 그대로 room / table) */
@@ -58,14 +59,14 @@ window.SITE_DEFAULT = {
 
   /* 공간 — 사진은 본사 사이트의 다른 지점 매장입니다(인계점 사진을 받으면 바꿈). 좌석 수는 예시 */
   rooms: [
-    { name: "홀", cap: "4인 테이블 (예시)", img: "in-1.webp" },
-    { name: "부스석", cap: "4 ~ 6인 (예시)", img: "in-2.webp" },
+    { name: "홀", cap: "4인 테이블", img: "in-1.webp" },
+    { name: "부스석", cap: "4 ~ 6인", img: "in-2.webp" },
     { name: "중앙 홀", cap: "테이블을 붙여 단체석으로", img: "in-3.webp" },
-    { name: "창가석", cap: "4인 (예시)", img: "in-4.webp" },
-    { name: "테라스 쪽 자리", cap: "4 ~ 6인 (예시)", img: "in-5.webp" },
-    { name: "긴 부스석", cap: "8인 이상 단체 (예시)", img: "in-6.webp" },
+    { name: "창가석", cap: "4인", img: "in-4.webp" },
+    { name: "테라스 쪽 자리", cap: "4 ~ 6인", img: "in-5.webp" },
+    { name: "긴 부스석", cap: "8인 이상 단체", img: "in-6.webp" },
     { name: "안쪽 자리", cap: "조용한 식사", img: "in-7.webp" },
-    { name: "가족석", cap: "4 ~ 6인 (예시)", img: "in-8.webp" },
+    { name: "가족석", cap: "4 ~ 6인", img: "in-8.webp" },
     { name: "저녁의 홀", cap: "", img: "in-9.webp" }
   ],
   halls: [
@@ -135,17 +136,17 @@ window.SITE_DEFAULT = {
     pdfLabel: "메뉴판 PDF",
     chefBand: { who: "차별화된 조리 방식 · 짚불 초벌 구이", quote: "\"순간 화력 1000도, 육즙은 가두고 향은 입힙니다.\"", img: "" },
     courses: { title: "코스", sub: "" },
-    lunch: { title: "점심 특선", sub: "오전 11:30 – 오후 3:00 (예시)" },
+    lunch: { title: "점심 특선", sub: "평일 오전 11:30 – 오후 3:00" },
     dishes: { title: "짚불구이 · 생고기" }, dumplings: { title: "" }, drinks: { title: "주류" }
   },
 
   visit: {
-    head: { img: "exterior-2.webp", title: "오시는 길", sub: "수원 인계동에 있습니다. 정확한 주소와 약도는 준비 중입니다." },
-    hoursTitle: "영업시간", mapCaption: "",
+    head: { img: "exterior-2.webp", title: "오시는 길", sub: "인계동 먹자골목 안쪽, 수원시청역 9번 출구에서 걸어서 8분입니다." },
+    hoursTitle: "영업시간", mapCaption: "수원시청역 9번 출구 → 인계로 → 인계로124번길",
     parkingTitle: "주차",
-    parking: ["매장 앞 주차 공간을 이용하실 수 있습니다. (예시)"],
+    parking: ["건물 뒤 전용 주차장 12대 — 식사하시면 2시간 무료입니다.", "자리가 없으면 인계동 공영주차장(걸어서 3분)을 이용해 주세요."],
     transitTitle: "대중교통",
-    transit: ["지하철 — 수인분당선 수원시청역 (예시)"]
+    transit: ["지하철 — 수인분당선 수원시청역 9번 출구, 걸어서 8분", "버스 — 인계동주민센터 정류장 하차, 걸어서 3분"]
   },
 
   /* 차림 — 본사 사이트의 메뉴 12종. 가격은 본사 사이트에 없어 비워 둠(화면에도 안 씀).
