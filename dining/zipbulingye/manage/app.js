@@ -26,7 +26,7 @@
     const reqAll = ZB.res.filter(r => r.status === "req" && r.date >= ZB.today()).length, waitN = ZB.waitLive().length;
     return `<div class="top">
         <h1>짚불태백 인계점<small>매장 화면</small></h1>
-        <nav class="tabs">${TABS.map(([k, l, note]) => `<button data-a="tab" data-v="${k}" class="${view.tab === k ? "on" : ""}">${l}${k === "res" && reqAll ? `<em>새 신청 ${reqAll}</em>` : k === "wait" && waitN ? `<em>대기 ${waitN}</em>` : note ? `<em>${note}</em>` : ""}</button>`).join("")}</nav>
+        <nav class="tabs">${TABS.map(([k, l, note]) => `<button data-a="tab" data-v="${k}" class="${view.tab === k ? "on" : ""}">${l}${k === "res" && reqAll ? `<em aria-label="새 신청 ${reqAll}건" title="확인할 새 신청">${reqAll}</em>` : k === "wait" && waitN ? `<em class="b" aria-label="대기 ${waitN}팀" title="지금 대기">${waitN}</em>` : note ? `<em>${note}</em>` : ""}</button>`).join("")}</nav>
         <div class="r"><a href="../home.html" target="_blank" rel="noopener">손님 홈페이지</a><button data-a="cfg">설정</button></div>
       </div>`;
   }
