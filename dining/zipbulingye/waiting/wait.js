@@ -13,7 +13,7 @@
 
   const phoneText = d => "010-" + (d.slice(0, 4) || "").padEnd(4, "_") + "-" + (d.slice(4) || "").padEnd(4, "_");
   const etaText = n => n > 0 ? "약 " + ZB.waitEta(n) + "분" : "곧 입장";
-  const head = `<header class="hd"><img src="../img/logo.png" alt="짚불태백"><span>인계점</span></header>`;
+  const head = `<header class="hd"><img src="../img/logo.png" alt="짚불태백"><span>광교점</span></header>`;
 
   function render(){
     ZB.reload();   /* 매장 화면에서 바꾼 것을 늘 새로 읽음 */

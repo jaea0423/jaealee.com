@@ -1,4 +1,4 @@
-/* (짚불태백 인계점 시안 — 한옥반점 js/content.js 그대로. 서버 설정 js/config.js 가 없어 늘 data/site.js 기본값으로 그립니다)
+/* (짚불태백 광교점 시안 — 한옥반점 js/content.js 그대로. 서버 설정 js/config.js 가 없어 늘 data/site.js 기본값으로 그립니다)
    사이트 내용 불러오기 — data/site.js 의 기본값 위에 서버 값을 덮습니다.
    · 보통: site_versions 에서 apply_at ≤ 지금 인 최신 판 하나 (예약 시스템 '홈페이지 관리' 에서 적용한 것)
    · ?preview=1 : site_draft (아직 적용 안 한 초안) — 관리 화면의 미리보기가 이 주소를 엽니다

@@ -16,7 +16,7 @@
   let di = Math.floor(Math.random() * DUMMY.length);
   const nextDummy = () => { di = (di + 1) % DUMMY.length; S.dummy = { amount: DUMMY[di], dummy: true }; };
   S.dummy = { amount: DUMMY[di], dummy: true };
-  const head = `<header class="hd"><img src="../img/logo.png" alt="짚불태백"><span>인계점</span></header>`;
+  const head = `<header class="hd"><img src="../img/logo.png" alt="짚불태백"><span>광교점</span></header>`;
 
   function render(){
     ZB.reload();
