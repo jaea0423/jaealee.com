@@ -323,11 +323,12 @@
     const sumT = (arr, type) => arr.filter(t => t.type === type).reduce((s, t) => s + t.pts, 0);
     const left = P.members.reduce((s, m) => s + ZB.pbal(m.id), 0);
     const newM = P.members.filter(m => { const a = ZB.memTx(m.id); return a.length && a[0].at >= m0; }).length;
-    const m = P.members.filter(x => x.id === view.mem)[0];
+    const m = P.members.filter(x => x.id === view.mem)[0], pend = ZB.pending;
     return `<div class="datebar wbar">
         <h2>포인트</h2><p class="rate">결제 금액의 <b>${c.pointRate}%</b> 적립 · ${pt(c.pointMin)}부터 사용</p>
-        <div class="r"><button class="btn pri big" data-a="p-earn">+ 적립</button></div>
+        <div class="r"><a class="btn" href="../points/" target="_blank" rel="noopener">계산대 화면 열기</a><button class="btn pri big" data-a="p-earn">+ 적립</button></div>
       </div>
+      ${pend ? `<div class="pend"><span><b>계산대 화면</b> 결제 ${won(pend.amount)} · 손님이 번호를 누르기를 기다리는 중 (${Math.max(0, Math.round((Date.now() - pend.at) / 60000))}분 전)</span><button class="btn sm" data-a="p-pend-off">거두기</button></div>` : ""}
       <div class="kpis">
         <div class="kpi"><span>회원</span><b class="num">${P.members.length}명<small>이번 달 새로 ${newM}명</small></b></div>
         <div class="kpi"><span>이번 달 적립</span><b class="num">${pt(sumT(month, "earn"))}</b></div>
@@ -379,10 +380,12 @@
         <header><h3>포인트 적립</h3><button class="btn sm ghost" data-a="close">닫기</button></header>
         <div class="body">
           <div class="fld"><label for="f-amount">결제 금액<em>계산서 금액 그대로</em></label><input id="f-amount" data-f="amount" value="${esc(f.amount)}" inputmode="numeric" autocomplete="off" placeholder="0"></div>
-          <div class="fld"><label for="f-phone">손님 휴대폰 번호<em>손님께 직접 눌러 달라고 해도 됩니다</em></label><input id="f-phone" data-f="phone" value="${esc(f.phone)}" inputmode="numeric" autocomplete="off" placeholder="010-0000-0000"></div>
+          <div class="fld"><label for="f-phone">손님 휴대폰 번호<em>또는 아래 '계산대 화면으로' — 손님이 직접 누름</em></label><input id="f-phone" data-f="phone" value="${esc(f.phone)}" inputmode="numeric" autocomplete="off" placeholder="010-0000-0000"></div>
           <p class="pv" id="pe-pv">${earnPreview()}</p>
         </div>
-        <footer><button class="btn" data-a="close">취소</button><button class="btn pri" data-a="pe-save"${earnOk() ? "" : " disabled"}>적립</button></footer>
+        <footer><button class="btn" data-a="close">취소</button>
+          <button class="btn" data-a="pe-send"${Number(digits(f.amount)) > 0 ? "" : " disabled"}>계산대 화면으로</button>
+          <button class="btn pri" data-a="pe-save"${earnOk() ? "" : " disabled"}>적립</button></footer>
       </div></div>`;
   }
   function sheetUse(){
@@ -504,6 +507,12 @@
       view.mem = r.m.id; view.pq = ""; view.sheet = null;
       toast(`${r.m.phone} ${pt(r.t.pts)} 적립${r.isNew ? " · 새 회원" : ""} · 모두 ${pt(ZB.pbal(r.m.id))}`, "적립 알림톡을 보냈습니다 (시안: 실제 발송 없음)");
     }
+    else if(a === "pe-send"){
+      const n = Number(digits(form.amount)) || 0; if(n <= 0) return;
+      ZB.setPending(n); view.sheet = null;
+      toast(`계산대 화면에 결제 ${won(n)}을 띄웠습니다`, "손님이 번호를 누르면 여기에 바로 적립됩니다");
+    }
+    else if(a === "p-pend-off"){ ZB.setPending(null); toast("계산대 화면에서 거뒀습니다"); }
     else if(a === "p-use"){ form = { mem: view.mem, pts: "" }; view.sheet = "pu"; }
     else if(a === "pu-all"){ form.pts = String(ZB.pbal(form.mem)); }
     else if(a === "pu-save"){
@@ -528,18 +537,21 @@
     const b = $("[data-a=f-save]"); if(b) b.disabled = !(form.time && form.name.trim());
     if(view.sheet === "lx"){ $("#lx-pv").innerHTML = txPreview(); $("[data-a=l-save]").disabled = amt() <= 0; }
     if(view.sheet === "la"){ $("[data-a=la-save]").disabled = !form.name.trim(); }
-    if(view.sheet === "pe"){ $("#pe-pv").innerHTML = earnPreview(); $("[data-a=pe-save]").disabled = !earnOk(); }
+    if(view.sheet === "pe"){ $("#pe-pv").innerHTML = earnPreview(); $("[data-a=pe-save]").disabled = !earnOk(); $("[data-a=pe-send]").disabled = !(Number(digits(form.amount)) > 0); }
     if(view.sheet === "pu"){ const n = Number(digits(form.pts)) || 0; $("#pu-pv").innerHTML = puPreview(); $("[data-a=pu-save]").disabled = !(n > 0 && n <= ZB.pbal(form.mem)); }
   });
   document.addEventListener("keydown", e => { if(e.key === "Escape" && view.sheet){ view.sheet = null; render(); } });
   /* 손님 홈페이지(다른 탭)에서 예약이 들어오면 바로 반영 — 실제 서비스의 '새 신청 알림' 자리 */
   window.addEventListener("storage", e => {
     if(e.key !== ZB.KEY) return;
-    const before = ZB.res.filter(r => r.status === "req").length, wBefore = ZB.wait.seq; ZB.reload();
+    const before = ZB.res.filter(r => r.status === "req").length, wBefore = ZB.wait.seq, pBefore = ZB.points.seq; ZB.reload();
     const after = ZB.res.filter(r => r.status === "req").length;
+    if(ZB.points.seq > pBefore){ const t = ZB.points.tx[ZB.points.tx.length - 1], m = ZB.points.members.filter(x => x.id === t.mem)[0]; if(m) view.mem = m.id; }   /* 계산대에서 적립한 손님을 바로 펼쳐 둠 */
     if(!view.sheet) render();
     if(after > before) toast("홈페이지에서 새 예약 신청이 들어왔습니다");
     else if(ZB.wait.seq > wBefore){ const x = ZB.wait.list[ZB.wait.list.length - 1]; toast(`웨이팅 ${x.no}번 · ${x.people}명이 접수됐습니다`); }
+    else if(ZB.points.seq > pBefore){ const t = ZB.points.tx[ZB.points.tx.length - 1], m = ZB.points.members.filter(x => x.id === t.mem)[0];
+      toast(`계산대에서 ${m ? m.phone : ""} ${pt(t.pts)} 적립`, m ? "모두 " + pt(ZB.pbal(m.id)) : ""); }
   });
   /* '기다린 지 n분' 이 흐르게 — 웨이팅 탭을 보고 있을 때만 가끔 다시 그림 */
   setInterval(() => { if(view.tab === "wait" && !view.sheet) render(); }, 30000);

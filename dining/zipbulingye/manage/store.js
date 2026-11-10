@@ -219,6 +219,10 @@
       db.points.tx.push(t); save(); return { m: m, t: t, isNew: isNew };
     },
     usePts(mem, pts){ const t = { id: "p_" + (++db.points.seq) + Date.now().toString(36), mem: mem, type: "use", pts: pts, amount: 0, at: Date.now() }; db.points.tx.push(t); save(); return t; },
+    /* 계산대 화면에 띄운 결제 금액 — 직원이 금액을 보내면 손님이 계산대 태블릿(../points/)에서 번호를 눌러 적립.
+       한 번에 하나만(계산대는 하나). 적립이 끝나거나 직원이 거두면 비움. */
+    get pending(){ return db.points.pending || null; },
+    setPending(amount){ if(amount) db.points.pending = { amount: amount, at: Date.now() }; else delete db.points.pending; save(); },
     voidPTx(id, on){ const t = db.points.tx.filter(x => x.id === id)[0]; if(t){ if(on === false) delete t.void; else t.void = true; save(); } return t; },
     voidTx(id, on){ const t = db.ledger.tx.filter(x => x.id === id)[0]; if(t){ if(on === false) delete t.void; else t.void = true; save(); } return t; },
     today: today, addDays: addDays, mins: mins, hhmm: hhmm, KEY: KEY
