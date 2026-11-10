@@ -1,4 +1,4 @@
-/* 짚불태백 인계점 시안 — 예약·웨이팅 자료 한 곳 (window.ZB).
+/* 짚불태백 인계점 시안 — 예약·웨이팅·선결제 장부 자료 한 곳 (window.ZB).
    손님 홈페이지의 예약 창(../js/reserve.js), 손님용 웨이팅 접수 화면(../waiting/), 매장 화면(app.js)이 이 파일 하나를 같이 씁니다.
 
    ★ 한옥반점과 다른 점: 자리를 '어느 테이블' 로 배정하지 않습니다. 테이블 '개수' 만 셉니다.
@@ -23,7 +23,8 @@
     seats: 4,            /* 한 테이블 좌석 */
     dwellMin: 120,       /* 한 팀 식사 시간(분) — 이 동안 테이블을 차지 */
     slots: ["11:30","12:00","12:30","13:00","13:30","14:00","17:00","17:30","18:00","18:30","19:00","19:30","20:00","20:30"],   /* ../js/reserve.js 의 시간표와 같게 */
-    waitMin: 8           /* 웨이팅: 앞 팀 하나가 빠지는 데 걸리는 시간(분, 예시) — 예상 대기 = 앞 팀 수 × 이 값 */
+    waitMin: 8,          /* 웨이팅: 앞 팀 하나가 빠지는 데 걸리는 시간(분, 예시) — 예상 대기 = 앞 팀 수 × 이 값 */
+    lowBalance: 100000   /* 선결제 장부: 잔액이 이 아래로 내려가면 '충전 안내' 표시 */
   };
   const ACTIVE = { req: 1, ok: 1, in: 1 };   /* 테이블을 차지하는 상태: 신청(확정 전에도 자리를 잡아 둠) · 확정 · 방문 */
 
@@ -32,7 +33,8 @@
     try{ db = JSON.parse(localStorage.getItem(KEY) || "null"); }catch(e){ db = null; }
     if(!db || db.seeded !== today()) db = seed((db && db.cfg) || null);   /* 하루 지난 예시는 날짜가 안 맞아 새로 */
     /* 웨이팅이 생기기 전에 저장된 자료에는 웨이팅 칸이 없음 — 예약은 그대로 두고 빠진 것만 채움 */
-    if(!db.wait || db.cfg.waitMin == null){ db.cfg = Object.assign({}, DEFAULT_CFG, db.cfg); if(!db.wait) db.wait = seedWait(); save(); }
+    if(!db.wait || !db.ledger || db.cfg.waitMin == null || db.cfg.lowBalance == null){
+      db.cfg = Object.assign({}, DEFAULT_CFG, db.cfg); if(!db.wait) db.wait = seedWait(); if(!db.ledger) db.ledger = seedLedger(); save(); }
     return db;
   }
   function save(){ try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){} }
@@ -93,6 +95,7 @@
       }
     }
     out.wait = seedWait();
+    out.ledger = seedLedger();
     save();
     return out;
   }
@@ -116,6 +119,37 @@
   }
   const waitLive = () => db.wait.list.filter(x => LIVE[x.status]).sort((a, b) => a.no - b.no);
 
+  /* ---------- 선결제 장부 ----------
+     회사·단골이 돈을 미리 맡겨 두고, 올 때마다 먹은 만큼 빼는 장부입니다(종이 장부·엑셀을 대신).
+     장부 한 권 = acct { name, kind 회사/개인, contact 담당자, phone, memo }
+     기록 한 줄 = tx { acct, type charge 충전 / use 사용, amount, memo, by 쓴 사람, at, void 취소 여부 }
+     ★ 잔액은 따로 저장하지 않고 기록을 더해 계산합니다 — 잘못 넣은 줄은 지우지 않고 '취소' 로 남겨, 나중에 따져도 흔적이 보이게.
+     잔액보다 많이 써도 막지 않습니다(모자란 만큼 마이너스 = 다음 충전에서 정산). */
+  function seedLedger(){
+    const now = Date.now(), D = 86400000, accts = [], tx = []; let n = 0;
+    const A = (name, kind, contact, phone, memo) => { const a = { id: "a" + (accts.length + 1), name: name, kind: kind, contact: contact, phone: phone, memo: memo || "" }; accts.push(a); return a; };
+    const T = (a, type, amount, daysAgo, memo, by, isVoid) => { const t = { id: "t" + (++n), acct: a.id, type: type, amount: amount, memo: memo || "", by: by || "", at: now - daysAgo * D - (n % 5) * 3600000 }; if(isVoid) t.void = true; tx.push(t); };
+    let a = A("인계건설 총무팀 (예시)", "회사", "박 과장", "010-0000-1201", "회식 때 차감. 영수증은 담당자 메일로");
+    T(a, "charge", 1000000, 80, "계좌이체"); T(a, "use", 186000, 74, "팀 회식 8명", "박 과장"); T(a, "use", 243000, 51, "송년회 1차 11명", "박 과장");
+    T(a, "use", 158000, 30, "6명", "김 대리"); T(a, "use", 64000, 9, "금액 잘못 입력", "", true); T(a, "use", 212000, 9, "부서 회식 9명", "박 과장");
+    a = A("인계 OO치과 (예시)", "회사", "김 원장", "010-0000-1302", "직원 점심 · 저녁");
+    T(a, "charge", 500000, 60, "카드"); T(a, "use", 98000, 45, "점심 5명", "김 원장"); T(a, "use", 132000, 20, "저녁 4명", "실장"); T(a, "use", 76000, 3, "점심 특선 4명", "실장");
+    a = A("한빛세무회계 (예시)", "회사", "이 실장", "010-0000-1403", "");
+    T(a, "charge", 300000, 40, "계좌이체"); T(a, "use", 87000, 33, "4명", "이 실장"); T(a, "use", 64000, 12, "3명", "이 실장"); T(a, "use", 95000, 2, "5명", "대표");
+    a = A("김민수 님", "개인", "", "010-0000-1504", "단골 · 생갈비 미리 준비");
+    T(a, "charge", 200000, 25, "현금"); T(a, "use", 46000, 18, "2명"); T(a, "use", 52000, 6, "가족 3명");
+    a = A("OO보험 인계지점 (예시)", "회사", "최 팀장", "010-0000-1605", "분기마다 충전");
+    T(a, "charge", 1000000, 20, "계좌이체"); T(a, "use", 312000, 14, "지점 회식 14명", "최 팀장");
+    a = A("이서연 님", "개인", "", "010-0000-1706", "");
+    T(a, "charge", 100000, 50, "카드"); T(a, "use", 58000, 41, "3명"); T(a, "use", 49000, 22, "2명");
+    a = A("인계동 상인회 (예시)", "회사", "정 총무", "010-0000-1807", "월례회 셋째 주 화요일");
+    T(a, "charge", 500000, 70, "계좌이체"); T(a, "use", 162000, 60, "월례회"); T(a, "use", 145000, 38, "월례회"); T(a, "use", 193000, 16, "월례회 + 추가 주문");
+    a = A("정도윤 님", "개인", "", "010-0000-1908", "");
+    T(a, "charge", 300000, 5, "카드");
+    return { seq: n, accts: accts, tx: tx };
+  }
+  const bal = id => db.ledger.tx.reduce((s, t) => t.acct !== id || t.void ? s : s + (t.type === "charge" ? t.amount : -t.amount), 0);
+
   window.ZB = {
     get cfg(){ return db.cfg; },
     get res(){ return db.res; },
@@ -136,6 +170,13 @@
       r.status = status; if(status === "call") r.callAt = Date.now(); else if(status === "wait"){ delete r.callAt; delete r.doneAt; } else r.doneAt = Date.now();
       save(); return r; },
     waitOn(v){ db.wait.on = !!v; save(); },
+    /* 선결제 장부 */
+    get ledger(){ return db.ledger; },
+    bal: bal,
+    acctTx(id){ return db.ledger.tx.filter(t => t.acct === id).sort((a, b) => a.at - b.at); },   /* 오래된 것부터(잔액을 차례로 계산하려고) */
+    addAcct(p){ const a = Object.assign({ id: "a_" + Date.now().toString(36) }, p); db.ledger.accts.push(a); save(); return a; },
+    addTx(acct, type, amount, memo, by){ const t = { id: "t_" + (++db.ledger.seq) + Date.now().toString(36), acct: acct, type: type, amount: amount, memo: memo || "", by: by || "", at: Date.now() }; db.ledger.tx.push(t); save(); return t; },
+    voidTx(id, on){ const t = db.ledger.tx.filter(x => x.id === id)[0]; if(t){ if(on === false) delete t.void; else t.void = true; save(); } return t; },
     today: today, addDays: addDays, mins: mins, hhmm: hhmm, KEY: KEY
   };
   load();

@@ -1,4 +1,4 @@
-/* 매장 화면 시안 — 예약 탭 · 웨이팅 탭.
+/* 매장 화면 시안 — 예약 탭 · 웨이팅 탭 · 선결제 장부 탭.
    화면은 상태(view) 하나로 통째로 다시 그립니다(render). 자료는 store.js 의 ZB.
    설계 원칙(한옥반점에서 가져온 것 하나): 경고는 막지 않고 알리기만 — 자리가 모자라도 직원이 판단해 받을 수 있게.
    단추는 data-a="동작" 으로 표시하고 맨 아래 한 곳에서 처리합니다(문자열 onclick 을 안 써서 따옴표 문제가 없음). */
@@ -9,7 +9,7 @@
   const dateText = s => { const d = new Date(s + "T00:00:00"); return (d.getMonth() + 1) + "월 " + d.getDate() + "일 " + WD[d.getDay()] + "요일"; };
   const hm = t => { const m = ZB.mins(t), h = Math.floor(m / 60); return (h < 12 ? "오전 " : "오후 ") + (h % 12 === 0 ? 12 : h % 12) + ":" + String(m % 60).padStart(2, "0"); };
   const STATUS = { req: "새 신청", ok: "확정", in: "방문", noshow: "노쇼", cancel: "취소" };
-  const TABS = [["res", "예약", ""], ["wait", "웨이팅", ""], ["ledger", "선결제 장부", "준비 중"], ["point", "포인트", "준비 중"]];
+  const TABS = [["res", "예약", ""], ["wait", "웨이팅", ""], ["ledger", "선결제 장부", ""], ["point", "포인트", "준비 중"]];
 
   const view = { tab: "res", date: ZB.today(), filter: "all", slot: "", sheet: null };
   let form = null, toastTimer = null;
@@ -17,8 +17,9 @@
   /* ---------- 그리기 ---------- */
   function render(){
     const app = $("#app");
-    app.innerHTML = top() + (view.tab === "res" ? resTab() : view.tab === "wait" ? waitTab() : soon())
-      + (view.sheet === "new" ? sheetNew() : view.sheet === "cfg" ? sheetCfg() : view.sheet === "wnew" ? sheetWait() : "");
+    app.innerHTML = top() + (view.tab === "res" ? resTab() : view.tab === "wait" ? waitTab() : view.tab === "ledger" ? ledgerTab() : soon())
+      + (view.sheet === "new" ? sheetNew() : view.sheet === "cfg" ? sheetCfg() : view.sheet === "wnew" ? sheetWait()
+        : view.sheet === "lx" ? sheetTx() : view.sheet === "la" ? sheetAcct() : "");
   }
   function top(){
     const reqAll = ZB.res.filter(r => r.status === "req" && r.date >= ZB.today()).length, waitN = ZB.waitLive().length;
@@ -198,6 +199,106 @@
       </div></div>`;
   }
 
+  /* ---------- 선결제 장부 탭 ----------
+     왼쪽: 장부 목록(최근에 쓴 순). 오른쪽: 고른 장부의 잔액과 기록.
+     직원이 하는 일은 둘뿐 — '사용'(먹은 만큼 빼기)과 '충전'. 잘못 넣으면 그 줄을 '취소'(지우지 않음). */
+  const won = n => (n < 0 ? "−" : "") + Math.abs(n).toLocaleString("ko-KR") + "원";
+  const md = t => { const d = new Date(t); return (d.getMonth() + 1) + "/" + d.getDate() + " " + String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"); };
+  function acctRows(){
+    const L = ZB.ledger, low = ZB.cfg.lowBalance, q = (view.q || "").trim();
+    const last = id => { const a = ZB.acctTx(id); return a.length ? a[a.length - 1].at : 0; };
+    const list = L.accts.filter(a => !q || (a.name + a.contact + a.phone).indexOf(q) >= 0).sort((x, y) => last(y.id) - last(x.id));
+    if(!list.length) return `<div class="empty sm">찾는 장부가 없습니다.</div>`;
+    return list.map(a => { const b = ZB.bal(a.id), cls = b < 0 ? "neg" : b < low ? "low" : "";
+      return `<button class="acct${view.acct === a.id ? " on" : ""}" data-a="acct" data-v="${esc(a.id)}">
+          <span class="nm"><b>${esc(a.name)}</b><small>${esc(a.kind)}${a.contact ? " · " + esc(a.contact) : ""} · 최근 ${last(a.id) ? md(last(a.id)).split(" ")[0] : "-"}</small></span>
+          <span class="bl num ${cls}">${won(b)}${cls ? `<small>${b < 0 ? "모자람" : "충전 안내"}</small>` : ""}</span>
+        </button>`; }).join("");
+  }
+  function ledgerTab(){
+    const L = ZB.ledger, low = ZB.cfg.lowBalance;
+    if(!view.acct || !L.accts.some(a => a.id === view.acct)){ const t = L.tx.filter(x => !x.void).sort((a, b) => b.at - a.at)[0]; view.acct = t ? t.acct : (L.accts[0] || {}).id; }
+    const d = new Date(), m0 = new Date(d.getFullYear(), d.getMonth(), 1).getTime();
+    const live = L.tx.filter(t => !t.void), month = live.filter(t => t.at >= m0);
+    const sumT = (arr, type) => arr.filter(t => t.type === type).reduce((s, t) => s + t.amount, 0);
+    const bals = L.accts.map(a => ZB.bal(a.id)), owed = bals.reduce((s, b) => s + Math.max(0, b), 0), lowN = bals.filter(b => b < low).length;
+    const a = L.accts.filter(x => x.id === view.acct)[0];
+    return `<div class="kpis">
+        <div class="kpi"><span>남은 선결제 합계<em>손님이 맡겨 둔 돈</em></span><b class="num">${won(owed)}</b></div>
+        <div class="kpi"><span>이번 달 충전</span><b class="num">${won(sumT(month, "charge"))}</b></div>
+        <div class="kpi"><span>이번 달 사용</span><b class="num">${won(sumT(month, "use"))}</b></div>
+        <div class="kpi${lowN ? " req" : ""}"><span>잔액 부족</span><b class="num">${lowN}곳<small>${won(low)} 아래</small></b></div>
+      </div>
+      <div class="cols l">
+        <section class="panel">
+          <header><div><h3>장부 ${L.accts.length}권</h3></div><button class="btn pri sm" data-a="l-new">+ 새 장부</button></header>
+          <div class="search"><input data-q="1" value="${esc(view.q || "")}" placeholder="이름 · 담당자 · 전화번호로 찾기" autocomplete="off" aria-label="장부 찾기"></div>
+          <div id="acct-list">${acctRows()}</div>
+        </section>
+        ${a ? acctPanel(a) : `<section class="panel"><div class="empty">장부를 골라 주세요.</div></section>`}
+      </div>`;
+  }
+  function acctPanel(a){
+    const b = ZB.bal(a.id), low = ZB.cfg.lowBalance; let run = 0;
+    const rows = ZB.acctTx(a.id).map(t => { if(!t.void) run += t.type === "charge" ? t.amount : -t.amount;
+      return `<div class="tx ${t.type}${t.void ? " void" : ""}">
+          <span class="dt num">${md(t.at)}</span>
+          <span class="ty">${t.type === "charge" ? "충전" : "사용"}</span>
+          <span class="mm">${esc(t.memo)}${t.by ? `<small>${esc(t.by)}</small>` : ""}${t.void ? `<small>취소한 줄 — 잔액에 넣지 않음</small>` : ""}</span>
+          <span class="am num">${t.type === "charge" ? "+" : "−"}${Math.abs(t.amount).toLocaleString("ko-KR")}</span>
+          <span class="rn num">${t.void ? "" : won(run)}</span>
+          <button class="btn sm ghost" data-a="l-void" data-v="${esc(t.id)}">${t.void ? "되살리기" : "취소"}</button>
+        </div>`; }).reverse().join("");
+    return `<section class="panel">
+        <div class="ahead">
+          <div><h3>${esc(a.name)}</h3><p>${esc(a.kind)}${a.contact ? " · " + esc(a.contact) : ""}${a.phone ? " · " + esc(a.phone) : ""}</p>${a.memo ? `<p class="memo">${esc(a.memo)}</p>` : ""}</div>
+          <div class="bal${b < 0 ? " neg" : b < low ? " low" : ""}"><span>잔액</span><b class="num">${won(b)}</b>${b < 0 ? `<small>다음 충전에서 정산</small>` : b < low ? `<small>충전을 권해 보세요</small>` : ""}</div>
+        </div>
+        <div class="abtn"><button class="btn pri" data-a="l-tx" data-v="use">사용 (차감)</button><button class="btn" data-a="l-tx" data-v="charge">충전</button></div>
+        <div class="tx th"><span>날짜</span><span>구분</span><span>내용</span><span>금액</span><span>남은 돈</span><span></span></div>
+        ${rows || `<div class="empty sm">기록이 없습니다.</div>`}
+      </section>`;
+  }
+  const amt = () => Number(String(form.amount || "").replace(/\D/g, "")) || 0;
+  function txPreview(){
+    const a = form.acct, b = ZB.bal(a), n = amt(), after = form.type === "charge" ? b + n : b - n;
+    return `지금 ${won(b)} → ${form.type === "charge" ? "충전" : "사용"} 후 <b>${won(after)}</b>` + (form.type === "use" && after < 0 ? `<em>잔액보다 많습니다. 그래도 뺄 수 있고, 모자란 만큼 마이너스로 남습니다.</em>` : "");
+  }
+  function sheetTx(){
+    const f = form, a = ZB.ledger.accts.filter(x => x.id === f.acct)[0], use = f.type === "use";
+    const presets = use ? [] : [300000, 500000, 1000000];
+    return `<div class="ov" data-a="close-ov"><div class="sheet" role="dialog" aria-modal="true" aria-label="${use ? "사용" : "충전"}">
+        <header><h3>${use ? "사용 (차감)" : "충전"} · ${esc(a.name)}</h3><button class="btn sm ghost" data-a="close">닫기</button></header>
+        <div class="body">
+          <div class="fld"><label for="f-amount">금액<em>${use ? "계산서 금액 그대로" : "받은 금액"}</em></label><input id="f-amount" data-f="amount" value="${esc(f.amount)}" inputmode="numeric" autocomplete="off" placeholder="0">
+            ${presets.length ? `<div class="presets">${presets.map(p => `<button class="btn sm" data-a="l-preset" data-v="${p}">${p / 10000}만원</button>`).join("")}</div>` : ""}</div>
+          <div class="two">
+            <div class="fld"><label for="f-memo">내용<em>${use ? "인원 · 모임" : "현금 · 카드 · 이체"}</em></label><input id="f-memo" data-f="memo" value="${esc(f.memo)}" autocomplete="off"></div>
+            <div class="fld"><label for="f-by">${use ? "드신 분" : "맡긴 분"}<em>선택</em></label><input id="f-by" data-f="by" value="${esc(f.by)}" autocomplete="off" placeholder="${esc(a.contact || "")}"></div>
+          </div>
+          <p class="pv" id="lx-pv">${txPreview()}</p>
+        </div>
+        <footer><button class="btn" data-a="close">취소</button><button class="btn pri" data-a="l-save"${amt() > 0 ? "" : " disabled"}>${use ? "빼기" : "충전하기"}</button></footer>
+      </div></div>`;
+  }
+  function sheetAcct(){
+    const f = form;
+    return `<div class="ov" data-a="close-ov"><div class="sheet" role="dialog" aria-modal="true" aria-label="새 장부">
+        <header><h3>새 장부</h3><button class="btn sm ghost" data-a="close">닫기</button></header>
+        <div class="body">
+          <div class="fld"><span>구분</span><div class="seg">${["회사", "개인"].map(k => `<button data-a="la-kind" data-v="${k}" class="${f.kind === k ? "on" : ""}">${k}</button>`).join("")}</div></div>
+          <div class="fld"><label for="f-name">${f.kind === "회사" ? "회사·모임 이름" : "성함"}</label><input id="f-name" data-f="name" value="${esc(f.name)}" autocomplete="off"></div>
+          <div class="two">
+            <div class="fld"><label for="f-contact">담당자<em>선택</em></label><input id="f-contact" data-f="contact" value="${esc(f.contact)}" autocomplete="off"></div>
+            <div class="fld"><label for="f-phone">전화번호<em>사용 내역 문자를 받을 번호</em></label><input id="f-phone" data-f="phone" value="${esc(f.phone)}" inputmode="numeric" autocomplete="off" placeholder="010-0000-0000"></div>
+          </div>
+          <div class="fld"><label for="f-amount">처음 맡기는 금액<em>나중에 충전해도 됩니다</em></label><input id="f-amount" data-f="amount" value="${esc(f.amount)}" inputmode="numeric" autocomplete="off" placeholder="0"></div>
+          <div class="fld"><label for="f-memo">메모<em>선택</em></label><input id="f-memo" data-f="memo" value="${esc(f.memo)}" autocomplete="off"></div>
+        </div>
+        <footer><button class="btn" data-a="close">취소</button><button class="btn pri" data-a="la-save"${f.name.trim() ? "" : " disabled"}>만들기</button></footer>
+      </div></div>`;
+  }
+
   /* ---------- 설정: 테이블 개수 ---------- */
   function sheetCfg(){
     const c = ZB.cfg;
@@ -211,6 +312,7 @@
           ${row("seats", "한 테이블 좌석", "인원을 이 수로 나눠 필요한 테이블을 셉니다", c.seats, "명")}
           ${row("dwellMin", "한 팀 식사 시간", "이 시간 동안 자리를 차지하는 것으로 셉니다", c.dwellMin, "분")}
           ${row("waitMin", "웨이팅 한 팀당 시간", "예상 대기 = 앞에 기다리는 팀 수 × 이 시간", c.waitMin, "분")}
+          ${row("lowBalance", "선결제 잔액 부족 기준", "잔액이 이 아래면 장부에 '충전 안내' 표시", (c.lowBalance / 10000) + "만", "원")}
           <p class="hint">어느 테이블에 앉힐지는 정하지 않습니다. 개수만 세기 때문에 좌석 배치도를 그리거나 관리할 필요가 없습니다. 바꾸면 손님 홈페이지의 예약 가능 시간에도 바로 반영됩니다.</p>
         </div>
         <footer><button class="btn ghost" data-a="reset">예시 자료 처음으로</button><button class="btn pri" data-a="close">확인</button></footer>
@@ -250,7 +352,8 @@
         toast(`${r.name} 님 ${r.time} 예약을 ${M[v]}`, (v === "ok" || v === "cancel") && r.phone ? "손님에게 안내 문자를 보냈습니다 (시안: 실제 발송 없음)" : ""); }
     }
     else if(a === "c"){
-      const k = el.dataset.k, c = ZB.cfg, step = k === "dwellMin" ? 30 : 1, min = k === "dwellMin" ? 60 : k === "seats" || k === "waitMin" ? 2 : 1, max = k === "dwellMin" ? 240 : k === "seats" ? 8 : k === "waitMin" ? 30 : k === "onlineTables" ? c.tables : 80;
+      const k = el.dataset.k, c = ZB.cfg, step = k === "dwellMin" ? 30 : k === "lowBalance" ? 10000 : 1, min = k === "dwellMin" ? 60 : k === "lowBalance" ? 0 : k === "seats" || k === "waitMin" ? 2 : 1,
+        max = k === "dwellMin" ? 240 : k === "seats" ? 8 : k === "waitMin" ? 30 : k === "lowBalance" ? 500000 : k === "onlineTables" ? c.tables : 80;
       const p = {}; p[k] = Math.max(min, Math.min(max, c[k] + Number(v) * step)); ZB.setCfg(p);
     }
     else if(a === "w-on"){ ZB.waitOn(!ZB.wait.on); toast(ZB.wait.on ? "웨이팅 접수를 다시 받습니다" : "웨이팅 접수를 멈췄습니다", ZB.wait.on ? "" : "기다리던 팀은 그대로 남습니다"); }
@@ -264,14 +367,40 @@
       if(x){ const M = { call: "손님을 호출했습니다", in: "입장 처리했습니다", gone: "미방문으로 넘겼습니다", cancel: "취소했습니다", wait: "다시 대기로 되돌렸습니다" };
         toast(`${x.no}번 ${M[v]}`, v === "call" ? (x.phone ? "입장 안내를 보냈습니다 (시안: 실제 발송 없음)" : "전화번호가 없습니다 — 번호를 직접 불러 주세요") : ""); }
     }
+    else if(a === "acct"){ view.acct = v; }
+    else if(a === "l-tx"){ form = { type: v, acct: view.acct, amount: "", memo: "", by: "" }; view.sheet = "lx"; }
+    else if(a === "l-preset"){ form.amount = v; }
+    else if(a === "l-save"){
+      const n = amt(); if(n <= 0) return;
+      const ac = ZB.ledger.accts.filter(x => x.id === form.acct)[0];
+      ZB.addTx(form.acct, form.type, n, form.memo.trim(), form.by.trim()); view.sheet = null;
+      toast(`${ac.name} ${form.type === "charge" ? "충전" : "사용"} ${won(n)} · 잔액 ${won(ZB.bal(ac.id))}`, ac.phone ? "담당자에게 내역 문자를 보냈습니다 (시안: 실제 발송 없음)" : "");
+    }
+    else if(a === "l-void"){
+      const t = ZB.ledger.tx.filter(x => x.id === v)[0]; if(!t) return;
+      if(!t.void && !confirm(`${md(t.at)} ${t.type === "charge" ? "충전" : "사용"} ${won(t.amount)} 을(를) 취소할까요?\n줄은 지우지 않고 '취소' 로 남습니다.`)) return;
+      ZB.voidTx(v, !t.void); toast(t.void ? "취소했습니다 — 잔액을 그 전으로 되돌렸습니다" : "되살렸습니다 — 잔액에 다시 넣었습니다");
+    }
+    else if(a === "l-new"){ form = { kind: "회사", name: "", contact: "", phone: "", amount: "", memo: "" }; view.sheet = "la"; }
+    else if(a === "la-kind"){ form.kind = v; }
+    else if(a === "la-save"){
+      if(!form.name.trim()) return;
+      const ac = ZB.addAcct({ name: form.name.trim(), kind: form.kind, contact: form.contact.trim(), phone: form.phone.trim(), memo: form.memo.trim() }), n = amt();
+      if(n > 0) ZB.addTx(ac.id, "charge", n, "처음 맡김", form.contact.trim());
+      view.acct = ac.id; view.q = ""; view.sheet = null; toast(`${ac.name} 장부를 만들었습니다${n > 0 ? " · " + won(n) : ""}`);
+    }
     else if(a === "reset"){ ZB.reset(); view.sheet = null; toast("예시 자료를 처음 상태로 되돌렸습니다"); }
     render();
   });
   /* 글자 칸은 다시 그리지 않고 값만 받아 둠(그리면 입력 중에 초점이 날아감). 등록 단추만 켜고 끔 */
   document.addEventListener("input", e => {
-    const k = e.target.dataset && e.target.dataset.f; if(!k || !form) return;
+    const ds = e.target.dataset || {};
+    if(ds.q){ view.q = e.target.value; const box = $("#acct-list"); if(box) box.innerHTML = acctRows(); return; }   /* 장부 찾기 — 목록만 다시 그림 */
+    const k = ds.f; if(!k || !form) return;
     form[k] = e.target.value;
     const b = $("[data-a=f-save]"); if(b) b.disabled = !(form.time && form.name.trim());
+    if(view.sheet === "lx"){ $("#lx-pv").innerHTML = txPreview(); $("[data-a=l-save]").disabled = amt() <= 0; }
+    if(view.sheet === "la"){ $("[data-a=la-save]").disabled = !form.name.trim(); }
   });
   document.addEventListener("keydown", e => { if(e.key === "Escape" && view.sheet){ view.sheet = null; render(); } });
   /* 손님 홈페이지(다른 탭)에서 예약이 들어오면 바로 반영 — 실제 서비스의 '새 신청 알림' 자리 */
