@@ -30,6 +30,11 @@
 
 ## 2026-11-11
 
+### 확인표: 외국인 직원 언어 질문 빼기
+- 제거: '외국인 직원이 쓰는 언어' 질문을 뺐습니다(질문 57개).
+- 주의: 기기 임시 보관 키를 `zb-gwanggyo-check-v3`로 바꿨습니다(칸 순서가 바뀜).
+- 범위: `dining/zipbulgwanggyo/check/`
+
 ### 기능 개선 1차: 정한 규칙을 화면에 반영 (확인표 답 = 설정값)
 - 변경(설정): 확인표 항목을 모두 매장 화면 '설정'의 값으로 뺐습니다. 예약 / 웨이팅 / 장부 / 포인트로 묶었습니다.
   - 기본값은 우리 제안입니다. 답이 오면 값만 바꾸면 됩니다.
@@ -71,7 +76,7 @@
   - 전체화면 버튼
 - 추가(기록): 모든 변경이 `ZB.log`에 남고, 기기 이름이 붙습니다(매장 화면·입구 기기·계산대·홈페이지·손님 휴대폰·매장 TV).
 - 주의: 자료 저장 키를 `zb-demo-v4`로 바꿔 예시를 새로 만듭니다. 한 팀 식사 시간 `dwellMin`은 `dwellLunch`·`dwellDinner`로 나눴습니다.
-- 범위: `dining/zipbulgwanggyo/` (manage · waiting · points · tv · js/reserve.js · index.html)
+- 범위: `dining/zipbulgwanggyo/` (manage · waiting · points · tv · js/reserve.js · index.html) · 커밋 95c77f5
 
 ### 확인표: 맨 앞 기능 소개, 맨 끝 추가 기능 질문
 - 추가: 맨 앞에 '준비하는 기능'을 넣었습니다. 기능 7개의 이름과 한 줄 설명입니다.
