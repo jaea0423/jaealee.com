@@ -6,13 +6,41 @@
   var yr = document.getElementById("yr");
   if (yr) yr.textContent = new Date().getFullYear();
 
-  // 위 막대
+  // 탭 전환 — #platform 같은 주소로 화면 하나만 보여 줌. 뒤로 가기·주소 공유가 그대로 됨.
+  var views = [].slice.call(document.querySelectorAll(".view"));
+  var current = "home";
   var nav = document.getElementById("nav");
-  if (nav) {
-    var onScroll = function () { nav.classList.toggle("solid", window.scrollY > 24); };
+  function show() {
+    if (!views.length) return;
+    var name = (location.hash || "").slice(1) || "home";
+    var view = views.filter(function (v) { return v.dataset.view === name; })[0];
+    if (!view) { name = "home"; view = views[0]; }
+    views.forEach(function (v) { v.classList.toggle("on", v === view); });
+    [].slice.call(document.querySelectorAll('.nav a[href^="#"]')).forEach(function (a) {
+      var on = a.getAttribute("href") === "#" + name;
+      a.classList.toggle("on", on);
+      if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+    });
+    document.title = "DineONE 다인원 — " + (view.dataset.title || "");
+    current = name;
+    window.scrollTo({ top: 0, behavior: "instant" });
     onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
+    if (typeof fit === "function") fit();
   }
+  // 로고(#)를 누르면 주소의 #도 지워서 홈으로
+  [].slice.call(document.querySelectorAll('a[href="#"]')).forEach(function (a) {
+    a.addEventListener("click", function (e) {
+      e.preventDefault();
+      if (location.hash) history.pushState(null, "", location.pathname + location.search);
+      show();
+    });
+  });
+  window.addEventListener("hashchange", show);
+  window.addEventListener("popstate", show);
+
+  // 위 막대 — 홈 첫 화면에서만 투명, 나머지는 검정 유리
+  function onScroll() { if (nav) nav.classList.toggle("solid", current !== "home" || window.scrollY > 24); }
+  window.addEventListener("scroll", onScroll, { passive: true });
 
   // 제품 화면 크기 맞추기
   var frames = [].slice.call(document.querySelectorAll(".device iframe"));
@@ -30,6 +58,7 @@
     window.addEventListener("resize", fit);
     if (window.ResizeObserver) frames.forEach(function (f) { new ResizeObserver(fit).observe(f.parentNode); });
   }
+  show();
 
   // 도입 문의
   var form = document.getElementById("applyForm");
