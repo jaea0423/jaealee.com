@@ -660,7 +660,7 @@
       if(!earnOk()) return;
       const r = ZB.earn(digits(form.phone), Number(digits(form.amount)), form.name, "직원 입력");
       view.mem = r.m.id; view.pq = ""; view.sheet = null;
-      toast(`${r.m.phone} ${pt(r.t.pts)} 적립${r.isNew ? " · 새 회원" : ""} · 모두 ${pt(ZB.pbal(r.m.id))}`, "적립 알림톡을 보냈습니다");
+      toast(`${r.m.phone} ${pt(r.t.pts)} 적립${r.isNew ? " · 새 회원" : ""} · 모두 ${pt(ZB.pbal(r.m.id))}`, "적립 문자를 보냈습니다");
     }
     else if(a === "pe-send"){
       const n = Number(digits(form.amount)) || 0; if(n <= 0) return;

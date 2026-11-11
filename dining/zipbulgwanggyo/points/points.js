@@ -60,7 +60,7 @@
         <div class="pair one"><div><span>모두</span><b>${pt(d.total)}</b></div></div>
         <p class="sub">${d.kind === "earn" && c.pointNextDay ? `오늘 쌓인 포인트는 <b>내일부터</b> 쓰실 수 있습니다. ` : ""}${can ? `다음 계산 때 직원에게 성함과 번호를 말씀하시면 <b>${won(d.total)}</b>까지 할인해 드립니다.` : `${pt(c.pointMin - d.total)} 더 모으시면 할인으로 쓰실 수 있습니다.`}</p>
         ${d.soon ? `<p class="sub warn">${pt(d.soon)}가 30일 안에 사라집니다.</p>` : ""}
-        ${d.kind === "earn" ? `<p class="sub">적립 내역을 카카오 알림톡으로 보내 드렸습니다.</p>` : ""}
+        ${d.kind === "earn" ? `<p class="sub">적립 내역을 문자로 보내 드렸습니다.</p>` : ""}
         ${backBtn()}
       </section>`;
   }
