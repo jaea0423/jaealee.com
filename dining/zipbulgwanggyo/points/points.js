@@ -7,9 +7,10 @@
    자료는 ../manage/store.js 의 ZB. 매장 화면과는 같은 브라우저의 다른 탭끼리 storage 이벤트로 이어집니다(시안이라 서버 없음). */
 (function(){
   const app = document.querySelector("#app");
-  const S = { mode: "idle", digits: "", agree: false, done: null, back: 0 };   /* mode: idle 쉬는 화면 · earn 적립 번호 입력 · look 조회 번호 입력 · done 끝 */
+  ZB.setDevice("계산대");   /* 기록에 '계산대' 로 남음 */
+  const S = { mode: "idle", digits: "", agree: false, name: "", done: null, back: 0 };   /* mode: idle 쉬는 화면 · earn 적립 번호 입력 · look 조회 번호 입력 · done 끝 */
   let timer = null;
-  const pt = n => n.toLocaleString("ko-KR") + "P", won = n => n.toLocaleString("ko-KR") + "원";
+  const pt = n => n.toLocaleString("ko-KR") + "포인트", won = n => n.toLocaleString("ko-KR") + "원";
   const phoneText = d => "010-" + d.slice(0, 4).padEnd(4, "_") + "-" + d.slice(4).padEnd(4, "_");
   /* 더미 결제 금액 — 고깃집 2~6인 계산 금액쯤. 다음 손님마다 바뀜 */
   const DUMMY = [86000, 64000, 128000, 47000, 152000, 93000, 71000, 118000];
@@ -29,15 +30,16 @@
   function keypad(pend){
     const full = S.digits.length === 8, phone = "010" + S.digits;
     const isNew = pend && full && !ZB.memberByPhone(phone);
-    const ok = full && (!isNew || S.agree);
+    const ok = full && (!isNew || (S.agree && S.name.trim()));
     const keys = ["1","2","3","4","5","6","7","8","9","","0","del"].map(k => k === "" ? `<span></span>` : `<button data-a="key" data-v="${k}"${k === "del" ? ' aria-label="한 글자 지우기"' : ""}>${k === "del" ? "←" : k}</button>`).join("");
     const get = pend ? Math.floor(pend.amount * ZB.cfg.pointRate / 100) : 0;
-    return (pend ? `<section class="now"><div><span>결제 금액</span><b>${won(pend.amount)}</b></div><div><span>쌓이는 포인트</span><b>+${pt(get)}</b></div></section>` : "") + `
+    return (pend ? `<section class="now"><div><span>결제 금액</span><b>${won(pend.amount)}</b></div><div><span>쌓이는 포인트</span><b>+${get.toLocaleString("ko-KR")}<small class="u">포인트</small></b></div></section>` : "") + `
       <section class="card grid">
         <div class="left">
           <h2>${pend ? "휴대폰 번호를 눌러 주세요" : "내 포인트 보기"}</h2>
           <div class="phone${full ? " full" : ""}" aria-live="polite">${phoneText(S.digits)}</div>
           <p class="sub">${pend ? "처음이시면 이 번호로 바로 회원이 됩니다." : "번호를 누르면 쌓인 포인트를 보여 드립니다."}</p>
+          ${isNew ? `<label class="nm"><span>성함 <small>성이나 별명도 됩니다 · 포인트를 쓰실 때 확인해요</small></span><input id="nm" value="${S.name.replace(/"/g, "&quot;")}" maxlength="10" autocomplete="off" placeholder="예) 김민수"></label>` : ""}
           ${isNew ? `<button class="agree${S.agree ? " on" : ""}" data-a="agree" role="checkbox" aria-checked="${S.agree}"><i></i><span>포인트 적립을 위한 전화번호 수집에 동의합니다<small>적립·사용 내역 안내에만 씁니다</small></span></button>` : ""}
           ${pend ? `<div class="quiets"><button class="quiet" data-a="skip">적립 안 할게요</button><button class="quiet" data-a="look">내 포인트만 보기</button></div>` : `<button class="quiet" data-a="idle">돌아가기</button>`}
         </div>
@@ -56,7 +58,8 @@
         <p class="sub">${d.kind === "earn" ? (d.isNew ? "회원이 되셨습니다 · " : "") + "적립되었습니다" : "내 포인트"}</p>
         ${d.kind === "earn" ? `<div class="big"><span>이번에 쌓인 포인트</span><b>+${d.pts.toLocaleString("ko-KR")}</b></div>` : ""}
         <div class="pair one"><div><span>모두</span><b>${pt(d.total)}</b></div></div>
-        <p class="sub">${can ? `다음 계산 때 직원에게 말씀하시면 <b>${won(d.total)}</b>까지 할인해 드립니다.` : `${pt(c.pointMin - d.total)} 더 모으시면 할인으로 쓰실 수 있습니다.`}</p>
+        <p class="sub">${d.kind === "earn" && c.pointNextDay ? `오늘 쌓인 포인트는 <b>내일부터</b> 쓰실 수 있습니다. ` : ""}${can ? `다음 계산 때 직원에게 성함과 번호를 말씀하시면 <b>${won(d.total)}</b>까지 할인해 드립니다.` : `${pt(c.pointMin - d.total)} 더 모으시면 할인으로 쓰실 수 있습니다.`}</p>
+        ${d.soon ? `<p class="sub warn">${pt(d.soon)}가 30일 안에 사라집니다.</p>` : ""}
         ${d.kind === "earn" ? `<p class="sub">적립 내역을 카카오 알림톡으로 보내 드렸습니다.</p>` : ""}
         ${backBtn()}
       </section>`;
@@ -69,7 +72,7 @@
     clearInterval(timer); timer = setInterval(() => { if(--S.back <= 0) goIdle(); else render(); }, 1000);
     render();
   }
-  function goIdle(){ clearInterval(timer); timer = null; S.mode = "idle"; S.digits = ""; S.agree = false; S.done = null; render(); }
+  function goIdle(){ clearInterval(timer); timer = null; S.mode = "idle"; S.digits = ""; S.agree = false; S.name = ""; S.done = null; render(); }
 
   document.addEventListener("click", e => {
     const el = e.target.closest("[data-a]"); if(!el) return;
@@ -81,22 +84,30 @@
     else if(a === "skip"){ if(ZB.pending) ZB.setPending(null); else nextDummy(); return finish({ kind: "skip" }); }
     else if(a === "earn"){
       ZB.reload(); const pend = ZB.pending || S.dummy; if(!pend || S.digits.length !== 8) return render();
-      const phone = "010" + S.digits; if(!ZB.memberByPhone(phone) && !S.agree) return;
-      const r = ZB.earn(phone, pend.amount); if(pend.dummy) nextDummy(); else ZB.setPending(null);
-      return finish({ kind: "earn", pts: r.t.pts, total: ZB.pbal(r.m.id), isNew: r.isNew });
+      const phone = "010" + S.digits; if(!ZB.memberByPhone(phone) && !(S.agree && S.name.trim())) return;
+      const r = ZB.earn(phone, pend.amount, S.name, "계산대"); if(pend.dummy) nextDummy(); else ZB.setPending(null);
+      const st = ZB.pstate(r.m.id);
+      return finish({ kind: "earn", pts: r.t.pts, total: st.total, soon: st.soon, isNew: r.isNew });
     }
     else if(a === "show"){
       const m = ZB.memberByPhone("010" + S.digits);
-      return finish(m ? { kind: "look", total: ZB.pbal(m.id) } : { kind: "none" });
+      if(!m) return finish({ kind: "none" });
+      const st = ZB.pstate(m.id); return finish({ kind: "look", total: st.total, soon: st.soon });
     }
     render();
   });
+  document.addEventListener("input", e => {
+    if(e.target.id !== "nm") return;
+    S.name = e.target.value;
+    const go = document.querySelector(".go"); if(go) go.disabled = !(S.digits.length === 8 && S.agree && S.name.trim());
+  });
   /* 매장 화면(다른 탭)에서 금액을 보내거나 거두면 바로 바뀜. 끝 화면을 보는 중에는 그대로 둠 */
-  window.addEventListener("storage", e => { if(e.key === ZB.KEY && S.mode !== "done") render(); });
+  window.addEventListener("storage", e => { if(e.key === ZB.KEY && S.mode !== "done" && !(document.activeElement && document.activeElement.id === "nm")) render(); });
 
   /* 키보드로도 — 노트북에서 보여 줄 때·입구에 키보드를 둔 매장. 숫자, ← 지우기(Backspace), Enter = 주 단추 */
   document.addEventListener("keydown", e => {
     if(e.ctrlKey || e.metaKey || e.altKey) return;
+    if(e.target && e.target.id === "nm"){ if(e.key === "Enter"){ const g = document.querySelector(".go:not(:disabled)"); if(g){ e.preventDefault(); g.click(); } } return; }   /* 이름 칸에서는 글자 그대로 */
     let sel = null;
     if(/^[0-9]$/.test(e.key)) sel = '[data-a=key][data-v="' + e.key + '"]';
     else if(e.key === "Backspace") sel = '[data-a=key][data-v="del"]';

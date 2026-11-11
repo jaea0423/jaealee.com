@@ -36,7 +36,8 @@ if(!window.safeHref) window.safeHref = function(u){ return /^https?:\/\//i.test(
   const dateText = s => { const d = new Date(s+"T00:00:00"); return (d.getMonth()+1)+"월 "+d.getDate()+"일 ("+WD[d.getDay()]+")"; };
   /* 접수 규칙은 SITE.online(관리 화면에서 바꿈). 값이 없으면 아래 기본값. 서버 정책(성인 2~12·룸 성인 5·내일부터)이 최종이라 그 밖으로 넓힐 수는 없습니다 */
   const R = () => Object.assign({enabled:true, maxDays:60, minAdults:2, maxPeople:12, roomMinAdults:5, limitMin:5, sameDay:false, sameDayLeadH:2,
-                                 offTitle:"지금은 온라인 예약을 받지 않습니다", offMsg:"예약은 전화로 부탁드립니다."}, (window.SITE && SITE.online) || {});
+                                 offTitle:"지금은 온라인 예약을 받지 않습니다", offMsg:"예약은 전화로 부탁드립니다."}, (window.SITE && SITE.online) || {},
+                                 window.ZB ? { maxDays: ZB.cfg.maxDays } : {});   /* 시안: 예약 기간은 매장 화면 설정을 따름(11-11) */
   const MAX_SEAT = 40, LUNCH_END = 15*60+30, CODE_SEC = 180, RESEND_WAIT_SEC = 60;   /* 인증번호 3분(서버 66차와 같게) */
   /* 점심 끝(분) — 예약 시스템이 남은 자리 표에 날짜마다 실어 보냄(_d.le = 그 날의 점심 경계, 하루 한 세션이면 0). 없으면 15:30(09-25 재아) */
   const LE = {};
@@ -76,8 +77,15 @@ if(!window.safeHref) window.safeHref = function(u){ return /^https?:\/\//i.test(
       await new Promise(r => setTimeout(r, 600));
       const id = p.rid || ("rq_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36));
       /* 시안: 서버 대신 이 브라우저의 자료에 '새 신청' 으로 넣음 — 매장 화면 시안이 같은 자료를 읽음 */
-      if(window.ZB && !ZB.res.some(x => x.id === id)){ ZB.reload(); ZB.add({ id: id, date: p.date, time: p.time, people: p.people, name: p.name, phone: p.phone, memo: p.request || "",
-        pre: (p.course && p.course !== "none" && p.course !== "later") ? p.courseLabel : "", status: "req", src: "홈페이지" }); }
+      if(window.ZB){
+        ZB.reload();
+        /* 노쇼가 설정 횟수(noshowLimit)만큼 쌓인 번호는 온라인 대신 전화로(이유는 말하지 않음 — 한옥반점과 같은 방식) */
+        if(ZB.noshowCount(p.phone) >= ZB.cfg.noshowLimit) return {ok:false, msg:"온라인으로 접수하기 어려운 예약입니다. 유선으로 예약 도와드리겠습니다. (" + ((window.SITE && SITE.info && SITE.info.tel) || "매장 전화") + ")"};
+        ZB.setDevice("홈페이지");
+        /* 단체(groupConfirm 명 이상)는 사장님 확인 후 확정, 그 아래는 바로 확정 */
+        if(!ZB.res.some(x => x.id === id)) ZB.add({ id: id, date: p.date, time: p.time, people: p.people, name: p.name, phone: p.phone, memo: p.request || "",
+          pre: (p.course && p.course !== "none" && p.course !== "later") ? p.courseLabel : "", status: ZB.autoStatus(p.people), src: "홈페이지" });
+      }
       return {ok:true, id: id};
     },
     day: async date => null,   /* 그날 전체 시각표·세션(_d) — 예약 시스템이 올린 자료에만 있음 */

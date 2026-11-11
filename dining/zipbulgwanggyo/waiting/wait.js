@@ -6,13 +6,14 @@
 (function(){
   const $ = s => document.querySelector(s);
   const app = $("#app");
+  ZB.setDevice(new URLSearchParams(location.search).get("no") ? "손님 휴대폰" : "입구 기기");
   const myNo = Number(new URLSearchParams(location.search).get("no")) || 0;
   const S = { step: "form", people: 2, digits: "", agree: false, mine: null, back: 0 };
   let timer = null;
   const BACK_SEC = 12;
 
   const phoneText = d => "010-" + (d.slice(0, 4) || "").padEnd(4, "_") + "-" + (d.slice(4) || "").padEnd(4, "_");
-  const etaText = n => n > 0 ? "약 " + ZB.waitEta(n) + "분" : "곧 입장";
+  const etaText = n => { const r = ZB.waitRange(n); return r ? r.lo + "~" + r.hi + "분" : "곧 입장"; };
   const head = `<header class="hd"><img src="../img/logo.png" alt="짚불태백"><span>광교점</span></header>`;
 
   function render(){
@@ -24,14 +25,17 @@
   function form(){
     const live = ZB.waitLive(), n = live.length;
     if(!ZB.wait.on) return head + `<section class="card center"><h1>지금은 웨이팅을 받지 않습니다</h1><p class="sub">직원에게 말씀해 주세요.</p></section>`;
-    const ok = S.digits.length === 8 && S.agree;
+    const cl = ZB.waitClose();
+    if(cl.closed) return head + `<section class="card center"><h1>오늘 웨이팅 접수가 마감되었습니다</h1><p class="sub">${cl.at}에 접수를 마감했습니다. 직원에게 말씀해 주세요.</p></section>`;
+    const big = S.people >= ZB.cfg.bigTeam;
+    const ok = S.digits.length === 8 && S.agree && !big;
     const keys = ["1","2","3","4","5","6","7","8","9","","0","del"].map(k => k === "" ? `<span></span>` : `<button data-a="key" data-v="${k}"${k === "del" ? ' aria-label="한 글자 지우기"' : ""}>${k === "del" ? "←" : k}</button>`).join("");
-    return head + `<section class="now"><div><span>지금 대기</span><b>${n}팀</b></div><div><span>예상 대기</span><b>${n ? "약 " + ZB.waitEta(n) + "분" : "바로 입장"}</b></div></section>
+    return head + `<section class="now"><div><span>지금 대기</span><b>${n}팀</b><small>${cl.at} 접수 마감</small></div><div><span>예상 대기</span><b>${n ? etaText(n) : "바로 입장"}</b><small>${ZB.waitPace().basis}</small></div></section>
       <section class="card grid">
         <div class="left">
           <h2>인원</h2>
           <div class="step"><button data-a="ppl" data-v="-1" aria-label="한 명 줄이기">−</button><b>${S.people}<small>명</small></b><button data-a="ppl" data-v="1" aria-label="한 명 늘리기">+</button></div>
-          <p class="sub">아이도 인원에 넣어 주세요.</p>
+          ${big ? `<p class="bignote">${ZB.cfg.bigTeam}명 이상은 웨이팅 대신 직원이 자리를 안내해 드립니다. 직원에게 말씀해 주세요.</p>` : `<p class="sub">아이도 인원에 넣어 주세요.</p>`}
           <h2>휴대폰 번호</h2>
           <div class="phone${S.digits.length === 8 ? " full" : ""}" aria-live="polite">${phoneText(S.digits)}</div>
           <p class="sub">순서가 가까워지면 이 번호로 알려 드립니다.</p>
