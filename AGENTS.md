@@ -25,6 +25,8 @@
 - 사용 중단이 확인된 파일은 `_disabled/`에 기존 내부 구조를 보존해 옮기고, `_disabled/README.md`에 원래 위치와 사유를 기록합니다. 미참조 파일이라는 이유만으로 비활성화하지 않습니다.
 - 페이지 실행과 무관한 새 기획·설명 문서는 `docs/projects/`에 둡니다.
 
-## 다인원(DineONE)
+## DineONE
 
-- `dineone/`·`dining/` 화면이나 다인원 문서를 바꾸면 같은 커밋에 `docs/projects/dineone-changelog.md` 맨 위(해당 날짜 아래)에 한 건을 추가합니다. 형식은 그 파일의 '쓰는 법'을 따르고, 커밋 해시는 다음 기록 때 채워도 됩니다.
+- `dineone/`·`dining/` 화면이나 DineONE 문서를 바꾸면 같은 커밋에 `docs/projects/dineone-changelog.md` 맨 위(해당 날짜 아래)에 한 건을 추가합니다. 형식은 그 파일의 '쓰는 법'을 따르고, 커밋 해시는 다음 기록 때 채워도 됩니다.
+- DineONE 실서비스 작업의 기본 대상은 개발(`*.dineone.dev`, Supabase `dineone-dev`)입니다. 운영(`*.dineone.co.kr`, `dineone-prod`, GitHub `production` 환경)에 영향을 주는 배포 승인·운영 SQL·운영 비밀값 변경은 사용자가 그 작업을 명시해 승인한 경우에만 하고, 승인은 작업마다 따로 받습니다. 경계 장치는 `docs/projects/dineone-structure.md` 14장을 따릅니다.
+- 화면(사이트·제목·아이콘 설명)과 새로 쓰는 문서에는 한글 표기 '다인원'을 당분간 쓰지 않고 DineONE만 씁니다.

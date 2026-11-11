@@ -21,7 +21,7 @@
       a.classList.toggle("on", on);
       if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
-    document.title = "DineONE 다인원 — " + (view.dataset.title || "");
+    document.title = "DineONE — " + (view.dataset.title || "");
     current = name;
     window.scrollTo({ top: 0, behavior: "instant" });
     onScroll();
