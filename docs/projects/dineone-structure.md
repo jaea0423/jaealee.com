@@ -45,8 +45,8 @@
   | `dineone.co.kr` | `denver.ns.cloudflare.com`, `mira.ns.cloudflare.com` |
   | `dineone.dev` | `arya.ns.cloudflare.com`, `cory.ns.cloudflare.com` |
 
-  - 가비아는 네임서버를 바꿀 때 안전잠금을 풀어야 합니다. 그래서 지금 두 도메인 모두 안전잠금이 꺼져 있습니다(`.co.kr`은 기관이전 잠금도 꺼짐).
-  - 할 일: Cloudflare에서 Active가 뜨면 가비아에서 **안전잠금·기관이전 잠금을 다시 켭니다.**
+  - 가비아는 네임서버를 바꿀 때 안전잠금을 풀어야 합니다. 바꾼 뒤 두 도메인 모두 **안전잠금·기관이전 잠금을 다시 켰습니다**(11-12 확인). 나중에 네임서버를 또 바꿀 때만 잠깐 풉니다.
+  - 공개 DNS(8.8.8.8)에서 Cloudflare 네임서버가 보이는 것까지 확인했습니다.
 
 ## 3. 맡는 곳
 
