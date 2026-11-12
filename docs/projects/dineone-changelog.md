@@ -30,6 +30,11 @@
 
 ## 2026-11-12
 
+### dineone-dev에 DB 첫 적용
+- 추가: Supabase `dineone-dev`(서울)에 DB 초안을 적용했습니다. SQL Editor에서 검사 27개가 모두 통과했습니다.
+- 주의: 운영(`dineone-prod`)에는 적용하지 않았습니다. 시안 화면은 아직 브라우저 저장(localStorage)을 씁니다.
+- 범위: Supabase `dineone-dev` · `docs/projects/dineone-db.md`
+
 ### DB 초안을 dev에 올릴 준비: 표 권한, 검사 SQL
 - 추가(DB 초안 16장): 표·함수 권한(GRANT)
   - Supabase에서 '새 표 자동 공개'를 껐기 때문에 권한을 SQL에 직접 적었습니다.
@@ -40,7 +45,7 @@
   - SQL Editor에 붙여 넣는 검사 27개입니다. 검사용 자료는 스스로 지웁니다.
   - 내 컴퓨터에서 모두 통과했습니다.
 - 변경(문서): [DB 설계](dineone-db.md) 0장에 dev에 올리고 검사하는 순서를 적었습니다.
-- 범위: `docs/projects/dineone-db-draft.sql` `docs/projects/dineone-db-check.sql` `docs/projects/dineone-db.md`
+- 범위: `docs/projects/dineone-db-draft.sql` `docs/projects/dineone-db-check.sql` `docs/projects/dineone-db.md` · 커밋 0a4371a
 
 ### Cloudflare 근거·요금, 계정 관리, 1588 사는 법
 - 추가(문서): 구조 정리 18~20장

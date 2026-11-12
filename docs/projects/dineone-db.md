@@ -2,7 +2,7 @@
 
 2026-11-12 첫 초안입니다(같은 날 개인정보 동의·지우기 추가). SQL은 [dineone-db-draft.sql](dineone-db-draft.sql) 한 파일에 있습니다.
 
-- **아직 어디에도 적용하지 않았습니다.**
+- **dev에만 적용했습니다(11-12). 운영에는 아직 적용하지 않았습니다.**
   - 실서비스 저장소(`dineone`)가 생기면 `supabase/migrations/0001_init.sql`로 옮깁니다.
   - 그다음 `dineone-dev`에 먼저 적용합니다. 운영 적용은 구조 정리 14장을 따릅니다.
 - 시안(`dining/zipbulgwanggyo/manage/store.js`)의 자료 모양을 그대로 옮겼습니다. 화면을 바꿀 때 이름이 어긋나지 않습니다.
@@ -20,6 +20,7 @@
    - **운영(dineone-prod)에서는 돌리지 않습니다.**
 - 프로젝트 설정: 'Automatically expose new tables' 끔, 'Enable automatic RLS' 켬(구조 정리 19장). 그래서 표 권한은 SQL 16장에 직접 적었습니다.
 - 내 컴퓨터(PGlite)에서 Supabase와 같은 조건으로 두 파일을 미리 돌려 27개 모두 통과했습니다.
+- **2026-11-12 `dineone-dev`(서울)에 실제로 적용했습니다. 검사 27개 모두 통과했습니다.** 운영(`dineone-prod`)에는 아직 적용하지 않았습니다.
 
 ## 1. 큰 원칙
 
