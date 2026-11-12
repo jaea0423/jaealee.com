@@ -397,6 +397,12 @@ DB 표와 권한 설계는 [DB 설계](dineone-db.md)에 있습니다(초안 v0,
     - 조직: 이름 `dineone-dev`, 유형 Company, 요금제 Free → 그다음 `dineone-prod`도 같은 값으로 만듭니다(처음엔 Free).
     - 프로젝트: 각 조직에 하나씩 `dineone-dev`, `dineone-prod`. 지역은 **Northeast Asia (Seoul)**
     - DB 비밀번호는 길게 자동 생성해 비밀번호 관리자에만 둡니다. 운영 비밀번호는 내 컴퓨터 `.env`에 두지 않습니다(14장).
+    - GitHub 연결: 하지 않습니다. 연결하면 저장소 변경이 바로 DB에 반영되는데, 운영은 승인 버튼을 거쳐야 하기 때문입니다(14장). 배포는 GitHub Actions에서 따로 합니다.
+    - Security:
+      - Enable Data API: **켬** (화면이 supabase-js로 읽고 씀)
+      - Automatically expose new tables: **끔**. 새 표가 저절로 열리지 않게 하고, 권한(GRANT)은 SQL에 직접 적습니다.
+      - Enable automatic RLS: **켬**. RLS를 빠뜨린 표가 생기지 않게 하는 안전장치입니다.
+    - Advanced configuration: 기본값
   - 무료 프로젝트는 한 계정에 2개까지라 dev·prod 둘로 딱 맞습니다.
   - 짚불태백 시범 운영의 실제 손님 정보는 **prod**에 넣습니다. dev에는 더미만 넣습니다.
   - 실제로 쓰기 시작하면 prod 조직만 Pro로 올립니다.
