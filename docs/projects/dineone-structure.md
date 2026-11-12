@@ -37,8 +37,16 @@
   - 실제 개발과 시범 화면은 처음부터 `.dev`에 올립니다. `.co.kr`에는 출시 전까지 회사 홈페이지(지금 `jaealee.com/dineone` 시안)만 둡니다.
 - **구입 완료(11-12)**: `dineone.co.kr`, `dineone.dev` 둘 다 가비아 회사 계정(와이비테크랩 명의, 기관)으로 샀습니다.
   - 기간 1년, 안전잠금 켬, 등록정보 숨김 안 함, 부가상품 없음. 네임서버는 우선 가비아 기본값입니다.
-  - 다음: Cloudflare(DineONE 전용 계정)에 두 도메인을 추가하고, 가비아에서 네임서버를 Cloudflare 것으로 바꿉니다.
-  - 자동 연장을 켜고, 만료일을 달력에 적어 둡니다(내년 11월).
+  - 만료일 2027-11-12. 자동 연장을 켜고 달력에 적어 둡니다.
+- **Cloudflare 연결(11-12)**: DineONE 전용 계정에 두 도메인을 Free로 추가하고, 가비아 네임서버를 바꿨습니다(DNSSEC 없음, DNS 레코드 0개에서 시작).
+
+  | 도메인 | Cloudflare 네임서버 |
+  |---|---|
+  | `dineone.co.kr` | `denver.ns.cloudflare.com`, `mira.ns.cloudflare.com` |
+  | `dineone.dev` | `arya.ns.cloudflare.com`, `cory.ns.cloudflare.com` |
+
+  - 가비아는 네임서버를 바꿀 때 안전잠금을 풀어야 합니다. 그래서 지금 두 도메인 모두 안전잠금이 꺼져 있습니다(`.co.kr`은 기관이전 잠금도 꺼짐).
+  - 할 일: Cloudflare에서 Active가 뜨면 가비아에서 **안전잠금·기관이전 잠금을 다시 켭니다.**
 
 ## 3. 맡는 곳
 

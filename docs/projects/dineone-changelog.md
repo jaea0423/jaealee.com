@@ -32,8 +32,9 @@
 
 ### 도메인 구입
 - 결정: `dineone.co.kr`, `dineone.dev`를 가비아에서 샀습니다(와이비테크랩 명의, 1년, 안전잠금 켬).
-- 다음: Cloudflare로 네임서버 옮기기
-- 범위: `docs/projects/dineone-structure.md` 2장
+- 변경: Cloudflare(전용 계정, Free)에 두 도메인을 추가하고 가비아 네임서버를 Cloudflare로 바꿨습니다. 전파를 기다리는 중입니다.
+- 주의: 네임서버를 바꾸느라 가비아 안전잠금이 꺼졌습니다. Active 뒤에 다시 켭니다.
+- 범위: `docs/projects/dineone-structure.md` 2장 · 커밋 f523c33(구입)
 
 ### 도메인 사는 순서
 - 추가(문서): 구조 정리 2장
