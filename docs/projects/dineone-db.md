@@ -26,8 +26,9 @@
 | 번호 | 파일 | 내용 | dev |
 |---|---|---|---|
 | 0001 | [dineone-db-draft.sql](dineone-db-draft.sql) | 표·권한·기기 함수·업무 기록·지우기 | 11-12 적용, 검사 27개 통과 |
-| 0002 | [dineone-db-0002-devices.sql](dineone-db-0002-devices.sql) | 기기 등록 코드, 계산대 금액 넘기기(`counter_pending`), 기기용 조회(`kiosk_me`·`kiosk_lookup`·`kiosk_wait_status`·`kiosk_earn_pending`) | 대기 |
-| 더미 | [dineone-db-seed-dev.sql](dineone-db-seed-dev.sql) | `dev_reseed()`: 오늘 기준 더미 가게(예약 160여 건, 웨이팅 14, 포인트 회원 16, 장부 5). 손님 번호는 모두 010-0000-xxxx | 대기 |
+| 0002 | [dineone-db-0002-devices.sql](dineone-db-0002-devices.sql) | 기기 등록 코드, 계산대 금액 넘기기(`counter_pending`), 기기용 조회(`kiosk_me`·`kiosk_lookup`·`kiosk_wait_status`·`kiosk_earn_pending`) | 11-12 적용 |
+| 0003 | [dineone-db-0003-staff.sql](dineone-db-0003-staff.sql) | 매장 화면용: 웨이팅↔예약 연결 칸, 기능 스위치 권한(사장·매니저), 직원 웨이팅 등록 `staff_wait_add` | 대기 |
+| 더미 | [dineone-db-seed-dev.sql](dineone-db-seed-dev.sql) | `dev_reseed()`: 오늘 기준 더미 가게(예약 160여 건, 웨이팅 14, 포인트 회원 16, 장부 5). 손님 번호는 모두 010-0000-xxxx | 11-12 적용 |
 
 - 0002와 더미는 0001처럼 SQL Editor에서 한 번씩 실행합니다. 더미는 그 뒤 언제든 `select dev_reseed();` 한 줄로 오늘 기준으로 다시 만듭니다.
 - 더미를 다시 만들면 dev 가게의 예약·웨이팅·포인트·장부와 업무 기록을 지우고 새로 만듭니다. **dev 전용**이고 운영에는 넣지 않습니다. 이 함수는 SQL Editor(postgres)에서만 부를 수 있습니다.
@@ -37,6 +38,20 @@
   2. 태블릿·TV는 익명 로그인 후 코드를 넣으면 가게에 묶입니다.
 - 내 컴퓨터에서 0001 → 0002 → 더미 순서로 돌려 검사 25개가 통과했습니다.
   - 확인한 것: 더미 생성과 다시 생성, 틀린 코드·두 번 등록 막힘, 기기는 코드를 만들 수 없음, 보낸 금액으로 적립하면 금액이 지워짐, 손님 브라우저와 사장은 `dev_reseed`를 부를 수 없음.
+
+### 화면 연결 (11-12, 매장 화면부터)
+- `dining/zipbulgwanggyo/manage/?db=dev`로 열면 실제 dev DB에 연결됩니다. 붙이지 않으면 지금처럼 브라우저 저장 시안입니다.
+- 구조
+  - `manage/remote.js`가 DB를 읽어 시안 자료 모양(ZB)으로 바꿔 끼웁니다. 그래서 화면 코드(app.js)는 거의 그대로입니다.
+  - 화면에서 바꾼 것은 store.js 함수를 감싸 DB에 씁니다. 순서는 '화면 먼저 → DB에 쓰기 → 다시 읽기'입니다.
+  - 새 기록 아이디는 DB와 같은 uuid를 씁니다.
+- 로그인: Supabase Authentication의 이메일 계정을 씁니다. 처음 로그인하면 이름(이메일 앞부분)으로 `profiles`를 만들어 업무 기록에 찍히게 합니다.
+- 10초마다 다시 읽습니다. 바뀐 게 있을 때만 다시 그립니다. 실시간 반영(Realtime)은 나중에 붙입니다.
+- 맨 위 노란 DEV 띠와 탭 제목 `[DEV]`로 개발 DB임을 표시합니다(구조 정리 14장).
+- 키는 공개용(publishable)만 화면 코드에 넣었습니다. 지켜 주는 것은 로그인과 RLS입니다.
+- 아직 남은 것
+  - 입구 웨이팅, 계산대, TV, 손님 예약 창은 아직 브라우저 저장입니다. 다음 차례에 기기 등록과 함께 연결합니다.
+  - 표마다 한 번에 1,000줄까지만 읽습니다(Supabase 기본 한도). 실서비스 전에 날짜 범위로 나눠 읽게 바꿉니다.
 
 ## 1. 큰 원칙
 

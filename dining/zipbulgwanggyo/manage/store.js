@@ -52,8 +52,17 @@
   };
   const ACTIVE = { req: 1, ok: 1, in: 1 };   /* 테이블을 차지하는 상태: 신청(확정 전에도 자리를 잡아 둠) · 확정 · 방문 */
 
+  /* ★ 11-12: 주소에 ?db=dev 가 있으면 실제 DB(Supabase dineone-dev)와 연결(remote.js). 이때는 브라우저 저장·예시를 쓰지 않고
+     빈 자료로 시작했다가 remote.js 가 DB 에서 읽어 채움. 새 기록 아이디는 DB 와 같은 uuid. 없으면 지금까지처럼 시안 */
+  const REMOTE = /[?&]db=dev(&|$)/.test(location.search);
+  const newId = p => REMOTE && window.crypto && crypto.randomUUID ? crypto.randomUUID() : p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const blank = () => ({ cfg: Object.assign({}, DEFAULT_CFG), res: [], seeded: today(), log: [], wait: { on: true, seq: 0, list: [] },
+    ledger: { seq: 0, accts: [], tx: [] }, points: { seq: 0, members: [], tx: [] } });
+  let next = null;   /* remote.js 가 새로 읽어 온 자료 — 다음 reload() 때 바꿔 끼움(화면이 '전→후' 를 비교해 알림을 띄울 수 있게) */
+
   let db = null, device = "매장 화면";
   function load(){
+    if(REMOTE){ if(next){ db = next; next = null; } if(!db) db = blank(); return db; }
     try{ db = JSON.parse(localStorage.getItem(KEY) || "null"); }catch(e){ db = null; }
     if(!db || db.seeded !== today()) db = seed((db && db.cfg) || null);   /* 하루 지난 예시는 날짜가 안 맞아 새로 */
     /* 설정 칸이 새로 생겨도 저장된 값은 두고 빠진 칸만 기본값으로 */
@@ -63,7 +72,7 @@
     if(JSON.stringify(db.cfg) !== before) save();
     return db;
   }
-  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){} }
+  function save(){ if(REMOTE) return; try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){} }
 
   /* ---------- 기록 ----------
      kind: res 예약 · wait 웨이팅 · ledger 장부 · point 포인트 · cfg 설정. by = 어느 기기·화면에서. 지우지 않고 더하기만. */
@@ -294,7 +303,7 @@
       if(changes.length) log("cfg", "설정 " + changes.join(", "));
       save();
     },
-    add(r){ r.id = r.id || ("r_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)); r.at = Date.now(); db.res.push(r);
+    add(r){ r.id = r.id || newId("r_"); r.at = Date.now(); db.res.push(r);
       log("res", `${r.date.slice(5)} ${r.time} ${r.name} ${r.people}명 예약 ${r.status === "req" ? "신청" : "등록"} (${r.src})`); save(); return r; },
     update(id, patch){ const r = db.res.filter(x => x.id === id)[0]; if(r){ Object.assign(r, patch);
       if(patch.status) log("res", `${r.date.slice(5)} ${r.time} ${r.name} ${r.people}명 → ${RES_ST[patch.status]}`); save(); } return r; },
@@ -307,7 +316,7 @@
     waitLive: waitLive, waitPace: waitPace, waitRange: waitRange, waitClose: waitClose,
     waitAhead(id){ return waitLive().findIndex(x => x.id === id); },   /* 내 앞에 몇 팀(0 이면 맨 앞, -1 이면 대기 중이 아님) */
     waitEta(ahead){ return ahead * waitPace().per; },
-    waitAdd(people, phone, src, first){ const w = db.wait, r = { id: "w_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), no: ++w.seq, people: people, phone: phone || "", src: src, status: "wait", at: Date.now() };
+    waitAdd(people, phone, src, first){ const w = db.wait, r = { id: newId("w_"), no: ++w.seq, people: people, phone: phone || "", src: src, status: "wait", at: Date.now() };
       if(first) r.first = true; w.list.push(r); log("wait", `웨이팅 ${r.no}번 ${people}명 접수${first ? " (예약 손님 · 맨 앞)" : ""}`); save(); return r; },
     waitSet(id, status){ const r = db.wait.list.filter(x => x.id === id)[0]; if(!r) return null;
       r.status = status; if(status === "call") r.callAt = Date.now(); else if(status === "wait"){ delete r.callAt; delete r.doneAt; } else r.doneAt = Date.now();
@@ -317,8 +326,8 @@
     get ledger(){ return db.ledger; },
     bal: bal,
     acctTx(id){ return db.ledger.tx.filter(t => t.acct === id).sort((a, b) => a.at - b.at); },
-    addAcct(p){ const a = Object.assign({ id: "a_" + Date.now().toString(36) }, p); db.ledger.accts.push(a); log("ledger", `새 장부 ${a.name}`); save(); return a; },
-    addTx(acct, type, amount, memo, by){ const t = { id: "t_" + (++db.ledger.seq) + Date.now().toString(36), acct: acct, type: type, amount: amount, memo: memo || "", by: by || "", at: Date.now() }; db.ledger.tx.push(t);
+    addAcct(p){ const a = Object.assign({ id: newId("a_") }, p); db.ledger.accts.push(a); log("ledger", `새 장부 ${a.name}`); save(); return a; },
+    addTx(acct, type, amount, memo, by){ ++db.ledger.seq; const t = { id: newId("t_"), acct: acct, type: type, amount: amount, memo: memo || "", by: by || "", at: Date.now() }; db.ledger.tx.push(t);
       const a = db.ledger.accts.filter(x => x.id === acct)[0]; log("ledger", `${a ? a.name : ""} ${type === "charge" ? "충전" : "사용"} ${won(amount)}${memo ? " · " + memo : ""}`); save(); return t; },
     voidTx(id, on){ const t = db.ledger.tx.filter(x => x.id === id)[0]; if(t){ if(on === false) delete t.void; else t.void = true;
       const a = db.ledger.accts.filter(x => x.id === t.acct)[0]; log("ledger", `${a ? a.name : ""} ${t.type === "charge" ? "충전" : "사용"} ${won(t.amount)} ${t.void ? "취소" : "되살림"}`); save(); } return t; },
@@ -333,12 +342,12 @@
     /* agree = 처음 가입 때 동의 { mkt: 홍보 문자 선택, via: 어디서 받았나 }. 필수 동의 시각(agreeAt)과 홍보 동의를 회원에 남김 */
     earn(phone, amount, name, src, agree){
       let m = this.memberByPhone(phone), isNew = !m; agree = agree || {};
-      if(!m){ m = { id: "m_" + Date.now().toString(36), phone: fmtPhone(phone), name: (name || "").trim(), agreeAt: Date.now(), agreeVia: agree.via || src || device, mkt: !!agree.mkt }; if(m.mkt) m.mktAt = m.agreeAt; db.points.members.push(m); }
+      if(!m){ m = { id: newId("m_"), phone: fmtPhone(phone), name: (name || "").trim(), agreeAt: Date.now(), agreeVia: agree.via || src || device, mkt: !!agree.mkt }; if(m.mkt) m.mktAt = m.agreeAt; db.points.members.push(m); }
       else if(name && !m.name) m.name = name.trim();
-      const t = { id: "p_" + (++db.points.seq) + Date.now().toString(36), mem: m.id, type: "earn", pts: Math.floor(amount * db.cfg.pointRate / 100), amount: amount, at: Date.now(), src: src || (device === "계산대" ? "계산대" : "직원 입력") };
+      ++db.points.seq; const t = { id: newId("p_"), mem: m.id, type: "earn", pts: Math.floor(amount * db.cfg.pointRate / 100), amount: amount, at: Date.now(), src: src || (device === "계산대" ? "계산대" : "직원 입력") };
       db.points.tx.push(t); log("point", `${m.phone} 적립 +${t.pts.toLocaleString("ko-KR")} (결제 ${won(amount)})${isNew ? " · 새 회원 " + (m.name || "") + " (개인정보 동의" + (m.mkt ? " · 홍보 문자 동의" : "") + ")" : ""}`); save(); return { m: m, t: t, isNew: isNew };
     },
-    usePts(mem, pts, how){ const t = { id: "p_" + (++db.points.seq) + Date.now().toString(36), mem: mem, type: "use", pts: pts, amount: 0, at: Date.now(), how: how || "" }; db.points.tx.push(t);
+    usePts(mem, pts, how){ ++db.points.seq; const t = { id: newId("p_"), mem: mem, type: "use", pts: pts, amount: 0, at: Date.now(), how: how || "" }; db.points.tx.push(t);
       const m = db.points.members.filter(x => x.id === mem)[0]; log("point", `${m ? m.phone : ""} 사용 −${pts.toLocaleString("ko-KR")}${how ? " · 확인: " + how : ""}`); save(); return t; },
     voidPTx(id, on){ const t = db.points.tx.filter(x => x.id === id)[0]; if(t){ if(on === false) delete t.void; else t.void = true;
       const m = db.points.members.filter(x => x.id === t.mem)[0]; log("point", `${m ? m.phone : ""} ${t.type === "earn" ? "적립" : "사용"} ${t.pts.toLocaleString("ko-KR")} ${t.void ? "취소" : "되살림"}`); save(); } return t; },
@@ -348,7 +357,9 @@
     /* 마감 정산 — 오늘 입력한 포스 매출(비교용) */
     get closing(){ return db.closing && db.closing.date === today() ? db.closing : { date: today(), pos: 0 }; },
     setClosing(patch){ db.closing = Object.assign({}, this.closing, patch); if(patch.pos != null) log("point", `마감: 포스 매출 ${won(patch.pos)} 입력`); if(patch.done) log("point", "마감 확인 완료"); save(); },
-    today: today, addDays: addDays, mins: mins, hhmm: hhmm, dayStart: dayStart, KEY: KEY
+    today: today, addDays: addDays, mins: mins, hhmm: hhmm, dayStart: dayStart, KEY: KEY,
+    /* 실제 DB 연결용(remote.js) */
+    REMOTE: REMOTE, DEFAULT_CFG: DEFAULT_CFG, blank: blank, _next(d){ next = d; }, get device(){ return device; }
   };
   load();
 })();
