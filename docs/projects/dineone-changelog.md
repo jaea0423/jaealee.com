@@ -30,6 +30,14 @@
 
 ## 2026-11-12
 
+### DB는 Supabase로 확정, 근거 기록
+- 추가(문서): 구조 정리 17장 'DB를 Supabase로 정한 근거'
+  - 기준: 서울 서버, Postgres + RLS, 로그인, 실시간, 혼자 운영, 옮길 수 있음
+  - 비교 대상: Neon, AWS RDS, 국내 클라우드, Firebase, Cloudflare D1, 직접 설치, 기타 백엔드 서비스
+  - Neon은 월 1~2만 원 싸지만 서울이 없고 기능 차이가 있어 고르지 않았습니다.
+  - Supabase의 약점과 대비, 다시 검토할 때를 정리했습니다.
+- 범위: `docs/projects/dineone-structure.md`
+
 ### 개인정보 동의·처리방침·이용약관 초안
 - 추가(문서)
   - [개인정보: 동의와 처리방침](dineone-privacy.md): 가게가 처리자이고 DineONE은 수탁자라는 역할, 받는 정보와 보관 기간, 화면별 동의 문구, 홍보 문자 규칙, 정식 운영 전 확인할 것
@@ -45,7 +53,7 @@
 - 추가(DB 초안)
   - 새 회원은 동의가 있어야 가입되고, 동의를 기록합니다.
   - 보관 기간이 지난 번호·이름을 지우는 `purge_personal_data()`를 넣었습니다. 검사를 통과했습니다.
-- 범위: `dining/zipbulgwanggyo/` (privacy.html, points/, waiting/, manage/, js/reserve.js, css/site.css) · `docs/projects/`
+- 범위: `dining/zipbulgwanggyo/` (privacy.html, points/, waiting/, manage/, js/reserve.js, css/site.css) · `docs/projects/` · 커밋 0236d18
 
 ### DB 설계 초안 v0, 요금·문자 결정 정리
 - 추가(문서): [DB 설계](dineone-db.md)와 SQL 초안 `dineone-db-draft.sql`
