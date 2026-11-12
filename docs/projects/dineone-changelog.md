@@ -30,13 +30,20 @@
 
 ## 2026-11-12
 
+### Cloudflare 근거·요금, 계정 관리, 1588 사는 법
+- 추가(문서): 구조 정리 18~20장
+  - 18장: Cloudflare에 맡기는 일과 이유, 요금, 운영 고정비 합계(월 약 $30), 단점과 대비
+  - 19장: DineONE 전용 Gmail로 Supabase·Cloudflare·GitHub 등을 가입하고, 가비아는 기존 회사 계정을 씁니다. 2단계 인증과 결제 카드도 정리했습니다.
+  - 20장: 1588 견적 받는 순서, 비교할 것, 피할 것
+- 범위: `docs/projects/dineone-structure.md`
+
 ### DB는 Supabase로 확정, 근거 기록
 - 추가(문서): 구조 정리 17장 'DB를 Supabase로 정한 근거'
   - 기준: 서울 서버, Postgres + RLS, 로그인, 실시간, 혼자 운영, 옮길 수 있음
   - 비교 대상: Neon, AWS RDS, 국내 클라우드, Firebase, Cloudflare D1, 직접 설치, 기타 백엔드 서비스
   - Neon은 월 1~2만 원 싸지만 서울이 없고 기능 차이가 있어 고르지 않았습니다.
   - Supabase의 약점과 대비, 다시 검토할 때를 정리했습니다.
-- 범위: `docs/projects/dineone-structure.md`
+- 범위: `docs/projects/dineone-structure.md` · 커밋 4af45d7
 
 ### 개인정보 동의·처리방침·이용약관 초안
 - 추가(문서)
