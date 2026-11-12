@@ -30,6 +30,12 @@
 
 ## 2026-11-12
 
+### 도메인 사는 순서
+- 추가(문서): 구조 정리 2장
+  - `.co.kr`과 `.dev`를 지금 같이 삽니다.
+  - 개발은 처음부터 `.dev`에서 합니다. `.co.kr`에는 출시 전까지 회사 홈페이지만 둡니다.
+- 범위: `docs/projects/dineone-structure.md`
+
 ### 손님 알림은 카카오 알림톡만 (결정)
 - 결정: 문자는 보내지 않습니다. 문자로 대신 보내는 것도 하지 않습니다(구조 정리 15·21장).
   - 웨이팅 호출은 입구·TV 번호 표시와 '알림 못 감' 표시로 받칩니다.
@@ -48,7 +54,7 @@
   - 웨이팅에 알림 상태 칸을 넣었습니다.
   - 내 컴퓨터에서 검사를 통과했습니다.
 - 주의: 확인표는 답변을 기다리는 중이라 고치지 않았습니다.
-- 범위: `dining/zipbulgwanggyo/` (index.html, privacy.html, manage/, waiting/, points/, tv/, js/reserve.js) · `docs/projects/`
+- 범위: `dining/zipbulgwanggyo/` (index.html, privacy.html, manage/, waiting/, points/, tv/, js/reserve.js) · `docs/projects/` · 커밋 80cd996
 
 ### 카카오 알림톡 다시 검토
 - 추가(문서): 구조 정리 21장
