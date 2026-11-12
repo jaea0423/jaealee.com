@@ -30,6 +30,11 @@
 
 ## 2026-11-12
 
+### 도메인 구입
+- 결정: `dineone.co.kr`, `dineone.dev`를 가비아에서 샀습니다(와이비테크랩 명의, 1년, 안전잠금 켬).
+- 다음: Cloudflare로 네임서버 옮기기
+- 범위: `docs/projects/dineone-structure.md` 2장
+
 ### 도메인 사는 순서
 - 추가(문서): 구조 정리 2장
   - `.co.kr`과 `.dev`를 지금 같이 삽니다.
