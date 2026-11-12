@@ -1,6 +1,6 @@
 /* 손님용 웨이팅 화면 시안.
    · 주소 그대로 열면: 매장 입구 태블릿의 접수 화면 (인원 → 전화번호 → 접수 → 대기번호)
-   · ?no=12 로 열면: 손님 휴대폰의 '내 순서' 화면 (실제 서비스에서는 문자 속 링크가 여기로 옴)
+   · ?no=12 로 열면: 손님 휴대폰의 '내 순서' 화면 (실제 서비스에서는 카카오 알림톡의 '내 순서 보기' 버튼이 여기로 옴)
    자료는 ../manage/store.js 의 ZB — 매장 화면 웨이팅 탭과 같은 것을 씁니다.
    입구 태블릿은 여러 손님이 이어서 쓰므로, 접수가 끝나면 잠시 뒤 스스로 처음 화면으로 돌아갑니다(앞 손님 번호가 남지 않게). */
 (function(){
@@ -39,7 +39,7 @@
           <h2>휴대폰 번호</h2>
           <div class="phone${S.digits.length === 8 ? " full" : ""}" aria-live="polite">${phoneText(S.digits)}</div>
           <p class="sub">순서가 가까워지면 이 번호로 알려 드립니다.</p>
-          <button class="agree${S.agree ? " on" : ""}" data-a="agree" role="checkbox" aria-checked="${S.agree}"><i></i><span><b>[필수]</b> 대기 안내를 위한 휴대폰 번호 수집·이용에 동의합니다<small>순서 안내 문자에만 쓰고 다음 날 지웁니다</small></span></button>
+          <button class="agree${S.agree ? " on" : ""}" data-a="agree" role="checkbox" aria-checked="${S.agree}"><i></i><span><b>[필수]</b> 대기 안내를 위한 휴대폰 번호 수집·이용에 동의합니다<small>순서 안내 카카오톡에만 쓰고 다음 날 지웁니다</small></span></button>
         </div>
         <div class="right">
           <div class="pad">${keys}</div>
@@ -53,7 +53,7 @@
         <p class="sub">${S.dup ? "이미 접수된 번호입니다" : "접수되었습니다"}</p>
         <div class="big"><span>대기번호</span><b>${x.no}</b></div>
         <div class="pair"><div><span>내 앞</span><b>${Math.max(0, ahead)}팀</b></div><div><span>예상 대기</span><b>${etaText(ahead)}</b></div></div>
-        <p class="sub">순서가 가까워지면 문자로 알려 드립니다.</p>
+        <p class="sub">순서가 가까워지면 카카오톡으로 알려 드립니다.</p>
         <a class="link" href="?no=${x.no}" target="_blank" rel="noopener">휴대폰으로 내 순서 보기</a>
         <button class="go" data-a="home">처음으로 <small>${S.back}초 뒤 자동</small></button>
       </section>`;
@@ -66,7 +66,7 @@
     const ahead = ZB.waitAhead(x.id);
     const body = x.status === "call" ? `<div class="callbox"><b>지금 입장해 주세요</b><span>매장 입구에서 대기번호를 말씀해 주세요.</span></div>`
       : x.status === "wait" ? `<div class="pair"><div><span>내 앞</span><b>${ahead}팀</b></div><div><span>예상 대기</span><b>${etaText(ahead)}</b></div></div>
-          <p class="sub">이 화면은 스스로 새로 고쳐집니다. 순서가 되면 문자로도 알려 드립니다.</p>`
+          <p class="sub">이 화면은 스스로 새로 고쳐집니다. 순서가 되면 카카오톡으로도 알려 드립니다.</p>`
       : `<div class="endbox">${x.status === "in" ? "입장하셨습니다. 맛있게 드세요." : x.status === "gone" ? "호출 뒤 오지 않으셔서 순서가 넘어갔습니다. 매장에 말씀해 주세요." : "웨이팅이 취소되었습니다."}</div>`;
     return head + `<section class="card center narrow">
         <div class="big"><span>대기번호</span><b>${x.no}</b></div>

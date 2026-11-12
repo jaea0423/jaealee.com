@@ -92,7 +92,7 @@
     const fOn = {}; feats.forEach(f => fOn[f.feature] = f.enabled);
     d.wait = { on: fOn.wait !== false, seq: Math.max(0, ...waits.map(w => w.no)),   /* 번호 카운터 표는 직원에게 열지 않음 — 오늘 웨이팅 중 가장 큰 번호 */
       list: waits.map(w => { const o = { id: w.id, no: w.no, people: w.people, phone: fmt(w.phone), src: WAIT_SRC[w.src] || w.src, status: w.status, at: ms(w.created_at) };
-        if(w.called_at) o.callAt = ms(w.called_at); if(w.seated_at || w.ended_at) o.doneAt = ms(w.seated_at || w.ended_at); if(w.priority) o.first = true; return o; }) };
+        if(w.called_at) o.callAt = ms(w.called_at); if(w.seated_at || w.ended_at) o.doneAt = ms(w.seated_at || w.ended_at); if(w.priority) o.first = true; if(w.notify_status === "failed") o.notifyFail = true; return o; }) };
     d.ledger = { seq: ltx.length,
       accts: accts.map(a => ({ id: a.id, name: a.name, kind: a.kind === "person" ? "개인" : "회사", contact: a.contact || "", phone: fmt(a.phone), memo: a.memo || "" })),
       tx: ltx.map(t => { const o = { id: t.id, acct: t.account_id, type: t.type, amount: t.amount, memo: t.memo || "", by: t.by_name || "", at: ms(t.created_at) }; if(t.voided_at) o.void = true; return o; }) };

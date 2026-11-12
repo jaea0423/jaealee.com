@@ -160,7 +160,7 @@
       return `<article class="wt ${x.status}${over ? " over" : ""}">
         <div class="no"><b class="num">${x.no}</b><span>번</span></div>
         <div class="who">
-          <div class="l1"><b class="num">${x.people}명</b>${x.status === "call" ? `<span class="chip ${over ? "noshow" : "req"}">호출함 · ${ago(x.callAt)}분 전${over ? " · " + c.callWaitMin + "분 지남" : ""}</span>` : `<span class="chip ok">${i === 0 ? "다음 순서" : "앞에 " + i + "팀"}</span>`}${x.first ? `<span class="chip in">예약 손님 · 맨 앞</span>` : ""}<span class="chip src">${esc(x.src)}</span></div>
+          <div class="l1"><b class="num">${x.people}명</b>${x.status === "call" ? `<span class="chip ${over ? "noshow" : "req"}">호출함 · ${ago(x.callAt)}분 전${over ? " · " + c.callWaitMin + "분 지남" : ""}</span>` : `<span class="chip ok">${i === 0 ? "다음 순서" : "앞에 " + i + "팀"}</span>`}${x.notifyFail ? `<span class="chip noshow" title="카카오톡을 안 쓰거나 알림을 차단한 손님">알림 못 감 · 직접 불러 주세요</span>` : ""}${x.first ? `<span class="chip in">예약 손님 · 맨 앞</span>` : ""}<span class="chip src">${esc(x.src)}</span></div>
           <div class="l2 num">${esc(x.phone || "전화번호 없음")} · 기다린 지 ${ago(x.at)}분${over ? " · 오지 않으면 미방문으로 넘기고 다음 팀을 부르세요" : ""}</div>
         </div>
         <div class="acts">${x.status === "call" ? B(x, "in", "입장", "in") + B(x, "call", "다시 호출") + B(x, "gone", over ? "넘기기 (미방문)" : "미방문", "no") : B(x, "call", "호출", "ok") + B(x, "in", "입장") + B(x, "cancel", "취소", "no")}</div>
@@ -308,7 +308,7 @@
           <div class="fld"><label for="f-name">${f.kind === "회사" ? "회사·모임 이름" : "성함"}</label><input id="f-name" data-f="name" value="${esc(f.name)}" autocomplete="off"></div>
           <div class="two">
             <div class="fld"><label for="f-contact">담당자<em>선택</em></label><input id="f-contact" data-f="contact" value="${esc(f.contact)}" autocomplete="off"></div>
-            <div class="fld"><label for="f-phone">전화번호<em>사용 내역 문자를 받을 번호</em></label><input id="f-phone" data-f="phone" value="${esc(f.phone)}" inputmode="numeric" autocomplete="off" placeholder="010-0000-0000"></div>
+            <div class="fld"><label for="f-phone">전화번호<em>사용 내역 알림톡을 받을 번호</em></label><input id="f-phone" data-f="phone" value="${esc(f.phone)}" inputmode="numeric" autocomplete="off" placeholder="010-0000-0000"></div>
           </div>
           <div class="fld"><label for="f-amount">처음 맡기는 금액<em>나중에 충전해도 됩니다</em></label><input id="f-amount" data-f="amount" value="${esc(f.amount)}" inputmode="numeric" autocomplete="off" placeholder="0"></div>
           <div class="fld"><label for="f-memo">메모<em>선택</em></label><input id="f-memo" data-f="memo" value="${esc(f.memo)}" autocomplete="off"></div>
@@ -400,10 +400,10 @@
     return `<span>${who}</span>` + (amount ? `<b>${won(amount)} × ${ZB.cfg.pointRate}% = ${pt(get)} 적립</b>` : "")
       + (dup.length ? `<em>오늘 이미 ${dup.length}번 적립했습니다 (${dup.map(t => md(t.at).split(" ")[1] + " " + won(t.amount)).join(", ")}). 다른 계산이 맞는지 확인해 주세요 — 막지는 않습니다.</em>` : "");
   }
-  /* 처음 오신 손님은 직원이 말로 동의를 받고 체크해야 적립됨(필수) · 홍보 문자는 선택 */
+  /* 처음 오신 손님은 직원이 말로 동의를 받고 체크해야 적립됨(필수) · 홍보 소식은 선택 */
   const earnOk = () => digits(form.phone).length === 11 && /^010/.test(digits(form.phone)) && Number(digits(form.amount)) > 0 && (earnMember() || form.agree);
-  const agreeBox = () => `<div class="fld"><button type="button" class="chk${form.agree ? " on" : ""}" data-a="pe-ag" role="checkbox" aria-checked="${!!form.agree}"><i></i><span><b>[필수]</b> 손님께 개인정보 수집·이용 동의를 받았습니다<em>휴대폰 번호·이름 · 포인트 적립·사용·내역 문자 · 마지막 이용 후 3년 보관</em></span></button>
-      <button type="button" class="chk${form.mkt ? " on" : ""}" data-a="pe-mk" role="checkbox" aria-checked="${!!form.mkt}"><i></i><span><b>[선택]</b> 홍보 문자 받기에 동의하셨습니다<em>묻고 원하실 때만 체크</em></span></button></div>`;
+  const agreeBox = () => `<div class="fld"><button type="button" class="chk${form.agree ? " on" : ""}" data-a="pe-ag" role="checkbox" aria-checked="${!!form.agree}"><i></i><span><b>[필수]</b> 손님께 개인정보 수집·이용 동의를 받았습니다<em>휴대폰 번호·이름 · 포인트 적립·사용·내역 알림 · 마지막 이용 후 3년 보관</em></span></button>
+      <button type="button" class="chk${form.mkt ? " on" : ""}" data-a="pe-mk" role="checkbox" aria-checked="${!!form.mkt}"><i></i><span><b>[선택]</b> 할인·행사 소식 받기에 동의하셨습니다<em>묻고 원하실 때만 체크</em></span></button></div>`;
   function sheetEarn(){
     const f = form, ph = digits(f.phone), isNew = ph.length === 11 && !earnMember();
     return `<div class="ov" data-a="close-ov"><div class="sheet" role="dialog" aria-modal="true" aria-label="포인트 적립">
@@ -607,12 +607,12 @@
     else if(a === "f-save"){
       if(!form.time || !form.name.trim()) return;
       ZB.add({ date: form.date, time: form.time, people: form.people, name: form.name.trim(), phone: form.phone.trim(), memo: form.memo.trim(), pre: "", status: "ok", src: "전화" });
-      view.sheet = null; toast(`${form.name.trim()} 님 ${form.time} ${form.people}명 예약을 등록했습니다`, form.phone.trim() ? "확정 문자를 보냈습니다" : "");
+      view.sheet = null; toast(`${form.name.trim()} 님 ${form.time} ${form.people}명 예약을 등록했습니다`, form.phone.trim() ? "확정 알림톡을 보냈습니다" : "");
     }
     else if(a === "st"){
       const r = ZB.update(el.dataset.id, { status: v });
       if(r){ const M = { ok: "확정했습니다", in: "방문 처리했습니다", noshow: "노쇼로 표시했습니다", cancel: "취소했습니다" };
-        toast(`${r.name} 님 ${r.time} 예약을 ${M[v]}`, (v === "ok" || v === "cancel") && r.phone ? "손님에게 안내 문자를 보냈습니다" : ""); }
+        toast(`${r.name} 님 ${r.time} 예약을 ${M[v]}`, (v === "ok" || v === "cancel") && r.phone ? "손님에게 안내 알림톡을 보냈습니다" : ""); }
     }
     else if(a === "c"){
       const k = el.dataset.k, c = ZB.cfg, st = CFG_STEP[k] || [1, 0, 999], max = k === "onlineTables" ? c.tables : st[2];
@@ -643,7 +643,7 @@
       const n = amt(); if(n <= 0) return;
       const ac = ZB.ledger.accts.filter(x => x.id === form.acct)[0];
       ZB.addTx(form.acct, form.type, n, form.memo.trim(), form.by.trim()); view.sheet = null;
-      toast(`${ac.name} ${form.type === "charge" ? "충전" : "사용"} ${won(n)} · 잔액 ${won(ZB.bal(ac.id))}`, ac.phone ? "담당자에게 내역 문자를 보냈습니다" : "");
+      toast(`${ac.name} ${form.type === "charge" ? "충전" : "사용"} ${won(n)} · 잔액 ${won(ZB.bal(ac.id))}`, ac.phone ? "담당자에게 내역 알림톡을 보냈습니다" : "");
     }
     else if(a === "l-void"){
       const t = ZB.ledger.tx.filter(x => x.id === v)[0]; if(!t) return;
@@ -664,7 +664,7 @@
       if(!earnOk()) return;
       const r = ZB.earn(digits(form.phone), Number(digits(form.amount)), form.name, "직원 입력", { mkt: !!form.mkt, via: "직원 확인(말로)" });
       view.mem = r.m.id; view.pq = ""; view.sheet = null;
-      toast(`${r.m.phone} ${pt(r.t.pts)} 적립${r.isNew ? " · 새 회원" : ""} · 모두 ${pt(ZB.pbal(r.m.id))}`, "적립 문자를 보냈습니다");
+      toast(`${r.m.phone} ${pt(r.t.pts)} 적립${r.isNew ? " · 새 회원" : ""} · 모두 ${pt(ZB.pbal(r.m.id))}`, "적립 알림톡을 보냈습니다");
     }
     else if(a === "pe-ag"){ form.agree = !form.agree; }
     else if(a === "pe-mk"){ form.mkt = !form.mkt; }

@@ -41,7 +41,7 @@
           ${isNew ? "" : `<p class="sub">${pend ? "처음이시면 이 번호로 바로 회원이 됩니다." : "번호를 누르면 쌓인 포인트를 보여 드립니다."}</p>`}
           ${isNew ? `<label class="nm"><span>성함 <small>성이나 별명도 됩니다 · 포인트를 쓰실 때 확인해요</small></span><input id="nm" value="${S.name.replace(/"/g, "&quot;")}" maxlength="10" autocomplete="off" placeholder="예) 김민수"></label>` : ""}
           ${isNew ? `<button class="agree${S.agree ? " on" : ""}" data-a="agree" role="checkbox" aria-checked="${S.agree}"><i></i><span><b>[필수]</b> 포인트 회원 개인정보 수집·이용 동의<small>번호·성함 · 적립·사용 안내 · 마지막 이용 후 3년 보관</small></span></button>
-            <button class="agree opt${S.mkt ? " on" : ""}" data-a="mkt" role="checkbox" aria-checked="${S.mkt}"><i></i><span><b>[선택]</b> 할인·행사 소식 문자 받기<small>안 받으셔도 적립은 똑같습니다</small></span></button>` : ""}
+            <button class="agree opt${S.mkt ? " on" : ""}" data-a="mkt" role="checkbox" aria-checked="${S.mkt}"><i></i><span><b>[선택]</b> 할인·행사 소식 받기<small>안 받으셔도 적립은 똑같습니다</small></span></button>` : ""}
           ${pend ? `<div class="quiets"><button class="quiet" data-a="skip">적립 안 할게요</button><button class="quiet" data-a="look">내 포인트만 보기</button></div>` : `<button class="quiet" data-a="idle">돌아가기</button>`}
         </div>
         <div class="right">
@@ -61,7 +61,7 @@
         <div class="pair one"><div><span>모두</span><b>${pt(d.total)}</b></div></div>
         <p class="sub">${d.kind === "earn" && c.pointNextDay ? `오늘 쌓인 포인트는 <b>내일부터</b> 쓰실 수 있습니다. ` : ""}${can ? `다음 계산 때 직원에게 성함과 번호를 말씀하시면 <b>${won(d.total)}</b>까지 할인해 드립니다.` : `${pt(c.pointMin - d.total)} 더 모으시면 할인으로 쓰실 수 있습니다.`}</p>
         ${d.soon ? `<p class="sub warn">${pt(d.soon)}가 30일 안에 사라집니다.</p>` : ""}
-        ${d.kind === "earn" ? `<p class="sub">적립 내역을 문자로 보내 드렸습니다.</p>` : ""}
+        ${d.kind === "earn" ? `<p class="sub">적립 내역을 카카오톡으로 보내 드렸습니다.</p>` : ""}
         ${backBtn()}
       </section>`;
   }

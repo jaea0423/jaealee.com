@@ -27,7 +27,8 @@
 |---|---|---|---|
 | 0001 | [dineone-db-draft.sql](dineone-db-draft.sql) | 표·권한·기기 함수·업무 기록·지우기 | 11-12 적용, 검사 27개 통과 |
 | 0002 | [dineone-db-0002-devices.sql](dineone-db-0002-devices.sql) | 기기 등록 코드, 계산대 금액 넘기기(`counter_pending`), 기기용 조회(`kiosk_me`·`kiosk_lookup`·`kiosk_wait_status`·`kiosk_earn_pending`) | 11-12 적용 |
-| 0003 | [dineone-db-0003-staff.sql](dineone-db-0003-staff.sql) | 매장 화면용: 웨이팅↔예약 연결 칸, 기능 스위치 권한(사장·매니저), 직원 웨이팅 등록 `staff_wait_add` | 대기 |
+| 0003 | [dineone-db-0003-staff.sql](dineone-db-0003-staff.sql) | 매장 화면용: 웨이팅↔예약 연결 칸, 기능 스위치 권한(사장·매니저), 직원 웨이팅 등록 `staff_wait_add` | 사용자 실행 여부 확인 필요 |
+| 0004 | [dineone-db-0004-alimtalk.sql](dineone-db-0004-alimtalk.sql) | 알림톡만: 보낸 알림에 `alimtalk` 종류·템플릿 코드, 웨이팅 `notify_status`(알림 못 감 표시) | 대기 |
 | 더미 | [dineone-db-seed-dev.sql](dineone-db-seed-dev.sql) | `dev_reseed()`: 오늘 기준 더미 가게(예약 160여 건, 웨이팅 14, 포인트 회원 16, 장부 5). 손님 번호는 모두 010-0000-xxxx | 11-12 적용 |
 
 - 0002와 더미는 0001처럼 SQL Editor에서 한 번씩 실행합니다. 더미는 그 뒤 언제든 `select dev_reseed();` 한 줄로 오늘 기준으로 다시 만듭니다.

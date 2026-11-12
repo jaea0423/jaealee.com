@@ -8,7 +8,7 @@
    아래부터 한옥반점 원문 설명 — 어느 장에서든 [data-reserve] 를 누르면 뜹니다.
 
    흐름(한 화면에 하나씩) ① 인원 → ② 날짜 → ③ 시간 → ④ 자리 → ⑤ 메뉴 → ⑥ 예약자 정보 → ⑦ 예약 확인 → 접수
-   접수는 바로 확정이 아닙니다. 가게에서 확인한 뒤 문자로 확정합니다(예약 시스템 '손님 요청' 칸으로 들어갈 예정).
+   접수는 바로 확정이 아닙니다. 가게에서 확인한 뒤 카카오 알림톡으로 확정을 알립니다(예약 시스템 '손님 요청' 칸으로 들어갈 예정).
    제한 시간 5분은 시간을 고른 다음(④)부터 흐릅니다.
    당일 예약은 관리 화면의 '당일 예약' 스위치(SITE.online.sameDay)를 켰을 때만 — 그때도 지금부터 sameDayLeadH 시간 뒤 시각만. 어린이는 유아를 포함합니다.
 
@@ -709,7 +709,7 @@ if(!window.safeHref) window.safeHref = function(u){ return /^https?:\/\//i.test(
         clearInterval(codeTimer); codeTimer = null; verify.disabled = true; hint.textContent = "인증번호가 만료되었습니다. 다시 요청해 주세요."; hint.classList.add("bad");
         S.sent = false; S.resendUsed = false; send.disabled = false; send.textContent = "인증번호 요청"; return;
       }
-      hint.textContent = (codeErr || "문자로 보낸 인증번호를 입력해 주세요.") + ` (${pad(Math.floor(codeLeft/60))}:${pad(codeLeft%60)})`; codeLeft--;
+      hint.textContent = (codeErr || "보내 드린 인증번호를 입력해 주세요.") + ` (${pad(Math.floor(codeLeft/60))}:${pad(codeLeft%60)})`; codeLeft--;
       /* 재요청은 성급한 중복 발송을 막되, 한 번은 받을 수 있게 1분 뒤에만 엽니다 */
       if(S.sent && !S.resendUsed && resendLeft > 0){ send.disabled = true; send.textContent = `다시 요청 (${resendLeft}초)`; resendLeft--; }
       else if(S.sent && !S.resendUsed){ send.disabled = false; send.textContent = "다시 요청"; }
@@ -731,7 +731,7 @@ if(!window.safeHref) window.safeHref = function(u){ return /^https?:\/\//i.test(
       : r.code === "LIMIT" ? "인증번호를 연달아 요청하셨습니다. 5분 뒤에 다시 시도해 주세요."
       : r.code === "DAILY" ? `이 번호로 오늘 요청할 수 있는 횟수를 넘었습니다. 전화로 예약 도와드리겠습니다. (${INFO.tel})`
       : r.code === "PHONE" ? "휴대폰 번호를 확인해 주세요."
-      : `지금은 인증 문자를 보낼 수 없습니다. 잠시 뒤 다시 시도하시거나 전화로 문의해 주세요. (${INFO.tel})`;
+      : `지금은 인증번호를 보낼 수 없습니다. 잠시 뒤 다시 시도하시거나 전화로 문의해 주세요. (${INFO.tel})`;
     let busy = false;
     send.addEventListener("click", async () => {
       const d = S.phone.replace(/\D/g, "");
@@ -811,7 +811,7 @@ if(!window.safeHref) window.safeHref = function(u){ return /^https?:\/\//i.test(
             <tr><th>항목</th><th>목적</th><th>보유 기간</th></tr>
             <tr><td>성함, 휴대폰 번호</td><td>예약 확인·확정 연락, 예약 관리</td><td>마지막 예약일로부터 3년</td></tr>
             <tr><td>알레르기, 요청사항</td><td>좌석과 식사 준비</td><td>방문일로부터 30일</td></tr></table>
-            <p class="rv-quiet">예약 시스템 운영과 안내 문자 발송은 와이비테크랩(DineONE)과 문자 발송 업체에 맡깁니다. 동의하지 않으셔도 되며, 이 경우 온라인 예약 대신 전화로 예약하실 수 있습니다. 자세한 내용은 <a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a>.</p>`)}
+            <p class="rv-quiet">예약 시스템 운영과 안내 메시지(카카오 알림톡) 발송은 와이비테크랩(DineONE)과 발송 업체·카카오에 맡깁니다. 동의하지 않으셔도 되며, 이 경우 온라인 예약 대신 전화로 예약하실 수 있습니다. 자세한 내용은 <a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a>.</p>`)}
         ${box("age", "만 14세 이상입니다", "")}
       </section>`);
     b.querySelectorAll("[data-a]").forEach(c => c.addEventListener("change", () => {

@@ -159,7 +159,7 @@
     const now = Date.now(), M = 60000, list = []; let no = 0;
     const mk = (ago, people, status, src, dur) => {
       const r = { id: "w_ex" + (++no), no: no, people: people, phone: "010-" + String(3100 + no * 617).slice(-4) + "-" + String(1000 + no * 137).slice(-4), src: src || "입구 접수", status: status, at: now - ago * M };
-      if(status === "call") r.callAt = now - 3 * M;
+      if(status === "call"){ r.callAt = now - 3 * M; r.notifyFail = true; }   /* 11-12: 알림톡만 씀 — 카톡 없는 손님은 알림이 안 감(매장 화면에 표시) */
       else if(!LIVE[status]) { r.callAt = r.at + (dur || 20) * M - 2 * M; r.doneAt = r.at + (dur || 20) * M; }
       list.push(r);
     };
@@ -339,13 +339,13 @@
     /* 오늘 이 회원이 이미 적립한 기록(중복 적립 경고용) */
     earnedToday(memId){ const t0 = dayStart(); return db.points.tx.filter(t => t.mem === memId && t.type === "earn" && !t.void && t.at >= t0); },
     /* 적립: 번호가 처음이면 회원을 만들고(이름·별명) 쌓음. src = 들어온 방식(계산대 / 직원 입력) */
-    /* agree = 처음 가입 때 동의 { mkt: 홍보 문자 선택, via: 어디서 받았나 }. 필수 동의 시각(agreeAt)과 홍보 동의를 회원에 남김 */
+    /* agree = 처음 가입 때 동의 { mkt: 홍보 소식 받기 선택, via: 어디서 받았나 }. 필수 동의 시각(agreeAt)과 홍보 동의를 회원에 남김 */
     earn(phone, amount, name, src, agree){
       let m = this.memberByPhone(phone), isNew = !m; agree = agree || {};
       if(!m){ m = { id: newId("m_"), phone: fmtPhone(phone), name: (name || "").trim(), agreeAt: Date.now(), agreeVia: agree.via || src || device, mkt: !!agree.mkt }; if(m.mkt) m.mktAt = m.agreeAt; db.points.members.push(m); }
       else if(name && !m.name) m.name = name.trim();
       ++db.points.seq; const t = { id: newId("p_"), mem: m.id, type: "earn", pts: Math.floor(amount * db.cfg.pointRate / 100), amount: amount, at: Date.now(), src: src || (device === "계산대" ? "계산대" : "직원 입력") };
-      db.points.tx.push(t); log("point", `${m.phone} 적립 +${t.pts.toLocaleString("ko-KR")} (결제 ${won(amount)})${isNew ? " · 새 회원 " + (m.name || "") + " (개인정보 동의" + (m.mkt ? " · 홍보 문자 동의" : "") + ")" : ""}`); save(); return { m: m, t: t, isNew: isNew };
+      db.points.tx.push(t); log("point", `${m.phone} 적립 +${t.pts.toLocaleString("ko-KR")} (결제 ${won(amount)})${isNew ? " · 새 회원 " + (m.name || "") + " (개인정보 동의" + (m.mkt ? " · 홍보 수신 동의" : "") + ")" : ""}`); save(); return { m: m, t: t, isNew: isNew };
     },
     usePts(mem, pts, how){ ++db.points.seq; const t = { id: newId("p_"), mem: mem, type: "use", pts: pts, amount: 0, at: Date.now(), how: how || "" }; db.points.tx.push(t);
       const m = db.points.members.filter(x => x.id === mem)[0]; log("point", `${m ? m.phone : ""} 사용 −${pts.toLocaleString("ko-KR")}${how ? " · 확인: " + how : ""}`); save(); return t; },
