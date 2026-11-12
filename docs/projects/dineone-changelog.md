@@ -30,6 +30,11 @@
 
 ## 2026-11-12
 
+### GitHub 조직·저장소
+- 결정: GitHub는 전용 계정 대신 조직 `dineone`(소유 YB Tech Lab)을 만들고, 비공개 저장소 `dineone/dineone`을 만들었습니다(구조 정리 19장).
+- 다음: jaealee.com에서 DineONE 파일을 새 저장소로 복사하고 `dineone.dev`에 배포합니다. 옛 시안 주소는 당분간 그대로 둡니다.
+- 범위: `docs/projects/dineone-structure.md` 3·19장
+
 ### 도메인 구입
 - 결정: `dineone.co.kr`, `dineone.dev`를 가비아에서 샀습니다(와이비테크랩 명의, 1년, 안전잠금 켬).
 - 변경: Cloudflare(전용 계정, Free)에 두 도메인을 추가하고 가비아 네임서버를 Cloudflare로 바꿨습니다. 전파를 기다리는 중입니다.

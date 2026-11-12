@@ -62,7 +62,7 @@
 - 왜 Supabase인지는 17장에 있습니다(11-12 결정).
 
 **GitHub**
-- 비공개 저장소 `dineone`
+- 비공개 저장소 `dineone/dineone` (조직 `dineone`, 11-12 만듦)
 - `main` 브랜치 → 운영, `dev` 브랜치 → 개발
 
 한옥반점이 지금 쓰는 방식(서브도메인마다 GitHub 저장소 하나)은 가게가 늘면 감당할 수 없습니다. 그래서 다인원은 프로그램 하나가 모든 주소를 받는 구조로 갑니다.
@@ -410,12 +410,18 @@ DB 표와 권한 설계는 [DB 설계](dineone-db.md)에 있습니다(초안 v0,
 
 | 서비스 | 계정 |
 |---|---|
-| Supabase, Cloudflare, GitHub, 문자 업체, PG | **DineONE 전용 Gmail을 새로 만들어** 가입. 한옥반점·개인 계정과 섞지 않음 |
+| Supabase, Cloudflare, 알림톡 업체, PG | **DineONE 전용 Gmail(`dineone.ops@gmail.com`)** 로 가입. 한옥반점·개인 계정과 섞지 않음 |
+| GitHub | **조직 `dineone`** (소유: YB Tech Lab, 무료, 연락 메일 dineone.ops). 로그인은 개인 계정 jaea0423 그대로. 저장소는 조직 소유 `dineone/dineone`(비공개) |
 | 가비아 (도메인) | **기존 와이비테크랩 회사 계정을 그대로** 씀. 갱신 결제만 하는 곳이라 따로 둘 이유가 없음 |
 
 - 전용 메일 주소는 `@dineone.co.kr`로 하지 않습니다.
   - 그 메일은 Cloudflare 메일 전달에 기대므로, Cloudflare 계정이 잠기면 복구 메일도 못 받습니다.
   - 이름 예: `dineone.ops@gmail.com` (ops = 운영)
+- GitHub만 조직으로 한 이유(11-12)
+  - GitHub 약관상 무료 개인 계정은 1인 1개라, 전용 계정을 따로 만들 수 없습니다. 조직은 몇 개든 무료입니다.
+  - 개인 계정이 학생 인증 계정이어도 조직은 학생 혜택과 상관없는 무료 요금제라 졸업 뒤에도 그대로입니다.
+  - 회사 자산이 개인과 분리되고, 사람을 들이거나 회사를 넘길 때 조직째 넘깁니다.
+  - Cloudflare에는 이 조직의 `dineone` 저장소만 접근을 허용합니다.
 - Supabase는 한 계정 안에 조직을 둘 둡니다: `dineone-prod`, `dineone-dev`. 요금도 조직별로 나갑니다(14장).
   - 만드는 값(11-12)
     - 조직: 이름 `dineone-dev`, 유형 Company, 요금제 Free → 그다음 `dineone-prod`도 같은 값으로 만듭니다(처음엔 Free).
