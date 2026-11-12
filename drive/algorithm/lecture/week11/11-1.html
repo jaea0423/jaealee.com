@@ -433,7 +433,7 @@ ul.dots{margin:8px 0 12px 20px;line-height:1.75}ul.dots li{margin:3px 0}
         <label><input type="checkbox"><span>N-Queens 조건 (행 · 열 · 대각선)</span></label>
         <label><input type="checkbox"><span>4-Queens 답 2개와 X 표기</span></label>
         <label><input type="checkbox"><span>nqueens · is_safe 의사코드</span></label>
-        <label><input type="checkbox"><span>대각선 조건 |X[i] − c| == k − i</span></label>
+        <label><input type="checkbox"><span>대각선: 밑변 |c − X[i]| = 높이 |k − i|</span></label>
         <label><input type="checkbox"><span>4-Queens 탐색 따라가기</span></label>
       </div>
       <div class="pbar"><i id="barFill"></i></div>
@@ -821,7 +821,7 @@ X[1] → 0안됨, 1안됨 2 가능
     <h2 class="st"><span class="sq">08</span>N-Queens 의사코드 — nqueens(k) · is_safe(k, c)</h2>
     <div class="badges"><span class="badge exam">시험 ★★★</span></div>
     <div class="codebox pseudo">
-      <div class="head"><span><span class="tag">의사코드</span>N-Queens — 오타 정리 · is_safe 뒷부분 보충</span><button class="copy">복사</button></div>
+      <div class="head"><span><span class="tag">의사코드</span>N-Queens — nqueens · is_safe</span><button class="copy">복사</button></div>
 <pre><code><span class="kw">def</span> nqueens(k):                  <span class="cm"># X[k] (k 행의 퀸 위치) 를 정하는 함수, 첫 호출: nqueens(0)</span>
     <span class="kw">if</span> k == N:                    <span class="cm"># 0 ~ N−1 행을 모두 채웠으면</span>
         print(X)                    <span class="cm"># 해 하나 출력</span>
@@ -834,16 +834,16 @@ X[1] → 0안됨, 1안됨 2 가능
 
 <span class="kw">def</span> is_safe(k, c):                <span class="cm"># k 행 c 열에 놓아도 되는가 (X[0] ~ X[k−1] 은 이미 정해짐)</span>
     <span class="kw">for</span> i <span class="kw">in</span> range(k):            <span class="cm"># 위쪽 행 0 ~ k−1 의 퀸과 하나씩 비교</span>
-        <span class="kw">if</span> X[i] == c:              <span class="cm"># 같은 열</span>
+        <span class="kw">if</span> X[i] == c:              <span class="cm"># 같은 열 (같은 행은 이미 걸러져 있음)</span>
             <span class="kw">return</span> False
-        <span class="kw">if</span> abs(X[i] − c) == k − i: <span class="cm"># (보충) 같은 대각선: 열 차이 = 행 차이</span>
+        <span class="kw">if</span> abs(X[i] − c) == abs(i − k):   <span class="cm"># 같은 대각선: 밑변 = 높이 (abs = 절댓값)</span>
             <span class="kw">return</span> False
-    <span class="kw">return</span> True                     <span class="cm"># (보충) 모두 통과하면 놓을 수 있음</span></code></pre>
+    <span class="kw">return</span> True                     <span class="cm"># 위쪽 퀸 모두와 안 겹치면 놓을 수 있음</span></code></pre>
     </div>
     <div class="tablewrap"><table><tbody>
       <tr><td style="width:160px">같은 행</td><td>행마다 X[k] 하나만 정하므로 검사할 필요 없음</td></tr>
       <tr><td>같은 열</td><td>X[i] == c</td></tr>
-      <tr><td>같은 대각선</td><td>두 퀸의 <b>행 차이 = 열 차이</b> → |X[i] − c| == k − i (↘ · ↙ 두 방향 모두)</td></tr>
+      <tr><td>같은 대각선</td><td>두 퀸을 이은 직각삼각형의 <b>밑변 |c − X[i]| = 높이 |k − i|</b> (아래 그림)</td></tr>
       <tr><td><b>백트랙은 어디서?</b></td><td>k 행에서 for 문이 0 ~ N−1 을 다 돌았는데 놓을 곳이 없으면 함수가 끝나 <b>위 행(k − 1) 의 for 문으로 돌아가</b> 그 행의 다음 열을 시도. X[k] 는 다음에 덮어쓰므로 지울 필요 없음</td></tr>
     </tbody></table></div>
     <h3>한 단계씩 보기 — 4-Queens, 첫 번째 해까지</h3>
@@ -855,7 +855,20 @@ document.getElementById('nq4p').onclick=function(){show(i-1)};document.getElemen
       <p>① 오타: "Nqueans(o0e" → <b>nqueens(0)</b>, "N-queens / Nqueens" → 함수 이름을 하나로 (nqueens), "range (N) $ c" 의 $ c 는 지움. 필기에 n 과 N 이 섞여 있어 <b>N</b> 으로 통일.</p>
       <p>② "x 랑 k 를 결정하는 알고리즘" → <b>X[k] (k 행의 퀸 위치) 를 결정</b>하는 함수.</p>
       <p>③ "x 가 0 부터 k=1 부터 정해져 있음" → <b>X[0] ~ X[k − 1] 이 이미 정해져 있음</b> (k 행 위쪽의 퀸들).</p>
-      <p>④ is_safe 가 <b>열 검사에서 끝나</b> 있습니다. 그대로면 대각선을 검사하지 않고, 겹치지 않을 때 True 를 돌려주는 줄도 없습니다. 대각선 검사와 return True 는 보충으로 채웠으니, 판서에 이어지는 부분이 있으면 보내 주세요.</p></div>
+      <p>④ "if abs(X[i] − c) == abs(i − k)" 뒤에 <b>콜론(:)</b> 이 빠져 있어 넣었습니다. i &lt; k 라서 abs(i − k) = k − i 로 써도 같습니다.</p></div>
+    <h3>대각선 판단 — 밑변과 높이</h3>
+    <p>k 행(가로줄) 과 c 열(세로줄) 이 만나는 곳이 새로 놓으려는 자리 <b>?</b>, 그 위쪽 i 행에 이미 놓인 퀸 <b>Q</b> (X[i] 열) 가 있습니다. 두 점을 이으면 직각삼각형이 생기는데:</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:10px;margin:12px 0">
+      <figure style="margin:0"><svg width="100%" viewBox="0 0 576 346" role="img" style="display:block;max-width:576px;margin:0 auto"><title>Q 가 오른쪽 위</title><desc>Q 가 오른쪽 위</desc><text x="173.0" y="30" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">0</text><text x="219.0" y="30" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">1</text><text x="265.0" y="30" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">2</text><text x="311.0" y="30" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">3</text><text x="357.0" y="30" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">4</text><text x="403.0" y="30" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">5</text><text x="138" y="67.0" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">0</text><text x="138" y="113.0" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">1</text><text x="138" y="159.0" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">2</text><text x="138" y="205.0" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">3</text><text x="138" y="251.0" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">4</text><text x="138" y="297.0" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">5</text><text x="288.0" y="14" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--ink-3)">열 번호</text><rect x="150" y="40" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="196" y="40" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="242" y="40" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="288" y="40" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="334" y="40" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="380" y="40" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="150" y="86" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="196" y="86" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="242" y="86" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="288" y="86" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="334" y="86" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="380" y="86" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="150" y="132" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="196" y="132" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="242" y="132" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="288" y="132" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="334" y="132" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="380" y="132" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="150" y="178" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="196" y="178" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="242" y="178" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="288" y="178" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="334" y="178" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="380" y="178" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="150" y="224" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="196" y="224" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="242" y="224" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="288" y="224" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="334" y="224" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="380" y="224" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="150" y="270" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="196" y="270" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="242" y="270" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="288" y="270" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="334" y="270" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="380" y="270" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><polygon points="357.0,109.0 357.0,247.0 219.0,247.0" fill="color-mix(in srgb,#F59E0B 18%,transparent)" stroke="#D97706" stroke-width="2"/><line x1="357.0" y1="109.0" x2="219.0" y2="247.0" stroke="#DC2626" stroke-width="2.4" stroke-dasharray="6 4"/><text x="288.0" y="269.0" text-anchor="middle" font-size="14" font-weight="800" fill="#B45309">밑변 |c − X[i]| = |1 − 4| = 3</text><text x="373.0" y="178.0" text-anchor="start" font-size="14" font-weight="800" fill="#B45309">높이 |k − i| = |4 − 1| = 3</text><circle cx="357.0" cy="109.0" r="14.72" fill="color-mix(in srgb,var(--accent) 30%,var(--surface))" stroke="var(--accent)" stroke-width="2"/><text x="357.0" y="115.0" text-anchor="middle" font-size="16" font-weight="900" fill="var(--accent-deep)">Q</text><circle cx="219.0" cy="247.0" r="14.72" fill="color-mix(in srgb,var(--accent) 30%,var(--surface))" stroke="var(--accent)" stroke-width="2"/><text x="219.0" y="253.0" text-anchor="middle" font-size="16" font-weight="900" fill="var(--accent-deep)">?</text><text x="377.7" y="91.52" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--ink-3)">i 행 · X[i]</text><text x="219.0" y="288.92" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--ink-3)">k 행 · c 열</text></svg><figcaption>Q 가 오른쪽 위 — 밑변 3 = 높이 3 → <b>대각선 (False)</b></figcaption></figure>
+      <figure style="margin:0"><svg width="100%" viewBox="0 0 576 346" role="img" style="display:block;max-width:576px;margin:0 auto"><title>Q 가 왼쪽 위</title><desc>Q 가 왼쪽 위</desc><text x="173.0" y="30" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">0</text><text x="219.0" y="30" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">1</text><text x="265.0" y="30" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">2</text><text x="311.0" y="30" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">3</text><text x="357.0" y="30" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">4</text><text x="403.0" y="30" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">5</text><text x="138" y="67.0" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">0</text><text x="138" y="113.0" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">1</text><text x="138" y="159.0" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">2</text><text x="138" y="205.0" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">3</text><text x="138" y="251.0" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">4</text><text x="138" y="297.0" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">5</text><text x="288.0" y="14" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--ink-3)">열 번호</text><rect x="150" y="40" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="196" y="40" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="242" y="40" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="288" y="40" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="334" y="40" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="380" y="40" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="150" y="86" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="196" y="86" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="242" y="86" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="288" y="86" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="334" y="86" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="380" y="86" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="150" y="132" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="196" y="132" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="242" y="132" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="288" y="132" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="334" y="132" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="380" y="132" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="150" y="178" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="196" y="178" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="242" y="178" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="288" y="178" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="334" y="178" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="380" y="178" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="150" y="224" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="196" y="224" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="242" y="224" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="288" y="224" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="334" y="224" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="380" y="224" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="150" y="270" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="196" y="270" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="242" y="270" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="288" y="270" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="334" y="270" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="380" y="270" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><polygon points="219.0,109.0 219.0,247.0 357.0,247.0" fill="color-mix(in srgb,#F59E0B 18%,transparent)" stroke="#D97706" stroke-width="2"/><line x1="219.0" y1="109.0" x2="357.0" y2="247.0" stroke="#DC2626" stroke-width="2.4" stroke-dasharray="6 4"/><text x="288.0" y="269.0" text-anchor="middle" font-size="14" font-weight="800" fill="#B45309">밑변 |c − X[i]| = |4 − 1| = 3</text><text x="203.0" y="178.0" text-anchor="end" font-size="14" font-weight="800" fill="#B45309">높이 |k − i| = |4 − 1| = 3</text><circle cx="219.0" cy="109.0" r="14.72" fill="color-mix(in srgb,var(--accent) 30%,var(--surface))" stroke="var(--accent)" stroke-width="2"/><text x="219.0" y="115.0" text-anchor="middle" font-size="16" font-weight="900" fill="var(--accent-deep)">Q</text><circle cx="357.0" cy="247.0" r="14.72" fill="color-mix(in srgb,var(--accent) 30%,var(--surface))" stroke="var(--accent)" stroke-width="2"/><text x="357.0" y="253.0" text-anchor="middle" font-size="16" font-weight="900" fill="var(--accent-deep)">?</text><text x="198.3" y="91.52" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--ink-3)">i 행 · X[i]</text><text x="357.0" y="288.92" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--ink-3)">k 행 · c 열</text></svg><figcaption>Q 가 왼쪽 위 — c − X[i] 의 부호만 반대, 절댓값은 같음 → <b>대각선</b></figcaption></figure>
+      <figure style="margin:0"><svg width="100%" viewBox="0 0 576 346" role="img" style="display:block;max-width:576px;margin:0 auto"><title>대각선 아님</title><desc>대각선 아님</desc><text x="173.0" y="30" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">0</text><text x="219.0" y="30" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">1</text><text x="265.0" y="30" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">2</text><text x="311.0" y="30" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">3</text><text x="357.0" y="30" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">4</text><text x="403.0" y="30" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">5</text><text x="138" y="67.0" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">0</text><text x="138" y="113.0" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">1</text><text x="138" y="159.0" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">2</text><text x="138" y="205.0" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">3</text><text x="138" y="251.0" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">4</text><text x="138" y="297.0" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink-3)">5</text><text x="288.0" y="14" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--ink-3)">열 번호</text><rect x="150" y="40" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="196" y="40" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="242" y="40" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="288" y="40" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="334" y="40" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="380" y="40" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="150" y="86" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="196" y="86" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="242" y="86" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="288" y="86" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="334" y="86" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="380" y="86" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="150" y="132" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="196" y="132" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="242" y="132" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="288" y="132" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="334" y="132" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="380" y="132" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="150" y="178" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="196" y="178" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="242" y="178" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="288" y="178" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="334" y="178" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="380" y="178" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="150" y="224" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="196" y="224" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="242" y="224" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="288" y="224" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="334" y="224" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="380" y="224" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="150" y="270" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="196" y="270" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="242" y="270" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="288" y="270" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><rect x="334" y="270" width="46" height="46" fill="color-mix(in srgb,var(--ink-3) 10%,var(--surface))" stroke="var(--line)" stroke-width="1"/><rect x="380" y="270" width="46" height="46" fill="var(--surface)" stroke="var(--line)" stroke-width="1"/><polygon points="357.0,109.0 357.0,201.0 219.0,201.0" fill="color-mix(in srgb,#F59E0B 18%,transparent)" stroke="#D97706" stroke-width="2"/><line x1="357.0" y1="109.0" x2="219.0" y2="201.0" stroke="#DC2626" stroke-width="2.4" stroke-dasharray="6 4"/><text x="288.0" y="223.0" text-anchor="middle" font-size="14" font-weight="800" fill="#B45309">밑변 |c − X[i]| = |1 − 4| = 3</text><text x="373.0" y="155.0" text-anchor="start" font-size="14" font-weight="800" fill="#B45309">높이 |k − i| = |3 − 1| = 2</text><circle cx="357.0" cy="109.0" r="14.72" fill="color-mix(in srgb,var(--accent) 30%,var(--surface))" stroke="var(--accent)" stroke-width="2"/><text x="357.0" y="115.0" text-anchor="middle" font-size="16" font-weight="900" fill="var(--accent-deep)">Q</text><circle cx="219.0" cy="201.0" r="14.72" fill="color-mix(in srgb,var(--accent) 30%,var(--surface))" stroke="var(--accent)" stroke-width="2"/><text x="219.0" y="207.0" text-anchor="middle" font-size="16" font-weight="900" fill="var(--accent-deep)">?</text><text x="377.7" y="91.52" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--ink-3)">i 행 · X[i]</text><text x="219.0" y="242.92000000000002" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--ink-3)">k 행 · c 열</text></svg><figcaption>밑변 3 ≠ 높이 2 → 대각선 아님 (열도 다르면 True)</figcaption></figure>
+    </div>
+    <div class="tablewrap"><table><tbody>
+      <tr><td style="width:150px">밑변</td><td>|c − X[i]| — 두 퀸의 <b>열 차이</b></td></tr>
+      <tr><td>높이</td><td>|k − i| — 두 퀸의 <b>행 차이</b></td></tr>
+      <tr><td>대각선</td><td><b>밑변 = 높이</b> 이면 두 퀸은 같은 대각선 (45°) 위에 있음</td></tr>
+      <tr><td>절댓값을 쓰는 이유</td><td>Q 가 왼쪽에 있으면 c − X[i] 의 <b>부호가 반대</b>가 되므로, 방향과 상관없이 길이만 비교하려고</td></tr>
+    </tbody></table></div>
     <details class="raw"><summary>필기 원문</summary><div class="txt">방금 한거 수도코드 작성
 pueudocode
 
@@ -873,7 +886,43 @@ def is_safe(k, c)
 나는 k행에 집중하고 있음. x가 0부터 k=1부터 정해져있음
     for i in range(k):
         if X[i] == c:
-          return False</div></details>
+          return False
+
+(방금 보낸거 마지막 부분)
+
+    for i in range(k):
+        if X[i] == c:     #같은열(같은 행은 이미 걸러져있음)
+          return False     
+
+내가 보고싶은건 K(x축으로 표현)
+c(y축으로 표현)
+k 위로는 i번째가 있다고 침(x축 위)
+i 축이 x출보다 위에 있음
+X[i]는 y축 오른쪽에 있음
+
+직 교점에 점 찍으면 우측 상단은 원래 Q
+좌측 하단은 Q?
+
+근데 대각선이 안된다했음
+즉 둘을 이어서 만들어지는 삼각형 밑변 높이가 같으면 안됨(왼쪽으로 있어도 마찬가지)
+두 길이의 절대값이 같은지 봐야함(왼쪽이면 부호가 다르기 때문)
+
+방금 말한 밑변은 |c-X[i]|
+높이는 |k-i| 가 됨
+(이거 그래프에서 알아서 잘 시각화해줘야해. 글로 표현하기 어렵다.)
+
+아무튼 이 두 개가 같으면 두 퀸은 대각선에 위치한다는 뜻임
+
+그래서 이걸 코드로 적으면
+
+    for i in range(k):
+        if X[i] == c:     #같은열(같은 행은 이미 걸러져있음)
+          return False     
+여기에 이어서 적을게
+        if abs(X[i] - c) == abs(i-k)   #abs는 절대값으로 만드는 수식같은거임
+            return False
+    return True
+이렇게 됨</div></details>
   </section>
   <!-- 09 -->
   <section id="sg">
@@ -889,7 +938,7 @@ def is_safe(k, c)
   <!-- 10 -->
   <section id="sq">
     <h2 class="st"><span class="sq">10</span>확인 필요</h2>
-    <div class="call ask"><div class="t">2. is_safe 의 뒷부분 — <span style="color:var(--c3)">판서 확인</span></div><p>필기는 열 검사(X[i] == c) 까지만 있습니다. 대각선 검사와 마지막 return True 가 판서에 어떻게 쓰였는지 알려 주세요 (08).</p></div><div class="call ask"><div class="t">1. find_way 의 미로 밖 처리 — <span style="color:var(--c3)">판서 확인</span></div><p>맨 아래 행 · 맨 오른쪽 열에서 남 · 동으로 호출하면 미로 밖 칸 M[n][y] · M[x][n] 을 읽게 됩니다. 교수님 판서에 범위 검사가 있었는지, 미로 밖을 unsafe 로 본다고 하셨는지 확인해 주세요 (06).</p></div>
+    <div class="call ask"><div class="t">1. find_way 의 미로 밖 처리 — <span style="color:var(--c3)">판서 확인</span></div><p>맨 아래 행 · 맨 오른쪽 열에서 남 · 동으로 호출하면 미로 밖 칸 M[n][y] · M[x][n] 을 읽게 됩니다. 교수님 판서에 범위 검사가 있었는지, 미로 밖을 unsafe 로 본다고 하셨는지 확인해 주세요 (06).</p></div>
   </section>
   <!-- 11 -->
   <section id="sx">
@@ -1164,6 +1213,47 @@ def is_safe(k, c)
         if X[i] == c:
           return False</div>
         <div class="where"><a href="#s8">08. N-Queens 의사코드</a></div>
+      </div>
+    </div>
+    <div class="rawitem">
+      <div class="seq">09<span>&nbsp;</span></div>
+      <div>
+        <div class="body">(방금 보낸거 마지막 부분)
+
+    for i in range(k):
+        if X[i] == c:     #같은열(같은 행은 이미 걸러져있음)
+          return False     
+
+내가 보고싶은건 K(x축으로 표현)
+c(y축으로 표현)
+k 위로는 i번째가 있다고 침(x축 위)
+i 축이 x출보다 위에 있음
+X[i]는 y축 오른쪽에 있음
+
+직 교점에 점 찍으면 우측 상단은 원래 Q
+좌측 하단은 Q?
+
+근데 대각선이 안된다했음
+즉 둘을 이어서 만들어지는 삼각형 밑변 높이가 같으면 안됨(왼쪽으로 있어도 마찬가지)
+두 길이의 절대값이 같은지 봐야함(왼쪽이면 부호가 다르기 때문)
+
+방금 말한 밑변은 |c-X[i]|
+높이는 |k-i| 가 됨
+(이거 그래프에서 알아서 잘 시각화해줘야해. 글로 표현하기 어렵다.)
+
+아무튼 이 두 개가 같으면 두 퀸은 대각선에 위치한다는 뜻임
+
+그래서 이걸 코드로 적으면
+
+    for i in range(k):
+        if X[i] == c:     #같은열(같은 행은 이미 걸러져있음)
+          return False     
+여기에 이어서 적을게
+        if abs(X[i] - c) == abs(i-k)   #abs는 절대값으로 만드는 수식같은거임
+            return False
+    return True
+이렇게 됨</div>
+        <div class="where"><a href="#s8">08. is_safe 이어서 — 대각선</a></div>
       </div>
     </div>
   </div>
