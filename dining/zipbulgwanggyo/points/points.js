@@ -8,7 +8,7 @@
 (function(){
   const app = document.querySelector("#app");
   ZB.setDevice("계산대");   /* 기록에 '계산대' 로 남음 */
-  const S = { mode: "idle", digits: "", agree: false, name: "", done: null, back: 0 };   /* mode: idle 쉬는 화면 · earn 적립 번호 입력 · look 조회 번호 입력 · done 끝 */
+  const S = { mode: "idle", digits: "", agree: false, mkt: false, name: "", done: null, back: 0 };   /* mode: idle 쉬는 화면 · earn 적립 번호 입력 · look 조회 번호 입력 · done 끝 */
   let timer = null;
   const pt = n => n.toLocaleString("ko-KR") + "포인트", won = n => n.toLocaleString("ko-KR") + "원";
   const phoneText = d => "010-" + d.slice(0, 4).padEnd(4, "_") + "-" + d.slice(4).padEnd(4, "_");
@@ -38,9 +38,10 @@
         <div class="left">
           <h2>${pend ? "휴대폰 번호를 눌러 주세요" : "내 포인트 보기"}</h2>
           <div class="phone${full ? " full" : ""}" aria-live="polite">${phoneText(S.digits)}</div>
-          <p class="sub">${pend ? "처음이시면 이 번호로 바로 회원이 됩니다." : "번호를 누르면 쌓인 포인트를 보여 드립니다."}</p>
+          ${isNew ? "" : `<p class="sub">${pend ? "처음이시면 이 번호로 바로 회원이 됩니다." : "번호를 누르면 쌓인 포인트를 보여 드립니다."}</p>`}
           ${isNew ? `<label class="nm"><span>성함 <small>성이나 별명도 됩니다 · 포인트를 쓰실 때 확인해요</small></span><input id="nm" value="${S.name.replace(/"/g, "&quot;")}" maxlength="10" autocomplete="off" placeholder="예) 김민수"></label>` : ""}
-          ${isNew ? `<button class="agree${S.agree ? " on" : ""}" data-a="agree" role="checkbox" aria-checked="${S.agree}"><i></i><span>포인트 적립을 위한 전화번호 수집에 동의합니다<small>적립·사용 내역 안내에만 씁니다</small></span></button>` : ""}
+          ${isNew ? `<button class="agree${S.agree ? " on" : ""}" data-a="agree" role="checkbox" aria-checked="${S.agree}"><i></i><span><b>[필수]</b> 포인트 회원 개인정보 수집·이용 동의<small>번호·성함 · 적립·사용 안내 · 마지막 이용 후 3년 보관</small></span></button>
+            <button class="agree opt${S.mkt ? " on" : ""}" data-a="mkt" role="checkbox" aria-checked="${S.mkt}"><i></i><span><b>[선택]</b> 할인·행사 소식 문자 받기<small>안 받으셔도 적립은 똑같습니다</small></span></button>` : ""}
           ${pend ? `<div class="quiets"><button class="quiet" data-a="skip">적립 안 할게요</button><button class="quiet" data-a="look">내 포인트만 보기</button></div>` : `<button class="quiet" data-a="idle">돌아가기</button>`}
         </div>
         <div class="right">
@@ -68,24 +69,25 @@
 
   /* 끝 화면은 잠시 보여 주고 스스로 쉬는 화면으로 — 다음 손님에게 앞 손님 포인트가 보이지 않게 */
   function finish(d){
-    S.done = d; S.mode = "done"; S.back = 8; S.digits = ""; S.agree = false;
+    S.done = d; S.mode = "done"; S.back = 8; S.digits = ""; S.agree = false; S.mkt = false;
     clearInterval(timer); timer = setInterval(() => { if(--S.back <= 0) goIdle(); else render(); }, 1000);
     render();
   }
-  function goIdle(){ clearInterval(timer); timer = null; S.mode = "idle"; S.digits = ""; S.agree = false; S.name = ""; S.done = null; render(); }
+  function goIdle(){ clearInterval(timer); timer = null; S.mode = "idle"; S.digits = ""; S.agree = false; S.mkt = false; S.name = ""; S.done = null; render(); }
 
   document.addEventListener("click", e => {
     const el = e.target.closest("[data-a]"); if(!el) return;
     const a = el.dataset.a, v = el.dataset.v;
     if(a === "key"){ if(v === "del") S.digits = S.digits.slice(0, -1); else if(S.digits.length < 8) S.digits += v; }
     else if(a === "agree") S.agree = !S.agree;
+    else if(a === "mkt") S.mkt = !S.mkt;
     else if(a === "look"){ S.mode = "look"; S.digits = ""; }
     else if(a === "idle") return goIdle();
     else if(a === "skip"){ if(ZB.pending) ZB.setPending(null); else nextDummy(); return finish({ kind: "skip" }); }
     else if(a === "earn"){
       ZB.reload(); const pend = ZB.pending || S.dummy; if(!pend || S.digits.length !== 8) return render();
       const phone = "010" + S.digits; if(!ZB.memberByPhone(phone) && !(S.agree && S.name.trim())) return;
-      const r = ZB.earn(phone, pend.amount, S.name, "계산대"); if(pend.dummy) nextDummy(); else ZB.setPending(null);
+      const r = ZB.earn(phone, pend.amount, S.name, "계산대", { mkt: S.mkt }); if(pend.dummy) nextDummy(); else ZB.setPending(null);
       const st = ZB.pstate(r.m.id);
       return finish({ kind: "earn", pts: r.t.pts, total: st.total, soon: st.soon, isNew: r.isNew });
     }

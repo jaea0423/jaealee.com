@@ -39,7 +39,7 @@
           <h2>휴대폰 번호</h2>
           <div class="phone${S.digits.length === 8 ? " full" : ""}" aria-live="polite">${phoneText(S.digits)}</div>
           <p class="sub">순서가 가까워지면 이 번호로 알려 드립니다.</p>
-          <button class="agree${S.agree ? " on" : ""}" data-a="agree" role="checkbox" aria-checked="${S.agree}"><i></i><span>대기 안내를 위한 전화번호 수집에 동의합니다<small>오늘 영업이 끝나면 지웁니다</small></span></button>
+          <button class="agree${S.agree ? " on" : ""}" data-a="agree" role="checkbox" aria-checked="${S.agree}"><i></i><span><b>[필수]</b> 대기 안내를 위한 휴대폰 번호 수집·이용에 동의합니다<small>순서 안내 문자에만 쓰고 다음 날 지웁니다</small></span></button>
         </div>
         <div class="right">
           <div class="pad">${keys}</div>

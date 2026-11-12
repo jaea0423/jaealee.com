@@ -810,8 +810,8 @@ if(!window.safeHref) window.safeHref = function(u){ return /^https?:\/\//i.test(
         ${box("priv", "개인정보 수집 · 이용에 동의합니다", `<table>
             <tr><th>항목</th><th>목적</th><th>보유 기간</th></tr>
             <tr><td>성함, 휴대폰 번호</td><td>예약 확인·확정 연락, 예약 관리</td><td>마지막 예약일로부터 3년</td></tr>
-            <tr><td>알레르기, 요청사항</td><td>좌석과 식사 준비</td><td>마지막 예약일로부터 3년</td></tr></table>
-            <p class="rv-quiet">동의하지 않으셔도 되며, 이 경우 온라인 예약 대신 전화로 예약하실 수 있습니다. 자세한 내용은 <a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a>.</p>`)}
+            <tr><td>알레르기, 요청사항</td><td>좌석과 식사 준비</td><td>방문일로부터 30일</td></tr></table>
+            <p class="rv-quiet">예약 시스템 운영과 안내 문자 발송은 와이비테크랩(DineONE)과 문자 발송 업체에 맡깁니다. 동의하지 않으셔도 되며, 이 경우 온라인 예약 대신 전화로 예약하실 수 있습니다. 자세한 내용은 <a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a>.</p>`)}
         ${box("age", "만 14세 이상입니다", "")}
       </section>`);
     b.querySelectorAll("[data-a]").forEach(c => c.addEventListener("change", () => {

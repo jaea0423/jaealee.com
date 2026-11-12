@@ -150,9 +150,12 @@ create table store_tables (
 create table customers (
   id          uuid primary key default gen_random_uuid(),
   store_id    uuid not null references stores(id),
-  phone       text not null check (phone ~ '^01[0-9]{8,9}$'),   -- 숫자만 01012345678
+  phone       text check (phone ~ '^01[0-9]{8,9}$'),            -- 숫자만 01012345678. 파기하면 비움
   name        text,                                             -- 성이나 별명도 됨
   memo        text,
+  marketing   boolean not null default false,                   -- 지금 홍보 문자 동의 상태 (근거는 consents)
+  last_seen_at timestamptz not null default now(),              -- 마지막 예약·적립·사용 (3년 보관 기준)
+  erased_at   timestamptz,                                      -- 보관 기간이 지나 번호·이름을 지운 때
   created_at  timestamptz not null default now(),
   unique (store_id, phone)
 );
@@ -380,7 +383,7 @@ create table sms_messages (
   store_id     uuid not null references stores(id),
   kind         text not null check (kind in
                ('res_confirm','res_change','res_remind','wait_join','wait_call','point_earn','ledger_use','promo','other')),
-  to_phone     text not null check (to_phone ~ '^01[0-9]{8,9}$'),
+  to_phone     text not null check (to_phone ~ '^01[0-9]([0-9]{7,8}|[*]{4}[0-9]{4})$'),   -- 6개월 뒤 010****1201
   body         text not null,
   bytes        int not null,                    -- EUC-KR 기준. 90 이하 단문
   msg_type     text not null check (msg_type in ('sms','lms')),
@@ -627,7 +630,8 @@ begin
 end $$;
 
 -- 계산대·겸용 태블릿: 적립 (처음이면 이름을 받아 회원 만들기)
-create function kiosk_earn(p_phone text, p_amount int, p_name text default null)
+create function kiosk_earn(p_phone text, p_amount int, p_name text default null,
+                           p_privacy boolean default false, p_marketing boolean default false)
 returns table (pts int, is_new boolean, usable int, total int)
 language plpgsql volatile security definer set search_path = public as $$
 declare
@@ -646,7 +650,15 @@ begin
   select id into cid from customers where store_id = s and phone = ph;
   is_new := cid is null;
   if is_new then
-    insert into customers (store_id, phone, name) values (s, ph, nullif(trim(p_name), '')) returning id into cid;
+    -- 처음 가입은 필수 동의가 있어야 함. 동의 문구 버전과 받은 기기를 남김
+    if not p_privacy then raise exception '개인정보 수집·이용 동의가 필요합니다'; end if;
+    insert into customers (store_id, phone, name, marketing) values (s, ph, nullif(trim(p_name), ''), p_marketing)
+      returning id into cid;
+    insert into consents (store_id, customer_id, kind, version, agreed, via) values
+      (s, cid, 'privacy', '2026-11-v1', true, (select label from devices where user_id = auth.uid())),
+      (s, cid, 'marketing', '2026-11-v1', p_marketing, (select label from devices where user_id = auth.uid()));
+  else
+    update customers set last_seen_at = now() where id = cid;
   end if;
   v_pts := floor(p_amount * coalesce((c->>'pointRate')::numeric, 5) / 100);
   insert into point_tx (store_id, customer_id, type, pts, pay_amount, src, created_by)
@@ -683,9 +695,39 @@ end $$;
 
 -- 기기 함수는 로그인한(익명 포함) 기기만, 손님 화면(anon)은 못 부름
 revoke execute on all functions in schema public from public, anon;
-grant execute on function kiosk_wait_join(int, text), kiosk_earn(text, int, text), tv_board(),
+grant execute on function kiosk_wait_join(int, text), kiosk_earn(text, int, text, boolean, boolean), tv_board(),
                           point_state(uuid, timestamptz), biz_date(uuid, timestamptz),
                           is_staff(uuid, text[]), staff_role(uuid), is_admin(boolean), device_store()
   to authenticated;
 -- 다음 번호 함수는 서버·기기 함수 안에서만 씀
 revoke execute on function next_wait_no(uuid) from authenticated;
+
+------------------------------------------------------------------------------
+-- 15. 보관 기간이 지난 개인정보 지우기 — 매일 새벽 서버가 부름 (가게 개인정보처리방침 1·5번)
+--     기록(예약·포인트·장부 내역)은 남기되 누구인지 알 수 없게 번호·이름만 비움
+------------------------------------------------------------------------------
+
+create function purge_personal_data(p_now timestamptz default now()) returns jsonb
+language plpgsql volatile security definer set search_path = public as $$
+declare
+  n_wait int; n_req int; n_cust int; n_sms int;
+begin
+  -- 웨이팅 번호: 다음 날 지움 (인원·시각은 대기 시간 통계로 남김)
+  update waitlist w set phone = null
+   where w.phone is not null and w.biz_date < biz_date(w.store_id, p_now);
+  get diagnostics n_wait = row_count;
+  -- 예약의 알레르기·요청사항: 방문일 30일 뒤
+  update reservations set memo = null, pre_order = null
+   where (memo is not null or pre_order is not null) and visit_date < (p_now at time zone 'Asia/Seoul')::date - 30;
+  get diagnostics n_req = row_count;
+  -- 손님: 마지막 이용 3년 뒤 번호·이름 비움 (홍보 동의도 끝)
+  update customers set phone = null, name = null, memo = null, marketing = false, erased_at = p_now
+   where erased_at is null and last_seen_at < p_now - interval '3 years';
+  get diagnostics n_cust = row_count;
+  -- 보낸 문자: 6개월 뒤 받는 번호 가리고 내용 비움 (건수·크레딧은 청구 근거로 남김)
+  update sms_messages set to_phone = regexp_replace(to_phone, '^(01[0-9])[0-9]{3,4}([0-9]{4})$', '\1****\2'), body = ''
+   where created_at < p_now - interval '6 months' and to_phone !~ '\*';
+  get diagnostics n_sms = row_count;
+  return jsonb_build_object('waitlist', n_wait, 'reservations', n_req, 'customers', n_cust, 'sms', n_sms);
+end $$;
+revoke execute on function purge_personal_data(timestamptz) from authenticated;

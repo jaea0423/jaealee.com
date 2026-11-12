@@ -400,7 +400,10 @@
     return `<span>${who}</span>` + (amount ? `<b>${won(amount)} × ${ZB.cfg.pointRate}% = ${pt(get)} 적립</b>` : "")
       + (dup.length ? `<em>오늘 이미 ${dup.length}번 적립했습니다 (${dup.map(t => md(t.at).split(" ")[1] + " " + won(t.amount)).join(", ")}). 다른 계산이 맞는지 확인해 주세요 — 막지는 않습니다.</em>` : "");
   }
-  const earnOk = () => digits(form.phone).length === 11 && /^010/.test(digits(form.phone)) && Number(digits(form.amount)) > 0;
+  /* 처음 오신 손님은 직원이 말로 동의를 받고 체크해야 적립됨(필수) · 홍보 문자는 선택 */
+  const earnOk = () => digits(form.phone).length === 11 && /^010/.test(digits(form.phone)) && Number(digits(form.amount)) > 0 && (earnMember() || form.agree);
+  const agreeBox = () => `<div class="fld"><button type="button" class="chk${form.agree ? " on" : ""}" data-a="pe-ag" role="checkbox" aria-checked="${!!form.agree}"><i></i><span><b>[필수]</b> 손님께 개인정보 수집·이용 동의를 받았습니다<em>휴대폰 번호·이름 · 포인트 적립·사용·내역 문자 · 마지막 이용 후 3년 보관</em></span></button>
+      <button type="button" class="chk${form.mkt ? " on" : ""}" data-a="pe-mk" role="checkbox" aria-checked="${!!form.mkt}"><i></i><span><b>[선택]</b> 홍보 문자 받기에 동의하셨습니다<em>묻고 원하실 때만 체크</em></span></button></div>`;
   function sheetEarn(){
     const f = form, ph = digits(f.phone), isNew = ph.length === 11 && !earnMember();
     return `<div class="ov" data-a="close-ov"><div class="sheet" role="dialog" aria-modal="true" aria-label="포인트 적립">
@@ -409,6 +412,7 @@
           <div class="fld"><label for="f-amount">결제 금액<em>포인트로 낸 금액은 빼고 · 계산서 금액 그대로</em></label><input id="f-amount" data-f="amount" value="${esc(f.amount)}" inputmode="numeric" autocomplete="off" placeholder="0"></div>
           <div class="fld"><label for="f-phone">손님 휴대폰 번호<em>또는 아래 '계산대 화면으로' — 손님이 직접 누름</em></label><input id="f-phone" data-f="phone" value="${esc(f.phone)}" inputmode="numeric" autocomplete="off" placeholder="010-0000-0000"></div>
           <div class="fld" id="pe-name"${isNew ? "" : " hidden"}><label for="f-name">이름<em>성이나 별명도 됩니다 · 포인트를 쓸 때 확인용</em></label><input id="f-name" data-f="name" value="${esc(f.name || "")}" autocomplete="off"></div>
+          <div id="pe-agree"${isNew ? "" : " hidden"}>${agreeBox()}</div>
           <p class="pv" id="pe-pv">${earnPreview()}</p>
         </div>
         <footer><button class="btn" data-a="close">취소</button>
@@ -658,10 +662,12 @@
     else if(a === "p-earn"){ form = { phone: v || "", amount: "", name: "" }; view.sheet = "pe"; }
     else if(a === "pe-save"){
       if(!earnOk()) return;
-      const r = ZB.earn(digits(form.phone), Number(digits(form.amount)), form.name, "직원 입력");
+      const r = ZB.earn(digits(form.phone), Number(digits(form.amount)), form.name, "직원 입력", { mkt: !!form.mkt, via: "직원 확인(말로)" });
       view.mem = r.m.id; view.pq = ""; view.sheet = null;
       toast(`${r.m.phone} ${pt(r.t.pts)} 적립${r.isNew ? " · 새 회원" : ""} · 모두 ${pt(ZB.pbal(r.m.id))}`, "적립 문자를 보냈습니다");
     }
+    else if(a === "pe-ag"){ form.agree = !form.agree; }
+    else if(a === "pe-mk"){ form.mkt = !form.mkt; }
     else if(a === "pe-send"){
       const n = Number(digits(form.amount)) || 0; if(n <= 0) return;
       ZB.setPending(n); view.sheet = null;
@@ -701,7 +707,7 @@
     if(view.sheet === "lx"){ $("#lx-pv").innerHTML = txPreview(); $("[data-a=l-save]").disabled = amt() <= 0; }
     if(view.sheet === "la"){ $("[data-a=la-save]").disabled = !form.name.trim(); }
     if(view.sheet === "pe"){ $("#pe-pv").innerHTML = earnPreview(); $("[data-a=pe-save]").disabled = !earnOk(); $("[data-a=pe-send]").disabled = !(Number(digits(form.amount)) > 0);
-      const nm = $("#pe-name"); if(nm) nm.hidden = !(digits(form.phone).length === 11 && !earnMember()); }
+      const nw = digits(form.phone).length === 11 && !earnMember(), nm = $("#pe-name"), ag = $("#pe-agree"); if(nm) nm.hidden = !nw; if(ag) ag.hidden = !nw; }
     if(view.sheet === "pu"){ const au = authState(), box = $("#pu-auth"); $("#pu-pv").innerHTML = puPreview(); $("[data-a=pu-save]").disabled = !puOk();
       if(box){ box.textContent = au.msg; box.classList.toggle("ok", au.ok); } }
   });
