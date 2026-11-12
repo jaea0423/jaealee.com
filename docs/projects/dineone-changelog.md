@@ -30,6 +30,11 @@
 
 ## 2026-11-12
 
+### 새 저장소로 옮김 (이 파일은 여기서 멈춤)
+- 변경: DineONE 작업은 이제 GitHub `dineone/dineone` 저장소와 `https://dineone.dev`에서 합니다. 이후 기록은 그 저장소의 `docs/dineone-changelog.md`에 씁니다.
+- 주의: 이 저장소의 `dineone/`, `dining/zipbulgwanggyo/`는 사장님께 보낸 링크 때문에 그대로 둡니다. 더 고치지 않습니다.
+- 범위: 문서
+
 ### GitHub 조직·저장소
 - 결정: GitHub는 전용 계정 대신 조직 `dineone`(소유 YB Tech Lab)을 만들고, 비공개 저장소 `dineone/dineone`을 만들었습니다(구조 정리 19장).
 - 다음: jaealee.com에서 DineONE 파일을 새 저장소로 복사하고 `dineone.dev`에 배포합니다. 옛 시안 주소는 당분간 그대로 둡니다.
