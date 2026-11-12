@@ -731,3 +731,39 @@ begin
   return jsonb_build_object('waitlist', n_wait, 'reservations', n_req, 'customers', n_cust, 'sms', n_sms);
 end $$;
 revoke execute on function purge_personal_data(timestamptz) from authenticated;
+
+------------------------------------------------------------------------------
+-- 16. 표·함수 권한 (맨 끝에 한 번에)
+--     Supabase 프로젝트에서 'Automatically expose new tables' 를 껐으므로 표 권한을 여기서 직접 줌.
+--     anon(손님 브라우저)에게는 아무 표도 주지 않음 — 손님 화면은 서버(service_role)를 거침.
+--     RLS 정책이 '어느 줄'을, 이 GRANT 가 '어떤 동작'을 막음 (둘 다 통과해야 함)
+------------------------------------------------------------------------------
+
+grant usage on schema public to authenticated, service_role;
+
+-- 업무 표: 읽기·쓰기·고치기 (지우기는 주지 않음)
+grant select, insert, update on zones, store_tables, customers, reservations, waitlist,
+  ledger_accounts, ledger_tx, point_tx, day_closings to authenticated;
+-- 동의 기록: 더하기만
+grant select, insert on consents to authenticated;
+-- 읽기만 (고치는 건 아래에서 따로)
+grant select on stores, store_domains, store_settings, store_features, store_staff, devices,
+  activity_log, sms_messages, sms_credit_tx, subscriptions, payments,
+  ledger_balances, sms_wallets to authenticated;
+grant update on stores, store_settings, devices to authenticated;
+grant select, insert, update on profiles to authenticated;
+grant insert on store_staff to authenticated;
+grant usage on all sequences in schema public to authenticated;
+
+-- 서버(service_role): 전부. 단 업무 기록은 더하기만
+grant all on all tables in schema public to service_role;
+grant usage, select on all sequences in schema public to service_role;
+revoke update, delete, truncate on activity_log from anon, authenticated, service_role;
+
+-- 함수: 기본으로 누구나 부를 수 있게 열리므로 모두 닫고 필요한 것만 엶 (15장 함수까지 포함)
+revoke execute on all functions in schema public from public, anon, authenticated;
+grant execute on function kiosk_wait_join(int, text), kiosk_earn(text, int, text, boolean, boolean), tv_board(),
+                          point_state(uuid, timestamptz), biz_date(uuid, timestamptz),
+                          is_staff(uuid, text[]), staff_role(uuid), is_admin(boolean), device_store()
+  to authenticated;
+grant execute on all functions in schema public to service_role;

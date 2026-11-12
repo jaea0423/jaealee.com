@@ -30,6 +30,18 @@
 
 ## 2026-11-12
 
+### DB 초안을 dev에 올릴 준비: 표 권한, 검사 SQL
+- 추가(DB 초안 16장): 표·함수 권한(GRANT)
+  - Supabase에서 '새 표 자동 공개'를 껐기 때문에 권한을 SQL에 직접 적었습니다.
+  - 손님 브라우저(anon)에게는 표를 하나도 열지 않습니다.
+  - 지우기 권한은 아무에게도 주지 않습니다.
+- 수정(DB 초안): 지우기 함수(`purge_personal_data`)가 기본 권한 때문에 누구나 부를 수 있게 열려 있었습니다. 맨 끝에서 모든 함수를 닫고 필요한 것만 다시 엽니다.
+- 추가(문서): [dineone-db-check.sql](dineone-db-check.sql)
+  - SQL Editor에 붙여 넣는 검사 27개입니다. 검사용 자료는 스스로 지웁니다.
+  - 내 컴퓨터에서 모두 통과했습니다.
+- 변경(문서): [DB 설계](dineone-db.md) 0장에 dev에 올리고 검사하는 순서를 적었습니다.
+- 범위: `docs/projects/dineone-db-draft.sql` `docs/projects/dineone-db-check.sql` `docs/projects/dineone-db.md`
+
 ### Cloudflare 근거·요금, 계정 관리, 1588 사는 법
 - 추가(문서): 구조 정리 18~20장
   - 18장: Cloudflare에 맡기는 일과 이유, 요금, 운영 고정비 합계(월 약 $30), 단점과 대비

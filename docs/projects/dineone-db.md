@@ -8,6 +8,19 @@
 - 시안(`dining/zipbulgwanggyo/manage/store.js`)의 자료 모양을 그대로 옮겼습니다. 화면을 바꿀 때 이름이 어긋나지 않습니다.
 - 내 컴퓨터의 Postgres(PGlite)에서 Supabase 로그인을 흉내 내 아래 검사를 모두 통과했습니다. 실제 Supabase에서는 한 번 더 확인합니다.
 
+## 0. dev에 올리고 검사하는 방법 (11-12)
+
+1. Supabase 대시보드 → `dineone-dev` 프로젝트 → **SQL Editor** → New query
+2. [dineone-db-draft.sql](dineone-db-draft.sql) 전체를 붙여 넣고 **Run**
+   - 처음 한 번만 실행합니다. 두 번 돌리면 '이미 있음' 오류가 납니다.
+   - 다시 하려면 프로젝트를 새로 만들거나, 나중에 정식 migration으로 관리합니다.
+3. 새 query에 [dineone-db-check.sql](dineone-db-check.sql) 전체를 붙여 넣고 **Run**
+   - 맨 아래 표의 '통과'가 27개 모두 true여야 합니다.
+   - 검사용 가게·사람·기기는 끝에서 스스로 지웁니다. 여러 번 돌려도 됩니다.
+   - **운영(dineone-prod)에서는 돌리지 않습니다.**
+- 프로젝트 설정: 'Automatically expose new tables' 끔, 'Enable automatic RLS' 켬(구조 정리 19장). 그래서 표 권한은 SQL 16장에 직접 적었습니다.
+- 내 컴퓨터(PGlite)에서 Supabase와 같은 조건으로 두 파일을 미리 돌려 27개 모두 통과했습니다.
+
 ## 1. 큰 원칙
 
 | 원칙 | 어떻게 |
@@ -103,6 +116,10 @@
 | 하루 뒤 지우기 | 웨이팅 번호 2건 지움 |
 | 7개월 전 문자 | 번호 `010****1201`, 내용 비움 |
 | 3년 뒤 지우기 | 손님 번호·이름 비움, 포인트 내역은 남음 |
+| 손님 브라우저(anon)가 표 읽기 / 지우기 함수 부르기 | 둘 다 권한 없음 |
+| 사장이 지우기 함수 부르기 | 막힘 (서버만) |
+| 포인트 기록 지우기 / 동의 기록 고치기 | 권한 자체가 없음 |
+| RLS 꺼진 표 | 없음 |
 
 ## 6. 다음에 할 것
 
