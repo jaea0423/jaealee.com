@@ -30,10 +30,18 @@
 
 ## 2026-11-12
 
+### 카카오 알림톡 다시 검토
+- 추가(문서): 구조 정리 21장
+  - 추천: 알림톡을 먼저 보내고, 안 되면 문자로 대신 보냅니다. 알림톡 원가는 6.5원입니다.
+  - 제약: 템플릿 검수, 정보성만 가능(홍보는 안 됨), 카카오톡 채널 필요
+  - 크레딧 수정안과 할 일을 적었습니다.
+- 15장에 '다시 검토 중' 표시를 달았습니다. 아직 결정은 아닙니다.
+- 범위: `docs/projects/dineone-structure.md`
+
 ### 매장 화면 dev 연결: 'DB 읽기 실패' 고침
 - 수정: 웨이팅 번호 카운터 표(`wait_counters`)는 직원에게 열지 않는 표인데 화면이 읽으려다 권한 오류가 났습니다. 오늘 웨이팅 중 가장 큰 번호를 쓰도록 바꿨습니다.
 - 변경: 읽기 실패 메시지에 오류 코드를 붙입니다.
-- 범위: `dining/zipbulgwanggyo/manage/remote.js`
+- 범위: `dining/zipbulgwanggyo/manage/remote.js` · 커밋 14d25c2
 
 ### 매장 화면을 실제 dev DB에 연결 (`?db=dev`)
 - 추가: `manage/remote.js`
@@ -51,7 +59,7 @@
 - 주의
   - dev에 0002와 더미는 적용했습니다(사장 계정 1). 0003은 아직 적용 전입니다.
   - 입구 웨이팅, 계산대, TV, 예약 창은 아직 브라우저 저장입니다.
-- 범위: `dining/zipbulgwanggyo/manage/` · `docs/projects/`
+- 범위: `dining/zipbulgwanggyo/manage/` · `docs/projects/` · 커밋 1792541
 
 ### DB 0002(기기 등록·계산대 금액)와 dev 더미 자료
 - 추가: [dineone-db-0002-devices.sql](dineone-db-0002-devices.sql)
