@@ -69,13 +69,12 @@
   async function q(p){ const r = await p; if(r.error) throw r.error; return r.data; }
   async function fetchAll(){
     const today = await q(sb.rpc("biz_date", { p_store: sid }));
-    const [cfgRow, feats, custs, res, waits, wc, accts, ltx, ptx, pend, clos, logs] = await Promise.all([
+    const [cfgRow, feats, custs, res, waits, accts, ltx, ptx, pend, clos, logs] = await Promise.all([
       q(sb.from("store_settings").select("cfg").eq("store_id", sid).maybeSingle()),
       q(sb.from("store_features").select("feature,enabled").eq("store_id", sid)),
       q(sb.from("customers").select("id,phone,name,marketing,created_at").eq("store_id", sid).range(0, 9999)),
       q(sb.from("reservations").select("*").eq("store_id", sid).range(0, 9999)),
       q(sb.from("waitlist").select("*").eq("store_id", sid).eq("biz_date", today)),
-      q(sb.from("wait_counters").select("last_no").eq("store_id", sid).eq("biz_date", today).maybeSingle()),
       q(sb.from("ledger_accounts").select("*").eq("store_id", sid)),
       q(sb.from("ledger_tx").select("*").eq("store_id", sid).range(0, 9999)),
       q(sb.from("point_tx").select("*").eq("store_id", sid).range(0, 9999)),
@@ -91,7 +90,7 @@
       name: c.name || "", phone: fmt(c.phone), memo: r.memo || "", pre: r.pre_order || "", status: resStatus(r.status), src: RES_SRC[r.src] || r.src, at: ms(r.created_at) };
       if(waitByRes[r.id]) o.waitNo = waitByRes[r.id]; return o; });
     const fOn = {}; feats.forEach(f => fOn[f.feature] = f.enabled);
-    d.wait = { on: fOn.wait !== false, seq: Math.max((wc && wc.last_no) || 0, ...waits.map(w => w.no), 0),
+    d.wait = { on: fOn.wait !== false, seq: Math.max(0, ...waits.map(w => w.no)),   /* 번호 카운터 표는 직원에게 열지 않음 — 오늘 웨이팅 중 가장 큰 번호 */
       list: waits.map(w => { const o = { id: w.id, no: w.no, people: w.people, phone: fmt(w.phone), src: WAIT_SRC[w.src] || w.src, status: w.status, at: ms(w.created_at) };
         if(w.called_at) o.callAt = ms(w.called_at); if(w.seated_at || w.ended_at) o.doneAt = ms(w.seated_at || w.ended_at); if(w.priority) o.first = true; return o; }) };
     d.ledger = { seq: ltx.length,
@@ -141,7 +140,7 @@
         window.dispatchEvent(new StorageEvent("storage", { key: ZB.KEY }));
       }
       say(`${me.name || ""} · ${{ owner: "사장", manager: "매니저", staff: "직원" }[me.role] || ""} <button type="button" id="dev-out">로그아웃</button>`);
-    }catch(e){ say("DB 읽기 실패: " + (e.message || e), true); }
+    }catch(e){ say("DB 읽기 실패: " + (e.message || e) + (e.code ? " (" + e.code + ")" : ""), true); console.error(e); }
   }
 
   /* ---------- 쓰기: 화면에서 바꾼 것 → DB ---------- */
