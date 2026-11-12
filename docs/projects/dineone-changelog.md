@@ -30,10 +30,20 @@
 
 ## 2026-11-12
 
+### DB 0002(기기 등록·계산대 금액)와 dev 더미 자료
+- 추가: [dineone-db-0002-devices.sql](dineone-db-0002-devices.sql)
+  - 기기 등록 코드: 사장·매니저가 만들고, 10자리, 30분 안에 한 번만 씁니다.
+  - 계산대 금액 넘기기 표(`counter_pending`)
+  - 기기용 조회 함수: 회원 여부·포인트, 입구 대기 상태, 보낸 금액으로 적립
+- 추가: [dineone-db-seed-dev.sql](dineone-db-seed-dev.sql)
+  - `dev_reseed()`로 오늘 기준 더미 가게를 만듭니다. 시안 더미와 같은 모양이고, 손님 번호는 010-0000-xxxx입니다.
+- 내 컴퓨터에서 0001 → 0002 → 더미 순서로 검사 25개를 통과했습니다. dev에는 아직 적용하지 않았습니다.
+- 범위: `docs/projects/`
+
 ### dineone-dev에 DB 첫 적용
 - 추가: Supabase `dineone-dev`(서울)에 DB 초안을 적용했습니다. SQL Editor에서 검사 27개가 모두 통과했습니다.
 - 주의: 운영(`dineone-prod`)에는 적용하지 않았습니다. 시안 화면은 아직 브라우저 저장(localStorage)을 씁니다.
-- 범위: Supabase `dineone-dev` · `docs/projects/dineone-db.md`
+- 범위: Supabase `dineone-dev` · `docs/projects/dineone-db.md` · 커밋 803e66b
 
 ### DB 초안을 dev에 올릴 준비: 표 권한, 검사 SQL
 - 추가(DB 초안 16장): 표·함수 권한(GRANT)
