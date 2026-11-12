@@ -393,6 +393,13 @@ DB 표와 권한 설계는 [DB 설계](dineone-db.md)에 있습니다(초안 v0,
   - 그 메일은 Cloudflare 메일 전달에 기대므로, Cloudflare 계정이 잠기면 복구 메일도 못 받습니다.
   - 이름 예: `dineone.ops@gmail.com` (ops = 운영)
 - Supabase는 한 계정 안에 조직을 둘 둡니다: `dineone-prod`, `dineone-dev`. 요금도 조직별로 나갑니다(14장).
+  - 만드는 값(11-12)
+    - 조직: 이름 `dineone-dev`, 유형 Company, 요금제 Free → 그다음 `dineone-prod`도 같은 값으로 만듭니다(처음엔 Free).
+    - 프로젝트: 각 조직에 하나씩 `dineone-dev`, `dineone-prod`. 지역은 **Northeast Asia (Seoul)**
+    - DB 비밀번호는 길게 자동 생성해 비밀번호 관리자에만 둡니다. 운영 비밀번호는 내 컴퓨터 `.env`에 두지 않습니다(14장).
+  - 무료 프로젝트는 한 계정에 2개까지라 dev·prod 둘로 딱 맞습니다.
+  - 짚불태백 시범 운영의 실제 손님 정보는 **prod**에 넣습니다. dev에는 더미만 넣습니다.
+  - 실제로 쓰기 시작하면 prod 조직만 Pro로 올립니다.
 - Cloudflare는 한 계정에 두 도메인을 둡니다. 운영과 개발은 프로젝트 이름(`-prod`/`-dev`)과 API 토큰 권한으로 나눕니다.
 - 모든 계정에 2단계 인증(OTP)을 켭니다. 복구 코드는 따로 보관합니다.
 - 결제는 와이비테크랩 사업자 카드로 합니다. 해외 서비스는 세금계산서가 나오지 않아 카드 명세서로 처리합니다.
