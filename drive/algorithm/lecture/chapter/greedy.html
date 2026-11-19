@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>그리디 방법 · 단원 정리</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<style>
+/* ── 색 · 글꼴 토큰 (포인트 색 없음, 먹색 단계로만 구분) ── */
+:root{
+  --bg:#ECEBE7; --paper:#FFFFFF; --ink:#111111; --ink-2:#3A3A3A; --ink-3:#767676;
+  --rule:#111111; --line:#CFCFCB; --line-2:#E6E5E1; --soft:#F4F3EF; --mark:#E3E2DC; --mark-strong:#CFCDC5;
+  --mono:"D2Coding","JetBrains Mono","SFMono-Regular",Consolas,monospace;
+  --sans:"Pretendard Variable",Pretendard,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141414; --paper:#1C1C1C; --ink:#F2F2F0; --ink-2:#CFCFCB; --ink-3:#9A9A96;
+  --rule:#F2F2F0; --line:#3A3A38; --line-2:#2C2C2A; --soft:#242423; --mark:#3A3936; --mark-strong:#4C4A45; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141414; --paper:#1C1C1C; --ink:#F2F2F0; --ink-2:#CFCFCB; --ink-3:#9A9A96;
+  --rule:#F2F2F0; --line:#3A3A38; --line-2:#2C2C2A; --soft:#242423; --mark:#3A3936; --mark-strong:#4C4A45; color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:20px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:18px;line-height:1.8;word-break:keep-all;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+sup,sub{line-height:0}
+code,.m{font-family:var(--mono);font-size:.9em}
+
+/* ── 레이아웃: 왼쪽 목차 + 종이 ── */
+.shell{display:grid;grid-template-columns:260px minmax(0,1fr);gap:28px;max-width:1240px;margin:0 auto;padding:24px 20px 80px}
+body.toc-closed .shell{grid-template-columns:minmax(0,1fr)}
+body.toc-closed .toc{display:none}
+.toc{position:sticky;top:20px;align-self:start;max-height:calc(100vh - 40px);overflow:auto;padding:18px 18px 20px;background:var(--paper);border:1px solid var(--line)}
+.toc .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:13px;font-weight:800;letter-spacing:.08em;color:var(--ink-3)}
+.toc ol{list-style:none;margin:0;padding:0;counter-reset:t}
+.toc li a{display:grid;grid-template-columns:26px 1fr;gap:4px;padding:7px 4px;color:var(--ink-2);text-decoration:none;font-size:15.5px;line-height:1.45;border-bottom:1px solid var(--line-2)}
+.toc li a b{font-variant-numeric:tabular-nums;color:var(--ink-3);font-weight:700}
+.toc li a:hover,.toc li a.on{color:var(--ink);font-weight:700}
+.toc li a.on b{color:var(--ink)}
+.toc li.todo a{color:var(--ink-3)}
+.toc li.todo a::after{content:"작성 예정";grid-column:2;font-size:12px;font-weight:600}
+.btn{border:1.5px solid var(--ink);background:var(--paper);padding:6px 12px;font-size:14px;font-weight:700;line-height:1.2}
+.btn:hover{background:var(--ink);color:var(--paper)}
+.btn.small{padding:3px 8px;font-size:12.5px}
+
+.paper{background:var(--paper);border:1px solid var(--line);padding:56px 64px 72px;min-width:0}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:34px;font-size:14.5px}
+.topbar a{color:var(--ink-2)}
+.topbar .tools{display:flex;gap:8px}
+
+/* ── 표제 ── */
+.title{border-top:6px solid var(--rule);border-bottom:1.5px solid var(--rule);padding:18px 0 20px;margin-bottom:8px}
+.title .kicker{font-size:14.5px;font-weight:700;letter-spacing:.06em;color:var(--ink-3)}
+.title h1{margin:6px 0 4px;font-size:40px;line-height:1.25;letter-spacing:-.02em;font-weight:850}
+.title p{margin:0;color:var(--ink-2);font-size:16.5px}
+.meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-bottom:1px solid var(--line);margin-bottom:44px}
+.meta div{padding:12px 14px 12px 0;font-size:15px;color:var(--ink-2)}
+.meta div+div{padding-left:14px;border-left:1px solid var(--line)}
+.meta b{display:block;font-size:12.5px;letter-spacing:.06em;color:var(--ink-3);font-weight:700}
+
+/* ── 장 제목 ── */
+section.ch{margin-top:72px}
+section.ch:first-of-type{margin-top:0}
+.ch-head{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;align-items:end;border-bottom:3px solid var(--rule);padding-bottom:10px;margin-bottom:26px}
+.ch-head .no{font-size:54px;line-height:.9;font-weight:900;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.ch-head h2{margin:0;font-size:29px;line-height:1.3;letter-spacing:-.015em;font-weight:850}
+.ch-head .sub{grid-column:2;font-size:15px;color:var(--ink-3);font-weight:600}
+h3{margin:40px 0 14px;font-size:21.5px;line-height:1.4;font-weight:800;display:flex;gap:10px;align-items:baseline}
+h3::before{content:"";flex:0 0 12px;height:12px;background:var(--ink);transform:translateY(-2px)}
+p{margin:12px 0}
+
+/* ── 강조: 먹색 형광펜 · 굵게 · 밑줄 ── */
+.hl{background:linear-gradient(transparent 52%,var(--mark) 52%);padding:0 2px;font-weight:700}
+.hl-strong{background:var(--mark-strong);padding:1px 5px;font-weight:800;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.ul{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px}
+
+/* ── 꼬리표 ── */
+.tag{display:inline-block;font-size:12.5px;font-weight:800;letter-spacing:.04em;padding:2px 8px;border:1.5px solid var(--ink);line-height:1.45;vertical-align:2px;white-space:nowrap}
+.tag.solid{background:var(--ink);color:var(--paper)}
+
+/* ── 상자 ── */
+.box{border:1.5px solid var(--rule);margin:22px 0;break-inside:avoid}
+.box > .lab{display:flex;gap:8px;align-items:center;padding:8px 16px;border-bottom:1.5px solid var(--rule);font-size:14.5px;font-weight:800;letter-spacing:.02em}
+.box > .body{padding:14px 18px}
+.box > .body > :first-child{margin-top:0}.box > .body > :last-child{margin-bottom:0}
+.box.def > .lab{background:var(--ink);color:var(--paper)}
+.box.def .body{font-size:19px;line-height:1.75}
+.box.exam{border-width:3px}
+.box.exam > .lab{border-bottom-width:3px}
+.box.soft{border:1px solid var(--line);background:var(--soft)}
+.box.soft > .lab{border-bottom:1px solid var(--line)}
+.box.extra{border:1.5px dashed var(--ink-3)}
+.box.extra > .lab{border-bottom:1.5px dashed var(--ink-3);color:var(--ink-2)}
+.box.extra > .lab::before{content:"보충";font-size:11.5px;padding:1px 6px;border:1px solid var(--ink-3)}
+
+/* ── 한 줄 결론 ── */
+.claim{margin:20px 0;padding:14px 0 14px 18px;border-left:6px solid var(--ink);font-size:19.5px;font-weight:700;line-height:1.6}
+
+/* ── 증명 단계 ── */
+.proof{border:1.5px solid var(--rule);margin:22px 0;break-inside:avoid}
+.proof .ptitle{padding:10px 16px;border-bottom:1.5px solid var(--rule);font-weight:800;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.proof .ptitle span{font-size:14px;font-weight:600;color:var(--ink-3)}
+.step{display:grid;grid-template-columns:110px 1fr;border-bottom:1px solid var(--line)}
+.step:last-child{border-bottom:0}
+.step .k{padding:12px 14px;font-size:14.5px;font-weight:800;border-right:1px solid var(--line);background:var(--soft);line-height:1.5}
+.step .k small{display:block;font-weight:600;color:var(--ink-3);font-size:12.5px}
+.step .v{padding:12px 16px}
+.step .v p{margin:4px 0}
+.step.key .k{background:var(--ink);color:var(--paper)}
+.step.key .k small{color:var(--paper);opacity:.75}
+.qed{display:block;text-align:right;font-weight:800;padding:8px 16px;border-top:1.5px solid var(--rule)}
+
+/* ── 수식 · 코드 ── */
+.eq{margin:16px 0;padding:14px 18px;background:var(--soft);border:1px solid var(--line);font-size:17.5px;line-height:1.9;font-variant-numeric:tabular-nums}
+.eq .row{display:flex;flex-wrap:wrap;gap:6px 28px}
+.eq b{font-weight:800}
+
+/* ── 표 ── */
+.tw{overflow-x:auto;margin:18px 0}
+table{width:100%;border-collapse:collapse;font-size:16.5px;line-height:1.6}
+th,td{padding:10px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+thead th{border-top:2px solid var(--rule);border-bottom:1.5px solid var(--rule);font-size:14.5px;font-weight:800;letter-spacing:.02em}
+tbody tr:last-child td{border-bottom:2px solid var(--rule)}
+td.c,th.c{text-align:center}
+td.nw{white-space:nowrap}
+td b{font-weight:800}
+
+/* ── 순서 목록 ── */
+ol.flow{list-style:none;counter-reset:f;padding:0;margin:14px 0}
+ol.flow li{counter-increment:f;display:grid;grid-template-columns:34px 1fr;gap:8px;padding:6px 0}
+ol.flow li::before{content:counter(f);width:26px;height:26px;border:1.5px solid var(--ink);display:grid;place-items:center;font-size:14px;font-weight:800;margin-top:3px}
+
+/* ── 그림 ── */
+figure{margin:22px 0}
+figure svg{display:block;width:100%;height:auto;max-width:640px;margin:0 auto}
+figcaption{text-align:center;font-size:14.5px;color:var(--ink-3);margin-top:8px}
+
+/* ── 장 끝 요약 ── */
+.recap{margin-top:30px;border-top:1.5px solid var(--rule);border-bottom:1.5px solid var(--rule);padding:12px 0}
+.recap .lab{font-size:13.5px;font-weight:800;letter-spacing:.08em;color:var(--ink-3)}
+.recap ul{margin:6px 0 0;padding-left:20px}
+.recap li{margin:4px 0}
+
+.todo-ch{border:1.5px dashed var(--line);padding:22px;color:var(--ink-3);text-align:center;font-weight:600}
+.src{font-size:14px;color:var(--ink-3)}
+.src a{color:var(--ink-2)}
+
+/* ── 좁은 화면 ── */
+@media (max-width:900px){
+  .shell{grid-template-columns:1fr;padding:12px 12px 60px}
+  .toc{position:static;max-height:none}
+  .paper{padding:28px 18px 48px}
+  .title h1{font-size:31px}
+  .ch-head .no{font-size:40px}
+  .ch-head h2{font-size:23px}
+  .meta{grid-template-columns:1fr}
+  .meta div+div{padding-left:0;border-left:0;border-top:1px solid var(--line)}
+  .step{grid-template-columns:1fr}
+  .step .k{border-right:0;border-bottom:1px solid var(--line)}
+  body{font-size:17px}
+}
+@media print{
+  body{background:#fff;font-size:12pt}
+  .toc,.topbar .tools{display:none}
+  .shell{display:block;padding:0}
+  .paper{border:0;padding:0}
+  section.ch{break-before:page;margin-top:0}
+  section.ch:first-of-type{break-before:auto}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="toc" aria-label="목차">
+    <div class="head"><span>목차</span><button class="btn small" id="tocClose" type="button">닫기</button></div>
+    <ol>
+      <li><a href="#c0"><b>0</b>한눈에 보기</a></li>
+      <li><a href="#c1"><b>1</b>그리디 방법과 귀류법</a></li>
+      <li><a href="#c2"><b>2</b>거스름돈</a></li>
+      <li><a href="#c3"><b>3</b>하루에 할 수 있는 일의 개수</a></li>
+      <li class="todo"><a href="#c4"><b>4</b>강의실 배정</a></li>
+      <li class="todo"><a href="#c5"><b>5</b>Huffman 코딩</a></li>
+    </ol>
+  </nav>
+
+  <main class="paper" id="main">
+    <div class="topbar">
+      <a href="../index.html">← 강의 정리</a>
+      <div class="tools"><button class="btn" id="tocOpen" type="button" hidden>목차</button><button class="btn" id="theme" type="button">다크 / 라이트</button></div>
+    </div>
+
+    <header class="title">
+      <div class="kicker">알고리즘 · 단원 정리 · 초안</div>
+      <h1>그리디 방법 (Greedy Method)</h1>
+      <p>수업 흐름이 아니라 시험 대비용으로 다시 묶은 정리입니다. 수업 필기 원문은 각 차시 페이지에 있습니다.</p>
+    </header>
+    <div class="meta">
+      <div><b>수업</b>9-2 · 10-1 · 10-2 (11/2 ~ 11/9)</div>
+      <div><b>시험에 나오는 것</b>주어진 전략의 동작 이해 · 귀류법 증명</div>
+      <div><b>시험에 안 나오는 것</b>그리디 전략을 스스로 찾기</div>
+    </div>
+
+    <!-- ═════════ 0 ═════════ -->
+    <section class="ch" id="c0">
+      <div class="ch-head"><div class="no">0</div><h2>한눈에 보기</h2><div class="sub">예제 4개를 한 표로</div></div>
+      <div class="tw"><table>
+        <thead><tr><th>예제</th><th>그리디 전략</th><th>최적인가</th><th>수행시간</th><th>증명의 핵심</th></tr></thead>
+        <tbody>
+          <tr><td><b>거스름돈</b></td><td>큰 단위 동전부터</td><td>단위가 서로 <b>약수 관계</b>일 때만</td><td>—</td><td>작은 단위로 큰 단위 1개보다 적게 못 만듦</td></tr>
+          <tr><td><b>일의 개수</b></td><td>소요시간 <b>짧은</b> 일부터</td><td>최적</td><td>—</td><td>짧은 k개의 합 ≤ 아무 k개의 합 → 모순</td></tr>
+          <tr><td><b>강의실 배정</b></td><td><b>빨리 끝나는</b> 강의부터</td><td>최적</td><td class="nw">O(n log n)</td><td>최적해를 그리디 해로 하나씩 바꿔치기 → 남는 강의 모순</td></tr>
+          <tr><td><b>Huffman</b></td><td>빈도가 <b>가장 작은 두 개</b>를 합침</td><td>최적</td><td class="nw">O(n log n)</td><td>보조정리 1 · 2 + 귀납법 · 귀류법 <span class="tag solid">기말 확정</span></td></tr>
+        </tbody>
+      </table></div>
+      <p class="src">수행시간 "—" 는 수업에서 다루지 않은 것입니다.</p>
+    </section>
+
+    <!-- ═════════ 1 ═════════ -->
+    <section class="ch" id="c1">
+      <div class="ch-head"><div class="no">1</div><h2>그리디 방법과 귀류법</h2><div class="sub">9-2</div></div>
+
+      <div class="box def"><div class="lab">정의 · 그리디 방법</div><div class="body">
+        <span class="hl">현재 상태에서 가장 좋은 선택</span>(greedy 전략)을 <span class="hl">반복</span>해서 해를 구성하는 방법.
+      </div></div>
+
+      <h3>지금까지의 방법과 비교</h3>
+      <div class="tw"><table>
+        <thead><tr><th>방법</th><th>푸는 방식</th><th>특징</th></tr></thead>
+        <tbody>
+          <tr><td><b>분할 정복</b></td><td>큰 문제 → 작은 문제로 나눠 재귀 호출</td><td>같은 작은 문제를 다시 계산해 비효율적일 수 있음</td></tr>
+          <tr><td><b>동적 계획법 (DP)</b></td><td>큰 문제 → 작은 문제 (분할 정복과 같음)</td><td>작은 문제의 답을 DP 테이블에 저장해 다시 사용</td></tr>
+          <tr><td><b>그리디</b></td><td>지금 가장 좋아 보이는 것을 고르고 끝</td><td>고른 것을 되돌리지 않음 → <span class="ul">최적이라는 증명이 꼭 필요</span></td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>그리디로 푸는 순서</h3>
+      <ol class="flow">
+        <li><span><b>그리디 전략</b>을 세운다. (시험에서는 주어짐)</span></li>
+        <li><span>그 전략으로 답을 구한다. (<span class="hl">동작 추적</span>)</span></li>
+        <li><span>그 전략이 <b>항상 최적 해</b>를 낸다는 것을 <span class="hl">귀류법</span>으로 증명한다.</span></li>
+      </ol>
+      <div class="claim">증명이 없으면 그리디 답은 "그럴듯한 답" 일 뿐이다. 거스름돈의 반례(2장)가 그 예.</div>
+
+      <div class="box def"><div class="lab">정의 · 귀류법 (proof by contradiction)</div><div class="body">
+        어떤 명제가 참임을 보이고 싶을 때, <span class="hl">결론을 부정</span>해서 <span class="hl">모순</span>이 생기는 것을 보여 간접적으로 결론이 성립함을 보이는 방법.
+      </div></div>
+      <div class="tw"><table>
+        <thead><tr><th>단계</th><th>"P 이면 Q" 를 증명할 때</th><th>그리디 증명에서</th></tr></thead>
+        <tbody>
+          <tr><td><b>가정</b></td><td>P 는 그대로, <b>Q 만 부정</b> (P ∧ ¬Q)</td><td>"그리디 전략으로 구한 해는 <b>최적이 아니다</b>"</td></tr>
+          <tr><td><b>전개</b></td><td>가정에서 출발해 따라감</td><td>더 좋은 해를 그리디 해와 비교</td></tr>
+          <tr><td><b>모순</b></td><td>이미 아는 사실과 충돌</td><td>그리디의 동작(가장 짧은 것 · 끝까지 훑음 등) 과 충돌</td></tr>
+          <tr><td><b>결론</b></td><td>가정이 거짓 → Q 가 참</td><td>"그리디 해는 최적이다"</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="proof">
+        <div class="ptitle">예 · √2 는 무리수이다 <span>귀류법 형식 연습</span></div>
+        <div class="step"><div class="k">가정<small>결론 부정</small></div><div class="v">√2 는 유리수다 → √2 = n / m (n, m 은 자연수, <b>서로소</b>)</div></div>
+        <div class="step"><div class="k">전개</div><div class="v"><p>2m<sup>2</sup> = n<sup>2</sup> → n<sup>2</sup> 은 2의 배수 → n 도 2의 배수 → n = 2k</p><p>2m<sup>2</sup> = 4k<sup>2</sup> → m<sup>2</sup> = 2k<sup>2</sup> → m 도 2의 배수</p></div></div>
+        <div class="step key"><div class="k">모순</div><div class="v">n, m 이 둘 다 2의 배수 → <b>서로소라는 가정과 충돌</b></div></div>
+        <div class="step"><div class="k">결론</div><div class="v">가정이 틀렸다 → √2 는 무리수</div></div>
+      </div>
+
+      <div class="box exam"><div class="lab"><span class="tag solid">시험</span>교수님 안내</div><div class="body">
+        <p>그리디 전략을 <b>찾아내라는 문제는 나오지 않는다</b>. 전략이 주어졌다고 가정하고, <span class="hl">그 동작을 이해하고 귀류법으로 최적임을 증명</span>하는 과정을 알면 된다.</p>
+        <p>증명 답안은 <b>첫 줄에 가정</b>(결론의 부정)을 쓰고, <b>마지막 줄에서 그 가정이 틀렸다</b>고 닫는다.</p>
+      </div></div>
+    </section>
+
+    <!-- ═════════ 2 ═════════ -->
+    <section class="ch" id="c2">
+      <div class="ch-head"><div class="no">2</div><h2>거스름돈 — 동전 개수 최소</h2><div class="sub">9-2 · 예제 1</div></div>
+
+      <div class="box soft"><div class="lab">문제</div><div class="body">
+        거스름돈을 동전으로 줄 때 <b>동전의 개수를 최소</b>로. 동전: 1원, 10원, 50원, 100원. 입력: 368원.
+      </div></div>
+      <div class="claim">전략: 가장 큰 단위의 동전부터 거슬러 준다.</div>
+      <div class="tw"><table>
+        <thead><tr><th>동전</th><th class="c">개수</th><th>남은 금액</th></tr></thead>
+        <tbody>
+          <tr><td>100원</td><td class="c">3</td><td>368 − 300 = 68</td></tr>
+          <tr><td>50원</td><td class="c">1</td><td>68 − 50 = 18</td></tr>
+          <tr><td>10원</td><td class="c">1</td><td>18 − 10 = 8</td></tr>
+          <tr><td>1원</td><td class="c">8</td><td>0</td></tr>
+          <tr><td><b>합계</b></td><td class="c"><b>13개</b></td><td></td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>왜 최적인가 — 단위가 서로 약수 관계</h3>
+      <p>100원은 100원 1개로 만든다. 더 작은 1 · 10 · 50원으로 <b>1개보다 적게</b> 100원을 만들 수 없다. 50원도 마찬가지.</p>
+      <p>이것이 되는 이유: <span class="hl">1, 10, 50 이 100 의 약수</span>이고, <span class="hl">1, 10 이 50 의 약수</span>이기 때문. (수업에서는 당연하다고 보고 증명 생략)</p>
+
+      <h3>반례 — 약수 관계가 아니면 틀린다</h3>
+      <div class="tw"><table>
+        <thead><tr><th>동전 1 · 5 · 7원, 10원 거슬러 주기</th><th>사용한 동전</th><th class="c">개수</th></tr></thead>
+        <tbody>
+          <tr><td>그리디 (큰 것부터)</td><td>7 + 1 + 1 + 1</td><td class="c">4</td></tr>
+          <tr><td><b>최적</b></td><td>5 + 5</td><td class="c"><b>2</b></td></tr>
+        </tbody>
+      </table></div>
+      <p>1원, 5원이 7원의 <b>약수가 아니라서</b> 큰 것부터 고르는 전략이 최적을 놓친다.</p>
+
+      <div class="recap"><div class="lab">2장 요약</div><ul>
+        <li>전략: 큰 단위부터. 368원 → <b>13개</b>.</li>
+        <li>최적 조건: 동전 단위가 서로 <b>약수 관계</b>. 반례 {1, 5, 7} / 10원 → 그리디 4개, 최적 2개.</li>
+      </ul></div>
+    </section>
+
+    <!-- ═════════ 3 ═════════ -->
+    <section class="ch" id="c3">
+      <div class="ch-head"><div class="no">3</div><h2>하루에 할 수 있는 일의 개수</h2><div class="sub">9-2 · 예제 2</div></div>
+
+      <div class="box soft"><div class="lab">문제</div><div class="body">
+        일 5개의 소요시간 A = [2, 1, 4, 6, 3], 하루에 일하는 시간 T = 9. <b>할 수 있는 일의 개수를 최대</b>로.
+      </div></div>
+      <div class="claim">전략: 소요시간이 짧은 일부터 한다.</div>
+
+      <figure>
+        <svg viewBox="0 0 640 150" role="img" aria-labelledby="f3t">
+          <title id="f3t">짧은 일부터 쌓으면 1 + 2 + 3 = 6 까지 가능하고 4 를 더하면 10 으로 T = 9 를 넘는다</title>
+          <g font-family="Pretendard Variable, sans-serif" font-size="15" font-weight="700">
+            <line x1="40" y1="96" x2="620" y2="96" stroke="currentColor" stroke-width="1.5"/>
+            <g fill="var(--mark-strong)" stroke="currentColor" stroke-width="1.5">
+              <rect x="40" y="56" width="52" height="40"/>
+              <rect x="92" y="56" width="104" height="40"/>
+              <rect x="196" y="56" width="156" height="40"/>
+            </g>
+            <rect x="352" y="56" width="208" height="40" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="6 5"/>
+            <g fill="currentColor" text-anchor="middle">
+              <text x="66" y="82">1</text><text x="144" y="82">2</text><text x="274" y="82">3</text>
+              <text x="456" y="82" font-weight="600">4 → 합 10</text>
+            </g>
+            <line x1="508" y1="30" x2="508" y2="118" stroke="currentColor" stroke-width="3"/>
+            <text x="508" y="22" text-anchor="middle" fill="currentColor" font-weight="800">T = 9</text>
+            <g fill="currentColor" font-size="13" font-weight="600" text-anchor="middle">
+              <text x="40" y="116">0</text><text x="352" y="116">6</text><text x="560" y="116">10</text>
+            </g>
+            <text x="196" y="140" text-anchor="middle" fill="currentColor" font-size="14" font-weight="600">짧은 것부터: 1 + 2 + 3 = 6 → 3개</text>
+          </g>
+        </svg>
+        <figcaption>1 + 2 + 3 = 6 ≤ 9 이고, 다음으로 짧은 4 를 더하면 10 &gt; 9 → <b>최대 3개</b></figcaption>
+      </figure>
+      <p>1 + 3 + 4 = 8, 1 + 2 + 4 = 7 처럼 다른 조합도 3개다. <span class="hl">어떤 일인지가 아니라 개수가 답</span>.</p>
+
+      <h3>최적성 증명 (귀류법)</h3>
+      <p>그리디가 고른 일을 짧은 순서로 a<sub>1</sub>, a<sub>2</sub>, a<sub>3</sub>, 다음으로 짧은 일을 a<sub>4</sub> 라고 한다.</p>
+      <div class="proof">
+        <div class="ptitle">짧은 일부터 고르는 전략은 최적이다 <span>예시는 그리디 해 3개 · 시험에서는 개수 · 기호가 바뀔 수 있음</span></div>
+        <div class="step"><div class="k">가정<small>결론 부정</small></div><div class="v">그리디 해(3개) 는 최적이 아니다 → <b>4개 이상</b> 할 수 있다. 그중 4개를 짧은 순으로 b<sub>1</sub>, b<sub>2</sub>, b<sub>3</sub>, b<sub>4</sub> 라고 한다.</div></div>
+        <div class="step"><div class="k">왜 4개만<small>자주 헷갈림</small></div><div class="v">5개 이상이어도 그중 4개만 떼어 내면 여전히 시간 안에 들어간다. <b>4개가 불가능하면 그보다 많은 것도 전부 불가능</b>.</div></div>
+        <div class="step"><div class="k">기호</div><div class="v">X = a<sub>1</sub> + a<sub>2</sub> + a<sub>3</sub>, &nbsp; Y = b<sub>1</sub> + b<sub>2</sub> + b<sub>3</sub></div></div>
+        <div class="step"><div class="k">사실 ①<small>그리디가 멈춤</small></div><div class="v"><b>X + a<sub>4</sub> &gt; T</b> — 그래서 그리디가 4번째를 못 넣었다.</div></div>
+        <div class="step"><div class="k">사실 ②<small>가정</small></div><div class="v"><b>Y + b<sub>4</sub> ≤ T</b> — b 4개는 시간 안에 들어간다.</div></div>
+        <div class="step"><div class="k">사실 ③<small>그리디 성질</small></div><div class="v"><p>a<sub>1</sub>, a<sub>2</sub>, a<sub>3</sub> 은 <b>가장 짧은 3개</b> → <b>X ≤ Y</b></p><p>a<sub>4</sub> 는 4번째로 짧은 일, b<sub>4</sub> 는 서로 다른 4개 중 가장 긴 것 → <b>a<sub>4</sub> ≤ b<sub>4</sub></b></p></div></div>
+        <div class="step key"><div class="k">모순</div><div class="v">③ 을 더하면 X + a<sub>4</sub> ≤ Y + b<sub>4</sub> ≤ T (②). 그런데 ① 에서 X + a<sub>4</sub> &gt; T. <b>둘 다 성립할 수 없다.</b></div></div>
+        <div class="step"><div class="k">결론</div><div class="v">가정이 틀렸다 → 짧은 일부터 고르는 그리디 해는 최적이다. <b style="float:right">■</b></div></div>
+      </div>
+      <div class="eq"><div class="row"><span>① X + a<sub>4</sub> &gt; T</span><span>② Y + b<sub>4</sub> ≤ T</span><span>③ X ≤ Y, &nbsp;a<sub>4</sub> ≤ b<sub>4</sub></span></div><b>③ + ② → X + a<sub>4</sub> ≤ Y + b<sub>4</sub> ≤ T &nbsp;— ① 과 모순</b></div>
+
+      <div class="box extra"><div class="lab">개수가 k 개일 때 (시험에서 숫자가 바뀌어도 그대로 씀)</div><div class="body">
+        그리디 해가 k 개 → 가정: k + 1 개 이상 가능 → 그중 k + 1 개 b<sub>1</sub> ~ b<sub>k+1</sub>. X = a<sub>1</sub> + … + a<sub>k</sub>, Y = b<sub>1</sub> + … + b<sub>k</sub> 로 두면 위 증명과 똑같이 X + a<sub>k+1</sub> ≤ Y + b<sub>k+1</sub> ≤ T &lt; X + a<sub>k+1</sub> 모순.
+      </div></div>
+
+      <div class="box exam"><div class="lab"><span class="tag solid">시험</span>이 증명에서 볼 것</div><div class="body">
+        <p>① 가정을 "최적이 아니다 = <b>하나 더</b> 할 수 있다" 로 쓰기 ② 그리디가 멈춘 이유 (X + a<sub>4</sub> &gt; T) ③ 그리디의 성질 (가장 짧은 것) 에서 부등식 두 개 ④ 두 식이 충돌.</p>
+        <p>변수 이름(a, b, X, Y) 은 바뀌어 나올 수 있으니 <b>각 기호의 역할</b>로 기억할 것.</p>
+      </div></div>
+
+      <div class="recap"><div class="lab">3장 요약</div><ul>
+        <li>전략: 짧은 일부터. A = [2, 1, 4, 6, 3], T = 9 → 1 + 2 + 3 → <b>3개</b>.</li>
+        <li>증명: 그리디가 멈춤 (X + a<sub>4</sub> &gt; T) vs 최적해 가능 (Y + b<sub>4</sub> ≤ T) vs 그리디가 가장 짧음 (X ≤ Y, a<sub>4</sub> ≤ b<sub>4</sub>) → 모순.</li>
+      </ul></div>
+    </section>
+
+    <!-- ═════════ 4 · 5 (초안 이후 작성) ═════════ -->
+    <section class="ch" id="c4">
+      <div class="ch-head"><div class="no">4</div><h2>강의실 배정 — 빨리 끝나는 강의부터</h2><div class="sub">10-1 · 예제 3</div></div>
+      <div class="todo-ch">디자인 확정 후 작성합니다.</div>
+    </section>
+    <section class="ch" id="c5">
+      <div class="ch-head"><div class="no">5</div><h2>Huffman 코딩</h2><div class="sub">10-1 · 10-2 · 예제 4</div></div>
+      <div class="todo-ch">디자인 확정 후 작성합니다.</div>
+    </section>
+  </main>
+</div>
+<script>
+(() => {
+  const root = document.documentElement, body = document.body;
+  const get = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  const set = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+  // 다크 / 라이트 — 선택을 기억
+  const saved = get('greedy-theme'); if (saved) root.dataset.theme = saved;
+  document.getElementById('theme').onclick = () => {
+    const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    root.dataset.theme = dark ? 'light' : 'dark'; set('greedy-theme', root.dataset.theme);
+  };
+  // 목차 닫기 / 열기 — 분할 화면에서 공간 확보
+  const openBtn = document.getElementById('tocOpen');
+  const toc = closed => { body.classList.toggle('toc-closed', closed); openBtn.hidden = !closed; set('greedy-toc', closed ? '1' : '0'); };
+  document.getElementById('tocClose').onclick = () => toc(true);
+  openBtn.onclick = () => toc(false);
+  const g = get('greedy-toc');
+  if (g === '1' || (g === null && matchMedia('(max-width: 900px)').matches)) { body.classList.add('toc-closed'); openBtn.hidden = false; }
+  // 지금 보고 있는 장 표시
+  const links = [...document.querySelectorAll('.toc a')];
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) links.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + e.target.id));
+  }), { rootMargin: '-20% 0px -70% 0px' });
+  document.querySelectorAll('section.ch').forEach(s => io.observe(s));
+})();
+</script>
+</body>
+</html>
