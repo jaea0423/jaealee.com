@@ -34,7 +34,7 @@ let num = 0;
 document.querySelectorAll('.sheet').forEach(sh => { notes(sh); const ds = sh.querySelectorAll('.fns .n');
   sh.querySelectorAll('.body sup.fr').forEach((r, i) => { num++; r.textContent = '[' + num + ']'; ds[i].textContent = '[' + num + ']'; }); });
 const tb = document.querySelector('.shead tbody');
-toc.forEach(e => tb.insertAdjacentHTML('beforeend', '<tr><td>' + e.t + '</td><td class="c">정리 ' + e.p + '</td><td class="c">단원 정리 ' + e.r + '</td></tr>'));
+toc.forEach(e => tb.insertAdjacentHTML('beforeend', '<tr><td>' + e.t + '</td><td class="c">' + e.p + '</td><td class="c">' + e.r + '</td></tr>'));
 document.getElementById('total').textContent = page + '쪽';
 document.documentElement.dataset.ready = '1';
 });
