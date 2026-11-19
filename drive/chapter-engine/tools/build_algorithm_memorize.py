@@ -107,13 +107,13 @@ CARDS = '<div class="unit cards">' + ''.join([
        chain('작은 단위 = 큰 단위의 <b>약수</b>', '그때만 최적'),
        chain('!반례 {1, 5, 7} · 10원', '!그리디 4개 vs 최적 2개')),
   card('c-orange', '일의 개수', '—', '짧은 일부터', svg_jobs(), '[2, 1, 4, 6, 3], T = 9 → 3개',
-       chain(f'{X} + {a(4)} &gt; {T}<br><small>멈춤</small>', f'{Y} + {b(4)} ≤ {T}<br><small>가정</small>', f'{X} ≤ {Y}<br>{a(4)} ≤ {b(4)}<br><small>가장 짧음</small>') + chain(f'!{X} + {a(4)} ≤ {T} ⇒ 모순')),
+       chain(f'{X} + {a(4)} &gt; {T} <small>멈춤</small>', f'{Y} + {b(4)} ≤ {T} <small>가정</small>', f'{X} ≤ {Y}, {a(4)} ≤ {b(4)} <small>가장 짧음</small>') + chain(f'!{X} + {a(4)} ≤ {T} ⇒ 모순')),
   card('c-blue', '강의실 배정', f'O({n} log {n})', '빨리 끝나는 것부터', svg_iv(), 'L = [0, 3, 7, 10] → 4개',
        chain(f'{a(1)} → 0', f'{sb("A", 1)} ⊂ {sb("G", 1)}', f'{a(2)}→3 … {a(4)}→10') + chain(f'!{a(5)} 남음', '!for 문이 놓칠 리 없음 ⇒ 모순'),
-       '<div class="cd">L = <mark>[0]</mark>, k = <mark>0</mark>\nfor i in range(<mark>1</mark>, n):\n    if <mark>F[k] &lt;= S[i]</mark>:\n        L.append(i), <mark>k = i</mark></div><span class="tag">판서 정정 <b>A₁ ⊂ G₁</b> (방향 주의)</span>'),
+       '<div class="cd">L = <mark>[0]</mark>, k = <mark>0</mark>\nfor i in range(<mark>1</mark>, n):\n    if <mark>F[k] &lt;= S[i]</mark>:\n        L.append(i), <mark>k = i</mark></div><span class="tag">판서 정정: <b>A₁ ⊂ G₁</b> (방향 주의)</span>'),
   card('c-purple', 'Huffman 코딩', f'O({n} log {n})', '최소 빈도 2개 합침', svg_tree(), '300 → 230비트 <small>16 → 25 → 32 → 57 → 100</small>',
        chain(f'extract_min · insert O(log {n}) × {n} 번 = O({n} log {n})'),
-       '<div class="cd">while <mark>len(T) &gt; 1</mark>:\n    x = <mark>extract_min</mark>(T); y = extract_min(T)\n    z = Node(left = x, right = y)\n    <mark>f(z) = f(x) + f(y)</mark>; <mark>insert</mark>(T, z)</div><span class="tag">판서 정정 <b>f = 1100</b> · <b>d 빈도 16</b></span>'),
+       '<div class="cd">while <mark>len(T) &gt; 1</mark>:\n    x = <mark>extract_min</mark>(T); y = extract_min(T)\n    z = Node(left = x, right = y)\n    <mark>f(z) = f(x) + f(y)</mark>; <mark>insert</mark>(T, z)</div><span class="tag">판서 정정: <b>f = 1100</b> · <b>d 빈도 16</b></span>'),
 ]) + '</div>'
 
 def fstep(lb, fm, why='', cls=''):
