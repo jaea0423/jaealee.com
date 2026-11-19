@@ -1,6 +1,7 @@
 /* 개념노트 A4 인쇄판 공통 배치기 — drive/chapter-engine/chapter.js
    #src 의 장(div[data-title]) → 쪽(.sheet) 으로 자동 배치, 각주 번호, 표지 목차 */
-document.fonts.ready.then(() => {
+// 웹 글꼴(본문·수식·코드)을 먼저 불러온 뒤 배치 — 늦게 불러오면 쪽 높이 계산이 어긋남
+Promise.all(['16px "Pretendard Variable"', 'italic 500 16px "STIX Two Text"', '16px "JetBrains Mono"'].map(f => document.fonts.load(f, '가a1'))).catch(() => {}).then(() => document.fonts.ready).then(() => {
 const src = document.getElementById('src'), root = document.getElementById('pages');
 const NOTES = JSON.parse(document.getElementById('fn-data').textContent);
 let page = 0;
