@@ -152,3 +152,36 @@ def build_summary(out, *, title, unit, kick, h1, h1_en, lead, chapters, engine='
 <script src="{engine}/summary.js"></script>
 </body></html>'''
     open(out, 'w').write(page)
+
+
+# ── 암기노트 (memorize.css · memorize.js) ──
+def qa(title, rows):
+    """질문 | 답 표 한 묶음. rows = [(질문, 답), ...]"""
+    tr = ''.join(f'<tr><td>{q}</td><td>{a}</td></tr>' for q, a in rows)
+    return (f'<div class="unit"><h3>{title}</h3><table class="t qa"><colgroup><col style="width:44%"><col style="width:56%"></colgroup>'
+            f'<thead><tr><th>질문</th><th>답</th></tr></thead><tbody>{tr}</tbody></table></div>')
+
+def build_memorize(out, *, title, subject, h1, h1_en, ranges, engine='../../chapter-engine', pdf='', back='../lecture/index.html',
+                   foot_l='Kangwon National University, Dept. of CSE', foot_r='이재아 202313564'):
+    """ranges: [(범위 이름, 출처, 개념노트 쪽 범위 문자열, [qa(...), ...]), ...] — 범위마다 새 쪽"""
+    head = (f'<div class="mhead"><h1>{h1}<span>{h1_en}</span></h1>'
+            '<table class="t"><colgroup><col style="width:56%"><col style="width:20%"><col style="width:24%"></colgroup>'
+            '<thead><tr><th>범위</th><th class="c">암기노트</th><th class="c">개념노트</th></tr></thead><tbody></tbody></table></div>')
+    rs = ''.join(f'<div data-title="{H.escape(n)}" data-ref="{ref}"><div class="mrange">{n}<small>{w}</small></div>{"".join(us)}</div>' for n, w, ref, us in ranges)
+    pdfbtn = f'<a class="btn" href="./{pdf}" download>PDF 내려받기</a>' if pdf else ''
+    page = f'''<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title}</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=STIX+Two+Text:ital,wght@1,500&display=swap">
+<link rel="stylesheet" href="{engine}/chapter.css"><link rel="stylesheet" href="{engine}/memorize.css"></head>
+<body data-subject="{H.escape(subject)}" data-foot-l="{H.escape(foot_l)}" data-foot-r="{H.escape(foot_r)}">
+<div class="bar"><a href="{back}">강의 정리로</a><span>암기노트 A4 <span id="total"></span></span><button type="button" class="btn" onclick="window.print()">출력</button>{pdfbtn}</div>
+<main id="pages"></main>
+<template id="cover-src">{head}</template>
+<div id="src">{rs}</div>
+<script type="application/json" id="fn-data">{json.dumps([[k, t] for k, t in FN], ensure_ascii=False)}</script>
+<script src="{engine}/memorize.js"></script>
+</body></html>'''
+    open(out, 'w').write(page)
