@@ -1,4 +1,4 @@
-# 단원 정리 A4 인쇄판 — 공통 생성 도구 (drive/chapter-engine/tools/chapgen.py)
+# 개념노트 A4 인쇄판 — 공통 생성 도구 (drive/chapter-engine/tools/chapgen.py)
 # 규칙: ../README.md
 import html as H, json
 # ═════════ 도우미 ═════════
@@ -116,8 +116,8 @@ def build(out, *, title, run, kick, h1, h1_en, chapters, engine='../../../chapte
 
 # ── 정리노트 (summary.css · summary.js) ──
 def sunit(title, body, ref=''):
-    """정리노트 한 칸 — 단 하나 안에 들어가야 함. ref = 단원 정리 쪽 번호"""
-    r = f'<span class="ref">→ 단원 정리 p.{ref}</span>' if ref else ''
+    """정리노트 한 칸 — 단 하나 안에 들어가야 함. ref = 개념노트 쪽 번호"""
+    r = f'<span class="ref">→ 개념노트 p.{ref}</span>' if ref else ''
     h = f'<h3><span>{title}</span>{r}</h3>' if title else ''
     return f'<div class="unit">{h}{body}</div>'
 def trap(items, title='헷갈리는 점 · 판서 정정'):
@@ -127,10 +127,10 @@ def exam(items, title='시험 포인트'):
 
 def build_summary(out, *, title, unit, kick, h1, h1_en, lead, chapters, engine='../../chapter-engine', pdf='', back='../lecture/index.html',
                   foot_l='Kangwon National University, Dept. of CSE', foot_r='이재아 202313564'):
-    """chapters: [(번호, 장 제목, 출처, 단원 정리 쪽, [sunit(...), ...]), ...] — 첫 sunit 에 장 제목이 붙는다"""
+    """chapters: [(번호, 장 제목, 출처, 개념노트 쪽, [sunit(...), ...]), ...] — 첫 sunit 에 장 제목이 붙는다"""
     head = (f'<div class="shead">' + (f'<div class="kick">{kick}</div>' if kick else '') + f'<h1>{h1}<span>{h1_en}</span></h1>' + (f'<p>{lead}</p>' if lead else '') +
             '<table class="t"><colgroup><col style="width:56%"><col style="width:20%"><col style="width:24%"></colgroup>'
-            '<thead><tr><th>장</th><th class="c">정리노트</th><th class="c">단원 정리</th></tr></thead><tbody></tbody></table></div>')
+            '<thead><tr><th>장</th><th class="c">정리노트</th><th class="c">개념노트</th></tr></thead><tbody></tbody></table></div>')
     chs = ''
     for no, t, w, ref, us in chapters:
         first = us[0].replace('<div class="unit">', f'<div class="unit"><h2 class="chap">{no}. {t}<small>{w}</small></h2>', 1)

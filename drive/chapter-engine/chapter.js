@@ -1,4 +1,4 @@
-/* 단원 정리 A4 인쇄판 공통 배치기 — drive/chapter-engine/chapter.js
+/* 개념노트 A4 인쇄판 공통 배치기 — drive/chapter-engine/chapter.js
    #src 의 장(div[data-title]) → 쪽(.sheet) 으로 자동 배치, 각주 번호, 표지 목차 */
 document.fonts.ready.then(() => {
 const src = document.getElementById('src'), root = document.getElementById('pages');

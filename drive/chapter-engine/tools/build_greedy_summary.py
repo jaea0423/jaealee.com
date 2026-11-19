@@ -1,11 +1,11 @@
-# 정리노트 — 그리디 (단원 정리 greedy.html 의 압축본)
+# 정리노트 — 그리디 (개념노트 greedy.html 의 압축본)
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from chapgen import *
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 OUT = os.path.join(ROOT, 'algorithm/summary/greedy.html')
 
-# 검증 (단원 정리와 같은 값)
+# 검증 (개념노트와 같은 값)
 S = [1, 3, 0, 5, 3, 5, 6, 8, 8, 2, 12]; F = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
 L = [0]; k = 0
 for i in range(1, len(S)):

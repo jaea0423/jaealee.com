@@ -1,4 +1,4 @@
-// 단원 정리 HTML → 같은 폴더에 PDF 저장.  사용: node export_pdf.js <html 경로>
+// 개념노트 HTML → 같은 폴더에 PDF 저장.  사용: node export_pdf.js <html 경로>
 // 화면 배치(chapter.js)가 끝난 뒤 A4 로 인쇄하므로 화면과 PDF 쪽 나눔이 같다.
 const { chromium } = require('playwright');
 const path = require('path');

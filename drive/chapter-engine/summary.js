@@ -1,5 +1,5 @@
 /* 정리노트 A4 인쇄판 배치기 — drive/chapter-engine/summary.js
-   단원 정리(chapter.js)와 같은 부품을 쓰되: 2단, 검은 띠 머리말, 오른쪽 탭, 첫 쪽 위쪽에 제목·목차, 쪽 번호 "정리 n".
+   개념노트(chapter.js)와 같은 부품을 쓰되: 2단, 검은 띠 머리말, 오른쪽 탭, 첫 쪽 위쪽에 제목·목차, 쪽 번호 "정리 n".
    #src 의 장(div[data-title][data-ref]) 안 .unit 을 단 단위로 배치 — unit 은 단 하나 안에 들어가야 하며 자르지 않는다. */
 document.fonts.ready.then(() => {
 const B = document.body.dataset, src = document.getElementById('src'), root = document.getElementById('pages');

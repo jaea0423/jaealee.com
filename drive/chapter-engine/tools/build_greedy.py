@@ -1,4 +1,4 @@
-# 그리디 단원 정리 — A4 인쇄판 (규칙 확정판)
+# 그리디 개념노트 — A4 인쇄판 (규칙 확정판)
 # 규칙: 장은 새 쪽 / 소제목 단위(unit)는 안 자름, 안 들어가면 다음 쪽 / 한 쪽보다 길면 블록 경계에서 나누고 "앞 쪽에서 이어짐"
 #       글자 15·11·9.5·8.5·7.5pt / 표 전체 폭 / 본문 = 필기, 보충·정정은 각주 / 분수는 위아래
 import html as H, json, sys, os
@@ -252,7 +252,7 @@ def Huffman(T):                 # T: 이진 트리 (decode tree)
    ('ok', '결론', f'{T} 는 최적이다 → 귀납법 3단계 증명 → 허프만 코딩은 항상 최적 decode tree 를 찾는다', '')])}'''),
 ]))
 
-build(OUT, title='그리디 방법 단원 정리', run='알고리즘 - 단원정리 - 그리디 Greedy',
+build(OUT, title='그리디 개념노트', run='알고리즘 - 개념노트 - 그리디 Greedy',
       kick='알고리즘 · 윤지현 교수님 · 9주차 2차시 ~ 10주차 2차시', h1='그리디 방법', h1_en='Greedy Method',
       chapters=CH, pdf='greedy.pdf')
 print('ok', OUT, len(FN), 'notes')
