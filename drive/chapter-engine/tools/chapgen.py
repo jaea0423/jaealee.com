@@ -112,3 +112,43 @@ def build(out, *, title, run, kick, h1, h1_en, chapters, engine='../../../chapte
 <script src="{engine}/chapter.js"></script>
 </body></html>'''
     open(out, 'w').write(page)
+
+
+# ── 정리노트 (summary.css · summary.js) ──
+def sunit(title, body, ref=''):
+    """정리노트 한 칸 — 단 하나 안에 들어가야 함. ref = 단원 정리 쪽 번호"""
+    r = f'<span class="ref">→ 단원 정리 p.{ref}</span>' if ref else ''
+    h = f'<h3><span>{title}</span>{r}</h3>' if title else ''
+    return f'<div class="unit">{h}{body}</div>'
+def trap(items, title='헷갈리는 점 · 판서 정정'):
+    return f'<div class="trap"><b>{title}</b><ul>' + ''.join(f'<li>{i}</li>' for i in items) + '</ul></div>'
+def exam(items, title='시험 포인트'):
+    return f'<div class="exam"><b>{title}</b><ul>' + ''.join(f'<li>{i}</li>' for i in items) + '</ul></div>'
+
+def build_summary(out, *, title, unit, kick, h1, h1_en, lead, chapters, engine='../../chapter-engine', pdf='', back='../lecture/index.html',
+                  foot_l='Kangwon National University, Dept. of CSE', foot_r='이재아 202313564'):
+    """chapters: [(번호, 장 제목, 출처, 단원 정리 쪽, [sunit(...), ...]), ...] — 첫 sunit 에 장 제목이 붙는다"""
+    head = (f'<div class="shead"><div class="kick">{kick}</div><h1>{h1}<span>{h1_en}</span></h1><p>{lead}</p>'
+            '<table class="t"><colgroup><col style="width:56%"><col style="width:20%"><col style="width:24%"></colgroup>'
+            '<thead><tr><th>장</th><th class="c">정리노트</th><th class="c">단원 정리</th></tr></thead><tbody></tbody></table></div>')
+    chs = ''
+    for no, t, w, ref, us in chapters:
+        first = us[0].replace('<div class="unit">', f'<div class="unit"><h2 class="chap">{no}. {t}<small>{w}</small></h2>', 1)
+        chs += f'<div data-title="{no}. {H.escape(t)}" data-ref="{ref}">{first}{"".join(us[1:])}</div>'
+    pdfbtn = f'<a class="btn" href="./{pdf}" download>PDF 내려받기</a>' if pdf else ''
+    page = f'''<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title}</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=STIX+Two+Text:ital,wght@1,500&display=swap">
+<link rel="stylesheet" href="{engine}/chapter.css"><link rel="stylesheet" href="{engine}/summary.css"></head>
+<body data-unit="{H.escape(unit)}" data-foot-l="{H.escape(foot_l)}" data-foot-r="{H.escape(foot_r)}">
+<div class="bar"><a href="{back}">강의 정리로</a><span>정리노트 A4 <span id="total"></span></span><button type="button" class="btn" onclick="window.print()">출력</button>{pdfbtn}</div>
+<main id="pages"></main>
+<template id="cover-src">{head}</template>
+<div id="src">{chs}</div>
+<script type="application/json" id="fn-data">{json.dumps([[k, t] for k, t in FN], ensure_ascii=False)}</script>
+<script src="{engine}/summary.js"></script>
+</body></html>'''
+    open(out, 'w').write(page)
