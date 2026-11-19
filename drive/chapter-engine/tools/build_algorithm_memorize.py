@@ -196,7 +196,7 @@ for i in range({K('1')}, n):
    ('반례', '0, 00 → 00 = aa? c?', ''),
  ]),
 ]
-GREEDY = [TOP] + PICKS
+GREEDY = PICKS
 
 
 build_memorize(OUT, title='알고리즘 기말 암기노트', subject='알고리즘 기말', h1='알고리즘 암기노트', h1_en='기말',
