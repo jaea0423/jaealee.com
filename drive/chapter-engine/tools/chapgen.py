@@ -128,7 +128,7 @@ def exam(items, title='시험 포인트'):
 def build_summary(out, *, title, unit, kick, h1, h1_en, lead, chapters, engine='../../chapter-engine', pdf='', back='../lecture/index.html',
                   foot_l='Kangwon National University, Dept. of CSE', foot_r='이재아 202313564'):
     """chapters: [(번호, 장 제목, 출처, 단원 정리 쪽, [sunit(...), ...]), ...] — 첫 sunit 에 장 제목이 붙는다"""
-    head = (f'<div class="shead"><div class="kick">{kick}</div><h1>{h1}<span>{h1_en}</span></h1><p>{lead}</p>'
+    head = (f'<div class="shead">' + (f'<div class="kick">{kick}</div>' if kick else '') + f'<h1>{h1}<span>{h1_en}</span></h1>' + (f'<p>{lead}</p>' if lead else '') +
             '<table class="t"><colgroup><col style="width:56%"><col style="width:20%"><col style="width:24%"></colgroup>'
             '<thead><tr><th>장</th><th class="c">정리노트</th><th class="c">단원 정리</th></tr></thead><tbody></tbody></table></div>')
     chs = ''

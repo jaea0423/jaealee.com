@@ -129,8 +129,8 @@ def Huffman(T):
         exam(['<b>기말 확정</b> — 보조 명제 2개 + 귀납 3단계의 <b>순서와 이유</b>를 쓸 수 있게', '기호(T, T′, T″, B, u, v, w)가 바뀌어도 역할로 대응']), ''),
 ]))
 
-build_summary(OUT, title='그리디 정리노트', unit='그리디 Greedy', kick='알고리즘 · 정리노트 · 기말 범위',
+build_summary(OUT, title='그리디 정리노트', unit='그리디 Greedy', kick='',
               h1='그리디 방법', h1_en='Greedy Method',
-              lead='단원 정리(15쪽)를 압축한 노트. 각 칸 오른쪽 위의 "→ 단원 정리 p." 가 자세한 내용의 위치.',
+              lead='',
               chapters=CH, pdf='greedy.pdf')
 print('ok', OUT)
