@@ -23,73 +23,44 @@ def d_(t, x): return f'{v("d")}<sub>{t}</sub>({v(x)})'
 n = v('n'); nlogn = f'O({n} log {n})'
 def c(s): return f'<code>{H.escape(s)}</code>'
 
+def munit(label, html): return f'<div class="unit"><div class="mlab">{label}</div>{html}</div>'
+nb = lambda: '&nbsp;'
+MATRIX = f"""<table class="mx"><colgroup><col style="width:17%"><col style="width:23%"><col style="width:25%"><col style="width:15%"><col style="width:20%"></colgroup>
+<thead><tr><th>예제</th><th>전략</th><th>결과</th><th>시간</th><th>증명 열쇠</th></tr></thead><tbody>
+<tr><td class="k">거스름돈</td><td class="big">큰 단위부터</td><td>368원 → <b>13개</b><small>반례 {{1, 5, 7}}, 10원: 4 vs 2</small></td><td>—</td><td>단위가 <b>약수 관계</b>일 때만 최적</td></tr>
+<tr><td class="k">일의 개수</td><td class="big">짧은 일부터</td><td>[2, 1, 4, 6, 3], 9 → <b>3개</b></td><td>—</td><td>부등식 3개 충돌</td></tr>
+<tr><td class="k">강의실 배정</td><td class="big">빨리 끝나는 것부터</td><td><b>L = [0, 3, 7, 10]</b></td><td><b>{nlogn}</b></td><td>바꿔치기 → {a(5)} 남음</td></tr>
+<tr><td class="k">Huffman</td><td class="big">최소 빈도 2개 합침</td><td>300 → <b>230비트</b><small>16 → 25 → 32 → 57 → 100</small></td><td><b>{nlogn}</b><small>extract_min · insert O(log {n})</small></td><td>보조 1 · 2 + 귀납</td></tr>
+</tbody></table>"""
+KEYS = f"""<div class="keys">
+<div class="kl">귀류법 틀</div><div class="kf">가정 "그리디 해는 <b>최적이 아니다</b>" → … → <span class="x">모순</span> → 최적</div>
+<div class="kl">일의 개수</div><div class="kf">{X} + {a(4)} &gt; {T} &nbsp;·&nbsp; {Y} + {b(4)} ≤ {T} &nbsp;·&nbsp; {X} ≤ {Y}, {a(4)} ≤ {b(4)} &nbsp;⇒&nbsp; {X} + {a(4)} ≤ {T} <span class="x">모순</span><small>최적 아님 → 4개(k + 1 개)만 잡으면 충분</small></div>
+<div class="kl">강의실 배정</div><div class="kf">{a(1)}→0, {a(2)}→3, {a(3)}→7, {a(4)}→10 &nbsp;⇒&nbsp; {a(5)} 남음 &nbsp;⇒&nbsp; for 문이 놓칠 리 없음 <span class="x">모순</span><small>{sb("A", 1)} ⊂ {sb("G", 1)} (a₁ 과 안 겹치면 0번과도 안 겹침)</small></div>
+<div class="kl">허프만 보조 1</div><div class="kf">({f_("x")} − {f_("a")})({d_("T", "x")} − {d_("T", "a")}) ≥ 0 &nbsp;⇒&nbsp; 최소 빈도 {v("x")}, {v("y")} 가 <b>가장 깊은 형제</b>인 최적 트리 존재</div>
+<div class="kl">허프만 보조 2</div><div class="kf">cost({v("B")}) − cost({v("B")}′) = {f_("u")} + {f_("v")}</div>
+<div class="kl">허프만 귀납</div><div class="kf">{n} = 2 자명 → {n} &lt; {v("k")} 가정 → {n} = {v("k")}: cost({T}″ − {{x, y}}) &lt; cost({T}′) <span class="x">모순</span><small>{T}′ 은 귀납 가정으로 최적</small></div>
+</div>"""
+CODE = """<div class="mcode"><span class="h">강의실 배정</span>L = <mark>[0]</mark>, k = <mark>0</mark>
+for i in range(<mark>1</mark>, n):
+    if <mark>F[k] &lt;= S[i]</mark>:
+        L.append(i), <mark>k = i</mark><span class="h">Huffman</span>while <mark>len(T) &gt; 1</mark>:
+    x = <mark>extract_min</mark>(T)
+    y = extract_min(T)
+    z = Node(left = x, right = y)
+    <mark>f(z) = f(x) + f(y)</mark>
+    <mark>insert</mark>(T, z)</div>"""
+FIX = f"""<ul class="fix">
+<li><span>f 의 코드</span> <b>1100<s>1110</s></b></li>
+<li><span>d 깊이 · 빈도</span> <b>3, 16<s>15</s></b></li>
+<li><span>보조 1 의 {T}′</span> <b>최적이다</b></li>
+<li><span>{d_("B′", "w")}</span> <b>{d_("B", "u")} − 1</b></li>
+<li><span>포함 방향</span> <b>{sb("A", 1)} ⊂ {sb("G", 1)}</b></li>
+<li><span>{n} = {v("k")} 의 {v("x")}, {v("y")}</span> <b>최소 빈도 두 문자</b></li>
+</ul>"""
 GREEDY = [
- qa('정의 · 개념', [
-   ('그리디 방법', '현재 상태에서 <b>가장 좋은 선택을 반복</b>해 해를 구성'),
-   ('그리디 답에 꼭 필요한 것', '그 전략이 <b>항상 최적</b>이라는 증명 (귀류법)'),
-   ('분할 정복과 DP 의 차이', 'DP 는 작은 문제의 답을 <b>테이블에 저장</b>해 다시 사용'),
-   ('귀류법', '결론을 <b>부정</b>해 <b>모순</b>을 보여 결론이 성립함을 보임'),
-   ('그리디 증명의 가정 (첫 줄)', '"그리디 전략으로 구한 해는 최적이 아니다"'),
-   ('고정 길이 코드', '모든 문자를 같은 비트 수로 (ASCII 8비트)'),
-   ('가변 길이 코드', '많이 나오는 문자에 <b>적은 비트</b>, 적게 나오는 문자에 많은 비트'),
-   ('prefix-free code', '어떤 문자의 코드도 다른 문자 코드의 <b>prefix(앞부분)가 아님</b>'),
-   ('이진 트리면 prefix-free 인 이유', '문자 = <b>리프만</b> → 중간 노드는 문자가 아님'),
-   ('cost(' + T + ')', f'<span class="sum">Σ</span> {f_("x")} · {d_("T", "x")} (빈도 × 깊이의 합)'),
-   ('min heap', '부모가 자식보다 작음 → <b>루트가 최소</b>'),
-   ('최적 허프만 트리는 하나뿐?', '<b>아니다</b> — 가지 방향에 따라 여러 개'),
- ]),
- qa('전략 ↔ 예제', [
-   ('거스름돈', '<b>큰 단위 동전부터</b> — 단위가 약수 관계일 때만 최적'),
-   ('하루에 할 수 있는 일', '<b>소요시간 짧은 일부터</b>'),
-   ('강의실 배정', '<b>빨리 끝나는 강의부터</b> (남은 시간이 많게)'),
-   ('Huffman 코딩', '<b>빈도가 가장 작은 두 개를 합침</b>'),
-   ('강의실 1번 전략 (짧은 것부터) 이 틀린 이유', '짧은 a 가 붙어 있는 b, c 를 막음 (1개 vs 2개)'),
-   ('강의실 2번 전략 (빨리 시작) 이 틀린 이유', '긴 a 가 b, c, d 를 막음 (1개 vs 3개)'),
- ]),
- qa('숫자 · 결과', [
-   ('368원, 동전 1 · 10 · 50 · 100', '100 × 3 + 50 × 1 + 10 × 1 + 1 × 8 = <b>13개</b>'),
-   ('동전 1 · 5 · 7원, 10원', '그리디 7 + 1 + 1 + 1 = <b>4개</b> vs 최적 5 + 5 = <b>2개</b>'),
-   (f'{v("A")} = [2, 1, 4, 6, 3], {T} = 9', '1 + 2 + 3 = 6 → <b>3개</b> (+4 = 10 &gt; 9)'),
-   ('강의실 예시 (11개) 의 결과', '<b>L = [0, 3, 7, 10]</b>, 4개'),
-   ('ASCII \'A\'', '65 = 01000001, 100자 → 800비트, 한글 16비트'),
-   ('문자 6개 고정 길이', '<b>3비트</b> (2<sup>3</sup>) → 100 × 3 = 300비트'),
-   ('a ~ f 가변 길이 합계', '<b>230비트</b> (1비트 43번 + 3비트 41번 + 4비트 16번)'),
-   ('묶는 순서 (a43 b13 c12 d16 e9 f7)', '16 (f + e) → 25 (c + b) → 32 (16 + d) → 57 → 100'),
-   ('코드표', 'a 0 · b 101 · c 100 · d 111 · e 1101 · f <b>1100</b>'),
-   ('복습 예 (a3 b7 c15 d20 e40 f60)', '10 → 25 → 45 → 85 → 145'),
- ]),
- qa('수행시간', [
-   ('강의실 배정', f'정렬 {nlogn} + for 문 O({n}) = <b>{nlogn}</b>'),
-   ('extract_min', f'O(log {n}) — 루트 꺼내고 마지막 노드를 루트로, heapify_down'),
-   ('insert', f'O(log {n}) — 마지막에 넣고 heapify_up'),
-   ('Huffman 전체', f'while {n} 번 × O(log {n}) = <b>{nlogn}</b>'),
- ]),
- qa('증명 순서', [
-   ('일의 개수: 세 식', f'① {X} + {a(4)} &gt; {T} &nbsp;② {Y} + {b(4)} ≤ {T} &nbsp;③ {X} ≤ {Y}, {a(4)} ≤ {b(4)} → 모순'),
-   ('"최적 아님" 일 때 왜 k + 1 개만 잡나', '더 많아도 그중 k + 1 개는 여전히 가능 → k + 1 개가 불가능하면 전부 불가능'),
-   ('강의실: 바꿔치기 순서', f'{a(1)} → 0, {a(2)} → 3, {a(3)} → 7, {a(4)} → 10, <b>{a(5)} 남음</b>'),
-   (f'{sb("A", 1)} 과 {sb("G", 1)} 의 관계', f'<b>{sb("A", 1)} ⊂ {sb("G", 1)}</b> (a₁ 과 안 겹치면 0번과도 안 겹침)'),
-   ('강의실: 모순의 근거', f'for 문이 모든 강의를 훑음 → 그리디가 {a(5)} 를 놓칠 수 없음'),
-   ('Huffman 보조 명제 1', f'빈도 최소 {v("x")}, {v("y")} 를 <b>가장 깊은 형제</b>로 갖는 최적 트리가 존재'),
-   ('보조 명제 1 핵심 식', f'({f_("x")} − {f_("a")})({d_("T", "x")} − {d_("T", "a")}) ≥ 0 → {T}′ 도 최적'),
-   ('Huffman 보조 명제 2', f'cost({v("B")}) − cost({v("B")}′) = <b>{f_("u")} + {f_("v")}</b>'),
-   ('귀납법 3단계', f'바닥 {n} = 2 (자명) / 가정 {n} &lt; {v("k")} 최적 / 단계 {n} = {v("k")} 증명'),
-   (f'{n} = {v("k")} 의 모순', f'cost({T}″ − {{x, y}}) &lt; cost({T}′) — 그런데 {T}′ 은 귀납 가정으로 최적'),
- ]),
- qa('의사코드 핵심 줄 (빈칸 대비)', [
-   ('강의실: 초기값', c('L = [0], k = 0')),
-   ('강의실: 반복과 조건', c('for i in range(1, n):') + '<br>' + c('if F[k] <= S[i]: L.append(i), k = i')),
-   ('Huffman: 반복 조건', c('while len(T) > 1:')),
-   ('Huffman: 꺼내기', c('x = extract_min(T)') + ', ' + c('y = extract_min(T)')),
-   ('Huffman: 새 노드', c('z = Node(left = x, right = y)') + '<br>' + c('f(z) = f(x) + f(y)') + ', ' + c('insert(T, z)')),
- ]),
- qa('판서 정정 (고친 값으로 외우기)', [
-   ('f 의 코드', '<b>1100</b> (판서 1110)'),
-   ('d 의 깊이 · 빈도', '깊이 3 (111), 빈도 <b>16</b> (판서 15)'),
-   ('보조 명제 1 의 T′', '<b>최적이다</b> (판서 "최적 아님")'),
-   (f'보조 명제 2 의 {d_("B′", "w")}', f'<b>{d_("B", "u")} − 1</b> (판서 d<sub>B′</sub>(u) − 1)'),
-   ('n = k 의 x, y', '임의가 아니라 <b>빈도가 가장 작은 두 문자</b> (보조 명제 1 사용)'),
- ]),
+ munit('한눈에 — 전략 · 결과 · 시간', MATRIX),
+ munit('증명 열쇠 — 서술형에 그대로 쓸 식', KEYS),
+ f'<div class="unit mgrid"><div><div class="mlab">빈칸 나올 줄 (형광 부분)</div>{CODE}</div><div><div class="mlab">판서 정정 — 고친 값</div>{FIX}</div></div>',
 ]
 
 build_memorize(OUT, title='알고리즘 기말 암기노트', subject='알고리즘 기말', h1='알고리즘 암기노트', h1_en='기말',
