@@ -42,49 +42,52 @@ FIX = f"""<ul class="fix">
 </ul>"""
 
 # ── 작은 그림 ──
+# 그림: viewBox 폭 300 = 카드 안쪽 폭(약 79mm) → 1 단위 ≈ 1px, 글자는 11.3px(8.5pt) · 12.7px(9.5pt) 두 가지만
+F85, F95 = 11.3, 12.7
 def svg_coins():
-    cs = [100, 100, 100, 50, 10] + [1] * 8; x = 14; o = ['<svg viewBox="0 0 340 52"><title>368원 = 100 × 3 + 50 + 10 + 1 × 8</title>']
+    cs = [100, 100, 100, 50, 10] + [1] * 8; x = 2; o = ['<svg viewBox="0 0 300 34"><title>368원 = 100 × 3 + 50 + 10 + 1 × 8</title>']
     for c_ in cs:
-        r = {100: 15, 50: 13, 10: 11, 1: 8}[c_]
-        o.append(f'<circle cx="{x + r}" cy="26" r="{r}" fill="#E7F5EC" stroke="#15803D" stroke-width="1.6"/><text x="{x + r}" y="{26 + 4}" font-size="{11 if r > 9 else 8}" font-weight="800" text-anchor="middle" fill="#15803D">{c_}</text>')
+        r = {100: 14, 50: 12, 10: 11, 1: 8}[c_]
+        fs = F85 if c_ > 1 else 10
+        o.append(f'<circle cx="{x + r}" cy="17" r="{r}" fill="#E7F5EC" stroke="#15803D" stroke-width="1.4"/><text x="{x + r}" y="{17 + fs * .36}" font-size="{fs}" font-weight="800" text-anchor="middle" fill="#15803D">{c_}</text>')
         x += 2 * r + 3
     o.append('</svg>'); return ''.join(o)
 def svg_jobs():
-    U = 30; X0 = 10; o = ['<svg viewBox="0 0 340 56"><title>1 + 2 + 3 = 6, +4 = 10 &gt; 9</title>']; x = X0
+    U = 26; X0 = 4; o = ['<svg viewBox="0 0 300 50"><title>1 + 2 + 3 = 6, +4 = 10 &gt; 9</title>']; x = X0
     for t in (1, 2, 3):
-        o.append(f'<rect x="{x}" y="14" width="{t * U}" height="24" fill="#FDEEE6" stroke="#C2410C" stroke-width="1.6"/><text x="{x + t * U / 2}" y="31" font-size="13" font-weight="800" text-anchor="middle" fill="#C2410C">{t}</text>'); x += t * U
-    o.append(f'<rect x="{x}" y="14" width="{4 * U}" height="24" fill="#fff" stroke="#999" stroke-width="1.4" stroke-dasharray="5 3"/><text x="{x + 2 * U}" y="31" font-size="12" font-weight="700" text-anchor="middle" fill="#777">+4 = 10</text>')
+        o.append(f'<rect x="{x}" y="10" width="{t * U}" height="22" fill="#FDEEE6" stroke="#C2410C" stroke-width="1.4"/><text x="{x + t * U / 2}" y="{21 + F95 * .36}" font-size="{F95}" font-weight="800" text-anchor="middle" fill="#C2410C">{t}</text>'); x += t * U
+    o.append(f'<rect x="{x}" y="10" width="{4 * U}" height="22" fill="#fff" stroke="#888" stroke-width="1.2" stroke-dasharray="4 3"/><text x="{x + 2 * U}" y="{21 + F85 * .36}" font-size="{F85}" font-weight="700" text-anchor="middle" fill="#666">+4 = 10</text>')
     tx = X0 + 9 * U
-    o.append(f'<line x1="{tx}" y1="6" x2="{tx}" y2="48" stroke="#111" stroke-width="2.4"/><text x="{tx + 4}" y="52" font-size="11" font-weight="800">T = 9</text></svg>')
+    o.append(f'<line x1="{tx}" y1="4" x2="{tx}" y2="38" stroke="#111" stroke-width="2.2"/><text x="{tx}" y="48" font-size="{F85}" font-weight="800" text-anchor="middle">T = 9</text></svg>')
     return ''.join(o)
 def svg_iv():
-    U = 22; X0 = 10; o = ['<svg viewBox="0 0 340 74"><title>0, 3, 7, 10 선택</title>']
-    sel = {0: 0, 3: 0, 7: 0, 10: 0}; rows = {}
-    lay = [[], [], []]
+    U = 20.5; X0 = 7; o = ['<svg viewBox="0 0 300 70"><title>0, 3, 7, 10 선택</title>']
+    sel = (0, 3, 7, 10); lay = [[], [], []]
     for i, (s_, f_2) in enumerate(zip(S, F)):
         if i in sel: continue
-        for li, row in enumerate(lay):
+        for row in lay:
             if all(f2 <= s_ or f_2 <= s2 for s2, f2 in row): row.append((s_, f_2)); break
     for li, row in enumerate(lay):
-        for s_, f_2 in row: o.append(f'<rect x="{X0 + s_ * U}" y="{4 + li * 11}" width="{(f_2 - s_) * U}" height="8" fill="#EEF0F4" stroke="#B5BAC4" stroke-width=".8"/>')
+        for s_, f_2 in row: o.append(f'<rect x="{X0 + s_ * U}" y="{2 + li * 9}" width="{(f_2 - s_) * U}" height="7" fill="#EEF0F4" stroke="#B5BAC4" stroke-width=".8"/>')
     for i in sel:
-        o.append(f'<rect x="{X0 + S[i] * U}" y="40" width="{(F[i] - S[i]) * U}" height="16" fill="#1D4ED8"/><text x="{X0 + (S[i] + F[i]) / 2 * U}" y="52" font-size="11" font-weight="800" text-anchor="middle" fill="#fff">{i}</text>')
-    o.append(f'<line x1="{X0}" y1="60" x2="{X0 + 14 * U}" y2="60" stroke="#111" stroke-width="1.2"/>')
-    for t in (0, 4, 7, 11, 14): o.append(f'<text x="{X0 + t * U}" y="72" font-size="10" text-anchor="middle" fill="#333">{t}</text>')
+        o.append(f'<rect x="{X0 + S[i] * U}" y="31" width="{(F[i] - S[i]) * U}" height="17" fill="#1D4ED8"/><text x="{X0 + (S[i] + F[i]) / 2 * U}" y="{39.5 + F85 * .36}" font-size="{F85}" font-weight="800" text-anchor="middle" fill="#fff">{i}</text>')
+    o.append(f'<line x1="{X0}" y1="52" x2="{X0 + 14 * U}" y2="52" stroke="#111" stroke-width="1.2"/>')
+    for t in (0, 4, 7, 11, 14): o.append(f'<text x="{X0 + t * U}" y="66" font-size="{F85}" text-anchor="middle" fill="#333">{t}</text>')
     o.append('</svg>'); return ''.join(o)
 def svg_tree():
-    N = {'r': (150, 12, '', 0), 'a': (70, 44, 'a', 1), 'n57': (230, 44, '', 0), 'n25': (180, 76, '', 0), 'n32': (280, 76, '', 0),
-         'c': (155, 108, 'c', 1), 'b': (205, 108, 'b', 1), 'n16': (255, 108, '', 0), 'd': (305, 108, 'd', 1), 'f': (230, 138, 'f', 1), 'e': (280, 138, 'e', 1)}
+    N = {'r': (110, 10, 0), 'a': (40, 40, 1), 'n57': (180, 40, 0), 'n25': (130, 72, 0), 'n32': (232, 72, 0),
+         'c': (100, 104, 1), 'b': (160, 104, 1), 'n16': (208, 104, 0), 'd': (268, 104, 1), 'f': (176, 136, 1), 'e': (240, 136, 1)}
     E = [('r', 'a', 0), ('r', 'n57', 1), ('n57', 'n25', 0), ('n57', 'n32', 1), ('n25', 'c', 0), ('n25', 'b', 1), ('n32', 'n16', 0), ('n32', 'd', 1), ('n16', 'f', 0), ('n16', 'e', 1)]
-    o = ['<svg viewBox="0 0 340 154"><title>허프만 트리</title>']
+    o = ['<svg viewBox="0 0 300 150"><title>허프만 트리</title>']
     for p_, c_, bit in E:
         (x1, y1), (x2, y2) = N[p_][:2], N[c_][:2]
-        o.append(f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="#7E22CE" stroke-width="1.4"/><text x="{(x1 + x2) / 2 + (-7 if bit == 0 else 7)}" y="{(y1 + y2) / 2 + 3}" font-size="10" font-weight="800" text-anchor="middle" fill="#7E22CE">{bit}</text>')
-    for k_, (x, y, lab, leaf) in N.items():
+        o.append(f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="#7E22CE" stroke-width="1.3"/><text x="{(x1 + x2) / 2 + (-8 if bit == 0 else 8)}" y="{(y1 + y2) / 2 + 3}" font-size="{F85}" font-weight="800" text-anchor="middle" fill="#7E22CE">{bit}</text>')
+    for k_, (x, y, leaf) in N.items():
         if leaf:
-            o.append(f'<rect x="{x - 26}" y="{y - 9}" width="52" height="18" rx="2" fill="#F3E9FB" stroke="#7E22CE" stroke-width="1.3"/><text x="{x}" y="{y + 4}" font-size="10.5" font-weight="800" text-anchor="middle">{lab}={HCODE[lab]}</text>')
+            lab = f'{k_} = {HCODE[k_]}'
+            o.append(f'<rect x="{x - 27}" y="{y - 10}" width="54" height="20" rx="4" fill="#F3E9FB" stroke="#7E22CE" stroke-width="1.3"/><text x="{x}" y="{y + F85 * .36}" font-size="{F85}" font-weight="800" text-anchor="middle">{lab}</text>')
         else:
-            o.append(f'<circle cx="{x}" cy="{y}" r="{9 if lab else 5}" fill="#fff" stroke="#7E22CE" stroke-width="1.3"/>' + (f'<text x="{x}" y="{y + 3.5}" font-size="8.5" font-weight="800" text-anchor="middle">{lab}</text>' if lab else ''))
+            o.append(f'<circle cx="{x}" cy="{y}" r="5" fill="#fff" stroke="#7E22CE" stroke-width="1.3"/>')
     o.append('</svg>'); return ''.join(o)
 
 def chain(*items):
@@ -95,7 +98,8 @@ def chain(*items):
         if i < len(items) - 1: out.append('<span class="ar">→</span>')
     return '<div class="chain">' + ''.join(out) + '</div>'
 def card(color, name, time, strat, fig, res, ch, extra=''):
-    return (f'<div class="card {color}"><div class="hd">{name}<span>{time}</span></div><div class="in">'
+    badge = f'<span>{time}</span>' if time and time != '—' else ''
+    return (f'<div class="card {color}"><div class="hd">{name}{badge}</div><div class="in">'
             f'<div class="st">{strat}</div>{fig}<div class="res">{res}</div>{ch}{extra}</div></div>')
 
 CARDS = '<div class="unit cards">' + ''.join([
@@ -108,7 +112,7 @@ CARDS = '<div class="unit cards">' + ''.join([
        chain(f'{a(1)} → 0', f'{sb("A", 1)} ⊂ {sb("G", 1)}', f'{a(2)}→3 … {a(4)}→10') + chain(f'!{a(5)} 남음', '!for 문이 놓칠 리 없음 ⇒ 모순'),
        '<div class="cd">L = <mark>[0]</mark>, k = <mark>0</mark>\nfor i in range(<mark>1</mark>, n):\n    if <mark>F[k] &lt;= S[i]</mark>:\n        L.append(i), <mark>k = i</mark></div><span class="tag">판서 정정 <b>A₁ ⊂ G₁</b> (방향 주의)</span>'),
   card('c-purple', 'Huffman 코딩', f'O({n} log {n})', '최소 빈도 2개 합침', svg_tree(), '300 → 230비트 <small>16 → 25 → 32 → 57 → 100</small>',
-       chain(f'extract_min · insert O(log {n}) × {n} 번', f'O({n} log {n})'),
+       chain(f'extract_min · insert O(log {n}) × {n} 번 = O({n} log {n})'),
        '<div class="cd">while <mark>len(T) &gt; 1</mark>:\n    x = <mark>extract_min</mark>(T); y = extract_min(T)\n    z = Node(left = x, right = y)\n    <mark>f(z) = f(x) + f(y)</mark>; <mark>insert</mark>(T, z)</div><span class="tag">판서 정정 <b>f = 1100</b> · <b>d 빈도 16</b></span>'),
 ]) + '</div>'
 
