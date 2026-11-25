@@ -53,10 +53,11 @@
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="../config.js"></script>
 <script src="notices.js"></script>
 <script>
+/* 세로 게시용 화면. 스마트TV 내장 브라우저처럼 오래된 환경에서도 떠야 하므로
+   라이브러리를 쓰지 않고 옛날 문법(ES5)으로만 작성했습니다. */
 (function () {
   "use strict";
 
@@ -65,10 +66,15 @@
   var countEl  = document.getElementById("count");
   var current  = [];
 
+  function setText(el, text) {
+    el.innerHTML = "";
+    el.appendChild(document.createTextNode(text));
+  }
+
   /* ---------------- 0. 건물 이름 / 날짜 ---------------- */
   var B = CONFIG.BUILDING || "대경빌";
-  document.getElementById("bldg").textContent = B;
-  document.getElementById("ban-head").textContent = B + " 등록 차량 외 주차 불가";
+  setText(document.getElementById("bldg"), B);
+  setText(document.getElementById("ban-head"), B + " 등록 차량 외 주차 불가");
   document.title = B + " 안내";
 
   (function () {
@@ -78,17 +84,19 @@
       fmt(d) + "<br>" + days[d.getDay()] + "요일";
   })();
 
-  /* ---------------- 1. 안내문 그리기 ---------------- */
+  /* ---------------- 1. 안내문 ---------------- */
   (function () {
     var box = document.getElementById("notice-list");
 
-    NOTICES.forEach(function (n) {
+    for (var i = 0; i < NOTICES.length; i++) {
+      var n = NOTICES[i];
+
       var card = document.createElement("div");
       card.className = "card t-" + n.tone;
 
       var tab = document.createElement("div");
       tab.className = "card-tab";
-      tab.textContent = n.title;
+      setText(tab, n.title);
 
       var body = document.createElement("div");
       body.className = "card-body";
@@ -96,35 +104,36 @@
       var inner = document.createElement("div");
       inner.className = "card-inner";
 
-      n.items.forEach(function (text) {
+      for (var j = 0; j < n.items.length; j++) {
         var p = document.createElement("p");
         // notices.js 는 우리가 쓰는 파일이라 <b> 같은 간단한 태그를 허용합니다
-        p.innerHTML = text;
+        p.innerHTML = n.items[j];
         inner.appendChild(p);
-      });
-      body.appendChild(inner);
+      }
 
+      body.appendChild(inner);
       card.appendChild(tab);
       card.appendChild(body);
       box.appendChild(card);
-    });
+    }
 
     fitNotices();
 
     var foot = document.getElementById("notice-footer");
     if (typeof NOTICE_FOOTER === "string" && NOTICE_FOOTER) {
-      foot.textContent = NOTICE_FOOTER;
+      setText(foot, NOTICE_FOOTER);
     } else {
       foot.style.display = "none";
     }
   })();
 
-  /* 안내 카드 글자가 칸을 넘치면 들어갈 때까지 줄입니다.
-     화면 크기나 안내 줄 수가 달라져도 글자가 잘리지 않습니다. */
+  /* 안내 카드 글자가 칸을 넘치면 들어갈 때까지 줄입니다. */
   function fitNotices() {
-    document.querySelectorAll(".card-body").forEach(function (body) {
-      var inner = body.querySelector(".card-inner");
-      if (!inner) { return; }
+    var bodies = document.querySelectorAll(".card-body");
+    for (var i = 0; i < bodies.length; i++) {
+      var body  = bodies[i];
+      var inner = body.getElementsByClassName("card-inner")[0];
+      if (!inner) { continue; }
 
       var size = window.innerHeight * 0.02;   // 2vh 에서 시작
       var min  = 11;
@@ -132,164 +141,155 @@
 
       var guard = 0;
       while (inner.offsetHeight > body.clientHeight && size > min && guard < 80) {
-        size *= 0.96;
+        size = size * 0.96;
         body.style.fontSize = size.toFixed(1) + "px";
         guard += 1;
       }
-    });
+    }
   }
 
   /* ---------------- 2. 5번 눌러 관리자 모드 ---------------- */
   var clicks = 0, timer = null;
   function tap() {
     clicks += 1;
-    clearTimeout(timer);
+    if (timer) { clearTimeout(timer); }
     timer = setTimeout(function () { clicks = 0; }, 3000);
     if (clicks >= 5) {
       clicks = 0;
       clearTimeout(timer);
-      location.href = "../admin.html";   // 관리자 화면은 v1 과 같이 씁니다
+      location.href = "../admin.html";
     }
   }
-  document.querySelectorAll(".tap").forEach(function (el) {
-    el.addEventListener("click", tap);
-  });
+  var taps = document.querySelectorAll(".tap");
+  for (var ti = 0; ti < taps.length; ti++) { taps[ti].onclick = tap; }
 
-  /* ---------------- 3. 번호판 글자 크기 맞추기 ----------------
-     글자 폭을 눈대중으로 잡으면 한글 때문에 두 줄로 접힙니다.
-     화면 밖에 같은 모양의 글자를 그려 놓고 실제 폭을 잽니다. */
+  /* ---------------- 3. 번호판 글자 크기 ---------------- */
   var ruler = document.createElement("span");
   ruler.setAttribute("aria-hidden", "true");
   ruler.style.cssText =
     "position:absolute;left:-9999px;top:0;white-space:nowrap;" +
-    "font-size:100px;font-weight:800;letter-spacing:.03em;" +
-    "font-variant-numeric:tabular-nums;visibility:hidden";
+    "font-size:100px;font-weight:800;letter-spacing:.03em;visibility:hidden";
   document.body.appendChild(ruler);
 
   function widestRatio() {
-    ruler.style.fontFamily = getComputedStyle(platesEl).fontFamily;
     var max = 5.5;
-    current.forEach(function (row) {
-      ruler.textContent = formatPlate(row.plate);
-      var r = ruler.getBoundingClientRect().width / 100;
+    for (var i = 0; i < current.length; i++) {
+      setText(ruler, formatPlate(current[i].plate));
+      var r = ruler.offsetWidth / 100;
       if (r > max) { max = r; }
-    });
+    }
     return max;
   }
 
+  function numStyle(el, prop, fallback) {
+    var v = 0;
+    if (window.getComputedStyle) { v = parseFloat(window.getComputedStyle(el)[prop]); }
+    return isNaN(v) ? fallback : v;
+  }
+
   function fitFont() {
-    var first = platesEl.firstElementChild;
+    var first = platesEl.firstChild;
     if (!first) { return; }
 
-    var cs  = getComputedStyle(first);
-    var box = first.getBoundingClientRect();
-    var padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight)
-             + parseFloat(cs.borderLeftWidth) + parseFloat(cs.borderRightWidth);
+    var padX = numStyle(first, "paddingLeft", 6) + numStyle(first, "paddingRight", 6)
+             + numStyle(first, "borderLeftWidth", 3) + numStyle(first, "borderRightWidth", 3);
 
-    var byWidth  = (box.width - padX - 4) / widestRatio();
-    var byHeight = box.height * 0.6;
+    var byWidth  = (first.offsetWidth - padX - 4) / widestRatio();
+    var byHeight = first.offsetHeight * 0.6;
 
     var size = Math.max(12, Math.min(byWidth, byHeight, 60));
     platesEl.style.fontSize = size.toFixed(1) + "px";
   }
 
-  /* ---------------- 4. 목록 그리기 ---------------- */
-  /* 2열~5열 중에서 번호판 글자가 가장 크게 들어가는 배치를 고릅니다.
-     세로 화면은 폭이 좁아, 열을 줄이면 글자가 커지고 행이 늘면 높이가 줄어듭니다.
-     둘을 다 계산해서 가장 나은 쪽을 씁니다. */
+  /* 2~5열 중 글자가 가장 크게 들어가는 배치를 고릅니다. */
   function gridPlan(n) {
-    var box   = platesEl.getBoundingClientRect();
-    var gap   = parseFloat(getComputedStyle(platesEl).gap) || 8;
+    var w   = platesEl.offsetWidth;
+    var h   = platesEl.offsetHeight;
+    var gap = numStyle(platesEl, "gap", 8);
+    if (!gap) { gap = 8; }
     var ratio = widestRatio();
-    var padX  = window.innerHeight * 0.02;   // 좌우 여백 + 테두리 (대략)
+    var padX  = window.innerHeight * 0.02;
 
     var best = null;
     for (var c = 2; c <= 5; c++) {
       var r    = Math.max(1, Math.ceil(Math.max(n, c) / c));
-      var colW = (box.width  - (c - 1) * gap) / c;
-      var rowH = (box.height - (r - 1) * gap) / r;
+      var colW = (w - (c - 1) * gap) / c;
+      var rowH = (h - (r - 1) * gap) / r;
       var f    = Math.min((colW - padX - 4) / ratio, rowH * 0.6);
       if (!best || f > best.f) { best = { cols: c, rows: r, total: c * r, f: f }; }
     }
     return best;
   }
 
+  /* ---------------- 4. 목록 ---------------- */
+  function showMsg(text) {
+    setText(msgEl, text);
+    msgEl.style.display = "";       // CSS 의 display:grid 를 그대로 씁니다
+  }
+  function hideMsg() { msgEl.style.display = "none"; }
+
+  hideMsg();
+
   function render(list) {
     current = list;
-    msgEl.hidden = true;
 
     if (!list.length) {
       platesEl.innerHTML = "";
-      countEl.textContent = "";
-      msgEl.hidden = false;
-      msgEl.textContent = "현재 등록된 차량이 없습니다.";
+      setText(countEl, "");
+      showMsg("현재 등록된 차량이 없습니다.");
       return;
     }
+    hideMsg();
 
     var plan = gridPlan(list.length);
     platesEl.style.gridTemplateColumns = "repeat(" + plan.cols + ", minmax(0, 1fr))";
     platesEl.style.gridTemplateRows    = "repeat(" + plan.rows + ", minmax(0, 1fr))";
     platesEl.innerHTML = "";
 
-    list.forEach(function (row) {
-      var li = document.createElement("li");
+    var i, li;
+    for (i = 0; i < list.length; i++) {
+      li = document.createElement("li");
       li.className = "plate";
-      li.textContent = formatPlate(row.plate);
+      li.appendChild(document.createTextNode(formatPlate(list[i].plate)));
       platesEl.appendChild(li);
-    });
-
-    // 마지막 줄만 빈 칸으로 채워 모양을 맞춥니다
-    for (var i = list.length; i < plan.total; i++) {
-      var e = document.createElement("li");
-      e.className = "plate empty-slot";
-      e.setAttribute("aria-hidden", "true");
-      platesEl.appendChild(e);
+    }
+    for (i = list.length; i < plan.total; i++) {
+      li = document.createElement("li");
+      li.className = "plate empty-slot";
+      li.setAttribute("aria-hidden", "true");
+      platesEl.appendChild(li);
     }
 
-    countEl.textContent = "총 " + list.length + "대";
-    requestAnimationFrame(fitFont);
+    setText(countEl, "총 " + list.length + "대");
+    setTimeout(fitFont, 0);
   }
 
   var resizeTimer = null;
-  window.addEventListener("resize", function () {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(function () { fitNotices(); render(current); }, 150);
-  });
+  window.onresize = function () {
+    if (resizeTimer) { clearTimeout(resizeTimer); }
+    resizeTimer = setTimeout(function () { fitNotices(); render(current); }, 200);
+  };
 
   /* ---------------- 5. 불러오기 ---------------- */
   function load() {
-    if (!configReady()) {
-      countEl.textContent = "";
-      msgEl.hidden = false;
-      msgEl.textContent = "설정이 아직 되지 않았습니다. config.js 를 채워 주세요.";
-      return;
-    }
-
-    makeClient().from("vehicles_public").select("plate").then(function (res) {
-      if (res.error) {
-        console.error(res.error);
-        countEl.textContent = "";
-        msgEl.hidden = false;
-        msgEl.textContent = "목록을 불러오지 못했습니다.";
-        return;
-      }
-      var list = res.data.slice().sort(function (a, b) {
-        return formatPlate(a.plate).localeCompare(formatPlate(b.plate), "ko");
+    loadPlates(function (rows) {
+      rows.sort(function (a, b) {
+        var x = formatPlate(a.plate), y = formatPlate(b.plate);
+        return x < y ? -1 : (x > y ? 1 : 0);
       });
-      render(list);
+      render(rows);
+    }, function (why) {
+      platesEl.innerHTML = "";
+      setText(countEl, "");
+      showMsg("목록을 불러오지 못했습니다.\n" + why);
     });
   }
 
   load();
-  setInterval(load, 5 * 60 * 1000);
+  setInterval(load, 5 * 60 * 1000);   // 5분마다 차량 목록 갱신
 
-  // 웹폰트는 늦게 도착할 수 있습니다. 다 불러온 뒤 크기를 다시 맞춥니다.
-  if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(function () {
-      fitNotices();
-      if (current.length) { render(current); }
-    });
-  }
+  // 관리자 화면에서 "새로고침 신호"를 보내면 이 화면도 스스로 다시 열립니다
+  watchReload();
 })();
 </script>
 

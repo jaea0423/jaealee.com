@@ -764,6 +764,35 @@
   });
 
   /* =========================================================
+     게시 화면 원격 새로고침
+
+     모니터·태블릿에 띄워 둔 화면들은 1분마다 app_settings 의
+     reload_token 을 확인합니다. 여기서 그 값을 바꾸면
+     각 화면이 스스로 페이지를 다시 엽니다.
+     ========================================================= */
+  $("btn-reload").addEventListener("click", function () {
+    if (!confirm("모니터·태블릿에 띄워 둔 게시 화면을 모두 새로고침합니다.\n" +
+                 "각 화면은 1분 안에 스스로 다시 열립니다. 계속할까요?")) { return; }
+
+    var token = String(new Date().getTime());
+    var btn = $("btn-reload");
+    btn.disabled = true;
+
+    db.from("app_settings")
+      .upsert({ key: "reload_token", value: token }, { onConflict: "key" })
+      .then(function (res) {
+        btn.disabled = false;
+        if (res.error) {
+          console.error("[reload]", res.error);
+          alert("신호를 보내지 못했습니다.\n\n[원문] " + res.error.message);
+          return;
+        }
+        logIt("새로고침", null, "게시 화면 새로고침 신호");
+        alert("신호를 보냈습니다.\n1분 안에 모든 게시 화면이 새로고침됩니다.");
+      });
+  });
+
+  /* =========================================================
      QR 코드
      ========================================================= */
   function defaultQrUrl() {

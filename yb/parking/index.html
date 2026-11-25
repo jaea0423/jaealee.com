@@ -45,21 +45,25 @@
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
 <script>
+/* 이 화면은 스마트TV 내장 브라우저처럼 오래된 환경에서도 떠야 합니다.
+   그래서 라이브러리를 쓰지 않고, 옛날 문법(ES5)으로만 작성했습니다. */
 (function () {
   "use strict";
 
   var platesEl = document.getElementById("plates");
   var emptyEl  = document.getElementById("empty");
   var countEl  = document.getElementById("count");
-  var current  = [];        // 마지막으로 불러온 목록
+  var current  = [];
 
   /* ---------------- 0. 건물 이름 / 오늘 날짜 ---------------- */
   var B = CONFIG.BUILDING || "대경빌";
-  document.getElementById("bldg").textContent = B;
-  document.getElementById("sign-head").textContent = B + " 등록 차량 외 주차 불가";
+  document.getElementById("bldg").innerHTML = "";
+  document.getElementById("bldg").appendChild(document.createTextNode(B));
+  document.getElementById("sign-head").innerHTML = "";
+  document.getElementById("sign-head").appendChild(
+    document.createTextNode(B + " 등록 차량 외 주차 불가"));
   document.title = B + " 등록 차량";
 
   (function () {
@@ -73,22 +77,17 @@
     var a = document.createElement("a");
     a.className = "sign-contact";
     a.href = "tel:" + CONFIG.CONTACT.replace(/[^0-9+]/g, "");
-    a.textContent = "이동주차 요청 " + CONFIG.CONTACT;
+    a.appendChild(document.createTextNode("이동주차 요청 " + CONFIG.CONTACT));
     document.getElementById("contact-wrap").appendChild(a);
   }
 
-  /* ---------------- 1. 5번 클릭 -> 관리자모드 ----------------
-     위쪽 "대경빌 주차"(P 마크 포함)를 3초 안에 5번 누르면 넘어갑니다.
-     목록 제목("등록 차량")은 눌러도 아무 일도 일어나지 않습니다.
-  ------------------------------------------------------------ */
-  var clicks = 0;
-  var timer  = null;
+  /* ---------------- 1. 5번 눌러 관리자 모드 ---------------- */
+  var clicks = 0, timer = null;
 
   function tap() {
     clicks += 1;
-    clearTimeout(timer);
+    if (timer) { clearTimeout(timer); }
     timer = setTimeout(function () { clicks = 0; }, 3000);
-
     if (clicks >= 5) {
       clicks = 0;
       clearTimeout(timer);
@@ -96,76 +95,51 @@
     }
   }
 
-  document.querySelectorAll(".tap").forEach(function (el) {
-    el.addEventListener("click", tap);
-  });
-
-  /* ---------------- 2. 목록 ---------------- */
-  function showEmpty(text) {
-    emptyEl.textContent = text;
-    emptyEl.classList.remove("hidden");
+  var taps = document.querySelectorAll(".tap");
+  for (var ti = 0; ti < taps.length; ti++) {
+    taps[ti].onclick = tap;     // NodeList.forEach 는 옛 브라우저에 없습니다
   }
 
-  /* ---- 화면 크기에 맞춰 격자 모양을 정합니다 ----
-     스크롤이 생기지 않도록, 남는 높이를 행 수로 나눠 씁니다. */
-  function gridPlan(carCount) {
-    var w = window.innerWidth;
-    var cols, slots;
-
-    if (w < 768)       { cols = 2; slots = CONFIG.SLOTS_MOBILE || 16; }  // 휴대폰
-    else if (w < 1200) { cols = 4; slots = CONFIG.SLOTS || 20; }         // 태블릿
-    else               { cols = 5; slots = CONFIG.SLOTS || 20; }         // PC / 모니터
-
-    var total = Math.max(slots, carCount);
-    var rows  = Math.max(1, Math.ceil(total / cols));
-    return { cols: cols, rows: rows, total: rows * cols };
-  }
-
-  /* 칸 크기에 맞춰 번호판 글자 크기를 정합니다.
-     글자 폭을 눈대중으로 계산하면 한글 폭 때문에 어긋나 두 줄로 접힙니다.
-     그래서 화면 밖에 똑같은 모양의 글자를 하나 그려 놓고 실제 폭을 잽니다. */
+  /* ---------------- 2. 번호판 글자 크기 ---------------- */
   var ruler = document.createElement("span");
   ruler.setAttribute("aria-hidden", "true");
   ruler.style.cssText =
     "position:absolute;left:-9999px;top:0;white-space:nowrap;" +
-    "font-size:100px;font-weight:800;letter-spacing:.03em;" +
-    "font-variant-numeric:tabular-nums;visibility:hidden";
+    "font-size:100px;font-weight:800;letter-spacing:.03em;visibility:hidden";
   document.body.appendChild(ruler);
 
-  // 가장 긴 번호판이 글자 크기 100px 일 때 몇 px 인지 -> 배율
   function widestRatio() {
-    ruler.style.fontFamily = getComputedStyle(platesEl).fontFamily;
-    var max = 5.5;                       // 최소한 이 정도는 잡아 둡니다
-    current.forEach(function (row) {
-      ruler.textContent = formatPlate(row.plate);
-      var r = ruler.getBoundingClientRect().width / 100;
+    var max = 5.5;
+    for (var i = 0; i < current.length; i++) {
+      ruler.innerHTML = "";
+      ruler.appendChild(document.createTextNode(formatPlate(current[i].plate)));
+      var r = ruler.offsetWidth / 100;
       if (r > max) { max = r; }
-    });
+    }
     return max;
   }
 
-  /* 넓은 화면에서는 칸이 너무 두꺼워집니다.
-     실제 번호판처럼 옆으로 긴 비율이 되도록 높이에 상한을 둡니다.
-     남는 높이는 안내판이 아래로 내려가면서 자연스럽게 흡수합니다.
-     (휴대폰은 세로가 빠듯하므로 그대로 꽉 채웁니다) */
-  function capRowHeight(rows) {
-    var first = platesEl.firstElementChild;
-    if (!first) { return; }
+  function numStyle(el, prop, fallback) {
+    var v = 0;
+    if (window.getComputedStyle) {
+      v = parseFloat(window.getComputedStyle(el)[prop]);
+    }
+    return isNaN(v) ? fallback : v;
+  }
 
-    // 휴대폰은 손대지 않습니다
-    if (window.innerWidth < 768) {
+  function capRowHeight(rows) {
+    var first = platesEl.firstChild;
+    if (!first || window.innerWidth < 768) {
       platesEl.style.flex = "";
       platesEl.style.marginBottom = "";
       return;
     }
-
-    var box = first.getBoundingClientRect();
-    var cap = box.width / 3.7;          // 가로:세로 = 약 3.7 : 1
-
-    if (box.height > cap) {
+    var w = first.offsetWidth, h = first.offsetHeight;
+    var cap = w / 3.7;                  // 실제 번호판에 가까운 가로:세로 비율
+    if (h > cap) {
       platesEl.style.gridTemplateRows = "repeat(" + rows + ", " + cap.toFixed(1) + "px)";
       platesEl.style.flex = "0 1 auto";
-      platesEl.style.marginBottom = "auto";   // 남는 높이를 아래로 몰아 줍니다
+      platesEl.style.marginBottom = "auto";
     } else {
       platesEl.style.flex = "";
       platesEl.style.marginBottom = "";
@@ -173,20 +147,39 @@
   }
 
   function fitFont() {
-    var first = platesEl.firstElementChild;
+    var first = platesEl.firstChild;
     if (!first) { return; }
 
-    var cs   = getComputedStyle(first);
-    var box  = first.getBoundingClientRect();
-    var padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight)
-             + parseFloat(cs.borderLeftWidth) + parseFloat(cs.borderRightWidth);
+    var padX = numStyle(first, "paddingLeft", 8) + numStyle(first, "paddingRight", 8)
+             + numStyle(first, "borderLeftWidth", 3) + numStyle(first, "borderRightWidth", 3);
 
-    var byWidth  = (box.width - padX - 4) / widestRatio();
-    var byHeight = box.height * 0.46;
+    var byWidth  = (first.offsetWidth - padX - 4) / widestRatio();
+    var byHeight = first.offsetHeight * 0.46;
 
     var size = Math.max(13, Math.min(byWidth, byHeight, 48));
     platesEl.style.fontSize = size.toFixed(1) + "px";
   }
+
+  /* ---------------- 3. 화면 그리기 ---------------- */
+  function gridPlan(carCount) {
+    var w = window.innerWidth, cols, slots;
+
+    if (w < 768)       { cols = 2; slots = CONFIG.SLOTS_MOBILE || 16; }
+    else if (w < 1200) { cols = 4; slots = CONFIG.SLOTS || 20; }
+    else               { cols = 5; slots = CONFIG.SLOTS || 20; }
+
+    var total = Math.max(slots, carCount);
+    var rows  = Math.max(1, Math.ceil(total / cols));
+    return { cols: cols, rows: rows, total: rows * cols };
+  }
+
+  function showEmpty(text) {
+    emptyEl.innerHTML = "";
+    emptyEl.appendChild(document.createTextNode(text));
+    emptyEl.className = "empty";
+  }
+
+  function hideEmpty() { emptyEl.className = "empty hidden"; }
 
   function render(list) {
     current = list;
@@ -195,66 +188,56 @@
     platesEl.style.gridTemplateColumns = "repeat(" + plan.cols + ", minmax(0, 1fr))";
     platesEl.style.gridTemplateRows    = "repeat(" + plan.rows + ", minmax(0, 1fr))";
     platesEl.innerHTML = "";
-    emptyEl.classList.add("hidden");
+    hideEmpty();
 
-    list.forEach(function (row) {
-      var li = document.createElement("li");
+    var i, li;
+    for (i = 0; i < list.length; i++) {
+      li = document.createElement("li");
       li.className = "plate";
-      li.textContent = formatPlate(row.plate);   // textContent 라서 HTML 주입 걱정 없음
+      li.appendChild(document.createTextNode(formatPlate(list[i].plate)));
       platesEl.appendChild(li);
-    });
-
-    // 남는 자리는 빈 칸으로 채웁니다
-    for (var i = list.length; i < plan.total; i++) {
-      var e = document.createElement("li");
-      e.className = "plate empty-slot";
-      e.setAttribute("aria-hidden", "true");
-      platesEl.appendChild(e);
+    }
+    for (i = list.length; i < plan.total; i++) {
+      li = document.createElement("li");
+      li.className = "plate empty-slot";
+      li.setAttribute("aria-hidden", "true");
+      platesEl.appendChild(li);
     }
 
-    countEl.textContent = list.length ? "총 " + list.length + "대" : "등록된 차량 없음";
+    countEl.innerHTML = "";
+    countEl.appendChild(document.createTextNode(
+      list.length ? "총 " + list.length + "대" : "등록된 차량 없음"));
 
-    requestAnimationFrame(function () {
-      capRowHeight(plan.rows);
-      requestAnimationFrame(fitFont);
-    });
+    setTimeout(function () { capRowHeight(plan.rows); setTimeout(fitFont, 0); }, 0);
   }
 
-  // 창 크기가 바뀌면 다시 계산합니다
   var resizeTimer = null;
-  window.addEventListener("resize", function () {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(function () { render(current); }, 150);
-  });
+  window.onresize = function () {
+    if (resizeTimer) { clearTimeout(resizeTimer); }
+    resizeTimer = setTimeout(function () { render(current); }, 200);
+  };
 
+  /* ---------------- 4. 불러오기 ---------------- */
   function load() {
-    if (!configReady()) {
-      countEl.textContent = "";
-      showEmpty("설정이 아직 되지 않았습니다. config.js 를 채워 주세요.");
-      return;
-    }
-
-    var db = makeClient();
-
-    // vehicles_public 뷰에는 "지금 등록 기간 중인 차량의 번호"만 들어 있습니다
-    db.from("vehicles_public").select("plate").then(function (res) {
-      if (res.error) {
-        console.error(res.error);
-        countEl.textContent = "";
-        showEmpty("목록을 불러오지 못했습니다. 잠시 후 새로고침해 주세요.");
-        return;
-      }
-
-      var list = res.data.slice().sort(function (a, b) {
-        return formatPlate(a.plate).localeCompare(formatPlate(b.plate), "ko");
+    loadPlates(function (rows) {
+      rows.sort(function (a, b) {
+        var x = formatPlate(a.plate), y = formatPlate(b.plate);
+        return x < y ? -1 : (x > y ? 1 : 0);
       });
-
-      render(list);
+      render(rows);
+    }, function (why) {
+      // 실패 이유를 화면에 그대로 보여 줍니다 (어디서 막혔는지 알 수 있게)
+      countEl.innerHTML = "";
+      platesEl.innerHTML = "";
+      showEmpty("목록을 불러오지 못했습니다.\n" + why);
     });
   }
 
   load();
-  setInterval(load, 5 * 60 * 1000);   // 게시용으로 켜 둘 수 있게 5분마다 갱신
+  setInterval(load, 5 * 60 * 1000);   // 5분마다 차량 목록 갱신
+
+  // 관리자 화면에서 "새로고침 신호"를 보내면 이 화면도 스스로 다시 열립니다
+  watchReload();
 })();
 </script>
 
