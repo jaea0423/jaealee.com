@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>알고리즘 F. 백트래킹 — 심화</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Gothic+Coding&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../exam-engine/exam.css">
+<style>:root{ --subject:#4F46E5; }  /* 과목 색 — 이 한 줄만 과목마다 다르다 */</style>
+<script src="../../exam-engine/exam.js"></script>
+</head>
+<body>
+<div id="engineMissing" style="max-width:560px;margin:60px auto;padding:18px 20px;border:1.5px solid #141414;background:#fff;font:14px/1.7 sans-serif">
+시험지 엔진을 불러오지 못했습니다.<br>이 파일은 <b>drive/exam-engine/exam.css · exam.js</b> 와 함께 있어야 열립니다.
+(<code>drive/algorithm/exam/bt-3.html</code> 위치에서 열어 주세요.)</div>
+<script>
+/* ════════ 시험지 정보 ════════ */
+const META = {
+  "org": "Kangwon National University CSE",
+  "subject": "알고리즘",
+  "title": "F. 백트래킹 — 심화",
+  "written": "2026년 11월 27일 작성",
+  "slug": "algorithm-bt-3",
+  "lectureBase": "../lecture",
+  "level": "심화",
+  "mcMax": 1,
+  "scope": "<b>백트래킹 · 심화</b> (11주차 1차시 ~ 13주차 1차시)<br>한계함수가 맞는 이유 (귀류법) · 4개 배낭 전체 추적 · 4-Queens SST · 일반형 적용 · 함수 비교"
+};
+
+/* ════════ 문항 ════════
+   type  : mc 객관식 · ox O/X · short 단답 · table 표 빈칸 · line 코드 줄 고르기 · essay 서술
+   생성  : exam/gen/gen_greedy_exam.py — 계산 값은 gx_core.py 에서 assert 로 검증
+   채점  : 엔진은 채점하지 않음. 문항마다 「정답 · 해설」을 펼쳐 스스로 확인 — rubric 은 [기준, 점수] (부분 점수) */
+const EXAM = [
+{"type": "essay", "lv": "상", "unit": "한계함수 정당성", "pts": 15, "q": "<p>0/1 Knapsack 백트래킹에서 \"상한 ≤ MP 인 가지는 방문하지 않아도 최적 해를 놓치지 않는다\" 를 귀류법으로 설명하시오.</p>", "model": "<b>가정</b>: 상한 U ≤ MP 인 가지 아래에 MP 보다 가치가 큰 0/1 해 x 가 있다 (놓쳤다).<br>그 가지에서 x 의 가치 = p(v) (+ P[i]) + (나머지 아이템으로 얻은 0/1 가치). 나머지 아이템의 0/1 가치 ≤ 같은 아이템 · 같은 남은 용량의 fractional 최적 가치 (0/1 해는 쪼개지 않은 fractional 해) → x 의 가치 ≤ U.<br><b>모순</b>: MP &lt; x 의 가치 ≤ U ≤ MP.<br><b>결론</b>: 그런 해는 없다 → 걸러도 최적을 놓치지 않는다.", "rubric": [["가정", 3], ["0/1 ≤ fractional 로 x ≤ U", 6], ["MP < x ≤ U ≤ MP 모순", 4], ["결론", 2]], "src": [["12-2", "s2", "fractional · 0/1"], ["12-2", "s8", "한계함수 MP"]]},
+
+{"type": "essay", "lv": "상", "unit": "0/1 추적", "pts": 15, "q": "<p>K = 16, S = [2, 5, 10, 5], P = [40, 30, 50, 10] 을 수업 코드로 풀 때 상태 공간 트리를 그리고, 방문하는 노드마다 p(v), s(v), 거르는 가지마다 상한 (또는 넘침) 을 쓰시오. 최종 MP 와 X 를 쓰시오.</p>", "model": "방문: [ ] (0, 0) → [1] (40, 2) → [1, 1] (70, 7) → [1, 1, 1] 넘침 ✕ → [1, 1, 0] (70, 7) → [1, 1, 0, 1] (80, 12) 잎 → MP = 80 → [1, 1, 0, 0] 상한 70 ✕ → [1, 0] (40, 2) → [1, 0, 1] (90, 12) → [1, 0, 1, 1] 넘침 ✕ → [1, 0, 1, 0] 잎 → <b>MP = 90</b> → [1, 0, 0] 상한 50 ✕ → [0] 상한 82 ✕.<br>결과 <b>MP = 90, X = [1, 0, 1, 0]</b>. (방문 노드 8개)", "rubric": [["방문 순서 · 트리", 5], ["MP 80 → 90 갱신", 4], ["거른 가지 5개와 이유", 4], ["결과", 2]], "src": [["12-2", "s8", "한계함수 MP"], ["13-1", "s3", "knapsack"], ["13-1", "s5", "판서 트리"]]},
+
+{"type": "essay", "lv": "상", "unit": "그리디 vs 백트래킹", "pts": 10, "q": "<p>fractional knapsack 은 그리디로, 0/1 knapsack 은 백트래킹으로 푸는 이유를 각각 쓰시오. 0/1 에 가성비 그리디가 실패하는 예를 수업 값이 아닌 새 값으로 하나 만드시오.</p>", "model": "fractional: 쪼갤 수 있어 가성비가 높은 것부터 채우면 남는 공간도 다음 좋은 아이템 조각으로 채워져 최적 (그리디). 0/1: 쪼갤 수 없어 가성비 좋은 것을 먼저 넣으면 남는 공간이 낭비될 수 있음 → 모든 조합을 봐야 하므로 백트래킹 (+ 상한으로 가지치기).<br>예: K = 4, 무게 [3, 2, 2], 가치 [9, 5, 5] (가성비 3, 2.5, 2.5) → 그리디 9 (3 을 넣으면 2 가 안 들어감), 최적 2 + 2 → 10.", "rubric": [["fractional 그리디 이유", 3], ["0/1 백트래킹 이유", 3], ["실제로 실패하는 새 예", 4]], "src": [["12-2", "s3", "fractional 풀이"], ["12-2", "s4", "0/1 가성비 순"], ["12-2", "s5", "0/1 은 백트래킹"]]},
+
+{"type": "essay", "lv": "상", "unit": "N-Queens 트리", "pts": 15, "q": "<p>4-Queens 를 수업 규칙 (각 노드에서 0, 1, 2, 3 열 순서, 충돌하면 X, 첫 해에서 종료) 으로 풀 때 상태 공간 트리를 그리시오. (과제 4 와 같은 문제)</p>", "model": "<b>루트 [ ] 의 X[0] = 0 가지</b><pre style=\"font-size:12px;line-height:1.45\">─0→ [0]\n    ─0→ [0,0] X\n    ─1→ [0,1] X\n    ─2→ [0,2]\n        ─0→ [0,2,0] X\n        ─1→ [0,2,1] X\n        ─2→ [0,2,2] X\n        ─3→ [0,2,3] X\n    ─3→ [0,3]\n        ─0→ [0,3,0] X\n        ─1→ [0,3,1]\n            ─0→ [0,3,1,0] X\n            ─1→ [0,3,1,1] X\n            ─2→ [0,3,1,2] X\n            ─3→ [0,3,1,3] X\n        ─2→ [0,3,2] X\n        ─3→ [0,3,3] X</pre><b>X[0] = 1 가지</b><svg viewBox=\"0 0 416 258\" style=\"width:100%;max-width:416px;height:auto;display:block;margin:8px 0\" role=\"img\"><title>[1] 아래</title><line x1=\"175.0\" y1=\"38\" x2=\"43.0\" y2=\"70\" stroke=\"#141414\" stroke-width=\"1.4\"/><text x=\"76.6\" y=\"60.4\" font-size=\"13\" font-weight=\"700\" text-anchor=\"end\">0</text><line x1=\"175.0\" y1=\"38\" x2=\"109.0\" y2=\"70\" stroke=\"#141414\" stroke-width=\"1.4\"/><text x=\"122.80000000000001\" y=\"60.4\" font-size=\"13\" font-weight=\"700\" text-anchor=\"end\">1</text><line x1=\"175.0\" y1=\"38\" x2=\"175.0\" y2=\"70\" stroke=\"#141414\" stroke-width=\"1.4\"/><text x=\"181.0\" y=\"60.4\" font-size=\"13\" font-weight=\"700\" text-anchor=\"start\">2</text><line x1=\"175.0\" y1=\"38\" x2=\"307.0\" y2=\"70\" stroke=\"#141414\" stroke-width=\"1.4\"/><text x=\"273.4\" y=\"60.4\" font-size=\"13\" font-weight=\"700\" text-anchor=\"start\">3</text><line x1=\"307.0\" y1=\"100\" x2=\"307.0\" y2=\"132\" stroke=\"#141414\" stroke-width=\"1.4\"/><text x=\"313.0\" y=\"122.39999999999999\" font-size=\"13\" font-weight=\"700\" text-anchor=\"start\">0</text><line x1=\"307.0\" y1=\"162\" x2=\"241.0\" y2=\"194\" stroke=\"#141414\" stroke-width=\"1.4\"/><text x=\"254.79999999999995\" y=\"184.39999999999998\" font-size=\"13\" font-weight=\"700\" text-anchor=\"end\">0</text><line x1=\"307.0\" y1=\"162\" x2=\"307.0\" y2=\"194\" stroke=\"#141414\" stroke-width=\"1.4\"/><text x=\"313.0\" y=\"184.39999999999998\" font-size=\"13\" font-weight=\"700\" text-anchor=\"start\">1</text><line x1=\"307.0\" y1=\"162\" x2=\"373.0\" y2=\"194\" stroke=\"#141414\" stroke-width=\"1.4\"/><text x=\"359.19999999999993\" y=\"184.39999999999998\" font-size=\"13\" font-weight=\"700\" text-anchor=\"start\">2</text><rect x=\"143.0\" y=\"8\" width=\"64\" height=\"30\" rx=\"6\" fill=\"#fff\" stroke=\"#141414\" stroke-width=\"1.5\"/><text x=\"175.0\" y=\"28.0\" font-size=\"13.5\" font-weight=\"800\" text-anchor=\"middle\" fill=\"#141414\">[1]</text><rect x=\"11.0\" y=\"70\" width=\"64\" height=\"30\" rx=\"6\" fill=\"#FBE3DC\" stroke=\"#C0341D\" stroke-width=\"1.5\"/><text x=\"43.0\" y=\"90.0\" font-size=\"13.5\" font-weight=\"800\" text-anchor=\"middle\" fill=\"#C0341D\">[1,0] X</text><rect x=\"77.0\" y=\"70\" width=\"64\" height=\"30\" rx=\"6\" fill=\"#FBE3DC\" stroke=\"#C0341D\" stroke-width=\"1.5\"/><text x=\"109.0\" y=\"90.0\" font-size=\"13.5\" font-weight=\"800\" text-anchor=\"middle\" fill=\"#C0341D\">[1,1] X</text><rect x=\"143.0\" y=\"70\" width=\"64\" height=\"30\" rx=\"6\" fill=\"#FBE3DC\" stroke=\"#C0341D\" stroke-width=\"1.5\"/><text x=\"175.0\" y=\"90.0\" font-size=\"13.5\" font-weight=\"800\" text-anchor=\"middle\" fill=\"#C0341D\">[1,2] X</text><rect x=\"275.0\" y=\"70\" width=\"64\" height=\"30\" rx=\"6\" fill=\"#fff\" stroke=\"#141414\" stroke-width=\"1.5\"/><text x=\"307.0\" y=\"90.0\" font-size=\"13.5\" font-weight=\"800\" text-anchor=\"middle\" fill=\"#141414\">[1,3]</text><rect x=\"275.0\" y=\"132\" width=\"64\" height=\"30\" rx=\"6\" fill=\"#fff\" stroke=\"#141414\" stroke-width=\"1.5\"/><text x=\"307.0\" y=\"152.0\" font-size=\"13.5\" font-weight=\"800\" text-anchor=\"middle\" fill=\"#141414\">[1,3,0]</text><rect x=\"209.0\" y=\"194\" width=\"64\" height=\"30\" rx=\"6\" fill=\"#FBE3DC\" stroke=\"#C0341D\" stroke-width=\"1.5\"/><text x=\"241.0\" y=\"214.0\" font-size=\"13.5\" font-weight=\"800\" text-anchor=\"middle\" fill=\"#C0341D\">[1,3,0,0] X</text><rect x=\"275.0\" y=\"194\" width=\"64\" height=\"30\" rx=\"6\" fill=\"#FBE3DC\" stroke=\"#C0341D\" stroke-width=\"1.5\"/><text x=\"307.0\" y=\"214.0\" font-size=\"13.5\" font-weight=\"800\" text-anchor=\"middle\" fill=\"#C0341D\">[1,3,0,1] X</text><rect x=\"341.0\" y=\"194\" width=\"64\" height=\"30\" rx=\"6\" fill=\"#FFD84D\" stroke=\"#141414\" stroke-width=\"1.5\"/><text x=\"373.0\" y=\"214.0\" font-size=\"13.5\" font-weight=\"800\" text-anchor=\"middle\" fill=\"#141414\">[1,3,0,2] O</text></svg>가지의 숫자 = 그 행에 놓은 열. 첫 해 [1, 3, 0, 2], X 노드 18개. X[0] = 2, 3 은 탐색하지 않음.", "rubric": [["[0] 아래 전부 실패 처리", 5], ["[1] → [1, 3] → [1, 3, 0] → [1, 3, 0, 2]", 5], ["X 표시 · 탐색 안 한 가지 처리", 5]], "src": [["11-1", "s7", "N-Queens"], ["12-1", "s9", "SST"]]},
+
+{"type": "essay", "lv": "상", "unit": "일반형 적용", "pts": 10, "q": "<p>Backtrack(k) 일반형으로 0/1 Knapsack 을 다시 쓸 때, 후보 c 와 한계함수 B(X[0], …, X[k−1], c) 를 각각 정의하시오.</p>", "model": "후보 c ∈ {1, 0} (1 먼저). B: c = 1 이면 s + S[k] ≤ K 이고 p + P[k] + frac(k + 1, K − s − S[k]) &gt; MP, c = 0 이면 p + frac(k + 1, K − s) &gt; MP (p, s = X[0] ~ X[k−1] 로 넣은 가치 · 무게 합). k ≥ n 에서 MP 와 비교해 갱신 (output solution).", "rubric": [["후보 c", 2], ["c = 1 의 B (넘침 + 상한)", 4], ["c = 0 의 B", 3], ["k ≥ n 처리", 1]], "src": [["12-1", "s8", "일반형 · 한계함수"], ["12-2", "s8", "한계함수 MP"]]},
+
+{"type": "essay", "lv": "상", "unit": "Subset Sum 비교", "pts": 10, "q": "<p>subsetsum1, subsetsum_sol, subsetsum_sol2 의 반환 · 출력과 쓰임을 비교하고, subsetsum1 을 DP 로 바꿀 수 있게 만든 subsetsum2 의 차이를 쓰시오.</p>", "model": "subsetsum1: 있는지만 True / False. sol: 답 하나 (리스트, 없으면 None). sol2: X 로 모든 답 출력. subsetsum2 는 배열을 잘라 넘기는 대신 인덱스 i 하나를 줄여 넘겨 상태가 (i, S) 두 숫자가 됨 → DP[i][S] 표로 저장 가능 → O(nS).", "rubric": [["세 함수 비교", 6], ["subsetsum2 → (i, S) → DP", 4]], "src": [["11-1", "s10", "subsetsum1"], ["12-1", "s2", "subsetsum2"], ["12-1", "s5", "subsetsum_sol"], ["12-1", "s6", "subsetsum_sol2"], ["12-1", "s3", "DP · O(nS)"]]},
+
+{"type": "essay", "lv": "상", "unit": "MP 초기값", "pts": 10, "q": "<p>knapsack(0, K, 0) 을 부르기 전에 MP = 0 으로 둔다. MP 를 처음부터 큰 값 (예: 1000) 으로 잘못 두면 어떤 일이 생기는지, 반대로 MP 를 \"가성비 그리디로 구한 0/1 가치\" 로 시작하면 어떤 장점이 있는지 쓰시오.</p>", "model": "1000 이면 모든 상한이 1000 이하라서 루트의 두 가지 모두 거름 → 아무 해도 찾지 못함 (best_X 없음). MP 는 실제로 가능한 해의 가치여야 한다. 그리디 0/1 가치 (예: K = 16 에서 80) 는 실제로 가능한 해이므로 MP 의 시작값으로 써도 최적을 놓치지 않고, 처음부터 더 많은 가지를 거를 수 있다 (보충).", "rubric": [["큰 값이면 전부 거름", 4], ["MP 는 가능한 해의 가치여야 함", 3], ["그리디 값 시작의 장점", 3]], "src": [["12-2", "s8", "한계함수 MP"], ["13-1", "s4", "update_best"]]},
+
+{"type": "essay", "lv": "상", "unit": "find_way 범위", "pts": 15, "q": "<p>수업 find_way 는 미로 밖 검사가 없다. (1) 수업 4 × 4 미로에서 실제로 미로 밖 인덱스로 호출되는 순간을 쓰시오. (2) 고친 코드를 쓰시오. (3) 동쪽 먼저로 바꾸려면 어떤 줄을 어떻게 바꾸는지 쓰시오.</p>", "model": "(1) (3, 1) 에서 남쪽 find_way(4, 1) — M[4][1] 은 범위 밖. (2) 맨 앞에 <code>if x &gt;= n or y &gt;= n: return false</code>. (3) <code>try_down = find_way(x + 1, y)</code> 와 <code>try_east = find_way(x, y + 1)</code> 의 순서를 바꿈 (먼저 find_way(x, y + 1) 을 시도하고 실패하면 find_way(x + 1, y)).", "rubric": [["(1) (4, 1) 호출", 5], ["(2) 범위 검사", 5], ["(3) 두 호출 순서 교환", 5]], "src": [["11-1", "s6", "find_way"], ["12-1", "s1", "find_way 들여쓰기"]]}
+];
+</script>
+</body>
+</html>
